@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "crosswake_version": "<%= @crosswake_version %>",
+  "router_path": "<%= @router_path %>",
+  "web_module": "<%= @web_module %>",
+  "policy_module": "<%= @policy_module %>",
+  "files": <%= @files_json %>,
+  "markers": <%= @markers_json %>
+}
