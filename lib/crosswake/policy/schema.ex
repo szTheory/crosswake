@@ -14,7 +14,7 @@ defmodule Crosswake.Policy.Schema do
               type_spec: quote(do: String.t())
             ],
             runtime: [
-              type: {:in, @runtime_values},
+              type: {:custom, __MODULE__, :validate_runtime, []},
               required: true,
               type_spec: quote(do: :live_view | :offline_island | :native_screen)
             ],
@@ -74,4 +74,12 @@ defmodule Crosswake.Policy.Schema do
   def validate_identifier(value) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
   def validate_identifier(value) when is_atom(value), do: {:ok, Atom.to_string(value)}
   def validate_identifier(_value), do: {:error, "expected a non-empty string or atom"}
+
+  @spec validate_runtime(term()) :: {:ok, runtime()} | {:error, String.t()}
+  def validate_runtime(:adapter), do: {:error, "runtime :adapter is a reserved future extension point"}
+  def validate_runtime(value) when value in @runtime_values, do: {:ok, value}
+
+  def validate_runtime(value) do
+    {:error, "expected one of #{inspect(@runtime_values)}, got: #{inspect(value)}"}
+  end
 end
