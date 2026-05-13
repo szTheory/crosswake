@@ -1,0 +1,23 @@
+# Crosswake iOS Shell Skeleton
+
+This workspace is `host-owned` and `editable` after generation. Crosswake created
+the scaffold so you can review and extend it, but it does not retain ownership of
+the native project files.
+
+## Phase 1 Boundary
+
+- This is a Phase 1 route-policy handoff, not a proven shell runtime.
+- Shell boot, manifest activation, bridge execution, and LiveView container behavior
+  land in later phases.
+- Keep the generated fixture local so the host team can evolve the native shell
+  without confusing it for library-owned runtime code.
+
+## Included Files
+
+- `Sources/AppShell.swift` - narrow placeholder source owned by the host app
+- `Fixtures/phase1_route_policy.json` - local bundled fixture for shell handoff work
+
+## Next Step
+
+Run `mix crosswake.install` first so the Phoenix host has a router-local policy
+surface before you wire any native shell behavior.
