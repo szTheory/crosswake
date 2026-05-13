@@ -3,10 +3,9 @@ defmodule Crosswake.Router do
   Phoenix-native router DSL for authoring Crosswake policy next to routes.
   """
 
-  alias Crosswake.Policy.Merge
+  alias Crosswake.Policy.RouterMetadata
   alias Crosswake.Router.ScopeDefaults
 
-  @metadata_key :crosswake
   @http_verbs [:get, :post, :put, :patch, :delete, :options, :head]
 
   defmacro __using__(_opts) do
@@ -33,21 +32,15 @@ defmodule Crosswake.Router do
       import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
       import Crosswake.Router
 
-      Crosswake.Router.ScopeDefaults.register(__MODULE__)
     end
   end
 
   defmacro crosswake_defaults(defaults, do: block) do
     evaluated_defaults = __eval_keyword!(defaults, __CALLER__)
+    rewritten_block = ScopeDefaults.apply(block, evaluated_defaults, __CALLER__)
 
     quote do
-      Crosswake.Router.ScopeDefaults.push(
-        __MODULE__,
-        unquote(Macro.escape(evaluated_defaults))
-      )
-
-      unquote(block)
-      Crosswake.Router.ScopeDefaults.pop(__MODULE__)
+      unquote(rewritten_block)
     end
   end
 
@@ -102,22 +95,17 @@ defmodule Crosswake.Router do
   end
 
   @doc false
-  def __route_options__(module, opts_ast, caller) do
+  def __route_options__(_module, opts_ast, caller) do
     opts = __eval_keyword!(opts_ast, caller)
     {crosswake_options, phoenix_options} = Keyword.pop(opts, :crosswake)
 
     if is_nil(crosswake_options) do
       phoenix_options
     else
-      merged_crosswake =
-        module
-        |> ScopeDefaults.current()
-        |> Merge.route_defaults(crosswake_options)
-
       metadata =
         phoenix_options
         |> Keyword.get(:metadata, %{})
-        |> Map.put(@metadata_key, merged_crosswake)
+        |> RouterMetadata.attach(crosswake_options)
 
       Keyword.put(phoenix_options, :metadata, metadata)
     end

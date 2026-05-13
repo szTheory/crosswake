@@ -1,19 +1,40 @@
 defmodule Crosswake.TestSupport.PageController do
+  def init(opts), do: opts
+  def call(conn, _opts), do: conn
 end
 
 defmodule Crosswake.TestSupport.SettingsController do
+  def init(opts), do: opts
+  def call(conn, _opts), do: conn
 end
 
 defmodule Crosswake.TestSupport.AccountController do
+  def init(opts), do: opts
+  def call(conn, _opts), do: conn
 end
 
 defmodule Crosswake.TestSupport.DashboardLive do
+  use Phoenix.LiveView
+
+  def render(assigns) do
+    ~H"<div>dashboard</div>"
+  end
 end
 
 defmodule Crosswake.TestSupport.LibraryLive do
+  use Phoenix.LiveView
+
+  def render(assigns) do
+    ~H"<div>library</div>"
+  end
 end
 
 defmodule Crosswake.TestSupport.CameraLive do
+  use Phoenix.LiveView
+
+  def render(assigns) do
+    ~H"<div>camera</div>"
+  end
 end
 
 defmodule Crosswake.TestSupport.RouterFixtures do
