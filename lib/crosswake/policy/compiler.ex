@@ -7,22 +7,26 @@ defmodule Crosswake.Policy.Compiler do
   alias Crosswake.Policy.Error
   alias Crosswake.Policy.Route
   alias Crosswake.Policy.Validator
+  alias Crosswake.Policy.Warning
 
   @type route_source :: module() | [map()]
   @type result ::
           {:ok, %{routes: [Route.t()], warnings: [term()]}}
           | {:error, Diagnostic.t()}
 
-  @spec compile(route_source()) :: result()
-  def compile(source) do
+  @spec compile(route_source(), keyword()) :: result()
+  def compile(source, opts \\ []) do
     routes = routes_from_source(source)
+    source_module = source_module(source)
 
-    {managed_routes, _unmanaged_routes} =
+    {managed_routes, unmanaged_routes} =
       Enum.split_with(routes, fn route ->
         route
         |> route_metadata()
         |> Map.has_key?(:crosswake)
       end)
+
+    warnings = build_warnings(unmanaged_routes, source_module, opts)
 
     {compiled_routes, errors} =
       Enum.reduce(managed_routes, {[], []}, fn route, {compiled, compile_errors} ->
@@ -41,8 +45,12 @@ defmodule Crosswake.Policy.Compiler do
       |> Kernel.++(Validator.validate(compiled_routes, managed_routes))
 
     case errors do
-      [] -> {:ok, %{routes: compiled_routes, warnings: []}}
-      _errors -> {:error, Diagnostic.new(module: source_module(source), errors: errors, warnings: [])}
+      [] ->
+        emit_warnings(warnings, opts)
+        {:ok, %{routes: compiled_routes, warnings: warnings}}
+
+      _errors ->
+        {:error, Diagnostic.new(module: source_module, errors: errors, warnings: [])}
     end
   end
 
@@ -50,6 +58,23 @@ defmodule Crosswake.Policy.Compiler do
   defp routes_from_source(source) when is_list(source), do: source
   defp source_module(source) when is_atom(source), do: source
   defp source_module(_source), do: nil
+
+  defp build_warnings(unmanaged_routes, source_module, opts) do
+    if Keyword.get(opts, :warn_on_unmanaged?, false) and unmanaged_routes != [] do
+      paths = Enum.map(unmanaged_routes, &Map.get(&1, :path))
+      [Warning.unmanaged_routes(paths, source_module)]
+    else
+      []
+    end
+  end
+
+  defp emit_warnings(warnings, opts) do
+    if Keyword.get(opts, :emit_warnings?, false) do
+      Enum.each(warnings, fn warning ->
+        IO.warn(Warning.format(warning))
+      end)
+    end
+  end
 
   defp normalize_route(route) do
     crosswake_options = route |> route_metadata() |> Map.fetch!(:crosswake)

@@ -38,8 +38,7 @@ defmodule Crosswake.Policy.WarningTest do
     ]
 
     assert {:error, diagnostic} = Compiler.compile(routes, warn_on_unmanaged?: true, emit_warnings?: true)
-    assert warning_messages = DiagnosticWarningProxy.messages(diagnostic)
-    assert warning_messages == []
+    assert diagnostic.warnings == []
   end
 
   defp route(path, opts) do
@@ -56,10 +55,4 @@ defmodule Crosswake.Policy.WarningTest do
       verb: Keyword.get(opts, :verb, :get)
     }
   end
-end
-
-defmodule DiagnosticWarningProxy do
-  alias Crosswake.Policy.Diagnostic
-
-  def messages(%Diagnostic{warnings: warnings}), do: Enum.map(warnings, & &1.message)
 end
