@@ -21,5 +21,23 @@ defmodule Crosswake.Policy.RouteTest do
         assert route.runtime == runtime
       end
     end
+
+    test "normalizes representative security and list-valued fields" do
+      assert {:ok, route} =
+               Route.new(
+                 id: :capture,
+                 runtime: :native_screen,
+                 capabilities: [:camera, "photos"],
+                 packs: [:media_core],
+                 sync: [:uploads],
+                 security: :sensitive
+               )
+
+      assert route.id == "capture"
+      assert route.capabilities == ["camera", "photos"]
+      assert route.packs == ["media_core"]
+      assert route.sync == ["uploads"]
+      assert route.security == :sensitive
+    end
   end
 end
