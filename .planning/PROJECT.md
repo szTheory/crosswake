@@ -12,17 +12,17 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Provide a Phoenix-native route policy DSL that declares runtime mode, offline policy, required capabilities, pack needs, sync seams, and security sensitivity per route. Validated in Phase 1: Route Policy Foundation.
+- [x] Provide additive generators/installers for host Phoenix setup and native shell bootstrap that keep ownership boundaries explicit. Validated in Phase 1: Route Policy Foundation.
 
 ### Active
 
-- [ ] Provide a Phoenix-native route policy DSL that declares runtime mode, offline policy, required capabilities, pack needs, sync seams, and security sensitivity per route.
 - [ ] Generate and validate a runtime manifest and compatibility contract that native shells, bridges, and host Phoenix apps can trust.
 - [ ] Define a versioned bridge contract for bounded native affordances instead of ad hoc messaging.
 - [ ] Establish a capability registry with explicit allowlists, versioning, and active-route checks.
 - [ ] Support offline semantics that clearly separate cached read-only routes, local drafts, append-only journals, reconciliation, and server-authoritative commits.
 - [ ] Create disciplined contracts for offline islands, native screens, content packs, media packs, and sync journals/outboxes.
-- [ ] Ship developer-facing generators, doctor diagnostics, example-host proof lanes, and honest documentation as part of the public product contract.
+- [ ] Ship the remaining developer-facing doctor diagnostics, example-host proof lanes, and broader honest documentation as part of the public product contract.
 - [ ] Treat telemetry, diagnostics, compatibility truth, and failure-mode visibility as first-class product surfaces.
 
 ### Out of Scope
@@ -55,12 +55,12 @@ The maintainer's OSS house style materially constrains the project. Install trut
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Center the product on route policy and runtime ownership | The strongest research convergence is that explicit boundaries are the core differentiator | — Pending |
+| Center the product on route policy and runtime ownership | The strongest research convergence is that explicit boundaries are the core differentiator | Validated in Phase 1 |
 | Use a capability ladder instead of a single runtime model | Different route classes need different ownership and honesty about tradeoffs | — Pending |
 | Treat bridge contracts as bounded, semantic, and versioned | High-frequency or ad hoc cross-runtime messaging would make the system fragile and misleading | — Pending |
 | Plan iOS and Android as first-class, web-inclusive targets | Mobile credibility is the project goal, while Phoenix web remains part of the architecture | — Pending |
 | Keep deep desktop packaging and broad adapters out of v1 core | Early scope should validate the contract surface before expanding platform breadth | — Pending |
-| Make diagnostics, proof lanes, and docs part of the public contract | This matches the maintainer's proven OSS style and reduces support ambiguity | — Pending |
+| Make diagnostics, proof lanes, and docs part of the public contract | This matches the maintainer's proven OSS style and reduces support ambiguity | Partially validated in Phase 1 via installers, shell handoff docs, and install guidance |
 
 ## Evolution
 
@@ -80,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 after initialization*
+*Last updated: 2026-05-13 after Phase 1 completion*

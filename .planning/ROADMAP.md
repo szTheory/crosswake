@@ -12,7 +12,7 @@ Crosswake v1 should move from explicit route truth to proven mobile runtime beha
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Route Policy Foundation** - Phoenix hosts declare per-route runtime ownership and get actionable compile-time validation.
+- [x] **Phase 1: Route Policy Foundation** - Phoenix hosts declare per-route runtime ownership and get actionable compile-time validation.
 - [ ] **Phase 2: Manifest Truth And Compatibility** - Crosswake compiles route policy into a versioned contract with diagnostics and explicit support boundaries.
 - [ ] **Phase 3: Native Shell Boot And Bounded Bridge** - iOS and Android shells boot from the manifest, resolve routes, and enforce capability access safely.
 - [ ] **Phase 4: Honest Offline Contract** - Crosswake proves one real offline island with explicit cache, journal, sync, and telemetry seams.
@@ -29,7 +29,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Phoenix developers can declare offline mode, required capabilities, pack dependencies, sync resources, and security sensitivity per route.
   3. Invalid or internally inconsistent route policy fails at compile time with error messages that identify the conflicting declaration.
   4. Developers can bootstrap a host Phoenix app and native shell workspace with generators/installers that make ownership boundaries explicit.
-**Plans**: TBD
+**Clarification**: Public Phase 1 runtime taxonomy is `:live_view`, `:offline_island`, and `:native_screen`. `adapter` remains reserved for future extension, so Phase 1 plans compensate for the older success-criteria wording through explicit diagnostics and documentation instead of exposing `adapter` as a public runtime.
+**Plans**: 4 plans
+
+Plans:
+- [x] 01-01-PLAN.md - Establish the core policy contracts, typed schemas, and normalization defaults.
+- [x] 01-02-PLAN.md - Add router-adjacent DSL, scope defaults, and route metadata attachment.
+- [x] 01-03-PLAN.md - Enforce compile-time validation, aggregated diagnostics, and incremental-adoption warnings.
+- [x] 01-04-PLAN.md - Ship additive installers and native shell generators with explicit ownership boundaries.
 
 ### Phase 2: Manifest Truth And Compatibility
 **Goal**: Crosswake produces a versioned runtime contract that hosts and adopters can trust before shipping artifacts.
@@ -81,7 +88,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Route Policy Foundation | 0/TBD | Not started | - |
+| 1. Route Policy Foundation | 4/4 | Complete | 2026-05-13 |
 | 2. Manifest Truth And Compatibility | 0/TBD | Not started | - |
 | 3. Native Shell Boot And Bounded Bridge | 0/TBD | Not started | - |
 | 4. Honest Offline Contract | 0/TBD | Not started | - |

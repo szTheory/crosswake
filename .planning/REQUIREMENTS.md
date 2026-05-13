@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Route Policy
 
-- [ ] **ROUTE-01**: Phoenix developers can declare runtime ownership per route as LiveView, offline island, native screen, or adapter.
-- [ ] **ROUTE-02**: Phoenix developers can declare per-route offline policy, including unavailable, cached read-only, and local-first modes.
-- [ ] **ROUTE-03**: Phoenix developers can declare required capabilities, pack dependencies, sync resources, and security sensitivity per route.
-- [ ] **ROUTE-04**: Crosswake rejects invalid or internally inconsistent route policy declarations at compile time with actionable error messages.
+- [x] **ROUTE-01**: Phoenix developers can declare runtime ownership per route as LiveView, offline island, native screen, or adapter.
+- [x] **ROUTE-02**: Phoenix developers can declare per-route offline policy, including unavailable, cached read-only, and local-first modes.
+- [x] **ROUTE-03**: Phoenix developers can declare required capabilities, pack dependencies, sync resources, and security sensitivity per route.
+- [x] **ROUTE-04**: Crosswake rejects invalid or internally inconsistent route policy declarations at compile time with actionable error messages.
 
 ### Manifest And Compatibility
 
@@ -49,7 +49,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Developer Experience And Proof
 
-- [ ] **DX-01**: Crosswake provides generators or installers for host Phoenix setup and native shell bootstrap with clear ownership boundaries.
+- [x] **DX-01**: Crosswake provides generators or installers for host Phoenix setup and native shell bootstrap with clear ownership boundaries.
 - [ ] **DX-02**: Crosswake provides doctor or diagnostics tooling that detects setup, compatibility, capability, and route-policy problems.
 - [ ] **DX-03**: Crosswake ships example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces.
 - [ ] **DX-04**: Crosswake documentation clearly states supported runtime modes, non-goals, prerequisites, and rough-edge truth for adopters.
@@ -88,10 +88,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROUTE-01 | Phase 1 | Pending |
-| ROUTE-02 | Phase 1 | Pending |
-| ROUTE-03 | Phase 1 | Pending |
-| ROUTE-04 | Phase 1 | Pending |
+| ROUTE-01 | Phase 1 | Complete |
+| ROUTE-02 | Phase 1 | Complete |
+| ROUTE-03 | Phase 1 | Complete |
+| ROUTE-04 | Phase 1 | Complete |
 | MANI-01 | Phase 2 | Pending |
 | MANI-02 | Phase 2 | Pending |
 | MANI-03 | Phase 3 | Pending |
@@ -110,7 +110,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PACK-02 | Phase 5 | Pending |
 | PACK-03 | Phase 5 | Pending |
 | PACK-04 | Phase 5 | Pending |
-| DX-01 | Phase 1 | Pending |
+| DX-01 | Phase 1 | Complete |
 | DX-02 | Phase 2 | Pending |
 | DX-03 | Phase 5 | Pending |
 | DX-04 | Phase 2 | Pending |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after roadmap creation*
+*Last updated: 2026-05-13 after Phase 1 completion*
