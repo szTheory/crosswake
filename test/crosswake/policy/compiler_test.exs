@@ -44,19 +44,19 @@ defmodule Crosswake.Policy.CompilerTest do
       ),
       route("/island-cached",
         helper: "island_cached",
-        crosswake: [id: "island-cached", runtime: :offline_island, offline: :cached_read_only, security: :standard]
+        crosswake: [id: "island-cached", runtime: :offline_island, offline: :unavailable, security: :standard]
       ),
       route("/sync-without-local-first",
         helper: "sync_without_local_first",
-        crosswake: [id: "sync-without-local-first", runtime: :native_screen, sync: ["uploads"], security: :sensitive]
+        crosswake: [id: "sync-without-local-first", runtime: :native_screen, sync: ["uploads"], offline: :unavailable, security: :sensitive]
       )
     ]
 
     assert {:error, %{errors: errors}} = Compiler.compile(routes)
 
     assert Enum.any?(errors, &String.contains?(&1.message, "live_view routes cannot declare offline :local_first"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "offline_island routes must declare offline :local_first"))
-    assert Enum.any?(errors, &String.contains?(&1.message, "sync declarations require offline :local_first"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "offline_island routes cannot declare offline :unavailable"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "sync declarations require offline support"))
 
     assert {:ok, %{routes: [route], warnings: []}} =
              Compiler.compile([
