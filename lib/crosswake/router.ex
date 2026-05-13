@@ -10,60 +10,67 @@ defmodule Crosswake.Router do
   @http_verbs [:get, :post, :put, :patch, :delete, :options, :head]
 
   defmacro __using__(_opts) do
-    route_macros =
-      for verb <- @http_verbs do
-        quote do
-          defmacro unquote(verb)(path, controller, action, opts \\ []) do
-            Crosswake.Router.__http_route__(
-              unquote(verb),
-              __CALLER__,
-              path,
-              controller,
-              action,
-              opts
-            )
-          end
-        end
-      end
-
     quote do
       use Phoenix.Router
-      import Phoenix.LiveView.Router
+      import Phoenix.Router,
+        except: [
+          get: 3,
+          get: 4,
+          post: 3,
+          post: 4,
+          put: 3,
+          put: 4,
+          patch: 3,
+          patch: 4,
+          delete: 3,
+          delete: 4,
+          options: 3,
+          options: 4,
+          head: 3,
+          head: 4
+        ]
+
+      import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]
+      import Crosswake.Router
 
       Crosswake.Router.ScopeDefaults.register(__MODULE__)
-
-      defmacro crosswake_defaults(defaults, do: block) do
-        evaluated_defaults = Crosswake.Router.__eval_keyword!(defaults, __CALLER__)
-
-        quote do
-          Crosswake.Router.ScopeDefaults.push(
-            __MODULE__,
-            unquote(Macro.escape(evaluated_defaults))
-          )
-
-          unquote(block)
-          Crosswake.Router.ScopeDefaults.pop(__MODULE__)
-        end
-      end
-
-      unquote_splicing(route_macros)
-
-      defmacro live(path, live_view) do
-        Crosswake.Router.__live_route__(__CALLER__, path, live_view, nil, [])
-      end
-
-      defmacro live(path, live_view, action_or_opts) do
-        if Crosswake.Router.__keyword_ast__?(action_or_opts) do
-          Crosswake.Router.__live_route__(__CALLER__, path, live_view, nil, action_or_opts)
-        else
-          Crosswake.Router.__live_route__(__CALLER__, path, live_view, action_or_opts, [])
-        end
-      end
-
-      defmacro live(path, live_view, action, opts) do
-        Crosswake.Router.__live_route__(__CALLER__, path, live_view, action, opts)
-      end
     end
+  end
+
+  defmacro crosswake_defaults(defaults, do: block) do
+    evaluated_defaults = __eval_keyword!(defaults, __CALLER__)
+
+    quote do
+      Crosswake.Router.ScopeDefaults.push(
+        __MODULE__,
+        unquote(Macro.escape(evaluated_defaults))
+      )
+
+      unquote(block)
+      Crosswake.Router.ScopeDefaults.pop(__MODULE__)
+    end
+  end
+
+  for verb <- @http_verbs do
+    defmacro unquote(verb)(path, controller, action, opts \\ []) do
+      __http_route__(unquote(verb), __CALLER__, path, controller, action, opts)
+    end
+  end
+
+  defmacro live(path, live_view) do
+    __live_route__(__CALLER__, path, live_view, nil, [])
+  end
+
+  defmacro live(path, live_view, action_or_opts) do
+    if __keyword_ast__?(action_or_opts) do
+      __live_route__(__CALLER__, path, live_view, nil, action_or_opts)
+    else
+      __live_route__(__CALLER__, path, live_view, action_or_opts, [])
+    end
+  end
+
+  defmacro live(path, live_view, action, opts) do
+    __live_route__(__CALLER__, path, live_view, action, opts)
   end
 
   @doc false
