@@ -3,6 +3,7 @@ defmodule Crosswake.Policy.Validator do
   Semantic invariant checks for normalized Crosswake route policy.
   """
 
+  alias Crosswake.Policy.Error
   alias Crosswake.Policy.Route
 
   @known_capabilities MapSet.new([
@@ -23,7 +24,7 @@ defmodule Crosswake.Policy.Validator do
                         "webrtc"
                       ])
 
-  @spec validate([Route.t()], [map()]) :: [map()]
+  @spec validate([Route.t()], [map()]) :: [Error.t()]
   def validate(routes, managed_routes) do
     routes
     |> Enum.zip(managed_routes)
@@ -134,7 +135,7 @@ defmodule Crosswake.Policy.Validator do
   defp build_error(managed_route, route, attrs) do
     source = Map.get(managed_route, :source, %{})
 
-    %{
+    struct!(Error, %{
       key: attrs.key,
       route_id: route.id,
       message: attrs.message,
@@ -144,7 +145,7 @@ defmodule Crosswake.Policy.Validator do
       verb: Map.get(managed_route, :verb),
       file: Map.get(source, :file),
       line: Map.get(source, :line)
-    }
+    })
   end
 
   defp security_required?(%Route{} = route) do

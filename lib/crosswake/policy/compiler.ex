@@ -3,25 +3,15 @@ defmodule Crosswake.Policy.Compiler do
   Compiles Crosswake-managed router metadata into normalized route policy.
   """
 
+  alias Crosswake.Policy.Diagnostic
+  alias Crosswake.Policy.Error
   alias Crosswake.Policy.Route
   alias Crosswake.Policy.Validator
 
   @type route_source :: module() | [map()]
-  @type compile_error :: %{
-          message: String.t(),
-          hint: String.t() | nil,
-          key: atom() | nil,
-          path: String.t() | nil,
-          helper: String.t() | nil,
-          verb: atom() | nil,
-          route_id: String.t() | nil,
-          file: String.t() | nil,
-          line: pos_integer() | nil
-        }
-
   @type result ::
           {:ok, %{routes: [Route.t()], warnings: [term()]}}
-          | {:error, %{errors: [compile_error()], warnings: [term()]}}
+          | {:error, Diagnostic.t()}
 
   @spec compile(route_source()) :: result()
   def compile(source) do
@@ -52,12 +42,14 @@ defmodule Crosswake.Policy.Compiler do
 
     case errors do
       [] -> {:ok, %{routes: compiled_routes, warnings: []}}
-      _errors -> {:error, %{errors: errors, warnings: []}}
+      _errors -> {:error, Diagnostic.new(module: source_module(source), errors: errors, warnings: [])}
     end
   end
 
   defp routes_from_source(source) when is_atom(source), do: source.__routes__()
   defp routes_from_source(source) when is_list(source), do: source
+  defp source_module(source) when is_atom(source), do: source
+  defp source_module(_source), do: nil
 
   defp normalize_route(route) do
     crosswake_options = route |> route_metadata() |> Map.fetch!(:crosswake)
@@ -154,7 +146,7 @@ defmodule Crosswake.Policy.Compiler do
 
     source = Map.get(route, :source, %{})
 
-    %{
+    struct!(Error, %{
       key: attrs[:key],
       route_id: route_id,
       message: attrs[:message],
@@ -164,7 +156,7 @@ defmodule Crosswake.Policy.Compiler do
       verb: Map.get(route, :verb),
       file: Map.get(source, :file),
       line: Map.get(source, :line)
-    }
+    })
   end
 
   defp route_metadata(route) do
