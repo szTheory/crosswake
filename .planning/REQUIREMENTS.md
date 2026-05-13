@@ -88,38 +88,38 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROUTE-01 | Unmapped | Pending |
-| ROUTE-02 | Unmapped | Pending |
-| ROUTE-03 | Unmapped | Pending |
-| ROUTE-04 | Unmapped | Pending |
-| MANI-01 | Unmapped | Pending |
-| MANI-02 | Unmapped | Pending |
-| MANI-03 | Unmapped | Pending |
-| MANI-04 | Unmapped | Pending |
-| SHELL-01 | Unmapped | Pending |
-| SHELL-02 | Unmapped | Pending |
-| SHELL-03 | Unmapped | Pending |
-| BRDG-01 | Unmapped | Pending |
-| BRDG-02 | Unmapped | Pending |
-| BRDG-03 | Unmapped | Pending |
-| OFFL-01 | Unmapped | Pending |
-| OFFL-02 | Unmapped | Pending |
-| OFFL-03 | Unmapped | Pending |
-| OFFL-04 | Unmapped | Pending |
-| PACK-01 | Unmapped | Pending |
-| PACK-02 | Unmapped | Pending |
-| PACK-03 | Unmapped | Pending |
-| PACK-04 | Unmapped | Pending |
-| DX-01 | Unmapped | Pending |
-| DX-02 | Unmapped | Pending |
-| DX-03 | Unmapped | Pending |
-| DX-04 | Unmapped | Pending |
+| ROUTE-01 | Phase 1 | Pending |
+| ROUTE-02 | Phase 1 | Pending |
+| ROUTE-03 | Phase 1 | Pending |
+| ROUTE-04 | Phase 1 | Pending |
+| MANI-01 | Phase 2 | Pending |
+| MANI-02 | Phase 2 | Pending |
+| MANI-03 | Phase 3 | Pending |
+| MANI-04 | Phase 2 | Pending |
+| SHELL-01 | Phase 3 | Pending |
+| SHELL-02 | Phase 3 | Pending |
+| SHELL-03 | Phase 3 | Pending |
+| BRDG-01 | Phase 3 | Pending |
+| BRDG-02 | Phase 3 | Pending |
+| BRDG-03 | Phase 3 | Pending |
+| OFFL-01 | Phase 4 | Pending |
+| OFFL-02 | Phase 4 | Pending |
+| OFFL-03 | Phase 4 | Pending |
+| OFFL-04 | Phase 4 | Pending |
+| PACK-01 | Phase 5 | Pending |
+| PACK-02 | Phase 5 | Pending |
+| PACK-03 | Phase 5 | Pending |
+| PACK-04 | Phase 5 | Pending |
+| DX-01 | Phase 1 | Pending |
+| DX-02 | Phase 2 | Pending |
+| DX-03 | Phase 5 | Pending |
+| DX-04 | Phase 2 | Pending |
 
 **Coverage:**
 - v1 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 ⚠️
+- Mapped to phases: 26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after initial definition*
+*Last updated: 2026-05-12 after roadmap creation*
