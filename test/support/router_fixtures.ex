@@ -61,4 +61,41 @@ defmodule Crosswake.TestSupport.RouterFixtures do
       get "/settings", Crosswake.TestSupport.SettingsController, :index
     end
   end
+
+  defmodule DefaultsRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults offline: :cached_read_only,
+                         capabilities: ["push.notifications"],
+                         packs: ["core.content"],
+                         sync: ["catalog"],
+                         security: :standard do
+        get "/reader", Crosswake.TestSupport.PageController, :index,
+          crosswake: [id: "reader", runtime: :live_view]
+
+        crosswake_defaults runtime: :offline_island,
+                           offline: :local_first,
+                           capabilities: ["scanner"],
+                           packs: ["offline.bundle"],
+                           sync: ["drafts"] do
+          live "/study", Crosswake.TestSupport.LibraryLive,
+            crosswake: [id: "study"]
+
+          live "/capture", Crosswake.TestSupport.CameraLive, :capture,
+            crosswake: [
+              id: "capture",
+              runtime: :native_screen,
+              offline: :local_first,
+              capabilities: ["camera.capture"],
+              packs: ["capture.pack"],
+              sync: ["uploads"],
+              security: :sensitive
+            ]
+        end
+      end
+
+      get "/public", Crosswake.TestSupport.SettingsController, :index
+    end
+  end
 end
