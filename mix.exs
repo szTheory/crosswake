@@ -23,7 +23,9 @@ defmodule Crosswake.MixProject do
 
   defp deps do
     [
-      {:nimble_options, "~> 1.1"}
+      {:nimble_options, "~> 1.1"},
+      {:phoenix, "~> 1.8"},
+      {:phoenix_live_view, "~> 1.1"}
     ]
   end
 
