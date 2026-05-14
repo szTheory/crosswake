@@ -99,7 +99,7 @@ defmodule Crosswake.Shell.Activation do
         allow(request, route)
 
       :deny ->
-        deny(request, route_id, denial_from_gate(manifest, route_id, decision))
+        deny(request, route_id, Map.get(decision, :denial) || denial_from_gate(manifest, route_id, decision))
     end
   end
 
@@ -166,7 +166,8 @@ defmodule Crosswake.Shell.Activation do
       native_runtime_version: request.native_runtime_version,
       origin: request.origin,
       manifest_source: request.manifest_source,
-      capabilities: request.capabilities
+      capabilities: request.capabilities,
+      packs: request.installed_packs
     }
   end
 
