@@ -20,13 +20,25 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert ios_output =~ "not safely regeneratable"
 
     ios_readme = Path.join(target, "native/ios/crosswake_shell/README.md")
-    ios_project = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj")
+
+    ios_project =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj")
+
     ios_app = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/AppShell.swift")
-    ios_manifest = Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
-    ios_activation = Path.join(target, "native/ios/crosswake_shell/Fixtures/route_activation.json")
+
+    ios_manifest =
+      Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
+
+    ios_activation =
+      Path.join(target, "native/ios/crosswake_shell/Fixtures/route_activation.json")
+
     ios_denial = Path.join(target, "native/ios/crosswake_shell/Fixtures/route_denial.json")
-    ios_declared_packs = Path.join(target, "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json")
-    ios_installed_packs = Path.join(target, "native/ios/crosswake_shell/Fixtures/installed_packs.json")
+
+    ios_declared_packs =
+      Path.join(target, "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json")
+
+    ios_installed_packs =
+      Path.join(target, "native/ios/crosswake_shell/Fixtures/installed_packs.json")
 
     assert File.read!(ios_readme) =~ "host-owned"
     assert File.read!(ios_readme) =~ "scaffold once"
@@ -57,6 +69,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     android_build = Path.join(target, "native/android/crosswake_shell/build.gradle")
     android_props = Path.join(target, "native/android/crosswake_shell/gradle.properties")
     android_wrapper = Path.join(target, "native/android/crosswake_shell/gradlew")
+
     android_wrapper_props =
       Path.join(
         target,
