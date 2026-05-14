@@ -212,6 +212,10 @@ final class ActivationCoordinator: ObservableObject {
         }
     }
 
+    func presentNavigationDenial(_ denial: RouteDenialPresentation) {
+        presentation = .denied(denial)
+    }
+
     func activate(_ request: ActivationRequest) {
         do {
             let manifest = try loadManifest()

@@ -41,6 +41,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_route_unavailable =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RouteUnavailableView.swift")
 
+    ios_live_view =
+      Path.join(
+        target,
+        "native/ios/crosswake_shell/CrosswakeShell/LiveViewContainerViewController.swift"
+      )
+
     ios_tests =
       Path.join(
         target,
@@ -69,14 +75,20 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_app) =~ "ActivationCoordinator.bundled"
     assert File.read!(ios_app) =~ "onOpenURL"
     assert File.read!(ios_app) =~ "onContinueUserActivity"
+    assert File.read!(ios_app) =~ "LiveViewContainerView"
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
     assert File.read!(ios_scheme) =~ "xcscheme"
     assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
     assert File.read!(ios_activation_coordinator) =~ "inactiveRoute"
     assert File.read!(ios_route_unavailable) =~ "Update app"
     assert File.read!(ios_route_unavailable) =~ "Open safe fallback"
+    assert File.read!(ios_live_view) =~ "WKWebView"
+    assert File.read!(ios_live_view) =~ "WKNavigationDelegate"
+    assert File.read!(ios_live_view) =~ "same-origin"
+    assert File.read!(ios_live_view) =~ "App-Bound Domains"
     assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
     assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
+    assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
     assert File.read!(ios_manifest) =~ "\"routes\""
     assert File.read!(ios_activation) =~ "\"declared_pack_requirements\""
@@ -144,6 +156,11 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(android_denial) =~ "\"reason\": \"pack_incompatible\""
+
+    verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
+    assert File.read!(verify_script) =~ "xcodebuild"
+    assert File.read!(verify_script) =~ "-showdestinations"
+    assert File.read!(verify_script) =~ "scheme=\"CrosswakeShell\""
   end
 
   defp tmp_dir!(prefix) do

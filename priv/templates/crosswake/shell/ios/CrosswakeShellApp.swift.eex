@@ -29,17 +29,9 @@ private struct RootSceneView: View {
             ProgressView("Resolving route from bundled manifest truth…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case let .liveView(session):
-            VStack(alignment: .leading, spacing: 12) {
-                Text("LiveView route approved")
-                    .font(.headline)
-                Text("Route \(session.routeID) was resolved before WebKit mount.")
-                    .foregroundStyle(.secondary)
-                Text(session.url.absoluteString)
-                    .font(.footnote.monospaced())
-                    .textSelection(.enabled)
+            LiveViewContainerView(session: session) { denial in
+                coordinator.presentNavigationDenial(denial)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(24)
         case let .denied(denial):
             RouteUnavailableView(denial: denial) { action in
                 coordinator.perform(action)
