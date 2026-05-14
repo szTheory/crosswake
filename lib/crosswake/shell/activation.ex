@@ -1,0 +1,219 @@
+defmodule Crosswake.Shell.Activation do
+  @moduledoc """
+  Shared activation contract for native shell entrypoints.
+  """
+
+  alias Crosswake.Compatibility.RouteGate
+  alias Crosswake.Compatibility.Target
+  alias Crosswake.Manifest.Types
+  alias Crosswake.Manifest.Types.Root
+  alias Crosswake.Manifest.Types.RouteEntry
+  alias Crosswake.Shell.Denial
+
+  defmodule Request do
+    @moduledoc false
+
+    @enforce_keys [
+      :source,
+      :origin,
+      :manifest_source,
+      :bridge_protocol_version,
+      :native_runtime_version,
+      :correlation_id
+    ]
+    defstruct [
+      :route_id,
+      :url,
+      :source,
+      :origin,
+      :manifest_source,
+      :bridge_protocol_version,
+      :native_runtime_version,
+      :correlation_id,
+      declared_pack_requirements: %{},
+      installed_packs: %{},
+      capabilities: %{}
+    ]
+
+    @type source :: :cold_start | :deep_link | :notification | :in_app_navigation
+
+    @type t :: %__MODULE__{
+            route_id: String.t() | nil,
+            url: String.t() | nil,
+            source: source(),
+            origin: String.t(),
+            manifest_source: :bundled | :cached | :remote,
+            bridge_protocol_version: String.t(),
+            native_runtime_version: String.t(),
+            correlation_id: String.t(),
+            declared_pack_requirements: %{optional(String.t()) => String.t()},
+            installed_packs: %{optional(String.t()) => String.t()},
+            capabilities: %{optional(String.t()) => String.t()}
+          }
+  end
+
+  defmodule Decision do
+    @moduledoc false
+
+    @enforce_keys [:status, :request, :route_id]
+    defstruct [:status, :request, :route_id, :runtime, :route_path, :denial]
+
+    @type t :: %__MODULE__{
+            status: :allow | :deny,
+            request: Request.t(),
+            route_id: String.t(),
+            runtime: atom() | nil,
+            route_path: String.t() | nil,
+            denial: Denial.t() | nil
+          }
+  end
+
+  @spec new_request(keyword()) :: Request.t()
+  def new_request(attrs) when is_list(attrs) do
+    url = Keyword.get(attrs, :url)
+    origin = Keyword.get_lazy(attrs, :origin, fn -> origin_from_url(url) end)
+
+    struct!(Request, %{
+      route_id: Keyword.get(attrs, :route_id),
+      url: url,
+      source: Keyword.fetch!(attrs, :source),
+      origin: origin,
+      manifest_source: Keyword.get(attrs, :manifest_source, :bundled),
+      bridge_protocol_version: Keyword.fetch!(attrs, :bridge_protocol_version),
+      native_runtime_version: Keyword.fetch!(attrs, :native_runtime_version),
+      correlation_id: Keyword.fetch!(attrs, :correlation_id),
+      declared_pack_requirements: Keyword.get(attrs, :declared_pack_requirements, %{}),
+      installed_packs: Keyword.get(attrs, :installed_packs, %{}),
+      capabilities: Keyword.get(attrs, :capabilities, %{})
+    })
+  end
+
+  @spec resolve(Root.t(), Request.t()) :: Decision.t()
+  def resolve(%Root{} = manifest, %Request{} = request) do
+    route_id = request.route_id || route_id_from_url(manifest, request.url)
+    decision = RouteGate.evaluate(manifest, route_id, target_from_request(request))
+
+    case decision.status do
+      :allow ->
+        route = Map.fetch!(manifest.routes, route_id)
+        allow(request, route)
+
+      :deny ->
+        deny(request, route_id, denial_from_gate(manifest, route_id, decision))
+    end
+  end
+
+  @spec allow(Request.t(), RouteEntry.t()) :: Decision.t()
+  def allow(%Request{} = request, %RouteEntry{} = route) do
+    %Decision{
+      status: :allow,
+      request: request,
+      route_id: route.id,
+      runtime: route.runtime,
+      route_path: route.path,
+      denial: nil
+    }
+  end
+
+  @spec deny(Request.t(), String.t(), Denial.t()) :: Decision.t()
+  def deny(%Request{} = request, route_id, %Denial{} = denial) when is_binary(route_id) do
+    %Decision{
+      status: :deny,
+      request: request,
+      route_id: route_id,
+      runtime: nil,
+      route_path: nil,
+      denial: denial
+    }
+  end
+
+  @spec to_map(Request.t() | Decision.t()) :: map()
+  def to_map(%Request{} = request) do
+    %{
+      "route_id" => request.route_id,
+      "url" => request.url,
+      "source" => Atom.to_string(request.source),
+      "origin" => request.origin,
+      "manifest_source" => Atom.to_string(request.manifest_source),
+      "bridge_protocol_version" => request.bridge_protocol_version,
+      "native_runtime_version" => request.native_runtime_version,
+      "correlation_id" => request.correlation_id,
+      "declared_pack_requirements" => Types.to_map(request.declared_pack_requirements),
+      "installed_packs" => Types.to_map(request.installed_packs),
+      "capabilities" => Types.to_map(request.capabilities)
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
+  end
+
+  def to_map(%Decision{} = decision) do
+    %{
+      "status" => Atom.to_string(decision.status),
+      "route_id" => decision.route_id,
+      "runtime" => decision.runtime && Atom.to_string(decision.runtime),
+      "route_path" => decision.route_path,
+      "request" => to_map(decision.request),
+      "denial" => decision.denial && Denial.to_map(decision.denial)
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
+  end
+
+  defp target_from_request(%Request{} = request) do
+    %Target{
+      manifest_schema_version: "1.0.0",
+      bridge_protocol_version: request.bridge_protocol_version,
+      native_runtime_version: request.native_runtime_version,
+      origin: request.origin,
+      manifest_source: request.manifest_source,
+      capabilities: request.capabilities
+    }
+  end
+
+  defp route_id_from_url(_manifest, nil), do: nil
+
+  defp route_id_from_url(%Root{} = manifest, url) do
+    path = URI.parse(url).path
+
+    Enum.find_value(manifest.routes, fn {route_id, route} ->
+      if route.path == path, do: route_id
+    end)
+  end
+
+  defp origin_from_url(nil), do: Types.default_origin()
+
+  defp origin_from_url(url) do
+    uri = URI.parse(url)
+
+    case uri do
+      %URI{scheme: scheme, host: host} when is_binary(scheme) and is_binary(host) ->
+        scheme <> "://" <> host <> port_suffix(uri)
+
+      _other ->
+        Types.default_origin()
+    end
+  end
+
+  defp denial_from_gate(%Root{} = manifest, route_id, decision) do
+    if Map.has_key?(manifest.routes, route_id) do
+      Denial.new(
+        reason: :compatibility_mismatch,
+        route_id: route_id,
+        message: "Activation denied before runtime boot.",
+        details: %{reasons: Map.get(decision, :reasons, [])}
+      )
+    else
+      Denial.new(
+        reason: :inactive_route,
+        route_id: route_id,
+        message: "The requested route is not active in the manifest.",
+        hint: "refresh the bundled manifest before opening the route"
+      )
+    end
+  end
+
+  defp port_suffix(%URI{port: nil}), do: ""
+  defp port_suffix(%URI{scheme: "https", port: 443}), do: ""
+  defp port_suffix(%URI{scheme: "http", port: 80}), do: ""
+  defp port_suffix(%URI{port: port}), do: ":#{port}"
+end
