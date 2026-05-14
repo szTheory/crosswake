@@ -24,7 +24,28 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_project =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj")
 
-    ios_app = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/AppShell.swift")
+    ios_app =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShellApp.swift")
+
+    ios_info = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
+
+    ios_scheme =
+      Path.join(
+        target,
+        "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme"
+      )
+
+    ios_activation_coordinator =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/ActivationCoordinator.swift")
+
+    ios_route_unavailable =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RouteUnavailableView.swift")
+
+    ios_tests =
+      Path.join(
+        target,
+        "native/ios/crosswake_shell/CrosswakeShellTests/ActivationCoordinatorTests.swift"
+      )
 
     ios_manifest =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
@@ -43,8 +64,19 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_readme) =~ "host-owned"
     assert File.read!(ios_readme) =~ "scaffold once"
     refute File.read!(ios_readme) =~ "Phase 1"
-    assert File.read!(ios_project) =~ "CrosswakeShell"
-    assert File.read!(ios_app) =~ "loadBundledManifestFixture"
+    assert File.read!(ios_project) =~ "PBXNativeTarget"
+    assert File.read!(ios_project) =~ "CrosswakeShellTests"
+    assert File.read!(ios_app) =~ "ActivationCoordinator.bundled"
+    assert File.read!(ios_app) =~ "onOpenURL"
+    assert File.read!(ios_app) =~ "onContinueUserActivity"
+    assert File.read!(ios_info) =~ "WKAppBoundDomains"
+    assert File.read!(ios_scheme) =~ "xcscheme"
+    assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
+    assert File.read!(ios_activation_coordinator) =~ "inactiveRoute"
+    assert File.read!(ios_route_unavailable) =~ "Update app"
+    assert File.read!(ios_route_unavailable) =~ "Open safe fallback"
+    assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
+    assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
     assert File.read!(ios_manifest) =~ "\"routes\""
     assert File.read!(ios_activation) =~ "\"declared_pack_requirements\""

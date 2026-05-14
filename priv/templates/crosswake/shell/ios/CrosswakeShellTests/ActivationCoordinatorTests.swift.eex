@@ -1,0 +1,125 @@
+import Foundation
+import XCTest
+@testable import CrosswakeShell
+
+@MainActor
+final class ActivationCoordinatorTests: XCTestCase {
+    func testBundledLaunchAllowsLiveViewRouteBeforeRuntimeMount() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest }
+        )
+
+        coordinator.bootstrapIfNeeded()
+
+        guard case let .liveView(session) = coordinator.presentation else {
+            return XCTFail("expected live view presentation")
+        }
+
+        XCTAssertEqual(session.routeID, "dashboard")
+        XCTAssertEqual(session.url.absoluteString, "https://example.com/dashboard")
+    }
+
+    func testDeniedDeepLinkUsesExplicitInactiveRouteSurface() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest }
+        )
+
+        coordinator.openURL(URL(string: "https://example.com/missing")!)
+
+        guard case let .denied(denial) = coordinator.presentation else {
+            return XCTFail("expected denial presentation")
+        }
+
+        XCTAssertEqual(denial.reason, .inactiveRoute)
+        XCTAssertTrue(denial.actions.contains(.retry))
+    }
+
+    func testPackIncompatibleDenialSurfacesUpdateAppAction() {
+        let incompatibleRequest = ActivationRequest(
+            routeID: "dashboard",
+            url: URL(string: "https://example.com/dashboard"),
+            source: .coldStart,
+            origin: "https://example.com",
+            manifestSource: .bundled,
+            bridgeProtocolVersion: "1.0.0",
+            nativeRuntimeVersion: "1.0.0",
+            correlationID: "ios-bootstrap-2",
+            declaredPackRequirements: ["shell.chrome": "1.0.0"],
+            installedPacks: ["shell.chrome": "0.9.0"],
+            capabilities: ["app.info.get": "1.0.0"]
+        )
+
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { incompatibleRequest }
+        )
+
+        coordinator.bootstrapIfNeeded()
+
+        guard case let .denied(denial) = coordinator.presentation else {
+            return XCTFail("expected denial presentation")
+        }
+
+        XCTAssertEqual(denial.reason, .packIncompatible)
+        XCTAssertTrue(denial.actions.contains(.updateApp))
+    }
+
+    func testInAppNavigationDeniesDisallowedOrigin() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest }
+        )
+
+        coordinator.activate(
+            ActivationRequest(
+                routeID: "dashboard",
+                url: URL(string: "https://evil.example/dashboard"),
+                source: .inAppNavigation,
+                origin: "https://evil.example",
+                manifestSource: .bundled,
+                bridgeProtocolVersion: "1.0.0",
+                nativeRuntimeVersion: "1.0.0",
+                correlationID: "ios-nav-1",
+                declaredPackRequirements: ["shell.chrome": "1.0.0"],
+                installedPacks: ["shell.chrome": "1.0.0"],
+                capabilities: ["app.info.get": "1.0.0"]
+            )
+        )
+
+        guard case let .denied(denial) = coordinator.presentation else {
+            return XCTFail("expected denial presentation")
+        }
+
+        XCTAssertEqual(denial.reason, .originDenied)
+        XCTAssertTrue(denial.actions.contains(.retry))
+    }
+
+    private static let manifest = ShellManifest(
+        routes: [
+            "dashboard": .init(
+                id: "dashboard",
+                path: "/dashboard",
+                runtime: "live_view",
+                capabilities: ["app.info.get"],
+                packs: ["shell.chrome@1.0.0"],
+                allowlistedOrigins: ["https://example.com"]
+            )
+        ]
+    )
+
+    private static let allowedRequest = ActivationRequest(
+        routeID: "dashboard",
+        url: URL(string: "https://example.com/dashboard"),
+        source: .coldStart,
+        origin: "https://example.com",
+        manifestSource: .bundled,
+        bridgeProtocolVersion: "1.0.0",
+        nativeRuntimeVersion: "1.0.0",
+        correlationID: "ios-bootstrap-1",
+        declaredPackRequirements: ["shell.chrome": "1.0.0"],
+        installedPacks: ["shell.chrome": "1.0.0"],
+        capabilities: ["app.info.get": "1.0.0"]
+    )
+}

@@ -25,6 +25,19 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     {"app/build.gradle", "android/app/build.gradle.eex"},
     {"app/src/main/AndroidManifest.xml", "android/app/src/main/AndroidManifest.xml.eex"}
   ]
+  @ios_templates [
+    {"CrosswakeShell/CrosswakeShellApp.swift", "ios/CrosswakeShellApp.swift.eex"},
+    {"CrosswakeShell/Info.plist", "ios/Info.plist.eex"},
+    {"CrosswakeShell/ActivationCoordinator.swift", "ios/ActivationCoordinator.swift.eex"},
+    {"CrosswakeShell/LiveViewContainerViewController.swift",
+     "ios/LiveViewContainerViewController.swift.eex"},
+    {"CrosswakeShell/RouteUnavailableView.swift", "ios/RouteUnavailableView.swift.eex"},
+    {"CrosswakeShell.xcodeproj/project.pbxproj", "ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"},
+    {"CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme",
+     "ios/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme.eex"},
+    {"CrosswakeShellTests/ActivationCoordinatorTests.swift",
+     "ios/CrosswakeShellTests/ActivationCoordinatorTests.swift.eex"}
+  ]
 
   @impl Mix.Task
   def run(args) do
@@ -65,14 +78,10 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     fixtures = Fixtures.export("ios")
 
     readme = Path.join(root, "README.md")
-    project = Path.join(root, "CrosswakeShell.xcodeproj/project.pbxproj")
-    entrypoint = Path.join(root, "CrosswakeShell/AppShell.swift")
+    entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
     ensure_file(readme, shell_readme("ios"))
-    ensure_file(project, ios_project())
-    ensure_file(Path.join(root, "CrosswakeShell/Info.plist"), ios_info_plist())
-    ensure_file(entrypoint, ios_app_shell())
-    ensure_file(Path.join(root, "CrosswakeShell/Assets.xcassets/Contents.json"), asset_catalog())
+    render_ios_templates(root)
     write_fixture_files(root, fixtures)
 
     %{
@@ -110,6 +119,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
   defp render_android_templates(root) do
     Enum.each(@android_templates, fn {relative_path, template_path} ->
+      ensure_file(Path.join(root, relative_path), render_template(template_path))
+    end)
+  end
+
+  defp render_ios_templates(root) do
+    Enum.each(@ios_templates, fn {relative_path, template_path} ->
       ensure_file(Path.join(root, relative_path), render_template(template_path))
     end)
   end
@@ -152,69 +167,6 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
   defp platform_readme_label("ios"), do: "Xcode"
   defp platform_readme_label("android"), do: "Android Studio"
-
-  defp ios_project do
-    """
-    // !$*UTF8*$!
-    {
-      archiveVersion = 1;
-      classes = {};
-      objectVersion = 56;
-      objects = {};
-      rootObject = CrosswakeShellProject;
-      targets = (CrosswakeShell);
-    }
-    """
-  end
-
-  defp ios_info_plist do
-    """
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>CFBundleDisplayName</key>
-      <string>CrosswakeShell</string>
-      <key>CFBundleIdentifier</key>
-      <string>dev.crosswake.shell</string>
-    </dict>
-    </plist>
-    """
-  end
-
-  defp ios_app_shell do
-    """
-    import Foundation
-
-    struct AppShell {
-      let activationFixture = "Fixtures/route_activation.json"
-      let manifestFixture = "Fixtures/crosswake_manifest.json"
-
-      func loadBundledManifestFixture() -> String {
-        manifestFixture
-      }
-
-      func loadActivationFixture() -> String {
-        activationFixture
-      }
-
-      func routeUnavailableSurface() -> String {
-        "Render the manifest-first denial surface before mounting any runtime."
-      }
-    }
-    """
-  end
-
-  defp asset_catalog do
-    """
-    {
-      "info" : {
-        "author" : "xcode",
-        "version" : 1
-      }
-    }
-    """
-  end
 
   defp android_main_activity do
     """
