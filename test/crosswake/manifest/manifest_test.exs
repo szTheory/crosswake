@@ -4,6 +4,7 @@ defmodule Crosswake.ManifestTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Manifest
+  alias Crosswake.Manifest.Types
   alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
 
   test "manifest compilation from a managed router yields one route-first artifact keyed by route id" do
@@ -71,12 +72,8 @@ defmodule Crosswake.ManifestTest do
                "study_session_media@3.0.0"
              ]
 
-    assert manifest.pack_registry["lesson_library@1.2.0"] == %{
-             id: "lesson_library",
-             version: "1.2.0",
-             kind: :content,
-             integrity: nil
-           }
+    assert manifest.pack_registry["lesson_library@1.2.0"] ==
+             Types.new_pack_entry(id: "lesson_library", version: "1.2.0", kind: :content)
   end
 
   test "route entries reference pack registry items instead of duplicating pack metadata payloads" do

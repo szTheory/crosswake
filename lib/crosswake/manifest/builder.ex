@@ -34,6 +34,7 @@ defmodule Crosswake.Manifest.Builder do
       compatibility: compatibility,
       support_matrix: support_matrix,
       capability_registry: capability_registry(routes),
+      pack_registry: pack_registry(routes),
       routes: route_entries(routes, managed_routes, host.origin)
     )
   end
@@ -63,7 +64,7 @@ defmodule Crosswake.Manifest.Builder do
           cache_contract: cache_contract(route),
           island_contract: island_contract(route),
           capabilities: route.capabilities,
-          packs: route.packs,
+          packs: route_pack_references(route.packs),
           sync: route.sync,
           security: route.security,
           allowlisted_origins: [origin]
@@ -72,6 +73,25 @@ defmodule Crosswake.Manifest.Builder do
       {route.id, entry}
     end)
   end
+
+  defp pack_registry(routes) do
+    routes
+    |> Enum.flat_map(& &1.packs)
+    |> Enum.sort_by(&pack_reference/1)
+    |> Map.new(fn pack ->
+      {pack_reference(pack),
+       Types.new_pack_entry(
+         id: pack.id,
+         version: pack.version,
+         kind: pack.kind,
+         integrity: pack.integrity
+       )}
+    end)
+  end
+
+  defp route_pack_references(packs), do: Enum.map(packs, &pack_reference/1)
+
+  defp pack_reference(%{id: id, version: version}), do: "#{id}@#{version}"
 
   defp capability_version(_capability), do: "1.0.0"
 

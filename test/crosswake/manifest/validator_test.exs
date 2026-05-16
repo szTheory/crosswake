@@ -131,12 +131,8 @@ defmodule Crosswake.Manifest.ValidatorTest do
         "camera" => Types.new_capability(id: "camera", version: "1.0.0")
       },
       pack_registry: %{
-        "camera_capture_assets@1.0.0" => %{
-          id: "camera_capture_assets",
-          version: "1.0.0",
-          kind: :media,
-          integrity: nil
-        }
+        "camera_capture_assets@1.0.0" =>
+          Types.new_pack_entry(id: "camera_capture_assets", version: "1.0.0", kind: :media)
       },
       routes: %{
         "camera" =>

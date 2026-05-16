@@ -15,6 +15,7 @@ defmodule Crosswake.Manifest.Types do
       :compatibility,
       :support_matrix,
       :capability_registry,
+      :pack_registry,
       :routes
     ]
     defstruct [
@@ -25,6 +26,7 @@ defmodule Crosswake.Manifest.Types do
       :compatibility,
       :support_matrix,
       capability_registry: %{},
+      pack_registry: %{},
       routes: %{}
     ]
 
@@ -37,6 +39,9 @@ defmodule Crosswake.Manifest.Types do
             support_matrix: Crosswake.Manifest.Types.SupportMatrix.t(),
             capability_registry: %{
               optional(String.t()) => Crosswake.Manifest.Types.Capability.t()
+            },
+            pack_registry: %{
+              optional(String.t()) => Crosswake.Manifest.Types.PackEntry.t()
             },
             routes: %{optional(String.t()) => Crosswake.Manifest.Types.RouteEntry.t()}
           }
@@ -104,6 +109,20 @@ defmodule Crosswake.Manifest.Types do
             id: String.t(),
             version: String.t(),
             status: status()
+          }
+  end
+
+  defmodule PackEntry do
+    @moduledoc false
+
+    @enforce_keys [:id, :version, :kind]
+    defstruct [:id, :version, :kind, :integrity]
+
+    @type t :: %__MODULE__{
+            id: String.t(),
+            version: String.t(),
+            kind: Crosswake.Policy.Schema.pack_kind(),
+            integrity: Crosswake.Policy.Schema.pack_integrity() | nil
           }
   end
 
@@ -249,6 +268,7 @@ defmodule Crosswake.Manifest.Types do
       compatibility: Keyword.fetch!(attrs, :compatibility),
       support_matrix: Keyword.fetch!(attrs, :support_matrix),
       capability_registry: Keyword.get(attrs, :capability_registry, %{}),
+      pack_registry: Keyword.get(attrs, :pack_registry, %{}),
       routes: Keyword.get(attrs, :routes, %{})
     })
   end
@@ -303,6 +323,16 @@ defmodule Crosswake.Manifest.Types do
       sync: Keyword.get(attrs, :sync, []),
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, [])
+    })
+  end
+
+  @spec new_pack_entry(keyword()) :: PackEntry.t()
+  def new_pack_entry(attrs) when is_list(attrs) do
+    struct!(PackEntry, %{
+      id: Keyword.fetch!(attrs, :id),
+      version: Keyword.fetch!(attrs, :version),
+      kind: Keyword.fetch!(attrs, :kind),
+      integrity: Keyword.get(attrs, :integrity)
     })
   end
 
@@ -363,6 +393,7 @@ defmodule Crosswake.Manifest.Types do
       "compatibility" => to_map(root.compatibility),
       "support_matrix" => to_map(root.support_matrix),
       "capability_registry" => to_map(root.capability_registry),
+      "pack_registry" => to_map(root.pack_registry),
       "routes" => to_map(root.routes)
     }
   end
@@ -392,6 +423,15 @@ defmodule Crosswake.Manifest.Types do
       "id" => capability.id,
       "version" => capability.version,
       "status" => format_status(capability.status)
+    }
+  end
+
+  def to_map(%PackEntry{} = pack_entry) do
+    %{
+      "id" => pack_entry.id,
+      "version" => pack_entry.version,
+      "kind" => Atom.to_string(pack_entry.kind),
+      "integrity" => to_map(pack_entry.integrity)
     }
   end
 

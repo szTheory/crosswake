@@ -14,7 +14,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_top_level_sections(manifest)
     |> validate_compatibility(manifest.compatibility)
     |> validate_support_matrix(manifest.support_matrix)
-    |> validate_routes(manifest.routes, manifest.capability_registry)
+    |> validate_routes(manifest.routes, manifest.capability_registry, manifest.pack_registry)
   end
 
   defp validate_top_level_sections(errors, %Types.Root{} = manifest) do
@@ -26,10 +26,11 @@ defmodule Crosswake.Manifest.Validator do
       {:compatibility, manifest.compatibility},
       {:support_matrix, manifest.support_matrix},
       {:capability_registry, manifest.capability_registry},
+      {:pack_registry, manifest.pack_registry},
       {:routes, manifest.routes}
     ]
     |> Enum.reduce(errors, fn {key, value}, acc ->
-      if present?(value) do
+      if present?(key, value) do
         acc
       else
         [
@@ -56,20 +57,21 @@ defmodule Crosswake.Manifest.Validator do
     |> Kernel.++(errors)
   end
 
-  defp validate_routes(errors, routes, capability_registry) do
+  defp validate_routes(errors, routes, capability_registry, pack_registry) do
     Enum.reduce(routes, errors, fn {_id, route}, acc ->
       route
-      |> route_errors(capability_registry)
+      |> route_errors(capability_registry, pack_registry)
       |> Enum.map(&build_error(&1, route))
       |> Kernel.++(acc)
     end)
   end
 
-  defp route_errors(route, capability_registry) do
+  defp route_errors(route, capability_registry, pack_registry) do
     []
     |> validate_route_field(route, :path, route.path)
     |> validate_route_field(route, :runtime, route.runtime)
     |> validate_route_capabilities(route, capability_registry)
+    |> validate_route_packs(route, pack_registry)
   end
 
   defp validate_route_field(errors, _route, _key, value) when not is_nil(value), do: errors
@@ -108,6 +110,27 @@ defmodule Crosswake.Manifest.Validator do
     end)
   end
 
+  defp validate_route_packs(errors, route, pack_registry) do
+    Enum.reduce(route.packs, errors, fn pack_reference, acc ->
+      if Map.has_key?(pack_registry, pack_reference) do
+        acc
+      else
+        [
+          %{
+            key: :packs,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "route #{route.id} declares pack reference #{inspect(pack_reference)} outside the manifest pack registry",
+            hint:
+              "compile #{inspect(pack_reference)} into pack_registry before validation passes"
+          }
+          | acc
+        ]
+      end
+    end)
+  end
+
   defp build_error(attrs, route \\ nil) do
     struct!(Error, %{
       key: attrs[:key],
@@ -118,8 +141,9 @@ defmodule Crosswake.Manifest.Validator do
     })
   end
 
-  defp present?(value) when value in [nil, ""], do: false
-  defp present?(value) when is_map(value), do: map_size(value) > 0
-  defp present?(value) when is_list(value), do: value != []
-  defp present?(_value), do: true
+  defp present?(:pack_registry, value) when is_map(value), do: true
+  defp present?(_key, value) when value in [nil, ""], do: false
+  defp present?(_key, value) when is_map(value), do: map_size(value) > 0
+  defp present?(_key, value) when is_list(value), do: value != []
+  defp present?(_key, _value), do: true
 end

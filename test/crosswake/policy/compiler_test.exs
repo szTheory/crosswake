@@ -12,7 +12,8 @@ defmodule Crosswake.Policy.CompilerTest do
 
     assert Enum.map(routes, &{&1.id, &1.runtime}) == [
              {"dashboard", :live_view},
-             {"library", :offline_island},
+             {"library", :live_view},
+             {"study-session", :offline_island},
              {"camera", :native_screen}
            ]
 
@@ -67,7 +68,7 @@ defmodule Crosswake.Policy.CompilerTest do
                    runtime: :native_screen,
                    offline: :local_first,
                    capabilities: ["camera.capture"],
-                   packs: ["capture.pack"],
+                   packs: [[id: "capture_pack", version: "1.0.0", kind: :media]],
                    sync: ["uploads"],
                    security: :sensitive
                  ]
