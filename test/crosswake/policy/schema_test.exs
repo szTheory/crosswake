@@ -51,5 +51,51 @@ defmodule Crosswake.Policy.SchemaTest do
       assert validated[:offline] == :local_first
       assert validated[:island_contract] == "study_session_v1"
     end
+
+    test "accepts typed versioned pack declarations with semantic metadata" do
+      validated =
+        Schema.validate!([
+          id: "library",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          cache_contract: :lesson_library_v1,
+          security: :standard,
+          packs: [
+            [
+              id: :lesson_library,
+              version: "1.2.0",
+              kind: :content,
+              integrity: [algorithm: :sha256, digest: "sha256-abc123"]
+            ],
+            [id: "pronunciation_audio", version: "2.0.0", kind: :media]
+          ]
+        ])
+
+      assert validated[:packs] == [
+               %{
+                 id: "lesson_library",
+                 version: "1.2.0",
+                 kind: :content,
+                 integrity: %{algorithm: "sha256", digest: "sha256-abc123"}
+               },
+               %{
+                 id: "pronunciation_audio",
+                 version: "2.0.0",
+                 kind: :media,
+                 integrity: nil
+               }
+             ]
+    end
+
+    test "rejects pack declarations without a required version" do
+      assert_raise NimbleOptions.ValidationError, ~r/version/, fn ->
+        Schema.validate!([
+          id: "library",
+          runtime: :live_view,
+          security: :standard,
+          packs: [[id: "lesson_library", kind: :content]]
+        ])
+      end
+    end
   end
 end

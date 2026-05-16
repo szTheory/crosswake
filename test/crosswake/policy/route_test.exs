@@ -28,16 +28,48 @@ defmodule Crosswake.Policy.RouteTest do
                  id: :capture,
                  runtime: :native_screen,
                  capabilities: [:camera, "photos"],
-                 packs: [:media_core],
+                 packs: [[id: :media_core, version: "1.0.0", kind: :content]],
                  sync: [:uploads],
                  security: :sensitive
                )
 
       assert route.id == "capture"
       assert route.capabilities == ["camera", "photos"]
-      assert route.packs == ["media_core"]
+      assert route.packs == [
+               %{id: "media_core", version: "1.0.0", kind: :content, integrity: nil}
+             ]
       assert route.sync == ["uploads"]
       assert route.security == :sensitive
+    end
+
+    test "accepts one or more semantic pack requirements with immutable ids and versions" do
+      assert {:ok, route} =
+               Route.new(
+                 id: "library",
+                 runtime: :live_view,
+                 offline: :cached_read_only,
+                 cache_contract: :lesson_library_v1,
+                 packs: [
+                   [
+                     id: "lesson_library",
+                     version: "1.2.0",
+                     kind: :content,
+                     integrity: [algorithm: :sha256, digest: "sha256-abc123"]
+                   ],
+                   [id: :pronunciation_audio, version: "2.0.0", kind: :media]
+                 ],
+                 security: :standard
+               )
+
+      assert route.packs == [
+               %{
+                 id: "lesson_library",
+                 version: "1.2.0",
+                 kind: :content,
+                 integrity: %{algorithm: "sha256", digest: "sha256-abc123"}
+               },
+               %{id: "pronunciation_audio", version: "2.0.0", kind: :media, integrity: nil}
+             ]
     end
 
     test "cached routes can declare an explicit cache contract without implying local mutation support" do
@@ -96,6 +128,23 @@ defmodule Crosswake.Policy.RouteTest do
 
       assert Exception.message(error) =~
                "island_contract requires runtime :offline_island with offline :local_first"
+    end
+
+    test "rejects duplicate pack ids so route-local pack truth stays unambiguous" do
+      assert {:error, error} =
+               Route.new(
+                 id: "library",
+                 runtime: :live_view,
+                 offline: :cached_read_only,
+                 cache_contract: :lesson_library_v1,
+                 packs: [
+                   [id: "lesson_library", version: "1.2.0", kind: :content],
+                   [id: "lesson_library", version: "2.0.0", kind: :content]
+                 ],
+                 security: :standard
+               )
+
+      assert Exception.message(error) =~ "pack ids must be unique"
     end
   end
 end
