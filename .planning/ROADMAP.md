@@ -108,7 +108,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md - Establish manifest-owned pack registry and route-policy pack truth.
 - [x] 05-02-PLAN.md - Add typed pack lifecycle, inventory, and fail-closed compatibility/activation gating.
-- [ ] 05-03-PLAN.md - Generate iOS and Android required-pack runtime surfaces from the shared lifecycle contract.
+- [x] 05-03-PLAN.md - Generate iOS and Android required-pack runtime surfaces from the shared lifecycle contract.
 - [ ] 05-04-PLAN.md - Define explicit upload/download/import/export route and manifest truth.
 - [x] 05-05-PLAN.md - Bound the bridge allowlist to explicit manifest-backed transfer commands.
 - [ ] 05-06-PLAN.md - Ship one media-capture `:native_screen` escape hatch in generated iOS and Android shells.
@@ -125,4 +125,4 @@ Plans:
 | 2. Manifest Truth And Compatibility | 4/4 | Complete | 2026-05-14 |
 | 3. Native Shell Boot And Bounded Bridge | 5/6 | In progress | - |
 | 4. Honest Offline Contract | 4/4 | Complete | 2026-05-16 |
-| 5. Packs, Native Escape, And Proof Lanes | 4/10 | In progress | - |
+| 5. Packs, Native Escape, And Proof Lanes | 5/10 | In progress | - |

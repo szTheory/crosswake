@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 5 of 5 in progress (Packs, Native Escape, And Proof Lanes)
-Plan: 4 of 10 in current phase
-Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, manifest-owned route-local transfer seam truth, and manifest-backed transfer bridge allowlisting are landed, while generated-shell pack runtime surfaces, native escape hatch wiring, transfer execution, and proof lanes remain ahead
-Last activity: 2026-05-17 — Completed Phase 5 plan 05-05 verification with `mix test test/crosswake/bridge/contract_test.exs test/crosswake/bridge/registry_test.exs`
+Plan: 5 of 10 in current phase
+Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, generated-shell required-pack runtime surfaces, manifest-owned route-local transfer seam truth, and manifest-backed transfer bridge allowlisting are landed, while native escape hatch wiring, transfer execution, and proof lanes remain ahead
+Last activity: 2026-05-17 — Completed Phase 5 plan 05-03 verification with `mix test test/mix/tasks/crosswake_gen_shell_test.exs`
 
 Progress: [██████████] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -33,7 +33,7 @@ Progress: [██████████] 95%
 | 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 04-02, 04-03, 04-04, 05-04, and 05-05 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
+- Last 5 plans: 04-03, 04-04, 05-04, 05-05, and 05-03 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
 - Trend: Positive
 
 ## Accumulated Context
@@ -54,6 +54,7 @@ Recent decisions affecting current work:
 - Phase 5 pack lifecycle remains intentionally narrow: install, verify, availability, stale, invalidation, and failure semantics only, without widening into generic asset management.
 - Pack activation now accepts both legacy installed-version strings and typed inventory records so generated shell work can adopt lifecycle truth incrementally.
 - Pack lifecycle denials continue to reuse `pack_incompatible` instead of adding a second pack-specific failure vocabulary.
+- Generated shells now block route activation on explicit required-pack UI and foreground-first install or invalidation actions instead of going straight to pack denial.
 - Transfer seams now stay route-local and semantic, and the manifest owns their typed declaration truth before any bridge command or shell execution is added.
 - Phase 5 transfer work intentionally stops at declaration and manifest truth in 05-04; command exposure and native execution stay deferred to later plans.
 - Phase 5 bridge transfer command exposure is derived from manifest-declared route seams only and remains bounded to explicit semantic commands instead of generic file or URL authority.
@@ -85,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-17
-Stopped at: Completed 05-05; next work is 05-03 generated required-pack runtime surfaces plus 05-06 native media-capture escape hatch and 05-07 generated-shell transfer execution while Phase 3 host-environment proof blockers remain unchanged
+Stopped at: Completed 05-03; next work is 05-06 native media-capture escape hatch and 05-07 generated-shell transfer execution while Phase 3 host-environment proof blockers remain unchanged
 Resume file: None
