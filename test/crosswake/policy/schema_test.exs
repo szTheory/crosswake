@@ -23,5 +23,33 @@ defmodule Crosswake.Policy.SchemaTest do
         Schema.validate!([id: "camera", runtime: :webview])
       end
     end
+
+    test "accepts explicit cache and island contract identifiers" do
+      assert [
+               id: "library",
+               runtime: :live_view,
+               offline: :cached_read_only,
+               cache_contract: "lesson_library_v1"
+             ] =
+               Schema.validate!([
+                 id: "library",
+                 runtime: :live_view,
+                 offline: :cached_read_only,
+                 cache_contract: :lesson_library_v1
+               ])
+
+      assert [
+               id: "study-session",
+               runtime: :offline_island,
+               offline: :local_first,
+               island_contract: "study_session_v1"
+             ] =
+               Schema.validate!([
+                 id: "study-session",
+                 runtime: :offline_island,
+                 offline: :local_first,
+                 island_contract: "study_session_v1"
+               ])
+    end
   end
 end
