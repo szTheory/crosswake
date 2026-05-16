@@ -9,14 +9,23 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import dev.crosswake.shell.packs.RequiredPackActivity
 
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     private lateinit var activationCoordinator: ActivationCoordinator
     private var unavailableDialog: AlertDialog? = null
+    private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        activationCoordinator = ActivationCoordinator.bundled(this)
+        render(
+            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
+            preserveCurrentRoute = false
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,9 +68,23 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
                 preserveCurrentRoute = false
             )
 
+            is ShellPresentation.RequiredPack -> showRequiredPack(presentation.requiredPack)
             is ShellPresentation.Denied -> showUnavailableSurface(presentation.denial, preserveCurrentRoute)
             is ShellPresentation.LiveView -> showLiveView(presentation.session)
         }
+    }
+
+    private fun showRequiredPack(requiredPack: RequiredPackPresentation) {
+        unavailableDialog?.dismiss()
+        unavailableDialog = null
+        requiredPackLauncher.launch(
+            RequiredPackActivity.intent(
+                context = this,
+                routeId = requiredPack.routeId,
+                runtimeLabel = requiredPack.runtimeLabel,
+                status = requiredPack.status
+            )
+        )
     }
 
     private fun showLiveView(session: LiveViewSession) {

@@ -2,6 +2,8 @@ package dev.crosswake.shell
 
 import android.content.Context
 import android.content.Intent
+import dev.crosswake.shell.packs.PackStore
+import dev.crosswake.shell.packs.RequiredPackStatus
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -111,8 +113,15 @@ data class LiveViewSession(
     val allowedOrigin: String
 )
 
+data class RequiredPackPresentation(
+    val routeId: String,
+    val runtimeLabel: String,
+    val status: RequiredPackStatus
+)
+
 sealed interface ShellPresentation {
     data object Booting : ShellPresentation
+    data class RequiredPack(val requiredPack: RequiredPackPresentation) : ShellPresentation
     data class LiveView(val session: LiveViewSession) : ShellPresentation
     data class Denied(val denial: RouteDenialPresentation) : ShellPresentation
 }
@@ -124,7 +133,8 @@ sealed interface NavigationDecision {
 
 class ActivationCoordinator(
     private val manifestLoader: () -> ShellManifest,
-    private val requestLoader: () -> ActivationRequest
+    private val requestLoader: () -> ActivationRequest,
+    private val packStore: PackStore
 ) {
     private var hasBootstrapped = false
     private var cachedManifest: ShellManifest? = null
@@ -138,7 +148,8 @@ class ActivationCoordinator(
         fun bundled(context: Context): ActivationCoordinator {
             return ActivationCoordinator(
                 manifestLoader = { ActivationFixtures.loadManifest(context) },
-                requestLoader = { ActivationFixtures.loadActivationRequest(context) }
+                requestLoader = { ActivationFixtures.loadActivationRequest(context) },
+                packStore = PackStore.bundled(context)
             )
         }
     }
@@ -265,16 +276,14 @@ class ActivationCoordinator(
             )
         }
 
-        val expectedPacks = requiredPacks(route)
-        if (expectedPacks.any { (pack, version) -> request.installedPacks[pack] != version }) {
-            return ShellPresentation.Denied(
-                denial(
-                    manifest = manifest,
-                    reason = RouteDenialReason.PACK_INCOMPATIBLE,
+        val blockingPack = packStore.blockingStatus(route.packs)
+        if (blockingPack != null) {
+            currentSession = null
+            return ShellPresentation.RequiredPack(
+                RequiredPackPresentation(
                     routeId = route.id,
-                    message = "This route needs a compatible declared pack before activation.",
-                    hint = "Update app",
-                    actions = listOf(RouteUnavailableAction.UPDATE_APP)
+                    runtimeLabel = "LiveView",
+                    status = blockingPack
                 )
             )
         }

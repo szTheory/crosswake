@@ -5,7 +5,11 @@
     <application
         android:allowBackup="false"
         android:label="Crosswake Shell"
+        android:theme="@style/Theme.CrosswakeShell"
         android:usesCleartextTraffic="false">
+        <activity
+            android:name=".packs.RequiredPackActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
