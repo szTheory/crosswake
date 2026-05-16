@@ -338,17 +338,13 @@ json = Jason.encode!(manifest_map)
 |---|-------|---------|---------------|
 | A1 | Diagnostics tasks tend to accrete unrelated native preflight work unless their scope is constrained. | Common Pitfalls | Low; the mitigation is still correct because the phase context explicitly constrains doctor scope. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Where should the canonical runtime manifest file live in the host tree?**
-   - What we know: Phase 1 already writes `priv/crosswake/install_manifest.json`, and the context wants a canonical JSON runtime artifact. [VERIFIED: lib/mix/tasks/crosswake.install.ex] [VERIFIED: .planning/phases/02-manifest-truth-and-compatibility/02-CONTEXT.md]
-   - What's unclear: Whether Phase 2 should colocate the runtime manifest under `priv/crosswake/` or generate it under a build/release-specific path. [VERIFIED: codebase grep]
-   - Recommendation: Plan around `priv/crosswake/runtime_manifest.json` unless release packaging requirements force a different output path later. [ASSUMED]
+1. **Canonical runtime manifest file location**
+   - Resolution: Plan around `priv/crosswake/runtime_manifest.json` as the canonical Phase 2 host artifact so it stays colocated with the existing Phase 1 install manifest under `priv/crosswake/`. If a later release-packaging need requires a second output location, that can be derived from this canonical artifact rather than replacing it. [VERIFIED: lib/mix/tasks/crosswake.install.ex] [VERIFIED: .planning/phases/02-manifest-truth-and-compatibility/02-CONTEXT.md]
 
-2. **Should support-matrix Markdown be generated into `guides/` or `.planning/` first?**
-   - What we know: Adopter-facing docs are in `guides/`, while planning artifacts already hold roadmap/research state. [VERIFIED: guides/install.md] [VERIFIED: .planning/ROADMAP.md]
-   - What's unclear: Whether the published support matrix should be a guide checked into `guides/` or a generated intermediate rendered elsewhere first. [VERIFIED: codebase grep]
-   - Recommendation: Generate canonical JSON first and render checked-in Markdown under `guides/` so public docs stay close to adopters while tests can validate the rendered content. [ASSUMED]
+2. **Support-matrix output location**
+   - Resolution: Generate canonical support truth in code first, then render checked-in Markdown under `guides/`, specifically `guides/support_matrix.md`, so adopter-facing docs remain near the public install and compatibility guides while tests can verify the rendered output mechanically. `.planning/` remains planning state, not the published support surface. [VERIFIED: guides/install.md] [VERIFIED: .planning/phases/02-manifest-truth-and-compatibility/02-CONTEXT.md]
 
 ## Security Domain
 

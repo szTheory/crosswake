@@ -13,7 +13,7 @@ Crosswake v1 should move from explicit route truth to proven mobile runtime beha
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Route Policy Foundation** - Phoenix hosts declare per-route runtime ownership and get actionable compile-time validation.
-- [ ] **Phase 2: Manifest Truth And Compatibility** - Crosswake compiles route policy into a versioned contract with diagnostics and explicit support boundaries.
+- [x] **Phase 2: Manifest Truth And Compatibility** - Crosswake compiles route policy into a versioned contract with diagnostics and explicit support boundaries.
 - [ ] **Phase 3: Native Shell Boot And Bounded Bridge** - iOS and Android shells boot from the manifest, resolve routes, and enforce capability access safely.
 - [ ] **Phase 4: Honest Offline Contract** - Crosswake proves one real offline island with explicit cache, journal, sync, and telemetry seams.
 - [ ] **Phase 5: Packs, Native Escape, And Proof Lanes** - Asset-heavy and device-heavy routes work through explicit contracts backed by deterministic install proof.
@@ -47,7 +47,13 @@ Plans:
   2. Manifest schema, compatibility versions, and support-matrix rules are validated before release artifacts are produced.
   3. Developers can run doctor/diagnostics tooling that surfaces setup, compatibility, capability, and route-policy problems in one report.
   4. Adopters can read documentation and a support matrix that clearly state supported baselines, runtime modes, prerequisites, non-goals, and rough edges.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [x] 02-01-PLAN.md - Define the typed compatibility and support-matrix contract that all Phase 2 surfaces share.
+- [x] 02-02-PLAN.md - Compile and validate the single canonical route-first manifest artifact.
+- [x] 02-03-PLAN.md - Ship the host-truth-first doctor engine and Mix task surface.
+- [x] 02-04-PLAN.md - Render and wire the adopter-facing compatibility and support documentation from canonical truth.
 
 ### Phase 3: Native Shell Boot And Bounded Bridge
 **Goal**: Mobile shells can boot from the manifest, open routes in the declared runtime, and fail closed on unsafe capability use.
@@ -58,8 +64,16 @@ Plans:
   2. The Android shell can boot from a Crosswake manifest, resolve route ownership, and host LiveView routes inside a bounded WebView container.
   3. Deep links and app-entry handoff open the runtime declared by route policy instead of falling back to a generic container.
   4. Bridge calls execute only through the typed request/reply contract for capabilities that are declared, allowlisted, active-route valid, and compatibility-safe.
-**Plans**: TBD
+**Plans**: 6 plans
 **UI hint**: yes
+
+Plans:
+- [x] 03-01-PLAN.md - Normalize app entry into manifest-first activation requests and shared denial contracts.
+- [x] 03-02-PLAN.md - Upgrade shell generation to real host-owned Android baseline assets and canonical shell fixtures.
+- [x] 03-03-PLAN.md - Ship the iOS shell boot path, denial UI, Xcode baseline, and WebKit proof hook.
+- [ ] 03-04-PLAN.md - Ship the Android shell boot path, denial UI, Gradle baseline, and WebView proof hook.
+- [x] 03-05-PLAN.md - Add the bounded typed bridge, manifest-backed capability registry, and platform bridge channels.
+- [x] 03-06-PLAN.md - Wire shell and bridge proof into doctor output and adopter-facing native shell guidance.
 
 ### Phase 4: Honest Offline Contract
 **Goal**: Crosswake proves one credible local-first route class with explicit cache, mutation, reconciliation, and failure visibility.
@@ -89,7 +103,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Route Policy Foundation | 4/4 | Complete | 2026-05-13 |
-| 2. Manifest Truth And Compatibility | 0/TBD | Not started | - |
-| 3. Native Shell Boot And Bounded Bridge | 0/TBD | Not started | - |
+| 2. Manifest Truth And Compatibility | 4/4 | Complete | 2026-05-14 |
+| 3. Native Shell Boot And Bounded Bridge | 5/6 | In progress | - |
 | 4. Honest Offline Contract | 0/TBD | Not started | - |
 | 5. Packs, Native Escape, And Proof Lanes | 0/TBD | Not started | - |

@@ -1,0 +1,117 @@
+defmodule Crosswake.Manifest.ValidatorTest do
+  use ExUnit.Case, async: true
+
+  alias Crosswake.Manifest
+  alias Crosswake.Manifest.Serializer
+  alias Crosswake.Manifest.Types
+  alias Crosswake.Manifest.Validator
+  alias Crosswake.SupportMatrix
+
+  test "manifest validation rejects missing sections and invalid compatibility truth before serialization" do
+    manifest =
+      Types.new_root(
+        manifest_schema_version: "1.0.0",
+        crosswake_version: "0.1.0",
+        generated_at: "2026-05-14T00:00:00Z",
+        host: Types.new_host(),
+        compatibility: Types.new_compatibility(remote_updates: [:overlay]),
+        support_matrix:
+          Types.new_support_matrix(
+            phoenix: [],
+            live_view: SupportMatrix.canonical().live_view,
+            ios: SupportMatrix.canonical().ios,
+            android: SupportMatrix.canonical().android,
+            shells: SupportMatrix.canonical().shells
+          ),
+        capability_registry: %{},
+        routes: %{}
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "remote updates"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "support matrix is missing phoenix"))
+  end
+
+  test "json rendering is deterministic and preserves created, reused, and updated semantics" do
+    manifest = manifest_fixture()
+
+    path =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-manifest-#{System.unique_integer([:positive])}.json"
+      )
+
+    rendered_once = Serializer.render(manifest)
+    rendered_twice = Serializer.render(manifest)
+
+    assert rendered_once == rendered_twice
+    assert {:ok, :created} = Serializer.write(path, manifest)
+    assert {:ok, :reused} = Serializer.write(path, manifest)
+
+    updated_manifest =
+      put_in(manifest.routes["camera"].allowlisted_origins, [
+        Types.default_origin(),
+        "https://cached.crosswake.invalid"
+      ])
+
+    assert {:ok, :updated} = Serializer.write(path, updated_manifest)
+  end
+
+  test "manifest compile returns structured validation failures instead of opaque strings" do
+    invalid_support_matrix =
+      Types.new_support_matrix(
+        phoenix: SupportMatrix.canonical().phoenix,
+        live_view: SupportMatrix.canonical().live_view,
+        ios: SupportMatrix.canonical().ios,
+        android: SupportMatrix.canonical().android,
+        shells: []
+      )
+
+    invalid_routes = [
+      %{
+        path: "/camera",
+        helper: "camera",
+        verb: :get,
+        metadata: %{
+          crosswake: [
+            id: "camera",
+            runtime: :native_screen,
+            capabilities: ["camera"],
+            security: :sensitive
+          ]
+        }
+      }
+    ]
+
+    assert {:error, %{errors: errors}} =
+             Manifest.compile(invalid_routes, support_matrix: invalid_support_matrix)
+
+    assert Enum.all?(errors, &match?(%Crosswake.Policy.Error{}, &1))
+  end
+
+  defp manifest_fixture do
+    Types.new_root(
+      crosswake_version: "0.1.0",
+      generated_at: "2026-05-14T00:00:00Z",
+      host: Types.new_host(),
+      compatibility: Types.new_compatibility(),
+      support_matrix: SupportMatrix.canonical(),
+      capability_registry: %{
+        "camera" => Types.new_capability(id: "camera", version: "1.0.0")
+      },
+      routes: %{
+        "camera" =>
+          Types.new_route_entry(
+            id: "camera",
+            path: "/camera",
+            runtime: :native_screen,
+            offline: :unavailable,
+            capabilities: ["camera"],
+            security: :sensitive,
+            allowlisted_origins: [Types.default_origin()]
+          )
+      }
+    )
+  end
+end

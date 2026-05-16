@@ -1,0 +1,75 @@
+new elixir oss lib prompt.txt
+----
+
+okay so i want to make an elixir opensource lib that fills a gap in the elixir ecosystem basically.... i have some more details below to help u get context
+
+below are some snippets from another llm conversation where i was digging into this, should orient you...
+
+-------
+
+research using subagents, what is pros/cons/tradeoffs of each considering the example for each approach, what is idiomatic for elixir/plug/ecto/phoenix for this type of lib and in this ecosystem, lessons learned from other libs in same space even from other languages/frameworks if thehy are popular successful, what did they do right that we should learn from, what did they do wrong/footguns we can learn from, great developer ergeonomics/dx emphasized... think deeply one-shot a perfect set of recommendations so i dont have to think, all recommendations are coherent/cohensive with each other and move us toward the goals/vision of this project... using great software architecture/engineering, principle of least surprise and great UI/UX wheere applicable great dev experience... "
+
+...
+
+and of course it's important to have ci/cd, this is an oss lib i want releases to be easy, etc.... is that enough to orient u? you can sanity check with me too
+
+----
+
+CONTEXT:
+
+also fyi i'm making alot of elixir libs so integration opportunties dont force it but like through telemetry or protocols? coud be some big wins... 
+they are all athttps://hex.pm/users/sztheory published under szTheory you can look at their github readmes the source code etc their hex docs to get deeper understanding of each of them and possible integration points...
+saas ina a box - unix philosophy elixir libs
+i've developed a bunch of libs u can find them here https://hex.pm/users/sztheory i built those out rapidly using ai/llm assisted development using GSD (get shit done) framework which is basically an RPI harness (research plan implement) on steroids i just feed into GSD like hey look at this space on this langauge/frameowkr and also other langs/frameworks and build up considering research online what are pros/cons/tradeoffs and footguns/lessons learned from other libs/frameworks etc etc so that we can build a best in class lessons learned lib with batteries included and deep integration with other 
+oh yeah and billing very important i think ios especially has a lot of concerns around which u use to do payments rules around subscrtipns in app purchases android might have some similar stuff have to be very careful here lots of footguns and opportutnies for great ui/ux to win... also we have to be very careful abou tnative application guidelines... the app stores the approval process etc so deeply consider all of this stufff...
+
+also again keeping in mind all the packages i unlocked https://github.com/szTheory ithere i'm building these composable packages that are kind of creating a unix like philosophy "saas in a box" b/c i'm rapidly creating high value integrations between them so that also ties into like the business level KPIs and stuff i'm trying to basically automate business creation and standup to the highest extent possible
+
+---
+
+mobile integration like they are trying to do with hotwire (of ruby on rails fame) ecosystem.... but we need to make it more with ecto/phoenix but with high quality also important features like offline etc must be VERY VERY polished and tie in deeply with phoenix, live view is great but keep in mind some mobile apps and situations must be able to gracefully deal with spotty connections... 
+
+so yeah the goal here is i want to be able to use phoenix live view and have android and ios apps... possibly also electron? of course while still working for the web.  i knwo how to make electron apps but why not have an integration for that for desktop if we are kind of already targeting multiple platforms... could "boil the ocean" here? making it easy to build these out to maintain them and to do releases so also build and distribution, this should all be thought out
+
+and considering all the types of personas/jtbd that go along with this stuff like in terms of DX/dev ergonomics, sre/devops of it.... even possibly like to an extent the reputation management so like app store reviews... also code signing packaging distribution on like s3 or website or app store? all of these things should be considered.... but of course also the primary technology for building these out...
+
+should be very strong on the happy path but also day 0, day 1, day 2 and beyond.... all these stories so like opinionated easy defaults but then works great at intermediate and advanced levels with edge cases etc...
+
+so i imagine this one will have like swift code maybe even objective c, and also android so kotlin probably java... we miht need to have build system support... idk if we do monorepo for this or multi-repo and i coordinate the development of it in a project??? multiple build systems at play using github actions... this will be opensource lib...
+
+need strong support for animations, so native capability as much as possible... but i like game feel/juiced up UI, great animations along the lines of this guy's work https://emilkowal.ski/ui/7-practical-animation-tips ... idk if we need Lottie support also for anims? just a space we should look into
+
+also need great audio support, great native capabilities support as much as possible look into this guy's stuff https://masilotti.com/hotwire-native/ https://newsletter.masilotti.com/ he has a lot of info there as well for hotwire so a lot you can learn from  also laravel integrates with turbo idk if this is old possibly lessons learned here too? https://turbo-laravel.com/
+
+audio engine is important as well so yeah we just need best of all worlds here i'd liek to epxlore this space and see if we can make something for elixir/phoenix/phoenix liveview that works great with websockets and also "spotty connetions"/offline... works well with crappy connetions, offline, low power devices as well so gracefully degrades (talking about mobile here really)
+
+lessons learned from react native, from doing native apps, from doing apps across multiple platforms (ios/android/web/desktop) at once..., lessons learned from hotwire native apps (i think it has issues with offline support for example, serviceworkers...).... 
+
+look at people's comments online about this stuff, pros/cons/tradeoffs, footguns/antipatterns, bestpractices/patterns to follow... CI/CD, app store approval, automation of all of this shifting left, telemtry, app store reviews etc... but really i'm focused on developing the app but i think quality of life and automation stuff is very important considerations too, we really want CI/CD easy, ideally a strong focus on e2e specs kind of like playwright does with fixtures/mocks to make them reliable/non-flakey... maybe we can use some kind of phoenix liveview/phoenix type e2e specs (like elixir's version of capybara???) b/c testing the UI as much as possible in a deterministic/reliable/fast way is very very important... gives us supreme confidence in shipping fast and shipping often... reduces drag in development velocity and getting value to users.
+
+i think the template here to strongly follow is hotwire at least that's the closest one on my radar. but you should do deep research maybe there are strong alternatives to this or inspired by it probably laravel has something also we could learn from 
+
+we need to have great ui/ux, native system feel, feels very polished and high quality not an afterthought...
+
+we definitely want like rich telemetry for this ... and idiomatic elixir/ecto/plug/phoenix...
+
+
+btw i see this comment about phoenix live view native... might be useful background to heavily consider
+
+
+---
+
+I'd love to answer the question but my reddit account got banned like 10 months ago saying it was linked to another account that was doing ban evasion (it wasn't).
+
+tldr; the top comment is correct. No production apps.
+
+tbh the direction the project is going in the moment means LiveView Native as a concept is likely dead in the water. The cost of having to constantly fix breaking changes in each minor version bump of LiveView is more than I'm willing to continue to absorb. A complete and total lack of cooperation from the LiveView team as well has been incredibly disheartening. They'll probably claim they were open to help but beyond three specific changes we got into Elixir or LiveView (multi-char sigils, render_with, and a change to the template engine) they refused to budge on the largest problem which is that LiveView is hard coded for HTML.
+
+What we're working towards is a general solution for all JavaScript frameworks to buld native apps. If you can build a HTML web app you can build a native app. Unfortunately this means that LiveView will be left behind because it decided it wanted to hold its ground. It could have been the only framework with a real server-driven UI solution for native application development but egos gotta ego I guess.
+
+This does put me out on the limb for not delivering on LVN. But I'm not willing to put myself out of business and drive myself into the looney bin building on top of that project any longer. I highly suggest others don't either. It's not built for extensibility which is a large reason why it has performed so poorly with adoption. Devs gravitate towards solutions that allow them to work with how they think. If you're forced into another lane then you're just going to look elsewhere.
+
+https://x.com/bcardarella/status/1973369656829166004?s=46
+
+
+

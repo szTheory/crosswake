@@ -1,0 +1,103 @@
+package dev.crosswake.shell
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class ActivationCoordinatorTest {
+    @Test
+    fun bootstrapAllowsBundledLiveViewRoute() {
+        val coordinator = coordinator()
+
+        val presentation = coordinator.activate(baselineRequest())
+
+        assertTrue(presentation is ShellPresentation.LiveView)
+        assertEquals("dashboard", (presentation as ShellPresentation.LiveView).session.routeId)
+    }
+
+    @Test
+    fun packIncompatibleDenialSurfacesUpdateAppAction() {
+        val coordinator = coordinator(
+            baselineRequest().copy(installedPacks = emptyMap())
+        )
+
+        val presentation = coordinator.activate(baselineRequest().copy(installedPacks = emptyMap()))
+
+        assertTrue(presentation is ShellPresentation.Denied)
+        val denial = (presentation as ShellPresentation.Denied).denial
+        assertEquals(RouteDenialReason.PACK_INCOMPATIBLE, denial.reason)
+        assertTrue(RouteUnavailableAction.UPDATE_APP in denial.actions)
+    }
+
+    @Test
+    fun inAppNavigationDeniesDisallowedOriginAndKeepsCurrentRouteStable() {
+        val coordinator = coordinator()
+        coordinator.activate(baselineRequest())
+
+        val decision = coordinator.resolveNavigation("https://evil.example.com/dashboard")
+
+        assertTrue(decision is NavigationDecision.Deny)
+        assertEquals(
+            RouteDenialReason.ORIGIN_DENIED,
+            (decision as NavigationDecision.Deny).denial.reason
+        )
+        assertEquals("dashboard", coordinator.currentSession?.routeId)
+    }
+
+    @Test
+    fun appLinkToUnknownRouteFailsClosed() {
+        val coordinator = coordinator()
+
+        val presentation = coordinator.activate(
+            ActivationRequest.forIncomingUrl(
+                "https://example.crosswake.invalid/missing",
+                ActivationSource.DEEP_LINK,
+                baselineRequest()
+            )
+        )
+
+        assertTrue(presentation is ShellPresentation.Denied)
+        assertEquals(
+            RouteDenialReason.INACTIVE_ROUTE,
+            (presentation as ShellPresentation.Denied).denial.reason
+        )
+    }
+
+    private fun coordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
+        return ActivationCoordinator(
+            manifestLoader = { manifest() },
+            requestLoader = { request }
+        )
+    }
+
+    private fun manifest(): ShellManifest {
+        return ShellManifest(
+            routes = mapOf(
+                "dashboard" to ShellManifest.Route(
+                    id = "dashboard",
+                    path = "/dashboard",
+                    runtime = "live_view",
+                    capabilities = listOf("app.info.get"),
+                    packs = listOf("shell.chrome@1.0.0"),
+                    allowlistedOrigins = listOf("https://example.crosswake.invalid")
+                )
+            )
+        )
+    }
+
+    private fun baselineRequest(): ActivationRequest {
+        return ActivationRequest(
+            routeId = "dashboard",
+            url = "https://example.crosswake.invalid/dashboard",
+            source = ActivationSource.DEEP_LINK,
+            origin = "https://example.crosswake.invalid",
+            manifestSource = ManifestSource.BUNDLED,
+            bridgeProtocolVersion = "1.0.0",
+            nativeRuntimeVersion = "1.0.0",
+            correlationId = "android-bootstrap-1",
+            declaredPackRequirements = mapOf("shell.chrome" to "1.0.0"),
+            installedPacks = mapOf("shell.chrome" to "1.0.0"),
+            capabilities = mapOf("app.info.get" to "1.0.0")
+        )
+    }
+}

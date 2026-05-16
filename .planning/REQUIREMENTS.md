@@ -16,10 +16,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Manifest And Compatibility
 
-- [ ] **MANI-01**: Crosswake compiles declared route policy into a versioned runtime manifest consumable by Phoenix hosts and native shells.
-- [ ] **MANI-02**: Crosswake validates manifest schema, compatibility versions, and support matrix rules before release artifacts are produced.
+- [x] **MANI-01**: Crosswake compiles declared route policy into a versioned runtime manifest consumable by Phoenix hosts and native shells.
+- [x] **MANI-02**: Crosswake validates manifest schema, compatibility versions, and support matrix rules before release artifacts are produced.
 - [ ] **MANI-03**: Native shells refuse to activate routes when manifest, bridge, capability, or pack compatibility checks fail.
-- [ ] **MANI-04**: Crosswake publishes an explicit support and compatibility matrix covering supported Phoenix, LiveView, iOS, and Android baselines.
+- [x] **MANI-04**: Crosswake publishes an explicit support and compatibility matrix covering supported Phoenix, LiveView, iOS, and Android baselines.
 
 ### Native Shell
 
@@ -50,9 +50,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Developer Experience And Proof
 
 - [x] **DX-01**: Crosswake provides generators or installers for host Phoenix setup and native shell bootstrap with clear ownership boundaries.
-- [ ] **DX-02**: Crosswake provides doctor or diagnostics tooling that detects setup, compatibility, capability, and route-policy problems.
+- [x] **DX-02**: Crosswake provides doctor or diagnostics tooling that detects setup, compatibility, capability, and route-policy problems.
 - [ ] **DX-03**: Crosswake ships example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces.
-- [ ] **DX-04**: Crosswake documentation clearly states supported runtime modes, non-goals, prerequisites, and rough-edge truth for adopters.
+- [x] **DX-04**: Crosswake documentation clearly states supported runtime modes, non-goals, prerequisites, and rough-edge truth for adopters.
 
 ## v2 Requirements
 
@@ -92,10 +92,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROUTE-02 | Phase 1 | Complete |
 | ROUTE-03 | Phase 1 | Complete |
 | ROUTE-04 | Phase 1 | Complete |
-| MANI-01 | Phase 2 | Pending |
-| MANI-02 | Phase 2 | Pending |
+| MANI-01 | Phase 2 | Complete |
+| MANI-02 | Phase 2 | Complete |
 | MANI-03 | Phase 3 | Pending |
-| MANI-04 | Phase 2 | Pending |
+| MANI-04 | Phase 2 | Complete |
 | SHELL-01 | Phase 3 | Pending |
 | SHELL-02 | Phase 3 | Pending |
 | SHELL-03 | Phase 3 | Pending |
@@ -111,9 +111,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PACK-03 | Phase 5 | Pending |
 | PACK-04 | Phase 5 | Pending |
 | DX-01 | Phase 1 | Complete |
-| DX-02 | Phase 2 | Pending |
+| DX-02 | Phase 2 | Complete |
 | DX-03 | Phase 5 | Pending |
-| DX-04 | Phase 2 | Pending |
+| DX-04 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 26 total
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-13 after Phase 1 completion*
+*Last updated: 2026-05-14 after Phase 2 completion*

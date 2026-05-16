@@ -23,12 +23,27 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     {"gradle/wrapper/gradle-wrapper.properties",
      "android/gradle/wrapper/gradle-wrapper.properties.eex"},
     {"app/build.gradle", "android/app/build.gradle.eex"},
-    {"app/src/main/AndroidManifest.xml", "android/app/src/main/AndroidManifest.xml.eex"}
+    {"app/src/main/AndroidManifest.xml", "android/app/src/main/AndroidManifest.xml.eex"},
+    {"app/src/main/java/dev/crosswake/shell/MainActivity.kt",
+     "android/app/src/main/java/dev/crosswake/shell/MainActivity.kt.eex"},
+    {"app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt",
+     "android/app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt.eex"},
+    {"app/src/main/java/dev/crosswake/shell/BridgeChannel.kt",
+     "android/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt.eex"},
+    {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
+     "android/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt.eex"},
+    {"app/src/main/res/layout/activity_route_unavailable.xml",
+     "android/app/src/main/res/layout/activity_route_unavailable.xml.eex"},
+    {"app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt",
+     "android/app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt.eex"},
+    {"app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt",
+     "android/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt.eex"}
   ]
   @ios_templates [
     {"CrosswakeShell/CrosswakeShellApp.swift", "ios/CrosswakeShellApp.swift.eex"},
     {"CrosswakeShell/Info.plist", "ios/Info.plist.eex"},
     {"CrosswakeShell/ActivationCoordinator.swift", "ios/ActivationCoordinator.swift.eex"},
+    {"CrosswakeShell/BridgeChannel.swift", "ios/BridgeChannel.swift.eex"},
     {"CrosswakeShell/LiveViewContainerViewController.swift",
      "ios/LiveViewContainerViewController.swift.eex"},
     {"CrosswakeShell/RouteUnavailableView.swift", "ios/RouteUnavailableView.swift.eex"},
@@ -102,7 +117,6 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     render_android_templates(root)
 
     entrypoint = Path.join(root, "app/src/main/java/dev/crosswake/shell/MainActivity.kt")
-    ensure_file(entrypoint, android_main_activity())
     write_fixture_files(Path.join(root, "app/src/main"), fixtures)
 
     ensure_executable(Path.join(root, "gradlew"))
@@ -167,26 +181,6 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
   defp platform_readme_label("ios"), do: "Xcode"
   defp platform_readme_label("android"), do: "Android Studio"
-
-  defp android_main_activity do
-    """
-    package dev.crosswake.shell
-
-    import android.app.Activity
-    import android.os.Bundle
-
-    class MainActivity : Activity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-        }
-
-        fun loadBundledManifestFixture(): String = "assets/crosswake_manifest.json"
-
-        fun routeUnavailableSurface(): String =
-            "Render the manifest-first denial surface before mounting any runtime."
-    }
-    """
-  end
 
   defp ensure_file(path, contents) do
     File.mkdir_p!(Path.dirname(path))

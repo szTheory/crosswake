@@ -38,6 +38,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_activation_coordinator =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/ActivationCoordinator.swift")
 
+    ios_bridge_channel =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/BridgeChannel.swift")
+
     ios_route_unavailable =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RouteUnavailableView.swift")
 
@@ -76,6 +79,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_app) =~ "onOpenURL"
     assert File.read!(ios_app) =~ "onContinueUserActivity"
     assert File.read!(ios_app) =~ "LiveViewContainerView"
+    assert File.read!(ios_bridge_channel) =~ "app.info.get"
+    assert File.read!(ios_bridge_channel) =~ "haptics.impact"
+    assert File.read!(ios_bridge_channel) =~ "files.pick"
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
     assert File.read!(ios_scheme) =~ "xcscheme"
     assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
@@ -128,6 +134,48 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/AndroidManifest.xml"
       )
 
+    android_main_activity =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/MainActivity.kt"
+      )
+
+    android_activation_coordinator =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt"
+      )
+
+    android_bridge_channel =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"
+      )
+
+    android_live_view_fragment =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt"
+      )
+
+    android_route_unavailable =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/res/layout/activity_route_unavailable.xml"
+      )
+
+    android_unit_tests =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt"
+      )
+
+    android_instrumented_tests =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+      )
+
     android_activation =
       Path.join(
         target,
@@ -152,7 +200,24 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_wrapper) =~ "Gradle start up script"
     assert File.read!(android_wrapper_props) =~ "gradle-8.7-bin.zip"
     assert File.read!(android_app_build) =~ "applicationId \"dev.crosswake.shell\""
+    assert File.read!(android_app_build) =~ "ManagedVirtualDevice"
+    assert File.read!(android_app_build) =~ "androidx.webkit:webkit:1.15.0"
     assert File.read!(android_manifest) =~ "usesCleartextTraffic"
+    assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
+    assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
+    assert File.read!(android_main_activity) =~ "ActivationCoordinator.bundled"
+    assert File.read!(android_activation_coordinator) =~ "pack_incompatible"
+    assert File.read!(android_activation_coordinator) =~ "inactive_route"
+    assert File.read!(android_bridge_channel) =~ "app.info.get"
+    assert File.read!(android_bridge_channel) =~ "haptics.impact"
+    assert File.read!(android_bridge_channel) =~ "files.pick"
+    assert File.read!(android_live_view_fragment) =~ "WebView"
+    assert File.read!(android_live_view_fragment) =~ "Allowlisted"
+    assert File.read!(android_route_unavailable) =~ "Update app"
+    assert File.read!(android_route_unavailable) =~ "Open safe fallback"
+    assert File.read!(android_unit_tests) =~ "packIncompatibleDenialSurfacesUpdateAppAction"
+    assert File.read!(android_unit_tests) =~ "inAppNavigationDeniesDisallowedOriginAndKeepsCurrentRouteStable"
+    assert File.read!(android_instrumented_tests) =~ "appLinkLaunchMountsBoundedWebView"
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(android_denial) =~ "\"reason\": \"pack_incompatible\""
@@ -161,6 +226,11 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(verify_script) =~ "xcodebuild"
     assert File.read!(verify_script) =~ "-showdestinations"
     assert File.read!(verify_script) =~ "scheme=\"CrosswakeShell\""
+
+    android_verify_script = Path.join(File.cwd!(), "script/verify_generated_android_shell.sh")
+    assert File.read!(android_verify_script) =~ "sdkmanager"
+    assert File.read!(android_verify_script) =~ "crosswakeApi34DebugAndroidTest"
+    assert File.read!(android_verify_script) =~ "commandlinetools-mac-14742923_latest.zip"
   end
 
   defp tmp_dir!(prefix) do

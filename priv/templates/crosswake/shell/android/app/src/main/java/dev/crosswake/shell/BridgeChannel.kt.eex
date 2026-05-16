@@ -1,0 +1,195 @@
+package dev.crosswake.shell
+
+import androidx.webkit.JavaScriptReplyProxy
+import androidx.webkit.WebMessageCompat
+import androidx.webkit.WebViewCompat
+import android.webkit.WebView
+import org.json.JSONObject
+
+enum class BridgeCommand(val wireValue: String) {
+    APP_INFO_GET("app.info.get"),
+    HAPTICS_IMPACT("haptics.impact"),
+    FILES_PICK("files.pick");
+
+    val capability: String
+        get() = wireValue
+
+    companion object {
+        fun fromWireValue(value: String): BridgeCommand? = entries.find { it.wireValue == value }
+    }
+}
+
+class BridgeChannel(
+    private val session: LiveViewSession,
+    private val bridgeProtocolVersion: String,
+    private val nativeRuntimeVersion: String,
+    private val installedPacks: Map<String, String>,
+    private val routeRequiredPacks: List<String>,
+    private val capabilities: Map<String, String>,
+    private val appInfoProvider: () -> Map<String, String>,
+    private val hapticsHandler: (String) -> Unit,
+    private val filesPickHandler: (Map<String, String>) -> Map<String, String>
+) {
+    companion object {
+        const val JS_OBJECT = "crosswakeBridge"
+        const val PROTOCOL = "crosswake.bridge"
+    }
+
+    fun attach(webView: WebView, allowedOriginRules: Set<String>) {
+        WebViewCompat.addWebMessageListener(
+            webView,
+            JS_OBJECT,
+            allowedOriginRules
+        ) { _, message, sourceOrigin, isMainFrame, replyProxy ->
+            val request = parseRequest(message) ?: return@addWebMessageListener
+
+            if (!isMainFrame || sourceOrigin.toString() != session.allowedOrigin) {
+                replyProxy.postMessage(deny(request, "origin_denied", "The bridge request origin is not allowlisted for the active route.", "Retry from the declared same-origin route surface."))
+                return@addWebMessageListener
+            }
+
+            val reply = evaluate(request)
+            replyProxy.postMessage(reply)
+        }
+    }
+
+    private fun parseRequest(message: WebMessageCompat): BridgeRequestEnvelope? {
+        val body = message.data ?: return null
+        return try {
+            BridgeRequestEnvelope(JSONObject(body))
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun evaluate(request: BridgeRequestEnvelope): String {
+        if (request.protocol != PROTOCOL || request.version != bridgeProtocolVersion || request.nativeRuntimeVersion != nativeRuntimeVersion) {
+            return deny(request, "compatibility_mismatch", "Bridge protocol or runtime mismatch.", "Update the shell before retrying this bridge request.")
+        }
+
+        if (request.routeId != session.routeId || request.activeRouteId != session.routeId) {
+            return deny(request, "inactive_route", "The bridge request is not scoped to the active route.", "Retry from the current active route only.")
+        }
+
+        if (request.origin != session.allowedOrigin) {
+            return deny(request, "origin_denied", "The bridge request origin is not allowlisted for the active route.", "Retry from the declared same-origin route surface.")
+        }
+
+        val command = BridgeCommand.fromWireValue(request.command)
+            ?: return deny(request, "undeclared_capability", "The bridge command is outside the bounded Phase 3 contract.", "Use app.info.get, haptics.impact, or files.pick only.")
+
+        if (request.capability != command.capability) {
+            return deny(request, "undeclared_capability", "The bridge envelope capability does not match the bounded command.", "Align the bridge envelope capability with manifest truth.")
+        }
+
+        val requiredCapabilityVersion = capabilities[command.capability]
+        if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+            return deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
+        }
+
+        val packsCompatible = routeRequiredPacks.all { packRequirement ->
+            val parts = packRequirement.split("@", limit = 2)
+            val packId = parts[0]
+            val requiredVersion = parts.getOrNull(1)
+            val installedVersion = installedPacks[packId]
+            if (requiredVersion == null) installedVersion != null else installedVersion == requiredVersion
+        }
+
+        if (!packsCompatible) {
+            return deny(request, "pack_incompatible", "The active route is missing a compatible declared pack.", "Install or update the required pack before retrying.")
+        }
+
+        return when (command) {
+            BridgeCommand.APP_INFO_GET -> ok(request, appInfoProvider())
+            BridgeCommand.HAPTICS_IMPACT -> {
+                val style = request.payload["style"] ?: "medium"
+                hapticsHandler(style)
+                ok(request, mapOf("style" to style))
+            }
+            BridgeCommand.FILES_PICK -> ok(request, filesPickHandler(request.payload))
+        }
+    }
+
+    private fun ok(request: BridgeRequestEnvelope, payload: Map<String, String>): String {
+        return JSONObject()
+            .put("protocol", request.protocol)
+            .put("version", request.version)
+            .put("command", request.command)
+            .put("route_id", request.routeId)
+            .put("correlation_id", request.correlationId)
+            .put("status", "ok")
+            .put("payload", JSONObject(payload))
+            .toString()
+    }
+
+    private fun deny(request: BridgeRequestEnvelope, reason: String, message: String, hint: String): String {
+        return JSONObject()
+            .put("protocol", request.protocol)
+            .put("version", request.version)
+            .put("command", request.command)
+            .put("route_id", request.routeId)
+            .put("correlation_id", request.correlationId)
+            .put("status", "deny")
+            .put("payload", JSONObject())
+            .put(
+                "denial",
+                JSONObject()
+                    .put("command", request.command)
+                    .put("route_id", request.routeId)
+                    .put("correlation_id", request.correlationId)
+                    .put(
+                        "denial",
+                        JSONObject()
+                            .put("reason", reason)
+                            .put("code", reason)
+                            .put("message", message)
+                            .put("route_id", request.routeId)
+                            .put("hint", hint)
+                    )
+            )
+            .toString()
+    }
+}
+
+data class BridgeRequestEnvelope(
+    val protocol: String,
+    val version: String,
+    val command: String,
+    val capability: String,
+    val routeId: String,
+    val activeRouteId: String,
+    val origin: String,
+    val nativeRuntimeVersion: String,
+    val correlationId: String,
+    val capabilities: Map<String, String>,
+    val installedPacks: Map<String, String>,
+    val payload: Map<String, String>
+) {
+    constructor(json: JSONObject) : this(
+        protocol = json.getString("protocol"),
+        version = json.getString("version"),
+        command = json.getString("command"),
+        capability = json.getString("capability"),
+        routeId = json.getString("route_id"),
+        activeRouteId = json.getString("active_route_id"),
+        origin = json.getString("origin"),
+        nativeRuntimeVersion = json.getString("native_runtime_version"),
+        correlationId = json.getString("correlation_id"),
+        capabilities = json.optJSONObject("capabilities").toStringMap(),
+        installedPacks = json.optJSONObject("installed_packs").toStringMap(),
+        payload = json.optJSONObject("payload").toStringMap()
+    )
+}
+
+private fun JSONObject?.toStringMap(): Map<String, String> {
+    val objectValue = this ?: return emptyMap()
+    val keys = objectValue.keys()
+    val map = mutableMapOf<String, String>()
+
+    while (keys.hasNext()) {
+        val key = keys.next()
+        map[key] = objectValue.optString(key)
+    }
+
+    return map
+}
