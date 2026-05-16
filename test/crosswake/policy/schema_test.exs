@@ -97,5 +97,64 @@ defmodule Crosswake.Policy.SchemaTest do
         ])
       end
     end
+
+    test "accepts explicit route-local transfer seams with typed semantic metadata" do
+      validated =
+        Schema.validate!([
+          id: "library",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          cache_contract: :lesson_library_v1,
+          security: :standard,
+          transfers: [
+            [
+              id: :lesson_import,
+              intent: :import,
+              source: :native_picker,
+              verification: :required,
+              media_types: ["application/pdf"]
+            ],
+            [
+              id: "lesson_export",
+              intent: :export,
+              destination: :user_visible_files,
+              verification: :required,
+              media_types: ["application/pdf"]
+            ]
+          ]
+        ])
+
+      assert validated[:transfers] == [
+               %{
+                 id: "lesson_import",
+                 intent: :import,
+                 direction: :inbound,
+                 source: :native_picker,
+                 destination: nil,
+                 verification: :required,
+                 media_types: ["application/pdf"]
+               },
+               %{
+                 id: "lesson_export",
+                 intent: :export,
+                 direction: :outbound,
+                 source: nil,
+                 destination: :user_visible_files,
+                 verification: :required,
+                 media_types: ["application/pdf"]
+               }
+             ]
+    end
+
+    test "rejects transfer seams that do not declare the required semantic endpoint metadata" do
+      assert_raise NimbleOptions.ValidationError, ~r/source/, fn ->
+        Schema.validate!([
+          id: "library",
+          runtime: :live_view,
+          security: :standard,
+          transfers: [[id: :asset_upload, intent: :upload, verification: :required]]
+        ])
+      end
+    end
   end
 end

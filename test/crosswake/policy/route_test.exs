@@ -146,5 +146,88 @@ defmodule Crosswake.Policy.RouteTest do
 
       assert Exception.message(error) =~ "pack ids must be unique"
     end
+
+    test "normalizes explicit route-local transfer seams for upload, download, import, and export" do
+      assert {:ok, route} =
+               Route.new(
+                 id: "library",
+                 runtime: :live_view,
+                 offline: :cached_read_only,
+                 cache_contract: :lesson_library_v1,
+                 security: :standard,
+                 transfers: [
+                   [
+                     id: :asset_upload,
+                     intent: :upload,
+                     source: :native_picker,
+                     verification: :required,
+                     media_types: ["image/*"]
+                   ],
+                   [
+                     id: :asset_download,
+                     intent: :download,
+                     destination: :app_sandbox,
+                     verification: :required,
+                     media_types: ["application/pdf"]
+                   ],
+                   [
+                     id: :asset_import,
+                     intent: :import,
+                     source: :native_picker,
+                     verification: :required,
+                     media_types: ["application/zip"]
+                   ],
+                   [
+                     id: :asset_export,
+                     intent: :export,
+                     destination: :user_visible_files,
+                     verification: :required,
+                     media_types: ["text/csv"]
+                   ]
+                 ]
+               )
+
+      assert Enum.map(route.transfers, & &1.intent) == [:upload, :download, :import, :export]
+      assert Enum.map(route.transfers, & &1.direction) == [:inbound, :outbound, :inbound, :outbound]
+    end
+
+    test "rejects ambiguous or runtime-inconsistent transfer declarations" do
+      assert {:error, error} =
+               Route.new(
+                 id: "capture",
+                 runtime: :native_screen,
+                 security: :sensitive,
+                 transfers: [
+                   [
+                     id: :capture_upload,
+                     intent: :upload,
+                     source: :native_capture,
+                     destination: :user_visible_files,
+                     verification: :required,
+                     media_types: ["image/*"]
+                   ]
+                 ]
+               )
+
+      assert Exception.message(error) =~ "must not declare destination"
+
+      assert {:error, error} =
+               Route.new(
+                 id: "library",
+                 runtime: :live_view,
+                 security: :standard,
+                 transfers: [
+                   [
+                     id: :capture_only_upload,
+                     intent: :upload,
+                     source: :native_capture,
+                     verification: :required,
+                     media_types: ["image/*"]
+                   ]
+                 ]
+               )
+
+      assert Exception.message(error) =~ "native_capture source requires runtime :native_screen"
+    end
   end
 end
