@@ -50,6 +50,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/ios/crosswake_shell/CrosswakeShell/LiveViewContainerViewController.swift"
       )
 
+    ios_pack_store =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/PackStore.swift")
+
+    ios_required_pack_view =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RequiredPackView.swift")
+
     ios_tests =
       Path.join(
         target,
@@ -69,6 +75,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
     ios_installed_packs =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/installed_packs.json")
+
+    ios_pack_inventory =
+      Path.join(target, "native/ios/crosswake_shell/Fixtures/pack_inventory.json")
 
     assert File.read!(ios_readme) =~ "host-owned"
     assert File.read!(ios_readme) =~ "scaffold once"
@@ -92,6 +101,13 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_live_view) =~ "WKNavigationDelegate"
     assert File.read!(ios_live_view) =~ "same-origin"
     assert File.read!(ios_live_view) =~ "App-Bound Domains"
+    assert File.read!(ios_pack_store) =~ "enum PackState"
+    assert File.read!(ios_pack_store) =~ "case invalidating"
+    assert File.read!(ios_pack_store) =~ "func installRequiredPack"
+    assert File.read!(ios_pack_store) =~ "func invalidatePack"
+    assert File.read!(ios_required_pack_view) =~ "Install Required Pack"
+    assert File.read!(ios_required_pack_view) =~ "Update Pack"
+    assert File.read!(ios_required_pack_view) =~ "PackStore"
     assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
     assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
     assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
@@ -102,6 +118,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_denial) =~ "\"reason\": \"pack_incompatible\""
     assert File.read!(ios_declared_packs) =~ "\"shell.chrome\": \"1.0.0\""
     assert File.read!(ios_installed_packs) =~ "\"shell.chrome\": \"1.0.0\""
+    assert File.read!(ios_pack_inventory) =~ "\"integrity_status\": \"verified\""
+    assert File.read!(ios_pack_inventory) =~ "\"verified_at\""
 
     android_output =
       capture_io(fn ->
