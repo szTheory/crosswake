@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 5 planning - Packs, Native Escape, And Proof Lanes
+**Current focus:** Phase 5 execution - Packs, Native Escape, And Proof Lanes
 
 ## Current Position
 
-Phase: 4 of 5 complete (Honest Offline Contract)
-Plan: 4 of 4 in current phase
-Status: Phase 4 executed end-to-end; cached-route and study-session offline contracts, replay/journal/runtime seams, doctor posture, docs, and the hermetic offline proof lane are landed
-Last activity: 2026-05-16 — Completed Phase 4 verification with `bash script/verify_offline_contract.sh`; generated shell runtime support remains verification-required behind the existing Phase 3 host-environment blockers
+Phase: 5 of 5 in progress (Packs, Native Escape, And Proof Lanes)
+Plan: 2 of 10 in current phase
+Status: Phase 5 execution is underway; manifest-owned pack registry plus typed pack lifecycle and fail-closed activation gating are landed, while generated-shell pack runtime surfaces, transfer seams, native escape hatch wiring, and proof lanes remain ahead
+Last activity: 2026-05-17 — Completed Phase 5 plan 05-02 verification with `mix test test/crosswake/packs/contracts_test.exs test/crosswake/packs/runtime_test.exs test/crosswake/compatibility/compatibility_test.exs test/crosswake/shell/activation_test.exs`
 
-Progress: [█████████░] 92%
+Progress: [█████████▓] 94%
 
 ## Performance Metrics
 
@@ -51,6 +51,9 @@ Recent decisions affecting current work:
 - The Android generated shell now self-bootstraps Gradle instead of depending on a missing wrapper jar.
 - Phase 4 proves one narrow offline story only: explicit cached read-only hydration plus one study-session offline island with append-only journal durability, explicit replay outcomes, and route-local diagnostics.
 - Phase 4 support posture is split intentionally: repo-local offline contract surfaces are supported by `script/verify_offline_contract.sh`, while generated shell runtime support still inherits Phase 3's `verification required` posture until both native proof hooks pass.
+- Phase 5 pack lifecycle remains intentionally narrow: install, verify, availability, stale, invalidation, and failure semantics only, without widening into generic asset management.
+- Pack activation now accepts both legacy installed-version strings and typed inventory records so generated shell work can adopt lifecycle truth incrementally.
+- Pack lifecycle denials continue to reuse `pack_incompatible` instead of adding a second pack-specific failure vocabulary.
 
 ### Pending Todos
 
@@ -64,7 +67,7 @@ None yet.
 - Plan 03-04 template work, toolchain bootstrapping, and Gradle bootstrap now succeed, and a re-run still reaches real Gradle execution, but `script/verify_generated_android_shell.sh` remains blocked by host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 - Plan 03-05 bounded bridge code, templates, guide, and tests landed.
 - Plan 03-06 doctor/docs/support guidance landed and now blocks shell support claims until both real proof hooks pass.
-- Phase 5 planning will need a strict first native escape-hatch choice to avoid broad adapter creep.
+- Phase 5 still needs a strict first native escape-hatch choice to avoid broad adapter creep as generated-shell and transfer work proceed.
 - Generated iOS shell proof still depends on the local Xcode/CoreSimulator install: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
 - Generated Android shell proof still depends on host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-16
-Stopped at: Phase 4 complete; next work is planning Phase 5 while either repairing local Xcode/CoreSimulator and Android emulator state for Phase 3 proof or explicitly deferring that proof outside the repo
+Last session: 2026-05-17
+Stopped at: Completed 05-02; next work is 05-03 generated required-pack runtime surfaces while Phase 3 host-environment proof blockers remain unchanged
 Resume file: None

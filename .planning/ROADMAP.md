@@ -101,8 +101,21 @@ Plans:
   2. One documented native screen or adapter can own a device-heavy flow such as camera or media capture without relying on generic WebView behavior.
   3. Upload, download, and media transfer flows use explicit Crosswake seams rather than ad hoc container behavior.
   4. Example hosts and deterministic CI verify the documented public install path across Phoenix, iOS, and Android surfaces.
-**Plans**: TBD
+**Clarification**: Phase 5 implements the first device-heavy escape hatch as one `:native_screen` media-capture flow. `:adapter` remains deferred.
+**Plans**: 10 plans
 **UI hint**: yes
+
+Plans:
+- [x] 05-01-PLAN.md - Establish manifest-owned pack registry and route-policy pack truth.
+- [x] 05-02-PLAN.md - Add typed pack lifecycle, inventory, and fail-closed compatibility/activation gating.
+- [ ] 05-03-PLAN.md - Generate iOS and Android required-pack runtime surfaces from the shared lifecycle contract.
+- [ ] 05-04-PLAN.md - Define explicit upload/download/import/export route and manifest truth.
+- [ ] 05-05-PLAN.md - Bound the bridge allowlist to explicit manifest-backed transfer commands.
+- [ ] 05-06-PLAN.md - Ship one media-capture `:native_screen` escape hatch in generated iOS and Android shells.
+- [ ] 05-07-PLAN.md - Wire explicit transfer command execution and native-capture handoff into generated shells.
+- [ ] 05-08-PLAN.md - Land passing example-host and generated-host proof lanes with deterministic CI.
+- [ ] 05-09-PLAN.md - Publish canonical doctor and support-matrix truth from the passing proof posture.
+- [ ] 05-10-PLAN.md - Refresh adopter guides from the final proof-backed Phase 5 contract.
 
 ## Progress
 
@@ -112,4 +125,4 @@ Plans:
 | 2. Manifest Truth And Compatibility | 4/4 | Complete | 2026-05-14 |
 | 3. Native Shell Boot And Bounded Bridge | 5/6 | In progress | - |
 | 4. Honest Offline Contract | 4/4 | Complete | 2026-05-16 |
-| 5. Packs, Native Escape, And Proof Lanes | 0/TBD | Not started | - |
+| 5. Packs, Native Escape, And Proof Lanes | 2/10 | In progress | - |
