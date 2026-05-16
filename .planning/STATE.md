@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 5 of 5 in progress (Packs, Native Escape, And Proof Lanes)
-Plan: 2 of 10 in current phase
-Status: Phase 5 execution is underway; manifest-owned pack registry plus typed pack lifecycle and fail-closed activation gating are landed, while generated-shell pack runtime surfaces, transfer seams, native escape hatch wiring, and proof lanes remain ahead
-Last activity: 2026-05-17 — Completed Phase 5 plan 05-02 verification with `mix test test/crosswake/packs/contracts_test.exs test/crosswake/packs/runtime_test.exs test/crosswake/compatibility/compatibility_test.exs test/crosswake/shell/activation_test.exs`
+Plan: 3 of 10 in current phase
+Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, and manifest-owned route-local transfer seam truth are landed, while generated-shell pack runtime surfaces, transfer command exposure, native escape hatch wiring, and proof lanes remain ahead
+Last activity: 2026-05-17 — Completed Phase 5 plan 05-04 verification with `mix test test/crosswake/policy/schema_test.exs test/crosswake/policy/route_test.exs test/crosswake/manifest/manifest_test.exs test/crosswake/manifest/validator_test.exs test/crosswake/transfer/contracts_test.exs`
 
-Progress: [█████████▓] 94%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -54,6 +54,8 @@ Recent decisions affecting current work:
 - Phase 5 pack lifecycle remains intentionally narrow: install, verify, availability, stale, invalidation, and failure semantics only, without widening into generic asset management.
 - Pack activation now accepts both legacy installed-version strings and typed inventory records so generated shell work can adopt lifecycle truth incrementally.
 - Pack lifecycle denials continue to reuse `pack_incompatible` instead of adding a second pack-specific failure vocabulary.
+- Transfer seams now stay route-local and semantic, and the manifest owns their typed declaration truth before any bridge command or shell execution is added.
+- Phase 5 transfer work intentionally stops at declaration and manifest truth in 05-04; command exposure and native execution stay deferred to later plans.
 
 ### Pending Todos
 
@@ -68,6 +70,7 @@ None yet.
 - Plan 03-05 bounded bridge code, templates, guide, and tests landed.
 - Plan 03-06 doctor/docs/support guidance landed and now blocks shell support claims until both real proof hooks pass.
 - Phase 5 still needs a strict first native escape-hatch choice to avoid broad adapter creep as generated-shell and transfer work proceed.
+- Transfer declaration truth is landed, but 05-05 and 05-07 still need to expose and execute those seams without widening into generic container file handling.
 - Generated iOS shell proof still depends on the local Xcode/CoreSimulator install: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
 - Generated Android shell proof still depends on host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 
@@ -81,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-17
-Stopped at: Completed 05-02; next work is 05-03 generated required-pack runtime surfaces while Phase 3 host-environment proof blockers remain unchanged
+Stopped at: Completed 05-04; next work is 05-03 generated required-pack runtime surfaces plus 05-05 manifest-backed transfer command allowlisting while Phase 3 host-environment proof blockers remain unchanged
 Resume file: None
