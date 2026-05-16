@@ -5,34 +5,65 @@ defmodule Crosswake.Bridge.ContractTest do
   alias Crosswake.Bridge.Denial
   alias Crosswake.Shell.Denial, as: ShellDenial
 
+  test "bridge contract exposes only the explicit bounded transfer command vocabulary" do
+    assert Contract.commands() == [
+             "app.info.get",
+             "haptics.impact",
+             "files.pick",
+             "transfer.download",
+             "transfer.export",
+             "transfer.import",
+             "transfer.upload.prepare"
+           ]
+
+    assert Contract.command_supported?("transfer.download")
+    assert Contract.command_supported?("transfer.export")
+    assert Contract.command_supported?("transfer.import")
+    assert Contract.command_supported?("transfer.upload.prepare")
+
+    refute Contract.command_supported?("browser.open")
+    refute Contract.command_supported?("share.sheet.present")
+    refute Contract.command_supported?("transfer.url.open")
+  end
+
   test "bridge requests carry the typed route, origin, active-route, version, and correlation fields" do
     request =
       Contract.new_request(
-        command: "app.info.get",
-        capability: "app.info.get",
-        route_id: "dashboard",
-        active_route_id: "dashboard",
+        command: "transfer.upload.prepare",
+        capability: "transfer.upload.prepare",
+        route_id: "camera",
+        active_route_id: "camera",
         origin: "https://example.crosswake.invalid",
         native_runtime_version: "1.0.0",
         correlation_id: "req-123",
-        capabilities: %{"app.info.get" => "1.0.0"},
+        capabilities: %{"transfer.upload.prepare" => "1.0.0"},
         installed_packs: %{"shell.chrome" => "1.0.0"},
-        payload: %{"include" => ["version"]}
+        payload: %{
+          "transfer_id" => "capture_upload",
+          "intent" => "upload",
+          "source" => "native_capture",
+          "verification" => "required"
+        }
       )
 
     assert Contract.to_map(request) == %{
              "protocol" => "crosswake.bridge",
              "version" => "1.0.0",
-             "command" => "app.info.get",
-             "capability" => "app.info.get",
-             "route_id" => "dashboard",
-             "active_route_id" => "dashboard",
+             "command" => "transfer.upload.prepare",
+             "capability" => "transfer.upload.prepare",
+             "route_id" => "camera",
+             "active_route_id" => "camera",
              "origin" => "https://example.crosswake.invalid",
              "native_runtime_version" => "1.0.0",
              "correlation_id" => "req-123",
-             "capabilities" => %{"app.info.get" => "1.0.0"},
+             "capabilities" => %{"transfer.upload.prepare" => "1.0.0"},
              "installed_packs" => %{"shell.chrome" => "1.0.0"},
-             "payload" => %{"include" => ["version"]}
+             "payload" => %{
+               "transfer_id" => "capture_upload",
+               "intent" => "upload",
+               "source" => "native_capture",
+               "verification" => "required"
+             }
            }
   end
 
@@ -80,5 +111,11 @@ defmodule Crosswake.Bridge.ContractTest do
                }
              }
            }
+  end
+
+  test "bridge contract stays request reply only and does not claim platform handlers" do
+    refute Contract.command_supported?("ios.transfer.upload.prepare")
+    refute Contract.command_supported?("android.transfer.upload.prepare")
+    refute Contract.command_supported?("native.transfer.execute")
   end
 end

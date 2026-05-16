@@ -8,7 +8,15 @@ defmodule Crosswake.Bridge.Contract do
 
   @protocol "crosswake.bridge"
   @version "1.0.0"
-  @commands ~w(app.info.get haptics.impact files.pick)
+  @commands ~w(
+    app.info.get
+    haptics.impact
+    files.pick
+    transfer.download
+    transfer.export
+    transfer.import
+    transfer.upload.prepare
+  )
 
   defmodule Request do
     @moduledoc false
