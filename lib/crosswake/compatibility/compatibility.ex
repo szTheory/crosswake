@@ -9,6 +9,7 @@ defmodule Crosswake.Compatibility do
   alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
+  alias Crosswake.Packs.Runtime, as: PackRuntime
 
   defmodule Target do
     @moduledoc false
@@ -32,7 +33,7 @@ defmodule Crosswake.Compatibility do
             active_route_id: String.t() | nil,
             manifest_source: :bundled | :cached | :remote,
             capabilities: %{optional(String.t()) => String.t()},
-            packs: %{optional(String.t()) => String.t()}
+            packs: %{optional(String.t()) => term()}
           }
   end
 
@@ -334,9 +335,9 @@ defmodule Crosswake.Compatibility do
   defp validate_packs(errors, %RouteEntry{} = route, %Target{} = target) do
     Enum.reduce(route.packs, errors, fn pack_requirement, acc ->
       {pack_id, required_version} = parse_pack_requirement(pack_requirement)
-      available_version = Map.get(target.packs, pack_id)
+      lifecycle = PackRuntime.lifecycle(pack_requirement, Map.get(target.packs, pack_id))
 
-      if compatible_pack?(available_version, required_version) do
+      if PackRuntime.available?(lifecycle) do
         acc
       else
         [
@@ -344,9 +345,9 @@ defmodule Crosswake.Compatibility do
             :pack_version,
             route.id,
             required_version || "present",
-            available_version,
-            pack_message(pack_id, required_version, available_version),
-            pack_hint(pack_id, required_version),
+            lifecycle_available_value(lifecycle),
+            pack_message(pack_id, required_version, lifecycle),
+            pack_hint(pack_id, required_version, lifecycle),
             pack_id
           )
           | acc
@@ -609,30 +610,45 @@ defmodule Crosswake.Compatibility do
     end
   end
 
-  defp compatible_pack?(nil, _required_version), do: false
-  defp compatible_pack?(available_version, nil), do: is_binary(available_version)
+  defp lifecycle_available_value(%{version: version}) when is_binary(version), do: version
+  defp lifecycle_available_value(%{state: state}), do: state
 
-  defp compatible_pack?(available_version, required_version),
-    do: compatible_version?(available_version, required_version)
-
-  defp pack_message(pack_id, nil, nil),
+  defp pack_message(pack_id, nil, %{state: :not_installed}),
     do: "route requires pack #{pack_id}, but it is not installed in the shell"
 
-  defp pack_message(pack_id, nil, available_version),
-    do: "route requires pack #{pack_id}, and the shell reports #{available_version}"
-
-  defp pack_message(pack_id, required_version, nil),
+  defp pack_message(pack_id, required_version, %{state: :not_installed}),
     do:
       "route requires pack #{pack_id} at #{required_version}, but it is not installed in the shell"
 
-  defp pack_message(pack_id, required_version, available_version),
+  defp pack_message(pack_id, required_version, %{state: :stale, version: available_version}),
     do:
       "route requires pack #{pack_id} at #{required_version}, but the shell exposes #{available_version}"
 
-  defp pack_hint(pack_id, nil),
+  defp pack_message(pack_id, required_version, %{state: :invalidating}),
+    do:
+      "route requires pack #{pack_id} at #{required_version}, but the shell is invalidating that pack"
+
+  defp pack_message(pack_id, required_version, %{state: :failed, failure: %{reason: :verification_missing}}),
+    do:
+      "route requires pack #{pack_id} at #{required_version}, but the shell has not verified the installed pack yet"
+
+  defp pack_message(pack_id, required_version, %{state: state}),
+    do:
+      "route requires pack #{pack_id} at #{required_version}, but the shell reports #{state}"
+
+  defp pack_hint(pack_id, nil, %{state: :not_installed}),
     do: "install pack #{pack_id} in the shell before activating the route"
 
-  defp pack_hint(pack_id, required_version),
+  defp pack_hint(pack_id, required_version, %{state: :stale}),
+    do: "install or update pack #{pack_id} to #{required_version} before activating the route"
+
+  defp pack_hint(pack_id, required_version, %{state: :invalidating}),
+    do: "wait for invalidation to finish, then reinstall pack #{pack_id} at #{required_version}"
+
+  defp pack_hint(pack_id, required_version, %{state: :failed}),
+    do: "verify or reinstall pack #{pack_id} at #{required_version} before activating the route"
+
+  defp pack_hint(pack_id, required_version, _lifecycle),
     do: "install or update pack #{pack_id} to #{required_version} before activating the route"
 
   defp base_details(finding) do
