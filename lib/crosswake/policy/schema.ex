@@ -23,6 +23,14 @@ defmodule Crosswake.Policy.Schema do
               default: :unavailable,
               type_spec: quote(do: :unavailable | :cached_read_only | :local_first)
             ],
+            cache_contract: [
+              type: {:custom, __MODULE__, :validate_identifier, []},
+              type_spec: quote(do: String.t() | nil)
+            ],
+            island_contract: [
+              type: {:custom, __MODULE__, :validate_identifier, []},
+              type_spec: quote(do: String.t() | nil)
+            ],
             capabilities: [
               type: {:list, {:custom, __MODULE__, :validate_identifier, []}},
               default: [],
@@ -51,6 +59,8 @@ defmodule Crosswake.Policy.Schema do
           id: String.t(),
           runtime: runtime(),
           offline: offline(),
+          cache_contract: String.t() | nil,
+          island_contract: String.t() | nil,
           capabilities: [String.t()],
           packs: [String.t()],
           sync: [String.t()],

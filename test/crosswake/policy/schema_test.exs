@@ -25,31 +25,31 @@ defmodule Crosswake.Policy.SchemaTest do
     end
 
     test "accepts explicit cache and island contract identifiers" do
-      assert [
-               id: "library",
-               runtime: :live_view,
-               offline: :cached_read_only,
-               cache_contract: "lesson_library_v1"
-             ] =
-               Schema.validate!([
-                 id: "library",
-                 runtime: :live_view,
-                 offline: :cached_read_only,
-                 cache_contract: :lesson_library_v1
-               ])
+      validated =
+        Schema.validate!([
+          id: "library",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          cache_contract: :lesson_library_v1
+        ])
 
-      assert [
-               id: "study-session",
-               runtime: :offline_island,
-               offline: :local_first,
-               island_contract: "study_session_v1"
-             ] =
-               Schema.validate!([
-                 id: "study-session",
-                 runtime: :offline_island,
-                 offline: :local_first,
-                 island_contract: "study_session_v1"
-               ])
+      assert validated[:id] == "library"
+      assert validated[:runtime] == :live_view
+      assert validated[:offline] == :cached_read_only
+      assert validated[:cache_contract] == "lesson_library_v1"
+
+      validated =
+        Schema.validate!([
+          id: "study-session",
+          runtime: :offline_island,
+          offline: :local_first,
+          island_contract: "study_session_v1"
+        ])
+
+      assert validated[:id] == "study-session"
+      assert validated[:runtime] == :offline_island
+      assert validated[:offline] == :local_first
+      assert validated[:island_contract] == "study_session_v1"
     end
   end
 end

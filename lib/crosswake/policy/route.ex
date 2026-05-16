@@ -7,12 +7,24 @@ defmodule Crosswake.Policy.Route do
   alias Crosswake.Policy.Schema
 
   @enforce_keys [:id, :runtime]
-  defstruct [:id, :runtime, :security, offline: :unavailable, capabilities: [], packs: [], sync: []]
+  defstruct [
+    :id,
+    :runtime,
+    :security,
+    :cache_contract,
+    :island_contract,
+    offline: :unavailable,
+    capabilities: [],
+    packs: [],
+    sync: []
+  ]
 
   @type t :: %__MODULE__{
           id: String.t(),
           runtime: Schema.runtime(),
           offline: Schema.offline(),
+          cache_contract: String.t() | nil,
+          island_contract: String.t() | nil,
           capabilities: [String.t()],
           packs: [String.t()],
           sync: [String.t()],
@@ -25,7 +37,11 @@ defmodule Crosswake.Policy.Route do
     |> merged_options()
     |> Schema.validate()
     |> case do
-      {:ok, validated} -> {:ok, struct!(__MODULE__, validated)}
+      {:ok, validated} ->
+        with {:ok, validated} <- validate_offline_contracts(validated) do
+          {:ok, struct!(__MODULE__, validated)}
+        end
+
       {:error, error} -> {:error, error}
     end
   end
@@ -35,11 +51,51 @@ defmodule Crosswake.Policy.Route do
     options
     |> merged_options()
     |> Schema.validate!()
+    |> validate_offline_contracts!()
     |> then(&struct!(__MODULE__, &1))
   end
 
   defp merged_options(options) do
     Defaults.route()
     |> Keyword.merge(options)
+  end
+
+  defp validate_offline_contracts(validated) do
+    cond do
+      validated[:cache_contract] && validated[:offline] != :cached_read_only ->
+        {:error,
+         validation_error(
+           :cache_contract,
+           validated[:cache_contract],
+           "cache_contract requires offline :cached_read_only and does not belong on local-first routes"
+         )}
+
+      validated[:island_contract] &&
+          (validated[:runtime] != :offline_island or validated[:offline] != :local_first) ->
+        {:error,
+         validation_error(
+           :island_contract,
+           validated[:island_contract],
+           "island_contract requires runtime :offline_island with offline :local_first"
+         )}
+
+      true ->
+        {:ok, validated}
+    end
+  end
+
+  defp validate_offline_contracts!(validated) do
+    case validate_offline_contracts(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validation_error(key, value, message) do
+    %NimbleOptions.ValidationError{
+      key: key,
+      value: value,
+      message: message
+    }
   end
 end

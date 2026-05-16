@@ -37,6 +37,14 @@ defmodule Crosswake.TestSupport.CameraLive do
   end
 end
 
+defmodule Crosswake.TestSupport.StudySessionLive do
+  use Phoenix.LiveView
+
+  def render(assigns) do
+    ~H"<div>study session</div>"
+  end
+end
+
 defmodule Crosswake.TestSupport.RouterFixtures do
   defmodule ManagedRouter do
     use Crosswake.Router
@@ -47,7 +55,16 @@ defmodule Crosswake.TestSupport.RouterFixtures do
           crosswake: [id: "dashboard"]
 
         live "/library", Crosswake.TestSupport.LibraryLive,
-          crosswake: [id: "library", runtime: :offline_island, sync: [:journal]]
+          crosswake: [id: "library", cache_contract: :lesson_library_v1]
+
+        live "/study-session", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "study-session",
+            runtime: :offline_island,
+            offline: :local_first,
+            island_contract: :study_session_v1,
+            sync: [:study_reviews]
+          ]
 
         live "/camera", Crosswake.TestSupport.CameraLive, :capture,
           crosswake: [
@@ -72,15 +89,16 @@ defmodule Crosswake.TestSupport.RouterFixtures do
                          sync: ["catalog"],
                          security: :standard do
         get "/reader", Crosswake.TestSupport.PageController, :index,
-          crosswake: [id: "reader", runtime: :live_view]
+          crosswake: [id: "reader", runtime: :live_view, cache_contract: :reader_catalog_v1]
 
         crosswake_defaults runtime: :offline_island,
                            offline: :local_first,
                            capabilities: ["scanner"],
                            packs: ["offline.bundle"],
-                           sync: ["drafts"] do
-          live "/study", Crosswake.TestSupport.LibraryLive,
-            crosswake: [id: "study"]
+                           sync: ["drafts"],
+                           island_contract: :study_session_v1 do
+          live "/study-session", Crosswake.TestSupport.StudySessionLive,
+            crosswake: [id: "study-session"]
 
           live "/capture", Crosswake.TestSupport.CameraLive, :capture,
             crosswake: [
