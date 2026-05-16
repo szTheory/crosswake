@@ -176,6 +176,24 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt"
       )
 
+    android_pack_store =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/PackStore.kt"
+      )
+
+    android_required_pack_activity =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt"
+      )
+
+    android_required_pack_layout =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/res/layout/activity_required_pack.xml"
+      )
+
     android_route_unavailable =
       Path.join(
         target,
@@ -209,6 +227,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/assets/crosswake_manifest.json"
       )
 
+    android_pack_inventory =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/assets/pack_inventory.json"
+      )
+
     assert File.read!(android_readme) =~ "host-owned"
     assert File.read!(android_readme) =~ "scaffold once"
     refute File.read!(android_readme) =~ "Phase 1"
@@ -223,6 +247,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest) =~ "usesCleartextTraffic"
     assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
     assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
+    assert File.read!(android_manifest) =~ "RequiredPackActivity"
     assert File.read!(android_main_activity) =~ "ActivationCoordinator.bundled"
     assert File.read!(android_activation_coordinator) =~ "pack_incompatible"
     assert File.read!(android_activation_coordinator) =~ "inactive_route"
@@ -231,6 +256,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_bridge_channel) =~ "files.pick"
     assert File.read!(android_live_view_fragment) =~ "WebView"
     assert File.read!(android_live_view_fragment) =~ "Allowlisted"
+    assert File.read!(android_pack_store) =~ "enum class PackState"
+    assert File.read!(android_pack_store) =~ "INVALIDATING"
+    assert File.read!(android_pack_store) =~ "suspend fun installRequiredPack"
+    assert File.read!(android_pack_store) =~ "suspend fun invalidatePack"
+    assert File.read!(android_required_pack_activity) =~ "Install Required Pack"
+    assert File.read!(android_required_pack_activity) =~ "Update Pack"
+    assert File.read!(android_required_pack_activity) =~ "PackStore"
+    assert File.read!(android_required_pack_layout) =~ "required_pack_title"
+    assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
     assert File.read!(android_route_unavailable) =~ "Update app"
     assert File.read!(android_route_unavailable) =~ "Open safe fallback"
     assert File.read!(android_unit_tests) =~ "packIncompatibleDenialSurfacesUpdateAppAction"
@@ -239,6 +273,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(android_denial) =~ "\"reason\": \"pack_incompatible\""
+    assert File.read!(android_pack_inventory) =~ "\"integrity_status\": \"verified\""
+    assert File.read!(android_pack_inventory) =~ "\"verified_at\""
 
     verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
     assert File.read!(verify_script) =~ "xcodebuild"
