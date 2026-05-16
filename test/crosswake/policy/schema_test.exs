@@ -2,6 +2,7 @@ defmodule Crosswake.Policy.SchemaTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Policy.Schema
+  alias Crosswake.Transfer.Contracts
 
   describe "validate!/1" do
     test "requires both id and runtime" do
@@ -125,7 +126,9 @@ defmodule Crosswake.Policy.SchemaTest do
         ])
 
       assert validated[:transfers] == [
-               %{
+               %Contracts.Declaration{
+                 protocol: "crosswake.transfer",
+                 version: "1.0.0",
                  id: "lesson_import",
                  intent: :import,
                  direction: :inbound,
@@ -134,7 +137,9 @@ defmodule Crosswake.Policy.SchemaTest do
                  verification: :required,
                  media_types: ["application/pdf"]
                },
-               %{
+               %Contracts.Declaration{
+                 protocol: "crosswake.transfer",
+                 version: "1.0.0",
                  id: "lesson_export",
                  intent: :export,
                  direction: :outbound,

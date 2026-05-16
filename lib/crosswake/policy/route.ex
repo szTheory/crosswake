@@ -16,7 +16,8 @@ defmodule Crosswake.Policy.Route do
     offline: :unavailable,
     capabilities: [],
     packs: [],
-    sync: []
+    sync: [],
+    transfers: []
   ]
 
   @type t :: %__MODULE__{
@@ -28,6 +29,7 @@ defmodule Crosswake.Policy.Route do
           capabilities: [String.t()],
           packs: [Schema.pack_requirement()],
           sync: [String.t()],
+          transfers: [Crosswake.Transfer.Contracts.declaration()],
           security: Schema.security() | nil
         }
 
@@ -39,7 +41,8 @@ defmodule Crosswake.Policy.Route do
     |> case do
       {:ok, validated} ->
         with {:ok, validated} <- validate_offline_contracts(validated),
-             {:ok, validated} <- validate_pack_requirements(validated) do
+             {:ok, validated} <- validate_pack_requirements(validated),
+             {:ok, validated} <- validate_transfer_declarations(validated) do
           {:ok, struct!(__MODULE__, validated)}
         end
 
@@ -54,6 +57,7 @@ defmodule Crosswake.Policy.Route do
     |> Schema.validate!()
     |> validate_offline_contracts!()
     |> validate_pack_requirements!()
+    |> validate_transfer_declarations!()
     |> then(&struct!(__MODULE__, &1))
   end
 
@@ -113,6 +117,53 @@ defmodule Crosswake.Policy.Route do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end
+  end
+
+  defp validate_transfer_declarations(validated) do
+    transfer_ids = Enum.map(validated[:transfers], & &1.id)
+
+    cond do
+      Enum.uniq(transfer_ids) != transfer_ids ->
+        {:error,
+         validation_error(
+           :transfers,
+           validated[:transfers],
+           "transfer ids must be unique within a route declaration"
+         )}
+
+      true ->
+        validate_transfer_runtime(validated)
+    end
+  end
+
+  defp validate_transfer_runtime(validated) do
+    case Enum.find(validated[:transfers], &invalid_transfer_for_runtime?(&1, validated[:runtime])) do
+      nil ->
+        {:ok, validated}
+
+      transfer ->
+        {:error,
+         validation_error(
+           :transfers,
+           validated[:transfers],
+           transfer_runtime_message(transfer)
+         )}
+    end
+  end
+
+  defp validate_transfer_declarations!(validated) do
+    case validate_transfer_declarations(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp invalid_transfer_for_runtime?(transfer, runtime) do
+    transfer.source == :native_capture and runtime != :native_screen
+  end
+
+  defp transfer_runtime_message(%{source: :native_capture, id: id}) do
+    "transfer #{inspect(id)} native_capture source requires runtime :native_screen"
   end
 
   defp validation_error(key, value, message) do

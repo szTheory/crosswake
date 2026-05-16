@@ -58,7 +58,30 @@ defmodule Crosswake.TestSupport.RouterFixtures do
           crosswake: [
             id: "library",
             cache_contract: :lesson_library_v1,
-            packs: [[id: :lesson_library, version: "1.2.0", kind: :content]]
+            packs: [[id: :lesson_library, version: "1.2.0", kind: :content]],
+            transfers: [
+              [
+                id: :lesson_import,
+                intent: :import,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_export,
+                intent: :export,
+                destination: :user_visible_files,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
+                id: :lesson_download,
+                intent: :download,
+                destination: :app_sandbox,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ]
+            ]
           ]
 
         live "/study-session", Crosswake.TestSupport.StudySessionLive,
@@ -77,6 +100,15 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             runtime: :native_screen,
             capabilities: [:camera],
             packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+            transfers: [
+              [
+                id: :capture_upload,
+                intent: :upload,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              ]
+            ],
             security: :sensitive
           ]
       end
@@ -95,7 +127,20 @@ defmodule Crosswake.TestSupport.RouterFixtures do
                          sync: ["catalog"],
                          security: :standard do
         get "/reader", Crosswake.TestSupport.PageController, :index,
-          crosswake: [id: "reader", runtime: :live_view, cache_contract: :reader_catalog_v1]
+          crosswake: [
+            id: "reader",
+            runtime: :live_view,
+            cache_contract: :reader_catalog_v1,
+            transfers: [
+              [
+                id: :reader_export,
+                intent: :export,
+                destination: :user_visible_files,
+                verification: :required,
+                media_types: ["text/plain"]
+              ]
+            ]
+          ]
 
         live "/study-session", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
@@ -115,6 +160,15 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             offline: :local_first,
             capabilities: ["camera.capture"],
             packs: [[id: :capture_pack, version: "1.0.0", kind: :media]],
+            transfers: [
+              [
+                id: :capture_upload,
+                intent: :upload,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              ]
+            ],
             sync: ["uploads"],
             security: :sensitive
           ]

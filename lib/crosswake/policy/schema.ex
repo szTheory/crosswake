@@ -3,6 +3,8 @@ defmodule Crosswake.Policy.Schema do
   NimbleOptions schema for Phase 1 Crosswake route policy declarations.
   """
 
+  alias Crosswake.Transfer.Contracts
+
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
   @security_values [:standard, :sensitive]
@@ -47,6 +49,11 @@ defmodule Crosswake.Policy.Schema do
               default: [],
               type_spec: quote(do: [String.t()])
             ],
+            transfers: [
+              type: {:custom, __MODULE__, :validate_transfer_declarations, []},
+              default: [],
+              type_spec: quote(do: [Crosswake.Transfer.Contracts.declaration()])
+            ],
             security: [
               type: {:in, @security_values},
               type_spec: quote(do: :standard | :sensitive)
@@ -73,6 +80,7 @@ defmodule Crosswake.Policy.Schema do
           capabilities: [String.t()],
           packs: [pack_requirement()],
           sync: [String.t()],
+          transfers: [Contracts.declaration()],
           security: security()
         ]
 
@@ -115,6 +123,22 @@ defmodule Crosswake.Policy.Schema do
   end
 
   def validate_pack_requirements(_value), do: {:error, "expected a list of pack declarations"}
+
+  @spec validate_transfer_declarations(term()) ::
+          {:ok, [Contracts.declaration()]} | {:error, String.t()}
+  def validate_transfer_declarations(declarations) when is_list(declarations) do
+    declarations
+    |> Enum.with_index()
+    |> Enum.reduce_while({:ok, []}, fn {declaration, index}, {:ok, acc} ->
+      case Contracts.normalize_declaration(declaration) do
+        {:ok, normalized} -> {:cont, {:ok, acc ++ [normalized]}}
+        {:error, reason} -> {:halt, {:error, "invalid transfer declaration at position #{index}: #{reason}"}}
+      end
+    end)
+  end
+
+  def validate_transfer_declarations(_value),
+    do: {:error, "expected a list of transfer declarations"}
 
   defp validate_pack_requirement(requirement) when is_list(requirement) do
     requirement

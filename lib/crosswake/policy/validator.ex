@@ -44,6 +44,7 @@ defmodule Crosswake.Policy.Validator do
     |> validate_unique_list(route, :capabilities, route.capabilities)
     |> validate_unique_pack_ids(route)
     |> validate_unique_list(route, :sync, route.sync)
+    |> validate_unique_transfer_ids(route)
   end
 
   defp validate_runtime_offline(errors, %Route{runtime: :live_view, offline: :local_first}) do
@@ -151,6 +152,25 @@ defmodule Crosswake.Policy.Validator do
     end
   end
 
+  defp validate_unique_transfer_ids(errors, %Route{transfers: []}), do: errors
+
+  defp validate_unique_transfer_ids(errors, %Route{} = route) do
+    transfer_ids = Enum.map(route.transfers, & &1.id)
+
+    if Enum.uniq(transfer_ids) == transfer_ids do
+      errors
+    else
+      [
+        %{
+          key: :transfers,
+          message: "transfer ids must be unique for route #{inspect(route.id)}",
+          hint: "remove duplicate transfer ids so the route exposes one semantic seam per transfer declaration"
+        }
+        | errors
+      ]
+    end
+  end
+
   defp build_error(managed_route, route, attrs) do
     source = Map.get(managed_route, :source, %{})
 
@@ -168,6 +188,7 @@ defmodule Crosswake.Policy.Validator do
   end
 
   defp security_required?(%Route{} = route) do
-    route.offline != :unavailable or route.capabilities != [] or route.packs != [] or route.sync != []
+    route.offline != :unavailable or route.capabilities != [] or route.packs != [] or
+      route.sync != [] or route.transfers != []
   end
 end
