@@ -120,6 +120,38 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation rejects transfer seams that are missing required endpoint truth" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:transfers)], [
+        Types.new_transfer_seam(
+          id: "capture_upload",
+          intent: :upload,
+          direction: :inbound,
+          verification: :required,
+          media_types: ["image/*"]
+        )
+      ])
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             String.contains?(error.message, "transfer seam \"capture_upload\" is invalid")
+           end)
+  end
+
+  test "manifest validation rejects route runtime drift for native-capture transfer seams" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:runtime)], :live_view)
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             String.contains?(error.message, "native_capture source requires route runtime :native_screen")
+           end)
+  end
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",
@@ -143,6 +175,16 @@ defmodule Crosswake.Manifest.ValidatorTest do
             offline: :unavailable,
             capabilities: ["camera"],
             packs: ["camera_capture_assets@1.0.0"],
+            transfers: [
+              Types.new_transfer_seam(
+                id: "capture_upload",
+                intent: :upload,
+                direction: :inbound,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              )
+            ],
             security: :sensitive,
             allowlisted_origins: [Types.default_origin()]
           )

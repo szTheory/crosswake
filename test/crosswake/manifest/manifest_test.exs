@@ -83,4 +83,39 @@ defmodule Crosswake.ManifestTest do
     assert manifest.routes["study-session"].packs == ["study_session_media@3.0.0"]
     assert manifest.routes["camera"].packs == ["camera_capture_assets@1.0.0"]
   end
+
+  test "manifest routes expose typed versioned transfer seam truth per route" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    library_transfers = manifest.routes["library"].transfers
+    camera_transfers = manifest.routes["camera"].transfers
+
+    assert Enum.map(library_transfers, & &1.id) == [
+             "lesson_import",
+             "lesson_export",
+             "lesson_download"
+           ]
+
+    assert Enum.map(library_transfers, & &1.protocol) == [
+             "crosswake.transfer",
+             "crosswake.transfer",
+             "crosswake.transfer"
+           ]
+
+    assert Enum.map(library_transfers, & &1.version) == ["1.0.0", "1.0.0", "1.0.0"]
+    assert Enum.map(library_transfers, & &1.intent) == [:import, :export, :download]
+    assert Enum.map(library_transfers, & &1.states) ==
+             List.duplicate(Crosswake.Transfer.Contracts.transfer_states(), 3)
+
+    assert camera_transfers == [
+             Types.new_transfer_seam(
+               id: "capture_upload",
+               intent: :upload,
+               direction: :inbound,
+               source: :native_capture,
+               verification: :required,
+               media_types: ["image/*"]
+             )
+           ]
+  end
 end
