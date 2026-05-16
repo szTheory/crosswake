@@ -4,6 +4,16 @@ defmodule Crosswake.DoctorTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Doctor
+
+  @allowed_bridge_commands [
+    "app.info.get",
+    "files.pick",
+    "haptics.impact",
+    "transfer.download",
+    "transfer.export",
+    "transfer.import",
+    "transfer.upload.prepare"
+  ]
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
   alias Crosswake.Doctor.JSONFormatter
@@ -73,7 +83,7 @@ defmodule Crosswake.DoctorTest do
     assert report.shells.android.route_unavailable.ok?
     assert report.shells.ios.proof.status == :verification_required
     assert report.shells.android.proof.status == :verification_required
-    assert report.bridge.allowed_commands == ["app.info.get", "files.pick", "haptics.impact"]
+    assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
     assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
     assert report.offline.telemetry.metadata_keys ==
@@ -140,7 +150,7 @@ defmodule Crosswake.DoctorTest do
     assert decoded["support"]["status"] == "supported"
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
-    assert decoded["bridge"]["allowed_commands"] == ["app.info.get", "files.pick", "haptics.impact"]
+    assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
     assert decoded["offline"]["status"] == "supported"
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
     assert "conflict_requires_attention" in decoded["offline"]["states"]
@@ -178,7 +188,7 @@ defmodule Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/BridgeChannel.swift"),
-      "app.info.get\nhaptics.impact\nfiles.pick\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(
@@ -224,7 +234,7 @@ defmodule Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"),
-      "app.info.get\nhaptics.impact\nfiles.pick\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(

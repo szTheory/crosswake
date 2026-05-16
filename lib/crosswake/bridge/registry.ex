@@ -6,11 +6,19 @@ defmodule Crosswake.Bridge.Registry do
   alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
+  alias Crosswake.Manifest.Types.TransferSeam
 
-  @phase_3_commands %{
+  @capability_commands %{
     "app.info.get" => "app.info.get",
     "haptics.impact" => "haptics.impact",
     "files.pick" => "files.pick"
+  }
+
+  @transfer_commands %{
+    "transfer.import" => :import,
+    "transfer.export" => :export,
+    "transfer.download" => :download,
+    "transfer.upload.prepare" => :upload
   }
 
   defmodule Entry do
@@ -30,16 +38,19 @@ defmodule Crosswake.Bridge.Registry do
 
   @spec allowed_commands() :: [String.t()]
   def allowed_commands do
-    @phase_3_commands
-    |> Map.keys()
+    (@capability_commands |> Map.keys()) ++ (@transfer_commands |> Map.keys())
     |> Enum.sort()
   end
 
   @spec command_capability(String.t()) :: String.t() | nil
-  def command_capability(command), do: Map.get(@phase_3_commands, command)
+  def command_capability(command) do
+    Map.get(@capability_commands, command) || if(Map.has_key?(@transfer_commands, command), do: command)
+  end
 
   @spec command_supported?(String.t()) :: boolean()
-  def command_supported?(command), do: Map.has_key?(@phase_3_commands, command)
+  def command_supported?(command) do
+    Map.has_key?(@capability_commands, command) or Map.has_key?(@transfer_commands, command)
+  end
 
   @spec lookup(Root.t(), String.t(), String.t()) ::
           {:ok, Entry.t()}
@@ -47,9 +58,28 @@ defmodule Crosswake.Bridge.Registry do
   def lookup(%Root{} = manifest, route_id, command)
       when is_binary(route_id) and is_binary(command) do
     with true <- command_supported?(command) || {:error, :unsupported_command},
-         %RouteEntry{} = route <- Map.get(manifest.routes, route_id) || {:error, :inactive_route},
-         capability_id when is_binary(capability_id) <- command_capability(command),
-         true <- capability_id in route.capabilities || {:error, :undeclared_capability},
+         %RouteEntry{} = route <- Map.get(manifest.routes, route_id) || {:error, :inactive_route} do
+      lookup_entry(manifest, route, command)
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp lookup_entry(manifest, route, command) do
+    cond do
+      capability_id = Map.get(@capability_commands, command) ->
+        capability_entry(manifest, route, command, capability_id)
+
+      transfer_intent = Map.get(@transfer_commands, command) ->
+        transfer_entry(route, command, transfer_intent)
+
+      true ->
+        {:error, :unsupported_command}
+    end
+  end
+
+  defp capability_entry(manifest, route, command, capability_id) do
+    with true <- capability_id in route.capabilities || {:error, :undeclared_capability},
          %Capability{} = capability <-
            Map.get(manifest.capability_registry, capability_id) ||
              {:error, :undeclared_capability} do
@@ -58,7 +88,7 @@ defmodule Crosswake.Bridge.Registry do
          command: command,
          capability: capability_id,
          version: capability.version,
-         route_id: route_id,
+         route_id: route.id,
          allowlisted_origins: route.allowlisted_origins
        }}
     else
@@ -67,4 +97,23 @@ defmodule Crosswake.Bridge.Registry do
       nil -> {:error, :undeclared_capability}
     end
   end
+
+  defp transfer_entry(route, command, transfer_intent) do
+    case Enum.find(route.transfers, &match_transfer_command?(&1, transfer_intent)) do
+      %TransferSeam{} = transfer ->
+        {:ok,
+         %Entry{
+           command: command,
+           capability: command,
+           version: transfer.version,
+           route_id: route.id,
+           allowlisted_origins: route.allowlisted_origins
+         }}
+
+      nil ->
+        {:error, :undeclared_capability}
+    end
+  end
+
+  defp match_transfer_command?(%TransferSeam{intent: intent}, transfer_intent), do: intent == transfer_intent
 end

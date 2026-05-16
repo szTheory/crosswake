@@ -5,6 +5,16 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
   import ExUnit.CaptureIO
 
+  @allowed_bridge_commands [
+    "app.info.get",
+    "files.pick",
+    "haptics.impact",
+    "transfer.download",
+    "transfer.export",
+    "transfer.import",
+    "transfer.upload.prepare"
+  ]
+
   @task "crosswake.doctor"
 
   setup do
@@ -111,7 +121,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["support"]["status"] == "supported"
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
-    assert decoded["bridge"]["allowed_commands"] == ["app.info.get", "files.pick", "haptics.impact"]
+    assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
     assert decoded["offline"]["status"] == "supported"
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
 
@@ -165,7 +175,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/BridgeChannel.swift"),
-      "app.info.get\nhaptics.impact\nfiles.pick\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(
@@ -211,7 +221,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"),
-      "app.info.get\nhaptics.impact\nfiles.pick\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(
