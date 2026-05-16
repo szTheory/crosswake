@@ -7,6 +7,8 @@ defmodule Crosswake.DoctorTest do
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
   alias Crosswake.Doctor.JSONFormatter
+  alias Crosswake.Offline.Status
+  alias Crosswake.Offline.Telemetry
 
   setup do
     target =
@@ -72,6 +74,12 @@ defmodule Crosswake.DoctorTest do
     assert report.shells.ios.proof.status == :verification_required
     assert report.shells.android.proof.status == :verification_required
     assert report.bridge.allowed_commands == ["app.info.get", "files.pick", "haptics.impact"]
+    assert report.offline.status == :supported
+    assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
+    assert report.offline.telemetry.metadata_keys ==
+             Enum.map(Telemetry.metadata_keys(), &Atom.to_string/1)
+    assert report.offline.routes["library"]["offline"] == "cached_read_only"
+    assert report.offline.routes["study-session"]["sync_seam"] == "study_reviews"
     assert report.bridge.denial_reasons |> Enum.sort() ==
              Enum.sort([
                "compatibility_mismatch",
@@ -124,6 +132,8 @@ defmodule Crosswake.DoctorTest do
     assert human =~ "support posture: supported"
     assert human =~ "route unavailable=yes"
     assert human =~ "bridge posture: crosswake.bridge@1.0.0"
+    assert human =~ "offline posture: supported"
+    assert human =~ "queued_for_replay"
     assert human =~ "proof=supported"
 
     assert decoded["status"] == "ok"
@@ -131,6 +141,9 @@ defmodule Crosswake.DoctorTest do
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == ["app.info.get", "files.pick", "haptics.impact"]
+    assert decoded["offline"]["status"] == "supported"
+    assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
+    assert "conflict_requires_attention" in decoded["offline"]["states"]
     assert Enum.any?(decoded["findings"], &(&1["severity"] == "advisory"))
   end
 

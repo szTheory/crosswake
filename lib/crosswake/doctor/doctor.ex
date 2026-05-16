@@ -8,6 +8,8 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Bridge.Registry
   alias Crosswake.Doctor.Check
   alias Crosswake.Manifest
+  alias Crosswake.Offline.Status, as: OfflineStatus
+  alias Crosswake.Offline.Telemetry, as: OfflineTelemetry
   alias Crosswake.Policy.Compiler
   alias Crosswake.Policy.Diagnostic
   alias Crosswake.Shell.Denial
@@ -22,6 +24,7 @@ defmodule Crosswake.Doctor do
       :manifest,
       shells: %{},
       bridge: %{},
+      offline: %{},
       support: %{},
       findings: []
     ]
@@ -32,6 +35,7 @@ defmodule Crosswake.Doctor do
             manifest: Crosswake.Manifest.Types.Root.t() | nil,
             shells: map(),
             bridge: map(),
+            offline: map(),
             support: map(),
             findings: [Check.t()]
           }
@@ -111,7 +115,8 @@ defmodule Crosswake.Doctor do
     {manifest, findings} = compile_and_validate_manifest(findings, opts)
 
     {shells, bridge, support, phase_3_findings} = phase_3_posture(manifest, cwd, opts)
-    findings = findings ++ phase_3_findings
+    {offline, phase_4_findings} = phase_4_posture(manifest)
+    findings = findings ++ phase_3_findings ++ phase_4_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -119,6 +124,7 @@ defmodule Crosswake.Doctor do
       manifest: manifest,
       shells: shells,
       bridge: bridge,
+      offline: offline,
       support: support,
       findings: findings
     }
@@ -340,6 +346,79 @@ defmodule Crosswake.Doctor do
         support_posture_findings(support, shells)
 
     {shells, bridge, support, findings}
+  end
+
+  defp phase_4_posture(nil), do: {%{}, []}
+
+  defp phase_4_posture(manifest) do
+    offline_routes =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(fn route ->
+        route.cache_contract != nil or route.island_contract != nil
+      end)
+      |> Enum.map(fn route ->
+        {route.id,
+         %{
+           runtime: route.runtime,
+           offline: route.offline,
+           sync_seam:
+             cond do
+               route.island_contract != nil -> route.island_contract.sync_seam
+               route.sync != [] -> List.first(route.sync)
+               true -> nil
+             end,
+           cache_contract: route.cache_contract != nil,
+           island_contract: route.island_contract != nil
+         }}
+      end)
+      |> Map.new()
+
+    status_vocabulary = Enum.map(OfflineStatus.states(), &Atom.to_string/1)
+    telemetry_keys = Enum.map(OfflineTelemetry.metadata_keys(), &Atom.to_string/1)
+    terminal_outcomes = Enum.map(OfflineTelemetry.terminal_outcomes(), &Atom.to_string/1)
+
+    coherent? =
+      Enum.all?(offline_routes, fn {_route_id, route} ->
+        case route.offline do
+          :cached_read_only -> route.cache_contract and not route.island_contract
+          :local_first -> route.island_contract
+          :unavailable -> true
+        end
+      end)
+
+    offline = %{
+      status: if(coherent?, do: :supported, else: :incomplete),
+      states: status_vocabulary,
+      telemetry: %{
+        metadata_keys: telemetry_keys,
+        terminal_outcomes: terminal_outcomes
+      },
+      routes: stringify_offline_routes(offline_routes)
+    }
+
+    findings = [
+      check(
+        if(coherent?, do: :advisory, else: :error),
+        if(coherent?, do: "offline_posture_ready", else: "offline_posture_incomplete"),
+        "offline_posture",
+        "offline posture exposes route-local cached, saved locally, queued for replay, replay failed, and conflict requires attention vocabulary",
+        if(coherent?,
+          do:
+            "doctor and JSON output now describe explicit cached-route and study-session island posture from typed contract truth",
+          else: "restore explicit cache and island contract truth for every offline route"
+        ),
+        %{
+          status: Atom.to_string(offline.status),
+          states: status_vocabulary,
+          telemetry_keys: telemetry_keys,
+          terminal_outcomes: terminal_outcomes,
+          routes: offline.routes
+        }
+      )
+    ]
+
+    {offline, findings}
   end
 
   defp shell_posture(platform, cwd, opts) do
@@ -746,6 +825,19 @@ defmodule Crosswake.Doctor do
   defp stringify_keys(map) do
     Enum.into(map, %{}, fn {key, value} ->
       {Atom.to_string(key), proof_label(value)}
+    end)
+  end
+
+  defp stringify_offline_routes(routes) do
+    Enum.into(routes, %{}, fn {route_id, route} ->
+      {route_id,
+       %{
+         "runtime" => Atom.to_string(route.runtime),
+         "offline" => Atom.to_string(route.offline),
+         "sync_seam" => route.sync_seam,
+         "cache_contract" => route.cache_contract,
+         "island_contract" => route.island_contract
+       }}
     end)
   end
 

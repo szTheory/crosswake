@@ -77,6 +77,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert output =~ "Crosswake doctor report"
     assert output =~ "support posture: verification_required"
     assert output =~ "route unavailable=yes"
+    assert output =~ "offline posture: supported"
     assert output =~ "proof=verification required"
   end
 
@@ -111,6 +112,8 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == ["app.info.get", "files.pick", "haptics.impact"]
+    assert decoded["offline"]["status"] == "supported"
+    assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
 
     assert File.read!(ios_proof) =~ "ios proof passed"
     assert File.read!(android_proof) =~ "android proof passed"

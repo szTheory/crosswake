@@ -12,6 +12,7 @@ defmodule Crosswake.Doctor.JSONFormatter do
       support: format_support(Map.get(report, :support, %{})),
       shells: format_shells(Map.get(report, :shells, %{})),
       bridge: format_bridge(Map.get(report, :bridge, %{})),
+      offline: format_offline(Map.get(report, :offline, %{})),
       findings: Enum.map(Map.get(report, :findings, []), &check_to_map/1)
     }
 
@@ -69,6 +70,17 @@ defmodule Crosswake.Doctor.JSONFormatter do
   end
 
   defp format_bridge(_bridge), do: %{}
+
+  defp format_offline(%{status: status, states: states, telemetry: telemetry, routes: routes}) do
+    %{
+      status: Atom.to_string(status),
+      states: states,
+      telemetry: telemetry,
+      routes: routes
+    }
+  end
+
+  defp format_offline(_offline), do: %{}
 
   defp artifact_state(inspection) do
     %{

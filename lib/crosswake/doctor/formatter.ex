@@ -16,6 +16,7 @@ defmodule Crosswake.Doctor.Formatter do
       format_support(Map.get(report, :support, %{})),
       format_shells(Map.get(report, :shells, %{})),
       format_bridge(Map.get(report, :bridge, %{})),
+      format_offline(Map.get(report, :offline, %{})),
       format_findings(findings)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -63,6 +64,18 @@ defmodule Crosswake.Doctor.Formatter do
   end
 
   defp format_bridge(_bridge), do: nil
+
+  defp format_offline(%{status: status, states: states, routes: routes}) do
+    route_ids =
+      routes
+      |> Map.keys()
+      |> Enum.sort()
+      |> Enum.join(", ")
+
+    "offline posture: #{status} states=[#{Enum.join(states, ", ")}] routes=[#{route_ids}]"
+  end
+
+  defp format_offline(_offline), do: nil
 
   defp format_findings(findings) do
     findings
