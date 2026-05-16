@@ -28,6 +28,27 @@ private struct RootSceneView: View {
         case .booting:
             ProgressView("Resolving route from bundled manifest truth…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case let .requiredPack(requiredPack):
+            RequiredPackView(
+                routeID: requiredPack.routeID,
+                runtimeLabel: requiredPack.runtimeLabel,
+                status: requiredPack.status,
+                onInstall: {
+                    Task {
+                        await coordinator.installRequiredPack(requiredPack)
+                    }
+                },
+                onRetry: {
+                    Task {
+                        await coordinator.retryRequiredPack(requiredPack)
+                    }
+                },
+                onInvalidate: {
+                    Task {
+                        await coordinator.invalidateRequiredPack(requiredPack)
+                    }
+                }
+            )
         case let .liveView(session):
             LiveViewContainerView(session: session) { denial in
                 coordinator.presentNavigationDenial(denial)

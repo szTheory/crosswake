@@ -136,8 +136,15 @@ struct LiveViewSession: Equatable {
     let allowedOrigin: URL
 }
 
+struct RequiredPackPresentation: Equatable {
+    let routeID: String
+    let runtimeLabel: String
+    let status: RequiredPackStatus
+}
+
 enum ShellPresentation: Equatable {
     case booting
+    case requiredPack(RequiredPackPresentation)
     case liveView(LiveViewSession)
     case denied(RouteDenialPresentation)
 }
@@ -148,22 +155,28 @@ final class ActivationCoordinator: ObservableObject {
 
     private let manifestLoader: () throws -> ShellManifest
     private let requestLoader: () throws -> ActivationRequest
+    private let packStore: PackStore
     private var hasBootstrapped = false
     private var lastRequest: ActivationRequest?
     private var cachedManifest: ShellManifest?
 
     init(
         manifestLoader: @escaping () throws -> ShellManifest,
-        requestLoader: @escaping () throws -> ActivationRequest
+        requestLoader: @escaping () throws -> ActivationRequest,
+        packStore: PackStore
     ) {
         self.manifestLoader = manifestLoader
         self.requestLoader = requestLoader
+        self.packStore = packStore
     }
 
     static func bundled(bundle: Bundle = .main) -> ActivationCoordinator {
+        let store = (try? PackStore.bundled(bundle: bundle)) ?? PackStore(requiredVersions: [:], inventory: [])
+
         ActivationCoordinator(
             manifestLoader: { try Self.decode("crosswake_manifest", bundle: bundle) },
-            requestLoader: { try Self.decode("route_activation", bundle: bundle) }
+            requestLoader: { try Self.decode("route_activation", bundle: bundle) },
+            packStore: store
         )
     }
 
@@ -216,6 +229,21 @@ final class ActivationCoordinator: ObservableObject {
         presentation = .denied(denial)
     }
 
+    func installRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+        await packStore.installRequiredPack(requiredPack.status)
+        reactivateLastRequest()
+    }
+
+    func retryRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+        await packStore.retry(requiredPack.status)
+        reactivateLastRequest()
+    }
+
+    func invalidateRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+        await packStore.invalidatePack(requiredPack.status)
+        reactivateLastRequest()
+    }
+
     func activate(_ request: ActivationRequest) {
         do {
             let manifest = try loadManifest()
@@ -260,16 +288,12 @@ final class ActivationCoordinator: ObservableObject {
             )
         }
 
-        let expectedPacks = requiredPacks(for: route)
-        if expectedPacks.contains(where: { request.installedPacks[$0.key] != $0.value }) {
-            return .denied(
-                denial(
-                    reason: .packIncompatible,
+        if let blockingPack = packStore.blockingStatus(for: route.packs) {
+            return .requiredPack(
+                RequiredPackPresentation(
                     routeID: route.id,
-                    manifest: manifest,
-                    message: "This route needs a compatible declared pack before activation.",
-                    hint: "Update app",
-                    actions: [.updateApp]
+                    runtimeLabel: "LiveView",
+                    status: blockingPack
                 )
             )
         }
@@ -340,6 +364,11 @@ final class ActivationCoordinator: ObservableObject {
         }
     }
 
+    private func reactivateLastRequest() {
+        guard let lastRequest else { return }
+        activate(lastRequest)
+    }
+
     private func denial(
         reason: RouteDenialReason,
         routeID: String?,
@@ -384,7 +413,7 @@ final class ActivationCoordinator: ObservableObject {
     }
 }
 
-private extension URL {
+extension URL {
     var crosswakeOrigin: String? {
         guard let scheme, let host else { return nil }
 

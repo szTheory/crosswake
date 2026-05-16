@@ -12,6 +12,17 @@ defmodule Crosswake.Shell.Fixtures do
 
   @declared_pack_requirements %{"shell.chrome" => "1.0.0"}
   @installed_packs %{"shell.chrome" => "1.0.0"}
+  @pack_inventory [
+    %{
+      "pack_id" => "shell.chrome",
+      "required_version" => "1.0.0",
+      "installed_version" => "1.0.0",
+      "bytes" => 24576,
+      "integrity_status" => "verified",
+      "verified_at" => "2026-05-17T09:00:00Z",
+      "status" => "available"
+    }
+  ]
   @capabilities %{"app.info.get" => "1.0.0"}
 
   @spec export(String.t()) :: %{optional(String.t()) => String.t()}
@@ -24,7 +35,8 @@ defmodule Crosswake.Shell.Fixtures do
       Path.join(fixture_root, "route_denial.json") => denial_json(),
       Path.join(fixture_root, "declared_pack_requirements.json") =>
         json!(@declared_pack_requirements),
-      Path.join(fixture_root, "installed_packs.json") => json!(@installed_packs)
+      Path.join(fixture_root, "installed_packs.json") => json!(@installed_packs),
+      Path.join(fixture_root, "pack_inventory.json") => json!(@pack_inventory)
     }
   end
 

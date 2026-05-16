@@ -247,7 +247,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
     android_verify_script = Path.join(File.cwd!(), "script/verify_generated_android_shell.sh")
     assert File.read!(android_verify_script) =~ "sdkmanager"
-    assert File.read!(android_verify_script) =~ "crosswakeApi34DebugAndroidTest"
+    assert File.read!(android_verify_script) =~ "connectedDebugAndroidTest"
     assert File.read!(android_verify_script) =~ "commandlinetools-mac-14742923_latest.zip"
   end
 
