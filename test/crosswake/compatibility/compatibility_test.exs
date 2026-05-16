@@ -6,6 +6,7 @@ defmodule Crosswake.CompatibilityTest do
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target
   alias Crosswake.Manifest.Types
+  alias Crosswake.Packs.Inventory
   alias Crosswake.Shell.Denial
   alias Crosswake.SupportMatrix
 
@@ -185,6 +186,70 @@ defmodule Crosswake.CompatibilityTest do
     denial = Compatibility.finding_to_denial(finding, route_id: "library")
 
     assert %Denial{reason: :pack_incompatible, route_id: "library"} = denial
+  end
+
+  test "route findings deny missing stale invalidated and unverified pack inventory through pack_incompatible posture" do
+    manifest = manifest_fixture()
+
+    states = [
+      %{},
+      %{
+        "camera.assets" =>
+          Inventory.record(
+            pack_id: "camera.assets",
+            required_version: "1.0.0",
+            installed_version: "0.9.0",
+            bytes: 2048,
+            integrity_status: :verified,
+            verified_at: ~U[2026-05-17 10:00:00Z]
+          )
+      },
+      %{
+        "camera.assets" =>
+          Inventory.record(
+            pack_id: "camera.assets",
+            required_version: "1.0.0",
+            installed_version: "1.0.0",
+            bytes: 2048,
+            integrity_status: :verified,
+            verified_at: ~U[2026-05-17 10:00:00Z],
+            status: :invalidating,
+            invalidation_reason: :manifest_replaced,
+            invalidated_at: ~U[2026-05-17 10:05:00Z],
+            last_known_state: %{state: :available, version: "1.0.0"}
+          )
+      },
+      %{
+        "camera.assets" =>
+          Inventory.record(
+            pack_id: "camera.assets",
+            required_version: "1.0.0",
+            installed_version: "1.0.0",
+            bytes: 2048,
+            integrity_status: :pending,
+            verified_at: nil
+          )
+      }
+    ]
+
+    for installed_packs <- states do
+      findings =
+        Compatibility.route_findings(
+          manifest,
+          "camera",
+          %Target{
+            manifest_schema_version: "1.0.0",
+            bridge_protocol_version: "1.0.0",
+            native_runtime_version: "1.0.0",
+            manifest_source: :bundled,
+            capabilities: %{"camera" => "1.0.0"},
+            packs: installed_packs,
+            origin: Types.default_origin()
+          }
+        )
+
+      assert Enum.any?(findings, &(&1.axis == :pack_version))
+    end
   end
 
   defp manifest_fixture do

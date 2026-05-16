@@ -2,6 +2,7 @@ defmodule Crosswake.Shell.ActivationTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Manifest.Types
+  alias Crosswake.Packs.Inventory
   alias Crosswake.Shell.Activation
   alias Crosswake.Shell.Activation.Decision
   alias Crosswake.Shell.Activation.Request
@@ -176,6 +177,84 @@ defmodule Crosswake.Shell.ActivationTest do
                "route_id" => "dashboard"
              }
            ]
+  end
+
+  test "activation stays fail closed until installed-pack inventory verifies as available and current" do
+    manifest =
+      Types.new_root(
+        crosswake_version: "0.1.0",
+        generated_at: "2026-05-17T00:00:00Z",
+        host: Types.new_host(),
+        compatibility: Types.new_compatibility(),
+        support_matrix: SupportMatrix.canonical(),
+        capability_registry: %{},
+        routes: %{
+          "library" =>
+            Types.new_route_entry(
+              id: "library",
+              path: "/library",
+              runtime: :live_view,
+              offline: :cached_read_only,
+              packs: ["library.bundle@1.0.0"],
+              allowlisted_origins: [Types.default_origin()]
+            )
+        }
+      )
+
+    allow_decision =
+      Activation.resolve(
+        manifest,
+        Activation.new_request(
+          route_id: "library",
+          source: :cold_start,
+          origin: Types.default_origin(),
+          manifest_source: :bundled,
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          correlation_id: "allow-library",
+          installed_packs: %{
+            "library.bundle" =>
+              Inventory.record(
+                pack_id: "library.bundle",
+                required_version: "1.0.0",
+                installed_version: "1.0.0",
+                bytes: 8192,
+                integrity_status: :verified,
+                verified_at: ~U[2026-05-17 10:00:00Z]
+              )
+          }
+        )
+      )
+
+    deny_decision =
+      Activation.resolve(
+        manifest,
+        Activation.new_request(
+          route_id: "library",
+          source: :cold_start,
+          origin: Types.default_origin(),
+          manifest_source: :bundled,
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          correlation_id: "deny-library",
+          installed_packs: %{
+            "library.bundle" =>
+              Inventory.record(
+                pack_id: "library.bundle",
+                required_version: "1.0.0",
+                installed_version: "1.0.0",
+                bytes: 8192,
+                integrity_status: :pending,
+                verified_at: nil
+              )
+          }
+        )
+      )
+
+    assert %Decision{status: :allow, route_id: "library"} = allow_decision
+
+    assert %Decision{status: :deny, route_id: "library", denial: %Denial{reason: :pack_incompatible}} =
+             deny_decision
   end
 
   defp manifest_fixture do
