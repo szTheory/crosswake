@@ -26,7 +26,7 @@ defmodule Crosswake.Policy.Route do
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
           capabilities: [String.t()],
-          packs: [String.t()],
+          packs: [Schema.pack_requirement()],
           sync: [String.t()],
           security: Schema.security() | nil
         }
@@ -38,7 +38,8 @@ defmodule Crosswake.Policy.Route do
     |> Schema.validate()
     |> case do
       {:ok, validated} ->
-        with {:ok, validated} <- validate_offline_contracts(validated) do
+        with {:ok, validated} <- validate_offline_contracts(validated),
+             {:ok, validated} <- validate_pack_requirements(validated) do
           {:ok, struct!(__MODULE__, validated)}
         end
 
@@ -52,6 +53,7 @@ defmodule Crosswake.Policy.Route do
     |> merged_options()
     |> Schema.validate!()
     |> validate_offline_contracts!()
+    |> validate_pack_requirements!()
     |> then(&struct!(__MODULE__, &1))
   end
 
@@ -86,6 +88,28 @@ defmodule Crosswake.Policy.Route do
 
   defp validate_offline_contracts!(validated) do
     case validate_offline_contracts(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validate_pack_requirements(validated) do
+    pack_ids = Enum.map(validated[:packs], & &1.id)
+
+    if Enum.uniq(pack_ids) == pack_ids do
+      {:ok, validated}
+    else
+      {:error,
+       validation_error(
+         :packs,
+         validated[:packs],
+         "pack ids must be unique within a route declaration"
+       )}
+    end
+  end
+
+  defp validate_pack_requirements!(validated) do
+    case validate_pack_requirements(validated) do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end

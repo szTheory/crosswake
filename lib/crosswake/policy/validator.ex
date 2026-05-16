@@ -42,7 +42,7 @@ defmodule Crosswake.Policy.Validator do
     |> validate_security(route)
     |> validate_capabilities(route)
     |> validate_unique_list(route, :capabilities, route.capabilities)
-    |> validate_unique_list(route, :packs, route.packs)
+    |> validate_unique_pack_ids(route)
     |> validate_unique_list(route, :sync, route.sync)
   end
 
@@ -126,6 +126,25 @@ defmodule Crosswake.Policy.Validator do
           key: key,
           message: "#{key} entries must be unique for route #{inspect(route.id)}",
           hint: "remove duplicate #{key} entries from the route policy"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_unique_pack_ids(errors, %Route{packs: []}), do: errors
+
+  defp validate_unique_pack_ids(errors, %Route{} = route) do
+    pack_ids = Enum.map(route.packs, & &1.id)
+
+    if Enum.uniq(pack_ids) == pack_ids do
+      errors
+    else
+      [
+        %{
+          key: :packs,
+          message: "pack ids must be unique for route #{inspect(route.id)}",
+          hint: "remove duplicate pack ids so the route points at one immutable version per pack"
         }
         | errors
       ]

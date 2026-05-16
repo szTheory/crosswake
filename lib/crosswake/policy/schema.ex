@@ -6,6 +6,7 @@ defmodule Crosswake.Policy.Schema do
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
   @security_values [:standard, :sensitive]
+  @pack_kind_values [:content, :media]
 
   @schema NimbleOptions.new!([
             id: [
@@ -37,9 +38,9 @@ defmodule Crosswake.Policy.Schema do
               type_spec: quote(do: [String.t()])
             ],
             packs: [
-              type: {:list, {:custom, __MODULE__, :validate_identifier, []}},
+              type: {:custom, __MODULE__, :validate_pack_requirements, []},
               default: [],
-              type_spec: quote(do: [String.t()])
+              type_spec: quote(do: [pack_requirement()])
             ],
             sync: [
               type: {:list, {:custom, __MODULE__, :validate_identifier, []}},
@@ -55,6 +56,14 @@ defmodule Crosswake.Policy.Schema do
   @type runtime :: :live_view | :offline_island | :native_screen
   @type offline :: :unavailable | :cached_read_only | :local_first
   @type security :: :standard | :sensitive
+  @type pack_kind :: :content | :media
+  @type pack_integrity :: %{algorithm: String.t(), digest: String.t()}
+  @type pack_requirement :: %{
+          id: String.t(),
+          version: String.t(),
+          kind: pack_kind(),
+          integrity: pack_integrity() | nil
+        }
   @type validated_options :: [
           id: String.t(),
           runtime: runtime(),
@@ -62,7 +71,7 @@ defmodule Crosswake.Policy.Schema do
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
           capabilities: [String.t()],
-          packs: [String.t()],
+          packs: [pack_requirement()],
           sync: [String.t()],
           security: security()
         ]
@@ -92,4 +101,65 @@ defmodule Crosswake.Policy.Schema do
   def validate_runtime(value) do
     {:error, "expected one of #{inspect(@runtime_values)}, got: #{inspect(value)}"}
   end
+
+  @spec validate_pack_requirements(term()) :: {:ok, [pack_requirement()]} | {:error, String.t()}
+  def validate_pack_requirements(requirements) when is_list(requirements) do
+    requirements
+    |> Enum.with_index()
+    |> Enum.reduce_while({:ok, []}, fn {requirement, index}, {:ok, acc} ->
+      case validate_pack_requirement(requirement) do
+        {:ok, normalized} -> {:cont, {:ok, acc ++ [normalized]}}
+        {:error, reason} -> {:halt, {:error, "invalid pack declaration at position #{index}: #{reason}"}}
+      end
+    end)
+  end
+
+  def validate_pack_requirements(_value), do: {:error, "expected a list of pack declarations"}
+
+  defp validate_pack_requirement(requirement) when is_list(requirement) do
+    requirement
+    |> Enum.into(%{})
+    |> validate_pack_requirement()
+  end
+
+  defp validate_pack_requirement(requirement) when is_map(requirement) do
+    with {:ok, id} <- validate_identifier(Map.get(requirement, :id, Map.get(requirement, "id"))),
+         {:ok, version} <- validate_pack_version(Map.get(requirement, :version, Map.get(requirement, "version"))),
+         {:ok, kind} <- validate_pack_kind(Map.get(requirement, :kind, Map.get(requirement, "kind"))),
+         {:ok, integrity} <-
+           validate_pack_integrity(Map.get(requirement, :integrity, Map.get(requirement, "integrity"))) do
+      {:ok, %{id: id, version: version, kind: kind, integrity: integrity}}
+    end
+  end
+
+  defp validate_pack_requirement(_value), do: {:error, "expected a keyword list or map"}
+
+  defp validate_pack_version(value) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
+  defp validate_pack_version(_value), do: {:error, "pack version is required and must be a non-empty string"}
+
+  defp validate_pack_kind(value) when value in @pack_kind_values, do: {:ok, value}
+
+  defp validate_pack_kind(value) do
+    {:error, "expected pack kind to be one of #{inspect(@pack_kind_values)}, got: #{inspect(value)}"}
+  end
+
+  defp validate_pack_integrity(nil), do: {:ok, nil}
+
+  defp validate_pack_integrity(integrity) when is_list(integrity) do
+    integrity
+    |> Enum.into(%{})
+    |> validate_pack_integrity()
+  end
+
+  defp validate_pack_integrity(integrity) when is_map(integrity) do
+    with {:ok, algorithm} <-
+           validate_identifier(Map.get(integrity, :algorithm, Map.get(integrity, "algorithm"))),
+         {:ok, digest} <-
+           validate_identifier(Map.get(integrity, :digest, Map.get(integrity, "digest"))) do
+      {:ok, %{algorithm: algorithm, digest: digest}}
+    end
+  end
+
+  defp validate_pack_integrity(_value),
+    do: {:error, "pack integrity must be a map or keyword list with algorithm and digest"}
 end

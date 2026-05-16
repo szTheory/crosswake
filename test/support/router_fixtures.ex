@@ -55,7 +55,11 @@ defmodule Crosswake.TestSupport.RouterFixtures do
           crosswake: [id: "dashboard"]
 
         live "/library", Crosswake.TestSupport.LibraryLive,
-          crosswake: [id: "library", cache_contract: :lesson_library_v1]
+          crosswake: [
+            id: "library",
+            cache_contract: :lesson_library_v1,
+            packs: [[id: :lesson_library, version: "1.2.0", kind: :content]]
+          ]
 
         live "/study-session", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
@@ -63,6 +67,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             runtime: :offline_island,
             offline: :local_first,
             island_contract: :study_session_v1,
+            packs: [[id: :study_session_media, version: "3.0.0", kind: :media]],
             sync: [:study_reviews]
           ]
 
@@ -71,6 +76,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             id: "camera",
             runtime: :native_screen,
             capabilities: [:camera],
+            packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
             security: :sensitive
           ]
       end
@@ -85,7 +91,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
     scope "/" do
       crosswake_defaults offline: :cached_read_only,
                          capabilities: ["push.notifications"],
-                         packs: ["core.content"],
+                         packs: [[id: :core_content, version: "1.0.0", kind: :content]],
                          sync: ["catalog"],
                          security: :standard do
         get "/reader", Crosswake.TestSupport.PageController, :index,
@@ -97,7 +103,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             runtime: :offline_island,
             offline: :local_first,
             capabilities: ["scanner"],
-            packs: ["offline.bundle"],
+            packs: [[id: :offline_bundle, version: "2.1.0", kind: :content]],
             sync: ["drafts"],
             island_contract: :study_session_v1
           ]
@@ -108,7 +114,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             runtime: :native_screen,
             offline: :local_first,
             capabilities: ["camera.capture"],
-            packs: ["capture.pack"],
+            packs: [[id: :capture_pack, version: "1.0.0", kind: :media]],
             sync: ["uploads"],
             security: :sensitive
           ]
