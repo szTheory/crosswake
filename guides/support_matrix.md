@@ -40,3 +40,11 @@ same host-owned iOS and Android shell artifacts adopters ship.
 |--------|---------|--------|-------|-------|
 | ios_shell | 0.1.0 | unsupported | script/verify_generated_ios_shell.sh | Unsupported until both platform proof hooks have passed together. |
 | android_shell | 0.1.0 | unsupported | script/verify_generated_android_shell.sh | Unsupported until both platform proof hooks have passed together. |
+
+## Offline Contract
+
+| Target | Version | Status | Proof | Notes |
+|--------|---------|--------|-------|-------|
+| cached_route_contract | 0.1.0 | supported | script/verify_offline_contract.sh | Proves explicit cached read-only hydration and support vocabulary from repo-local artifacts. |
+| study_session_offline_island | 0.1.0 | supported | script/verify_offline_contract.sh | Proves one study session replay seam with saved locally, queued for replay, replay failed, and conflict requires attention vocabulary. |
+| generated_shell_offline_runtime | 0.1.0 | verification required | script/verify_generated_ios_shell.sh + script/verify_generated_android_shell.sh | Native generated-project runtime support still inherits the broader shell proof boundary until both platform hooks pass. |

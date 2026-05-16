@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Route Policy Foundation** - Phoenix hosts declare per-route runtime ownership and get actionable compile-time validation.
 - [x] **Phase 2: Manifest Truth And Compatibility** - Crosswake compiles route policy into a versioned contract with diagnostics and explicit support boundaries.
 - [ ] **Phase 3: Native Shell Boot And Bounded Bridge** - iOS and Android shells boot from the manifest, resolve routes, and enforce capability access safely.
-- [ ] **Phase 4: Honest Offline Contract** - Crosswake proves one real offline island with explicit cache, journal, sync, and telemetry seams.
+- [x] **Phase 4: Honest Offline Contract** - Crosswake proves one real offline island with explicit cache, journal, sync, and telemetry seams.
 - [ ] **Phase 5: Packs, Native Escape, And Proof Lanes** - Asset-heavy and device-heavy routes work through explicit contracts backed by deterministic install proof.
 
 ## Phase Details
@@ -84,7 +84,13 @@ Plans:
   2. One offline island can complete its intended workflow without LiveView round-trips while offline.
   3. Offline mutations persist as local drafts or journal/outbox entries and expose explicit reconciliation hooks before server-authoritative commit.
   4. Developers and operators can inspect telemetry or diagnostics for offline replay, sync, and reconciliation failures.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [x] 04-01-PLAN.md - Extend route policy and manifest truth with explicit cached-route and offline-island subcontracts.
+- [x] 04-02-PLAN.md - Wire the study-session exemplar through SQLite-backed local persistence, journal/replay, and generated shell runtime seams.
+- [x] 04-03-PLAN.md - Add route-local offline status vocabulary, telemetry contract, and doctor/report surfaces.
+- [x] 04-04-PLAN.md - Publish proof-oriented offline guidance and a hermetic offline proof lane while broader shell-runtime proof remains verification-required.
 
 ### Phase 5: Packs, Native Escape, And Proof Lanes
 **Goal**: Crosswake supports asset-heavy and device-heavy flows through explicit pack and transfer contracts backed by deterministic install proof.
@@ -105,5 +111,5 @@ Plans:
 | 1. Route Policy Foundation | 4/4 | Complete | 2026-05-13 |
 | 2. Manifest Truth And Compatibility | 4/4 | Complete | 2026-05-14 |
 | 3. Native Shell Boot And Bounded Bridge | 5/6 | In progress | - |
-| 4. Honest Offline Contract | 0/TBD | Not started | - |
+| 4. Honest Offline Contract | 4/4 | Complete | 2026-05-16 |
 | 5. Packs, Native Escape, And Proof Lanes | 0/TBD | Not started | - |

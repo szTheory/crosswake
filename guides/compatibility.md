@@ -42,6 +42,19 @@ Crosswake activation is fail-closed.
   `compatibility_mismatch`, `origin_denied`, `inactive_route`,
   `undeclared_capability`, `unavailable_capability`, and `pack_incompatible`.
 
+## Offline Boundary
+
+Phase 4 adds one explicit offline contract boundary:
+
+- cached read-only routes hydrate from a SQLite-backed snapshot and stay read-only
+- one study-session offline island owns local draft state, append-only journal
+  durability, and explicit replay outcomes
+- Crosswake does not widen this into a generic sync framework
+
+Doctor and manifest truth now expose the same route-local vocabulary:
+`cached read-only`, `saved locally`, `queued for replay`, `replay failed`, and
+`conflict requires attention`.
+
 ## Proof Boundary
 
 Shell support claims are blocked until both generated-project proof hooks pass on the
@@ -54,11 +67,19 @@ Run `mix crosswake.doctor` for manifest and shell posture, then run
 `mix crosswake.doctor --native-checks` to execute the proof hooks and move support
 from `verification required` to `supported`.
 
+The hermetic offline proof lane is separate:
+
+- `script/verify_offline_contract.sh`
+
+It verifies the explicit cached-route and study-session contract from repo-local
+artifacts only and does not rely on simulator or emulator startup.
+
 ## Rough Edges
 
 - Crosswake shell support remains narrow and mechanically checkable.
-- Native-screen breadth, offline journals, reconciliation, and pack-management UI are
-  still later-phase work.
+- Native-screen breadth and pack-management UI are still later-phase work.
+- Crosswake now proves one offline journal and reconciliation seam only; broader
+  offline breadth remains out of scope.
 - The bounded bridge stays limited to `app.info.get`, `haptics.impact`, and
   `files.pick`.
 

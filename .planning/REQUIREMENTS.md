@@ -35,10 +35,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Offline And Sync
 
-- [ ] **OFFL-01**: Crosswake can mark a LiveView-backed route as cached read-only with explicit staleness policy and cache restrictions.
-- [ ] **OFFL-02**: Crosswake provides one production-grade offline island contract for a local-first workflow that can execute without LiveView round-trips.
-- [ ] **OFFL-03**: Offline islands support local drafts or append-only journals/outboxes and expose explicit reconciliation hooks for server-authoritative sync.
-- [ ] **OFFL-04**: Crosswake exposes route-class telemetry and diagnostics for offline replay, sync, and reconciliation failures.
+- [x] **OFFL-01**: Crosswake can mark a LiveView-backed route as cached read-only with explicit staleness policy and cache restrictions.
+- [x] **OFFL-02**: Crosswake provides one production-grade offline island contract for a local-first workflow that can execute without LiveView round-trips.
+- [x] **OFFL-03**: Offline islands support local drafts or append-only journals/outboxes and expose explicit reconciliation hooks for server-authoritative sync.
+- [x] **OFFL-04**: Crosswake exposes route-class telemetry and diagnostics for offline replay, sync, and reconciliation failures.
 
 ### Packs And Native Escapes
 
@@ -102,10 +102,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BRDG-01 | Phase 3 | Pending |
 | BRDG-02 | Phase 3 | Pending |
 | BRDG-03 | Phase 3 | Pending |
-| OFFL-01 | Phase 4 | Pending |
-| OFFL-02 | Phase 4 | Pending |
-| OFFL-03 | Phase 4 | Pending |
-| OFFL-04 | Phase 4 | Pending |
+| OFFL-01 | Phase 4 | Complete |
+| OFFL-02 | Phase 4 | Complete |
+| OFFL-03 | Phase 4 | Complete |
+| OFFL-04 | Phase 4 | Complete |
 | PACK-01 | Phase 5 | Pending |
 | PACK-02 | Phase 5 | Pending |
 | PACK-03 | Phase 5 | Pending |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-14 after Phase 2 completion*
+*Last updated: 2026-05-16 after Phase 4 completion*

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 3 - Native Shell Boot And Bounded Bridge (execution in progress)
+**Current focus:** Phase 5 planning - Packs, Native Escape, And Proof Lanes
 
 ## Current Position
 
-Phase: 3 of 5 (Native Shell Boot And Bounded Bridge)
-Plan: 5 of 6 in current phase
-Status: Executing Phase 3; Plans 03-03, 03-05, and 03-06 are landed, and Plan 03-04 reaches real Gradle execution but remains blocked on managed-emulator startup
-Last activity: 2026-05-16 — Re-verified Phase 3 targeted tests passing; iOS proof remains blocked by the host Xcode/CoreSimulator install, and Android proof remains blocked by managed-emulator snapshot startup
+Phase: 4 of 5 complete (Honest Offline Contract)
+Plan: 4 of 4 in current phase
+Status: Phase 4 executed end-to-end; cached-route and study-session offline contracts, replay/journal/runtime seams, doctor posture, docs, and the hermetic offline proof lane are landed
+Last activity: 2026-05-16 — Completed Phase 4 verification with `bash script/verify_offline_contract.sh`; generated shell runtime support remains verification-required behind the existing Phase 3 host-environment blockers
 
-Progress: [████████░░] 85%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -30,9 +30,10 @@ Progress: [████████░░] 85%
 | 1. Route Policy Foundation | 4 | n/a | n/a |
 | 2. Manifest Truth And Compatibility | 4 | n/a | n/a |
 | 3. Native Shell Boot And Bounded Bridge | 0 | n/a | n/a |
+| 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 03-03, 03-05, and 03-06 landed; 03-04 reduced to a host-emulator blocker
+- Last 5 plans: 04-01, 04-02, 04-03, and 04-04 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
 - Trend: Positive
 
 ## Accumulated Context
@@ -48,6 +49,8 @@ Recent decisions affecting current work:
 - Phase 3 will execute as six plans: activation and denial contract, generator and fixtures, iOS shell, Android shell, bounded bridge, then doctor/docs/proof wiring.
 - Phase 3 doctor/docs/support truth now uses `verification required` until both generated-project proof hooks pass.
 - The Android generated shell now self-bootstraps Gradle instead of depending on a missing wrapper jar.
+- Phase 4 proves one narrow offline story only: explicit cached read-only hydration plus one study-session offline island with append-only journal durability, explicit replay outcomes, and route-local diagnostics.
+- Phase 4 support posture is split intentionally: repo-local offline contract surfaces are supported by `script/verify_offline_contract.sh`, while generated shell runtime support still inherits Phase 3's `verification required` posture until both native proof hooks pass.
 
 ### Pending Todos
 
@@ -61,8 +64,9 @@ None yet.
 - Plan 03-04 template work, toolchain bootstrapping, and Gradle bootstrap now succeed, and a re-run still reaches real Gradle execution, but `script/verify_generated_android_shell.sh` remains blocked by host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 - Plan 03-05 bounded bridge code, templates, guide, and tests landed.
 - Plan 03-06 doctor/docs/support guidance landed and now blocks shell support claims until both real proof hooks pass.
-- Phase 4 planning will need one named offline-island reference workflow to keep storage and reconciliation scope narrow.
 - Phase 5 planning will need a strict first native escape-hatch choice to avoid broad adapter creep.
+- Generated iOS shell proof still depends on the local Xcode/CoreSimulator install: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
+- Generated Android shell proof still depends on host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 
 ## Deferred Items
 
@@ -74,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-16
-Stopped at: Re-verified that targeted Phase 3 tests pass and both native proof hooks still fail for host-environment reasons; next work is either repairing local Xcode/CoreSimulator and Android emulator state or explicitly deferring 03-04 proof outside the repo
+Stopped at: Phase 4 complete; next work is planning Phase 5 while either repairing local Xcode/CoreSimulator and Android emulator state for Phase 3 proof or explicitly deferring that proof outside the repo
 Resume file: None
