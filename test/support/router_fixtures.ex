@@ -91,26 +91,27 @@ defmodule Crosswake.TestSupport.RouterFixtures do
         get "/reader", Crosswake.TestSupport.PageController, :index,
           crosswake: [id: "reader", runtime: :live_view, cache_contract: :reader_catalog_v1]
 
-        crosswake_defaults runtime: :offline_island,
-                           offline: :local_first,
-                           capabilities: ["scanner"],
-                           packs: ["offline.bundle"],
-                           sync: ["drafts"],
-                           island_contract: :study_session_v1 do
-          live "/study-session", Crosswake.TestSupport.StudySessionLive,
-            crosswake: [id: "study-session"]
+        live "/study-session", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "study-session",
+            runtime: :offline_island,
+            offline: :local_first,
+            capabilities: ["scanner"],
+            packs: ["offline.bundle"],
+            sync: ["drafts"],
+            island_contract: :study_session_v1
+          ]
 
-          live "/capture", Crosswake.TestSupport.CameraLive, :capture,
-            crosswake: [
-              id: "capture",
-              runtime: :native_screen,
-              offline: :local_first,
-              capabilities: ["camera.capture"],
-              packs: ["capture.pack"],
-              sync: ["uploads"],
-              security: :sensitive
-            ]
-        end
+        live "/capture", Crosswake.TestSupport.CameraLive, :capture,
+          crosswake: [
+            id: "capture",
+            runtime: :native_screen,
+            offline: :local_first,
+            capabilities: ["camera.capture"],
+            packs: ["capture.pack"],
+            sync: ["uploads"],
+            security: :sensitive
+          ]
       end
 
       get "/public", Crosswake.TestSupport.SettingsController, :index

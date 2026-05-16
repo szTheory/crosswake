@@ -59,6 +59,8 @@ defmodule Crosswake.Manifest.Builder do
           path: path,
           runtime: route.runtime,
           offline: route.offline,
+          cache_contract: cache_contract(route),
+          island_contract: island_contract(route),
           capabilities: route.capabilities,
           packs: route.packs,
           sync: route.sync,
@@ -71,4 +73,20 @@ defmodule Crosswake.Manifest.Builder do
   end
 
   defp capability_version(_capability), do: "1.0.0"
+
+  defp cache_contract(%Route{cache_contract: nil}), do: nil
+
+  defp cache_contract(%Route{cache_contract: contract_id}) do
+    Types.new_cache_contract(id: contract_id)
+  end
+
+  defp island_contract(%Route{island_contract: nil}), do: nil
+
+  defp island_contract(%Route{island_contract: contract_id, sync: [sync_seam | _rest]}) do
+    Types.new_island_contract(id: contract_id, sync_seam: sync_seam)
+  end
+
+  defp island_contract(%Route{island_contract: contract_id}) do
+    Types.new_island_contract(id: contract_id, sync_seam: contract_id)
+  end
 end

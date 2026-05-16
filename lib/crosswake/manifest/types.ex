@@ -116,6 +116,8 @@ defmodule Crosswake.Manifest.Types do
       :path,
       :runtime,
       :offline,
+      :cache_contract,
+      :island_contract,
       :security,
       capabilities: [],
       packs: [],
@@ -128,11 +130,46 @@ defmodule Crosswake.Manifest.Types do
             path: String.t(),
             runtime: Crosswake.Policy.Schema.runtime(),
             offline: Crosswake.Policy.Schema.offline(),
+            cache_contract: Crosswake.Manifest.Types.CacheContract.t() | nil,
+            island_contract: Crosswake.Manifest.Types.IslandContract.t() | nil,
             capabilities: [String.t()],
             packs: [String.t()],
             sync: [String.t()],
             security: Crosswake.Policy.Schema.security() | nil,
             allowlisted_origins: [String.t()]
+          }
+  end
+
+  defmodule CacheContract do
+    @moduledoc false
+
+    @enforce_keys [:id, :staleness, :restrictions]
+    defstruct [:id, :staleness, restrictions: []]
+
+    @type staleness :: :best_effort
+    @type restriction :: :read_only | :server_authoritative
+
+    @type t :: %__MODULE__{
+            id: String.t(),
+            staleness: staleness(),
+            restrictions: [restriction()]
+          }
+  end
+
+  defmodule IslandContract do
+    @moduledoc false
+
+    @enforce_keys [:id, :storage, :reconciliation, :sync_seam]
+    defstruct [:id, :storage, :reconciliation, :sync_seam]
+
+    @type storage :: :sqlite
+    @type reconciliation :: :explicit
+
+    @type t :: %__MODULE__{
+            id: String.t(),
+            storage: storage(),
+            reconciliation: reconciliation(),
+            sync_seam: String.t()
           }
   end
 
@@ -229,11 +266,32 @@ defmodule Crosswake.Manifest.Types do
       path: Keyword.fetch!(attrs, :path),
       runtime: Keyword.fetch!(attrs, :runtime),
       offline: Keyword.get(attrs, :offline, :unavailable),
+      cache_contract: Keyword.get(attrs, :cache_contract),
+      island_contract: Keyword.get(attrs, :island_contract),
       capabilities: Keyword.get(attrs, :capabilities, []),
       packs: Keyword.get(attrs, :packs, []),
       sync: Keyword.get(attrs, :sync, []),
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, [])
+    })
+  end
+
+  @spec new_cache_contract(keyword()) :: CacheContract.t()
+  def new_cache_contract(attrs) when is_list(attrs) do
+    struct!(CacheContract, %{
+      id: Keyword.fetch!(attrs, :id),
+      staleness: Keyword.get(attrs, :staleness, :best_effort),
+      restrictions: Keyword.get(attrs, :restrictions, [:read_only, :server_authoritative])
+    })
+  end
+
+  @spec new_island_contract(keyword()) :: IslandContract.t()
+  def new_island_contract(attrs) when is_list(attrs) do
+    struct!(IslandContract, %{
+      id: Keyword.fetch!(attrs, :id),
+      storage: Keyword.get(attrs, :storage, :sqlite),
+      reconciliation: Keyword.get(attrs, :reconciliation, :explicit),
+      sync_seam: Keyword.fetch!(attrs, :sync_seam)
     })
   end
 
@@ -307,11 +365,30 @@ defmodule Crosswake.Manifest.Types do
       "path" => route.path,
       "runtime" => Atom.to_string(route.runtime),
       "offline" => Atom.to_string(route.offline),
+      "cache_contract" => to_map(route.cache_contract),
+      "island_contract" => to_map(route.island_contract),
       "capabilities" => route.capabilities,
       "packs" => route.packs,
       "sync" => route.sync,
       "security" => route.security && Atom.to_string(route.security),
       "allowlisted_origins" => route.allowlisted_origins
+    }
+  end
+
+  def to_map(%CacheContract{} = contract) do
+    %{
+      "id" => contract.id,
+      "staleness" => Atom.to_string(contract.staleness),
+      "restrictions" => Enum.map(contract.restrictions, &Atom.to_string/1)
+    }
+  end
+
+  def to_map(%IslandContract{} = contract) do
+    %{
+      "id" => contract.id,
+      "storage" => Atom.to_string(contract.storage),
+      "reconciliation" => Atom.to_string(contract.reconciliation),
+      "sync_seam" => contract.sync_seam
     }
   end
 

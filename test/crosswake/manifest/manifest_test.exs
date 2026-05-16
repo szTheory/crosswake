@@ -9,10 +9,37 @@ defmodule Crosswake.ManifestTest do
   test "manifest compilation from a managed router yields one route-first artifact keyed by route id" do
     assert {:ok, %{manifest: manifest, warnings: []}} = Manifest.compile(ManagedRouter)
 
-    assert Map.keys(manifest.routes) == ["camera", "dashboard", "library"]
+    assert Map.keys(manifest.routes) == ["camera", "dashboard", "library", "study-session"]
     assert manifest.routes["dashboard"].path == "/dashboard"
     assert manifest.routes["library"].offline == :cached_read_only
+    assert manifest.routes["study-session"].offline == :local_first
     assert manifest.routes["camera"].runtime == :native_screen
+  end
+
+  test "cached routes expose explicit cache-contract truth in the manifest" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    route = manifest.routes["library"]
+
+    assert route.offline == :cached_read_only
+    assert route.cache_contract.id == "lesson_library_v1"
+    assert route.cache_contract.staleness == :best_effort
+    assert route.cache_contract.restrictions == [:read_only, :server_authoritative]
+    assert is_nil(route.island_contract)
+  end
+
+  test "offline islands expose explicit island-contract truth in the manifest" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    route = manifest.routes["study-session"]
+
+    assert route.runtime == :offline_island
+    assert route.offline == :local_first
+    assert is_nil(route.cache_contract)
+    assert route.island_contract.id == "study_session_v1"
+    assert route.island_contract.storage == :sqlite
+    assert route.island_contract.reconciliation == :explicit
+    assert route.island_contract.sync_seam == "study_reviews"
   end
 
   test "top-level manifest includes host, compatibility, support matrix, capability registry, and routes" do
