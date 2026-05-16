@@ -4,6 +4,7 @@ defmodule Crosswake.Manifest.Builder do
   """
 
   alias Crosswake.Manifest.Types
+  alias Crosswake.Offline.Contracts
   alias Crosswake.Policy.Route
 
   @spec build([Route.t()], [map()], keyword()) :: Types.Root.t()
@@ -76,17 +77,23 @@ defmodule Crosswake.Manifest.Builder do
 
   defp cache_contract(%Route{cache_contract: nil}), do: nil
 
-  defp cache_contract(%Route{cache_contract: contract_id}) do
-    Types.new_cache_contract(id: contract_id)
+  defp cache_contract(%Route{id: route_id, cache_contract: contract_id}) do
+    contract_id
+    |> Contracts.new_cache_route(route_id: route_id)
+    |> Contracts.cache_contract()
   end
 
   defp island_contract(%Route{island_contract: nil}), do: nil
 
-  defp island_contract(%Route{island_contract: contract_id, sync: [sync_seam | _rest]}) do
-    Types.new_island_contract(id: contract_id, sync_seam: sync_seam)
+  defp island_contract(%Route{id: route_id, island_contract: contract_id, sync: [sync_seam | _rest]}) do
+    contract_id
+    |> Contracts.new_study_session_island(route_id: route_id, sync_seam: sync_seam)
+    |> Contracts.island_contract()
   end
 
-  defp island_contract(%Route{island_contract: contract_id}) do
-    Types.new_island_contract(id: contract_id, sync_seam: contract_id)
+  defp island_contract(%Route{id: route_id, island_contract: contract_id}) do
+    contract_id
+    |> Contracts.new_study_session_island(route_id: route_id, sync_seam: contract_id)
+    |> Contracts.island_contract()
   end
 end

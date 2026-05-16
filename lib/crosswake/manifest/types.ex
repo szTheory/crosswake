@@ -143,15 +143,19 @@ defmodule Crosswake.Manifest.Types do
   defmodule CacheContract do
     @moduledoc false
 
-    @enforce_keys [:id, :staleness, :restrictions]
-    defstruct [:id, :staleness, restrictions: []]
+    @enforce_keys [:id, :staleness, :hydration, :storage, :restrictions]
+    defstruct [:id, :staleness, :hydration, :storage, restrictions: []]
 
     @type staleness :: :best_effort
+    @type hydration :: :sqlite_snapshot
+    @type storage :: :sqlite
     @type restriction :: :read_only | :server_authoritative
 
     @type t :: %__MODULE__{
             id: String.t(),
             staleness: staleness(),
+            hydration: hydration(),
+            storage: storage(),
             restrictions: [restriction()]
           }
   end
@@ -159,16 +163,42 @@ defmodule Crosswake.Manifest.Types do
   defmodule IslandContract do
     @moduledoc false
 
-    @enforce_keys [:id, :storage, :reconciliation, :sync_seam]
-    defstruct [:id, :storage, :reconciliation, :sync_seam]
+    @enforce_keys [
+      :id,
+      :storage,
+      :draft_surface,
+      :journal_mode,
+      :reconciliation,
+      :checkpoint_requirement,
+      :authoritative_source,
+      :sync_seam
+    ]
+    defstruct [
+      :id,
+      :storage,
+      :draft_surface,
+      :journal_mode,
+      :reconciliation,
+      :checkpoint_requirement,
+      :authoritative_source,
+      :sync_seam
+    ]
 
     @type storage :: :sqlite
+    @type draft_surface :: :study_session_draft
+    @type journal_mode :: :append_only
     @type reconciliation :: :explicit
+    @type checkpoint_requirement :: :required
+    @type authoritative_source :: :phoenix
 
     @type t :: %__MODULE__{
             id: String.t(),
             storage: storage(),
+            draft_surface: draft_surface(),
+            journal_mode: journal_mode(),
             reconciliation: reconciliation(),
+            checkpoint_requirement: checkpoint_requirement(),
+            authoritative_source: authoritative_source(),
             sync_seam: String.t()
           }
   end
@@ -281,6 +311,8 @@ defmodule Crosswake.Manifest.Types do
     struct!(CacheContract, %{
       id: Keyword.fetch!(attrs, :id),
       staleness: Keyword.get(attrs, :staleness, :best_effort),
+      hydration: Keyword.get(attrs, :hydration, :sqlite_snapshot),
+      storage: Keyword.get(attrs, :storage, :sqlite),
       restrictions: Keyword.get(attrs, :restrictions, [:read_only, :server_authoritative])
     })
   end
@@ -290,7 +322,11 @@ defmodule Crosswake.Manifest.Types do
     struct!(IslandContract, %{
       id: Keyword.fetch!(attrs, :id),
       storage: Keyword.get(attrs, :storage, :sqlite),
+      draft_surface: Keyword.get(attrs, :draft_surface, :study_session_draft),
+      journal_mode: Keyword.get(attrs, :journal_mode, :append_only),
       reconciliation: Keyword.get(attrs, :reconciliation, :explicit),
+      checkpoint_requirement: Keyword.get(attrs, :checkpoint_requirement, :required),
+      authoritative_source: Keyword.get(attrs, :authoritative_source, :phoenix),
       sync_seam: Keyword.fetch!(attrs, :sync_seam)
     })
   end
@@ -379,6 +415,8 @@ defmodule Crosswake.Manifest.Types do
     %{
       "id" => contract.id,
       "staleness" => Atom.to_string(contract.staleness),
+      "hydration" => Atom.to_string(contract.hydration),
+      "storage" => Atom.to_string(contract.storage),
       "restrictions" => Enum.map(contract.restrictions, &Atom.to_string/1)
     }
   end
@@ -387,7 +425,11 @@ defmodule Crosswake.Manifest.Types do
     %{
       "id" => contract.id,
       "storage" => Atom.to_string(contract.storage),
+      "draft_surface" => Atom.to_string(contract.draft_surface),
+      "journal_mode" => Atom.to_string(contract.journal_mode),
       "reconciliation" => Atom.to_string(contract.reconciliation),
+      "checkpoint_requirement" => Atom.to_string(contract.checkpoint_requirement),
+      "authoritative_source" => Atom.to_string(contract.authoritative_source),
       "sync_seam" => contract.sync_seam
     }
   end

@@ -1,0 +1,51 @@
+import Foundation
+import SQLite3
+
+enum OfflineRecordKind: String, Codable {
+    case cachedRoute = "cached_route"
+    case draft
+    case journal
+}
+
+struct OfflineJournalRecord: Codable, Equatable {
+    let id: String
+    let routeID: String
+    let syncSeam: String
+    let clientMutationID: String
+    let idempotencyKey: String
+    let baseCheckpoint: String
+    let payload: [String: String]
+    let status: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case routeID = "route_id"
+        case syncSeam = "sync_seam"
+        case clientMutationID = "client_mutation_id"
+        case idempotencyKey = "idempotency_key"
+        case baseCheckpoint = "base_checkpoint"
+        case payload
+        case status
+    }
+}
+
+final class OfflineStore {
+    private let sqlitePath: URL
+
+    init(sqlitePath: URL) {
+        self.sqlitePath = sqlitePath
+    }
+
+    func hydrateCachedRoute(routeID: String) -> Data? {
+        _ = sqlitePath
+        return nil
+    }
+
+    func persistDraft(routeID: String, payload: Data) {
+        _ = (routeID, payload, sqlitePath)
+    }
+
+    func appendJournal(record: OfflineJournalRecord) {
+        _ = (record, sqlitePath)
+    }
+}

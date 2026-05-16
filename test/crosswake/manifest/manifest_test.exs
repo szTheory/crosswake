@@ -24,6 +24,8 @@ defmodule Crosswake.ManifestTest do
     assert route.offline == :cached_read_only
     assert route.cache_contract.id == "lesson_library_v1"
     assert route.cache_contract.staleness == :best_effort
+    assert route.cache_contract.hydration == :sqlite_snapshot
+    assert route.cache_contract.storage == :sqlite
     assert route.cache_contract.restrictions == [:read_only, :server_authoritative]
     assert is_nil(route.island_contract)
   end
@@ -38,7 +40,11 @@ defmodule Crosswake.ManifestTest do
     assert is_nil(route.cache_contract)
     assert route.island_contract.id == "study_session_v1"
     assert route.island_contract.storage == :sqlite
+    assert route.island_contract.draft_surface == :study_session_draft
+    assert route.island_contract.journal_mode == :append_only
     assert route.island_contract.reconciliation == :explicit
+    assert route.island_contract.checkpoint_requirement == :required
+    assert route.island_contract.authoritative_source == :phoenix
     assert route.island_contract.sync_seam == "study_reviews"
   end
 

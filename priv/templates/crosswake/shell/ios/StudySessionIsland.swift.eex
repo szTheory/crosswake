@@ -1,0 +1,32 @@
+import Foundation
+
+struct StudySessionDraft: Codable, Equatable {
+    let routeID: String
+    let checkpoint: String
+    let savedLocallyAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case routeID = "route_id"
+        case checkpoint
+        case savedLocallyAt = "saved_locally_at"
+    }
+}
+
+final class StudySessionIsland {
+    private let offlineStore: OfflineStore
+    private let syncSeam = "study_reviews"
+
+    init(offlineStore: OfflineStore) {
+        self.offlineStore = offlineStore
+    }
+
+    func saveDraft(_ draft: StudySessionDraft) throws {
+        let payload = try JSONEncoder().encode(draft)
+        offlineStore.persistDraft(routeID: draft.routeID, payload: payload)
+    }
+
+    func queueReplay(record: OfflineJournalRecord) {
+        precondition(record.syncSeam == syncSeam)
+        offlineStore.appendJournal(record: record)
+    }
+}

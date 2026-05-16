@@ -1,0 +1,20 @@
+package dev.crosswake.shell.offline
+
+data class StudySessionDraft(
+    val routeId: String,
+    val checkpoint: String,
+    val savedLocallyAt: String
+)
+
+class StudySessionIsland(private val offlineStore: OfflineStore) {
+    private val syncSeam = "study_reviews"
+
+    fun saveDraft(draft: StudySessionDraft, payload: String) {
+        offlineStore.persistDraft(draft.routeId, payload)
+    }
+
+    fun queueReplay(record: OfflineJournalRecord) {
+        require(record.syncSeam == syncSeam)
+        offlineStore.appendJournal(record)
+    }
+}
