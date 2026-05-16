@@ -4,6 +4,8 @@ defmodule Crosswake.Manifest.Types do
   doctor diagnostics, and support-matrix rendering.
   """
 
+  alias Crosswake.Transfer.Contracts
+
   defmodule Root do
     @moduledoc false
 
@@ -141,6 +143,7 @@ defmodule Crosswake.Manifest.Types do
       capabilities: [],
       packs: [],
       sync: [],
+      transfers: [],
       allowlisted_origins: []
     ]
 
@@ -154,8 +157,47 @@ defmodule Crosswake.Manifest.Types do
             capabilities: [String.t()],
             packs: [String.t()],
             sync: [String.t()],
+            transfers: [Crosswake.Manifest.Types.TransferSeam.t()],
             security: Crosswake.Policy.Schema.security() | nil,
             allowlisted_origins: [String.t()]
+          }
+  end
+
+  defmodule TransferSeam do
+    @moduledoc false
+
+    @enforce_keys [
+      :protocol,
+      :version,
+      :id,
+      :intent,
+      :direction,
+      :verification
+    ]
+    defstruct [
+      :protocol,
+      :version,
+      :id,
+      :intent,
+      :direction,
+      :source,
+      :destination,
+      :verification,
+      media_types: [],
+      states: []
+    ]
+
+    @type t :: %__MODULE__{
+            protocol: String.t(),
+            version: String.t(),
+            id: String.t(),
+            intent: Contracts.intent(),
+            direction: Contracts.direction(),
+            source: Contracts.source() | nil,
+            destination: Contracts.destination() | nil,
+            verification: Contracts.verification(),
+            media_types: [String.t()],
+            states: [Contracts.state()]
           }
   end
 
@@ -321,8 +363,25 @@ defmodule Crosswake.Manifest.Types do
       capabilities: Keyword.get(attrs, :capabilities, []),
       packs: Keyword.get(attrs, :packs, []),
       sync: Keyword.get(attrs, :sync, []),
+      transfers: Keyword.get(attrs, :transfers, []),
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, [])
+    })
+  end
+
+  @spec new_transfer_seam(keyword()) :: TransferSeam.t()
+  def new_transfer_seam(attrs) when is_list(attrs) do
+    struct!(TransferSeam, %{
+      protocol: Keyword.get(attrs, :protocol, Contracts.protocol()),
+      version: Keyword.get(attrs, :version, Contracts.version()),
+      id: Keyword.fetch!(attrs, :id),
+      intent: Keyword.fetch!(attrs, :intent),
+      direction: Keyword.fetch!(attrs, :direction),
+      source: Keyword.get(attrs, :source),
+      destination: Keyword.get(attrs, :destination),
+      verification: Keyword.fetch!(attrs, :verification),
+      media_types: Keyword.get(attrs, :media_types, []),
+      states: Keyword.get(attrs, :states, Contracts.transfer_states())
     })
   end
 
@@ -446,9 +505,27 @@ defmodule Crosswake.Manifest.Types do
       "capabilities" => route.capabilities,
       "packs" => route.packs,
       "sync" => route.sync,
+      "transfers" => Enum.map(route.transfers, &to_map/1),
       "security" => route.security && Atom.to_string(route.security),
       "allowlisted_origins" => route.allowlisted_origins
     }
+  end
+
+  def to_map(%TransferSeam{} = seam) do
+    %{
+      "protocol" => seam.protocol,
+      "version" => seam.version,
+      "id" => seam.id,
+      "intent" => Atom.to_string(seam.intent),
+      "direction" => Atom.to_string(seam.direction),
+      "source" => seam.source && Atom.to_string(seam.source),
+      "destination" => seam.destination && Atom.to_string(seam.destination),
+      "verification" => Atom.to_string(seam.verification),
+      "media_types" => seam.media_types,
+      "states" => Enum.map(seam.states, &Atom.to_string/1)
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
   end
 
   def to_map(%CacheContract{} = contract) do

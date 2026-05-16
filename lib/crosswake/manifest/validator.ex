@@ -7,6 +7,7 @@ defmodule Crosswake.Manifest.Validator do
   alias Crosswake.Manifest.Types
   alias Crosswake.Policy.Error
   alias Crosswake.SupportMatrix
+  alias Crosswake.Transfer.Contracts
 
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
@@ -72,6 +73,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_route_field(route, :runtime, route.runtime)
     |> validate_route_capabilities(route, capability_registry)
     |> validate_route_packs(route, pack_registry)
+    |> validate_route_transfers(route)
   end
 
   defp validate_route_field(errors, _route, _key, value) when not is_nil(value), do: errors
@@ -129,6 +131,121 @@ defmodule Crosswake.Manifest.Validator do
         ]
       end
     end)
+  end
+
+  defp validate_route_transfers(errors, route) do
+    Enum.reduce(route.transfers, errors, fn transfer, acc ->
+      acc
+      |> validate_transfer_protocol(route, transfer)
+      |> validate_transfer_declaration(route, transfer)
+      |> validate_transfer_runtime(route, transfer)
+    end)
+  end
+
+  defp validate_transfer_protocol(errors, route, transfer) do
+    cond do
+      transfer.protocol != Contracts.protocol() ->
+        [
+          %{
+            key: :transfers,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "transfer seam #{inspect(transfer.id)} must use protocol #{inspect(Contracts.protocol())}",
+            hint: "compile transfer seams from the canonical Crosswake transfer contract"
+          }
+          | errors
+        ]
+
+      transfer.version != Contracts.version() ->
+        [
+          %{
+            key: :transfers,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "transfer seam #{inspect(transfer.id)} must use version #{inspect(Contracts.version())}",
+            hint: "regenerate the manifest from current transfer seam truth"
+          }
+          | errors
+        ]
+
+      transfer.states != Contracts.transfer_states() ->
+        [
+          %{
+            key: :transfers,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "transfer seam #{inspect(transfer.id)} must expose the canonical route-local transfer state vocabulary",
+            hint: "compile states from Crosswake.Transfer.Contracts.transfer_states/0"
+          }
+          | errors
+        ]
+
+      true ->
+        errors
+    end
+  end
+
+  defp validate_transfer_declaration(errors, route, transfer) do
+    attrs = [
+      id: transfer.id,
+      intent: transfer.intent,
+      source: transfer.source,
+      destination: transfer.destination,
+      verification: transfer.verification,
+      media_types: transfer.media_types
+    ]
+
+    case Contracts.normalize_declaration(attrs) do
+      {:ok, declaration} ->
+        if declaration.direction == transfer.direction do
+          errors
+        else
+          [
+            %{
+              key: :transfers,
+              route_id: route.id,
+              path: route.path,
+              message:
+                "transfer seam #{inspect(transfer.id)} must use direction #{inspect(declaration.direction)}",
+              hint: "derive transfer direction from intent instead of hand-authoring it"
+            }
+            | errors
+          ]
+        end
+
+      {:error, reason} ->
+        [
+          %{
+            key: :transfers,
+            route_id: route.id,
+            path: route.path,
+            message: "transfer seam #{inspect(transfer.id)} is invalid: #{reason}",
+            hint: "supply typed source or destination metadata that matches the transfer intent"
+          }
+          | errors
+        ]
+    end
+  end
+
+  defp validate_transfer_runtime(errors, route, transfer) do
+    if transfer.source == :native_capture and route.runtime != :native_screen do
+      [
+        %{
+          key: :transfers,
+          route_id: route.id,
+          path: route.path,
+          message:
+            "transfer seam #{inspect(transfer.id)} native_capture source requires route runtime :native_screen",
+          hint: "move capture-owned transfers to a native_screen route or use a non-capture transfer source"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
   end
 
   defp build_error(attrs, route \\ nil) do

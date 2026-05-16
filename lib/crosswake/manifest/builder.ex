@@ -66,6 +66,7 @@ defmodule Crosswake.Manifest.Builder do
           capabilities: route.capabilities,
           packs: route_pack_references(route.packs),
           sync: route.sync,
+          transfers: transfer_seams(route.transfers),
           security: route.security,
           allowlisted_origins: [origin]
         )
@@ -90,6 +91,20 @@ defmodule Crosswake.Manifest.Builder do
   end
 
   defp route_pack_references(packs), do: Enum.map(packs, &pack_reference/1)
+
+  defp transfer_seams(transfers) do
+    Enum.map(transfers, fn transfer ->
+      Types.new_transfer_seam(
+        id: transfer.id,
+        intent: transfer.intent,
+        direction: transfer.direction,
+        source: transfer.source,
+        destination: transfer.destination,
+        verification: transfer.verification,
+        media_types: transfer.media_types
+      )
+    end)
+  end
 
   defp pack_reference(%{id: id, version: version}), do: "#{id}@#{version}"
 
