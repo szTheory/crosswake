@@ -90,6 +90,36 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert Enum.all?(errors, &match?(%Crosswake.Policy.Error{}, &1))
   end
 
+  test "manifest validation rejects route pack references that are missing from the root pack registry" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:packs)], ["missing.pack@9.9.9"])
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             String.contains?(
+               error.message,
+               "route camera declares pack reference \"missing.pack@9.9.9\" outside the manifest pack registry"
+             )
+           end)
+  end
+
+  test "manifest validation rejects route pack references that drift from the canonical registry version" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:packs)], ["camera_capture_assets@2.0.0"])
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             String.contains?(
+               error.message,
+               "route camera declares pack reference \"camera_capture_assets@2.0.0\" outside the manifest pack registry"
+             )
+           end)
+  end
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",
@@ -100,6 +130,14 @@ defmodule Crosswake.Manifest.ValidatorTest do
       capability_registry: %{
         "camera" => Types.new_capability(id: "camera", version: "1.0.0")
       },
+      pack_registry: %{
+        "camera_capture_assets@1.0.0" => %{
+          id: "camera_capture_assets",
+          version: "1.0.0",
+          kind: :media,
+          integrity: nil
+        }
+      },
       routes: %{
         "camera" =>
           Types.new_route_entry(
@@ -108,6 +146,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
             runtime: :native_screen,
             offline: :unavailable,
             capabilities: ["camera"],
+            packs: ["camera_capture_assets@1.0.0"],
             security: :sensitive,
             allowlisted_origins: [Types.default_origin()]
           )

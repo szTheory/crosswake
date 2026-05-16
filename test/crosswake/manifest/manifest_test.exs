@@ -56,6 +56,34 @@ defmodule Crosswake.ManifestTest do
     assert manifest.host.manifest_sources == [:bundled, :cached, :remote]
     assert manifest.compatibility.bridge_protocol_version == "1.0.0"
     assert Map.has_key?(manifest.capability_registry, "camera")
+    assert Map.has_key?(manifest.pack_registry, "camera_capture_assets@1.0.0")
+    assert Map.has_key?(manifest.pack_registry, "lesson_library@1.2.0")
     assert manifest.support_matrix.phoenix != []
+  end
+
+  test "manifest root exposes a canonical typed pack registry keyed by immutable id and version" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    assert Map.keys(manifest.pack_registry) ==
+             [
+               "camera_capture_assets@1.0.0",
+               "lesson_library@1.2.0",
+               "study_session_media@3.0.0"
+             ]
+
+    assert manifest.pack_registry["lesson_library@1.2.0"] == %{
+             id: "lesson_library",
+             version: "1.2.0",
+             kind: :content,
+             integrity: nil
+           }
+  end
+
+  test "route entries reference pack registry items instead of duplicating pack metadata payloads" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    assert manifest.routes["library"].packs == ["lesson_library@1.2.0"]
+    assert manifest.routes["study-session"].packs == ["study_session_media@3.0.0"]
+    assert manifest.routes["camera"].packs == ["camera_capture_assets@1.0.0"]
   end
 end
