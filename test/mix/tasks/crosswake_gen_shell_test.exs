@@ -224,6 +224,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt"
       )
 
+    android_transfer_coordinator =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt"
+      )
+
     android_required_pack_layout =
       Path.join(
         target,
@@ -295,8 +301,14 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_bridge_channel) =~ "app.info.get"
     assert File.read!(android_bridge_channel) =~ "haptics.impact"
     assert File.read!(android_bridge_channel) =~ "files.pick"
+    assert File.read!(android_bridge_channel) =~ "transfer.download"
+    assert File.read!(android_bridge_channel) =~ "transfer.export"
+    assert File.read!(android_bridge_channel) =~ "transfer.import"
+    assert File.read!(android_bridge_channel) =~ "transfer.upload.prepare"
+    assert File.read!(android_bridge_channel) =~ "transferCoordinator"
     assert File.read!(android_live_view_fragment) =~ "WebView"
     assert File.read!(android_live_view_fragment) =~ "Allowlisted"
+    assert File.read!(android_live_view_fragment) =~ "BridgeChannel"
     assert File.read!(android_pack_store) =~ "enum class PackState"
     assert File.read!(android_pack_store) =~ "INVALIDATING"
     assert File.read!(android_pack_store) =~ "suspend fun installRequiredPack"
@@ -308,6 +320,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_native_capture_activity) =~ "Capture media locally"
     assert File.read!(android_native_capture_activity) =~ "Stage For Transfer"
     assert File.read!(android_native_capture_activity) =~ "Cancel Capture"
+    assert File.read!(android_native_capture_activity) =~ "stageCapturedMedia"
+    assert File.read!(android_transfer_coordinator) =~ "enum class TransferState"
+    assert File.read!(android_transfer_coordinator) =~ "AWAITING_NETWORK(\"awaiting_network\")"
+    assert File.read!(android_transfer_coordinator) =~ "fun stageCapturedMedia"
+    assert File.read!(android_transfer_coordinator) =~ "fun execute"
+    assert File.read!(android_transfer_coordinator) =~ "transfer.upload.prepare"
+    assert File.read!(android_transfer_coordinator) =~ "transfer.download"
+    assert File.read!(android_transfer_coordinator) =~ "transfer.import"
+    assert File.read!(android_transfer_coordinator) =~ "transfer.export"
     assert File.read!(android_required_pack_layout) =~ "required_pack_title"
     assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
     assert File.read!(android_route_unavailable) =~ "Update app"
