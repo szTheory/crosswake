@@ -8,6 +8,17 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
 
+## Current Milestone: v2.0 Adopter Stress Profiles
+
+**Goal:** Stress-test Crosswake's proven v1 substrate against realistic adopter-shaped app profiles and harden the core where those examples expose gaps.
+
+**Target features:**
+- Build a published profile matrix for the three strongest adopter shapes already named in the project thesis.
+- Deliver minimal but realistic exemplar routes and flows that pressure server-centric, selective-native, and local-first product shapes.
+- Extend proof lanes, diagnostics, and guides so exemplar support and rough edges become part of the public contract.
+
+**Why now:** v1 proved the substrate in isolation. The next highest-leverage work is forcing that substrate through credible app shapes before widening into broader native capability or commerce surface area.
+
 ## Requirements
 
 ### Validated
@@ -19,12 +30,14 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 - [x] Treat diagnostics, compatibility truth, and failure-mode visibility as first-class product surfaces. Validated in Phase 2: Manifest Truth And Compatibility.
 - [x] Support offline semantics that clearly separate cached read-only routes, local drafts, append-only journals, reconciliation, and server-authoritative commits. Validated in Phase 4: Honest Offline Contract.
 - [x] Create disciplined contracts for offline islands and sync journals/outboxes without widening into generic sync claims. Validated in Phase 4: Honest Offline Contract.
+- [x] Define a versioned bridge contract for bounded native affordances instead of ad hoc messaging. Validated in Phase 3: Native Shell Boot And Bounded Bridge.
+- [x] Establish a capability registry with explicit allowlists, versioning, and active-route checks. Validated in Phase 3: Native Shell Boot And Bounded Bridge.
+- [x] Ship example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces. Validated in Phase 5: Packs, Native Escape, And Proof Lanes.
 
 ### Active
-
-- [ ] Define a versioned bridge contract for bounded native affordances instead of ad hoc messaging.
-- [ ] Establish a capability registry with explicit allowlists, versioning, and active-route checks.
-- [ ] Ship the remaining example-host proof lanes as part of the public product contract.
+- [ ] Validate the v1 substrate against three adopter-shaped exemplar lanes: Phoenix-backed SaaS portal, selective-native mobile flow, and local-first study or content flow.
+- [ ] Harden route-policy, manifest, shell, bridge, pack, transfer, and offline contracts where exemplar pressure exposes adopter-facing gaps.
+- [ ] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract.
 
 ### Out of Scope
 
@@ -58,11 +71,17 @@ The maintainer's OSS house style materially constrains the project. Install trut
 |----------|-----------|---------|
 | Center the product on route policy and runtime ownership | The strongest research convergence is that explicit boundaries are the core differentiator | Validated in Phase 1 |
 | Use a capability ladder instead of a single runtime model | Different route classes need different ownership and honesty about tradeoffs | Validated in Phase 2 via manifest/runtime/support contract layering |
-| Treat bridge contracts as bounded, semantic, and versioned | High-frequency or ad hoc cross-runtime messaging would make the system fragile and misleading | — Pending |
+| Treat bridge contracts as bounded, semantic, and versioned | High-frequency or ad hoc cross-runtime messaging would make the system fragile and misleading | Validated in Phase 3 via typed bridge envelopes, manifest-backed allowlists, and fail-closed native channels |
 | Keep offline claims route-local, typed, and narrow | Cached read-only degradation and local-first mutation need visibly different contracts and proof posture | Validated in Phase 4 via cache/island contracts, replay outcomes, doctor posture, and the hermetic offline proof lane |
 | Plan iOS and Android as first-class, web-inclusive targets | Mobile credibility is the project goal, while Phoenix web remains part of the architecture | Validated in Phase 2 via explicit support matrix and compatibility baselines |
 | Keep deep desktop packaging and broad adapters out of v1 core | Early scope should validate the contract surface before expanding platform breadth | — Pending |
 | Make diagnostics, proof lanes, and docs part of the public contract | This matches the maintainer's proven OSS style and reduces support ambiguity | Further validated in Phase 2 via `mix crosswake.doctor`, generated support docs, and compatibility guidance |
+| Treat checked-in example hosts as the public proof artifact class and generated hosts as secondary verification | Proof-backed support needed a stable adopter-facing install path rather than host-local scaffolding alone | Validated in Phase 5 |
+| Use adopter-shaped stress profiles as the first v2 milestone | Realistic product pressure should reveal the next core fixes before Crosswake expands official native capability breadth | Active in Milestone v2.0 |
+| Treat exemplars as proof artifacts, not product templates | The milestone should validate architectural fit without turning Crosswake into a starter-app bundle | Active in Milestone v2.0 |
+| Publish one adopter-profile matrix plus a shared example-host lane contract before exemplar implementation | Locking profile vocabulary, non-goals, and artifact boundaries first reduces scope drift in Phases 7-10 | Validated in Phase 6 |
+| Prove the Phoenix SaaS lane as one authenticated LiveView-first approvals slice with one bounded haptics seam | The first exemplar needed credible product pressure without drifting into offline, transfer-first, or native-screen breadth | Validated in Phase 7 |
+| Route-pattern deep links in checked-in shells must match manifest paths with dynamic segments | The SaaS approval route exposed that exact-path matching denied valid `/saas/.../:id` deep links and broke proof-backed shell activation | Validated in Phase 7 |
 
 ## Evolution
 
@@ -82,4 +101,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-16 after Phase 4 completion*
+*Last updated: 2026-05-18 after Phase 7 completion*

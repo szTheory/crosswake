@@ -18,20 +18,20 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **MANI-01**: Crosswake compiles declared route policy into a versioned runtime manifest consumable by Phoenix hosts and native shells.
 - [x] **MANI-02**: Crosswake validates manifest schema, compatibility versions, and support matrix rules before release artifacts are produced.
-- [ ] **MANI-03**: Native shells refuse to activate routes when manifest, bridge, capability, or pack compatibility checks fail.
+- [x] **MANI-03**: Native shells refuse to activate routes when manifest, bridge, capability, or pack compatibility checks fail.
 - [x] **MANI-04**: Crosswake publishes an explicit support and compatibility matrix covering supported Phoenix, LiveView, iOS, and Android baselines.
 
 ### Native Shell
 
-- [ ] **SHELL-01**: Crosswake provides an iOS shell that can boot from a Crosswake manifest, resolve route ownership, and host LiveView routes in a bounded WebKit container.
-- [ ] **SHELL-02**: Crosswake provides an Android shell that can boot from a Crosswake manifest, resolve route ownership, and host LiveView routes in a bounded WebView container.
-- [ ] **SHELL-03**: Crosswake supports deep-link and app-entry handoff so mobile routes open in the runtime declared by route policy.
+- [x] **SHELL-01**: Crosswake provides an iOS shell that can boot from a Crosswake manifest, resolve route ownership, and host LiveView routes in a bounded WebKit container.
+- [x] **SHELL-02**: Crosswake provides an Android shell that can boot from a Crosswake manifest, resolve route ownership, and host LiveView routes in a bounded WebView container.
+- [x] **SHELL-03**: Crosswake supports deep-link and app-entry handoff so mobile routes open in the runtime declared by route policy.
 
 ### Bridge And Capabilities
 
-- [ ] **BRDG-01**: Crosswake provides a typed, versioned, request/reply bridge for bounded native capability calls instead of ad hoc message passing.
-- [ ] **BRDG-02**: Crosswake exposes a capability registry that allowlists capabilities by route and blocks unavailable or undeclared capability access.
-- [ ] **BRDG-03**: Crosswake verifies active-route, origin, and compatibility constraints before any bridge call is executed.
+- [x] **BRDG-01**: Crosswake provides a typed, versioned, request/reply bridge for bounded native capability calls instead of ad hoc message passing.
+- [x] **BRDG-02**: Crosswake exposes a capability registry that allowlists capabilities by route and blocks unavailable or undeclared capability access.
+- [x] **BRDG-03**: Crosswake verifies active-route, origin, and compatibility constraints before any bridge call is executed.
 
 ### Offline And Sync
 
@@ -51,12 +51,42 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DX-01**: Crosswake provides generators or installers for host Phoenix setup and native shell bootstrap with clear ownership boundaries.
 - [x] **DX-02**: Crosswake provides doctor or diagnostics tooling that detects setup, compatibility, capability, and route-policy problems.
-- [ ] **DX-03**: Crosswake ships example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces.
+- [x] **DX-03**: Crosswake ships example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces.
 - [x] **DX-04**: Crosswake documentation clearly states supported runtime modes, non-goals, prerequisites, and rough-edge truth for adopters.
 
 ## v2 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Current milestone requirements for the next release cycle. Each maps to roadmap phases 6-10.
+
+### Adopter Profile Matrix
+
+- [x] **PROF-01**: Phoenix teams can inspect a published adopter-profile matrix that maps the three target app shapes to Crosswake runtime modes, required seams, and explicit non-goals.
+- [x] **PROF-02**: Phoenix teams can tell which Crosswake surfaces each profile is meant to pressure before they run the exemplars.
+
+### Phoenix SaaS Portal Exemplar
+
+- [x] **SAAS-01**: Phoenix teams can run a SaaS-portal exemplar route set that keeps the majority of authenticated product flows in LiveView while exercising at least one bounded native affordance without shell forking.
+- [x] **SAAS-02**: Phoenix teams can verify from guides and proof lanes which server-centric mobile-shell boundaries are supported for the SaaS profile and which remain intentionally unsupported.
+
+### Selective Native Flow Exemplar
+
+- [ ] **NATIVE-01**: Phoenix teams can run a selective-native exemplar flow that moves one device-heavy or entitlement-adjacent route into explicit native ownership while surrounding routes remain Phoenix-owned.
+- [ ] **NATIVE-02**: The selective-native exemplar uses declared pack, transfer, and capability seams rather than ad hoc container behavior.
+
+### Local-First Content Flow Exemplar
+
+- [ ] **LOCAL-01**: Phoenix teams can run a local-first exemplar flow that completes meaningful work offline using Crosswake's journal, outbox, and reconciliation contract.
+- [ ] **LOCAL-02**: The local-first exemplar proves cached read-only degradation and explicit replay outcomes alongside the offline-island workflow.
+
+### Hardening And Proof
+
+- [ ] **HARD-01**: Phoenix teams can express the exemplar flows without app-local shell forks, undocumented bridge behavior, or generic plugin-bus patterns.
+- [ ] **HARD-02**: Contributors can run deterministic proof lanes that validate each exemplar's declared support posture across docs, host code, and runtime hooks.
+- [ ] **HARD-03**: Adopters can read guidance and diagnostics that explain which profile pressures are first-class, which are rough edges, and where future capability expansion begins.
+
+## Future Requirements
+
+Deferred beyond the current milestone.
 
 ### Integrations And Operations
 
@@ -81,6 +111,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | Broad billing or identity-provider abstractions in core | Important for some adopters, but too vendor-heavy for v1 substrate scope |
 | Desktop-first architecture work | Desktop is a later extension, not a first-release driver |
 | Claims of seamless or magical offline support | Offline behavior must remain explicit about what is cached, local, or server-authoritative |
+| Turn exemplar lanes into full starter apps or polished templates | This milestone is for architectural pressure and proof, not template-productization |
+| Broad commerce abstraction or paywall infrastructure in this milestone | Capability and commerce expansion should follow validated exemplar pressure, not precede it |
 
 ## Traceability
 
@@ -94,14 +126,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROUTE-04 | Phase 1 | Complete |
 | MANI-01 | Phase 2 | Complete |
 | MANI-02 | Phase 2 | Complete |
-| MANI-03 | Phase 3 | Pending |
+| MANI-03 | Phase 3 | Complete |
 | MANI-04 | Phase 2 | Complete |
-| SHELL-01 | Phase 3 | Pending |
-| SHELL-02 | Phase 3 | Pending |
-| SHELL-03 | Phase 3 | Pending |
-| BRDG-01 | Phase 3 | Pending |
-| BRDG-02 | Phase 3 | Pending |
-| BRDG-03 | Phase 3 | Pending |
+| SHELL-01 | Phase 3 | Complete |
+| SHELL-02 | Phase 3 | Complete |
+| SHELL-03 | Phase 3 | Complete |
+| BRDG-01 | Phase 3 | Complete |
+| BRDG-02 | Phase 3 | Complete |
+| BRDG-03 | Phase 3 | Complete |
 | OFFL-01 | Phase 4 | Complete |
 | OFFL-02 | Phase 4 | Complete |
 | OFFL-03 | Phase 4 | Complete |
@@ -112,14 +144,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PACK-04 | Phase 5 | Complete |
 | DX-01 | Phase 1 | Complete |
 | DX-02 | Phase 2 | Complete |
-| DX-03 | Phase 5 | Pending |
+| DX-03 | Phase 5 | Complete |
 | DX-04 | Phase 2 | Complete |
+| PROF-01 | Phase 6 | Complete |
+| PROF-02 | Phase 6 | Complete |
+| SAAS-01 | Phase 7 | Complete |
+| SAAS-02 | Phase 7 | Complete |
+| NATIVE-01 | Phase 8 | Planned |
+| NATIVE-02 | Phase 8 | Planned |
+| LOCAL-01 | Phase 9 | Planned |
+| LOCAL-02 | Phase 9 | Planned |
+| HARD-01 | Phase 10 | Planned |
+| HARD-02 | Phase 10 | Planned |
+| HARD-03 | Phase 10 | Planned |
 
 **Coverage:**
 - v1 requirements: 26 total
-- Mapped to phases: 26
+- v2.0 requirements: 11 total
+- Mapped to phases: 37
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-17 after Phase 5 plan 05-06 completion*
+*Last updated: 2026-05-18 after Phase 7 completion*

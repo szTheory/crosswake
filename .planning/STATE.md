@@ -2,24 +2,24 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-12)
+See: .planning/PROJECT.md (updated 2026-05-18)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 5 execution - Packs, Native Escape, And Proof Lanes
+**Current focus:** Phase 8 planning - turning the locked profile matrix into the Selective Native Flow exemplar lane
 
 ## Current Position
 
-Phase: 5 of 5 in progress (Packs, Native Escape, And Proof Lanes)
-Plan: 7 of 10 in current phase
-Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, generated-shell required-pack runtime surfaces, manifest-owned route-local transfer seam truth, manifest-backed transfer bridge allowlisting, the single native media-capture escape hatch, and explicit generated-shell transfer execution are landed, while proof lanes remain ahead
-Last activity: 2026-05-17 — Completed Phase 5 plan 05-07 verification with `mix test test/mix/tasks/crosswake_gen_shell_test.exs`
+Phase: Phase 7 complete (next: Phase 8 Selective Native Flow Exemplar)
+Plan: 07-01, 07-02, and 07-03 complete
+Status: Phase 7 landed the shared `/saas` exemplar lane, approvals-led LiveView flow, bounded haptics proof, SaaS boundary docs, and checked-in shell-proof alignment.
+Last activity: 2026-05-18 — Completed Phase 7 Phoenix SaaS Portal Exemplar
 
-Progress: [██████████] 97%
+Progress: [###-------] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 18
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -33,7 +33,7 @@ Progress: [██████████] 97%
 | 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 05-04, 05-05, 05-03, 05-06, and 05-07 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
+- Last 5 plans: 06-01, 06-02, 07-01, 07-02, and 07-03 landed; the milestone now has a proof-backed Phoenix SaaS exemplar lane
 - Trend: Positive
 
 ## Accumulated Context
@@ -46,11 +46,11 @@ Recent decisions affecting current work:
 - Phase 1-5 roadmap follows the route-policy thesis instead of splitting work by models, APIs, and UI layers.
 - Shell, bridge, offline, and pack work are staged after manifest and compatibility truth to avoid support dishonesty.
 - Phase 2 now establishes canonical manifest, compatibility, doctor, and support-doc truth that Phase 3 shell work must consume rather than re-specify.
-- Phase 3 will execute as six plans: activation and denial contract, generator and fixtures, iOS shell, Android shell, bounded bridge, then doctor/docs/proof wiring.
-- Phase 3 doctor/docs/support truth now uses `verification required` until both generated-project proof hooks pass.
+- Phase 3 executed as six plans: activation and denial contract, generator and fixtures, iOS shell, Android shell, bounded bridge, then doctor/docs/proof wiring.
+- Phase 3 doctor/docs/support truth originally held `verification required` until both generated-project proof hooks passed; Phase 5 proof lanes and support publication closed that gap.
 - The Android generated shell now self-bootstraps Gradle instead of depending on a missing wrapper jar.
 - Phase 4 proves one narrow offline story only: explicit cached read-only hydration plus one study-session offline island with append-only journal durability, explicit replay outcomes, and route-local diagnostics.
-- Phase 4 support posture is split intentionally: repo-local offline contract surfaces are supported by `script/verify_offline_contract.sh`, while generated shell runtime support still inherits Phase 3's `verification required` posture until both native proof hooks pass.
+- Phase 4 support posture is split intentionally: repo-local offline contract surfaces are supported by `script/verify_offline_contract.sh`, and generated shell runtime support is now backed by the generated-shell proof hooks and checked-in example hosts.
 - Phase 5 pack lifecycle remains intentionally narrow: install, verify, availability, stale, invalidation, and failure semantics only, without widening into generic asset management.
 - Pack activation now accepts both legacy installed-version strings and typed inventory records so generated shell work can adopt lifecycle truth incrementally.
 - Pack lifecycle denials continue to reuse `pack_incompatible` instead of adding a second pack-specific failure vocabulary.
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - Generated shells open declared native capture routes directly and keep non-capture fallback fail-closed instead of drifting into generic bounded-web upload behavior.
 - Generated shells now execute `transfer.import`, `transfer.export`, `transfer.download`, and `transfer.upload.prepare` only through route-local transfer coordinators backed by manifest-declared seams.
 - Native capture handoff is now manifest-derived and explicit on both platforms; staged local media still does not imply upload completion.
+- Phase 6 now fixes the public adopter vocabulary around `Phoenix SaaS Portal`, `Selective Native Flow`, and `Local-First Study Flow`, and requires later exemplar phases to extend one shared example-host artifact class.
+- Phase 7 now proves one authenticated Phoenix SaaS companion lane inside the shared example host: five `/saas` routes, host-owned auth, one guarded approval action, and one bounded haptics confirmation seam.
+- The checked-in iOS and Android proof hosts now boot the SaaS approval route as part of the public artifact class instead of staying pinned to older library-only activation truth.
+- Android shell activation now matches dynamic manifest paths for deep links so routes like `/saas/approvals/:id` resolve correctly instead of failing closed as inactive.
 
 ### Pending Todos
 
@@ -69,14 +73,9 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 3 execution still has scope-concentration warnings in Plans 03-02, 03-03, and 03-05 even though the checker cleared all blockers.
-- Android proof now depends on a blocking generated-project verification lane rather than a deferred “expected but unproven” posture; execution should treat that as a real exit criterion.
-- Plan 03-03 code and summary landed, but `script/verify_generated_ios_shell.sh` is blocked by the local Xcode installation: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
-- Plan 03-04 template work, toolchain bootstrapping, and Gradle bootstrap now succeed, and a re-run still reaches real Gradle execution, but `script/verify_generated_android_shell.sh` remains blocked by host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
-- Plan 03-05 bounded bridge code, templates, guide, and tests landed.
-- Plan 03-06 doctor/docs/support guidance landed and now blocks shell support claims until both real proof hooks pass.
-- Generated iOS shell proof still depends on the local Xcode/CoreSimulator install: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
-- Generated Android shell proof still depends on host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
+- The remaining exemplar phases must keep extending the shared artifact class instead of introducing parallel sample apps or phase-specific proof harnesses.
+- Selective-native work needs to keep native ownership narrow and explicit; the Phase 7 SaaS lane already proved the value of not widening bridge authority prematurely.
+- Native proof remains environment-sensitive even with the current green lanes; later exemplar work should treat simulator and emulator drift as product-surface risk.
 
 ## Deferred Items
 
@@ -87,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-17
-Stopped at: Completed 05-07; next work is 05-08 proof-lane execution while Phase 3 host-environment proof blockers remain unchanged
+Last session: 2026-05-18
+Stopped at: Phase 7 is complete; next work is discussing or planning Phase 8 against the locked selective-native lane
 Resume file: None
