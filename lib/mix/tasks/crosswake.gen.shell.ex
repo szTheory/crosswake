@@ -54,6 +54,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     {"CrosswakeShell/Info.plist", "ios/Info.plist.eex"},
     {"CrosswakeShell/ActivationCoordinator.swift", "ios/ActivationCoordinator.swift.eex"},
     {"CrosswakeShell/NativeCaptureView.swift", "ios/NativeCaptureView.swift.eex"},
+    {"CrosswakeShell/TransferCoordinator.swift", "ios/TransferCoordinator.swift.eex"},
     {"CrosswakeShell/PackStore.swift", "ios/PackStore.swift.eex"},
     {"CrosswakeShell/RequiredPackView.swift", "ios/RequiredPackView.swift.eex"},
     {"CrosswakeShell/BridgeChannel.swift", "ios/BridgeChannel.swift.eex"},

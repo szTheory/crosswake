@@ -94,12 +94,35 @@ struct ActivationRequest: Codable, Equatable {
 }
 
 struct ShellManifest: Codable, Equatable {
+    struct TransferSeam: Codable, Equatable {
+        let id: String
+        let intent: String
+        let direction: String
+        let source: String?
+        let destination: String?
+        let verification: String
+        let mediaTypes: [String]
+        let states: [String]
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case intent
+            case direction
+            case source
+            case destination
+            case verification
+            case mediaTypes = "media_types"
+            case states
+        }
+    }
+
     struct Route: Codable, Equatable {
         let id: String
         let path: String
         let runtime: String
         let capabilities: [String]
         let packs: [String]
+        let transfers: [TransferSeam]
         let allowlistedOrigins: [String]
 
         enum CodingKeys: String, CodingKey {
@@ -108,6 +131,7 @@ struct ShellManifest: Codable, Equatable {
             case runtime
             case capabilities
             case packs
+            case transfers
             case allowlistedOrigins = "allowlisted_origins"
         }
     }
@@ -134,6 +158,12 @@ struct LiveViewSession: Equatable {
     let routeID: String
     let url: URL
     let allowedOrigin: URL
+    let bridgeProtocolVersion: String
+    let nativeRuntimeVersion: String
+    let installedPacks: [String: String]
+    let routeRequiredPacks: [String]
+    let capabilities: [String: String]
+    let declaredTransfers: [ShellManifest.TransferSeam]
 }
 
 struct RequiredPackPresentation: Equatable {
@@ -160,6 +190,7 @@ enum ShellPresentation: Equatable {
 @MainActor
 final class ActivationCoordinator: ObservableObject {
     @Published private(set) var presentation: ShellPresentation = .booting
+    @Published private(set) var transferCoordinator: TransferCoordinator?
 
     private let manifestLoader: () throws -> ShellManifest
     private let requestLoader: () throws -> ActivationRequest
@@ -285,6 +316,7 @@ final class ActivationCoordinator: ObservableObject {
         }
 
         if let blockingPack = packStore.blockingStatus(for: route.packs) {
+            transferCoordinator = nil
             return .requiredPack(
                 RequiredPackPresentation(
                     routeID: route.id,
@@ -295,6 +327,9 @@ final class ActivationCoordinator: ObservableObject {
         }
 
         if route.runtime == "native_screen" {
+            let routeTransferCoordinator = TransferCoordinator(routeID: route.id, declaredTransfers: route.transfers)
+            transferCoordinator = routeTransferCoordinator
+
             guard let transferID = captureTransferID(for: route) else {
                 return .denied(
                     denial(
@@ -318,6 +353,7 @@ final class ActivationCoordinator: ObservableObject {
         }
 
         guard route.runtime == "live_view" else {
+            transferCoordinator = nil
             return .denied(
                 denial(
                     reason: .compatibilityMismatch,
@@ -343,9 +379,24 @@ final class ActivationCoordinator: ObservableObject {
 
         let resolvedURL = request.url ?? URL(string: request.origin + route.path)!
         let allowedOrigin = URL(string: request.origin) ?? resolvedURL
+        let routeTransferCoordinator = route.transfers.isEmpty
+            ? nil
+            : TransferCoordinator(routeID: route.id, declaredTransfers: route.transfers)
+
+        transferCoordinator = routeTransferCoordinator
 
         return .liveView(
-            LiveViewSession(routeID: route.id, url: resolvedURL, allowedOrigin: allowedOrigin)
+            LiveViewSession(
+                routeID: route.id,
+                url: resolvedURL,
+                allowedOrigin: allowedOrigin,
+                bridgeProtocolVersion: request.bridgeProtocolVersion,
+                nativeRuntimeVersion: request.nativeRuntimeVersion,
+                installedPacks: request.installedPacks,
+                routeRequiredPacks: route.packs,
+                capabilities: request.capabilities,
+                declaredTransfers: route.transfers
+            )
         )
     }
 
@@ -396,11 +447,7 @@ final class ActivationCoordinator: ObservableObject {
     }
 
     private func captureTransferID(for route: ShellManifest.Route) -> String? {
-        if route.id == "camera" || route.id == "capture" {
-            return "capture_upload"
-        }
-
-        return nil
+        route.transfers.first(where: { $0.intent == "upload" && $0.source == "native_capture" })?.id
     }
 
     private func routeTitle(for route: ShellManifest.Route) -> String {

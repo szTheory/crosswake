@@ -9,8 +9,21 @@ enum BridgeCommand: String, CaseIterable {
     case appInfoGet = "app.info.get"
     case hapticsImpact = "haptics.impact"
     case filesPick = "files.pick"
+    case transferImport = "transfer.import"
+    case transferExport = "transfer.export"
+    case transferDownload = "transfer.download"
+    case transferUploadPrepare = "transfer.upload.prepare"
 
     var capability: String { rawValue }
+
+    var isTransferCommand: Bool {
+        switch self {
+        case .transferImport, .transferExport, .transferDownload, .transferUploadPrepare:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 struct BridgeRequestEnvelope: Codable, Equatable {
@@ -99,40 +112,32 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
     static let handlerName = "crosswakeBridge"
     static let protocolName = "crosswake.bridge"
 
-    private let session: LiveViewSession
-    private let bridgeProtocolVersion: String
-    private let nativeRuntimeVersion: String
-    private let installedPacks: [String: String]
-    private let routeRequiredPacks: [String]
-    private let capabilities: [String: String]
+    private var session: LiveViewSession
     private let replySink: (BridgeReplyEnvelope) -> Void
     private let appInfoProvider: () -> [String: String]
     private let hapticsHandler: (String) -> Void
     private let filesPickHandler: ([String: String]) -> [String: String]
+    private let transferCoordinator: TransferCoordinator?
 
     init(
         session: LiveViewSession,
-        bridgeProtocolVersion: String,
-        nativeRuntimeVersion: String,
-        installedPacks: [String: String],
-        routeRequiredPacks: [String],
-        capabilities: [String: String],
+        transferCoordinator: TransferCoordinator?,
         replySink: @escaping (BridgeReplyEnvelope) -> Void,
         appInfoProvider: @escaping () -> [String: String],
         hapticsHandler: @escaping (String) -> Void,
         filesPickHandler: @escaping ([String: String]) -> [String: String]
     ) {
         self.session = session
-        self.bridgeProtocolVersion = bridgeProtocolVersion
-        self.nativeRuntimeVersion = nativeRuntimeVersion
-        self.installedPacks = installedPacks
-        self.routeRequiredPacks = routeRequiredPacks
-        self.capabilities = capabilities
+        self.transferCoordinator = transferCoordinator
         self.replySink = replySink
         self.appInfoProvider = appInfoProvider
         self.hapticsHandler = hapticsHandler
         self.filesPickHandler = filesPickHandler
         super.init()
+    }
+
+    func update(session: LiveViewSession) {
+        self.session = session
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -143,8 +148,8 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
         }
 
         guard request.protocolName == Self.protocolName,
-              request.version == bridgeProtocolVersion,
-              request.nativeRuntimeVersion == nativeRuntimeVersion else {
+              request.version == session.bridgeProtocolVersion,
+              request.nativeRuntimeVersion == session.nativeRuntimeVersion else {
             replySink(deny(request, reason: "compatibility_mismatch", message: "Bridge protocol or runtime mismatch.", hint: "Update the shell before retrying this bridge request."))
             return
         }
@@ -160,21 +165,15 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
         }
 
         guard let command = BridgeCommand(rawValue: request.command), request.capability == command.capability else {
-            replySink(deny(request, reason: "undeclared_capability", message: "The bridge command is outside the bounded Phase 3 contract.", hint: "Use app.info.get, haptics.impact, or files.pick only."))
+            replySink(deny(request, reason: "undeclared_capability", message: "The bridge command is outside the bounded transfer contract.", hint: "Use app.info.get, haptics.impact, files.pick, transfer.import, transfer.export, transfer.download, or transfer.upload.prepare only."))
             return
         }
 
-        guard let requiredCapabilityVersion = capabilities[command.capability],
-              request.capabilities[command.capability] == requiredCapabilityVersion else {
-            replySink(deny(request, reason: "unavailable_capability", message: "The requested capability is not available at the manifest-backed version.", hint: "Ship the declared capability version before retrying."))
-            return
-        }
-
-        guard routeRequiredPacks.allSatisfy({ packRequirement in
+        guard session.routeRequiredPacks.allSatisfy({ packRequirement in
             let parts = packRequirement.split(separator: "@", maxSplits: 1).map(String.init)
             let packID = parts[0]
             let requiredVersion = parts.count == 2 ? parts[1] : nil
-            let installedVersion = installedPacks[packID]
+            let installedVersion = session.installedPacks[packID]
             return requiredVersion == nil ? installedVersion != nil : installedVersion == requiredVersion
         }) else {
             replySink(deny(request, reason: "pack_incompatible", message: "The active route is missing a compatible declared pack.", hint: "Install or update the required pack before retrying."))
@@ -183,15 +182,46 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
 
         switch command {
         case .appInfoGet:
+            guard let requiredCapabilityVersion = session.capabilities[command.capability],
+                  request.capabilities[command.capability] == requiredCapabilityVersion else {
+                replySink(deny(request, reason: "unavailable_capability", message: "The requested capability is not available at the manifest-backed version.", hint: "Ship the declared capability version before retrying."))
+                return
+            }
+
             replySink(ok(request, payload: appInfoProvider()))
 
         case .hapticsImpact:
+            guard let requiredCapabilityVersion = session.capabilities[command.capability],
+                  request.capabilities[command.capability] == requiredCapabilityVersion else {
+                replySink(deny(request, reason: "unavailable_capability", message: "The requested capability is not available at the manifest-backed version.", hint: "Ship the declared capability version before retrying."))
+                return
+            }
+
             let style = request.payload["style"] ?? "medium"
             hapticsHandler(style)
             replySink(ok(request, payload: ["style": style]))
 
         case .filesPick:
+            guard let requiredCapabilityVersion = session.capabilities[command.capability],
+                  request.capabilities[command.capability] == requiredCapabilityVersion else {
+                replySink(deny(request, reason: "unavailable_capability", message: "The requested capability is not available at the manifest-backed version.", hint: "Ship the declared capability version before retrying."))
+                return
+            }
+
             replySink(ok(request, payload: filesPickHandler(request.payload)))
+
+        case .transferImport, .transferExport, .transferDownload, .transferUploadPrepare:
+            guard let transferCoordinator,
+                  let payload = transferCoordinator.execute(
+                    command: command.rawValue,
+                    payload: request.payload,
+                    correlationID: request.correlationID
+                  ) else {
+                replySink(deny(request, reason: "undeclared_capability", message: "This route does not declare the requested transfer seam.", hint: "Retry only with the active route's manifest-declared transfer command and transfer_id."))
+                return
+            }
+
+            replySink(ok(request, payload: payload))
         }
     }
 

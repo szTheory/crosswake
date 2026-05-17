@@ -3,10 +3,26 @@ import SwiftUI
 struct NativeCaptureView: View {
     let routeID: String
     let routeTitle: String
-    let runtimeLabel: String = "Native capture"
+    let runtimeLabel: String
     let transferID: String
+    @ObservedObject private var transferCoordinator: TransferCoordinator
 
     @State private var stagedLocalFile = false
+
+    init(
+        routeID: String,
+        routeTitle: String,
+        runtimeLabel: String = "Native capture",
+        transferID: String,
+        transferCoordinator: TransferCoordinator?
+    ) {
+        self.routeID = routeID
+        self.routeTitle = routeTitle
+        self.runtimeLabel = runtimeLabel
+        self.transferID = transferID
+        self.transferCoordinator =
+            transferCoordinator ?? TransferCoordinator(routeID: routeID, declaredTransfers: [])
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -24,6 +40,7 @@ struct NativeCaptureView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Captured locally")
                         .font(.system(size: 14, weight: .semibold))
+
                     Text("Local staging is complete. Transfer handoff stays explicit until `\(transferID)` starts.")
                         .font(.system(size: 16))
                         .foregroundStyle(.secondary)
@@ -31,7 +48,7 @@ struct NativeCaptureView: View {
             }
 
             Button("Stage For Transfer") {
-                stagedLocalFile = true
+                onStageForTransfer()
             }
             .buttonStyle(.borderedProminent)
 
@@ -49,5 +66,16 @@ struct NativeCaptureView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(uiColor: .systemGroupedBackground))
+    }
+
+    private func onStageForTransfer() {
+        stagedLocalFile = true
+
+        _ = transferCoordinator.stageCapturedMedia(
+            transferID: transferID,
+            localPath: "/tmp/\(transferID)-captured.jpg",
+            mediaType: "image/jpeg",
+            bytes: 524_288
+        )
     }
 }

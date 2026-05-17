@@ -4,22 +4,40 @@ import WebKit
 
 struct LiveViewContainerView: UIViewControllerRepresentable {
     let session: LiveViewSession
+    let transferCoordinator: TransferCoordinator?
     let onDenied: (RouteDenialPresentation) -> Void
 
     func makeUIViewController(context: Context) -> LiveViewContainerViewController {
-        LiveViewContainerViewController(session: session, onDenied: onDenied)
+        LiveViewContainerViewController(
+            session: session,
+            transferCoordinator: transferCoordinator,
+            onDenied: onDenied
+        )
     }
 
     func updateUIViewController(_ uiViewController: LiveViewContainerViewController, context: Context) {
-        uiViewController.update(session: session)
+        uiViewController.update(session: session, transferCoordinator: transferCoordinator)
     }
 }
 
 final class LiveViewContainerViewController: UIViewController, WKNavigationDelegate {
     private let onDenied: (RouteDenialPresentation) -> Void
     private var session: LiveViewSession
+    private var transferCoordinator: TransferCoordinator?
+    private lazy var bridgeChannel = BridgeChannel(
+        session: session,
+        transferCoordinator: transferCoordinator,
+        replySink: { _ in },
+        appInfoProvider: { ["shell": "CrosswakeShell", "route_id": self.session.routeID] },
+        hapticsHandler: { _ in },
+        filesPickHandler: { payload in payload }
+    )
     private lazy var webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
+        let userContentController = WKUserContentController()
+
+        userContentController.add(bridgeChannel, name: BridgeChannel.handlerName)
+        configuration.userContentController = userContentController
 
         // App-Bound Domains keep the generated shell inside declared WebKit authority.
         if #available(iOS 14.0, *) {
@@ -32,8 +50,13 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         return view
     }()
 
-    init(session: LiveViewSession, onDenied: @escaping (RouteDenialPresentation) -> Void) {
+    init(
+        session: LiveViewSession,
+        transferCoordinator: TransferCoordinator?,
+        onDenied: @escaping (RouteDenialPresentation) -> Void
+    ) {
         self.session = session
+        self.transferCoordinator = transferCoordinator
         self.onDenied = onDenied
         super.init(nibName: nil, bundle: nil)
     }
@@ -52,9 +75,11 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         loadRouteIfNeeded()
     }
 
-    func update(session: LiveViewSession) {
-        guard self.session != session else { return }
+    func update(session: LiveViewSession, transferCoordinator: TransferCoordinator?) {
+        guard self.session != session || self.transferCoordinator !== transferCoordinator else { return }
         self.session = session
+        self.transferCoordinator = transferCoordinator
+        bridgeChannel.update(session: session)
         loadRouteIfNeeded()
     }
 
