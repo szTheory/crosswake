@@ -1,0 +1,346 @@
+{
+  "capability_registry": {
+    "camera": {
+      "id": "camera",
+      "status": "supported",
+      "version": "1.0.0"
+    },
+    "haptics": {
+      "id": "haptics",
+      "status": "supported",
+      "version": "1.0.0"
+    }
+  },
+  "compatibility": {
+    "bridge_protocol_version": "1.0.0",
+    "manifest_schema_version": "1.0.0",
+    "native_runtime_version": "1.0.0",
+    "remote_updates": [
+      "versioned_replacement",
+      "versioned_companion_data"
+    ],
+    "supported_manifest_sources": [
+      "bundled",
+      "cached",
+      "remote"
+    ]
+  },
+  "crosswake_version": "0.1.0",
+  "generated_at": "2026-05-17T04:17:51Z",
+  "host": {
+    "live_view_version": "~> 1.1",
+    "manifest_sources": [
+      "bundled",
+      "cached",
+      "remote"
+    ],
+    "origin": "https://example.crosswake.invalid",
+    "phoenix_version": "~> 1.8"
+  },
+  "manifest_schema_version": "1.0.0",
+  "pack_registry": {
+    "camera_capture_assets@1.0.0": {
+      "id": "camera_capture_assets",
+      "integrity": null,
+      "kind": "media",
+      "version": "1.0.0"
+    },
+    "lesson_library@1.2.0": {
+      "id": "lesson_library",
+      "integrity": null,
+      "kind": "content",
+      "version": "1.2.0"
+    }
+  },
+  "routes": {
+    "camera": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [
+        "camera"
+      ],
+      "id": "camera",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [
+        "camera_capture_assets@1.0.0"
+      ],
+      "path": "/camera",
+      "runtime": "native_screen",
+      "security": "sensitive",
+      "sync": [],
+      "transfers": [
+        {
+          "direction": "inbound",
+          "id": "capture_upload",
+          "intent": "upload",
+          "media_types": [
+            "image/*"
+          ],
+          "protocol": "crosswake.transfer",
+          "source": "native_capture",
+          "states": [
+            "queued",
+            "preparing",
+            "transferring",
+            "awaiting_network",
+            "verifying",
+            "complete",
+            "failed",
+            "canceled"
+          ],
+          "verification": "required",
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "home": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "home",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "library": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": {
+        "hydration": "sqlite_snapshot",
+        "id": "lesson_library_v1",
+        "restrictions": [
+          "read_only",
+          "server_authoritative"
+        ],
+        "staleness": "best_effort",
+        "storage": "sqlite"
+      },
+      "capabilities": [],
+      "id": "library",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [
+        "lesson_library@1.2.0"
+      ],
+      "path": "/library",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": [
+        {
+          "direction": "inbound",
+          "id": "lesson_import",
+          "intent": "import",
+          "media_types": [
+            "application/pdf"
+          ],
+          "protocol": "crosswake.transfer",
+          "source": "native_picker",
+          "states": [
+            "queued",
+            "preparing",
+            "transferring",
+            "awaiting_network",
+            "verifying",
+            "complete",
+            "failed",
+            "canceled"
+          ],
+          "verification": "required",
+          "version": "1.0.0"
+        },
+        {
+          "destination": "user_visible_files",
+          "direction": "outbound",
+          "id": "lesson_export",
+          "intent": "export",
+          "media_types": [
+            "application/pdf"
+          ],
+          "protocol": "crosswake.transfer",
+          "states": [
+            "queued",
+            "preparing",
+            "transferring",
+            "awaiting_network",
+            "verifying",
+            "complete",
+            "failed",
+            "canceled"
+          ],
+          "verification": "required",
+          "version": "1.0.0"
+        },
+        {
+          "destination": "app_sandbox",
+          "direction": "outbound",
+          "id": "lesson_download",
+          "intent": "download",
+          "media_types": [
+            "application/pdf"
+          ],
+          "protocol": "crosswake.transfer",
+          "states": [
+            "queued",
+            "preparing",
+            "transferring",
+            "awaiting_network",
+            "verifying",
+            "complete",
+            "failed",
+            "canceled"
+          ],
+          "verification": "required",
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "saas-account": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "saas-account",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/saas/accounts/:id",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "saas-approval": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [
+        "haptics"
+      ],
+      "id": "saas-approval",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/saas/approvals/:id",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "saas-approvals": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "saas-approvals",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/saas/approvals",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "saas-dashboard": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "saas-dashboard",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/saas/dashboard",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "saas-profile-settings": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "saas-profile-settings",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/saas/settings/profile",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    }
+  },
+  "support_matrix": {
+    "android": [
+      {
+        "notes": "Host-owned shell boot is only published after the generated-project proof hook passes.",
+        "proof": "script/verify_generated_android_shell.sh",
+        "status": "verification required",
+        "target": "android",
+        "version": "26"
+      }
+    ],
+    "ios": [
+      {
+        "notes": "Host-owned shell boot is only published after the generated-project proof hook passes.",
+        "proof": "script/verify_generated_ios_shell.sh",
+        "status": "verification required",
+        "target": "ios",
+        "version": "17.0"
+      }
+    ],
+    "live_view": [
+      {
+        "notes": "LiveView remains server-owned and route-first.",
+        "proof": "phase-2-proof-lane",
+        "status": "supported",
+        "target": "phoenix_live_view",
+        "version": "~> 1.1"
+      }
+    ],
+    "phoenix": [
+      {
+        "notes": "Phoenix host install and manifest generation are the stable baseline.",
+        "proof": "phase-2-proof-lane",
+        "status": "supported",
+        "target": "phoenix",
+        "version": "~> 1.8"
+      }
+    ],
+    "shells": [
+      {
+        "notes": "Unsupported until both platform proof hooks have passed together.",
+        "proof": "script/verify_generated_ios_shell.sh",
+        "status": "unsupported",
+        "target": "ios_shell",
+        "version": "0.1.0"
+      },
+      {
+        "notes": "Unsupported until both platform proof hooks have passed together.",
+        "proof": "script/verify_generated_android_shell.sh",
+        "status": "unsupported",
+        "target": "android_shell",
+        "version": "0.1.0"
+      }
+    ]
+  }
+}

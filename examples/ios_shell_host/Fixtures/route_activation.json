@@ -1,0 +1,15 @@
+{
+  "bridge_protocol_version": "1.0.0",
+  "capabilities": {
+    "haptics.impact": "1.0.0"
+  },
+  "correlation_id": "ios-example-saas-approval-1",
+  "declared_pack_requirements": {},
+  "installed_packs": {},
+  "manifest_source": "bundled",
+  "native_runtime_version": "1.0.0",
+  "origin": "https://example.crosswake.invalid",
+  "route_id": "saas-approval",
+  "source": "cold_start",
+  "url": "https://example.crosswake.invalid/saas/approvals/approval-1"
+}
