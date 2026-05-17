@@ -56,6 +56,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_required_pack_view =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RequiredPackView.swift")
 
+    ios_native_capture_view =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/NativeCaptureView.swift")
+
     ios_tests =
       Path.join(
         target,
@@ -88,6 +91,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_app) =~ "onOpenURL"
     assert File.read!(ios_app) =~ "onContinueUserActivity"
     assert File.read!(ios_app) =~ "LiveViewContainerView"
+    assert File.read!(ios_app) =~ "NativeCaptureView"
     assert File.read!(ios_bridge_channel) =~ "app.info.get"
     assert File.read!(ios_bridge_channel) =~ "haptics.impact"
     assert File.read!(ios_bridge_channel) =~ "files.pick"
@@ -95,6 +99,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_scheme) =~ "xcscheme"
     assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
     assert File.read!(ios_activation_coordinator) =~ "inactiveRoute"
+    assert File.read!(ios_activation_coordinator) =~ "nativeCapture"
+    assert File.read!(ios_activation_coordinator) =~ "Native capture"
+    refute File.read!(ios_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
     assert File.read!(ios_route_unavailable) =~ "Update app"
     assert File.read!(ios_route_unavailable) =~ "Open safe fallback"
     assert File.read!(ios_live_view) =~ "WKWebView"
@@ -108,6 +115,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_required_pack_view) =~ "Install Required Pack"
     assert File.read!(ios_required_pack_view) =~ "Update Pack"
     assert File.read!(ios_required_pack_view) =~ "PackStore"
+    assert File.read!(ios_native_capture_view) =~ "Native capture"
+    assert File.read!(ios_native_capture_view) =~ "Capture media locally"
+    assert File.read!(ios_native_capture_view) =~ "Stage For Transfer"
+    assert File.read!(ios_native_capture_view) =~ "Cancel Capture"
     assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
     assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
     assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
@@ -188,6 +199,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt"
       )
 
+    android_native_capture_activity =
+      Path.join(
+        target,
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt"
+      )
+
     android_required_pack_layout =
       Path.join(
         target,
@@ -248,9 +265,14 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
     assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
     assert File.read!(android_manifest) =~ "RequiredPackActivity"
+    assert File.read!(android_manifest) =~ "NativeCaptureActivity"
     assert File.read!(android_main_activity) =~ "ActivationCoordinator.bundled"
+    assert File.read!(android_main_activity) =~ "NativeCaptureActivity"
     assert File.read!(android_activation_coordinator) =~ "pack_incompatible"
     assert File.read!(android_activation_coordinator) =~ "inactive_route"
+    assert File.read!(android_activation_coordinator) =~ "NATIVE_CAPTURE"
+    assert File.read!(android_activation_coordinator) =~ "Native capture"
+    refute File.read!(android_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
     assert File.read!(android_bridge_channel) =~ "app.info.get"
     assert File.read!(android_bridge_channel) =~ "haptics.impact"
     assert File.read!(android_bridge_channel) =~ "files.pick"
@@ -263,6 +285,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_required_pack_activity) =~ "Install Required Pack"
     assert File.read!(android_required_pack_activity) =~ "Update Pack"
     assert File.read!(android_required_pack_activity) =~ "PackStore"
+    assert File.read!(android_native_capture_activity) =~ "Native capture"
+    assert File.read!(android_native_capture_activity) =~ "Capture media locally"
+    assert File.read!(android_native_capture_activity) =~ "Stage For Transfer"
+    assert File.read!(android_native_capture_activity) =~ "Cancel Capture"
     assert File.read!(android_required_pack_layout) =~ "required_pack_title"
     assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
     assert File.read!(android_route_unavailable) =~ "Update app"
