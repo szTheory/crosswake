@@ -142,9 +142,17 @@ struct RequiredPackPresentation: Equatable {
     let status: RequiredPackStatus
 }
 
+struct NativeCapturePresentation: Equatable {
+    let routeID: String
+    let routeTitle: String
+    let runtimeLabel: String
+    let transferID: String
+}
+
 enum ShellPresentation: Equatable {
     case booting
     case requiredPack(RequiredPackPresentation)
+    case nativeCapture(NativeCapturePresentation)
     case liveView(LiveViewSession)
     case denied(RouteDenialPresentation)
 }
@@ -276,6 +284,39 @@ final class ActivationCoordinator: ObservableObject {
             )
         }
 
+        if let blockingPack = packStore.blockingStatus(for: route.packs) {
+            return .requiredPack(
+                RequiredPackPresentation(
+                    routeID: route.id,
+                    runtimeLabel: "LiveView",
+                    status: blockingPack
+                )
+            )
+        }
+
+        if route.runtime == "native_screen" {
+            guard let transferID = captureTransferID(for: route) else {
+                return .denied(
+                    denial(
+                        reason: .compatibilityMismatch,
+                        routeID: route.id,
+                        manifest: manifest,
+                        message: "This native capture route is missing its declared transfer handoff.",
+                        hint: "Ship the route with a manifest-declared native capture upload seam before opening it."
+                    )
+                )
+            }
+
+            return .nativeCapture(
+                NativeCapturePresentation(
+                    routeID: route.id,
+                    routeTitle: routeTitle(for: route),
+                    runtimeLabel: "Native capture",
+                    transferID: transferID
+                )
+            )
+        }
+
         guard route.runtime == "live_view" else {
             return .denied(
                 denial(
@@ -283,17 +324,7 @@ final class ActivationCoordinator: ObservableObject {
                     routeID: route.id,
                     manifest: manifest,
                     message: "This runtime is not available in the bounded shell.",
-                    hint: "Ship a native screen or offline island in a later phase."
-                )
-            )
-        }
-
-        if let blockingPack = packStore.blockingStatus(for: route.packs) {
-            return .requiredPack(
-                RequiredPackPresentation(
-                    routeID: route.id,
-                    runtimeLabel: "LiveView",
-                    status: blockingPack
+                    hint: "Open the declared native capture route instead of falling back into the bounded web container."
                 )
             )
         }
@@ -362,6 +393,21 @@ final class ActivationCoordinator: ObservableObject {
             guard components.count == 2 else { return }
             result[components[0]] = components[1]
         }
+    }
+
+    private func captureTransferID(for route: ShellManifest.Route) -> String? {
+        if route.id == "camera" || route.id == "capture" {
+            return "capture_upload"
+        }
+
+        return nil
+    }
+
+    private func routeTitle(for route: ShellManifest.Route) -> String {
+        route.id
+            .split(separator: "-", omittingEmptySubsequences: true)
+            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .joined(separator: " ")
     }
 
     private func reactivateLastRequest() {

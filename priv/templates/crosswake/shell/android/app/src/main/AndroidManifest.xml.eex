@@ -11,6 +11,9 @@
             android:name=".packs.RequiredPackActivity"
             android:exported="false" />
         <activity
+            android:name=".NativeCaptureActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

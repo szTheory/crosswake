@@ -119,9 +119,17 @@ data class RequiredPackPresentation(
     val status: RequiredPackStatus
 )
 
+data class NativeCapturePresentation(
+    val routeId: String,
+    val routeTitle: String,
+    val runtimeLabel: String,
+    val transferId: String
+)
+
 sealed interface ShellPresentation {
     data object Booting : ShellPresentation
     data class RequiredPack(val requiredPack: RequiredPackPresentation) : ShellPresentation
+    data class NativeCapture(val nativeCapture: NativeCapturePresentation) : ShellPresentation
     data class LiveView(val session: LiveViewSession) : ShellPresentation
     data class Denied(val denial: RouteDenialPresentation) : ShellPresentation
 }
@@ -136,6 +144,7 @@ class ActivationCoordinator(
     private val requestLoader: () -> ActivationRequest,
     private val packStore: PackStore
 ) {
+    private val nativeCaptureTransferId = NATIVE_CAPTURE_TRANSFER_ID
     private var hasBootstrapped = false
     private var cachedManifest: ShellManifest? = null
     private var lastRequest: ActivationRequest? = null
@@ -145,6 +154,8 @@ class ActivationCoordinator(
         private set
 
     companion object {
+        private const val NATIVE_CAPTURE_TRANSFER_ID = "capture_upload"
+
         fun bundled(context: Context): ActivationCoordinator {
             return ActivationCoordinator(
                 manifestLoader = { ActivationFixtures.loadManifest(context) },
@@ -264,18 +275,6 @@ class ActivationCoordinator(
                 )
             )
 
-        if (route.runtime != "live_view") {
-            return ShellPresentation.Denied(
-                denial(
-                    manifest = manifest,
-                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
-                    routeId = route.id,
-                    message = "This runtime is not available in the bounded shell.",
-                    hint = "Ship a native screen or offline island in a later phase."
-                )
-            )
-        }
-
         val blockingPack = packStore.blockingStatus(route.packs)
         if (blockingPack != null) {
             currentSession = null
@@ -284,6 +283,42 @@ class ActivationCoordinator(
                     routeId = route.id,
                     runtimeLabel = "LiveView",
                     status = blockingPack
+                )
+            )
+        }
+
+        if (route.runtime == "native_screen") {
+            currentSession = null
+
+            val transferId = captureTransferId(route)
+                ?: return ShellPresentation.Denied(
+                    denial(
+                        manifest = manifest,
+                        reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                        routeId = route.id,
+                        message = "This native capture route is missing its declared transfer handoff.",
+                        hint = "Ship the route with a manifest-declared native capture upload seam before opening it."
+                    )
+                )
+
+            return ShellPresentation.NativeCapture(
+                NativeCapturePresentation(
+                    routeId = route.id,
+                    routeTitle = routeTitle(route),
+                    runtimeLabel = "Native capture",
+                    transferId = transferId
+                )
+            )
+        }
+
+        if (route.runtime != "live_view") {
+            return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                    routeId = route.id,
+                    message = "This runtime is not available in the bounded shell.",
+                    hint = "Open the declared Native capture route instead of falling back into the bounded web container."
                 )
             )
         }
@@ -361,6 +396,18 @@ class ActivationCoordinator(
     private fun routeForUrl(manifest: ShellManifest, url: String): ShellManifest.Route? {
         val path = runCatching { URI(url).path }.getOrNull() ?: return null
         return manifest.routes.values.firstOrNull { it.path == path }
+    }
+
+    private fun captureTransferId(route: ShellManifest.Route): String? {
+        return if (route.id == "camera" || route.id == "capture") nativeCaptureTransferId else null
+    }
+
+    private fun routeTitle(route: ShellManifest.Route): String {
+        return route.id
+            .split("-")
+            .joinToString(" ") { segment ->
+                segment.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            }
     }
 
     private fun requiredPacks(route: ShellManifest.Route): Map<String, String> {

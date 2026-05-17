@@ -14,12 +14,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import dev.crosswake.shell.NativeCaptureActivity
 import dev.crosswake.shell.packs.RequiredPackActivity
 
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     private lateinit var activationCoordinator: ActivationCoordinator
     private var unavailableDialog: AlertDialog? = null
     private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        activationCoordinator = ActivationCoordinator.bundled(this)
+        render(
+            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
+            preserveCurrentRoute = false
+        )
+    }
+    private val nativeCaptureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         activationCoordinator = ActivationCoordinator.bundled(this)
         render(
             activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
@@ -69,6 +77,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
             )
 
             is ShellPresentation.RequiredPack -> showRequiredPack(presentation.requiredPack)
+            is ShellPresentation.NativeCapture -> showNativeCapture(presentation.nativeCapture)
             is ShellPresentation.Denied -> showUnavailableSurface(presentation.denial, preserveCurrentRoute)
             is ShellPresentation.LiveView -> showLiveView(presentation.session)
         }
@@ -83,6 +92,20 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
                 routeId = requiredPack.routeId,
                 runtimeLabel = requiredPack.runtimeLabel,
                 status = requiredPack.status
+            )
+        )
+    }
+
+    private fun showNativeCapture(nativeCapture: NativeCapturePresentation) {
+        unavailableDialog?.dismiss()
+        unavailableDialog = null
+        nativeCaptureLauncher.launch(
+            NativeCaptureActivity.intent(
+                context = this,
+                routeId = nativeCapture.routeId,
+                routeTitle = nativeCapture.routeTitle,
+                runtimeLabel = nativeCapture.runtimeLabel,
+                transferId = nativeCapture.transferId
             )
         )
     }

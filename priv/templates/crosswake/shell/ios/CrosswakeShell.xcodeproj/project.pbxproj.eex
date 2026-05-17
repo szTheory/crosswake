@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* CrosswakeShellApp.swift */; };
 		A10000020000000000000001 /* ActivationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000120000000000000001 /* ActivationCoordinator.swift */; };
+		A10000020500000000000001 /* NativeCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000120500000000000001 /* NativeCaptureView.swift */; };
 		A10000021000000000000001 /* PackStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000121000000000000001 /* PackStore.swift */; };
 		A10000022000000000000001 /* RequiredPackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000122000000000000001 /* RequiredPackView.swift */; };
 		A10000030000000000000001 /* LiveViewContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000130000000000000001 /* LiveViewContainerViewController.swift */; };
@@ -35,6 +36,7 @@
 /* Begin PBXFileReference section */
 		A10000110000000000000001 /* CrosswakeShellApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosswakeShellApp.swift; sourceTree = "<group>"; };
 		A10000120000000000000001 /* ActivationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivationCoordinator.swift; sourceTree = "<group>"; };
+		A10000120500000000000001 /* NativeCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCaptureView.swift; sourceTree = "<group>"; };
 		A10000121000000000000001 /* PackStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackStore.swift; sourceTree = "<group>"; };
 		A10000122000000000000001 /* RequiredPackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredPackView.swift; sourceTree = "<group>"; };
 		A10000130000000000000001 /* LiveViewContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveViewContainerViewController.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 			children = (
 				A10000110000000000000001 /* CrosswakeShellApp.swift */,
 				A10000120000000000000001 /* ActivationCoordinator.swift */,
+				A10000120500000000000001 /* NativeCaptureView.swift */,
 				A10000121000000000000001 /* PackStore.swift */,
 				A10000122000000000000001 /* RequiredPackView.swift */,
 				A10000130000000000000001 /* LiveViewContainerViewController.swift */,
@@ -221,6 +224,7 @@
 			files = (
 				A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */,
 				A10000020000000000000001 /* ActivationCoordinator.swift in Sources */,
+				A10000020500000000000001 /* NativeCaptureView.swift in Sources */,
 				A10000021000000000000001 /* PackStore.swift in Sources */,
 				A10000022000000000000001 /* RequiredPackView.swift in Sources */,
 				A10000030000000000000001 /* LiveViewContainerViewController.swift in Sources */,
