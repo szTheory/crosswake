@@ -59,33 +59,11 @@ defmodule CrosswakeExample.SaaSPortal.ProfileSettingsLive do
   end
 end
 
-defmodule CrosswakeExample.SaaSPortal.Auth do
-  import Plug.Conn
-
-  @default_user %{id: "member-1", role: :member, account_id: "acct-1"}
-
-  def init(action), do: action
-
-  def call(conn, :fetch_current_user) do
-    assign(conn, :current_saas_user, @default_user)
-  end
-end
-
-defmodule CrosswakeExample.SaaSPortal.OnMount do
-  alias Phoenix.Component
-
-  @default_user %{id: "member-1", role: :member, account_id: "acct-1"}
-
-  def on_mount(:require_authenticated_member, _params, _session, socket) do
-    {:cont, Component.assign(socket, :current_saas_user, @default_user)}
-  end
-end
-
 defmodule CrosswakeExample.Router do
   use Phoenix.Router
   # crosswake:install:start
   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
-  import Phoenix.LiveView.Router, only: [live_session: 2, live_session: 3]
+  import Phoenix.LiveView.Router, only: [live_session: 3]
   import Crosswake.Router
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
   # crosswake:install:end
