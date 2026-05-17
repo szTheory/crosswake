@@ -54,10 +54,14 @@ private struct RootSceneView: View {
                 routeID: nativeCapture.routeID,
                 routeTitle: nativeCapture.routeTitle,
                 runtimeLabel: nativeCapture.runtimeLabel,
-                transferID: nativeCapture.transferID
+                transferID: nativeCapture.transferID,
+                transferCoordinator: coordinator.transferCoordinator
             )
         case let .liveView(session):
-            LiveViewContainerView(session: session) { denial in
+            LiveViewContainerView(
+                session: session,
+                transferCoordinator: coordinator.transferCoordinator
+            ) { denial in
                 coordinator.presentNavigationDenial(denial)
             }
         case let .denied(denial):
