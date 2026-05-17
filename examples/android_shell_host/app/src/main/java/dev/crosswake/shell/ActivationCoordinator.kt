@@ -1,0 +1,584 @@
+package dev.crosswake.shell
+
+import android.content.Context
+import android.content.Intent
+import dev.crosswake.shell.packs.PackStore
+import dev.crosswake.shell.packs.RequiredPackStatus
+import dev.crosswake.shell.transfer.TransferCoordinator
+import org.json.JSONArray
+import org.json.JSONObject
+import java.net.URI
+
+enum class ActivationSource(val wireValue: String) {
+    COLD_START("cold_start"),
+    DEEP_LINK("deep_link"),
+    NOTIFICATION("notification"),
+    IN_APP_NAVIGATION("in_app_navigation")
+}
+
+enum class ManifestSource(val wireValue: String) {
+    BUNDLED("bundled"),
+    CACHED("cached"),
+    REMOTE("remote")
+}
+
+enum class RouteDenialReason(val wireValue: String) {
+    COMPATIBILITY_MISMATCH("compatibility_mismatch"),
+    UNDECLARED_CAPABILITY("undeclared_capability"),
+    UNAVAILABLE_CAPABILITY("unavailable_capability"),
+    ORIGIN_DENIED("origin_denied"),
+    INACTIVE_ROUTE("inactive_route"),
+    PACK_INCOMPATIBLE("pack_incompatible")
+}
+
+enum class RouteUnavailableAction {
+    RETRY,
+    UPDATE_APP,
+    SAFE_FALLBACK
+}
+
+data class ActivationRequest(
+    val routeId: String?,
+    val url: String?,
+    val source: ActivationSource,
+    val origin: String,
+    val manifestSource: ManifestSource,
+    val bridgeProtocolVersion: String,
+    val nativeRuntimeVersion: String,
+    val correlationId: String,
+    val declaredPackRequirements: Map<String, String> = emptyMap(),
+    val installedPacks: Map<String, String> = emptyMap(),
+    val capabilities: Map<String, String> = emptyMap()
+) {
+    companion object {
+        fun forIncomingUrl(url: String, source: ActivationSource, baseline: ActivationRequest): ActivationRequest {
+            return ActivationRequest(
+                routeId = null,
+                url = url,
+                source = source,
+                origin = originFromUrl(url) ?: baseline.origin,
+                manifestSource = baseline.manifestSource,
+                bridgeProtocolVersion = baseline.bridgeProtocolVersion,
+                nativeRuntimeVersion = baseline.nativeRuntimeVersion,
+                correlationId = baseline.correlationId,
+                declaredPackRequirements = baseline.declaredPackRequirements,
+                installedPacks = baseline.installedPacks,
+                capabilities = baseline.capabilities
+            )
+        }
+
+        fun originFromUrl(url: String?): String? {
+            if (url == null) {
+                return null
+            }
+
+            val uri = URI(url)
+            val scheme = uri.scheme ?: return null
+            val host = uri.host ?: return null
+            val port = when {
+                uri.port == -1 -> ""
+                scheme == "https" && uri.port == 443 -> ""
+                scheme == "http" && uri.port == 80 -> ""
+                else -> ":${uri.port}"
+            }
+
+            return "$scheme://$host$port"
+        }
+    }
+}
+
+data class ShellManifest(val routes: Map<String, Route>) {
+    data class TransferSeam(
+        val id: String,
+        val intent: String,
+        val direction: String,
+        val source: String?,
+        val destination: String?,
+        val verification: String,
+        val mediaTypes: List<String>,
+        val states: List<String>
+    )
+
+    data class Route(
+        val id: String,
+        val path: String,
+        val runtime: String,
+        val capabilities: List<String>,
+        val packs: List<String>,
+        val transfers: List<TransferSeam>,
+        val allowlistedOrigins: List<String>
+    )
+}
+
+data class RouteDenialPresentation(
+    val reason: RouteDenialReason,
+    val title: String,
+    val message: String,
+    val hint: String?,
+    val routeId: String?,
+    val actions: List<RouteUnavailableAction>,
+    val safeFallbackUrl: String?
+)
+
+data class LiveViewSession(
+    val routeId: String,
+    val url: String,
+    val allowedOrigin: String,
+    val bridgeProtocolVersion: String,
+    val nativeRuntimeVersion: String,
+    val installedPacks: Map<String, String>,
+    val routeRequiredPacks: List<String>,
+    val capabilities: Map<String, String>,
+    val declaredTransfers: List<ShellManifest.TransferSeam>
+)
+
+data class RequiredPackPresentation(
+    val routeId: String,
+    val runtimeLabel: String,
+    val status: RequiredPackStatus
+)
+
+data class NativeCapturePresentation(
+    val routeId: String,
+    val routeTitle: String,
+    val runtimeLabel: String,
+    val transferId: String
+)
+
+sealed interface ShellPresentation {
+    data object Booting : ShellPresentation
+    data class RequiredPack(val requiredPack: RequiredPackPresentation) : ShellPresentation
+    data class NativeCapture(val nativeCapture: NativeCapturePresentation) : ShellPresentation
+    data class LiveView(val session: LiveViewSession) : ShellPresentation
+    data class Denied(val denial: RouteDenialPresentation) : ShellPresentation
+}
+
+sealed interface NavigationDecision {
+    data object Allow : NavigationDecision
+    data class Deny(val denial: RouteDenialPresentation) : NavigationDecision
+}
+
+class ActivationCoordinator(
+    private val manifestLoader: () -> ShellManifest,
+    private val requestLoader: () -> ActivationRequest,
+    private val packStore: PackStore
+) {
+    private var hasBootstrapped = false
+    private var cachedManifest: ShellManifest? = null
+    private var lastRequest: ActivationRequest? = null
+    private var presentation: ShellPresentation = ShellPresentation.Booting
+
+    var currentSession: LiveViewSession? = null
+        private set
+    var currentTransferCoordinator: TransferCoordinator? = null
+        private set
+
+    companion object {
+        private const val NATIVE_CAPTURE = "native_screen"
+
+        fun bundled(context: Context): ActivationCoordinator {
+            return ActivationCoordinator(
+                manifestLoader = { ActivationFixtures.loadManifest(context) },
+                requestLoader = { ActivationFixtures.loadActivationRequest(context) },
+                packStore = PackStore.bundled(context)
+            )
+        }
+    }
+
+    fun bootstrapIfNeeded(intent: Intent?): ShellPresentation {
+        if (hasBootstrapped) {
+            return currentPresentation()
+        }
+
+        hasBootstrapped = true
+        return handleIntent(intent, fallbackSource = ActivationSource.COLD_START)
+    }
+
+    fun handleIntent(intent: Intent?, fallbackSource: ActivationSource = ActivationSource.DEEP_LINK): ShellPresentation {
+        presentation = try {
+            val baseline = requestLoader()
+            val request = normalizeIntent(intent, baseline, fallbackSource)
+            activate(request)
+        } catch (error: Exception) {
+            deniedBoot(
+                routeId = null,
+                hint = error.message
+            )
+        }
+
+        return presentation
+    }
+
+    fun retry(): ShellPresentation {
+        val request = lastRequest
+        return if (request == null) {
+            deniedBoot(routeId = null, hint = "No activation request is available to retry.")
+        } else {
+            activate(request)
+        }
+    }
+
+    fun activate(request: ActivationRequest): ShellPresentation {
+        presentation = try {
+            val manifest = loadManifest()
+            lastRequest = request
+            resolve(request, manifest)
+        } catch (error: Exception) {
+            deniedBoot(routeId = request.routeId, hint = error.message)
+        }
+
+        return presentation
+    }
+
+    fun resolveNavigation(url: String): NavigationDecision {
+        val session = currentSession
+            ?: return NavigationDecision.Deny(
+                denial(
+                    manifest = cachedManifest,
+                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                    routeId = null,
+                    message = "The shell cannot validate navigation without an active route session.",
+                    hint = "Retry the declared route activation before navigating."
+                )
+            )
+
+        val manifest = loadManifest()
+        val origin = ActivationRequest.originFromUrl(url)
+
+        if (origin == null || origin != session.allowedOrigin) {
+            return NavigationDecision.Deny(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.ORIGIN_DENIED,
+                    routeId = session.routeId,
+                    message = "This navigation left the allowlisted origin for the active route.",
+                    hint = "Retry or open the declared safe fallback instead."
+                )
+            )
+        }
+
+        val route = routeForUrl(manifest, url)
+            ?: return NavigationDecision.Deny(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.INACTIVE_ROUTE,
+                    routeId = session.routeId,
+                    message = "This navigation target is not active in the bundled manifest.",
+                    hint = "Open a manifest-declared route instead."
+                )
+            )
+
+        if (route.runtime != "live_view") {
+            return NavigationDecision.Deny(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                    routeId = route.id,
+                    message = "This route runtime is not available inside the bounded WebView.",
+                    hint = "Open a native screen or safe fallback route instead."
+                )
+            )
+        }
+
+        return NavigationDecision.Allow
+    }
+
+    private fun resolve(request: ActivationRequest, manifest: ShellManifest): ShellPresentation {
+        val route = routeForRequest(manifest, request)
+            ?: return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.INACTIVE_ROUTE,
+                    routeId = request.routeId,
+                    message = "This route is not active in the bundled manifest.",
+                    hint = "Retry after shipping an updated shell manifest."
+                )
+            )
+
+        val blockingPack = packStore.blockingStatus(route.packs)
+        if (blockingPack != null) {
+            currentSession = null
+            currentTransferCoordinator = null
+            return ShellPresentation.RequiredPack(
+                RequiredPackPresentation(
+                    routeId = route.id,
+                    runtimeLabel = "LiveView",
+                    status = blockingPack
+                )
+            )
+        }
+
+        if (route.runtime == NATIVE_CAPTURE) {
+            currentSession = null
+            currentTransferCoordinator = TransferCoordinator(route.id, route.transfers)
+
+            val transferId = captureTransferId(route)
+                ?: return ShellPresentation.Denied(
+                    denial(
+                        manifest = manifest,
+                        reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                        routeId = route.id,
+                        message = "This native capture route is missing its declared transfer handoff.",
+                        hint = "Ship the route with a manifest-declared native capture upload seam before opening it."
+                    )
+                )
+
+            return ShellPresentation.NativeCapture(
+                NativeCapturePresentation(
+                    routeId = route.id,
+                    routeTitle = routeTitle(route),
+                    runtimeLabel = "Native capture",
+                    transferId = transferId
+                )
+            )
+        }
+
+        if (route.runtime != "live_view") {
+            currentTransferCoordinator = null
+            return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                    routeId = route.id,
+                    message = "This runtime is not available in the bounded shell.",
+                    hint = "Open the declared Native capture route instead of falling back into the bounded web container."
+                )
+            )
+        }
+
+        if (!route.allowlistedOrigins.contains(request.origin)) {
+            return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.ORIGIN_DENIED,
+                    routeId = route.id,
+                    message = "The requested origin is not allowlisted for this route.",
+                    hint = "Open a declared safe fallback route or retry from a trusted origin."
+                )
+            )
+        }
+
+        val resolvedUrl = request.url ?: request.origin + route.path
+        val session = LiveViewSession(
+            routeId = route.id,
+            url = resolvedUrl,
+            allowedOrigin = request.origin,
+            bridgeProtocolVersion = request.bridgeProtocolVersion,
+            nativeRuntimeVersion = request.nativeRuntimeVersion,
+            installedPacks = request.installedPacks,
+            routeRequiredPacks = route.packs,
+            capabilities = request.capabilities,
+            declaredTransfers = route.transfers
+        )
+        currentSession = session
+        currentTransferCoordinator =
+            if (route.transfers.isEmpty()) null else TransferCoordinator(route.id, route.transfers)
+        return ShellPresentation.LiveView(session)
+    }
+
+    private fun deniedBoot(routeId: String?, hint: String?): ShellPresentation.Denied {
+        currentSession = null
+        currentTransferCoordinator = null
+
+        return ShellPresentation.Denied(
+            RouteDenialPresentation(
+                reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                title = "Shell boot blocked",
+                message = "The bundled manifest truth could not be loaded before runtime mount.",
+                hint = hint,
+                routeId = routeId,
+                actions = listOf(RouteUnavailableAction.RETRY),
+                safeFallbackUrl = null
+            )
+        )
+    }
+
+    private fun currentPresentation(): ShellPresentation {
+        return presentation
+    }
+
+    private fun loadManifest(): ShellManifest {
+        val manifest = cachedManifest
+        if (manifest != null) {
+            return manifest
+        }
+
+        return manifestLoader().also { cachedManifest = it }
+    }
+
+    private fun normalizeIntent(intent: Intent?, baseline: ActivationRequest, fallbackSource: ActivationSource): ActivationRequest {
+        val url = intent?.dataString
+        val source = when {
+            intent?.action == Intent.ACTION_VIEW && url != null -> ActivationSource.DEEP_LINK
+            else -> fallbackSource
+        }
+
+        return if (url == null) {
+            baseline.copy(source = source)
+        } else {
+            ActivationRequest.forIncomingUrl(url, source, baseline)
+        }
+    }
+
+    private fun routeForRequest(manifest: ShellManifest, request: ActivationRequest): ShellManifest.Route? {
+        request.routeId?.let { routeId ->
+            manifest.routes[routeId]?.let { return it }
+        }
+
+        val url = request.url ?: return null
+        return routeForUrl(manifest, url)
+    }
+
+    private fun routeForUrl(manifest: ShellManifest, url: String): ShellManifest.Route? {
+        val path = runCatching { URI(url).path }.getOrNull() ?: return null
+        return manifest.routes.values.firstOrNull { routePathMatches(it.path, path) }
+    }
+
+    private fun routePathMatches(routePath: String, requestPath: String): Boolean {
+        val routeSegments = routePath.trim('/').split('/').filter { it.isNotEmpty() }
+        val requestSegments = requestPath.trim('/').split('/').filter { it.isNotEmpty() }
+
+        if (routeSegments.size != requestSegments.size) {
+            return false
+        }
+
+        return routeSegments.zip(requestSegments).all { (routeSegment, requestSegment) ->
+            routeSegment.startsWith(":") || routeSegment == requestSegment
+        }
+    }
+
+    private fun captureTransferId(route: ShellManifest.Route): String? {
+        return route.transfers.firstOrNull { it.intent == "upload" && it.source == "native_capture" }?.id
+    }
+
+    private fun routeTitle(route: ShellManifest.Route): String {
+        return route.id
+            .split("-")
+            .joinToString(" ") { segment ->
+                segment.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            }
+    }
+
+    private fun requiredPacks(route: ShellManifest.Route): Map<String, String> {
+        return route.packs.mapNotNull { pack ->
+            val components = pack.split("@", limit = 2)
+            if (components.size == 2) components[0] to components[1] else null
+        }.toMap()
+    }
+
+    private fun denial(
+        manifest: ShellManifest?,
+        reason: RouteDenialReason,
+        routeId: String?,
+        message: String,
+        hint: String?,
+        actions: List<RouteUnavailableAction> = listOf(RouteUnavailableAction.RETRY)
+    ): RouteDenialPresentation {
+        val safeFallback = fallbackUrl(manifest)
+        val recoveryActions = actions.toMutableList()
+
+        if (safeFallback != null && RouteUnavailableAction.SAFE_FALLBACK !in recoveryActions) {
+            recoveryActions += RouteUnavailableAction.SAFE_FALLBACK
+        }
+
+        return RouteDenialPresentation(
+            reason = reason,
+            title = "Route unavailable",
+            message = message,
+            hint = hint,
+            routeId = routeId,
+            actions = recoveryActions,
+            safeFallbackUrl = safeFallback
+        )
+    }
+
+    private fun fallbackUrl(manifest: ShellManifest?): String? {
+        val route = manifest?.routes?.values?.firstOrNull { it.runtime == "live_view" } ?: return null
+        val origin = route.allowlistedOrigins.firstOrNull() ?: return null
+        return origin + route.path
+    }
+}
+
+object ActivationFixtures {
+    fun loadManifest(context: Context): ShellManifest {
+        val root = JSONObject(readAsset(context, "crosswake_manifest.json"))
+        val routesJson = root.getJSONObject("routes")
+        val routes = mutableMapOf<String, ShellManifest.Route>()
+
+        routesJson.keys().forEach { routeId ->
+            val routeJson = routesJson.getJSONObject(routeId)
+            routes[routeId] = ShellManifest.Route(
+                id = routeJson.getString("id"),
+                path = routeJson.getString("path"),
+                runtime = routeJson.getString("runtime"),
+                capabilities = routeJson.optJSONArray("capabilities").toStringList(),
+                packs = routeJson.optJSONArray("packs").toStringList(),
+                transfers = routeJson.optJSONArray("transfers").toTransferSeams(),
+                allowlistedOrigins = routeJson.optJSONArray("allowlisted_origins").toStringList()
+            )
+        }
+
+        return ShellManifest(routes = routes)
+    }
+
+    fun loadActivationRequest(context: Context): ActivationRequest {
+        val json = JSONObject(readAsset(context, "route_activation.json"))
+
+        return ActivationRequest(
+            routeId = json.optString("route_id").takeIf { it.isNotBlank() },
+            url = json.optString("url").takeIf { it.isNotBlank() },
+            source = ActivationSource.entries.first { it.wireValue == json.getString("source") },
+            origin = json.getString("origin"),
+            manifestSource = ManifestSource.entries.first { it.wireValue == json.getString("manifest_source") },
+            bridgeProtocolVersion = json.getString("bridge_protocol_version"),
+            nativeRuntimeVersion = json.getString("native_runtime_version"),
+            correlationId = json.getString("correlation_id"),
+            declaredPackRequirements = json.optJSONObject("declared_pack_requirements").toStringMap(),
+            installedPacks = json.optJSONObject("installed_packs").toStringMap(),
+            capabilities = json.optJSONObject("capabilities").toStringMap()
+        )
+    }
+
+    private fun readAsset(context: Context, name: String): String {
+        return context.assets.open(name).bufferedReader().use { it.readText() }
+    }
+
+    private fun JSONObject?.toStringMap(): Map<String, String> {
+        if (this == null) {
+            return emptyMap()
+        }
+
+        val result = mutableMapOf<String, String>()
+        keys().forEach { key -> result[key] = getString(key) }
+        return result
+    }
+
+    private fun JSONArray?.toStringList(): List<String> {
+        if (this == null) {
+            return emptyList()
+        }
+
+        return List(length()) { index -> getString(index) }
+    }
+
+    private fun JSONArray?.toTransferSeams(): List<ShellManifest.TransferSeam> {
+        if (this == null) {
+            return emptyList()
+        }
+
+        return List(length()) { index ->
+            val transferJson = getJSONObject(index)
+
+            ShellManifest.TransferSeam(
+                id = transferJson.getString("id"),
+                intent = transferJson.getString("intent"),
+                direction = transferJson.getString("direction"),
+                source = transferJson.optString("source").takeIf { it.isNotBlank() },
+                destination = transferJson.optString("destination").takeIf { it.isNotBlank() },
+                verification = transferJson.getString("verification"),
+                mediaTypes = transferJson.optJSONArray("media_types").toStringList(),
+                states = transferJson.optJSONArray("states").toStringList()
+            )
+        }
+    }
+}
