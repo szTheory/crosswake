@@ -4,6 +4,10 @@ Crosswake Phase 3 ships host-owned iOS and Android shells that boot from the bun
 manifest, resolve routes natively first, and fail closed when a route or bridge call
 does not satisfy the declared contract.
 
+For product-fit context, read
+[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+before using this guide as the deeper shell and native-ownership reference.
+
 ## Contract
 
 - Shell projects are `host-owned` after generation.
@@ -11,6 +15,10 @@ does not satisfy the declared contract.
 - Unsupported routes land on an explicit `route unavailable` surface.
 - LiveView routes mount only inside bounded same-origin web containers.
 - Bridge calls stay typed, versioned, request/reply-only, and low-frequency.
+
+For the Phase 7 `Phoenix SaaS Portal` lane, that means authenticated approvals stay
+Phoenix-owned inside the shell. The shell may supply one bounded confirmation signal,
+but it does not take control of auth or product writes.
 
 ## Generated Projects
 
@@ -53,6 +61,10 @@ Crosswake does not silently fall back to a generic web container.
 
 The route unavailable surface is part of the product contract, not cleanup work.
 
+For the SaaS lane, `route unavailable` remains the primary degraded behavior:
+authentication still belongs to the host, and denied activation stays explicit rather
+than degrading into a generic web wrapper.
+
 ## iOS Notes
 
 - LiveView routes run inside a bounded `WKWebView`.
@@ -67,7 +79,11 @@ The route unavailable surface is part of the product contract, not cleanup work.
 
 ## Proof Hooks
 
-Support claims stay blocked until both generated-project proof hooks pass:
+Published shell support is proof-backed by:
+
+- `bash script/verify_phase5_example_hosts.sh`
+
+Generated-host verification remains part of the contract:
 
 - `script/verify_generated_ios_shell.sh`
 - `script/verify_generated_android_shell.sh`
@@ -79,8 +95,28 @@ mix crosswake.doctor --router Elixir.YourAppWeb.Router
 mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks
 ```
 
-Without passing proof hooks, doctor reports `verification required` and support
-remains narrow. A single passing platform is not enough to widen public claims.
+The checked-in example hosts are the public artifact class. `--native-checks` reruns
+the generated-host verification hooks against your local shell projects so your
+workstation support posture stays explicit.
+
+For exact support status, keep
+[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+as the canonical surface and
+[guides/install.md](/Users/jon/projects/crosswake/guides/install.md) as the canonical
+proof-entry surface.
+
+## Native Capture Escape Hatch
+
+Phase 5 adds one explicit `:native_screen` escape hatch for media capture.
+
+- The runtime label stays visible as `Native capture`.
+- Captured media is staged locally first.
+- Staged media is not yet transferred.
+- Transfer completion is separate from local capture.
+- `:adapter` remains deferred.
+
+Crosswake does not silently fall back into a bounded web upload flow. If a route
+declares native capture, the shell opens the declared native surface or fails closed.
 
 ## Bridge Boundary
 
@@ -89,6 +125,10 @@ The shell bridge stays bounded to:
 - `app.info.get`
 - `haptics.impact`
 - `files.pick`
+- `transfer.download`
+- `transfer.export`
+- `transfer.import`
+- `transfer.upload.prepare`
 
 Everything else is denied. Read
 [guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md) for the exact
