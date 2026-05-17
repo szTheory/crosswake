@@ -211,6 +211,14 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     assert member_socket.assigns.bridge_request == nil
   end
 
+  test "the base checked-in proof entrypoint layers in the SaaS lane" do
+    example_host_script = File.read!("script/verify_phase5_example_hosts.sh")
+
+    assert example_host_script =~ "test/crosswake/proof/adopter_profile_contract_test.exs"
+    assert example_host_script =~ "test/crosswake/proof/phase7_saas_lane_test.exs"
+    assert example_host_script =~ "test/crosswake/proof/phase5_proof_lane_test.exs"
+  end
+
   defp base_socket(user, account) do
     %Phoenix.LiveView.Socket{}
     |> Component.assign(:current_saas_user, user)

@@ -50,10 +50,17 @@ defmodule Crosswake.Proof.AdopterProfileContractTest do
 
   test "profile verification scaffold extends the existing example-host proof posture" do
     script = File.read!("script/verify_adopter_profile_contract.sh")
+    example_host_script = File.read!("script/verify_phase5_example_hosts.sh")
 
     assert script =~ "guides/adopter_profiles.md"
     assert script =~ "examples/phoenix_host/README.md"
     assert script =~ "script/verify_phase5_example_hosts.sh"
+    assert script =~ "Degraded behavior"
+    assert script =~ "Deferred behavior"
+    assert script =~ "haptics.impact"
+
+    assert example_host_script =~ "test/crosswake/proof/adopter_profile_contract_test.exs"
+    assert example_host_script =~ "test/crosswake/proof/phase7_saas_lane_test.exs"
 
     assert {output, 0} = System.cmd("bash", ["script/verify_adopter_profile_contract.sh"])
     assert output =~ "Adopter profile contract verified."
