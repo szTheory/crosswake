@@ -19,46 +19,6 @@ defmodule CrosswakeExample.CameraLive do
   end
 end
 
-defmodule CrosswakeExample.SaaSPortal.DashboardLive do
-  use Phoenix.LiveView
-
-  def render(assigns) do
-    ~H"<div>saas dashboard</div>"
-  end
-end
-
-defmodule CrosswakeExample.SaaSPortal.AccountLive do
-  use Phoenix.LiveView
-
-  def render(assigns) do
-    ~H"<div>saas account</div>"
-  end
-end
-
-defmodule CrosswakeExample.SaaSPortal.ApprovalsLive do
-  use Phoenix.LiveView
-
-  def render(assigns) do
-    ~H"<div>saas approvals</div>"
-  end
-end
-
-defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
-  use Phoenix.LiveView
-
-  def render(assigns) do
-    ~H"<div>saas approval</div>"
-  end
-end
-
-defmodule CrosswakeExample.SaaSPortal.ProfileSettingsLive do
-  use Phoenix.LiveView
-
-  def render(assigns) do
-    ~H"<div>saas profile</div>"
-  end
-end
-
 defmodule CrosswakeExample.Router do
   use Phoenix.Router
   # crosswake:install:start
@@ -168,11 +128,12 @@ defmodule CrosswakeExample.Router do
           crosswake: [
             id: "saas-approval",
             runtime: :live_view,
+            capabilities: ["haptics"],
             offline: :cached_read_only,
             security: :standard
           ]
 
-        live "/settings/profile", ProfileSettingsLive,
+        live "/settings/profile", SettingsLive,
           crosswake: [
             id: "saas-profile-settings",
             runtime: :live_view,
