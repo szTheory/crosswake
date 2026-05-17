@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 5 of 5 in progress (Packs, Native Escape, And Proof Lanes)
-Plan: 5 of 10 in current phase
-Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, generated-shell required-pack runtime surfaces, manifest-owned route-local transfer seam truth, and manifest-backed transfer bridge allowlisting are landed, while native escape hatch wiring, transfer execution, and proof lanes remain ahead
-Last activity: 2026-05-17 — Completed Phase 5 plan 05-03 verification with `mix test test/mix/tasks/crosswake_gen_shell_test.exs`
+Plan: 6 of 10 in current phase
+Status: Phase 5 execution is underway; manifest-owned pack registry, typed pack lifecycle and fail-closed activation gating, generated-shell required-pack runtime surfaces, manifest-owned route-local transfer seam truth, manifest-backed transfer bridge allowlisting, and the single native media-capture escape hatch are landed, while transfer execution and proof lanes remain ahead
+Last activity: 2026-05-17 — Completed Phase 5 plan 05-06 verification with `mix test test/crosswake/native_escape/contract_test.exs test/mix/tasks/crosswake_gen_shell_test.exs`
 
-Progress: [██████████] 95%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -33,7 +33,7 @@ Progress: [██████████] 95%
 | 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 04-03, 04-04, 05-04, 05-05, and 05-03 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
+- Last 5 plans: 04-04, 05-04, 05-05, 05-03, and 05-06 landed; 03-04 remains a host-emulator blocker outside the hermetic offline lane
 - Trend: Positive
 
 ## Accumulated Context
@@ -58,6 +58,8 @@ Recent decisions affecting current work:
 - Transfer seams now stay route-local and semantic, and the manifest owns their typed declaration truth before any bridge command or shell execution is added.
 - Phase 5 transfer work intentionally stops at declaration and manifest truth in 05-04; command exposure and native execution stay deferred to later plans.
 - Phase 5 bridge transfer command exposure is derived from manifest-declared route seams only and remains bounded to explicit semantic commands instead of generic file or URL authority.
+- Phase 5 now exposes one public native escape hatch only: `:native_screen` media capture with explicit local staging and explicit transfer handoff metadata.
+- Generated shells open declared native capture routes directly and keep non-capture fallback fail-closed instead of drifting into generic bounded-web upload behavior.
 
 ### Pending Todos
 
@@ -71,7 +73,6 @@ None yet.
 - Plan 03-04 template work, toolchain bootstrapping, and Gradle bootstrap now succeed, and a re-run still reaches real Gradle execution, but `script/verify_generated_android_shell.sh` remains blocked by host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
 - Plan 03-05 bounded bridge code, templates, guide, and tests landed.
 - Plan 03-06 doctor/docs/support guidance landed and now blocks shell support claims until both real proof hooks pass.
-- Phase 5 still needs a strict first native escape-hatch choice to avoid broad adapter creep as generated-shell and transfer work proceed.
 - Transfer declaration and bridge exposure truth are landed, but 05-07 still needs to execute those seams in generated shells without widening into generic container file handling.
 - Generated iOS shell proof still depends on the local Xcode/CoreSimulator install: `xcodebuild` cannot load `IDESimulatorFoundation` because `/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/CoreSimulator` is missing.
 - Generated Android shell proof still depends on host managed-device startup: Gradle fails `:app:crosswakeApi34Setup` because the AOSP ATD emulator closes unexpectedly while creating its snapshot.
@@ -86,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-17
-Stopped at: Completed 05-03; next work is 05-06 native media-capture escape hatch and 05-07 generated-shell transfer execution while Phase 3 host-environment proof blockers remain unchanged
+Stopped at: Completed 05-06; next work is 05-07 generated-shell transfer execution while Phase 3 host-environment proof blockers remain unchanged
 Resume file: None

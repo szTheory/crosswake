@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PACK-01**: Crosswake supports versioned content pack or media pack declarations in route policy and manifest output.
 - [x] **PACK-02**: Crosswake provides a pack lifecycle contract covering install, availability checks, and invalidation for declared packs.
-- [ ] **PACK-03**: Crosswake provides one documented native screen or adapter escape hatch for a device-heavy flow such as camera or media capture.
+- [x] **PACK-03**: Crosswake provides one documented native screen or adapter escape hatch for a device-heavy flow such as camera or media capture.
 - [x] **PACK-04**: Crosswake provides explicit media transfer seams for upload/download flows rather than treating them as generic WebView behavior.
 
 ### Developer Experience And Proof
@@ -108,7 +108,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OFFL-04 | Phase 4 | Complete |
 | PACK-01 | Phase 5 | Complete |
 | PACK-02 | Phase 5 | Complete |
-| PACK-03 | Phase 5 | Pending |
+| PACK-03 | Phase 5 | Complete |
 | PACK-04 | Phase 5 | Complete |
 | DX-01 | Phase 1 | Complete |
 | DX-02 | Phase 2 | Complete |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-17 after Phase 5 plan 05-04 completion*
+*Last updated: 2026-05-17 after Phase 5 plan 05-06 completion*
