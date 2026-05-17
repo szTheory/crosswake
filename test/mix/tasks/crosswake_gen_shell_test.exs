@@ -59,6 +59,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_native_capture_view =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/NativeCaptureView.swift")
 
+    ios_transfer_coordinator =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/TransferCoordinator.swift")
+
     ios_tests =
       Path.join(
         target,
@@ -95,6 +98,11 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_bridge_channel) =~ "app.info.get"
     assert File.read!(ios_bridge_channel) =~ "haptics.impact"
     assert File.read!(ios_bridge_channel) =~ "files.pick"
+    assert File.read!(ios_bridge_channel) =~ "transfer.download"
+    assert File.read!(ios_bridge_channel) =~ "transfer.export"
+    assert File.read!(ios_bridge_channel) =~ "transfer.import"
+    assert File.read!(ios_bridge_channel) =~ "transfer.upload.prepare"
+    assert File.read!(ios_bridge_channel) =~ "transferCoordinator"
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
     assert File.read!(ios_scheme) =~ "xcscheme"
     assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
@@ -119,6 +127,17 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_native_capture_view) =~ "Capture media locally"
     assert File.read!(ios_native_capture_view) =~ "Stage For Transfer"
     assert File.read!(ios_native_capture_view) =~ "Cancel Capture"
+    assert File.read!(ios_native_capture_view) =~ "onStageForTransfer"
+    assert File.read!(ios_native_capture_view) =~ "stageCapturedMedia"
+    assert File.read!(ios_native_capture_view) =~ "Transfer handoff stays explicit"
+    assert File.read!(ios_transfer_coordinator) =~ "enum TransferState: String"
+    assert File.read!(ios_transfer_coordinator) =~ "case awaitingNetwork = \"awaiting_network\""
+    assert File.read!(ios_transfer_coordinator) =~ "func stageCapturedMedia"
+    assert File.read!(ios_transfer_coordinator) =~ "func execute(command:"
+    assert File.read!(ios_transfer_coordinator) =~ "transfer.upload.prepare"
+    assert File.read!(ios_transfer_coordinator) =~ "transfer.download"
+    assert File.read!(ios_transfer_coordinator) =~ "transfer.import"
+    assert File.read!(ios_transfer_coordinator) =~ "transfer.export"
     assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
     assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
     assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
