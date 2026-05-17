@@ -38,6 +38,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
      "android/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt.eex"},
     {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
      "android/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt.eex"},
+    {"app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt",
+     "android/app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt.eex"},
     {"app/src/main/res/values/themes.xml",
      "android/app/src/main/res/values/themes.xml.eex"},
     {"app/src/main/res/layout/activity_required_pack.xml",

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import dev.crosswake.shell.packs.PackStore
 import dev.crosswake.shell.packs.RequiredPackStatus
+import dev.crosswake.shell.transfer.TransferCoordinator
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -87,12 +88,24 @@ data class ActivationRequest(
 }
 
 data class ShellManifest(val routes: Map<String, Route>) {
+    data class TransferSeam(
+        val id: String,
+        val intent: String,
+        val direction: String,
+        val source: String?,
+        val destination: String?,
+        val verification: String,
+        val mediaTypes: List<String>,
+        val states: List<String>
+    )
+
     data class Route(
         val id: String,
         val path: String,
         val runtime: String,
         val capabilities: List<String>,
         val packs: List<String>,
+        val transfers: List<TransferSeam>,
         val allowlistedOrigins: List<String>
     )
 }
@@ -110,7 +123,13 @@ data class RouteDenialPresentation(
 data class LiveViewSession(
     val routeId: String,
     val url: String,
-    val allowedOrigin: String
+    val allowedOrigin: String,
+    val bridgeProtocolVersion: String,
+    val nativeRuntimeVersion: String,
+    val installedPacks: Map<String, String>,
+    val routeRequiredPacks: List<String>,
+    val capabilities: Map<String, String>,
+    val declaredTransfers: List<ShellManifest.TransferSeam>
 )
 
 data class RequiredPackPresentation(
@@ -144,7 +163,6 @@ class ActivationCoordinator(
     private val requestLoader: () -> ActivationRequest,
     private val packStore: PackStore
 ) {
-    private val nativeCaptureTransferId = NATIVE_CAPTURE_TRANSFER_ID
     private var hasBootstrapped = false
     private var cachedManifest: ShellManifest? = null
     private var lastRequest: ActivationRequest? = null
@@ -152,9 +170,11 @@ class ActivationCoordinator(
 
     var currentSession: LiveViewSession? = null
         private set
+    var currentTransferCoordinator: TransferCoordinator? = null
+        private set
 
     companion object {
-        private const val NATIVE_CAPTURE_TRANSFER_ID = "capture_upload"
+        private const val NATIVE_CAPTURE = "native_screen"
 
         fun bundled(context: Context): ActivationCoordinator {
             return ActivationCoordinator(
@@ -278,6 +298,7 @@ class ActivationCoordinator(
         val blockingPack = packStore.blockingStatus(route.packs)
         if (blockingPack != null) {
             currentSession = null
+            currentTransferCoordinator = null
             return ShellPresentation.RequiredPack(
                 RequiredPackPresentation(
                     routeId = route.id,
@@ -287,8 +308,9 @@ class ActivationCoordinator(
             )
         }
 
-        if (route.runtime == "native_screen") {
+        if (route.runtime == NATIVE_CAPTURE) {
             currentSession = null
+            currentTransferCoordinator = TransferCoordinator(route.id, route.transfers)
 
             val transferId = captureTransferId(route)
                 ?: return ShellPresentation.Denied(
@@ -312,6 +334,7 @@ class ActivationCoordinator(
         }
 
         if (route.runtime != "live_view") {
+            currentTransferCoordinator = null
             return ShellPresentation.Denied(
                 denial(
                     manifest = manifest,
@@ -336,13 +359,26 @@ class ActivationCoordinator(
         }
 
         val resolvedUrl = request.url ?: request.origin + route.path
-        val session = LiveViewSession(route.id, resolvedUrl, request.origin)
+        val session = LiveViewSession(
+            routeId = route.id,
+            url = resolvedUrl,
+            allowedOrigin = request.origin,
+            bridgeProtocolVersion = request.bridgeProtocolVersion,
+            nativeRuntimeVersion = request.nativeRuntimeVersion,
+            installedPacks = request.installedPacks,
+            routeRequiredPacks = route.packs,
+            capabilities = request.capabilities,
+            declaredTransfers = route.transfers
+        )
         currentSession = session
+        currentTransferCoordinator =
+            if (route.transfers.isEmpty()) null else TransferCoordinator(route.id, route.transfers)
         return ShellPresentation.LiveView(session)
     }
 
     private fun deniedBoot(routeId: String?, hint: String?): ShellPresentation.Denied {
         currentSession = null
+        currentTransferCoordinator = null
 
         return ShellPresentation.Denied(
             RouteDenialPresentation(
@@ -399,7 +435,7 @@ class ActivationCoordinator(
     }
 
     private fun captureTransferId(route: ShellManifest.Route): String? {
-        return if (route.id == "camera" || route.id == "capture") nativeCaptureTransferId else null
+        return route.transfers.firstOrNull { it.intent == "upload" && it.source == "native_capture" }?.id
     }
 
     private fun routeTitle(route: ShellManifest.Route): String {
@@ -464,6 +500,7 @@ object ActivationFixtures {
                 runtime = routeJson.getString("runtime"),
                 capabilities = routeJson.optJSONArray("capabilities").toStringList(),
                 packs = routeJson.optJSONArray("packs").toStringList(),
+                transfers = routeJson.optJSONArray("transfers").toTransferSeams(),
                 allowlistedOrigins = routeJson.optJSONArray("allowlisted_origins").toStringList()
             )
         }
@@ -509,5 +546,26 @@ object ActivationFixtures {
         }
 
         return List(length()) { index -> getString(index) }
+    }
+
+    private fun JSONArray?.toTransferSeams(): List<ShellManifest.TransferSeam> {
+        if (this == null) {
+            return emptyList()
+        }
+
+        return List(length()) { index ->
+            val transferJson = getJSONObject(index)
+
+            ShellManifest.TransferSeam(
+                id = transferJson.getString("id"),
+                intent = transferJson.getString("intent"),
+                direction = transferJson.getString("direction"),
+                source = transferJson.optString("source").takeIf { it.isNotBlank() },
+                destination = transferJson.optString("destination").takeIf { it.isNotBlank() },
+                verification = transferJson.getString("verification"),
+                mediaTypes = transferJson.optJSONArray("media_types").toStringList(),
+                states = transferJson.optJSONArray("states").toStringList()
+            )
+        }
     }
 }
