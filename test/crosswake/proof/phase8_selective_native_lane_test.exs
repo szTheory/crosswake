@@ -22,6 +22,12 @@ defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
           "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals_live.ex",
           "examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex",
           "examples/phoenix_host/lib/crosswake_example/saas_portal/settings_live.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/on_mount.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/fixtures.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/claims_live.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_live.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_capture_live.ex",
+          "examples/phoenix_host/lib/crosswake_example/selective_native/submission_review_live.ex",
           "examples/phoenix_host/lib/crosswake_example/router.ex"
         ] do
       Code.require_file(Path.expand(path, File.cwd!()))
@@ -72,5 +78,29 @@ defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
     review_route = manifest.routes["selective-native-submission-review"]
     assert review_route.runtime == :live_view
     assert review_route.security == :sensitive
+  end
+
+  test "example host has a narrow Ecto-backed claim and submission slice without leaking into core" do
+    assert File.exists?("examples/phoenix_host/lib/crosswake_example/repo.ex")
+    assert File.exists?("examples/phoenix_host/lib/crosswake_example/selective_native/claim.ex")
+    assert File.exists?("examples/phoenix_host/lib/crosswake_example/selective_native/submission.ex")
+
+    # Core library should not have Ecto schemas
+    refute File.exists?("lib/crosswake/selective_native/claim.ex")
+  end
+
+  test "the data boundary keeps local capture, staging, upload, and submission as distinct states" do
+    claim_code = File.read!("examples/phoenix_host/lib/crosswake_example/selective_native/claim.ex")
+    submission_code = File.read!("examples/phoenix_host/lib/crosswake_example/selective_native/submission.ex")
+
+    assert claim_code =~ "field :status, :string"
+    assert claim_code =~ "schema \"selective_native_claims\""
+    
+    assert submission_code =~ "field :status, :string"
+    assert submission_code =~ "schema \"selective_native_submissions\""
+    assert submission_code =~ "\"captured locally\""
+    assert submission_code =~ "\"staged\""
+    assert submission_code =~ "\"uploaded\""
+    assert submission_code =~ "\"submitted\""
   end
 end

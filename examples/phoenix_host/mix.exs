@@ -1,0 +1,32 @@
+defmodule CrosswakeExample.MixProject do
+  use Mix.Project
+
+  def project do
+    [
+      app: :crosswake_example,
+      version: "0.1.0",
+      elixir: "~> 1.19",
+      start_permanent: Mix.env() == :prod,
+      deps: deps()
+    ]
+  end
+
+  def application do
+    [
+      mod: {CrosswakeExample.Application, []},
+      extra_applications: [:logger]
+    ]
+  end
+
+  defp deps do
+    [
+      {:crosswake, path: "../.."},
+      {:phoenix, "~> 1.8"},
+      {:phoenix_live_view, "~> 1.1"},
+      {:plug, "~> 1.16"},
+      {:jason, "~> 1.4"},
+      {:ecto_sql, "~> 3.10"},
+      {:ecto_sqlite3, "~> 0.16"}
+    ]
+  end
+end
