@@ -76,23 +76,7 @@ defmodule CrosswakeExample.Router do
           ]
         ]
 
-      live "/camera", CrosswakeExample.CameraLive, :capture,
-        crosswake: [
-          id: "camera",
-          runtime: :native_screen,
-          capabilities: [:camera],
-          packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
-          transfers: [
-            [
-              id: :capture_upload,
-              intent: :upload,
-              source: :native_capture,
-              verification: :required,
-              media_types: ["image/*"]
-            ]
-          ],
-          security: :sensitive
-        ]
+
     end
   end
 
@@ -172,6 +156,17 @@ defmodule CrosswakeExample.Router do
           crosswake: [
             id: "selective-native-claim-capture",
             runtime: :native_screen,
+            capabilities: [:camera],
+            packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+            transfers: [
+              [
+                id: :capture_upload,
+                intent: :upload,
+                source: :native_capture,
+                verification: :required,
+                media_types: ["image/*"]
+              ]
+            ],
             offline: :cached_read_only,
             security: :sensitive
           ]

@@ -57,10 +57,22 @@ defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
     capture_route = manifest.routes["selective-native-claim-capture"]
     assert capture_route.runtime == :native_screen
     assert capture_route.security == :sensitive
+    assert capture_route.capabilities == ["camera"]
+    assert capture_route.packs == ["camera_capture_assets@1.0.0"]
+    assert length(capture_route.transfers) == 1
+    transfer = hd(capture_route.transfers)
+    assert transfer.id == "capture_upload"
+    assert transfer.intent == :upload
+    assert transfer.source == :native_capture
+    assert transfer.verification == :required
+    assert transfer.media_types == ["image/*"]
 
     for route_id <- Map.keys(@native_routes) -- ["selective-native-claim-capture"] do
       route = manifest.routes[route_id]
       assert route.runtime != :native_screen
+      assert route.capabilities == []
+      assert route.packs == []
+      assert route.transfers == []
     end
   end
 
