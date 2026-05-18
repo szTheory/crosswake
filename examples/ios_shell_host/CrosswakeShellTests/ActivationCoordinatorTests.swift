@@ -146,10 +146,13 @@ final class ActivationCoordinatorTests: XCTestCase {
                 transfers: [
                     .init(
                         id: "capture_upload",
-                        intent: .upload,
-                        source: .nativeCapture,
-                        verification: .required,
-                        mediaTypes: ["image/*"]
+                        intent: "upload",
+                        direction: "outbound",
+                        source: "native_capture",
+                        destination: nil,
+                        verification: "required",
+                        mediaTypes: ["image/*"],
+                        states: []
                     )
                 ],
                 allowlistedOrigins: ["https://example.com"]

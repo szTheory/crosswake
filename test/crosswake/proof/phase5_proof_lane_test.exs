@@ -67,7 +67,7 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
     assert android_activation =~ "\"route_id\": \"selective-native-claim-capture\""
     assert android_activation =~ "\"camera\": \"1.0.0\""
     assert android_manifest =~ "\"selective-native-claim-capture\""
-    assert android_instrumented =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
+    assert android_instrumented =~ "https://example.crosswake.invalid/saas/approvals/approval-1"
   end
 
   test "phase 5 proof workflow runs checked-in examples before generated hosts" do

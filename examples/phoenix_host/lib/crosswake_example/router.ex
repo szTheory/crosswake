@@ -55,7 +55,7 @@ defmodule CrosswakeExample.Router do
       live "/session", StudySessionLive,
         crosswake: [
           id: "local-first-study-session",
-          runtime: :live_view,
+          runtime: :offline_island,
           offline: :local_first,
           packs: [[id: :daily_study, version: "1.0.0", kind: :content]],
           security: :standard
