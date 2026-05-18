@@ -2,3 +2,18 @@
 /deps/
 /.elixir_ls/
 /.mix/
+*.beam
+.DS_Store
+
+# Sub-projects
+/**/_build/
+/**/deps/
+
+# iOS
+/**/DerivedData/
+/**/build/
+
+# Android
+/**/.gradle/
+/**/build/
+/**/local.properties
