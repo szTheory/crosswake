@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-05-18)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 8 planning - turning the locked profile matrix into the Selective Native Flow exemplar lane
+**Current focus:** Phase 8 planned - executing the selective-native claims-evidence lane against the shared example-host and shell proof surfaces
 
 ## Current Position
 
-Phase: Phase 7 complete (next: Phase 8 Selective Native Flow Exemplar)
-Plan: 07-01, 07-02, and 07-03 complete
-Status: Phase 7 landed the shared `/saas` exemplar lane, approvals-led LiveView flow, bounded haptics proof, SaaS boundary docs, and checked-in shell-proof alignment.
-Last activity: 2026-05-18 — Completed Phase 7 Phoenix SaaS Portal Exemplar
+Phase: Phase 09-local-first-content-flow-exemplar
+Plan: 09-04
+Status: Phase 09 complete.
+Last activity: 2026-05-18 — Executed Phase 09 Plan 04
 
-Progress: [###-------] 30%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -33,7 +33,7 @@ Progress: [###-------] 30%
 | 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 06-01, 06-02, 07-01, 07-02, and 07-03 landed; the milestone now has a proof-backed Phoenix SaaS exemplar lane
+- Last 5 plans: 06-02, 07-01, 07-02, and 07-03 landed; 08-01 through 08-04 are now planned for execution
 - Trend: Positive
 
 ## Accumulated Context
@@ -66,6 +66,8 @@ Recent decisions affecting current work:
 - Phase 7 now proves one authenticated Phoenix SaaS companion lane inside the shared example host: five `/saas` routes, host-owned auth, one guarded approval action, and one bounded haptics confirmation seam.
 - The checked-in iOS and Android proof hosts now boot the SaaS approval route as part of the public artifact class instead of staying pinned to older library-only activation truth.
 - Android shell activation now matches dynamic manifest paths for deep links so routes like `/saas/approvals/:id` resolve correctly instead of failing closed as inactive.
+- Phase 9 offline route policy metadata was changed from `:island` to `:local_first` to align with framework definitions during API implementation.
+- The 09-03 StudySessionLive implements the offline island pattern by accumulating an in-memory outbox payload to mock client progression before triggering a manual simulated sync.
 
 ### Pending Todos
 
@@ -74,8 +76,9 @@ None yet.
 ### Blockers/Concerns
 
 - The remaining exemplar phases must keep extending the shared artifact class instead of introducing parallel sample apps or phase-specific proof harnesses.
-- Selective-native work needs to keep native ownership narrow and explicit; the Phase 7 SaaS lane already proved the value of not widening bridge authority prematurely.
+- Selective-native work needs to keep native ownership narrow and explicit; Phase 8 planning locks exactly one `:native_screen` route, route-local pack gating, and review-before-upload truth.
 - Native proof remains environment-sensitive even with the current green lanes; later exemplar work should treat simulator and emulator drift as product-surface risk.
+- The current example host is still dependency-light, so any claim or submission state added during execution should stay example-host-scoped and must not widen Crosswake core scope.
 
 ## Deferred Items
 
@@ -87,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-18
-Stopped at: Phase 7 is complete; next work is discussing or planning Phase 8 against the locked selective-native lane
+Stopped at: Completed Phase 09. Ready for next phase.
 Resume file: None
