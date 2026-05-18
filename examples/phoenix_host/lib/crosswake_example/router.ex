@@ -25,7 +25,9 @@ defmodule CrosswakeExample.Router do
   import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]
   import Phoenix.LiveView.Router, only: [live_session: 3]
   import Crosswake.Router
+  @compile {:no_warn_undefined, CrosswakeExample.Crosswake.Policy}
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
+  _ = @crosswake_policy_module
   # crosswake:install:end
 
   pipeline :browser do

@@ -1,5 +1,4 @@
 defmodule CrosswakeExample.SelectiveNative.Claims do
-  import Ecto.Query
   alias CrosswakeExample.Repo
   alias CrosswakeExample.SelectiveNative.Claim
 

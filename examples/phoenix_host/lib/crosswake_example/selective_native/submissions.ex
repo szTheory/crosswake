@@ -1,5 +1,4 @@
 defmodule CrosswakeExample.SelectiveNative.Submissions do
-  import Ecto.Query
   alias CrosswakeExample.Repo
   alias CrosswakeExample.SelectiveNative.Submission
 
