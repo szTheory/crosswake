@@ -39,6 +39,38 @@ defmodule CrosswakeExample.Router do
     plug CrosswakeExample.SaaSPortal.Auth, :fetch_current_user
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  scope "/study", CrosswakeExample.LocalFirst do
+    pipe_through [:api]
+    post "/sync", SyncController, :sync
+  end
+
+  scope "/study", CrosswakeExample.LocalFirst do
+    pipe_through [:browser]
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live "/session", StudySessionLive,
+        crosswake: [
+          id: "local-first-study-session",
+          runtime: :live_view,
+          offline: :local_first,
+          packs: [[id: :daily_study, version: "1.0.0", kind: :content]],
+          security: :standard
+        ]
+
+      live "/history", StudyHistoryLive,
+        crosswake: [
+          id: "local-first-study-history",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+    end
+  end
+
   scope "/" do
     pipe_through [:browser]
 
