@@ -157,6 +157,45 @@ defmodule Crosswake.DoctorTest do
     assert Enum.any?(decoded["findings"], &(&1["severity"] == "advisory"))
   end
 
+  defmodule BoundaryViolationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :offline_island, offline: :local_first, security: :standard do
+        live "/violator", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "violator",
+            island_contract: :violator_v1,
+            capabilities: ["background_sync", "generic_plugin_bus"]
+          ]
+      end
+    end
+  end
+
+  test "doctor catches explicit v1 boundaries like background_sync on offline_island", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: BoundaryViolationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert report.status == :error
+    
+    sync_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "background_sync"))
+    assert sync_finding
+    assert sync_finding.severity == :error
+    assert sync_finding.message =~ "requests background_sync which is an explicit v1 boundary"
+
+    plugin_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "generic_plugin_bus"))
+    assert plugin_finding
+    assert plugin_finding.severity == :error
+    assert plugin_finding.message =~ "requests generic_plugin_bus which is an explicit v1 boundary"
+  end
+
   defp write_shell_artifacts!(target) do
     ios_root = Path.join(target, "native/ios/crosswake_shell")
     android_root = Path.join(target, "native/android/crosswake_shell")

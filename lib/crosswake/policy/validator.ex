@@ -9,10 +9,12 @@ defmodule Crosswake.Policy.Validator do
   @known_capabilities MapSet.new([
                         "audio",
                         "background_audio",
+                        "background_sync",
                         "camera",
                         "camera.capture",
                         "document_preview",
                         "file_picker",
+                        "generic_plugin_bus",
                         "haptics",
                         "lock_screen_controls",
                         "microphone",

@@ -116,7 +116,9 @@ defmodule Crosswake.Doctor do
 
     {shells, bridge, support, phase_3_findings} = phase_3_posture(manifest, cwd, opts)
     {offline, phase_4_findings} = phase_4_posture(manifest)
-    findings = findings ++ phase_3_findings ++ phase_4_findings
+    phase_10_findings = phase_10_posture(manifest)
+    
+    findings = findings ++ phase_3_findings ++ phase_4_findings ++ phase_10_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -419,6 +421,48 @@ defmodule Crosswake.Doctor do
     ]
 
     {offline, findings}
+  end
+
+  defp phase_10_posture(nil), do: []
+
+  defp phase_10_posture(manifest) do
+    Enum.reduce(manifest.routes, [], fn {_id, route}, acc ->
+      acc =
+        if route.runtime == :offline_island and "background_sync" in route.capabilities do
+          [
+            check(
+              :error,
+              "unsupported_capability",
+              "route_policy",
+              "Route #{route.path} requests background_sync which is an explicit v1 boundary",
+              "Remove background_sync capability. See Boundary Warnings in guides/offline.md",
+              %{capability: "background_sync", route_id: route.id, path: route.path}
+            )
+            | acc
+          ]
+        else
+          acc
+        end
+
+      acc =
+        if "generic_plugin_bus" in route.capabilities do
+          [
+            check(
+              :error,
+              "unsupported_capability",
+              "route_policy",
+              "Route #{route.path} requests generic_plugin_bus which is an explicit v1 boundary",
+              "Remove generic_plugin_bus capability. See Boundary Warnings in guides/packs.md",
+              %{capability: "generic_plugin_bus", route_id: route.id, path: route.path}
+            )
+            | acc
+          ]
+        else
+          acc
+        end
+
+      acc
+    end)
   end
 
   defp shell_posture(platform, cwd, opts) do
