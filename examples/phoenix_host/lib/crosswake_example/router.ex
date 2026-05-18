@@ -143,4 +143,45 @@ defmodule CrosswakeExample.Router do
       end
     end
   end
+
+  scope "/native", CrosswakeExample.SelectiveNative do
+    pipe_through [:browser]
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live_session :selective_native,
+        on_mount: [{CrosswakeExample.SelectiveNative.OnMount, :require_authenticated_member}] do
+        live "/claims", ClaimsLive,
+          crosswake: [
+            id: "selective-native-claims",
+            runtime: :live_view,
+            offline: :cached_read_only,
+            security: :standard
+          ]
+
+        live "/claims/:id", ClaimLive,
+          crosswake: [
+            id: "selective-native-claim",
+            runtime: :live_view,
+            offline: :cached_read_only,
+            security: :standard
+          ]
+
+        live "/claims/:id/capture", ClaimCaptureLive,
+          crosswake: [
+            id: "selective-native-claim-capture",
+            runtime: :native_screen,
+            offline: :cached_read_only,
+            security: :sensitive
+          ]
+
+        live "/submissions/:id/review", SubmissionReviewLive,
+          crosswake: [
+            id: "selective-native-submission-review",
+            runtime: :live_view,
+            offline: :cached_read_only,
+            security: :sensitive
+          ]
+      end
+    end
+  end
 end
