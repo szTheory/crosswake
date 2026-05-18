@@ -160,7 +160,13 @@ Plans:
   1. A realistic exemplar flow moves one device-heavy or entitlement-adjacent route into `:native_screen` ownership while surrounding routes remain manifest-driven Phoenix routes.
   2. The exemplar uses declared pack, transfer, and capability seams rather than fallback container behaviors or generic bridge authority.
   3. Any contract gaps exposed by the exemplar are made explicit and bounded instead of widened into a capability wishlist.
-**Plans**: 0 plans
+**Plans**: 4 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - Establish the `/native` lane skeleton, single-native-route contract, and bounded host-side claim or submission scaffolding.
+- [ ] 08-02-PLAN.md - Implement the nested native capture flow, staged-review-upload handoff, and route-local pack or transfer seams.
+- [ ] 08-03-PLAN.md - Extend checked-in shell fixtures and proof lanes for pack-ready and pack-blocked selective-native activation.
+- [ ] 08-04-PLAN.md - Refresh the shared-host and public guide surfaces to the locked claims-evidence lane and its rough-edge truth.
 
 ### Phase 9: Local-First Content Flow Exemplar
 **Goal**: Crosswake proves a realistic local-first product shape using the existing offline island and cached-route posture.
@@ -170,7 +176,13 @@ Plans:
   1. A local-first exemplar can complete meaningful offline work through Crosswake's journal, outbox, and reconciliation contract.
   2. The exemplar also exercises cached read-only degradation and explicit replay outcomes in a way adopters can understand and verify.
   3. The local-first story stays honest about what is local-first, what is cached-only, and what still requires server authority.
-**Plans**: 0 plans
+**Plans**: 4 plans
+
+Plans:
+- [ ] 09-01-PLAN.md - Establish the core Ecto schema and context for the Local-First study flow.
+- [ ] 09-02-PLAN.md - Expose the synchronization API endpoint and define the explicit Crosswake route policy.
+- [ ] 09-03-PLAN.md - Implement the Local-First LiveViews to represent the Offline Island and Cached Read-Only states.
+- [ ] 09-04-PLAN.md - Wire the deterministic proof lane and verification artifacts for the Local-First Exemplar.
 
 ### Phase 10: Cross-Profile Hardening, Proof, And Guidance
 **Goal**: Crosswake hardens the core and support posture based on the pressure revealed by the three exemplar profiles.
@@ -193,6 +205,6 @@ Plans:
 | 5. Packs, Native Escape, And Proof Lanes | 10/10 | Complete | 2026-05-17 |
 | 6. Adopter Profile Matrix And Pressure Contract | 2/2 | Complete | 2026-05-17 |
 | 7. Phoenix SaaS Portal Exemplar | 3/3 | Complete | 2026-05-18 |
-| 8. Selective Native Flow Exemplar | 0/0 | Planned | - |
-| 9. Local-First Content Flow Exemplar | 0/0 | Planned | - |
+| 8. Selective Native Flow Exemplar | 0/4 | Planned | - |
+| 9. Local-First Content Flow Exemplar | 0/4 | Planned | - |
 | 10. Cross-Profile Hardening, Proof, And Guidance | 0/0 | Planned | - |
