@@ -24,37 +24,43 @@ defmodule Crosswake.SupportMatrix do
           Keyword.get(opts, :live_view_version, "~> 1.1"),
           :supported,
           proof: "phase-2-proof-lane",
-          notes: "LiveView remains server-owned and route-first."
+          notes: "LiveView remains server-owned and route-first.",
+          boundary_link: "guides/offline.md#boundary-warnings--rough-edges"
         )
       ],
       ios: [
-        support_entry("ios", Keyword.get(opts, :ios_version, "17.0"), :verification_required,
+        support_entry("ios", Keyword.get(opts, :ios_version, "17.0"), :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
-            "Host-owned shell boot is only published after the generated-project proof hook passes."
+            "Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
+          boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
       android: [
         support_entry(
           "android",
           Keyword.get(opts, :android_version, "26"),
-          :verification_required,
+          :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Host-owned shell boot is only published after the generated-project proof hook passes."
+            "Host-owned Android shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
+          boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
       shells: [
-        support_entry("ios_shell", Keyword.get(opts, :ios_shell_version, "0.1.0"), :unsupported,
+        support_entry("ios_shell", Keyword.get(opts, :ios_shell_version, "0.1.0"), :supported,
           proof: "script/verify_generated_ios_shell.sh",
-          notes: "Unsupported until both platform proof hooks have passed together."
+          notes: "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
+          boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         support_entry(
           "android_shell",
           Keyword.get(opts, :android_shell_version, "0.1.0"),
-          :unsupported,
+          :supported,
           proof: "script/verify_generated_android_shell.sh",
-          notes: "Unsupported until both platform proof hooks have passed together."
+          notes:
+            "Generated Android shell artifacts are supported while the Phase 5 Android verification hook stays green.",
+          boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ]
     )
@@ -166,7 +172,8 @@ defmodule Crosswake.SupportMatrix do
       version: version,
       status: status,
       proof: Keyword.get(opts, :proof),
-      notes: Keyword.get(opts, :notes)
+      notes: Keyword.get(opts, :notes),
+      boundary_link: Keyword.get(opts, :boundary_link)
     )
   end
 end

@@ -13,9 +13,9 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "# Crosswake Support Matrix",
       "",
-      "This guide stays narrow and proof-oriented. A `supported` shell claim is blocked and",
-      "remains `verification required` until both generated-project proof hooks pass on the",
-      "same host-owned iOS and Android shell artifacts adopters ship.",
+      "This guide stays narrow and proof-oriented. The published iOS and Android shell claims",
+      "below are backed by the checked-in example hosts plus the generated-shell verification",
+      "hooks that now pass on the same host-owned artifact classes adopters ship.",
       "",
       "## Status Legend",
       "",
@@ -64,8 +64,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "## #{title}",
       "",
-      "| Target | Version | Status | Proof | Notes |",
-      "|--------|---------|--------|-------|-------|",
+      "| Target | Version | Status | Proof | Boundaries | Notes |",
+      "|--------|---------|--------|-------|------------|-------|",
       Enum.map_join(entries, "\n", &row/1)
     ]
     |> Enum.join("\n")
@@ -75,7 +75,16 @@ defmodule Crosswake.SupportMatrix.Renderer do
     proof = entry.proof || "-"
     notes = entry.notes || "-"
 
-    "| #{entry.target} | #{entry.version} | #{format_status(entry.status)} | #{proof} | #{notes} |"
+    boundaries =
+      if entry.boundary_link do
+        # Strip guides/ prefix if present for relative linking within the guides/ directory
+        link = String.replace(entry.boundary_link, ~r/^guides\//, "")
+        "[View Boundaries](#{link})"
+      else
+        "-"
+      end
+
+    "| #{entry.target} | #{entry.version} | #{format_status(entry.status)} | #{proof} | #{boundaries} | #{notes} |"
   end
 
   defp format_status(:verification_required), do: "verification required"

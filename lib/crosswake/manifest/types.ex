@@ -283,14 +283,15 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
 
     @enforce_keys [:target, :version, :status]
-    defstruct [:target, :version, :status, :proof, :notes]
+    defstruct [:target, :version, :status, :proof, :notes, :boundary_link]
 
     @type t :: %__MODULE__{
             target: String.t(),
             version: String.t(),
             status: Crosswake.Manifest.Types.Capability.status(),
             proof: String.t() | nil,
-            notes: String.t() | nil
+            notes: String.t() | nil,
+            boundary_link: String.t() | nil
           }
   end
 
@@ -438,7 +439,8 @@ defmodule Crosswake.Manifest.Types do
       version: Keyword.fetch!(attrs, :version),
       status: Keyword.fetch!(attrs, :status),
       proof: Keyword.get(attrs, :proof),
-      notes: Keyword.get(attrs, :notes)
+      notes: Keyword.get(attrs, :notes),
+      boundary_link: Keyword.get(attrs, :boundary_link)
     })
   end
 
@@ -567,7 +569,8 @@ defmodule Crosswake.Manifest.Types do
       "version" => support_entry.version,
       "status" => format_status(support_entry.status),
       "proof" => support_entry.proof,
-      "notes" => support_entry.notes
+      "notes" => support_entry.notes,
+      "boundary_link" => support_entry.boundary_link
     }
     |> Enum.reject(fn {_key, value} -> is_nil(value) end)
     |> Map.new()

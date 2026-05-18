@@ -5,6 +5,11 @@ Crosswake Phase 4 proves one narrow offline story on purpose:
 - one cached read-only route class for degraded reads
 - one study-session offline island for local-first mutation
 
+If you need help deciding whether your app should stay cached read-only or move one
+route into a true offline island, start with
+[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+and then return here for the exact offline contract.
+
 Everything else remains out of scope until later phases prove it explicitly.
 Crosswake is not a generic sync framework, and it does not claim magical
 app-wide offline behavior.
@@ -85,3 +90,12 @@ Generated iOS and Android shell runtime support still depends on:
 Until those native proof hooks pass on the real generated projects, shell support
 stays `verification required` even though the repo-local offline contract itself
 is hermetically proven.
+
+## Boundary Warnings & Rough Edges
+
+Crosswake's offline support is intentionally narrow. Adopters should be aware of these boundaries:
+
+- **No Background Sync:** True background synchronization (syncing when the app is not in the foreground) is currently unsupported. Sync only occurs while the app is active and the user is on the relevant route.
+- **Manual Reconciliation:** Fallback to manual reconciliation hooks upon resume is required if automatic replay fails or encounters conflicts.
+- **Limited Scope:** Offline support is only proven for specific "Offline Island" routes. App-wide offline state is not a goal.
+- **No Conflict Magic:** Conflict resolution requires explicit user attention; silent "last-write-wins" is not supported.

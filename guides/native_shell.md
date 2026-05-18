@@ -133,3 +133,12 @@ The shell bridge stays bounded to:
 Everything else is denied. Read
 [guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md) for the exact
 request/reply envelope and denial vocabulary.
+
+## Boundary Warnings & Rough Edges
+
+The native shell is a bounded host for Phoenix/LiveView applications. Note these boundaries:
+
+- **Command-Only Bridge:** The native bridge relies on explicit, typed commands rather than generic message buses or arbitrary JavaScript execution.
+- **No Silent Fallbacks:** If a route is unavailable or a bridge call fails the contract, the shell fails closed with an explicit error UI rather than falling back to a web-view default.
+- **Host Ownership Responsibility:** Once generated, shell projects are host-owned. Upgrades require manual patching; they are not "drop-in" regeneratable overlays.
+- **Limited Transfer Lifecycle:** While media can be captured natively, the full transfer lifecycle (upload/download) has specific preparation and completion steps that must be handled explicitly.
