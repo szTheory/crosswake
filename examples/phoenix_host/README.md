@@ -81,20 +81,38 @@ canonical support and proof surfaces.
 
 Representative routes:
 
-- `/native/library`
+- `/native/claims`
 - `/native/claims/:id`
-- `/native/capture`
+- `/native/claims/:id/capture`
 - `/native/submissions/:id/review`
 
 Required seams:
 
-- one explicit `:native_screen` route
+- one explicit `:native_screen` route for capture
 - route-local required packs
-- route-local transfer seam such as `transfer.upload.prepare`
-- explicit sensitive-route handling
+- route-local explicit `:camera` capability
+- route-local `transfer.upload.prepare` seam
+- explicit sensitive-route handling for the capture corridor
 
-This lane exists to pressure fail-closed native ownership and transfer handoff
-without widening into a broad native capability surface.
+This lane exists to pressure fail-closed native ownership, pack-gating, and transfer handoff
+without widening into a broad native capability surface. The surrounding workflow stays Phoenix-owned.
+
+Supported behavior:
+
+- native capture remains bounded to one specific route inside the claims-evidence corridor
+- media stays staged and captured locally until explicit Phoenix review before upload triggers the transfer seam
+- surrounding `/native` routes do not inherit capability or pack requirements
+
+Degraded behavior:
+
+- if the shell lacks the requested camera media pack, the capture route denies activation with `pack_incompatible`
+- non-capture routes stay fully usable even if the capture pack is absent or incompatible
+
+Deferred behavior:
+
+- background uploads without user confirmation, silent retries, or implicit submission
+- generic capability-bus or workflow-bus semantics where the shell drives the interaction
+- generic file pickers or cross-app sharing as the primary media path
 
 ### Local-First Study Flow
 

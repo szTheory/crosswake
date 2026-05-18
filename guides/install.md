@@ -20,8 +20,10 @@ before drilling into the deeper shell, offline, or pack contracts.
 
 Phase 7 extends the checked-in proof lane with the `Phoenix SaaS Portal` exemplar:
 an approvals-led, host-owned auth surface that stays mostly `:live_view`, fails closed
-with `route unavailable`, and uses one bounded haptics confirmation seam. Support
-status still lives in
+with `route unavailable`, and uses one bounded haptics confirmation seam. Phase 8
+further extends the shared host with the `Selective Native Flow` exemplar, isolating
+native capture and pack-gated `transfer.upload.prepare` into one explicitly typed route
+while surrounding workflow stays Phoenix-owned. Support status still lives in
 [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md);
 this guide stays the canonical proof-entry surface.
 

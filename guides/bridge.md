@@ -1,10 +1,15 @@
 # Bounded Bridge
 
-Crosswake Phase 3 exposes one typed, versioned, request/reply-only bridge. It is deliberately small:
+Crosswake exposes one typed, versioned, request/reply-only bridge. It stays deliberately
+small even after Phase 5:
 
 - `app.info.get`
 - `haptics.impact`
 - `files.pick`
+- `transfer.download`
+- `transfer.export`
+- `transfer.import`
+- `transfer.upload.prepare`
 
 Everything else is denied. The bridge is not navigation authority, not render synchronization, and not a generic plugin bus.
 
@@ -14,7 +19,7 @@ Every request carries:
 
 - `protocol`: `crosswake.bridge`
 - `version`: bridge protocol version
-- `command`: one of the three bounded commands
+- `command`: one of the bounded commands above
 - `capability`: must match the command's manifest-backed capability id
 - `route_id`: requested route identity
 - `active_route_id`: current active route identity
@@ -40,6 +45,19 @@ Before any side effect runs, Crosswake checks:
 - The route's declared packs are compatible with the shell
 
 If any check fails, Crosswake returns a typed denial reply and executes no side effect.
+
+## Transfer Boundary
+
+The transfer commands stay semantic and route-local.
+
+- `transfer.import` means the route explicitly asked to import user-chosen media or files.
+- `transfer.export` means the route explicitly asked to hand owned content out.
+- `transfer.download` means the route explicitly asked for a download seam.
+- `transfer.upload.prepare` means staged local media is ready to enter a foreground-first upload path.
+
+Transfer execution is foreground-first. States remain explicit: `queued`, `preparing`,
+`transferring`, `awaiting_network`, `verifying`, `complete`, `failed`, and `canceled`.
+Crosswake does not promise silent background reconciliation or generic file authority.
 
 ## Denial Reasons
 

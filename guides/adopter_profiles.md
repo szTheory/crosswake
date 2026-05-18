@@ -89,7 +89,7 @@ Explicit non-goals:
 - broad transfer workflows
 - billing abstractions or plugin-style capability growth
 
-## Selective Native Flow
+### Selective Native Flow
 
 This profile fits a mostly Phoenix-owned product where one route becomes explicitly
 `:native_screen` because a device-heavy step should not be forced through a bounded
@@ -98,22 +98,39 @@ Phoenix-owned.
 
 Representative routes:
 
-- `/library`
-- `/claims/:id`
-- `/claims/:id/media`
-- `/camera/capture`
-- `/submissions/:id/review`
+- `/native/claims`
+- `/native/claims/:id`
+- `/native/claims/:id/capture`
+- `/native/submissions/:id/review`
 
 Required seams:
 
-- one declared `:native_screen` route
+- one declared `:native_screen` route for capture
 - route-local packs for native capture assets when required
+- route-local explicit `:camera` capability
 - route-local transfer seams such as `transfer.upload.prepare`
 - explicit sensitivity and fail-closed native activation
 
 Primary failure vocabulary focus:
 
 - `pack_incompatible`
+
+Supported behavior:
+
+- native capture remains bounded to one specific route inside the claims-evidence corridor
+- media stays staged and captured locally until explicit Phoenix review before upload triggers the transfer seam
+- surrounding `/native` routes do not inherit capability or pack requirements
+
+Degraded behavior:
+
+- if the shell lacks the requested camera media pack, the capture route denies activation with `pack_incompatible`
+- non-capture routes stay fully usable even if the capture pack is absent or incompatible
+
+Deferred behavior:
+
+- background uploads without user confirmation, silent retries, or implicit submission
+- generic capability-bus or workflow-bus semantics where the shell drives the interaction
+- generic file pickers or cross-app sharing as the primary media path
 
 Proof posture summary:
 
