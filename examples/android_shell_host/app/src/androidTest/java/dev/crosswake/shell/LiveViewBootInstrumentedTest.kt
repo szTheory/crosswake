@@ -18,7 +18,7 @@ class LiveViewBootInstrumentedTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val intent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse("https://example.crosswake.invalid/saas/approvals/approval-1")
+            data = Uri.parse("https://example.crosswake.invalid/native/claims/claim-1/capture")
         }
 
         ActivityScenario.launch<MainActivity>(intent).use { scenario ->

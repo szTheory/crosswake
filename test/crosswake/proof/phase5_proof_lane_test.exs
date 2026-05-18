@@ -31,9 +31,9 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
              "lesson_download"
            ]
 
-    assert manifest.routes["camera"].runtime == :native_screen
-    assert manifest.routes["camera"].packs == ["camera_capture_assets@1.0.0"]
-    assert Enum.map(manifest.routes["camera"].transfers, & &1.id) == ["capture_upload"]
+    assert manifest.routes["selective-native-claim-capture"].runtime == :native_screen
+    assert manifest.routes["selective-native-claim-capture"].packs == ["camera_capture_assets@1.0.0"]
+    assert Enum.map(manifest.routes["selective-native-claim-capture"].transfers, & &1.id) == ["capture_upload"]
 
     assert manifest.routes["saas-dashboard"].runtime == :live_view
     assert manifest.routes["saas-approval"].runtime == :live_view
@@ -58,16 +58,16 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
     assert router =~ "saas-approval"
     assert approval_live =~ "haptics.impact"
 
-    assert ios_activation =~ "\"route_id\": \"saas-approval\""
-    assert ios_activation =~ "\"haptics.impact\": \"1.0.0\""
-    assert ios_manifest =~ "\"saas-approval\""
-    assert ios_tests =~ "\"haptics.impact\": \"1.0.0\""
-    assert ios_tests =~ "https://example.crosswake.invalid/saas/approvals/approval-1"
+    assert ios_activation =~ "\"route_id\": \"selective-native-claim-capture\""
+    assert ios_activation =~ "\"camera\": \"1.0.0\""
+    assert ios_manifest =~ "\"selective-native-claim-capture\""
+    assert ios_tests =~ "\"camera\": \"1.0.0\""
+    assert ios_tests =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
 
-    assert android_activation =~ "\"route_id\": \"saas-approval\""
-    assert android_activation =~ "\"haptics.impact\": \"1.0.0\""
-    assert android_manifest =~ "\"saas-approval\""
-    assert android_instrumented =~ "https://example.crosswake.invalid/saas/approvals/approval-1"
+    assert android_activation =~ "\"route_id\": \"selective-native-claim-capture\""
+    assert android_activation =~ "\"camera\": \"1.0.0\""
+    assert android_manifest =~ "\"selective-native-claim-capture\""
+    assert android_instrumented =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
   end
 
   test "phase 5 proof workflow runs checked-in examples before generated hosts" do

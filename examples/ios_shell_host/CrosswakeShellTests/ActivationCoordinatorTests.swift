@@ -17,9 +17,9 @@ final class ActivationCoordinatorTests: XCTestCase {
             return XCTFail("expected live view presentation")
         }
 
-        XCTAssertEqual(session.routeID, "saas-approval")
-        XCTAssertEqual(session.url.absoluteString, "https://example.crosswake.invalid/saas/approvals/approval-1")
-        XCTAssertEqual(session.capabilities["haptics.impact"], "1.0.0")
+        XCTAssertEqual(session.routeID, "selective-native-claim-capture")
+        XCTAssertEqual(session.url.absoluteString, "https://example.crosswake.invalid/native/claims/claim-1/capture")
+        XCTAssertEqual(session.capabilities["camera"], "1.0.0")
     }
 
     func testDeniedDeepLinkUsesExplicitInactiveRouteSurface() {
@@ -137,30 +137,38 @@ final class ActivationCoordinatorTests: XCTestCase {
                 ],
                 allowlistedOrigins: ["https://example.crosswake.invalid"]
             ),
-            "saas-approval": .init(
-                id: "saas-approval",
-                path: "/saas/approvals/:id",
-                runtime: "live_view",
-                capabilities: ["haptics"],
-                packs: [],
-                transfers: [],
-                allowlistedOrigins: ["https://example.crosswake.invalid"]
+            "selective-native-claim-capture": .init(
+                id: "selective-native-claim-capture",
+                path: "/native/claims/:id/capture",
+                runtime: "native_screen",
+                capabilities: ["camera"],
+                packs: ["camera_capture_assets@1.0.0"],
+                transfers: [
+                    .init(
+                        id: "capture_upload",
+                        intent: .upload,
+                        source: .nativeCapture,
+                        verification: .required,
+                        mediaTypes: ["image/*"]
+                    )
+                ],
+                allowlistedOrigins: ["https://example.com"]
             )
-        ]
-    )
+            ]
+            )
 
-    private static let allowedRequest = ActivationRequest(
-        routeID: "saas-approval",
-        url: URL(string: "https://example.crosswake.invalid/saas/approvals/approval-1"),
-        source: .coldStart,
-        origin: "https://example.crosswake.invalid",
-        manifestSource: .bundled,
-        bridgeProtocolVersion: "1.0.0",
-        nativeRuntimeVersion: "1.0.0",
-        correlationID: "ios-example-saas-approval-1",
-        declaredPackRequirements: [:],
-        installedPacks: [:],
-        capabilities: ["haptics.impact": "1.0.0"]
+            private static let allowedRequest = ActivationRequest(
+            routeID: "selective-native-claim-capture",
+            url: URL(string: "https://example.crosswake.invalid/native/claims/claim-1/capture"),
+            source: .coldStart,
+            origin: "https://example.crosswake.invalid",
+            manifestSource: .bundled,
+            bridgeProtocolVersion: "1.0.0",
+            nativeRuntimeVersion: "1.0.0",
+            correlationID: "ios-example-capture-1",
+            declaredPackRequirements: ["camera_capture_assets": "1.0.0"],
+            installedPacks: ["camera_capture_assets": "1.0.0"],
+            capabilities: ["camera": "1.0.0"]
     )
 
     private static let libraryPackRequest = ActivationRequest(

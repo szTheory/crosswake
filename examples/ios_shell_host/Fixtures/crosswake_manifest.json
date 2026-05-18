@@ -26,7 +26,7 @@
     ]
   },
   "crosswake_version": "0.1.0",
-  "generated_at": "2026-05-17T04:17:51Z",
+  "generated_at": "2026-05-18T17:20:08Z",
   "host": {
     "live_view_version": "~> 1.1",
     "manifest_sources": [
@@ -53,49 +53,6 @@
     }
   },
   "routes": {
-    "camera": {
-      "allowlisted_origins": [
-        "https://example.crosswake.invalid"
-      ],
-      "cache_contract": null,
-      "capabilities": [
-        "camera"
-      ],
-      "id": "camera",
-      "island_contract": null,
-      "offline": "cached_read_only",
-      "packs": [
-        "camera_capture_assets@1.0.0"
-      ],
-      "path": "/camera",
-      "runtime": "native_screen",
-      "security": "sensitive",
-      "sync": [],
-      "transfers": [
-        {
-          "direction": "inbound",
-          "id": "capture_upload",
-          "intent": "upload",
-          "media_types": [
-            "image/*"
-          ],
-          "protocol": "crosswake.transfer",
-          "source": "native_capture",
-          "states": [
-            "queued",
-            "preparing",
-            "transferring",
-            "awaiting_network",
-            "verifying",
-            "complete",
-            "failed",
-            "canceled"
-          ],
-          "verification": "required",
-          "version": "1.0.0"
-        }
-      ]
-    },
     "home": {
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
@@ -287,23 +244,114 @@
       "security": "standard",
       "sync": [],
       "transfers": []
+    },
+    "selective-native-claim": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "selective-native-claim",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/native/claims/:id",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "selective-native-claim-capture": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [
+        "camera"
+      ],
+      "id": "selective-native-claim-capture",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [
+        "camera_capture_assets@1.0.0"
+      ],
+      "path": "/native/claims/:id/capture",
+      "runtime": "native_screen",
+      "security": "sensitive",
+      "sync": [],
+      "transfers": [
+        {
+          "direction": "inbound",
+          "id": "capture_upload",
+          "intent": "upload",
+          "media_types": [
+            "image/*"
+          ],
+          "protocol": "crosswake.transfer",
+          "source": "native_capture",
+          "states": [
+            "queued",
+            "preparing",
+            "transferring",
+            "awaiting_network",
+            "verifying",
+            "complete",
+            "failed",
+            "canceled"
+          ],
+          "verification": "required",
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "selective-native-claims": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "selective-native-claims",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/native/claims",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "selective-native-submission-review": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "selective-native-submission-review",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/native/submissions/:id/review",
+      "runtime": "live_view",
+      "security": "sensitive",
+      "sync": [],
+      "transfers": []
     }
   },
   "support_matrix": {
     "android": [
       {
-        "notes": "Host-owned shell boot is only published after the generated-project proof hook passes.",
+        "notes": "Host-owned Android shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
         "proof": "script/verify_generated_android_shell.sh",
-        "status": "verification required",
+        "status": "supported",
         "target": "android",
         "version": "26"
       }
     ],
     "ios": [
       {
-        "notes": "Host-owned shell boot is only published after the generated-project proof hook passes.",
+        "notes": "Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
         "proof": "script/verify_generated_ios_shell.sh",
-        "status": "verification required",
+        "status": "supported",
         "target": "ios",
         "version": "17.0"
       }
@@ -328,16 +376,16 @@
     ],
     "shells": [
       {
-        "notes": "Unsupported until both platform proof hooks have passed together.",
+        "notes": "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
         "proof": "script/verify_generated_ios_shell.sh",
-        "status": "unsupported",
+        "status": "supported",
         "target": "ios_shell",
         "version": "0.1.0"
       },
       {
-        "notes": "Unsupported until both platform proof hooks have passed together.",
+        "notes": "Generated Android shell artifacts are supported while the Phase 5 Android verification hook stays green.",
         "proof": "script/verify_generated_android_shell.sh",
-        "status": "unsupported",
+        "status": "supported",
         "target": "android_shell",
         "version": "0.1.0"
       }
