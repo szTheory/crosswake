@@ -1,10 +1,12 @@
 ---
 id: SEED-001
-status: dormant
+status: shipped
 planted: 2026-05-17
 planted_during: "Phase 5 complete — v1 roadmap complete, proof-backed repo posture reconciled"
 trigger_when: "Surface during v2 planning, when the project shifts from finishing the v1 substrate to stress-testing it with realistic adopter-shaped example apps."
 scope: Medium
+resolved_on: 2026-05-19
+resolved_by: "Milestone v2.0 Adopter Stress Profiles (Phases 6-10)"
 ---
 
 # SEED-001: Build realistic example-app stress profiles for the main Crosswake adopter types
@@ -58,3 +60,13 @@ Constraints for the future milestone:
 - Keep them realistic but minimal.
 - Do not let billing, identity-provider, or other vendor-heavy flows leak into core abstractions unless a later milestone explicitly chooses that.
 - Prefer one app per profile over many overlapping demos.
+
+## Resolution
+
+This seed shipped in `v2.0 Adopter Stress Profiles`.
+
+- Phase 6 defined the adopter-profile matrix and the shared example-host contract.
+- Phase 7 proved the Phoenix SaaS portal lane.
+- Phase 8 proved the selective-native flow lane.
+- Phase 9 proved the local-first content lane.
+- Phase 10 hardened the support, proof, and diagnostics posture those lanes exposed.

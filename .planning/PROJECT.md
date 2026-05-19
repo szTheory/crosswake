@@ -8,16 +8,28 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
 
-## Current Milestone: v2.0 Adopter Stress Profiles
+## Current State
 
-**Goal:** Stress-test Crosswake's proven v1 substrate against realistic adopter-shaped app profiles and harden the core where those examples expose gaps.
+Crosswake shipped `v2.0 Adopter Stress Profiles` on `2026-05-19`.
+
+`v2.0` validated the route-policy substrate against three realistic adopter shapes:
+
+- a Phoenix SaaS portal lane that stays mostly LiveView-owned
+- a selective-native claims-evidence corridor with one explicit `:native_screen` route
+- a local-first study flow with an offline-island session and cached read-only history
+
+It also hardened the product surface around those lanes through doctor checks, per-profile verification scripts, CI, and localized support guidance.
+
+## Next Milestone Candidate
+
+The next milestone should widen Crosswake's official Phoenix-first native capability and commerce support without collapsing its core thesis.
 
 **Target features:**
-- Build a published profile matrix for the three strongest adopter shapes already named in the project thesis.
-- Deliver minimal but realistic exemplar routes and flows that pressure server-centric, selective-native, and local-first product shapes.
-- Extend proof lanes, diagnostics, and guides so exemplar support and rough edges become part of the public contract.
+- Define the first capability families or first-party companions worth supporting officially after the exemplar milestone.
+- Design Phoenix-facing commerce and entitlement seams that stay explicit, typed, and bounded.
+- Extend proof lanes, diagnostics, and support truth so future native and commerce claims stay as honest as the current substrate claims.
 
-**Why now:** v1 proved the substrate in isolation. The next highest-leverage work is forcing that substrate through credible app shapes before widening into broader native capability or commerce surface area.
+**Why now:** `v2.0` proved that the architecture holds under realistic adopter pressure. The next leverage point is reducing bespoke native and commerce work for Phoenix teams while preserving explicit route ownership and bounded bridge semantics.
 
 ## Requirements
 
@@ -35,9 +47,14 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 - [x] Ship example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces. Validated in Phase 5: Packs, Native Escape, And Proof Lanes.
 
 ### Active
-- [ ] Validate the v1 substrate against three adopter-shaped exemplar lanes: Phoenix-backed SaaS portal, selective-native mobile flow, and local-first study or content flow.
-- [ ] Harden route-policy, manifest, shell, bridge, pack, transfer, and offline contracts where exemplar pressure exposes adopter-facing gaps.
-- [ ] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract.
+
+None. Milestone `v2.0` shipped on `2026-05-19`.
+
+### Validated (Milestone v2.0)
+
+- [x] Validate the v1 substrate against three adopter-shaped exemplar lanes: Phoenix-backed SaaS portal, selective-native mobile flow, and local-first study or content flow. Validated across Phases 7-10.
+- [x] Harden route-policy, manifest, shell, bridge, pack, transfer, and offline contracts where exemplar pressure exposes adopter-facing gaps. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
+- [x] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
 
 ### Out of Scope
 
@@ -77,8 +94,8 @@ The maintainer's OSS house style materially constrains the project. Install trut
 | Keep deep desktop packaging and broad adapters out of v1 core | Early scope should validate the contract surface before expanding platform breadth | — Pending |
 | Make diagnostics, proof lanes, and docs part of the public contract | This matches the maintainer's proven OSS style and reduces support ambiguity | Further validated in Phase 2 via `mix crosswake.doctor`, generated support docs, and compatibility guidance |
 | Treat checked-in example hosts as the public proof artifact class and generated hosts as secondary verification | Proof-backed support needed a stable adopter-facing install path rather than host-local scaffolding alone | Validated in Phase 5 |
-| Use adopter-shaped stress profiles as the first v2 milestone | Realistic product pressure should reveal the next core fixes before Crosswake expands official native capability breadth | Active in Milestone v2.0 |
-| Treat exemplars as proof artifacts, not product templates | The milestone should validate architectural fit without turning Crosswake into a starter-app bundle | Active in Milestone v2.0 |
+| Use adopter-shaped stress profiles as the first v2 milestone | Realistic product pressure should reveal the next core fixes before Crosswake expands official native capability breadth | Validated in Milestone v2.0 |
+| Treat exemplars as proof artifacts, not product templates | The milestone should validate architectural fit without turning Crosswake into a starter-app bundle | Validated in Milestone v2.0 |
 | Publish one adopter-profile matrix plus a shared example-host lane contract before exemplar implementation | Locking profile vocabulary, non-goals, and artifact boundaries first reduces scope drift in Phases 7-10 | Validated in Phase 6 |
 | Prove the Phoenix SaaS lane as one authenticated LiveView-first approvals slice with one bounded haptics seam | The first exemplar needed credible product pressure without drifting into offline, transfer-first, or native-screen breadth | Validated in Phase 7 |
 | Route-pattern deep links in checked-in shells must match manifest paths with dynamic segments | The SaaS approval route exposed that exact-path matching denied valid `/saas/.../:id` deep links and broke proof-backed shell activation | Validated in Phase 7 |
@@ -101,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-18 after Phase 7 completion*
+*Last updated: 2026-05-19 after v2.0 milestone archival*

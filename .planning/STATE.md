@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-18)
+See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 8 planned - executing the selective-native claims-evidence lane against the shared example-host and shell proof surfaces
+**Current focus:** No active milestone. Prepare the next milestone definition around Phoenix-first native capabilities and commerce support.
 
 ## Current Position
 
-Phase: Phase 09-local-first-content-flow-exemplar
-Plan: 09-04
-Status: Phase 09 complete.
-Last activity: 2026-05-18 — Executed Phase 09 Plan 04
+Phase: None
+Plan: N/A
+Status: v2.0 milestone complete
+Last activity: 2026-05-19 — v2.0 milestone completed and archived
 
 Progress: [##########] 100%
 
@@ -33,7 +33,7 @@ Progress: [##########] 100%
 | 4. Honest Offline Contract | 0 | n/a | n/a |
 
 **Recent Trend:**
-- Last 5 plans: 06-02, 07-01, 07-02, and 07-03 landed; 08-01 through 08-04 are now planned for execution
+- Last milestone shipped: v2.0 Adopter Stress Profiles on 2026-05-19
 - Trend: Positive
 
 ## Accumulated Context
@@ -75,20 +75,18 @@ None yet.
 
 ### Blockers/Concerns
 
-- The remaining exemplar phases must keep extending the shared artifact class instead of introducing parallel sample apps or phase-specific proof harnesses.
-- Selective-native work needs to keep native ownership narrow and explicit; Phase 8 planning locks exactly one `:native_screen` route, route-local pack gating, and review-before-upload truth.
-- Native proof remains environment-sensitive even with the current green lanes; later exemplar work should treat simulator and emulator drift as product-surface risk.
-- The current example host is still dependency-light, so any claim or submission state added during execution should stay example-host-scoped and must not widen Crosswake core scope.
+- Native proof remains environment-sensitive even with the current green lanes; future capability expansion should keep simulator and emulator drift visible as product-surface risk.
+- The next milestone must preserve explicit route ownership and typed, low-frequency bridge contracts as capability breadth expands.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Integrations | First-party companion integrations remain v2 scope until the core contract is proven | Deferred | 2026-05-12 |
+| Integrations | First-party companion integrations remain deferred until the next post-v2 milestone is defined | Deferred | 2026-05-12 |
 | Platform | Desktop packaging remains out of v1 scope | Deferred | 2026-05-12 |
 
 ## Session Continuity
 
-Last session: 2026-05-18
-Stopped at: Completed Phase 09. Ready for next phase.
+Last session: 2026-05-19
+Stopped at: Archived v2.0 milestone. Ready for `$gsd-new-milestone`.
 Resume file: None

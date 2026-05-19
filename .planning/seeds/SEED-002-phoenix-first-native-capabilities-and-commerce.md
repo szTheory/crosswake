@@ -1,10 +1,12 @@
 ---
 id: SEED-002
-status: dormant
+status: harvested
 planted: 2026-05-17
 planted_during: "Phase 5 complete — v1 roadmap complete, proof-backed repo posture reconciled"
 trigger_when: "Surface during v2 planning, when Crosswake shifts from proving the v1 substrate to expanding official Phoenix-first native capabilities and commerce support."
 scope: Large
+resolved_on: 2026-05-19
+resolved_by: "Harvested into post-v2 project direction and future requirements"
 ---
 
 # SEED-002: Build Phoenix-first native capability and commerce support
@@ -81,3 +83,11 @@ Future milestone family to preserve:
 
 - **Comparison framing**
   Masilotti’s Bridge Components and PurchaseKit are reference products only. They prove these feature categories matter. Crosswake should build the Phoenix-native equivalent where it fits the thesis.
+
+## Resolution
+
+This seed was harvested rather than executed in `v2.0`.
+
+- Its scope now lives in `.planning/PROJECT.md` as the next milestone candidate for Phoenix-first native capabilities and commerce support.
+- Its future-facing requirement shape already exists in `.planning/PROJECT.md` and the archived requirements as `COMP-*` future requirements.
+- It remains intentionally out of the shipped `v2.0` scope so the exemplar milestone stays focused on pressure-testing the substrate instead of widening core capability breadth early.
