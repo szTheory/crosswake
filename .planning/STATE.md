@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** No active milestone. Prepare the next milestone definition around Phoenix-first native capabilities and commerce support.
+**Current focus:** Milestone `v3.0 Capability Contract And Packaging`, starting with Phase 11: Capability Taxonomy And Contract Rubric.
 
 ## Current Position
 
-Phase: None
+Phase: 11
 Plan: N/A
-Status: v2.0 milestone complete
-Last activity: 2026-05-19 — v2.0 milestone completed and archived
+Status: Milestone initialized
+Last activity: 2026-05-19 — Milestone `v3.0 Capability Contract And Packaging` started
 
-Progress: [##########] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -34,6 +34,7 @@ Progress: [##########] 100%
 
 **Recent Trend:**
 - Last milestone shipped: v2.0 Adopter Stress Profiles on 2026-05-19
+- Current milestone opened: v3.0 Capability Contract And Packaging on 2026-05-19
 - Trend: Positive
 
 ## Accumulated Context
@@ -68,25 +69,27 @@ Recent decisions affecting current work:
 - Android shell activation now matches dynamic manifest paths for deep links so routes like `/saas/approvals/:id` resolve correctly instead of failing closed as inactive.
 - Phase 9 offline route policy metadata was changed from `:island` to `:local_first` to align with framework definitions during API implementation.
 - The 09-03 StudySessionLive implements the offline island pattern by accumulating an in-memory outbox payload to mock client progression before triggering a manual simulated sync.
+- Post-`v2.0` capability expansion is now sequenced as contracts-first work: taxonomy, packaging, commerce seams, and support truth land before broader native or companion breadth.
 
 ### Pending Todos
 
-None yet.
+- Start Phase 11 discussion or planning.
 
 ### Blockers/Concerns
 
 - Native proof remains environment-sensitive even with the current green lanes; future capability expansion should keep simulator and emulator drift visible as product-surface risk.
-- The next milestone must preserve explicit route ownership and typed, low-frequency bridge contracts as capability breadth expands.
+- Capability and commerce breadth must preserve explicit route ownership and typed, low-frequency bridge contracts.
+- Companion package and release-boundary decisions now directly affect future support claims, rebuild expectations, and proof posture.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Integrations | First-party companion integrations remain deferred until the next post-v2 milestone is defined | Deferred | 2026-05-12 |
-| Platform | Desktop packaging remains out of v1 scope | Deferred | 2026-05-12 |
+| Integrations | First-party companion integrations remain deferred until the current contract and packaging milestone lands | Deferred | 2026-05-19 |
+| Platform | Desktop packaging remains out of the near-term arc | Deferred | 2026-05-19 |
 
 ## Session Continuity
 
 Last session: 2026-05-19
-Stopped at: Archived v2.0 milestone. Ready for `$gsd-new-milestone`.
+Stopped at: Milestone initialized. Next command is `$gsd-discuss-phase 11` or `$gsd-plan-phase 11`.
 Resume file: None

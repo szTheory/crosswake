@@ -20,16 +20,19 @@ Crosswake shipped `v2.0 Adopter Stress Profiles` on `2026-05-19`.
 
 It also hardened the product surface around those lanes through doctor checks, per-profile verification scripts, CI, and localized support guidance.
 
-## Next Milestone Candidate
+`v3.0 Capability Contract And Packaging` is now active. This milestone is intentionally about contract and package-boundary truth before feature-breadth delivery.
 
-The next milestone should widen Crosswake's official Phoenix-first native capability and commerce support without collapsing its core thesis.
+## Current Milestone: v3.0 Capability Contract And Packaging
+
+**Goal:** lock capability taxonomy, package boundaries, commerce seam rules, and support-proof posture before broadening Crosswake's native and commerce surface area.
 
 **Target features:**
-- Define the first capability families or first-party companions worth supporting officially after the exemplar milestone.
-- Design Phoenix-facing commerce and entitlement seams that stay explicit, typed, and bounded.
+- Freeze capability-family taxonomy, package boundaries, and manifest/support truth before broad feature expansion.
+- Define the first capability families and first-party companions Crosswake should support officially after the exemplar milestone.
+- Design Phoenix-facing commerce and entitlement seams that stay explicit, typed, bounded, and backend-truthful.
 - Extend proof lanes, diagnostics, and support truth so future native and commerce claims stay as honest as the current substrate claims.
 
-**Why now:** `v2.0` proved that the architecture holds under realistic adopter pressure. The next leverage point is reducing bespoke native and commerce work for Phoenix teams while preserving explicit route ownership and bounded bridge semantics.
+**Why now:** `v2.0` proved that the architecture holds under realistic adopter pressure. The next leverage point is reducing bespoke native and commerce work for Phoenix teams while preserving explicit route ownership and bounded bridge semantics. The biggest immediate risk is adding feature breadth before locking package boundaries, support posture, and compatibility expectations.
 
 ## Requirements
 
@@ -45,24 +48,26 @@ The next milestone should widen Crosswake's official Phoenix-first native capabi
 - [x] Define a versioned bridge contract for bounded native affordances instead of ad hoc messaging. Validated in Phase 3: Native Shell Boot And Bounded Bridge.
 - [x] Establish a capability registry with explicit allowlists, versioning, and active-route checks. Validated in Phase 3: Native Shell Boot And Bounded Bridge.
 - [x] Ship example-host proof lanes and deterministic CI that verify the public install path across Phoenix, iOS, and Android surfaces. Validated in Phase 5: Packs, Native Escape, And Proof Lanes.
-
-### Active
-
-None. Milestone `v2.0` shipped on `2026-05-19`.
-
-### Validated (Milestone v2.0)
-
 - [x] Validate the v1 substrate against three adopter-shaped exemplar lanes: Phoenix-backed SaaS portal, selective-native mobile flow, and local-first study or content flow. Validated across Phases 7-10.
 - [x] Harden route-policy, manifest, shell, bridge, pack, transfer, and offline contracts where exemplar pressure exposes adopter-facing gaps. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
 - [x] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
+
+### Active
+
+- [ ] Freeze capability-family taxonomy and route-owner decision rules before shipping new capability families.
+- [ ] Classify `core`, `companion`, `example/docs-only`, and deferred surfaces with explicit release and rebuild rules.
+- [ ] Define Phoenix-facing commerce and entitlement seams that keep entitlement truth backend-owned.
+- [ ] Extend doctor, support-matrix, and proof-lane posture so future capability claims remain honest.
 
 ### Out of Scope
 
 - Universal UI abstraction across all screens — it conflicts with the project thesis that runtime ownership should be explicit and per-route.
 - LiveView rendering native widgets directly — it would over-couple the library to unstable or private rendering internals.
 - Generic "wrap your app in a WebView" positioning — it hides the architecture boundaries Crosswake is supposed to clarify.
-- Deep first-version native feature breadth — v1 should establish route policy and runtime contracts before broad adapter coverage.
-- Desktop packaging as a v1 driver — it is a later extension after mobile-first architecture proves out.
+- Shipping a broad capability catalog in `v3.0` — this milestone should decide what belongs where before implementing many new families.
+- Store-specific billing implementation in `v3.0` — commerce contract truth comes first; provider adapters follow later.
+- Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
+- Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
 
 ## Context
@@ -73,6 +78,8 @@ The strongest early app archetypes are Phoenix-backed SaaS portals, subscription
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.0` activates the harvested post-`v2.0` capability and commerce seed, but it does so as prerequisite contract work rather than as immediate breadth expansion.
+
 ## Constraints
 
 - **Tech stack**: Phoenix-native Elixir library with mobile shell integration seams — the product must extend Phoenix instead of replacing it with a JS-framework-first abstraction.
@@ -80,7 +87,7 @@ The maintainer's OSS house style materially constrains the project. Install trut
 - **Architecture**: Per-route runtime ownership is authoritative — solution design cannot collapse into single-runtime ideology.
 - **Security**: Route allowlists, origin allowlists, capability allowlists, active-route checks, and cache sensitivity need explicit defaults — mobile/runtime boundaries increase the blast radius of vague trust assumptions.
 - **Proof posture**: Deterministic CI, example-host verification, docs integrity, and release discipline are required early — support claims must be proven, not aspirational.
-- **Scope**: Native capability breadth must be phased — the first milestone should prove the contract surface before broad integrations.
+- **Scope**: Native capability breadth must be phased — `v3.0` should lock contract and packaging truth before wider capability delivery.
 
 ## Key Decisions
 
@@ -99,6 +106,7 @@ The maintainer's OSS house style materially constrains the project. Install trut
 | Publish one adopter-profile matrix plus a shared example-host lane contract before exemplar implementation | Locking profile vocabulary, non-goals, and artifact boundaries first reduces scope drift in Phases 7-10 | Validated in Phase 6 |
 | Prove the Phoenix SaaS lane as one authenticated LiveView-first approvals slice with one bounded haptics seam | The first exemplar needed credible product pressure without drifting into offline, transfer-first, or native-screen breadth | Validated in Phase 7 |
 | Route-pattern deep links in checked-in shells must match manifest paths with dynamic segments | The SaaS approval route exposed that exact-path matching denied valid `/saas/.../:id` deep links and broke proof-backed shell activation | Validated in Phase 7 |
+| Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | — Pending in Milestone v3.0 |
 
 ## Evolution
 
@@ -118,4 +126,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 after v2.0 milestone archival*
+*Last updated: 2026-05-19 after initializing milestone v3.0 Capability Contract And Packaging*
