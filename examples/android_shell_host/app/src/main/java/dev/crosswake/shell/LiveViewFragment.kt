@@ -68,8 +68,40 @@ class LiveViewFragment : Fragment() {
         BridgeChannel(
             session = session,
             transferCoordinator = transferCoordinator,
-            appInfoProvider = { mapOf("shell" to "CrosswakeShell", "route_id" to session.routeId) },
-            hapticsHandler = { _ -> },
+            appInfoProvider = {
+                val packageManager = requireContext().packageManager
+                val packageInfo = packageManager.getPackageInfo(requireContext().packageName, 0)
+                mapOf(
+                    "version" to (packageInfo.versionName ?: ""),
+                    "build" to if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        packageInfo.longVersionCode.toString()
+                    } else {
+                        packageInfo.versionCode.toString()
+                    },
+                    "bundle_id" to requireContext().packageName
+                )
+            },
+            hapticsHandler = { style ->
+                val feedbackConstant = when (style) {
+                    "heavy" -> android.view.HapticFeedbackConstants.LONG_PRESS
+                    "light" -> android.view.HapticFeedbackConstants.KEYBOARD_TAP
+                    else -> android.view.HapticFeedbackConstants.VIRTUAL_KEY
+                }
+                webView.performHapticFeedback(feedbackConstant)
+            },
+            shareHandler = { payload ->
+                val title = payload["title"] ?: ""
+                val text = payload["text"]
+                val url = payload["url"]
+                val combinedText = listOfNotNull(text, url).joinToString("\n")
+
+                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_TITLE, title)
+                    putExtra(android.content.Intent.EXTRA_TEXT, combinedText)
+                }
+                startActivity(android.content.Intent.createChooser(intent, title))
+            },
             filesPickHandler = { payload -> payload }
         ).attach(webView, setOf(session.allowedOrigin))
 
