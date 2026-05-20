@@ -1,0 +1,41 @@
+defmodule Crosswake.Guides.CommerceTest do
+  use ExUnit.Case, async: true
+
+  @guide_path Path.join([File.cwd!(), "guides", "commerce.md"])
+
+  setup_all do
+    content = File.read!(@guide_path)
+    %{content: content}
+  end
+
+  test "includes exact normalized surface names", %{content: content} do
+    assert content =~ "paywall_entry"
+    assert content =~ "purchase_intent"
+    assert content =~ "restore_intent"
+    assert content =~ "entitlement_snapshot"
+    assert content =~ "reconciliation_evidence"
+  end
+
+  test "makes authority vs evidence semantics explicit for entitlement_snapshot", %{content: content} do
+    assert content =~ "authority"
+    assert content =~ "evidence"
+    assert content =~ "entitlement_snapshot"
+    assert content =~ "pending_purchase"
+    assert content =~ "pending_restore"
+    assert content =~ "awaiting_verification"
+  end
+
+  test "documents the canonical flow", %{content: content} do
+    assert content =~ "device or native commerce route emits typed purchase or restore evidence"
+    assert content =~ "Phoenix persists a reconciliation_attempt"
+    assert content =~ "backend verification/replay runs through host-owned workers and provider adapters"
+    assert content =~ "backend updates one authoritative entitlement_snapshot"
+    assert content =~ "Phoenix/native consumers refresh from that snapshot"
+  end
+
+  test "documents explicit offline non-goals and split-brain rejection copy", %{content: content} do
+    assert content =~ "offline purchase replay"
+    assert content =~ "device-local authority"
+    assert content =~ "split-brain"
+  end
+end
