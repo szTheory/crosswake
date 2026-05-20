@@ -117,6 +117,7 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
     private let replySink: (BridgeReplyEnvelope) -> Void
     private let appInfoProvider: () -> [String: String]
     private let hapticsHandler: (String) -> Void
+    private let shareHandler: ([String: String]) -> Void
     private let filesPickHandler: ([String: String]) -> [String: String]
     private let transferCoordinator: TransferCoordinator?
 
@@ -126,6 +127,7 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
         replySink: @escaping (BridgeReplyEnvelope) -> Void,
         appInfoProvider: @escaping () -> [String: String],
         hapticsHandler: @escaping (String) -> Void,
+        shareHandler: @escaping ([String: String]) -> Void,
         filesPickHandler: @escaping ([String: String]) -> [String: String]
     ) {
         self.session = session
@@ -133,6 +135,7 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
         self.replySink = replySink
         self.appInfoProvider = appInfoProvider
         self.hapticsHandler = hapticsHandler
+        self.shareHandler = shareHandler
         self.filesPickHandler = filesPickHandler
         super.init()
     }
