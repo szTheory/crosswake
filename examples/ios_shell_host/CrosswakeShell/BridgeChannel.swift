@@ -8,6 +8,7 @@ import UIKit
 enum BridgeCommand: String, CaseIterable {
     case appInfoGet = "app.info.get"
     case hapticsImpact = "haptics.impact"
+    case shareInvoke = "share.invoke"
     case filesPick = "files.pick"
     case transferImport = "transfer.import"
     case transferExport = "transfer.export"
@@ -200,6 +201,16 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
             let style = request.payload["style"] ?? "medium"
             hapticsHandler(style)
             replySink(ok(request, payload: ["style": style]))
+
+        case .shareInvoke:
+            guard let requiredCapabilityVersion = session.capabilities[command.capability],
+                  request.capabilities[command.capability] == requiredCapabilityVersion else {
+                replySink(deny(request, reason: "unavailable_capability", message: "The requested capability is not available at the manifest-backed version.", hint: "Ship the declared capability version before retrying."))
+                return
+            }
+
+            shareHandler(request.payload)
+            replySink(ok(request, payload: [:]))
 
         case .filesPick:
             guard let requiredCapabilityVersion = session.capabilities[command.capability],
