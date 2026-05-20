@@ -11,6 +11,7 @@ defmodule Crosswake.Bridge.Contract do
   @commands ~w(
     app.info.get
     haptics.impact
+    share.invoke
     files.pick
     transfer.download
     transfer.export

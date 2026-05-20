@@ -9,6 +9,7 @@ defmodule Crosswake.Bridge.ContractTest do
     assert Contract.commands() == [
              "app.info.get",
              "haptics.impact",
+             "share.invoke",
              "files.pick",
              "transfer.download",
              "transfer.export",

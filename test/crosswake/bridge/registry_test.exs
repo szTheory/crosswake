@@ -10,6 +10,7 @@ defmodule Crosswake.Bridge.RegistryTest do
              "app.info.get",
              "files.pick",
              "haptics.impact",
+             "share.invoke",
              "transfer.download",
              "transfer.export",
              "transfer.import",
