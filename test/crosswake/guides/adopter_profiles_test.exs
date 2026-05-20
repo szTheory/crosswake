@@ -63,6 +63,11 @@ defmodule Crosswake.Guides.AdopterProfilesTest do
     assert guide =~ "guides/offline.md"
     assert guide =~ "guides/packs.md"
     assert guide =~ "guides/install.md"
+    assert guide =~ "guides/commerce.md"
+
+    assert guide =~ "account, status, and billing history remain Phoenix-owned surfaces"
+    assert guide =~ "this lane models native commerce corridor boundaries"
+    assert guide =~ "offline purchase replay or device-authoritative entitlement mutation"
 
     refute guide =~ "| Target | Version | Status | Proof | Notes |"
     refute guide =~ "verification required"

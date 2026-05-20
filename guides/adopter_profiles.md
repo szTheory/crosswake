@@ -6,7 +6,7 @@ product shape that best matches your app pressure, then routes you to the existi
 support and contract guides for exact proof and behavior details.
 
 Read [guides/install.md](/Users/jon/projects/crosswake/guides/install.md) for the
-checked-in example-host install path and
+checked-in example-host install path, [guides/commerce.md](/Users/jon/projects/crosswake/guides/commerce.md) for the commerce boundaries, and
 [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
 for the canonical support-status surface.
 
@@ -90,6 +90,7 @@ Explicit non-goals:
 - native capture ownership
 - broad transfer workflows
 - billing abstractions or plugin-style capability growth
+- hidden storefront loops (account, status, and billing history remain Phoenix-owned surfaces)
 
 ### Selective Native Flow
 
@@ -153,7 +154,7 @@ container.
 
 Explicit non-goals:
 
-- billing or entitlement systems
+- billing or entitlement systems (this lane models native commerce corridor boundaries, but Phase 13 still does not ship a billing adapter)
 - multiple native-screen categories
 - generic upload fallback through the web container
 - broad permission-broker scope
@@ -226,3 +227,4 @@ Explicit non-goals:
 - background-sync guarantees
 - media-heavy offline transfer
 - multiple offline-island stories
+- offline purchase replay or device-authoritative entitlement mutation
