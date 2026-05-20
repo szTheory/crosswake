@@ -321,21 +321,19 @@ val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedi
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
 | A1 | [ASSUMED] The best first pack kinds are likely `content`, `media`, and `shell_chrome`, because those map cleanly onto current route and denial semantics without widening into OTA code delivery. | Standard Stack / Architecture Patterns | Medium — pack taxonomy might need a different first split, but the plan shape stays similar. |
-| A2 | [ASSUMED] A checked-in `examples/` tree is the cleanest DX-03 artifact shape, even though the requirement only mandates example hosts and deterministic proof, not a specific directory layout. | Recommended Project Structure / Open Questions | Low — the repo could place example hosts elsewhere if the proof artifact class remains explicit. |
+| A2 | [RESOLVED] Phase 5 proof uses both checked-in example hosts and generated-host smoke/proof lanes, with checked-in example hosts as the public artifact class and generated hosts as secondary verification. | Recommended Project Structure / Resolved Planning Decisions | Low — the artifact class is now locked for planning. |
 
 If this table is non-empty, those assumptions should be confirmed during planning before they become locked execution decisions. [ASSUMED]
 
-## Open Questions
+## Resolved Planning Decisions
 
-1. **Should Phase 5 prove checked-in example hosts, generated hosts, or both?**
-   - What we know: current proof hooks generate tempdir shell projects and there is no checked-in `examples/` host today. [VERIFIED: script/verify_generated_ios_shell.sh] [VERIFIED: script/verify_generated_android_shell.sh] [VERIFIED: filesystem search on 2026-05-17 found no `examples/` directory]
-   - What's unclear: whether the maintainer wants DX-03 proof centered on generated artifacts only or on stable example-host repos plus generator smoke. [ASSUMED]
-   - Recommendation: plan for both, but make checked-in example hosts the public proof artifact and keep generator smoke as a secondary guard. [ASSUMED]
+1. **Phase 5 proof covers both checked-in example hosts and generated hosts.**
+   - Decision: checked-in example hosts are the public DX-03 artifact class, and generated-host smoke/proof lanes remain secondary verification. [RESOLVED]
+   - Why: the current proof hooks generate tempdir shell projects and there is no checked-in `examples/` host today, so Phase 5 must add stable example artifacts without losing generator verification. [VERIFIED: script/verify_generated_ios_shell.sh] [VERIFIED: script/verify_generated_android_shell.sh] [VERIFIED: filesystem search on 2026-05-17 found no `examples/` directory]
 
-2. **Should pack downloads be foreground-only in Phase 5?**
-   - What we know: the project thesis values explicit route ownership and honest support boundaries over breadth. [VERIFIED: .planning/PROJECT.md] [VERIFIED: AGENTS.md]
-   - What's unclear: whether background/resumable transfer is needed in v1 for the chosen exemplar, or whether explicit foreground transfer is enough. [ASSUMED]
-   - Recommendation: plan foreground-only first unless the exemplar route demonstrably fails without background behavior. [ASSUMED]
+2. **Transfer scope is foreground-first in Phase 5.**
+   - Decision: pack downloads and media transfer stay foreground-first and explicit in this phase; background or resumable behavior remains out of scope unless the chosen exemplar proves it is required. [RESOLVED]
+   - Why: the project thesis favors explicit ownership and honest support boundaries over breadth, and the first escape hatch is a narrow `:native_screen` media-capture flow rather than a general transfer subsystem. [VERIFIED: .planning/PROJECT.md] [VERIFIED: AGENTS.md]
 
 ## Environment Availability
 

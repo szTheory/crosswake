@@ -1,3 +1,5 @@
+Code.require_file("../../support/example_host.exs", __DIR__)
+
 defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
   use ExUnit.Case, async: false
 
@@ -11,28 +13,7 @@ defmodule Crosswake.Proof.Phase8SelectiveNativeLaneTest do
   }
 
   setup_all do
-    for path <- [
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/fixtures.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/accounts.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/auth.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/on_mount.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/dashboard_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/account_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/settings_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/on_mount.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/fixtures.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claims_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_capture_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/submission_review_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/router.ex"
-        ] do
-      Code.require_file(Path.expand(path, File.cwd!()))
-    end
-
+    Crosswake.TestSupport.ExampleHost.load!()
     :ok
   end
 

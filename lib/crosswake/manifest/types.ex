@@ -103,14 +103,42 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
 
     @enforce_keys [:id, :version]
-    defstruct [:id, :version, status: :supported]
+    defstruct [
+      :id,
+      :version,
+      :family,
+      :owner,
+      :package_class,
+      :proof_class,
+      :rebuild,
+      :denial,
+      :fallback,
+      :guide,
+      status: :supported,
+      prerequisites: [],
+      legacy_ids: []
+    ]
 
     @type status :: :supported | :verification_required | :unsupported
+    @type owner :: :bounded_bridge | :native_screen | :backend_seam | :defer
+    @type package_class :: :core | :companion | :example_docs_only | :defer
+    @type proof_class :: :merge_blocking | :advisory
+    @type rebuild :: :none | :native_required | :companion_required
 
     @type t :: %__MODULE__{
             id: String.t(),
             version: String.t(),
-            status: status()
+            status: status(),
+            family: String.t(),
+            owner: owner(),
+            package_class: package_class(),
+            proof_class: proof_class(),
+            rebuild: rebuild(),
+            prerequisites: [String.t()],
+            denial: String.t(),
+            fallback: String.t(),
+            guide: String.t(),
+            legacy_ids: [String.t()]
           }
   end
 
@@ -267,15 +295,37 @@ defmodule Crosswake.Manifest.Types do
   defmodule SupportMatrix do
     @moduledoc false
 
-    @enforce_keys [:phoenix, :live_view, :ios, :android, :shells]
-    defstruct phoenix: [], live_view: [], ios: [], android: [], shells: []
+    @enforce_keys [
+      :phoenix,
+      :live_view,
+      :ios,
+      :android,
+      :shells,
+      :capability_families,
+      :package_surfaces,
+      :release_boundaries,
+      :change_classes
+    ]
+    defstruct phoenix: [],
+              live_view: [],
+              ios: [],
+              android: [],
+              shells: [],
+              capability_families: [],
+              package_surfaces: [],
+              release_boundaries: [],
+              change_classes: []
 
     @type t :: %__MODULE__{
             phoenix: [Crosswake.Manifest.Types.SupportEntry.t()],
             live_view: [Crosswake.Manifest.Types.SupportEntry.t()],
             ios: [Crosswake.Manifest.Types.SupportEntry.t()],
             android: [Crosswake.Manifest.Types.SupportEntry.t()],
-            shells: [Crosswake.Manifest.Types.SupportEntry.t()]
+            shells: [Crosswake.Manifest.Types.SupportEntry.t()],
+            capability_families: [Crosswake.Manifest.Types.CapabilitySupportEntry.t()],
+            package_surfaces: [Crosswake.Manifest.Types.PackageSurfaceEntry.t()],
+            release_boundaries: [Crosswake.Manifest.Types.ReleaseBoundaryEntry.t()],
+            change_classes: [Crosswake.Manifest.Types.ChangeClassEntry.t()]
           }
   end
 
@@ -292,6 +342,90 @@ defmodule Crosswake.Manifest.Types do
             proof: String.t() | nil,
             notes: String.t() | nil,
             boundary_link: String.t() | nil
+          }
+  end
+
+  defmodule CapabilitySupportEntry do
+    @moduledoc false
+
+    @enforce_keys [:family, :owner, :package_class, :proof_class, :rebuild]
+    defstruct [
+      :family,
+      :owner,
+      :package_class,
+      :proof_class,
+      :rebuild,
+      prerequisites: [],
+      denial: nil,
+      fallback: nil,
+      guide: nil
+    ]
+
+    @type t :: %__MODULE__{
+            family: String.t(),
+            owner: Capability.owner(),
+            package_class: Capability.package_class(),
+            proof_class: Capability.proof_class(),
+            rebuild: Capability.rebuild(),
+            prerequisites: [String.t()],
+            denial: String.t() | nil,
+            fallback: String.t() | nil,
+            guide: String.t() | nil
+          }
+  end
+
+  defmodule PackageSurfaceEntry do
+    @moduledoc false
+
+    @enforce_keys [:surface, :package_class, :why, :release_burden, :guide]
+    defstruct [:surface, :package_class, :why, :release_burden, :guide]
+
+    @type t :: %__MODULE__{
+            surface: String.t(),
+            package_class: Capability.package_class(),
+            why: String.t(),
+            release_burden: String.t(),
+            guide: String.t()
+          }
+  end
+
+  defmodule ReleaseBoundaryEntry do
+    @moduledoc false
+
+    @enforce_keys [:target, :versioning, :compatibility_contract, :release_rule]
+    defstruct [
+      :target,
+      :versioning,
+      :compatibility_contract,
+      :release_rule
+    ]
+
+    @type t :: %__MODULE__{
+            target: String.t(),
+            versioning: String.t(),
+            compatibility_contract: String.t(),
+            release_rule: String.t()
+          }
+  end
+
+  defmodule ChangeClassEntry do
+    @moduledoc false
+
+    @enforce_keys [:change_class, :what_changed, :adopter_action, :compatibility_signal, :required_proof]
+    defstruct [
+      :change_class,
+      :what_changed,
+      :adopter_action,
+      :compatibility_signal,
+      :required_proof
+    ]
+
+    @type t :: %__MODULE__{
+            change_class: String.t(),
+            what_changed: String.t(),
+            adopter_action: String.t(),
+            compatibility_signal: String.t(),
+            required_proof: String.t()
           }
   end
 
@@ -348,7 +482,17 @@ defmodule Crosswake.Manifest.Types do
     struct!(Capability, %{
       id: Keyword.fetch!(attrs, :id),
       version: Keyword.get(attrs, :version, "1.0.0"),
-      status: Keyword.get(attrs, :status, :supported)
+      status: Keyword.get(attrs, :status, :supported),
+      family: Keyword.get(attrs, :family, Keyword.fetch!(attrs, :id)),
+      owner: Keyword.get(attrs, :owner, :defer),
+      package_class: Keyword.get(attrs, :package_class, :defer),
+      proof_class: Keyword.get(attrs, :proof_class, :advisory),
+      rebuild: Keyword.get(attrs, :rebuild, :none),
+      prerequisites: Keyword.get(attrs, :prerequisites, ["declared route support"]),
+      denial: Keyword.get(attrs, :denial, "unavailable_capability"),
+      fallback: Keyword.get(attrs, :fallback, "fail_closed"),
+      guide: Keyword.get(attrs, :guide, "guides/capabilities.md"),
+      legacy_ids: Keyword.get(attrs, :legacy_ids, [])
     })
   end
 
@@ -428,7 +572,11 @@ defmodule Crosswake.Manifest.Types do
       live_view: Keyword.get(attrs, :live_view, []),
       ios: Keyword.get(attrs, :ios, []),
       android: Keyword.get(attrs, :android, []),
-      shells: Keyword.get(attrs, :shells, [])
+      shells: Keyword.get(attrs, :shells, []),
+      capability_families: Keyword.get(attrs, :capability_families, []),
+      package_surfaces: Keyword.get(attrs, :package_surfaces, []),
+      release_boundaries: Keyword.get(attrs, :release_boundaries, []),
+      change_classes: Keyword.get(attrs, :change_classes, [])
     })
   end
 
@@ -441,6 +589,53 @@ defmodule Crosswake.Manifest.Types do
       proof: Keyword.get(attrs, :proof),
       notes: Keyword.get(attrs, :notes),
       boundary_link: Keyword.get(attrs, :boundary_link)
+    })
+  end
+
+  @spec new_capability_support_entry(keyword()) :: CapabilitySupportEntry.t()
+  def new_capability_support_entry(attrs) when is_list(attrs) do
+    struct!(CapabilitySupportEntry, %{
+      family: Keyword.fetch!(attrs, :family),
+      owner: Keyword.fetch!(attrs, :owner),
+      package_class: Keyword.fetch!(attrs, :package_class),
+      proof_class: Keyword.fetch!(attrs, :proof_class),
+      rebuild: Keyword.fetch!(attrs, :rebuild),
+      prerequisites: Keyword.get(attrs, :prerequisites, []),
+      denial: Keyword.get(attrs, :denial),
+      fallback: Keyword.get(attrs, :fallback),
+      guide: Keyword.get(attrs, :guide)
+    })
+  end
+
+  @spec new_package_surface_entry(keyword()) :: PackageSurfaceEntry.t()
+  def new_package_surface_entry(attrs) when is_list(attrs) do
+    struct!(PackageSurfaceEntry, %{
+      surface: Keyword.fetch!(attrs, :surface),
+      package_class: Keyword.fetch!(attrs, :package_class),
+      why: Keyword.fetch!(attrs, :why),
+      release_burden: Keyword.fetch!(attrs, :release_burden),
+      guide: Keyword.fetch!(attrs, :guide)
+    })
+  end
+
+  @spec new_release_boundary_entry(keyword()) :: ReleaseBoundaryEntry.t()
+  def new_release_boundary_entry(attrs) when is_list(attrs) do
+    struct!(ReleaseBoundaryEntry, %{
+      target: Keyword.fetch!(attrs, :target),
+      versioning: Keyword.fetch!(attrs, :versioning),
+      compatibility_contract: Keyword.fetch!(attrs, :compatibility_contract),
+      release_rule: Keyword.fetch!(attrs, :release_rule)
+    })
+  end
+
+  @spec new_change_class_entry(keyword()) :: ChangeClassEntry.t()
+  def new_change_class_entry(attrs) when is_list(attrs) do
+    struct!(ChangeClassEntry, %{
+      change_class: Keyword.fetch!(attrs, :change_class),
+      what_changed: Keyword.fetch!(attrs, :what_changed),
+      adopter_action: Keyword.fetch!(attrs, :adopter_action),
+      compatibility_signal: Keyword.fetch!(attrs, :compatibility_signal),
+      required_proof: Keyword.fetch!(attrs, :required_proof)
     })
   end
 
@@ -482,6 +677,16 @@ defmodule Crosswake.Manifest.Types do
   def to_map(%Capability{} = capability) do
     %{
       "id" => capability.id,
+      "family" => capability.family,
+      "owner" => Atom.to_string(capability.owner),
+      "package_class" => format_package_class(capability.package_class),
+      "proof_class" => format_proof_class(capability.proof_class),
+      "rebuild" => format_rebuild(capability.rebuild),
+      "prerequisites" => capability.prerequisites,
+      "denial" => capability.denial,
+      "fallback" => capability.fallback,
+      "guide" => capability.guide,
+      "legacy_ids" => capability.legacy_ids,
       "version" => capability.version,
       "status" => format_status(capability.status)
     }
@@ -559,7 +764,11 @@ defmodule Crosswake.Manifest.Types do
       "live_view" => Enum.map(support_matrix.live_view, &to_map/1),
       "ios" => Enum.map(support_matrix.ios, &to_map/1),
       "android" => Enum.map(support_matrix.android, &to_map/1),
-      "shells" => Enum.map(support_matrix.shells, &to_map/1)
+      "shells" => Enum.map(support_matrix.shells, &to_map/1),
+      "capability_families" => Enum.map(support_matrix.capability_families, &to_map/1),
+      "package_surfaces" => Enum.map(support_matrix.package_surfaces, &to_map/1),
+      "release_boundaries" => Enum.map(support_matrix.release_boundaries, &to_map/1),
+      "change_classes" => Enum.map(support_matrix.change_classes, &to_map/1)
     }
   end
 
@@ -574,6 +783,51 @@ defmodule Crosswake.Manifest.Types do
     }
     |> Enum.reject(fn {_key, value} -> is_nil(value) end)
     |> Map.new()
+  end
+
+  def to_map(%CapabilitySupportEntry{} = support_entry) do
+    %{
+      "family" => support_entry.family,
+      "owner" => Atom.to_string(support_entry.owner),
+      "package_class" => format_package_class(support_entry.package_class),
+      "proof_class" => format_proof_class(support_entry.proof_class),
+      "rebuild" => format_rebuild(support_entry.rebuild),
+      "prerequisites" => support_entry.prerequisites,
+      "denial" => support_entry.denial,
+      "fallback" => support_entry.fallback,
+      "guide" => support_entry.guide
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
+  end
+
+  def to_map(%PackageSurfaceEntry{} = entry) do
+    %{
+      "surface" => entry.surface,
+      "package_class" => format_package_class(entry.package_class),
+      "why" => entry.why,
+      "release_burden" => entry.release_burden,
+      "guide" => entry.guide
+    }
+  end
+
+  def to_map(%ReleaseBoundaryEntry{} = entry) do
+    %{
+      "target" => entry.target,
+      "versioning" => entry.versioning,
+      "compatibility_contract" => entry.compatibility_contract,
+      "release_rule" => entry.release_rule
+    }
+  end
+
+  def to_map(%ChangeClassEntry{} = entry) do
+    %{
+      "change_class" => entry.change_class,
+      "what_changed" => entry.what_changed,
+      "adopter_action" => entry.adopter_action,
+      "compatibility_signal" => entry.compatibility_signal,
+      "required_proof" => entry.required_proof
+    }
   end
 
   def to_map(map) when is_map(map) do
@@ -599,4 +853,11 @@ defmodule Crosswake.Manifest.Types do
 
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)
+  defp format_package_class(:example_docs_only), do: "example/docs-only"
+  defp format_package_class(package_class), do: Atom.to_string(package_class)
+  defp format_proof_class(:merge_blocking), do: "merge-blocking"
+  defp format_proof_class(proof_class), do: Atom.to_string(proof_class)
+  defp format_rebuild(:native_required), do: "native-required"
+  defp format_rebuild(:companion_required), do: "companion-required"
+  defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
 end

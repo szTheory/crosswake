@@ -146,7 +146,7 @@ defmodule CrosswakeExample.Router do
           crosswake: [
             id: "saas-approval",
             runtime: :live_view,
-            capabilities: ["haptics"],
+            capabilities: ["haptics.impact"],
             offline: :cached_read_only,
             security: :standard
           ]

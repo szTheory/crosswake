@@ -1,12 +1,8 @@
 # Native Shell Guide
 
-Crosswake Phase 3 ships host-owned iOS and Android shells that boot from the bundled
+Crosswake ships host-owned iOS and Android shells that boot from the bundled
 manifest, resolve routes natively first, and fail closed when a route or bridge call
-does not satisfy the declared contract.
-
-For product-fit context, read
-[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
-before using this guide as the deeper shell and native-ownership reference.
+does not satisfy the declared contract. See [guides/adopter_profiles.md](adopter_profiles.md) for adopter-fit framing of the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow lanes.
 
 ## Contract
 
@@ -15,10 +11,6 @@ before using this guide as the deeper shell and native-ownership reference.
 - Unsupported routes land on an explicit `route unavailable` surface.
 - LiveView routes mount only inside bounded same-origin web containers.
 - Bridge calls stay typed, versioned, request/reply-only, and low-frequency.
-
-For the Phase 7 `Phoenix SaaS Portal` lane, that means authenticated approvals stay
-Phoenix-owned inside the shell. The shell may supply one bounded confirmation signal,
-but it does not take control of auth or product writes.
 
 ## Generated Projects
 
@@ -40,15 +32,11 @@ do not treat them as safely regeneratable overlays.
 ## Manifest-First Activation
 
 Every app-entry path normalizes into one activation request before any web container
-exists:
+exists. The shell resolves the requested route against bundled or cached manifest
+truth, checks compatibility, origin allowlists, declared packs, and capability
+posture, and only then mounts the declared runtime.
 
-- cold start
-- deep link / universal link / App Link
-- in-app navigation
-
-The shell resolves the requested route against bundled or cached manifest truth,
-checks compatibility, origin allowlists, declared packs, and capability posture, and
-only then mounts the declared runtime.
+`deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
 
 ## Route Unavailable Surfaces
 
@@ -56,26 +44,18 @@ Crosswake does not silently fall back to a generic web container.
 
 - Denied deep links open a Crosswake-owned `route unavailable` screen.
 - In-app activation denials keep the current route stable and interrupt with native UI.
-- `pack_incompatible`, `origin_denied`, `inactive_route`, and compatibility failures
-  stay visible instead of degrading silently.
+- `pack_incompatible`, `origin_denied`, `inactive_route`, and compatibility failures stay visible instead of transitioning to a degraded state silently.
 
-The route unavailable surface is part of the product contract, not cleanup work.
+## Rebuild Guidance
 
-For the SaaS lane, `route unavailable` remains the primary degraded behavior:
-authentication still belongs to the host, and denied activation stays explicit rather
-than degrading into a generic web wrapper.
+Use the change class first:
 
-## iOS Notes
+- `core-only/no native rebuild` does not require a shell rebuild when the native runtime line and generated shell contract stay unchanged.
+- `compatibility-bump only` may tighten support windows without forcing a fresh binary if the shipped shell/runtime is still compatible.
+- `native or companion rebuild required` applies when shell templates, native code, entitlements, permissions, platform configuration, or native dependencies change.
 
-- LiveView routes run inside a bounded `WKWebView`.
-- Same-origin navigation stays under `WKNavigationDelegate`.
-- `Info.plist` configures `WKAppBoundDomains` so App-Bound Domains remain explicit.
-
-## Android Notes
-
-- LiveView routes run inside a bounded `WebView`.
-- App entry is normalized through the activation coordinator before `WebView` setup.
-- App Links and denial UI stay explicit in the generated host-owned project.
+Package class must not imply native ownership. Route ownership still comes from the
+route policy and manifest contract.
 
 ## Proof Hooks
 
@@ -95,19 +75,10 @@ mix crosswake.doctor --router Elixir.YourAppWeb.Router
 mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks
 ```
 
-The checked-in example hosts are the public artifact class. `--native-checks` reruns
-the generated-host verification hooks against your local shell projects so your
-workstation support posture stays explicit.
-
-For exact support status, keep
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
-as the canonical surface and
-[guides/install.md](/Users/jon/projects/crosswake/guides/install.md) as the canonical
-proof-entry surface.
-
 ## Native Capture Escape Hatch
 
-Phase 5 adds one explicit `:native_screen` escape hatch for media capture.
+Crosswake adds one explicit `:native_screen` escape hatch for `media_capture`. This is a
+native screen surface where native code owns the session loop.
 
 - The runtime label stays visible as `Native capture`.
 - Captured media is staged locally first.
@@ -130,15 +101,11 @@ The shell bridge stays bounded to:
 - `transfer.import`
 - `transfer.upload.prepare`
 
-Everything else is denied. Read
-[guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md) for the exact
-request/reply envelope and denial vocabulary.
+Everything else is denied.
 
 ## Boundary Warnings & Rough Edges
 
-The native shell is a bounded host for Phoenix/LiveView applications. Note these boundaries:
-
-- **Command-Only Bridge:** The native bridge relies on explicit, typed commands rather than generic message buses or arbitrary JavaScript execution.
-- **No Silent Fallbacks:** If a route is unavailable or a bridge call fails the contract, the shell fails closed with an explicit error UI rather than falling back to a web-view default.
-- **Host Ownership Responsibility:** Once generated, shell projects are host-owned. Upgrades require manual patching; they are not "drop-in" regeneratable overlays.
-- **Limited Transfer Lifecycle:** While media can be captured natively, the full transfer lifecycle (upload/download) has specific preparation and completion steps that must be handled explicitly.
+- Command-only bridge, not a generic message bus
+- No silent fallbacks
+- Host ownership responsibility after generation
+- Explicit rebuild expectations whenever native or companion code changes

@@ -1,0 +1,20 @@
+[
+  {
+    "bytes": 24576,
+    "installed_version": "1.2.0",
+    "integrity_status": "verified",
+    "pack_id": "lesson_library",
+    "required_version": "1.2.0",
+    "status": "available",
+    "verified_at": "2026-05-17T09:00:00Z"
+  },
+  {
+    "bytes": 8192,
+    "installed_version": "1.0.0",
+    "integrity_status": "verified",
+    "pack_id": "camera_capture_assets",
+    "required_version": "1.0.0",
+    "status": "available",
+    "verified_at": "2026-05-17T09:00:00Z"
+  }
+]

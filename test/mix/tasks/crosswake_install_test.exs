@@ -43,8 +43,9 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
 
     router_contents = File.read!(router_path)
     assert router_contents =~ "# crosswake:install:start"
+    assert router_contents =~ "import Phoenix.Router, except: [get: 3, get: 4"
     assert router_contents =~ "import Crosswake.Router"
-    assert router_contents =~ "except: [live: 2, live: 3, live: 4]"
+    refute router_contents =~ "import Phoenix.LiveView.Router"
     assert router_contents =~ "@crosswake_policy_module DemoWeb.Crosswake.Policy"
 
     policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")

@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 cd "${ROOT_DIR}"
 
+(cd examples/phoenix_host && mix run gen_manifest.exs >/dev/null)
+
 mix test \
   test/mix/tasks/crosswake_install_test.exs \
   test/crosswake/proof/phase5_proof_lane_test.exs \

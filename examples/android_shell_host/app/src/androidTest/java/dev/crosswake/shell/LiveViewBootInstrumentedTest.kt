@@ -40,6 +40,33 @@ class LiveViewBootInstrumentedTest {
         }
     }
 
+    @Test
+    fun localFirstHistoryLaunchMountsBoundedWebView() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val intent = Intent(context, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse("https://example.crosswake.invalid/study/history")
+        }
+
+        ActivityScenario.launch<MainActivity>(intent).use { scenario ->
+            val webViewMounted = waitForUiCondition {
+                var mounted = false
+
+                scenario.onActivity { activity ->
+                    assertNotNull(activity.findViewById(android.R.id.content))
+
+                    mounted =
+                        activity.findViewById<android.view.View>(LiveViewFragment.WEB_VIEW_ID) != null ||
+                            activity.supportFragmentManager.findFragmentByTag(LiveViewFragment.TAG) != null
+                }
+
+                mounted
+            }
+
+            assertTrue("expected LiveView surface to mount for the local-first history route", webViewMounted)
+        }
+    }
+
     private fun waitForUiCondition(timeoutMs: Long = 2_000, condition: () -> Boolean): Boolean {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val deadline = SystemClock.elapsedRealtime() + timeoutMs

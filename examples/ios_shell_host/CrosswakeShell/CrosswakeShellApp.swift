@@ -1,0 +1,73 @@
+import SwiftUI
+
+@main
+struct CrosswakeShellApp: App {
+    @StateObject private var activationCoordinator = ActivationCoordinator.bundled()
+
+    var body: some Scene {
+        WindowGroup {
+            RootSceneView(coordinator: activationCoordinator)
+                .task {
+                    activationCoordinator.bootstrapIfNeeded()
+                }
+                .onOpenURL { url in
+                    activationCoordinator.openURL(url)
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                    activationCoordinator.continueUserActivity(userActivity)
+                }
+        }
+    }
+}
+
+private struct RootSceneView: View {
+    @ObservedObject var coordinator: ActivationCoordinator
+
+    var body: some View {
+        switch coordinator.presentation {
+        case .booting:
+            ProgressView("Resolving route from bundled manifest truth…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case let .requiredPack(requiredPack):
+            RequiredPackView(
+                routeID: requiredPack.routeID,
+                runtimeLabel: requiredPack.runtimeLabel,
+                status: requiredPack.status,
+                onInstall: {
+                    Task {
+                        await coordinator.installRequiredPack(requiredPack)
+                    }
+                },
+                onRetry: {
+                    Task {
+                        await coordinator.retryRequiredPack(requiredPack)
+                    }
+                },
+                onInvalidate: {
+                    Task {
+                        await coordinator.invalidateRequiredPack(requiredPack)
+                    }
+                }
+            )
+        case let .nativeCapture(nativeCapture):
+            NativeCaptureView(
+                routeID: nativeCapture.routeID,
+                routeTitle: nativeCapture.routeTitle,
+                runtimeLabel: nativeCapture.runtimeLabel,
+                transferID: nativeCapture.transferID,
+                transferCoordinator: coordinator.transferCoordinator
+            )
+        case let .liveView(session):
+            LiveViewContainerView(
+                session: session,
+                transferCoordinator: coordinator.transferCoordinator
+            ) { denial in
+                coordinator.presentNavigationDenial(denial)
+            }
+        case let .denied(denial):
+            RouteUnavailableView(denial: denial) { action in
+                coordinator.perform(action)
+            }
+        }
+    }
+}

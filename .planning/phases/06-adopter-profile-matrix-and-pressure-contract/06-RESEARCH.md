@@ -311,12 +311,12 @@ source of exact support status and proof-backed baselines.
 | A1 | `guides/adopter_profiles.md` is the best exact filename for the new public guide. [ASSUMED] | Summary, Architecture Patterns | Low; renaming the file later is cheap, but planners would need to update link targets. |
 | A2 | Later profile-lane tests will likely live under `test/crosswake/` beside existing guide/proof tests rather than under a new test app namespace. [ASSUMED] | Recommended Project Structure | Low; test path can move, but slice boundaries still stand. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the new guide be linked from `guides/install.md`, `guides/compatibility.md`, or both?**
-   - What we know: `install.md` already acts as a public guide map, and current tests lock some of those cross-links. [CITED: guides/install.md] [CITED: test/crosswake/support_matrix/renderer_test.exs]
-   - What's unclear: The repo has no top-level README guide index, so the best discoverability link target is a repo-local choice. [VERIFIED: codebase grep]
-   - Recommendation: Plan one slice that adds the guide, then a second small slice that wires links from `install.md` and whichever adjacent guide best matches the new profile framing. [VERIFIED: codebase grep]
+1. **Should the new guide be linked from `guides/install.md`, `guides/compatibility.md`, or both?** RESOLVED
+   - Decision: `guides/install.md` is the required top-level entrypoint for the new adopter-profile guide because it already acts as the public guide map and install/proof entry surface. [CITED: guides/install.md] [CITED: test/crosswake/support_matrix/renderer_test.exs]
+   - Secondary guidance: substrate-specific guides such as `guides/native_shell.md`, `guides/offline.md`, and `guides/packs.md` may also link to the new guide where profile-fit context helps orient readers before deeper contract details. [CITED: guides/native_shell.md] [CITED: guides/offline.md] [CITED: guides/packs.md]
+   - Why not `guides/compatibility.md` as a required entrypoint: the profile artifact is about adopter fit and pressure shape rather than baseline/version compatibility truth, so compatibility remains adjacent rather than mandatory for primary discovery. [CITED: guides/support_matrix.md] [CITED: .planning/phases/06-adopter-profile-matrix-and-pressure-contract/06-CONTEXT.md]
 
 ## Security Domain
 

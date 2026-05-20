@@ -33,7 +33,7 @@ defmodule Crosswake.Bridge.RegistryTest do
 
     assert {:ok, entry} = Registry.lookup(manifest, "dashboard", "haptics.impact")
     assert entry.command == "haptics.impact"
-    assert entry.capability == "haptics.impact"
+    assert entry.capability == "haptics"
     assert entry.version == "2.3.0"
     assert entry.allowlisted_origins == ["https://shell.crosswake.example"]
   end
@@ -65,6 +65,16 @@ defmodule Crosswake.Bridge.RegistryTest do
              Registry.lookup(manifest, "camera", "transfer.download")
   end
 
+  test "files.pick stays a compatibility command instead of becoming the public share family" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:capability_registry), "share"], Types.new_capability(id: "share", family: "share"))
+      |> put_in([Access.key!(:routes), "dashboard", Access.key!(:capabilities)], ["share"])
+
+    assert {:error, :undeclared_capability} =
+             Registry.lookup(manifest, "dashboard", "files.pick")
+  end
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",
@@ -73,8 +83,64 @@ defmodule Crosswake.Bridge.RegistryTest do
       compatibility: Types.new_compatibility(),
       support_matrix: SupportMatrix.canonical(),
       capability_registry: %{
-        "app.info.get" => Types.new_capability(id: "app.info.get", version: "1.0.0"),
-        "haptics.impact" => Types.new_capability(id: "haptics.impact", version: "2.3.0")
+        "app_info" =>
+          Types.new_capability(
+            id: "app_info",
+            family: "app_info",
+            version: "1.0.0",
+            owner: :bounded_bridge,
+            package_class: :core,
+            proof_class: :merge_blocking,
+            rebuild: :none,
+            prerequisites: ["declared route capability"],
+            denial: "undeclared_capability",
+            fallback: "Phoenix route continues without native app metadata",
+            guide: "guides/bridge.md#bounded-bridge",
+            legacy_ids: ["app.info.get"]
+          ),
+        "app.info.get" =>
+          Types.new_capability(
+            id: "app.info.get",
+            family: "app_info",
+            version: "1.0.0",
+            owner: :bounded_bridge,
+            package_class: :core,
+            proof_class: :merge_blocking,
+            rebuild: :none,
+            prerequisites: ["declared route capability"],
+            denial: "undeclared_capability",
+            fallback: "Phoenix route continues without native app metadata",
+            guide: "guides/bridge.md#bounded-bridge"
+          ),
+        "haptics" =>
+          Types.new_capability(
+            id: "haptics",
+            family: "haptics",
+            version: "2.3.0",
+            owner: :bounded_bridge,
+            package_class: :core,
+            proof_class: :merge_blocking,
+            rebuild: :none,
+            prerequisites: ["declared route capability"],
+            denial: "undeclared_capability",
+            fallback: "Phoenix route continues without native confirmation feedback",
+            guide: "guides/bridge.md#bounded-bridge",
+            legacy_ids: ["haptics.impact"]
+          ),
+        "haptics.impact" =>
+          Types.new_capability(
+            id: "haptics.impact",
+            family: "haptics",
+            version: "2.3.0",
+            owner: :bounded_bridge,
+            package_class: :core,
+            proof_class: :merge_blocking,
+            rebuild: :none,
+            prerequisites: ["declared route capability"],
+            denial: "undeclared_capability",
+            fallback: "Phoenix route continues without native confirmation feedback",
+            guide: "guides/bridge.md#bounded-bridge"
+          )
       },
       routes: %{
         "dashboard" =>

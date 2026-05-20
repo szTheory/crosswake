@@ -49,7 +49,7 @@ grep -Fq "4-6 routes" "$HOST_README" || {
   exit 1
 }
 
-grep -Fq "5-8 routes" "$HOST_README" || {
+grep -Fq "3-4 routes" "$HOST_README" || {
   echo "host contract must lock the local-first route budget" >&2
   exit 1
 }

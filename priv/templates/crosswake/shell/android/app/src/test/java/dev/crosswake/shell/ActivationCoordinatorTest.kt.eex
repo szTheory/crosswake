@@ -1,5 +1,6 @@
 package dev.crosswake.shell
 
+import dev.crosswake.shell.packs.PackStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -16,17 +17,14 @@ class ActivationCoordinatorTest {
     }
 
     @Test
-    fun packIncompatibleDenialSurfacesUpdateAppAction() {
-        val coordinator = coordinator(
-            baselineRequest().copy(installedPacks = emptyMap())
-        )
+    fun stalePackInventoryShowsRequiredPackSurface() {
+        val presentation = staleCoordinator().activate(baselineRequest())
 
-        val presentation = coordinator.activate(baselineRequest().copy(installedPacks = emptyMap()))
-
-        assertTrue(presentation is ShellPresentation.Denied)
-        val denial = (presentation as ShellPresentation.Denied).denial
-        assertEquals(RouteDenialReason.PACK_INCOMPATIBLE, denial.reason)
-        assertTrue(RouteUnavailableAction.UPDATE_APP in denial.actions)
+        assertTrue(presentation is ShellPresentation.RequiredPack)
+        val requiredPack = (presentation as ShellPresentation.RequiredPack).requiredPack
+        assertEquals("dashboard", requiredPack.routeId)
+        assertEquals("0.9.0", requiredPack.status.installedVersion)
+        assertEquals("stale", requiredPack.status.state.wireValue)
     }
 
     @Test
@@ -66,7 +64,34 @@ class ActivationCoordinatorTest {
     private fun coordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
         return ActivationCoordinator(
             manifestLoader = { manifest() },
-            requestLoader = { request }
+            requestLoader = { request },
+            packStore = PackStore.inMemory(
+                requiredVersions = mapOf("shell.chrome" to "1.0.0"),
+                inventory = listOf(
+                    packInventoryRecord(
+                        packId = "shell.chrome",
+                        requiredVersion = "1.0.0",
+                        installedVersion = "1.0.0"
+                    )
+                )
+            )
+        )
+    }
+
+    private fun staleCoordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
+        return ActivationCoordinator(
+            manifestLoader = { manifest() },
+            requestLoader = { request },
+            packStore = PackStore.inMemory(
+                requiredVersions = mapOf("shell.chrome" to "1.0.0"),
+                inventory = listOf(
+                    packInventoryRecord(
+                        packId = "shell.chrome",
+                        requiredVersion = "1.0.0",
+                        installedVersion = "0.9.0"
+                    )
+                )
+            )
         )
     }
 
@@ -79,6 +104,7 @@ class ActivationCoordinatorTest {
                     runtime = "live_view",
                     capabilities = listOf("app.info.get"),
                     packs = listOf("shell.chrome@1.0.0"),
+                    transfers = emptyList(),
                     allowlistedOrigins = listOf("https://example.crosswake.invalid")
                 )
             )
@@ -98,6 +124,22 @@ class ActivationCoordinatorTest {
             declaredPackRequirements = mapOf("shell.chrome" to "1.0.0"),
             installedPacks = mapOf("shell.chrome" to "1.0.0"),
             capabilities = mapOf("app.info.get" to "1.0.0")
+        )
+    }
+
+    private fun packInventoryRecord(
+        packId: String,
+        requiredVersion: String,
+        installedVersion: String
+    ): dev.crosswake.shell.packs.PackInventoryRecord {
+        return dev.crosswake.shell.packs.PackInventoryRecord(
+            packId = packId,
+            requiredVersion = requiredVersion,
+            installedVersion = installedVersion,
+            bytes = 24_576,
+            integrityStatus = "verified",
+            verifiedAt = "2026-05-17T09:00:00Z",
+            status = "available"
         )
     }
 }

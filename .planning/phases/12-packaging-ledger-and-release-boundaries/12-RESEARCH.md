@@ -343,17 +343,17 @@ mix test \
 | A1 | Proof-lane over/under-testing is a likely maintainer failure mode if change classes are not explicit. | Common Pitfalls 3 | Medium: plan may overweight or underweight CI mapping work. |
 | A2 | Drift warning signs include guide edits without metadata/test changes. | Common Pitfalls 4 | Low: verification policy may need different heuristics. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should change class live in manifest metadata, support-matrix metadata, or a dedicated release-policy module?**
-   - What we know: capability entries already carry `package_class`, `proof_class`, and `rebuild`, and support rendering is already canonical. `[VERIFIED: codebase grep - lib/crosswake/manifest/types.ex][VERIFIED: codebase grep - lib/crosswake/support_matrix/support_matrix.ex]`
-   - What's unclear: whether change class is best expressed as derived policy from existing fields or as a first-class typed field. `[ASSUMED]`
-   - Recommendation: Plan for a small policy module or derived helper first, not a new manifest surface, unless implementation shows existing fields cannot express `compatibility-bump only`. `[ASSUMED]`
+1. **Where should change-class policy live?**
+   - **Resolution:** Change-class policy should live in typed support-matrix policy metadata and renderer-backed guide output, not as new per-route manifest truth and not as a detached handwritten release-policy file.
+   - **Why:** The repo already centralizes public support truth in `Crosswake.SupportMatrix` and `Crosswake.SupportMatrix.Renderer`, while manifest capability entries already supply the lower-level `package_class`, `proof_class`, and `rebuild` inputs that change-class policy derives from. This keeps one authoritative publication path and avoids widening the manifest with adopter-action policy that is not route activation truth. `[VERIFIED: codebase grep - lib/crosswake/manifest/types.ex][VERIFIED: codebase grep - lib/crosswake/support_matrix/support_matrix.ex][VERIFIED: codebase grep - lib/crosswake/support_matrix/renderer.ex]`
+   - **Planning implication:** Phase 12 plans should add typed policy entries under support-matrix truth plus guide parity tests, and only extend manifest types as needed for shared typed structs used by support-matrix policy rendering.
 
-2. **Should doctor surface package/change-class guidance directly in Phase 12, or should that remain mostly guide-facing until Phase 14?**
-   - What we know: doctor already owns operator-facing contract output and can run native proof hooks. `[VERIFIED: codebase grep - lib/mix/tasks/crosswake.doctor.ex][VERIFIED: codebase grep - test/mix/tasks/crosswake_doctor_test.exs]`
-   - What's unclear: whether Phase 12 should add user-facing doctor messages now or only prepare metadata for later support-truth work. `[ASSUMED]`
-   - Recommendation: Plan for at least one minimal doctor message or JSON field proving the change-class vocabulary is consumable, even if richer support UX lands in Phase 14. `[ASSUMED]`
+2. **Should doctor surface package/change-class guidance in Phase 12?**
+   - **Resolution:** Yes, but narrowly. Phase 12 should surface minimal release/versioning policy in doctor output during Plan `12-02`, while leaving richer support UX and denial-detail expansion to Phase 14.
+   - **Why:** D-03, D-04, D-14, and D-20 already treat `mix crosswake.doctor` as part of the core contract and require doctor alignment when compatibility policy changes. At the same time, PKG-03 is adopter-facing rebuild/change-class publication work, so doctor does not need to own that broader workflow in Phase 12. `[VERIFIED: codebase grep - .planning/phases/12-packaging-ledger-and-release-boundaries/12-CONTEXT.md][VERIFIED: codebase grep - lib/mix/tasks/crosswake.doctor.ex][VERIFIED: codebase grep - test/mix/tasks/crosswake_doctor_test.exs]`
+   - **Planning implication:** Keep doctor work in `12-02` limited to hybrid versioning and compatibility-axis policy. Keep `12-03` focused on typed change-class truth plus public guide publication/testing, without additional doctor-output scope.
 
 ## Environment Availability
 

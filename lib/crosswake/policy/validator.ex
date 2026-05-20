@@ -13,16 +13,20 @@ defmodule Crosswake.Policy.Validator do
                         "camera",
                         "camera.capture",
                         "document_preview",
+                        "entitlement_snapshot",
                         "file_picker",
                         "generic_plugin_bus",
                         "haptics",
+                        "haptics.impact",
                         "lock_screen_controls",
                         "microphone",
-                        "play_billing",
+                        "paywall_entry",
+                        "purchase_intent",
                         "push.notifications",
+                        "reconciliation_evidence",
+                        "restore_intent",
                         "scanner",
                         "share",
-                        "storekit",
                         "webrtc"
                       ])
 

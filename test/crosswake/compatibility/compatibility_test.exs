@@ -252,6 +252,20 @@ defmodule Crosswake.CompatibilityTest do
     end
   end
 
+  test "compatibility guide keeps package versions separate from runtime axes" do
+    guide = File.read!("guides/compatibility.md")
+
+    assert guide =~ "Package Versions Versus Compatibility Axes"
+    assert guide =~ "Companion Compatibility Contract"
+    assert guide =~ "Release Choreography"
+    assert guide =~ "Runtime Line Rules"
+    assert guide =~ "package versions alone"
+    assert guide =~ "manifest_schema_version"
+    assert guide =~ "bridge_protocol_version"
+    assert guide =~ "native_runtime_version"
+    assert guide =~ "minimum compatible ranges"
+  end
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",

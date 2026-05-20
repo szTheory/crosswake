@@ -86,6 +86,10 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert output =~ "Crosswake doctor report"
     assert output =~ "support posture: verification_required"
+    assert output =~ "manifest_schema_version=1.0.0"
+    assert output =~ "bridge_protocol_version=1.0.0"
+    assert output =~ "native_runtime_version=1.0.0"
+    assert output =~ "Package versions alone do not determine support truth"
     assert output =~ "route unavailable=yes"
     assert output =~ "offline posture: supported"
     assert output =~ "proof=verification required"
@@ -119,6 +123,9 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
+    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["bridge_protocol_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands

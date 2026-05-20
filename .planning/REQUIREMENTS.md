@@ -55,15 +55,15 @@
 
 ### Capability Taxonomy And Contract Rubric (`core`)
 
-- [ ] **CAPA-01**: Phoenix teams can classify candidate native affordances into bounded bridge, explicit native screen, or deferred categories using one published rubric.
-- [ ] **CAPA-02**: Crosswake can express capability-family metadata, route-owner expectations, and support posture in manifest and support-matrix truth without widening runtime authority.
-- [ ] **CAPA-03**: Adopters can read explicit rules for when a capability family belongs in `core`, requires a `companion`, or stays deferred.
+- [x] **CAPA-01**: Phoenix teams can classify candidate native affordances into bounded bridge, explicit native screen, or deferred categories using one published rubric.
+- [x] **CAPA-02**: Crosswake can express capability-family metadata, route-owner expectations, and support posture in manifest and support-matrix truth without widening runtime authority.
+- [x] **CAPA-03**: Adopters can read explicit rules for when a capability family belongs in `core`, requires a `companion`, or stays deferred.
 
 ### Packaging And Release Boundaries (`core` policy + `companion` boundary)
 
-- [ ] **PKG-01**: Phoenix teams can see a published packaging ledger that classifies major Crosswake surfaces as `core`, `companion`, `example/docs-only`, or `defer`.
-- [ ] **PKG-02**: Maintainers can follow one documented release and versioning policy for companion-ready future work without breaking manifest, shell, or support truth.
-- [ ] **PKG-03**: Adopters can tell when a capability or companion change requires a native rebuild, compatibility bump, or docs-only update.
+- [x] **PKG-01**: Phoenix teams can see a published packaging ledger that classifies major Crosswake surfaces as `core`, `companion`, `example/docs-only`, or `defer`.
+- [x] **PKG-02**: Maintainers can follow one documented release and versioning policy for companion-ready future work without breaking manifest, shell, or support truth.
+- [x] **PKG-03**: Adopters can tell when a capability or companion change requires a native rebuild, compatibility bump, or docs-only update.
 
 ### Commerce And Entitlement Seams (`core` seam, provider-specific work deferred)
 
@@ -116,12 +116,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAPA-01 | Phase 11 | Pending |
-| CAPA-02 | Phase 11 | Pending |
-| CAPA-03 | Phase 11 | Pending |
-| PKG-01 | Phase 12 | Pending |
-| PKG-02 | Phase 12 | Pending |
-| PKG-03 | Phase 12 | Pending |
+| CAPA-01 | Phase 11 | Validated |
+| CAPA-02 | Phase 11 | Validated |
+| CAPA-03 | Phase 11 | Validated |
+| PKG-01 | Phase 12 | Validated |
+| PKG-02 | Phase 12 | Validated |
+| PKG-03 | Phase 12 | Validated |
 | COMM-01 | Phase 13 | Pending |
 | COMM-02 | Phase 13 | Pending |
 | COMM-03 | Phase 13 | Pending |

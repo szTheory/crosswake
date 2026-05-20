@@ -50,6 +50,8 @@ Supported behavior:
 - host-owned auth keeps one signed-in boundary and one lightweight role split
 - one low-frequency approval confirmation can request shell haptics without changing
   route ownership
+- this lane maps most directly to `app_info`, `haptics`, and `deep_link` rather than
+  broad native capability breadth
 
 Degraded behavior:
 
@@ -57,8 +59,8 @@ Degraded behavior:
   the request
 - when the shell cannot satisfy the haptics request, the approval remains
   server-authoritative and the route still completes on the Phoenix side
-- router metadata still compiles with the legacy `haptics` capability token while the
-  exercised shell request path uses `haptics.impact`
+- the approval-detail route declares the same `haptics.impact` capability that the
+  exercised shell request path uses
 
 Deferred behavior:
 
@@ -120,6 +122,8 @@ Supported behavior:
 - native capture remains bounded to one specific route inside the claims-evidence corridor
 - media stays staged and captured locally until explicit Phoenix review before upload triggers the transfer seam
 - surrounding `/native` routes do not inherit capability or pack requirements
+- this lane maps directly to `media_capture` and keeps native ownership explicit on
+  that route instead of widening into generic plugin-style support
 
 Degraded behavior:
 
@@ -156,18 +160,16 @@ Explicit non-goals:
 
 ## Local-First Study Flow
 
-This profile fits a study-oriented or training-oriented route set where one
-`:offline_island` keeps meaningful work moving offline while neighboring routes stay
-cached read-only. The goal is to keep local-first mutation and cached degradation
-honest and visibly different.
+This profile fits a study-oriented route set where one `:offline_island` keeps
+meaningful work moving offline while a neighboring history route stays cached
+read-only. The goal is to keep local-first mutation and cached degradation honest
+and visibly different.
 
 Representative routes:
 
-- `/library`
-- `/lesson/:id`
-- `/study-session`
-- `/study-session/history`
-- `/sync-status`
+- `/study/session`
+- `/study/history`
+- `/study/sync`
 
 Required seams:
 
@@ -187,6 +189,30 @@ cached read-only and replay contract, and
 [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
 for the canonical support-status surface. The install and example-host path stays in
 [guides/install.md](/Users/jon/projects/crosswake/guides/install.md).
+
+Supported behavior:
+
+- the `:offline_island` session route keeps local progress and outbox state inside the
+  example host lane until explicit sync
+- the `/study/history` route stays cached read-only and renders replay outcomes without
+  taking local mutation authority
+- the shared shell fixtures carry the local-first history route so the bounded shell
+  still proves the cached neighbor surface
+- this lane reinforces backend-truth and bounded-route semantics instead of implying
+  broad capability support
+
+Degraded behavior:
+
+- if the shell cannot open the offline-island session route directly, the bounded
+  shell still proves the cached read-only history route instead of pretending the
+  whole local-first workflow is shell-supported
+- replay remains explicit and user-driven; there is no background sync promise
+
+Deferred behavior:
+
+- lesson libraries, multi-route curricula, and collaborative sync datasets
+- background-sync guarantees
+- media-heavy offline transfer
 
 Why this profile exists:
 

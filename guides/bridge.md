@@ -1,7 +1,8 @@
 # Bounded Bridge
 
 Crosswake exposes one typed, versioned, request/reply-only bridge. It stays deliberately
-small even after Phase 5:
+small even after Phase 5, and its public framing is family-first rather than
+command-first:
 
 - `app.info.get`
 - `haptics.impact`
@@ -11,7 +12,10 @@ small even after Phase 5:
 - `transfer.import`
 - `transfer.upload.prepare`
 
-Everything else is denied. The bridge is not navigation authority, not render synchronization, and not a generic plugin bus.
+The public families behind that posture are `app_info`, `haptics`, and, later,
+`share`. This bounded bridge contract stays family-first. Concrete bridge commands remain lower-level protocol details. Everything
+else is denied. The bridge is not navigation authority, not render synchronization,
+and not a generic plugin bus. `deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
 
 ## Request Envelope
 
@@ -58,6 +62,13 @@ The transfer commands stay semantic and route-local.
 Transfer execution is foreground-first. States remain explicit: `queued`, `preparing`,
 `transferring`, `awaiting_network`, `verifying`, `complete`, `failed`, and `canceled`.
 Crosswake does not promise silent background reconciliation or generic file authority.
+
+The bridge examples that remain honest in this posture are family-first:
+
+- `app_info` for one-shot app metadata reads
+- `haptics` for low-frequency confirmation signals
+- `share` as a future semantic handoff family once Crosswake publishes a truthful
+  route-local share contract beyond compatibility-only command seams
 
 ## Denial Reasons
 

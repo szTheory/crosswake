@@ -21,7 +21,8 @@ defmodule Crosswake.Manifest.ValidatorTest do
             live_view: SupportMatrix.canonical().live_view,
             ios: SupportMatrix.canonical().ios,
             android: SupportMatrix.canonical().android,
-            shells: SupportMatrix.canonical().shells
+            shells: SupportMatrix.canonical().shells,
+            capability_families: SupportMatrix.canonical().capability_families
           ),
         capability_registry: %{},
         routes: %{}
@@ -148,8 +149,36 @@ defmodule Crosswake.Manifest.ValidatorTest do
     errors = Validator.validate(manifest)
 
     assert Enum.any?(errors, fn error ->
-             String.contains?(error.message, "native_capture source requires route runtime :native_screen")
+           String.contains?(error.message, "native_capture source requires route runtime :native_screen")
            end)
+  end
+
+  test "manifest validation rejects invalid capability metadata vocabulary and empty support facts" do
+    manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:capability_registry), "camera"],
+        Types.new_capability(
+          id: "camera",
+          family: "media_capture",
+          owner: :invalid_owner,
+          package_class: :companion,
+          proof_class: :merge_blocking,
+          rebuild: :native_required,
+          prerequisites: [],
+          denial: "",
+          fallback: "",
+          guide: ""
+        )
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "unsupported owner"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "non-empty prerequisite strings"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :denial"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :fallback"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :guide"))
   end
 
   defp manifest_fixture do
@@ -160,7 +189,33 @@ defmodule Crosswake.Manifest.ValidatorTest do
       compatibility: Types.new_compatibility(),
       support_matrix: SupportMatrix.canonical(),
       capability_registry: %{
-        "camera" => Types.new_capability(id: "camera", version: "1.0.0")
+        "media_capture" =>
+          Types.new_capability(
+            id: "media_capture",
+            family: "media_capture",
+            owner: :native_screen,
+            package_class: :companion,
+            proof_class: :merge_blocking,
+            rebuild: :native_required,
+            prerequisites: ["native screen route", "capture pack availability"],
+            denial: "pack_incompatible",
+            fallback: "fail closed instead of degrading into a bounded web upload flow",
+            guide: "guides/native_shell.md#native-capture-escape-hatch",
+            legacy_ids: ["camera", "camera.capture"]
+          ),
+        "camera" =>
+          Types.new_capability(
+            id: "camera",
+            family: "media_capture",
+            owner: :native_screen,
+            package_class: :companion,
+            proof_class: :merge_blocking,
+            rebuild: :native_required,
+            prerequisites: ["native screen route", "capture pack availability"],
+            denial: "pack_incompatible",
+            fallback: "fail closed instead of degrading into a bounded web upload flow",
+            guide: "guides/native_shell.md#native-capture-escape-hatch"
+          )
       },
       pack_registry: %{
         "camera_capture_assets@1.0.0" =>

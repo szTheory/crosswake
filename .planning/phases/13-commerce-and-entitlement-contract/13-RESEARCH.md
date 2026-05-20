@@ -316,17 +316,15 @@ use Oban.Worker,
 |---|-------|---------|---------------|
 | A1 | Host examples for future phases will likely use Ecto + Oban as the reference reconciliation stack rather than another Elixir persistence/job combination. [ASSUMED] | Standard Stack | Low; the core contract remains valid, but later plan tasks may need different host examples if the maintainer prefers another stack. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `paywall_entry` stay purely semantic or include a bounded presentation hint set?**
-   - What we know: The phase locks a typed surface and explicit native-corridor bias, but leaves exact field names and layout discretion open. [VERIFIED: codebase grep]
-   - What's unclear: Whether core should expose only reason/context metadata or a tiny presentation taxonomy such as `placement` or `campaign`. [ASSUMED]
-   - Recommendation: Keep `core` limited to semantic context plus denial/fallback vocabulary; push visual/paywall SDK tuning to companions. [VERIFIED: codebase grep]
+   - Resolution: Keep `paywall_entry` purely semantic in `core`. It may carry route-local context or reason metadata needed to explain why Phoenix is entering a commerce flow, but it must not define presentation taxonomies such as placement, campaign, variant, or SDK-facing layout hints. Those belong in companions or host apps where storefront UI is actually owned. [VERIFIED: codebase grep]
+   - Planning consequence: `COMM-01` should model `paywall_entry` as semantic entry context plus denial/fallback semantics only. No plan should add visual-paywall configuration vocabulary to `core`.
 
 2. **How much provider detail should `reconciliation_evidence.metadata` allow?**
-   - What we know: The context explicitly forbids provider enums in the public contract. [VERIFIED: codebase grep]
-   - What's unclear: The exact boundary between bounded debug metadata and leaked provider semantics. [ASSUMED]
-   - Recommendation: Allow only opaque namespaced metadata maps in evidence, and keep all typed provider parsing outside `core`. [VERIFIED: codebase grep]
+   - Resolution: Allow only opaque, namespaced metadata intended for correlation or debugging. `core` may preserve this metadata as uninterpreted baggage, but it must not define typed provider enums, provider-specific lifecycle fields, or decision-making semantics based on metadata contents. Provider parsing and strong typing stay outside `core` in companions or host-owned adapters. [VERIFIED: codebase grep]
+   - Planning consequence: `COMM-01` and `COMM-02` can expose a bounded `metadata` field, but tests and guide wording must make clear that entitlement authority never depends on typed provider metadata in `core`.
 
 ## Security Domain
 

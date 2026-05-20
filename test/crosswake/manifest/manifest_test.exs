@@ -57,9 +57,28 @@ defmodule Crosswake.ManifestTest do
     assert manifest.host.manifest_sources == [:bundled, :cached, :remote]
     assert manifest.compatibility.bridge_protocol_version == "1.0.0"
     assert Map.has_key?(manifest.capability_registry, "camera")
+    assert Map.has_key?(manifest.capability_registry, "media_capture")
     assert Map.has_key?(manifest.pack_registry, "camera_capture_assets@1.0.0")
     assert Map.has_key?(manifest.pack_registry, "lesson_library@1.2.0")
     assert manifest.support_matrix.phoenix != []
+    assert manifest.support_matrix.capability_families != []
+  end
+
+  test "manifest capability registry exposes typed family metadata and compatibility aliases" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    media_capture = manifest.capability_registry["media_capture"]
+    camera = manifest.capability_registry["camera"]
+
+    assert media_capture.family == "media_capture"
+    assert media_capture.owner == :native_screen
+    assert media_capture.package_class == :companion
+    assert media_capture.proof_class == :merge_blocking
+    assert media_capture.rebuild == :native_required
+    assert media_capture.legacy_ids == ["camera", "camera.capture"]
+
+    assert camera.family == "media_capture"
+    assert camera.guide == "guides/native_shell.md#native-capture-escape-hatch"
   end
 
   test "manifest root exposes a canonical typed pack registry keyed by immutable id and version" do
@@ -117,5 +136,38 @@ defmodule Crosswake.ManifestTest do
                media_types: ["image/*"]
              )
            ]
+  end
+  test "manifest capability registry includes normalized commerce vocabulary" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
+
+    assert %{
+             owner: :backend_seam,
+             family: "paywall_entry",
+             package_class: :example_docs_only
+           } = manifest.capability_registry["paywall_entry"]
+
+    assert %{
+             owner: :backend_seam,
+             family: "purchase_intent",
+             package_class: :example_docs_only
+           } = manifest.capability_registry["purchase_intent"]
+
+    assert %{
+             owner: :backend_seam,
+             family: "restore_intent",
+             package_class: :example_docs_only
+           } = manifest.capability_registry["restore_intent"]
+
+    assert %{
+             owner: :backend_seam,
+             family: "entitlement_snapshot",
+             package_class: :example_docs_only
+           } = manifest.capability_registry["entitlement_snapshot"]
+
+    assert %{
+             owner: :backend_seam,
+             family: "reconciliation_evidence",
+             package_class: :example_docs_only
+           } = manifest.capability_registry["reconciliation_evidence"]
   end
 end

@@ -50,7 +50,7 @@ defmodule Crosswake.Install.Patcher do
             global: false
           )
 
-        {:ok, patched, [:marker_inserted, :live_view_import_patched]}
+        {:ok, patched, [:marker_inserted, :live_view_import_replaced]}
 
       regex_match = Regex.run(~r/^(\s*)use\s+.+:router\s*$/m, contents) ->
         indentation = List.last(regex_match)
@@ -87,7 +87,7 @@ defmodule Crosswake.Install.Patcher do
   defp install_block(indentation, policy_module) do
     [
       "#{indentation}#{@marker_start}",
-      "#{indentation}import Phoenix.LiveView.Router, except: [live: 2, live: 3, live: 4]",
+      "#{indentation}import Phoenix.Router, except: [get: 3, get: 4, post: 3, post: 4, put: 3, put: 4, patch: 3, patch: 4, delete: 3, delete: 4, options: 3, options: 4, head: 3, head: 4]",
       "#{indentation}import Crosswake.Router",
       "#{indentation}@crosswake_policy_module #{policy_module}",
       "#{indentation}#{@marker_end}"

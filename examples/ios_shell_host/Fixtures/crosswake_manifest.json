@@ -5,8 +5,8 @@
       "status": "supported",
       "version": "1.0.0"
     },
-    "haptics": {
-      "id": "haptics",
+    "haptics.impact": {
+      "id": "haptics.impact",
       "status": "supported",
       "version": "1.0.0"
     }
@@ -26,7 +26,7 @@
     ]
   },
   "crosswake_version": "0.1.0",
-  "generated_at": "2026-05-18T17:20:08Z",
+  "generated_at": "2026-05-19T13:36:03Z",
   "host": {
     "live_view_version": "~> 1.1",
     "manifest_sources": [
@@ -43,6 +43,12 @@
       "id": "camera_capture_assets",
       "integrity": null,
       "kind": "media",
+      "version": "1.0.0"
+    },
+    "daily_study@1.0.0": {
+      "id": "daily_study",
+      "integrity": null,
+      "kind": "content",
       "version": "1.0.0"
     },
     "lesson_library@1.2.0": {
@@ -163,6 +169,40 @@
         }
       ]
     },
+    "local-first-study-history": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "local-first-study-history",
+      "island_contract": null,
+      "offline": "cached_read_only",
+      "packs": [],
+      "path": "/study/history",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "local-first-study-session": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "id": "local-first-study-session",
+      "island_contract": null,
+      "offline": "local_first",
+      "packs": [
+        "daily_study@1.0.0"
+      ],
+      "path": "/study/session",
+      "runtime": "offline_island",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
     "saas-account": {
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
@@ -185,7 +225,7 @@
       ],
       "cache_contract": null,
       "capabilities": [
-        "haptics"
+        "haptics.impact"
       ],
       "id": "saas-approval",
       "island_contract": null,
@@ -340,6 +380,7 @@
   "support_matrix": {
     "android": [
       {
+        "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
         "notes": "Host-owned Android shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
         "proof": "script/verify_generated_android_shell.sh",
         "status": "supported",
@@ -349,6 +390,7 @@
     ],
     "ios": [
       {
+        "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
         "notes": "Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
         "proof": "script/verify_generated_ios_shell.sh",
         "status": "supported",
@@ -358,6 +400,7 @@
     ],
     "live_view": [
       {
+        "boundary_link": "guides/offline.md#boundary-warnings--rough-edges",
         "notes": "LiveView remains server-owned and route-first.",
         "proof": "phase-2-proof-lane",
         "status": "supported",
@@ -376,6 +419,7 @@
     ],
     "shells": [
       {
+        "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
         "notes": "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
         "proof": "script/verify_generated_ios_shell.sh",
         "status": "supported",
@@ -383,6 +427,7 @@
         "version": "0.1.0"
       },
       {
+        "boundary_link": "guides/native_shell.md#boundary-warnings--rough-edges",
         "notes": "Generated Android shell artifacts are supported while the Phase 5 Android verification hook stays green.",
         "proof": "script/verify_generated_android_shell.sh",
         "status": "supported",

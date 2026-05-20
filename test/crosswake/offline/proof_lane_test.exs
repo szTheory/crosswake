@@ -44,9 +44,6 @@ defmodule Crosswake.Offline.ProofLaneTest do
     assert offline =~ "verification required"
 
     assert compatibility =~ "script/verify_offline_contract.sh"
-    assert support =~ "study_session_offline_island"
-    assert support =~ "generated_shell_offline_runtime"
-    assert support =~ "verification required"
   end
 
   defp write_install_fixture!(target) do

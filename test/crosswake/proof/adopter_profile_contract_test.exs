@@ -21,7 +21,7 @@ defmodule Crosswake.Proof.AdopterProfileContractTest do
     assert readme =~ "one shared Phoenix host"
     assert readme =~ "paired iOS and Android example hosts"
     assert readme =~ "4-6 routes"
-    assert readme =~ "5-8 routes"
+    assert readme =~ "3-4 routes"
     assert readme =~ "`:live_view`"
     assert readme =~ "`:native_screen`"
     assert readme =~ "`:offline_island`"

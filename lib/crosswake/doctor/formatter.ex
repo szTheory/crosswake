@@ -23,6 +23,25 @@ defmodule Crosswake.Doctor.Formatter do
     |> Enum.join("\n")
   end
 
+  defp format_support(%{
+         status: status,
+         blocking_platforms: blocking_platforms,
+         release_policy: release_policy
+       }) do
+    blocked =
+      case blocking_platforms do
+        [] -> "none"
+        platforms -> Enum.map_join(platforms, ", ", &Atom.to_string/1)
+      end
+
+    [
+      "support posture: #{status} (blocking: #{blocked})",
+      format_release_policy(release_policy)
+    ]
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join("\n")
+  end
+
   defp format_support(%{status: status, blocking_platforms: blocking_platforms}) do
     blocked =
       case blocking_platforms do
@@ -34,6 +53,28 @@ defmodule Crosswake.Doctor.Formatter do
   end
 
   defp format_support(_support), do: nil
+
+  defp format_release_policy(%{
+         crosswake_version: crosswake_version,
+         manifest_schema_version: manifest_schema_version,
+         bridge_protocol_version: bridge_protocol_version,
+         native_runtime_version: native_runtime_version,
+         package_version_truth: package_version_truth,
+         companion_requirement: companion_requirement
+       }) do
+    [
+      "release policy:",
+      "  crosswake_version=#{crosswake_version}",
+      "  manifest_schema_version=#{manifest_schema_version}",
+      "  bridge_protocol_version=#{bridge_protocol_version}",
+      "  native_runtime_version=#{native_runtime_version}",
+      "  #{package_version_truth}",
+      "  #{companion_requirement}"
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp format_release_policy(_release_policy), do: nil
 
   defp format_shells(shells) when shells == %{}, do: nil
 

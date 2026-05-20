@@ -7,7 +7,8 @@ final class ActivationCoordinatorTests: XCTestCase {
     func testBundledLaunchAllowsLiveViewRouteBeforeRuntimeMount() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
-            requestLoader: { Self.allowedRequest }
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
         )
 
         coordinator.bootstrapIfNeeded()
@@ -23,7 +24,8 @@ final class ActivationCoordinatorTests: XCTestCase {
     func testDeniedDeepLinkUsesExplicitInactiveRouteSurface() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
-            requestLoader: { Self.allowedRequest }
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
         )
 
         coordinator.openURL(URL(string: "https://example.com/missing")!)
@@ -32,44 +34,33 @@ final class ActivationCoordinatorTests: XCTestCase {
             return XCTFail("expected denial presentation")
         }
 
-        XCTAssertEqual(denial.reason, .inactiveRoute)
-        XCTAssertTrue(denial.actions.contains(.retry))
+        XCTAssertEqual(denial.reason, RouteDenialReason.inactiveRoute)
+        XCTAssertTrue(denial.actions.contains(RouteUnavailableAction.retry))
     }
 
-    func testPackIncompatibleDenialSurfacesUpdateAppAction() {
-        let incompatibleRequest = ActivationRequest(
-            routeID: "dashboard",
-            url: URL(string: "https://example.com/dashboard"),
-            source: .coldStart,
-            origin: "https://example.com",
-            manifestSource: .bundled,
-            bridgeProtocolVersion: "1.0.0",
-            nativeRuntimeVersion: "1.0.0",
-            correlationID: "ios-bootstrap-2",
-            declaredPackRequirements: ["shell.chrome": "1.0.0"],
-            installedPacks: ["shell.chrome": "0.9.0"],
-            capabilities: ["app.info.get": "1.0.0"]
-        )
-
+    func testStalePackInventoryShowsRequiredPackSurface() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
-            requestLoader: { incompatibleRequest }
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.stalePackStore
         )
 
         coordinator.bootstrapIfNeeded()
 
-        guard case let .denied(denial) = coordinator.presentation else {
-            return XCTFail("expected denial presentation")
+        guard case let .requiredPack(requiredPack) = coordinator.presentation else {
+            return XCTFail("expected required pack presentation")
         }
 
-        XCTAssertEqual(denial.reason, .packIncompatible)
-        XCTAssertTrue(denial.actions.contains(.updateApp))
+        XCTAssertEqual(requiredPack.routeID, "dashboard")
+        XCTAssertEqual(requiredPack.status.state, .stale)
+        XCTAssertEqual(requiredPack.status.installedVersion, "0.9.0")
     }
 
     func testInAppNavigationDeniesDisallowedOrigin() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
-            requestLoader: { Self.allowedRequest }
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
         )
 
         coordinator.activate(
@@ -92,8 +83,8 @@ final class ActivationCoordinatorTests: XCTestCase {
             return XCTFail("expected denial presentation")
         }
 
-        XCTAssertEqual(denial.reason, .originDenied)
-        XCTAssertTrue(denial.actions.contains(.retry))
+        XCTAssertEqual(denial.reason, RouteDenialReason.originDenied)
+        XCTAssertTrue(denial.actions.contains(RouteUnavailableAction.retry))
     }
 
     func testLiveViewContainerAllowsSameOriginNavigation() {
@@ -122,6 +113,7 @@ final class ActivationCoordinatorTests: XCTestCase {
                 runtime: "live_view",
                 capabilities: ["app.info.get"],
                 packs: ["shell.chrome@1.0.0"],
+                transfers: [],
                 allowlistedOrigins: ["https://example.com"]
             )
         ]
@@ -139,5 +131,35 @@ final class ActivationCoordinatorTests: XCTestCase {
         declaredPackRequirements: ["shell.chrome": "1.0.0"],
         installedPacks: ["shell.chrome": "1.0.0"],
         capabilities: ["app.info.get": "1.0.0"]
+    )
+
+    private static let packStore = PackStore(
+        requiredVersions: ["shell.chrome": "1.0.0"],
+        inventory: [
+            PackInventoryRecord(
+                packID: "shell.chrome",
+                requiredVersion: "1.0.0",
+                installedVersion: "1.0.0",
+                bytes: 24_576,
+                integrityStatus: "verified",
+                verifiedAt: ISO8601DateFormatter().date(from: "2026-05-17T09:00:00Z"),
+                status: "available"
+            )
+        ]
+    )
+
+    private static let stalePackStore = PackStore(
+        requiredVersions: ["shell.chrome": "1.0.0"],
+        inventory: [
+            PackInventoryRecord(
+                packID: "shell.chrome",
+                requiredVersion: "1.0.0",
+                installedVersion: "0.9.0",
+                bytes: 24_576,
+                integrityStatus: "verified",
+                verifiedAt: ISO8601DateFormatter().date(from: "2026-05-17T09:00:00Z"),
+                status: "available"
+            )
+        ]
     )
 }

@@ -138,7 +138,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_transfer_coordinator) =~ "transfer.download"
     assert File.read!(ios_transfer_coordinator) =~ "transfer.import"
     assert File.read!(ios_transfer_coordinator) =~ "transfer.export"
-    assert File.read!(ios_tests) =~ "testPackIncompatibleDenialSurfacesUpdateAppAction"
+    assert File.read!(ios_tests) =~ "testStalePackInventoryShowsRequiredPackSurface"
     assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
     assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
@@ -333,7 +333,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
     assert File.read!(android_route_unavailable) =~ "Update app"
     assert File.read!(android_route_unavailable) =~ "Open safe fallback"
-    assert File.read!(android_unit_tests) =~ "packIncompatibleDenialSurfacesUpdateAppAction"
+    assert File.read!(android_unit_tests) =~ "stalePackInventoryShowsRequiredPackSurface"
     assert File.read!(android_unit_tests) =~ "inAppNavigationDeniesDisallowedOriginAndKeepsCurrentRouteStable"
     assert File.read!(android_instrumented_tests) =~ "appLinkLaunchMountsBoundedWebView"
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
@@ -345,7 +345,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
     assert File.read!(verify_script) =~ "xcodebuild"
     assert File.read!(verify_script) =~ "-showdestinations"
-    assert File.read!(verify_script) =~ "scheme=\"CrosswakeShell\""
+    assert File.read!(verify_script) =~ "SCHEME=\"${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}\""
 
     android_verify_script = Path.join(File.cwd!(), "script/verify_generated_android_shell.sh")
     assert File.read!(android_verify_script) =~ "sdkmanager"

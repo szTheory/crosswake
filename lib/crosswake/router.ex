@@ -85,6 +85,8 @@ defmodule Crosswake.Router do
     route_options = __route_options__(caller.module, opts, caller)
 
     quote do
+      require Phoenix.LiveView.Router
+
       Phoenix.LiveView.Router.live(
         unquote(path),
         unquote(live_view),

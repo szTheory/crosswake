@@ -79,14 +79,13 @@ defmodule Crosswake.Bridge.Registry do
   end
 
   defp capability_entry(manifest, route, command, capability_id) do
-    with true <- capability_id in route.capabilities || {:error, :undeclared_capability},
+    with true <- capability_declared_on_route?(route, capability_id) || {:error, :undeclared_capability},
          %Capability{} = capability <-
-           Map.get(manifest.capability_registry, capability_id) ||
-             {:error, :undeclared_capability} do
+           lookup_capability(manifest, capability_id) || {:error, :undeclared_capability} do
       {:ok,
        %Entry{
          command: command,
-         capability: capability_id,
+         capability: capability.family,
          version: capability.version,
          route_id: route.id,
          allowlisted_origins: route.allowlisted_origins
@@ -96,6 +95,19 @@ defmodule Crosswake.Bridge.Registry do
       false -> {:error, :undeclared_capability}
       nil -> {:error, :undeclared_capability}
     end
+  end
+
+  defp capability_declared_on_route?(route, capability_id) do
+    capability_id in route.capabilities
+  end
+
+  defp lookup_capability(manifest, capability_id) do
+    Map.get(manifest.capability_registry, capability_id) ||
+      Enum.find_value(manifest.capability_registry, fn {_id, capability} ->
+        if capability_id in capability.legacy_ids do
+          capability
+        end
+      end)
   end
 
   defp transfer_entry(route, command, transfer_intent) do

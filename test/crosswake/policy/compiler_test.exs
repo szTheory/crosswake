@@ -78,6 +78,30 @@ defmodule Crosswake.Policy.CompilerTest do
     assert %Route{id: "camera", runtime: :native_screen, offline: :local_first} = route
   end
 
+  test "normalized commerce capabilities compile successfully" do
+    assert {:ok, %{routes: [route], warnings: []}} =
+             Compiler.compile([
+               route("/commerce",
+                 helper: "commerce",
+                 crosswake: [
+                   id: "commerce",
+                   runtime: :live_view,
+                   security: :standard,
+                   offline: :unavailable,
+                   capabilities: [
+                     "paywall_entry",
+                     "purchase_intent",
+                     "restore_intent",
+                     "entitlement_snapshot",
+                     "reconciliation_evidence"
+                   ]
+                 ]
+               )
+             ])
+
+    assert %Route{id: "commerce"} = route
+  end
+
   defp route(path, opts) do
     metadata =
       case Keyword.fetch(opts, :crosswake) do

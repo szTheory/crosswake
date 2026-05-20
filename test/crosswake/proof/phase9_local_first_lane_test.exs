@@ -1,34 +1,12 @@
+Code.require_file("../../support/example_host.exs", __DIR__)
+
 defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.Manifest
 
   setup_all do
-    for path <- [
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/fixtures.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/accounts.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/auth.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/on_mount.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/dashboard_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/account_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/settings_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/on_mount.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/fixtures.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claims_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/claim_capture_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/selective_native/submission_review_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/local_first/study_history_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/local_first/study_session_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/local_first/sync_controller.ex",
-          "examples/phoenix_host/lib/crosswake_example/router.ex"
-        ] do
-      Code.require_file(Path.expand(path, File.cwd!()))
-    end
-
+    Crosswake.TestSupport.ExampleHost.load!()
     :ok
   end
 
@@ -55,5 +33,22 @@ defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
     assert sync_route != nil
     assert sync_route.plug == CrosswakeExample.LocalFirst.SyncController
     assert sync_route.plug_opts == :sync
+  end
+
+  test "checked-in shell fixtures carry the local-first route truth" do
+    ios_manifest = File.read!("examples/ios_shell_host/Fixtures/crosswake_manifest.json")
+    ios_tests = File.read!("examples/ios_shell_host/CrosswakeShellTests/ActivationCoordinatorTests.swift")
+    android_manifest = File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
+
+    android_instrumented =
+      File.read!("examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt")
+
+    assert ios_manifest =~ "\"local-first-study-session\""
+    assert ios_manifest =~ "\"path\": \"/study/history\""
+    assert ios_tests =~ "https://example.crosswake.invalid/study/history"
+
+    assert android_manifest =~ "\"local-first-study-session\""
+    assert android_manifest =~ "\"path\": \"/study/history\""
+    assert android_instrumented =~ "https://example.crosswake.invalid/study/history"
   end
 end

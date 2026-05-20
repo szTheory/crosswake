@@ -1,0 +1,41 @@
+name: Phase 5 Proof
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  phase5-proof:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Verify checked-in example hosts
+        run: bash script/verify_phase5_example_hosts.sh
+
+      - name: Verify generated iOS shell
+        run: bash script/verify_generated_ios_shell.sh
+
+      - name: Verify generated Android shell
+        run: bash script/verify_generated_android_shell.sh

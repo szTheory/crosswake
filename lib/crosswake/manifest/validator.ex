@@ -15,6 +15,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_top_level_sections(manifest)
     |> validate_compatibility(manifest.compatibility)
     |> validate_support_matrix(manifest.support_matrix)
+    |> validate_capability_registry(manifest.capability_registry)
     |> validate_routes(manifest.routes, manifest.capability_registry, manifest.pack_registry)
   end
 
@@ -58,6 +59,15 @@ defmodule Crosswake.Manifest.Validator do
     |> Kernel.++(errors)
   end
 
+  defp validate_capability_registry(errors, capability_registry) when is_map(capability_registry) do
+    Enum.reduce(capability_registry, errors, fn {_id, capability}, acc ->
+      capability
+      |> capability_errors()
+      |> Enum.map(&build_error/1)
+      |> Kernel.++(acc)
+    end)
+  end
+
   defp validate_routes(errors, routes, capability_registry, pack_registry) do
     Enum.reduce(routes, errors, fn {_id, route}, acc ->
       route
@@ -93,7 +103,7 @@ defmodule Crosswake.Manifest.Validator do
 
   defp validate_route_capabilities(errors, route, capability_registry) do
     Enum.reduce(route.capabilities, errors, fn capability, acc ->
-      if Map.has_key?(capability_registry, capability) do
+      if route_capability_declared?(capability_registry, capability) do
         acc
       else
         [
@@ -110,6 +120,80 @@ defmodule Crosswake.Manifest.Validator do
         ]
       end
     end)
+  end
+
+  defp capability_errors(%Types.Capability{} = capability) do
+    []
+    |> validate_capability_vocab(
+      :owner,
+      capability.owner,
+      [:bounded_bridge, :native_screen, :backend_seam, :defer]
+    )
+    |> validate_capability_vocab(
+      :package_class,
+      capability.package_class,
+      [:core, :companion, :example_docs_only, :defer]
+    )
+    |> validate_capability_vocab(:proof_class, capability.proof_class, [:merge_blocking, :advisory])
+    |> validate_capability_vocab(
+      :rebuild,
+      capability.rebuild,
+      [:none, :native_required, :companion_required]
+    )
+    |> validate_capability_required_string(:denial, capability.denial, capability.id)
+    |> validate_capability_required_string(:fallback, capability.fallback, capability.id)
+    |> validate_capability_required_string(:guide, capability.guide, capability.id)
+    |> validate_capability_prerequisites(capability)
+  end
+
+  defp validate_capability_vocab(errors, key, value, allowed) do
+    if value in allowed do
+      errors
+    else
+      [
+        %{
+          key: key,
+          message: "capability metadata uses unsupported #{key} #{inspect(value)}",
+          hint: "use one of #{Enum.map_join(allowed, ", ", &inspect/1)}"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_capability_required_string(errors, key, value, capability_id) do
+    if non_empty_string?(value) do
+      errors
+    else
+      [
+        %{
+          key: key,
+          message: "capability #{inspect(capability_id)} must provide non-empty #{inspect(key)} metadata",
+          hint: "populate #{inspect(key)} with explicit support truth"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_capability_prerequisites(errors, %Types.Capability{id: id, prerequisites: prerequisites}) do
+    if is_list(prerequisites) and prerequisites != [] and Enum.all?(prerequisites, &non_empty_string?/1) do
+      errors
+    else
+      [
+        %{
+          key: :prerequisites,
+          message: "capability #{inspect(id)} must provide non-empty prerequisite strings",
+          hint: "publish explicit prerequisite truth for every capability entry"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp route_capability_declared?(capability_registry, capability) do
+    Map.has_key?(capability_registry, capability) or
+      Enum.any?(capability_registry, fn {_id, entry} -> capability in entry.legacy_ids end)
   end
 
   defp validate_route_packs(errors, route, pack_registry) do
@@ -257,6 +341,9 @@ defmodule Crosswake.Manifest.Validator do
       hint: attrs[:hint]
     })
   end
+
+  defp non_empty_string?(value) when is_binary(value), do: byte_size(String.trim(value)) > 0
+  defp non_empty_string?(_value), do: false
 
   defp present?(:pack_registry, value) when is_map(value), do: true
   defp present?(_key, value) when value in [nil, ""], do: false

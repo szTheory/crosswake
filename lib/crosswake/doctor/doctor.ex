@@ -340,7 +340,7 @@ defmodule Crosswake.Doctor do
       end)
 
     bridge = bridge_posture(manifest)
-    support = support_posture(shells)
+    support = support_posture(shells, manifest)
 
     findings =
       shell_findings(shells) ++
@@ -536,7 +536,7 @@ defmodule Crosswake.Doctor do
     }
   end
 
-  defp support_posture(shells) do
+  defp support_posture(shells, manifest) do
     proof_statuses =
       Enum.into(shells, %{}, fn {platform, shell} ->
         {platform, shell.proof.status}
@@ -552,7 +552,26 @@ defmodule Crosswake.Doctor do
     %{
       status: if(blocking_platforms == [], do: :supported, else: :verification_required),
       blocking_platforms: blocking_platforms,
-      proof_statuses: proof_statuses
+      proof_statuses: proof_statuses,
+      release_policy: release_policy_snapshot(manifest)
+    }
+  end
+
+  defp release_policy_snapshot(manifest) do
+    compatibility = manifest.compatibility
+    support_matrix = manifest.support_matrix
+
+    %{
+      crosswake_version: manifest.crosswake_version,
+      manifest_schema_version: compatibility.manifest_schema_version,
+      bridge_protocol_version: compatibility.bridge_protocol_version,
+      native_runtime_version: compatibility.native_runtime_version,
+      package_version_truth:
+        "Package versions alone do not determine support truth.",
+      companion_requirement:
+        "Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.",
+      package_surfaces: Enum.map(support_matrix.package_surfaces, & &1.surface),
+      change_classes: Enum.map(support_matrix.change_classes, & &1.change_class)
     }
   end
 

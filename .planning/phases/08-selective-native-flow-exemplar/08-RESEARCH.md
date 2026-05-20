@@ -421,12 +421,12 @@ assert Enum.count(native_routes, fn {_id, route} -> route.runtime == :native_scr
 | A1 | UI/state naming shortcuts are a likely implementer temptation in this phase. [ASSUMED] | Common Pitfalls | Low; it only affects wording emphasis, not architecture. |
 | A2 | Early implementation may try to reference tables/repos before resolving the Ecto dependency question. [ASSUMED] | Common Pitfalls | Medium; planning order could break if persistence scope is not decided first. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **How literal should the locked “Ecto-backed claim/submission state” decision be in Phase 8 execution?**
-   - What we know: The context calls for Ecto-backed state, but the repo currently does not depend on Ecto. [VERIFIED: .planning/phases/08-selective-native-flow-exemplar/08-CONTEXT.md] [VERIFIED: mix.exs]
-   - What's unclear: Whether the planner should add an example-host-only Ecto dependency slice now or treat the current fixture-backed host as sufficient for this exemplar. [VERIFIED: examples/phoenix_host/lib/crosswake_example/saas_portal/fixtures.ex] [VERIFIED: mix.exs]
-   - Recommendation: Make this a Wave 0 planning decision and do not let persistence details leak into later lane/proof/doc tasks without resolving it. [VERIFIED: mix.exs]
+   - Resolution: Treat D-26 literally, but keep the scope narrow. Phase 8 should add an example-host-only Ecto-backed claim and submission slice, backed by a small local SQLite repo under `examples/phoenix_host`, and must not widen the root `crosswake` application into a persistence surface. [VERIFIED: .planning/phases/08-selective-native-flow-exemplar/08-CONTEXT.md] [VERIFIED: examples/phoenix_host/mix.exs] [VERIFIED: examples/phoenix_host/config/config.exs]
+   - Why this resolves the risk: It satisfies the locked context, keeps the exemplar product-shaped, and preserves the project thesis that Crosswake core owns route/runtime contracts rather than app persistence. [VERIFIED: .planning/PROJECT.md] [VERIFIED: .planning/phases/08-selective-native-flow-exemplar/08-CONTEXT.md]
+   - Planning consequence: The first execution slice must explicitly include example-host Ecto wiring, repo/application setup, claim/submission schemas, and minimal migration or seed support before later LiveView, shell-proof, and doc work depends on that state boundary. [VERIFIED: examples/phoenix_host/mix.exs] [VERIFIED: examples/phoenix_host/config/config.exs]
 
 ## Environment Availability
 

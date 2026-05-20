@@ -1,7 +1,8 @@
 # Crosswake Install Guide
 
-Crosswake now exposes one install path for the Phoenix host and one scaffold-once path
-for the host-owned native shells:
+Crosswake keeps one primary package surface: `crosswake`. Companion-ready and
+docs-only surfaces stay explicit, but there is still one primary install path for the
+Phoenix host and one scaffold-once path for host-owned native shells.
 
 1. `mix crosswake.install`
 2. `mix crosswake.gen.shell ios|android`
@@ -10,22 +11,19 @@ for the host-owned native shells:
 5. `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks`
 
 The generated Phoenix and native files are `host-owned`, reviewable, and editable
-after generation. Crosswake owns the DSL, manifest contract, doctor surface, and
-proof posture. It does not re-own your app files after scaffolding.
+after generation. Crosswake owns the DSL, manifest contract, doctor surface, support
+matrix, and release-boundary policy. It does not re-own your app files after scaffolding.
+
+## Package Surface
+
+There is one primary `crosswake` package plus explicitly bounded companion-ready and
+docs-only surfaces. Package class does not override route ownership.
 
 If you are deciding whether your app pressure is mostly LiveView, one explicit
 native route, or one honest offline island, read
 [guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+for the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow profiles
 before drilling into the deeper shell, offline, or pack contracts.
-
-Phase 7 extends the checked-in proof lane with the `Phoenix SaaS Portal` exemplar:
-an approvals-led, host-owned auth surface that stays mostly `:live_view`, fails closed
-with `route unavailable`, and uses one bounded haptics confirmation seam. Phase 8
-further extends the shared host with the `Selective Native Flow` exemplar, isolating
-native capture and pack-gated `transfer.upload.prepare` into one explicitly typed route
-while surrounding workflow stays Phoenix-owned. Support status still lives in
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md);
-this guide stays the canonical proof-entry surface.
 
 ## Step 1: Install Crosswake Into A Phoenix Host
 
@@ -40,11 +38,8 @@ What it does:
 - patches `lib/<app>_web/router.ex` with explicit Crosswake marker lines
 - keeps LiveView router imports compatible with the Crosswake `live` macro
 - generates a host-owned policy module at `lib/<app>_web/crosswake/policy.ex`
-- writes `priv/crosswake/install_manifest.json` so later tooling can inspect what
-  Crosswake created or reused
-- points follow-up diagnostics at `mix crosswake.doctor`, `guides/compatibility.md`,
-  `guides/support_matrix.md`, `guides/native_shell.md`, `guides/bridge.md`, and
-  `guides/packs.md`
+- writes `priv/crosswake/install_manifest.json` so later tooling can inspect what Crosswake created or reused
+- points follow-up diagnostics at `mix crosswake.doctor`, `guides/compatibility.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/bridge.md`, and `guides/packs.md`
 
 Repeated installer runs are idempotent. Existing marker blocks are reused instead
 of duplicating router edits, and existing host-owned policy files are left alone.
@@ -62,21 +57,17 @@ What it does:
 
 - creates a host-owned shell project under `native/<platform>/crosswake_shell`
 - bundles the canonical manifest, activation, route-unavailable, and declared-pack fixtures
-- scaffolds manifest-first activation, explicit route unavailable UI, and the bounded
-  bridge channel for `app.info.get`, `haptics.impact`, and `files.pick`
+- scaffolds manifest-first activation, explicit route unavailable UI, and the bounded bridge channel
 
 What it does not do:
 
 - it does not safely regenerate over host edits
 - it does not turn unsupported routes into generic container fallback
-- it does not widen Phase 5 beyond explicit packs, explicit transfers, and one
-  native-capture `:native_screen`
+- it does not widen support beyond explicit, proof-backed surfaces
 
 Read [guides/native_shell.md](/Users/jon/projects/crosswake/guides/native_shell.md) for
 the shell contract and [guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md)
-for the bounded bridge contract. Read
-[guides/packs.md](/Users/jon/projects/crosswake/guides/packs.md) for the required-pack,
-transfer, and native-capture handoff contract.
+for the bounded bridge contract.
 
 ## Step 3: Verify Host And Manifest Truth
 
@@ -87,9 +78,7 @@ mix crosswake.doctor --router Elixir.YourAppWeb.Router
 ```
 
 This checks install state, manifest truth, shell generation posture, bounded bridge
-truth, and the fail-closed denial vocabulary. Without `--native-checks`, doctor keeps
-your local host verification explicit even though the published Phase 5 support matrix
-is already proof-backed.
+truth, release policy posture, and fail-closed denial vocabulary.
 
 ## Step 4: Run The Public Proof Lane
 
@@ -99,12 +88,7 @@ Run:
 bash script/verify_phase5_example_hosts.sh
 ```
 
-This is the primary proof artifact class Crosswake publishes for adopters. It verifies:
-
-- the checked-in Phoenix example host route truth
-- the checked-in Phoenix SaaS Portal boundary wording and proof hooks
-- the checked-in iOS example host build/install/launch path
-- the checked-in Android example host unit + connected-test path
+This is the primary proof artifact class Crosswake publishes for adopters.
 
 ## Step 5: Re-Run Local Generated-Host Verification
 
@@ -119,32 +103,55 @@ With `--native-checks`, doctor executes the generated-host verification hooks:
 - `script/verify_generated_ios_shell.sh`
 - `script/verify_generated_android_shell.sh`
 
-The generated-host hooks are secondary verification. They should stay green alongside
-the checked-in example hosts, but the public install path is anchored on the example
-hosts rather than private local scaffolding.
+## Do I need to rebuild?
 
-## Generated Artifact Inventory
+Use the four public change classes first, before raw version numbers:
 
-Phoenix host artifacts:
+- `docs-only` -> read the updated guidance and run docs integrity only
+- `core-only/no native rebuild` -> update core and rerun core contract + doctor/support proof
+- `compatibility-bump only` -> confirm your compatibility window and run fail-closed compatibility fixtures
+- `native or companion rebuild required` -> rebuild the affected shell or companion and rerun generated-shell or companion verification lanes
 
-- `lib/<app>_web/router.ex`
-- `lib/<app>_web/crosswake/policy.ex`
-- `priv/crosswake/install_manifest.json`
+The matching proof lanes are:
 
-Native shell artifacts:
+- docs integrity only
+- core contract + doctor/support proof
+- fail-closed compatibility fixtures
+- generated-shell or companion verification lanes
 
-- `native/ios/crosswake_shell/*`
-- `native/android/crosswake_shell/*`
-- `examples/phoenix_host/*`
-- `examples/ios_shell_host/*`
-- `examples/android_shell_host/*`
-- `script/verify_phase5_example_hosts.sh`
-- `script/verify_generated_ios_shell.sh`
-- `script/verify_generated_android_shell.sh`
+The generated support matrix remains authoritative:
+[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
 
-## Ownership Boundary
+## Docs-Only Install Boundary
 
-Crosswake deliberately stays Phoenix-first. Route truth lives in the router and
-manifest, runtime activation stays manifest-first, bridge calls stay typed and
-low-frequency, pack and transfer work stays foreground-first, and route unavailable
-behavior stays explicit. Crosswake is not a generic WebView wrapper.
+The install walkthrough is useful product guidance, but it is `not first-class supported`
+as a separate package surface. It teaches the primary `crosswake` install path and the
+boundary between host-owned artifacts and Crosswake-owned contract surfaces.
+
+### Route owner
+
+Install guidance does not change route ownership. Phoenix routes remain Phoenix-owned unless a route policy explicitly declares otherwise.
+
+### Why not core/companion
+
+This walkthrough explains package and artifact boundaries. It is not itself a runtime package, and it does not promote host scaffolding into a companion surface.
+
+### Host-owned responsibilities
+
+The host reviews generated files, owns shell project edits after generation, reruns proof hooks, and decides when local rebuilds are needed.
+
+### Prerequisites
+
+A Phoenix host, explicit router wiring, generated policy module, and the proof scripts referenced by the support matrix.
+
+### Denial behavior
+
+If install or compatibility truth is incomplete, `mix crosswake.doctor` reports blocking issues instead of inferring that the host is correctly wired.
+
+### Fallback behavior
+
+Crosswake falls back to explicit diagnostics and route-unavailable posture, not silent package promotion or generic shell behavior.
+
+### Native rebuild required
+
+Only when your change lands in the `native or companion rebuild required` class. Docs-only install guidance and core-only policy changes do not automatically imply a native rebuild.

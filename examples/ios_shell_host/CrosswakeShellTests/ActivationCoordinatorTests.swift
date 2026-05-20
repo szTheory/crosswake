@@ -22,6 +22,23 @@ final class ActivationCoordinatorTests: XCTestCase {
         XCTAssertEqual(session.capabilities["camera"], "1.0.0")
     }
 
+    func testDeepLinkLaunchAllowsLocalFirstHistoryRouteBeforeRuntimeMount() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
+        )
+
+        coordinator.openURL(URL(string: "https://example.crosswake.invalid/study/history")!)
+
+        guard case let .liveView(session) = coordinator.presentation else {
+            return XCTFail("expected live view presentation")
+        }
+
+        XCTAssertEqual(session.routeID, "local-first-study-history")
+        XCTAssertEqual(session.url.absoluteString, "https://example.crosswake.invalid/study/history")
+    }
+
     func testDeniedDeepLinkUsesExplicitInactiveRouteSurface() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
@@ -156,6 +173,24 @@ final class ActivationCoordinatorTests: XCTestCase {
                     )
                 ],
                 allowlistedOrigins: ["https://example.com"]
+            ),
+            "local-first-study-history": .init(
+                id: "local-first-study-history",
+                path: "/study/history",
+                runtime: "live_view",
+                capabilities: [],
+                packs: [],
+                transfers: [],
+                allowlistedOrigins: ["https://example.crosswake.invalid"]
+            ),
+            "local-first-study-session": .init(
+                id: "local-first-study-session",
+                path: "/study/session",
+                runtime: "offline_island",
+                capabilities: [],
+                packs: ["daily_study@1.0.0"],
+                transfers: [],
+                allowlistedOrigins: ["https://example.crosswake.invalid"]
             )
             ]
             )

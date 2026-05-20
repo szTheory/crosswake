@@ -29,9 +29,9 @@ Crosswake uses `v3.0` to lock the rules for capability breadth before shipping t
 
 Plans:
 
-- [ ] 11-01: Publish the capability-family inventory, route-owner rubric, and bounded-bridge versus native-screen decision rules.
-- [ ] 11-02: Extend manifest and support-matrix truth so capability-family metadata and support posture can be declared explicitly.
-- [ ] 11-03: Document example classifications for first-target capability families and explicit defer rules for out-of-thesis surfaces.
+- [x] 11-01: Publish the capability-family inventory, route-owner rubric, and bounded-bridge versus native-screen decision rules.
+- [x] 11-02: Extend manifest and support-matrix truth so capability-family metadata and support posture can be declared explicitly.
+- [x] 11-03: Document example classifications for first-target capability families and explicit defer rules for out-of-thesis surfaces.
 
 **Success criteria:**
 1. Phoenix teams can place candidate capability families into bounded bridge, native screen, or deferred buckets using one published rubric.
@@ -47,9 +47,9 @@ Plans:
 
 Plans:
 
-- [ ] 12-01: Publish the packaging ledger covering `core`, `companion`, `example/docs-only`, and deferred surfaces.
-- [ ] 12-02: Define companion-ready release/versioning policy for manifest, shell, and package compatibility changes.
-- [ ] 12-03: Publish rebuild, compatibility-bump, and docs-only change rules for future capability and companion work.
+- [x] 12-01: Publish the packaging ledger covering `core`, `companion`, `example/docs-only`, and deferred surfaces.
+- [x] 12-02: Define companion-ready release/versioning policy for manifest, shell, and package compatibility changes.
+- [x] 12-03: Publish rebuild, compatibility-bump, and docs-only change rules for future capability and companion work.
 
 **Success criteria:**
 1. Adopters can tell which major surfaces belong in `core` and which require first-party companions or examples.
@@ -115,11 +115,11 @@ Plans:
 
 ## ▶ Next Up
 
-**Phase 11: Capability Taxonomy And Contract Rubric** — define the capability-family rubric and manifest/support-matrix vocabulary that future breadth depends on.
+**Phase 13: Commerce And Entitlement Contract** — define a Phoenix-facing commerce seam that preserves backend-owned entitlement truth and keeps provider-specific logic outside core.
 
-`$gsd-discuss-phase 11`
+`$gsd-discuss-phase 13`
 
 Also available:
-- `$gsd-plan-phase 11` — skip discussion and plan directly
+- `$gsd-plan-phase 13` — skip discussion and plan directly
 
 ---

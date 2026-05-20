@@ -25,7 +25,8 @@ defmodule Crosswake.RouterTest do
 
   test "all public runtimes round-trip through Phoenix router introspection" do
     assert_route_info("/dashboard", "dashboard", :live_view)
-    assert_route_info("/library", "library", :offline_island)
+    assert_route_info("/library", "library", :live_view)
+    assert_route_info("/study-session", "study-session", :offline_island)
     assert_route_info("/camera", "camera", :native_screen)
   end
 

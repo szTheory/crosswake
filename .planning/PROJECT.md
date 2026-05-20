@@ -51,11 +51,11 @@ It also hardened the product surface around those lanes through doctor checks, p
 - [x] Validate the v1 substrate against three adopter-shaped exemplar lanes: Phoenix-backed SaaS portal, selective-native mobile flow, and local-first study or content flow. Validated across Phases 7-10.
 - [x] Harden route-policy, manifest, shell, bridge, pack, transfer, and offline contracts where exemplar pressure exposes adopter-facing gaps. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
 - [x] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
+- [x] Freeze capability-family taxonomy and route-owner decision rules before shipping new capability families. Validated in Phase 11: Capability Taxonomy And Contract Rubric.
+- [x] Classify `core`, `companion`, `example/docs-only`, and deferred surfaces with explicit release and rebuild rules. Validated in Phase 12: Packaging Ledger And Release Boundaries.
 
 ### Active
 
-- [ ] Freeze capability-family taxonomy and route-owner decision rules before shipping new capability families.
-- [ ] Classify `core`, `companion`, `example/docs-only`, and deferred surfaces with explicit release and rebuild rules.
 - [ ] Define Phoenix-facing commerce and entitlement seams that keep entitlement truth backend-owned.
 - [ ] Extend doctor, support-matrix, and proof-lane posture so future capability claims remain honest.
 
@@ -106,7 +106,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Publish one adopter-profile matrix plus a shared example-host lane contract before exemplar implementation | Locking profile vocabulary, non-goals, and artifact boundaries first reduces scope drift in Phases 7-10 | Validated in Phase 6 |
 | Prove the Phoenix SaaS lane as one authenticated LiveView-first approvals slice with one bounded haptics seam | The first exemplar needed credible product pressure without drifting into offline, transfer-first, or native-screen breadth | Validated in Phase 7 |
 | Route-pattern deep links in checked-in shells must match manifest paths with dynamic segments | The SaaS approval route exposed that exact-path matching denied valid `/saas/.../:id` deep links and broke proof-backed shell activation | Validated in Phase 7 |
-| Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | — Pending in Milestone v3.0 |
+| Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | Validated through Phases 11-12; commerce and support extensions remain active |
 
 ## Evolution
 
@@ -126,4 +126,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 after initializing milestone v3.0 Capability Contract And Packaging*
+*Last updated: 2026-05-19 after completing Phase 12 Packaging Ledger And Release Boundaries*

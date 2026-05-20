@@ -5,8 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLCHAIN_ROOT="${HOME}/.crosswake/android-toolchain"
 SDK_ROOT="${ANDROID_SDK_ROOT:-${HOME}/.crosswake/android-sdk}"
 JDK_ROOT="${JAVA_HOME:-${TOOLCHAIN_ROOT}/temurin-17}"
+PROJECT_ROOT_INPUT="${CROSSWAKE_ANDROID_PROJECT_ROOT:-}"
 CMDLINE_TOOLS_ZIP="commandlinetools-mac-14742923_latest.zip"
 CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/${CMDLINE_TOOLS_ZIP}"
+AVD_NAME="crosswakeApi34Verify"
+AVD_SERIAL="emulator-5560"
+AVD_PORT="5560"
 
 download() {
   local url="$1"
@@ -125,23 +129,96 @@ install_android_tools_if_needed() {
     "system-images;android-34;aosp_atd;arm64-v8a"
 }
 
+create_avd_if_needed() {
+  local avd_dir="${HOME}/.android/avd/${AVD_NAME}.avd"
+  local avd_ini="${HOME}/.android/avd/${AVD_NAME}.ini"
+
+  if [[ -f "${avd_ini}" && -d "${avd_dir}" ]]; then
+    return
+  fi
+
+  avdmanager delete avd -n "${AVD_NAME}" >/dev/null 2>&1 || true
+  printf 'no\n' | avdmanager create avd \
+    -n "${AVD_NAME}" \
+    -k "system-images;android-34;aosp_atd;arm64-v8a" \
+    -d pixel_6 >/dev/null
+}
+
+wait_for_boot() {
+  local serial="$1"
+  local attempts=120
+  local boot_completed=""
+
+  adb -s "${serial}" wait-for-device >/dev/null
+
+  while (( attempts > 0 )); do
+    boot_completed="$(adb -s "${serial}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+
+    if [[ "${boot_completed}" == "1" ]]; then
+      return 0
+    fi
+
+    sleep 2
+    attempts=$((attempts - 1))
+  done
+
+  echo "error: emulator ${serial} did not finish booting" >&2
+  return 1
+}
+
+start_emulator() {
+  local log_file="$1"
+
+  adb kill-server >/dev/null 2>&1 || true
+  rm -f "${log_file}"
+
+  emulator @"${AVD_NAME}" \
+    -port "${AVD_PORT}" \
+    -no-window \
+    -no-boot-anim \
+    -no-audio \
+    -gpu swiftshader_indirect \
+    -no-snapshot-load \
+    -no-snapshot-save \
+    -wipe-data \
+    >"${log_file}" 2>&1 &
+
+  EMULATOR_PID=$!
+  wait_for_boot "${AVD_SERIAL}"
+}
+
+stop_emulator() {
+  if [[ -n "${EMULATOR_PID:-}" ]] && kill -0 "${EMULATOR_PID}" >/dev/null 2>&1; then
+    adb -s "${AVD_SERIAL}" emu kill >/dev/null 2>&1 || true
+    wait "${EMULATOR_PID}" >/dev/null 2>&1 || true
+  fi
+}
+
 main() {
   install_jdk_if_needed
   install_android_tools_if_needed
+  create_avd_if_needed
 
   local tmpdir=""
+  local project_root=""
   tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-android-shell.XXXXXX")"
-  trap '[[ -n "${tmpdir:-}" ]] && rm -rf "${tmpdir}"' EXIT
+  local emulator_log="${TMPDIR:-/tmp}/crosswake-android-emulator.log"
+  trap 'stop_emulator; [[ -n "${tmpdir:-}" ]] && rm -rf "${tmpdir}"' EXIT
 
-  cd "${ROOT_DIR}"
-  mix crosswake.gen.shell android --target "${tmpdir}" >/dev/null
+  if [[ -n "${PROJECT_ROOT_INPUT}" ]]; then
+    project_root="$(cd "${ROOT_DIR}" && cd "${PROJECT_ROOT_INPUT}" && pwd)"
+  else
+    cd "${ROOT_DIR}"
+    mix crosswake.gen.shell android --target "${tmpdir}" >/dev/null
+    project_root="${tmpdir}/native/android/crosswake_shell"
+  fi
 
-  local project_root="${tmpdir}/native/android/crosswake_shell"
   printf 'sdk.dir=%s\n' "${ANDROID_SDK_ROOT//:/\\:}" > "${project_root}/local.properties"
 
+  start_emulator "${emulator_log}"
+
   cd "${project_root}"
-  ./gradlew --stacktrace testDebugUnitTest crosswakeApi34DebugAndroidTest \
-    -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
+  ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --stacktrace testDebugUnitTest connectedDebugAndroidTest
 }
 
 main "$@"

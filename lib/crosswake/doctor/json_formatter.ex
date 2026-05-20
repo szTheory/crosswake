@@ -31,11 +31,27 @@ defmodule Crosswake.Doctor.JSONFormatter do
         |> Map.get(:proof_statuses, %{})
         |> Enum.into(%{}, fn {platform, proof_status} ->
           {Atom.to_string(platform), format_proof_status(proof_status)}
-        end)
+        end),
+      release_policy: format_release_policy(Map.get(support, :release_policy))
     }
   end
 
   defp format_support(_support), do: %{}
+
+  defp format_release_policy(nil), do: nil
+
+  defp format_release_policy(release_policy) do
+    %{
+      crosswake_version: release_policy.crosswake_version,
+      manifest_schema_version: release_policy.manifest_schema_version,
+      bridge_protocol_version: release_policy.bridge_protocol_version,
+      native_runtime_version: release_policy.native_runtime_version,
+      package_version_truth: release_policy.package_version_truth,
+      companion_requirement: release_policy.companion_requirement,
+      package_surfaces: release_policy.package_surfaces,
+      change_classes: release_policy.change_classes
+    }
+  end
 
   defp format_shells(shells) do
     Enum.into(shells, %{}, fn {platform, shell} ->

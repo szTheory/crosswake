@@ -1,0 +1,18 @@
+{
+  "code": "pack_incompatible",
+  "details": {
+    "installed_packs": {},
+    "required_pack": "lesson_library@1.2.0"
+  },
+  "hint": "install or update the lesson library pack before activating the route",
+  "message": "The shell is missing a compatible declared pack for this route.",
+  "reason": "pack_incompatible",
+  "recovery": {
+    "actions": [
+      "retry",
+      "update_app"
+    ],
+    "mode": "fail_closed"
+  },
+  "route_id": "library"
+}

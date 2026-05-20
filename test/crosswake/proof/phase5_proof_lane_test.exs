@@ -1,25 +1,16 @@
+Code.require_file("../../support/example_host.exs", __DIR__)
+
 defmodule Crosswake.Proof.Phase5ProofLaneTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.Manifest
 
-  test "checked-in Phoenix example host compiles the public pack, transfer, and native capture route surfaces" do
-    for path <- [
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/fixtures.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/accounts.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/auth.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/on_mount.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/dashboard_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/account_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approvals_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/saas_portal/settings_live.ex",
-          "examples/phoenix_host/lib/crosswake_example/router.ex"
-        ] do
-      Code.require_file(Path.expand(path, File.cwd!()))
-    end
+  setup_all do
+    Crosswake.TestSupport.ExampleHost.load!()
+    :ok
+  end
 
+  test "checked-in Phoenix example host compiles the public pack, transfer, and native capture route surfaces" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(CrosswakeExample.Router)
 
     assert manifest.routes["library"].runtime == :live_view
@@ -37,7 +28,9 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
 
     assert manifest.routes["saas-dashboard"].runtime == :live_view
     assert manifest.routes["saas-approval"].runtime == :live_view
-    assert manifest.routes["saas-approval"].capabilities == ["haptics"]
+    assert manifest.routes["saas-approval"].capabilities == ["haptics.impact"]
+    assert manifest.routes["local-first-study-session"].path == "/study/session"
+    assert manifest.routes["local-first-study-history"].path == "/study/history"
   end
 
   test "checked-in iOS and Android example hosts stay aligned to the same example route truth" do
@@ -56,18 +49,25 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
     assert router =~ "native_screen"
     assert router =~ "capture_upload"
     assert router =~ "saas-approval"
+    assert router =~ "local-first-study-session"
     assert approval_live =~ "haptics.impact"
 
     assert ios_activation =~ "\"route_id\": \"selective-native-claim-capture\""
     assert ios_activation =~ "\"camera\": \"1.0.0\""
     assert ios_manifest =~ "\"selective-native-claim-capture\""
+    assert ios_manifest =~ "\"local-first-study-session\""
+    assert ios_manifest =~ "\"local-first-study-history\""
     assert ios_tests =~ "\"camera\": \"1.0.0\""
     assert ios_tests =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
+    assert ios_tests =~ "https://example.crosswake.invalid/study/history"
 
     assert android_activation =~ "\"route_id\": \"selective-native-claim-capture\""
     assert android_activation =~ "\"camera\": \"1.0.0\""
     assert android_manifest =~ "\"selective-native-claim-capture\""
+    assert android_manifest =~ "\"local-first-study-session\""
+    assert android_manifest =~ "\"local-first-study-history\""
     assert android_instrumented =~ "https://example.crosswake.invalid/saas/approvals/approval-1"
+    assert android_instrumented =~ "https://example.crosswake.invalid/study/history"
   end
 
   test "phase 5 proof workflow runs checked-in examples before generated hosts" do

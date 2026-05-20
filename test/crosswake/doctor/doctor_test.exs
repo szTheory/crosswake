@@ -85,6 +85,11 @@ defmodule Crosswake.DoctorTest do
     assert report.shells.android.proof.status == :verification_required
     assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
+    assert report.support.release_policy.crosswake_version == "0.1.0"
+    assert report.support.release_policy.manifest_schema_version == "1.0.0"
+    assert report.support.release_policy.bridge_protocol_version == "1.0.0"
+    assert report.support.release_policy.native_runtime_version == "1.0.0"
+    assert report.support.release_policy.package_version_truth =~ "Package versions alone"
     assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
     assert report.offline.telemetry.metadata_keys ==
              Enum.map(Telemetry.metadata_keys(), &Atom.to_string/1)
@@ -140,6 +145,11 @@ defmodule Crosswake.DoctorTest do
     decoded = Jason.decode!(json)
 
     assert human =~ "support posture: supported"
+    assert human =~ "release policy:"
+    assert human =~ "manifest_schema_version=1.0.0"
+    assert human =~ "bridge_protocol_version=1.0.0"
+    assert human =~ "native_runtime_version=1.0.0"
+    assert human =~ "Package versions alone do not determine support truth"
     assert human =~ "route unavailable=yes"
     assert human =~ "bridge posture: crosswake.bridge@1.0.0"
     assert human =~ "offline posture: supported"
@@ -148,6 +158,10 @@ defmodule Crosswake.DoctorTest do
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
+    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["bridge_protocol_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["package_version_truth"] =~ "Package versions alone"
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
