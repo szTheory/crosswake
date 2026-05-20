@@ -10,29 +10,20 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-Crosswake shipped `v2.0 Adopter Stress Profiles` on `2026-05-19`.
+Crosswake shipped `v3.0 Capability Contract And Packaging` on `2026-05-20`.
 
-`v2.0` validated the route-policy substrate against three realistic adopter shapes:
+`v3.0` formalized capability taxonomy, package boundaries, commerce seams, and support truth to prepare the library for future capability breadth without breaking explicit ownership contracts.
 
-- a Phoenix SaaS portal lane that stays mostly LiveView-owned
-- a selective-native claims-evidence corridor with one explicit `:native_screen` route
-- a local-first study flow with an offline-island session and cached read-only history
+Awaiting definition of the next milestone via `$gsd-new-milestone`.
 
-It also hardened the product surface around those lanes through doctor checks, per-profile verification scripts, CI, and localized support guidance.
+## Current Milestone: TBD
 
-`v3.0 Capability Contract And Packaging` is now active. This milestone is intentionally about contract and package-boundary truth before feature-breadth delivery.
-
-## Current Milestone: v3.0 Capability Contract And Packaging
-
-**Goal:** lock capability taxonomy, package boundaries, commerce seam rules, and support-proof posture before broadening Crosswake's native and commerce surface area.
+**Goal:** Pending.
 
 **Target features:**
-- Freeze capability-family taxonomy, package boundaries, and manifest/support truth before broad feature expansion.
-- Define the first capability families and first-party companions Crosswake should support officially after the exemplar milestone.
-- Design Phoenix-facing commerce and entitlement seams that stay explicit, typed, bounded, and backend-truthful.
-- Extend proof lanes, diagnostics, and support truth so future native and commerce claims stay as honest as the current substrate claims.
+- Pending.
 
-**Why now:** `v2.0` proved that the architecture holds under realistic adopter pressure. The next leverage point is reducing bespoke native and commerce work for Phoenix teams while preserving explicit route ownership and bounded bridge semantics. The biggest immediate risk is adding feature breadth before locking package boundaries, support posture, and compatibility expectations.
+**Why now:** Pending.
 
 ## Requirements
 
@@ -53,11 +44,12 @@ It also hardened the product surface around those lanes through doctor checks, p
 - [x] Publish proof, diagnostics, and guidance that make exemplar support and rough-edge truth part of the public product contract. Validated in Phase 10: Cross-Profile Hardening, Proof, And Guidance.
 - [x] Freeze capability-family taxonomy and route-owner decision rules before shipping new capability families. Validated in Phase 11: Capability Taxonomy And Contract Rubric.
 - [x] Classify `core`, `companion`, `example/docs-only`, and deferred surfaces with explicit release and rebuild rules. Validated in Phase 12: Packaging Ledger And Release Boundaries.
+- [x] Define Phoenix-facing commerce and entitlement seams that keep entitlement truth backend-owned. Validated in Phase 13: Commerce And Entitlement Contract.
+- [x] Extend doctor, support-matrix, and proof-lane posture so future capability claims remain honest. Validated in Phase 14: Proof, Doctor, And Support Truth.
 
 ### Active
 
-- [ ] Define Phoenix-facing commerce and entitlement seams that keep entitlement truth backend-owned.
-- [ ] Extend doctor, support-matrix, and proof-lane posture so future capability claims remain honest.
+- *(None currently)*
 
 ### Out of Scope
 
