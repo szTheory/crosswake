@@ -35,10 +35,11 @@ The first Phase 11 inventory is:
 - `media_capture`
 - `scanner`
 - `document_scan`
-- `paywall`
-- `purchase`
-- `restore`
+- `paywall_entry`
+- `purchase_intent`
+- `restore_intent`
 - `entitlement_snapshot`
+- `reconciliation_evidence`
 
 `deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
 
@@ -73,13 +74,19 @@ Representative native-screen-first families:
 Some surfaces are valid capability-family vocabulary without being honest Phase 11
 core support claims.
 
-- `paywall`, `purchase`, `restore`, and `entitlement_snapshot` are meaningful
+- `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` are meaningful
   taxonomy entries, but entitlement truth remains backend-owned and provider/store
   boundaries stay explicit.
 - Control-plane or provider-heavy surfaces belong in `backend_seam` posture rather
   than route-local bridge authority.
 - Families that would force broad scanner, storefront, or review-heavy support
   claims stay deferred until Crosswake can prove them honestly.
+
+## Commerce Boundaries
+
+- `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` are `core` contract vocabulary
+- StoreKit, Play Billing, RevenueCat-style SDK glue, provider verification clients, webhook helpers, and native purchase command/event contracts are `companion`
+- silent web checkout or generic WebView fallback for digital goods is unsupported
 
 ## Family Naming Rules
 
@@ -136,7 +143,7 @@ pressure explicit before Crosswake widens support claims.
 
 ### Route owner
 
-`paywall`, `purchase`, `restore`, and `entitlement_snapshot` remain Phoenix/backend-owned seams. A docs-only classification does not authorize the device to own entitlement truth.
+`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` remain Phoenix/backend-owned seams. A docs-only classification does not authorize the device to own entitlement truth.
 
 ### Why not core/companion
 
@@ -166,16 +173,16 @@ Usually yes once a real storefront adapter or native provider SDK enters the pic
 
 Crosswake keeps the first example set narrow and exemplar-aligned:
 
-- `deep_link`, `app_info`, `haptics`, and `share` are the first canonical `core` examples.
+- `deep_link`, `app_info`, `haptics`, `share`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` are the first canonical `core` examples.
 - `media_capture`, `notification_token`, `rollout`, and `audit` are `companion`-leaning or boundary-heavy examples.
-- `permissions.status`, `auth`, `paywall`, `purchase`, `restore`, and `entitlement_snapshot` are `example/docs-only` guidance in Phase 11.
+- `permissions.status` and `auth` are `example/docs-only` guidance in Phase 13.
 - `scanner` and `document_scan` are explicit `defer` examples for now.
 
 ## Package Class Examples
 
-- `core`: `deep_link`, `app_info`, `haptics`, `share`
+- `core`: `deep_link`, `app_info`, `haptics`, `share`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, `reconciliation_evidence`
 - `companion`: `media_capture`, `notification_token`, `rollout`, `audit`
-- `example/docs-only`: `permissions.status`, `auth`, `paywall`, `purchase`, `restore`, `entitlement_snapshot`
+- `example/docs-only`: `permissions.status`, `auth`
 - `defer`: `scanner`, `document_scan`
 
 ## Explicit Defers

@@ -42,6 +42,8 @@ Future companions must declare minimum compatible ranges for:
 That keeps companion support explicit and fail closed instead of pretending every
 published package version can interoperate safely.
 
+Storefront-sensitive commerce work follows this contract. Provider adapters and native SDK wrappers carry `native or companion rebuild required` guidance and explicit compatibility declarations, rather than prose-only notes. You must rebuild when commerce companion prerequisites change.
+
 ## Release Choreography
 
 Use the compatibility axes to describe release impact.

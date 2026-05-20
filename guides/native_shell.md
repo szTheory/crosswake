@@ -89,6 +89,10 @@ native screen surface where native code owns the session loop.
 Crosswake does not silently fall back into a bounded web upload flow. If a route
 declares native capture, the shell opens the declared native surface or fails closed.
 
+## Native Commerce Corridors
+
+Declared native commerce routes require the appropriate companion/runtime line and must show explicit fail-closed unavailable guidance when prerequisites are missing. Storefront-sensitive flows like purchase confirmation or native SDK loops run inside explicit native surfaces. Crosswake does not silently fall back to generic web checkouts when native commerce prerequisites are unmet.
+
 ## Bridge Boundary
 
 The shell bridge stays bounded to:

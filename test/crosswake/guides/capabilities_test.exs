@@ -11,10 +11,11 @@ defmodule Crosswake.Guides.CapabilitiesTest do
     "media_capture",
     "scanner",
     "document_scan",
-    "paywall",
-    "purchase",
-    "restore",
-    "entitlement_snapshot"
+    "paywall_entry",
+    "purchase_intent",
+    "restore_intent",
+    "entitlement_snapshot",
+    "reconciliation_evidence"
   ]
 
   test "capability guide publishes the locked ownership-first rubric and family inventory" do
@@ -53,8 +54,8 @@ defmodule Crosswake.Guides.CapabilitiesTest do
     assert guide =~ "core"
     assert guide =~ "companion"
     assert guide =~ "example/docs-only"
-  end
-
+    assert guide =~ "silent web checkout or generic WebView fallback for digital goods is unsupported"
+    end
   test "bridge and native shell guides stay aligned to the family-first capability posture" do
     bridge = File.read!("guides/bridge.md")
     native_shell = File.read!("guides/native_shell.md")

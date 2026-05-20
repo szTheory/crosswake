@@ -33,6 +33,13 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "Phoenix/native consumers refresh from that snapshot"
   end
 
+  test "documents explicit commerce moment classifications", %{content: content} do
+    assert content =~ "Commerce Moment Map"
+    assert content =~ "Phoenix-owned"
+    assert content =~ "Native-screen required"
+    assert content =~ "Thin exception case"
+  end
+
   test "documents explicit offline non-goals and split-brain rejection copy", %{content: content} do
     assert content =~ "offline purchase replay"
     assert content =~ "device-local authority"

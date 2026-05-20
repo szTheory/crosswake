@@ -20,6 +20,14 @@ Device success is evidence, not entitlement. Missing or stale evidence must not 
 
 States such as `pending_purchase`, `pending_restore`, and `awaiting_verification` are reconciliation states, not automatic access grants. You must explicitly evaluate `authority_state` vs `access_state` to know if a user can access a feature.
 
+## Commerce Moment Map
+
+To keep boundaries explicit, Crosswake classifies commerce moments into these ownership corridors:
+
+- **Phoenix-owned:** pricing, subscription status, entitlement-gated checks, FAQ, billing/account history, post-reconciliation account surfaces.
+- **Native-screen required or strong default:** storefront purchase confirmation, restore choreography, offer-code / redeem flows, provider SDK-owned session loops.
+- **Thin exception case:** bounded one-shot trigger from a Phoenix-owned route into native commerce UI, only when the surface is genuinely sheet-like (and not a complex multi-step native stack).
+
 ## The Canonical Reconciliation Flow
 
 Crosswake requires a backend reconciliation inbox plus an authoritative entitlement projection. The canonical flow is:

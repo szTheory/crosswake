@@ -46,11 +46,11 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| media_capture | native_screen | companion |"
     assert guide =~ "| notification_token | bounded_bridge | companion |"
     assert guide =~ "| permissions.status | bounded_bridge | example/docs-only |"
-    assert guide =~ "| paywall_entry | backend_seam | example/docs-only |"
-    assert guide =~ "| purchase_intent | backend_seam | example/docs-only |"
-    assert guide =~ "| restore_intent | backend_seam | example/docs-only |"
-    assert guide =~ "| entitlement_snapshot | backend_seam | example/docs-only |"
-    assert guide =~ "| reconciliation_evidence | backend_seam | example/docs-only |"
+    assert guide =~ "| paywall_entry | backend_seam | core | merge-blocking"
+    assert guide =~ "| purchase_intent | backend_seam | core | merge-blocking"
+    assert guide =~ "| restore_intent | backend_seam | core | merge-blocking"
+    assert guide =~ "| entitlement_snapshot | backend_seam | core | merge-blocking"
+    assert guide =~ "| reconciliation_evidence | backend_seam | core | merge-blocking"
     assert guide =~ "| scanner | native_screen | defer |"
   end
 

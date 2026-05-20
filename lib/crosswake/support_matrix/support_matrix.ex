@@ -208,7 +208,7 @@ defmodule Crosswake.SupportMatrix do
         surface: "Phoenix-facing commerce seam vocabulary",
         package_class: :core,
         why:
-          "`paywall`, `purchase`, `restore`, and `entitlement_snapshot` stay normalized and backend-truthful in core without embedding storefront providers.",
+          "`paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers.",
         release_burden:
           "Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package.",
         guide: "guides/capabilities.md#packaging-ledger"
