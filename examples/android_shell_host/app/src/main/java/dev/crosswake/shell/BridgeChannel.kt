@@ -9,6 +9,7 @@ import org.json.JSONObject
 enum class BridgeCommand(val wireValue: String) {
     APP_INFO_GET("app.info.get"),
     HAPTICS_IMPACT("haptics.impact"),
+    SHARE_INVOKE("share.invoke"),
     FILES_PICK("files.pick"),
     TRANSFER_IMPORT("transfer.import"),
     TRANSFER_EXPORT("transfer.export"),
@@ -34,6 +35,7 @@ class BridgeChannel(
     private val transferCoordinator: TransferCoordinator?,
     private val appInfoProvider: () -> Map<String, String>,
     private val hapticsHandler: (String) -> Unit,
+    private val shareHandler: (Map<String, String>) -> Unit,
     private val filesPickHandler: (Map<String, String>) -> Map<String, String>
 ) {
     companion object {
@@ -97,7 +99,7 @@ class BridgeChannel(
                 request,
                 "undeclared_capability",
                 "The bridge command is outside the bounded transfer contract.",
-                "Use app.info.get, haptics.impact, files.pick, transfer.import, transfer.export, transfer.download, or transfer.upload.prepare only."
+                "Use app.info.get, haptics.impact, share.invoke, files.pick, transfer.import, transfer.export, transfer.download, or transfer.upload.prepare only."
             )
 
         if (request.capability != command.capability) {
@@ -134,6 +136,16 @@ class BridgeChannel(
                     val style = request.payload["style"] ?: "medium"
                     hapticsHandler(style)
                     ok(request, mapOf("style" to style))
+                }
+            }
+
+            BridgeCommand.SHARE_INVOKE -> {
+                val requiredCapabilityVersion = session.capabilities[command.capability]
+                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                    deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
+                } else {
+                    shareHandler(request.payload)
+                    ok(request, emptyMap())
                 }
             }
 
