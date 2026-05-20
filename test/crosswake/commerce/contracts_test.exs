@@ -86,4 +86,15 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert evidence.source == :device_callback
     end
   end
+
+  describe "commerce behaviour" do
+    test "defines thin orchestration seam" do
+      callbacks = Crosswake.Commerce.behaviour_info(:callbacks)
+      
+      assert {:submit_purchase_intent, 1} in callbacks
+      assert {:submit_restore_intent, 1} in callbacks
+      assert {:ingest_reconciliation_evidence, 1} in callbacks
+      assert {:fetch_entitlement_snapshot, 1} in callbacks
+    end
+  end
 end
