@@ -49,3 +49,13 @@ Crosswake intentionally explicitly avoids:
 - **device-local authority**: Storefront device callbacks cannot directly transition access state in the core. They provide evidence to the backend.
 - **split-brain truth**: We explicitly reject split-brain paths where client callbacks and server notifications maintain separate truths. Both must feed the same authoritative reconciliation boundary.
 - **provider-specific core logic**: Raw Apple, Google, or RevenueCat enum details must not leak into core snapshot contracts.
+
+## Reviewer/Storefront Notes
+
+Commerce requires explicit reviewer playbooks. Storefront reviewers will scrutinize purchase and restore flows. Adopters must prepare clear reviewer notes explaining how to trigger paywalls, how test accounts are provisioned, and how the backend handles sandbox vs. production receipts. Crosswake core limits its scope to the reconciliation envelope, meaning the storefront adapter's behavior must be documented and proven by the host app team before submission.
+
+## Fallback Behavior
+
+When commerce capabilities are unavailable, undeclared, or missing evidence, the fallback involves returning to a Phoenix-owned baseline or graceful degradation. Fallback remains a Phoenix-owned guidance or a deliberate native-screen requirement without device authority. Never fail open. If the native commerce shell is unreachable, fall back to Phoenix-owned paywall guidance without attempting unsafe web-based native billing bridges.
+
+*See [guides/capabilities.md](capabilities.md) for the broader capabilities contract and ownership rubric.*

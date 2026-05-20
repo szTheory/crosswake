@@ -53,6 +53,16 @@ Use the compatibility axes to describe release impact.
 - Native-code or entitlement change: move to a new `native_runtime_version` line and mark the change as rebuild required.
 - Compatibility-window narrowing: treat it as `compatibility-bump only`, publish the new supported ranges, and keep older combinations fail closed.
 
+## Rebuild Guidance
+
+Crosswake enforces explicit rebuild guidance to maintain honest support claims and compatibility boundaries:
+
+- **Bumping `native_runtime_version`:** Mandates an explicit native rebuild and submission to the app stores.
+- **Bumping `bridge_protocol_version`:** Requires generating and publishing a compatible shell artifact update, followed by an explicit rebuild.
+- **Adding new `companion` packages:** Especially native-backed ones, requires updating the shell project dependencies, adjusting entitlements, and performing an explicit native rebuild and submission.
+
+You cannot bypass these rules with hot code pushes or cached manifests. Changing runtime native dependencies or bridge protocols requires a full native build cycle.
+
 ## Runtime Line Rules
 
 iOS and Android shell artifacts publish against the same runtime line even if their

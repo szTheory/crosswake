@@ -190,3 +190,14 @@ Crosswake keeps the first example set narrow and exemplar-aligned:
 `scanner` and `document_scan` stay deferred because they imply heavier native
 ownership, policy burden, and broader proof/support-matrix breadth than Crosswake
 can honestly claim today.
+
+## Reviewer/Storefront Notes
+
+When adopting native capabilities, especially `native_screen` ones, you must prepare explicit reviewer notes for App Store and Play Store submissions. Reviewers will check whether your requested capabilities (e.g., haptics, media capture, permissions) match the app's core functionality. If your Crosswake app requires a capability, you must provide a clear reviewer playbook demonstrating the flow.
+
+## Fallback Behavior
+
+Crosswake requires explicit fallback behavior for any declared capability. 
+- If a capability is undeclared, unavailable, or denied by the bridge, the route must gracefully degrade.
+- Fallback typically involves returning to a Phoenix-owned baseline (e.g., showing a standard web upload form instead of a native media capture screen, or standard UI state without haptics).
+- Never fail open. If a required native interaction is missing, the route should remain bounded and explicit about its failure state.
