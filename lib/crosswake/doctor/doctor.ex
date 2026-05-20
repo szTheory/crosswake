@@ -631,7 +631,7 @@ defmodule Crosswake.Doctor do
           shells: shell_support_details(shells)
         }
       )
-    ]
+    ] ++ capability_posture_findings(support)
   end
 
   defp support_posture_findings(%{status: :verification_required} = support, shells) do
@@ -649,7 +649,45 @@ defmodule Crosswake.Doctor do
           shells: shell_support_details(shells)
         }
       )
-    ]
+    ] ++ capability_posture_findings(support)
+  end
+
+  defp capability_posture_findings(support) do
+    {merge_blocking, advisory} =
+      support.release_policy.capability_families
+      |> Enum.split_with(&(&1.proof_class == :merge_blocking))
+
+    mb_check =
+      if merge_blocking != [] do
+        check(
+          if(support.status == :supported, do: :advisory, else: :error),
+          "capability_proof_merge_blocking",
+          "capability_posture",
+          "merge-blocking capability proofs are required for: #{Enum.map(merge_blocking, & &1.family) |> Enum.join(", ")}",
+          "merge-blocking capability proofs must pass to claim support truth",
+          %{
+            capabilities: Enum.map(merge_blocking, & &1.family),
+            proof_class: "merge_blocking"
+          }
+        )
+      end
+
+    adv_check =
+      if advisory != [] do
+        check(
+          :advisory,
+          "capability_proof_advisory",
+          "capability_posture",
+          "advisory capability proofs are abstract for: #{Enum.map(advisory, & &1.family) |> Enum.join(", ")}",
+          "advisory capabilities do not block standard CI but require environment-sensitive verification before widening claims",
+          %{
+            capabilities: Enum.map(advisory, & &1.family),
+            proof_class: "advisory"
+          }
+        )
+      end
+
+    [mb_check, adv_check] |> Enum.reject(&is_nil/1)
   end
 
   defp shell_generation_finding(shell) do
