@@ -60,6 +60,35 @@ defmodule Crosswake.Doctor.Formatter do
          bridge_protocol_version: bridge_protocol_version,
          native_runtime_version: native_runtime_version,
          package_version_truth: package_version_truth,
+         companion_requirement: companion_requirement,
+         capability_families: capability_families,
+         package_surfaces: package_surfaces,
+         release_boundaries: release_boundaries,
+         change_classes: change_classes
+       }) do
+    [
+      "release policy:",
+      "  crosswake_version=#{crosswake_version}",
+      "  manifest_schema_version=#{manifest_schema_version}",
+      "  bridge_protocol_version=#{bridge_protocol_version}",
+      "  native_runtime_version=#{native_runtime_version}",
+      "  #{package_version_truth}",
+      "  #{companion_requirement}",
+      format_capability_families(capability_families),
+      format_package_surfaces(package_surfaces),
+      format_release_boundaries(release_boundaries),
+      format_change_classes(change_classes)
+    ]
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join("\n")
+  end
+
+  defp format_release_policy(%{
+         crosswake_version: crosswake_version,
+         manifest_schema_version: manifest_schema_version,
+         bridge_protocol_version: bridge_protocol_version,
+         native_runtime_version: native_runtime_version,
+         package_version_truth: package_version_truth,
          companion_requirement: companion_requirement
        }) do
     [
@@ -75,6 +104,43 @@ defmodule Crosswake.Doctor.Formatter do
   end
 
   defp format_release_policy(_release_policy), do: nil
+
+  defp format_capability_families(families) do
+    lines =
+      Enum.map(families, fn family ->
+        prereqs = if family.prerequisites == [], do: "none", else: Enum.join(family.prerequisites, ", ")
+        "    #{family.family}: prerequisites=#{prereqs}, denial=#{family.denial || "none"}, fallback=#{family.fallback || "none"}"
+      end)
+
+    ["  capability families:" | lines] |> Enum.join("\n")
+  end
+
+  defp format_package_surfaces(surfaces) do
+    lines =
+      Enum.map(surfaces, fn surface ->
+        "    #{surface.surface}: class=#{surface.package_class}, why=\"#{surface.why}\", burden=\"#{surface.release_burden}\""
+      end)
+
+    ["  package surfaces:" | lines] |> Enum.join("\n")
+  end
+
+  defp format_release_boundaries(boundaries) do
+    lines =
+      Enum.map(boundaries, fn boundary ->
+        "    #{boundary.target}: versioning=\"#{boundary.versioning}\", rule=\"#{boundary.release_rule}\""
+      end)
+
+    ["  release boundaries:" | lines] |> Enum.join("\n")
+  end
+
+  defp format_change_classes(classes) do
+    lines =
+      Enum.map(classes, fn change_class ->
+        "    #{change_class.change_class}: signal=\"#{change_class.compatibility_signal}\", proof=\"#{change_class.required_proof}\""
+      end)
+
+    ["  change classes:" | lines] |> Enum.join("\n")
+  end
 
   defp format_shells(shells) when shells == %{}, do: nil
 

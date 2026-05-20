@@ -347,6 +347,7 @@ defmodule Crosswake.Manifest.Types do
 
   defmodule CapabilitySupportEntry do
     @moduledoc false
+    @derive Jason.Encoder
 
     @enforce_keys [:family, :owner, :package_class, :proof_class, :rebuild]
     defstruct [
@@ -376,6 +377,7 @@ defmodule Crosswake.Manifest.Types do
 
   defmodule PackageSurfaceEntry do
     @moduledoc false
+    @derive Jason.Encoder
 
     @enforce_keys [:surface, :package_class, :why, :release_burden, :guide]
     defstruct [:surface, :package_class, :why, :release_burden, :guide]
@@ -391,6 +393,7 @@ defmodule Crosswake.Manifest.Types do
 
   defmodule ReleaseBoundaryEntry do
     @moduledoc false
+    @derive Jason.Encoder
 
     @enforce_keys [:target, :versioning, :compatibility_contract, :release_rule]
     defstruct [
@@ -410,6 +413,7 @@ defmodule Crosswake.Manifest.Types do
 
   defmodule ChangeClassEntry do
     @moduledoc false
+    @derive Jason.Encoder
 
     @enforce_keys [:change_class, :what_changed, :adopter_action, :compatibility_signal, :required_proof]
     defstruct [

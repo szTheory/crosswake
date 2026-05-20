@@ -143,31 +143,31 @@ defmodule Crosswake.ManifestTest do
     assert %{
              owner: :backend_seam,
              family: "paywall_entry",
-             package_class: :example_docs_only
+             package_class: :core
            } = manifest.capability_registry["paywall_entry"]
 
     assert %{
              owner: :backend_seam,
              family: "purchase_intent",
-             package_class: :example_docs_only
+             package_class: :core
            } = manifest.capability_registry["purchase_intent"]
 
     assert %{
              owner: :backend_seam,
              family: "restore_intent",
-             package_class: :example_docs_only
+             package_class: :core
            } = manifest.capability_registry["restore_intent"]
 
     assert %{
              owner: :backend_seam,
              family: "entitlement_snapshot",
-             package_class: :example_docs_only
+             package_class: :core
            } = manifest.capability_registry["entitlement_snapshot"]
 
     assert %{
              owner: :backend_seam,
              family: "reconciliation_evidence",
-             package_class: :example_docs_only
+             package_class: :core
            } = manifest.capability_registry["reconciliation_evidence"]
   end
 end

@@ -570,8 +570,10 @@ defmodule Crosswake.Doctor do
         "Package versions alone do not determine support truth.",
       companion_requirement:
         "Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.",
-      package_surfaces: Enum.map(support_matrix.package_surfaces, & &1.surface),
-      change_classes: Enum.map(support_matrix.change_classes, & &1.change_class)
+      capability_families: support_matrix.capability_families,
+      package_surfaces: support_matrix.package_surfaces,
+      release_boundaries: support_matrix.release_boundaries,
+      change_classes: support_matrix.change_classes
     }
   end
 
