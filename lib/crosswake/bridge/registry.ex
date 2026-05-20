@@ -11,7 +11,8 @@ defmodule Crosswake.Bridge.Registry do
   @capability_commands %{
     "app.info.get" => "app.info.get",
     "haptics.impact" => "haptics.impact",
-    "files.pick" => "files.pick"
+    "files.pick" => "files.pick",
+    "share.invoke" => "share.invoke"
   }
 
   @transfer_commands %{
