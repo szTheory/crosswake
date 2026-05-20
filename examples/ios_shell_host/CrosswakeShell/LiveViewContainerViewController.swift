@@ -28,8 +28,41 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         session: session,
         transferCoordinator: transferCoordinator,
         replySink: { _ in },
-        appInfoProvider: { ["shell": "CrosswakeShell", "route_id": self.session.routeID] },
-        hapticsHandler: { _ in },
+        appInfoProvider: {
+            let info = Bundle.main.infoDictionary
+            return [
+                "version": info?["CFBundleShortVersionString"] as? String ?? "",
+                "build": info?["CFBundleVersion"] as? String ?? "",
+                "bundle_id": info?["CFBundleIdentifier"] as? String ?? ""
+            ]
+        },
+        hapticsHandler: { styleString in
+            let style: UIImpactFeedbackGenerator.FeedbackStyle
+            switch styleString {
+            case "light": style = .light
+            case "heavy": style = .heavy
+            case "medium": fallthrough
+            default: style = .medium
+            }
+            UIImpactFeedbackGenerator(style: style).impactOccurred()
+        },
+        shareHandler: { [weak self] payload in
+            var items: [Any] = []
+            if let text = payload["text"] { items.append(text) }
+            if let urlString = payload["url"], let url = URL(string: urlString) { items.append(url) }
+            if items.isEmpty { return }
+            
+            let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
+            if let title = payload["title"] {
+                activityVC.setValue(title, forKey: "subject")
+            }
+            if let popover = activityVC.popoverPresentationController, let view = self?.view {
+                popover.sourceView = view
+                popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+            self?.present(activityVC, animated: true)
+        },
         filesPickHandler: { payload in payload }
     )
     private lazy var webView: WKWebView = {
