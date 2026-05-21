@@ -49,6 +49,7 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 | deep_link | bounded_bridge | core | merge-blocking | none | bundled or cached manifest; shell activation support; explicit route entry approval | route_unavailable | show route unavailable surface that distinguishes inactive routes from routes that reject external entry | [Guide](native_shell.md#manifest-first-activation) |
 | document_scan | native_screen | defer | advisory | companion-required | document-scan runtime; policy-heavy proof lane | unavailable_capability | defer document scan support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
 | entitlement_snapshot | backend_seam | core | merge-blocking | companion-required | backend entitlement authority; reconciliation hook | unavailable_capability | treat device-side state as evidence instead of final entitlement truth | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| file_picker | bounded_bridge | core | merge-blocking | native-required | declared transfer_id; bounded bridge support; inbound native_picker transfer seam; copy-first staged handle plus transfer verification | undeclared_capability | keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified | [Guide](capabilities.md#bounded-bridge) |
 | haptics | bounded_bridge | core | merge-blocking | none | declared route capability; bounded bridge support | undeclared_capability | Phoenix route continues without native confirmation feedback | [Guide](bridge.md#bounded-bridge) |
 | media_capture | native_screen | companion | merge-blocking | native-required | native screen route; capture pack availability | pack_incompatible | fail closed instead of degrading into a bounded web upload flow | [Guide](native_shell.md#native-capture-escape-hatch) |
 | notification_token | bounded_bridge | companion | advisory | companion-required | declared route capability; bounded bridge support; notification authorization already resolved; provider token snapshot available | unavailable_capability | treat notification token replies as provider-tagged evidence instead of backend registration truth | [Guide](capabilities.md#bounded-bridge) |
@@ -59,6 +60,11 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 | restore_intent | backend_seam | core | merge-blocking | companion-required | backend reconciliation; storefront-aware adapter | unavailable_capability | keep restore flow backend-owned until adapter truth is explicit | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
 | scanner | native_screen | defer | advisory | companion-required | scanner-native runtime; policy-heavy proof lane | unavailable_capability | defer scanner support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
 | share | bounded_bridge | core | advisory | none | truthful semantic share contract | unavailable_capability | keep content in the Phoenix-owned route until a share seam is declared | [Guide](capabilities.md#bounded-bridge) |
+
+`file_picker` replies stay low-frequency and copy-first: success returns one
+`transfer_id` plus `items`, cancelation is a distinct typed outcome, and item
+metadata such as `name`, `mime_type`, and `size_bytes` may be null until transfer
+verification finishes.
 
 ## Packaging Ledger
 

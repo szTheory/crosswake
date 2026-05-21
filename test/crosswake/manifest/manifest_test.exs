@@ -67,9 +67,26 @@ defmodule Crosswake.ManifestTest do
   test "manifest capability registry exposes typed family metadata and compatibility aliases" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
 
+    file_picker = manifest.capability_registry["file_picker"]
     media_capture = manifest.capability_registry["media_capture"]
     camera = manifest.capability_registry["camera"]
     notification_token = manifest.capability_registry["notification_token"]
+
+    assert file_picker.family == "file_picker"
+    assert file_picker.owner == :bounded_bridge
+    assert file_picker.package_class == :core
+    assert file_picker.proof_class == :merge_blocking
+    assert file_picker.rebuild == :native_required
+    assert file_picker.prerequisites == [
+             "declared transfer_id",
+             "bounded bridge support",
+             "inbound native_picker transfer seam",
+             "copy-first staged handle plus transfer verification"
+           ]
+    assert file_picker.denial == "undeclared_capability"
+    assert file_picker.fallback ==
+             "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified"
+    assert file_picker.legacy_ids == ["files.pick"]
 
     assert media_capture.family == "media_capture"
     assert media_capture.owner == :native_screen
@@ -127,20 +144,20 @@ defmodule Crosswake.ManifestTest do
 
     assert Enum.map(library_transfers, & &1.id) == [
              "lesson_import",
+             "lesson_upload_prepare",
              "lesson_export",
              "lesson_download"
            ]
 
-    assert Enum.map(library_transfers, & &1.protocol) == [
-             "crosswake.transfer",
-             "crosswake.transfer",
-             "crosswake.transfer"
-           ]
+    assert Enum.map(library_transfers, & &1.protocol) ==
+             List.duplicate("crosswake.transfer", 4)
 
-    assert Enum.map(library_transfers, & &1.version) == ["1.0.0", "1.0.0", "1.0.0"]
-    assert Enum.map(library_transfers, & &1.intent) == [:import, :export, :download]
+    assert Enum.map(library_transfers, & &1.version) == ["1.0.0", "1.0.0", "1.0.0", "1.0.0"]
+    assert Enum.map(library_transfers, & &1.intent) == [:import, :upload, :export, :download]
+    assert Enum.map(Enum.take(library_transfers, 2), & &1.source) == [:native_picker, :native_picker]
+    assert Enum.map(Enum.take(library_transfers, 2), & &1.verification) == [:required, :required]
     assert Enum.map(library_transfers, & &1.states) ==
-             List.duplicate(Crosswake.Transfer.Contracts.transfer_states(), 3)
+             List.duplicate(Crosswake.Transfer.Contracts.transfer_states(), 4)
 
     assert camera_transfers == [
              Types.new_transfer_seam(

@@ -68,6 +68,13 @@ defmodule Crosswake.TestSupport.RouterFixtures do
                 media_types: ["application/pdf"]
               ],
               [
+                id: :lesson_upload_prepare,
+                intent: :upload,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ],
+              [
                 id: :lesson_export,
                 intent: :export,
                 destination: :user_visible_files,

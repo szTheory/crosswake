@@ -229,6 +229,25 @@ defmodule Crosswake.Manifest.Builder do
         legacy_ids: ["push.notifications"]
       ],
       [
+        id: "file_picker",
+        family: "file_picker",
+        owner: :bounded_bridge,
+        package_class: :core,
+        proof_class: :merge_blocking,
+        rebuild: :native_required,
+        prerequisites: [
+          "declared transfer_id",
+          "bounded bridge support",
+          "inbound native_picker transfer seam",
+          "copy-first staged handle plus transfer verification"
+        ],
+        denial: "undeclared_capability",
+        fallback:
+          "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+        guide: "guides/capabilities.md#bounded-bridge",
+        legacy_ids: ["files.pick"]
+      ],
+      [
         id: "media_capture",
         family: "media_capture",
         owner: :native_screen,

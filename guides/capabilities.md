@@ -30,6 +30,7 @@ The first Phase 11 inventory is:
 - `app_info`
 - `haptics`
 - `share`
+- `file_picker`
 - `permissions.status`
 - `notification_token`
 - `media_capture`
@@ -54,8 +55,14 @@ Representative bounded-bridge families:
 - `app_info`
 - `haptics`
 - `share`
+- `file_picker` when bound to a declared `transfer_id` and returning copy-first staged-handle `items` that stay transfer-verified evidence rather than durable file authority
 - `permissions.status` when treated as a read-only snapshot of the `notifications` alias only
 - `notification_token` when treated as a prompt-free, provider-explicit evidence snapshot rather than delivery truth
+
+`file_picker` keeps the route Phoenix-owned only when it stays subordinate to an
+inbound `source: :native_picker` transfer seam. The public success shape is
+`transfer_id` plus `items`, metadata fields other than `handle` may be null, and
+cancelation is a distinct typed outcome instead of `items: []`.
 
 ## Native Screen
 
@@ -174,13 +181,13 @@ Usually yes once a real storefront adapter or native provider SDK enters the pic
 Crosswake keeps the first example set narrow and exemplar-aligned:
 
 - `deep_link`, `app_info`, `haptics`, `share`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` are the first canonical `core` examples.
-- `permissions.status`, `media_capture`, `notification_token`, `rollout`, and `audit` are the first boundary-heavy examples after the base bridge families.
+- `permissions.status`, `file_picker`, `media_capture`, `notification_token`, `rollout`, and `audit` are the first boundary-heavy examples after the base bridge families.
 - `auth` remains `example/docs-only` guidance until its backend/session seam is proven.
 - `scanner` and `document_scan` are explicit `defer` examples for now.
 
 ## Package Class Examples
 
-- `core`: `deep_link`, `app_info`, `haptics`, `share`, `permissions.status`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, `reconciliation_evidence`
+- `core`: `deep_link`, `app_info`, `haptics`, `share`, `file_picker`, `permissions.status`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, `reconciliation_evidence`
 - `companion`: `media_capture`, `notification_token`, `rollout`, `audit`
 - `example/docs-only`: `auth`
 - `defer`: `scanner`, `document_scan`
