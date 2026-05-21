@@ -16,6 +16,7 @@ import org.json.JSONObject
 class LiveViewFragment : Fragment() {
     interface Host {
         fun allowNavigation(url: String): Boolean
+        fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult
     }
 
     private val session: LiveViewSession
@@ -104,7 +105,14 @@ class LiveViewFragment : Fragment() {
                 }
                 startActivity(android.content.Intent.createChooser(intent, title))
             },
-            filesPickHandler = { payload -> payload }
+            filesPickHandler = { payload, correlationId ->
+                (activity as? Host)?.filesPick(payload, correlationId)
+                    ?: FilesPickResult.Denied(
+                        reason = "undeclared_capability",
+                        message = "This route does not declare the requested transfer seam.",
+                        hint = "Retry only from the mounted shell activity with a manifest-declared native_picker transfer."
+                    )
+            }
         ).attach(webView, setOf(session.allowedOrigin))
 
         webView.webViewClient = object : WebViewClient() {

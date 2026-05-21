@@ -19,6 +19,7 @@ import dev.crosswake.shell.packs.RequiredPackActivity
 
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     private lateinit var activationCoordinator: ActivationCoordinator
+    private var filePickerCoordinator: FilePickerCoordinator? = null
     private var unavailableDialog: AlertDialog? = null
     private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         activationCoordinator = ActivationCoordinator.bundled(this)
@@ -33,6 +34,9 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
             activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
             preserveCurrentRoute = false
         )
+    }
+    private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        filePickerCoordinator?.consumeResult(result.resultCode, result.data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +65,17 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
         }
     }
 
+    override fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+        val coordinator = filePickerCoordinator
+            ?: return FilesPickResult.Denied(
+                reason = "undeclared_capability",
+                message = "This route does not declare the requested transfer seam.",
+                hint = "Retry only after mounting a LiveView session with a manifest-declared native_picker transfer."
+            )
+
+        return coordinator.pick(payload, correlationId)
+    }
+
     private fun render(presentation: ShellPresentation, preserveCurrentRoute: Boolean) {
         when (presentation) {
             ShellPresentation.Booting -> showUnavailableSurface(
@@ -84,6 +99,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     }
 
     private fun showRequiredPack(requiredPack: RequiredPackPresentation) {
+        filePickerCoordinator = null
         unavailableDialog?.dismiss()
         unavailableDialog = null
         requiredPackLauncher.launch(
@@ -97,6 +113,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     }
 
     private fun showNativeCapture(nativeCapture: NativeCapturePresentation) {
+        filePickerCoordinator = null
         unavailableDialog?.dismiss()
         unavailableDialog = null
         nativeCaptureLauncher.launch(
@@ -113,6 +130,14 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     private fun showLiveView(session: LiveViewSession) {
         unavailableDialog?.dismiss()
         unavailableDialog = null
+        filePickerCoordinator =
+            activationCoordinator.currentTransferCoordinator?.let { transferCoordinator ->
+                FilePickerCoordinator(
+                    context = this,
+                    transferCoordinator = transferCoordinator,
+                    launchPicker = filePickerLauncher::launch
+                )
+            }
 
         val container = FrameLayout(this).apply {
             id = CONTAINER_ID
@@ -138,6 +163,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     }
 
     private fun showUnavailableSurface(denial: RouteDenialPresentation, preserveCurrentRoute: Boolean) {
+        filePickerCoordinator = null
         if (preserveCurrentRoute && supportFragmentManager.findFragmentByTag(LiveViewFragment.TAG) != null) {
             showUnavailableDialog(denial)
             return

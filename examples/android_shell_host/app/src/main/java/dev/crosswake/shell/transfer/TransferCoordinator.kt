@@ -6,6 +6,15 @@ class TransferCoordinator(
     private val routeId: String,
     private val declaredTransfers: List<ShellManifest.TransferSeam>
 ) {
+    data class StagedPickerItem(
+        val handle: String,
+        val localPath: String,
+        val name: String?,
+        val mimeType: String?,
+        val sizeBytes: Long?,
+        val nativeType: String?
+    )
+
     enum class TransferCommand(val wireValue: String) {
         TRANSFER_IMPORT("transfer.import"),
         TRANSFER_EXPORT("transfer.export"),
@@ -41,6 +50,7 @@ class TransferCoordinator(
     )
 
     private val transfers = mutableMapOf<String, TransferRecord>()
+    private val stagedPickerItems = mutableMapOf<String, List<StagedPickerItem>>()
 
     fun execute(command: String, payload: Map<String, String>, correlationId: String): Map<String, String>? {
         val transferCommand = TransferCommand.fromWireValue(command) ?: return null
@@ -92,6 +102,88 @@ class TransferCoordinator(
             "staged_path" to localPath,
             "media_type" to mediaType,
             "bytes" to bytes.toString()
+        )
+    }
+
+    fun declaredNativePickerTransfer(transferId: String): ShellManifest.TransferSeam? {
+        return declaredTransfers.firstOrNull { seam ->
+            seam.id == transferId &&
+                seam.source == "native_picker" &&
+                (seam.intent == "import" || seam.intent == "upload")
+        }
+    }
+
+    fun stagePickedFiles(
+        transferId: String,
+        items: List<StagedPickerItem>,
+        correlationId: String
+    ): Map<String, String>? {
+        val seam = declaredNativePickerTransfer(transferId) ?: return null
+        val command =
+            if (seam.intent == "upload") {
+                TransferCommand.TRANSFER_UPLOAD_PREPARE
+            } else {
+                TransferCommand.TRANSFER_IMPORT
+            }
+
+        val record = TransferRecord(
+            routeId = routeId,
+            transferId = transferId,
+            command = command,
+            intent = seam.intent,
+            source = seam.source,
+            destination = seam.destination,
+            state = TransferState.PREPARING,
+            detail = "Picker content copied into app-controlled staging. Transfer verification remains route-local. [$correlationId]",
+            stagedPath = items.firstOrNull()?.localPath
+        )
+
+        transfers[transferId] = record
+        stagedPickerItems[transferId] = items
+
+        val payload = linkedMapOf(
+            "status" to "ok",
+            "transfer_id" to transferId
+        )
+
+        items.forEachIndexed { index, item ->
+            payload["items.$index.handle"] = item.handle
+            item.name?.let { payload["items.$index.name"] = it }
+            item.mimeType?.let { payload["items.$index.mime_type"] = it }
+            item.sizeBytes?.let { payload["items.$index.size_bytes"] = it.toString() }
+            item.nativeType?.let { payload["items.$index.native_type"] = it }
+        }
+
+        return payload
+    }
+
+    fun cancelPickedFiles(transferId: String, detailReason: String = "user_canceled"): Map<String, String>? {
+        val seam = declaredNativePickerTransfer(transferId) ?: return null
+        val command =
+            if (seam.intent == "upload") {
+                TransferCommand.TRANSFER_UPLOAD_PREPARE
+            } else {
+                TransferCommand.TRANSFER_IMPORT
+            }
+
+        val record = TransferRecord(
+            routeId = routeId,
+            transferId = transferId,
+            command = command,
+            intent = seam.intent,
+            source = seam.source,
+            destination = seam.destination,
+            state = TransferState.CANCELED,
+            detail = "Picker canceled before transfer staging began.",
+            stagedPath = null
+        )
+
+        transfers[transferId] = record
+
+        return mapOf(
+            "status" to "canceled",
+            "transfer_id" to transferId,
+            "detail.reason" to detailReason
         )
     }
 

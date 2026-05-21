@@ -44,7 +44,7 @@ class BridgeChannel(
     private val permissionStatusProvider: (String) -> Map<String, String>?,
     private val notificationTokenProvider: NotificationTokenProvider,
     private val shareHandler: (Map<String, String>) -> Unit,
-    private val filesPickHandler: (Map<String, String>) -> Map<String, String>
+    private val filesPickHandler: (Map<String, String>, String) -> FilesPickResult
 ) {
     companion object {
         const val JS_OBJECT = "crosswakeBridge"
@@ -75,8 +75,12 @@ class BridgeChannel(
                 return@addWebMessageListener
             }
 
-            val reply = evaluate(request)
-            replyProxy.postMessage(reply)
+            val reply = evaluate(request) { deferredReply ->
+                replyProxy.postMessage(deferredReply)
+            }
+            if (reply != null) {
+                replyProxy.postMessage(reply)
+            }
         }
     }
 
@@ -89,7 +93,10 @@ class BridgeChannel(
         }
     }
 
-    private fun evaluate(request: BridgeRequestEnvelope): String {
+    private fun evaluate(
+        request: BridgeRequestEnvelope,
+        deferredReply: ((String) -> Unit)? = null
+    ): String? {
         if (request.protocol != PROTOCOL || request.version != session.bridgeProtocolVersion || request.nativeRuntimeVersion != session.nativeRuntimeVersion) {
             return deny(request, "compatibility_mismatch", "Bridge protocol or runtime mismatch.", "Update the shell before retrying this bridge request.")
         }
@@ -194,7 +201,28 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    ok(request, filesPickHandler(request.payload))
+                    when (val result = filesPickHandler(request.payload, request.correlationId)) {
+                        is FilesPickResult.Immediate -> ok(request, result.payload)
+                        is FilesPickResult.Denied -> deny(request, result.reason, result.message, result.hint)
+                        is FilesPickResult.Deferred -> {
+                            val sink =
+                                deferredReply
+                                    ?: return deny(
+                                        request,
+                                        "unavailable_capability",
+                                        "The Android shell cannot complete files.pick without an activity-backed result channel.",
+                                        "Retry from the mounted shell activity so the picker can return a staged handle reply."
+                                    )
+
+                            result.dispatch(
+                                onSuccess = { payload -> sink(ok(request, payload)) },
+                                onDenied = { denial ->
+                                    sink(deny(request, denial.reason, denial.message, denial.hint))
+                                }
+                            )
+                            null
+                        }
+                    }
                 }
             }
 
@@ -215,7 +243,10 @@ class BridgeChannel(
         }
     }
 
-    fun evaluateForTesting(request: BridgeRequestEnvelope): String = evaluate(request)
+    fun evaluateForTesting(request: BridgeRequestEnvelope): String {
+        return evaluate(request)
+            ?: error("Deferred bridge replies are not supported by evaluateForTesting.")
+    }
 
     private fun ok(request: BridgeRequestEnvelope, payload: Map<String, String>): String {
         return JSONObject()

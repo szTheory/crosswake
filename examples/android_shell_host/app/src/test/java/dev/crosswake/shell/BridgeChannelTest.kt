@@ -140,14 +140,16 @@ class BridgeChannelTest {
     @Test
     fun filesPickReturnsTransferBoundItems() {
         val channel = bridgeChannel(
-            filesPickHandler = { payload ->
-                mapOf(
-                    "status" to "ok",
-                    "transfer_id" to (payload["transfer_id"] ?: ""),
-                    "items.0.handle" to "staged://lesson_import/asset-1",
-                    "items.0.name" to "lesson.pdf",
-                    "items.0.mime_type" to "application/pdf",
-                    "items.0.size_bytes" to "2048"
+            filesPickHandler = { payload, _ ->
+                FilesPickResult.Immediate(
+                    mapOf(
+                        "status" to "ok",
+                        "transfer_id" to (payload["transfer_id"] ?: ""),
+                        "items.0.handle" to "staged://lesson_import/asset-1",
+                        "items.0.name" to "lesson.pdf",
+                        "items.0.mime_type" to "application/pdf",
+                        "items.0.size_bytes" to "2048"
+                    )
                 )
             }
         )
@@ -172,11 +174,13 @@ class BridgeChannelTest {
     @Test
     fun filesPickPreservesTypedCancellationOutcome() {
         val channel = bridgeChannel(
-            filesPickHandler = { payload ->
-                mapOf(
-                    "status" to "canceled",
-                    "transfer_id" to (payload["transfer_id"] ?: ""),
-                    "detail.reason" to "user_canceled"
+            filesPickHandler = { payload, _ ->
+                FilesPickResult.Immediate(
+                    mapOf(
+                        "status" to "canceled",
+                        "transfer_id" to (payload["transfer_id"] ?: ""),
+                        "detail.reason" to "user_canceled"
+                    )
                 )
             }
         )
@@ -207,7 +211,9 @@ class BridgeChannelTest {
                 hint = "Install and configure a provider-backed token seam before retrying."
             )
         },
-        filesPickHandler: (Map<String, String>) -> Map<String, String> = { payload -> payload },
+        filesPickHandler: (Map<String, String>, String) -> FilesPickResult = { payload, _ ->
+            FilesPickResult.Immediate(payload)
+        },
         declaredTransfers: List<ShellManifest.TransferSeam> = listOf(
             ShellManifest.TransferSeam(
                 id = "lesson_import",
