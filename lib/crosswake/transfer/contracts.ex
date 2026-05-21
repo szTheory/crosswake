@@ -13,6 +13,7 @@ defmodule Crosswake.Transfer.Contracts do
   @verifications [:required, :none]
   @inbound_intents [:upload, :import]
   @outbound_intents [:download, :export]
+  @picker_intents [:upload, :import]
 
   defmodule Declaration do
     @moduledoc false
@@ -163,6 +164,24 @@ defmodule Crosswake.Transfer.Contracts do
       detail: Keyword.get(attrs, :detail),
       metadata: Keyword.get(attrs, :metadata, %{})
     })
+  end
+
+  @spec validate_picker_declaration(declaration()) ::
+          :ok | {:error, :invalid_picker_direction | :invalid_picker_intent | :invalid_picker_source}
+  def validate_picker_declaration(%Declaration{} = declaration) do
+    cond do
+      declaration.intent not in @picker_intents ->
+        {:error, :invalid_picker_intent}
+
+      declaration.direction != :inbound ->
+        {:error, :invalid_picker_direction}
+
+      declaration.source != :native_picker ->
+        {:error, :invalid_picker_source}
+
+      true ->
+        :ok
+    end
   end
 
   defp direction_for_intent(intent) when intent in @inbound_intents, do: :inbound

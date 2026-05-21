@@ -1,6 +1,7 @@
 defmodule Crosswake.Bridge.RegistryTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Bridge.Commands.FilePicker
   alias Crosswake.Bridge.Commands.NotificationToken
   alias Crosswake.Bridge.Commands.PermissionsStatus
   alias Crosswake.Bridge.Registry
@@ -75,6 +76,18 @@ defmodule Crosswake.Bridge.RegistryTest do
     assert entry.allowlisted_origins == ["https://shell.crosswake.example"]
   end
 
+  test "registry resolves files.pick only through declared native_picker transfer seams" do
+    manifest = manifest_fixture()
+
+    assert {:ok, entry} =
+             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_import"})
+
+    assert entry.command == "files.pick"
+    assert entry.capability == "file_picker"
+    assert entry.version == "1.0.0"
+    assert entry.route_id == "library"
+  end
+
   test "registry rejects unsupported commands and undeclared route transfer seams fail closed" do
     manifest = manifest_fixture()
 
@@ -83,6 +96,15 @@ defmodule Crosswake.Bridge.RegistryTest do
 
     assert {:error, :undeclared_capability} =
              Registry.lookup(manifest, "dashboard", "files.pick")
+
+    assert {:error, :undeclared_capability} =
+             Registry.lookup(manifest, "library", "files.pick", %{})
+
+    assert {:error, :undeclared_capability} =
+             Registry.lookup(manifest, "camera", "files.pick", %{"transfer_id" => "capture_upload"})
+
+    assert {:error, :undeclared_capability} =
+             Registry.lookup(manifest, "library", "files.pick", %{"transfer_id" => "lesson_export"})
 
     assert {:error, :undeclared_capability} =
              Registry.lookup(manifest, "camera", "notifications.token.get")
@@ -128,6 +150,45 @@ defmodule Crosswake.Bridge.RegistryTest do
     assert response.token == "fcm-token"
     assert response.notification_status == :restricted
     assert response.detail == %{"reason" => "companion_unavailable"}
+  end
+
+  test "file_picker keeps request filters advisory and models cancel separately from success" do
+    assert {:ok, %FilePicker.Request{} = request} =
+             FilePicker.new_request(
+               transfer_id: :lesson_import,
+               media_types: ["image/*"],
+               multiple_allowed: true
+             )
+
+    success =
+      FilePicker.new_success(
+        transfer_id: request.transfer_id,
+        items: [
+          [
+            handle: "picked-1",
+            name: "worksheet.pdf",
+            mime_type: nil,
+            size_bytes: 1024,
+            native_type: "com.adobe.pdf"
+          ]
+        ]
+      )
+
+    canceled =
+      FilePicker.new_canceled(
+        transfer_id: request.transfer_id,
+        detail: %{"reason" => "user_canceled"}
+      )
+
+    assert request.transfer_id == "lesson_import"
+    assert request.media_types == ["image/*"]
+    assert request.multiple_allowed == true
+    assert success.transfer_id == "lesson_import"
+    assert length(success.items) == 1
+    assert hd(success.items).handle == "picked-1"
+    assert hd(success.items).mime_type == nil
+    assert canceled.transfer_id == "lesson_import"
+    assert canceled.detail == %{"reason" => "user_canceled"}
   end
 
   test "files.pick stays a compatibility command instead of becoming the public share family" do
@@ -269,6 +330,32 @@ defmodule Crosswake.Bridge.RegistryTest do
                 direction: :inbound,
                 source: :native_capture,
                 verification: :required
+              )
+            ]
+          ),
+        "library" =>
+          Types.new_route_entry(
+            id: "library",
+            path: "/library",
+            runtime: :live_view,
+            offline: :cached_read_only,
+            allowlisted_origins: ["https://shell.crosswake.example"],
+            transfers: [
+              Types.new_transfer_seam(
+                id: "lesson_import",
+                intent: :import,
+                direction: :inbound,
+                source: :native_picker,
+                verification: :required,
+                media_types: ["application/pdf"]
+              ),
+              Types.new_transfer_seam(
+                id: "lesson_export",
+                intent: :export,
+                direction: :outbound,
+                destination: :user_visible_files,
+                verification: :required,
+                media_types: ["application/pdf"]
               )
             ]
           )

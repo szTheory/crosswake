@@ -3,6 +3,7 @@ defmodule Crosswake.Bridge.Registry do
   Manifest-backed Phase 3 bridge allowlist.
   """
 
+  alias Crosswake.Transfer.Contracts
   alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
@@ -13,7 +14,7 @@ defmodule Crosswake.Bridge.Registry do
     "haptics.impact" => "haptics.impact",
     "permissions.status" => "permissions.status",
     "notifications.token.get" => "notification_token",
-    "files.pick" => "files.pick",
+    "files.pick" => "file_picker",
     "share.invoke" => "share.invoke"
   }
 
@@ -60,16 +61,27 @@ defmodule Crosswake.Bridge.Registry do
           | {:error, :inactive_route | :unsupported_command | :undeclared_capability}
   def lookup(%Root{} = manifest, route_id, command)
       when is_binary(route_id) and is_binary(command) do
+    lookup(manifest, route_id, command, %{})
+  end
+
+  @spec lookup(Root.t(), String.t(), String.t(), map()) ::
+          {:ok, Entry.t()}
+          | {:error, :inactive_route | :unsupported_command | :undeclared_capability}
+  def lookup(%Root{} = manifest, route_id, command, payload)
+      when is_binary(route_id) and is_binary(command) and is_map(payload) do
     with true <- command_supported?(command) || {:error, :unsupported_command},
          %RouteEntry{} = route <- Map.get(manifest.routes, route_id) || {:error, :inactive_route} do
-      lookup_entry(manifest, route, command)
+      lookup_entry(manifest, route, command, payload)
     else
       {:error, reason} -> {:error, reason}
     end
   end
 
-  defp lookup_entry(manifest, route, command) do
+  defp lookup_entry(manifest, route, command, payload) do
     cond do
+      command == "files.pick" ->
+        file_picker_entry(route, command, payload)
+
       capability_id = Map.get(@capability_commands, command) ->
         capability_entry(manifest, route, command, capability_id)
 
@@ -97,6 +109,31 @@ defmodule Crosswake.Bridge.Registry do
       {:error, reason} -> {:error, reason}
       false -> {:error, :undeclared_capability}
       nil -> {:error, :undeclared_capability}
+    end
+  end
+
+  defp file_picker_entry(route, command, payload) do
+    transfer_id = payload_transfer_id(payload)
+
+    case Enum.find(route.transfers, &(&1.id == transfer_id)) do
+      %TransferSeam{} = transfer ->
+        case Contracts.validate_picker_declaration(transfer_declaration(transfer)) do
+          :ok ->
+            {:ok,
+             %Entry{
+               command: command,
+               capability: "file_picker",
+               version: transfer.version,
+               route_id: route.id,
+               allowlisted_origins: route.allowlisted_origins
+             }}
+
+          {:error, _reason} ->
+            {:error, :undeclared_capability}
+        end
+
+      nil ->
+        {:error, :undeclared_capability}
     end
   end
 
@@ -131,4 +168,19 @@ defmodule Crosswake.Bridge.Registry do
   end
 
   defp match_transfer_command?(%TransferSeam{intent: intent}, transfer_intent), do: intent == transfer_intent
+
+  defp payload_transfer_id(payload) do
+    Map.get(payload, "transfer_id") || Map.get(payload, :transfer_id)
+  end
+
+  defp transfer_declaration(%TransferSeam{} = transfer) do
+    Contracts.new_declaration(
+      id: transfer.id,
+      intent: transfer.intent,
+      source: transfer.source,
+      destination: transfer.destination,
+      verification: transfer.verification,
+      media_types: transfer.media_types
+    )
+  end
 end
