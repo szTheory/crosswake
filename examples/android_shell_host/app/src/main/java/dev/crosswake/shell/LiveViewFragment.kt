@@ -89,6 +89,8 @@ class LiveViewFragment : Fragment() {
                 }
                 webView.performHapticFeedback(feedbackConstant)
             },
+            permissionStatusProvider = PermissionStatusProvider(requireContext())::statusPayload,
+            notificationTokenProvider = NotificationTokenProvider(requireContext()),
             shareHandler = { payload ->
                 val title = payload["title"] ?: ""
                 val text = payload["text"]

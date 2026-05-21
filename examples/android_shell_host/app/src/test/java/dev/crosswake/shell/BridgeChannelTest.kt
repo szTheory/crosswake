@@ -230,6 +230,7 @@ class BridgeChannelTest {
             appInfoProvider = { emptyMap() },
             hapticsHandler = { _ -> },
             permissionStatusProvider = permissionStatusProvider::statusPayload,
+            notificationTokenProvider = notificationTokenProvider,
             shareHandler = { _ -> },
             filesPickHandler = filesPickHandler
         )

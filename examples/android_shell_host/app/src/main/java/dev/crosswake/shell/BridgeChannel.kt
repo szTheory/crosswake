@@ -9,6 +9,8 @@ import org.json.JSONObject
 enum class BridgeCommand(val wireValue: String) {
     APP_INFO_GET("app.info.get"),
     HAPTICS_IMPACT("haptics.impact"),
+    PERMISSIONS_STATUS("permissions.status"),
+    NOTIFICATIONS_TOKEN_GET("notifications.token.get"),
     SHARE_INVOKE("share.invoke"),
     FILES_PICK("files.pick"),
     TRANSFER_IMPORT("transfer.import"),
@@ -17,7 +19,11 @@ enum class BridgeCommand(val wireValue: String) {
     TRANSFER_UPLOAD_PREPARE("transfer.upload.prepare");
 
     val capability: String
-        get() = wireValue
+        get() = when (this) {
+            NOTIFICATIONS_TOKEN_GET -> "notification_token"
+            FILES_PICK -> "file_picker"
+            else -> wireValue
+        }
 
     val isTransferCommand: Boolean
         get() = when (this) {
@@ -35,6 +41,8 @@ class BridgeChannel(
     private val transferCoordinator: TransferCoordinator?,
     private val appInfoProvider: () -> Map<String, String>,
     private val hapticsHandler: (String) -> Unit,
+    private val permissionStatusProvider: (String) -> Map<String, String>?,
+    private val notificationTokenProvider: NotificationTokenProvider,
     private val shareHandler: (Map<String, String>) -> Unit,
     private val filesPickHandler: (Map<String, String>) -> Map<String, String>
 ) {
@@ -99,7 +107,7 @@ class BridgeChannel(
                 request,
                 "undeclared_capability",
                 "The bridge command is outside the bounded transfer contract.",
-                "Use app.info.get, haptics.impact, share.invoke, files.pick, transfer.import, transfer.export, transfer.download, or transfer.upload.prepare only."
+                "Use app.info.get, haptics.impact, permissions.status, notifications.token.get, share.invoke, files.pick, transfer.import, transfer.export, transfer.download, or transfer.upload.prepare only."
             )
 
         if (request.capability != command.capability) {
@@ -139,6 +147,38 @@ class BridgeChannel(
                 }
             }
 
+            BridgeCommand.PERMISSIONS_STATUS -> {
+                val requiredCapabilityVersion = session.capabilities[command.capability]
+                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                    deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
+                } else {
+                    val permissionAlias = request.payload["alias"]
+                    val payload =
+                        permissionAlias?.let { permissionStatusProvider(it) }
+                            ?: return deny(
+                                request,
+                                "unavailable_capability",
+                                "The requested permission alias is outside the shipped read-only permissions.status scope.",
+                                "Use the notifications alias only."
+                            )
+
+                    ok(request, payload)
+                }
+            }
+
+            BridgeCommand.NOTIFICATIONS_TOKEN_GET -> {
+                val requiredCapabilityVersion = session.capabilities[command.capability]
+                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                    deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
+                } else {
+                    when (val result = notificationTokenProvider.fetch()) {
+                        is NotificationTokenProvider.Result.Available -> ok(request, result.payload())
+                        is NotificationTokenProvider.Result.Denied ->
+                            deny(request, result.reason, result.message, result.hint)
+                    }
+                }
+            }
+
             BridgeCommand.SHARE_INVOKE -> {
                 val requiredCapabilityVersion = session.capabilities[command.capability]
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
@@ -174,6 +214,8 @@ class BridgeChannel(
             }
         }
     }
+
+    fun evaluateForTesting(request: BridgeRequestEnvelope): String = evaluate(request)
 
     private fun ok(request: BridgeRequestEnvelope, payload: Map<String, String>): String {
         return JSONObject()
