@@ -1,6 +1,8 @@
 defmodule Crosswake.Bridge.ContractTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Bridge.Commands.NotificationToken
+  alias Crosswake.Bridge.Commands.PermissionsStatus
   alias Crosswake.Bridge.Contract
   alias Crosswake.Bridge.Denial
   alias Crosswake.Shell.Denial, as: ShellDenial
@@ -9,6 +11,8 @@ defmodule Crosswake.Bridge.ContractTest do
     assert Contract.commands() == [
              "app.info.get",
              "haptics.impact",
+             "permissions.status",
+             "notifications.token.get",
              "share.invoke",
              "files.pick",
              "transfer.download",
@@ -21,10 +25,33 @@ defmodule Crosswake.Bridge.ContractTest do
     assert Contract.command_supported?("transfer.export")
     assert Contract.command_supported?("transfer.import")
     assert Contract.command_supported?("transfer.upload.prepare")
+    assert Contract.command_supported?("permissions.status")
+    assert Contract.command_supported?("notifications.token.get")
 
     refute Contract.command_supported?("browser.open")
     refute Contract.command_supported?("share.sheet.present")
     refute Contract.command_supported?("transfer.url.open")
+  end
+
+  test "notification_token stays a one-shot typed command with provider-explicit evidence replies" do
+    assert {:ok, %NotificationToken.Request{}} = NotificationToken.new_request([])
+
+    assert {:error, :unsupported_option} =
+             NotificationToken.new_request(alias: "notifications")
+
+    response =
+      NotificationToken.new_response(
+        provider: :apns,
+        token: "apns-token",
+        notification_status: :granted,
+        detail: %{"environment" => "sandbox"}
+      )
+
+    assert response.provider == "apns"
+    assert response.token == "apns-token"
+    assert response.notification_status == :granted
+    assert response.detail == %{"environment" => "sandbox"}
+    assert NotificationToken.supported_statuses() == PermissionsStatus.supported_statuses()
   end
 
   test "bridge requests carry the typed route, origin, active-route, version, and correlation fields" do

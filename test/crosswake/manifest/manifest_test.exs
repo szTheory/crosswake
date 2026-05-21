@@ -69,6 +69,7 @@ defmodule Crosswake.ManifestTest do
 
     media_capture = manifest.capability_registry["media_capture"]
     camera = manifest.capability_registry["camera"]
+    notification_token = manifest.capability_registry["notification_token"]
 
     assert media_capture.family == "media_capture"
     assert media_capture.owner == :native_screen
@@ -79,6 +80,21 @@ defmodule Crosswake.ManifestTest do
 
     assert camera.family == "media_capture"
     assert camera.guide == "guides/native_shell.md#native-capture-escape-hatch"
+
+    assert notification_token.family == "notification_token"
+    assert notification_token.owner == :bounded_bridge
+    assert notification_token.package_class == :companion
+    assert notification_token.rebuild == :companion_required
+    assert notification_token.prerequisites == [
+             "declared route capability",
+             "bounded bridge support",
+             "notification authorization already resolved",
+             "provider token snapshot available"
+           ]
+    assert notification_token.denial == "unavailable_capability"
+    assert notification_token.fallback ==
+             "treat notification token replies as provider-tagged evidence instead of backend registration truth"
+    assert notification_token.legacy_ids == ["push.notifications"]
   end
 
   test "manifest root exposes a canonical typed pack registry keyed by immutable id and version" do
