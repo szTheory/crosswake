@@ -192,6 +192,7 @@ final class BridgeChannelTests: XCTestCase {
         )
 
         let channel = bridgeChannel(
+            declaredTransfers: [pickerTransfer(id: "lesson_import")],
             filesPickHandler: { payload, correlationID, completion in
                 XCTAssertEqual(payload["transfer_id"], "lesson_import")
                 XCTAssertEqual(correlationID, "pick-1")
@@ -219,7 +220,6 @@ final class BridgeChannelTests: XCTestCase {
                     "notification_token": "1.0.0",
                     "file_picker": "1.0.0"
                 ],
-                declaredTransfers: [pickerTransfer(id: "lesson_import")],
                 payload: ["transfer_id": "lesson_import"]
             )
         )
@@ -233,6 +233,7 @@ final class BridgeChannelTests: XCTestCase {
 
     func testFilesPickReturnsTypedCanceledOutcome() async {
         let channel = bridgeChannel(
+            declaredTransfers: [pickerTransfer(id: "lesson_import")],
             filesPickHandler: { payload, _, completion in
                 completion(
                     .success(
@@ -258,7 +259,6 @@ final class BridgeChannelTests: XCTestCase {
                     "notification_token": "1.0.0",
                     "file_picker": "1.0.0"
                 ],
-                declaredTransfers: [pickerTransfer(id: "lesson_import")],
                 payload: ["transfer_id": "lesson_import"]
             )
         )
@@ -284,7 +284,6 @@ final class BridgeChannelTests: XCTestCase {
                     "notification_token": "1.0.0",
                     "file_picker": "1.0.0"
                 ],
-                declaredTransfers: [],
                 payload: ["transfer_id": "lesson_import"]
             )
         )
@@ -299,6 +298,7 @@ final class BridgeChannelTests: XCTestCase {
             detail: ["detail.registration_state": "unconfigured"]
         ),
         permissionsStatusProvider: PermissionStatusProvider = PermissionStatusProvider { _ in nil },
+        declaredTransfers: [ShellManifest.TransferSeam] = [],
         filesPickHandler: @escaping BridgeChannel.FilesPickHandler = { _, _, completion in
             completion(
                 .deny(
@@ -309,7 +309,27 @@ final class BridgeChannelTests: XCTestCase {
             )
         }
     ) -> BridgeChannel {
-        BridgeChannel(
+        let transferCoordinator = declaredTransfers.isEmpty
+            ? nil
+            : TransferCoordinator(routeID: "dashboard", declaredTransfers: declaredTransfers)
+
+        let bridgeSnapshotProvider = {
+            switch notificationTokenProvider {
+            case let .available(provider, token, detail):
+                return BridgeChannel.NotificationTokenCommandSnapshot.available(
+                    provider: provider,
+                    token: token,
+                    detail: detail
+                )
+            case let .unavailable(reason, detail):
+                return BridgeChannel.NotificationTokenCommandSnapshot.unavailable(
+                    reason: reason,
+                    detail: detail
+                )
+            }
+        }
+
+        return BridgeChannel(
             session: LiveViewSession(
                 routeID: "dashboard",
                 url: URL(string: "https://example.crosswake.invalid/dashboard")!,
@@ -323,14 +343,14 @@ final class BridgeChannelTests: XCTestCase {
                     "notification_token": "1.0.0",
                     "file_picker": "1.0.0"
                 ],
-                declaredTransfers: []
+                declaredTransfers: declaredTransfers
             ),
-            transferCoordinator: nil,
+            transferCoordinator: transferCoordinator,
             replySink: { _ in },
             appInfoProvider: { [:] },
             hapticsHandler: { _ in },
             permissionStatusProvider: permissionsStatusProvider.statusPayload(for:),
-            notificationTokenProvider: { notificationTokenProvider },
+            notificationTokenProvider: bridgeSnapshotProvider,
             shareHandler: { _ in },
             filesPickHandler: filesPickHandler
         )
@@ -341,7 +361,6 @@ final class BridgeChannelTests: XCTestCase {
         capability: String,
         correlationID: String,
         capabilities: [String: String],
-        declaredTransfers: [ShellManifest.TransferSeam] = [],
         payload: [String: String] = [:]
     ) -> BridgeRequestEnvelope {
         BridgeRequestEnvelope(

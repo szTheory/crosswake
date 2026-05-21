@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 
 @MainActor
 final class TransferCoordinator: ObservableObject {
@@ -33,10 +36,22 @@ final class TransferCoordinator: ObservableObject {
         let stagedPath: String?
     }
 
+    struct StagedDocument: Equatable {
+        let routeID: String
+        let transferID: String
+        let handle: String
+        let stagedPath: String
+        let name: String?
+        let mimeType: String?
+        let nativeType: String?
+        let sizeBytes: Int?
+    }
+
     private let routeID: String
     private let declaredTransfers: [ShellManifest.TransferSeam]
 
     @Published private(set) var transfers: [String: TransferRecord] = [:]
+    @Published private(set) var stagedDocuments: [String: StagedDocument] = [:]
 
     init(routeID: String, declaredTransfers: [ShellManifest.TransferSeam]) {
         self.routeID = routeID
@@ -105,6 +120,108 @@ final class TransferCoordinator: ObservableObject {
             "media_type": mediaType,
             "bytes": String(bytes)
         ]
+    }
+
+    func declaredPickerTransfer(id: String) -> ShellManifest.TransferSeam? {
+        declaredTransfers.first(where: { seam in
+            seam.id == id && seam.direction == "inbound" && seam.source == "native_picker"
+        })
+    }
+
+    func markPickerCanceled(transferID: String, correlationID: String) {
+        guard let seam = declaredPickerTransfer(id: transferID) else { return }
+
+        transfers[transferID] = TransferRecord(
+            routeID: routeID,
+            transferID: transferID,
+            command: .transferImport,
+            intent: seam.intent,
+            source: seam.source,
+            destination: seam.destination,
+            state: .canceled,
+            detail: "Picker canceled before any staged copy was handed to the route. [\(correlationID)]",
+            stagedPath: nil
+        )
+    }
+
+    func stagePickedDocument(
+        transferID: String,
+        sourceURL: URL,
+        correlationID: String
+    ) throws -> [String: String]? {
+        guard let seam = declaredPickerTransfer(id: transferID) else {
+            return nil
+        }
+
+        let fileManager = FileManager.default
+        let stagingDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("crosswake-picker-staging", isDirectory: true)
+            .appendingPathComponent(transferID, isDirectory: true)
+
+        try fileManager.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
+
+        let handle = UUID().uuidString.lowercased()
+        let fileExtension = sourceURL.pathExtension.isEmpty ? "" : ".\(sourceURL.pathExtension)"
+        let stagedURL = stagingDirectory.appendingPathComponent(handle + fileExtension)
+        let accessedSecurityScope = sourceURL.startAccessingSecurityScopedResource()
+
+        defer {
+            if accessedSecurityScope {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        if fileManager.fileExists(atPath: stagedURL.path) {
+            try fileManager.removeItem(at: stagedURL)
+        }
+
+        try fileManager.copyItem(at: sourceURL, to: stagedURL)
+
+        let resourceValues = try stagedURL.resourceValues(forKeys: [.contentTypeKey, .fileSizeKey, .nameKey])
+        let nativeType = resourceValues.contentType?.identifier
+        let mimeType = resourceValues.contentType?.preferredMIMEType
+        let name = resourceValues.name ?? sourceURL.lastPathComponent
+        let resolvedName = name.isEmpty ? nil : name
+        let sizeBytes = resourceValues.fileSize
+
+        stagedDocuments[handle] = StagedDocument(
+            routeID: routeID,
+            transferID: transferID,
+            handle: handle,
+            stagedPath: stagedURL.path,
+            name: resolvedName,
+            mimeType: mimeType,
+            nativeType: nativeType,
+            sizeBytes: sizeBytes
+        )
+
+        transfers[transferID] = TransferRecord(
+            routeID: routeID,
+            transferID: transferID,
+            command: .transferImport,
+            intent: seam.intent,
+            source: seam.source,
+            destination: seam.destination,
+            state: .queued,
+            detail: "Picker selection copied into app staging. Transfer verification still owns MIME and integrity truth. [\(correlationID)]",
+            stagedPath: stagedURL.path
+        )
+
+        var item = ["handle": handle]
+        if let resolvedName {
+            item["name"] = resolvedName
+        }
+        if let mimeType, mimeType.isEmpty == false {
+            item["mime_type"] = mimeType
+        }
+        if let sizeBytes {
+            item["size_bytes"] = String(sizeBytes)
+        }
+        if let nativeType, nativeType.isEmpty == false {
+            item["native_type"] = nativeType
+        }
+
+        return item
     }
 
     private func declaredTransfer(id: String, matching command: TransferCommand) -> ShellManifest.TransferSeam? {
