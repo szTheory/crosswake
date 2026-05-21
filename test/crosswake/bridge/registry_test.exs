@@ -242,7 +242,7 @@ defmodule Crosswake.Bridge.RegistryTest do
             denial: "unavailable_capability",
             fallback: "treat notification token replies as provider-tagged evidence instead of backend registration truth",
             guide: "guides/capabilities.md#bounded-bridge",
-            legacy_ids: ["push.notifications", "notifications.token.get"]
+            legacy_ids: ["push.notifications"]
           )
       },
       routes: %{

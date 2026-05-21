@@ -54,8 +54,8 @@ Representative bounded-bridge families:
 - `app_info`
 - `haptics`
 - `share`
-- `permissions.status` when treated as a read-only snapshot
-- `notification_token` when treated as evidence rather than delivery truth
+- `permissions.status` when treated as a read-only snapshot of the `notifications` alias only
+- `notification_token` when treated as a prompt-free, provider-explicit evidence snapshot rather than delivery truth
 
 ## Native Screen
 
@@ -174,15 +174,15 @@ Usually yes once a real storefront adapter or native provider SDK enters the pic
 Crosswake keeps the first example set narrow and exemplar-aligned:
 
 - `deep_link`, `app_info`, `haptics`, `share`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` are the first canonical `core` examples.
-- `media_capture`, `notification_token`, `rollout`, and `audit` are `companion`-leaning or boundary-heavy examples.
-- `permissions.status` and `auth` are `example/docs-only` guidance in Phase 13.
+- `permissions.status`, `media_capture`, `notification_token`, `rollout`, and `audit` are the first boundary-heavy examples after the base bridge families.
+- `auth` remains `example/docs-only` guidance until its backend/session seam is proven.
 - `scanner` and `document_scan` are explicit `defer` examples for now.
 
 ## Package Class Examples
 
-- `core`: `deep_link`, `app_info`, `haptics`, `share`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, `reconciliation_evidence`
+- `core`: `deep_link`, `app_info`, `haptics`, `share`, `permissions.status`, `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, `reconciliation_evidence`
 - `companion`: `media_capture`, `notification_token`, `rollout`, `audit`
-- `example/docs-only`: `permissions.status`, `auth`
+- `example/docs-only`: `auth`
 - `defer`: `scanner`, `document_scan`
 
 ## Explicit Defers

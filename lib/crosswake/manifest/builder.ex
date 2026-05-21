@@ -88,6 +88,7 @@ defmodule Crosswake.Manifest.Builder do
           path: path,
           runtime: route.runtime,
           offline: route.offline,
+          entry: route.entry,
           cache_contract: cache_contract(route),
           island_contract: island_contract(route),
           capabilities: route.capabilities,
@@ -144,9 +145,14 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
-        prerequisites: ["bundled or cached manifest", "shell activation support"],
+        prerequisites: [
+          "bundled or cached manifest",
+          "shell activation support",
+          "explicit route entry approval"
+        ],
         denial: "route_unavailable",
-        fallback: "show route unavailable surface and keep route ownership explicit",
+        fallback:
+          "show route unavailable surface that distinguishes inactive routes from routes that reject external entry",
         guide: "guides/native_shell.md#manifest-first-activation"
       ],
       [
@@ -191,12 +197,16 @@ defmodule Crosswake.Manifest.Builder do
         id: "permissions.status",
         family: "permissions.status",
         owner: :bounded_bridge,
-        package_class: :example_docs_only,
-        proof_class: :advisory,
+        package_class: :core,
+        proof_class: :merge_blocking,
         rebuild: :none,
-        prerequisites: ["point-of-need permission snapshot", "declared route capability"],
-        denial: "unavailable_capability",
-        fallback: "route continues without native permission snapshot authority",
+        prerequisites: [
+          "declared route capability",
+          "bounded bridge support",
+          "notifications alias only"
+        ],
+        denial: "undeclared_capability",
+        fallback: "route continues without native notification permission snapshot authority",
         guide: "guides/capabilities.md#bounded-bridge"
       ],
       [
@@ -206,9 +216,15 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :companion,
         proof_class: :advisory,
         rebuild: :companion_required,
-        prerequisites: ["push entitlement setup", "backend reconciliation"],
+        prerequisites: [
+          "declared route capability",
+          "bounded bridge support",
+          "notification authorization already resolved",
+          "provider token snapshot available"
+        ],
         denial: "unavailable_capability",
-        fallback: "treat token delivery as evidence, not notification truth",
+        fallback:
+          "treat notification token replies as provider-tagged evidence instead of backend registration truth",
         guide: "guides/capabilities.md#bounded-bridge",
         legacy_ids: ["push.notifications"]
       ],

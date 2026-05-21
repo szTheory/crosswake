@@ -11,6 +11,8 @@ defmodule Crosswake.Bridge.Registry do
   @capability_commands %{
     "app.info.get" => "app.info.get",
     "haptics.impact" => "haptics.impact",
+    "permissions.status" => "permissions.status",
+    "notifications.token.get" => "notification_token",
     "files.pick" => "files.pick",
     "share.invoke" => "share.invoke"
   }
@@ -80,9 +82,9 @@ defmodule Crosswake.Bridge.Registry do
   end
 
   defp capability_entry(manifest, route, command, capability_id) do
-    with true <- capability_declared_on_route?(route, capability_id) || {:error, :undeclared_capability},
-         %Capability{} = capability <-
-           lookup_capability(manifest, capability_id) || {:error, :undeclared_capability} do
+    with %Capability{} = capability <-
+           lookup_capability(manifest, capability_id) || {:error, :undeclared_capability},
+         true <- capability_declared_on_route?(route, capability) || {:error, :undeclared_capability} do
       {:ok,
        %Entry{
          command: command,
@@ -98,8 +100,8 @@ defmodule Crosswake.Bridge.Registry do
     end
   end
 
-  defp capability_declared_on_route?(route, capability_id) do
-    capability_id in route.capabilities
+  defp capability_declared_on_route?(route, %Capability{id: capability_id, legacy_ids: legacy_ids}) do
+    Enum.any?([capability_id | legacy_ids], &(&1 in route.capabilities))
   end
 
   defp lookup_capability(manifest, capability_id) do
