@@ -348,17 +348,15 @@ transfers: [
 - Manual command lists in docs that are not synced with registry/tests are outdated and should not be treated as canonical. [VERIFIED: codebase grep]
 - Any reading of `deep_link` as route-local bridge authority is outdated relative to current phase decisions and shell guides. [VERIFIED: codebase grep]
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should Phase 18 solve the `deep_link` support-row ambiguity by changing schema, copy, or both?**
-   - What we know: `deep_link` must stay activation-first, but support rendering currently shows it in the capability-family table as `bounded_bridge`. [VERIFIED: codebase grep]
-   - What's unclear: whether the smallest honest fix is a wording change, a new owner label, or a separate activation-specific rendering path. [VERIFIED: codebase grep]
-   - Recommendation: Plan this as an explicit design decision in the support-truth slice, because copying the current row forward will keep misleading downstream docs and diagnostics. [VERIFIED: codebase grep]
+   - Resolution: use both, but keep the schema change minimal. `deep_link` should render through a distinct activation-first support path instead of reading like another bounded-bridge family row, and the generated guide copy should reinforce that external entry is shell activation truth rather than route-local bridge authority. [VERIFIED: codebase grep]
+   - Planning consequence: the support-truth slice must update canonical support data plus renderer output so `deep_link` is structurally separated from ordinary bounded capabilities. [VERIFIED: codebase grep]
 
 2. **Should doctor findings introduce a first-class taxonomy helper now or stay inline?**
-   - What we know: Phase context permits a helper module/table, and current severity logic is scattered across shell/support/bridge findings. [VERIFIED: codebase grep]
-   - What's unclear: whether Phase 18 scope is large enough to justify centralizing severity and remediation templates immediately. [VERIFIED: codebase grep]
-   - Recommendation: Plan for a small helper only if it reduces duplicated severity/remediation logic across capability-specific checks; otherwise keep changes local to avoid abstraction churn. [VERIFIED: codebase grep]
+   - Resolution: introduce a small helper now. The current severity and remediation logic is already spread across doctor findings, and Phase 18 explicitly widens that matrix to include proof-state honesty, transfer-backed exceptions, and environment-sensitive warnings. A narrow helper keeps severity assignment deterministic without introducing a broad new abstraction layer. [VERIFIED: codebase grep]
+   - Planning consequence: the doctor slice should add one focused taxonomy helper module and route new Phase 18 findings through it. [VERIFIED: codebase grep]
 
 ## Environment Availability
 

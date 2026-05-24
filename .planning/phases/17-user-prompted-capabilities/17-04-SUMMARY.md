@@ -58,7 +58,7 @@ Implemented the Android example-host slice for Phase 17 by adding a provider-awa
 - `java -version && (cd examples/android_shell_host && ./gradlew test --tests dev.crosswake.shell.BridgeChannelTest)`
   - Result: blocked locally because this environment does not have a Java runtime installed.
   - Observed failure: `Unable to locate a Java Runtime.`
-- Because Java is unavailable here, Gradle and JVM proof for `BridgeChannelTest` still needs to run in CI or on a Java-enabled workstation.
+- Because Java is unavailable here, Gradle and JVM proof for `BridgeChannelTest` is now expected to close in the dedicated `Phase 18 Proof` GitHub Actions workflow rather than through manual workstation follow-up.
 
 ## Deviations From Plan
 
