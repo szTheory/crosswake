@@ -541,6 +541,105 @@ defmodule Crosswake.DoctorTest do
     assert plugin_finding.message =~ "requests generic_plugin_bus which is an explicit v1 boundary"
   end
 
+  # -- Phase 23 Plan 04 Task 3: advisory proof-boundary contract --
+  #
+  # The advisory boundary contract requires that any advisory-class finding
+  # surfaced by the doctor pipeline carries an explicit `promotion_path` hint
+  # explaining what would need to change for the finding to become merge-blocking.
+  # Advisory findings never assert core support truth; they are visible
+  # supplementary evidence. These tests reinforce that contract at the unit
+  # level alongside the proof-lane integration test in
+  # test/crosswake/proof/phase23_commerce_support_proof_test.exs.
+
+  test "advisory commerce findings (when emitted) cannot assert core support truth and carry explicit provider context",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: PurchaseCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :fresh,
+        native_rebuild_satisfied?: true
+      )
+
+    advisory_commerce_findings =
+      report.findings
+      |> Enum.filter(fn finding ->
+        (String.starts_with?(finding.code, "commerce.") or
+           finding.check in ["commerce_corridor", "commerce_summary"]) and
+          Map.get(finding.details, :proof_class) in ["advisory", :advisory]
+      end)
+
+    # Today no commerce finding emits proof_class :advisory directly — every
+    # corridor row is merge_blocking. The advisory_provider_proof flag rides
+    # alongside in commerce_summary.proof_posture.advisory entries. Assert the
+    # contract that IF such findings appear, they must never claim merge-blocking
+    # core support truth.
+    for finding <- advisory_commerce_findings do
+      refute Map.get(finding.details, :proof_class) in ["merge_blocking", :merge_blocking],
+             "advisory commerce finding #{finding.code} cannot also claim merge_blocking proof_class"
+
+      assert finding.severity in [:advisory, :warning],
+             "advisory commerce finding #{finding.code} must have advisory/warning severity, not error"
+    end
+
+    # The commerce_summary.proof_posture surface separates merge_blocking from
+    # advisory lists; this is the canonical place advisory commerce results
+    # appear. Assert that the two lists are disjoint (an advisory entry cannot
+    # double-count as merge_blocking core support truth).
+    summary = report.commerce_summary
+
+    overlap =
+      MapSet.intersection(
+        MapSet.new(summary.proof_posture.merge_blocking),
+        MapSet.new(summary.proof_posture.advisory)
+      )
+
+    assert MapSet.size(overlap) == 0,
+           "commerce_summary.proof_posture merge_blocking and advisory lists must be disjoint, got overlap #{inspect(MapSet.to_list(overlap))}"
+  end
+
+  test "advisory findings include a promotion_path hint explaining merge-blocking promotion requirements",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    # The doctor capability_proof_advisory finding is the canonical advisory
+    # finding shape today. It must carry an explicit promotion_path hint so
+    # operators can see what would need to change for the finding's lane to
+    # become merge-blocking (matches the contract language in
+    # .github/workflows/phase23-proof.yml).
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    advisory_findings =
+      report.findings
+      |> Enum.filter(fn finding ->
+        finding.severity == :advisory and
+          Map.get(finding.details, :proof_class) in ["advisory", :advisory]
+      end)
+
+    assert advisory_findings != [],
+           "expected at least one advisory finding (e.g. capability_proof_advisory) from the fixture router"
+
+    for finding <- advisory_findings do
+      assert Map.has_key?(finding.details, :promotion_path),
+             "advisory finding #{finding.code} missing :promotion_path hint in details"
+
+      promotion_path = Map.get(finding.details, :promotion_path)
+
+      assert is_binary(promotion_path) and promotion_path != "",
+             "advisory finding #{finding.code} promotion_path must be a non-empty string, got #{inspect(promotion_path)}"
+
+      # The promotion_path must explicitly reference the requirement/roadmap
+      # scope change requirement so operators cannot misread advisory passing
+      # as a green-light for support promotion.
+      assert promotion_path =~ ~r/requirement|roadmap/i,
+             "advisory finding #{finding.code} promotion_path must mention requirement/roadmap scope change, got #{inspect(promotion_path)}"
+    end
+  end
+
   defp write_shell_artifacts!(target) do
     ios_root = Path.join(target, "native/ios/crosswake_shell")
     android_root = Path.join(target, "native/android/crosswake_shell")

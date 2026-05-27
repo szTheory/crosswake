@@ -912,7 +912,9 @@ defmodule Crosswake.Doctor do
           "advisory capabilities do not block standard CI but require environment-sensitive verification before widening claims",
           %{
             capabilities: Enum.map(advisory, & &1.family),
-            proof_class: "advisory"
+            proof_class: "advisory",
+            promotion_path:
+              "advisory-to-merge-blocking promotion requires an explicit requirement/roadmap scope change plus sustained stability evidence from the advisory lane; advisory results never assert core support truth"
           }
         )
       end
