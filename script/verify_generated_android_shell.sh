@@ -6,6 +6,7 @@ TOOLCHAIN_ROOT="${HOME}/.crosswake/android-toolchain"
 SDK_ROOT="${ANDROID_SDK_ROOT:-${HOME}/.crosswake/android-sdk}"
 JDK_ROOT="${JAVA_HOME:-${TOOLCHAIN_ROOT}/temurin-17}"
 PROJECT_ROOT_INPUT="${CROSSWAKE_ANDROID_PROJECT_ROOT:-}"
+RUN_CONNECTED_TESTS="${CROSSWAKE_ANDROID_CONNECTED_TESTS:-1}"
 CMDLINE_TOOLS_ZIP="commandlinetools-mac-14742923_latest.zip"
 CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/${CMDLINE_TOOLS_ZIP}"
 AVD_NAME="crosswakeApi34Verify"
@@ -121,12 +122,20 @@ install_android_tools_if_needed() {
   set +o pipefail
   yes | sdkmanager --licenses >/dev/null
   set -o pipefail
-  sdkmanager \
+  local packages=(
     "platform-tools" \
     "platforms;android-34" \
-    "build-tools;34.0.0" \
-    "emulator" \
-    "system-images;android-34;aosp_atd;arm64-v8a"
+    "build-tools;34.0.0"
+  )
+
+  if [[ "${RUN_CONNECTED_TESTS}" != "0" ]]; then
+    packages+=(
+      "emulator"
+      "system-images;android-34;aosp_atd;arm64-v8a"
+    )
+  fi
+
+  sdkmanager "${packages[@]}"
 }
 
 create_avd_if_needed() {
@@ -195,9 +204,10 @@ stop_emulator() {
 }
 
 main() {
+  echo "Android verification mode: connected_tests=${RUN_CONNECTED_TESTS}"
+
   install_jdk_if_needed
   install_android_tools_if_needed
-  create_avd_if_needed
 
   local tmpdir=""
   local project_root=""
@@ -215,10 +225,16 @@ main() {
 
   printf 'sdk.dir=%s\n' "${ANDROID_SDK_ROOT//:/\\:}" > "${project_root}/local.properties"
 
-  start_emulator "${emulator_log}"
-
   cd "${project_root}"
-  ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --stacktrace testDebugUnitTest connectedDebugAndroidTest
+
+  if [[ "${RUN_CONNECTED_TESTS}" == "0" ]]; then
+    ./gradlew --no-daemon --stacktrace testDebugUnitTest
+    return
+  fi
+
+  create_avd_if_needed
+  start_emulator "${emulator_log}"
+  ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --no-daemon --stacktrace testDebugUnitTest connectedDebugAndroidTest
 }
 
 main "$@"
