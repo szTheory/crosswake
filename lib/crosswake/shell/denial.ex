@@ -45,6 +45,9 @@ defmodule Crosswake.Shell.Denial do
   @spec new(keyword()) :: t()
   def new(attrs) when is_list(attrs) do
     reason = Keyword.fetch!(attrs, :reason)
+    details = Keyword.get(attrs, :details, %{})
+    recovery = Keyword.get(attrs, :recovery, %{})
+    {details, recovery} = ensure_commerce_corridor_payload(reason, details, recovery)
 
     struct!(__MODULE__, %{
       reason: reason,
@@ -52,8 +55,8 @@ defmodule Crosswake.Shell.Denial do
       message: Keyword.fetch!(attrs, :message),
       hint: Keyword.get(attrs, :hint),
       route_id: Keyword.get(attrs, :route_id),
-      details: Keyword.get(attrs, :details, %{}),
-      recovery: Keyword.get(attrs, :recovery, %{})
+      details: details,
+      recovery: recovery
     })
   end
 
@@ -71,4 +74,27 @@ defmodule Crosswake.Shell.Denial do
     |> Enum.reject(fn {_key, value} -> is_nil(value) or value == %{} end)
     |> Map.new()
   end
+
+  defp ensure_commerce_corridor_payload(:commerce_corridor, details, recovery) do
+    details =
+      if details == %{} do
+        %{failing_moment: :commerce_route_activation}
+      else
+        details
+      end
+
+    recovery =
+      if recovery == %{} do
+        %{
+          actions: [:return_to_phoenix_guidance, :declare_corridor_or_disable_commerce_route],
+          fallback: :return_to_phoenix_guidance
+        }
+      else
+        recovery
+      end
+
+    {details, recovery}
+  end
+
+  defp ensure_commerce_corridor_payload(_reason, details, recovery), do: {details, recovery}
 end
