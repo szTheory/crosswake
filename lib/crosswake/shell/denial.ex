@@ -9,6 +9,7 @@ defmodule Crosswake.Shell.Denial do
     :compatibility_mismatch,
     :undeclared_capability,
     :unavailable_capability,
+    :commerce_corridor,
     :origin_denied,
     :inactive_route,
     :external_entry_denied,
@@ -22,6 +23,7 @@ defmodule Crosswake.Shell.Denial do
           :compatibility_mismatch
           | :undeclared_capability
           | :unavailable_capability
+          | :commerce_corridor
           | :origin_denied
           | :inactive_route
           | :external_entry_denied

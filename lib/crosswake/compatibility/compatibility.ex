@@ -106,35 +106,40 @@ defmodule Crosswake.Compatibility do
   def finding_to_denial(%Finding{} = finding, opts \\ []) do
     route_id = Keyword.get(opts, :route_id, finding.route_id)
 
-    {reason, recovery, details} =
+    {reason, code, recovery, details} =
       case finding.axis do
         :route ->
-          {:inactive_route, recovery_for(:inactive_route, opts), %{}}
+          {:inactive_route, nil, recovery_for(:inactive_route, opts), %{}}
 
         :active_route ->
-          {:inactive_route, recovery_for(:inactive_route, opts), %{}}
+          {:inactive_route, nil, recovery_for(:inactive_route, opts), %{}}
 
         :entry ->
-          {:external_entry_denied, recovery_for(:external_entry_denied, opts), %{}}
+          {:external_entry_denied, nil, recovery_for(:external_entry_denied, opts), %{}}
 
         :origin ->
-          {:origin_denied, %{}, %{}}
+          {:origin_denied, nil, %{}, %{}}
 
         :bridge_command ->
-          {:undeclared_capability, %{}, capability_details(finding)}
+          {:undeclared_capability, nil, %{}, capability_details(finding)}
 
         :capability_registry ->
-          {:undeclared_capability, %{}, capability_details(finding)}
+          {:undeclared_capability, nil, %{}, capability_details(finding)}
 
         :capability_version ->
-          {:unavailable_capability, %{}, capability_details(finding)}
+          {:unavailable_capability, nil, %{}, capability_details(finding)}
 
         :pack_version ->
-          {:pack_incompatible, recovery_for(:pack_incompatible, opts),
+          {:pack_incompatible, nil, recovery_for(:pack_incompatible, opts),
            pack_details(finding, opts)}
 
-        _other ->
-          {:compatibility_mismatch, recovery_for(:compatibility_mismatch, opts), %{}}
+        axis ->
+          if axis in commerce_corridor_axes() do
+            {code, recovery, details} = commerce_corridor_denial(axis, finding, opts)
+            {:commerce_corridor, code, recovery, details}
+          else
+            {:compatibility_mismatch, nil, recovery_for(:compatibility_mismatch, opts), %{}}
+          end
       end
 
     details =
@@ -146,6 +151,7 @@ defmodule Crosswake.Compatibility do
 
     Denial.new(
       reason: reason,
+      code: code || Atom.to_string(reason),
       route_id: route_id,
       message: finding.message,
       hint: finding.hint,
@@ -752,6 +758,111 @@ defmodule Crosswake.Compatibility do
     else
       %{}
     end
+  end
+
+  defp commerce_corridor_axes do
+    [
+      :commerce_corridor_undeclared,
+      :commerce_corridor_unsupported,
+      :commerce_corridor_prerequisite_missing,
+      :commerce_corridor_runtime_incompatible,
+      :commerce_corridor_entry_denied,
+      :commerce_corridor_origin_denied,
+      :commerce_corridor_policy_blocked,
+      :commerce_corridor_pack_incompatible
+    ]
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_undeclared, finding, opts) do
+    details =
+      %{}
+      |> maybe_put(:corridor_ref, finding.subject || finding.required)
+      |> maybe_put(:role, finding.available)
+
+    recovery =
+      commerce_recovery(
+        opts,
+        :declare_corridor,
+        [:return_to_phoenix_guidance, :declare_corridor_or_disable_commerce_route]
+      )
+
+    {"commerce.corridor.undeclared", recovery, details}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_unsupported, _finding, opts) do
+    recovery =
+      commerce_recovery(opts, :route_gate, [:return_to_phoenix_guidance, :review_supported_roles])
+
+    {"commerce.corridor.unsupported", recovery, %{}}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_prerequisite_missing, finding, opts) do
+    details =
+      %{}
+      |> maybe_put(:prerequisite, finding.subject || finding.required)
+
+    recovery =
+      commerce_recovery(
+        opts,
+        :prerequisite,
+        [:return_to_phoenix_guidance, :declare_corridor_or_disable_commerce_route]
+      )
+
+    {"commerce.corridor.prerequisite_missing", recovery, details}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_runtime_incompatible, finding, opts) do
+    details =
+      %{}
+      |> maybe_put(:required_runtime, finding.required)
+      |> maybe_put(:available_runtime, finding.available)
+
+    recovery = commerce_recovery(opts, :runtime, [:return_to_phoenix_guidance, :update_app])
+
+    {"commerce.corridor.runtime_incompatible", recovery, details}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_entry_denied, _finding, opts) do
+    recovery = commerce_recovery(opts, :entry, [:return_to_phoenix_guidance, :retry])
+    {"commerce.corridor.entry_denied", recovery, %{}}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_origin_denied, _finding, opts) do
+    recovery = commerce_recovery(opts, :origin, [:return_to_phoenix_guidance])
+    {"commerce.corridor.origin_denied", recovery, %{}}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_policy_blocked, finding, opts) do
+    details =
+      %{}
+      |> maybe_put(:policy, finding.required)
+      |> maybe_put(:available, finding.available)
+
+    recovery =
+      commerce_recovery(
+        opts,
+        :policy,
+        [:return_to_phoenix_guidance, :declare_corridor_or_disable_commerce_route]
+      )
+
+    {"commerce.corridor.policy_blocked", recovery, details}
+  end
+
+  defp commerce_corridor_denial(:commerce_corridor_pack_incompatible, finding, opts) do
+    recovery = commerce_recovery(opts, :pack, [:return_to_phoenix_guidance, :update_app])
+    {"commerce.corridor.pack_incompatible", recovery, pack_details(finding, opts)}
+  end
+
+  defp commerce_recovery(opts, mode, actions) do
+    %{
+      mode: mode,
+      actions: actions,
+      fallback: :return_to_phoenix_guidance,
+      corridor_action: :declare_corridor_or_disable_commerce_route,
+      activation_source: Keyword.get(opts, :activation_source)
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
   end
 
   defp maybe_put(map, _key, nil), do: map
