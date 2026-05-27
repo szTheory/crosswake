@@ -113,8 +113,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "## Commerce Corridors",
       "",
-      "| corridor_role | owner_posture | prerequisites | denial_codes | fallback_behavior | native_rebuild_required |",
-      "|---------------|---------------|---------------|--------------|-------------------|-------------------------|",
+      "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |",
+      "|---------------|---------------|----------------------|---------------|--------------|-------------------|-------------|---------------------|",
       Enum.map_join(entries, "\n", &commerce_corridor_row/1)
     ]
     |> Enum.join("\n")
@@ -183,10 +183,13 @@ defmodule Crosswake.SupportMatrix.Renderer do
   end
 
   defp commerce_corridor_row(entry) do
+    prerequisite_classes = format_atom_list(entry.prerequisite_classes)
     prerequisites = format_list(entry.prerequisites)
     denial_codes = format_list(entry.denial_codes)
+    proof_class = format_proof_class(entry.proof_class)
+    rebuild_requirement = format_rebuild_requirement(entry.rebuild_requirement)
 
-    "| #{entry.corridor_role} | #{entry.owner_posture} | #{prerequisites} | #{denial_codes} | #{entry.fallback_behavior} | #{entry.native_rebuild_required} |"
+    "| #{entry.corridor_role} | #{entry.owner_posture} | #{prerequisite_classes} | #{prerequisites} | #{denial_codes} | #{entry.fallback_behavior} | #{proof_class} | #{rebuild_requirement} |"
   end
 
   defp release_boundary_row(%ReleaseBoundaryEntry{} = entry) do
@@ -214,4 +217,11 @@ defmodule Crosswake.SupportMatrix.Renderer do
 
   defp format_list([]), do: "-"
   defp format_list(items), do: Enum.join(items, "; ")
+
+  defp format_atom_list([]), do: "-"
+  defp format_atom_list(items), do: Enum.map_join(items, "; ", &Atom.to_string/1)
+
+  defp format_rebuild_requirement(%{native_rebuild_required: required, rebuild_trigger: trigger}) do
+    "native_rebuild_required=#{required}: #{trigger}"
+  end
 end

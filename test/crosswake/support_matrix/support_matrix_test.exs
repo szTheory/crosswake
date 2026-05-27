@@ -286,4 +286,73 @@ defmodule Crosswake.SupportMatrixTest do
              "restore_intent" => %{proof_class: :merge_blocking, advisory_provider_proof: true}
            }
   end
+
+  test "every commerce corridor entry declares prerequisite_classes, proof_class, and rebuild_requirement" do
+    entries = SupportMatrix.commerce_corridors()
+
+    for entry <- entries do
+      assert Map.has_key?(entry, :prerequisite_classes),
+             "commerce corridor #{entry.corridor_role} missing :prerequisite_classes"
+
+      assert is_list(entry.prerequisite_classes) and entry.prerequisite_classes != [],
+             "commerce corridor #{entry.corridor_role} prerequisite_classes must be a non-empty list, got #{inspect(entry.prerequisite_classes)}"
+
+      assert Map.has_key?(entry, :proof_class),
+             "commerce corridor #{entry.corridor_role} missing :proof_class"
+
+      assert Map.has_key?(entry, :rebuild_requirement),
+             "commerce corridor #{entry.corridor_role} missing :rebuild_requirement"
+
+      assert is_map(entry.rebuild_requirement),
+             "commerce corridor #{entry.corridor_role} rebuild_requirement must be a structured map"
+
+      assert Map.has_key?(entry.rebuild_requirement, :native_rebuild_required),
+             "commerce corridor #{entry.corridor_role} rebuild_requirement missing :native_rebuild_required"
+
+      assert is_boolean(entry.rebuild_requirement.native_rebuild_required),
+             "commerce corridor #{entry.corridor_role} rebuild_requirement.native_rebuild_required must be a boolean"
+
+      assert Map.has_key?(entry.rebuild_requirement, :rebuild_trigger),
+             "commerce corridor #{entry.corridor_role} rebuild_requirement missing :rebuild_trigger"
+
+      assert is_binary(entry.rebuild_requirement.rebuild_trigger),
+             "commerce corridor #{entry.corridor_role} rebuild_requirement.rebuild_trigger must be a string"
+
+      # rebuild_requirement.native_rebuild_required must stay consistent with the legacy boolean
+      assert entry.rebuild_requirement.native_rebuild_required == entry.native_rebuild_required,
+             "commerce corridor #{entry.corridor_role} rebuild_requirement.native_rebuild_required must match legacy native_rebuild_required boolean"
+    end
+  end
+
+  test "every commerce corridor prerequisite_classes value is drawn from the canonical taxonomy" do
+    taxonomy = MapSet.new(SupportMatrix.commerce_corridor_prerequisite_taxonomy())
+
+    for entry <- SupportMatrix.commerce_corridors(),
+        prerequisite_class <- entry.prerequisite_classes do
+      assert MapSet.member?(taxonomy, prerequisite_class),
+             "commerce corridor #{entry.corridor_role} prerequisite_class #{inspect(prerequisite_class)} not in canonical taxonomy #{inspect(MapSet.to_list(taxonomy))}"
+    end
+  end
+
+  test "commerce_corridor_prerequisite_taxonomy/0 returns the canonical prerequisite class set" do
+    assert SupportMatrix.commerce_corridor_prerequisite_taxonomy() == [
+             :route_declaration,
+             :backend_reconciliation,
+             :native_adapter,
+             :provider_setup
+           ]
+  end
+
+  test "paywall and account_management corridors require no native rebuild; purchase and restore require native rebuild" do
+    entries = SupportMatrix.commerce_corridors()
+    paywall_entry = Enum.find(entries, &(&1.corridor_role == "paywall_entry"))
+    account_management = Enum.find(entries, &(&1.corridor_role == "account_management"))
+    purchase_intent = Enum.find(entries, &(&1.corridor_role == "purchase_intent"))
+    restore_intent = Enum.find(entries, &(&1.corridor_role == "restore_intent"))
+
+    refute paywall_entry.rebuild_requirement.native_rebuild_required
+    refute account_management.rebuild_requirement.native_rebuild_required
+    assert purchase_intent.rebuild_requirement.native_rebuild_required
+    assert restore_intent.rebuild_requirement.native_rebuild_required
+  end
 end

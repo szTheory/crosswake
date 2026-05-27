@@ -13,10 +13,17 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.SupportMatrix
 
   @statuses [:supported, :verification_required, :unsupported]
+  @commerce_corridor_prerequisite_taxonomy [
+    :route_declaration,
+    :backend_reconciliation,
+    :native_adapter,
+    :provider_setup
+  ]
   @commerce_corridor_entries [
     %{
       corridor_role: "paywall_entry",
       owner_posture: "phoenix_owned",
+      prerequisite_classes: [:route_declaration, :backend_reconciliation],
       prerequisites: [
         "route declares commerce corridor binding",
         "backend entitlement contract available"
@@ -29,12 +36,18 @@ defmodule Crosswake.SupportMatrix do
       fallback_behavior:
         "Keep the paywall route Phoenix-owned and return explicit declaration guidance when a corridor check fails.",
       native_rebuild_required: false,
+      rebuild_requirement: %{
+        native_rebuild_required: false,
+        rebuild_trigger:
+          "Core route/manifest metadata only — Phoenix-owned paywall changes do not require a native shell rebuild."
+      },
       proof_class: :merge_blocking,
       advisory_provider_proof: false
     },
     %{
       corridor_role: "account_management",
       owner_posture: "phoenix_owned",
+      prerequisite_classes: [:route_declaration, :backend_reconciliation],
       prerequisites: [
         "route declares commerce corridor binding",
         "backend entitlement projection available"
@@ -47,12 +60,18 @@ defmodule Crosswake.SupportMatrix do
       fallback_behavior:
         "Return to backend-owned account management guidance and fail closed until prerequisites are restored.",
       native_rebuild_required: false,
+      rebuild_requirement: %{
+        native_rebuild_required: false,
+        rebuild_trigger:
+          "Core route/manifest metadata only — backend-owned account surfaces do not require a native shell rebuild."
+      },
       proof_class: :merge_blocking,
       advisory_provider_proof: false
     },
     %{
       corridor_role: "purchase_intent",
       owner_posture: "native_or_companion_required",
+      prerequisite_classes: [:native_adapter, :provider_setup, :backend_reconciliation],
       prerequisites: [
         "native or companion storefront corridor implemented",
         "backend reconciliation ingest enabled"
@@ -66,12 +85,18 @@ defmodule Crosswake.SupportMatrix do
       fallback_behavior:
         "Fail closed with return-to-Phoenix guidance; never grant entitlement authority from device intent alone.",
       native_rebuild_required: true,
+      rebuild_requirement: %{
+        native_rebuild_required: true,
+        rebuild_trigger:
+          "Native adapter or provider SDK code changes require rebuilding and resubmitting the host shell."
+      },
       proof_class: :merge_blocking,
       advisory_provider_proof: true
     },
     %{
       corridor_role: "restore_intent",
       owner_posture: "native_or_companion_required",
+      prerequisite_classes: [:native_adapter, :provider_setup, :backend_reconciliation],
       prerequisites: [
         "native or companion restore corridor implemented",
         "backend reconciliation ingest enabled"
@@ -85,6 +110,11 @@ defmodule Crosswake.SupportMatrix do
       fallback_behavior:
         "Fail closed with restore guidance and keep entitlement truth backend-owned until evidence is reconciled.",
       native_rebuild_required: true,
+      rebuild_requirement: %{
+        native_rebuild_required: true,
+        rebuild_trigger:
+          "Native restore choreography or provider SDK code changes require rebuilding and resubmitting the host shell."
+      },
       proof_class: :merge_blocking,
       advisory_provider_proof: true
     }
@@ -209,6 +239,14 @@ defmodule Crosswake.SupportMatrix do
     |> Enum.uniq()
     |> Enum.sort()
   end
+
+  @doc """
+  Returns the canonical taxonomy of prerequisite classes that may be referenced by
+  commerce corridor entries. Every `prerequisite_classes` value on a commerce corridor
+  entry must be drawn from this set so doctor/support/guides taxonomy stays parity-locked.
+  """
+  @spec commerce_corridor_prerequisite_taxonomy() :: [atom()]
+  def commerce_corridor_prerequisite_taxonomy, do: @commerce_corridor_prerequisite_taxonomy
 
   @doc """
   Returns the canonical commerce corridor proof-class mapping.
