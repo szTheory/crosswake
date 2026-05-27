@@ -17,12 +17,28 @@ defmodule Crosswake.Guides.CommerceTest do
   end
 
   test "makes authority vs evidence semantics explicit for entitlement_snapshot", %{content: content} do
+    assert content =~ "Entitlement Snapshot Lanes"
+    assert content =~ "authority"
+    assert content =~ "access"
+    assert content =~ "reconciliation"
+    assert content =~ "freshness"
+    assert content =~ "effective"
     assert content =~ "authority"
     assert content =~ "evidence"
     assert content =~ "entitlement_snapshot"
+    assert content =~ "device"
+    assert content =~ "storefront"
+    assert content =~ "webhook"
+    assert content =~ "support"
     assert content =~ "pending_purchase"
     assert content =~ "pending_restore"
     assert content =~ "awaiting_verification"
+    assert content =~ "billing_retry"
+    assert content =~ "refunded"
+    assert content =~ "expired"
+    assert content =~ "fresh"
+    assert content =~ "stale"
+    assert content =~ "unknown"
   end
 
   test "documents the canonical flow", %{content: content} do

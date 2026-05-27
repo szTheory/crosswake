@@ -25,13 +25,26 @@ Crosswake keeps corridor ownership explicit and matrix-first so route authors ca
 
 For Phase 19, provider adapters are out of scope. Crosswake defines seam vocabulary and fallback posture, while StoreKit, Play Billing, and other adapter implementations stay companion or future work.
 
+## Entitlement Snapshot Lanes
+
+Crosswake models `entitlement_snapshot` as six explicit semantic lanes:
+
+1. `authority`: backend-owned entitlement verdict (`none`, `active`, `grace`, `billing_retry`, `canceled_scheduled_end`, `revoked`, `refunded`, `expired`).
+2. `access`: the route-facing decision (`granted` or `denied`) with reason metadata.
+3. `reconciliation`: workflow posture (`pending_purchase`, `pending_restore`, `awaiting_verification`, `projection_refreshed`, `conflict`, `verification_failed`, `stale_authority`).
+4. `freshness`: projection confidence (`fresh`, `stale`, `unknown`).
+5. `effective`: effective-from / effective-until timing metadata.
+6. `evidence`: bounded provenance envelope for reconciliation inputs.
+
+The lanes are orthogonal: pending and verification workflow states belong to reconciliation and never imply direct authority grants.
+
 ## Authority vs Evidence
 
-An `entitlement_snapshot` is a dual-lane record: it carries both a strict backend `authority` verdict and a bounded `evidence` envelope. Device or storefront observations inform the snapshot but do not replace it. 
+An `entitlement_snapshot` keeps authority and evidence separate by design. Device, storefront, webhook, and support signals are evidence sources that can advance reconciliation, but they cannot directly grant authority.
 
 Device success is evidence, not entitlement. Missing or stale evidence must not silently imply denial, and missing device evidence must not silently imply entitlement success.
 
-States such as `pending_purchase`, `pending_restore`, and `awaiting_verification` are reconciliation states, not automatic access grants. You must explicitly evaluate `authority_state` vs `access_state` to know if a user can access a feature.
+States such as `pending_purchase`, `pending_restore`, `awaiting_verification`, `grace`, `billing_retry`, `canceled_scheduled_end`, `revoked`, `refunded`, and `expired` require explicit backend projection semantics. You must evaluate `authority_state`, `access_state`, and freshness posture together rather than treating pending or evidence signals as grants.
 
 ## Commerce Moment Map
 
