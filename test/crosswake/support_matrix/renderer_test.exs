@@ -95,11 +95,43 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Commerce Corridors"
-    assert guide =~ "| corridor_role | owner_posture | prerequisites | denial_codes | fallback_behavior | native_rebuild_required |"
+    assert guide =~
+             "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |"
     assert guide =~ "| paywall_entry | phoenix_owned |"
     assert guide =~ "commerce.corridor.undeclared"
     assert guide =~ "| purchase_intent | native_or_companion_required |"
     assert guide =~ "commerce.corridor.runtime_incompatible"
+  end
+
+  test "commerce corridor rows expose proof_class, prerequisite_classes, and rebuild_requirement columns" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    # proof_class appears on every commerce corridor row
+    assert guide =~ "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
+
+    assert guide =~
+             "| account_management | phoenix_owned | route_declaration; backend_reconciliation |"
+
+    assert guide =~
+             "| purchase_intent | native_or_companion_required | native_adapter; provider_setup; backend_reconciliation |"
+
+    assert guide =~
+             "| restore_intent | native_or_companion_required | native_adapter; provider_setup; backend_reconciliation |"
+
+    # proof_class merge-blocking label appears on commerce corridor rows
+    assert guide =~ "| merge-blocking | native_rebuild_required=false:"
+    assert guide =~ "| merge-blocking | native_rebuild_required=true:"
+
+    # rebuild_trigger text appears on the corridor row
+    assert guide =~
+             "Phoenix-owned paywall changes do not require a native shell rebuild"
+
+    assert guide =~ "Native adapter or provider SDK code changes require rebuilding"
+    assert guide =~ "Native restore choreography or provider SDK code changes require rebuilding"
+
+    # prerequisite_classes are rendered as semicolon-separated atom names
+    assert guide =~ "route_declaration; backend_reconciliation"
+    assert guide =~ "native_adapter; provider_setup; backend_reconciliation"
   end
 
   test "guides remain mechanically checked against canonical support truth and phase 3 boundaries" do
