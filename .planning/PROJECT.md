@@ -10,23 +10,21 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27`.
+Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
-`v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
+`v3.2` delivered provider-neutral commerce route/corridor declarations with canonical `commerce.corridor.*` denial vocabulary, explicit entitlement lifecycle lane semantics that keep device/storefront evidence non-authoritative, a runnable Phoenix-owned reconciliation inbox/projection example, merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides anchored to canonical `SupportMatrix` accessors, a hermetic 14-test CI proof lane separated from a scheduled-only advisory provider lane, and machine-enforced SUMMARY frontmatter parity (`requirements-completed:`) backed by an ExUnit merge-blocking test. Tech-debt closure (Phase 25) hardened the parity test with presence assertion (WR-01) and loud-fail malformed-shape detection (WR-02).
 
-`v3.2 Commerce And Entitlement Seams` remains active with `Phase 24 Reconciliation Traceability Hardening` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, a runnable Phoenix-owned reconciliation inbox/projection example, merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides, a hermetic CI proof lane, and machine-enforced SUMMARY frontmatter parity (`requirements-completed:`) backed by an ExUnit merge-blocking test plus a re-audit evidence section in `v3.2-MILESTONE-AUDIT.md`.
+`v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-## Current Milestone: v3.2 Commerce And Entitlement Seams
+## Next Milestone Goals
 
-**Goal:** Make Crosswake's commerce seam usable and provable for Phoenix teams while keeping entitlement truth backend-owned and native/storefront provider work outside core.
+The next strategic arc candidate per `MILESTONE-ARC.md` is provider/companion adapter delivery now that the commerce seam is operationalized and support truth is mechanically enforced. Likely scope candidates:
 
-**Target features:**
-- Commerce route/corridor declarations that separate Phoenix-owned paywall/account surfaces from native-screen or companion-owned purchase loops.
-- Typed purchase, restore, reconciliation, and entitlement lifecycle semantics that keep device/storefront events as evidence.
-- Minimal Phoenix-owned reconciliation inbox and entitlement projection example for host apps.
-- Doctor, support-matrix, reviewer/storefront, and proof-lane guidance for commerce prerequisites and fallbacks.
+- **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input.
+- **Commerce archetype proof (ARCH-02)** — re-run a subscription/paywall adopter-shaped exemplar lane against the v3.2 seam plus at least one provider-aware adapter or mocked storefront corridor.
+- **Operator and companion expansion (OPS-01, COMP-05)** — richer operator inspection for entitlement snapshots, reconciliation attempts, and commerce route support truth; first commerce-adjacent companion integration only after package boundaries and rebuild truth are proven.
 
-**Why now:** `v3.0` locked the commerce vocabulary and package boundary, and `v3.1` proved bounded native capability delivery. Commerce is the next strategic arc candidate before wider companion or archetype expansion.
+Final scope and ordering will be set via `$gsd-new-milestone`.
 
 ## Requirements
 
@@ -52,16 +50,22 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 - [x] Ship the first low-frequency bounded native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) without widening into high-frequency bridge authority. Validated across Phases 15-17.
 - [x] Enforce v3.1 capability declarations route-locally and keep missing prerequisites fail-closed with explicit doctor and support-matrix truth. Validated in Phase 18.
 - [x] Prove the v3.1 capability surface through layered Elixir, checked-in iOS shell, and Android JVM CI proof lanes. Validated by Phase 18 Proof run `26498172516`.
-- [x] Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops. Validated in Phase 19: Commerce Route Corridors.
-- [x] Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary. Validated in Phase 19: Commerce Route Corridors.
-- [x] Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback. Validated in Phase 19: Commerce Route Corridors.
-- [x] Phoenix teams can use normalized purchase, restore, reconciliation, and entitlement snapshot semantics without treating device callbacks as entitlement authority. Validated in Phase 20: Entitlement Lifecycle Semantics.
-- [x] Host apps can follow a minimal backend reconciliation inbox and entitlement projection example that keeps idempotency and provider verification outside Crosswake core. Validated in Phase 21: Reconciliation Example.
-- [x] Adopters can see explicit doctor, support-matrix, reviewer/storefront, fallback, and proof guidance for commerce claims before provider adapters ship. Validated in Phase 23: Commerce Support And Proof Closure.
+- [x] **COMM-04** Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops. Validated in v3.2 (Phase 19).
+- [x] **COMM-05** Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary. Validated in v3.2 (Phase 19).
+- [x] **COMM-06** Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback. Validated in v3.2 (Phase 19).
+- [x] **ENTL-01** Phoenix teams can model entitlement snapshots with authority state, access state, reconciliation state, freshness, effective dates, and bounded evidence metadata. Validated in v3.2 (Phase 20).
+- [x] **ENTL-02** Crosswake distinguishes pending purchase, pending restore, awaiting verification, grace/billing retry, canceled scheduled end, revoked/refunded, expired, and stale snapshot states without leaking raw provider enums. Validated in v3.2 (Phase 20).
+- [x] **ENTL-03** Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts. Validated in v3.2 (Phase 20).
+- [x] **RECN-01** Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **RECN-02** Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **RECN-03** Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **SUPP-04** Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale entitlement snapshots, and native rebuild requirements. Validated in v3.2 (Phase 23).
+- [x] **SUPP-05** Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped. Validated in v3.2 (Phase 23).
+- [x] **SUPP-06** Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship. Validated in v3.2 (Phase 23).
 
 ### Active
 
-_All v3.2 commerce-and-entitlement requirements validated through Phase 23. Next: Phase 24 (Reconciliation Traceability Hardening)._
+_All v3.2 commerce-and-entitlement requirements validated. Next milestone scope set via `$gsd-new-milestone`._
 
 ### Out of Scope
 
@@ -113,7 +117,11 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | Validated through Phases 11-18 |
 | Ship native capabilities only when they remain low-frequency, typed, and route-local | v3.1 proved value in bounded affordances while avoiding continuous client authority | Validated in Milestone v3.1 |
 | Split proof lanes by evidence class when emulator/device proof slows iteration | Android JVM bridge truth closed quickly in CI once separated from emulator-backed connected tests | Validated in Phase 18 closeout |
-| Operationalize commerce as a backend-owned seam before provider adapters | Apple and Google purchase ecosystems both require native storefront evidence plus backend verification/lifecycle truth, matching Crosswake's Phase 13 contract posture | Active in Milestone v3.2 |
+| Operationalize commerce as a backend-owned seam before provider adapters | Apple and Google purchase ecosystems both require native storefront evidence plus backend verification/lifecycle truth, matching Crosswake's Phase 13 contract posture | Validated in Milestone v3.2 — provider-neutral corridors, lifecycle lane vocabulary, and reconciliation example all shipped without any provider adapter code |
+| Use canonical `commerce.corridor.*` denial vocabulary as the single source of truth across route policy, manifest, doctor, support matrix, and guides | Provider-specific denial codes would force every consumer of support truth to know provider trivia; a canonical taxonomy lets the same data stitch through `SupportMatrix.commerce_corridors/0`, doctor `commerce_summary`, and merge-blocking docs tests | Validated in v3.2 (Phases 19+23) — parity tests lock taxonomy across all surfaces |
+| Split commerce CI proof into hermetic merge-blocking and scheduled-only advisory lanes | Provider simulator/device/storefront proof is environment-sensitive and would block PRs unfairly; the hermetic lane stays fast and required while advisory proof remains visible at runtime via the doctor `promotion_path` detail | Validated in v3.2 (Phase 23) — `phase23-proof.yml` two-job split with `continue-on-error: true` on the advisory job |
+| Decompose audit-flagged phases before execution rather than executing oversized phases | The v3.2 milestone-audit flagged Phase 22 as the original "support + review + proof" container; splitting into Phase 23 (runtime closure) and Phase 24 (traceability hardening) before execution kept verification scopes sharp and avoided cross-stream drift | Validated in v3.2 — both decomposed phases shipped clean verification |
+| Treat SUMMARY-frontmatter traceability automation as merge-blocking infrastructure | RECN-01/02/03 were initially flagged `partial` purely because of artifact-shape inconsistency (`requirements:` vs canonical `requirements-completed:`); the gap closed by adding a parity ExUnit test wired into the merge-blocking CI job, not by changing behavior | Validated in v3.2 (Phase 24; hardened in Phase 25) — parity test now asserts presence (WR-01) and fails loudly on malformed shapes (WR-02) |
 
 ## Evolution
 
@@ -133,4 +141,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Phase 24 Reconciliation Traceability Hardening*
+*Last updated: 2026-05-27 after v3.2 milestone*

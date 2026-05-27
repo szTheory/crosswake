@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
-status: executing
+status: Awaiting next milestone
 stopped_at: Phase 25 context gathered
-last_updated: "2026-05-27T21:52:22.999Z"
-last_activity: 2026-05-27 -- Phase 25 execution started
+last_updated: "2026-05-27T22:23:13.090Z"
+last_activity: 2026-05-27 — Milestone v3.2 completed and archived
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 18
-  completed_plans: 16
-  percent: 71
+  completed_plans: 18
+  percent: 86
 ---
 
 # Project State
@@ -21,16 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 25 — Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02
+**Current focus:** Planning next milestone (v3.2 archived)
 
 ## Current Position
 
-Phase: 25 (Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 25
-Last activity: 2026-05-27 -- Phase 25 execution started
-
-Progress: [#####-----] 50%
+Phase: Milestone v3.2 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-27 — Milestone v3.2 completed and archived
 
 ## Performance Metrics
 
@@ -58,8 +56,8 @@ Progress: [#####-----] 50%
 
 **Recent Trend:**
 
-- Last milestone shipped: v3.1 Native Capabilities and Bridge Expansion on 2026-05-27
-- Current milestone: v3.2 Commerce And Entitlement Seams
+- Last milestone shipped: v3.2 Commerce And Entitlement Seams on 2026-05-27
+- Current milestone: TBD (planning next milestone)
 - Trend: Positive
 
 ## Accumulated Context
@@ -67,24 +65,15 @@ Progress: [#####-----] 50%
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Recent milestone summary:
 
-- Milestone v3.1 shipped with the first low-frequency bounded capability families and closed Phase 18 CI proof.
-- Milestone v3.2 treats Phase 13 commerce vocabulary as substrate and focuses on operationalizing route corridors, lifecycle semantics, reconciliation examples, and support truth.
-- Entitlement truth remains Phoenix/backend-owned; StoreKit, Play Billing, and provider SDK events are evidence inputs.
-- Provider-specific billing adapters remain companion/future work, not core scope.
-- Phase 19 Plan 01 established canonical corridor profile declarations and root manifest `commerce_corridors` with route `corridor_ref` linkage.
-- Manifest schema stays `1.0.0`; corridor fields are additive and enforced only on routes that declare commerce.
-- Phase 19 Plan 02 established canonical `commerce.corridor.*` denial codes under `:commerce_corridor` and fail-closed activation enforcement.
-- Corridor denials now carry explicit `return_to_phoenix_guidance` plus corridor declaration recovery actions instead of silent fallback.
-- Phase 19 Plan 03 synchronized commerce corridor support truth across support matrix, doctor human/json output, and public guides with canonical taxonomy parity tests.
+- Milestone v3.2 shipped on 2026-05-27 with provider-neutral commerce route corridors, entitlement lifecycle lane semantics, reconciliation example, merge-blocking commerce proof lane, and SUMMARY frontmatter parity enforcement.
+- Phase 22 was audit-decomposed into Phases 23 (runtime closure) and 24 (traceability hardening) before execution.
+- Phase 25 closed two non-blocking tech-debt items from the milestone-closure re-audit (Phase 20 verification text + parity test WR-01/02 hardening).
 
 ### Pending Todos
 
-- Execute Phase 23 wave 1: `23-01` (doctor commerce summary + stale diagnostics) and `23-02` (support matrix enrichment + guide sync) in parallel.
-- Execute Phase 23 wave 2: `23-03` (reviewer/storefront guidance) and `23-04` (proof lane formalization) after wave 1.
-- Run Phase 24 traceability hardening to close RECN partial audit findings (`RECN-01`, `RECN-02`, `RECN-03`).
-- Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
+- Define next milestone via `$gsd-new-milestone`. Strategic arc candidates: provider/companion adapters (`ADPT-01/02`), commerce archetype proof (`ARCH-02`), operator/companion expansion (`OPS-01`, `COMP-05`).
 
 ### Blockers/Concerns
 
@@ -93,7 +82,7 @@ Recent decisions affecting current work:
 
 ### Roadmap Evolution
 
-- Phase 25 added: Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02
+- v3.2 milestone archived. ROADMAP.md collapsed; full archive at `.planning/milestones/v3.2-ROADMAP.md`.
 
 ## Deferred Items
 
@@ -106,6 +95,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T21:33:32.517Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-address-tech-debt-phase-20-verification-text-phase-24-parity/25-CONTEXT.md
+Last session: 2026-05-27 — Milestone v3.2 archived
+Stopped at: v3.2 complete
+Resume file: —
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd:new-milestone
