@@ -360,8 +360,22 @@ defmodule Crosswake.Doctor.Formatter do
   # (WR-08).
   defp detail(nil, _key), do: nil
 
+  # Membership-based lookup so legitimate falsy values (e.g.
+  # advisory_provider_proof: false) are returned as-is. The previous
+  # `Map.get(...) || Map.get(...)` form fell through to the string-keyed
+  # lookup whenever the atom-keyed value was false, silently overriding
+  # correct data (WR-09).
   defp detail(details, key) when is_map(details) do
-    Map.get(details, key) || Map.get(details, Atom.to_string(key))
+    cond do
+      Map.has_key?(details, key) ->
+        Map.get(details, key)
+
+      is_atom(key) and Map.has_key?(details, Atom.to_string(key)) ->
+        Map.get(details, Atom.to_string(key))
+
+      true ->
+        nil
+    end
   end
 
   defp status_word(true), do: "yes"

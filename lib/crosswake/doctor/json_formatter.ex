@@ -204,8 +204,21 @@ defmodule Crosswake.Doctor.JSONFormatter do
   # from every check_to_map/1 detail lookup (WR-08).
   defp detail(nil, _key), do: nil
 
+  # Membership-based lookup so legitimate falsy values (e.g.
+  # advisory_provider_proof: false) survive — the previous
+  # `Map.get(...) || Map.get(...)` form silently fell through to the
+  # string-keyed lookup whenever the atom-keyed value was false (WR-09).
   defp detail(details, key) when is_map(details) do
-    Map.get(details, key) || Map.get(details, Atom.to_string(key))
+    cond do
+      Map.has_key?(details, key) ->
+        Map.get(details, key)
+
+      is_atom(key) and Map.has_key?(details, Atom.to_string(key)) ->
+        Map.get(details, Atom.to_string(key))
+
+      true ->
+        nil
+    end
   end
 
   defp maybe_atom_to_string(value) when is_atom(value), do: Atom.to_string(value)

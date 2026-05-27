@@ -168,6 +168,41 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "fallback_hint=return_to_phoenix_guidance"
   end
 
+  test "formatter detail lookup preserves legitimate `false` values without falling through to the string-keyed slot (WR-09)" do
+    # Map.get(...) || Map.get(...) silently overrode `false` at the atom-keyed
+    # slot. Use Map.has_key?-based lookup so false survives. Today no commerce
+    # finding stores a falsy detail, but advisory_provider_proof: false is a
+    # natural future addition. Lock the contract now.
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route buy triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: %{
+            corridor_ref: "subscription_default",
+            role: :purchase_intent,
+            denial_code: "commerce.corridor.runtime_incompatible",
+            # Critical: atom-keyed false. Pre-fix this silently fell through
+            # to the string-keyed "fallback_hint" slot and emitted whichever
+            # value sat there (or nil → then `|| check.hint` kicked in,
+            # giving "return_to_phoenix_guidance" instead of "false").
+            fallback_hint: false,
+            proof_class: "merge_blocking"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "fallback_hint=false",
+           "atom-keyed false must survive detail/2 lookup; got: #{output}"
+  end
+
   test "commerce summary findings render their proof_class label inline" do
     report = %{
       status: :error,
