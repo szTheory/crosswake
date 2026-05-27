@@ -97,6 +97,25 @@ This reconciliation walkthrough is `example/docs-only` and companion-ready. It i
 
 Idempotency belongs on the backend. Attempt keys should use provider-aware identity such as provider, original transaction id or purchase token, event id, and event kind. Transient device correlation ids are useful evidence but do not define idempotency keys. Duplicate webhook retries or replacement tokens must be safely handled by your host-owned workers.
 
+Use explicit dual keys in host-owned reconciliation workers:
+
+- `event_key`: dedupe/replay identity for one evidence event (`provider`, `provider_reference`, `event_kind`, `evidence_ref`).
+- `subject_key`: serialization identity for authoritative projection ordering (`provider`, `provider_reference`, with optional host `group_id` override).
+- `correlation_id`: trace metadata only. A transient device `correlation_id` never defines idempotency identity or authority ownership.
+
+## Deterministic Projection Precedence
+
+Keep one authoritative snapshot and map each evaluation to exactly one top-level output:
+
+| precedence | condition | output | authority posture |
+| --- | --- | --- | --- |
+| 1 | freshness is `stale` or `unknown` | `stale` | fail closed until fresher backend projection data exists |
+| 2 | reconciliation is `pending_purchase`, `pending_restore`, or `awaiting_verification` | `pending` | non-authoritative reconciliation in progress |
+| 3 | freshness is `fresh`, reconciliation is resolved, authority is `active`/`grace`/`billing_retry`/`canceled_scheduled_end`, and access decision is granted | `granted` | authoritative backend projection allows access |
+| 4 | all other resolved outcomes | `denied` | authoritative backend projection denies access |
+
+Projection updates must enforce monotonic `as_of` ordering so out-of-order evidence cannot overwrite newer authoritative state.
+
 ## Non-Goals & explicit Rejections
 
 Crosswake intentionally explicitly avoids:
