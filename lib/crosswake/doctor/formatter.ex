@@ -173,6 +173,21 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_bridge(_bridge), do: nil
 
+  defp format_offline(%{status: status, states: states, telemetry: telemetry, routes: routes}) do
+    route_ids =
+      routes
+      |> Map.keys()
+      |> Enum.sort()
+      |> Enum.join(", ")
+
+    [
+      "offline posture: #{status} states=[#{Enum.join(states, ", ")}] routes=[#{route_ids}]",
+      format_offline_telemetry(telemetry)
+    ]
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join("\n")
+  end
+
   defp format_offline(%{status: status, states: states, routes: routes}) do
     route_ids =
       routes
@@ -184,6 +199,14 @@ defmodule Crosswake.Doctor.Formatter do
   end
 
   defp format_offline(_offline), do: nil
+
+  defp format_offline_telemetry(%{metadata_keys: keys, terminal_outcomes: terminals}) do
+    keys_text = if keys == [], do: "none", else: Enum.join(keys, ", ")
+    terminals_text = if terminals == [], do: "none", else: Enum.join(terminals, ", ")
+    "  telemetry: metadata_keys=[#{keys_text}] terminal_outcomes=[#{terminals_text}]"
+  end
+
+  defp format_offline_telemetry(_telemetry), do: nil
 
   defp format_commerce_summary(summary) when summary in [nil, %{}], do: nil
 

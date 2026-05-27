@@ -161,6 +161,13 @@ defmodule Crosswake.DoctorTest do
     assert human =~ "offline posture: supported"
     assert human =~ "queued_for_replay"
     assert human =~ "proof=supported"
+    # Phase 23 WR-05 parity fix: human formatter renders offline telemetry
+    # (metadata_keys + terminal_outcomes) so operator-facing posture matches
+    # the JSON output's telemetry block, instead of silently dropping fields.
+    assert human =~ "telemetry: metadata_keys="
+    assert human =~ "terminal_outcomes="
+    assert human =~ "accepted"
+    assert human =~ "conflict"
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
