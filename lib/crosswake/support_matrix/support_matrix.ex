@@ -425,9 +425,9 @@ defmodule Crosswake.SupportMatrix do
         package_class: capability.package_class,
         proof_class: capability.proof_class,
         rebuild: capability.rebuild,
-        prerequisites: capability.prerequisites,
+        prerequisites: capability_prerequisites(capability),
         denial: capability.denial,
-        fallback: capability.fallback,
+        fallback: capability_fallback(capability),
         guide: capability.guide
       )
     end)
@@ -468,6 +468,26 @@ defmodule Crosswake.SupportMatrix do
   defp capability_posture(%Capability{owner: :native_screen}), do: "native_screen"
   defp capability_posture(%Capability{owner: :backend_seam}), do: "backend_seam"
   defp capability_posture(%Capability{}), do: "bounded_bridge"
+
+  defp capability_prerequisites(%Capability{id: "entitlement_snapshot", prerequisites: prerequisites}) do
+    prerequisites ++ ["freshness posture (fresh/stale/unknown) surfaced before access checks"]
+  end
+
+  defp capability_prerequisites(%Capability{id: "reconciliation_evidence", prerequisites: prerequisites}) do
+    prerequisites ++ ["pending and awaiting_verification reconciliation states stay non-granting"]
+  end
+
+  defp capability_prerequisites(%Capability{prerequisites: prerequisites}), do: prerequisites
+
+  defp capability_fallback(%Capability{id: "entitlement_snapshot"}) do
+    "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement."
+  end
+
+  defp capability_fallback(%Capability{id: "reconciliation_evidence"}) do
+    "Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority."
+  end
+
+  defp capability_fallback(%Capability{fallback: fallback}), do: fallback
 
   defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported

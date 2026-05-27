@@ -159,6 +159,33 @@ defmodule Crosswake.SupportMatrixTest do
            ]
   end
 
+  test "entitlement and evidence support entries encode freshness and non-authoritative posture" do
+    capability_families = SupportMatrix.canonical().capability_families
+    entitlement_snapshot = Enum.find(capability_families, &(&1.family == "entitlement_snapshot"))
+    reconciliation_evidence = Enum.find(capability_families, &(&1.family == "reconciliation_evidence"))
+
+    assert Enum.any?(entitlement_snapshot.prerequisites, fn prerequisite ->
+             String.contains?(prerequisite, "freshness posture")
+           end)
+
+    assert entitlement_snapshot.fallback =~ "Fail closed"
+    assert entitlement_snapshot.fallback =~ "stale or unknown"
+    assert entitlement_snapshot.fallback =~ "pending"
+    assert entitlement_snapshot.fallback =~ "awaiting_verification"
+    assert entitlement_snapshot.fallback =~ "never grant entitlement"
+
+    assert Enum.any?(reconciliation_evidence.prerequisites, fn prerequisite ->
+             String.contains?(prerequisite, "awaiting_verification")
+           end)
+
+    assert reconciliation_evidence.fallback =~ "device/storefront/webhook/support"
+    assert reconciliation_evidence.fallback =~ "non-authoritative"
+    assert reconciliation_evidence.fallback =~ "pending_purchase"
+    assert reconciliation_evidence.fallback =~ "pending_restore"
+    assert reconciliation_evidence.fallback =~ "awaiting_verification"
+    assert reconciliation_evidence.fallback =~ "non-granting"
+  end
+
   test "commerce corridor support truth stays provider-neutral and uses canonical denial taxonomy" do
     entries = SupportMatrix.commerce_corridors()
 

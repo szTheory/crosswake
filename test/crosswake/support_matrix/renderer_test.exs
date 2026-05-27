@@ -51,6 +51,12 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
     assert guide =~ "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
     assert guide =~ "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+    assert guide =~ "freshness posture (fresh/stale/unknown) surfaced before access checks"
+    assert guide =~
+             "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available"
+    assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+    assert guide =~
+             "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
   end
 
