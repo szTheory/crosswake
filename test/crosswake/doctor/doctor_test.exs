@@ -233,8 +233,19 @@ defmodule Crosswake.DoctorTest do
     assert "commerce.corridor.runtime_incompatible" in emitted_codes
     assert "commerce.corridor.prerequisite_missing" in emitted_codes
 
+    # Denial-taxonomy parity is scoped to findings produced by the corridor denial check
+    # (check: "commerce_corridor"). The commerce_summary check publishes typed
+    # non-denial codes like commerce.corridor.native_rebuild_required which live in
+    # the commerce.* family but are not denial codes.
+    denial_emitted_codes =
+      corridor_findings
+      |> Enum.filter(&(&1.check == "commerce_corridor"))
+      |> Enum.map(& &1.code)
+      |> Enum.uniq()
+      |> Enum.sort()
+
     assert MapSet.subset?(
-             MapSet.new(emitted_codes),
+             MapSet.new(denial_emitted_codes),
              MapSet.new(SupportMatrix.commerce_corridor_denial_codes())
            )
 
@@ -278,6 +289,217 @@ defmodule Crosswake.DoctorTest do
                finding.check == "commerce_corridor" and
                finding.details[:denial_code] == "commerce.corridor.undeclared"
            end)
+  end
+
+  defmodule PaywallCorridorRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+        live "/paywall", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "paywall",
+            runtime: :live_view,
+            commerce: [corridor: :subscription_default, role: :paywall_entry]
+          ]
+      end
+    end
+  end
+
+  defmodule PurchaseCorridorRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :native_screen, offline: :unavailable, security: :sensitive do
+        live "/buy", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "buy",
+            runtime: :native_screen,
+            commerce: [corridor: :subscription_default, role: :purchase_intent]
+          ]
+      end
+    end
+  end
+
+  test "doctor exposes a typed commerce_summary surface with the canonical keys", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    summary = report.commerce_summary
+
+    assert is_map(summary)
+
+    assert MapSet.new(Map.keys(summary)) ==
+             MapSet.new([
+               :corridors,
+               :prerequisites,
+               :snapshot_freshness,
+               :proof_posture,
+               :rebuild_requirements
+             ])
+
+    assert Enum.any?(summary.corridors, fn corridor ->
+             corridor.route_id == "paywall" and corridor.role == "paywall_entry" and
+               corridor.proof_class == :merge_blocking
+           end)
+
+    assert Map.has_key?(summary.prerequisites, "paywall")
+    assert summary.snapshot_freshness in [:fresh, :stale, :unknown, :not_applicable]
+    assert is_map(summary.proof_posture)
+    assert Map.has_key?(summary.proof_posture, :merge_blocking)
+    assert Map.has_key?(summary.proof_posture, :advisory)
+    assert is_list(summary.rebuild_requirements)
+  end
+
+  test "commerce_summary returns the not_applicable freshness baseline when no commerce routes exist",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert report.commerce_summary.snapshot_freshness == :not_applicable
+    assert report.commerce_summary.corridors == []
+    assert report.commerce_summary.rebuild_requirements == []
+    refute Enum.any?(report.findings, &(&1.code == "commerce.entitlement.stale_snapshot"))
+    refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
+  end
+
+  test "stale entitlement freshness emits a merge-blocking warning finding", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :stale
+      )
+
+    stale_finding =
+      Enum.find(report.findings, &(&1.code == "commerce.entitlement.stale_snapshot"))
+
+    assert stale_finding
+    assert stale_finding.severity == :warning
+    assert stale_finding.check == "commerce_summary"
+    assert stale_finding.details[:proof_class] == "merge_blocking"
+    assert stale_finding.details[:freshness] == "stale"
+    assert report.commerce_summary.snapshot_freshness == :stale
+    assert "commerce.entitlement.stale_snapshot" in report.commerce_summary.proof_posture.merge_blocking
+  end
+
+  test "unknown entitlement freshness defaults to fail-closed merge-blocking truth when commerce routes exist",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert report.commerce_summary.snapshot_freshness == :unknown
+
+    assert Enum.any?(
+             report.findings,
+             &(&1.code == "commerce.entitlement.stale_snapshot" and
+                 &1.details[:proof_class] == "merge_blocking")
+           )
+  end
+
+  test "fresh entitlement freshness suppresses the stale snapshot finding", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :fresh
+      )
+
+    assert report.commerce_summary.snapshot_freshness == :fresh
+    refute Enum.any?(report.findings, &(&1.code == "commerce.entitlement.stale_snapshot"))
+  end
+
+  test "native rebuild requirements are derived from canonical support matrix metadata", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: PurchaseCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :fresh
+      )
+
+    rebuild_finding =
+      Enum.find(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
+
+    assert rebuild_finding
+    assert rebuild_finding.severity == :warning
+    assert rebuild_finding.check == "commerce_summary"
+    assert rebuild_finding.details[:role] == "purchase_intent"
+    assert rebuild_finding.details[:route_id] == "buy"
+    assert rebuild_finding.details[:proof_class] == "merge_blocking"
+
+    expected_rebuild_roles =
+      SupportMatrix.commerce_corridors()
+      |> Enum.filter(& &1.native_rebuild_required)
+      |> Enum.map(& &1.corridor_role)
+
+    assert "purchase_intent" in expected_rebuild_roles
+
+    assert Enum.any?(report.commerce_summary.rebuild_requirements, fn requirement ->
+             requirement.role == "purchase_intent" and requirement.route_id == "buy"
+           end)
+  end
+
+  test "native_rebuild_satisfied? suppresses the native rebuild finding without removing rebuild_requirements truth",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: PurchaseCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :fresh,
+        native_rebuild_satisfied?: true
+      )
+
+    refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
+
+    assert Enum.any?(report.commerce_summary.rebuild_requirements, fn requirement ->
+             requirement.role == "purchase_intent"
+           end)
+  end
+
+  test "phase 19 commerce corridor findings now carry proof_class labels", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert Enum.all?(
+             report.findings
+             |> Enum.filter(&String.starts_with?(&1.code, "commerce.corridor.")),
+             fn finding -> Map.has_key?(finding.details, :proof_class) end
+           )
   end
 
   defmodule BoundaryViolationRouter do
