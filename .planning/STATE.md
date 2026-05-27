@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: executing
-stopped_at: Completed 19-02-PLAN.md
-last_updated: "2026-05-27T09:23:22Z"
-last_activity: 2026-05-27 -- Completed Phase 19 Plan 02 fail-closed corridor runtime enforcement
+stopped_at: Completed 19-03-PLAN.md
+last_updated: "2026-05-27T09:30:50Z"
+last_activity: 2026-05-27 -- Completed Phase 19 Plan 03 support, doctor, and guide corridor truth
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 19 — commerce-route-corridors
+**Current focus:** Phase 20 — entitlement-lifecycle-semantics
 
 ## Current Position
 
-Phase: 19 (commerce-route-corridors) — EXECUTING
-Plan: 3 of 3
-Status: Executing Phase 19 (19-01 and 19-02 complete)
-Last activity: 2026-05-27 -- Completed Phase 19 Plan 02 fail-closed corridor runtime enforcement
+Phase: 20 (entitlement-lifecycle-semantics) — READY
+Plan: Not started
+Status: Phase 19 complete (19-01, 19-02, 19-03 complete); ready to begin Phase 20
+Last activity: 2026-05-27 -- Completed Phase 19 Plan 03 support, doctor, and guide corridor truth
 
-Progress: [######----] 67%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 32
+- Total plans completed: 33
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -44,7 +44,7 @@ Progress: [######----] 67%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 19. Commerce Route Corridors | 2 | 12 min | 6 min |
+| 19. Commerce Route Corridors | 3 | 18 min | 6 min |
 | 20. Entitlement Lifecycle Semantics | 0 | n/a | n/a |
 | 21. Reconciliation Example | 0 | n/a | n/a |
 | 22. Commerce Support, Review, And Proof | 0 | n/a | n/a |
@@ -70,10 +70,11 @@ Recent decisions affecting current work:
 - Manifest schema stays `1.0.0`; corridor fields are additive and enforced only on routes that declare commerce.
 - Phase 19 Plan 02 established canonical `commerce.corridor.*` denial codes under `:commerce_corridor` and fail-closed activation enforcement.
 - Corridor denials now carry explicit `return_to_phoenix_guidance` plus corridor declaration recovery actions instead of silent fallback.
+- Phase 19 Plan 03 synchronized commerce corridor support truth across support matrix, doctor human/json output, and public guides with canonical taxonomy parity tests.
 
 ### Pending Todos
 
-- Execute `.planning/phases/19-commerce-route-corridors/19-03-PLAN.md`.
+- Start Phase 20 planning/execution for entitlement lifecycle semantics (`ENTL-01`, `ENTL-02`, `ENTL-03`).
 - Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
@@ -92,6 +93,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T09:23:22Z
-Stopped at: Completed 19-02-PLAN.md
-Resume file: .planning/phases/19-commerce-route-corridors/19-03-PLAN.md
+Last session: 2026-05-27T09:30:50Z
+Stopped at: Completed 19-03-PLAN.md
+Resume file: None

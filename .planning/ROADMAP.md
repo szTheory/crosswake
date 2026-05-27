@@ -29,7 +29,7 @@
 
 **Requirements:** COMM-04, COMM-05, COMM-06
 
-**Plan progress:** 2/3 complete (`19-01` and `19-02` complete; `19-03` next)
+**Plan progress:** 3/3 complete (`19-01`, `19-02`, and `19-03` complete)
 
 **Success criteria:**
 1. Route policy can express Phoenix-owned paywall/account surfaces separately from native-screen or companion storefront loops.
@@ -82,8 +82,8 @@
 
 ## Current Position
 
-Phase 19 is executing (2 of 3 plans complete).
+Phase 19 is complete (3 of 3 plans complete). Phase 20 is next.
 
 Start with:
 
-`$gsd-execute-phase 19`
+`$gsd-execute-phase 20`

@@ -113,9 +113,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COMM-04 | Phase 19 | Completed (19-01) |
-| COMM-05 | Phase 19 | Completed (19-01) |
-| COMM-06 | Phase 19 | Completed (19-02) |
+| COMM-04 | Phase 19 | Completed (19-01, 19-03) |
+| COMM-05 | Phase 19 | Completed (19-01, 19-03) |
+| COMM-06 | Phase 19 | Completed (19-02, 19-03) |
 | ENTL-01 | Phase 20 | Pending |
 | ENTL-02 | Phase 20 | Pending |
 | ENTL-03 | Phase 20 | Pending |
@@ -133,4 +133,4 @@
 
 ---
 *Requirements defined: 2026-05-27*
-*Last updated: 2026-05-27 after completing Phase 19 Plan 02 (COMM-06)*
+*Last updated: 2026-05-27 after completing Phase 19 Plan 03 (support/doctor/docs corridor truth)*
