@@ -18,10 +18,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone Goals
 
-The next strategic arc candidate per `MILESTONE-ARC.md` is provider/companion adapter delivery now that the commerce seam is operationalized and support truth is mechanically enforced. Likely scope candidates:
+**Release readiness is a recommended pre-strategic-arc milestone (v3.3).** Surfaced via `$gsd-new-milestone` assessment on 2026-05-27: current `source_url` in `mix.exs:37-42` is a placeholder (`https://github.com/example/crosswake`), version is `0.1.0`, no CHANGELOG.md, no release-please pipeline, no hex publish workflow. The lib is invisible to the Phoenix community without hex.pm presence. szTheory house-style anchors ("install truth is product truth", "release truth matters") make this load-bearing before further capability work. See `.planning/threads/release-readiness.md`. Uses `bootstrap-elixir-hex-lib` skill as paved path.
 
+Strategic-arc candidates after release readiness, per `MILESTONE-ARC.md` and the 2026-05-27 assessment:
+
+- **Commerce archetype proof (ARCH-02)** — re-run a subscription/paywall adopter-shaped exemplar lane against the v3.2 seam using a mocked storefront corridor (no provider adapter required). Turns v3.2 vocabulary into a copy-able adopter lane. See `.planning/threads/commerce-archetype-proof.md`.
+- **First-party companion: Rulestead** — establishes companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks subsequent companions (sigra, rindle, chimeway, threadline). See `.planning/threads/companion-seam-pattern.md`.
 - **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input.
-- **Commerce archetype proof (ARCH-02)** — re-run a subscription/paywall adopter-shaped exemplar lane against the v3.2 seam plus at least one provider-aware adapter or mocked storefront corridor.
 - **Operator and companion expansion (OPS-01, COMP-05)** — richer operator inspection for entitlement snapshots, reconciliation attempts, and commerce route support truth; first commerce-adjacent companion integration only after package boundaries and rebuild truth are proven.
 
 Final scope and ordering will be set via `$gsd-new-milestone`.
@@ -122,6 +125,8 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Split commerce CI proof into hermetic merge-blocking and scheduled-only advisory lanes | Provider simulator/device/storefront proof is environment-sensitive and would block PRs unfairly; the hermetic lane stays fast and required while advisory proof remains visible at runtime via the doctor `promotion_path` detail | Validated in v3.2 (Phase 23) — `phase23-proof.yml` two-job split with `continue-on-error: true` on the advisory job |
 | Decompose audit-flagged phases before execution rather than executing oversized phases | The v3.2 milestone-audit flagged Phase 22 as the original "support + review + proof" container; splitting into Phase 23 (runtime closure) and Phase 24 (traceability hardening) before execution kept verification scopes sharp and avoided cross-stream drift | Validated in v3.2 — both decomposed phases shipped clean verification |
 | Treat SUMMARY-frontmatter traceability automation as merge-blocking infrastructure | RECN-01/02/03 were initially flagged `partial` purely because of artifact-shape inconsistency (`requirements:` vs canonical `requirements-completed:`); the gap closed by adding a parity ExUnit test wired into the merge-blocking CI job, not by changing behavior | Validated in v3.2 (Phase 24; hardened in Phase 25) — parity test now asserts presence (WR-01) and fails loudly on malformed shapes (WR-02) |
+| Adopt machine-enforced SUMMARY-frontmatter parity as the default automation level for adopter-facing traceability across future milestones | Phase 24/25 demonstrated that `requirements-completed:` parity (parser + presence + malformed-shape detection) is the right level of automation — heavier than a docs convention, lighter than a full traceability matrix tool. Graduation candidate surfaced 2026-05-27 from Phase 24/25 LEARNINGS | — Default for v3.3+ |
+| Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Phase 23's two-job split (hermetic merge-blocking + advisory provider/storefront/device lane with documented 4-condition `promotion_path`) keeps PRs fast and required without dishonest claims about environment-sensitive proof. Should be the default for future provider/device/storefront-sensitive surfaces (StoreKit adapter, Play Billing adapter, push delivery integration, etc.). Graduation candidate surfaced 2026-05-27 | — Default for v3.3+ |
 
 ## Evolution
 
@@ -141,4 +146,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after v3.2 milestone*
+*Last updated: 2026-05-27 after v3.2 milestone + post-v3.2 next-step assessment*

@@ -5,7 +5,7 @@ milestone_name: Commerce And Entitlement Seams
 status: Awaiting next milestone
 stopped_at: Phase 25 context gathered
 last_updated: "2026-05-27T22:23:13.090Z"
-last_activity: 2026-05-27 — Milestone v3.2 completed and archived
+last_activity: 2026-05-27 — Milestone next-step assessment completed; v3.3 candidate: release readiness + hex publication
 progress:
   total_phases: 7
   completed_phases: 6
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 
 Phase: Milestone v3.2 complete
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-27 — Milestone v3.2 completed and archived
+Status: Awaiting v3.3 milestone kickoff (release readiness recommended)
+Last activity: 2026-05-27 — Milestone next-step assessment completed; v3.3 candidate: release readiness + hex publication. See threads release-readiness, commerce-archetype-proof, companion-seam-pattern.
 
 ## Performance Metrics
 
@@ -73,12 +73,16 @@ Recent milestone summary:
 
 ### Pending Todos
 
-- Define next milestone via `$gsd-new-milestone`. Strategic arc candidates: provider/companion adapters (`ADPT-01/02`), commerce archetype proof (`ARCH-02`), operator/companion expansion (`OPS-01`, `COMP-05`).
+- **v3.3 candidate (recommended next):** Release readiness — publish to hex.pm, fix placeholder `source_url` in `mix.exs`, add CHANGELOG.md, wire release-please pipeline. See thread `release-readiness`. Uses `bootstrap-elixir-hex-lib` skill as paved path.
+- **v3.4 candidate:** Commerce archetype proof (ARCH-02) — wire a runnable paywall_entry + purchase_intent + restore_intent lane in `examples/phoenix_host` using a mocked storefront corridor (no provider adapter needed). See thread `commerce-archetype-proof`.
+- **v3.5 candidate:** Rulestead first-party companion — establishes companion-seam pattern that unblocks sigra/rindle/chimeway/threadline. See thread `companion-seam-pattern`. Blocked on v3.3.
+- Further out: provider adapters (ADPT-01/02 StoreKit + Play Billing), sigra companion + notification-driven re-entry archetype, operator runtime surface (OPS-01) + telemetry instrumentation, v3.5 archetype proof lanes from original ARC.
 
 ### Blockers/Concerns
 
 - This local workstation still lacks a Java runtime, so Android JVM evidence should continue to come from CI unless Java is installed locally.
 - StoreKit and Play Billing proof should remain advisory until a provider adapter milestone intentionally ships native/provider code.
+- **Planning blindspot (flagged 2026-05-27):** `MILESTONE-ARC.md` did not list hex publication / release readiness as a milestone candidate. `mix.exs:4,37-42` has placeholder `source_url: "https://github.com/example/crosswake"` and `version: "0.1.0"`. No CHANGELOG.md, no release-please config, no hex publish workflow. Surfaced via `$gsd-new-milestone` assessment; ARC amended with a Release Readiness Baseline section.
 
 ### Roadmap Evolution
 
