@@ -14,7 +14,7 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 
 `v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-`v3.2 Commerce And Entitlement Seams` remains active with `Phase 19 Commerce Route Corridors` complete. The milestone now has provider-neutral route/corridor declarations, canonical fail-closed `commerce.corridor.*` denial semantics, and baseline support/doctor/public guide parity in place before provider adapters ship.
+`v3.2 Commerce And Entitlement Seams` remains active with `Phase 20 Entitlement Lifecycle Semantics` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, and fail-closed ENTL-03 source-boundary enforcement before provider adapters ship.
 
 ## Current Milestone: v3.2 Commerce And Entitlement Seams
 
@@ -55,10 +55,10 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 - [x] Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops. Validated in Phase 19: Commerce Route Corridors.
 - [x] Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary. Validated in Phase 19: Commerce Route Corridors.
 - [x] Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback. Validated in Phase 19: Commerce Route Corridors.
+- [x] Phoenix teams can use normalized purchase, restore, reconciliation, and entitlement snapshot semantics without treating device callbacks as entitlement authority. Validated in Phase 20: Entitlement Lifecycle Semantics.
 
 ### Active
 
-- [ ] Phoenix teams can use normalized purchase, restore, reconciliation, and entitlement snapshot semantics without treating device callbacks as entitlement authority.
 - [ ] Host apps can follow a minimal backend reconciliation inbox and entitlement projection example that keeps idempotency and provider verification outside Crosswake core.
 - [ ] Adopters can see explicit doctor, support-matrix, reviewer/storefront, fallback, and proof guidance for commerce claims before provider adapters ship.
 
@@ -132,4 +132,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Phase 19 Commerce Route Corridors*
+*Last updated: 2026-05-27 after completing Phase 20 Entitlement Lifecycle Semantics*
