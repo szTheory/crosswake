@@ -127,6 +127,7 @@
 | SUPP-06 | Phase 22 | Pending |
 
 **Coverage:**
+
 - v3.2 requirements: 12 total
 - Mapped to phases: 12
 - Unmapped: 0

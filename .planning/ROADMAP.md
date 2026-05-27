@@ -16,7 +16,7 @@
 
 | Phase | Name | Goal | Requirements | Success Criteria |
 |-------|------|------|--------------|------------------|
-| 19 | Commerce Route Corridors | Declare and validate commerce-sensitive route ownership and support truth. | COMM-04, COMM-05, COMM-06 | 4 |
+| 19 | Commerce Route Corridors | 3/3 | Complete    | 2026-05-27 |
 | 20 | Entitlement Lifecycle Semantics | Expand normalized contract semantics for entitlement authority, access, freshness, and evidence. | ENTL-01, ENTL-02, ENTL-03 | 4 |
 | 21 | Reconciliation Example | Provide a minimal Phoenix-owned reconciliation inbox and entitlement projection example. | RECN-01, RECN-02, RECN-03 | 4 |
 | 22 | Commerce Support, Review, And Proof | Publish doctor/support/reviewer guidance and split merge-blocking from advisory proof. | SUPP-04, SUPP-05, SUPP-06 | 5 |
@@ -32,6 +32,7 @@
 **Plan progress:** 3/3 complete (`19-01`, `19-02`, and `19-03` complete)
 
 **Success criteria:**
+
 1. Route policy can express Phoenix-owned paywall/account surfaces separately from native-screen or companion storefront loops.
 2. Manifest output exposes commerce corridor truth without provider-specific vocabulary.
 3. Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons.
@@ -44,6 +45,7 @@
 **Requirements:** ENTL-01, ENTL-02, ENTL-03
 
 **Success criteria:**
+
 1. Entitlement snapshots separate authority state, access state, reconciliation state, freshness, effective dates, and evidence metadata.
 2. Pending, restore, verification, grace, billing retry, canceled scheduled end, revoked/refunded, expired, and stale states are represented through Crosswake-owned vocabulary.
 3. Tests prove device, storefront, webhook, and support evidence cannot directly grant core entitlement authority.
@@ -56,6 +58,7 @@
 **Requirements:** RECN-01, RECN-02, RECN-03
 
 **Success criteria:**
+
 1. Example host or guide shows a minimal reconciliation inbox for purchase, restore, webhook, and support evidence.
 2. Idempotency guidance uses provider-aware identity rather than transient device correlation IDs.
 3. Example projection produces one authoritative entitlement snapshot with stale, pending, denied, and granted states.
@@ -68,6 +71,7 @@
 **Requirements:** SUPP-04, SUPP-05, SUPP-06
 
 **Success criteria:**
+
 1. Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale snapshots, and native rebuild requirements.
 2. Public commerce docs include reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough-edge guidance.
 3. Merge-blocking tests cover hermetic commerce contracts, route denials, support truth, and docs integrity.
