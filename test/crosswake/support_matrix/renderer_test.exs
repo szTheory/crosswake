@@ -134,6 +134,22 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "native_adapter; provider_setup; backend_reconciliation"
   end
 
+  test "guides/support_matrix.md is byte-identical to canonical renderer output after Plan 23-02 enrichment" do
+    # Plan 23-02 enriched commerce corridor entries with prerequisite_classes,
+    # rebuild_requirement, and proof_class metadata, and added three new columns to
+    # the Commerce Corridors section. Plan 23-03 explicitly re-asserts this byte-identity
+    # so a reviewer or future planner can see the guarantee in the test suite without
+    # having to reason through the broader guide parity test below.
+    rendered = Renderer.render(SupportMatrix.canonical())
+    on_disk = File.read!("guides/support_matrix.md")
+
+    assert rendered == on_disk,
+           "guides/support_matrix.md drifted from canonical Renderer output; regenerate before merging"
+
+    # Determinism guard: re-rendering must produce identical bytes (no nondeterministic ordering).
+    assert rendered == Renderer.render(SupportMatrix.canonical())
+  end
+
   test "guides remain mechanically checked against canonical support truth and phase 3 boundaries" do
     assert File.read!("guides/support_matrix.md") == Renderer.render(SupportMatrix.canonical())
 

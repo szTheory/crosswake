@@ -184,7 +184,7 @@ defmodule Crosswake.Guides.CommerceTest do
       content
       |> String.split("## Commerce Corridor Ownership")
       |> List.last()
-      |> String.split("## Entitlement Snapshot Lanes")
+      |> String.split("### Entitlement Snapshot Lanes")
       |> hd()
 
     for role <- support_matrix_roles do
@@ -210,5 +210,175 @@ defmodule Crosswake.Guides.CommerceTest do
 
     assert guide_roles == support_matrix_roles,
            "commerce guide ownership corridor roles #{inspect(guide_roles)} must match support matrix corridor roles #{inspect(support_matrix_roles)} exactly"
+  end
+
+  # --- Phase 23 Plan 03: layered docs hub assertions ---
+
+  test "commerce guide publishes three explicit layer headings", %{content: content} do
+    # Layer 1: support truth, Layer 2: reviewer/storefront playbooks, Layer 3: rough edges/non-claims.
+    # All three must be H2 headings so navigation is mechanically unambiguous.
+    assert content =~ ~r/^## Commerce Support Truth\s*$/m,
+           "commerce guide missing Layer 1 heading `## Commerce Support Truth`"
+
+    assert content =~ ~r/^## Reviewer And Storefront Playbooks\s*$/m,
+           "commerce guide missing Layer 2 heading `## Reviewer And Storefront Playbooks`"
+
+    assert content =~ ~r/^## Rough Edges And Non-Claims\s*$/m,
+           "commerce guide missing Layer 3 heading `## Rough Edges And Non-Claims`"
+  end
+
+  test "reviewer playbooks carry explicit Advisory — provider-specific guidance callout", %{
+    content: content
+  } do
+    playbook_section =
+      content
+      |> String.split("## Reviewer And Storefront Playbooks")
+      |> List.last()
+      |> String.split("## Rough Edges And Non-Claims")
+      |> hd()
+
+    # The layer-level advisory callout must be present so reviewers/adopters cannot
+    # mistake provider-specific guidance for core support truth.
+    assert playbook_section =~ "Advisory — provider-specific guidance",
+           "Reviewer playbook section missing layer-level `Advisory — provider-specific guidance` callout"
+
+    # Both platform templates must carry their own advisory callout.
+    app_store_section =
+      playbook_section
+      |> String.split("### App Store Reviewer Notes")
+      |> List.last()
+      |> String.split("### Play Store Reviewer Notes")
+      |> hd()
+
+    assert app_store_section =~ "Advisory — provider-specific guidance",
+           "App Store reviewer template missing per-template advisory callout"
+
+    play_store_section =
+      playbook_section
+      |> String.split("### Play Store Reviewer Notes")
+      |> List.last()
+
+    assert play_store_section =~ "Advisory — provider-specific guidance",
+           "Play Store reviewer template missing per-template advisory callout"
+  end
+
+  test "non-claims section explicitly names StoreKit, Play Billing, device-local authority, and offline replay",
+       %{content: content} do
+    non_claims_section =
+      content
+      |> String.split("## Rough Edges And Non-Claims")
+      |> List.last()
+
+    # Each non-claim must be stated explicitly using "not shipped" language so reviewers
+    # cannot misread silence as a claim. Device-local authority is the only one stated
+    # both as a non-claim and as an explicit contract-direction rejection.
+    assert non_claims_section =~ ~r/StoreKit adapter is not shipped/i,
+           "non-claims section missing explicit `StoreKit adapter is not shipped` statement"
+
+    assert non_claims_section =~ ~r/Play Billing adapter is not shipped/i,
+           "non-claims section missing explicit `Play Billing adapter is not shipped` statement"
+
+    assert non_claims_section =~ ~r/Device-local entitlement authority is not shipped/i,
+           "non-claims section missing explicit `Device-local entitlement authority is not shipped` statement"
+
+    assert non_claims_section =~ ~r/Offline purchase replay is not shipped/i,
+           "non-claims section missing explicit `Offline purchase replay is not shipped` statement"
+
+    assert non_claims_section =~ ~r/Storefront purchase UI is not shipped/i,
+           "non-claims section missing explicit `Storefront purchase UI is not shipped` statement"
+  end
+
+  test "reviewer templates contain owner, proof_class, failure_posture, and rebuild_requirement columns",
+       %{content: content} do
+    playbook_section =
+      content
+      |> String.split("## Reviewer And Storefront Playbooks")
+      |> List.last()
+      |> String.split("## Rough Edges And Non-Claims")
+      |> hd()
+
+    # The exact reviewer template header must appear at least once in each platform template
+    # so the four canonical metadata columns are mechanically locked.
+    expected_header = "| surface | owner | proof_class | failure_posture | rebuild_requirement |"
+
+    matches = playbook_section |> String.split("\n") |> Enum.count(&(&1 == expected_header))
+
+    assert matches >= 2,
+           "reviewer playbook section expected at least 2 reviewer template tables with header `#{expected_header}`, found #{matches}"
+  end
+
+  test "reviewer fallback language uses canonical commerce.corridor.* denial codes", %{
+    content: content
+  } do
+    playbook_section =
+      content
+      |> String.split("## Reviewer And Storefront Playbooks")
+      |> List.last()
+      |> String.split("## Rough Edges And Non-Claims")
+      |> hd()
+
+    canonical_denial_codes = Crosswake.SupportMatrix.commerce_corridor_denial_codes()
+
+    # At least the failure-posture-relevant denial codes (prerequisite_missing,
+    # runtime_incompatible, unsupported) must appear in reviewer fallback descriptions.
+    required_in_fallback = [
+      "commerce.corridor.prerequisite_missing",
+      "commerce.corridor.runtime_incompatible",
+      "commerce.corridor.unsupported"
+    ]
+
+    for code <- required_in_fallback do
+      assert code in canonical_denial_codes,
+             "test invariant: `#{code}` must exist in canonical denial codes (got: #{inspect(canonical_denial_codes)})"
+
+      assert playbook_section =~ code,
+             "reviewer playbook fallback descriptions missing canonical denial code `#{code}`"
+    end
+  end
+
+  test "reviewer template corridor roles cross-reference canonical SupportMatrix corridor roles", %{
+    content: content
+  } do
+    playbook_section =
+      content
+      |> String.split("## Reviewer And Storefront Playbooks")
+      |> List.last()
+      |> String.split("## Rough Edges And Non-Claims")
+      |> hd()
+
+    canonical_roles =
+      Crosswake.SupportMatrix.commerce_corridors()
+      |> Enum.map(& &1.corridor_role)
+
+    # Reviewer templates reference corridor identities by canonical role name
+    # (purchase_intent, restore_intent, paywall_entry, account_management) so adopters
+    # cannot drift their reviewer language away from the canonical contract surface.
+    # We assert each canonical role appears at least once inside the reviewer playbook
+    # layer; this is the parity guard required by Task 3.
+    for role <- canonical_roles do
+      assert playbook_section =~ role,
+             "reviewer playbook section missing canonical corridor role `#{role}` referenced by SupportMatrix"
+    end
+  end
+
+  test "reviewer playbooks include How To Use These Templates preamble anchored to canonical accessors",
+       %{content: content} do
+    playbook_section =
+      content
+      |> String.split("## Reviewer And Storefront Playbooks")
+      |> List.last()
+      |> String.split("## Rough Edges And Non-Claims")
+      |> hd()
+
+    assert playbook_section =~ "How To Use These Templates",
+           "reviewer playbook section missing `How To Use These Templates` preamble"
+
+    # The preamble must cite the canonical accessors so adopter customization remains
+    # mechanically anchored to support truth, not free-form prose.
+    assert playbook_section =~ "Crosswake.SupportMatrix.commerce_corridor_denial_codes/0",
+           "reviewer preamble missing reference to canonical denial codes accessor"
+
+    assert playbook_section =~ "Crosswake.SupportMatrix.commerce_corridors/0",
+           "reviewer preamble missing reference to canonical corridors accessor"
   end
 end
