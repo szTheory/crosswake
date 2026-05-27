@@ -29,7 +29,7 @@
 
 **Requirements:** COMM-04, COMM-05, COMM-06
 
-**Plan progress:** 1/3 complete (`19-01` complete; `19-02` next)
+**Plan progress:** 2/3 complete (`19-01` and `19-02` complete; `19-03` next)
 
 **Success criteria:**
 1. Route policy can express Phoenix-owned paywall/account surfaces separately from native-screen or companion storefront loops.
@@ -82,7 +82,7 @@
 
 ## Current Position
 
-Phase 19 is executing (1 of 3 plans complete).
+Phase 19 is executing (2 of 3 plans complete).
 
 Start with:
 

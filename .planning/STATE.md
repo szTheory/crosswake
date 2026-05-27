@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: executing
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-05-27T09:15:52Z"
-last_activity: 2026-05-27 -- Completed Phase 19 Plan 01 corridor contract foundation
+stopped_at: Completed 19-02-PLAN.md
+last_updated: "2026-05-27T09:23:22Z"
+last_activity: 2026-05-27 -- Completed Phase 19 Plan 02 fail-closed corridor runtime enforcement
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -26,17 +26,17 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 ## Current Position
 
 Phase: 19 (commerce-route-corridors) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase 19 (19-01 complete)
-Last activity: 2026-05-27 -- Completed Phase 19 Plan 01 corridor contract foundation
+Plan: 3 of 3
+Status: Executing Phase 19 (19-01 and 19-02 complete)
+Last activity: 2026-05-27 -- Completed Phase 19 Plan 02 fail-closed corridor runtime enforcement
 
-Progress: [###-------] 33%
+Progress: [######----] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 31
+- Total plans completed: 32
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -44,7 +44,7 @@ Progress: [###-------] 33%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 19. Commerce Route Corridors | 1 | 7 min | 7 min |
+| 19. Commerce Route Corridors | 2 | 12 min | 6 min |
 | 20. Entitlement Lifecycle Semantics | 0 | n/a | n/a |
 | 21. Reconciliation Example | 0 | n/a | n/a |
 | 22. Commerce Support, Review, And Proof | 0 | n/a | n/a |
@@ -68,10 +68,12 @@ Recent decisions affecting current work:
 - Provider-specific billing adapters remain companion/future work, not core scope.
 - Phase 19 Plan 01 established canonical corridor profile declarations and root manifest `commerce_corridors` with route `corridor_ref` linkage.
 - Manifest schema stays `1.0.0`; corridor fields are additive and enforced only on routes that declare commerce.
+- Phase 19 Plan 02 established canonical `commerce.corridor.*` denial codes under `:commerce_corridor` and fail-closed activation enforcement.
+- Corridor denials now carry explicit `return_to_phoenix_guidance` plus corridor declaration recovery actions instead of silent fallback.
 
 ### Pending Todos
 
-- Execute `.planning/phases/19-commerce-route-corridors/19-02-PLAN.md`.
+- Execute `.planning/phases/19-commerce-route-corridors/19-03-PLAN.md`.
 - Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
@@ -90,6 +92,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T09:15:52Z
-Stopped at: Completed 19-01-PLAN.md
-Resume file: .planning/phases/19-commerce-route-corridors/19-02-PLAN.md
+Last session: 2026-05-27T09:23:22Z
+Stopped at: Completed 19-02-PLAN.md
+Resume file: .planning/phases/19-commerce-route-corridors/19-03-PLAN.md
