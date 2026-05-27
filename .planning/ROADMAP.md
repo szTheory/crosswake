@@ -149,3 +149,30 @@ Wave 3 (depends on 24-01 and 24-02): `24-03` (append-only re-audit to v3.2-MILES
 Start with:
 
 `$gsd-execute-phase 23`
+
+### Phase 25: Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02
+
+**Goal:** Close the two v3.2 milestone-audit tech-debt items: (1) delete the contradictory trailing sentence at `.planning/phases/20-entitlement-lifecycle-semantics/20-VERIFICATION.md:63` and (2) harden `test/crosswake/planning/summary_frontmatter_test.exs` for WR-01 (missing-key presence assertion), WR-02 (loud-fail in helper for malformed shapes), IN-01 (compile-time `@requirements_path` symmetry), and IN-02 (`[xX ]` case-tolerant checkbox regex) — shipping both Phase 25 SUMMARYs in the same atomic commit as the test edits.
+
+**Requirements:** None — Phase 25 closes zero requirement IDs (see CONTEXT.md D-04; both SUMMARYs declare `requirements-completed: []`).
+
+**Depends on:** Phase 24
+
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 25-01-PLAN.md — Phase 20 VERIFICATION.md single-line delete (line 63 contradictory sentence)
+
+**Wave 2** *(blocked on Wave 1 completion per D-11 natural order)*
+
+- [ ] 25-02-PLAN.md — Parity-test hardening (WR-01 + WR-02 + IN-01 + IN-02) + both 25-* SUMMARYs in one atomic commit (Footgun 1, D-10)
+
+**Success criteria:**
+
+1. The contradictory final-determination sentence at `20-VERIFICATION.md:63` is removed; line 61 byte-identical.
+2. `summary_frontmatter_test.exs` has a third presence assertion (WR-01) and `extract_completed_ids/1` raises loudly on key-present-but-malformed shapes (WR-02).
+3. `@requirements_path` is a compile-time module attribute symmetric with `@summary_glob` (IN-01); REQUIREMENTS.md bullet regex character class is `[xX ]` (IN-02).
+4. Both `25-01-SUMMARY.md` and `25-02-SUMMARY.md` exist with the canonical `requirements-completed: []` tech-debt shape (D-04) and ride in the same atomic commit as the test edits.
+5. `mix test` passes against the full corpus (16 existing + 2 new = 18 SUMMARYs) before AND after the atomic commit.
