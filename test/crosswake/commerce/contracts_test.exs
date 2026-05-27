@@ -143,6 +143,52 @@ defmodule Crosswake.Commerce.ContractsTest do
     end
   end
 
+  describe "entitlement taxonomy placement" do
+    test "locks authority, reconciliation, freshness, and access vocabularies" do
+      assert :active in Contracts.authority_vocabulary()
+      assert :grace in Contracts.authority_vocabulary()
+      assert :billing_retry in Contracts.authority_vocabulary()
+      assert :canceled_scheduled_end in Contracts.authority_vocabulary()
+      assert :revoked in Contracts.authority_vocabulary()
+      assert :refunded in Contracts.authority_vocabulary()
+      assert :expired in Contracts.authority_vocabulary()
+
+      assert :pending_purchase in Contracts.reconciliation_vocabulary()
+      assert :pending_restore in Contracts.reconciliation_vocabulary()
+      assert :awaiting_verification in Contracts.reconciliation_vocabulary()
+
+      assert :fresh in Contracts.freshness_vocabulary()
+      assert :stale in Contracts.freshness_vocabulary()
+      assert :unknown in Contracts.freshness_vocabulary()
+
+      assert Contracts.access_vocabulary() == [:granted, :denied]
+    end
+
+    test "rejects invalid mixed lane placement for authority and freshness states" do
+      {:error, authority_errors} =
+        Contracts.new_entitlement_snapshot(
+          snapshot_attrs(%{
+            authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :pending_restore}
+          })
+        )
+
+      assert {:authority, {:invalid_state, :pending_restore}} in authority_errors
+
+      {:error, freshness_errors} =
+        Contracts.new_entitlement_snapshot(
+          snapshot_attrs(%{
+            freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+              state: :active,
+              checked_at: "2023-01-01T12:00:00Z",
+              stale_after: "2023-01-01T13:00:00Z"
+            }
+          })
+        )
+
+      assert {:freshness, {:invalid_state, :active}} in freshness_errors
+    end
+  end
+
   describe "commerce behaviour" do
     test "defines thin orchestration seam" do
       callbacks = Crosswake.Commerce.behaviour_info(:callbacks)
@@ -152,5 +198,34 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert {:ingest_reconciliation_evidence, 1} in callbacks
       assert {:fetch_entitlement_snapshot, 1} in callbacks
     end
+  end
+
+  defp snapshot_attrs(overrides) do
+    base_attrs = %{
+      group_id: "premium",
+      authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
+      access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
+      reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+        state: :projection_refreshed,
+        reference: "attempt_123"
+      },
+      freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+        state: :fresh,
+        checked_at: "2023-01-01T12:00:00Z",
+        stale_after: "2023-01-01T13:00:00Z"
+      },
+      effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+        effective_from: "2023-01-01T12:00:00Z",
+        effective_until: "2023-02-01T12:00:00Z"
+      },
+      evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+        source: :storefront,
+        reference: "tx_123",
+        observed_at: "2023-01-01T12:00:00Z"
+      },
+      as_of: 42
+    }
+
+    Map.merge(base_attrs, overrides)
   end
 end

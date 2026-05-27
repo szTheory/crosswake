@@ -1,6 +1,7 @@
 defmodule Crosswake.Commerce.ReconciliationTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Commerce.Contracts
   alias Crosswake.Commerce.Reconciliation
 
   describe "reconciliation attempt types and outcomes" do
@@ -86,5 +87,46 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       assert Reconciliation.workflow_reporting_outcome?(:conflict)
       assert Reconciliation.workflow_reporting_outcome?(:stale_authority)
     end
+
+    test "reconciliation outcomes are rejected when treated as authority states" do
+      {:error, errors} =
+        Contracts.new_entitlement_snapshot(
+          snapshot_attrs(%{
+            authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :pending_restore}
+          })
+        )
+
+      assert {:authority, {:invalid_state, :pending_restore}} in errors
+      refute Reconciliation.outcome_implies_authority_grant?(:pending_restore)
+    end
+  end
+
+  defp snapshot_attrs(overrides) do
+    base_attrs = %{
+      group_id: "premium",
+      authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
+      access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
+      reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+        state: :projection_refreshed,
+        reference: "attempt_123"
+      },
+      freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+        state: :fresh,
+        checked_at: "2023-01-01T12:00:00Z",
+        stale_after: "2023-01-01T13:00:00Z"
+      },
+      effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+        effective_from: "2023-01-01T12:00:00Z",
+        effective_until: "2023-02-01T12:00:00Z"
+      },
+      evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+        source: :storefront,
+        reference: "tx_123",
+        observed_at: "2023-01-01T12:00:00Z"
+      },
+      as_of: 42
+    }
+
+    Map.merge(base_attrs, overrides)
   end
 end
