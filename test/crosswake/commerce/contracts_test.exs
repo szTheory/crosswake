@@ -215,6 +215,37 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert Contracts.reconciliation_evidence_source_vocabulary() == [:device, :storefront, :webhook, :support]
       refute :device_callback in Contracts.reconciliation_evidence_source_vocabulary()
     end
+
+    test "new_entitlement_snapshot rejects invalid evidence source values" do
+      {:error, errors} =
+        Contracts.new_entitlement_snapshot(
+          snapshot_attrs(%{
+            evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+              source: :device_callback,
+              reference: "tx_123",
+              observed_at: "2023-01-01T12:00:00Z"
+            }
+          })
+        )
+
+      assert {:evidence, {:invalid_source, details}} = List.keyfind(errors, :evidence, 0)
+      assert Keyword.fetch!(details, :source) == :device_callback
+    end
+
+    test "new_entitlement_snapshot normalizes canonical string evidence source values" do
+      assert {:ok, snapshot} =
+               Contracts.new_entitlement_snapshot(
+                 snapshot_attrs(%{
+                   evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+                     source: "device",
+                     reference: "tx_123",
+                     observed_at: "2023-01-01T12:00:00Z"
+                   }
+                 })
+               )
+
+      assert snapshot.evidence.source == :device
+    end
   end
 
   defp snapshot_attrs(overrides) do

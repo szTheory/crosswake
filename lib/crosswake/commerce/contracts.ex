@@ -206,6 +206,10 @@ defmodule Crosswake.Commerce.Contracts do
 
   @freshness_vocabulary [:fresh, :stale, :unknown]
   @reconciliation_evidence_source_vocabulary [:device, :storefront, :webhook, :support]
+  @reconciliation_evidence_source_by_string Map.new(
+                                           @reconciliation_evidence_source_vocabulary,
+                                           &{Atom.to_string(&1), &1}
+                                         )
 
   @spec authority_vocabulary() :: [EntitlementSnapshot.AuthorityLane.state()]
   def authority_vocabulary, do: @authority_vocabulary
@@ -221,6 +225,27 @@ defmodule Crosswake.Commerce.Contracts do
 
   @spec reconciliation_evidence_source_vocabulary() :: [ReconciliationEvidence.source()]
   def reconciliation_evidence_source_vocabulary, do: @reconciliation_evidence_source_vocabulary
+
+  @spec canonical_reconciliation_evidence_source(term()) ::
+          {:ok, ReconciliationEvidence.source()} | {:error, {:invalid_source, keyword()}}
+  def canonical_reconciliation_evidence_source(source) when is_atom(source) do
+    if source in @reconciliation_evidence_source_vocabulary do
+      {:ok, source}
+    else
+      {:error, {:invalid_source, invalid_source_details(source)}}
+    end
+  end
+
+  def canonical_reconciliation_evidence_source(source) when is_binary(source) do
+    case Map.fetch(@reconciliation_evidence_source_by_string, source) do
+      {:ok, canonical_source} -> {:ok, canonical_source}
+      :error -> {:error, {:invalid_source, invalid_source_details(source)}}
+    end
+  end
+
+  def canonical_reconciliation_evidence_source(source) do
+    {:error, {:invalid_source, invalid_source_details(source)}}
+  end
 
   @spec new_entitlement_snapshot(map() | keyword()) ::
           {:ok, EntitlementSnapshot.t()} | {:error, keyword()}
@@ -250,12 +275,25 @@ defmodule Crosswake.Commerce.Contracts do
   end
 
   defp build_entitlement_snapshot(attrs) do
+    normalized_attrs = normalize_snapshot_evidence_source(attrs)
+
     try do
-      {:ok, struct!(EntitlementSnapshot, attrs)}
+      {:ok, struct!(EntitlementSnapshot, normalized_attrs)}
     rescue
       error in KeyError -> {:error, [snapshot: Exception.message(error)]}
     end
   end
+
+  defp normalize_snapshot_evidence_source(
+         %{evidence: %EntitlementSnapshot.EvidenceLane{source: source} = evidence} = attrs
+       ) do
+    case canonical_reconciliation_evidence_source(source) do
+      {:ok, canonical_source} -> %{attrs | evidence: %{evidence | source: canonical_source}}
+      {:error, _reason} -> attrs
+    end
+  end
+
+  defp normalize_snapshot_evidence_source(attrs), do: attrs
 
   defp validate_authority_lane(errors, %EntitlementSnapshot.AuthorityLane{state: state}) do
     if state in @authority_vocabulary do
@@ -300,8 +338,25 @@ defmodule Crosswake.Commerce.Contracts do
   defp validate_effective_lane(errors, %EntitlementSnapshot.EffectiveLane{}), do: errors
   defp validate_effective_lane(errors, _), do: [{:effective, :invalid_lane} | errors]
 
-  defp validate_evidence_lane(errors, %EntitlementSnapshot.EvidenceLane{}), do: errors
+  defp validate_evidence_lane(
+         errors,
+         %EntitlementSnapshot.EvidenceLane{source: source}
+       ) do
+    case canonical_reconciliation_evidence_source(source) do
+      {:ok, _canonical_source} -> errors
+      {:error, reason} -> [{:evidence, reason} | errors]
+    end
+  end
+
   defp validate_evidence_lane(errors, _), do: [{:evidence, :invalid_lane} | errors]
+
+  defp invalid_source_details(source) do
+    [
+      source: source,
+      allowed_sources: @reconciliation_evidence_source_vocabulary,
+      hint: "Use one of :device | :storefront | :webhook | :support"
+    ]
+  end
 
   defp to_validation_result([]), do: :ok
   defp to_validation_result(errors), do: {:error, Enum.reverse(errors)}
