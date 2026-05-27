@@ -2,6 +2,7 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
   use ExUnit.Case, async: true
 
   @summary_glob Path.join(File.cwd!(), ".planning/phases/*/*-SUMMARY.md")
+  @requirements_path Path.join(File.cwd!(), ".planning/REQUIREMENTS.md")
 
   test "all phase summaries use requirements-completed: not bare requirements:" do
     summaries = Path.wildcard(@summary_glob)
@@ -28,6 +29,21 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
         assert id in known_ids,
                "#{path} lists `#{id}` under requirements-completed: but `#{id}` is not in .planning/REQUIREMENTS.md"
       end
+    end
+  end
+
+  test "every phase summary declares requirements-completed:" do
+    summaries = Path.wildcard(@summary_glob)
+    assert summaries != [], "expected SUMMARY.md files at #{@summary_glob}"
+
+    for path <- summaries do
+      fm = parse_frontmatter(File.read!(path))
+
+      assert fm != "",
+             "#{path} has no YAML frontmatter block"
+
+      assert Regex.match?(~r/^requirements-completed:[ \t]*(?:\[|\r?\n[ \t]+-)/m, fm),
+             "#{path} is missing required `requirements-completed:` key"
     end
   end
 
@@ -70,6 +86,10 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
           ) ->
         scan_ids(hd(block))
 
+      # Key present but neither shape matched — fail loudly instead of returning [].
+      Regex.match?(~r/^requirements-completed:/m, frontmatter) ->
+        raise "requirements-completed: is present but neither inline `[A, B]` nor multi-line `  - X` shape parsed"
+
       true ->
         []
     end
@@ -82,13 +102,13 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
   end
 
   # Parse bullet IDs from REQUIREMENTS.md.
-  # Matches both checked [ ] and unchecked [x] bullets so the test does not
+  # Matches both checked [ ] and unchecked [x]/[X] bullets so the test does not
   # couple to completion status — only to existence of the requirement ID.
   defp parse_requirement_ids_from_requirements_md do
-    Path.join(File.cwd!(), ".planning/REQUIREMENTS.md")
+    @requirements_path
     |> File.read!()
     |> then(fn content ->
-      Regex.scan(~r/- \[[x ]\] \*\*([A-Z]+-\d+)\*\*/, content)
+      Regex.scan(~r/- \[[xX ]\] \*\*([A-Z]+-\d+)\*\*/, content)
       |> Enum.map(fn [_, id] -> id end)
     end)
   end
