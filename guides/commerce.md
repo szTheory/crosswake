@@ -14,16 +14,25 @@ Crosswake exposes five core typed surfaces:
 
 ## Commerce Corridor Ownership
 
-Crosswake keeps corridor ownership explicit and matrix-first so route authors can see where Phoenix stays in control and where native or companion choreography is mandatory.
+Crosswake keeps corridor ownership explicit and matrix-first so route authors can see where Phoenix stays in control and where native or companion choreography is mandatory. Every corridor row mirrors the canonical support matrix source (`Crosswake.SupportMatrix.commerce_corridors/0`); guides are rendered artifacts, not independent sources.
 
-| corridor_role | owner_posture | phase_19_truth |
-| --- | --- | --- |
-| `paywall_entry` | `phoenix_owned` | Keep paywall entry routes Phoenix-owned and declarative. |
-| `account_management` | `phoenix_owned` | Keep post-reconciliation account surfaces Phoenix-owned. |
-| `purchase_intent` | `native_or_companion_required` | Storefront confirmation and purchase execution require native or companion choreography. |
-| `restore_intent` | `native_or_companion_required` | Restore workflows require native or companion choreography. |
+| corridor_role | owner_posture | proof_class | native_rebuild_required | phase_19_truth |
+| --- | --- | --- | --- | --- |
+| `paywall_entry` | `phoenix_owned` | `merge_blocking` | `false` | Keep paywall entry routes Phoenix-owned and declarative; core route/manifest metadata only. |
+| `account_management` | `phoenix_owned` | `merge_blocking` | `false` | Keep post-reconciliation account surfaces Phoenix-owned; backend-owned metadata only. |
+| `purchase_intent` | `native_or_companion_required` | `merge_blocking` (core) + `advisory` (provider) | `true` | Storefront confirmation and purchase execution require native or companion choreography; native adapter or provider SDK code changes require rebuilding and resubmitting the host shell. |
+| `restore_intent` | `native_or_companion_required` | `merge_blocking` (core) + `advisory` (provider) | `true` | Restore workflows require native or companion choreography; native restore choreography or provider SDK code changes require rebuilding and resubmitting the host shell. |
 
 For Phase 19, provider adapters are out of scope. Crosswake defines seam vocabulary and fallback posture, while StoreKit, Play Billing, and other adapter implementations stay companion or future work.
+
+### Proof Posture
+
+Commerce corridor checks are split by canonical proof class so CI gates and reviewers can see exactly what blocks merge versus what is informational:
+
+- **`merge_blocking`** (hermetic Phoenix-owned contract proof): corridor declaration, route runtime/ownership posture, canonical denial taxonomy, manifest projection, and reconciliation backend contract. Every commerce corridor row above carries a `merge_blocking` core contract proof class. These checks must pass before a change can land.
+- **`advisory`** (provider/storefront/simulator/device evidence): StoreKit, Play Billing, or other provider SDK smoke checks. These run on schedule and on demand, publish artifacts and rough-edge notes, and surface only as supplementary evidence on `purchase_intent` and `restore_intent` corridors.
+
+**Advisory checks cannot redefine core support truth.** An advisory provider check failure does not retract a `merge_blocking` claim, and an advisory check passing does not promote `purchase_intent` or `restore_intent` beyond their declared support posture. By contract, advisory checks cannot redefine the core merge-blocking support claim for any commerce corridor; advisory lanes are not core support truth. Promotion of an advisory lane to merge-blocking requires an explicit requirement/roadmap scope change plus sustained stability evidence; it is never inferred from a green run.
 
 ## Entitlement Snapshot Lanes
 
@@ -56,18 +65,18 @@ To keep boundaries explicit, Crosswake classifies commerce moments into these ow
 
 ## Canonical Corridor Denial And Fallback Codes
 
-Crosswake uses canonical `commerce.corridor.*` IDs across route gates, support matrix, doctor output, and docs:
+Crosswake uses canonical `commerce.corridor.*` IDs across route gates, support matrix, doctor output, and docs. Every denial is `merge_blocking`: corridor failures cannot be reduced to advisory provider/storefront evidence.
 
-| denial_code | fail_closed_reason | fallback |
-| --- | --- | --- |
-| `commerce.corridor.undeclared` | route declared commerce without a canonical corridor profile | `return_to_phoenix_guidance` |
-| `commerce.corridor.unsupported` | corridor role or manifest-source posture is unsupported for activation | `return_to_phoenix_guidance` |
-| `commerce.corridor.prerequisite_missing` | required corridor prerequisites are missing | `return_to_phoenix_guidance` |
-| `commerce.corridor.runtime_incompatible` | route runtime does not satisfy corridor ownership posture | `return_to_phoenix_guidance` |
-| `commerce.corridor.entry_denied` | external entry posture conflicts with corridor policy | `return_to_phoenix_guidance` |
-| `commerce.corridor.origin_denied` | origin allowlist posture conflicts with corridor policy | `return_to_phoenix_guidance` |
-| `commerce.corridor.policy_blocked` | role declaration conflicts with canonical corridor policy | `return_to_phoenix_guidance` |
-| `commerce.corridor.pack_incompatible` | required pack/runtime posture is incompatible for the corridor | `return_to_phoenix_guidance` |
+| denial_code | fail_closed_reason | fallback | proof_class |
+| --- | --- | --- | --- |
+| `commerce.corridor.undeclared` | route declared commerce without a canonical corridor profile | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.unsupported` | corridor role or manifest-source posture is unsupported for activation | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.prerequisite_missing` | required corridor prerequisites are missing | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.runtime_incompatible` | route runtime does not satisfy corridor ownership posture | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.entry_denied` | external entry posture conflicts with corridor policy | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.origin_denied` | origin allowlist posture conflicts with corridor policy | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.policy_blocked` | role declaration conflicts with canonical corridor policy | `return_to_phoenix_guidance` | `merge_blocking` |
+| `commerce.corridor.pack_incompatible` | required pack/runtime posture is incompatible for the corridor | `return_to_phoenix_guidance` | `merge_blocking` |
 
 ## The Canonical Reconciliation Flow
 

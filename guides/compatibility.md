@@ -44,6 +44,13 @@ published package version can interoperate safely.
 
 Storefront-sensitive commerce work follows this contract. Provider adapters and native SDK wrappers carry `native or companion rebuild required` guidance and explicit compatibility declarations, rather than prose-only notes. You must rebuild when commerce companion prerequisites change.
 
+Concretely, the canonical commerce corridor rebuild truth (mirrored from `Crosswake.SupportMatrix.commerce_corridors/0`) is:
+
+- `paywall_entry` and `account_management` — `native_rebuild_required: false`. Phoenix-owned core route/manifest metadata changes do not require a native shell rebuild.
+- `purchase_intent` and `restore_intent` — `native_rebuild_required: true`. Native adapter or provider SDK code changes require rebuilding and resubmitting the host shell.
+
+See [guides/commerce.md](commerce.md) for the full corridor ownership matrix and proof-class posture.
+
 ## Release Choreography
 
 Use the compatibility axes to describe release impact.

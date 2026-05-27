@@ -126,4 +126,84 @@ defmodule Crosswake.Guides.CommerceTest do
     refute reconciliation_section =~ "evidence directly grants authority"
     assert reconciliation_section =~ "non-authoritative"
   end
+
+  test "commerce guide corridor ownership section publishes proof_class and rebuild posture", %{
+    content: content
+  } do
+    assert content =~ "proof_class"
+    assert content =~ "native_rebuild_required"
+    assert content =~ "merge_blocking"
+    assert content =~ "advisory"
+
+    # Every corridor row in the ownership matrix carries an explicit proof_class
+    assert content =~ "| `paywall_entry` | `phoenix_owned` | `merge_blocking` |"
+
+    assert content =~
+             "| `account_management` | `phoenix_owned` | `merge_blocking` |"
+
+    assert content =~
+             "| `purchase_intent` | `native_or_companion_required` | `merge_blocking` (core) + `advisory` (provider) |"
+
+    assert content =~
+             "| `restore_intent` | `native_or_companion_required` | `merge_blocking` (core) + `advisory` (provider) |"
+  end
+
+  test "commerce guide publishes explicit non-claim that advisory checks cannot redefine core support truth",
+       %{content: content} do
+    assert content =~ "Proof Posture"
+    assert content =~ "Advisory checks cannot redefine core support truth"
+    assert content =~ "explicit requirement/roadmap scope change"
+  end
+
+  test "commerce guide denial taxonomy row publishes proof_class column", %{content: content} do
+    assert content =~ "| denial_code | fail_closed_reason | fallback | proof_class |"
+
+    assert content =~
+             "| `commerce.corridor.undeclared` | route declared commerce without a canonical corridor profile | `return_to_phoenix_guidance` | `merge_blocking` |"
+
+    assert content =~
+             "| `commerce.corridor.pack_incompatible` | required pack/runtime posture is incompatible for the corridor | `return_to_phoenix_guidance` | `merge_blocking` |"
+  end
+
+  test "commerce guide corridor roles match canonical support matrix corridor roles exactly", %{
+    content: content
+  } do
+    support_matrix_roles =
+      Crosswake.SupportMatrix.commerce_corridors()
+      |> Enum.map(& &1.corridor_role)
+      |> Enum.sort()
+
+    # Each canonical corridor role must appear as a backtick-quoted entry in the
+    # Commerce Corridor Ownership section of the guide.
+    ownership_section =
+      content
+      |> String.split("## Commerce Corridor Ownership")
+      |> List.last()
+      |> String.split("## Entitlement Snapshot Lanes")
+      |> hd()
+
+    for role <- support_matrix_roles do
+      assert ownership_section =~ "`#{role}`",
+             "commerce guide ownership section missing canonical corridor role `#{role}` (support matrix declares: #{inspect(support_matrix_roles)})"
+    end
+
+    # The guide must not introduce additional corridor roles that are not in
+    # the canonical support matrix source. We approximate this by checking that
+    # every row of the corridor ownership table corresponds to a canonical role.
+    table_rows =
+      ownership_section
+      |> String.split("\n")
+      |> Enum.filter(&Regex.match?(~r/^\| `[a-z_]+` \| `(phoenix_owned|native_or_companion_required)` \|/, &1))
+
+    guide_roles =
+      table_rows
+      |> Enum.map(fn row ->
+        [_, role | _] = String.split(row, "|", parts: 3)
+        role |> String.trim() |> String.trim("`")
+      end)
+      |> Enum.sort()
+
+    assert guide_roles == support_matrix_roles,
+           "commerce guide ownership corridor roles #{inspect(guide_roles)} must match support matrix corridor roles #{inspect(support_matrix_roles)} exactly"
+  end
 end
