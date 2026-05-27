@@ -204,6 +204,87 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation rejects provider-specific terms in nested entitlement and evidence commerce structures" do
+    corridor_ref = "entitlement.lifecycle"
+
+    base_manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:commerce_corridors)],
+        %{
+          corridor_ref => %{
+            id: corridor_ref,
+            role_ownership: %{paywall_entry: :phoenix_owned},
+            denial: "fail_closed",
+            fallback: "return_to_phoenix_guidance",
+            prerequisites: ["backend_projection"]
+          }
+        }
+      )
+
+    for term <- ["storekit", "play_billing", "revenuecat"] do
+      manifest =
+        put_in(
+          base_manifest,
+          [Access.key!(:routes), "camera", Access.key!(:commerce)],
+          %{
+            corridor_ref: corridor_ref,
+            role: :paywall_entry,
+            entitlement_snapshot: %{authority: %{state: term}},
+            reconciliation_evidence: %{provider: term}
+          }
+        )
+
+      errors = Validator.validate(manifest)
+
+      assert Enum.any?(errors, fn error ->
+               error.key == :commerce and
+                 String.contains?(error.message, "provider-specific commerce vocabulary")
+             end),
+             "expected provider-specific term #{term} to be rejected"
+    end
+  end
+
+  test "manifest validation rejects provider-specific terms in corridor semantic metadata" do
+    corridor_ref = "entitlement.lifecycle"
+
+    base_manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:commerce_corridors)],
+        %{
+          corridor_ref => %{
+            id: corridor_ref,
+            role_ownership: %{paywall_entry: :phoenix_owned},
+            denial: "fail_closed",
+            fallback: "return_to_phoenix_guidance",
+            prerequisites: ["backend_projection"]
+          }
+        }
+      )
+
+    manifest =
+      put_in(
+        base_manifest,
+        [Access.key!(:commerce_corridors), corridor_ref],
+        %{
+          id: corridor_ref,
+          role_ownership: %{paywall_entry: :phoenix_owned},
+          denial: "fail_closed",
+          fallback: "return_to_phoenix_guidance",
+          prerequisites: ["backend_projection"],
+          entitlement: %{status: "storekit"}
+        }
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.key == :commerce_corridors and
+               String.contains?(error.message, "provider-specific vocabulary")
+           end)
+  end
+
   test "manifest validation rejects invalid capability metadata vocabulary and empty support facts" do
     manifest =
       manifest_fixture()

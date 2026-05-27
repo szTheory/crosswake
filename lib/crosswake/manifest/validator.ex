@@ -11,6 +11,20 @@ defmodule Crosswake.Manifest.Validator do
 
   @commerce_role_values Crosswake.Policy.Schema.commerce_role_values()
   @provider_specific_commerce_terms ["storekit", "play_billing", "play-billing", "play billing", "revenuecat"]
+  @nested_commerce_semantic_keys [
+    "entitlement",
+    "entitlements",
+    "entitlement_snapshot",
+    "evidence",
+    "reconciliation",
+    "authority",
+    "access",
+    "freshness",
+    "effective",
+    "lifecycle",
+    "state",
+    "status"
+  ]
   @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
 
   @spec validate(Types.Root.t()) :: [Error.t()]
@@ -244,13 +258,19 @@ defmodule Crosswake.Manifest.Validator do
     commerce = route.commerce
 
     if provider_specific_vocabulary?(commerce) do
+      message =
+        if provider_specific_semantic_vocabulary?(commerce) do
+          "route #{route.id} uses provider-specific commerce vocabulary in nested entitlement or evidence semantics"
+        else
+          "route #{route.id} uses provider-specific commerce vocabulary in corridor_ref or role"
+        end
+
       [
         %{
           key: :commerce,
           route_id: route.id,
           path: route.path,
-          message:
-            "route #{route.id} uses provider-specific commerce vocabulary in corridor_ref or role",
+          message: message,
           hint: "use provider-neutral commerce corridor vocabulary in core manifest seams"
         }
         | errors
@@ -320,11 +340,17 @@ defmodule Crosswake.Manifest.Validator do
 
   defp validate_commerce_corridor_vocab(errors, corridor, corridor_ref) do
     if provider_specific_vocabulary?(corridor) do
+      message =
+        if provider_specific_semantic_vocabulary?(corridor) do
+          "commerce corridor #{inspect(corridor_ref)} includes provider-specific vocabulary in nested entitlement or evidence semantics"
+        else
+          "commerce corridor #{inspect(corridor_ref)} includes provider-specific vocabulary"
+        end
+
       [
         %{
           key: :commerce_corridors,
-          message:
-            "commerce corridor #{inspect(corridor_ref)} includes provider-specific vocabulary",
+          message: message,
           hint: "use provider-neutral commerce corridor vocabulary in core manifest seams"
         }
         | errors
@@ -577,6 +603,27 @@ defmodule Crosswake.Manifest.Validator do
       end)
 
   defp provider_specific_vocabulary?(_value), do: false
+
+  defp provider_specific_semantic_vocabulary?(value) when is_map(value) do
+    value
+    |> normalize_provider_vocab_map()
+    |> Enum.any?(fn {key, nested_value} ->
+      if commerce_semantic_key?(key) do
+        provider_specific_vocabulary?(nested_value)
+      else
+        provider_specific_semantic_vocabulary?(nested_value)
+      end
+    end)
+  end
+
+  defp provider_specific_semantic_vocabulary?(value) when is_list(value),
+    do: Enum.any?(value, &provider_specific_semantic_vocabulary?/1)
+
+  defp provider_specific_semantic_vocabulary?(_value), do: false
+
+  defp commerce_semantic_key?(value) when is_atom(value), do: value |> Atom.to_string() |> commerce_semantic_key?()
+  defp commerce_semantic_key?(value) when is_binary(value), do: String.downcase(value) in @nested_commerce_semantic_keys
+  defp commerce_semantic_key?(_value), do: false
 
   defp normalize_provider_vocab_map(%_{} = struct), do: Map.from_struct(struct)
   defp normalize_provider_vocab_map(map), do: map
