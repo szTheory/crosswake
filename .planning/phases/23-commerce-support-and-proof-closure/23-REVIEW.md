@@ -24,7 +24,7 @@ findings:
   warning: 9
   info: 7
   total: 16
-status: issues_found
+status: partial_fixes_applied
 ---
 
 # Phase 23: Code Review Report
@@ -32,7 +32,7 @@ status: issues_found
 **Reviewed:** 2026-05-27T00:00:00Z
 **Depth:** standard
 **Files Reviewed:** 15
-**Status:** issues_found
+**Status:** partial_fixes_applied (all 9 WARNING findings addressed; 7 INFO findings remain for a follow-on pass)
 
 ## Summary
 
@@ -346,6 +346,31 @@ The `if String.starts_with?(check.code, "commerce.corridor.") and check.check ==
 
 ---
 
+## Fixes Applied
+
+Applied 2026-05-27 by gsd-code-fixer. All 9 WARNING findings addressed; INFO findings deferred to a follow-on pass. Each fix committed atomically. Verification ran `mix test test/crosswake/doctor/ test/crosswake/support_matrix/ test/crosswake/guides/ test/crosswake/proof/phase23_commerce_support_proof_test.exs test/mix/tasks/crosswake_doctor_test.exs` after every fix (96 baseline → 101 final tests, 0 failures throughout).
+
+| Finding | Commit | Summary |
+|---------|--------|---------|
+| WR-01 | `6a60281` | Fail-closed `commerce.corridor.role_unknown` finding plus explicit `:unknown` corridor row when a commerce route role is not in canonical SupportMatrix taxonomy. Regression test asserts canonical fixtures never trigger the finding. |
+| WR-02 | `0d6bc52` | Coerce `entitlement_snapshot_freshness: :not_applicable` → `:unknown` when commerce routes are present, so the merge-blocking `commerce.entitlement.stale_snapshot` finding still fires. Locked by regression test. |
+| WR-03 | `cc86ac0` | Added `proof_class_eq?/2` helper in `build_proof_posture/4` that matches both atom and string `proof_class` forms, closing the silent-disappearance hazard if a caller stores `:merge_blocking` instead of `"merge_blocking"`. |
+| WR-04 | `4bd8900` | Added `escape_cell/1` helper in `Crosswake.SupportMatrix.Renderer` and applied it to every interpolated cell across `row/0`, `capability_row/0`, `package_surface_row/0`, `commerce_corridor_row/0`, `release_boundary_row/0`, `change_class_row/0`, `format_list/1`, and `format_rebuild_requirement/1`. Byte-identity for `guides/support_matrix.md` preserved (no current canonical value contains `\|`, `\\`, or newlines). |
+| WR-05 | `b2eef19` | Extended `format_offline/1` to render telemetry summary line (`  telemetry: metadata_keys=[...] terminal_outcomes=[...]`) so human output matches JSON output. Legacy three-key clause kept as fallback. |
+| WR-06 | `c5f69b5` | Demoted `advisory-commerce-proof` job from `macos-15` to `ubuntu-latest` until a real macOS-required step lands. Comment documents the split-job pattern for future StoreKit adapter work. |
+| WR-07 | `6ba0414` | Added `if:` guard restricting `merge-blocking-commerce-proof` to `pull_request`, `push`, and `workflow_dispatch` events. Scheduled weekly runs no longer re-execute the merge gate (zero signal, premium minute cost). |
+| WR-08 | `44b1d79` | Added `defp detail(nil, _key), do: nil` clause in both `Crosswake.Doctor.Formatter` and `Crosswake.Doctor.JSONFormatter` so a `%Check{details: nil}` no longer raises `FunctionClauseError`. Locked by a nil-details fixture test. |
+| WR-09 | `826e90d` | Replaced `Map.get(...) \|\| Map.get(...)` form of `detail/2` with `Map.has_key?/2`-based lookup in both formatters so legitimate falsy values (e.g. `advisory_provider_proof: false`) are preserved instead of falling through to the string-keyed slot. Locked by a `fallback_hint: false` regression test. |
+
+### Deferred to a Follow-on Pass (7 INFO findings)
+
+Per fix scope (WARNING only), the following INFO findings remain in this REVIEW.md unchanged and should be addressed by a subsequent `/gsd:code-review --fix --include-info` pass or by hand: IN-01, IN-02, IN-03, IN-04, IN-05, IN-06, IN-07.
+
+IN-06 in particular cross-references a pre-existing test failure already logged in `deferred-items.md` (item 1) and may merit a dedicated commit if the JSON schema decision is made to widen rather than narrow.
+
+---
+
 _Reviewed: 2026-05-27T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+_Fixed: 2026-05-27 (WARNING findings only) by gsd-code-fixer_
