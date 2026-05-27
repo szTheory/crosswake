@@ -20,6 +20,22 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
   @task "crosswake.doctor"
 
+  defmodule CommerceCorridorRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+        live "/billing", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "billing",
+            runtime: :live_view,
+            capabilities: ["purchase_intent"],
+            commerce: [corridor: :subscription_default, role: :purchase_intent]
+          ]
+      end
+    end
+  end
+
   setup do
     target =
       Path.join(System.tmp_dir!(), "crosswake-doctor-task-#{System.unique_integer([:positive])}")
@@ -152,6 +168,82 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
         ])
       end)
     end
+  end
+
+  test "mix crosswake.doctor human output includes canonical commerce corridor diagnostics", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Task.reenable(@task)
+
+            Mix.Task.run(@task, [
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    assert output =~ "commerce.corridor.runtime_incompatible"
+    assert output =~ "commerce.corridor.prerequisite_missing"
+    assert output =~ "corridor_ref=subscription_default"
+    assert output =~ "role=purchase_intent"
+    assert output =~ "fallback_hint=return_to_phoenix_guidance"
+  end
+
+  test "mix crosswake.doctor json output serializes commerce corridor fields", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Task.reenable(@task)
+
+            Mix.Task.run(@task, [
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--format",
+              "json"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    decoded = Jason.decode!(output)
+
+    corridor_findings =
+      decoded["findings"]
+      |> Enum.filter(&String.starts_with?(&1["code"], "commerce.corridor."))
+
+    assert corridor_findings != []
+
+    assert Enum.all?(corridor_findings, fn finding ->
+             Map.has_key?(finding, "corridor_ref") and
+               Map.has_key?(finding, "role") and
+               Map.has_key?(finding, "denial_code") and
+               Map.has_key?(finding, "fallback_hint")
+           end)
+
+    assert Enum.any?(corridor_findings, fn finding ->
+             finding["corridor_ref"] == "subscription_default" and
+               finding["role"] == "purchase_intent" and
+               finding["denial_code"] == finding["code"] and
+               finding["fallback_hint"] == "return_to_phoenix_guidance"
+           end)
   end
 
   defp write_shell_artifacts!(target) do

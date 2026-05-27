@@ -196,6 +196,7 @@ defmodule Crosswake.Doctor.Formatter do
       "[#{check.severity}] #{check.check} (#{check.code})",
       check.message,
       check.hint && "hint: #{check.hint}",
+      format_commerce_corridor_fields(check),
       format_details(check.details)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -218,6 +219,21 @@ defmodule Crosswake.Doctor.Formatter do
   defp format_value(value) when is_list(value), do: Enum.map_join(value, "|", &format_value/1)
   defp format_value(value) when is_map(value), do: Jason.encode!(value)
   defp format_value(value), do: to_string(value)
+
+  defp format_commerce_corridor_fields(%Check{code: code} = check) do
+    if String.starts_with?(code, "commerce.corridor.") do
+      corridor_ref = detail(check.details, :corridor_ref) || "unknown"
+      role = detail(check.details, :role) |> format_value()
+      denial_code = detail(check.details, :denial_code) || code
+      fallback_hint = detail(check.details, :fallback_hint) || check.hint || "return_to_phoenix_guidance"
+
+      "corridor: corridor_ref=#{corridor_ref} role=#{role} denial_code=#{denial_code} fallback_hint=#{fallback_hint}"
+    end
+  end
+
+  defp detail(details, key) when is_map(details) do
+    Map.get(details, key) || Map.get(details, Atom.to_string(key))
+  end
 
   defp status_word(true), do: "yes"
   defp status_word(false), do: "no"

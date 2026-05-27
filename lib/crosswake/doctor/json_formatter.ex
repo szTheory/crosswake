@@ -106,7 +106,7 @@ defmodule Crosswake.Doctor.JSONFormatter do
   end
 
   defp check_to_map(%Check{} = check) do
-    %{
+    base = %{
       severity: Atom.to_string(check.severity),
       code: check.code,
       message: check.message,
@@ -114,10 +114,28 @@ defmodule Crosswake.Doctor.JSONFormatter do
       check: check.check,
       details: check.details
     }
+
+    if String.starts_with?(check.code, "commerce.corridor.") do
+      Map.merge(base, %{
+        corridor_ref: detail(check.details, :corridor_ref),
+        role: detail(check.details, :role) |> maybe_atom_to_string(),
+        denial_code: detail(check.details, :denial_code) || check.code,
+        fallback_hint: detail(check.details, :fallback_hint) || check.hint
+      })
+    else
+      base
+    end
   end
 
   defp format_proof_status(:passed), do: "supported"
   defp format_proof_status(:failed), do: "failed"
   defp format_proof_status(:missing), do: "unsupported"
   defp format_proof_status(:verification_required), do: "verification required"
+
+  defp detail(details, key) when is_map(details) do
+    Map.get(details, key) || Map.get(details, Atom.to_string(key))
+  end
+
+  defp maybe_atom_to_string(value) when is_atom(value), do: Atom.to_string(value)
+  defp maybe_atom_to_string(value), do: value
 end

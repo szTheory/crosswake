@@ -6,6 +6,8 @@ defmodule Crosswake.Doctor do
 
   alias Crosswake.Bridge.Contract
   alias Crosswake.Bridge.Registry
+  alias Crosswake.Compatibility
+  alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.FindingPolicy
   alias Crosswake.Manifest
@@ -119,8 +121,9 @@ defmodule Crosswake.Doctor do
     {shells, bridge, support, phase_3_findings} = phase_3_posture(manifest, cwd, opts)
     {offline, phase_4_findings} = phase_4_posture(manifest)
     phase_10_findings = phase_10_posture(manifest)
-    
-    findings = findings ++ phase_3_findings ++ phase_4_findings ++ phase_10_findings
+    phase_19_findings = phase_19_commerce_corridor_posture(manifest)
+
+    findings = findings ++ phase_3_findings ++ phase_4_findings ++ phase_10_findings ++ phase_19_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -298,21 +301,7 @@ defmodule Crosswake.Doctor do
             {manifest, findings ++ warning_findings ++ support_findings}
 
           {:error, %Diagnostic{errors: errors}} ->
-            manifest_findings =
-              Enum.map(errors, fn error ->
-                check(
-                  :error,
-                  "manifest_invalid",
-                  "manifest_contract",
-                  error.message,
-                  error.hint,
-                  %{
-                    key: error.key,
-                    route_id: error.route_id,
-                    path: error.path
-                  }
-                )
-              end)
+            manifest_findings = Enum.map(errors, &manifest_compile_check/1)
 
             {nil, findings ++ warning_findings ++ manifest_findings}
         end
@@ -464,6 +453,23 @@ defmodule Crosswake.Doctor do
         end
 
       acc
+    end)
+  end
+
+  defp phase_19_commerce_corridor_posture(nil), do: []
+
+  defp phase_19_commerce_corridor_posture(manifest) do
+    manifest.routes
+    |> Map.values()
+    |> Enum.filter(&(not is_nil(&1.commerce)))
+    |> Enum.flat_map(fn route ->
+      target = commerce_corridor_target(manifest, route.id)
+
+      manifest
+      |> RouteGate.evaluate(route.id, target)
+      |> Map.get(:denials, [])
+      |> Enum.filter(&commerce_doctor_denial?/1)
+      |> Enum.map(&commerce_denial_check(route, &1))
     end)
   end
 
@@ -945,6 +951,101 @@ defmodule Crosswake.Doctor do
       [path | _rest] -> Path.expand(path, cwd)
       [] -> nil
     end
+  end
+
+  defp manifest_compile_check(error) do
+    base_details = %{
+      key: error.key,
+      route_id: error.route_id,
+      path: error.path
+    }
+
+    cond do
+      String.contains?(error.message, "declares undeclared corridor_ref") ->
+        check(
+          :error,
+          "commerce.corridor.undeclared",
+          "commerce_corridor",
+          error.message,
+          "declare the corridor profile before manifest generation",
+          Map.merge(base_details, %{
+            denial_code: "commerce.corridor.undeclared",
+            fallback_hint: "return_to_phoenix_guidance"
+          })
+        )
+
+      String.contains?(error.message, "must provide non-empty prerequisites") ->
+        check(
+          :error,
+          "commerce.corridor.prerequisite_missing",
+          "commerce_corridor",
+          error.message,
+          "restore canonical corridor prerequisites before shipping commerce routes",
+          Map.merge(base_details, %{
+            denial_code: "commerce.corridor.prerequisite_missing",
+            fallback_hint: "return_to_phoenix_guidance"
+          })
+        )
+
+      true ->
+        check(
+          :error,
+          "manifest_invalid",
+          "manifest_contract",
+          error.message,
+          error.hint,
+          base_details
+        )
+    end
+  end
+
+  defp commerce_corridor_target(manifest, route_id) do
+    %Compatibility.Target{
+      manifest_schema_version: manifest.compatibility.manifest_schema_version,
+      bridge_protocol_version: manifest.compatibility.bridge_protocol_version,
+      native_runtime_version: manifest.compatibility.native_runtime_version,
+      origin: manifest.host.origin,
+      active_route_id: route_id,
+      manifest_source: :bundled,
+      capabilities: %{},
+      packs: %{}
+    }
+  end
+
+  defp commerce_doctor_denial?(denial) do
+    denial.reason == :commerce_corridor and
+      denial.code in [
+        "commerce.corridor.undeclared",
+        "commerce.corridor.prerequisite_missing",
+        "commerce.corridor.runtime_incompatible"
+      ]
+  end
+
+  defp commerce_denial_check(route, denial) do
+    role = Map.get(denial.details, :role, route.commerce.role)
+    corridor_ref = Map.get(denial.details, :corridor_ref, route.commerce.corridor_ref)
+    fallback_hint = commerce_fallback_hint(denial)
+
+    check(
+      :error,
+      denial.code,
+      "commerce_corridor",
+      "route #{route.id} triggered #{denial.code}",
+      fallback_hint,
+      %{
+        route_id: route.id,
+        corridor_ref: corridor_ref,
+        role: role,
+        denial_code: denial.code,
+        fallback_hint: fallback_hint
+      }
+    )
+  end
+
+  defp commerce_fallback_hint(denial) do
+    denial.recovery
+    |> Map.get(:fallback, :return_to_phoenix_guidance)
+    |> to_string()
   end
 
   defp check(severity, code, check_name, message, hint, details \\ %{}) do

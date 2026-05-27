@@ -1,5 +1,6 @@
 defmodule Crosswake.Doctor.FormatterTest do
   use ExUnit.Case, async: true
+  alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
   alias Crosswake.SupportMatrix
 
@@ -55,5 +56,34 @@ defmodule Crosswake.Doctor.FormatterTest do
 
     assert output =~ "change classes:"
     assert output =~ "docs-only: signal=\"No compatibility-axis or capability-version change"
+  end
+
+  test "formats commerce corridor findings with canonical IDs and fallback hints" do
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :error,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route billing triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: %{
+            corridor_ref: "subscription_default",
+            role: :purchase_intent,
+            denial_code: "commerce.corridor.runtime_incompatible",
+            fallback_hint: "return_to_phoenix_guidance"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "commerce.corridor.runtime_incompatible"
+    assert output =~ "corridor_ref=subscription_default"
+    assert output =~ "role=purchase_intent"
+    assert output =~ "denial_code=commerce.corridor.runtime_incompatible"
+    assert output =~ "fallback_hint=return_to_phoenix_guidance"
   end
 end

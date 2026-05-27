@@ -22,6 +22,7 @@ defmodule Crosswake.DoctorTest do
   alias Crosswake.Doctor.JSONFormatter
   alias Crosswake.Offline.Status
   alias Crosswake.Offline.Telemetry
+  alias Crosswake.SupportMatrix
 
   setup do
     target =
@@ -100,6 +101,7 @@ defmodule Crosswake.DoctorTest do
     assert report.offline.routes["study-session"]["sync_seam"] == "study_reviews"
     assert report.bridge.denial_reasons |> Enum.sort() ==
              Enum.sort([
+               "commerce_corridor",
                "compatibility_mismatch",
                "external_entry_denied",
                "inactive_route",
@@ -173,6 +175,109 @@ defmodule Crosswake.DoctorTest do
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
     assert "conflict_requires_attention" in decoded["offline"]["states"]
     assert Enum.any?(decoded["findings"], &(&1["severity"] == "advisory"))
+  end
+
+  defmodule CommerceCorridorRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+        live "/billing", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "billing",
+            runtime: :live_view,
+            capabilities: ["purchase_intent"],
+            commerce: [corridor: :subscription_default, role: :purchase_intent]
+          ]
+      end
+    end
+  end
+
+  defmodule UndeclaredCommerceCorridorRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+        live "/billing", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "billing",
+            runtime: :live_view,
+            capabilities: ["purchase_intent"],
+            commerce: [corridor: :missing_subscription_profile, role: :purchase_intent]
+          ]
+      end
+    end
+  end
+
+  test "doctor emits canonical commerce corridor findings and keeps taxonomy parity with support matrix", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    corridor_findings =
+      report.findings
+      |> Enum.filter(&String.starts_with?(&1.code, "commerce.corridor."))
+
+    emitted_codes =
+      corridor_findings
+      |> Enum.map(& &1.code)
+      |> Enum.uniq()
+      |> Enum.sort()
+
+    assert "commerce.corridor.runtime_incompatible" in emitted_codes
+    assert "commerce.corridor.prerequisite_missing" in emitted_codes
+
+    assert MapSet.subset?(
+             MapSet.new(emitted_codes),
+             MapSet.new(SupportMatrix.commerce_corridor_denial_codes())
+           )
+
+    assert Enum.any?(corridor_findings, fn finding ->
+             finding.details[:corridor_ref] == "subscription_default" and
+               finding.details[:role] == :purchase_intent and
+               finding.details[:denial_code] == finding.code and
+               finding.details[:fallback_hint] == "return_to_phoenix_guidance"
+           end)
+
+    human = Formatter.render(report)
+    decoded = JSONFormatter.render(report) |> Jason.decode!()
+
+    assert human =~ "commerce.corridor.runtime_incompatible"
+    assert human =~ "corridor_ref=subscription_default"
+    assert human =~ "denial_code=commerce.corridor.prerequisite_missing"
+    assert human =~ "fallback_hint=return_to_phoenix_guidance"
+
+    assert Enum.any?(decoded["findings"], fn finding ->
+             finding["code"] == "commerce.corridor.runtime_incompatible" and
+               finding["corridor_ref"] == "subscription_default" and
+               finding["role"] == "purchase_intent" and
+               finding["denial_code"] == "commerce.corridor.runtime_incompatible" and
+               finding["fallback_hint"] == "return_to_phoenix_guidance"
+           end)
+  end
+
+  test "doctor maps undeclared corridor compile failures onto canonical commerce denial IDs", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: UndeclaredCommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "commerce.corridor.undeclared" and
+               finding.check == "commerce_corridor" and
+               finding.details[:denial_code] == "commerce.corridor.undeclared"
+           end)
   end
 
   defmodule BoundaryViolationRouter do
