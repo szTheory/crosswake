@@ -79,6 +79,20 @@ Crosswake requires a backend reconciliation inbox plus an authoritative entitlem
 4. backend updates one authoritative entitlement_snapshot
 5. Phoenix/native consumers refresh from that snapshot
 
+## Minimal Reconciliation Inbox Example
+
+Use this minimal sequence when you need a runnable Phoenix-owned reconciliation inbox that stays backend-authoritative:
+
+1. A `purchase`, `restore`, `webhook`, or `support` signal arrives as normalized `reconciliation_evidence`.
+2. Phoenix persists append-only evidence events plus a canonical reconciliation attempt record.
+3. Host-owned verification workers/processes run provider checks and replay handling.
+4. One backend projection updates `entitlement_snapshot` as the single authority source.
+5. Phoenix and native surfaces read that snapshot for route decisions.
+
+Ingestion outcomes are non-authoritative by contract: they can move reconciliation work forward, but they do not grant access or set entitlement authority directly.
+
+This reconciliation walkthrough is `example/docs-only` and companion-ready. It is guidance for host implementations, not a required persistence schema, queue layout, or job framework contract.
+
 ## Backend Idempotency
 
 Idempotency belongs on the backend. Attempt keys should use provider-aware identity such as provider, original transaction id or purchase token, event id, and event kind. Transient device correlation ids are useful evidence but do not define idempotency keys. Duplicate webhook retries or replacement tokens must be safely handled by your host-owned workers.
