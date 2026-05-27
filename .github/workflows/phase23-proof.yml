@@ -89,6 +89,13 @@ jobs:
             test/crosswake/support_matrix/renderer_test.exs \
             test/crosswake/guides/commerce_test.exs
 
+      - name: Run planning corpus parity test
+        # Phase 24: merge-blocking parity test asserting (a) no SUMMARY file
+        # uses bare `requirements:` key and (b) every requirements-completed:
+        # ID exists in .planning/REQUIREMENTS.md. Hermetic — reads only static
+        # planning artifact files committed to git.
+        run: mix test test/crosswake/planning/summary_frontmatter_test.exs
+
   advisory-commerce-proof:
     # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
     # Does NOT run on pull_request or push to main, so it cannot block merges
