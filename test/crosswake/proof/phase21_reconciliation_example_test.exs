@@ -69,6 +69,20 @@ defmodule Crosswake.Proof.Phase21ReconciliationExampleTest do
     refute first_attempt.trace_metadata == second_attempt.trace_metadata
   end
 
+  test "provider-issued identifiers remain case-sensitive in event and subject keys" do
+    base = sample_evidence()
+    upper_provider_ref = sample_evidence(%{provider_reference: "Tx_ABC"})
+    lower_provider_ref = sample_evidence(%{provider_reference: "tx_abc"})
+    upper_evidence_ref = sample_evidence(%{evidence_ref: "Receipt_ABC"})
+    lower_evidence_ref = sample_evidence(%{evidence_ref: "receipt_abc"})
+
+    refute ReconciliationKeys.event_key(upper_provider_ref) == ReconciliationKeys.event_key(lower_provider_ref)
+    refute ReconciliationKeys.subject_key(upper_provider_ref) == ReconciliationKeys.subject_key(lower_provider_ref)
+    refute ReconciliationKeys.event_key(upper_evidence_ref) == ReconciliationKeys.event_key(lower_evidence_ref)
+
+    assert ReconciliationKeys.event_key(base) == ReconciliationKeys.event_key(sample_evidence())
+  end
+
   test "projection precedence returns stale, pending, denied, and granted deterministically" do
     stale_snapshot = snapshot(%{freshness: freshness_lane(:stale)})
     pending_snapshot = snapshot(%{reconciliation: reconciliation_lane(:awaiting_verification)})

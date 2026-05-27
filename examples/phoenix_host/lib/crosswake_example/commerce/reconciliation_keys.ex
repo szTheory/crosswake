@@ -13,9 +13,14 @@ defmodule CrosswakeExample.Commerce.ReconciliationKeys do
 
   @spec event_key(Contracts.ReconciliationEvidence.t()) :: String.t()
   def event_key(%Contracts.ReconciliationEvidence{} = evidence) do
-    ["event", evidence.provider, evidence.provider_reference, evidence.event_kind, evidence.evidence_ref]
-    |> Enum.map(&normalize_component/1)
-    |> Enum.join("::")
+    [
+      canonical_component("event"),
+      canonical_component(evidence.provider),
+      opaque_component(evidence.provider_reference),
+      canonical_component(evidence.event_kind),
+      opaque_component(evidence.evidence_ref)
+    ]
+    |> join_components()
   end
 
   @spec subject_key(Contracts.ReconciliationEvidence.t()) :: String.t()
@@ -26,12 +31,14 @@ defmodule CrosswakeExample.Commerce.ReconciliationKeys do
   @spec subject_key(Contracts.ReconciliationEvidence.t(), keyword()) :: String.t()
   def subject_key(%Contracts.ReconciliationEvidence{} = evidence, opts) when is_list(opts) do
     components =
-      ["subject", evidence.provider, evidence.provider_reference]
+      [
+        canonical_component("subject"),
+        canonical_component(evidence.provider),
+        opaque_component(evidence.provider_reference)
+      ]
       |> maybe_append_group_id(Keyword.get(opts, :group_id))
 
-    components
-    |> Enum.map(&normalize_component/1)
-    |> Enum.join("::")
+    join_components(components)
   end
 
   @spec trace_metadata(Contracts.ReconciliationEvidence.t()) :: map()
@@ -55,16 +62,24 @@ defmodule CrosswakeExample.Commerce.ReconciliationKeys do
   defp maybe_append_group_id(components, group_id) do
     case present_string(group_id) do
       nil -> components
-      normalized_group_id -> components ++ ["group", normalized_group_id]
+      normalized_group_id -> components ++ [canonical_component("group"), opaque_component(normalized_group_id)]
     end
   end
 
-  defp normalize_component(component) do
+  defp canonical_component(component) do
     component
     |> to_string()
     |> String.trim()
     |> String.downcase()
   end
+
+  defp opaque_component(component) do
+    component
+    |> to_string()
+    |> String.trim()
+  end
+
+  defp join_components(components), do: Enum.join(components, "::")
 
   defp present_string(value) when is_binary(value) do
     case String.trim(value) do

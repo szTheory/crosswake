@@ -3,9 +3,9 @@
 This checked-in host is a `supported example` artifact class. It is proof-backed and
 important product surface area, but it is not a separate supported runtime package.
 
-Read [guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+Read [guides/adopter_profiles.md](../../guides/adopter_profiles.md)
 for adopter-fit framing and
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/support_matrix.md](../../guides/support_matrix.md)
 for the canonical package and support posture.
 
 ## Shared Artifact Rules
