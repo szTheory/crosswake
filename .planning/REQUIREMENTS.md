@@ -58,8 +58,8 @@
 
 ### Commerce Route Corridors (`core`)
 
-- [ ] **COMM-04**: Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops.
-- [ ] **COMM-05**: Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary.
+- [x] **COMM-04**: Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops.
+- [x] **COMM-05**: Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary.
 - [ ] **COMM-06**: Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback.
 
 ### Entitlement Lifecycle Semantics (`core`)
@@ -113,8 +113,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COMM-04 | Phase 19 | Pending |
-| COMM-05 | Phase 19 | Pending |
+| COMM-04 | Phase 19 | Completed (19-01) |
+| COMM-05 | Phase 19 | Completed (19-01) |
 | COMM-06 | Phase 19 | Pending |
 | ENTL-01 | Phase 20 | Pending |
 | ENTL-02 | Phase 20 | Pending |

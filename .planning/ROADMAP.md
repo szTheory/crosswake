@@ -29,6 +29,8 @@
 
 **Requirements:** COMM-04, COMM-05, COMM-06
 
+**Plan progress:** 1/3 complete (`19-01` complete; `19-02` next)
+
 **Success criteria:**
 1. Route policy can express Phoenix-owned paywall/account surfaces separately from native-screen or companion storefront loops.
 2. Manifest output exposes commerce corridor truth without provider-specific vocabulary.
@@ -80,8 +82,8 @@
 
 ## Current Position
 
-Phase 19 is ready for planning.
+Phase 19 is executing (1 of 3 plans complete).
 
 Start with:
 
-`$gsd-discuss-phase 19`
+`$gsd-execute-phase 19`
