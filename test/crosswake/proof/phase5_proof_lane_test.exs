@@ -70,19 +70,18 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
     assert android_instrumented =~ "https://example.crosswake.invalid/study/history"
   end
 
-  test "phase 5 proof workflow runs checked-in examples before generated hosts" do
+  test "phase 5 proof workflow keeps native shell proof delegated to Phase 18" do
     example_script = File.read!("script/verify_phase5_example_hosts.sh")
     workflow = File.read!(".github/workflows/phase5-proof.yml")
 
     assert example_script =~ "test/crosswake/proof/phase5_proof_lane_test.exs"
     assert example_script =~ "CROSSWAKE_IOS_PROJECT_ROOT=\"examples/ios_shell_host\""
     assert example_script =~ "CROSSWAKE_ANDROID_PROJECT_ROOT=\"examples/android_shell_host\""
+    assert example_script =~ "CROSSWAKE_PHASE5_NATIVE_PROOFS"
 
     assert workflow =~ "bash script/verify_phase5_example_hosts.sh"
-    assert workflow =~ "bash script/verify_generated_ios_shell.sh"
-    assert workflow =~ "bash script/verify_generated_android_shell.sh"
-
-    assert elem(:binary.match(workflow, "bash script/verify_phase5_example_hosts.sh"), 0) <
-             elem(:binary.match(workflow, "bash script/verify_generated_ios_shell.sh"), 0)
+    assert workflow =~ "CROSSWAKE_PHASE5_NATIVE_PROOFS: \"0\""
+    refute workflow =~ "bash script/verify_generated_ios_shell.sh"
+    refute workflow =~ "bash script/verify_generated_android_shell.sh"
   end
 end
