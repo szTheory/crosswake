@@ -77,9 +77,9 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Doctor/support-matrix guidance for newly formalized capability metadata
 - Example classification of first target capability families
 
-### Candidate: v3.1 Native Affordance Families
+### Shipped: v3.1 Native Affordance Families
 
-**Status:** next candidate after `v3.0`
+**Status:** shipped on 2026-05-27
 
 **Objective**
 - Ship the first low-frequency, high-DX capability families that fit the existing bridge thesis.
@@ -104,6 +104,11 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Route-local allowlist tests
 - Platform support matrix by shell version
 - Doctor output for missing permissions/prerequisites
+
+**Outcome**
+- Shipped the first low-frequency bounded capability families: `haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`.
+- Closed route-local enforcement, doctor/support posture, and support-matrix truth for the new families.
+- Added a dedicated Phase 18 proof lane that passes Elixir proof slices, checked-in iOS shell proof, and Android JVM BridgeChannel proof.
 
 ### Candidate: v3.2 Commerce And Entitlement Seams
 

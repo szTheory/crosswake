@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-20)
+See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 18 implementation is in place through plans `18-01` to `18-03`, and the remaining work is to let the dedicated Phase 18 CI proof lane run and record the result for `18-04`.
+**Current focus:** Milestone v3.1 shipped. Next action is to define the next milestone with `$gsd-new-milestone`.
 
 ## Current Position
 
-Phase: 18. Operational Diagnostics and Enforcement
-Plan: Partial (`18-01` through `18-03` complete; `18-04` verification pending)
-Status: Phase 18 executed on 2026-05-21. Elixir and iOS verification passed locally; Android JVM verification has been shifted into the dedicated `phase18-proof.yml` CI workflow because this environment does not have a Java runtime.
-Last activity: 2026-05-21 — Added the dedicated CI proof workflow for Phase 18 so Android shell verification can close on machine evidence instead of human follow-up.
+Phase: None active
+Plan: None active
+Status: Milestone v3.1 Native Capabilities and Bridge Expansion shipped on 2026-05-27. Phase 18 proof closure passed in GitHub Actions run `26498172516`, covering Elixir proof slices, checked-in iOS shell proof, and Android JVM BridgeChannel proof.
+Last activity: 2026-05-27 — Closed the Phase 18 proof lane, shortened Android CI iteration, archived v3.1, and prepared the project for the next milestone.
 
-Progress: [####......] 40%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
@@ -35,8 +35,8 @@ Progress: [####......] 40%
 | 18. Operational Diagnostics And Enforcement | 3 complete, 1 pending proof | n/a | n/a |
 
 **Recent Trend:**
-- Last milestone shipped: v3.0 Capability Contract And Packaging on 2026-05-20
-- Current milestone opened: v3.1 Native Capabilities and Bridge Expansion
+- Last milestone shipped: v3.1 Native Capabilities and Bridge Expansion on 2026-05-27
+- Current milestone: pending definition
 - Trend: Positive
 
 ## Accumulated Context
@@ -49,18 +49,16 @@ Recent decisions affecting current work:
 - Milestone v3.1 shipped into planning phase, defining 7 target capabilities divided into 4 sequential execution phases.
 - Bounded low-frequency affordances only, maintaining the fail-closed default.
 - Phase 17 split into four ownership-based execution slices so Elixir contract work settled before native shell implementations ran in parallel.
-- Phase 18 keeps Android support truth at `verification_required` until the explicit JVM shell lane passes in the dedicated CI proof workflow.
+- Phase 18 proof truth is closed by CI evidence, with Android JVM proof intentionally separated from slower emulator-backed connected tests for iteration speed.
 
 ### Pending Todos
 
-- Run the `Phase 18 Proof` GitHub Actions workflow and record whether the Android shell proof passes.
-- Decide whether the iOS placeholder source files from `17-03` should be promoted into compiled standalone sources via `CrosswakeShell.xcodeproj/project.pbxproj`.
-- If the CI proof workflow passes, update `.planning/ROADMAP.md`, `.planning/STATE.md`, and `18-04-SUMMARY.md` to close Phase 18 honestly.
+- Define the next milestone with `$gsd-new-milestone`.
+- Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
 
-- Local Android verification for Phases 17 and 18 is blocked because this environment does not have a Java runtime installed, so both phases now depend on the `Phase 18 Proof` GitHub Actions lane for final Android shell evidence.
-- The iOS example host currently keeps the new provider/coordinator implementations in already-compiled owned Swift files; moving them into standalone compiled files still requires `CrosswakeShell.xcodeproj/project.pbxproj` ownership.
+- This local workstation still lacks a Java runtime, so Android JVM evidence should continue to come from CI unless Java is installed locally.
 
 ## Deferred Items
 
@@ -68,9 +66,10 @@ Recent decisions affecting current work:
 |----------|------|--------|-------------|
 | Integrations | First-party companion integrations remain deferred until the current contract and packaging milestone lands | Deferred | 2026-05-19 |
 | Platform | Desktop packaging remains out of the near-term arc | Deferred | 2026-05-19 |
+| Human UAT | Phase 15 device checks for share sheet presentation, physical haptics feedback, and app-info runtime fidelity remain human-needed | Deferred | 2026-05-27 |
 
 ## Session Continuity
 
-Last session: 2026-05-21
-Stopped at: Phase 18 code and iOS proof landed. Next action is to let the `Phase 18 Proof` workflow run green, then close `18-04`.
+Last session: 2026-05-27
+Stopped at: v3.1 archived and ready for the next milestone definition.
 Resume file: None
