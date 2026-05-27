@@ -6,6 +6,8 @@ defmodule Crosswake.Policy.Route do
   alias Crosswake.Policy.Defaults
   alias Crosswake.Policy.Schema
 
+  @commerce_role_values [:paywall_entry, :purchase_intent, :restore_intent, :account_management]
+
   @enforce_keys [:id, :runtime]
   defstruct [
     :id,
@@ -13,6 +15,7 @@ defmodule Crosswake.Policy.Route do
     :security,
     :cache_contract,
     :island_contract,
+    :commerce,
     offline: :unavailable,
     entry: :internal_only,
     capabilities: [],
@@ -28,6 +31,7 @@ defmodule Crosswake.Policy.Route do
           entry: Schema.entry(),
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
+          commerce: Schema.commerce_declaration() | nil,
           capabilities: [String.t()],
           packs: [Schema.pack_requirement()],
           sync: [String.t()],
@@ -44,6 +48,7 @@ defmodule Crosswake.Policy.Route do
       {:ok, validated} ->
         with {:ok, validated} <- validate_offline_contracts(validated),
              {:ok, validated} <- validate_entry_policy(validated),
+             {:ok, validated} <- validate_commerce_declaration(validated),
              {:ok, validated} <- validate_pack_requirements(validated),
              {:ok, validated} <- validate_transfer_declarations(validated) do
           {:ok, struct!(__MODULE__, validated)}
@@ -60,6 +65,7 @@ defmodule Crosswake.Policy.Route do
     |> Schema.validate!()
     |> validate_offline_contracts!()
     |> validate_entry_policy!()
+    |> validate_commerce_declaration!()
     |> validate_pack_requirements!()
     |> validate_transfer_declarations!()
     |> then(&struct!(__MODULE__, &1))
@@ -179,6 +185,45 @@ defmodule Crosswake.Policy.Route do
 
   defp validate_entry_policy!(validated) do
     case validate_entry_policy(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validate_commerce_declaration(validated) do
+    case validated[:commerce] do
+      nil ->
+        {:ok, validated}
+
+      %{corridor: nil} = commerce ->
+        {:error, validation_error(:commerce, commerce, "commerce declaration requires :corridor")}
+
+      %{role: nil} = commerce ->
+        {:error, validation_error(:commerce, commerce, "commerce declaration requires :role")}
+
+      %{corridor: corridor, role: _role} = commerce when not is_binary(corridor) ->
+        {:error,
+         validation_error(
+           :commerce,
+           commerce,
+           "commerce declaration corridor must be a non-empty string or atom"
+         )}
+
+      %{corridor: _corridor, role: role} = commerce when role not in @commerce_role_values ->
+        {:error,
+         validation_error(
+           :commerce,
+           commerce,
+           "unsupported commerce role #{inspect(role)}; expected one of #{inspect(@commerce_role_values)}"
+         )}
+
+      %{corridor: _corridor, role: _role} ->
+        {:ok, validated}
+    end
+  end
+
+  defp validate_commerce_declaration!(validated) do
+    case validate_commerce_declaration(validated) do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end
