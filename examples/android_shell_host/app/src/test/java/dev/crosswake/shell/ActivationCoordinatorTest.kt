@@ -205,7 +205,7 @@ class ActivationCoordinatorTest {
         return ActivationRequest(
             routeId = "library",
             url = "https://example.crosswake.invalid/library",
-            source = ActivationSource.DEEP_LINK,
+            source = ActivationSource.COLD_START,
             origin = "https://example.crosswake.invalid",
             manifestSource = ManifestSource.BUNDLED,
             bridgeProtocolVersion = "1.0.0",
