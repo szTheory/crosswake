@@ -167,6 +167,22 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation rejects undeclared corridor_ref values with deterministic messaging" do
+    manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:routes), "camera", Access.key!(:commerce)],
+        Types.new_route_commerce(corridor_ref: "undeclared", role: :paywall_entry)
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.message ==
+               "route camera declares undeclared corridor_ref \"undeclared\" outside commerce_corridors"
+           end)
+  end
+
   test "manifest validation rejects invalid capability metadata vocabulary and empty support facts" do
     manifest =
       manifest_fixture()

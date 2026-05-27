@@ -5,6 +5,7 @@ defmodule Crosswake.ManifestTest do
 
   alias Crosswake.Manifest
   alias Crosswake.Manifest.Types
+  alias Crosswake.Policy.CorridorProfiles
   alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
 
   test "manifest compilation from a managed router yields one route-first artifact keyed by route id" do
@@ -202,5 +203,45 @@ defmodule Crosswake.ManifestTest do
              family: "reconciliation_evidence",
              package_class: :core
            } = manifest.capability_registry["reconciliation_evidence"]
+  end
+
+  test "manifest links canonical profile definitions through root commerce_corridors and route corridor_ref entries" do
+    canonical = CorridorProfiles.commerce_corridors()["subscription_default"]
+
+    assert {:ok, %{manifest: manifest}} =
+             Manifest.compile([
+               route("/paywall",
+                 helper: "paywall",
+                 crosswake: [
+                   id: "paywall",
+                   runtime: :live_view,
+                   security: :standard,
+                   commerce: [corridor: :subscription_default, role: :paywall_entry]
+                 ]
+               )
+             ])
+
+    assert manifest.commerce_corridors["subscription_default"].id == canonical.id
+    assert manifest.commerce_corridors["subscription_default"].denial == canonical.denial
+    assert manifest.commerce_corridors["subscription_default"].fallback == canonical.fallback
+    assert manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
+    assert manifest.routes["paywall"].commerce.role == :paywall_entry
+    assert Types.to_map(manifest)["commerce_corridors"]["subscription_default"]["id"] == "subscription_default"
+    assert Types.to_map(manifest)["routes"]["paywall"]["commerce"]["corridor_ref"] == "subscription_default"
+  end
+
+  defp route(path, opts) do
+    metadata =
+      case Keyword.fetch(opts, :crosswake) do
+        {:ok, crosswake} -> %{crosswake: crosswake}
+        :error -> %{}
+      end
+
+    %{
+      path: path,
+      metadata: metadata,
+      helper: Keyword.get(opts, :helper, "route"),
+      verb: Keyword.get(opts, :verb, :get)
+    }
   end
 end

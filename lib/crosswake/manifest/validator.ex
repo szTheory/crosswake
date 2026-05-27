@@ -566,9 +566,17 @@ defmodule Crosswake.Manifest.Validator do
     do: Enum.any?(value, &provider_specific_vocabulary?/1)
 
   defp provider_specific_vocabulary?(value) when is_map(value),
-    do: Enum.any?(value, fn {key, nested_value} -> provider_specific_vocabulary?(key) or provider_specific_vocabulary?(nested_value) end)
+    do:
+      value
+      |> normalize_provider_vocab_map()
+      |> Enum.any?(fn {key, nested_value} ->
+        provider_specific_vocabulary?(key) or provider_specific_vocabulary?(nested_value)
+      end)
 
   defp provider_specific_vocabulary?(_value), do: false
+
+  defp normalize_provider_vocab_map(%_{} = struct), do: Map.from_struct(struct)
+  defp normalize_provider_vocab_map(map), do: map
 
   defp present?(:pack_registry, value) when is_map(value), do: true
   defp present?(:commerce_corridors, value) when is_map(value), do: true

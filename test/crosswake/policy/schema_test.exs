@@ -65,6 +65,18 @@ defmodule Crosswake.Policy.SchemaTest do
       end
     end
 
+    test "accepts provider-neutral commerce corridor declarations" do
+      validated =
+        Schema.validate!([
+          id: "paywall",
+          runtime: :live_view,
+          security: :standard,
+          commerce: [corridor: :subscription_default, role: :paywall_entry]
+        ])
+
+      assert validated[:commerce] == %{corridor: "subscription_default", role: :paywall_entry}
+    end
+
     test "accepts typed versioned pack declarations with semantic metadata" do
       validated =
         Schema.validate!([
