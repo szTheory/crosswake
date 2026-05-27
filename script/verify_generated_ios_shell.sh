@@ -7,6 +7,7 @@ PROJECT_ROOT=""
 TMPDIR_ROOT=""
 DERIVED_DATA_ROOT=""
 SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
+BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
 LAUNCH_SIMULATOR="${CROSSWAKE_IOS_LAUNCH_SIMULATOR:-1}"
 BUNDLE_ID=""
 
@@ -40,6 +41,10 @@ project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
   printf '%s\n' "$project_check" >&2
   exit 1
 }
+
+if [[ "$BUILD_FOR_TESTING" != "1" ]]; then
+  exit 0
+fi
 
 destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 
