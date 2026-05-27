@@ -21,7 +21,7 @@
 | 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
 | 22 | Commerce Support, Review, And Proof (decomposed) | Decomposed by milestone audit into focused closure phases before execution. | Decomposed into Phases 23-24 | Split |
 | 23 | Commerce Support And Proof Closure | 4/4 | Complete    | 2026-05-27 |
-| 24 | Reconciliation Traceability Hardening | Normalize reconciliation requirement traceability and verification metadata for deterministic audits. | RECN-01, RECN-02, RECN-03 | 3 |
+| 24 | Reconciliation Traceability Hardening | 0/3 | RECN-01, RECN-02, RECN-03 | Planned |
 
 ## Phase Details
 
@@ -110,6 +110,13 @@
 
 **Requirements:** RECN-01, RECN-02, RECN-03
 
+**Plans:** 3 plans (3 waves)
+
+Plans:
+- [ ] 24-01-PLAN.md — Phase 21 SUMMARY frontmatter key rename + REQUIREMENTS.md bullets/traceability sync
+- [ ] 24-02-PLAN.md — ExUnit parity test (test/crosswake/planning/summary_frontmatter_test.exs) + phase23-proof.yml CI merge-gate amendment
+- [ ] 24-03-PLAN.md — Append-only re-audit section + reaudits[] frontmatter entry in v3.2-MILESTONE-AUDIT.md
+
 **Success criteria:**
 
 1. Phase summaries use canonical `requirements-completed` frontmatter for reconciliation requirements.
@@ -124,10 +131,12 @@
 
 ## Current Position
 
-Phase 21 is complete (2 of 2 plans complete). Phase 23 is planned (4 plans, 2 waves).
+Phase 21 is complete (2 of 2 plans complete). Phase 23 is planned (4 plans, 2 waves). Phase 24 is planned (3 plans, 3 waves).
 
-Wave 1 (parallel): `23-01` (doctor + stale diagnostics) and `23-02` (support matrix enrichment + guide sync).
-Wave 2 (depends on wave 1): `23-03` (reviewer/storefront guidance) and `23-04` (proof lane formalization).
+Phase 24 waves:
+Wave 1: `24-01` (Phase 21 SUMMARY rename + REQUIREMENTS.md sync — artifact-shape gap closure).
+Wave 2 (depends on 24-01): `24-02` (ExUnit parity test + phase23-proof.yml CI merge-gate amendment).
+Wave 3 (depends on 24-01 and 24-02): `24-03` (append-only re-audit to v3.2-MILESTONE-AUDIT.md).
 
 Start with:
 
