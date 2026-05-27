@@ -150,6 +150,30 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert rendered == Renderer.render(SupportMatrix.canonical())
   end
 
+  test "renderer escapes pipe characters in support entry cells so future data cannot rip the markdown column layout" do
+    # Synthesizes a SupportMatrix with a notes string containing a literal
+    # pipe character. Without escaping, the rendered row would silently split
+    # into extra columns and break GitHub markdown parsing for the entire
+    # Phoenix section. Asserts the renderer emits the escaped form (`\|`)
+    # and does not produce a row with a raw inline `|` in the notes cell.
+    base = SupportMatrix.canonical()
+
+    risky_phoenix =
+      Enum.map(base.phoenix, fn entry ->
+        %{entry | notes: "alpha | beta"}
+      end)
+
+    matrix = %{base | phoenix: risky_phoenix}
+
+    rendered = Renderer.render(matrix)
+
+    assert rendered =~ "alpha \\| beta",
+           "renderer must escape `|` in interpolated cells"
+
+    refute rendered =~ "alpha | beta |",
+           "rendered output still contains an unescaped pipe in a cell, which would break the markdown table layout"
+  end
+
   test "guides remain mechanically checked against canonical support truth and phase 3 boundaries" do
     assert File.read!("guides/support_matrix.md") == Renderer.render(SupportMatrix.canonical())
 
