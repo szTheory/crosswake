@@ -35,55 +35,111 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert intent.correlation_id == "restore_456"
     end
 
-    test "entitlement_snapshot keeps authority_state and access_state distinct with freshness fields" do
+    test "entitlement_snapshot uses explicit entitlement lanes with required keys" do
       snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
-        authority_state: :active,
-        access_state: :granted,
-        checked_at: "2023-01-01T12:00:00Z",
-        stale_after: "2023-01-01T13:00:00Z",
-        effective_until: "2023-02-01T12:00:00Z"
+        authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
+        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
+        reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+          state: :projection_refreshed,
+          reference: "attempt_123"
+        },
+        freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+          state: :fresh,
+          checked_at: "2023-01-01T12:00:00Z",
+          stale_after: "2023-01-01T13:00:00Z"
+        },
+        effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+          effective_from: "2023-01-01T12:00:00Z",
+          effective_until: "2023-02-01T12:00:00Z"
+        },
+        evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+          source: :storefront,
+          reference: "tx_123",
+          observed_at: "2023-01-01T12:00:00Z"
+        },
+        as_of: 42
       }
 
-      assert snapshot.authority_state == :active
-      assert snapshot.access_state == :granted
-      assert snapshot.checked_at == "2023-01-01T12:00:00Z"
+      keys = Map.keys(snapshot)
+
+      assert :authority in keys
+      assert :access in keys
+      assert :reconciliation in keys
+      assert :freshness in keys
+      assert :effective in keys
+      assert :evidence in keys
+      assert :as_of in keys
+      refute :authority_state in keys
+      refute :checked_at in keys
     end
 
-    test "entitlement_snapshot supports canceled_scheduled_end vs revoked authority state" do
+    test "entitlement_snapshot keeps authority and access semantics orthogonal" do
       snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
-        authority_state: :canceled_scheduled_end,
-        access_state: :granted,
-        checked_at: "2023-01-01T12:00:00Z",
-        stale_after: "2023-01-01T13:00:00Z",
-        effective_until: "2023-02-01T12:00:00Z"
+        authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :canceled_scheduled_end},
+        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :still_within_term},
+        reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+          state: :projection_refreshed,
+          reference: "attempt_123"
+        },
+        freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+          state: :fresh,
+          checked_at: "2023-01-01T12:00:00Z",
+          stale_after: "2023-01-01T13:00:00Z"
+        },
+        effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+          effective_from: "2023-01-01T12:00:00Z",
+          effective_until: "2023-02-01T12:00:00Z"
+        },
+        evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+          source: :webhook,
+          reference: "evt_123",
+          observed_at: "2023-01-01T12:00:00Z"
+        },
+        as_of: 43
       }
 
-      assert snapshot.authority_state == :canceled_scheduled_end
-      assert snapshot.access_state == :granted
+      assert snapshot.authority.state == :canceled_scheduled_end
+      assert snapshot.access.decision == :granted
 
       revoked_snapshot = %Contracts.EntitlementSnapshot{
         group_id: "premium",
-        authority_state: :revoked,
-        access_state: :denied,
-        checked_at: "2023-01-01T12:00:00Z",
-        stale_after: "2023-01-01T13:00:00Z",
-        effective_until: nil
+        authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :revoked},
+        access: %Contracts.EntitlementSnapshot.AccessLane{decision: :denied, reason: :manual_revoke},
+        reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+          state: :projection_refreshed,
+          reference: "attempt_124"
+        },
+        freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+          state: :fresh,
+          checked_at: "2023-01-01T12:00:00Z",
+          stale_after: "2023-01-01T13:00:00Z"
+        },
+        effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+          effective_from: "2023-01-01T12:00:00Z",
+          effective_until: nil
+        },
+        evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+          source: :support,
+          reference: "ticket_123",
+          observed_at: "2023-01-01T12:00:00Z"
+        },
+        as_of: 44
       }
 
-      assert revoked_snapshot.authority_state == :revoked
+      assert revoked_snapshot.authority.state == :revoked
     end
 
     test "reconciliation_evidence compiles without provider leakage" do
       evidence = %Contracts.ReconciliationEvidence{
         correlation_id: "txn_123",
         evidence_token: "receipt_base64_data",
-        source: :device_callback
+        source: :device
       }
 
       assert evidence.evidence_token == "receipt_base64_data"
-      assert evidence.source == :device_callback
+      assert evidence.source == :device
     end
   end
 
