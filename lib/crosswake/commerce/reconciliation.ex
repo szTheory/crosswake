@@ -21,17 +21,40 @@ defmodule Crosswake.Commerce.Reconciliation do
           | :verification_failed
           | :stale_authority
 
+  @outcome_vocabulary [
+    :pending_purchase,
+    :pending_restore,
+    :awaiting_verification,
+    :projection_refreshed,
+    :conflict,
+    :verification_failed,
+    :stale_authority
+  ]
+
+  @unresolved_outcomes [:pending_purchase, :pending_restore, :awaiting_verification]
+  @workflow_reporting_outcomes [:projection_refreshed, :verification_failed, :conflict, :stale_authority]
+
+  @spec outcome_vocabulary() :: [outcome()]
   def outcome_vocabulary do
-    [
-      :pending_purchase,
-      :pending_restore,
-      :awaiting_verification,
-      :projection_refreshed,
-      :conflict,
-      :verification_failed,
-      :stale_authority
-    ]
+    @outcome_vocabulary
   end
+
+  @spec reconciliation_outcome?(term()) :: boolean()
+  def reconciliation_outcome?(state), do: state in @outcome_vocabulary
+
+  @spec unresolved_outcome?(term()) :: boolean()
+  def unresolved_outcome?(state), do: state in @unresolved_outcomes
+
+  @spec workflow_reporting_outcome?(term()) :: boolean()
+  def workflow_reporting_outcome?(state), do: state in @workflow_reporting_outcomes
+
+  @spec outcome_implies_authority_grant?(term()) :: boolean()
+  def outcome_implies_authority_grant?(state) when state in @outcome_vocabulary, do: false
+  def outcome_implies_authority_grant?(_state), do: false
+
+  @spec outcome_implies_access_granted?(term()) :: boolean()
+  def outcome_implies_access_granted?(state) when state in @outcome_vocabulary, do: false
+  def outcome_implies_access_granted?(_state), do: false
 
   defmodule Attempt do
     @moduledoc """

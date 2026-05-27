@@ -27,6 +27,10 @@ defmodule Crosswake.Commerce.ReconciliationTest do
         :verification_failed,
         :stale_authority
       ]
+
+      assert Reconciliation.reconciliation_outcome?(:pending_purchase)
+      assert Reconciliation.reconciliation_outcome?(:pending_restore)
+      assert Reconciliation.reconciliation_outcome?(:awaiting_verification)
     end
 
     test "idempotency fields are provider-aware and backend-owned, instead of transient device correlation ids" do
@@ -60,6 +64,27 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       assert evidence_result.attempt.status == :pending_purchase
       refute Map.has_key?(evidence_result, :access_state)
       refute Map.has_key?(evidence_result, :authority_state)
+    end
+
+    test "pending and verification outcomes stay reconciliation-only and never become authority grants" do
+      assert Reconciliation.unresolved_outcome?(:pending_purchase)
+      assert Reconciliation.unresolved_outcome?(:pending_restore)
+      assert Reconciliation.unresolved_outcome?(:awaiting_verification)
+
+      refute Reconciliation.outcome_implies_authority_grant?(:pending_purchase)
+      refute Reconciliation.outcome_implies_authority_grant?(:pending_restore)
+      refute Reconciliation.outcome_implies_authority_grant?(:awaiting_verification)
+    end
+
+    test "reconciliation outcomes do not imply access granted decisions" do
+      for outcome <- Reconciliation.outcome_vocabulary() do
+        refute Reconciliation.outcome_implies_access_granted?(outcome)
+      end
+
+      assert Reconciliation.workflow_reporting_outcome?(:projection_refreshed)
+      assert Reconciliation.workflow_reporting_outcome?(:verification_failed)
+      assert Reconciliation.workflow_reporting_outcome?(:conflict)
+      assert Reconciliation.workflow_reporting_outcome?(:stale_authority)
     end
   end
 end
