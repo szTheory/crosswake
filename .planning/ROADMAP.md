@@ -21,7 +21,7 @@
 | 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
 | 22 | Commerce Support, Review, And Proof (decomposed) | Decomposed by milestone audit into focused closure phases before execution. | Decomposed into Phases 23-24 | Split |
 | 23 | Commerce Support And Proof Closure | 4/4 | Complete    | 2026-05-27 |
-| 24 | Reconciliation Traceability Hardening | 1/3 | In Progress|  |
+| 24 | Reconciliation Traceability Hardening | 2/3 | In Progress|  |
 
 ## Phase Details
 
@@ -110,7 +110,7 @@
 
 **Requirements:** RECN-01, RECN-02, RECN-03
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -119,7 +119,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 24-02-PLAN.md — ExUnit parity test (test/crosswake/planning/summary_frontmatter_test.exs) + phase23-proof.yml CI merge-gate amendment
+- [x] 24-02-PLAN.md — ExUnit parity test (test/crosswake/planning/summary_frontmatter_test.exs) + phase23-proof.yml CI merge-gate amendment
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
