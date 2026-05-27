@@ -52,18 +52,33 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
   # Extract IDs from requirements-completed: handling BOTH inline [A, B] and
   # multi-line \n  - A shapes. The corpus has both: Phase 19/20 use inline,
   # Phase 23 uses multi-line (RESEARCH Finding 1).
+  # Scope: only the requirements-completed: value, not subsequent YAML keys
+  # (which may legitimately reference IDs like D-07 in affects:/patterns:).
   defp extract_completed_ids(frontmatter) do
-    case Regex.run(~r/^requirements-completed:[ \t]*(.*)/ms, frontmatter,
-           capture: :all_but_first
-         ) do
-      [rest] ->
-        Regex.scan(~r/\b([A-Z]+-\d+)\b/, rest)
-        |> Enum.map(fn [_, id] -> id end)
-        |> Enum.uniq()
+    cond do
+      inline =
+          Regex.run(~r/^requirements-completed:[ \t]*\[([^\]]*)\]/m, frontmatter,
+            capture: :all_but_first
+          ) ->
+        scan_ids(hd(inline))
 
-      nil ->
+      block =
+          Regex.run(
+            ~r/^requirements-completed:[ \t]*\r?\n((?:[ \t]+-[^\n]*\r?\n?)+)/m,
+            frontmatter,
+            capture: :all_but_first
+          ) ->
+        scan_ids(hd(block))
+
+      true ->
         []
     end
+  end
+
+  defp scan_ids(text) do
+    Regex.scan(~r/\b([A-Z]+-\d+)\b/, text)
+    |> Enum.map(fn [_, id] -> id end)
+    |> Enum.uniq()
   end
 
   # Parse bullet IDs from REQUIREMENTS.md.
