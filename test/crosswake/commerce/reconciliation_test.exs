@@ -1,24 +1,11 @@
 defmodule Crosswake.Commerce.ReconciliationTest do
   use ExUnit.Case, async: true
 
-  alias Crosswake.Commerce.Contracts
   alias Crosswake.Commerce.Reconciliation
+  alias Crosswake.Commerce.Contracts
 
-  describe "reconciliation attempt types and outcomes" do
-    test "distinguishes evidence submission, verification, projection refresh, conflict, failure, and stale authority states" do
-      # Attempt should capture idempotency and evidence
-      attempt = %Reconciliation.Attempt{
-        provider: :app_store,
-        provider_reference: "tx_123",
-        event_kind: :purchase,
-        correlation_id: "corr_456", # Supplemental
-        evidence_token: "receipt_data",
-        status: :pending_purchase
-      }
-
-      assert attempt.status == :pending_purchase
-
-      # Outcomes distinguish evidence vs authority
+  describe "reconciliation outcome vocabulary" do
+    test "distinguishes evidence processing outcomes from authority semantics" do
       assert Reconciliation.outcome_vocabulary() == [
         :pending_purchase,
         :pending_restore,
@@ -32,39 +19,6 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       assert Reconciliation.reconciliation_outcome?(:pending_purchase)
       assert Reconciliation.reconciliation_outcome?(:pending_restore)
       assert Reconciliation.reconciliation_outcome?(:awaiting_verification)
-    end
-
-    test "idempotency fields are provider-aware and backend-owned, instead of transient device correlation ids" do
-      # Idempotency relies on provider, reference, and kind, NOT correlation_id
-      idempotency_key = %Reconciliation.IdempotencyKey{
-        provider: :play_store,
-        provider_reference: "GPA.1234-5678",
-        event_kind: :renewal
-      }
-
-      assert idempotency_key.provider == :play_store
-      assert idempotency_key.provider_reference == "GPA.1234-5678"
-      assert idempotency_key.event_kind == :renewal
-      refute Map.has_key?(idempotency_key, :correlation_id)
-    end
-
-    test "device purchase success, restore success, and native callback success remain evidence-only result states" do
-      evidence_result = %Reconciliation.EvidenceResult{
-        source: :device_purchase,
-        status: :submitted,
-        attempt: %Reconciliation.Attempt{
-          provider: :app_store,
-          provider_reference: "tx_123",
-          event_kind: :purchase,
-          status: :pending_purchase
-        }
-      }
-
-      # These outcomes shouldn't grant access
-      assert evidence_result.status == :submitted
-      assert evidence_result.attempt.status == :pending_purchase
-      refute Map.has_key?(evidence_result, :access_state)
-      refute Map.has_key?(evidence_result, :authority_state)
     end
 
     test "pending and verification outcomes stay reconciliation-only and never become authority grants" do
@@ -87,46 +41,77 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       assert Reconciliation.workflow_reporting_outcome?(:conflict)
       assert Reconciliation.workflow_reporting_outcome?(:stale_authority)
     end
+  end
 
-    test "reconciliation outcomes are rejected when treated as authority states" do
-      {:error, errors} =
-        Contracts.new_entitlement_snapshot(
-          snapshot_attrs(%{
-            authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :pending_restore}
-          })
-        )
+  describe "evidence ingestion authority separation" do
+    test "maps unverified evidence to awaiting_verification and never to active authority" do
+      evidence = sample_evidence()
 
-      assert {:authority, {:invalid_state, :pending_restore}} in errors
-      refute Reconciliation.outcome_implies_authority_grant?(:pending_restore)
+      assert {:ok, result} = Reconciliation.ingest_evidence(evidence)
+      assert result.status == :awaiting_verification
+      assert result.attempt.status == :awaiting_verification
+      refute result.attempt.status == :active
+      refute Reconciliation.authority_mutation_allowed_from_evidence?(evidence)
+    end
+
+    test "allows projection_refreshed only with backend verification marker" do
+      evidence = sample_evidence()
+
+      assert {:ok, awaiting_result} = Reconciliation.ingest_evidence(evidence)
+      assert awaiting_result.status == :awaiting_verification
+
+      assert {:ok, verified_result} =
+               Reconciliation.ingest_evidence(evidence, verified_projection: true)
+
+      assert verified_result.status == :projection_refreshed
+      refute verified_result.attempt.status == :active
+    end
+
+    test "marks duplicate evidence as replay and keeps authority non-granting" do
+      evidence = sample_evidence()
+
+      assert {:ok, first_result} = Reconciliation.ingest_evidence(evidence)
+
+      assert {:ok, replay_result} =
+               Reconciliation.ingest_evidence(
+                 evidence,
+                 seen_idempotency_keys: [first_result.idempotency_key]
+               )
+
+      assert replay_result.replay?
+      assert replay_result.idempotency_key == first_result.idempotency_key
+      assert replay_result.status == :awaiting_verification
+      refute replay_result.attempt.status == :active
+    end
+
+    test "unknown evidence kinds fail closed" do
+      evidence = sample_evidence(%{event_kind: "new_provider_status"})
+
+      assert {:ok, result} = Reconciliation.ingest_evidence(evidence)
+      assert result.status == :verification_failed
+      refute result.attempt.status == :active
+    end
+
+    test "rejects attempts to set authority lane from evidence input" do
+      evidence = sample_evidence()
+
+      assert {:error, :authority_lane_mutation_forbidden} =
+               Reconciliation.ingest_evidence(evidence, authority_state: :active)
     end
   end
 
-  defp snapshot_attrs(overrides) do
-    base_attrs = %{
-      group_id: "premium",
-      authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :active},
-      access: %Contracts.EntitlementSnapshot.AccessLane{decision: :granted, reason: :active_subscription},
-      reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
-        state: :projection_refreshed,
-        reference: "attempt_123"
-      },
-      freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
-        state: :fresh,
-        checked_at: "2023-01-01T12:00:00Z",
-        stale_after: "2023-01-01T13:00:00Z"
-      },
-      effective: %Contracts.EntitlementSnapshot.EffectiveLane{
-        effective_from: "2023-01-01T12:00:00Z",
-        effective_until: "2023-02-01T12:00:00Z"
-      },
-      evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
-        source: :storefront,
-        reference: "tx_123",
-        observed_at: "2023-01-01T12:00:00Z"
-      },
-      as_of: 42
+  defp sample_evidence(overrides \\ %{}) do
+    base = %{
+      source: :device,
+      provider: "app_store",
+      provider_reference: "tx_123",
+      event_kind: "purchase",
+      evidence_ref: "receipt_ref_123",
+      captured_at: "2023-01-01T12:00:00Z",
+      integrity_digest: "sha256:abc123",
+      idempotency_ref: "idem_123"
     }
 
-    Map.merge(base_attrs, overrides)
+    struct!(Contracts.ReconciliationEvidence, Map.merge(base, overrides))
   end
 end

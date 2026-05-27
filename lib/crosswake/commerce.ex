@@ -18,7 +18,8 @@ defmodule Crosswake.Commerce do
   @doc """
   Ingest evidence from device callbacks or webhooks.
   """
-  @callback ingest_reconciliation_evidence(Contracts.ReconciliationEvidence.t()) :: :ok | {:error, term()}
+  @callback ingest_reconciliation_evidence(Contracts.ReconciliationEvidence.t()) ::
+              {:ok, Crosswake.Commerce.Reconciliation.EvidenceResult.t()} | {:error, term()}
 
   @doc """
   Fetch the current entitlement snapshot for a given group.

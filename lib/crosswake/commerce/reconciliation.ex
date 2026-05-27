@@ -12,6 +12,8 @@ defmodule Crosswake.Commerce.Reconciliation do
   or silent denials. Device success is evidence, not entitlement.
   """
 
+  alias Crosswake.Commerce.Contracts
+
   @type outcome ::
           :pending_purchase
           | :pending_restore
@@ -61,15 +63,15 @@ defmodule Crosswake.Commerce.Reconciliation do
     A typed record of a backend-owned reconciliation attempt.
     """
     @enforce_keys [:provider, :provider_reference, :event_kind, :status]
-    defstruct [:provider, :provider_reference, :event_kind, :status, :evidence_token, :correlation_id]
+    defstruct [:provider, :provider_reference, :event_kind, :status, :evidence_ref, :idempotency_ref]
 
     @type t :: %__MODULE__{
-            provider: atom(),
+            provider: String.t(),
             provider_reference: String.t(),
-            event_kind: atom(),
+            event_kind: String.t(),
             status: Crosswake.Commerce.Reconciliation.outcome(),
-            evidence_token: String.t() | nil,
-            correlation_id: String.t() | nil
+            evidence_ref: String.t() | nil,
+            idempotency_ref: String.t() | nil
           }
   end
 
@@ -82,9 +84,9 @@ defmodule Crosswake.Commerce.Reconciliation do
     defstruct [:provider, :provider_reference, :event_kind]
 
     @type t :: %__MODULE__{
-            provider: atom(),
+            provider: String.t(),
             provider_reference: String.t(),
-            event_kind: atom()
+            event_kind: String.t()
           }
   end
 
@@ -93,13 +95,78 @@ defmodule Crosswake.Commerce.Reconciliation do
     Represents an evidence-only result state for device purchase, restore, or native callback success.
     These states do not directly mutate entitlement authority.
     """
-    @enforce_keys [:source, :status, :attempt]
-    defstruct [:source, :status, :attempt]
+    @enforce_keys [:source, :status, :attempt, :idempotency_key, :replay?]
+    defstruct [:source, :status, :attempt, :idempotency_key, :replay?]
 
     @type t :: %__MODULE__{
-            source: atom(),
-            status: atom(),
-            attempt: Crosswake.Commerce.Reconciliation.Attempt.t()
+            source: Contracts.ReconciliationEvidence.source(),
+            status: Crosswake.Commerce.Reconciliation.outcome(),
+            attempt: Crosswake.Commerce.Reconciliation.Attempt.t(),
+            idempotency_key: Crosswake.Commerce.Reconciliation.IdempotencyKey.t(),
+            replay?: boolean()
           }
+  end
+
+  @success_like_event_kinds MapSet.new(["purchase", "restore", "renewal", "grace_period", "billing_retry"])
+
+  @spec ingest_evidence(Contracts.ReconciliationEvidence.t(), keyword()) ::
+          {:ok, EvidenceResult.t()} | {:error, term()}
+  def ingest_evidence(%Contracts.ReconciliationEvidence{} = evidence, opts \\ []) do
+    with :ok <- reject_direct_authority_override(opts) do
+      idempotency_key = to_idempotency_key(evidence)
+      replay? = seen_idempotency_key?(idempotency_key, Keyword.get(opts, :seen_idempotency_keys, []))
+      status = evidence_status(evidence, opts)
+
+      attempt = %Attempt{
+        provider: evidence.provider,
+        provider_reference: evidence.provider_reference,
+        event_kind: evidence.event_kind,
+        status: status,
+        evidence_ref: evidence.evidence_ref,
+        idempotency_ref: evidence.idempotency_ref
+      }
+
+      {:ok,
+       %EvidenceResult{
+         source: evidence.source,
+         status: status,
+         attempt: attempt,
+         idempotency_key: idempotency_key,
+         replay?: replay?
+       }}
+    end
+  end
+
+  @spec authority_mutation_allowed_from_evidence?(Contracts.ReconciliationEvidence.t()) :: false
+  def authority_mutation_allowed_from_evidence?(%Contracts.ReconciliationEvidence{}), do: false
+
+  defp to_idempotency_key(%Contracts.ReconciliationEvidence{} = evidence) do
+    %IdempotencyKey{
+      provider: evidence.provider,
+      provider_reference: evidence.provider_reference,
+      event_kind: evidence.event_kind
+    }
+  end
+
+  defp seen_idempotency_key?(idempotency_key, %MapSet{} = seen), do: MapSet.member?(seen, idempotency_key)
+  defp seen_idempotency_key?(idempotency_key, seen) when is_list(seen), do: Enum.member?(seen, idempotency_key)
+  defp seen_idempotency_key?(_idempotency_key, _seen), do: false
+
+  defp evidence_status(evidence, opts) do
+    cond do
+      Keyword.get(opts, :verified_projection, false) -> :projection_refreshed
+      success_like_evidence?(evidence.event_kind) -> :awaiting_verification
+      true -> :verification_failed
+    end
+  end
+
+  defp success_like_evidence?(event_kind),
+    do: MapSet.member?(@success_like_event_kinds, to_string(event_kind))
+
+  defp reject_direct_authority_override(opts) do
+    case Keyword.fetch(opts, :authority_state) do
+      {:ok, _state} -> {:error, :authority_lane_mutation_forbidden}
+      :error -> :ok
+    end
   end
 end
