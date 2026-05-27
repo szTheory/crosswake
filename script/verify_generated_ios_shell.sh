@@ -43,6 +43,26 @@ project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
 destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 
 if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
+  if command -v xcrun >/dev/null 2>&1; then
+    runtime_id="$(xcrun simctl list runtimes available 2>/dev/null | awk '
+      /iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS/ {
+        if (match($0, /com\.apple\.CoreSimulator\.SimRuntime\.iOS-[^ )]+/)) {
+          print substr($0, RSTART, RLENGTH)
+          exit
+        }
+      }
+    ' || true)"
+
+    if [[ -n "${runtime_id:-}" ]]; then
+      xcrun simctl create "Crosswake CI iPhone" \
+        "com.apple.CoreSimulator.SimDeviceType.iPhone-16" \
+        "$runtime_id" >/dev/null 2>&1 || true
+      destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+    fi
+  fi
+fi
+
+if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
   echo "No concrete iPhone simulator destination found; downloading iOS simulator platform..." >&2
   xcodebuild -downloadPlatform iOS || {
     echo "warning: iOS simulator platform download failed; retrying with currently available destinations" >&2
