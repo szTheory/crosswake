@@ -18,7 +18,7 @@
 |-------|------|------|--------------|------------------|
 | 19 | Commerce Route Corridors | 3/3 | Complete    | 2026-05-27 |
 | 20 | Entitlement Lifecycle Semantics | 4/4 | Complete    | 2026-05-27 |
-| 21 | Reconciliation Example | Provide a minimal Phoenix-owned reconciliation inbox and entitlement projection example. | RECN-01, RECN-02, RECN-03 | 4 |
+| 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
 | 22 | Commerce Support, Review, And Proof | Publish doctor/support/reviewer guidance and split merge-blocking from advisory proof. | SUPP-04, SUPP-05, SUPP-06 | 5 |
 
 ## Phase Details
@@ -86,8 +86,8 @@
 
 ## Current Position
 
-Phase 19 is complete (3 of 3 plans complete). Phase 20 is next.
+Phase 21 is complete (2 of 2 plans complete). Phase 22 is next.
 
 Start with:
 
-`$gsd-execute-phase 20`
+`$gsd-execute-phase 22`

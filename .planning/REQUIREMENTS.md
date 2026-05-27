@@ -70,9 +70,9 @@
 
 ### Reconciliation Example (`example/docs-only`, companion-ready)
 
-- [ ] **RECN-01**: Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence.
-- [ ] **RECN-02**: Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs.
-- [ ] **RECN-03**: Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly.
+- [x] **RECN-01**: Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence.
+- [x] **RECN-02**: Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs.
+- [x] **RECN-03**: Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly.
 
 ### Commerce Support And Proof (`core` support truth)
 
@@ -119,12 +119,18 @@
 | ENTL-01 | Phase 20 | Complete |
 | ENTL-02 | Phase 20 | Complete |
 | ENTL-03 | Phase 20 | Complete |
-| RECN-01 | Phase 21 | Pending |
-| RECN-02 | Phase 21 | Pending |
-| RECN-03 | Phase 21 | Pending |
+| RECN-01 | Phase 21 | Complete |
+| RECN-02 | Phase 21 | Complete |
+| RECN-03 | Phase 21 | Complete |
 | SUPP-04 | Phase 22 | Pending |
 | SUPP-05 | Phase 22 | Pending |
 | SUPP-06 | Phase 22 | Pending |
+| ADPT-01 | Future milestone (provider adapters) | Pending |
+| ADPT-02 | Future milestone (provider adapters) | Pending |
+| ADPT-03 | Future milestone (provider adapters) | Pending |
+| ARCH-02 | Future milestone (commerce archetype proof) | Pending |
+| COMP-05 | Future milestone (companion expansion) | Pending |
+| OPS-01 | Future milestone (operator expansion) | Pending |
 
 **Coverage:**
 
@@ -134,4 +140,4 @@
 
 ---
 *Requirements defined: 2026-05-27*
-*Last updated: 2026-05-27 after completing Phase 19 Plan 03 (support/doctor/docs corridor truth)*
+*Last updated: 2026-05-27 after completing Phase 21 Reconciliation Example*

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
-status: completed
-stopped_at: Phase 20 complete; ready for Phase 21 discussion
-last_updated: "2026-05-27T10:24:30.058Z"
-last_activity: 2026-05-27
+status: executing
+stopped_at: Phase 21 complete; Phase 22 ready to execute
+last_updated: "2026-05-27T11:08:45.256Z"
+last_activity: 2026-05-27 -- Phase 21 execution complete
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
-  percent: 50
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 21 — reconciliation-example
+**Current focus:** Phase 22 — commerce-support-review-and-proof
 
 ## Current Position
 
-Phase: 21
+Phase: 22
 Plan: Not started
-Status: Phase 20 complete (20-01, 20-02, 20-03, 20-04 complete); ready to begin Phase 21
-Last activity: 2026-05-27
+Status: Phase 21 complete (21-01, 21-02 complete); ready to execute Phase 22
+Last activity: 2026-05-27 -- Phase 21 execution complete
 
 Progress: [##########] 100%
 
@@ -36,7 +36,7 @@ Progress: [##########] 100%
 
 **Velocity:**
 
-- Total plans completed: 40
+- Total plans completed: 42
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -46,10 +46,11 @@ Progress: [##########] 100%
 |-------|-------|-------|----------|
 | 19. Commerce Route Corridors | 3 | 18 min | 6 min |
 | 20. Entitlement Lifecycle Semantics | 4 | n/a | n/a |
-| 21. Reconciliation Example | 0 | n/a | n/a |
+| 21. Reconciliation Example | 2 | n/a | n/a |
 | 22. Commerce Support, Review, And Proof | 0 | n/a | n/a |
 | 19 | 3 | - | - |
 | 20 | 4 | - | - |
+| 21 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -76,7 +77,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Start Phase 21 planning/execution for reconciliation example semantics (`RECN-01`, `RECN-02`, `RECN-03`).
+- Start Phase 22 execution for support/reviewer/proof guidance requirements (`SUPP-04`, `SUPP-05`, `SUPP-06`).
 - Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
@@ -95,6 +96,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T09:48:02.494Z
-Stopped at: Phase 20 complete; Phase 21 ready for discuss/planning
-Resume file: .planning/ROADMAP.md
+Last session: 2026-05-27T11:08:45.256Z
+Stopped at: Phase 21 complete; Phase 22 ready to execute
+Resume file: .planning/phases/22-commerce-support-review-and-proof/
