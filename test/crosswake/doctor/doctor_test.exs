@@ -442,6 +442,32 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
+  test "entitlement_snapshot_freshness: :not_applicable is coerced to :unknown when commerce routes are present",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    # :not_applicable is reserved as the default when no commerce routes are
+    # declared. When commerce routes ARE present, accepting :not_applicable
+    # would silently bypass the fail-closed stale-snapshot finding. Phase 23
+    # D-04 requires stale/unknown to be merge-blocking and fail-closed; coerce
+    # :not_applicable -> :unknown so the diagnostic still fires.
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :not_applicable
+      )
+
+    assert report.commerce_summary.snapshot_freshness == :unknown,
+           "expected :not_applicable to be coerced to :unknown when commerce routes are present"
+
+    assert Enum.any?(
+             report.findings,
+             &(&1.code == "commerce.entitlement.stale_snapshot" and
+                 &1.details[:proof_class] == "merge_blocking")
+           ),
+           "expected merge-blocking stale_snapshot finding even with :not_applicable opt + commerce routes"
+  end
+
   test "fresh entitlement freshness suppresses the stale snapshot finding", %{
     target: target,
     install_manifest_path: install_manifest_path

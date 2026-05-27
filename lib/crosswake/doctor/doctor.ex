@@ -622,8 +622,17 @@ defmodule Crosswake.Doctor do
 
   defp commerce_snapshot_freshness(_routes, nil), do: :unknown
 
+  # :not_applicable is reserved as the default when no commerce routes are
+  # declared (see the docstring for commerce_summary/2). When commerce routes
+  # ARE present, a caller-supplied :not_applicable would silently bypass the
+  # fail-closed commerce.entitlement.stale_snapshot finding (because
+  # stale_snapshot_findings/2 matches :not_applicable as the catch-all). Coerce
+  # to :unknown so the fail-closed merge-blocking diagnostic still fires per
+  # phase 23 D-04 (stale or unknown freshness is fail-closed and merge-blocking).
+  defp commerce_snapshot_freshness(_routes, :not_applicable), do: :unknown
+
   defp commerce_snapshot_freshness(_routes, freshness)
-       when freshness in [:fresh, :stale, :unknown, :not_applicable],
+       when freshness in [:fresh, :stale, :unknown],
        do: freshness
 
   defp commerce_snapshot_freshness(_routes, _other), do: :unknown
