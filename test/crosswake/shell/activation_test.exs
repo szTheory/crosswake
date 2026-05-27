@@ -111,6 +111,66 @@ defmodule Crosswake.Shell.ActivationTest do
              deny_decision
   end
 
+  test "deep-link activation denies known routes that do not allow external entry" do
+    manifest = manifest_fixture()
+
+    deny_decision =
+      manifest
+      |> Activation.resolve(
+        Activation.new_request(
+          route_id: "dashboard",
+          url: "#{Types.default_origin()}/dashboard",
+          source: :deep_link,
+          manifest_source: :bundled,
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          correlation_id: "deny-entry-1",
+          declared_pack_requirements: %{},
+          installed_packs: %{},
+          capabilities: %{}
+        )
+      )
+
+    assert %Decision{
+             status: :deny,
+             route_id: "dashboard",
+             denial: %Denial{reason: :external_entry_denied}
+           } = deny_decision
+  end
+
+  test "deep-link activation matches dynamic path segments before runtime mount" do
+    manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:routes), "capture"],
+        Types.new_route_entry(
+          id: "capture",
+          path: "/native/claims/:id/capture",
+          runtime: :native_screen,
+          entry: :external,
+          allowlisted_origins: [Types.default_origin()]
+        )
+      )
+
+    decision =
+      Activation.resolve(
+        manifest,
+        Activation.new_request(
+          url: "#{Types.default_origin()}/native/claims/claim-1/capture",
+          source: :deep_link,
+          manifest_source: :bundled,
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          correlation_id: "capture-1",
+          declared_pack_requirements: %{},
+          installed_packs: %{},
+          capabilities: %{}
+        )
+      )
+
+    assert %Decision{status: :allow, route_id: "capture"} = decision
+  end
+
   test "denials expose stable product reasons and machine readable details" do
     reasons = [
       :compatibility_mismatch,
@@ -118,6 +178,7 @@ defmodule Crosswake.Shell.ActivationTest do
       :unavailable_capability,
       :origin_denied,
       :inactive_route,
+      :external_entry_denied,
       :pack_incompatible
     ]
 
@@ -167,6 +228,13 @@ defmodule Crosswake.Shell.ActivationTest do
                "details" => %{"axis" => "inactive_route"},
                "message" => "denied",
                "reason" => "inactive_route",
+               "route_id" => "dashboard"
+             },
+             %{
+               "code" => "external_entry_denied",
+               "details" => %{"axis" => "external_entry_denied"},
+               "message" => "denied",
+               "reason" => "external_entry_denied",
                "route_id" => "dashboard"
              },
              %{
@@ -272,6 +340,7 @@ defmodule Crosswake.Shell.ActivationTest do
             path: "/dashboard",
             runtime: :live_view,
             offline: :unavailable,
+            entry: :internal_only,
             allowlisted_origins: [Types.default_origin()]
           )
       }

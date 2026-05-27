@@ -6,29 +6,20 @@ defmodule Crosswake.Policy.Validator do
   alias Crosswake.Policy.Error
   alias Crosswake.Policy.Route
 
-  @known_capabilities MapSet.new([
-                        "audio",
-                        "background_audio",
-                        "background_sync",
-                        "camera",
-                        "camera.capture",
-                        "document_preview",
-                        "entitlement_snapshot",
-                        "file_picker",
-                        "generic_plugin_bus",
-                        "haptics",
-                        "haptics.impact",
-                        "lock_screen_controls",
-                        "microphone",
-                        "paywall_entry",
-                        "purchase_intent",
-                        "push.notifications",
-                        "reconciliation_evidence",
-                        "restore_intent",
-                        "scanner",
-                        "share",
-                        "webrtc"
-                      ])
+  @known_capabilities MapSet.new(
+                        Crosswake.Manifest.Builder.public_route_capability_ids() ++
+                          Crosswake.Manifest.Builder.compatibility_route_capability_ids() ++
+                          ~w(
+                            audio
+                            background_audio
+                            background_sync
+                            document_preview
+                            generic_plugin_bus
+                            lock_screen_controls
+                            microphone
+                            webrtc
+                          )
+                      )
 
   @spec validate([Route.t()], [map()]) :: [Error.t()]
   def validate(routes, managed_routes) do
@@ -44,6 +35,7 @@ defmodule Crosswake.Policy.Validator do
   defp route_errors(route) do
     []
     |> validate_runtime_offline(route)
+    |> validate_entry(route)
     |> validate_sync(route)
     |> validate_security(route)
     |> validate_capabilities(route)
@@ -76,6 +68,19 @@ defmodule Crosswake.Policy.Validator do
   end
 
   defp validate_runtime_offline(errors, _route), do: errors
+
+  defp validate_entry(errors, %Route{entry: :external, runtime: :offline_island}) do
+    [
+      %{
+        key: :entry,
+        message: "entry :external is not supported on offline_island routes",
+        hint: "keep offline_island routes internal_only until external activation semantics are explicitly proven"
+      }
+      | errors
+    ]
+  end
+
+  defp validate_entry(errors, _route), do: errors
 
   defp validate_sync(errors, %Route{sync: sync, offline: :unavailable}) when sync != [] do
     [
@@ -114,7 +119,8 @@ defmodule Crosswake.Policy.Validator do
           %{
             key: :capabilities,
             message: "unknown capability #{inspect(capability)}",
-            hint: "declare only built-in Crosswake Phase 1 capability identifiers"
+            hint:
+              "declare semantic Crosswake capability families such as app_info, haptics, share, permissions.status, notification_token, or file_picker"
           }
           | acc
         ]
@@ -195,6 +201,6 @@ defmodule Crosswake.Policy.Validator do
 
   defp security_required?(%Route{} = route) do
     route.offline != :unavailable or route.capabilities != [] or route.packs != [] or
-      route.sync != [] or route.transfers != []
+      route.sync != [] or route.transfers != [] or route.entry != :internal_only
   end
 end

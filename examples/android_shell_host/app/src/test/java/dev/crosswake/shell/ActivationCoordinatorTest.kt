@@ -61,6 +61,44 @@ class ActivationCoordinatorTest {
         )
     }
 
+    @Test
+    fun appLinkToKnownInternalRouteUsesExternalEntryDeniedReason() {
+        val coordinator = coordinator()
+
+        val presentation = coordinator.activate(
+            ActivationRequest.forIncomingUrl(
+                "https://example.crosswake.invalid/study/session",
+                ActivationSource.DEEP_LINK,
+                baselineRequest()
+            )
+        )
+
+        assertTrue(presentation is ShellPresentation.Denied)
+        assertEquals(
+            RouteDenialReason.EXTERNAL_ENTRY_DENIED,
+            (presentation as ShellPresentation.Denied).denial.reason
+        )
+    }
+
+    @Test
+    fun dynamicSegmentRoutesMatchDeepLinksConsistently() {
+        val coordinator = coordinator(dynamicRequest())
+
+        val presentation = coordinator.activate(
+            ActivationRequest.forIncomingUrl(
+                "https://example.crosswake.invalid/native/claims/claim-1/capture",
+                ActivationSource.DEEP_LINK,
+                dynamicRequest()
+            )
+        )
+
+        assertTrue(presentation is ShellPresentation.NativeCapture)
+        assertEquals(
+            "selective-native-claim-capture",
+            (presentation as ShellPresentation.NativeCapture).nativeCapture.routeId
+        )
+    }
+
     private fun coordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
         return ActivationCoordinator(
             manifestLoader = { manifest() },
@@ -102,6 +140,7 @@ class ActivationCoordinatorTest {
                     id = "library",
                     path = "/library",
                     runtime = "live_view",
+                    entry = "internal_only",
                     capabilities = emptyList(),
                     packs = listOf("lesson_library@1.2.0"),
                     transfers = listOf(
@@ -126,6 +165,37 @@ class ActivationCoordinatorTest {
                         )
                     ),
                     allowlistedOrigins = listOf("https://example.crosswake.invalid")
+                ),
+                "study-session" to ShellManifest.Route(
+                    id = "study-session",
+                    path = "/study/session",
+                    runtime = "offline_island",
+                    entry = "internal_only",
+                    capabilities = emptyList(),
+                    packs = emptyList(),
+                    transfers = emptyList(),
+                    allowlistedOrigins = listOf("https://example.crosswake.invalid")
+                ),
+                "selective-native-claim-capture" to ShellManifest.Route(
+                    id = "selective-native-claim-capture",
+                    path = "/native/claims/:id/capture",
+                    runtime = "native_screen",
+                    entry = "external",
+                    capabilities = emptyList(),
+                    packs = listOf("camera_capture_assets@1.0.0"),
+                    transfers = listOf(
+                        ShellManifest.TransferSeam(
+                            id = "capture_upload",
+                            intent = "upload",
+                            direction = "outbound",
+                            source = "native_capture",
+                            destination = null,
+                            verification = "required",
+                            mediaTypes = emptyList(),
+                            states = emptyList()
+                        )
+                    ),
+                    allowlistedOrigins = listOf("https://example.crosswake.invalid")
                 )
             )
         )
@@ -142,6 +212,22 @@ class ActivationCoordinatorTest {
             nativeRuntimeVersion = "1.0.0",
             correlationId = "android-example-library-1",
             declaredPackRequirements = mapOf("lesson_library" to "1.2.0"),
+            installedPacks = mapOf("lesson_library" to "1.2.0", "camera_capture_assets" to "1.0.0"),
+            capabilities = emptyMap()
+        )
+    }
+
+    private fun dynamicRequest(): ActivationRequest {
+        return ActivationRequest(
+            routeId = "selective-native-claim-capture",
+            url = "https://example.crosswake.invalid/native/claims/claim-1/capture",
+            source = ActivationSource.DEEP_LINK,
+            origin = "https://example.crosswake.invalid",
+            manifestSource = ManifestSource.BUNDLED,
+            bridgeProtocolVersion = "1.0.0",
+            nativeRuntimeVersion = "1.0.0",
+            correlationId = "android-example-capture-1",
+            declaredPackRequirements = mapOf("camera_capture_assets" to "1.0.0"),
             installedPacks = mapOf("lesson_library" to "1.2.0", "camera_capture_assets" to "1.0.0"),
             capabilities = emptyMap()
         )

@@ -10,12 +10,12 @@ defmodule Crosswake.Bridge.Registry do
   alias Crosswake.Manifest.Types.TransferSeam
 
   @capability_commands %{
-    "app.info.get" => "app.info.get",
-    "haptics.impact" => "haptics.impact",
+    "app.info.get" => "app_info",
+    "haptics.impact" => "haptics",
     "permissions.status" => "permissions.status",
     "notifications.token.get" => "notification_token",
     "files.pick" => "file_picker",
-    "share.invoke" => "share.invoke"
+    "share.invoke" => "share"
   }
 
   @transfer_commands %{

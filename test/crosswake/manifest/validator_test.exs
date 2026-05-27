@@ -1,3 +1,5 @@
+Code.require_file("../../support/router_fixtures.ex", __DIR__)
+
 defmodule Crosswake.Manifest.ValidatorTest do
   use ExUnit.Case, async: true
 
@@ -153,6 +155,18 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation rejects unsupported route entry vocabulary" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:entry)], :ambient)
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             String.contains?(error.message, "declares unsupported entry policy")
+           end)
+  end
+
   test "manifest validation rejects invalid capability metadata vocabulary and empty support facts" do
     manifest =
       manifest_fixture()
@@ -179,6 +193,55 @@ defmodule Crosswake.Manifest.ValidatorTest do
     assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :denial"))
     assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :fallback"))
     assert Enum.any?(errors, &String.contains?(&1.message, "non-empty :guide"))
+  end
+
+  test "policy validation prefers family-first capability vocabulary while keeping compatibility aliases narrow" do
+    routes = [
+      Crosswake.Policy.Route.new!(
+        id: "reader",
+        runtime: :live_view,
+        offline: :cached_read_only,
+        capabilities: ["notification_token"],
+        security: :standard
+      ),
+      Crosswake.Policy.Route.new!(
+        id: "capture",
+        runtime: :native_screen,
+        offline: :local_first,
+        capabilities: ["media_capture"],
+        security: :sensitive
+      )
+    ]
+
+    managed_routes = [
+      %{path: "/reader", helper: "reader", verb: :get, source: %{file: "test", line: 1}},
+      %{path: "/capture", helper: "capture", verb: :get, source: %{file: "test", line: 2}}
+    ]
+
+    errors = Crosswake.Policy.Validator.validate(routes, managed_routes)
+
+    refute Enum.any?(errors, &(&1.route_id == "reader"))
+    refute Enum.any?(errors, &(&1.route_id == "capture"))
+
+    invalid_route =
+      Crosswake.Policy.Route.new!(
+        id: "bad",
+        runtime: :live_view,
+        offline: :cached_read_only,
+        capabilities: ["share.invoke"],
+        security: :standard
+      )
+
+    invalid_errors =
+      Crosswake.Policy.Validator.validate(
+        [invalid_route],
+        [%{path: "/bad", helper: "bad", verb: :get, source: %{file: "test", line: 1}}]
+      )
+
+    assert Enum.any?(invalid_errors, fn error ->
+             error.route_id == "bad" and
+               String.contains?(error.hint, "semantic Crosswake capability families")
+           end)
   end
 
   defp manifest_fixture do
@@ -228,6 +291,7 @@ defmodule Crosswake.Manifest.ValidatorTest do
             path: "/camera",
             runtime: :native_screen,
             offline: :unavailable,
+            entry: :internal_only,
             capabilities: ["camera"],
             packs: ["camera_capture_assets@1.0.0"],
             transfers: [

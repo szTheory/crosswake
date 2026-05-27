@@ -120,7 +120,7 @@ defmodule Crosswake.Manifest.Types do
     ]
 
     @type status :: :supported | :verification_required | :unsupported
-    @type owner :: :bounded_bridge | :native_screen | :backend_seam | :defer
+    @type owner :: :bounded_bridge | :native_screen | :backend_seam | :activation | :defer
     @type package_class :: :core | :companion | :example_docs_only | :defer
     @type proof_class :: :merge_blocking | :advisory
     @type rebuild :: :none | :native_required | :companion_required
@@ -165,6 +165,7 @@ defmodule Crosswake.Manifest.Types do
       :path,
       :runtime,
       :offline,
+      :entry,
       :cache_contract,
       :island_contract,
       :security,
@@ -180,6 +181,7 @@ defmodule Crosswake.Manifest.Types do
             path: String.t(),
             runtime: Crosswake.Policy.Schema.runtime(),
             offline: Crosswake.Policy.Schema.offline(),
+            entry: Crosswake.Policy.Schema.entry(),
             cache_contract: Crosswake.Manifest.Types.CacheContract.t() | nil,
             island_contract: Crosswake.Manifest.Types.IslandContract.t() | nil,
             capabilities: [String.t()],
@@ -333,12 +335,23 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
 
     @enforce_keys [:target, :version, :status]
-    defstruct [:target, :version, :status, :proof, :notes, :boundary_link]
+    defstruct [
+      :target,
+      :version,
+      :status,
+      :baseline_status,
+      :proof_status,
+      :proof,
+      :notes,
+      :boundary_link
+    ]
 
     @type t :: %__MODULE__{
             target: String.t(),
             version: String.t(),
             status: Crosswake.Manifest.Types.Capability.status(),
+            baseline_status: Crosswake.Manifest.Types.Capability.status() | nil,
+            proof_status: Crosswake.Manifest.Types.Capability.status() | nil,
             proof: String.t() | nil,
             notes: String.t() | nil,
             boundary_link: String.t() | nil
@@ -353,6 +366,9 @@ defmodule Crosswake.Manifest.Types do
     defstruct [
       :family,
       :owner,
+      :posture,
+      :baseline_status,
+      :proof_status,
       :package_class,
       :proof_class,
       :rebuild,
@@ -365,6 +381,9 @@ defmodule Crosswake.Manifest.Types do
     @type t :: %__MODULE__{
             family: String.t(),
             owner: Capability.owner(),
+            posture: String.t() | nil,
+            baseline_status: Capability.status() | nil,
+            proof_status: Capability.status() | nil,
             package_class: Capability.package_class(),
             proof_class: Capability.proof_class(),
             rebuild: Capability.rebuild(),
@@ -507,6 +526,7 @@ defmodule Crosswake.Manifest.Types do
       path: Keyword.fetch!(attrs, :path),
       runtime: Keyword.fetch!(attrs, :runtime),
       offline: Keyword.get(attrs, :offline, :unavailable),
+      entry: Keyword.get(attrs, :entry, :internal_only),
       cache_contract: Keyword.get(attrs, :cache_contract),
       island_contract: Keyword.get(attrs, :island_contract),
       capabilities: Keyword.get(attrs, :capabilities, []),
@@ -586,10 +606,14 @@ defmodule Crosswake.Manifest.Types do
 
   @spec new_support_entry(keyword()) :: SupportEntry.t()
   def new_support_entry(attrs) when is_list(attrs) do
+    status = Keyword.fetch!(attrs, :status)
+
     struct!(SupportEntry, %{
       target: Keyword.fetch!(attrs, :target),
       version: Keyword.fetch!(attrs, :version),
-      status: Keyword.fetch!(attrs, :status),
+      status: status,
+      baseline_status: Keyword.get(attrs, :baseline_status, status),
+      proof_status: Keyword.get(attrs, :proof_status, status),
       proof: Keyword.get(attrs, :proof),
       notes: Keyword.get(attrs, :notes),
       boundary_link: Keyword.get(attrs, :boundary_link)
@@ -601,6 +625,9 @@ defmodule Crosswake.Manifest.Types do
     struct!(CapabilitySupportEntry, %{
       family: Keyword.fetch!(attrs, :family),
       owner: Keyword.fetch!(attrs, :owner),
+      posture: Keyword.get(attrs, :posture),
+      baseline_status: Keyword.get(attrs, :baseline_status, :supported),
+      proof_status: Keyword.get(attrs, :proof_status, :supported),
       package_class: Keyword.fetch!(attrs, :package_class),
       proof_class: Keyword.fetch!(attrs, :proof_class),
       rebuild: Keyword.fetch!(attrs, :rebuild),
@@ -711,6 +738,7 @@ defmodule Crosswake.Manifest.Types do
       "path" => route.path,
       "runtime" => Atom.to_string(route.runtime),
       "offline" => Atom.to_string(route.offline),
+      "entry" => Atom.to_string(route.entry),
       "cache_contract" => to_map(route.cache_contract),
       "island_contract" => to_map(route.island_contract),
       "capabilities" => route.capabilities,
@@ -781,6 +809,8 @@ defmodule Crosswake.Manifest.Types do
       "target" => support_entry.target,
       "version" => support_entry.version,
       "status" => format_status(support_entry.status),
+      "baseline_status" => support_entry.baseline_status && format_status(support_entry.baseline_status),
+      "proof_status" => support_entry.proof_status && format_status(support_entry.proof_status),
       "proof" => support_entry.proof,
       "notes" => support_entry.notes,
       "boundary_link" => support_entry.boundary_link
@@ -793,6 +823,10 @@ defmodule Crosswake.Manifest.Types do
     %{
       "family" => support_entry.family,
       "owner" => Atom.to_string(support_entry.owner),
+      "posture" => support_entry.posture,
+      "baseline_status" =>
+        support_entry.baseline_status && format_status(support_entry.baseline_status),
+      "proof_status" => support_entry.proof_status && format_status(support_entry.proof_status),
       "package_class" => format_package_class(support_entry.package_class),
       "proof_class" => format_proof_class(support_entry.proof_class),
       "rebuild" => format_rebuild(support_entry.rebuild),

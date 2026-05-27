@@ -68,10 +68,16 @@ defmodule Crosswake.Compatibility do
 
   @spec route_findings(Root.t(), String.t(), Target.t()) :: [Finding.t()]
   def route_findings(%Root{} = manifest, route_id, %Target{} = target) do
+    route_findings(manifest, route_id, target, [])
+  end
+
+  @spec route_findings(Root.t(), String.t(), Target.t(), keyword()) :: [Finding.t()]
+  def route_findings(%Root{} = manifest, route_id, %Target{} = target, opts) do
     route = Map.get(manifest.routes, route_id)
 
     []
     |> validate_route_presence(route_id, route)
+    |> validate_external_entry(route, opts)
     |> validate_manifest_schema(manifest.compatibility, target, route)
     |> validate_bridge_protocol(manifest.compatibility, target, route)
     |> validate_native_runtime(manifest.compatibility, target, route)
@@ -107,6 +113,9 @@ defmodule Crosswake.Compatibility do
 
         :active_route ->
           {:inactive_route, recovery_for(:inactive_route, opts), %{}}
+
+        :entry ->
+          {:external_entry_denied, recovery_for(:external_entry_denied, opts), %{}}
 
         :origin ->
           {:origin_denied, %{}, %{}}
@@ -211,6 +220,27 @@ defmodule Crosswake.Compatibility do
   end
 
   defp validate_route_presence(errors, _route_id, _route), do: errors
+
+  defp validate_external_entry(errors, nil, _opts), do: errors
+
+  defp validate_external_entry(errors, %RouteEntry{} = route, opts) do
+    if external_activation?(Keyword.get(opts, :activation_source)) and route.entry != :external do
+      [
+        %Finding{
+          axis: :entry,
+          route_id: route.id,
+          subject: Atom.to_string(route.entry),
+          required: :external,
+          available: route.entry,
+          message: "route #{route.id} does not allow external entry",
+          hint: "declare entry: :external on the route policy before opening it from an inbound deep link"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
+  end
 
   defp validate_manifest_schema(errors, _compatibility, _target, nil), do: errors
 
@@ -680,6 +710,20 @@ defmodule Crosswake.Compatibility do
     end
   end
 
+  defp recovery_for(:external_entry_denied, opts) do
+    case Keyword.get(opts, :fallback_route_id) do
+      nil ->
+        %{actions: [:retry]}
+
+      fallback_route_id ->
+        %{
+          mode: :safe_fallback,
+          fallback_route_id: fallback_route_id,
+          actions: [:retry, :open_safe_fallback]
+        }
+    end
+  end
+
   defp recovery_for(:pack_incompatible, opts) do
     base = %{actions: [:retry, :update_app]}
 
@@ -712,4 +756,6 @@ defmodule Crosswake.Compatibility do
 
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp external_activation?(source), do: source in [:deep_link, :notification]
 end

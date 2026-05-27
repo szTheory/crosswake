@@ -76,8 +76,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "## #{title}",
       "",
-      "| Target | Version | Status | Proof | Boundaries | Notes |",
-      "|--------|---------|--------|-------|------------|-------|",
+      "| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |",
+      "|--------|---------|----------|--------------|------------|------------|-------|",
       Enum.map_join(entries, "\n", &row/1)
     ]
     |> Enum.join("\n")
@@ -87,8 +87,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "## Capability Families",
       "",
-      "| Family | Owner | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |",
-      "|--------|-------|---------|-------|---------|---------------|--------|----------|-------|",
+      "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |",
+      "|--------|-------|---------|----------|--------------|---------|-------|---------|---------------|--------|----------|-------|",
       Enum.map_join(entries, "\n", &capability_row/1)
     ]
     |> Enum.join("\n")
@@ -144,7 +144,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
         "-"
       end
 
-    "| #{entry.target} | #{entry.version} | #{format_status(entry.status)} | #{proof} | #{boundaries} | #{notes} |"
+    "| #{entry.target} | #{entry.version} | #{format_status(entry.baseline_status || entry.status)} | #{format_status(entry.proof_status || entry.status)} | #{proof} | #{boundaries} | #{notes} |"
   end
 
   defp capability_row(%CapabilitySupportEntry{} = entry) do
@@ -162,7 +162,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
         items -> Enum.join(items, "; ")
       end
 
-    "| #{entry.family} | #{Atom.to_string(entry.owner)} | #{format_package_class(entry.package_class)} | #{format_proof_class(entry.proof_class)} | #{format_rebuild(entry.rebuild)} | #{prerequisites} | #{entry.denial || "-"} | #{entry.fallback || "-"} | #{guide} |"
+    "| #{entry.family} | #{Atom.to_string(entry.owner)} | #{entry.posture || "-"} | #{format_status(entry.baseline_status || :supported)} | #{format_status(entry.proof_status || :supported)} | #{format_package_class(entry.package_class)} | #{format_proof_class(entry.proof_class)} | #{format_rebuild(entry.rebuild)} | #{prerequisites} | #{entry.denial || "-"} | #{entry.fallback || "-"} | #{guide} |"
   end
 
   defp package_surface_row(%PackageSurfaceEntry{} = entry) do

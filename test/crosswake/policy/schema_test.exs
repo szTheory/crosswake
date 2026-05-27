@@ -31,12 +31,14 @@ defmodule Crosswake.Policy.SchemaTest do
           id: "library",
           runtime: :live_view,
           offline: :cached_read_only,
+          entry: :external,
           cache_contract: :lesson_library_v1
         ])
 
       assert validated[:id] == "library"
       assert validated[:runtime] == :live_view
       assert validated[:offline] == :cached_read_only
+      assert validated[:entry] == :external
       assert validated[:cache_contract] == "lesson_library_v1"
 
       validated =
@@ -50,7 +52,17 @@ defmodule Crosswake.Policy.SchemaTest do
       assert validated[:id] == "study-session"
       assert validated[:runtime] == :offline_island
       assert validated[:offline] == :local_first
+      assert validated[:entry] == :internal_only
       assert validated[:island_contract] == "study_session_v1"
+    end
+
+    test "accepts only the explicit route-entry vocabulary" do
+      validated = Schema.validate!([id: "approval", runtime: :live_view, entry: :external])
+      assert validated[:entry] == :external
+
+      assert_raise NimbleOptions.ValidationError, ~r/invalid value for :entry option/, fn ->
+        Schema.validate!([id: "approval", runtime: :live_view, entry: :ambient])
+      end
     end
 
     test "accepts typed versioned pack declarations with semantic metadata" do

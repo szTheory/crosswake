@@ -14,6 +14,7 @@ defmodule Crosswake.Policy.Route do
     :cache_contract,
     :island_contract,
     offline: :unavailable,
+    entry: :internal_only,
     capabilities: [],
     packs: [],
     sync: [],
@@ -24,6 +25,7 @@ defmodule Crosswake.Policy.Route do
           id: String.t(),
           runtime: Schema.runtime(),
           offline: Schema.offline(),
+          entry: Schema.entry(),
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
           capabilities: [String.t()],
@@ -41,6 +43,7 @@ defmodule Crosswake.Policy.Route do
     |> case do
       {:ok, validated} ->
         with {:ok, validated} <- validate_offline_contracts(validated),
+             {:ok, validated} <- validate_entry_policy(validated),
              {:ok, validated} <- validate_pack_requirements(validated),
              {:ok, validated} <- validate_transfer_declarations(validated) do
           {:ok, struct!(__MODULE__, validated)}
@@ -56,6 +59,7 @@ defmodule Crosswake.Policy.Route do
     |> merged_options()
     |> Schema.validate!()
     |> validate_offline_contracts!()
+    |> validate_entry_policy!()
     |> validate_pack_requirements!()
     |> validate_transfer_declarations!()
     |> then(&struct!(__MODULE__, &1))
@@ -153,6 +157,28 @@ defmodule Crosswake.Policy.Route do
 
   defp validate_transfer_declarations!(validated) do
     case validate_transfer_declarations(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validate_entry_policy(validated) do
+    case {validated[:entry], validated[:runtime]} do
+      {:external, :offline_island} ->
+        {:error,
+         validation_error(
+           :entry,
+           validated[:entry],
+           "entry :external is not supported on offline_island routes"
+         )}
+
+      _other ->
+        {:ok, validated}
+    end
+  end
+
+  defp validate_entry_policy!(validated) do
+    case validate_entry_policy(validated) do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end

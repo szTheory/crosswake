@@ -12,59 +12,54 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 
 ## Phoenix
 
-| Target | Version | Status | Proof | Boundaries | Notes |
-|--------|---------|--------|-------|------------|-------|
-| phoenix | ~> 1.8 | supported | phase-2-proof-lane | - | Phoenix host install and manifest generation are the stable baseline. |
+| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
+|--------|---------|----------|--------------|------------|------------|-------|
+| phoenix | ~> 1.8 | supported | supported | phase-2-proof-lane | - | Phoenix host install and manifest generation are the stable baseline. |
 
 ## LiveView
 
-| Target | Version | Status | Proof | Boundaries | Notes |
-|--------|---------|--------|-------|------------|-------|
-| phoenix_live_view | ~> 1.1 | supported | phase-2-proof-lane | [View Boundaries](offline.md#boundary-warnings--rough-edges) | LiveView remains server-owned and route-first. |
+| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
+|--------|---------|----------|--------------|------------|------------|-------|
+| phoenix_live_view | ~> 1.1 | supported | supported | phase-2-proof-lane | [View Boundaries](offline.md#boundary-warnings--rough-edges) | LiveView remains server-owned and route-first. |
 
 ## iOS
 
-| Target | Version | Status | Proof | Boundaries | Notes |
-|--------|---------|--------|-------|------------|-------|
-| ios | 17.0 | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook. |
+| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
+|--------|---------|----------|--------------|------------|------------|-------|
+| ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook. |
 
 ## Android
 
-| Target | Version | Status | Proof | Boundaries | Notes |
-|--------|---------|--------|-------|------------|-------|
-| android | 26 | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned Android shell boot is proof-backed by the checked-in example host and generated-shell verification hook. |
+| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
+|--------|---------|----------|--------------|------------|------------|-------|
+| android | 26 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned Android shell boot is baseline-supported, but the current repository truth still requires the Java-enabled BridgeChannel proof lane to pass before Android support can be claimed as fully verified. |
 
 ## Shell Artifacts
 
-| Target | Version | Status | Proof | Boundaries | Notes |
-|--------|---------|--------|-------|------------|-------|
-| ios_shell | 0.1.0 | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green. |
-| android_shell | 0.1.0 | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported while the Phase 5 Android verification hook stays green. |
+| Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
+|--------|---------|----------|--------------|------------|------------|-------|
+| ios_shell | 0.1.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green. |
+| android_shell | 0.1.0 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts remain baseline-supported, but repository support truth stays verification-required until the Java-enabled BridgeChannel proof lane passes. |
 
 ## Capability Families
 
-| Family | Owner | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |
-|--------|-------|---------|-------|---------|---------------|--------|----------|-------|
-| app_info | bounded_bridge | core | merge-blocking | none | declared route capability; bounded bridge support | undeclared_capability | Phoenix route continues without native app metadata | [Guide](bridge.md#bounded-bridge) |
-| deep_link | bounded_bridge | core | merge-blocking | none | bundled or cached manifest; shell activation support; explicit route entry approval | route_unavailable | show route unavailable surface that distinguishes inactive routes from routes that reject external entry | [Guide](native_shell.md#manifest-first-activation) |
-| document_scan | native_screen | defer | advisory | companion-required | document-scan runtime; policy-heavy proof lane | unavailable_capability | defer document scan support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
-| entitlement_snapshot | backend_seam | core | merge-blocking | companion-required | backend entitlement authority; reconciliation hook | unavailable_capability | treat device-side state as evidence instead of final entitlement truth | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
-| file_picker | bounded_bridge | core | merge-blocking | native-required | declared transfer_id; bounded bridge support; inbound native_picker transfer seam; copy-first staged handle plus transfer verification | undeclared_capability | keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified | [Guide](capabilities.md#bounded-bridge) |
-| haptics | bounded_bridge | core | merge-blocking | none | declared route capability; bounded bridge support | undeclared_capability | Phoenix route continues without native confirmation feedback | [Guide](bridge.md#bounded-bridge) |
-| media_capture | native_screen | companion | merge-blocking | native-required | native screen route; capture pack availability | pack_incompatible | fail closed instead of degrading into a bounded web upload flow | [Guide](native_shell.md#native-capture-escape-hatch) |
-| notification_token | bounded_bridge | companion | advisory | companion-required | declared route capability; bounded bridge support; notification authorization already resolved; provider token snapshot available | unavailable_capability | treat notification token replies as provider-tagged evidence instead of backend registration truth | [Guide](capabilities.md#bounded-bridge) |
-| paywall_entry | backend_seam | core | merge-blocking | companion-required | backend entitlement contract; storefront guidance | unavailable_capability | fall back to Phoenix-owned paywall guidance without device authority | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
-| permissions.status | bounded_bridge | core | merge-blocking | none | declared route capability; bounded bridge support; notifications alias only | undeclared_capability | route continues without native notification permission snapshot authority | [Guide](capabilities.md#bounded-bridge) |
-| purchase_intent | backend_seam | core | merge-blocking | companion-required | backend reconciliation; provider-specific adapter | unavailable_capability | treat purchase events as reconciliation inputs, not entitlement truth | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
-| reconciliation_evidence | backend_seam | core | merge-blocking | companion-required | backend reconciliation; device callback or webhook | unavailable_capability | treat evidence as asynchronous payload without blocking route entry | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
-| restore_intent | backend_seam | core | merge-blocking | companion-required | backend reconciliation; storefront-aware adapter | unavailable_capability | keep restore flow backend-owned until adapter truth is explicit | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
-| scanner | native_screen | defer | advisory | companion-required | scanner-native runtime; policy-heavy proof lane | unavailable_capability | defer scanner support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
-| share | bounded_bridge | core | advisory | none | truthful semantic share contract | unavailable_capability | keep content in the Phoenix-owned route until a share seam is declared | [Guide](capabilities.md#bounded-bridge) |
-
-`file_picker` replies stay low-frequency and copy-first: success returns one
-`transfer_id` plus `items`, cancelation is a distinct typed outcome, and item
-metadata such as `name`, `mime_type`, and `size_bytes` may be null until transfer
-verification finishes.
+| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |
+|--------|-------|---------|----------|--------------|---------|-------|---------|---------------|--------|----------|-------|
+| app_info | bounded_bridge | bounded_bridge | supported | verification required | core | merge-blocking | none | declared route capability; bounded bridge support | undeclared_capability | Phoenix route continues without native app metadata | [Guide](bridge.md#bounded-bridge) |
+| deep_link | activation | activation_first | supported | supported | core | merge-blocking | none | bundled or cached manifest; shell activation support; explicit route entry approval | route_unavailable | show route unavailable surface that distinguishes inactive routes from routes that reject external entry | [Guide](native_shell.md#manifest-first-activation) |
+| document_scan | native_screen | native_screen | supported | supported | defer | advisory | companion-required | document-scan runtime; policy-heavy proof lane | unavailable_capability | defer document scan support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
+| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking | companion-required | backend entitlement authority; reconciliation hook | unavailable_capability | treat device-side state as evidence instead of final entitlement truth | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| file_picker | bounded_bridge | transfer_backed | supported | verification required | core | merge-blocking | native-required | declared transfer_id; bounded bridge support; inbound native_picker transfer seam; copy-first staged handle plus transfer verification | undeclared_capability | keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified | [Guide](capabilities.md#bounded-bridge) |
+| haptics | bounded_bridge | bounded_bridge | supported | verification required | core | merge-blocking | none | declared route capability; bounded bridge support | undeclared_capability | Phoenix route continues without native confirmation feedback | [Guide](bridge.md#bounded-bridge) |
+| media_capture | native_screen | native_screen | supported | verification required | companion | merge-blocking | native-required | native screen route; capture pack availability | pack_incompatible | fail closed instead of degrading into a bounded web upload flow | [Guide](native_shell.md#native-capture-escape-hatch) |
+| notification_token | bounded_bridge | provider_snapshot | supported | verification required | companion | advisory | companion-required | declared route capability; bounded bridge support; notification authorization already resolved; provider token snapshot available | unavailable_capability | treat notification token replies as provider-tagged evidence instead of backend registration truth | [Guide](capabilities.md#bounded-bridge) |
+| paywall_entry | backend_seam | backend_seam | supported | verification required | core | merge-blocking | companion-required | backend entitlement contract; storefront guidance | unavailable_capability | fall back to Phoenix-owned paywall guidance without device authority | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| permissions.status | bounded_bridge | alias_snapshot | supported | verification required | core | merge-blocking | none | declared route capability; bounded bridge support; notifications alias only | undeclared_capability | route continues without native notification permission snapshot authority | [Guide](capabilities.md#bounded-bridge) |
+| purchase_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking | companion-required | backend reconciliation; provider-specific adapter | unavailable_capability | treat purchase events as reconciliation inputs, not entitlement truth | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking | companion-required | backend reconciliation; device callback or webhook | unavailable_capability | treat evidence as asynchronous payload without blocking route entry | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking | companion-required | backend reconciliation; storefront-aware adapter | unavailable_capability | keep restore flow backend-owned until adapter truth is explicit | [Guide](capabilities.md#backend-seams-and-deferred-surfaces) |
+| scanner | native_screen | native_screen | supported | supported | defer | advisory | companion-required | scanner-native runtime; policy-heavy proof lane | unavailable_capability | defer scanner support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
+| share | bounded_bridge | bounded_bridge | supported | supported | core | advisory | none | truthful semantic share contract | undeclared_capability | keep content in the Phoenix-owned route until a share family is declared | [Guide](capabilities.md#bounded-bridge) |
 
 ## Packaging Ledger
 

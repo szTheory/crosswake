@@ -5,6 +5,9 @@ runtime pretending to own every mobile surface. This guide helps you pick the
 product shape that best matches your app pressure, then routes you to the existing
 support and contract guides for exact proof and behavior details.
 
+If you want the quickest narrative ramp-up before reading the matrix, start with
+[guides/user_flows.md](/Users/jon/projects/crosswake/guides/user_flows.md).
+
 Read [guides/install.md](/Users/jon/projects/crosswake/guides/install.md) for the
 checked-in example-host install path, [guides/commerce.md](/Users/jon/projects/crosswake/guides/commerce.md) for the commerce boundaries, and
 [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)

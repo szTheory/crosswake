@@ -50,6 +50,16 @@ defmodule Crosswake.Policy.CompilerTest do
       route("/sync-without-local-first",
         helper: "sync_without_local_first",
         crosswake: [id: "sync-without-local-first", runtime: :native_screen, sync: ["uploads"], offline: :unavailable, security: :sensitive]
+      ),
+      route("/study-share",
+        helper: "study_share",
+        crosswake: [
+          id: "study-share",
+          runtime: :offline_island,
+          offline: :local_first,
+          entry: :external,
+          security: :standard
+        ]
       )
     ]
 
@@ -58,6 +68,7 @@ defmodule Crosswake.Policy.CompilerTest do
     assert Enum.any?(errors, &String.contains?(&1.message, "live_view routes cannot declare offline :local_first"))
     assert Enum.any?(errors, &String.contains?(&1.message, "offline_island routes cannot declare offline :unavailable"))
     assert Enum.any?(errors, &String.contains?(&1.message, "sync declarations require offline support"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "entry :external is not supported on offline_island routes"))
 
     assert {:ok, %{routes: [route], warnings: []}} =
              Compiler.compile([
@@ -100,6 +111,34 @@ defmodule Crosswake.Policy.CompilerTest do
              ])
 
     assert %Route{id: "commerce"} = route
+  end
+
+  test "route entry declarations compile with explicit default and override semantics" do
+    assert {:ok, %{routes: routes, warnings: []}} =
+             Compiler.compile([
+               route("/approvals/:id",
+                 helper: "approval",
+                 crosswake: [
+                   id: "approval",
+                   runtime: :live_view,
+                   offline: :cached_read_only,
+                   entry: :external,
+                   security: :standard
+                 ]
+               ),
+               route("/settings/profile",
+                 helper: "settings",
+                 crosswake: [
+                   id: "settings",
+                   runtime: :live_view,
+                   offline: :cached_read_only,
+                   security: :standard
+                 ]
+               )
+             ])
+
+    assert Enum.find(routes, &(&1.id == "approval")).entry == :external
+    assert Enum.find(routes, &(&1.id == "settings")).entry == :internal_only
   end
 
   defp route(path, opts) do

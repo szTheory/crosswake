@@ -201,6 +201,15 @@ defmodule Crosswake.Bridge.RegistryTest do
              Registry.lookup(manifest, "dashboard", "files.pick")
   end
 
+  test "registry still honors legacy route capability aliases while family ids stay canonical" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "dashboard", Access.key!(:capabilities)], ["push.notifications"])
+
+    assert {:ok, entry} = Registry.lookup(manifest, "dashboard", "notifications.token.get")
+    assert entry.capability == "notification_token"
+  end
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",
@@ -313,7 +322,7 @@ defmodule Crosswake.Bridge.RegistryTest do
             path: "/dashboard",
             runtime: :live_view,
             offline: :unavailable,
-            capabilities: ["app.info.get", "haptics.impact", "permissions.status", "push.notifications"],
+            capabilities: ["app_info", "haptics", "permissions.status", "notification_token"],
             allowlisted_origins: ["https://shell.crosswake.example"]
           ),
         "camera" =>

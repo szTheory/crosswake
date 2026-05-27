@@ -38,6 +38,7 @@ Crosswake is not:
 
 Start with:
 
+- [guides/user_flows.md](guides/user_flows.md) for the fastest JTBD and user-flow ramp-up
 - [guides/adopter_profiles.md](guides/adopter_profiles.md) for the three target app shapes
 - [guides/install.md](guides/install.md) for the public install and proof path
 - [guides/support_matrix.md](guides/support_matrix.md) for the current supported baseline
@@ -105,6 +106,8 @@ Crosswake is currently shaped around three adopter profiles:
 
 See [guides/adopter_profiles.md](guides/adopter_profiles.md) for the profile matrix,
 representative routes, and explicit non-goals.
+For the fastest "how would I actually use this in my app?" pass, start with
+[guides/user_flows.md](guides/user_flows.md).
 
 ## Proof and support posture
 
@@ -123,6 +126,7 @@ container.
 ## Guide map
 
 - [guides/install.md](guides/install.md) — Phoenix install path and native shell generation
+- [guides/user_flows.md](guides/user_flows.md) — JTBD and route-by-route adopter ramp-up
 - [guides/native_shell.md](guides/native_shell.md) — manifest-first activation and shell contract
 - [guides/bridge.md](guides/bridge.md) — bounded bridge vocabulary
 - [guides/packs.md](guides/packs.md) — required packs, transfers, and native capture handoff

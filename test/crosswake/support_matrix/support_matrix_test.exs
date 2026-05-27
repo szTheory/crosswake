@@ -43,13 +43,13 @@ defmodule Crosswake.SupportMatrixTest do
   test "canonical support entries now publish the proof-backed phase 5 shell posture" do
     matrix = SupportMatrix.canonical()
 
-    statuses =
-      [:phoenix, :live_view, :ios, :android, :shells]
-      |> Enum.flat_map(fn category -> Enum.map(Map.fetch!(matrix, category), & &1.status) end)
-      |> Enum.uniq()
-      |> Enum.sort()
-
-    assert statuses == [:supported]
+    assert Enum.map(matrix.phoenix, & &1.baseline_status) == [:supported]
+    assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
+    assert Enum.map(matrix.android, & &1.proof_status) == [:verification_required]
+    assert Enum.map(matrix.shells, &{&1.target, &1.proof_status}) |> Enum.sort() == [
+             {"android_shell", :verification_required},
+             {"ios_shell", :supported}
+           ]
     assert SupportMatrix.statuses() == [:supported, :verification_required, :unsupported]
   end
 
@@ -104,6 +104,9 @@ defmodule Crosswake.SupportMatrixTest do
              Types.new_capability_support_entry(
                family: "haptics",
                owner: :bounded_bridge,
+               posture: "bounded_bridge",
+               baseline_status: :supported,
+               proof_status: :verification_required,
                package_class: :core,
                proof_class: :merge_blocking,
                rebuild: :none,

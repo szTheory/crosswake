@@ -7,6 +7,33 @@ defmodule Crosswake.Manifest.Builder do
   alias Crosswake.Offline.Contracts
   alias Crosswake.Policy.Route
 
+  @public_route_capability_ids ~w(
+    app_info
+    file_picker
+    haptics
+    notification_token
+    permissions.status
+    share
+    deep_link
+    media_capture
+    scanner
+    document_scan
+    paywall_entry
+    purchase_intent
+    restore_intent
+    entitlement_snapshot
+    reconciliation_evidence
+  )
+
+  @compatibility_route_capability_ids ~w(
+    app.info.get
+    camera
+    camera.capture
+    files.pick
+    haptics.impact
+    push.notifications
+  )
+
   @spec build([Route.t()], [map()], keyword()) :: Types.Root.t()
   def build(routes, managed_routes, opts \\ [])
       when is_list(routes) and is_list(managed_routes) do
@@ -76,6 +103,12 @@ defmodule Crosswake.Manifest.Builder do
     Map.merge(public_registry, compatibility_registry)
   end
 
+  @spec public_route_capability_ids() :: [String.t()]
+  def public_route_capability_ids, do: @public_route_capability_ids
+
+  @spec compatibility_route_capability_ids() :: [String.t()]
+  def compatibility_route_capability_ids, do: @compatibility_route_capability_ids
+
   defp route_entries(routes, managed_routes, origin) do
     routes
     |> Enum.zip(managed_routes)
@@ -141,7 +174,7 @@ defmodule Crosswake.Manifest.Builder do
       [
         id: "deep_link",
         family: "deep_link",
-        owner: :bounded_bridge,
+        owner: :activation,
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
@@ -189,8 +222,8 @@ defmodule Crosswake.Manifest.Builder do
         proof_class: :advisory,
         rebuild: :none,
         prerequisites: ["truthful semantic share contract"],
-        denial: "unavailable_capability",
-        fallback: "keep content in the Phoenix-owned route until a share seam is declared",
+        denial: "undeclared_capability",
+        fallback: "keep content in the Phoenix-owned route until a share family is declared",
         guide: "guides/capabilities.md#bounded-bridge"
       ],
       [

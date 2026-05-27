@@ -1,0 +1,45 @@
+name: Phase 18 Proof
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  phase18-proof:
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Verify Phase 18 Elixir contract and proof slices
+        run: bash script/verify_phase18_contract.sh
+
+      - name: Verify checked-in iOS shell bridge and activation proof
+        run: |
+          export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
+          bash script/verify_generated_ios_shell.sh
+
+      - name: Verify checked-in Android shell BridgeChannel proof
+        run: |
+          export CROSSWAKE_ANDROID_PROJECT_ROOT="examples/android_shell_host"
+          bash script/verify_generated_android_shell.sh

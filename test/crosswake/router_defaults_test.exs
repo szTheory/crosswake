@@ -14,7 +14,7 @@ defmodule Crosswake.RouterDefaultsTest do
              id: "reader",
              runtime: :live_view,
              offline: :cached_read_only,
-             capabilities: ["push.notifications"],
+             capabilities: ["notification_token"],
              packs: [%{id: "core_content", version: "1.0.0", kind: :content, integrity: nil}],
              sync: ["catalog"],
              security: :standard
@@ -28,7 +28,7 @@ defmodule Crosswake.RouterDefaultsTest do
              id: "capture",
              runtime: :native_screen,
              offline: :local_first,
-             capabilities: ["camera.capture"],
+             capabilities: ["media_capture"],
              packs: [%{id: "capture_pack", version: "1.0.0", kind: :media, integrity: nil}],
              sync: ["uploads"],
              security: :sensitive

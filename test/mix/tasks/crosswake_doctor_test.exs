@@ -9,6 +9,8 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     "app.info.get",
     "files.pick",
     "haptics.impact",
+    "notifications.token.get",
+    "permissions.status",
     "share.invoke",
     "transfer.download",
     "transfer.export",
@@ -166,7 +168,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/ActivationCoordinator.swift"),
-      "packIncompatible\ninactiveRoute\n"
+      "packIncompatible\ninactiveRoute\nexternalEntryDenied\n"
     )
 
     write_file!(
@@ -183,7 +185,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/BridgeChannel.swift"),
-      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\npermissions.status\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(
@@ -209,7 +211,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt"),
-      "pack_incompatible\ninactive_route\n"
+      "pack_incompatible\ninactive_route\nexternal_entry_denied\n"
     )
 
     write_file!(
@@ -229,7 +231,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"),
-      "app.info.get\nfiles.pick\nhaptics.impact\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
+      "app.info.get\nfiles.pick\nhaptics.impact\npermissions.status\ntransfer.download\ntransfer.export\ntransfer.import\ntransfer.upload.prepare\nrequest\nreply\n"
     )
 
     write_file!(

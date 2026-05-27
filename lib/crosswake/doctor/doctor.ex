@@ -7,6 +7,7 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Bridge.Contract
   alias Crosswake.Bridge.Registry
   alias Crosswake.Doctor.Check
+  alias Crosswake.Doctor.FindingPolicy
   alias Crosswake.Manifest
   alias Crosswake.Offline.Status, as: OfflineStatus
   alias Crosswake.Offline.Telemetry, as: OfflineTelemetry
@@ -58,7 +59,8 @@ defmodule Crosswake.Doctor do
       manifest_first: [
         {"CrosswakeShell/CrosswakeShellApp.swift",
          ["ActivationCoordinator.bundled", "onOpenURL", "onContinueUserActivity"]},
-        {"CrosswakeShell/ActivationCoordinator.swift", ["packIncompatible", "inactiveRoute"]},
+        {"CrosswakeShell/ActivationCoordinator.swift",
+         ["packIncompatible", "inactiveRoute", "externalEntryDenied"]},
         {"CrosswakeShell/LiveViewContainerViewController.swift",
          ["WKWebView", "WKNavigationDelegate", "same-origin"]},
         {"CrosswakeShell/Info.plist", ["WKAppBoundDomains"]}
@@ -69,7 +71,7 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"CrosswakeShell/BridgeChannel.swift",
-         ["app.info.get", "haptics.impact", "files.pick", "request", "reply"]}
+         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
       ]
     },
     android: %{
@@ -85,7 +87,7 @@ defmodule Crosswake.Doctor do
       ],
       manifest_first: [
         {"app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt",
-         ["pack_incompatible", "inactive_route"]},
+         ["pack_incompatible", "inactive_route", "external_entry_denied"]},
         {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
          ["WebView", "Allowlisted"]},
         {"app/src/main/AndroidManifest.xml",
@@ -98,7 +100,7 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"app/src/main/java/dev/crosswake/shell/BridgeChannel.kt",
-         ["app.info.get", "haptics.impact", "files.pick", "request", "reply"]}
+         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
       ]
     }
   }
@@ -618,13 +620,15 @@ defmodule Crosswake.Doctor do
   end
 
   defp support_posture_findings(%{status: :supported} = support, shells) do
+    {severity, code, message, hint} = FindingPolicy.support_claim(:supported)
+
     [
       check(
-        :advisory,
-        "support_claim_supported",
+        severity,
+        code,
         "support_posture",
-        "shell support claims are unlocked because both generated-project proof hooks passed",
-        "keep host-owned iOS and Android proof hooks green before widening public support",
+        message,
+        hint,
         %{
           status: Atom.to_string(support.status),
           proof_statuses: stringify_keys(support.proof_statuses),
@@ -635,13 +639,15 @@ defmodule Crosswake.Doctor do
   end
 
   defp support_posture_findings(%{status: :verification_required} = support, shells) do
+    {severity, code, message, hint} = FindingPolicy.support_claim(:verification_required)
+
     [
       check(
-        :error,
-        "support_claim_verification_required",
+        severity,
+        code,
         "support_posture",
-        "support claims are verification required until both generated iOS and Android proof hooks pass",
-        "run mix crosswake.doctor --native-checks after the host-owned shell projects and proof hooks are in place",
+        message,
+        hint,
         %{
           status: Atom.to_string(support.status),
           blocking_platforms: Enum.map(support.blocking_platforms, &Atom.to_string/1),
@@ -729,30 +735,14 @@ defmodule Crosswake.Doctor do
       shell,
       "shell_bridge",
       shell.bridge,
-      "#{shell.label} shell carries the bounded bridge channel for app.info.get, haptics.impact, and files.pick",
+      "#{shell.label} shell carries the bounded bridge channel for app.info.get, haptics.impact, permissions.status, and files.pick",
       "restore the bounded bridge channel so route-scoped commands stay typed, versioned, and request/reply-only"
     )
   end
 
   defp shell_proof_finding(shell) do
     {severity, code, hint} =
-      case shell.proof.status do
-        :passed ->
-          {:advisory, "proof_hook_passed",
-           "generated-project proof passed on the same host-owned artifact class adopters ship"}
-
-        :failed ->
-          {:error, "proof_hook_failed",
-           "fix the proof hook failure before treating #{shell.label} shell support as supported"}
-
-        :missing ->
-          {:error, "proof_hook_missing",
-           "restore #{shell.proof.script_path} before claiming #{shell.label} shell support"}
-
-        :verification_required ->
-          {:error, "proof_hook_verification_required",
-           "run #{shell.proof.script_path} through mix crosswake.doctor --native-checks before claiming #{shell.label} shell support"}
-      end
+      FindingPolicy.shell_proof(shell.proof.status, shell.label, shell.proof.script_path)
 
     check(
       severity,

@@ -28,6 +28,7 @@ enum class RouteDenialReason(val wireValue: String) {
     UNAVAILABLE_CAPABILITY("unavailable_capability"),
     ORIGIN_DENIED("origin_denied"),
     INACTIVE_ROUTE("inactive_route"),
+    EXTERNAL_ENTRY_DENIED("external_entry_denied"),
     PACK_INCOMPATIBLE("pack_incompatible")
 }
 
@@ -103,6 +104,7 @@ data class ShellManifest(val routes: Map<String, Route>) {
         val id: String,
         val path: String,
         val runtime: String,
+        val entry: String,
         val capabilities: List<String>,
         val packs: List<String>,
         val transfers: List<TransferSeam>,
@@ -294,6 +296,18 @@ class ActivationCoordinator(
                     hint = "Retry after shipping an updated shell manifest."
                 )
             )
+
+        if (externalActivationSource(request.source) && route.entry != "external") {
+            return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.EXTERNAL_ENTRY_DENIED,
+                    routeId = route.id,
+                    message = "This route exists in the manifest but does not allow external entry.",
+                    hint = "Declare external entry for the route before opening it from a deep link."
+                )
+            )
+        }
 
         val blockingPack = packStore.blockingStatus(route.packs)
         if (blockingPack != null) {
@@ -497,6 +511,10 @@ class ActivationCoordinator(
         val origin = route.allowlistedOrigins.firstOrNull() ?: return null
         return origin + route.path
     }
+
+    private fun externalActivationSource(source: ActivationSource): Boolean {
+        return source == ActivationSource.DEEP_LINK || source == ActivationSource.NOTIFICATION
+    }
 }
 
 object ActivationFixtures {
@@ -511,6 +529,7 @@ object ActivationFixtures {
                 id = routeJson.getString("id"),
                 path = routeJson.getString("path"),
                 runtime = routeJson.getString("runtime"),
+                entry = routeJson.optString("entry", "internal_only"),
                 capabilities = routeJson.optJSONArray("capabilities").toStringList(),
                 packs = routeJson.optJSONArray("packs").toStringList(),
                 transfers = routeJson.optJSONArray("transfers").toTransferSeams(),

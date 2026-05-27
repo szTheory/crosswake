@@ -20,6 +20,7 @@ enum RouteDenialReason: String, Codable, Equatable {
     case unavailableCapability = "unavailable_capability"
     case originDenied = "origin_denied"
     case inactiveRoute = "inactive_route"
+    case externalEntryDenied = "external_entry_denied"
     case packIncompatible = "pack_incompatible"
 }
 
@@ -120,6 +121,7 @@ struct ShellManifest: Codable, Equatable {
         let id: String
         let path: String
         let runtime: String
+        let entry: String
         let capabilities: [String]
         let packs: [String]
         let transfers: [TransferSeam]
@@ -129,6 +131,7 @@ struct ShellManifest: Codable, Equatable {
             case id
             case path
             case runtime
+            case entry
             case capabilities
             case packs
             case transfers
@@ -315,6 +318,18 @@ final class ActivationCoordinator: ObservableObject {
             )
         }
 
+        if externalActivationSource(request.source) && route.entry != "external" {
+            return .denied(
+                denial(
+                    reason: .externalEntryDenied,
+                    routeID: route.id,
+                    manifest: manifest,
+                    message: "This route exists in the manifest but does not allow external entry.",
+                    hint: "Declare external entry for the route before opening it from a deep link."
+                )
+            )
+        }
+
         if let blockingPack = packStore.blockingStatus(for: route.packs) {
             transferCoordinator = nil
             return .requiredPack(
@@ -435,7 +450,18 @@ final class ActivationCoordinator: ObservableObject {
 
         guard let path = request.url?.path else { return nil }
 
-        return manifest.routes.values.first(where: { $0.path == path })
+        return manifest.routes.values.first(where: { routePathMatches(routePath: $0.path, requestPath: path) })
+    }
+
+    private func routePathMatches(routePath: String, requestPath: String) -> Bool {
+        let routeSegments = routePath.split(separator: "/").map(String.init)
+        let requestSegments = requestPath.split(separator: "/").map(String.init)
+
+        guard routeSegments.count == requestSegments.count else { return false }
+
+        return zip(routeSegments, requestSegments).allSatisfy { routeSegment, requestSegment in
+            routeSegment.hasPrefix(":") || routeSegment == requestSegment
+        }
     }
 
     private func requiredPacks(for route: ShellManifest.Route) -> [String: String] {
@@ -494,6 +520,10 @@ final class ActivationCoordinator: ObservableObject {
         }
 
         return URL(string: origin + route.path)
+    }
+
+    private func externalActivationSource(_ source: ActivationSource) -> Bool {
+        source == .deepLink || source == .notification
     }
 
     private static func decode<T: Decodable>(_ name: String, bundle: Bundle) throws -> T {

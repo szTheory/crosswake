@@ -91,7 +91,13 @@ defmodule Crosswake.Shell.Activation do
   @spec resolve(Root.t(), Request.t()) :: Decision.t()
   def resolve(%Root{} = manifest, %Request{} = request) do
     route_id = request.route_id || route_id_from_url(manifest, request.url)
-    decision = RouteGate.evaluate(manifest, route_id, target_from_request(request))
+    decision =
+      RouteGate.evaluate(
+        manifest,
+        route_id,
+        target_from_request(request),
+        activation_source: request.source
+      )
 
     case decision.status do
       :allow ->
@@ -177,7 +183,7 @@ defmodule Crosswake.Shell.Activation do
     path = URI.parse(url).path
 
     Enum.find_value(manifest.routes, fn {route_id, route} ->
-      if route.path == path, do: route_id
+      if route_path_matches?(route.path, path), do: route_id
     end)
   end
 
@@ -196,21 +202,45 @@ defmodule Crosswake.Shell.Activation do
   end
 
   defp denial_from_gate(%Root{} = manifest, route_id, decision) do
-    if Map.has_key?(manifest.routes, route_id) do
-      Denial.new(
-        reason: :compatibility_mismatch,
-        route_id: route_id,
-        message: "Activation denied before runtime boot.",
-        details: %{reasons: Map.get(decision, :reasons, [])}
-      )
+    if denial = Map.get(decision, :denial) do
+      denial
     else
-      Denial.new(
-        reason: :inactive_route,
-        route_id: route_id,
-        message: "The requested route is not active in the manifest.",
-        hint: "refresh the bundled manifest before opening the route"
-      )
+      if Map.has_key?(manifest.routes, route_id) do
+        Denial.new(
+          reason: :compatibility_mismatch,
+          route_id: route_id,
+          message: "Activation denied before runtime boot.",
+          details: %{reasons: Map.get(decision, :reasons, [])}
+        )
+      else
+        Denial.new(
+          reason: :inactive_route,
+          route_id: route_id,
+          message: "The requested route is not active in the manifest.",
+          hint: "refresh the bundled manifest before opening the route"
+        )
+      end
     end
+  end
+
+  defp route_path_matches?(route_path, request_path)
+       when is_binary(route_path) and is_binary(request_path) do
+    route_segments = path_segments(route_path)
+    request_segments = path_segments(request_path)
+
+    length(route_segments) == length(request_segments) and
+      Enum.zip(route_segments, request_segments)
+      |> Enum.all?(fn {route_segment, request_segment} ->
+        String.starts_with?(route_segment, ":") or route_segment == request_segment
+      end)
+  end
+
+  defp route_path_matches?(_route_path, _request_path), do: false
+
+  defp path_segments(path) do
+    path
+    |> String.trim("/")
+    |> String.split("/", trim: true)
   end
 
   defp port_suffix(%URI{port: nil}), do: ""

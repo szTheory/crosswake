@@ -52,12 +52,16 @@ defmodule Crosswake.TestSupport.RouterFixtures do
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
         get "/dashboard", Crosswake.TestSupport.PageController, :index,
-          crosswake: [id: "dashboard"]
+          crosswake: [
+            id: "dashboard",
+            capabilities: ["app_info", "haptics", "permissions.status", "notification_token", "share"]
+          ]
 
         live "/library", Crosswake.TestSupport.LibraryLive,
           crosswake: [
             id: "library",
             cache_contract: :lesson_library_v1,
+            capabilities: ["file_picker"],
             packs: [[id: :lesson_library, version: "1.2.0", kind: :content]],
             transfers: [
               [
@@ -129,7 +133,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
 
     scope "/" do
       crosswake_defaults offline: :cached_read_only,
-                         capabilities: ["push.notifications"],
+                         capabilities: ["notification_token"],
                          packs: [[id: :core_content, version: "1.0.0", kind: :content]],
                          sync: ["catalog"],
                          security: :standard do
@@ -165,7 +169,7 @@ defmodule Crosswake.TestSupport.RouterFixtures do
             id: "capture",
             runtime: :native_screen,
             offline: :local_first,
-            capabilities: ["camera.capture"],
+            capabilities: ["media_capture"],
             packs: [[id: :capture_pack, version: "1.0.0", kind: :media]],
             transfers: [
               [

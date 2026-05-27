@@ -14,6 +14,7 @@
 		A10000021000000000000001 /* PackStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000121000000000000001 /* PackStore.swift */; };
 		A10000022000000000000001 /* RequiredPackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000122000000000000001 /* RequiredPackView.swift */; };
 		A10000023000000000000001 /* BridgeChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000123000000000000001 /* BridgeChannel.swift */; };
+		A10000023500000000000001 /* PermissionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000123500000000000001 /* PermissionStatusProvider.swift */; };
 		A10000030000000000000001 /* LiveViewContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000130000000000000001 /* LiveViewContainerViewController.swift */; };
 		A10000040000000000000001 /* RouteUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000140000000000000001 /* RouteUnavailableView.swift */; };
 		A10000050000000000000001 /* crosswake_manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000150000000000000001 /* crosswake_manifest.json */; };
@@ -23,6 +24,7 @@
 		A10000090000000000000001 /* installed_packs.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000190000000000000001 /* installed_packs.json */; };
 		A10000091000000000000001 /* pack_inventory.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000191000000000000001 /* pack_inventory.json */; };
 		A100000A0000000000000001 /* ActivationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A0000000000000001 /* ActivationCoordinatorTests.swift */; };
+		A100000B0000000000000001 /* BridgeChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001E0000000000000001 /* BridgeChannelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +45,7 @@
 		A10000121000000000000001 /* PackStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackStore.swift; sourceTree = "<group>"; };
 		A10000122000000000000001 /* RequiredPackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredPackView.swift; sourceTree = "<group>"; };
 		A10000123000000000000001 /* BridgeChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeChannel.swift; sourceTree = "<group>"; };
+		A10000123500000000000001 /* PermissionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionStatusProvider.swift; sourceTree = "<group>"; };
 		A10000130000000000000001 /* LiveViewContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveViewContainerViewController.swift; sourceTree = "<group>"; };
 		A10000140000000000000001 /* RouteUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteUnavailableView.swift; sourceTree = "<group>"; };
 		A10000150000000000000001 /* crosswake_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = crosswake_manifest.json; sourceTree = "<group>"; };
@@ -52,6 +55,7 @@
 		A10000190000000000000001 /* installed_packs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = installed_packs.json; sourceTree = "<group>"; };
 		A10000191000000000000001 /* pack_inventory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pack_inventory.json; sourceTree = "<group>"; };
 		A100001A0000000000000001 /* ActivationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivationCoordinatorTests.swift; sourceTree = "<group>"; };
+		A100001E0000000000000001 /* BridgeChannelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeChannelTests.swift; sourceTree = "<group>"; };
 		A100001B0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A100001C0000000000000001 /* CrosswakeShell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosswakeShell.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100001D0000000000000001 /* CrosswakeShellTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosswakeShellTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -95,6 +99,7 @@
 				A10000121000000000000001 /* PackStore.swift */,
 				A10000122000000000000001 /* RequiredPackView.swift */,
 				A10000123000000000000001 /* BridgeChannel.swift */,
+				A10000123500000000000001 /* PermissionStatusProvider.swift */,
 				A10000130000000000000001 /* LiveViewContainerViewController.swift */,
 				A10000140000000000000001 /* RouteUnavailableView.swift */,
 				A100001B0000000000000001 /* Info.plist */,
@@ -119,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				A100001A0000000000000001 /* ActivationCoordinatorTests.swift */,
+				A100001E0000000000000001 /* BridgeChannelTests.swift */,
 			);
 			path = CrosswakeShellTests;
 			sourceTree = "<group>";
@@ -235,6 +241,7 @@
 				A10000021000000000000001 /* PackStore.swift in Sources */,
 				A10000022000000000000001 /* RequiredPackView.swift in Sources */,
 				A10000023000000000000001 /* BridgeChannel.swift in Sources */,
+				A10000023500000000000001 /* PermissionStatusProvider.swift in Sources */,
 				A10000030000000000000001 /* LiveViewContainerViewController.swift in Sources */,
 				A10000040000000000000001 /* RouteUnavailableView.swift in Sources */,
 			);
@@ -245,6 +252,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A100000A0000000000000001 /* ActivationCoordinatorTests.swift in Sources */,
+				A100000B0000000000000001 /* BridgeChannelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -5,6 +5,7 @@ defmodule Crosswake.Policy.Defaults do
 
   @route [
     offline: :unavailable,
+    entry: :internal_only,
     capabilities: [],
     packs: [],
     sync: []

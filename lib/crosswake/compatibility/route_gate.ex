@@ -29,7 +29,7 @@ defmodule Crosswake.Compatibility.RouteGate do
 
   @spec evaluate(Root.t(), String.t(), Target.t(), keyword()) :: Decision.t()
   def evaluate(%Root{} = manifest, route_id, %Target{} = target, opts) do
-    findings = Compatibility.route_findings(manifest, route_id, target)
+    findings = Compatibility.route_findings(manifest, route_id, target, opts)
     denials = Enum.map(findings, &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id)))
     status = if(denials == [], do: :allow, else: :deny)
 

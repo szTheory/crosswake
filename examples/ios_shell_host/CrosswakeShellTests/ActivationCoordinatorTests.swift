@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class ActivationCoordinatorTests: XCTestCase {
-    func testBundledLaunchAllowsLiveViewRouteBeforeRuntimeMount() {
+    func testBundledLaunchAllowsNativeCaptureRouteBeforeRuntimeMount() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
@@ -13,13 +13,12 @@ final class ActivationCoordinatorTests: XCTestCase {
 
         coordinator.bootstrapIfNeeded()
 
-        guard case let .liveView(session) = coordinator.presentation else {
-            return XCTFail("expected live view presentation")
+        guard case let .nativeCapture(nativeCapture) = coordinator.presentation else {
+            return XCTFail("expected native capture presentation")
         }
 
-        XCTAssertEqual(session.routeID, "selective-native-claim-capture")
-        XCTAssertEqual(session.url.absoluteString, "https://example.crosswake.invalid/native/claims/claim-1/capture")
-        XCTAssertEqual(session.capabilities["camera"], "1.0.0")
+        XCTAssertEqual(nativeCapture.routeID, "selective-native-claim-capture")
+        XCTAssertEqual(nativeCapture.transferID, "capture_upload")
     }
 
     func testDeepLinkLaunchAllowsLocalFirstHistoryRouteBeforeRuntimeMount() {
@@ -39,6 +38,22 @@ final class ActivationCoordinatorTests: XCTestCase {
         XCTAssertEqual(session.url.absoluteString, "https://example.crosswake.invalid/study/history")
     }
 
+    func testDeepLinkLaunchMatchesDynamicSegmentsBeforeRuntimeMount() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
+        )
+
+        coordinator.openURL(URL(string: "https://example.com/native/claims/claim-9/capture")!)
+
+        guard case let .nativeCapture(nativeCapture) = coordinator.presentation else {
+            return XCTFail("expected native capture presentation")
+        }
+
+        XCTAssertEqual(nativeCapture.routeID, "selective-native-claim-capture")
+    }
+
     func testDeniedDeepLinkUsesExplicitInactiveRouteSurface() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
@@ -53,6 +68,23 @@ final class ActivationCoordinatorTests: XCTestCase {
         }
 
         XCTAssertEqual(denial.reason, RouteDenialReason.inactiveRoute)
+        XCTAssertTrue(denial.actions.contains(RouteUnavailableAction.retry))
+    }
+
+    func testDeniedDeepLinkDistinguishesRoutesThatRejectExternalEntry() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
+        )
+
+        coordinator.openURL(URL(string: "https://example.crosswake.invalid/study/session")!)
+
+        guard case let .denied(denial) = coordinator.presentation else {
+            return XCTFail("expected denial presentation")
+        }
+
+        XCTAssertEqual(denial.reason, RouteDenialReason.externalEntryDenied)
         XCTAssertTrue(denial.actions.contains(RouteUnavailableAction.retry))
     }
 
@@ -129,6 +161,7 @@ final class ActivationCoordinatorTests: XCTestCase {
                 id: "library",
                 path: "/library",
                 runtime: "live_view",
+                entry: "internal_only",
                 capabilities: [],
                 packs: ["lesson_library@1.2.0"],
                 transfers: [
@@ -158,6 +191,7 @@ final class ActivationCoordinatorTests: XCTestCase {
                 id: "selective-native-claim-capture",
                 path: "/native/claims/:id/capture",
                 runtime: "native_screen",
+                entry: "external",
                 capabilities: ["camera"],
                 packs: ["camera_capture_assets@1.0.0"],
                 transfers: [
@@ -178,6 +212,7 @@ final class ActivationCoordinatorTests: XCTestCase {
                 id: "local-first-study-history",
                 path: "/study/history",
                 runtime: "live_view",
+                entry: "external",
                 capabilities: [],
                 packs: [],
                 transfers: [],
@@ -187,6 +222,7 @@ final class ActivationCoordinatorTests: XCTestCase {
                 id: "local-first-study-session",
                 path: "/study/session",
                 runtime: "offline_island",
+                entry: "internal_only",
                 capabilities: [],
                 packs: ["daily_study@1.0.0"],
                 transfers: [],

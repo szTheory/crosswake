@@ -7,6 +7,7 @@ defmodule Crosswake.Policy.Schema do
 
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
+  @entry_values [:internal_only, :external]
   @security_values [:standard, :sensitive]
   @pack_kind_values [:content, :media]
 
@@ -25,6 +26,11 @@ defmodule Crosswake.Policy.Schema do
               type: {:in, @offline_values},
               default: :unavailable,
               type_spec: quote(do: :unavailable | :cached_read_only | :local_first)
+            ],
+            entry: [
+              type: {:in, @entry_values},
+              default: :internal_only,
+              type_spec: quote(do: :internal_only | :external)
             ],
             cache_contract: [
               type: {:custom, __MODULE__, :validate_identifier, []},
@@ -62,6 +68,7 @@ defmodule Crosswake.Policy.Schema do
 
   @type runtime :: :live_view | :offline_island | :native_screen
   @type offline :: :unavailable | :cached_read_only | :local_first
+  @type entry :: :internal_only | :external
   @type security :: :standard | :sensitive
   @type pack_kind :: :content | :media
   @type pack_integrity :: %{algorithm: String.t(), digest: String.t()}
@@ -75,6 +82,7 @@ defmodule Crosswake.Policy.Schema do
           id: String.t(),
           runtime: runtime(),
           offline: offline(),
+          entry: entry(),
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
           capabilities: [String.t()],

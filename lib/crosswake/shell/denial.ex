@@ -11,6 +11,7 @@ defmodule Crosswake.Shell.Denial do
     :unavailable_capability,
     :origin_denied,
     :inactive_route,
+    :external_entry_denied,
     :pack_incompatible
   ]
 
@@ -23,6 +24,7 @@ defmodule Crosswake.Shell.Denial do
           | :unavailable_capability
           | :origin_denied
           | :inactive_route
+          | :external_entry_denied
           | :pack_incompatible
 
   @type t :: %__MODULE__{

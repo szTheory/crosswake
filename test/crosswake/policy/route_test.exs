@@ -10,6 +10,7 @@ defmodule Crosswake.Policy.RouteTest do
       assert route.id == "inbox"
       assert route.runtime == :live_view
       assert route.offline == :unavailable
+      assert route.entry == :internal_only
       assert route.capabilities == []
       assert route.packs == []
       assert route.sync == []
@@ -78,11 +79,13 @@ defmodule Crosswake.Policy.RouteTest do
                  id: "library",
                  runtime: :live_view,
                  offline: :cached_read_only,
+                 entry: :external,
                  cache_contract: :lesson_library_v1,
                  security: :standard
                )
 
       assert route.offline == :cached_read_only
+      assert route.entry == :external
       assert Map.get(route, :cache_contract) == "lesson_library_v1"
       assert Map.get(route, :island_contract) == nil
     end
@@ -145,6 +148,21 @@ defmodule Crosswake.Policy.RouteTest do
                )
 
       assert Exception.message(error) =~ "pack ids must be unique"
+    end
+
+    test "rejects external entry on offline-island routes" do
+      assert {:error, error} =
+               Route.new(
+                 id: "study-session",
+                 runtime: :offline_island,
+                 offline: :local_first,
+                 entry: :external,
+                 island_contract: "study_session_v1",
+                 sync: ["study_reviews"],
+                 security: :standard
+               )
+
+      assert Exception.message(error) =~ "entry :external is not supported on offline_island routes"
     end
 
     test "normalizes explicit route-local transfer seams for upload, download, import, and export" do

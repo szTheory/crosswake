@@ -40,6 +40,8 @@ defmodule Crosswake.SupportMatrix do
       ],
       ios: [
         support_entry("ios", Keyword.get(opts, :ios_version, "17.0"), :supported,
+          baseline_status: :supported,
+          proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
             "Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
@@ -50,15 +52,19 @@ defmodule Crosswake.SupportMatrix do
         support_entry(
           "android",
           Keyword.get(opts, :android_version, "26"),
-          :supported,
+          :verification_required,
+          baseline_status: :supported,
+          proof_status: :verification_required,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Host-owned Android shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
+            "Host-owned Android shell boot is baseline-supported, but the current repository truth still requires the Java-enabled BridgeChannel proof lane to pass before Android support can be claimed as fully verified.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
       shells: [
         support_entry("ios_shell", Keyword.get(opts, :ios_shell_version, "0.1.0"), :supported,
+          baseline_status: :supported,
+          proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes: "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
@@ -66,10 +72,12 @@ defmodule Crosswake.SupportMatrix do
         support_entry(
           "android_shell",
           Keyword.get(opts, :android_shell_version, "0.1.0"),
-          :supported,
+          :verification_required,
+          baseline_status: :supported,
+          proof_status: :verification_required,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported while the Phase 5 Android verification hook stays green.",
+            "Generated Android shell artifacts remain baseline-supported, but repository support truth stays verification-required until the Java-enabled BridgeChannel proof lane passes.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -332,6 +340,9 @@ defmodule Crosswake.SupportMatrix do
       Types.new_capability_support_entry(
         family: capability.family,
         owner: capability.owner,
+        posture: capability_posture(capability),
+        baseline_status: :supported,
+        proof_status: capability_proof_status(capability),
         package_class: capability.package_class,
         proof_class: capability.proof_class,
         rebuild: capability.rebuild,
@@ -363,9 +374,24 @@ defmodule Crosswake.SupportMatrix do
       target: target,
       version: version,
       status: status,
+      baseline_status: Keyword.get(opts, :baseline_status, status),
+      proof_status: Keyword.get(opts, :proof_status, status),
       proof: Keyword.get(opts, :proof),
       notes: Keyword.get(opts, :notes),
       boundary_link: Keyword.get(opts, :boundary_link)
     )
   end
+
+  defp capability_posture(%Capability{id: "deep_link"}), do: "activation_first"
+  defp capability_posture(%Capability{id: "file_picker"}), do: "transfer_backed"
+  defp capability_posture(%Capability{id: "notification_token"}), do: "provider_snapshot"
+  defp capability_posture(%Capability{id: "permissions.status"}), do: "alias_snapshot"
+  defp capability_posture(%Capability{owner: :native_screen}), do: "native_screen"
+  defp capability_posture(%Capability{owner: :backend_seam}), do: "backend_seam"
+  defp capability_posture(%Capability{}), do: "bounded_bridge"
+
+  defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
+  defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported
+  defp capability_proof_status(%Capability{proof_class: :merge_blocking}), do: :verification_required
+  defp capability_proof_status(%Capability{proof_class: :advisory}), do: :supported
 end

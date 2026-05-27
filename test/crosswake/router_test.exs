@@ -10,7 +10,13 @@ defmodule Crosswake.RouterTest do
   test "managed routes expose normalized crosswake policy on compiled route metadata" do
     route = route_by_path!(ManagedRouter, "/dashboard")
 
-    assert route.metadata.crosswake == [runtime: :live_view, offline: :cached_read_only, security: :standard, id: "dashboard"]
+    assert route.metadata.crosswake == [
+             runtime: :live_view,
+             offline: :cached_read_only,
+             security: :standard,
+             id: "dashboard",
+             capabilities: ["app_info", "haptics", "permissions.status", "notification_token", "share"]
+           ]
     assert %Route{id: "dashboard", runtime: :live_view, offline: :cached_read_only, security: :standard} =
              RouterMetadata.fetch!(route.metadata)
   end

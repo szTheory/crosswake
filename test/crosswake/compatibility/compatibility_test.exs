@@ -122,13 +122,13 @@ defmodule Crosswake.CompatibilityTest do
         manifest,
         Contract.new_request(
           command: "files.pick",
-          capability: "files.pick",
+          capability: "file_picker",
           route_id: "library",
           active_route_id: "dashboard",
           origin: "https://untrusted.example",
           native_runtime_version: "0.9.0",
           correlation_id: "bridge-1",
-          capabilities: %{"files.pick" => "0.9.0"},
+          capabilities: %{"file_picker" => "0.9.0"},
           installed_packs: %{}
         )
       )
@@ -171,13 +171,13 @@ defmodule Crosswake.CompatibilityTest do
         manifest,
         Contract.new_request(
           command: "files.pick",
-          capability: "files.pick",
+          capability: "file_picker",
           route_id: "library",
           active_route_id: "library",
           origin: Types.default_origin(),
           native_runtime_version: "1.0.0",
           correlation_id: "bridge-3",
-          capabilities: %{"files.pick" => "1.0.0"},
+          capabilities: %{"file_picker" => "1.0.0"},
           installed_packs: %{}
         )
       )
@@ -313,7 +313,7 @@ defmodule Crosswake.CompatibilityTest do
       support_matrix: SupportMatrix.canonical(),
       capability_registry: %{
         "app.info.get" => Types.new_capability(id: "app.info.get", version: "1.0.0"),
-        "files.pick" => Types.new_capability(id: "files.pick", version: "1.0.0")
+        "file_picker" => Types.new_capability(id: "file_picker", version: "1.0.0")
       },
       routes: %{
         "dashboard" =>
@@ -331,7 +331,7 @@ defmodule Crosswake.CompatibilityTest do
             path: "/library",
             runtime: :live_view,
             offline: :cached_read_only,
-            capabilities: ["files.pick"],
+            capabilities: ["file_picker"],
             packs: ["library.bundle@1.0.0"],
             allowlisted_origins: [Types.default_origin()]
           )

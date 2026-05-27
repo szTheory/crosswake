@@ -43,6 +43,10 @@ The first Phase 11 inventory is:
 - `reconciliation_evidence`
 
 `deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
+Route DSL declarations should use semantic family ids such as `app_info`, `haptics`,
+`share`, `permissions.status`, `notification_token`, and `file_picker`. Transport
+commands like `app.info.get`, `haptics.impact`, `share.invoke`, and `files.pick`
+remain protocol details rather than the public route-policy vocabulary.
 
 ## Bounded Bridge
 
@@ -63,6 +67,10 @@ Representative bounded-bridge families:
 inbound `source: :native_picker` transfer seam. The public success shape is
 `transfer_id` plus `items`, metadata fields other than `handle` may be null, and
 cancelation is a distinct typed outcome instead of `items: []`.
+
+This is the only transfer-backed bounded-bridge exception. Ordinary bounded bridge
+families authorize through the declared family alone; `file_picker` also requires
+the matching `transfer_id` and `native_picker` seam.
 
 ## Native Screen
 

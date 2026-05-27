@@ -44,7 +44,7 @@ Crosswake does not silently fall back to a generic web container.
 
 - Denied deep links open a Crosswake-owned `route unavailable` screen.
 - In-app activation denials keep the current route stable and interrupt with native UI.
-- `pack_incompatible`, `origin_denied`, `inactive_route`, and compatibility failures stay visible instead of transitioning to a degraded state silently.
+- `pack_incompatible`, `origin_denied`, `inactive_route`, `external_entry_denied`, and compatibility failures stay visible instead of transitioning to a degraded state silently.
 
 ## Rebuild Guidance
 
@@ -99,6 +99,7 @@ The shell bridge stays bounded to:
 
 - `app.info.get`
 - `haptics.impact`
+- `permissions.status`
 - `files.pick`
 - `transfer.download`
 - `transfer.export`
@@ -106,6 +107,8 @@ The shell bridge stays bounded to:
 - `transfer.upload.prepare`
 
 Everything else is denied.
+
+`permissions.status` is intentionally narrow in Phase 16: it is read-only, one-shot, and supports the `notifications` alias only. It does not request permissions, observe background changes, or expose a generic permission dashboard.
 
 ## Boundary Warnings & Rough Edges
 

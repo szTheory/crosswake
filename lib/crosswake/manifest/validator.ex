@@ -81,9 +81,27 @@ defmodule Crosswake.Manifest.Validator do
     []
     |> validate_route_field(route, :path, route.path)
     |> validate_route_field(route, :runtime, route.runtime)
+    |> validate_route_entry(route)
     |> validate_route_capabilities(route, capability_registry)
     |> validate_route_packs(route, pack_registry)
     |> validate_route_transfers(route)
+  end
+
+  defp validate_route_entry(errors, route) do
+    if route.entry in [:internal_only, :external] do
+      errors
+    else
+      [
+        %{
+          key: :entry,
+          route_id: route.id,
+          path: route.path,
+          message: "route #{route.id} declares unsupported entry policy #{inspect(route.entry)}",
+          hint: "use entry :internal_only or :external in manifest route truth"
+        }
+        | errors
+      ]
+    end
   end
 
   defp validate_route_field(errors, _route, _key, value) when not is_nil(value), do: errors
@@ -127,7 +145,7 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_capability_vocab(
       :owner,
       capability.owner,
-      [:bounded_bridge, :native_screen, :backend_seam, :defer]
+      [:bounded_bridge, :native_screen, :backend_seam, :activation, :defer]
     )
     |> validate_capability_vocab(
       :package_class,

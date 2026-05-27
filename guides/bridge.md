@@ -6,13 +6,14 @@ command-first:
 
 - `app.info.get`
 - `haptics.impact`
+- `permissions.status`
 - `files.pick`
 - `transfer.download`
 - `transfer.export`
 - `transfer.import`
 - `transfer.upload.prepare`
 
-The public families behind that posture are `app_info`, `haptics`, and, later,
+The public families behind that posture are `app_info`, `haptics`, `permissions.status`, and, later,
 `share`. This bounded bridge contract stays family-first. Concrete bridge commands remain lower-level protocol details. Everything
 else is denied. The bridge is not navigation authority, not render synchronization,
 and not a generic plugin bus. `deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
@@ -67,6 +68,7 @@ The bridge examples that remain honest in this posture are family-first:
 
 - `app_info` for one-shot app metadata reads
 - `haptics` for low-frequency confirmation signals
+- `permissions.status` for one-shot prerequisite checks scoped to the `notifications` alias only
 - `share` as a future semantic handoff family once Crosswake publishes a truthful
   route-local share contract beyond compatibility-only command seams
 

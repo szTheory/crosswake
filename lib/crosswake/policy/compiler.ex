@@ -147,6 +147,9 @@ defmodule Crosswake.Policy.Compiler do
       String.contains?(message, "invalid value for :offline") ->
         "use offline: :unavailable | :cached_read_only | :local_first"
 
+      String.contains?(message, "invalid value for :entry") ->
+        "use entry: :internal_only | :external"
+
       true ->
         nil
     end
@@ -156,6 +159,7 @@ defmodule Crosswake.Policy.Compiler do
     cond do
       String.contains?(message, ":runtime") -> :runtime
       String.contains?(message, ":offline") -> :offline
+      String.contains?(message, ":entry") -> :entry
       String.contains?(message, ":id") -> :id
       true -> nil
     end
