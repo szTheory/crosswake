@@ -6,7 +6,6 @@ defmodule CrosswakeExample.Commerce.EntitlementProjection do
   and require verified reconciliation outcomes plus monotonic `as_of` ordering.
   """
 
-  alias Crosswake.Commerce.Contracts
   alias Crosswake.Commerce.Contracts.EntitlementSnapshot
 
   @pending_reconciliation_states [:pending_purchase, :pending_restore, :awaiting_verification]
@@ -101,14 +100,17 @@ defmodule CrosswakeExample.Commerce.EntitlementProjection do
 
   defp as_of_rank(_value), do: :error
 
-  defp stale_authority_snapshot(%EntitlementSnapshot{} = current, %EntitlementSnapshot{} = incoming) do
+  defp stale_authority_snapshot(
+         %EntitlementSnapshot{
+           reconciliation: %EntitlementSnapshot.ReconciliationLane{} = current_reconciliation
+         } = current,
+         %EntitlementSnapshot{} = incoming
+       ) do
+    incoming_reference = incoming.reconciliation.reference || current_reconciliation.reference
+
     %EntitlementSnapshot{
       current
-      | reconciliation: %EntitlementSnapshot.ReconciliationLane{
-          current.reconciliation
-          | state: :stale_authority,
-            reference: incoming.reconciliation.reference || current.reconciliation.reference
-        }
+      | reconciliation: %{current_reconciliation | state: :stale_authority, reference: incoming_reference}
     }
   end
 end
