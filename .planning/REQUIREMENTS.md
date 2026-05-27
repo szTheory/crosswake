@@ -70,15 +70,15 @@
 
 ### Reconciliation Example (`example/docs-only`, companion-ready)
 
-- [x] **RECN-01**: Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence.
-- [x] **RECN-02**: Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs.
-- [x] **RECN-03**: Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly.
+- [ ] **RECN-01**: Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence.
+- [ ] **RECN-02**: Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs.
+- [ ] **RECN-03**: Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly.
 
 ### Commerce Support And Proof (`core` support truth)
 
-- [ ] **SUPP-04**: Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale entitlement snapshots, and native rebuild requirements.
-- [ ] **SUPP-05**: Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped.
-- [ ] **SUPP-06**: Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship.
+- [x] **SUPP-04**: Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale entitlement snapshots, and native rebuild requirements.
+- [x] **SUPP-05**: Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped.
+- [x] **SUPP-06**: Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship.
 
 ## Future Requirements
 
@@ -119,12 +119,12 @@
 | ENTL-01 | Phase 20 | Complete |
 | ENTL-02 | Phase 20 | Complete |
 | ENTL-03 | Phase 20 | Complete |
-| RECN-01 | Phase 21 | Complete |
-| RECN-02 | Phase 21 | Complete |
-| RECN-03 | Phase 21 | Complete |
-| SUPP-04 | Phase 22 | Pending |
-| SUPP-05 | Phase 22 | Pending |
-| SUPP-06 | Phase 22 | Pending |
+| RECN-01 | Phase 24 | Pending |
+| RECN-02 | Phase 24 | Pending |
+| RECN-03 | Phase 24 | Pending |
+| SUPP-04 | Phase 23 | Complete |
+| SUPP-05 | Phase 23 | Complete |
+| SUPP-06 | Phase 23 | Complete |
 | ADPT-01 | Future milestone (provider adapters) | Pending |
 | ADPT-02 | Future milestone (provider adapters) | Pending |
 | ADPT-03 | Future milestone (provider adapters) | Pending |
@@ -140,4 +140,4 @@
 
 ---
 *Requirements defined: 2026-05-27*
-*Last updated: 2026-05-27 after completing Phase 21 Reconciliation Example*
+*Last updated: 2026-05-27 after adding gap-closure Phases 23-24*

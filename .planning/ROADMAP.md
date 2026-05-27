@@ -20,7 +20,7 @@
 | 20 | Entitlement Lifecycle Semantics | 4/4 | Complete    | 2026-05-27 |
 | 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
 | 22 | Commerce Support, Review, And Proof (decomposed) | Decomposed by milestone audit into focused closure phases before execution. | Decomposed into Phases 23-24 | Split |
-| 23 | Commerce Support And Proof Closure | 4/4 | Complete   | 2026-05-27 |
+| 23 | Commerce Support And Proof Closure | 4/4 | Complete    | 2026-05-27 |
 | 24 | Reconciliation Traceability Hardening | Normalize reconciliation requirement traceability and verification metadata for deterministic audits. | RECN-01, RECN-02, RECN-03 | 3 |
 
 ## Phase Details
