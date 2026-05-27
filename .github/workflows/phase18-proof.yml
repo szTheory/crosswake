@@ -35,6 +35,7 @@ jobs:
         run: bash script/verify_phase18_contract.sh
 
       - name: Verify checked-in iOS shell bridge and activation proof
+        timeout-minutes: 15
         run: |
           export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
           bash script/verify_generated_ios_shell.sh

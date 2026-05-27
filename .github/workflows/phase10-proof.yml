@@ -39,16 +39,3 @@ jobs:
 
       - name: Verify Local-First profile
         run: bash script/verify_local_first.sh
-
-      - name: Verify flagship generated iOS shell
-        run: |
-          export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
-          bash script/verify_generated_ios_shell.sh
-
-      - name: Verify flagship generated Android shell
-        timeout-minutes: 20
-        env:
-          CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
-        run: |
-          export CROSSWAKE_ANDROID_PROJECT_ROOT="examples/android_shell_host"
-          bash script/verify_generated_android_shell.sh

@@ -35,12 +35,3 @@ jobs:
         env:
           CROSSWAKE_PHASE5_NATIVE_PROOFS: "0"
         run: bash script/verify_phase5_example_hosts.sh
-
-      - name: Verify generated iOS shell
-        run: bash script/verify_generated_ios_shell.sh
-
-      - name: Verify generated Android shell
-        timeout-minutes: 20
-        env:
-          CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
-        run: bash script/verify_generated_android_shell.sh
