@@ -103,6 +103,12 @@ core support claims.
 - StoreKit, Play Billing, RevenueCat-style SDK glue, provider verification clients, webhook helpers, and native purchase command/event contracts are `companion`
 - silent web checkout or generic WebView fallback for digital goods is unsupported
 
+### Commerce Corridor Ownership Guidance
+
+- `paywall_entry` and `account_management` stay Phoenix-owned corridor surfaces.
+- `purchase_intent` and `restore_intent` require native-screen or companion corridor posture before activation.
+- Provider adapters remain out of scope in Phase 19; this guide documents ownership and fail-closed posture, not adapter implementation.
+
 ## Family Naming Rules
 
 - Use stable semantic family names, not generic buckets like `device`, `media`, or `plugins`.

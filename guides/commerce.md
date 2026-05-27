@@ -12,6 +12,19 @@ Crosswake exposes five core typed surfaces:
 4. `entitlement_snapshot`: A backend-issued read model of access truth.
 5. `reconciliation_evidence`: The normalized input envelope for purchase, restore, webhook, or support evidence.
 
+## Commerce Corridor Ownership
+
+Crosswake keeps corridor ownership explicit and matrix-first so route authors can see where Phoenix stays in control and where native or companion choreography is mandatory.
+
+| corridor_role | owner_posture | phase_19_truth |
+| --- | --- | --- |
+| `paywall_entry` | `phoenix_owned` | Keep paywall entry routes Phoenix-owned and declarative. |
+| `account_management` | `phoenix_owned` | Keep post-reconciliation account surfaces Phoenix-owned. |
+| `purchase_intent` | `native_or_companion_required` | Storefront confirmation and purchase execution require native or companion choreography. |
+| `restore_intent` | `native_or_companion_required` | Restore workflows require native or companion choreography. |
+
+For Phase 19, provider adapters are out of scope. Crosswake defines seam vocabulary and fallback posture, while StoreKit, Play Billing, and other adapter implementations stay companion or future work.
+
 ## Authority vs Evidence
 
 An `entitlement_snapshot` is a dual-lane record: it carries both a strict backend `authority` verdict and a bounded `evidence` envelope. Device or storefront observations inform the snapshot but do not replace it. 
@@ -27,6 +40,21 @@ To keep boundaries explicit, Crosswake classifies commerce moments into these ow
 - **Phoenix-owned:** pricing, subscription status, entitlement-gated checks, FAQ, billing/account history, post-reconciliation account surfaces.
 - **Native-screen required or strong default:** storefront purchase confirmation, restore choreography, offer-code / redeem flows, provider SDK-owned session loops.
 - **Thin exception case:** bounded one-shot trigger from a Phoenix-owned route into native commerce UI, only when the surface is genuinely sheet-like (and not a complex multi-step native stack).
+
+## Canonical Corridor Denial And Fallback Codes
+
+Crosswake uses canonical `commerce.corridor.*` IDs across route gates, support matrix, doctor output, and docs:
+
+| denial_code | fail_closed_reason | fallback |
+| --- | --- | --- |
+| `commerce.corridor.undeclared` | route declared commerce without a canonical corridor profile | `return_to_phoenix_guidance` |
+| `commerce.corridor.unsupported` | corridor role or manifest-source posture is unsupported for activation | `return_to_phoenix_guidance` |
+| `commerce.corridor.prerequisite_missing` | required corridor prerequisites are missing | `return_to_phoenix_guidance` |
+| `commerce.corridor.runtime_incompatible` | route runtime does not satisfy corridor ownership posture | `return_to_phoenix_guidance` |
+| `commerce.corridor.entry_denied` | external entry posture conflicts with corridor policy | `return_to_phoenix_guidance` |
+| `commerce.corridor.origin_denied` | origin allowlist posture conflicts with corridor policy | `return_to_phoenix_guidance` |
+| `commerce.corridor.policy_blocked` | role declaration conflicts with canonical corridor policy | `return_to_phoenix_guidance` |
+| `commerce.corridor.pack_incompatible` | required pack/runtime posture is incompatible for the corridor | `return_to_phoenix_guidance` |
 
 ## The Canonical Reconciliation Flow
 

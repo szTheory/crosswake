@@ -40,6 +40,17 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "Thin exception case"
   end
 
+  test "locks corridor ownership matrix and canonical denial taxonomy language", %{content: content} do
+    assert content =~ "## Commerce Corridor Ownership"
+    assert content =~ "paywall_entry"
+    assert content =~ "account_management"
+    assert content =~ "purchase_intent"
+    assert content =~ "restore_intent"
+    assert content =~ "commerce.corridor.prerequisite_missing"
+    assert content =~ "commerce.corridor.runtime_incompatible"
+    assert content =~ "provider adapters are out of scope"
+  end
+
   test "documents explicit offline non-goals and split-brain rejection copy", %{content: content} do
     assert content =~ "offline purchase replay"
     assert content =~ "device-local authority"
