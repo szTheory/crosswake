@@ -47,9 +47,16 @@ jobs:
     # Required branch check. Runs on every PR and push to main. This job MUST
     # stay hermetic — no network, no simulator, no provider SDK. Any change
     # that introduces a non-hermetic dependency here is a contract violation.
+    #
+    # Guarded with an `if:` so this job runs ONLY on merge-driving events
+    # (pull_request, push, workflow_dispatch). It is intentionally skipped on
+    # the weekly `schedule` trigger that drives the advisory lane — re-running
+    # the hermetic merge gate weekly was pure cost (the hermetic lane gates
+    # merges; periodic re-verification adds no signal).
     name: merge-blocking commerce support proof (hermetic)
     runs-on: macos-15
     timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
