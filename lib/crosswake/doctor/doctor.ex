@@ -700,15 +700,26 @@ defmodule Crosswake.Doctor do
     end
   end
 
+  # Lenient proof_class comparison so call sites that store either the atom
+  # form (matching the SupportMatrix source of truth) or the legacy string
+  # form (used today by commerce_summary findings) both match. The codebase
+  # already defensively handles both shapes in the formatters; until every
+  # emission site converges on the atom form, build_proof_posture/4 uses this
+  # helper so a future caller storing :merge_blocking does not silently drop
+  # the finding from the proof posture buckets.
+  defp proof_class_eq?(value, target_atom) when is_atom(target_atom) do
+    value == target_atom or value == Atom.to_string(target_atom)
+  end
+
   defp build_proof_posture(commerce_routes, _corridors, _proof_class_map, extra_findings) do
     merge_blocking_extra =
       Enum.filter(extra_findings, fn finding ->
-        Map.get(finding.details, :proof_class) == "merge_blocking"
+        proof_class_eq?(Map.get(finding.details, :proof_class), :merge_blocking)
       end)
 
     advisory_extra =
       Enum.filter(extra_findings, fn finding ->
-        Map.get(finding.details, :proof_class) == "advisory"
+        proof_class_eq?(Map.get(finding.details, :proof_class), :advisory)
       end)
 
     base_merge_blocking =
