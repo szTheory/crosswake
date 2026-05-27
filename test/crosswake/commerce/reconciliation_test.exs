@@ -92,6 +92,21 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       refute result.attempt.status == :active
     end
 
+    test "rejects invalid source vocabulary before creating evidence results" do
+      evidence = sample_evidence(%{source: :device_callback})
+
+      assert {:error, [source: {:invalid_source, details}]} = Reconciliation.ingest_evidence(evidence)
+      assert Keyword.fetch!(details, :source) == :device_callback
+    end
+
+    test "normalizes canonical string source values during evidence ingestion" do
+      evidence = sample_evidence(%{source: "webhook"})
+
+      assert {:ok, result} = Reconciliation.ingest_evidence(evidence)
+      assert result.source == :webhook
+      assert result.status == :awaiting_verification
+    end
+
     test "rejects attempts to set authority lane from evidence input" do
       evidence = sample_evidence()
 

@@ -112,7 +112,8 @@ defmodule Crosswake.Commerce.Reconciliation do
   @spec ingest_evidence(Contracts.ReconciliationEvidence.t(), keyword()) ::
           {:ok, EvidenceResult.t()} | {:error, term()}
   def ingest_evidence(%Contracts.ReconciliationEvidence{} = evidence, opts \\ []) do
-    with :ok <- reject_direct_authority_override(opts) do
+    with :ok <- reject_direct_authority_override(opts),
+         {:ok, source} <- normalize_evidence_source(evidence.source) do
       idempotency_key = to_idempotency_key(evidence)
       replay? = seen_idempotency_key?(idempotency_key, Keyword.get(opts, :seen_idempotency_keys, []))
       status = evidence_status(evidence, opts)
@@ -128,7 +129,7 @@ defmodule Crosswake.Commerce.Reconciliation do
 
       {:ok,
        %EvidenceResult{
-         source: evidence.source,
+         source: source,
          status: status,
          attempt: attempt,
          idempotency_key: idempotency_key,
@@ -167,6 +168,13 @@ defmodule Crosswake.Commerce.Reconciliation do
     case Keyword.fetch(opts, :authority_state) do
       {:ok, _state} -> {:error, :authority_lane_mutation_forbidden}
       :error -> :ok
+    end
+  end
+
+  defp normalize_evidence_source(source) do
+    case Contracts.canonical_reconciliation_evidence_source(source) do
+      {:ok, canonical_source} -> {:ok, canonical_source}
+      {:error, {:invalid_source, details}} -> {:error, [source: {:invalid_source, details}]}
     end
   end
 end
