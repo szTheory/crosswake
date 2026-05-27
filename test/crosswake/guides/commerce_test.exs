@@ -111,11 +111,16 @@ defmodule Crosswake.Guides.CommerceTest do
   end
 
   test "keeps reconciliation guidance provider-neutral and non-authoritative", %{content: content} do
+    # The reconciliation flow narrative lives inside Layer 1 (Commerce Support Truth) and
+    # must remain provider-neutral. The layered restructure introduces Layer 2 (Reviewer
+    # And Storefront Playbooks) right after the Layer 1 fallback section, so the
+    # reconciliation section now terminates at the Layer 2 boundary rather than the old
+    # H2 "## Non-Goals & explicit Rejections" boundary (which moved into Layer 3).
     reconciliation_section =
       content
-      |> String.split("## The Canonical Reconciliation Flow")
+      |> String.split("### The Canonical Reconciliation Flow")
       |> List.last()
-      |> String.split("## Non-Goals & explicit Rejections")
+      |> String.split("## Reviewer And Storefront Playbooks")
       |> hd()
       |> String.downcase()
 
