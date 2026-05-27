@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: executing
-stopped_at: Phase 21 complete; Phase 22 ready to execute
-last_updated: "2026-05-27T11:08:45.256Z"
-last_activity: 2026-05-27 -- Phase 21 execution complete
+stopped_at: Phase 23 context gathered
+last_updated: "2026-05-27T13:33:52.454Z"
+last_activity: 2026-05-27 -- Phase 23 execution started
 progress:
-  total_phases: 4
+  total_phases: 6
   completed_phases: 3
-  total_plans: 9
+  total_plans: 13
   completed_plans: 9
-  percent: 75
+  percent: 50
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 22 — commerce-support-review-and-proof
+**Current focus:** Phase 23 — commerce-support-and-proof-closure
 
 ## Current Position
 
-Phase: 22
-Plan: Not started
-Status: Phase 21 complete (21-01, 21-02 complete); ready to execute Phase 22
-Last activity: 2026-05-27 -- Phase 21 execution complete
+Phase: 23 (commerce-support-and-proof-closure) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 23
+Last activity: 2026-05-27 -- Phase 23 execution started
 
-Progress: [##########] 100%
+Progress: [#####-----] 50%
 
 ## Performance Metrics
 
@@ -47,7 +47,9 @@ Progress: [##########] 100%
 | 19. Commerce Route Corridors | 3 | 18 min | 6 min |
 | 20. Entitlement Lifecycle Semantics | 4 | n/a | n/a |
 | 21. Reconciliation Example | 2 | n/a | n/a |
-| 22. Commerce Support, Review, And Proof | 0 | n/a | n/a |
+| 22. Commerce Support, Review, And Proof (decomposed) | 0 | n/a | n/a |
+| 23. Commerce Support And Proof Closure | 0 | n/a | n/a |
+| 24. Reconciliation Traceability Hardening | 0 | n/a | n/a |
 | 19 | 3 | - | - |
 | 20 | 4 | - | - |
 | 21 | 2 | - | - |
@@ -77,7 +79,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Start Phase 22 execution for support/reviewer/proof guidance requirements (`SUPP-04`, `SUPP-05`, `SUPP-06`).
+- Execute Phase 23 wave 1: `23-01` (doctor commerce summary + stale diagnostics) and `23-02` (support matrix enrichment + guide sync) in parallel.
+- Execute Phase 23 wave 2: `23-03` (reviewer/storefront guidance) and `23-04` (proof lane formalization) after wave 1.
+- Run Phase 24 traceability hardening to close RECN partial audit findings (`RECN-01`, `RECN-02`, `RECN-03`).
 - Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
@@ -96,6 +100,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T11:08:45.256Z
-Stopped at: Phase 21 complete; Phase 22 ready to execute
-Resume file: .planning/phases/22-commerce-support-review-and-proof/
+Last session: 2026-05-27T13:21:05.479Z
+Stopped at: Phase 23 context gathered
+Resume file: .planning/phases/23-commerce-support-and-proof-closure/23-CONTEXT.md

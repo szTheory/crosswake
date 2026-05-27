@@ -6,7 +6,7 @@
 - ✅ **v2.0 Adopter Stress Profiles** — Phases 6-10 shipped on 2026-05-19. Full archive: [.planning/milestones/v2.0-ROADMAP.md](/Users/jon/projects/crosswake/.planning/milestones/v2.0-ROADMAP.md)
 - ✅ **v3.0 Capability Contract And Packaging** — Phases 11-14 shipped on 2026-05-20. Full archive: [.planning/milestones/v3.0-ROADMAP.md](/Users/jon/projects/crosswake/.planning/milestones/v3.0-ROADMAP.md)
 - ✅ **v3.1 Native Capabilities and Bridge Expansion** — Phases 15-18 shipped on 2026-05-27. Full archive: [.planning/milestones/v3.1-ROADMAP.md](/Users/jon/projects/crosswake/.planning/milestones/v3.1-ROADMAP.md)
-- ◆ **v3.2 Commerce And Entitlement Seams** — Phases 19-22 active.
+- ◆ **v3.2 Commerce And Entitlement Seams** — Phases 19-24 active.
 
 ## Current Milestone: v3.2 Commerce And Entitlement Seams
 
@@ -19,7 +19,9 @@
 | 19 | Commerce Route Corridors | 3/3 | Complete    | 2026-05-27 |
 | 20 | Entitlement Lifecycle Semantics | 4/4 | Complete    | 2026-05-27 |
 | 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
-| 22 | Commerce Support, Review, And Proof | Publish doctor/support/reviewer guidance and split merge-blocking from advisory proof. | SUPP-04, SUPP-05, SUPP-06 | 5 |
+| 22 | Commerce Support, Review, And Proof (decomposed) | Decomposed by milestone audit into focused closure phases before execution. | Decomposed into Phases 23-24 | Split |
+| 23 | Commerce Support And Proof Closure | 1/4 | In Progress|  |
+| 24 | Reconciliation Traceability Hardening | Normalize reconciliation requirement traceability and verification metadata for deterministic audits. | RECN-01, RECN-02, RECN-03 | 3 |
 
 ## Phase Details
 
@@ -66,9 +68,34 @@
 
 ### Phase 22: Commerce Support, Review, And Proof
 
-**Goal:** Publish doctor/support/reviewer guidance and split merge-blocking from advisory proof.
+**Goal:** Original closure phase for support/proof guidance.
+
+**Requirements:** Decomposed into Phases 23-24 before execution.
+
+**Status:** Superseded by audit-driven phase split to reduce execution risk and isolate traceability hardening.
+
+**Success criteria:**
+
+1. Scope split accepted: runtime/support closure moved to Phase 23.
+2. Traceability hardening and metadata normalization moved to Phase 24.
+3. Milestone closure continues with explicit merge-blocking versus advisory proof posture.
+
+### Phase 23: Commerce Support And Proof Closure
+
+**Goal:** Close blocking support/proof gaps and publish merge-blocking versus advisory commerce truth.
 
 **Requirements:** SUPP-04, SUPP-05, SUPP-06
+
+**Plan progress:** 0/4 complete
+
+**Plans:**
+
+1/4 plans executed
+|------|------|------|---------|--------------|--------|
+| 23-01 | Doctor Commerce Summary And Stale-Snapshot Diagnostics | 1 | — | SUPP-04 | Pending |
+| 23-02 | Support Matrix Enrichment And Guide Synchronization | 1 | — | SUPP-04, SUPP-05 | Pending |
+| 23-03 | Reviewer/Storefront Guidance And Non-Claims | 2 | 23-01, 23-02 | SUPP-05 | Pending |
+| 23-04 | Merge-Blocking vs Advisory Proof Lanes | 2 | 23-01, 23-02 | SUPP-06 | Pending |
 
 **Success criteria:**
 
@@ -76,7 +103,18 @@
 2. Public commerce docs include reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough-edge guidance.
 3. Merge-blocking tests cover hermetic commerce contracts, route denials, support truth, and docs integrity.
 4. StoreKit/Play Billing simulator, device, or storefront checks are documented as advisory until adapter milestones ship.
-5. Requirements traceability shows all v3.2 requirements mapped and no provider adapter implementation included in current scope.
+
+### Phase 24: Reconciliation Traceability Hardening
+
+**Goal:** Normalize reconciliation traceability artifacts so audit automation reflects verified behavior without manual interpretation.
+
+**Requirements:** RECN-01, RECN-02, RECN-03
+
+**Success criteria:**
+
+1. Phase summaries use canonical `requirements-completed` frontmatter for reconciliation requirements.
+2. Reconciliation requirement traceability status is synchronized across summary, verification, and requirements artifacts.
+3. Re-audit evidence for RECN requirements reports satisfied (not partial) due to artifact-shape consistency.
 
 ## Coverage
 
@@ -86,8 +124,11 @@
 
 ## Current Position
 
-Phase 21 is complete (2 of 2 plans complete). Phase 22 is next.
+Phase 21 is complete (2 of 2 plans complete). Phase 23 is planned (4 plans, 2 waves).
+
+Wave 1 (parallel): `23-01` (doctor + stale diagnostics) and `23-02` (support matrix enrichment + guide sync).
+Wave 2 (depends on wave 1): `23-03` (reviewer/storefront guidance) and `23-04` (proof lane formalization).
 
 Start with:
 
-`$gsd-execute-phase 22`
+`$gsd-execute-phase 23`
