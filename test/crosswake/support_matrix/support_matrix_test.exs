@@ -3,6 +3,7 @@ defmodule Crosswake.SupportMatrixTest do
 
   alias Crosswake.Manifest.Types
   alias Crosswake.SupportMatrix
+  alias Crosswake.SupportMatrix.Renderer
 
   test "canonical support matrix provides the typed manifest slots used by phase 2" do
     matrix = SupportMatrix.canonical()
@@ -184,6 +185,18 @@ defmodule Crosswake.SupportMatrixTest do
     assert reconciliation_evidence.fallback =~ "pending_restore"
     assert reconciliation_evidence.fallback =~ "awaiting_verification"
     assert reconciliation_evidence.fallback =~ "non-granting"
+  end
+
+  test "support matrix wording keeps stale and pending states explicit in docs and generated output" do
+    guide = File.read!("guides/support_matrix.md")
+    rendered = Renderer.render(SupportMatrix.canonical())
+
+    for text <- [guide, rendered] do
+      assert text =~ "stale"
+      assert text =~ "pending"
+      assert text =~ "awaiting_verification"
+      assert text =~ "non-granting"
+    end
   end
 
   test "commerce corridor support truth stays provider-neutral and uses canonical denial taxonomy" do

@@ -57,7 +57,18 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
     assert guide =~
              "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
+    refute String.downcase(guide) =~ "storekit"
+    refute String.downcase(guide) =~ "play_billing"
+    refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
+  end
+
+  test "generated support output does not present evidence as direct authority grant" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "non-authoritative reconciliation input"
+    refute String.downcase(guide) =~ "evidence is a direct authority grant"
+    refute String.downcase(guide) =~ "pending_purchase grants authority"
   end
 
   test "generated guide renders packaging ledger, release policy, and change classes from typed support truth" do

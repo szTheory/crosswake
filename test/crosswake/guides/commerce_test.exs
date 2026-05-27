@@ -72,4 +72,21 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "device-local authority"
     assert content =~ "split-brain"
   end
+
+  test "keeps lifecycle guidance provider-neutral and preserves phase scope fences", %{content: content} do
+    assert content =~ "provider adapters are out of scope"
+
+    lifecycle_section =
+      content
+      |> String.split("## Entitlement Snapshot Lanes")
+      |> List.last()
+      |> String.split("## Commerce Moment Map")
+      |> hd()
+      |> String.downcase()
+
+    refute lifecycle_section =~ "storekit"
+    refute lifecycle_section =~ "play_billing"
+    refute lifecycle_section =~ "play billing"
+    refute lifecycle_section =~ "revenuecat"
+  end
 end
