@@ -42,6 +42,14 @@ project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
 
 destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 
+if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
+  if xcodebuild -help 2>/dev/null | grep -q -- "-downloadPlatform"; then
+    echo "No concrete iPhone simulator destination found; downloading iOS simulator platform..." >&2
+    xcodebuild -downloadPlatform iOS
+    destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+  fi
+fi
+
 destination_name="$(printf '%s\n' "$destinations" | awk '
   /platform:iOS Simulator/ && /name:iPhone/ {
     line = $0
