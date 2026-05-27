@@ -14,7 +14,7 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 
 `v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-`v3.2 Commerce And Entitlement Seams` remains active with `Phase 21 Reconciliation Example` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, and a runnable Phoenix-owned reconciliation inbox/projection example before Phase 22 support-proof guidance closes the milestone.
+`v3.2 Commerce And Entitlement Seams` remains active with `Phase 23 Commerce Support And Proof Closure` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, a runnable Phoenix-owned reconciliation inbox/projection example, and merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides, and a hermetic CI proof lane. Phase 24 (Reconciliation Traceability Hardening) is next.
 
 ## Current Milestone: v3.2 Commerce And Entitlement Seams
 
@@ -57,10 +57,11 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 - [x] Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback. Validated in Phase 19: Commerce Route Corridors.
 - [x] Phoenix teams can use normalized purchase, restore, reconciliation, and entitlement snapshot semantics without treating device callbacks as entitlement authority. Validated in Phase 20: Entitlement Lifecycle Semantics.
 - [x] Host apps can follow a minimal backend reconciliation inbox and entitlement projection example that keeps idempotency and provider verification outside Crosswake core. Validated in Phase 21: Reconciliation Example.
+- [x] Adopters can see explicit doctor, support-matrix, reviewer/storefront, fallback, and proof guidance for commerce claims before provider adapters ship. Validated in Phase 23: Commerce Support And Proof Closure.
 
 ### Active
 
-- [ ] Adopters can see explicit doctor, support-matrix, reviewer/storefront, fallback, and proof guidance for commerce claims before provider adapters ship.
+_All v3.2 commerce-and-entitlement requirements validated through Phase 23. Next: Phase 24 (Reconciliation Traceability Hardening)._
 
 ### Out of Scope
 
@@ -132,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Phase 21 Reconciliation Example*
+*Last updated: 2026-05-27 after completing Phase 23 Commerce Support And Proof Closure*
