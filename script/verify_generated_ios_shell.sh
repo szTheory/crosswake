@@ -44,7 +44,9 @@ destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinatio
 
 if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
   echo "No concrete iPhone simulator destination found; downloading iOS simulator platform..." >&2
-  xcodebuild -downloadPlatform iOS
+  xcodebuild -downloadPlatform iOS || {
+    echo "warning: iOS simulator platform download failed; retrying with currently available destinations" >&2
+  }
   destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 fi
 

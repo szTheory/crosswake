@@ -32,6 +32,8 @@ jobs:
         run: mix deps.get
 
       - name: Verify checked-in example hosts
+        env:
+          CROSSWAKE_PHASE5_NATIVE_PROOFS: "0"
         run: bash script/verify_phase5_example_hosts.sh
 
       - name: Verify generated iOS shell
