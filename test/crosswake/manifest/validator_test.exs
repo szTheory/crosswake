@@ -183,6 +183,27 @@ defmodule Crosswake.Manifest.ValidatorTest do
            end)
   end
 
+  test "manifest validation stays backward-compatible for routes without commerce declarations" do
+    errors = Validator.validate(manifest_fixture())
+
+    refute Enum.any?(errors, fn error ->
+             error.key in [:commerce, :commerce_corridors]
+           end)
+  end
+
+  test "commerce corridor field guidance only triggers when a route declares commerce" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:commerce)], %{role: :paywall_entry})
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.message == "route camera declares commerce without a corridor_ref" and
+               String.contains?(error.hint, "additive in manifest schema 1.0.0")
+           end)
+  end
+
   test "manifest validation rejects invalid capability metadata vocabulary and empty support facts" do
     manifest =
       manifest_fixture()

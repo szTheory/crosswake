@@ -11,6 +11,7 @@ defmodule Crosswake.Manifest.Validator do
 
   @commerce_role_values Crosswake.Policy.Schema.commerce_role_values()
   @provider_specific_commerce_terms ["storekit", "play_billing", "play-billing", "play billing", "revenuecat"]
+  @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
 
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
@@ -170,7 +171,7 @@ defmodule Crosswake.Manifest.Validator do
   end
 
   defp validate_route_commerce_corridor_ref(errors, route, commerce_corridors) do
-    corridor_ref = route.commerce && route.commerce.corridor_ref
+    corridor_ref = commerce_field(route.commerce, :corridor_ref)
 
     cond do
       not non_empty_string?(corridor_ref) ->
@@ -180,7 +181,8 @@ defmodule Crosswake.Manifest.Validator do
             route_id: route.id,
             path: route.path,
             message: "route #{route.id} declares commerce without a corridor_ref",
-            hint: "declare route commerce with a canonical corridor_ref from commerce_corridors"
+            hint:
+              "declare route commerce with a canonical corridor_ref from commerce_corridors; #{@additive_compatibility_hint}"
           }
           | errors
         ]
@@ -205,7 +207,7 @@ defmodule Crosswake.Manifest.Validator do
   end
 
   defp validate_route_commerce_role(errors, route) do
-    role = route.commerce && route.commerce.role
+    role = commerce_field(route.commerce, :role)
 
     cond do
       is_nil(role) ->
@@ -215,7 +217,8 @@ defmodule Crosswake.Manifest.Validator do
             route_id: route.id,
             path: route.path,
             message: "route #{route.id} declares commerce without a role",
-            hint: "declare role with route commerce (for example :paywall_entry)"
+            hint:
+              "declare role with route commerce (for example :paywall_entry); #{@additive_compatibility_hint}"
           }
           | errors
         ]
@@ -577,6 +580,9 @@ defmodule Crosswake.Manifest.Validator do
 
   defp normalize_provider_vocab_map(%_{} = struct), do: Map.from_struct(struct)
   defp normalize_provider_vocab_map(map), do: map
+
+  defp commerce_field(nil, _field), do: nil
+  defp commerce_field(commerce, field) when is_map(commerce), do: Map.get(commerce, field)
 
   defp present?(:pack_registry, value) when is_map(value), do: true
   defp present?(:commerce_corridors, value) when is_map(value), do: true

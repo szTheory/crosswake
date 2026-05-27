@@ -65,6 +65,32 @@ defmodule Crosswake.ManifestTest do
     assert manifest.support_matrix.capability_families != []
   end
 
+  test "manifest keeps schema 1.0.0 while commerce corridor fields remain additive" do
+    assert {:ok, %{manifest: baseline_manifest}} = Manifest.compile(ManagedRouter)
+
+    assert baseline_manifest.manifest_schema_version == "1.0.0"
+    assert baseline_manifest.commerce_corridors == %{}
+    assert Enum.all?(baseline_manifest.routes, fn {_id, route} -> is_nil(route.commerce) end)
+
+    assert {:ok, %{manifest: commerce_manifest}} =
+             Manifest.compile([
+               route("/paywall",
+                 helper: "paywall",
+                 crosswake: [
+                   id: "paywall",
+                   runtime: :live_view,
+                   security: :standard,
+                   commerce: [corridor: :subscription_default, role: :paywall_entry]
+                 ]
+               )
+             ])
+
+    assert commerce_manifest.manifest_schema_version == "1.0.0"
+    assert Map.has_key?(commerce_manifest.commerce_corridors, "subscription_default")
+    assert commerce_manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
+    assert commerce_manifest.routes["paywall"].commerce.role == :paywall_entry
+  end
+
   test "manifest capability registry exposes typed family metadata and compatibility aliases" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
 
