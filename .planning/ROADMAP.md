@@ -113,8 +113,16 @@
 **Plans:** 3 plans (3 waves)
 
 Plans:
+**Wave 1**
+
 - [ ] 24-01-PLAN.md — Phase 21 SUMMARY frontmatter key rename + REQUIREMENTS.md bullets/traceability sync
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 24-02-PLAN.md — ExUnit parity test (test/crosswake/planning/summary_frontmatter_test.exs) + phase23-proof.yml CI merge-gate amendment
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 24-03-PLAN.md — Append-only re-audit section + reaudits[] frontmatter entry in v3.2-MILESTONE-AUDIT.md
 
 **Success criteria:**
