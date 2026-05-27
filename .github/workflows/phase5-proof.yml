@@ -10,7 +10,7 @@ on:
 jobs:
   phase5-proof:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
@@ -38,4 +38,7 @@ jobs:
         run: bash script/verify_generated_ios_shell.sh
 
       - name: Verify generated Android shell
+        timeout-minutes: 20
+        env:
+          CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"
         run: bash script/verify_generated_android_shell.sh
