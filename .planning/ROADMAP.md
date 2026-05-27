@@ -21,7 +21,7 @@
 | 21 | Reconciliation Example | 2/2 | Complete    | 2026-05-27 |
 | 22 | Commerce Support, Review, And Proof (decomposed) | Decomposed by milestone audit into focused closure phases before execution. | Decomposed into Phases 23-24 | Split |
 | 23 | Commerce Support And Proof Closure | 4/4 | Complete    | 2026-05-27 |
-| 24 | Reconciliation Traceability Hardening | 0/3 | RECN-01, RECN-02, RECN-03 | Planned |
+| 24 | Reconciliation Traceability Hardening | 1/3 | In Progress|  |
 
 ## Phase Details
 
@@ -110,12 +110,12 @@
 
 **Requirements:** RECN-01, RECN-02, RECN-03
 
-**Plans:** 3 plans (3 waves)
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 24-01-PLAN.md — Phase 21 SUMMARY frontmatter key rename + REQUIREMENTS.md bullets/traceability sync
+- [x] 24-01-PLAN.md — Phase 21 SUMMARY frontmatter key rename + REQUIREMENTS.md bullets/traceability sync
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
