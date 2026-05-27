@@ -72,7 +72,8 @@ defmodule Crosswake.Doctor.FormatterTest do
             corridor_ref: "subscription_default",
             role: :purchase_intent,
             denial_code: "commerce.corridor.runtime_incompatible",
-            fallback_hint: "return_to_phoenix_guidance"
+            fallback_hint: "return_to_phoenix_guidance",
+            proof_class: "merge_blocking"
           }
         }
       ]
@@ -85,5 +86,91 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "role=purchase_intent"
     assert output =~ "denial_code=commerce.corridor.runtime_incompatible"
     assert output =~ "fallback_hint=return_to_phoenix_guidance"
+    assert output =~ "[merge-blocking] commerce_corridor"
+  end
+
+  test "formats the commerce summary section with corridors, prerequisites, freshness, proof posture, and rebuild requirements" do
+    report = %{
+      status: :error,
+      findings: [],
+      commerce_summary: %{
+        corridors: [
+          %{
+            route_id: "buy",
+            corridor_ref: "subscription_default",
+            role: "purchase_intent",
+            owner_posture: "native_or_companion_required",
+            native_rebuild_required: true,
+            proof_class: :merge_blocking,
+            advisory_provider_proof: true
+          }
+        ],
+        prerequisites: %{
+          "buy" => ["native or companion storefront corridor implemented"]
+        },
+        snapshot_freshness: :stale,
+        proof_posture: %{
+          merge_blocking: ["corridor_contract:buy", "commerce.entitlement.stale_snapshot"],
+          advisory: ["provider_storefront:buy"]
+        },
+        rebuild_requirements: [
+          %{route_id: "buy", corridor_ref: "subscription_default", role: "purchase_intent"}
+        ]
+      }
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "Commerce:"
+    assert output =~ "snapshot_freshness: stale"
+    assert output =~ "corridors:"
+    assert output =~ "proof_class=[merge-blocking]"
+    assert output =~ "prerequisites:"
+    assert output =~ "native or companion storefront corridor implemented"
+    assert output =~ "proof_posture:"
+    assert output =~ "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+    assert output =~ "[advisory]: provider_storefront:buy"
+    assert output =~ "rebuild_requirements:"
+    assert output =~ "buy: corridor_ref=subscription_default, role=purchase_intent"
+    assert output =~ "native rebuild required before commerce support advances"
+  end
+
+  test "format commerce summary section is omitted when commerce_summary is empty" do
+    report = %{status: :ok, findings: [], commerce_summary: %{}}
+    refute Formatter.render(report) =~ "Commerce:"
+  end
+
+  test "commerce summary findings render their proof_class label inline" do
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "commerce.entitlement.stale_snapshot",
+          check: "commerce_summary",
+          message: "entitlement snapshot freshness is stale",
+          hint: "refresh the backend entitlement projection",
+          details: %{freshness: "stale", proof_class: "merge_blocking"}
+        },
+        %Check{
+          severity: :warning,
+          code: "commerce.corridor.native_rebuild_required",
+          check: "commerce_summary",
+          message: "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
+          hint: "rebuild the corridor",
+          details: %{
+            route_id: "buy",
+            corridor_ref: "subscription_default",
+            role: "purchase_intent",
+            proof_class: "merge_blocking"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[merge-blocking] commerce_summary (commerce.entitlement.stale_snapshot)"
+    assert output =~ "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
   end
 end

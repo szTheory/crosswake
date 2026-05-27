@@ -29,6 +29,7 @@ defmodule Crosswake.Doctor do
       bridge: %{},
       offline: %{},
       support: %{},
+      commerce_summary: %{},
       findings: []
     ]
 
@@ -40,6 +41,7 @@ defmodule Crosswake.Doctor do
             bridge: map(),
             offline: map(),
             support: map(),
+            commerce_summary: map(),
             findings: [Check.t()]
           }
   end
@@ -123,7 +125,13 @@ defmodule Crosswake.Doctor do
     phase_10_findings = phase_10_posture(manifest)
     phase_19_findings = phase_19_commerce_corridor_posture(manifest)
 
-    findings = findings ++ phase_3_findings ++ phase_4_findings ++ phase_10_findings ++ phase_19_findings
+    {commerce_summary, phase_23_findings} = phase_23_commerce_summary(manifest, opts)
+
+    findings =
+      findings ++
+        phase_3_findings ++
+        phase_4_findings ++
+        phase_10_findings ++ phase_19_findings ++ phase_23_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -133,8 +141,25 @@ defmodule Crosswake.Doctor do
       bridge: bridge,
       offline: offline,
       support: support,
+      commerce_summary: commerce_summary,
       findings: findings
     }
+  end
+
+  @doc """
+  Builds the typed commerce summary surface published alongside the findings stream.
+
+  Returns a map with `:corridors`, `:prerequisites`, `:snapshot_freshness`,
+  `:proof_posture`, and `:rebuild_requirements` keys derived from the compiled
+  manifest and canonical support matrix entries. Use the `:entitlement_snapshot_freshness`
+  option (one of `:fresh`, `:stale`, `:unknown`, `:not_applicable`) to communicate
+  the host-side freshness posture; the default is `:not_applicable` when no commerce
+  routes are declared and `:unknown` otherwise.
+  """
+  @spec commerce_summary(Manifest.Types.Root.t() | nil, keyword()) :: map()
+  def commerce_summary(manifest, opts \\ []) do
+    {summary, _findings} = phase_23_commerce_summary(manifest, opts)
+    summary
   end
 
   defp load_install_manifest(path) do
@@ -471,6 +496,199 @@ defmodule Crosswake.Doctor do
       |> Enum.filter(&commerce_doctor_denial?/1)
       |> Enum.map(&commerce_denial_check(route, &1))
     end)
+  end
+
+  defp phase_23_commerce_summary(nil, _opts) do
+    {%{
+       corridors: [],
+       prerequisites: %{},
+       snapshot_freshness: :not_applicable,
+       proof_posture: %{merge_blocking: [], advisory: []},
+       rebuild_requirements: []
+     }, []}
+  end
+
+  defp phase_23_commerce_summary(manifest, opts) do
+    commerce_routes =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(&(not is_nil(&1.commerce)))
+
+    proof_class_map = SupportMatrix.commerce_corridor_proof_classes()
+    corridor_entries = SupportMatrix.commerce_corridors()
+    corridor_entries_by_role = Map.new(corridor_entries, &{&1.corridor_role, &1})
+
+    corridors = commerce_corridors_summary(commerce_routes, corridor_entries_by_role)
+    prerequisites = commerce_prerequisites_summary(commerce_routes, corridor_entries_by_role)
+
+    snapshot_freshness =
+      commerce_snapshot_freshness(commerce_routes, Keyword.get(opts, :entitlement_snapshot_freshness))
+
+    rebuild_requirements = commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role)
+
+    stale_findings = stale_snapshot_findings(commerce_routes, snapshot_freshness)
+    rebuild_findings = native_rebuild_findings(rebuild_requirements, opts)
+
+    extra_findings = stale_findings ++ rebuild_findings
+
+    proof_posture =
+      build_proof_posture(commerce_routes, corridors, proof_class_map, extra_findings)
+
+    summary = %{
+      corridors: corridors,
+      prerequisites: prerequisites,
+      snapshot_freshness: snapshot_freshness,
+      proof_posture: proof_posture,
+      rebuild_requirements: rebuild_requirements
+    }
+
+    {summary, extra_findings}
+  end
+
+  defp commerce_corridors_summary(commerce_routes, corridor_entries_by_role) do
+    commerce_routes
+    |> Enum.map(fn route ->
+      role = route.commerce.role |> Atom.to_string()
+      entry = Map.get(corridor_entries_by_role, role)
+
+      proof_class =
+        case entry do
+          nil -> :unknown
+          %{proof_class: pc} -> pc
+        end
+
+      advisory_provider_proof =
+        case entry do
+          nil -> false
+          %{advisory_provider_proof: flag} -> flag
+        end
+
+      %{
+        route_id: route.id,
+        corridor_ref: route.commerce.corridor_ref,
+        role: role,
+        owner_posture: entry && entry.owner_posture,
+        native_rebuild_required: entry && entry.native_rebuild_required,
+        proof_class: proof_class,
+        advisory_provider_proof: advisory_provider_proof
+      }
+    end)
+    |> Enum.sort_by(& &1.route_id)
+  end
+
+  defp commerce_prerequisites_summary(commerce_routes, corridor_entries_by_role) do
+    commerce_routes
+    |> Enum.map(fn route ->
+      role = route.commerce.role |> Atom.to_string()
+      entry = Map.get(corridor_entries_by_role, role)
+      {route.id, (entry && entry.prerequisites) || []}
+    end)
+    |> Map.new()
+  end
+
+  defp commerce_snapshot_freshness([], _opt), do: :not_applicable
+
+  defp commerce_snapshot_freshness(_routes, nil), do: :unknown
+
+  defp commerce_snapshot_freshness(_routes, freshness)
+       when freshness in [:fresh, :stale, :unknown, :not_applicable],
+       do: freshness
+
+  defp commerce_snapshot_freshness(_routes, _other), do: :unknown
+
+  defp commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role) do
+    commerce_routes
+    |> Enum.filter(fn route ->
+      role = route.commerce.role |> Atom.to_string()
+      entry = Map.get(corridor_entries_by_role, role)
+      entry && entry.native_rebuild_required
+    end)
+    |> Enum.map(fn route ->
+      %{
+        route_id: route.id,
+        corridor_ref: route.commerce.corridor_ref,
+        role: route.commerce.role |> Atom.to_string()
+      }
+    end)
+    |> Enum.sort_by(& &1.route_id)
+  end
+
+  defp stale_snapshot_findings([], _freshness), do: []
+
+  defp stale_snapshot_findings(_routes, freshness) when freshness in [:stale, :unknown] do
+    [
+      check(
+        :warning,
+        "commerce.entitlement.stale_snapshot",
+        "commerce_summary",
+        "entitlement snapshot freshness is #{freshness}; access decisions stay fail-closed until backend authority refreshes the projection",
+        "refresh the backend entitlement projection and rerun doctor; doctor will not advance commerce support truth while snapshot freshness is stale or unknown",
+        %{
+          freshness: Atom.to_string(freshness),
+          proof_class: "merge_blocking"
+        }
+      )
+    ]
+  end
+
+  defp stale_snapshot_findings(_routes, _freshness), do: []
+
+  defp native_rebuild_findings([], _opts), do: []
+
+  defp native_rebuild_findings(rebuild_requirements, opts) do
+    case Keyword.get(opts, :native_rebuild_satisfied?, false) do
+      true ->
+        []
+
+      false ->
+        Enum.map(rebuild_requirements, fn requirement ->
+          check(
+            :warning,
+            "commerce.corridor.native_rebuild_required",
+            "commerce_summary",
+            "route #{requirement.route_id} corridor #{requirement.corridor_ref} (#{requirement.role}) requires a native or companion rebuild before commerce support can advance",
+            "rebuild the corridor's native or companion artifacts and rerun doctor with native_rebuild_satisfied?: true after the corresponding proof lane passes",
+            %{
+              route_id: requirement.route_id,
+              corridor_ref: requirement.corridor_ref,
+              role: requirement.role,
+              proof_class: "merge_blocking"
+            }
+          )
+        end)
+    end
+  end
+
+  defp build_proof_posture(commerce_routes, _corridors, _proof_class_map, extra_findings) do
+    merge_blocking_extra =
+      Enum.filter(extra_findings, fn finding ->
+        Map.get(finding.details, :proof_class) == "merge_blocking"
+      end)
+
+    advisory_extra =
+      Enum.filter(extra_findings, fn finding ->
+        Map.get(finding.details, :proof_class) == "advisory"
+      end)
+
+    base_merge_blocking =
+      commerce_routes
+      |> Enum.map(fn route -> "corridor_contract:" <> route.id end)
+      |> Enum.sort()
+
+    base_advisory =
+      commerce_routes
+      |> Enum.filter(fn route ->
+        SupportMatrix.commerce_corridor_proof_classes()
+        |> Map.get(route.commerce.role |> Atom.to_string(), %{})
+        |> Map.get(:advisory_provider_proof, false)
+      end)
+      |> Enum.map(fn route -> "provider_storefront:" <> route.id end)
+      |> Enum.sort()
+
+    %{
+      merge_blocking: base_merge_blocking ++ Enum.map(merge_blocking_extra, & &1.code),
+      advisory: base_advisory ++ Enum.map(advisory_extra, & &1.code)
+    }
   end
 
   defp shell_posture(platform, cwd, opts) do
@@ -970,7 +1188,8 @@ defmodule Crosswake.Doctor do
           "declare the corridor profile before manifest generation",
           Map.merge(base_details, %{
             denial_code: "commerce.corridor.undeclared",
-            fallback_hint: "return_to_phoenix_guidance"
+            fallback_hint: "return_to_phoenix_guidance",
+            proof_class: "merge_blocking"
           })
         )
 
@@ -983,7 +1202,8 @@ defmodule Crosswake.Doctor do
           "restore canonical corridor prerequisites before shipping commerce routes",
           Map.merge(base_details, %{
             denial_code: "commerce.corridor.prerequisite_missing",
-            fallback_hint: "return_to_phoenix_guidance"
+            fallback_hint: "return_to_phoenix_guidance",
+            proof_class: "merge_blocking"
           })
         )
 
@@ -1025,6 +1245,7 @@ defmodule Crosswake.Doctor do
     role = Map.get(denial.details, :role, route.commerce.role)
     corridor_ref = Map.get(denial.details, :corridor_ref, route.commerce.corridor_ref)
     fallback_hint = commerce_fallback_hint(denial)
+    proof_class = commerce_role_proof_class(role)
 
     check(
       :error,
@@ -1037,10 +1258,23 @@ defmodule Crosswake.Doctor do
         corridor_ref: corridor_ref,
         role: role,
         denial_code: denial.code,
-        fallback_hint: fallback_hint
+        fallback_hint: fallback_hint,
+        proof_class: proof_class
       }
     )
   end
+
+  defp commerce_role_proof_class(role) when is_atom(role),
+    do: commerce_role_proof_class(Atom.to_string(role))
+
+  defp commerce_role_proof_class(role) when is_binary(role) do
+    case SupportMatrix.commerce_corridor_proof_classes() |> Map.get(role) do
+      %{proof_class: pc} -> Atom.to_string(pc)
+      _ -> "merge_blocking"
+    end
+  end
+
+  defp commerce_role_proof_class(_), do: "merge_blocking"
 
   defp commerce_fallback_hint(denial) do
     denial.recovery

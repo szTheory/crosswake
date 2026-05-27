@@ -28,7 +28,9 @@ defmodule Crosswake.SupportMatrix do
       ],
       fallback_behavior:
         "Keep the paywall route Phoenix-owned and return explicit declaration guidance when a corridor check fails.",
-      native_rebuild_required: false
+      native_rebuild_required: false,
+      proof_class: :merge_blocking,
+      advisory_provider_proof: false
     },
     %{
       corridor_role: "account_management",
@@ -44,7 +46,9 @@ defmodule Crosswake.SupportMatrix do
       ],
       fallback_behavior:
         "Return to backend-owned account management guidance and fail closed until prerequisites are restored.",
-      native_rebuild_required: false
+      native_rebuild_required: false,
+      proof_class: :merge_blocking,
+      advisory_provider_proof: false
     },
     %{
       corridor_role: "purchase_intent",
@@ -61,7 +65,9 @@ defmodule Crosswake.SupportMatrix do
       ],
       fallback_behavior:
         "Fail closed with return-to-Phoenix guidance; never grant entitlement authority from device intent alone.",
-      native_rebuild_required: true
+      native_rebuild_required: true,
+      proof_class: :merge_blocking,
+      advisory_provider_proof: true
     },
     %{
       corridor_role: "restore_intent",
@@ -78,7 +84,9 @@ defmodule Crosswake.SupportMatrix do
       ],
       fallback_behavior:
         "Fail closed with restore guidance and keep entitlement truth backend-owned until evidence is reconciled.",
-      native_rebuild_required: true
+      native_rebuild_required: true,
+      proof_class: :merge_blocking,
+      advisory_provider_proof: true
     }
   ]
 
@@ -200,6 +208,30 @@ defmodule Crosswake.SupportMatrix do
     |> Enum.flat_map(& &1.denial_codes)
     |> Enum.uniq()
     |> Enum.sort()
+  end
+
+  @doc """
+  Returns the canonical commerce corridor proof-class mapping.
+
+  Every commerce corridor declares whether its hermetic Phoenix-owned contract proof is
+  `:merge_blocking` (core route/manifest/denial truth that must pass before merge) and
+  whether it also carries an `advisory_provider_proof` flag for storefront/simulator
+  evidence (StoreKit, Play Billing) that stays advisory in v3.2.
+  """
+  @spec commerce_corridor_proof_classes() :: %{
+          required(String.t()) => %{
+            required(:proof_class) => :merge_blocking | :advisory,
+            required(:advisory_provider_proof) => boolean()
+          }
+        }
+  def commerce_corridor_proof_classes do
+    Map.new(@commerce_corridor_entries, fn entry ->
+      {entry.corridor_role,
+       %{
+         proof_class: entry.proof_class,
+         advisory_provider_proof: entry.advisory_provider_proof
+       }}
+    end)
   end
 
   defp validate_categories_present(errors, %SupportMatrix{} = support_matrix) do
