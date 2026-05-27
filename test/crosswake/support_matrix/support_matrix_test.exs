@@ -227,4 +227,63 @@ defmodule Crosswake.SupportMatrixTest do
              end)
            end)
   end
+
+  test "every commerce corridor entry carries an explicit proof_class and advisory_provider_proof flag" do
+    entries = SupportMatrix.commerce_corridors()
+
+    for entry <- entries do
+      assert Map.has_key?(entry, :proof_class),
+             "commerce corridor #{entry.corridor_role} missing :proof_class"
+
+      assert entry.proof_class in [:merge_blocking, :advisory],
+             "commerce corridor #{entry.corridor_role} proof_class must be :merge_blocking or :advisory, got #{inspect(entry.proof_class)}"
+
+      assert Map.has_key?(entry, :advisory_provider_proof),
+             "commerce corridor #{entry.corridor_role} missing :advisory_provider_proof"
+
+      assert is_boolean(entry.advisory_provider_proof),
+             "commerce corridor #{entry.corridor_role} advisory_provider_proof must be a boolean"
+    end
+  end
+
+  test "paywall_entry and account_management commerce corridors are merge-blocking without advisory provider proof" do
+    entries = SupportMatrix.commerce_corridors()
+    paywall_entry = Enum.find(entries, &(&1.corridor_role == "paywall_entry"))
+    account_management = Enum.find(entries, &(&1.corridor_role == "account_management"))
+
+    assert paywall_entry.proof_class == :merge_blocking
+    refute paywall_entry.advisory_provider_proof
+
+    assert account_management.proof_class == :merge_blocking
+    refute account_management.advisory_provider_proof
+  end
+
+  test "purchase_intent and restore_intent commerce corridors are merge-blocking with advisory provider proof flag" do
+    entries = SupportMatrix.commerce_corridors()
+    purchase_intent = Enum.find(entries, &(&1.corridor_role == "purchase_intent"))
+    restore_intent = Enum.find(entries, &(&1.corridor_role == "restore_intent"))
+
+    assert purchase_intent.proof_class == :merge_blocking
+    assert purchase_intent.advisory_provider_proof
+
+    assert restore_intent.proof_class == :merge_blocking
+    assert restore_intent.advisory_provider_proof
+  end
+
+  test "commerce_corridor_proof_classes/0 returns canonical proof-class mapping for every corridor role" do
+    mapping = SupportMatrix.commerce_corridor_proof_classes()
+
+    assert mapping == %{
+             "paywall_entry" => %{proof_class: :merge_blocking, advisory_provider_proof: false},
+             "account_management" => %{
+               proof_class: :merge_blocking,
+               advisory_provider_proof: false
+             },
+             "purchase_intent" => %{
+               proof_class: :merge_blocking,
+               advisory_provider_proof: true
+             },
+             "restore_intent" => %{proof_class: :merge_blocking, advisory_provider_proof: true}
+           }
+  end
 end
