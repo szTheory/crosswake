@@ -14,7 +14,7 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 
 `v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-`v3.2 Commerce And Entitlement Seams` remains active with `Phase 23 Commerce Support And Proof Closure` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, a runnable Phoenix-owned reconciliation inbox/projection example, and merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides, and a hermetic CI proof lane. Phase 24 (Reconciliation Traceability Hardening) is next.
+`v3.2 Commerce And Entitlement Seams` remains active with `Phase 24 Reconciliation Traceability Hardening` complete. The milestone now has provider-neutral route/corridor declarations, explicit entitlement lifecycle lane semantics, a runnable Phoenix-owned reconciliation inbox/projection example, merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides, a hermetic CI proof lane, and machine-enforced SUMMARY frontmatter parity (`requirements-completed:`) backed by an ExUnit merge-blocking test plus a re-audit evidence section in `v3.2-MILESTONE-AUDIT.md`.
 
 ## Current Milestone: v3.2 Commerce And Entitlement Seams
 
@@ -133,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Phase 23 Commerce Support And Proof Closure*
+*Last updated: 2026-05-27 after completing Phase 24 Reconciliation Traceability Hardening*
