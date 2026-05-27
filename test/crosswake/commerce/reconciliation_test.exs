@@ -107,6 +107,15 @@ defmodule Crosswake.Commerce.ReconciliationTest do
       assert result.status == :awaiting_verification
     end
 
+    test "accepts every canonical source vocabulary value during ingestion" do
+      for source <- Contracts.reconciliation_evidence_source_vocabulary() do
+        evidence = sample_evidence(%{source: source})
+
+        assert {:ok, result} = Reconciliation.ingest_evidence(evidence)
+        assert result.source == source
+      end
+    end
+
     test "rejects attempts to set authority lane from evidence input" do
       evidence = sample_evidence()
 

@@ -246,6 +246,23 @@ defmodule Crosswake.Commerce.ContractsTest do
 
       assert snapshot.evidence.source == :device
     end
+
+    test "new_entitlement_snapshot accepts every canonical evidence source" do
+      for source <- Contracts.reconciliation_evidence_source_vocabulary() do
+        assert {:ok, snapshot} =
+                 Contracts.new_entitlement_snapshot(
+                   snapshot_attrs(%{
+                     evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+                       source: source,
+                       reference: "tx_123",
+                       observed_at: "2023-01-01T12:00:00Z"
+                     }
+                   })
+                 )
+
+        assert snapshot.evidence.source == source
+      end
+    end
   end
 
   defp snapshot_attrs(overrides) do
