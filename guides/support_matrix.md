@@ -61,6 +61,15 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 | scanner | native_screen | native_screen | supported | supported | defer | advisory | companion-required | scanner-native runtime; policy-heavy proof lane | unavailable_capability | defer scanner support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
 | share | bounded_bridge | bounded_bridge | supported | supported | core | advisory | none | truthful semantic share contract | undeclared_capability | keep content in the Phoenix-owned route until a share family is declared | [Guide](capabilities.md#bounded-bridge) |
 
+## Commerce Corridors
+
+| corridor_role | owner_posture | prerequisites | denial_codes | fallback_behavior | native_rebuild_required |
+|---------------|---------------|---------------|--------------|-------------------|-------------------------|
+| paywall_entry | phoenix_owned | route declares commerce corridor binding; backend entitlement contract available | commerce.corridor.undeclared; commerce.corridor.entry_denied; commerce.corridor.origin_denied | Keep the paywall route Phoenix-owned and return explicit declaration guidance when a corridor check fails. | false |
+| account_management | phoenix_owned | route declares commerce corridor binding; backend entitlement projection available | commerce.corridor.undeclared; commerce.corridor.policy_blocked; commerce.corridor.prerequisite_missing | Return to backend-owned account management guidance and fail closed until prerequisites are restored. | false |
+| purchase_intent | native_or_companion_required | native or companion storefront corridor implemented; backend reconciliation ingest enabled | commerce.corridor.runtime_incompatible; commerce.corridor.unsupported; commerce.corridor.pack_incompatible; commerce.corridor.prerequisite_missing | Fail closed with return-to-Phoenix guidance; never grant entitlement authority from device intent alone. | true |
+| restore_intent | native_or_companion_required | native or companion restore corridor implemented; backend reconciliation ingest enabled | commerce.corridor.runtime_incompatible; commerce.corridor.unsupported; commerce.corridor.pack_incompatible; commerce.corridor.prerequisite_missing | Fail closed with restore guidance and keep entitlement truth backend-owned until evidence is reconciled. | true |
+
 ## Packaging Ledger
 
 `crosswake` remains the one primary public package. Companions are first-party-scoped typed boundaries, not plugin-market surfaces.

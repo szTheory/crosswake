@@ -13,6 +13,74 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.SupportMatrix
 
   @statuses [:supported, :verification_required, :unsupported]
+  @commerce_corridor_entries [
+    %{
+      corridor_role: "paywall_entry",
+      owner_posture: "phoenix_owned",
+      prerequisites: [
+        "route declares commerce corridor binding",
+        "backend entitlement contract available"
+      ],
+      denial_codes: [
+        "commerce.corridor.undeclared",
+        "commerce.corridor.entry_denied",
+        "commerce.corridor.origin_denied"
+      ],
+      fallback_behavior:
+        "Keep the paywall route Phoenix-owned and return explicit declaration guidance when a corridor check fails.",
+      native_rebuild_required: false
+    },
+    %{
+      corridor_role: "account_management",
+      owner_posture: "phoenix_owned",
+      prerequisites: [
+        "route declares commerce corridor binding",
+        "backend entitlement projection available"
+      ],
+      denial_codes: [
+        "commerce.corridor.undeclared",
+        "commerce.corridor.policy_blocked",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Return to backend-owned account management guidance and fail closed until prerequisites are restored.",
+      native_rebuild_required: false
+    },
+    %{
+      corridor_role: "purchase_intent",
+      owner_posture: "native_or_companion_required",
+      prerequisites: [
+        "native or companion storefront corridor implemented",
+        "backend reconciliation ingest enabled"
+      ],
+      denial_codes: [
+        "commerce.corridor.runtime_incompatible",
+        "commerce.corridor.unsupported",
+        "commerce.corridor.pack_incompatible",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Fail closed with return-to-Phoenix guidance; never grant entitlement authority from device intent alone.",
+      native_rebuild_required: true
+    },
+    %{
+      corridor_role: "restore_intent",
+      owner_posture: "native_or_companion_required",
+      prerequisites: [
+        "native or companion restore corridor implemented",
+        "backend reconciliation ingest enabled"
+      ],
+      denial_codes: [
+        "commerce.corridor.runtime_incompatible",
+        "commerce.corridor.unsupported",
+        "commerce.corridor.pack_incompatible",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Fail closed with restore guidance and keep entitlement truth backend-owned until evidence is reconciled.",
+      native_rebuild_required: true
+    }
+  ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
@@ -122,6 +190,17 @@ defmodule Crosswake.SupportMatrix do
 
   @spec change_classes(SupportMatrix.t()) :: [ChangeClassEntry.t()]
   def change_classes(%SupportMatrix{} = support_matrix), do: support_matrix.change_classes
+
+  @spec commerce_corridors() :: [map()]
+  def commerce_corridors, do: @commerce_corridor_entries
+
+  @spec commerce_corridor_denial_codes() :: [String.t()]
+  def commerce_corridor_denial_codes do
+    @commerce_corridor_entries
+    |> Enum.flat_map(& &1.denial_codes)
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
 
   defp validate_categories_present(errors, %SupportMatrix{} = support_matrix) do
     Enum.reduce([:phoenix, :live_view, :ios, :android, :shells], errors, fn category, acc ->

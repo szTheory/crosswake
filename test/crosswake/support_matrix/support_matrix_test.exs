@@ -22,6 +22,7 @@ defmodule Crosswake.SupportMatrixTest do
 
     assert Map.keys(root_map) == [
              "capability_registry",
+             "commerce_corridors",
              "compatibility",
              "crosswake_version",
              "generated_at",
@@ -156,5 +157,34 @@ defmodule Crosswake.SupportMatrixTest do
              "compatibility-bump only",
              "native or companion rebuild required"
            ]
+  end
+
+  test "commerce corridor support truth stays provider-neutral and uses canonical denial taxonomy" do
+    entries = SupportMatrix.commerce_corridors()
+
+    assert Enum.map(entries, & &1.corridor_role) == [
+             "paywall_entry",
+             "account_management",
+             "purchase_intent",
+             "restore_intent"
+           ]
+
+    assert SupportMatrix.commerce_corridor_denial_codes() == [
+             "commerce.corridor.entry_denied",
+             "commerce.corridor.origin_denied",
+             "commerce.corridor.pack_incompatible",
+             "commerce.corridor.policy_blocked",
+             "commerce.corridor.prerequisite_missing",
+             "commerce.corridor.runtime_incompatible",
+             "commerce.corridor.undeclared",
+             "commerce.corridor.unsupported"
+           ]
+
+    refute Enum.any?(entries, fn entry ->
+             Enum.any?(entry.prerequisites, fn prerequisite ->
+               String.contains?(prerequisite, "StoreKit") or
+                 String.contains?(prerequisite, "Play Billing")
+             end)
+           end)
   end
 end

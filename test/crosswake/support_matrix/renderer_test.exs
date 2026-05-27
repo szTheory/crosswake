@@ -74,6 +74,17 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| native or companion rebuild required |"
   end
 
+  test "generated guide renders commerce corridor support truth with canonical denial codes" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "## Commerce Corridors"
+    assert guide =~ "| corridor_role | owner_posture | prerequisites | denial_codes | fallback_behavior | native_rebuild_required |"
+    assert guide =~ "| paywall_entry | phoenix_owned |"
+    assert guide =~ "commerce.corridor.undeclared"
+    assert guide =~ "| purchase_intent | native_or_companion_required |"
+    assert guide =~ "commerce.corridor.runtime_incompatible"
+  end
+
   test "guides remain mechanically checked against canonical support truth and phase 3 boundaries" do
     assert File.read!("guides/support_matrix.md") == Renderer.render(SupportMatrix.canonical())
 

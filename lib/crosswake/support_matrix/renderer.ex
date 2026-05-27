@@ -39,6 +39,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       capability_family_section(support_matrix.capability_families),
       "",
+      commerce_corridor_section(Crosswake.SupportMatrix.commerce_corridors()),
+      "",
       package_surface_section(support_matrix.package_surfaces),
       "",
       release_boundary_section(support_matrix.release_boundaries),
@@ -107,6 +109,17 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp commerce_corridor_section(entries) do
+    [
+      "## Commerce Corridors",
+      "",
+      "| corridor_role | owner_posture | prerequisites | denial_codes | fallback_behavior | native_rebuild_required |",
+      "|---------------|---------------|---------------|--------------|-------------------|-------------------------|",
+      Enum.map_join(entries, "\n", &commerce_corridor_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
   defp release_boundary_section(entries) do
     [
       "## Release And Versioning Policy",
@@ -169,6 +182,13 @@ defmodule Crosswake.SupportMatrix.Renderer do
     "| #{entry.surface} | #{format_package_class(entry.package_class)} | #{entry.why} | #{entry.release_burden} | #{format_guide_link(entry.guide)} |"
   end
 
+  defp commerce_corridor_row(entry) do
+    prerequisites = format_list(entry.prerequisites)
+    denial_codes = format_list(entry.denial_codes)
+
+    "| #{entry.corridor_role} | #{entry.owner_posture} | #{prerequisites} | #{denial_codes} | #{entry.fallback_behavior} | #{entry.native_rebuild_required} |"
+  end
+
   defp release_boundary_row(%ReleaseBoundaryEntry{} = entry) do
     "| #{entry.target} | #{entry.versioning} | #{entry.compatibility_contract} | #{entry.release_rule} |"
   end
@@ -191,4 +211,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+
+  defp format_list([]), do: "-"
+  defp format_list(items), do: Enum.join(items, "; ")
 end
