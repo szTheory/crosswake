@@ -3,7 +3,7 @@ phase: 21-reconciliation-example
 plan: 01
 subsystem: commerce
 tags: [reconciliation, example-host, idempotency, entitlement-projection, proof-lane]
-requirements:
+requirements-completed:
   - RECN-01
   - RECN-02
   - RECN-03

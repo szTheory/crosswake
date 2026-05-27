@@ -3,7 +3,7 @@ phase: 21-reconciliation-example
 plan: 02
 subsystem: docs
 tags: [commerce, reconciliation, guides, docs-contract, example-host]
-requirements:
+requirements-completed:
   - RECN-01
   - RECN-02
   - RECN-03
