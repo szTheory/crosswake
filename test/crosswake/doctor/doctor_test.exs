@@ -374,6 +374,32 @@ defmodule Crosswake.DoctorTest do
     refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.native_rebuild_required"))
   end
 
+  test "commerce_summary does not emit commerce.corridor.role_unknown when every route role maps to canonical SupportMatrix taxonomy",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    # Forward-compatible fail-closed contract: when a commerce route's role is
+    # not in Crosswake.SupportMatrix.commerce_corridors/0, doctor must emit a
+    # merge-blocking commerce.corridor.role_unknown finding (paired with an
+    # explicit :unknown row in commerce_summary.corridors). Today the manifest
+    # validator rejects unknown roles before they reach doctor, so the canonical
+    # fixtures never trigger the finding — assert that, so a future change that
+    # widens corridor role acceptance without updating the SupportMatrix
+    # taxonomy fails this test rather than silently producing :unknown rows.
+    report =
+      Doctor.run(
+        route_source: PaywallCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        entitlement_snapshot_freshness: :fresh
+      )
+
+    refute Enum.any?(report.findings, &(&1.code == "commerce.corridor.role_unknown")),
+           "canonical fixtures should not surface commerce.corridor.role_unknown; got findings: #{inspect(Enum.map(report.findings, & &1.code))}"
+
+    # Every emitted corridor row has a resolved (non-:unknown) proof_class.
+    refute Enum.any?(report.commerce_summary.corridors, &(&1.proof_class == :unknown)),
+           "no commerce_summary corridor row should carry :unknown proof_class for canonical fixtures"
+  end
+
   test "stale entitlement freshness emits a merge-blocking warning finding", %{
     target: target,
     install_manifest_path: install_manifest_path

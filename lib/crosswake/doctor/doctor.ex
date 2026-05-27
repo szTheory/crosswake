@@ -528,8 +528,9 @@ defmodule Crosswake.Doctor do
 
     stale_findings = stale_snapshot_findings(commerce_routes, snapshot_freshness)
     rebuild_findings = native_rebuild_findings(rebuild_requirements, opts)
+    unknown_role_findings = unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role)
 
-    extra_findings = stale_findings ++ rebuild_findings
+    extra_findings = stale_findings ++ rebuild_findings ++ unknown_role_findings
 
     proof_posture =
       build_proof_posture(commerce_routes, corridors, proof_class_map, extra_findings)
@@ -549,31 +550,62 @@ defmodule Crosswake.Doctor do
     commerce_routes
     |> Enum.map(fn route ->
       role = route.commerce.role |> Atom.to_string()
-      entry = Map.get(corridor_entries_by_role, role)
 
-      proof_class =
-        case entry do
-          nil -> :unknown
-          %{proof_class: pc} -> pc
-        end
+      case Map.fetch(corridor_entries_by_role, role) do
+        {:ok, entry} ->
+          %{
+            route_id: route.id,
+            corridor_ref: route.commerce.corridor_ref,
+            role: role,
+            owner_posture: entry.owner_posture,
+            native_rebuild_required: entry.native_rebuild_required,
+            proof_class: entry.proof_class,
+            advisory_provider_proof: entry.advisory_provider_proof
+          }
 
-      advisory_provider_proof =
-        case entry do
-          nil -> false
-          %{advisory_provider_proof: flag} -> flag
-        end
-
-      %{
-        route_id: route.id,
-        corridor_ref: route.commerce.corridor_ref,
-        role: role,
-        owner_posture: entry && entry.owner_posture,
-        native_rebuild_required: entry && entry.native_rebuild_required,
-        proof_class: proof_class,
-        advisory_provider_proof: advisory_provider_proof
-      }
+        :error ->
+          # Fail-closed surface row for an unknown corridor role. Paired with a
+          # merge-blocking commerce.corridor.role_unknown finding emitted by
+          # unknown_corridor_role_findings/2 so the unknown row is never silent.
+          %{
+            route_id: route.id,
+            corridor_ref: route.commerce.corridor_ref,
+            role: role,
+            owner_posture: :unknown,
+            native_rebuild_required: :unknown,
+            proof_class: :unknown,
+            advisory_provider_proof: false
+          }
+      end
     end)
     |> Enum.sort_by(& &1.route_id)
+  end
+
+  defp unknown_corridor_role_findings([], _corridor_entries_by_role), do: []
+
+  defp unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role) do
+    commerce_routes
+    |> Enum.filter(fn route ->
+      role = route.commerce.role |> Atom.to_string()
+      not Map.has_key?(corridor_entries_by_role, role)
+    end)
+    |> Enum.map(fn route ->
+      role = route.commerce.role |> Atom.to_string()
+
+      check(
+        :error,
+        "commerce.corridor.role_unknown",
+        "commerce_summary",
+        "route #{route.id} declares corridor role #{role} which is not in the canonical SupportMatrix commerce corridor taxonomy",
+        "declare #{role} in Crosswake.SupportMatrix.commerce_corridors/0 or change the route to a canonical corridor role before relying on commerce support truth",
+        %{
+          route_id: route.id,
+          corridor_ref: route.commerce.corridor_ref,
+          role: role,
+          proof_class: "merge_blocking"
+        }
+      )
+    end)
   end
 
   defp commerce_prerequisites_summary(commerce_routes, corridor_entries_by_role) do
