@@ -89,8 +89,17 @@ jobs:
     # provider adapters, so this lane intentionally emits "advisory — no
     # provider adapters shipped" status; it is the placeholder where future
     # StoreKit / Play Billing / storefront / device checks will live.
+    #
+    # Runner is ubuntu-latest because every step today is an echo placeholder
+    # plus dependency setup — none of the placeholder steps exercise macOS-
+    # specific behavior, so paying the ~10x macOS-15 minute cost on every
+    # weekly run is pure waste. When a future provider-adapter milestone
+    # ships a StoreKit simulator step (which DOES require macOS), split this
+    # job: keep the Linux-runnable advisory placeholders here, and add a
+    # separate macos-15 job for the StoreKit-only step, if:-gated on the
+    # presence of the StoreKit adapter (see promotion-path commentary above).
     name: advisory commerce proof (provider/storefront/simulator/device)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     # `continue-on-error: true` ensures that even if a future advisory step
