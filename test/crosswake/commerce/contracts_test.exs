@@ -131,15 +131,25 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert revoked_snapshot.authority.state == :revoked
     end
 
-    test "reconciliation_evidence compiles without provider leakage" do
+    test "reconciliation_evidence compiles with bounded provenance metadata" do
       evidence = %Contracts.ReconciliationEvidence{
-        correlation_id: "txn_123",
-        evidence_token: "receipt_base64_data",
-        source: :device
+        source: :device,
+        provider: "app_store",
+        provider_reference: "tx_123",
+        event_kind: "purchase",
+        evidence_ref: "receipt_ref_123",
+        captured_at: "2023-01-01T12:00:00Z",
+        integrity_digest: "sha256:abc123",
+        idempotency_ref: "idem_123"
       }
 
-      assert evidence.evidence_token == "receipt_base64_data"
       assert evidence.source == :device
+      assert evidence.provider_reference == "tx_123"
+      assert evidence.event_kind == "purchase"
+      assert evidence.evidence_ref == "receipt_ref_123"
+      assert evidence.integrity_digest == "sha256:abc123"
+      assert evidence.idempotency_ref == "idem_123"
+      refute Map.has_key?(evidence, :provider_payload)
     end
   end
 
@@ -197,6 +207,13 @@ defmodule Crosswake.Commerce.ContractsTest do
       assert {:submit_restore_intent, 1} in callbacks
       assert {:ingest_reconciliation_evidence, 1} in callbacks
       assert {:fetch_entitlement_snapshot, 1} in callbacks
+    end
+  end
+
+  describe "reconciliation evidence vocabulary" do
+    test "locks normalized source vocabulary" do
+      assert Contracts.reconciliation_evidence_source_vocabulary() == [:device, :storefront, :webhook, :support]
+      refute :device_callback in Contracts.reconciliation_evidence_source_vocabulary()
     end
   end
 

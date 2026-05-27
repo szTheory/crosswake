@@ -149,15 +149,36 @@ defmodule Crosswake.Commerce.Contracts do
 
   defmodule ReconciliationEvidence do
     @moduledoc false
-    @enforce_keys [:correlation_id, :evidence_token, :source]
-    defstruct [:correlation_id, :evidence_token, :source]
+    @enforce_keys [
+      :source,
+      :provider,
+      :provider_reference,
+      :event_kind,
+      :evidence_ref,
+      :captured_at
+    ]
+    defstruct [
+      :source,
+      :provider,
+      :provider_reference,
+      :event_kind,
+      :evidence_ref,
+      :captured_at,
+      :integrity_digest,
+      :idempotency_ref
+    ]
 
     @type source :: :device | :storefront | :webhook | :support
 
     @type t :: %__MODULE__{
-            correlation_id: String.t(),
-            evidence_token: String.t(),
-            source: source()
+            source: source(),
+            provider: String.t(),
+            provider_reference: String.t(),
+            event_kind: String.t(),
+            evidence_ref: String.t(),
+            captured_at: String.t(),
+            integrity_digest: String.t() | nil,
+            idempotency_ref: String.t() | nil
           }
   end
 
@@ -184,6 +205,7 @@ defmodule Crosswake.Commerce.Contracts do
   ]
 
   @freshness_vocabulary [:fresh, :stale, :unknown]
+  @reconciliation_evidence_source_vocabulary [:device, :storefront, :webhook, :support]
 
   @spec authority_vocabulary() :: [EntitlementSnapshot.AuthorityLane.state()]
   def authority_vocabulary, do: @authority_vocabulary
@@ -196,6 +218,9 @@ defmodule Crosswake.Commerce.Contracts do
 
   @spec freshness_vocabulary() :: [EntitlementSnapshot.FreshnessLane.state()]
   def freshness_vocabulary, do: @freshness_vocabulary
+
+  @spec reconciliation_evidence_source_vocabulary() :: [ReconciliationEvidence.source()]
+  def reconciliation_evidence_source_vocabulary, do: @reconciliation_evidence_source_vocabulary
 
   @spec new_entitlement_snapshot(map() | keyword()) ::
           {:ok, EntitlementSnapshot.t()} | {:error, keyword()}
