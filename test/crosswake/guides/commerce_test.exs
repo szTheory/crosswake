@@ -49,6 +49,26 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "Phoenix/native consumers refresh from that snapshot"
   end
 
+  test "locks minimal reconciliation example, dual keys, and projection precedence contracts", %{
+    content: content
+  } do
+    assert content =~ "## Minimal Reconciliation Inbox Example"
+    assert content =~ "`purchase`"
+    assert content =~ "`restore`"
+    assert content =~ "`webhook`"
+    assert content =~ "`support`"
+    assert content =~ "example/docs-only"
+    assert content =~ "event_key"
+    assert content =~ "subject_key"
+    assert content =~ "correlation_id"
+    assert content =~ "stale"
+    assert content =~ "pending"
+    assert content =~ "denied"
+    assert content =~ "granted"
+    assert content =~ "as_of"
+    assert content =~ "Ingestion outcomes are non-authoritative"
+  end
+
   test "documents explicit commerce moment classifications", %{content: content} do
     assert content =~ "Commerce Moment Map"
     assert content =~ "Phoenix-owned"
@@ -88,5 +108,22 @@ defmodule Crosswake.Guides.CommerceTest do
     refute lifecycle_section =~ "play_billing"
     refute lifecycle_section =~ "play billing"
     refute lifecycle_section =~ "revenuecat"
+  end
+
+  test "keeps reconciliation guidance provider-neutral and non-authoritative", %{content: content} do
+    reconciliation_section =
+      content
+      |> String.split("## The Canonical Reconciliation Flow")
+      |> List.last()
+      |> String.split("## Non-Goals & explicit Rejections")
+      |> hd()
+      |> String.downcase()
+
+    refute reconciliation_section =~ "storekit"
+    refute reconciliation_section =~ "play_billing"
+    refute reconciliation_section =~ "play billing"
+    refute reconciliation_section =~ "revenuecat"
+    refute reconciliation_section =~ "evidence directly grants authority"
+    assert reconciliation_section =~ "non-authoritative"
   end
 end

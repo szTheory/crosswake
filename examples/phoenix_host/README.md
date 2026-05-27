@@ -15,6 +15,16 @@ for the canonical package and support posture.
 - Extend profile-specific routes, modules, fixtures, and proof checks inside the shared host for the 3 locked lanes: Phoenix SaaS Portal (4-6 routes), Selective Native Flow (3-4 routes), and Local-First Study Flow. They use the runtimes `:live_view`, `:native_screen`, and `:offline_island`.
 - Do not turn the example host into a runtime package or kitchen-sink demo.
 
+## Reconciliation Example Surface
+
+The reconciliation example lives in `CrosswakeExample.Commerce.ReconciliationKeys`,
+`CrosswakeExample.Commerce.ReconciliationInbox`, and
+`CrosswakeExample.Commerce.EntitlementProjection`.
+
+These modules are a supportable reconciliation example surface for host teams. They
+show backend-owned authority and non-authoritative evidence handling, but they are
+not a core billing engine and they do not ship provider adapter implementations.
+
 ## Example Boundary
 
 This README describes a proof-backed example host boundary. It is not a separate
