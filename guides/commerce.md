@@ -155,6 +155,20 @@ Adopters copy these templates into their own reviewer notes, replace placeholder
 
 Canonical denial codes in the fallback columns are drawn from `Crosswake.SupportMatrix.commerce_corridor_denial_codes/0`; reviewers should expect the host app to surface return-to-Phoenix guidance keyed on these codes rather than silently failing open.
 
+#### Canonical Source Cross-References
+
+Every reviewer template column maps back to canonical support truth so adopters cannot drift their reviewer notes away from the contract surface. The mapping is mechanically enforced by docs-contract tests (see `test/crosswake/guides/commerce_test.exs`):
+
+| reviewer template column | canonical source | accessor |
+| --- | --- | --- |
+| `owner` | corridor `owner_posture` | `Crosswake.SupportMatrix.commerce_corridors/0` (each entry's `:owner_posture`) |
+| `proof_class` | corridor `proof_class` and `advisory_provider_proof` flag | `Crosswake.SupportMatrix.commerce_corridor_proof_classes/0` |
+| `failure_posture` | canonical denial taxonomy (fail-closed reasons + fallback codes) | `Crosswake.SupportMatrix.commerce_corridor_denial_codes/0` plus each corridor entry's `:fallback_behavior` |
+| `rebuild_requirement` | corridor `rebuild_requirement` map | `Crosswake.SupportMatrix.commerce_corridors/0` (each entry's `:rebuild_requirement.native_rebuild_required` and `:rebuild_trigger`) |
+| corridor role names referenced in templates | canonical corridor role set | `Crosswake.SupportMatrix.commerce_corridors/0` (each entry's `:corridor_role`) |
+
+Adopters who add reviewer rows for additional surfaces (for example, an offer-code flow) must still draw all four metadata columns from these canonical sources. Adding a reviewer surface that does not map to a canonical corridor role is a contract violation, not a documentation choice.
+
 ### App Store Reviewer Notes
 
 > **Advisory — provider-specific guidance**
