@@ -36,6 +36,8 @@ jobs:
 
       - name: Verify checked-in iOS shell bridge and activation proof
         timeout-minutes: 15
+        env:
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
         run: |
           export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
           bash script/verify_generated_ios_shell.sh

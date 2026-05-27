@@ -7,6 +7,7 @@ PROJECT_ROOT=""
 TMPDIR_ROOT=""
 DERIVED_DATA_ROOT=""
 SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
+LAUNCH_SIMULATOR="${CROSSWAKE_IOS_LAUNCH_SIMULATOR:-1}"
 BUNDLE_ID=""
 
 if ! command -v xcodebuild >/dev/null 2>&1; then
@@ -42,7 +43,7 @@ project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
 
 destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 
-if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
+if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
   if command -v xcrun >/dev/null 2>&1; then
     runtime_id="$(xcrun simctl list runtimes available 2>/dev/null | awk '
       /iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS/ {
@@ -62,7 +63,7 @@ if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhon
   fi
 fi
 
-if ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
+if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
   echo "No concrete iPhone simulator destination found; downloading iOS simulator platform..." >&2
   xcodebuild -downloadPlatform iOS || {
     echo "warning: iOS simulator platform download failed; retrying with currently available destinations" >&2
@@ -106,27 +107,31 @@ destination_id="$(printf '%s\n' "$destinations" | awk '
   }
 ')"
 
-if [[ -z "$destination_name" ]]; then
+if [[ -z "$destination_name" && "$LAUNCH_SIMULATOR" == "1" ]]; then
   echo "error: no iPhone simulator destination found for generated shell" >&2
   printf '%s\n' "$destinations" >&2
   exit 1
 fi
 
-if [[ -z "$destination_id" ]]; then
+if [[ -z "$destination_id" && "$LAUNCH_SIMULATOR" == "1" ]]; then
   echo "error: no concrete iPhone simulator id found for generated shell" >&2
   printf '%s\n' "$destinations" >&2
   exit 1
 fi
 
-if command -v xcrun >/dev/null 2>&1; then
+if [[ "$LAUNCH_SIMULATOR" == "1" ]] && command -v xcrun >/dev/null 2>&1; then
   xcrun simctl boot "$destination_id" >/dev/null 2>&1 || true
   xcrun simctl bootstatus "$destination_id" -b
   open -a Simulator --args -CurrentDeviceUDID "$destination_id" >/dev/null 2>&1 || true
 fi
 
-destination="platform=iOS Simulator,id=$destination_id"
+if [[ -n "$destination_id" ]]; then
+  destination="platform=iOS Simulator,id=$destination_id"
+else
+  destination="generic/platform=iOS Simulator"
+fi
 
-if [[ -n "$destination_os" ]]; then
+if [[ -n "$destination_os" && -n "$destination_id" ]]; then
   destination="$destination,OS=$destination_os"
 fi
 
@@ -146,6 +151,10 @@ xcodebuild \
 if [[ ! -d "$app_path" ]]; then
   echo "error: expected built iOS shell at $app_path" >&2
   exit 1
+fi
+
+if [[ "$LAUNCH_SIMULATOR" != "1" ]]; then
+  exit 0
 fi
 
 BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${app_path}/Info.plist" 2>/dev/null || true)"
