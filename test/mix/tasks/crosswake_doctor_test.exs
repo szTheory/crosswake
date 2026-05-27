@@ -227,7 +227,10 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     corridor_findings =
       decoded["findings"]
-      |> Enum.filter(&String.starts_with?(&1["code"], "commerce.corridor."))
+      |> Enum.filter(fn finding ->
+        String.starts_with?(finding["code"], "commerce.corridor.") and
+          finding["check"] == "commerce_corridor"
+      end)
 
     assert corridor_findings != []
 
