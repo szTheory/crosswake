@@ -13,11 +13,64 @@ defmodule Crosswake.Doctor.JSONFormatter do
       shells: format_shells(Map.get(report, :shells, %{})),
       bridge: format_bridge(Map.get(report, :bridge, %{})),
       offline: format_offline(Map.get(report, :offline, %{})),
+      commerce_summary: format_commerce_summary(Map.get(report, :commerce_summary, %{})),
       findings: Enum.map(Map.get(report, :findings, []), &check_to_map/1)
     }
 
     Jason.encode!(payload, pretty: true)
   end
+
+  defp format_commerce_summary(summary) when summary in [nil, %{}], do: %{}
+
+  defp format_commerce_summary(%{
+         corridors: corridors,
+         prerequisites: prerequisites,
+         snapshot_freshness: snapshot_freshness,
+         proof_posture: proof_posture,
+         rebuild_requirements: rebuild_requirements
+       }) do
+    %{
+      corridors: Enum.map(corridors, &format_commerce_corridor/1),
+      prerequisites: prerequisites,
+      snapshot_freshness: Atom.to_string(snapshot_freshness),
+      proof_posture: format_commerce_proof_posture(proof_posture),
+      rebuild_requirements: Enum.map(rebuild_requirements, &format_commerce_rebuild_requirement/1)
+    }
+  end
+
+  defp format_commerce_summary(_summary), do: %{}
+
+  defp format_commerce_corridor(corridor) do
+    %{
+      route_id: corridor.route_id,
+      corridor_ref: corridor.corridor_ref,
+      role: corridor.role,
+      owner_posture: corridor.owner_posture,
+      native_rebuild_required: corridor.native_rebuild_required,
+      proof_class: atom_label(corridor.proof_class),
+      advisory_provider_proof: corridor.advisory_provider_proof
+    }
+  end
+
+  defp format_commerce_proof_posture(%{merge_blocking: mb, advisory: adv}) do
+    %{
+      "merge_blocking" => mb,
+      "advisory" => adv
+    }
+  end
+
+  defp format_commerce_proof_posture(other), do: other
+
+  defp format_commerce_rebuild_requirement(requirement) do
+    %{
+      route_id: requirement.route_id,
+      corridor_ref: requirement.corridor_ref,
+      role: requirement.role
+    }
+  end
+
+  defp atom_label(value) when is_atom(value), do: Atom.to_string(value)
+  defp atom_label(value), do: value
 
   defp format_support(%{status: status} = support) do
     %{
@@ -115,7 +168,16 @@ defmodule Crosswake.Doctor.JSONFormatter do
       details: check.details
     }
 
-    if String.starts_with?(check.code, "commerce.corridor.") do
+    base =
+      cond do
+        commerce_check?(check.code, check.check) and detail(check.details, :proof_class) ->
+          Map.put(base, :proof_class, detail(check.details, :proof_class) |> maybe_atom_to_string())
+
+        true ->
+          base
+      end
+
+    if String.starts_with?(check.code, "commerce.corridor.") and check.check == "commerce_corridor" do
       Map.merge(base, %{
         corridor_ref: detail(check.details, :corridor_ref),
         role: detail(check.details, :role) |> maybe_atom_to_string(),
@@ -125,6 +187,11 @@ defmodule Crosswake.Doctor.JSONFormatter do
     else
       base
     end
+  end
+
+  defp commerce_check?(code, check_name) do
+    String.starts_with?(code || "", "commerce.") or
+      check_name in ["commerce_corridor", "commerce_summary"]
   end
 
   defp format_proof_status(:passed), do: "supported"
