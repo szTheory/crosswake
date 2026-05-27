@@ -355,4 +355,67 @@ defmodule Crosswake.SupportMatrixTest do
     assert purchase_intent.rebuild_requirement.native_rebuild_required
     assert restore_intent.rebuild_requirement.native_rebuild_required
   end
+
+  # -- Phase 23 Plan 04 Task 3: advisory corridor labeling contract --
+  #
+  # When the canonical support matrix declares an advisory commerce corridor
+  # (proof_class: :advisory), that corridor must be explicitly labeled in the
+  # corridor entry AND must not appear in the merge-blocking required-check
+  # list. This locks the advisory boundary at the unit level alongside the
+  # proof-lane integration test (Plan 23-04 Task 1).
+  #
+  # Today no commerce corridor has proof_class :advisory directly — every
+  # corridor row is merge_blocking with an optional advisory_provider_proof
+  # flag for storefront/simulator evidence. These tests document the contract
+  # that any future advisory corridor must satisfy.
+
+  test "any advisory commerce corridor must be explicitly labeled with proof_class :advisory and is excluded from merge-blocking required checks" do
+    entries = SupportMatrix.commerce_corridors()
+
+    advisory_entries =
+      Enum.filter(entries, &(&1.proof_class == :advisory))
+
+    # Contract assertion #1: any advisory entry must carry the proof_class
+    # label explicitly (no inferred advisory class).
+    for entry <- advisory_entries do
+      assert entry.proof_class == :advisory,
+             "advisory commerce corridor #{entry.corridor_role} must be explicitly labeled :advisory"
+    end
+
+    # Contract assertion #2: the canonical proof-class mapping must never
+    # claim merge_blocking for an entry whose corridor_role is in the
+    # advisory list. (Today both lists are populated coherently; this asserts
+    # they stay in sync if a future scope change introduces advisory
+    # corridors.)
+    mapping = SupportMatrix.commerce_corridor_proof_classes()
+
+    for entry <- advisory_entries do
+      assert Map.get(mapping, entry.corridor_role)[:proof_class] == :advisory,
+             "commerce_corridor_proof_classes mapping for #{entry.corridor_role} must mirror entry's :advisory proof_class label"
+    end
+
+    # Contract assertion #3: any corridor with advisory_provider_proof: true
+    # MUST still carry an explicit core proof_class (merge_blocking or
+    # advisory). The advisory_provider_proof flag is supplementary evidence,
+    # never a substitute for the core proof_class declaration.
+    for entry <- entries, entry.advisory_provider_proof do
+      assert entry.proof_class in [:merge_blocking, :advisory],
+             "corridor #{entry.corridor_role} carries advisory_provider_proof: true but missing or unrecognized core proof_class #{inspect(entry.proof_class)}"
+    end
+
+    # Contract assertion #4: merge_blocking corridors are the only entries
+    # that should be referenced as required branch checks. Build the
+    # canonical merge-blocking required-check list from the support matrix
+    # and assert no advisory corridor leaks into it.
+    merge_blocking_required_check_roles =
+      entries
+      |> Enum.filter(&(&1.proof_class == :merge_blocking))
+      |> Enum.map(& &1.corridor_role)
+      |> MapSet.new()
+
+    advisory_roles = MapSet.new(advisory_entries, & &1.corridor_role)
+
+    assert MapSet.disjoint?(merge_blocking_required_check_roles, advisory_roles),
+           "merge-blocking required-check list #{inspect(MapSet.to_list(merge_blocking_required_check_roles))} must be disjoint from advisory corridors #{inspect(MapSet.to_list(advisory_roles))}"
+  end
 end
