@@ -4,8 +4,8 @@ milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: executing
 stopped_at: Phase 25 context gathered
-last_updated: "2026-05-27T21:47:35.332Z"
-last_activity: 2026-05-27 -- Phase 25 planning complete
+last_updated: "2026-05-27T21:52:22.999Z"
+last_activity: 2026-05-27 -- Phase 25 execution started
 progress:
   total_phases: 7
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 24 — reconciliation-traceability-hardening
+**Current focus:** Phase 25 — Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02
 
 ## Current Position
 
-Phase: 24
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-27 -- Phase 25 planning complete
+Phase: 25 (Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 25
+Last activity: 2026-05-27 -- Phase 25 execution started
 
 Progress: [#####-----] 50%
 

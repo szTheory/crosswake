@@ -158,16 +158,16 @@ Start with:
 
 **Depends on:** Phase 24
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 25-01-PLAN.md — Phase 20 VERIFICATION.md single-line delete (line 63 contradictory sentence)
+- [x] 25-01-PLAN.md — Phase 20 VERIFICATION.md single-line delete (line 63 contradictory sentence)
 
 **Wave 2** *(blocked on Wave 1 completion per D-11 natural order)*
 
-- [ ] 25-02-PLAN.md — Parity-test hardening (WR-01 + WR-02 + IN-01 + IN-02) + both 25-* SUMMARYs in one atomic commit (Footgun 1, D-10)
+- [x] 25-02-PLAN.md — Parity-test hardening (WR-01 + WR-02 + IN-01 + IN-02) + both 25-* SUMMARYs in one atomic commit (Footgun 1, D-10)
 
 **Success criteria:**
 
