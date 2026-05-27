@@ -14,16 +14,19 @@ Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27
 
 `v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-Awaiting definition of the next milestone via `$gsd-new-milestone`.
+`v3.2 Commerce And Entitlement Seams` is now active. It operationalizes the Phase 13 commerce vocabulary into route/corridor declarations, host-owned reconciliation examples, richer entitlement lifecycle semantics, support truth, and proof posture without shipping provider-specific billing adapters in core.
 
-## Current Milestone: TBD
+## Current Milestone: v3.2 Commerce And Entitlement Seams
 
-**Goal:** Pending.
+**Goal:** Make Crosswake's commerce seam usable and provable for Phoenix teams while keeping entitlement truth backend-owned and native/storefront provider work outside core.
 
 **Target features:**
-- Pending.
+- Commerce route/corridor declarations that separate Phoenix-owned paywall/account surfaces from native-screen or companion-owned purchase loops.
+- Typed purchase, restore, reconciliation, and entitlement lifecycle semantics that keep device/storefront events as evidence.
+- Minimal Phoenix-owned reconciliation inbox and entitlement projection example for host apps.
+- Doctor, support-matrix, reviewer/storefront, and proof-lane guidance for commerce prerequisites and fallbacks.
 
-**Why now:** Pending.
+**Why now:** `v3.0` locked the commerce vocabulary and package boundary, and `v3.1` proved bounded native capability delivery. Commerce is the next strategic arc candidate before wider companion or archetype expansion.
 
 ## Requirements
 
@@ -52,7 +55,10 @@ Awaiting definition of the next milestone via `$gsd-new-milestone`.
 
 ### Active
 
-- *(None currently)*
+- [ ] Phoenix teams can declare commerce-sensitive route corridors that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops.
+- [ ] Phoenix teams can use normalized purchase, restore, reconciliation, and entitlement snapshot semantics without treating device callbacks as entitlement authority.
+- [ ] Host apps can follow a minimal backend reconciliation inbox and entitlement projection example that keeps idempotency and provider verification outside Crosswake core.
+- [ ] Adopters can see explicit doctor, support-matrix, reviewer/storefront, fallback, and proof guidance for commerce claims before provider adapters ship.
 
 ### Out of Scope
 
@@ -60,7 +66,7 @@ Awaiting definition of the next milestone via `$gsd-new-milestone`.
 - LiveView rendering native widgets directly — it would over-couple the library to unstable or private rendering internals.
 - Generic "wrap your app in a WebView" positioning — it hides the architecture boundaries Crosswake is supposed to clarify.
 - Shipping a broad capability catalog in `v3.0` — this milestone should decide what belongs where before implementing many new families.
-- Store-specific billing implementation in `v3.0` — commerce contract truth comes first; provider adapters follow later.
+- Store-specific billing implementation in `v3.2` — this milestone operationalizes the core seam, while provider adapters and storefront SDK code remain companion or future work.
 - Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
 - Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
@@ -73,7 +79,7 @@ The strongest early app archetypes are Phoenix-backed SaaS portals, subscription
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
-The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.0` activates the harvested post-`v2.0` capability and commerce seed, but it does so as prerequisite contract work rather than as immediate breadth expansion.
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activates the commerce candidate as operational seam work, building on the harvested post-`v2.0` capability and commerce seed plus the Phase 13 contract substrate.
 
 ## Constraints
 
@@ -104,6 +110,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | Validated through Phases 11-18 |
 | Ship native capabilities only when they remain low-frequency, typed, and route-local | v3.1 proved value in bounded affordances while avoiding continuous client authority | Validated in Milestone v3.1 |
 | Split proof lanes by evidence class when emulator/device proof slows iteration | Android JVM bridge truth closed quickly in CI once separated from emulator-backed connected tests | Validated in Phase 18 closeout |
+| Operationalize commerce as a backend-owned seam before provider adapters | Apple and Google purchase ecosystems both require native storefront evidence plus backend verification/lifecycle truth, matching Crosswake's Phase 13 contract posture | Active in Milestone v3.2 |
 
 ## Evolution
 
@@ -123,4 +130,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Milestone v3.1 Native Capabilities and Bridge Expansion*
+*Last updated: 2026-05-27 after starting Milestone v3.2 Commerce And Entitlement Seams*

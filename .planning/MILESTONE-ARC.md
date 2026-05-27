@@ -50,9 +50,9 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 
 ## Milestone Sequence
 
-### Active: v3.0 Capability Contract And Packaging
+### Shipped: v3.0 Capability Contract And Packaging
 
-**Status:** active on 2026-05-19
+**Status:** shipped on 2026-05-20
 
 **Objective**
 - Freeze capability-family taxonomy, package boundary policy, manifest extensions, bridge command rules, and multi-package release constraints.
@@ -110,25 +110,34 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Closed route-local enforcement, doctor/support posture, and support-matrix truth for the new families.
 - Added a dedicated Phase 18 proof lane that passes Elixir proof slices, checked-in iOS shell proof, and Android JVM BridgeChannel proof.
 
-### Candidate: v3.2 Commerce And Entitlement Seams
+### Active: v3.2 Commerce And Entitlement Seams
 
-**Status:** candidate
+**Status:** active on 2026-05-27
 
 **Objective**
-- Define Crosswake's Phoenix-facing commerce seam: paywall route mode, purchase intent, restore intent, entitlement snapshot, and reconciliation hooks.
+- Operationalize Crosswake's Phoenix-facing commerce seam: route/corridor declarations, purchase intent, restore intent, entitlement snapshot lifecycle truth, reconciliation hooks, support posture, and proof guidance.
 
 **Why now**
-- Subscription and companion-app adopters expect a coherent mobile commerce story, but Crosswake must avoid store-specific core sprawl.
+- `v3.0` defined the core commerce vocabulary and package boundary, and `v3.1` proved low-frequency capability delivery. Subscription and companion-app adopters now need the seam to become usable and provable without store-specific core sprawl.
+
+**Key outputs**
+- Commerce route/corridor declarations
+- Normalized lifecycle semantics for purchase, restore, reconciliation, and entitlement snapshots
+- Minimal Phoenix-owned reconciliation inbox and entitlement projection example
+- Doctor/support-matrix/reviewer guidance for commerce prerequisites and fallbacks
+- Merge-blocking contract proof plus advisory storefront/provider proof posture
 
 **Non-goals**
 - A universal billing engine in core
 - Device-local entitlement truth
 - Provider lock-in disguised as generic architecture
+- StoreKit, Play Billing, or provider SDK implementation in core
 
 **Proof required**
 - Explicit core-vs-companion boundary for commerce
 - Support guidance for storefront, reviewer, and restore flows
 - Backend reconciliation contract examples
+- Denial/fallback tests proving device evidence cannot directly grant entitlement authority
 
 ### Candidate: v3.3 First-Party Companions
 
@@ -226,4 +235,4 @@ Any milestone in this arc that widens Crosswake's public surface must define:
 - Whether `accrue` should be the first commerce companion anchor or remain an example/docs-only reference at first
 
 ---
-*Last updated: 2026-05-19 after activating milestone v3.0 Capability Contract And Packaging*
+*Last updated: 2026-05-27 after activating milestone v3.2 Commerce And Entitlement Seams*
