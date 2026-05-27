@@ -17,7 +17,7 @@
 | Phase | Name | Goal | Requirements | Success Criteria |
 |-------|------|------|--------------|------------------|
 | 19 | Commerce Route Corridors | 3/3 | Complete    | 2026-05-27 |
-| 20 | Entitlement Lifecycle Semantics | Expand normalized contract semantics for entitlement authority, access, freshness, and evidence. | ENTL-01, ENTL-02, ENTL-03 | 4 |
+| 20 | Entitlement Lifecycle Semantics | 4/4 | Complete    | 2026-05-27 |
 | 21 | Reconciliation Example | Provide a minimal Phoenix-owned reconciliation inbox and entitlement projection example. | RECN-01, RECN-02, RECN-03 | 4 |
 | 22 | Commerce Support, Review, And Proof | Publish doctor/support/reviewer guidance and split merge-blocking from advisory proof. | SUPP-04, SUPP-05, SUPP-06 | 5 |
 

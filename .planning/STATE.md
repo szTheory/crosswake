@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: completed
-stopped_at: Phase 20 context gathered
-last_updated: "2026-05-27T09:48:02.496Z"
+stopped_at: Phase 20 complete; ready for Phase 21 discussion
+last_updated: "2026-05-27T10:24:30.058Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 25
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 7
+  percent: 50
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 20 — entitlement-lifecycle-semantics
+**Current focus:** Phase 21 — reconciliation-example
 
 ## Current Position
 
-Phase: 20
+Phase: 21
 Plan: Not started
-Status: Phase 19 complete (19-01, 19-02, 19-03 complete); ready to begin Phase 20
+Status: Phase 20 complete (20-01, 20-02, 20-03, 20-04 complete); ready to begin Phase 21
 Last activity: 2026-05-27
 
 Progress: [##########] 100%
@@ -36,7 +36,7 @@ Progress: [##########] 100%
 
 **Velocity:**
 
-- Total plans completed: 36
+- Total plans completed: 40
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -45,10 +45,11 @@ Progress: [##########] 100%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 19. Commerce Route Corridors | 3 | 18 min | 6 min |
-| 20. Entitlement Lifecycle Semantics | 0 | n/a | n/a |
+| 20. Entitlement Lifecycle Semantics | 4 | n/a | n/a |
 | 21. Reconciliation Example | 0 | n/a | n/a |
 | 22. Commerce Support, Review, And Proof | 0 | n/a | n/a |
 | 19 | 3 | - | - |
+| 20 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -75,7 +76,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Start Phase 20 planning/execution for entitlement lifecycle semantics (`ENTL-01`, `ENTL-02`, `ENTL-03`).
+- Start Phase 21 planning/execution for reconciliation example semantics (`RECN-01`, `RECN-02`, `RECN-03`).
 - Decide whether future proof lanes should split JVM/unit checks from emulator-backed connected checks across separate workflows.
 
 ### Blockers/Concerns
@@ -95,5 +96,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-05-27T09:48:02.494Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-entitlement-lifecycle-semantics/20-CONTEXT.md
+Stopped at: Phase 20 complete; Phase 21 ready for discuss/planning
+Resume file: .planning/ROADMAP.md

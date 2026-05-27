@@ -64,9 +64,9 @@
 
 ### Entitlement Lifecycle Semantics (`core`)
 
-- [ ] **ENTL-01**: Phoenix teams can model entitlement snapshots with authority state, access state, reconciliation state, freshness, effective dates, and bounded evidence metadata.
-- [ ] **ENTL-02**: Crosswake distinguishes pending purchase, pending restore, awaiting verification, grace/billing retry, canceled scheduled end, revoked/refunded, expired, and stale snapshot states without leaking raw provider enums.
-- [ ] **ENTL-03**: Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts.
+- [x] **ENTL-01**: Phoenix teams can model entitlement snapshots with authority state, access state, reconciliation state, freshness, effective dates, and bounded evidence metadata.
+- [x] **ENTL-02**: Crosswake distinguishes pending purchase, pending restore, awaiting verification, grace/billing retry, canceled scheduled end, revoked/refunded, expired, and stale snapshot states without leaking raw provider enums.
+- [x] **ENTL-03**: Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts.
 
 ### Reconciliation Example (`example/docs-only`, companion-ready)
 
@@ -116,9 +116,9 @@
 | COMM-04 | Phase 19 | Completed (19-01, 19-03) |
 | COMM-05 | Phase 19 | Completed (19-01, 19-03) |
 | COMM-06 | Phase 19 | Completed (19-02, 19-03) |
-| ENTL-01 | Phase 20 | Pending |
-| ENTL-02 | Phase 20 | Pending |
-| ENTL-03 | Phase 20 | Pending |
+| ENTL-01 | Phase 20 | Complete |
+| ENTL-02 | Phase 20 | Complete |
+| ENTL-03 | Phase 20 | Complete |
 | RECN-01 | Phase 21 | Pending |
 | RECN-02 | Phase 21 | Pending |
 | RECN-03 | Phase 21 | Pending |
