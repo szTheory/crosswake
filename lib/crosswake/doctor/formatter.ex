@@ -354,6 +354,12 @@ defmodule Crosswake.Doctor.Formatter do
     end
   end
 
+  # nil-safe: %Check{} allows details: nil even though the default is %{}, so
+  # any caller (including hand-built test fixtures) that passes a nil details
+  # map would otherwise raise FunctionClauseError from every detail/2 call site
+  # (WR-08).
+  defp detail(nil, _key), do: nil
+
   defp detail(details, key) when is_map(details) do
     Map.get(details, key) || Map.get(details, Atom.to_string(key))
   end

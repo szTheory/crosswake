@@ -199,6 +199,11 @@ defmodule Crosswake.Doctor.JSONFormatter do
   defp format_proof_status(:missing), do: "unsupported"
   defp format_proof_status(:verification_required), do: "verification required"
 
+  # nil-safe: %Check{} permits details: nil even though %{} is the default, so
+  # a hand-built Check with nil details would otherwise raise FunctionClauseError
+  # from every check_to_map/1 detail lookup (WR-08).
+  defp detail(nil, _key), do: nil
+
   defp detail(details, key) when is_map(details) do
     Map.get(details, key) || Map.get(details, Atom.to_string(key))
   end

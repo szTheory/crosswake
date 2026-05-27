@@ -140,6 +140,34 @@ defmodule Crosswake.Doctor.FormatterTest do
     refute Formatter.render(report) =~ "Commerce:"
   end
 
+  test "formatter does not crash when a commerce.corridor.* check carries nil details (WR-08)" do
+    # %Check{} struct allows details: nil even though %{} is the default. A hand-
+    # built Check (the test fixture pattern, see formatter_test.exs:62-79) with
+    # nil details previously raised FunctionClauseError from the detail/2 calls
+    # inside format_commerce_corridor_fields/1 and format_check_proof_class/1.
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :error,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route billing triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: nil
+        }
+      ]
+    }
+
+    # Must not raise.
+    output = Formatter.render(report)
+
+    assert output =~ "commerce.corridor.runtime_incompatible"
+    # Fallback values still appear when details is nil.
+    assert output =~ "corridor_ref=unknown"
+    assert output =~ "fallback_hint=return_to_phoenix_guidance"
+  end
+
   test "commerce summary findings render their proof_class label inline" do
     report = %{
       status: :error,
