@@ -325,6 +325,66 @@ defmodule Crosswake.Shell.ActivationTest do
              deny_decision
   end
 
+  test "commerce corridor denials stay fail closed with explicit recovery guidance" do
+    manifest =
+      Types.new_root(
+        crosswake_version: "0.1.0",
+        generated_at: "2026-05-27T00:00:00Z",
+        host: Types.new_host(),
+        compatibility: Types.new_compatibility(),
+        support_matrix: SupportMatrix.canonical(),
+        capability_registry: %{},
+        commerce_corridors: %{},
+        routes: %{
+          "billing" =>
+            Types.new_route_entry(
+              id: "billing",
+              path: "/billing",
+              runtime: :live_view,
+              offline: :unavailable,
+              commerce: Types.new_route_commerce(corridor_ref: "missing_corridor", role: :purchase_intent),
+              allowlisted_origins: [Types.default_origin()]
+            )
+        }
+      )
+
+    activation_result =
+      manifest
+      |> Activation.resolve(
+        Activation.new_request(
+          route_id: "billing",
+          source: :cold_start,
+          origin: Types.default_origin(),
+          manifest_source: :bundled,
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          correlation_id: "commerce-deny-1",
+          installed_packs: %{},
+          capabilities: %{}
+        )
+      )
+      |> activation_gate_result()
+
+    refute match?({:ok, _}, activation_result)
+
+    assert {:error,
+            %Decision{
+              status: :deny,
+              route_id: "billing",
+              denial: %Denial{reason: :commerce_corridor, code: "commerce.corridor.undeclared"} =
+                denial
+            }} = activation_result
+
+    assert denial.details[:corridor_ref] == "missing_corridor"
+    assert denial.details[:role] == :purchase_intent
+    assert denial.recovery != %{}
+    assert denial.recovery[:fallback] == :return_to_phoenix_guidance
+    assert Enum.any?(denial.recovery[:actions], &(&1 == :declare_corridor_or_disable_commerce_route))
+  end
+
+  defp activation_gate_result(%Decision{status: :allow} = decision), do: {:ok, decision}
+  defp activation_gate_result(%Decision{} = decision), do: {:error, decision}
+
   defp manifest_fixture do
     Types.new_root(
       crosswake_version: "0.1.0",

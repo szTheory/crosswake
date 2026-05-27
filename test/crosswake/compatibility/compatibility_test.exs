@@ -252,6 +252,104 @@ defmodule Crosswake.CompatibilityTest do
     end
   end
 
+  test "commerce corridor finding axes map to canonical denial codes with recovery payloads" do
+    scenarios = [
+      {:commerce_corridor_undeclared, "commerce.corridor.undeclared", %{corridor_ref: "subscription_default"}},
+      {:commerce_corridor_unsupported, "commerce.corridor.unsupported", %{}},
+      {:commerce_corridor_prerequisite_missing, "commerce.corridor.prerequisite_missing",
+       %{prerequisite: "backend_entitlement_contract"}},
+      {:commerce_corridor_runtime_incompatible, "commerce.corridor.runtime_incompatible",
+       %{required_runtime: :native_screen, available_runtime: :live_view}},
+      {:commerce_corridor_entry_denied, "commerce.corridor.entry_denied", %{}},
+      {:commerce_corridor_origin_denied, "commerce.corridor.origin_denied", %{}},
+      {:commerce_corridor_policy_blocked, "commerce.corridor.policy_blocked",
+       %{policy: "paywall_entry", available: :native_screen}},
+      {:commerce_corridor_pack_incompatible, "commerce.corridor.pack_incompatible", %{}}
+    ]
+
+    Enum.each(scenarios, fn {axis, expected_code, expected_details} ->
+      finding =
+        %Compatibility.Finding{
+          axis: axis,
+          route_id: "billing",
+          required: expected_details[:policy] || expected_details[:required_runtime] || "required",
+          available: expected_details[:available] || expected_details[:available_runtime] || "available",
+          subject: expected_details[:corridor_ref] || expected_details[:prerequisite] || "subject",
+          message: "commerce corridor denied",
+          hint: "explicit remediation"
+        }
+
+      denial =
+        Compatibility.finding_to_denial(
+          finding,
+          route_id: "billing",
+          activation_source: :deep_link
+        )
+
+      assert denial.reason == :commerce_corridor
+      assert denial.code == expected_code
+      assert denial.recovery != %{}
+      assert denial.recovery[:fallback] == :return_to_phoenix_guidance
+      assert Denial.to_map(denial)["recovery"] != %{}
+
+      Enum.each(expected_details, fn {key, value} ->
+        assert denial.details[key] == value
+      end)
+    end)
+  end
+
+  test "route gate emits runtime_incompatible and policy_blocked corridor denials deterministically" do
+    runtime_incompatible_decision =
+      RouteGate.evaluate(
+        commerce_manifest_fixture(
+          route_runtime: :live_view,
+          route_role: :purchase_intent
+        ),
+        "billing",
+        %Target{
+          manifest_schema_version: "1.0.0",
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          manifest_source: :bundled,
+          origin: Types.default_origin(),
+          capabilities: %{},
+          packs: %{}
+        }
+      )
+
+    policy_blocked_decision =
+      RouteGate.evaluate(
+        commerce_manifest_fixture(
+          route_runtime: :native_screen,
+          route_role: :paywall_entry
+        ),
+        "billing",
+        %Target{
+          manifest_schema_version: "1.0.0",
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          manifest_source: :bundled,
+          origin: Types.default_origin(),
+          capabilities: %{},
+          packs: %{}
+        }
+      )
+
+    assert runtime_incompatible_decision.status == :deny
+
+    assert Enum.any?(runtime_incompatible_decision.denials, fn denial ->
+             denial.code == "commerce.corridor.runtime_incompatible" and
+               denial.reason == :commerce_corridor
+           end)
+
+    assert policy_blocked_decision.status == :deny
+
+    assert Enum.any?(policy_blocked_decision.denials, fn denial ->
+             denial.code == "commerce.corridor.policy_blocked" and
+               denial.reason == :commerce_corridor
+           end)
+  end
+
   test "compatibility guide keeps package versions separate from runtime axes" do
     guide = File.read!("guides/compatibility.md")
 
@@ -333,6 +431,46 @@ defmodule Crosswake.CompatibilityTest do
             offline: :cached_read_only,
             capabilities: ["file_picker"],
             packs: ["library.bundle@1.0.0"],
+            allowlisted_origins: [Types.default_origin()]
+          )
+      }
+    )
+  end
+
+  defp commerce_manifest_fixture(opts) do
+    route_runtime = Keyword.get(opts, :route_runtime, :live_view)
+    route_role = Keyword.get(opts, :route_role, :purchase_intent)
+
+    Types.new_root(
+      crosswake_version: "0.1.0",
+      generated_at: "2026-05-27T00:00:00Z",
+      host: Types.new_host(),
+      compatibility: Types.new_compatibility(),
+      support_matrix: SupportMatrix.canonical(),
+      capability_registry: %{},
+      commerce_corridors: %{
+        "subscription_default" =>
+          Types.new_commerce_corridor(
+            id: "subscription_default",
+            role_ownership: %{
+              paywall_entry: :phoenix_owned,
+              purchase_intent: :native_or_companion_required,
+              restore_intent: :native_or_companion_required,
+              account_management: :phoenix_owned
+            },
+            denial: "commerce.corridor.unsupported",
+            fallback: "return_to_phoenix_guidance",
+            prerequisites: ["backend_entitlement_contract"]
+          )
+      },
+      routes: %{
+        "billing" =>
+          Types.new_route_entry(
+            id: "billing",
+            path: "/billing",
+            runtime: route_runtime,
+            offline: :unavailable,
+            commerce: Types.new_route_commerce(corridor_ref: "subscription_default", role: route_role),
             allowlisted_origins: [Types.default_origin()]
           )
       }
