@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: Commerce And Entitlement Seams
 status: executing
-stopped_at: Phase 24 context gathered
-last_updated: "2026-05-27T21:01:32.436Z"
+stopped_at: Phase 25 context gathered
+last_updated: "2026-05-27T21:33:32.521Z"
 last_activity: 2026-05-27
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 5
   total_plans: 16
   completed_plans: 16
-  percent: 83
+  percent: 71
 ---
 
 # Project State
@@ -91,6 +91,10 @@ Recent decisions affecting current work:
 - This local workstation still lacks a Java runtime, so Android JVM evidence should continue to come from CI unless Java is installed locally.
 - StoreKit and Play Billing proof should remain advisory until a provider adapter milestone intentionally ships native/provider code.
 
+### Roadmap Evolution
+
+- Phase 25 added: Address tech debt: Phase 20 verification text + Phase 24 parity test WR-01/02
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
@@ -102,6 +106,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-27T17:28:13.501Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-reconciliation-traceability-hardening/24-CONTEXT.md
+Last session: 2026-05-27T21:33:32.517Z
+Stopped at: Phase 25 context gathered
+Resume file: .planning/phases/25-address-tech-debt-phase-20-verification-text-phase-24-parity/25-CONTEXT.md
