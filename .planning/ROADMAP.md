@@ -27,7 +27,7 @@
 ### v3.3 Release Readiness (Phases 26-32)
 
 - [x] **Phase 26: Package Metadata Audit** — Replace placeholder `source_url`, set explicit OTP/tarball name, declare `:files` allowlist, add three-link `:links`, add `LICENSE`, wire `docs/0` + `ex_doc` dev dep.
-- [ ] **Phase 27: Versioning Decision And CHANGELOG Synthesis** — Pin `@version "0.1.0"`, synthesize `CHANGELOG.md` (Keep-a-Changelog, `[Unreleased]` anchor, single `[0.1.0]` capability entry, planning-vs-hex preamble, roadmap traceability footnote).
+- [x] **Phase 27: Versioning Decision And CHANGELOG Synthesis** — Pin `@version "0.1.0"`, synthesize `CHANGELOG.md` (Keep-a-Changelog, `[Unreleased]` anchor, single `[0.1.0]` capability entry, planning-vs-hex preamble, roadmap traceability footnote). (completed 2026-05-28)
 - [ ] **Phase 28: release-please Configuration Files** — Add `release-please-config.json` (oarlock pattern, `release-as: "0.1.0"` pin, `bootstrap-sha`), `.release-please-manifest.json` baselined at `0.0.0`, `.tool-versions` for reproducible builds.
 - [ ] **Phase 29: Release Workflows And Supply-Chain Hardening** — Add `release-please.yml` (oarlock template, NOT sigra), `hex-publish.yml` recovery workflow, SHA-pin all GitHub Actions, add `dependabot.yml` for Actions ecosystem.
 - [ ] **Phase 30: Hex Page Polish And Tarball Dry-Run** — Audit `README.md` for absolute URLs, run `mix hex.build --unpack` + `mix docs` + `mix hex.publish --dry-run` clean, with no `.planning/`/`prompts/`/`test/` leakage.
@@ -65,7 +65,9 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   2. `CHANGELOG.md` exists at repo root, uses Keep-a-Changelog format, and contains a `## [Unreleased]` H2 anchor placed above the first versioned entry.
   3. `CHANGELOG.md` contains exactly one `## [0.1.0]` entry with 4–5 capability bullets (route policy DSL, manifest + capability ladder, bounded bridge with v3.1 families, offline contracts, commerce + entitlement seams with reconciliation example) and an explicit "no provider adapters yet, no first-party companions yet" non-claim.
   4. `CHANGELOG.md` preamble explicitly disambiguates internal `v1.0`–`v3.2` planning labels (in `.planning/MILESTONES.md`) from hex semver versions; the `[0.1.0]` entry includes a `### Roadmap traceability` subsection linking `.planning/MILESTONES.md` and `.planning/PROJECT.md`.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 27-01-PLAN.md — Version Pinning and CHANGELOG Structure
+- [x] 27-02-PLAN.md — CHANGELOG Content Synthesis and Preamble
 
 ### Phase 28: release-please Configuration Files
 **Goal**: Land the three release-please config artifacts on disk so the workflow added in Phase 29 has a manifest, a config, and a tool-versions file to read.
@@ -101,7 +103,9 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   2. `mix hex.build --unpack` produces a tarball containing exactly `lib/`, `priv/`, `.formatter.exs`, `mix.exs`, `README.md`, `LICENSE`, `CHANGELOG.md`, and `guides/` — and contains NO `.planning/`, `prompts/`, `test/`, `.github/`, `examples/`, or `native/` paths.
   3. `mix docs` runs locally with zero warnings, produces an `doc/` tree where `index.html` redirects to the README landing page, and every file in `guides/` renders as a navigable extras entry.
   4. `mix hex.publish --dry-run` exits 0 against the audited `mix.exs` and reports correct metadata, license, files allowlist, and version preflight checks.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 27-01-PLAN.md — Version Pinning and CHANGELOG Structure
+- [ ] 27-02-PLAN.md — CHANGELOG Content Synthesis and Preamble
 
 ### Phase 31: First Hex Publish (Human-Gated)
 **Goal**: Complete the irreversible human-gated handoffs (GitHub permissions, `HEX_API_KEY`, Release PR merge) so `crosswake 0.1.0` is live on hex.pm.
@@ -113,7 +117,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   3. release-please opens a Release PR titled `chore(main): release 0.1.0` (NOT `release 0.1.1` and NOT `release 1.0.0`) within 2 minutes of the first push to `main`.
   4. **Human-gated:** the maintainer merges the Release PR, the `publish-hex` job runs to green, and `curl -fsS https://hex.pm/api/packages/crosswake/releases/0.1.0` returns a JSON body with `"version": "0.1.0"`.
   5. The hex.pm package page at `https://hex.pm/packages/crosswake/0.1.0` renders with working GitHub, Docs, and Changelog links; hexdocs at `https://hexdocs.pm/crosswake/0.1.0/` renders the README as the landing page.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 31-01-PLAN.md — Publish Execution
 
 ### Phase 32: Post-Publish Cleanup
 **Goal**: Close out the milestone by removing the one-time `release-as` pin, smoke-testing the install path from an external project, and shipping the canonical install snippet adopters will paste into their `mix.exs`.
@@ -124,7 +129,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   2. A fresh scratch project created via `mix new crosswake_smoke` with `{:crosswake, "~> 0.1"}` in its deps runs `mix deps.get` and resolves `crosswake 0.1.0` from hex.pm successfully; `mix compile` against the resolved dep succeeds.
   3. `guides/install.md` contains the canonical `{:crosswake, "~> 0.1"}` install snippet matching the published version, with no `0.0.0` or placeholder version strings remaining.
   4. After the cleanup commit lands, the next release-please run produces a Release PR proposing a version derived from accumulated conventional commits (NOT pinned to `0.1.0`), confirming the auto-bump pipeline is healthy.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 32-01-PLAN.md — Post-Publish Cleanup
 
 ## Progress
 
@@ -138,7 +144,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 24. Reconciliation Traceability Hardening| v3.2 | 3/3 | Complete   | 2026-05-27 |
 | 25. Address tech debt (Phase 20+24)      | v3.2 | 2/2 | Complete   | 2026-05-27 |
 | 26. Package Metadata Audit               | v3.3 | 4/4 | Complete   | 2026-05-28 |
-| 27. Versioning + CHANGELOG               | v3.3 | 0/0 | Not started | —         |
+| 27. Versioning + CHANGELOG               | v3.3 | 2/2 | Complete   | 2026-05-28 |
 | 28. release-please Configuration Files   | v3.3 | 0/0 | Not started | —         |
 | 29. Release Workflows + Supply Chain     | v3.3 | 1/1 | Planned     | —         |
 | 30. Hex Page Polish + Tarball Dry-Run    | v3.3 | 0/0 | Not started | —         |

@@ -21,14 +21,14 @@
 
 ### B. Versioning Policy
 
-- [ ] **VER-01** The first published hex version is `0.1.0` — `mix.exs` `@version` module attribute is set to `"0.1.0"`. (Survey: 17 of 19 surveyed Elixir OSS libs shipped `0.1.0` or lower first; 0 shipped `1.0.0-rc.0` or `1.0.0` directly. Crosswake has zero external adopters, which SemVer §5 makes a prerequisite for 1.0.)
+- [x] **VER-01** The first published hex version is `0.1.0` — `mix.exs` `@version` module attribute is set to `"0.1.0"`. (Survey: 17 of 19 surveyed Elixir OSS libs shipped `0.1.0` or lower first; 0 shipped `1.0.0-rc.0` or `1.0.0` directly. Crosswake has zero external adopters, which SemVer §5 makes a prerequisite for 1.0.)
 
 ### C. CHANGELOG
 
-- [ ] **LOG-01** `CHANGELOG.md` exists at repo root, uses Keep-a-Changelog format, and contains a `## [Unreleased]` anchor — required by release-please's insertion regex.
-- [ ] **LOG-02** `CHANGELOG.md` contains a single `## [0.1.0]` entry describing what the first published version delivers — 4–5 capability bullets (route policy DSL, manifest + capability ladder, bounded bridge with v3.1 native families, offline contracts, commerce + entitlement seams with reconciliation example) plus explicit non-claims (no provider adapters yet, no first-party companions yet).
-- [ ] **LOG-03** `CHANGELOG.md` preamble disambiguates planning milestones from hex versions — explicit note that internal `v1.0`–`v3.2` milestone labels are planning artifacts (in `.planning/MILESTONES.md`), not hex semver versions, and that `0.1.0` is the first hex release.
-- [ ] **LOG-04** The `[0.1.0]` entry includes a `### Roadmap traceability` subsection linking `.planning/MILESTONES.md` and `.planning/PROJECT.md` so adopters can trace internal development history without confusing it with hex versions.
+- [x] **LOG-01** `CHANGELOG.md` exists at repo root, uses Keep-a-Changelog format, and contains a `## [Unreleased]` anchor — required by release-please's insertion regex.
+- [x] **LOG-02** `CHANGELOG.md` contains a single `## [0.1.0]` entry describing what the first published version delivers — 4–5 capability bullets (route policy DSL, manifest + capability ladder, bounded bridge with v3.1 native families, offline contracts, commerce + entitlement seams with reconciliation example) plus explicit non-claims (no provider adapters yet, no first-party companions yet).
+- [x] **LOG-03** `CHANGELOG.md` preamble disambiguates planning milestones from hex versions — explicit note that internal `v1.0`–`v3.2` milestone labels are planning artifacts (in `.planning/MILESTONES.md`), not hex semver versions, and that `0.1.0` is the first hex release.
+- [x] **LOG-04** The `[0.1.0]` entry includes a `### Roadmap traceability` subsection linking `.planning/MILESTONES.md` and `.planning/PROJECT.md` so adopters can trace internal development history without confusing it with hex versions.
 
 ### D. Release Pipeline
 
@@ -95,11 +95,11 @@ Every v3.3 requirement is mapped to exactly one phase. Coverage: 28/28.
 | META-04 | Phase 26: Package Metadata Audit | Complete |
 | META-05 | Phase 26: Package Metadata Audit | Complete |
 | META-06 | Phase 26: Package Metadata Audit | Complete |
-| VER-01 | Phase 27: Versioning + CHANGELOG | Pending |
-| LOG-01 | Phase 27: Versioning + CHANGELOG | Pending |
-| LOG-02 | Phase 27: Versioning + CHANGELOG | Pending |
-| LOG-03 | Phase 27: Versioning + CHANGELOG | Pending |
-| LOG-04 | Phase 27: Versioning + CHANGELOG | Pending |
+| VER-01 | Phase 27: Versioning + CHANGELOG | Complete |
+| LOG-01 | Phase 27: Versioning + CHANGELOG | Complete |
+| LOG-02 | Phase 27: Versioning + CHANGELOG | Complete |
+| LOG-03 | Phase 27: Versioning + CHANGELOG | Complete |
+| LOG-04 | Phase 27: Versioning + CHANGELOG | Complete |
 | REL-01 | Phase 28: release-please Configuration Files | Pending |
 | REL-02 | Phase 28: release-please Configuration Files | Pending |
 | REL-09 | Phase 28: release-please Configuration Files | Pending |
