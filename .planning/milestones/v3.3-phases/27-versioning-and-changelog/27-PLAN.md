@@ -1,0 +1,153 @@
+---
+phase: 27-versioning-and-changelog
+plan: 01
+type: execute
+wave: 1
+depends_on: []
+files_modified: ["CHANGELOG.md", "mix.exs"]
+autonomous: true
+requirements: [VER-01, LOG-01, LOG-02, LOG-03, LOG-04]
+must_haves:
+  truths:
+    - "CHANGELOG.md uses Keep-a-Changelog format and includes an [Unreleased] anchor"
+    - "CHANGELOG.md explicitly details the capabilities delivered in 0.1.0"
+    - "CHANGELOG.md explicitly disambiguates internal milestones from Hex releases"
+    - "mix.exs docs/0 extras list includes CHANGELOG.md for HexDocs rendering"
+  artifacts:
+    - path: "CHANGELOG.md"
+      provides: "First Hex release changelog and release-please baseline"
+    - path: "mix.exs"
+      provides: "Docs configuration with CHANGELOG included"
+  key_links:
+    - from: "mix.exs"
+      to: "CHANGELOG.md"
+      via: "docs/0 extras list"
+---
+
+<objective>
+Lock the first published hex version at 0.1.0 and synthesize `CHANGELOG.md` with Keep-a-Changelog format.
+
+Purpose: This satisfies the release-please pipeline parser requirements and correctly documents the capabilities available in the first public hex release.
+Output: `CHANGELOG.md` created at repo root, `mix.exs` updated to include `CHANGELOG.md` in `docs/0` extras list.
+</objective>
+
+<execution_context>
+@$HOME/.gemini/get-shit-done/workflows/execute-plan.md
+@$HOME/.gemini/get-shit-done/templates/summary.md
+</execution_context>
+
+<context>
+@.planning/PROJECT.md
+@.planning/ROADMAP.md
+@.planning/STATE.md
+@.planning/milestones/v3.3-phases/27-versioning-and-changelog/27-CONTEXT.md
+</context>
+
+<interfaces>
+<!-- 
+From .planning/milestones/v3.3-phases/27-versioning-and-changelog/27-PATTERNS.md:
+The exact Keep-a-Changelog template to use for CHANGELOG.md:
+-->
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Planning milestones vs Hex releases
+
+This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)** headings like **`[0.1.0]`** for **published Hex releases**. Separately, maintainers track **planning milestones** labeled **v1.0–v3.2** in **`.planning/MILESTONES.md`** — those labels describe shipped *tranches of work*, **not** a second installable version axis on Hex (this repo remains **0.x** on Hex until a real **1.0.0**). When in doubt, treat **`MILESTONES.md`** as canonical for milestone dates and archive paths.
+
+## [Unreleased]
+
+### Added
+
+* Initial public release.
+
+## [0.1.0] — 2026-05-28
+
+### Added
+
+* Route policy DSL for declaring per-route runtime ownership: LiveView, offline island, native screen, or adapter. Runtime manifest and compatibility contract generated from route policy declarations.
+* Bounded bridge contract for low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, `file_picker`) with route-local enforcement and typed command envelopes.
+* Offline semantics: cached read-only routes, offline islands with append-only journals, sync endpoints, and server-authoritative reconciliation — each with explicit contract boundaries and doctor diagnostics.
+* Commerce corridor declarations with provider-neutral `commerce.corridor.*` denial vocabulary, entitlement lifecycle lane semantics (authority/access/reconciliation/freshness/evidence), and a Phoenix-owned reconciliation inbox example. Provider adapters (StoreKit, Play Billing) are not included; this release operationalizes the seam contract only.
+* `mix crosswake.doctor` diagnostics, support matrix, and proof lanes verified against three adopter-shaped exemplar lanes: Phoenix SaaS portal, selective-native flow, and local-first study flow.
+
+### Roadmap traceability
+
+Internal planning milestones v1.0 (Route Policy Foundation), v2.0 (Adopter Stress Profiles), v3.0 (Capability Contract And Packaging), v3.1 (Native Capabilities and Bridge Expansion), and v3.2 (Commerce And Entitlement Seams) are archived in `.planning/MILESTONES.md`. These are not separate Hex releases.
+
+[Unreleased]: https://github.com/szTheory/crosswake/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/szTheory/crosswake/releases/tag/v0.1.0
+```
+</interfaces>
+
+<tasks>
+<task type="auto">
+  <name>Task 1: Synthesize CHANGELOG.md with Keep-a-Changelog format</name>
+  <files>CHANGELOG.md</files>
+  <action>
+    Create `CHANGELOG.md` at the repo root. 
+    Use the exact Keep-a-Changelog template provided in the interfaces block above.
+    Ensure all components are present verbatim:
+    - The `## Planning milestones vs Hex releases` preamble.
+    - The `## [Unreleased]` anchor right below the preamble.
+    - The `## [0.1.0]` entry.
+    - The 4-5 capability bullets listed in the template.
+    - The `### Roadmap traceability` subsection.
+    - The `[Unreleased]` and `[0.1.0]` Github compare links at the bottom.
+  </action>
+  <verify>
+    <automated>cat CHANGELOG.md | grep -q "## \[Unreleased\]" && cat CHANGELOG.md | grep -q "## \[0.1.0\]"</automated>
+  </verify>
+  <done>CHANGELOG.md is created and properly structured with the [0.1.0] entry, [Unreleased] anchor, and preamble.</done>
+</task>
+
+<task type="auto">
+  <name>Task 2: Wire CHANGELOG.md into HexDocs in mix.exs</name>
+  <files>mix.exs</files>
+  <action>
+    Modify `mix.exs`.
+    1. Confirm `@version` module attribute is exactly `"0.1.0"`. Leave it as is if it's already "0.1.0".
+    2. In the `docs/0` private function, locate the `extras:` list.
+    3. Add `"CHANGELOG.md",` to the `extras:` list. Maintain the existing indentation and trailing comma format. Do this in accordance with D-07 (Phase 26 Phase-split decision).
+  </action>
+  <verify>
+    <automated>grep -A 20 "defp docs do" mix.exs | grep -q "CHANGELOG.md" && mix compile</automated>
+  </verify>
+  <done>mix.exs is successfully modified to include CHANGELOG.md in the docs extras and mix compile succeeds.</done>
+</task>
+</tasks>
+
+<threat_model>
+## Trust Boundaries
+
+| Boundary | Description |
+|----------|-------------|
+| N/A | No new runtime trust boundaries introduced. Metadata files only. |
+
+## STRIDE Threat Register
+
+| Threat ID | Category | Component | Disposition | Mitigation Plan |
+|-----------|----------|-----------|-------------|-----------------|
+| T-27-01 | Tampering | `CHANGELOG.md` | mitigate | Ensure release-please template format is strictly adhered to, preventing insertion parsing failures later in CI. |
+</threat_model>
+
+<verification>
+1. `mix.exs` `@version` module attribute is set to `"0.1.0"` and `mix compile` succeeds.
+2. `CHANGELOG.md` exists at repo root, uses Keep-a-Changelog format, and contains a `## [Unreleased]` H2 anchor placed above the first versioned entry.
+3. `CHANGELOG.md` contains exactly one `## [0.1.0]` entry with the 5 specific capability bullets and an explicit non-claim.
+4. `CHANGELOG.md` preamble explicitly disambiguates internal planning labels from hex semver versions, and the `[0.1.0]` entry includes a `### Roadmap traceability` subsection.
+</verification>
+
+<success_criteria>
+- `mix.exs` compiles successfully and includes `CHANGELOG.md` in `extras`.
+- `CHANGELOG.md` conforms to the rigorous structural requirements for release-please pipeline compatibility.
+</success_criteria>
+
+<output>
+After completion, create `.planning/milestones/v3.3-phases/27-versioning-and-changelog/27-01-SUMMARY.md`
+</output>

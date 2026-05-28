@@ -26,7 +26,7 @@
 
 ### v3.3 Release Readiness (Phases 26-32)
 
-- [ ] **Phase 26: Package Metadata Audit** — Replace placeholder `source_url`, set explicit OTP/tarball name, declare `:files` allowlist, add three-link `:links`, add `LICENSE`, wire `docs/0` + `ex_doc` dev dep.
+- [x] **Phase 26: Package Metadata Audit** — Replace placeholder `source_url`, set explicit OTP/tarball name, declare `:files` allowlist, add three-link `:links`, add `LICENSE`, wire `docs/0` + `ex_doc` dev dep.
 - [ ] **Phase 27: Versioning Decision And CHANGELOG Synthesis** — Pin `@version "0.1.0"`, synthesize `CHANGELOG.md` (Keep-a-Changelog, `[Unreleased]` anchor, single `[0.1.0]` capability entry, planning-vs-hex preamble, roadmap traceability footnote).
 - [ ] **Phase 28: release-please Configuration Files** — Add `release-please-config.json` (oarlock pattern, `release-as: "0.1.0"` pin, `bootstrap-sha`), `.release-please-manifest.json` baselined at `0.0.0`, `.tool-versions` for reproducible builds.
 - [ ] **Phase 29: Release Workflows And Supply-Chain Hardening** — Add `release-please.yml` (oarlock template, NOT sigra), `hex-publish.yml` recovery workflow, SHA-pin all GitHub Actions, add `dependabot.yml` for Actions ecosystem.
@@ -53,8 +53,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 **Plans**: 4 plans
 - [x] 26-01-PLAN.md — Create LICENSE file with canonical Apache-2.0 boilerplate
 - [x] 26-02-PLAN.md — Introduce @source_url, extend project/0, replace defp description and defp package with canonical block
-- [ ] 26-03-PLAN.md — Add docs/0 function and ex_doc dev dependency (NO CHANGELOG.md in extras per D-12)
-- [ ] 26-04-PLAN.md — Verify mix deps.get && mix compile --warnings-as-errors and run ROADMAP success-criteria final sweep
+- [x] 26-03-PLAN.md — Add docs/0 function and ex_doc dev dependency (NO CHANGELOG.md in extras per D-12)
+- [x] 26-04-PLAN.md — Verify mix deps.get && mix compile --warnings-as-errors and run ROADMAP success-criteria final sweep
 
 ### Phase 27: Versioning Decision And CHANGELOG Synthesis
 **Goal**: Lock the first published hex version at `0.1.0` and produce a `CHANGELOG.md` whose shape release-please can parse and whose content honestly describes what 0.1.0 delivers.
@@ -75,7 +75,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   1. `release-please-config.json` exists at repo root with `release-type: "elixir"`, `bump-minor-pre-major: false`, `bump-patch-for-minor-pre-major: true`, a one-time `release-as: "0.1.0"` pin on the `.` package, and a `bootstrap-sha` anchored to a commit before v3.3 to prevent backwards CHANGELOG walk through 25 phases of non-conventional commits.
   2. `.release-please-manifest.json` exists at repo root with exactly `{".": "0.0.0"}` — NOT `"0.1.0"` (prevents the off-by-one footgun where release-please would propose `0.2.0` first).
   3. `.tool-versions` exists at repo root and pins Elixir + Erlang/OTP versions; running `cat .tool-versions` shows lines for both runtimes and `mix compile` works against the pinned versions locally.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 28-01-PLAN.md — Create release-please-config.json, .release-please-manifest.json, and .tool-versions
 
 ### Phase 29: Release Workflows And Supply-Chain Hardening
 **Goal**: Land both release workflow files (Release PR creation + manual recovery) and bake in supply-chain hardening so post-CVE-2025-30066 tag-move attacks cannot affect Crosswake's release pipeline.
@@ -135,7 +136,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 23. Commerce Support And Proof Closure   | v3.2 | 4/4 | Complete   | 2026-05-27 |
 | 24. Reconciliation Traceability Hardening| v3.2 | 3/3 | Complete   | 2026-05-27 |
 | 25. Address tech debt (Phase 20+24)      | v3.2 | 2/2 | Complete   | 2026-05-27 |
-| 26. Package Metadata Audit               | v3.3 | 2/4 | In Progress|  |
+| 26. Package Metadata Audit               | v3.3 | 4/4 | Complete   | 2026-05-28 |
 | 27. Versioning + CHANGELOG               | v3.3 | 0/0 | Not started | —         |
 | 28. release-please Configuration Files   | v3.3 | 0/0 | Not started | —         |
 | 29. Release Workflows + Supply Chain     | v3.3 | 0/0 | Not started | —         |
