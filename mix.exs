@@ -15,7 +15,8 @@ defmodule Crosswake.MixProject do
       description: description(),
       source_url: @source_url,
       homepage_url: @source_url,
-      package: package()
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -30,7 +31,8 @@ defmodule Crosswake.MixProject do
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
       {:phoenix, "~> 1.8"},
-      {:phoenix_live_view, "~> 1.1"}
+      {:phoenix_live_view, "~> 1.1"},
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
   end
 
