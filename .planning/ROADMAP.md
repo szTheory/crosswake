@@ -51,8 +51,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   4. `mix.exs` defines a `docs/0` function with `main: "readme"`, `source_ref: "v#{@version}"`, and an extras list that includes every file in `guides/`.
   5. `{:ex_doc, "~> 0.38", only: :dev, runtime: false}` appears in the `deps/0` list and `mix deps.get && mix compile` succeeds with no warnings.
 **Plans**: 4 plans
-- [ ] 26-01-PLAN.md — Create LICENSE file with canonical Apache-2.0 boilerplate
-- [ ] 26-02-PLAN.md — Introduce @source_url, extend project/0, replace defp description and defp package with canonical block
+- [x] 26-01-PLAN.md — Create LICENSE file with canonical Apache-2.0 boilerplate
+- [x] 26-02-PLAN.md — Introduce @source_url, extend project/0, replace defp description and defp package with canonical block
 - [ ] 26-03-PLAN.md — Add docs/0 function and ex_doc dev dependency (NO CHANGELOG.md in extras per D-12)
 - [ ] 26-04-PLAN.md — Verify mix deps.get && mix compile --warnings-as-errors and run ROADMAP success-criteria final sweep
 
@@ -135,7 +135,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 23. Commerce Support And Proof Closure   | v3.2 | 4/4 | Complete   | 2026-05-27 |
 | 24. Reconciliation Traceability Hardening| v3.2 | 3/3 | Complete   | 2026-05-27 |
 | 25. Address tech debt (Phase 20+24)      | v3.2 | 2/2 | Complete   | 2026-05-27 |
-| 26. Package Metadata Audit               | v3.3 | 0/0 | Not started | —         |
+| 26. Package Metadata Audit               | v3.3 | 2/4 | In Progress|  |
 | 27. Versioning + CHANGELOG               | v3.3 | 0/0 | Not started | —         |
 | 28. release-please Configuration Files   | v3.3 | 0/0 | Not started | —         |
 | 29. Release Workflows + Supply Chain     | v3.3 | 0/0 | Not started | —         |

@@ -12,11 +12,11 @@
 
 ### A. Package Metadata Truth
 
-- [ ] **META-01** Adopter can navigate from the hex.pm package page to the real GitHub repository — `mix.exs` `source_url` replaces the `https://github.com/example/crosswake` placeholder with the real `szTheory/crosswake` repo URL via a `@source_url` module attribute.
-- [ ] **META-02** The published tarball has the correct OTP name — `:package` block sets `name: "crosswake"` explicitly (prevents OTP-atom tarball-naming footgun from `bootstrap-elixir-hex-lib` skill).
-- [ ] **META-03** The published tarball ships only adopter-facing files — `:package` declares an explicit `:files` allowlist that includes `lib/`, `priv/`, `mix.exs`, `README.md`, `CHANGELOG.md`, `LICENSE`, and `guides/` and excludes `.planning/`, `prompts/`, `test/`, `.github/`, and `examples/`. Verified by `mix hex.build --unpack`.
-- [ ] **META-04** The hex.pm package page surfaces three working links — `:package` `:links` provides `"GitHub"` (source repo), `"Docs"` (hexdocs.pm/crosswake), and `"Changelog"` entries.
-- [ ] **META-05** The published package has a legally honest license — `LICENSE` file exists at repo root and matches the Apache-2.0 declaration in `:package` `:licenses`.
+- [x] **META-01** Adopter can navigate from the hex.pm package page to the real GitHub repository — `mix.exs` `source_url` replaces the `https://github.com/example/crosswake` placeholder with the real `szTheory/crosswake` repo URL via a `@source_url` module attribute.
+- [x] **META-02** The published tarball has the correct OTP name — `:package` block sets `name: "crosswake"` explicitly (prevents OTP-atom tarball-naming footgun from `bootstrap-elixir-hex-lib` skill).
+- [x] **META-03** The published tarball ships only adopter-facing files — `:package` declares an explicit `:files` allowlist that includes `lib/`, `priv/`, `mix.exs`, `README.md`, `CHANGELOG.md`, `LICENSE`, and `guides/` and excludes `.planning/`, `prompts/`, `test/`, `.github/`, and `examples/`. Verified by `mix hex.build --unpack`.
+- [x] **META-04** The hex.pm package page surfaces three working links — `:package` `:links` provides `"GitHub"` (source repo), `"Docs"` (hexdocs.pm/crosswake), and `"Changelog"` entries.
+- [x] **META-05** The published package has a legally honest license — `LICENSE` file exists at repo root and matches the Apache-2.0 declaration in `:package` `:licenses`.
 - [ ] **META-06** Adopters can browse generated docs at `hexdocs.pm/crosswake` after publish — `mix.exs` defines a `docs/0` function (main README, extras for guides), and `ex_doc ~> 0.38` is declared as a `runtime: false` dev dep.
 
 ### B. Versioning Policy
@@ -89,11 +89,11 @@ Every v3.3 requirement is mapped to exactly one phase. Coverage: 28/28.
 
 | Requirement | Phase | Status |
 |---|---|---|
-| META-01 | Phase 26: Package Metadata Audit | Pending |
-| META-02 | Phase 26: Package Metadata Audit | Pending |
-| META-03 | Phase 26: Package Metadata Audit | Pending |
-| META-04 | Phase 26: Package Metadata Audit | Pending |
-| META-05 | Phase 26: Package Metadata Audit | Pending |
+| META-01 | Phase 26: Package Metadata Audit | Complete |
+| META-02 | Phase 26: Package Metadata Audit | Complete |
+| META-03 | Phase 26: Package Metadata Audit | Complete |
+| META-04 | Phase 26: Package Metadata Audit | Complete |
+| META-05 | Phase 26: Package Metadata Audit | Complete |
 | META-06 | Phase 26: Package Metadata Audit | Pending |
 | VER-01 | Phase 27: Versioning + CHANGELOG | Pending |
 | LOG-01 | Phase 27: Versioning + CHANGELOG | Pending |
