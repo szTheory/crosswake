@@ -16,9 +16,19 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-## Next Milestone Goals
+## Current Milestone: v3.3 Release Readiness
 
-**Release readiness is a recommended pre-strategic-arc milestone (v3.3).** Surfaced via `$gsd-new-milestone` assessment on 2026-05-27: current `source_url` in `mix.exs:37-42` is a placeholder (`https://github.com/example/crosswake`), version is `0.1.0`, no CHANGELOG.md, no release-please pipeline, no hex publish workflow. The lib is invisible to the Phoenix community without hex.pm presence. szTheory house-style anchors ("install truth is product truth", "release truth matters") make this load-bearing before further capability work. See `.planning/threads/release-readiness.md`. Uses `bootstrap-elixir-hex-lib` skill as paved path.
+**Goal:** Make Crosswake installable from hex.pm with honest release metadata, CHANGELOG, real `source_url`, and a release-please publication pipeline — turning szTheory's "install truth is product truth" and "release truth matters" anchors into actual product surface before further capability work.
+
+**Target features:**
+- Package metadata truth — replace placeholder `source_url` in `mix.exs:37-42`, audit `:package` block (licenses, links, maintainers, files allowlist, description) for honest hex-page rendering.
+- Versioning decision — pick initial published version (`0.1.0` pre-release vs `1.0.0-rc.0` contract-mature signal) and document rationale in CHANGELOG plus mix.exs.
+- CHANGELOG.md — synthesize from MILESTONES.md v1.0 → v3.2 history with honest scope per release.
+- Release pipeline — release-please config (canonical per `bootstrap-elixir-hex-lib` skill), `.github/workflows/release.yml`, hex publish on tag, `HEX_API_KEY` secret wiring guidance.
+- Hex page polish — README renders correctly on hex package page; hexdocs render via `mix docs`; `mix hex.build` content audit.
+- Proof + truth — verify hex publish flow end-to-end where possible (dry run / staging), update support truth so install path is part of the product contract.
+
+**Key context:** Paved path is the `bootstrap-elixir-hex-lib` skill. Strategic-arc blindspot — `MILESTONE-ARC.md` did not list release readiness; flagged 2026-05-27 and amended. Downstream milestones (v3.5 Rulestead first-party companion) are blocked on v3.3. Uses the hermetic-vs-advisory CI split pattern (graduated default for v3.3+) for any environment-sensitive proof of the publish path. See `.planning/threads/release-readiness.md`.
 
 Strategic-arc candidates after release readiness, per `MILESTONE-ARC.md` and the 2026-05-27 assessment:
 
@@ -68,7 +78,7 @@ Final scope and ordering will be set via `$gsd-new-milestone`.
 
 ### Active
 
-_All v3.2 commerce-and-entitlement requirements validated. Next milestone scope set via `$gsd-new-milestone`._
+_v3.3 Release Readiness requirements defined in `.planning/REQUIREMENTS.md`. Milestone goal: hex.pm publication with honest release metadata, CHANGELOG, real `source_url`, and release-please pipeline._
 
 ### Out of Scope
 
@@ -146,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after v3.2 milestone + post-v3.2 next-step assessment*
+*Last updated: 2026-05-27 — v3.3 Release Readiness milestone started*

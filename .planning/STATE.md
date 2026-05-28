@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.2
-milestone_name: Commerce And Entitlement Seams
-status: Awaiting next milestone
-stopped_at: Phase 25 context gathered
-last_updated: "2026-05-27T22:23:13.090Z"
-last_activity: 2026-05-27 — Milestone next-step assessment completed; v3.3 candidate: release readiness + hex publication
+milestone: v3.3
+milestone_name: Release Readiness
+status: planning
+last_updated: "2026-05-28T00:49:22.875Z"
+last_activity: 2026-05-28
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 18
-  completed_plans: 18
-  percent: 86
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 
 ## Current Position
 
-Phase: Milestone v3.2 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting v3.3 milestone kickoff (release readiness recommended)
-Last activity: 2026-05-27 — Milestone next-step assessment completed; v3.3 candidate: release readiness + hex publication. See threads release-readiness, commerce-archetype-proof, companion-seam-pattern.
+Status: Defining requirements
+Last activity: 2026-05-28 — Milestone v3.3 started
 
 ## Performance Metrics
 
