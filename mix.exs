@@ -49,7 +49,7 @@ defmodule Crosswake.MixProject do
         "Documentation" => "https://hexdocs.pm/crosswake",
         "GitHub" => @source_url
       },
-      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md guides)
+      files: ~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides)
     ]
   end
 
@@ -61,6 +61,7 @@ defmodule Crosswake.MixProject do
       formatters: ["html"],
       extras: [
         "README.md",
+        "CHANGELOG.md",
         "LICENSE",
         "guides/install.md",
         "guides/support_matrix.md",
@@ -74,7 +75,20 @@ defmodule Crosswake.MixProject do
         "guides/native_shell.md",
         "guides/packs.md"
       ],
+      groups_for_modules: [
+        Policy: [Crosswake.Policy, Crosswake.Router],
+        Bridge: [Crosswake.Bridge],
+        Manifest: [Crosswake.Manifest],
+        Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/
+      ],
       groups_for_extras: [
+        Setup: ["guides/install.md", "guides/support_matrix.md"],
+        Capabilities: [
+          "guides/capabilities.md",
+          "guides/commerce.md",
+          "guides/offline.md",
+          "guides/packs.md"
+        ],
         Guides: ~r/guides\//
       ]
     ]
