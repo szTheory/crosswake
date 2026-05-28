@@ -52,4 +52,31 @@ defmodule Crosswake.MixProject do
       files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md guides)
     ]
   end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      formatters: ["html"],
+      extras: [
+        "README.md",
+        "LICENSE",
+        "guides/install.md",
+        "guides/support_matrix.md",
+        "guides/adopter_profiles.md",
+        "guides/user_flows.md",
+        "guides/capabilities.md",
+        "guides/bridge.md",
+        "guides/offline.md",
+        "guides/commerce.md",
+        "guides/compatibility.md",
+        "guides/native_shell.md",
+        "guides/packs.md"
+      ],
+      groups_for_extras: [
+        Guides: ~r/guides\//
+      ]
+    ]
+  end
 end
