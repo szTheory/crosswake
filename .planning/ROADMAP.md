@@ -50,7 +50,11 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   3. `LICENSE` file exists at repo root and contains an Apache-2.0 declaration matching the `:licenses` field.
   4. `mix.exs` defines a `docs/0` function with `main: "readme"`, `source_ref: "v#{@version}"`, and an extras list that includes every file in `guides/`.
   5. `{:ex_doc, "~> 0.38", only: :dev, runtime: false}` appears in the `deps/0` list and `mix deps.get && mix compile` succeeds with no warnings.
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 26-01-PLAN.md — Create LICENSE file with canonical Apache-2.0 boilerplate
+- [ ] 26-02-PLAN.md — Introduce @source_url, extend project/0, replace defp description and defp package with canonical block
+- [ ] 26-03-PLAN.md — Add docs/0 function and ex_doc dev dependency (NO CHANGELOG.md in extras per D-12)
+- [ ] 26-04-PLAN.md — Verify mix deps.get && mix compile --warnings-as-errors and run ROADMAP success-criteria final sweep
 
 ### Phase 27: Versioning Decision And CHANGELOG Synthesis
 **Goal**: Lock the first published hex version at `0.1.0` and produce a `CHANGELOG.md` whose shape release-please can parse and whose content honestly describes what 0.1.0 delivers.
