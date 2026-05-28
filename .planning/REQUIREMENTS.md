@@ -85,10 +85,39 @@ Explicit exclusions for v3.3 with reasoning:
 
 ## Traceability
 
+Every v3.3 requirement is mapped to exactly one phase. Coverage: 28/28.
+
 | Requirement | Phase | Status |
 |---|---|---|
-| _(filled by roadmapper)_ | | |
+| META-01 | Phase 26: Package Metadata Audit | Pending |
+| META-02 | Phase 26: Package Metadata Audit | Pending |
+| META-03 | Phase 26: Package Metadata Audit | Pending |
+| META-04 | Phase 26: Package Metadata Audit | Pending |
+| META-05 | Phase 26: Package Metadata Audit | Pending |
+| META-06 | Phase 26: Package Metadata Audit | Pending |
+| VER-01 | Phase 27: Versioning + CHANGELOG | Pending |
+| LOG-01 | Phase 27: Versioning + CHANGELOG | Pending |
+| LOG-02 | Phase 27: Versioning + CHANGELOG | Pending |
+| LOG-03 | Phase 27: Versioning + CHANGELOG | Pending |
+| LOG-04 | Phase 27: Versioning + CHANGELOG | Pending |
+| REL-01 | Phase 28: release-please Configuration Files | Pending |
+| REL-02 | Phase 28: release-please Configuration Files | Pending |
+| REL-09 | Phase 28: release-please Configuration Files | Pending |
+| REL-03 | Phase 29: Release Workflows + Supply Chain | Pending |
+| REL-04 | Phase 29: Release Workflows + Supply Chain | Pending |
+| REL-05 | Phase 29: Release Workflows + Supply Chain | Pending |
+| REL-06 | Phase 29: Release Workflows + Supply Chain | Pending |
+| HEX-01 | Phase 30: Hex Page Polish + Tarball Dry-Run | Pending |
+| HEX-02 | Phase 30: Hex Page Polish + Tarball Dry-Run | Pending |
+| HEX-03 | Phase 30: Hex Page Polish + Tarball Dry-Run | Pending |
+| PRF-01 | Phase 30: Hex Page Polish + Tarball Dry-Run | Pending |
+| REL-07 | Phase 31: First Hex Publish (Human-Gated) | Pending |
+| REL-08 | Phase 31: First Hex Publish (Human-Gated) | Pending |
+| PRF-02 | Phase 31: First Hex Publish (Human-Gated) | Pending |
+| PRF-03 | Phase 32: Post-Publish Cleanup | Pending |
+| PRF-04 | Phase 32: Post-Publish Cleanup | Pending |
+| HEX-04 | Phase 32: Post-Publish Cleanup | Pending |
 
 ---
 
-*Last updated: 2026-05-27 — v3.3 Release Readiness requirements defined from research-then-recommend cycle*
+*Last updated: 2026-05-27 — v3.3 traceability filled by roadmapper. Phases 26-32 mapped 1:1 against all 28 requirements with zero orphans and zero double-counts.*

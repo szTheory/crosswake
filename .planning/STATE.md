@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v3.3
 milestone_name: Release Readiness
 status: planning
-last_updated: "2026-05-28T00:49:22.875Z"
-last_activity: 2026-05-28
+last_updated: "2026-05-27T00:00:00.000Z"
+last_activity: 2026-05-27
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,24 +20,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Planning next milestone (v3.2 archived)
+**Current focus:** v3.3 Release Readiness — publish `crosswake 0.1.0` to hex.pm with honest metadata, CHANGELOG, and release-please pipeline.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 26 — Package Metadata Audit (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-28 — Milestone v3.3 started
+Status: Roadmap created (2026-05-27); ready for `/gsd:plan-phase 26`.
+Last activity: 2026-05-27 — v3.3 roadmap created (Phases 26-32).
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 49
+- Total plans completed: 49 (v1.0–v3.2)
 - Average duration: n/a
 - Total execution time: n/a
 
-**By Phase:**
+**By Phase (v3.2):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -45,18 +45,14 @@ Last activity: 2026-05-28 — Milestone v3.3 started
 | 20. Entitlement Lifecycle Semantics | 4 | n/a | n/a |
 | 21. Reconciliation Example | 2 | n/a | n/a |
 | 22. Commerce Support, Review, And Proof (decomposed) | 0 | n/a | n/a |
-| 23. Commerce Support And Proof Closure | 0 | n/a | n/a |
-| 24. Reconciliation Traceability Hardening | 0 | n/a | n/a |
-| 19 | 3 | - | - |
-| 20 | 4 | - | - |
-| 21 | 2 | - | - |
-| 23 | 4 | - | - |
-| 24 | 3 | - | - |
+| 23. Commerce Support And Proof Closure | 4 | n/a | n/a |
+| 24. Reconciliation Traceability Hardening | 3 | n/a | n/a |
+| 25. Tech-debt closure | 2 | n/a | n/a |
 
 **Recent Trend:**
 
 - Last milestone shipped: v3.2 Commerce And Entitlement Seams on 2026-05-27
-- Current milestone: TBD (planning next milestone)
+- Current milestone: v3.3 Release Readiness (planning → execution transition)
 - Trend: Positive
 
 ## Accumulated Context
@@ -64,15 +60,17 @@ Last activity: 2026-05-28 — Milestone v3.3 started
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent milestone summary:
+Recent milestone + v3.3 framing:
 
 - Milestone v3.2 shipped on 2026-05-27 with provider-neutral commerce route corridors, entitlement lifecycle lane semantics, reconciliation example, merge-blocking commerce proof lane, and SUMMARY frontmatter parity enforcement.
-- Phase 22 was audit-decomposed into Phases 23 (runtime closure) and 24 (traceability hardening) before execution.
-- Phase 25 closed two non-blocking tech-debt items from the milestone-closure re-audit (Phase 20 verification text + parity test WR-01/02 hardening).
+- v3.3 Release Readiness is the recommended next milestone (planning-blindspot discovery 2026-05-27). Paved path: `bootstrap-elixir-hex-lib` skill (oarlock canonical pattern).
+- v3.3 versioning decision: ship `0.1.0` (not `1.0.0` or `1.0.0-rc.0`). Crosswake has zero external adopters; SemVer §5 prerequisites are not met.
+- v3.3 release-please config: `bump-minor-pre-major: false` (oarlock/lattice_stripe pattern, NOT sigra's `true`). Manifest baselined at `0.0.0` with one-time `release-as: "0.1.0"` pin; pin removed in Phase 32.
+- v3.3 supply-chain hardening: all NEW GitHub Actions workflows SHA-pin every external action; dependabot configured for the `github-actions` ecosystem. Existing phase-proof workflows (phase5, phase10, phase18, phase23) are NOT in scope for retroactive SHA pinning.
 
 ### Pending Todos
 
-- **v3.3 candidate (recommended next):** Release readiness — publish to hex.pm, fix placeholder `source_url` in `mix.exs`, add CHANGELOG.md, wire release-please pipeline. See thread `release-readiness`. Uses `bootstrap-elixir-hex-lib` skill as paved path.
+- **v3.3 (in progress):** Release readiness — publish to hex.pm. Phases 26-32 mapped to 28 v3.3 requirements across Categories A-F. Ready for `/gsd:plan-phase 26`.
 - **v3.4 candidate:** Commerce archetype proof (ARCH-02) — wire a runnable paywall_entry + purchase_intent + restore_intent lane in `examples/phoenix_host` using a mocked storefront corridor (no provider adapter needed). See thread `commerce-archetype-proof`.
 - **v3.5 candidate:** Rulestead first-party companion — establishes companion-seam pattern that unblocks sigra/rindle/chimeway/threadline. See thread `companion-seam-pattern`. Blocked on v3.3.
 - Further out: provider adapters (ADPT-01/02 StoreKit + Play Billing), sigra companion + notification-driven re-entry archetype, operator runtime surface (OPS-01) + telemetry instrumentation, v3.5 archetype proof lanes from original ARC.
@@ -81,11 +79,13 @@ Recent milestone summary:
 
 - This local workstation still lacks a Java runtime, so Android JVM evidence should continue to come from CI unless Java is installed locally.
 - StoreKit and Play Billing proof should remain advisory until a provider adapter milestone intentionally ships native/provider code.
-- **Planning blindspot (flagged 2026-05-27):** `MILESTONE-ARC.md` did not list hex publication / release readiness as a milestone candidate. `mix.exs:4,37-42` has placeholder `source_url: "https://github.com/example/crosswake"` and `version: "0.1.0"`. No CHANGELOG.md, no release-please config, no hex publish workflow. Surfaced via `$gsd-new-milestone` assessment; ARC amended with a Release Readiness Baseline section.
+- **v3.3 human-gated steps** (Phase 26 META-01 + Phase 31 REL-07/REL-08/PRF-02): real GitHub repo URL confirmation, `default_workflow_permissions=write` flip, `HEX_API_KEY` generation, and Release PR merge are all maintainer-only handoffs. Phases 26 and 31 cannot pass verification without these.
+- **Irreversibility window:** Phase 31 publish has a 60-minute republish window and a 24-hour revert window for initial publish. Phases 26-30 collectively gate Phase 31 so dry-run, tarball audit, and render checks all pass before the human-gated merge.
 
 ### Roadmap Evolution
 
 - v3.2 milestone archived. ROADMAP.md collapsed; full archive at `.planning/milestones/v3.2-ROADMAP.md`.
+- v3.3 roadmap created 2026-05-27. Phase numbering continues from Phase 25; v3.3 spans Phases 26-32. ROADMAP.md and REQUIREMENTS.md traceability matrix updated in same commit.
 
 ## Deferred Items
 
@@ -95,13 +95,16 @@ Recent milestone summary:
 | Commerce | StoreKit, Play Billing, RevenueCat, Accrue, or other provider adapters remain deferred to companion/future milestones | Deferred | 2026-05-27 |
 | Platform | Desktop packaging remains out of the near-term arc | Deferred | 2026-05-19 |
 | Human UAT | Phase 15 device checks for share sheet presentation, physical haptics feedback, and app-info runtime fidelity remain human-needed | Deferred | 2026-05-27 |
+| CI infra | Retroactive SHA-pinning of pre-existing phase-proof workflows (phase5, phase10, phase18, phase23) — v3.3 ships the standard for NEW workflows only | Deferred to v3.4+ | 2026-05-27 |
+| Tooling | `mix crosswake.doctor --check-publish` install-truth surface (graduation candidate after v3.3 publish) | Deferred to v3.4+ | 2026-05-27 |
+| Docs | Machine-enforced CHANGELOG shape test (ExUnit `[Unreleased]` presence + format checks) | Deferred to v3.4 | 2026-05-27 |
 
 ## Session Continuity
 
-Last session: 2026-05-27 — Milestone v3.2 archived
-Stopped at: v3.2 complete
-Resume file: —
+Last session: 2026-05-27 — v3.3 roadmap created (Phases 26-32 mapped to 28 requirements).
+Stopped at: Awaiting plan-phase for Phase 26 (Package Metadata Audit).
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd:new-milestone
+- Run `/gsd:plan-phase 26` to begin Package Metadata Audit.
