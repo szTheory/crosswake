@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.3
 milestone_name: Release Readiness
 status: completed
-stopped_at: Phase 30 context gathered
-last_updated: "2026-05-28T21:21:16.271Z"
-last_activity: 2026-05-28 -- Phase 28 marked complete
+stopped_at: Phase 29 reconciled complete (shipped by earlier run)
+last_updated: "2026-05-28T21:24:00.000Z"
+last_activity: 2026-05-28 -- Phase 29 reconciled as complete; dependabot.yml bug fixed
 progress:
-  total_phases: 6
-  completed_phases: 5
+  total_phases: 7
+  completed_phases: 6
   total_plans: 11
-  completed_plans: 10
-  percent: 83
+  completed_plans: 11
+  percent: 86
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 
 ## Current Position
 
-Phase: 28 — COMPLETE
-Plan: 02/02
-Status: Phase 28 complete
-Last activity: 2026-05-28 -- Phase 28 marked complete
+Phase: 29 — COMPLETE
+Plan: 01/01
+Status: Phase 29 complete (deliverables shipped + committed by an earlier run; reconciled into tracking 2026-05-28)
+Last activity: 2026-05-28 -- Phase 29 reconciled as complete; dependabot.yml bug fixed
 
 ## Performance Metrics
 
@@ -110,4 +110,5 @@ Resume file: None
 ## Operator Next Steps
 
 - Phase 28 (release-please Configuration Files) complete — config, manifest, and `.tool-versions` committed.
-- Next: Phase 29 (Release Workflows And Supply-Chain Hardening). Run `/gsd-plan-phase 29` then `/gsd-execute-phase 29`.
+- Phase 29 (Release Workflows And Supply-Chain Hardening) complete — `release-please.yml`, `hex-publish.yml`, `dependabot.yml` were shipped + committed by an earlier (Gemini) run; verified against ROADMAP success criteria SC1–SC4 and reconciled into tracking. Fixed an invalid top-level `name:` key in `dependabot.yml` (commit `cf28954`). NOTE: `actionlint` (SC5) is not installed locally — confirm via `gh workflow view` once pushed.
+- Next: Phase 30 (Hex Page Polish And Tarball Dry-Run). Context already gathered (`30-CONTEXT.md`). Run `/gsd-plan-phase 30` then `/gsd-execute-phase 30`.

@@ -29,7 +29,7 @@
 - [x] **Phase 26: Package Metadata Audit** — Replace placeholder `source_url`, set explicit OTP/tarball name, declare `:files` allowlist, add three-link `:links`, add `LICENSE`, wire `docs/0` + `ex_doc` dev dep.
 - [x] **Phase 27: Versioning Decision And CHANGELOG Synthesis** — Pin `@version "0.1.0"`, synthesize `CHANGELOG.md` (Keep-a-Changelog, `[Unreleased]` anchor, single `[0.1.0]` capability entry, planning-vs-hex preamble, roadmap traceability footnote). (completed 2026-05-28)
 - [x] **Phase 28: release-please Configuration Files** — Add `release-please-config.json` (oarlock pattern, `release-as: "0.1.0"` pin, `bootstrap-sha`), `.release-please-manifest.json` baselined at `0.0.0`, `.tool-versions` for reproducible builds. (completed 2026-05-28)
-- [ ] **Phase 29: Release Workflows And Supply-Chain Hardening** — Add `release-please.yml` (oarlock template, NOT sigra), `hex-publish.yml` recovery workflow, SHA-pin all GitHub Actions, add `dependabot.yml` for Actions ecosystem.
+- [x] **Phase 29: Release Workflows And Supply-Chain Hardening** — Add `release-please.yml` (oarlock template, NOT sigra), `hex-publish.yml` recovery workflow, SHA-pin all GitHub Actions, add `dependabot.yml` for Actions ecosystem. (completed 2026-05-28)
 - [ ] **Phase 30: Hex Page Polish And Tarball Dry-Run** — Audit `README.md` for absolute URLs, run `mix hex.build --unpack` + `mix docs` + `mix hex.publish --dry-run` clean, with no `.planning/`/`prompts/`/`test/` leakage.
 - [ ] **Phase 31: First Hex Publish (Human-Gated)** — Maintainer flips `default_workflow_permissions=write`, installs `HEX_API_KEY` secret, merges release-please's Release PR; `https://hex.pm/packages/crosswake/0.1.0` goes live.
 - [ ] **Phase 32: Post-Publish Cleanup** — Remove one-time `release-as` pin, run smoke install from fresh `mix new`, update `guides/install.md` with canonical `{:crosswake, "~> 0.1"}` snippet.
@@ -107,7 +107,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 
 **Plans**: 1 plan
 
-- [ ] 29-01-PLAN.md — Create release workflows and configure Dependabot for supply-chain hardening
+- [x] 29-01-PLAN.md — Create release workflows and configure Dependabot for supply-chain hardening — completed 2026-05-28
 
 **UI hint**: no
 
@@ -175,7 +175,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 26. Package Metadata Audit               | v3.3 | 4/4 | Complete   | 2026-05-28 |
 | 27. Versioning + CHANGELOG               | v3.3 | 2/2 | Complete   | 2026-05-28 |
 | 28. release-please Configuration Files   | v3.3 | 1/1 | Complete   | 2026-05-28 |
-| 29. Release Workflows + Supply Chain     | v3.3 | 1/1 | Planned     | —         |
+| 29. Release Workflows + Supply Chain     | v3.3 | 1/1 | Complete    | 2026-05-28 |
 | 30. Hex Page Polish + Tarball Dry-Run    | v3.3 | 0/0 | Not started | —         |
 | 31. First Hex Publish (Human-Gated)      | v3.3 | 1/1 | Planned     | —         |
 | 32. Post-Publish Cleanup                 | v3.3 | 0/0 | Not started | —         |
