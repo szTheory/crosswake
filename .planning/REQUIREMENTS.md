@@ -17,7 +17,7 @@
 - [x] **META-03** The published tarball ships only adopter-facing files — `:package` declares an explicit `:files` allowlist that includes `lib/`, `priv/`, `mix.exs`, `README.md`, `CHANGELOG.md`, `LICENSE`, and `guides/` and excludes `.planning/`, `prompts/`, `test/`, `.github/`, and `examples/`. Verified by `mix hex.build --unpack`.
 - [x] **META-04** The hex.pm package page surfaces three working links — `:package` `:links` provides `"GitHub"` (source repo), `"Docs"` (hexdocs.pm/crosswake), and `"Changelog"` entries.
 - [x] **META-05** The published package has a legally honest license — `LICENSE` file exists at repo root and matches the Apache-2.0 declaration in `:package` `:licenses`.
-- [ ] **META-06** Adopters can browse generated docs at `hexdocs.pm/crosswake` after publish — `mix.exs` defines a `docs/0` function (main README, extras for guides), and `ex_doc ~> 0.38` is declared as a `runtime: false` dev dep.
+- [x] **META-06** Adopters can browse generated docs at `hexdocs.pm/crosswake` after publish — `mix.exs` defines a `docs/0` function (main README, extras for guides), and `ex_doc ~> 0.38` is declared as a `runtime: false` dev dep.
 
 ### B. Versioning Policy
 
@@ -94,7 +94,7 @@ Every v3.3 requirement is mapped to exactly one phase. Coverage: 28/28.
 | META-03 | Phase 26: Package Metadata Audit | Complete |
 | META-04 | Phase 26: Package Metadata Audit | Complete |
 | META-05 | Phase 26: Package Metadata Audit | Complete |
-| META-06 | Phase 26: Package Metadata Audit | Pending |
+| META-06 | Phase 26: Package Metadata Audit | Complete |
 | VER-01 | Phase 27: Versioning + CHANGELOG | Pending |
 | LOG-01 | Phase 27: Versioning + CHANGELOG | Pending |
 | LOG-02 | Phase 27: Versioning + CHANGELOG | Pending |

@@ -4,14 +4,14 @@ milestone: v3.3
 milestone_name: Release Readiness
 status: executing
 stopped_at: Phase 26 context gathered
-last_updated: "2026-05-28T11:30:58.190Z"
+last_updated: "2026-05-28T11:32:34.137Z"
 last_activity: 2026-05-28 -- Phase 26 planning complete
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
-  percent: 0
+  total_plans: 5
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 ## Current Position
 
 Phase: 26 — Package Metadata Audit
-Plan: 03/05
+Plan: 04/05
 Status: executing
 Last activity: 2026-05-28 -- Phase 26 planning complete
 
@@ -63,6 +63,7 @@ Last activity: 2026-05-28 -- Phase 26 planning complete
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent milestone + v3.3 framing:
 
+- Phase 26-04: Accepted ex_doc resolution to 0.40.3 which satisfies the ~> 0.38 constraint.
 - Milestone v3.2 shipped on 2026-05-27 with provider-neutral commerce route corridors, entitlement lifecycle lane semantics, reconciliation example, merge-blocking commerce proof lane, and SUMMARY frontmatter parity enforcement.
 - v3.3 Release Readiness is the recommended next milestone (planning-blindspot discovery 2026-05-27). Paved path: `bootstrap-elixir-hex-lib` skill (oarlock canonical pattern).
 - v3.3 versioning decision: ship `0.1.0` (not `1.0.0` or `1.0.0-rc.0`). Crosswake has zero external adopters; SemVer §5 prerequisites are not met.
@@ -102,7 +103,7 @@ Recent milestone + v3.3 framing:
 
 ## Session Continuity
 
-Last session: 2026-05-28T11:30:58.184Z
+Last session: 2026-05-28T11:32:34.134Z
 Stopped at: Phase 26 context gathered
 Resume file: None
 
