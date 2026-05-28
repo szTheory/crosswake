@@ -1,0 +1,11 @@
+{
+  "bootstrap-sha": "f788e312747e14b157c8498ba710f057534530f5",
+  "bump-minor-pre-major": false,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "release-type": "elixir",
+      "release-as": "0.1.0"
+    }
+  }
+}
