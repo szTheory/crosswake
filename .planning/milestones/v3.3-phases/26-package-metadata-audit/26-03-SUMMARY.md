@@ -6,6 +6,7 @@ tags:
   - ex_doc
   - hex
   - mix
+requirements-completed: [META-06]
 dependency_graph:
   requires:
     - 26-02

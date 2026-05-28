@@ -1,7 +1,7 @@
 defmodule Crosswake.Planning.SummaryFrontmatterTest do
   use ExUnit.Case, async: true
 
-  @summary_glob Path.join(File.cwd!(), ".planning/phases/*/*-SUMMARY.md")
+  @summary_glob Path.join(File.cwd!(), ".planning/milestones/v3.3-phases/*/*-SUMMARY.md")
   @requirements_path Path.join(File.cwd!(), ".planning/REQUIREMENTS.md")
 
   test "all phase summaries use requirements-completed: not bare requirements:" do

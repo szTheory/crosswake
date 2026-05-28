@@ -7,8 +7,7 @@ tags:
   - compliance
   - hex
 depends_on: []
-requires:
-  - META-05
+requirements-completed: [META-05]
 provides:
   - Apache-2.0 LICENSE file
 affects:
