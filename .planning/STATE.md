@@ -104,9 +104,9 @@ Recent milestone + v3.3 framing:
 ## Session Continuity
 
 Last session: 2026-05-28T11:32:34.134Z
-Stopped at: Phase 28 context gathered
+Stopped at: Phase 28 planning complete
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 28` to begin release-please Configuration Files planning.
+- Run `/gsd-execute-phase 28` to begin release-please Configuration Files execution.

@@ -88,7 +88,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
   3. `grep -E "uses: .+@[a-f0-9]{40}" .github/workflows/release-please.yml .github/workflows/hex-publish.yml` lists every external action (`actions/checkout`, `erlef/setup-beam`, `actions/cache`, `googleapis/release-please-action`) pinned to a full commit SHA with a `# vX.Y.Z` comment; no `@vN`-tag references remain in either file.
   4. `.github/dependabot.yml` exists with `package-ecosystem: "github-actions"` so SHA pins surface as PRs when upstream Actions ship updates.
   5. `actionlint .github/workflows/release-please.yml .github/workflows/hex-publish.yml` exits 0 (or both workflows parse cleanly via `gh workflow view` once pushed).
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 29-01-PLAN.md — Create release workflows and configure Dependabot for supply-chain hardening
 **UI hint**: no
 
 ### Phase 30: Hex Page Polish And Tarball Dry-Run
@@ -139,7 +140,7 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 26. Package Metadata Audit               | v3.3 | 4/4 | Complete   | 2026-05-28 |
 | 27. Versioning + CHANGELOG               | v3.3 | 0/0 | Not started | —         |
 | 28. release-please Configuration Files   | v3.3 | 0/0 | Not started | —         |
-| 29. Release Workflows + Supply Chain     | v3.3 | 0/0 | Not started | —         |
+| 29. Release Workflows + Supply Chain     | v3.3 | 1/1 | Planned     | —         |
 | 30. Hex Page Polish + Tarball Dry-Run    | v3.3 | 0/0 | Not started | —         |
 | 31. First Hex Publish (Human-Gated)      | v3.3 | 0/0 | Not started | —         |
 | 32. Post-Publish Cleanup                 | v3.3 | 0/0 | Not started | —         |
