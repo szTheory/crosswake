@@ -2,15 +2,19 @@ defmodule Crosswake.MixProject do
   use Mix.Project
 
   @version "0.1.0"
+  @source_url "https://github.com/szTheory/crosswake"
 
   def project do
     [
       app: :crosswake,
       version: @version,
+      name: "crosswake",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
+      source_url: @source_url,
+      homepage_url: @source_url,
       package: package()
     ]
   end
@@ -31,13 +35,19 @@ defmodule Crosswake.MixProject do
   end
 
   defp description do
-    "Phoenix-first route policy and runtime contract substrate"
+    "Route policy and runtime contracts for Phoenix apps that go mobile."
   end
 
   defp package do
     [
+      name: "crosswake",
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/example/crosswake"}
+      links: %{
+        "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md",
+        "Documentation" => "https://hexdocs.pm/crosswake",
+        "GitHub" => @source_url
+      },
+      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md guides)
     ]
   end
 end
