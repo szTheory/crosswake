@@ -51,65 +51,78 @@
 ## Phase Details
 
 ### Phase 33: Corridor Routes And CI Infrastructure
+
 **Goal**: The `examples/phoenix_host` router declares the three paywall corridor routes with correct `commerce:` DSL, and `phase34-proof.yml` establishes the hermetic-merge-blocking / advisory-only two-job CI split that will gate every subsequent PR in this milestone
 **Depends on**: Phase 32 (v3.3 complete)
 **Requirements**: PWAL-01, PROOF-02
 **Success Criteria** (what must be TRUE):
+
   1. An adopter can copy the `paywall_entry` route declaration (with `commerce: [corridor: :subscription_default, role: :paywall_entry]`) from `examples/phoenix_host/router.ex` and see the canonical DSL shape
   2. The example host router compiles with all three corridor routes (`paywall_entry`, `purchase_intent`, `restore_intent`) and they appear in the manifest with correct corridor metadata
   3. `.github/workflows/phase34-proof.yml` exists with a hermetic merge-blocking job and an advisory job (`continue-on-error: true`) including the 4-condition `promotion_path` comment mirroring `phase23-proof.yml`
-  4. The hermetic CI job runs `mix test --exclude requires_example_host` cleanly and the advisory job never gates a merge
-**Plans**: 2 plans
+  4. The hermetic CI job runs `mix test --exclude requires_example_host` cleanly and the advisory job never gates a merge**Plans**: 2 plans
 - [ ] 33-01-PLAN.md — Declare /commerce corridor routes (paywall_entry live + purchase/restore post) in the example host router; forward-reference Phase 35 modules; manifest-introspection proof test
 - [ ] 33-02-PLAN.md — Create phase34-proof.yml two-job hermetic+advisory CI split (merge-blocking `mix test --exclude requires_example_host` + advisory continue-on-error lane)
 
 ### Phase 34: MockStorefront And Idempotency Invariants
+
 **Goal**: `CrosswakeExample.Commerce.MockStorefront` exists as a pure-Elixir evidence emitter with `simulate_purchase/1` and `simulate_restore/1`, its idempotency invariants are provable against the existing `ReconciliationInbox` and `ReconciliationKeys`, and a provider-vocabulary fence confirms no forbidden tokens appear in the mock source
 **Depends on**: Phase 33
 **Requirements**: MOCK-01, MOCK-02, MOCK-03, WIRE-03
 **Success Criteria** (what must be TRUE):
+
   1. An adopter can inspect `MockStorefront.simulate_purchase/1` and see it consume a `PurchaseIntent` and return `ReconciliationEvidence{source: :storefront, provider: "mock", event_kind: "purchase"}` with no provider SDK code
   2. An adopter can inspect `MockStorefront.simulate_restore/1` and see it consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`)
   3. `MockStorefront`'s `@moduledoc` explicitly names the two functions a real StoreKit/Play Billing adapter would replace, making the drop-in swap target pattern obvious
   4. A replay test demonstrates that submitting evidence with the same `provider_reference` (but a different `correlation_id`) returns `replay?: true` from `ReconciliationInbox.ingest_evidence/2`, proving idempotency is keyed on stable provider identity via `ReconciliationKeys`, not transient device IDs
   5. A provider-vocabulary fence test confirms `MockStorefront` source contains no `storekit`, `play_billing`, `play billing`, or `revenuecat` tokens
+
 **Plans**: TBD
 
 ### Phase 35: Reconciliation Wiring And Four-State LiveView
+
 **Goal**: `PaywallEntryLive`, `PurchaseIntentLive`, and `RestoreIntentLive` are wired end-to-end — mock evidence flows through `ReconciliationInbox.ingest_evidence/2` and `EntitlementProjection.project_snapshot/2`, and `PaywallEntryLive` renders all four `derived_state/1` outputs as distinct UI states
 **Depends on**: Phase 34
 **Requirements**: WIRE-01, WIRE-02, STATE-01, PWAL-02
 **Success Criteria** (what must be TRUE):
+
   1. An adopter can see `PurchaseIntentLive` submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult` (status `:awaiting_verification`)
   2. An adopter can see `EntitlementProjection.project_snapshot/2` invoked after simulated backend verification, producing the authoritative entitlement snapshot used to derive UI state
   3. `PaywallEntryLive` renders a single subscription `PaywallEntry` (pricing display + "Subscribe" action) with zero provider-SDK code visible
   4. `PaywallEntryLive` has explicit `case` branches for all four `derived_state/1` values — `:granted`, `:pending`, `:denied`, and `:stale` — where `:stale` is visually distinct from `:denied` and `:pending` shows a "processing" state
   5. `PaywallEntryLive` initializes to `:stale` on mount (fail-closed) and transitions to other states only via the PubSub `{:entitlement_update, derived_state}` message path
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 36: Hermetic Proof Lane
+
 **Goal**: `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` is the merge-blocking proof for the full mock corridor — it drives all four `derived_state/1` states, asserts the `:pending` → `:granted` transition, and fences `authority_mutation_allowed_from_evidence?/1` returning `false`, all without any network call, process start, or example-host runtime dependency
 **Depends on**: Phase 35
 **Requirements**: PROOF-01, PROOF-03
 **Success Criteria** (what must be TRUE):
+
   1. The hermetic proof test drives the full lane — inline `ReconciliationEvidence` → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1` — and all four states (`:stale`, `:pending`, `:denied`, `:granted`) are explicitly asserted with distinct assertions
   2. The proof test asserts the `:pending` → `:granted` transition: ingestion produces `:awaiting_verification`, then a verified snapshot produces `:granted` via `project_snapshot/2`
   3. The mock-boundary fence assertion confirms `Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?/1` returns `false` for mock-produced evidence, and that `project_snapshot/2` rejects any snapshot with non-`:projection_refreshed` reconciliation state
   4. The proof test file uses `async: false`, phase-prefixed inline fixture module names (e.g. `Phase34PaywallCorridorRouter`) to avoid collision with phase23 fixtures, and contains a hermeticity self-scan guard confirming no `Code.require_file` on example-host paths
   5. The hermetic CI job in `phase34-proof.yml` runs this test file and passes cleanly under `--exclude requires_example_host --warnings-as-errors`
+
 **Plans**: TBD
 
 ### Phase 37: Guides Walkthrough And Docs-Contract Lock
+
 **Goal**: `guides/commerce.md` gains an end-to-end paywall corridor walkthrough section written against the final shipped code, and `commerce_test.exs` is extended to lock all module/function references, canonical field names, and the four non-claims against the working example — making the guide a merge-blocking artifact
 **Depends on**: Phase 36
 **Requirements**: DOCS-01, DOCS-02
 **Success Criteria** (what must be TRUE):
+
   1. `guides/commerce.md` contains a "Paywall Corridor Walkthrough" section that anchors each step (route declaration, MockStorefront call, evidence ingestion, snapshot projection, derived state, LiveView rendering) to a named example-host module and function
   2. The walkthrough opens with an explicit mock-vs-real callout stating that `MockStorefront` uses `provider: "mock"` and that no StoreKit or Play Billing code is shipped
   3. A docs-contract test in `commerce_test.exs` asserts the walkthrough heading exists, that `CrosswakeExample.Commerce.MockStorefront` is named exactly, and that canonical field names (`provider_reference`, `evidence_ref`) are used rather than invented aliases
   4. The docs-contract test confirms the existing phase23 three-layer guide-structure assertions still pass after the new walkthrough section is added
   5. The docs-contract test asserts all four non-claims (`StoreKit`, `Play Billing`, `Device-local authority`, `Offline purchase replay`) remain present in `guides/commerce.md` after the walkthrough update
+
 **Plans**: TBD
 
 ## Progress
