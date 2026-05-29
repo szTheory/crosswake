@@ -10,7 +10,9 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-**v3.4 progress:** Phase 33 (Corridor Routes And CI Infrastructure) complete — the `examples/phoenix_host` router declares the three `:subscription_default` corridor routes (paywall_entry `live`, purchase/restore `post`) with canonical `crosswake: [..., commerce: [...]]` DSL, and `.github/workflows/phase34-proof.yml` establishes the hermetic-merge-blocking / advisory two-job CI split now gating the milestone. PWAL-01 and PROOF-02 validated.
+**v3.4 progress:** Phase 34 (MockStorefront And Idempotency Invariants) complete — `CrosswakeExample.Commerce.MockStorefront` is a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) that derives stable provider identity from `entry_id`/a canonical `@subscription_entry_id` constant, never from transient `correlation_id`. A hermetic, untagged merge-blocking proof drives `ReconciliationInbox.ingest_evidence/2` to demonstrate the replay invariant (same identity / different correlation_id → `replay?: true`), restore-shares-subject-key, and a provider-vocabulary fence (no `storekit`/`play_billing`/`play billing`/`revenuecat` tokens). No `lib/crosswake/` or existing example-host module changes. MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated.
+
+Phase 33 (Corridor Routes And CI Infrastructure) complete — the `examples/phoenix_host` router declares the three `:subscription_default` corridor routes (paywall_entry `live`, purchase/restore `post`) with canonical `crosswake: [..., commerce: [...]]` DSL, and `.github/workflows/phase34-proof.yml` establishes the hermetic-merge-blocking / advisory two-job CI split now gating the milestone. PWAL-01 and PROOF-02 validated.
 
 Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
@@ -76,6 +78,10 @@ Strategic-arc candidates after the commerce archetype proof, per `MILESTONE-ARC.
 - [x] **SUPP-05** Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped. Validated in v3.2 (Phase 23).
 - [x] **SUPP-06** Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship. Validated in v3.2 (Phase 23).
 - ✓ **v3.3 Release Readiness** (all 28 requirements: META-*, VER-01, LOG-*, REL-*, HEX-*, PRF-*) — `crosswake 0.1.0` published to hex.pm + HexDocs via the release-please pipeline. Validated across Phases 26–32; full detail in `.planning/milestones/v3.3-REQUIREMENTS.md`.
+- [x] **MOCK-01** Adopter can see `MockStorefront` consume a `PurchaseIntent` and return `ReconciliationEvidence{source: :storefront, provider: "mock"}` in pure Elixir. Validated in v3.4 (Phase 34).
+- [x] **MOCK-02** Adopter can see `MockStorefront` consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`). Validated in v3.4 (Phase 34).
+- [x] **MOCK-03** `MockStorefront` is shaped and documented as a drop-in swap target that makes explicit which functions a real provider adapter would replace. Validated in v3.4 (Phase 34).
+- [x] **WIRE-03** Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission). Validated in v3.4 (Phase 34).
 
 ### Active
 
