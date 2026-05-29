@@ -1,330 +1,184 @@
-# Stack Research: v3.3 Release Readiness (hex.pm publication infrastructure)
+# Stack Research
 
-**Milestone:** v3.3 Release Readiness
-**Researched:** 2026-05-27
-**Confidence:** HIGH — all versions verified against hex.pm API, GitHub releases API, and canonical oarlock/sigra templates in this repo.
+**Domain:** Hermetic mocked-storefront paywall archetype example (v3.4)
+**Researched:** 2026-05-29
+**Confidence:** HIGH
 
-## Scope
+## Verdict: No New Dependencies Required
 
-This file covers only the NEW infrastructure for v3.3. The existing Elixir/Phoenix/NimbleOptions/Jason stack is unchanged. Do not re-add phoenix, phoenix_live_view, jason, or nimble_options here.
+The paywall corridor example can be built entirely with what is already in
+`examples/phoenix_host/mix.exs`. Every new file is pure Elixir wired through
+existing contracts. The only decisions are about *which existing pieces to use
+and how*, not about adding deps.
 
 ---
 
-## mix.exs Changes Required
+## Existing Stack (What We Already Have)
 
-### Missing module attribute: `@source_url`
+### Core Technologies in examples/phoenix_host
 
-Current `mix.exs` has no `@source_url` module attribute and uses a placeholder URL directly in the `:package` block. The canonical szTheory pattern (verified in oarlock, sigra) is:
+| Technology | Pinned Range | Current Stable | Purpose | Status |
+|------------|-------------|----------------|---------|--------|
+| `crosswake` | `path: "../.."` | n/a (local) | Route policy DSL, commerce contracts, reconciliation primitives | Already ships `Contracts`, `Reconciliation` used directly by paywall lane |
+| `phoenix` | `~> 1.8` | 1.8.7 | HTTP routing, Plug pipelines, controller/LiveView host | Already wires all existing exemplar lanes |
+| `phoenix_live_view` | `~> 1.1` | 1.1.31 (stable); 1.2.0-rc.3 (preview) | Server-rendered reactive UI, socket assigns, `handle_event` | Pattern proven by SaaS approvals lane and study session lane |
+| `ecto_sql` | `~> 3.10` | 3.12.x | Schema, changeset, query layer for SQLite | Already used for claims/submissions in selective_native lane |
+| `ecto_sqlite3` | `~> 0.16` | 0.24.0 | SQLite adapter; no external DB process needed | Already wired via `CrosswakeExample.Repo` |
+| `jason` | `~> 1.4` | 1.4.x | JSON codec for evidence payloads, doc-contract tests | Already present |
+| `plug` | `~> 1.16` | 1.16.x | Conn/pipeline plumbing, controller for intent endpoints | Already present |
+
+Versions verified against hex.pm API on 2026-05-29. All dep ranges in the
+existing `mix.exs` accommodate current stable releases with no changes required.
+
+### Existing Commerce Infrastructure (Already Shipped in v3.2)
+
+These files exist in `examples/phoenix_host/lib/crosswake_example/commerce/` and are
+already exercised by the Phase 21 proof test. They are the foundation for v3.4 — not
+new additions.
+
+| File | What It Does |
+|------|-------------|
+| `reconciliation_keys.ex` | `event_key/1`, `subject_key/2`, `trace_metadata/2` — provider-aware identity helpers |
+| `reconciliation_inbox.ex` | `ingest_evidence/2` — append-only evidence ingestion, replay detection |
+| `entitlement_projection.ex` | `project_snapshot/2`, `derived_state/1` — snapshot projection and state derivation (`:stale`, `:pending`, `:denied`, `:granted`) |
+
+---
+
+## What v3.4 Adds (New Files, Zero New Deps)
+
+All new artifacts are plain Elixir modules that consume the existing contract types.
+
+### MockStorefront Module
+
+New file: `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex`
+Module: `CrosswakeExample.Commerce.MockStorefront`
+
+Accepts a `PurchaseIntent` or `RestoreIntent` struct (both already defined in
+`Crosswake.Commerce.Contracts`) and returns a `ReconciliationEvidence` struct with
+`source: :storefront`, `provider: "mock"`, and a deterministic `event_kind`
+(`"purchase"` or `"restore"`). No network call, no SDK, no NIF — pure struct
+construction.
+
+Why no new dep: `ReconciliationEvidence` is already a typed struct in
+`lib/crosswake/commerce/contracts.ex`. The mock just builds one with known values.
+The existing `ReconciliationInbox.ingest_evidence/2` handles the downstream path.
+There is no behavior to simulate beyond "return a plausible evidence struct."
+
+### Router Additions
+
+Three new routes added to the existing
+`examples/phoenix_host/lib/crosswake_example/router.ex` under a `/commerce` scope:
+
+- `GET /commerce/paywall` — `PaywallLive` with `commerce: [corridor: :subscription_default, role: :paywall_entry]` policy. Reflects entitlement state from socket assigns.
+- `POST /commerce/purchase_intent` — Controller action: `MockStorefront.purchase/1` → `ReconciliationInbox.ingest_evidence/2` → `EntitlementProjection.project_snapshot/2` → assigns result.
+- `POST /commerce/restore_intent` — Same pipeline, `RestoreIntent` path.
+
+Why no new dep: Existing `Crosswake.Router` `crosswake_defaults` DSL already supports
+the `commerce:` corridor keyword (shipped in v3.2). Existing `phoenix` router `scope`,
+`live`, and `post` macros cover everything.
+
+### PaywallLive LiveView
+
+New file: `examples/phoenix_host/lib/crosswake_example/commerce/paywall_live.ex`
+Module: `CrosswakeExample.Commerce.PaywallLive`
+
+Standard LiveView `mount`, `handle_event`, `assign/3` to reflect entitlement state.
+`EntitlementProjection.derived_state/1` (already exists) returns `:stale | :pending |
+:denied | :granted`; the LiveView assigns that atom and renders the appropriate paywall
+or content gate. Pattern is identical to `ApprovalsLive` (status from Ecto context)
+and `StudySessionLive` (local state via assigns).
+
+Why no new dep: `Phoenix.LiveView` `assign/3` and `handle_event/3` cover all needed
+state transitions. No PubSub subscription is needed — the hermetic proof drives the
+full round trip synchronously through controller actions and explicit `assign` calls,
+not real-time broadcast.
+
+### Optional: Entitlement State Persistence
+
+If the example also shows persistence across page refreshes: add a minimal
+`CommerceEntitlement` Ecto schema backed by the existing SQLite repo — same pattern
+as `selective_native/claim.ex`. This is optional for the hermetic proof; the proof
+test can drive everything through in-memory socket state.
+
+Why no new dep: `ecto_sql` and `ecto_sqlite3` are already in the example host.
+
+### Hermetic Proof Test
+
+New file: `test/crosswake/proof/phase34_paywall_lane_test.exs`
+
+Follows the established `Code.require_file` pattern from Phase 21:
 
 ```elixir
-@version "0.1.0"   # already present — update value for versioning decision
-@source_url "https://github.com/szTheory/crosswake"   # ADD: real URL
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
+# reconciliation_keys.ex, reconciliation_inbox.ex, entitlement_projection.ex
+# already loaded by phase21 test or repeated here
 ```
 
-### Missing `project/0` keys
+The test drives the full lane:
+1. `MockStorefront.purchase/1` returns `%ReconciliationEvidence{source: :storefront, event_kind: "purchase", ...}`
+2. `ReconciliationInbox.ingest_evidence/2` returns `{:ok, %{status: :awaiting_verification, ...}}`
+3. Caller builds incoming `EntitlementSnapshot` with `reconciliation.state: :projection_refreshed` and `authority.state: :active`
+4. `EntitlementProjection.project_snapshot/2` returns `{:ok, snapshot}`
+5. `EntitlementProjection.derived_state/1` returns `:granted`
 
-Current `project/0` is missing `name:`, `source_url:`, `homepage_url:`, and `docs:`. Add:
+Separate assertions: `:pending` after ingest before projection; restore path also
+yields `:granted` after projection; provider-token fence (no `"storekit"`,
+`"play_billing"`, `"revenuecat"` in any example file).
 
-```elixir
-name: "crosswake",
-source_url: @source_url,
-homepage_url: @source_url,
-docs: docs()
-```
-
-`name:` is required because the OTP atom is `:crosswake` and the Hex package name must be `crosswake` — they match here, but the explicit `name:` in `package/0` is still required or `mix hex.build` will name the tarball after the OTP atom. See bootstrap-elixir-hex-lib gotcha #2.
-
-### `package/0` audit
-
-Current block is missing `:links` richness and `:files` allowlist. Replace with:
-
-```elixir
-defp package do
-  [
-    name: "crosswake",
-    licenses: ["Apache-2.0"],   # already set — keep
-    links: %{
-      "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md",
-      "Documentation" => "https://hexdocs.pm/crosswake",
-      "GitHub" => @source_url
-    },
-    files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md guides)
-  ]
-end
-```
-
-`priv/` must be included because Crosswake ships generator templates in `priv/templates/`. Omitting it would produce a broken install for any adopter using `mix crosswake.install`. `guides/` is included because the public guides are part of the product contract. `examples/` is excluded — example apps are not part of the published library surface.
-
-### `docs/0` block (new)
-
-```elixir
-defp docs do
-  [
-    main: "readme",
-    source_ref: "v#{@version}",
-    source_url: @source_url,
-    formatters: ["html"],
-    extras: [
-      "README.md",
-      "CHANGELOG.md",
-      "LICENSE",
-      "guides/install.md",
-      "guides/capabilities.md",
-      "guides/bridge.md",
-      "guides/offline.md",
-      "guides/commerce.md",
-      "guides/compatibility.md",
-      "guides/support_matrix.md",
-      "guides/native_shell.md",
-      "guides/packs.md",
-      "guides/adopter_profiles.md",
-      "guides/user_flows.md"
-    ],
-    groups_for_extras: [
-      Guides: ~r/guides\//
-    ]
-  ]
-end
-```
-
-`main: "readme"` makes the README the hexdocs landing page — standard szTheory pattern. `source_ref: "v#{@version}"` wires the "View Source" links on hexdocs to the correct tag.
+Why no new dep: `ExUnit.Case` is stdlib. Same hermetic pattern as Phase 21 and Phase
+23. No `Phoenix.ConnTest`, no `LiveViewTest`, no running endpoint needed. The proof
+is pure function composition over typed structs.
 
 ---
 
-## New Dev Dependency: ex_doc
+## What NOT to Add
 
-```elixir
-{:ex_doc, "~> 0.38", only: :dev, runtime: false}
-```
-
-**Version:** Use `~> 0.38` to allow patch and minor bumps through the current `0.40.x` series (latest confirmed: `0.40.3`, published 2026-05-21). The `~> 0.34` constraint used in oarlock is still valid but unnecessarily restrictive now that 0.40 is stable. Using `~> 0.38` gets the latest HTML/sidebar improvements while staying clear of any theoretical 1.0 breaking change.
-
-**Why ex_doc:** It is the only Elixir documentation generator with first-class hexdocs.pm integration. `mix docs` produces the HTML that hex publish uploads. There is no alternative worth considering for a hex package.
-
-**Classification:** `only: :dev, runtime: false` — ex_doc is never a runtime or test dependency. Including it outside `:dev` would force adopters to compile it.
-
-**Mix tasks:**
-- `mix docs` — generates `doc/` directory locally for review
-- `mix hex.build` — builds the tarball; ex_doc is not invoked here but must be present for the `mix docs` step in the publish workflow
+| Do Not Add | Why |
+|------------|-----|
+| StoreKit SDK, Play Billing SDK, revenue_cat, or any billing provider dep | Out of scope by contract. v3.4 is explicitly mocked only. Provider adapters are v3.6. |
+| `Phoenix.LiveViewTest` / `ConnTest` | The hermetic proof operates at the function level, not HTTP/WebSocket. Adds running endpoint complexity without improving proof quality. |
+| `mox` or any mock library | `MockStorefront` is a hand-written deterministic module, not a behavior mock. No mock framework needed. |
+| `Phoenix.PubSub` | The example host does not currently start PubSub. The hermetic proof does not require broadcast. If added later for UX polish it requires supervising a PubSub server — scope creep. |
+| HEEx component libraries (Surface, LiveSvelte, etc.) | Plain `~H` sigil is sufficient for a copy-able adopter example. A UI component dep obscures the commerce architecture. |
+| Any new Hex package | Everything needed is already present. Adding a dep to an OSS example that real adopters copy expands the install surface with zero benefit. |
+| Ecto migrations for the paywall (as a proof requirement) | Optional for UX polish; not required for merge-blocking proof. If added, use the existing repo — do not introduce a second DB. |
 
 ---
 
-## New Files: release-please configuration
+## Integration Points with Existing Stack
 
-### `release-please-config.json`
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "elixir",
-  "bump-minor-pre-major": false,
-  "bump-patch-for-minor-pre-major": true,
-  "packages": {
-    ".": {
-      "changelog-path": "CHANGELOG.md",
-      "include-v-in-tag": true,
-      "release-as": "0.1.0"
-    }
-  }
-}
-```
-
-`release-as: "0.1.0"` is the **one-time first-release pin**. Remove it after `v0.1.0` ships (see bootstrap-elixir-hex-lib gotcha #5: without the pin, release-please's "first stable release" heuristic proposes 1.0.0 when accumulated `feat:` commits cross the threshold). Remove the pin in the post-publish cleanup step.
-
-`bump-minor-pre-major: false` keeps breaking changes as patch bumps inside 0.x, matching the oarlock/lattice_stripe pattern. Flip to `true` only if the versioning decision lands on sigra-style minor bumps for features pre-1.0.
-
-`release-type: "elixir"` — release-please's Elixir strategy updates `@version "..."` in `mix.exs` using a regex match on `@version "[A-Za-z0-9_\-+.~]+"` (verified from `src/updaters/elixir/elixir-mix-exs.ts`). The current `mix.exs` already uses `@version "0.1.0"` — this pattern is compatible with no changes required.
-
-### `.release-please-manifest.json`
-
-```json
-{
-  ".": "0.0.0"
-}
-```
-
-Baseline at `0.0.0` (bootstrap-elixir-hex-lib gotcha #4: if manifest says `0.1.0`, release-please treats 0.1.0 as already released and will propose 0.1.1 or 0.2.0). The `release-as: "0.1.0"` pin in config overrides the bump so the Release PR title is `chore(main): release 0.1.0`.
-
----
-
-## New Files: GitHub Action workflows
-
-### `.github/workflows/release-please.yml`
-
-Use `googleapis/release-please-action@v5.0.0` (SHA `45996ed1f6d02564a971a2fa1b5860e934307cf7`). v5 shipped 2026-04-22 with Node 24 upgrade and release-please bump to 17.6.0; it is stable (non-prerelease) and the current canonical version.
-
-**Do NOT use v4** for new wiring — v4.4.1 was released 2026-04-13, one week before v5.0.0, which means the existing oarlock pin (`@v4`) will continue to work but new projects should start on v5. The only breaking change in v5 is the Node 24 runner requirement, which GitHub-hosted runners satisfy.
-
-Key structure (mirror oarlock, substituting `crosswake` for `oarlock` in the verify step):
-
-```yaml
-jobs:
-  release-please:
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
-        with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-  publish-hex:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
-        with:
-          version-file: .tool-versions
-          version-type: strict
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-      # ... compile, test, dry-run publish, publish, verify
-```
-
-**No DB service block.** Crosswake has no Ecto/Postgrex dependency. The oarlock pattern omits the Postgres services block for non-DB libs.
-
-**No sync-release-summary job.** That job is sigra-specific (bootstrap-elixir-hex-lib gotcha #6). Using sigra's workflow verbatim would break because Crosswake's CHANGELOG.md will not follow sigra's `### Summary` subsection convention.
-
-**Verify step URL:** `https://hex.pm/api/packages/crosswake/releases/${VERSION}` (replace oarlock's URL).
-
-### `.github/workflows/hex-publish.yml`
-
-Manual recovery workflow — copy oarlock's `hex-publish.yml` verbatim, update only the verify step URL to `crosswake`. Used when the automated release-please trigger doesn't fire (e.g., divergent main after merge).
-
-### Integration with existing CI pattern
-
-Crosswake already has phase-specific proof workflows (`phase5-proof.yml`, `phase18-proof.yml`, `phase23-proof.yml`, `phase10-proof.yml`) using the hermetic-vs-advisory split. The new `release-please.yml` workflow is a separate concern — it does not replace or conflict with these. The publish-hex job runs the full `mix test` suite (hermetic only, no advisory provider lanes), which is the correct bar for a library publish.
-
-A new `ci.yml` (oarlock-pattern, no DB block) should also be added as the general PR/push merge gate. Currently crosswake has no `ci.yml` — this is a gap. The existing phase proof workflows are per-milestone artifacts, not a general CI gate.
-
----
-
-## New Files: release scaffolding
-
-### `CHANGELOG.md`
-
-Synthesized from `.planning/MILESTONES.md`. The file must follow Keep a Changelog 1.1.0 format with Semantic Versioning headings. Key structure:
-
-```markdown
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## Planning milestones vs Hex releases
-
-This changelog uses Semantic Versioning headings like `[0.1.0]` for published Hex releases.
-Separately, maintainers track planning milestones in `.planning/MILESTONES.md` —
-those labels describe shipped tranches of work, not a second installable version axis on Hex.
-
-## [Unreleased]
-
-### Added
-
-* Initial public release.
-```
-
-The `## Planning milestones vs Hex releases` section is mandatory — without it, readers will be confused by the gap between "v3.2 Commerce" milestone labels and `0.1.0` Hex version. Do NOT add a `### Summary` subsection (bootstrap-elixir-hex-lib gotcha #6).
-
-release-please will maintain this file automatically after first publish.
-
-### `LICENSE`
-
-Currently missing from the repo root. Must be added before publish. Use MIT (Apache-2.0 is set in `package/0 :licenses` but crosswake's actual license file is absent). **Decision needed:** confirm whether Apache-2.0 or MIT is correct for Crosswake. Current `mix.exs` says `Apache-2.0`. Use Apache-2.0 consistently — create the `LICENSE` file with Apache-2.0 text, year 2026, holder `sztheory`. Do not change the `:licenses` field to MIT without a deliberate decision.
-
-### `.tool-versions`
-
-Currently absent from the repo. Required for `erlef/setup-beam` with `version-type: strict` in all CI workflows. Copy from oarlock:
-
-```
-erlang 28.1
-elixir 1.19.5-otp-28
-```
-
-`mix.exs` already requires `elixir: "~> 1.19"` — this is consistent. The `.tool-versions` pin ensures CI uses the exact same runtime as local dev. `version-type: strict` prevents silent version drift.
-
----
-
-## Mix task invocations (phase reference)
-
-| Task | When | Purpose |
-|------|------|---------|
-| `mix hex.build` | Package metadata audit phase | Inspect tarball name (must be `crosswake-X.Y.Z.tar`, not `crosswake-X.Y.Z.tar` from `:crosswake` atom — names match here but always verify), audit included files |
-| `mix hex.publish --dry-run --yes` | Before first real publish | Validates all metadata, checks for conflicts, does not push to hex.pm |
-| `mix hex.publish --yes` | Automated via CI on release tag | Actual publish; `--yes` skips interactive confirmation for CI |
-| `mix docs` | Hex page polish phase | Generates `doc/` locally; review that README renders correctly and no broken links |
-| `mix deps.unlock --check-unused` | CI gate | Catches phantom deps in `mix.lock` — already used in oarlock CI, add to crosswake `ci.yml` |
-
----
-
-## Versioning decision
-
-**Recommendation: start at `0.1.0` on hex.pm.**
-
-Rationale: Crosswake has shipped 5 internal planning milestones (v1.0–v3.2) with 11.5k LOC. Those are planning labels, not published Hex versions. The first published Hex version signals "installable and trustworthy enough to pin" — `0.1.0` is the honest claim for a library that has never been published and whose API surface has not been validated by external adopters. `1.0.0-rc.0` would signal API stability guarantees that haven't been tested outside the repo. The thread note in `release-readiness.md` suggests `1.0.0-rc.0` as a "contract maturity signal" — but contract maturity in planning milestones does not equal published API stability. The oarlock/sigra precedent also starts at `0.1.0` regardless of internal milestone count.
-
-If v3.3 ships and community adopters validate the install path without API breakage, bumping to `1.0.0` in a subsequent milestone is straightforward. Going backward from `1.0.0-rc.0` is harder to communicate.
-
-**hex.pm name availability:** `crosswake` returns HTTP 404 from `https://hex.pm/api/packages/crosswake` — name is available. No need for fallback names (`crosswake_sdk`, `ex_crosswake`).
+| Integration | Mechanism | File(s) |
+|-------------|-----------|---------|
+| `MockStorefront` → `ReconciliationInbox` | `MockStorefront.purchase/1` returns `%ReconciliationEvidence{}` → passed directly to `ReconciliationInbox.ingest_evidence/2` | mock_storefront.ex (new) → reconciliation_inbox.ex (exists) |
+| `ReconciliationInbox` → `EntitlementProjection` | `ingest_evidence/2` returns `{:ok, attempt}` → caller builds incoming `EntitlementSnapshot` → `EntitlementProjection.project_snapshot/2` | reconciliation_inbox.ex (exists) → entitlement_projection.ex (exists) |
+| `EntitlementProjection` → `PaywallLive` | `derived_state/1` called in LiveView/controller; result assigned via `assign(socket, :entitlement_state, state)` | entitlement_projection.ex (exists) → paywall_live.ex (new) |
+| Router corridor declaration | `commerce: [corridor: :subscription_default, role: :paywall_entry]` — valid `Crosswake.Router` option since v3.2 | router.ex (extend existing) |
+| Proof test → example files | `Code.require_file` pattern established in Phase 21; new proof loads mock_storefront.ex additionally | phase34_paywall_lane_test.exs (new) |
 
 ---
 
 ## Alternatives Considered
 
-| Decision | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| Release pipeline | release-please | Tag-driven manual release | release-please automates CHANGELOG, version bump, and GitHub release creation from conventional commits. Manual tag-driven release requires maintaining CHANGELOG by hand and is inconsistent with szTheory house style. |
-| Release pipeline version | v5.0.0 (`@45996ed`) | v4.4.1 | v5 is stable (non-prerelease, 2026-04-22), only breaking change is Node 24 runner which GitHub provides. New projects should start on current version. |
-| CHANGELOG generator | release-please | git-cliff, towncrier | release-please handles both CHANGELOG and version bumps atomically. Adding a separate CHANGELOG generator creates two tools where one suffices. |
-| Documentation | ex_doc ~> 0.38 | ex_doc ~> 0.34 (oarlock pin) | ~> 0.38 picks up improvements through 0.40.x (current: 0.40.3, 2026-05-21). 0.34 still works but is more restrictive than needed. |
-| Initial Hex version | 0.1.0 | 1.0.0-rc.0 | 0.1.0 is the honest first-publish signal. 1.0.0-rc.0 implies external API stability guarantees not yet tested by real adopters. |
-
----
-
-## What NOT to add
-
-| Avoid | Why |
-|-------|-----|
-| `git-cliff` or `auto-changelog` | release-please already manages CHANGELOG — a second tool creates divergence |
-| `mix_test_watch` or similar in publish workflow | Dev convenience tooling; not relevant to release pipeline |
-| Postgrex / Ecto service blocks in CI | Crosswake has no DB dependency — adding a Postgres block adds unnecessary build time |
-| `ex_doc` outside `only: :dev` | Would force adopters to compile documentation tooling at install time |
-| `RELEASE_PLEASE_TOKEN` as a hard requirement | It is optional — `github.token` suffices unless branch protection rules block the default token from creating PRs. Wire as `secrets.RELEASE_PLEASE_TOKEN || github.token` so it degrades gracefully. |
-
----
-
-## SHA pin reference
-
-All SHA pins verified from GitHub API as of 2026-05-27.
-
-| Action | Tag | SHA |
-|--------|-----|-----|
-| `googleapis/release-please-action` | v5.0.0 | `45996ed1f6d02564a971a2fa1b5860e934307cf7` |
-| `actions/checkout` | v6.0.2 | `de0fac2e4500dabe0009e67214ff5f5447ce83dd` |
-| `erlef/setup-beam` | v1.24.0 | `fc68ffb90438ef2936bbb3251622353b3dcb2f93` |
-| `actions/cache` | v4.3.0 | `0057852bfaa89a56745cba8c7296529d2fc39830` |
-
-`actions/checkout`, `erlef/setup-beam`, and `actions/cache` SHA pins are taken directly from the oarlock canonical template (already verified and in production). Only the `release-please-action` pin changes (v4 → v5).
+| Considered | Decision | Rationale |
+|------------|----------|-----------|
+| `Phoenix.LiveViewTest` for proof | Rejected | Requires a running endpoint and compiled Plug router. The hermetic proof needs only function-level assertions over typed structs. `Code.require_file` + `ExUnit` is sufficient and follows the established Phase 21 pattern. |
+| GenServer-based entitlement store | Rejected | Adds a supervised process, restart semantics, and test isolation complexity. Socket assigns are sufficient for the hermetic proof; Ecto is sufficient for the demo UX. A GenServer would imply a singleton entitlement server, conflicting with the multi-user reality real adopters have. |
+| PubSub for real-time entitlement update | Deferred | Architecturally correct for real adopters but not needed for the hermetic proof. Adds application supervision complexity. Can be documented as the "next step" in guides/commerce.md without implementing in v3.4. |
+| Separate `mix.exs` package for the mock storefront | Rejected | The mock is example-only; it belongs in the example host source tree, not as a published Hex dep. |
 
 ---
 
 ## Sources
 
-- `https://hex.pm/api/packages/ex_doc` — confirmed latest ex_doc 0.40.3, published 2026-05-21
-- `https://hex.pm/api/packages/crosswake` — HTTP 404, name available
-- `https://api.github.com/repos/googleapis/release-please-action/releases` — confirmed v5.0.0 stable, 2026-04-22
-- `https://api.github.com/repos/googleapis/release-please-action/tags` — SHA `45996ed1f6d02564a971a2fa1b5860e934307cf7` for v5.0.0
-- `https://raw.githubusercontent.com/googleapis/release-please/main/README.md` — confirmed `release-type: "elixir"` is a supported type
-- `https://api.github.com/repos/googleapis/release-please/contents/src/updaters/elixir/elixir-mix-exs.ts` — verified `@version "..."` regex pattern that release-please uses to update mix.exs
-- `/Users/jon/projects/oarlock/.github/workflows/release-please.yml` — canonical template (in-repo, HIGH confidence)
-- `/Users/jon/projects/oarlock/mix.exs` — canonical package/docs block pattern (in-repo, HIGH confidence)
-- `/Users/jon/projects/oarlock/.tool-versions` — erlang 28.1 / elixir 1.19.5-otp-28 (in-repo, HIGH confidence)
-- `/Users/jon/.claude/skills/bootstrap-elixir-hex-lib/SKILL.md` — paved-path skill with 6 verified gotchas
+- Verified from source: `examples/phoenix_host/mix.exs` — complete existing dep tree
+- Verified from source: `lib/crosswake/commerce/contracts.ex` — `PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence`, `EntitlementSnapshot` typed structs
+- Verified from source: `lib/crosswake/commerce/reconciliation.ex` — `ingest_evidence/2` signature
+- Verified from source: `examples/phoenix_host/lib/crosswake_example/commerce/` — three existing commerce modules (reconciliation_keys, reconciliation_inbox, entitlement_projection)
+- Verified from source: `test/crosswake/proof/phase21_reconciliation_example_test.exs` — `Code.require_file` hermetic proof pattern
+- Verified from source: `test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermetic-vs-advisory lane split and provider-token fence pattern
+- hex.pm API (2026-05-29): phoenix 1.8.7, phoenix_live_view 1.1.31 / 1.2.0-rc.3, ecto_sqlite3 0.24.0 — confirmed current stable releases
+- Context7 `/phoenixframework/phoenix_live_view` — `assign/3`, `handle_event/3` patterns confirmed (HIGH confidence)
 
 ---
-*Stack research for: hex.pm publication infrastructure (v3.3 Release Readiness)*
-*Researched: 2026-05-27*
+*Stack research for: v3.4 Commerce Archetype Proof — mocked-storefront paywall example*
+*Researched: 2026-05-29*

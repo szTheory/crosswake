@@ -1,349 +1,217 @@
-# Project Research: Pitfalls For v3.3 Release Readiness (hex.pm Publication)
+# Pitfalls Research
 
-**Milestone:** v3.3 Release Readiness
-**Domain:** First-time hex.pm publication of a mature Elixir library
-**Researched:** 2026-05-27
-**Confidence:** HIGH — primarily sourced from hex.pm official docs, release-please official docs, bootstrap-elixir-hex-lib skill (oarlock first-publish post-mortem), and Elixir library guidelines.
+**Domain:** Mocked paywall/subscription example added to a contract-first, backend-owned entitlement system (Crosswake v3.4 Commerce Archetype Proof)
+**Researched:** 2026-05-29
+**Confidence:** HIGH — grounded in repo source (contracts.ex, reconciliation.ex, phase23-proof.yml, existing test isolation patterns, STATE.md Phase 30 post-mortem, MILESTONE-ARC.md locked guardrails)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Files Allowlist Omission Ships `.planning/`, `prompts/`, or Internal Docs
+### Pitfall 1: Mock Storefront Accidentally Granting Entitlement Authority (Non-Authoritative-Evidence Violation)
 
 **What goes wrong:**
-Hex's default `:files` list is `["lib", "priv", ".formatter.exs", "mix.exs", "README*", "readme*", "LICENSE*", "license*", "CHANGELOG*", "changelog*", "src", "c_src", "Makefile*"]`. Crosswake's current `package/0` block has NO `:files` key at all (confirmed in `mix.exs:37-42`). The default does not match glob patterns like `.planning/` or `prompts/` — but `priv/` is included by default and any directory named `src` would be included. More critically, if anyone ever adds a `guides/` directory alongside the library (it's already referenced in the bootstrap skill's template), it would be silently included.
-
-The deeper risk: `.planning/` contains strategy docs, MILESTONES.md, threads, and internal roadmap material that are not appropriate for public hex packages. `prompts/` contains OSS DNA prompts. Neither of these matches the hex default glob, so they are currently safe — but the moment `:files` is explicitly set, the author must enumerate exactly what to include. A naive `~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md guides)` that copies the skill template without auditing `guides/` vs internal dirs ships unwanted content permanently into a public, immutable tarball.
+`MockStorefront` returns a value that the example host code promotes directly to `authority.state = :active` and `access.decision = :granted` without going through `EntitlementProjection.project_snapshot/2`. The mock short-circuits the reconciliation inbox and publishes a `:granted` snapshot bypassing the verification step. This violates ENTL-03 ("Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts").
 
 **Why it happens:**
-Developers copying a template files list without auditing whether Crosswake's directory structure matches the template source.
+The convenience pressure of "make the demo work end-to-end" is highest when wiring the LiveView. The shortest path is: mock purchase → set snapshot to granted → LiveView shows paywall lifted. The reconciliation inbox feels like ceremony. Developers paste code from the guide's "canonical flow" narrative but skip the `awaiting_verification` → `projection_refreshed` hop because the mock has no real backend verifier.
+
+The existing `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?/1` already returns `false` for every reconciliation outcome, and `authority_mutation_allowed_from_evidence?/1` always returns `false` — but these guards only activate if `ingest_evidence/2` is on the call path. If `MockStorefront` is wired to call `EntitlementProjection.project_snapshot/2` directly with a hand-built snapshot that already has `:active` authority, the guards are bypassed entirely.
 
 **How to avoid:**
-Run `mix hex.build --unpack` before any publish and inspect every file in the unpacked directory. Explicitly set `:files` in `package/0` to the exact allowlist. Do NOT include `guides/` unless a `guides/` directory for adopter documentation has been created intentionally. Include `src` only if it exists. The safe explicit allowlist for Crosswake's current layout: `~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)`.
+1. The proof test must assert `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?(attempt.status) == false` for every status the mock produces.
+2. The example `EntitlementProjection` must enforce `ensure_verified_reconciliation/1` before accepting any snapshot — it already does; the proof test must drive through it, not around it.
+3. `MockStorefront` must produce a `ReconciliationEvidence` struct (source: `:storefront`, event_kind: `"purchase"`) and pass it through `ReconciliationInbox.ingest_evidence/2`, not return a pre-baked entitlement snapshot.
+4. Add an explicit test: `assert {:error, :unverified_reconciliation_outcome} = EntitlementProjection.project_snapshot(nil, snapshot_with_pending_reconciliation)` — proving a `:pending_purchase` reconciliation state cannot produce a `:granted` snapshot.
 
 **Warning signs:**
-- `package/0` has no `:files` key (currently the case in `mix.exs`)
-- Any new top-level directory gets added without updating the allowlist
-- `mix hex.build --unpack` output contains `.planning/`, `prompts/`, `test/`, or any doc-planning artifact
+- `MockStorefront` module has a return type of `EntitlementSnapshot.t()` rather than `ReconciliationEvidence.t()`.
+- Example code assigns `authority: %AuthorityLane{state: :active}` inside the mock module itself.
+- The proof test passes without ever touching `ReconciliationInbox.ingest_evidence/2`.
+- `reconciliation.state` in the "granted" snapshot is `:pending_purchase` or `:awaiting_verification` rather than `:projection_refreshed`.
 
 **Phase to address:**
-Package metadata audit phase. Audit and set `:files` explicitly before any publish attempt. Verify with `mix hex.build --unpack`.
+Phase implementing `MockStorefront` and `EntitlementProjection` wiring (the reconciliation → entitlement snapshot phase). A dedicated test asserting `authority_mutation_allowed_from_evidence? == false` for mock-produced evidence must be in the merge-blocking proof lane, not deferred.
 
 ---
 
-### Pitfall 2: release-please Manifest Off-By-One Version
+### Pitfall 2: Example Drifts Into a De-Facto Billing Engine or Implies Provider Adapters Shipped
 
 **What goes wrong:**
-Two distinct failure modes from the oarlock post-mortem (bootstrap-elixir-hex-lib SKILL.md gotchas #4 and #5):
+`MockStorefront` accumulates provider-shaped logic: product catalog lookups, receipt validation stubs, sandbox receipt URLs, retry/refund state machines. The module grows into a thin StoreKit simulator wrapper. Guides start describing the mock as "how StoreKit integration works." Adopters copy the mock and fill in real StoreKit/Play Billing calls, treating the example as the provider adapter scaffolding. The non-claims section of `guides/commerce.md` (currently asserting "StoreKit adapter is not shipped" and "Play Billing adapter is not shipped") becomes implicitly false.
 
-- If `.release-please-manifest.json` baseline is `"0.1.0"`, release-please treats `0.1.0` as already released and proposes `0.1.1` or `0.2.0` as the next release. The first publish goes to the wrong version.
-- If `.release-please-manifest.json` baseline is `"0.0.0"` without a `release-as` pin AND there are accumulated `feat:` commits in history, release-please's first-stable-release heuristic proposes `1.0.0`, not `0.1.0`. An unlocked first publish to `1.0.0` when the intent was `0.1.0` cannot be undone.
-
-For Crosswake, which is deciding between `0.1.0` and `1.0.0-rc.0` as the initial published version, this manifests as: whichever version is chosen must be pinned explicitly via `release-as` in `release-please-config.json`, and the manifest baseline must be one version prior.
+The same drift can happen from the other direction: the guide walkthrough for the mock paywall corridor is written so generically that it reads as universal billing guidance, and an adopter opening a support issue about their RevenueCat integration cites the guide as justification for expecting Crosswake to handle it.
 
 **Why it happens:**
-Misunderstanding the manifest's role: it records what has been released, not what should be released next. Setting it to the intended first version means release-please believes that version has already shipped.
+The mock needs enough realism to prove the corridor end-to-end. Each "what if the mock simulated X" improvement seems harmless. The line between "minimum viable mock" and "aspirational billing example" blurs during execution.
 
 **How to avoid:**
-- Set manifest baseline to the version BEFORE the intended first release (e.g., `"0.0.0"` if targeting `0.1.0`, or `"0.0.1"` if targeting `1.0.0-rc.0` — though pre-release versions in manifests require additional care; use `release-as` pin instead).
-- Add `"release-as": "<intended-first-version>"` to the package entry in `release-please-config.json` for the FIRST release only.
-- Remove the `release-as` pin after the first successful publish (leaving it causes every future PR to be pinned to that version, causing publish-already-exists failures).
+1. `MockStorefront` must implement only the v3.2 contract surface: accept `PurchaseIntent` / `RestoreIntent`, emit `ReconciliationEvidence` with `source: :storefront`, `provider: "mock"`, `event_kind: "purchase"` or `"restore"`. No receipt fields, no sandbox URLs, no catalog map.
+2. The guide walkthrough must open with an explicit callout: "This example uses `MockStorefront` (provider: `\"mock\"`). It proves the corridor contract without StoreKit or Play Billing. See Rough Edges And Non-Claims for what is not shipped."
+3. The existing `@forbidden_provider_tokens` fence in `phase23_commerce_support_proof_test.exs` covers the support matrix and doctor findings. Extend it (or add a parallel test) to scan the example-host `MockStorefront` source for `storekit`, `play_billing`, `play billing`, `revenuecat` tokens.
+4. The docs-contract test must assert the guide still carries all four non-claims (`StoreKit adapter is not shipped`, `Play Billing adapter is not shipped`, `Device-local entitlement authority is not shipped`, `Offline purchase replay is not shipped`) after the walkthrough is updated.
 
 **Warning signs:**
-- Release PR title proposes a version different from the intended first version
-- First CI run after push proposes `0.2.0`, `1.0.0`, or any version other than the one in `release-as`
+- `MockStorefront` has a `@products` module attribute that looks like a real product catalog.
+- The mock accepts or returns receipt-like binary data.
+- Guide text says "replace `mock` with your StoreKit adapter" rather than "a real provider adapter is out of scope."
+- `provider` field in mock-produced `ReconciliationEvidence` is `"storekit"` or `"com.apple"` instead of `"mock"`.
 
 **Phase to address:**
-Release-please config phase. Pin and verify before the first push to GitHub.
+Phase writing `MockStorefront` and updating `guides/commerce.md`. The non-claims docs-contract test (already in `commerce_test.exs`) must be re-run against the updated guide as a merge-blocking gate.
 
 ---
 
-### Pitfall 3: release-please v4 `releases_created` Output Footgun
+### Pitfall 3: Docs-Contract Drift — Guide Walkthrough Diverges From Working Example Code
 
 **What goes wrong:**
-In `release-please-action` v4, the plural `releases_created` output is always `true`, regardless of whether an actual release was created. Any workflow job that uses `if: steps.release.outputs.releases_created` as the gate for hex publish will trigger unconditionally — including on regular PR merges where no release PR was merged. This causes spurious publish attempts (and fails with "version already published" or publishes a pre-release tarball that shouldn't be public).
+`guides/commerce.md` is updated to describe the new paywall corridor walkthrough, but the code shown in the guide (module names, function signatures, struct field names, idempotency key construction) drifts from the actual `examples/phoenix_host/lib/crosswake_example/commerce/` files. An adopter copies the guide snippet and gets a compile error or a runtime crash because `ReconciliationKeys.event_key/1` has a different arity than what the guide shows.
+
+This is a concrete version of the v3.2 risk: `guides/commerce.md` already has a `Minimal Reconciliation Inbox Example` section (locked by `commerce_test.exs`) describing `event_key`, `subject_key`, `correlation_id`, `stale`, `pending`, `denied`, `granted`, `as_of`, and "Ingestion outcomes are non-authoritative." The v3.4 guide update adds a paywall entry + MockStorefront walkthrough on top of this. If the new walkthrough is written before the example code is final, or edited by hand after the fact, it drifts.
 
 **Why it happens:**
-v3 used `releases_created` safely; v4 changed behavior without renaming. Copying v3 workflow templates into a v4 setup reproduces the bug silently.
+Docs are written during phase planning (before code is final) or copy-pasted from earlier drafts and not re-verified after the code settles. The existing `commerce_test.exs` locks structural headings and keyword presence — it does not verify that named function arities, module references, or inline code snippets are accurate.
 
 **How to avoid:**
-Use the singular `release_created` output: `if: ${{ steps.release.outputs.release_created }}`. For a single-package repo (the Crosswake case), this is the correct gate. The bootstrap skill's oarlock template already uses the correct output — do not substitute `releases_created`.
+1. Write example code first, then write the guide walkthrough from the running code — not from the planning spec.
+2. Add a docs-contract test that asserts the exact module names referenced in the new guide section exist as compiled modules (using `Code.ensure_loaded?/1` or a `@moduledoc` scan).
+3. Assert the guide mentions `MockStorefront` by its exact module name (`CrosswakeExample.Commerce.MockStorefront` or the chosen canonical name).
+4. Assert the guide uses the canonical `ReconciliationEvidence` field names (`provider`, `provider_reference`, `event_kind`, `evidence_ref`, `captured_at`) rather than invented aliases.
+5. The Phase 23 pattern of locking guide section headings with regex assertions in `commerce_test.exs` should be extended: add assertions that lock the new "Paywall Corridor Walkthrough" or equivalent heading as soon as it is written.
 
 **Warning signs:**
-- Publish job runs on every push to main, not just after release PR merges
-- CI log shows "version already published" errors on non-release commits
-- Workflow YAML contains `releases_created` (plural) as a job condition
+- Guide uses `receipt_token:` as a field name; contracts use `evidence_ref:`.
+- Guide calls `ReconciliationInbox.record_purchase/1`; the actual module exports `ingest_evidence/2`.
+- Guide shows `MockStorefront.buy/1`; implementation uses `MockStorefront.submit_purchase_intent/1`.
+- The docs-contract test suite passes but the adopter example at the top of the guide still references a function that was renamed during implementation.
 
 **Phase to address:**
-Release workflow authoring phase. Audit output variable names in release.yml before push.
+Phase updating `guides/commerce.md` — the docs-contract test extension must be in the same phase, not deferred to a separate tech-debt phase. Write the code, then write (and lock) the guide in the same phase boundary.
 
 ---
 
-### Pitfall 4: GitHub Actions Cannot Create PRs (Default Repo Permission)
+### Pitfall 4: Proof-Honesty Failures — Hermetic Lane That Secretly Depends on Environment, or Advisory/Merge-Blocking Confusion
 
 **What goes wrong:**
-GitHub's default repository setting blocks Actions from creating pull requests. release-please depends on opening a Release PR to track upcoming version bumps and changelogs. If the setting is not flipped, the release-please workflow runs, produces no PR, logs a permissions error, and silently does nothing — or fails with a cryptic API 403.
+Two failure modes in the same category:
 
-This bit the oarlock bootstrap (SKILL.md gotcha #3) and is easy to forget because the CI run completes (the release-please job doesn't fail hard by default) but no Release PR appears.
+**4a. Hidden environment dependency.** The new v3.4 proof test is added to the merge-blocking CI job, but the test silently calls `Code.require_file` on an example-host file that is not compiled in the hermetic `mix test` run. Under normal `mix test`, the example host is excluded. The test passes locally (where the example host is compiled) and fails in CI. The existing `phase23_commerce_support_proof_test.exs` has an explicit hermeticity guard that scans its own source for `crosswake_example.router` and `Code.require_file` calls — but the v3.4 proof test is a new file, and that guard does not automatically extend to it.
+
+The Phase 30 post-mortem already documented two latent races: (1) parallel-compile `require_file` collision (two async tests both `Code.require_file`-ing the same file and racing on first-load), and (2) global-cwd `File.cd` race (a test using `File.cd!/2` interfering with async tests that use relative paths like `File.read!("guides/...")` at compile time via `@guide_path`).
+
+**4b. Advisory/merge-blocking confusion.** A future maintainer adds a MockStorefront-level test that uses a simulated clock or a mock provider response and marks it `@tag :requires_example_host`, assuming it will be excluded from the hermetic lane. But it is added to the wrong CI step, so it now blocks merges on a non-deterministic timer or a test-double response that depends on module load order.
 
 **Why it happens:**
-GitHub ships the restrictive default to reduce abuse surface. New repos inherit it. The fix is one API call but it's easy to overlook.
+The hermetic/advisory split is enforced at the workflow level (`if: github.event_name == 'pull_request'` on the merge-blocking job, `continue-on-error: true` on the advisory job), but it is NOT enforced at the test tag level by default. Tags like `:requires_example_host` are excluded via `--exclude` flags that must be manually kept in sync with each CI step's `mix test` invocation. A new test file added without the tag will be picked up by every step.
 
 **How to avoid:**
-Immediately after creating or confirming the public GitHub repo, run:
-```
-gh api -X PUT /repos/szTheory/crosswake/actions/permissions/workflow \
-  -f default_workflow_permissions=write \
-  -F can_approve_pull_request_reviews=true
-```
-Or set via repo Settings > Actions > General > Workflow permissions.
+1. Create a dedicated `phase34-proof.yml` (mirroring `phase23-proof.yml` two-job split) for the v3.4 proof lane. The merge-blocking job must include the hermeticity guard — either as a self-scan test (like the one in phase23) or as an explicit `--exclude requires_example_host` flag.
+2. Any test that drives the full paywall corridor using `Code.require_file` on example-host modules must carry `@moduletag :requires_example_host` and run in the `phase5-proof.yml` lane (which builds the example host first), NOT in the hermetic lane.
+3. Tests that prove the contracts in isolation (MockStorefront produces valid `ReconciliationEvidence`, `EntitlementProjection.project_snapshot/2` enforces verification gate, freshness fail-closed) can use in-memory fixtures and are safe for the hermetic lane.
+4. Use `async: false` for any test that uses `File.cd!/2`. Use `@guide_path Path.join([File.cwd!(), ...])` computed at module compile time (not inside a test body) to avoid the global-cwd race.
+5. `Code.require_file` calls on example-host modules must appear only in tests tagged `:requires_example_host` and must be at the top of the file (module scope), not inside test callbacks — parallel `require_file` calls inside async tests race on first-load.
 
 **Warning signs:**
-- release-please workflow run shows green but no Release PR appears
-- Workflow logs contain "403" or "Resource not accessible by integration" from the GitHub API call
+- A new proof test file does not have `@moduletag :requires_example_host` but contains `Code.require_file` on a path under `examples/`.
+- The `phase34-proof.yml` merge-blocking job runs `mix test` without `--exclude requires_example_host`.
+- A test in the hermetic lane calls `File.cd!/2` while another async test reads `guides/commerce.md` via a compile-time `@guide_path`.
+- The advisory-to-merge-blocking promotion commentary is missing from the new workflow file (copying the 4-condition `promotion_path` from `phase23-proof.yml` is required).
 
 **Phase to address:**
-GitHub repo setup phase. Do this before the first release-please workflow run.
+Phase writing the merge-blocking proof lane. The CI workflow and the hermeticity guard must be in the same phase as the proof test itself — not a later "CI cleanup" phase.
 
 ---
 
-### Pitfall 5: Version Choice Irreversibly Signals Wrong Maturity Posture
+### Pitfall 5: LiveView State Reflecting Stale, Pending, or Denied Entitlement Incorrectly
 
 **What goes wrong:**
-Publishing `0.1.0` when Crosswake has 11.5k LOC, 8k LOC tests, five shipped internal milestones, and a stable contract surface sends "experimental, unstable" signals to evaluators. Publishing `1.0.0` without an RC period signals "stable public API" when the hex page has never been live and no external adopter has validated the install path.
+The PaywallEntryLive (or equivalent) render function has a single `:granted` / not-`:granted` branch. It treats any non-`:granted` snapshot as "show paywall" without distinguishing `:pending` (purchase in flight, show spinner), `:stale` (freshness expired, show refresh prompt), and `:denied` (access genuinely denied, show paywall with clear denial reason). This means:
 
-The irreversibility aspect: hex.pm allows reverts within one hour of initial publish and within 24 hours of the first publish of a brand-new package. After those windows, the version exists permanently (you can retire it, but it remains in the package history and its existence sets ecosystem expectations). Choosing wrong and retiring is noisier than choosing right.
+- A user who just purchased sees the paywall again because the snapshot is still `:pending_purchase` during the reconciliation window.
+- A user whose snapshot has gone `:stale` (freshness lane) sees the same paywall as a rejected user, with no way to distinguish a stale read from a genuine denial.
+- The LiveView does not subscribe to snapshot refresh events, so once mounted with `:stale` state it never re-renders even after the backend publishes a fresh `:granted` snapshot.
+
+This maps directly to the `EntitlementProjection.derived_state/1` function in the example host, which already returns `:stale | :pending | :denied | :granted`. The LiveView must use all four derived states.
 
 **Why it happens:**
-Treating the published version as purely an internal tracking number, not as a public signal that adopters and dependency resolution tools interpret.
+The simplest LiveView template is `if @snapshot.access.decision == :granted, do: render_content, else: render_paywall`. This compiles and "works" for the happy path. The `:stale` and `:pending` states only appear under timing or environment conditions that are easy to ignore during example development.
 
 **How to avoid:**
-Make the explicit decision before the package metadata phase and document it in CHANGELOG.md:
-- `0.1.0`: honest pre-release signal, permits breaking changes under semver, but understates the contract maturity. release-please's `bump-minor-pre-major: false` setting means breaking changes inside `0.x` bump patch, not minor — which is the right posture if adopting `0.x`.
-- `1.0.0-rc.0`: signals "contract-mature, beta install path" without claiming production stability. Adopters who pin `~> 1.0` get updates within the 1.x series. Pre-release versions are excluded from `~> x.y` requirement matching by default in Hex (`:allow_pre` defaults to false), so `1.0.0-rc.0` won't satisfy a `~> 1.0` requirement in a downstream unless that downstream opts in.
-
-The evidence favors `0.1.0` if the primary concern is staying on a well-understood release-please automation path. Use `1.0.0-rc.0` only if the explicit goal is signaling contract maturity to early adopters who need to opt into pre-release.
+1. The PaywallEntryLive must pattern-match on `EntitlementProjection.derived_state/1` — all four branches: `:granted`, `:pending`, `:stale`, `:denied`.
+2. The proof test must assert each derived state produces a distinct LiveView render outcome. Use `Phoenix.LiveViewTest` to mount the LiveView with injected snapshots covering all four `derived_state/1` values.
+3. `:stale` must render a "refreshing" or "checking your subscription" UI, not the same paywall as `:denied`. The difference is load-bearing: `:stale` means the backend might grant access once the snapshot is refreshed; `:denied` means access is explicitly withheld.
+4. The LiveView must subscribe to a PubSub topic (or equivalent) that the `EntitlementProjection` publishes to on snapshot refresh, so `:pending` → `:granted` transitions re-render without a full page reload.
+5. The mock scenario must exercise the `:pending` → `:granted` transition in the proof test (mock purchase emits evidence → reconciliation inbox ingests → projection publishes `:granted` snapshot → LiveView receives message and re-renders).
 
 **Warning signs:**
-- Version in mix.exs and CHANGELOG.md are inconsistent
-- release-please `release-as` pin not updated to match the chosen version
-- No CHANGELOG entry explaining the rationale for the chosen version
+- LiveView has `if snapshot.access.decision == :granted` rather than `case EntitlementProjection.derived_state(snapshot)`.
+- Proof test only verifies the `:granted` case.
+- No PubSub subscription or `handle_info/2` clause in the LiveView for snapshot refresh events.
+- `:stale` and `:denied` render the same template in the test output.
 
 **Phase to address:**
-Version decision phase (before package metadata or CHANGELOG work begins). Document rationale.
+Phase implementing PaywallEntryLive and the end-to-end proof test. The four-state render test and the `:pending` → `:granted` transition test must both be in the merge-blocking proof lane.
 
 ---
 
-### Pitfall 6: CHANGELOG Synthesized from MILESTONES.md Drifts from hex.pm Rendering Context
+### Pitfall 6: Idempotency / Replay Pitfalls in Reconciliation Evidence
 
 **What goes wrong:**
-MILESTONES.md uses Crosswake-internal milestone labels (`v1.0 Route Policy Foundation`, `v3.2 Commerce And Entitlement Seams`) that have no meaning on the hex package page. Naively copying milestone headings into CHANGELOG.md creates a CHANGELOG that looks like internal planning artifacts, not a public adopter-facing release history.
+The mock purchase flow calls `ReconciliationInbox.ingest_evidence/2` but uses `PurchaseIntent.correlation_id` as the idempotency key instead of `ReconciliationEvidence.provider_reference` + `event_kind`. When a retry or a reconnect re-submits the same `PurchaseIntent`, a new `correlation_id` is generated (because the device generates it fresh), creating a second non-replay evidence record for the same underlying provider transaction. The backend double-counts the purchase.
 
-The secondary risk: release-please writes to CHANGELOG.md on each release. If the CHANGELOG is pre-populated with handcrafted entries using non-standard heading formats (e.g., `## v3.2 Commerce And Entitlement Seams` instead of `## [0.1.0] - 2026-05-27`), release-please may insert its auto-generated block in the wrong position or fail to find the `## [Unreleased]` anchor it requires.
+The existing `Crosswake.Commerce.Reconciliation.IdempotencyKey` struct already encodes the correct key: `{provider, provider_reference, event_kind}` — explicitly excluding transient device correlation IDs (RECN-02: "Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs"). `ReconciliationKeys.event_key/1` in the example host mirrors this. But `MockStorefront` must generate a stable `provider_reference` (e.g. a UUID derived from the `entry_id`, not from the `correlation_id`), or the idempotency key will be `correlation_id`-shaped by accident.
+
+A second sub-pitfall: the proof test for replay (already present in `phase21_reconciliation_example_test.exs`) passes `seen_event_keys:` as an explicit list. In production code the "seen keys" come from a database query. The example must make clear that `seen_event_keys` is the host's responsibility to populate from persistent storage, not an in-memory set held in the MockStorefront process.
 
 **Why it happens:**
-MILESTONES.md is an excellent internal source of truth but was not written for hex.pm/adopter consumption. Direct copy-paste elides the translation step.
+`PurchaseIntent.correlation_id` is the only device-side identifier available at the point where the mock generates `ReconciliationEvidence`. Using it as `provider_reference` is the path of least resistance. The distinction between "transient device correlation ID" and "stable provider transaction reference" is only meaningful when a real provider (Apple, Google) assigns a canonical transaction ID. The mock has to simulate this distinction explicitly, or the idempotency contract is accidentally tested with correlation IDs.
 
 **How to avoid:**
-- CHANGELOG.md must use Keep-a-Changelog format with `## [Unreleased]` at the top.
-- The initial `## [Unreleased]` section under the Bootstrap Disclaimer (see SKILL.md template) should contain a single `* Initial public release.` entry — not a history dump of v1.0 through v3.2.
-- v1.0 through v3.2 history belongs in a `## Historical Planning Milestones` appendix section with a header note explaining these are internal planning phases, or omitted entirely from CHANGELOG.md in favor of a link to MILESTONES.md.
-- Test `mix docs` locally before publish; verify hexdocs renders the CHANGELOG extras correctly.
+1. `MockStorefront` must generate a stable `provider_reference` that does NOT derive from `correlation_id`. Use a deterministic UUID seeded from `entry_id` + a monotonic counter, or a fixed UUID per test scenario. Document in the mock's `@moduledoc` that real providers assign `provider_reference` (e.g. Apple's `originalTransactionIdentifier`).
+2. The proof test must demonstrate idempotency by replaying the same evidence (same `provider_reference` + `event_kind`) with a different `correlation_id` and asserting `replay?: true` and no double-count.
+3. The guide walkthrough must include a callout: "Real provider adapters must use the provider's canonical transaction ID as `provider_reference`, not the device-generated `correlation_id`."
+4. `seen_event_keys` must be documented as a value the host populates from its database, not an in-memory accumulation inside the mock. Show a commented-out `Repo.all(from e in ReconciliationAttempt, select: e.event_key)` pattern in the example.
 
 **Warning signs:**
-- CHANGELOG.md has `## v3.2 Commerce And Entitlement Seams` or similar non-semver headings at the top
-- No `## [Unreleased]` anchor exists (release-please will fail to find insert point)
-- `## Planning milestones vs Hex releases` disclaimer (from SKILL.md template) is absent — adopters see no explanation for the milestone vocabulary
+- `MockStorefront` sets `provider_reference: evidence.correlation_id` or `provider_reference: intent.correlation_id`.
+- Proof test for replay uses the same `correlation_id` as the distinguishing variable instead of `provider_reference`.
+- `IdempotencyKey` in the proof output has `provider_reference` equal to a UUID that changes on every test run.
+- `seen_event_keys` in the example host is held in a module attribute or process-level ETS table rather than persisted to a database.
 
 **Phase to address:**
-CHANGELOG authoring phase. Draft CHANGELOG.md before wiring release-please; validate the heading structure with the release-please elixir release-type parser.
+Phase implementing `MockStorefront` and the idempotency proof test. This must be in the same phase as the mock — not deferred. The existing phase21 replay test already covers the contract; the v3.4 mock must pass the same invariant.
 
 ---
 
-### Pitfall 7: `source_url` Placeholder in `mix.exs` Published to hex.pm
+### Pitfall 7: Test Isolation Failures in the Example Host Proof Lane
 
 **What goes wrong:**
-`mix.exs:40` currently reads `"GitHub" => "https://github.com/example/crosswake"`. Publishing with this value means every hex package page link, every hexdocs "view source" link, and every CHANGELOG diff link points to a nonexistent repo. Worse, this is a public signal on hex.pm that the package was published carelessly.
+Three concrete races documented in the Phase 30 post-mortem reappear when new example-host proof tests are added without the same isolation discipline:
+
+**7a. Parallel `Code.require_file` race.** Two `async: true` tests both call `Code.require_file` on the same example-host file at the top of their test module. The first call compiles and loads the file; the second call races on the first-load state and either raises a `CompileError` or silently succeeds with stale bytecode.
+
+**7b. Global-cwd `File.cd` race.** A new proof test uses `File.cd!(target, fn -> ... end)` to test the mock in an isolated temp directory (the same pattern used in `crosswake_doctor_test.exs`). If this test uses `async: true`, any other async test that reads `guides/commerce.md` via a compile-time `@guide_path = Path.join([File.cwd!(), "guides", "commerce.md"])` will resolve to the wrong path while the `File.cd!` call is active, causing `File.read!` failures.
+
+**7c. Module name collision.** New proof tests define inline `defmodule PaywallCorridorRouter` fixtures. If the module name matches an existing fixture module in another test file (the phase23 test already defines `PaywallCorridorRouter` and `PurchaseCorridorRouter` as inline modules), and both tests run in the same `mix test` invocation, Elixir raises a module-redefinition warning that becomes an error under `--warnings-as-errors`.
 
 **Why it happens:**
-The placeholder was set during private milestone work and was not replaced because the repo was not yet public.
+Example-host tests reuse the `Code.require_file` pattern established in `phase21_reconciliation_example_test.exs`, but add it to new files that also define async tests. The isolation rules from Phase 30 are not written down as a policy; they live in test-file comments (`async: false — this test changes the global process working directory via File.cd!/2`). New contributors (or the planner) copy the pattern without the comment and without reading the prior post-mortem.
 
 **How to avoid:**
-Set `@source_url` to the actual GitHub repo URL in mix.exs. Also add `@source_url` as a module attribute and reference it in both `project/0` and `package/0` (the skill template pattern). Confirm the GitHub repo exists and is public before first publish. Add `source_url: @source_url` to the `docs/0` function's `source_ref: "v#{@version}"` block.
+1. Any test file that calls `Code.require_file` on an example-host path must use `async: false`. Put the `Code.require_file` calls at module scope (top of file), not inside `setup` or test bodies.
+2. Any test file that uses `File.cd!/2` must use `async: false`. The `crosswake_doctor_test.exs` comment is the canonical rationale; copy it verbatim.
+3. Inline router fixture modules defined inside proof test files must use unique, test-file-scoped names. Convention: prefix with the phase number (`Phase34PaywallCorridorRouter`) to avoid collision with Phase 23's `PaywallCorridorRouter`.
+4. The new `phase34-proof.yml` merge-blocking step must include `--warnings-as-errors` (matching the existing pattern) so module-redefinition warnings surface as CI failures immediately.
+5. Compile-time `@guide_path` assignments (using `File.cwd!()` at module load time) are safe only if no concurrent test changes the cwd. Verify that any test defining `@guide_path` is either `async: false` or that it runs in a suite that does not include `File.cd!`-using tests.
 
 **Warning signs:**
-- `mix.exs` still contains `example/crosswake` or any placeholder string
-- `mix hex.build --unpack` + grep for "example" finds it in the unpacked tarball metadata
+- A new proof test file contains `Code.require_file` and `use ExUnit.Case, async: true` in the same file.
+- A new proof test defines a module named `PaywallCorridorRouter` without a phase-scoped prefix.
+- CI log shows `warning: redefining module PaywallCorridorRouter` followed by a test failure under `--warnings-as-errors`.
+- A `File.read!("guides/commerce.md")` fails with `no such file` in CI but passes locally (cwd contamination from a concurrent `File.cd!` test).
 
 **Phase to address:**
-Package metadata audit phase. First action before anything else.
-
----
-
-## Moderate Pitfalls
-
-### Pitfall 8: `mix.exs` Missing `docs/0` Function — ex_doc Not a Dev Dependency
-
-**What goes wrong:**
-Crosswake's current `mix.exs` has no `docs/0` function and no `{:ex_doc, ...}` dependency. Publishing without `ex_doc` means hexdocs.pm will either show no documentation or render auto-generated module stubs without the README, guides, or extras. The hex package page displays the package description but no polished docs landing page.
-
-Additionally, if `ex_doc` is added but listed without `only: [:dev]`, it becomes a transitive compile dependency for every adopter of the library, which is unnecessary and inconsiderate.
-
-**How to avoid:**
-Add `{:ex_doc, "~> 0.34", only: :dev, runtime: false}` to deps. Add a `docs/0` private function:
-```elixir
-defp docs do
-  [
-    main: "readme",
-    source_ref: "v#{@version}",
-    source_url: @source_url,
-    extras: ["README.md", "CHANGELOG.md"]
-  ]
-end
-```
-Add `docs: docs()` to `project/0`. Run `mix docs` locally and verify the HTML output before publish.
-
-**Warning signs:**
-- `mix.exs` has no `docs:` key in `project/0`
-- `mix deps` shows no `ex_doc` entry
-- `mix docs` fails or produces no `doc/` directory
-
-**Phase to address:**
-Package metadata audit phase, alongside `:files` and `:package` audits.
-
----
-
-### Pitfall 9: Dependency Version Constraints Too Tight (Blocking Adopter Upgrades)
-
-**What goes wrong:**
-Crosswake currently depends on `{:phoenix, "~> 1.8"}` and `{:phoenix_live_view, "~> 1.1"}`. The `~> 1.8` form is correct (allows 1.8.x and 1.9.x, 1.10.x, etc. but not 2.0). However, if any dependency were specified as `"~> 1.8.0"` (with patch), it would block adopters from using Phoenix 1.9.x when it ships. The library guidelines are explicit: `"~> x.y.z"` prevents minor upgrades for the adopter.
-
-The secondary risk: `{:jason, "~> 1.4"}` and `{:nimble_options, "~> 1.1"}` look correct. Verify no dep uses a three-part patch constraint.
-
-**How to avoid:**
-Audit every dep in `deps/0`. Ensure all production dependencies use `"~> major.minor"` form, not `"~> major.minor.patch"`. For pre-1.0 deps, `"~> 0.x.y"` is acceptable.
-
-**Warning signs:**
-- Any `{:dep, "~> x.y.z"}` where `z` is a patch version in a 1.x+ library
-
-**Phase to address:**
-Package metadata audit phase.
-
----
-
-### Pitfall 10: `HEX_API_KEY` Exposed in Workflow Logs
-
-**What goes wrong:**
-If `HEX_API_KEY` is echoed, printed to a step summary, or logged in any workflow step — even accidentally via a debug flag — it becomes visible in GitHub Actions logs. Anyone with read access to the repo can view historical workflow logs. A leaked key allows any holder to publish to hex.pm as the package owner.
-
-The supply-chain angle: if a CI workflow uses a third-party action pinned by version tag (not SHA), a compromised action version can exfiltrate the secret. The tj-actions/changed-files incident (March 2025) did exactly this across 23,000 repos.
-
-**How to avoid:**
-- Store `HEX_API_KEY` as a repository secret, never as an environment file or workflow variable that might be echoed.
-- Reference only as `${{ secrets.HEX_API_KEY }}` in the publish step's `env:` block.
-- Pin all third-party actions in workflows to full commit SHA, not to `@v4` tags: `uses: actions/checkout@<full-sha>`.
-- Do not add `-v` or `--verbose` to `mix hex.publish` steps — verbose mode can print environment details.
-
-**Warning signs:**
-- Any workflow step that `echo`s environment variables
-- Third-party actions referenced as `@v3`, `@v4` instead of `@<40-char-sha>`
-- `HEX_API_KEY` set anywhere other than GitHub Secrets UI
-
-**Phase to address:**
-Release workflow authoring phase. Security audit of all workflow YAML before push.
-
----
-
-### Pitfall 11: release-please Accumulates Non-Conventional Commits from Private History
-
-**What goes wrong:**
-Crosswake has 25+ phases of commit history with commit messages that were written for internal milestone tracking, not for conventional commits format. When release-please runs for the first time on a repo with accumulated history, it may scan all commits since the beginning of time (if no `bootstrap-sha` is set) and produce a CHANGELOG that contains hundreds of non-conformant entries, or produce an unexpected major bump from any commit that happens to parse as `feat!:` or contain `BREAKING CHANGE:` in its body.
-
-**Why it happens:**
-release-please's manifest-releaser uses the GitHub API to walk commits back to the most recent tag or the `bootstrap-sha`. Without a bootstrap anchor, every commit is in scope.
-
-**How to avoid:**
-Set `"bootstrap-sha"` in `release-please-config.json` to the SHA of the most recent commit before the release workflow is first wired. This tells release-please to treat everything before that SHA as pre-existing history, not as changelog material:
-```json
-{
-  "bootstrap-sha": "<sha-of-last-commit-before-release-wire>",
-  "packages": { "...": {} }
-}
-```
-The bootstrap-sha is only used once; after the first Release PR merges, it becomes irrelevant and can be removed.
-
-**Warning signs:**
-- First release-please PR contains a CHANGELOG with dozens of entries referencing internal planning phases
-- Version bump is unexpected (e.g., proposes 2.0.0 from an old "BREAKING: ..." commit in the archive)
-
-**Phase to address:**
-Release-please config phase. Set bootstrap-sha before the first push with release-please workflow.
-
----
-
-### Pitfall 12: README Renders Differently on hex.pm Package Page vs hexdocs.pm
-
-**What goes wrong:**
-hex.pm's package page renders the README directly from the tarball without ExDoc processing. hexdocs.pm renders the README through ExDoc's HTML pipeline. The differences that bite:
-- Relative image paths (`./assets/diagram.png`) render correctly in GitHub and hexdocs but break on the hex.pm package page, which has no asset serving.
-- Elixir code blocks with `<!--hexdoc skip-->` comments and other ExDoc-specific directives are visible as raw HTML comments on the hex.pm page.
-- Admonitions and callout syntax (`> #### Note\n> `) render correctly in ExDoc but appear as plain blockquotes on hex.pm.
-
-**How to avoid:**
-- Use absolute GitHub raw URLs for any images in README.md: `https://raw.githubusercontent.com/szTheory/crosswake/main/assets/...`
-- Preview the hex package page rendering by running `mix hex.build --unpack` and opening the README in a plain Markdown renderer (not GitHub-flavored).
-- For Crosswake specifically: check if README.md contains any relative asset links.
-
-**Warning signs:**
-- README.md contains `![...](./)` or `![...](assets/)` relative image paths
-- README uses `> [!NOTE]` GitHub-flavored admonition syntax (not standard Markdown)
-
-**Phase to address:**
-README and hexdocs polish phase. Verify rendering before first publish.
-
----
-
-### Pitfall 13: `release-as` Pin Left In After First Publish
-
-**What goes wrong:**
-The `release-as` pin in `release-please-config.json` is a one-time bootstrap override that forces the first release to a specific version. If it is not removed after the first successful publish, every subsequent release-please PR will attempt to re-propose the same version. The publish step will fail with "version already published on hex.pm" or release-please will create an infinite loop of Release PRs all targeting `0.1.0`.
-
-**Why it happens:**
-The cleanup step is documented in the skill but easy to skip after the excitement of a first publish.
-
-**How to avoid:**
-Treat `release-as` removal as a mandatory post-publish step. Add it to the release phase acceptance criteria: "CHANGELOG.md updated AND release-as pin removed AND release-please config committed."
-
-```bash
-sed -i '' '/"release-as":/d' release-please-config.json
-git commit -am "chore: remove release-as pin (0.1.0 shipped)"
-git push origin main
-```
-
-**Warning signs:**
-- `release-please-config.json` still contains `"release-as"` after first publish
-- Second release-please run proposes the same version as the first
-
-**Phase to address:**
-Post-publish cleanup phase (explicit phase or acceptance criteria step in the release phase).
-
----
-
-### Pitfall 14: `ex_doc` Missing from `:files` Allowlist for `guides/` Extras
-
-**What goes wrong:**
-If `docs/0` lists `extras: ["README.md", "CHANGELOG.md", "guides/architecture.md"]` but `package/0` `:files` does not include `"guides"`, the hex tarball won't contain the guides files. hexdocs.pm will build docs from the tarball and silently omit the extras — producing a docs site with no guides content and no error. This is a particularly nasty silent failure because `mix docs` (which runs from the source tree) works fine; only the hexdocs.pm build (from tarball) fails.
-
-**How to avoid:**
-Ensure `:files` allowlist matches every directory referenced in `docs/0` extras. If guides are added later, update both in the same commit.
-
-**Warning signs:**
-- `extras:` in `docs/0` references a directory not present in `:files`
-- hexdocs.pm shows fewer pages than `mix docs` generates locally
-
-**Phase to address:**
-Package metadata audit phase. Cross-check `:files` vs `docs/0` extras before publish.
+Phase writing the merge-blocking proof lane for the full paywall corridor. The isolation rules must be applied when the test file is first written — retrofit is painful. The `phase34-proof.yml` step must replicate the `--exclude requires_example_host` and `--warnings-as-errors` flags from existing proof workflows.
 
 ---
 
@@ -351,12 +219,12 @@ Package metadata audit phase. Cross-check `:files` vs `docs/0` extras before pub
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Skip `mix hex.build --unpack` audit | Faster publish | Ships .planning/ or internal docs permanently | Never |
-| Copy files list from template without auditing | Template reuse | Wrong files included or missing | Never |
-| Leave `release-as` pin after first publish | Simpler first PR | Infinite Release PR loop | Never — must remove |
-| Skip `bootstrap-sha` in release-please config | Simpler config | Massive CHANGELOG from private history | Never |
-| Pin actions by tag (`@v4`) instead of SHA | Easier to read | Supply chain vulnerability (tj-actions pattern) | Only for internal-only repos with no secrets |
-| Use `releases_created` output gate | Copy from v3 docs | Spurious hex publish on every push | Never in v4 |
+| MockStorefront returns `EntitlementSnapshot` directly | Less wiring to implement | Bypasses non-authoritative-evidence guardrail; proof test validates wrong boundary | Never — the mock must return `ReconciliationEvidence` |
+| Single `:granted`/not-`:granted` LiveView branch | Simpler template | `:stale` and `:pending` render as paywall; adopters copy the wrong pattern | Never — all four `derived_state/1` branches are part of the proof contract |
+| Use `correlation_id` as `provider_reference` in mock | No UUID generation needed | Idempotency test proves wrong key; adopters copy correlation-id-based dedup | Never — `provider_reference` must be stable and provider-assigned |
+| Add new proof test to existing `phase23-proof.yml` step | One fewer workflow file | Phase 23 scope expands; hermeticity guard scans only its own file | Acceptable only if the new test is 100% hermetic (no `Code.require_file`, no example-host dependency) |
+| Write guide walkthrough before example code is final | Earlier docs review | Structural drift between guide and implementation; docs-contract test fails silently if locked assertions are too coarse | Never for code-referencing sections; acceptable for conceptual overview |
+| `async: true` with `Code.require_file` at test scope | Faster test suite | Parallel-compile race; intermittent CI failures | Never |
 
 ---
 
@@ -364,54 +232,28 @@ Package metadata audit phase. Cross-check `:files` vs `docs/0` extras before pub
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| release-please + existing repo | Manifest baseline at `0.1.0` | Baseline at `0.0.0` with `release-as: "0.1.0"` pin |
-| release-please + existing repo | No `bootstrap-sha` | Set `bootstrap-sha` to HEAD SHA before first push |
-| release-please v4 | `releases_created` condition | `release_created` (singular) condition |
-| hex publish + GitHub Actions | API key in env echo | `${{ secrets.HEX_API_KEY }}` in env block only |
-| hexdocs + README | Relative image paths | Absolute raw.githubusercontent.com URLs |
-| hex tarball + guides | Guides in extras but not `:files` | Cross-check `:files` vs extras list every time |
-| hex.pm + description | Missing `description()` function | Required field — will error at publish time |
-| release-please + GitHub | Default workflow permissions | Flip `default_workflow_permissions=write` immediately after repo creation |
-
----
-
-## Security Mistakes
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Third-party actions pinned by tag not SHA | Compromised action exfiltrates `HEX_API_KEY` (tj-actions 2025 pattern) | Pin all `uses:` to full 40-char commit SHA |
-| `HEX_API_KEY` in repo-level secret without environment protection | Any workflow on any branch can access the key | Consider environment secrets with approval gate for the publish environment |
-| `mix hex.publish` with `--verbose` flag | Key value in logs | Never add verbose flag; use `mix hex.build --dry-run` for validation |
-| Publishing from a branch other than main | Unreviewed code shipped | Release workflow must gate on `refs/tags/v*` or require Release PR merge to main |
+| `ReconciliationInbox.ingest_evidence/2` | Pass `authority_state:` as an opt to force a grant | `reject_direct_authority_override/1` already rejects `:authority_state` opts with `{:error, :authority_lane_mutation_forbidden}`; the mock must not attempt this | Return `ReconciliationEvidence` and let `ingest_evidence/2` produce `EvidenceResult` with `status: :awaiting_verification` |
+| `EntitlementProjection.project_snapshot/2` | Call with a snapshot whose `reconciliation.state` is `:pending_purchase` or `:awaiting_verification` expecting `:ok` | Returns `{:error, :unverified_reconciliation_outcome}` — only `:projection_refreshed`, `:verification_failed`, `:conflict`, `:stale_authority` are "verified" states | Mock must produce a snapshot with `reconciliation.state: :projection_refreshed` to pass the projection gate; the proof test must assert the gate fires correctly for unverified states |
+| `phase23-proof.yml` advisory lane | Add mock purchase test to `advisory-commerce-proof` job assuming it can block merge | `continue-on-error: true` means advisory failures never block merge; a test that must gate the PR belongs in the hermetic job | Route merge-blocking tests to the hermetic job; advisory job is for environment-sensitive placeholders only |
+| `guides/commerce.md` non-claims section | Add "MockStorefront ships a paywall UI" language | The non-claims test asserts `Storefront purchase UI is not shipped` — adding UI language breaks the lock | Mock proves the corridor contract, not the UI; guide must state explicitly that the paywall UI template is example-only |
+| `ReconciliationKeys.event_key/1` | Use `correlation_id` as a key component | `ReconciliationKeys` derives the key from `provider + provider_reference + event_kind` (stable, provider-assigned) | Mock must assign a stable `provider_reference` UUID and document that `correlation_id` is intentionally excluded |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **`:package` block:** Has `:licenses`, `:links`, `:maintainers`, AND `:files` — missing any one causes hex-page rendering gaps or ships wrong content.
-- [ ] **`source_url`:** No longer contains `example/crosswake` placeholder — verify with `grep -r "example" mix.exs`.
-- [ ] **CHANGELOG.md:** Has `## [Unreleased]` anchor at top — release-please inserts above this; without it the insert position is undefined.
-- [ ] **release-please manifest:** Baseline is `"0.0.0"` not `"0.1.0"` — one-off-by-one version causes first publish to wrong version.
-- [ ] **`release-as` pin:** Present in config before first publish AND removed after.
-- [ ] **GitHub permissions:** `default_workflow_permissions=write` set — otherwise release-please silently fails to create PR.
-- [ ] **Tarball audit:** `mix hex.build --unpack` run and output inspected for unwanted files.
-- [ ] **hexdocs smoke test:** `mix docs` runs locally without errors before publish.
-- [ ] **ex_doc dev-only:** `{:ex_doc, ..., only: :dev, runtime: false}` — not a production dep.
-- [ ] **`releases_created` vs `release_created`:** Workflow YAML uses singular `release_created` output gate.
-- [ ] **`release-as` pin removed:** After first publish, `release-please-config.json` has no `release-as` key.
-
----
-
-## Recovery Strategies
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Wrong files shipped in tarball | HIGH | Retire the version within 1-hour window (`mix hex.publish --revert VERSION`); fix `:files`, republish. After 1 hour: contact hex.pm admin or retire with `mix hex.retire VERSION security` + republish corrected version. |
-| Wrong version published | MEDIUM | Within 24h of brand-new package: revert entire package. After 24h: retire wrong version, publish correct version separately. Note: retired version remains in history. |
-| `release-as` pin not removed | LOW | Remove pin, commit, push. release-please will self-correct on next run. |
-| `source_url` placeholder published | MEDIUM | Within 1 hour: revert and republish. After: publish corrected metadata in next version bump. |
-| CHANGELOG missing `[Unreleased]` anchor | LOW | Add `## [Unreleased]` section, push to main — release-please fixes on next run before any publish occurs. |
-| release-please creates wrong-version PR | LOW | Close the PR, fix manifest/config, push — release-please will open a new correct PR. No publish has occurred yet. |
+- [ ] **MockStorefront boundary:** Verify `MockStorefront` returns `ReconciliationEvidence`, not `EntitlementSnapshot`. Check that no `authority:` or `access:` field is set inside the mock module.
+- [ ] **Non-authoritative-evidence test:** Verify the proof lane includes a test asserting `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?(attempt.status) == false` for mock-produced evidence.
+- [ ] **Four-state LiveView render:** Verify PaywallEntryLive has explicit branches for `:granted`, `:pending`, `:stale`, `:denied` — not just `:granted` vs everything else.
+- [ ] **Pending-to-granted transition:** Verify the proof test drives the `:pending_purchase` → `:awaiting_verification` → `:projection_refreshed` → LiveView re-render transition, not just the steady-state `:granted` case.
+- [ ] **Idempotency key source:** Verify `MockStorefront` uses a stable `provider_reference` UUID unrelated to `correlation_id`. Check the proof replay test uses `provider_reference` as the stable key.
+- [ ] **Guide walkthrough accuracy:** Verify module names, function arities, and struct field names in the guide walkthrough match the actual example-host implementation (run the docs-contract test against the final code, not the planning draft).
+- [ ] **Non-claims still intact:** Verify `guides/commerce.md` still carries all five non-claims (`StoreKit`, `Play Billing`, `Device-local authority`, `Offline purchase replay`, `Storefront purchase UI`) after the walkthrough is added.
+- [ ] **Hermetic proof lane:** Verify the new proof test file does not contain `Code.require_file` on example-host paths. Verify it runs clean under `mix test --exclude requires_example_host`.
+- [ ] **CI workflow:** Verify `phase34-proof.yml` (or equivalent) has the two-job split (hermetic merge-blocking + advisory placeholder) with `continue-on-error: true` on the advisory job and the 4-condition `promotion_path` comment.
+- [ ] **async: false:** Verify any test using `File.cd!/2` or `Code.require_file` on example-host files uses `async: false`.
+- [ ] **Module name uniqueness:** Verify inline fixture modules in the new proof test use phase-scoped names (e.g. `Phase34PaywallCorridorRouter`) to avoid collision with phase23 fixtures.
+- [ ] **Provider-vocabulary fence:** Verify the new proof test or an extended existing test scans `MockStorefront` source for provider token leakage (`storekit`, `play_billing`, `revenuecat`).
 
 ---
 
@@ -419,37 +261,37 @@ Package metadata audit phase. Cross-check `:files` vs `docs/0` extras before pub
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Files allowlist ships internal docs | Package metadata audit phase | `mix hex.build --unpack` + manual inspection of unpacked dir |
-| Manifest off-by-one / release-as missing | release-please config phase | Verify Release PR title matches intended first version |
-| `releases_created` v4 output | Release workflow authoring phase | Code review of `if:` condition in publish job |
-| GitHub Actions can't create PRs | GitHub repo setup phase | Confirm Release PR appears after first push |
-| Version choice (0.1.0 vs 1.0.0-rc.0) | Version decision phase (before metadata) | CHANGELOG entry documents rationale |
-| CHANGELOG milestones vs hex format | CHANGELOG authoring phase | Validate `## [Unreleased]` anchor exists; test with `mix docs` |
-| source_url placeholder | Package metadata audit phase | `grep "example" mix.exs` returns nothing |
-| ex_doc missing / not dev-only | Package metadata audit phase | `mix docs` succeeds; `mix deps` shows `ex_doc` with `only: :dev` |
-| Dep version constraints too tight | Package metadata audit phase | Audit each dep in `deps/0` for `~> x.y.z` three-part form |
-| HEX_API_KEY leak / supply chain | Release workflow authoring phase | SHA-pinned actions; secret in `env:` block only |
-| Conventional commit history accumulation | release-please config phase | `bootstrap-sha` set; first Release PR CHANGELOG is minimal |
-| README rendering differences | README/hexdocs polish phase | `mix hex.build --unpack`; view README in non-GitHub renderer |
-| `release-as` left in after publish | Post-publish cleanup phase | `grep "release-as" release-please-config.json` returns nothing |
-| guides in extras but not in `:files` | Package metadata audit phase | Cross-check `docs/0` extras vs `:files` list |
+| Mock grants entitlement authority directly | Phase implementing MockStorefront + EntitlementProjection wiring | Proof test: `outcome_implies_authority_grant? == false`; `project_snapshot` rejects `:pending_purchase` state |
+| Example drifts into billing engine | Phase writing MockStorefront | Provider-vocabulary fence test scans mock source; non-claims section still intact after guide update |
+| Docs-contract drift (guide vs. example code) | Phase updating `guides/commerce.md` (same phase as code, not after) | Extended `commerce_test.exs` assertions on walkthrough heading and module references |
+| Hermetic lane with hidden env dependency | Phase writing the proof lane CI workflow | Phase34-proof.yml hermetic job runs clean without example-host build; hermeticity guard test in merge-blocking lane |
+| Advisory/merge-blocking job confusion | Phase writing `phase34-proof.yml` | Advisory job has `continue-on-error: true`; promotion_path 4-condition comment present |
+| LiveView reflects only :granted/:not-granted | Phase implementing PaywallEntryLive | Proof test exercises all four `derived_state/1` values and asserts distinct render outcomes |
+| Pending-to-granted transition not proved | Same phase as LiveView | Proof test drives full `:pending_purchase` → `:projection_refreshed` → re-render sequence |
+| Idempotency key derived from correlation_id | Phase implementing MockStorefront | Replay proof test: same `provider_reference` + different `correlation_id` → `replay?: true` |
+| Seen-event-keys held in memory not DB | Phase implementing MockStorefront | `@moduledoc` and guide callout explicitly document persistence responsibility; proof test comment explains `seen_event_keys` source |
+| Parallel `Code.require_file` race | Phase writing example-host proof test | Test file uses `async: false`; `Code.require_file` at module scope |
+| Global `File.cd` race | Same phase | Test file uses `async: false`; comment mirrors `crosswake_doctor_test.exs` rationale |
+| Module name collision in test fixtures | Same phase | Fixture modules use `Phase34` prefix; `--warnings-as-errors` in CI catches redefinition |
 
 ---
 
 ## Sources
 
-- hex.pm publish documentation: https://hex.pm/docs/publish
-- mix hex.publish task docs: https://hexdocs.pm/hex/Mix.Tasks.Hex.Publish.html
-- hex.pm FAQ (unpublish/retire windows): https://hex.pm/docs/faq
-- Elixir library guidelines (dependency constraints, mix.lock): https://hexdocs.pm/elixir/library-guidelines.html
-- release-please manifest releaser docs: https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md
-- Elixir School release-please guide (existing repo bootstrap): https://elixirschool.com/blog/managing-releases-with-release-please
-- release-please v4 `releases_created` footgun: https://danwakeem.medium.com/beware-the-release-please-v4-github-action-ee71ff9de151
-- GitHub Actions SHA pinning: https://www.stepsecurity.io/blog/pinning-github-actions-for-enhanced-security-a-complete-guide
-- bootstrap-elixir-hex-lib SKILL.md (oarlock first-publish post-mortem, 6 gotchas): `/Users/jon/.claude/skills/bootstrap-elixir-hex-lib/SKILL.md`
-- Crosswake mix.exs current state: `/Users/jon/projects/crosswake/mix.exs`
-- Crosswake release-readiness thread: `/Users/jon/projects/crosswake/.planning/threads/release-readiness.md`
+- `lib/crosswake/commerce/contracts.ex` — `ReconciliationEvidence`, `EntitlementSnapshot` lane types, `authority_mutation_allowed_from_evidence?/1`, `outcome_implies_authority_grant?/1` (direct inspection)
+- `lib/crosswake/commerce/reconciliation.ex` — `IdempotencyKey` struct, `reject_direct_authority_override/1`, `ingest_evidence/2` authority guardrails (direct inspection)
+- `examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — `derived_state/1` four-state function, `ensure_verified_reconciliation/1` gate (direct inspection)
+- `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — `ingest_evidence/2`, `seen_event_key?/2`, idempotency pattern (direct inspection)
+- `test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermeticity guard pattern, `@forbidden_provider_tokens` fence, inline fixture module naming (direct inspection)
+- `test/crosswake/guides/commerce_test.exs` — non-claims lock, corridor role parity test, docs-contract patterns (direct inspection)
+- `test/mix/tasks/crosswake_doctor_test.exs` — `async: false` + `File.cd!/2` isolation pattern and rationale comment (direct inspection)
+- `test/crosswake/proof/phase21_reconciliation_example_test.exs` — `Code.require_file` at module scope, `async: false`, `:requires_example_host` tag, replay test shape (direct inspection)
+- `.github/workflows/phase23-proof.yml` — two-job split, `continue-on-error: true`, 4-condition `promotion_path`, hermetic job `if:` guard (direct inspection)
+- `.planning/STATE.md` — Phase 30 post-mortem: parallel-compile `require_file` race, global-cwd `File.cd` race (direct inspection)
+- `.planning/MILESTONE-ARC.md` — Locked guardrails: "Entitlement truth remains backend- and Phoenix-owned; device purchase events are not sufficient by themselves" (direct inspection)
+- `.planning/PROJECT.md` — ENTL-03, RECN-02, Key Decisions on hermetic/advisory split, docs-contract as merge-blocking (direct inspection)
+- `.planning/threads/commerce-archetype-proof.md` — v3.4 goal, MockStorefront design constraints, advisory→hermetic promotion criteria (direct inspection)
 
 ---
-*Pitfalls research for: v3.3 Release Readiness — first-time hex.pm publication of a mature Elixir library*
-*Researched: 2026-05-27*
+*Pitfalls research for: Crosswake v3.4 Commerce Archetype Proof — mocked paywall/subscription example in a contract-first backend-owned entitlement system*
+*Researched: 2026-05-29*

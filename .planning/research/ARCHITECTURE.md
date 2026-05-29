@@ -1,400 +1,472 @@
 # Architecture Research
 
-**Domain:** Hex.pm publication infrastructure — v3.3 Release Readiness
-**Researched:** 2026-05-27
-**Confidence:** HIGH (all findings grounded in existing repo artifacts, skill SKILL.md, and PROJECT.md)
+**Domain:** Mocked-storefront paywall archetype integration (v3.4 Commerce Archetype Proof)
+**Researched:** 2026-05-29
+**Confidence:** HIGH — all findings grounded in committed source code and planning files; no external sources required.
 
 ---
 
-## System Overview
+## Standard Architecture
+
+### System Overview
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          COMPONENT CLASSIFICATION                         │
-├────────────────────────┬─────────────────────────┬───────────────────────┤
-│       UNCHANGED        │        MODIFIED          │          NEW          │
-│                        │                          │                       │
-│  lib/                  │  mix.exs                 │  CHANGELOG.md         │
-│  test/                 │    @source_url (real)    │  release-please-      │
-│  examples/             │    package/0 block       │    config.json        │
-│  guides/               │    docs/0 added          │  .release-please-     │
-│  priv/                 │  README.md               │    manifest.json      │
-│  script/               │    hex-page render       │  .github/workflows/   │
-│  .github/workflows/    │    source_url links      │    release-please.yml │
-│    phase5-proof.yml    │  guides/install.md       │  .github/workflows/   │
-│    phase10-proof.yml   │    real install snippet  │    hex-publish.yml    │
-│    phase18-proof.yml   │  .gitignore additions    │  HEX_API_KEY secret   │
-│    phase23-proof.yml   │  Possibly: doctor        │                       │
-│  .planning/            │    install-truth check   │                       │
-└────────────────────────┴─────────────────────────┴───────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         EXAMPLE HOST LAYER                           │
+│              examples/phoenix_host/lib/crosswake_example/            │
+├────────────────────┬────────────────────┬───────────────────────────┤
+│   Router (MODIFY)  │  PaywallLive (NEW) │  Paywall corridor routes  │
+│   /paywall         │  /purchase_intent  │  wired via commerce: DSL  │
+│   /purchase_intent │  /restore_intent   │                           │
+│   /restore_intent  │  PaywallEntryLive  │                           │
+├────────────────────┴────────────────────┴───────────────────────────┤
+│                       MOCK ADAPTER LAYER (NEW)                       │
+│            commerce/mock_storefront.ex  (example host only)          │
+│                                                                      │
+│  Consumes PurchaseIntent + RestoreIntent structs from Contracts.     │
+│  Emits ReconciliationEvidence with source: :storefront.              │
+│  Provider-neutral: provider field = "mock"; no real SDK code.        │
+├──────────────────────────────────────────────────────────────────────┤
+│                   BACKEND RECONCILIATION LAYER (EXISTING + EXTEND)   │
+│  commerce/reconciliation_inbox.ex    (EXISTS — used as-is)           │
+│  commerce/reconciliation_keys.ex     (EXISTS — used as-is)           │
+│  commerce/entitlement_projection.ex  (EXISTS — used as-is)           │
+├──────────────────────────────────────────────────────────────────────┤
+│                        CROSSWAKE CORE LIBRARY                        │
+│  Crosswake.Commerce.Contracts        (EXISTS — do not modify)        │
+│  Crosswake.Commerce.Reconciliation   (EXISTS — do not modify)        │
+│  Crosswake.Router DSL                (EXISTS — add commerce: routes) │
+└──────────────────────────────────────────────────────────────────────┘
+
+                             DATA FLOW
+MockStorefront.simulate_purchase/1
+    ↓  returns ReconciliationEvidence{source: :storefront, provider: "mock", ...}
+ReconciliationInbox.ingest_evidence/2
+    ↓  returns {:ok, attempt}  (status: :awaiting_verification, never grants authority)
+[Host backend simulates verification — sets reconciliation to :projection_refreshed]
+EntitlementProjection.project_snapshot/2
+    ↓  returns {:ok, EntitlementSnapshot.t()}  (monotonic as_of, verified reconciliation)
+EntitlementProjection.derived_state/1
+    ↓  returns :stale | :pending | :denied | :granted
+Phoenix.PubSub.broadcast/3
+    ↓  {:entitlement_update, derived_state}
+PaywallEntryLive.handle_info/2
+    ↓  assign(socket, entitlement_state: derived_state)
 ```
 
 ---
 
-## Component Responsibilities
+## Component Boundaries
 
-| Component | Responsibility | Status |
-|-----------|----------------|--------|
-| `mix.exs` `:package` block | Declares Hex package name, licenses, links (Source/Docs/Changelog), files allowlist | Modified — `:maintainers`, `:links` Changelog entry, `name:`, `docs:` all missing |
-| `mix.exs` `@source_url` | Canonical repo URL used in docs source links and hex page | Modified — currently `github.com/example/crosswake` placeholder |
-| `mix.exs` `docs/0` | Configures ExDoc: `main:`, `source_ref:`, `formatters:`, `extras:` (guides + CHANGELOG) | New function — entirely absent today |
-| `CHANGELOG.md` | Keep-a-Changelog format; synthesis from MILESTONES.md history; release-please appends entries on each release | New file — does not exist |
-| `release-please-config.json` | Declares `release-type: elixir`, bump strategy, `changelog-path`, one-time `release-as:` pin | New file |
-| `.release-please-manifest.json` | Baselines current version at `0.0.0` so release-please knows first release is the next bump | New file — MUST be `0.0.0`, not the current mix.exs version |
-| `.github/workflows/release-please.yml` | Listens for merged commits, opens Release PR with CHANGELOG diff and version bump, on merge creates tag, triggers `publish-hex` | New workflow |
-| `.github/workflows/hex-publish.yml` | Manual recovery workflow; dispatches hex publish for a specific tag if release-please auto-publish stalls | New workflow |
-| `HEX_API_KEY` GitHub secret | Authorizes `mix hex.publish` in CI | New secret — human step, not automated |
-| `README.md` | Hex page renders from README; must have correct `source_url`-relative links and render cleanly on hex.pm | Modified — relative links need audit for hex.pm package page |
-| `guides/install.md` | Canonical install guide; should reference `{:crosswake, "~> X.Y"}` with the real published version | Modified |
-| `doctor` diagnostics | Surfaces install-truth check — "is a published version available?" | Possibly modified — see Doctor/Install Truth section |
+### Integration Points: New vs. Modified vs. Existing
 
----
-
-## Integration Points with Existing CI Lanes
-
-### Existing Workflows (All Unchanged)
-
-| Workflow | Trigger | Lane Type | Gate Status |
-|----------|---------|-----------|-------------|
-| `phase5-proof.yml` | PR, push main | Hermetic | Merge-blocking |
-| `phase10-proof.yml` | PR, push main | Hermetic | Merge-blocking |
-| `phase18-proof.yml` | PR, push main | Hermetic | Merge-blocking |
-| `phase23-proof.yml` merge-blocking-commerce-proof job | PR, push main, dispatch | Hermetic | Merge-blocking |
-| `phase23-proof.yml` advisory-commerce-proof job | Schedule (Mon 06:00 UTC), dispatch | Advisory | Never gates merge (`continue-on-error: true`) |
-
-### New Workflows and Their Relationship to Existing Lanes
-
-**`release-please.yml`** operates on a different event axis than the proof lanes:
-
-- Triggers on: `push` to `main` (after PR merge), `workflow_dispatch`
-- The `release-please` job runs on every push to main — it opens or updates a Release PR
-- The `publish-hex` job runs ONLY when release-please creates a GitHub release (i.e., after the Release PR is merged) — it is `needs: release-please` gated
-- This workflow does NOT interact with branch protection for any proof lane. The existing merge-blocking hermetic jobs (phase5/10/18/23) must still pass before any PR (including the Release PR opened by release-please) can merge. **The Release PR itself goes through the same merge gate as any other PR** — this is by design.
-
-**`hex-publish.yml`** (manual recovery):
-
-- Trigger: `workflow_dispatch` only with `tag` and `release_version` inputs
-- No interaction with proof lanes — it runs `mix test` internally to verify before publishing
-- No `sync-release-summary` step (gotcha #6 — that is sigra-specific and would block publish)
-
-**Advisory lane for publish path** (if needed):
-
-Per the hermetic-vs-advisory graduation default (PROJECT.md Key Decisions, 2026-05-27), any environment-sensitive publish proof — e.g., a live hex.pm API availability check, or a smoke-test that `mix deps.get crosswake` resolves — should follow the advisory pattern: schedule/dispatch only, `continue-on-error: true`, never in the merge gate. This is analogous to how `advisory-commerce-proof` handles storefront/device checks.
+| Component | Path | Status | Role |
+|-----------|------|--------|------|
+| `CrosswakeExample.Router` | `examples/phoenix_host/lib/crosswake_example/router.ex` | MODIFY | Add `/paywall` scope with three corridor routes |
+| `CrosswakeExample.Commerce.MockStorefront` | `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex` | NEW | Mock adapter; emits `ReconciliationEvidence` without provider SDK |
+| `CrosswakeExample.Paywall.PaywallEntryLive` | `examples/phoenix_host/lib/crosswake_example/paywall/paywall_entry_live.ex` | NEW | LiveView for paywall display; subscribes to entitlement state via PubSub |
+| `CrosswakeExample.Paywall.PurchaseIntentLive` | `examples/phoenix_host/lib/crosswake_example/paywall/purchase_intent_live.ex` | NEW | LiveView that calls MockStorefront, feeds evidence into ReconciliationInbox |
+| `CrosswakeExample.Paywall.RestoreIntentLive` | `examples/phoenix_host/lib/crosswake_example/paywall/restore_intent_live.ex` | NEW | LiveView that calls MockStorefront restore path, feeds evidence into inbox |
+| `CrosswakeExample.Commerce.ReconciliationInbox` | `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` | EXISTING (unchanged) | Ingests evidence; returns attempt map; never grants authority |
+| `CrosswakeExample.Commerce.EntitlementProjection` | `examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` | EXISTING (unchanged) | `derived_state/1` and `project_snapshot/2` are already correct and proven in phase21 |
+| `CrosswakeExample.Commerce.ReconciliationKeys` | `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` | EXISTING (unchanged) | `event_key/1`, `subject_key/2` for idempotency |
+| `Crosswake.Commerce.Contracts` | `lib/crosswake/commerce/contracts.ex` | EXISTING (do not modify) | Canonical struct definitions consumed by the example host |
+| `Crosswake.Commerce.Reconciliation` | `lib/crosswake/commerce/reconciliation.ex` | EXISTING (do not modify) | Outcome vocabulary; `ingest_evidence/2` is the reference contract |
+| Hermetic proof test | `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` | NEW | Merge-blocking; drives full data layer without example-host runtime or PubSub |
+| Advisory CI workflow | `.github/workflows/phase34-proof.yml` | NEW | Mirrors phase23-proof.yml two-job split; hermetic job + advisory placeholder |
+| `guides/commerce.md` | `guides/commerce.md` | MODIFY | Add end-to-end paywall corridor walkthrough; docs-contract test locks it |
 
 ---
 
-## Build Order (Dependency Sequence)
+## Recommended Project Structure
 
-This is the correct sequencing for roadmap phase ordering. Each step depends on the previous.
+```
+examples/phoenix_host/lib/crosswake_example/
+├── commerce/
+│   ├── mock_storefront.ex          # NEW — mock adapter only; example/docs-only
+│   ├── reconciliation_inbox.ex     # EXISTS — unchanged
+│   ├── reconciliation_keys.ex      # EXISTS — unchanged
+│   └── entitlement_projection.ex  # EXISTS — unchanged
+├── paywall/
+│   ├── paywall_entry_live.ex      # NEW — subscribes to entitlement state
+│   ├── purchase_intent_live.ex    # NEW — triggers mock purchase path
+│   └── restore_intent_live.ex     # NEW — triggers mock restore path
+├── router.ex                      # MODIFY — add /paywall scope
 
-**Step 1: Package Metadata Audit**
-- Check hex.pm/api/packages/crosswake for name availability (gotcha #1)
-- Replace `@source_url` placeholder with real GitHub URL (`szTheory/crosswake`)
-- Add `name: "crosswake"` to `package/0` — explicit OTP atom match (gotcha #2 prevention)
-- Expand `links:` to include Source, Docs, Changelog entries
-- Finalize files allowlist: `lib/`, `priv/`, `guides/`, `mix.exs`, `README.md`, `LICENSE`, `CHANGELOG.md`
-- Review `:description` string for hex page rendering
-- mix.exs must be clean before CHANGELOG or release-please can reference it
+test/crosswake/proof/
+├── phase34_paywall_corridor_proof_test.exs  # NEW — hermetic merge-blocking
+├── phase21_reconciliation_example_test.exs  # EXISTS — unchanged
+├── phase23_commerce_support_proof_test.exs  # EXISTS — unchanged
 
-**Step 2: Versioning Decision**
-- 0.1.0 (pre-release signal) vs 1.0.0-rc.0 (contract-mature signal) — decision drives the `release-as:` pin
-- Document rationale in CHANGELOG.md Unreleased section
-- This decision is a prerequisite for both CHANGELOG draft and release-please config
+.github/workflows/
+├── phase34-proof.yml              # NEW — hermetic + advisory split
+├── phase23-proof.yml              # EXISTS — unchanged
 
-**Step 3: CHANGELOG.md Draft**
-- Synthesize from MILESTONES.md v1.0 through v3.2 history
-- Use Keep-a-Changelog format with `[Unreleased]` heading
-- Include planning-milestones-vs-hex-releases bridge note (all prior milestone work folds into the first 0.1.0 entry)
-- Do NOT include `### Summary` subsection — that is sigra-specific and breaks the release pipeline (gotcha #6)
-- This file must exist before `release-please-config.json` can reference `changelog-path`
+guides/
+└── commerce.md                    # MODIFY — add paywall walkthrough section
+```
 
-**Step 4: release-please Config**
-- `release-please-config.json`: `release-type: elixir`, bump strategy, `changelog-path: CHANGELOG.md`
-- `.release-please-manifest.json`: baseline at `0.0.0` — NOT the current mix.exs version (gotcha #4)
-- Include one-time `release-as:` pin matching Step 2 version decision (gotcha #5)
-- CHANGELOG.md must exist first (Step 3 dependency)
+### Structure Rationale
 
-**Step 5: Release Workflow**
-- `.github/workflows/release-please.yml` — use oarlock template, not sigra (gotcha #6)
-- `.github/workflows/hex-publish.yml` — manual recovery
-- Wire `publish-hex needs: release-please` only — no `sync-release-summary` job
-- GitHub Actions permissions: `default_workflow_permissions=write`, `can_approve_pull_request_reviews=true` (gotcha #3 — must be set immediately after push)
-
-**Step 6: `mix hex.build` Dry Run and Content Audit**
-- Run `mix hex.build` locally — verify tarball is named `crosswake-X.Y.Z.tar` (not the OTP atom form)
-- Verify files allowlist is complete and correct
-- Clean up tarball after verification
-
-**Step 7: ExDoc / Hexdocs Polish**
-- Add `defp docs/0` to mix.exs: `main: "readme"`, `source_ref: "v#{@version}"`, `formatters: ["html"]`
-- `extras:` list must include `README.md` + `CHANGELOG.md` + guides
-- Run `mix docs` locally to verify hexdocs rendering
-- README.md render audit — relative links in README render as ExDoc extras links on hexdocs.pm; on the raw hex.pm package page they should use absolute GitHub URLs
-
-**Step 8: HEX_API_KEY Secret (Human Step)**
-- Visit hex.pm/dashboard/keys → Generate key named `crosswake-ci` with write permissions
-- `gh secret set HEX_API_KEY --repo szTheory/crosswake`
-- Cannot be automated — hex.pm key generation is a human browser action
-- Verify with `gh secret list --repo szTheory/crosswake`
-
-**Step 9: Release-Please Bootstrap and First Publish**
-- Push all above commits to main
-- Wait for release-please to open Release PR
-- Verify PR proposes the correct version matching the `release-as:` pin (gotcha #5 check)
-- Confirm HEX_API_KEY secret is set before merging
-- Merge Release PR — triggers `publish-hex` job — verify hex.pm has the release
-
-**Step 10: Post-Publish Cleanup and Proof**
-- Remove `release-as:` pin from `release-please-config.json` (gotcha #5 follow-up — if forgotten, future releases will all be pinned)
-- Smoke-test: `mix new scratch`, add `{:crosswake, "~> X.Y"}`, `mix deps.get`, `mix compile`
-- Verify hexdocs.pm/crosswake/X.Y.Z/ resolves
-- Update `guides/install.md` with real `{:crosswake, "~> X.Y"}` snippet
-- Doctor install-truth check (if in scope — comes last because hex version must be live first)
+- **`commerce/`:** Groups all reconciliation plumbing. `mock_storefront.ex` belongs here (not in `paywall/`) because it is the adapter layer, not a UI layer. This mirrors how a real StoreKit adapter would be organized by an adopter. Keeping it adjacent to the existing inbox/projection/keys files makes the adoption pattern explicit.
+- **`paywall/`:** A dedicated namespace for corridor LiveViews mirrors how `saas_portal/` and `selective_native/` are organized in the existing example host. Route owners live next to their corridor declaration context.
+- **No GenServer or ETS for v3.4:** The proof is hermetic-first. `EntitlementProjection` stays a pure-function module. LiveViews hold in-socket state derived from `EntitlementProjection.derived_state/1`. A persistent state process is a valid adopter extension but is not required by this proof and would add non-hermetic scope.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: release-please as the Single Version Authority
+### Pattern 1: MockStorefront as a Thin Evidence Emitter
 
-**What:** release-please reads conventional commits on `main`, maintains `.release-please-manifest.json` as the version ledger, opens a Release PR with a CHANGELOG diff, and on merge creates the GitHub release and tag that triggers `publish-hex`. No human manually edits `mix.exs` version or CHANGELOG after bootstrap.
+**What:** `MockStorefront` is a single pure-function module with two public functions: `simulate_purchase/1` (takes `PurchaseIntent.t()`) and `simulate_restore/1` (takes `RestoreIntent.t()`). Both return `{:ok, %ReconciliationEvidence{}}`. The mock sets `provider: "mock"` and derives `provider_reference` deterministically from the intent's `entry_id` or `correlation_id`. No external calls, no processes.
 
-**When to use:** After the initial bootstrap. First release requires the one-time `release-as:` pin; subsequent releases are fully automated.
+**When to use:** In example-host LiveViews and the hermetic proof test. In real adopter apps, `MockStorefront` is replaced by a StoreKit or Play Billing adapter that emits the same `ReconciliationEvidence` contract struct. The rest of the pipeline (inbox, projection, LiveView) is identical.
 
-**Trade-offs:** Requires conventional commit discipline (`feat:`, `fix:`, `chore:`, `BREAKING CHANGE:`). The Release PR is a normal PR that goes through all existing merge gates — this is a feature. Misuse of the pin (leaving `release-as:` in config permanently) blocks all future version bumps.
+**Why this shape preserves the non-authoritative boundary:** `ReconciliationEvidence` is the struct boundary between storefront and Phoenix. It structurally cannot express authority — there are no authority or access fields. Downstream modules (`ReconciliationInbox`, `EntitlementProjection`) behave identically whether evidence came from the mock or a real storefront. `Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally as the contract-level guard.
 
-**Key config:**
-```json
-{
-  "release-type": "elixir",
-  "bump-minor-pre-major": false,
-  "bump-patch-for-minor-pre-major": true,
-  "packages": {
-    ".": {
-      "changelog-path": "CHANGELOG.md",
-      "include-v-in-tag": true,
-      "release-as": "0.1.0"
-    }
-  }
-}
-```
-
-Manifest baseline (CRITICAL — gotcha #4):
-```json
-{ ".": "0.0.0" }
-```
-
-### Pattern 2: Hermetic-vs-Advisory Split Applied to Publish Path
-
-**What:** Any environment-sensitive publish-path proof follows the same two-job split established in `phase23-proof.yml`. A dry-run `mix hex.build` is hermetic and can be merge-blocking. A live hex.pm API probe or consumer-side `mix deps.get` smoke test is advisory: schedule/dispatch only, `continue-on-error: true`, never in the merge gate.
-
-**When to use:** If the roadmap includes a CI step that checks "is this version live on hex.pm?" — that check is advisory. Matches how provider simulators are not in the commerce merge gate.
-
-**Trade-offs:** Keeps PRs fast and honest. Advisory lane results are visible in CI dashboard without blocking merges. Promotion to merge-blocking requires the 4-condition promotion path documented in `phase23-proof.yml`.
-
-### Pattern 3: CHANGELOG.md as One-Time Synthesis, Then release-please Owned
-
-**What:** CHANGELOG.md is seeded once from MILESTONES.md history (v1.0 through v3.2), then owned by release-please going forward. The no-divergence rule: MILESTONES.md tracks planning milestone labels (v1.0, v2.0, v3.1, v3.2) which are NOT hex version numbers. CHANGELOG.md tracks hex release versions (0.1.0, 0.2.0, etc.). These are parallel axes.
-
-**When to use:** From the very first CHANGELOG.md commit. The planning-milestones-vs-hex-releases bridge note (from skill template) documents this split explicitly inside CHANGELOG.md itself.
-
-**Prevents:** The divergence trap where a maintainer tries to map hex versions to planning milestone labels. v3.2 as a hex release would imply v1.x and v2.x were also published hex releases — they were not. The first hex release is 0.1.0 (or whichever version is decided) regardless of planning milestone history.
-
----
-
-## CHANGELOG Synthesis: No-Divergence Rule
-
-The MILESTONES.md history spans planning milestones v1.0 through v3.2. CHANGELOG.md must NOT attempt to map these to hex version numbers (which would imply prior hex releases existed). The correct synthesis pattern:
-
-```markdown
-## [Unreleased]
-
-### Added
-
-* Initial public release — incorporates all work from planning milestones
-  v1.0 (Route Policy Foundation) through v3.2 (Commerce And Entitlement Seams).
-  See .planning/MILESTONES.md for the full milestone history.
-```
-
-Release-please then appends a `## [0.1.0] - YYYY-MM-DD` section when the first Release PR merges. All prior work is credited in the Unreleased → 0.1.0 entry. This is honest: there was one published release event, and it contains everything built before it.
-
-The planning-milestones-vs-hex-releases bridge note near the top of CHANGELOG.md documents this explicitly for future readers and prevents future maintainers from treating planning milestone labels as hex version axes.
-
----
-
-## Doctor / Install Truth Surface
-
-**Current state:** `mix crosswake.doctor` surfaces commerce support truth, capability prerequisites, support matrix, and CI promotion paths. It does NOT currently surface anything about hex publication status or install-path truth.
-
-**v3.3 scope decision:** Whether to add a doctor check for "is the published version available on hex.pm?" is an explicit scope call for the roadmap. It aligns with the "install truth is product truth" house-style anchor (PROJECT.md, Context from OSS DNA). The `bootstrap-elixir-hex-lib` skill does not extend doctor, but the anchor makes it a natural v3.3 surface.
-
-**If in scope — recommended architecture:**
-
-A new check in the existing doctor pipeline that probes the hex.pm API only when an explicit flag is passed:
-
-```
-mix crosswake.doctor --router YourAppWeb.Router --check-publish
-```
-
-Doctor output section:
-
-```
-install truth:
-  hex.pm package: crosswake
-  current version: 0.1.0
-  source_url: https://github.com/szTheory/crosswake
-  hex.pm status: (run with --check-publish to probe live)
-```
-
-The check is advisory-flagged internally — it makes a network call and reports the result without making the entire local doctor run network-dependent. This is analogous to how the advisory CI lane documents provider-adapter truth without blocking merges.
-
-**Phase ordering implication:** Doctor install-truth extension (if in scope) comes AFTER hex publish is verified live at Step 10. You cannot probe a version that has not been published. This is a Step 10+ addition, not a prerequisite for publication.
-
----
-
-## mix.exs Modifications: Current vs Required
-
-**Current state (abridged):**
+**Example:**
 ```elixir
-@version "0.1.0"
+defmodule CrosswakeExample.Commerce.MockStorefront do
+  alias Crosswake.Commerce.Contracts.{PurchaseIntent, RestoreIntent, ReconciliationEvidence}
 
-def project do
-  [app: :crosswake, version: @version, ..., description: description(), package: package()]
+  @provider "mock"
+
+  @spec simulate_purchase(PurchaseIntent.t()) :: {:ok, ReconciliationEvidence.t()}
+  def simulate_purchase(%PurchaseIntent{entry_id: entry_id, correlation_id: correlation_id}) do
+    {:ok, %ReconciliationEvidence{
+      source: :storefront,
+      provider: @provider,
+      provider_reference: "mock-purchase-#{entry_id}",
+      event_kind: "purchase",
+      evidence_ref: "mock-evidence-#{correlation_id}",
+      captured_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+      integrity_digest: nil,
+      idempotency_ref: correlation_id
+    }}
+  end
+
+  @spec simulate_restore(RestoreIntent.t()) :: {:ok, ReconciliationEvidence.t()}
+  def simulate_restore(%RestoreIntent{correlation_id: correlation_id}) do
+    {:ok, %ReconciliationEvidence{
+      source: :storefront,
+      provider: @provider,
+      provider_reference: "mock-restore-#{correlation_id}",
+      event_kind: "restore",
+      evidence_ref: "mock-restore-evidence-#{correlation_id}",
+      captured_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+      integrity_digest: nil,
+      idempotency_ref: correlation_id
+    }}
+  end
+end
+```
+
+**Critical constraints:**
+- `MockStorefront` must live in `examples/phoenix_host/`, not in `lib/`. It is example/docs-only per the capability taxonomy. Putting it in `lib/` would ship it to hex.pm as part of the Crosswake library.
+- The hermetic proof test does NOT import `CrosswakeExample.MockStorefront`. It constructs `ReconciliationEvidence` directly (same as phase21 proof constructs evidence inline). The `:requires_example_host` tagged test loads it via `Code.require_file` as phase21 does.
+
+---
+
+### Pattern 2: Paywall Corridor Route Policy Declaration
+
+**What:** Three routes in a new `/paywall` scope, each with a `commerce:` key matching the canonical corridor vocabulary from `Crosswake.SupportMatrix.commerce_corridors/0`. The corridor role values must exactly match the support matrix atoms `:paywall_entry`, `:purchase_intent`, `:restore_intent`.
+
+**When to use:** This is the only correct shape. The `commerce:` DSL key is already wired to manifest compilation and doctor output. Incorrect role atoms will fail corridor checks.
+
+**Example (addition to router.ex):**
+```elixir
+scope "/paywall", CrosswakeExample.Paywall do
+  pipe_through [:browser]
+
+  crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+    live "/", PaywallEntryLive,
+      crosswake: [
+        id: "paywall-entry",
+        runtime: :live_view,
+        commerce: [corridor: :subscription_default, role: :paywall_entry]
+      ]
+
+    live "/purchase", PurchaseIntentLive,
+      crosswake: [
+        id: "paywall-purchase-intent",
+        runtime: :native_screen,
+        commerce: [corridor: :subscription_default, role: :purchase_intent]
+      ]
+
+    live "/restore", RestoreIntentLive,
+      crosswake: [
+        id: "paywall-restore-intent",
+        runtime: :native_screen,
+        commerce: [corridor: :subscription_default, role: :restore_intent]
+      ]
+  end
+end
+```
+
+**Rationale for `runtime: :native_screen` on purchase/restore:** The support matrix declares `purchase_intent` and `restore_intent` as `native_or_companion_required`. Using `:native_screen` is semantically correct — it signals the storefront execution is native-side. The mock simulates that evidence path from Phoenix for proof purposes; the runtime declaration is not changed by the mock.
+
+**Rationale for `offline: :unavailable`:** Commerce routes must not cache or degrade silently. Fail-closed posture matches the corridor denial vocabulary (`commerce.corridor.prerequisite_missing`, etc.).
+
+---
+
+### Pattern 3: LiveView Entitlement State Subscription
+
+**What:** `PaywallEntryLive` subscribes to a PubSub topic on mount and receives `{:entitlement_update, derived_state}` messages. The assign `@entitlement_state` holds one of `:stale | :pending | :denied | :granted`. `render/1` pattern-matches on it.
+
+**When to use:** This is the mechanism that closes the end-to-end proof: mock purchase emits evidence → inbox ingests → projection derives state → PubSub broadcast → LiveView assigns update.
+
+**Why not a GenServer for v3.4:** A persistent state process is a valid adopter implementation choice, but adds non-hermetic scope that the proof does not need. The hermetic lane calls `EntitlementProjection.derived_state/1` directly on constructed snapshots. The `:requires_example_host` integration test drives the LiveView assign-update path by triggering `PurchaseIntentLive` actions and asserting `PaywallEntryLive`'s socket assigns update.
+
+**Example (PaywallEntryLive skeleton):**
+```elixir
+def mount(_params, _session, socket) do
+  if connected?(socket), do: Phoenix.PubSub.subscribe(CrosswakeExample.PubSub, "entitlement")
+  {:ok, assign(socket, entitlement_state: :stale)}
 end
 
-defp package do
-  [
-    licenses: ["Apache-2.0"],
-    links: %{"GitHub" => "https://github.com/example/crosswake"}
-  ]
+def handle_info({:entitlement_update, derived_state}, socket) do
+  {:noreply, assign(socket, entitlement_state: derived_state)}
 end
 ```
 
-**Required additions for v3.3:**
-- Add `@source_url "https://github.com/szTheory/crosswake"` module attribute (real URL)
-- Add to `project/0`: `name: "crosswake"`, `source_url: @source_url`, `homepage_url: @source_url`, `docs: docs()`
-- Expand `package/0`: add `name: "crosswake"` (gotcha #2), expand `links:` to include Docs and Changelog entries, add `files:` allowlist
-- Add new `defp docs/0`: `main: "readme"`, `source_ref: "v#{@version}"`, `source_url: @source_url`, `formatters: ["html"]`, `extras:` list
+**Projection precedence (from existing `EntitlementProjection.derived_state/1` — do not reimplement):**
+1. freshness `:stale` or `:unknown` — returns `:stale` (fail-closed)
+2. reconciliation in `[:pending_purchase, :pending_restore, :awaiting_verification]` — returns `:pending`
+3. freshness `:fresh`, reconciliation `:projection_refreshed`, authority in grantable states, access `:granted` — returns `:granted`
+4. all other resolved outcomes — returns `:denied`
 
-**Files allowlist:** `~w(lib priv guides .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)`
-- `priv/` is included — `priv/templates/` exists
-- `guides/` is included — 11 guide files should render as ExDoc extras
-- Do NOT include `test/`, `examples/`, `script/`, `.planning/`, or `prompts/` — these are not for consumers
+This function already exists and is proven correct in phase21. Do not reimplement it.
 
 ---
 
-## README Hex-Page Render Considerations
+### Pattern 4: Hermetic Proof Test Structure (mirrors phase23)
 
-**Current README links (all relative):** e.g., `[guides/user_flows.md](guides/user_flows.md)`. These render correctly as ExDoc extras links on hexdocs.pm IF guides are included in `extras:`. On the raw hex.pm package page (not hexdocs), relative links may 404 because the hex.pm package page renders README as-is without resolving relative paths.
+**What:** The merge-blocking proof test uses inline router fixture modules (as phase23 does), never imports `CrosswakeExample.Router` or loads any example-host file via `Code.require_file`, makes no network calls, starts no processes.
 
-**Recommendation:** README links to guides should use absolute GitHub URLs for the hex.pm package page, OR the README should note that full documentation is available at hexdocs.pm. Required audit: `mix hex.build` + `mix docs` dry run to verify rendering before first publish.
+**Key assertions the hermetic lane must drive:**
+1. A router with `commerce: [corridor: :subscription_default, role: :paywall_entry]` compiles and the route appears in the manifest with correct corridor metadata.
+2. A `ReconciliationEvidence` struct with `source: :storefront, provider: "mock", event_kind: "purchase"` validates against `Crosswake.Commerce.Contracts` (no error from `canonical_reconciliation_evidence_source/1`).
+3. `ReconciliationInbox.ingest_evidence/2` returns `{:ok, attempt}` where `attempt.status == :awaiting_verification` and the attempt map has no authority or access fields.
+4. `Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?/1` returns `false` for any `ReconciliationEvidence`.
+5. `EntitlementProjection.derived_state/1` returns `:stale` for a snapshot with freshness `:stale` or `:unknown`.
+6. `EntitlementProjection.derived_state/1` returns `:pending` for a snapshot with reconciliation `:awaiting_verification` and fresh freshness.
+7. `EntitlementProjection.project_snapshot/2` promotes a snapshot to `{:ok, snapshot}` when given `:projection_refreshed` reconciliation + `:active` authority + `:granted` access + fresh freshness + monotonic `as_of`.
+8. `EntitlementProjection.derived_state/1` returns `:granted` for that promoted snapshot.
+9. Provider-vocabulary fence: the proof test's own source must not contain "storekit", "play_billing", "play billing", or "revenuecat".
 
-**The existing `script/verify_phase5_example_hosts.sh` is NOT relevant to hex page render verification** — that verifies example hosts, not package page rendering.
-
----
-
-## New vs Modified vs Unchanged Components (Summary Table)
-
-### New Components
-
-| Component | Path | Purpose |
-|-----------|------|---------|
-| CHANGELOG.md | `/CHANGELOG.md` | Keep-a-Changelog; seeded from MILESTONES.md; owned by release-please after bootstrap |
-| release-please config | `/release-please-config.json` | Declares elixir release-type, bump strategy, one-time release-as pin |
-| release-please manifest | `/.release-please-manifest.json` | Baselines at 0.0.0 (gotcha #4 prevention) |
-| Release workflow | `/.github/workflows/release-please.yml` | Opens Release PR → on merge creates tag → triggers hex publish |
-| Recovery workflow | `/.github/workflows/hex-publish.yml` | Manual dispatch fallback for stalled publish |
-| HEX_API_KEY secret | GitHub repo settings | Authorizes mix hex.publish in CI — human step |
-
-### Modified Components
-
-| Component | What Changes |
-|-----------|-------------|
-| `mix.exs` | `@source_url` real URL; `name:`, `homepage_url:`, `source_url:`, `docs:` in project/0; expanded `package/0` with `name:`, full `links:`, `files:` allowlist; new `defp docs/0` |
-| `README.md` | Relative link audit for hex-page render; hex badge and install snippet; version reference |
-| `guides/install.md` | Real `{:crosswake, "~> X.Y"}` mix.exs snippet once version decided |
-| `.gitignore` | Append `crosswake-*.tar` and `crosswake-*.tar` patterns — prevent hex build artifacts from being committed |
-
-### Unchanged Components
-
-| Component | Why Unchanged |
-|-----------|--------------|
-| `lib/` | No behavioral changes in v3.3 |
-| `test/` | No new tests unless doctor install-truth check added |
-| `examples/phoenix_host/` | Proof artifact — not part of hex tarball |
-| `script/` | Internal verification scripts |
-| `.github/workflows/phase5-proof.yml` | Existing hermetic merge gate |
-| `.github/workflows/phase10-proof.yml` | Existing hermetic merge gate |
-| `.github/workflows/phase18-proof.yml` | Existing hermetic merge gate |
-| `.github/workflows/phase23-proof.yml` | Two-job hermetic+advisory commerce gate |
-| `.planning/` | Internal planning artifacts — not in hex tarball |
-| `priv/templates/` | Included in hex tarball via files allowlist — no content changes needed |
+The `:requires_example_host` tagged test (run in the CI example-host lane, not the hermetic lane) loads MockStorefront via `Code.require_file` and drives the full LiveView assign-update path.
 
 ---
 
-## Gotcha Map for Roadmap Phases
+## Data Flow
 
-| Gotcha | Risk | Prevention Phase |
-|--------|------|-----------------|
-| #1 — Hex package name collision | `crosswake` may be taken on hex.pm | Step 1 — check hex.pm/api/packages/crosswake before any mix.exs edit |
-| #2 — Tarball named by OTP atom | `mix hex.build` produces `:crosswake`-named tarball if `name:` is absent from `package/0` | Step 1 (add `name: "crosswake"`) + Step 6 (dry run verifies tarball name) |
-| #3 — GitHub Actions can't create PRs | release-please fails to open Release PRs | Step 5 — set `default_workflow_permissions=write` immediately after first push |
-| #4 — Manifest off-by-one | `.release-please-manifest.json` set to `0.1.0` means release-please thinks 0.1.0 is already released and bumps to 0.1.1 | Step 4 — baseline manifest at `0.0.0` |
-| #5 — First release jumps to 1.0.0 | Accumulated `feat:` commits cause release-please to propose 1.0.0 on first run | Step 4 (add `release-as:` pin) + Step 9 (verify PR proposes correct version) + Step 10 (remove pin after publish) |
-| #6 — sync_release_summary.sh (sigra-specific) | Copying release-please.yml from sigra brings in a job that greps CHANGELOG for `### Summary` subsections and exits 1 if absent | Step 5 — use oarlock template, not sigra; no `sync-release-summary` job |
-
----
-
-## Data Flow: Release Pipeline
+### Full Purchase Flow (Mock Corridor)
 
 ```
-Developer pushes feat:/fix: commit to main (after PR merges through existing gates)
-         |
-         v
-release-please.yml (push to main trigger)
-         |
-         v
-release-please job: reads CHANGELOG.md + .release-please-manifest.json
-  → opens / updates Release PR with version bump + CHANGELOG entry
-         |
-         v
-Release PR goes through existing merge gates (all hermetic, unchanged):
-  phase5-proof (hermetic) must pass
-  phase10-proof (hermetic) must pass
-  phase18-proof (hermetic) must pass
-  phase23-proof merge-blocking-commerce-proof (hermetic) must pass
-         |
-         v
-Maintainer merges Release PR
-         |
-         v
-release-please creates GitHub Release + tag vX.Y.Z
-         |
-         v
-publish-hex job (needs: release-please):
-  mix deps.get
-  mix test
-  mix hex.publish --yes  (uses HEX_API_KEY secret)
-  verify: curl https://hex.pm/api/packages/crosswake/releases/X.Y.Z
-         |
-         v
-Advisory probe (optional, schedule/dispatch, continue-on-error: true):
-  consumer smoke-test: mix new scratch, add dep, mix deps.get, mix compile
-  hexdocs.pm/crosswake/X.Y.Z/ resolves
+[User views PaywallEntryLive — @entitlement_state: :stale on mount]
+    ↓ (user taps "Subscribe" → navigate to /paywall/purchase)
+[PurchaseIntentLive mounts]
+    ↓ builds PurchaseIntent{entry_id: "pro", correlation_id: UUID}
+[MockStorefront.simulate_purchase/1]
+    ↓ {:ok, %ReconciliationEvidence{
+         source: :storefront, provider: "mock",
+         event_kind: "purchase", provider_reference: "mock-purchase-pro", ...}}
+[ReconciliationInbox.ingest_evidence/2]
+    ↓ {:ok, %{source: :storefront, status: :awaiting_verification,
+              event_key: "event::mock::mock-purchase-pro::purchase::...",
+              subject_key: "subject::mock::mock-purchase-pro",
+              replay?: false, ...}}
+    ↓ (status is :awaiting_verification — no authority or access fields set)
+[Host backend verification step — in example: inline, in production: worker/job]
+    ↓ builds EntitlementSnapshot with:
+         authority: %AuthorityLane{state: :active}
+         access: %AccessLane{decision: :granted}
+         reconciliation: %ReconciliationLane{state: :projection_refreshed}
+         freshness: %FreshnessLane{state: :fresh, checked_at: now}
+         evidence: %EvidenceLane{source: :storefront, reference: attempt.event_key}
+         as_of: System.monotonic_time()
+[EntitlementProjection.project_snapshot/2]
+    ↓ {:ok, %EntitlementSnapshot{...}}  (monotonic as_of passes)
+[EntitlementProjection.derived_state/1]
+    ↓ :granted
+[Phoenix.PubSub.broadcast(CrosswakeExample.PubSub, "entitlement", {:entitlement_update, :granted})]
+    ↓
+[PaywallEntryLive.handle_info({:entitlement_update, :granted}, socket)]
+    ↓ assign(socket, entitlement_state: :granted)
+[LiveView renders "Access granted" UI state]
 ```
+
+### Full Restore Flow (Mock Corridor)
+
+```
+[User taps "Restore Purchases" on PaywallEntryLive]
+    ↓ (navigate to /paywall/restore)
+[RestoreIntentLive mounts]
+    ↓ builds RestoreIntent{correlation_id: UUID}
+[MockStorefront.simulate_restore/1]
+    ↓ {:ok, %ReconciliationEvidence{event_kind: "restore", source: :storefront, provider: "mock", ...}}
+[ReconciliationInbox.ingest_evidence/2]
+    ↓ {:ok, %{status: :awaiting_verification, ...}}
+— same projection path as purchase from this point forward —
+→ derived_state → :granted → broadcast → LiveView assign update
+```
+
+### Stale and Denied States (LiveView reflects correctly)
+
+```
+Initial PaywallEntryLive mount:
+    entitlement_state: :stale
+    (fail-closed default; no snapshot yet)
+
+After ReconciliationInbox.ingest_evidence, before backend verification:
+    reconciliation.state == :awaiting_verification
+    → EntitlementProjection.derived_state → :pending
+    → broadcast → LiveView renders "Purchase processing..." UI
+
+After verification_failed (unknown event kind or integrity failure):
+    reconciliation.state == :verification_failed
+    access.decision == :denied
+    → derived_state → :denied
+    → broadcast → LiveView renders "Access denied" UI
+
+Out-of-order as_of update rejected by project_snapshot/2:
+    {:error, {:stale_authority, snapshot}}
+    reconciliation.state set to :stale_authority on returned snapshot
+    → derived_state(stale_authority_snapshot) → :denied
+```
+
+---
+
+## Build Order
+
+The following order respects module dependencies and the proof-before-wiring discipline established by prior milestones.
+
+**Step 1 — Route policy (router.ex modification)**
+Add the `/paywall` scope with three corridor routes. This is the contract anchor — the manifest, doctor output, and proof test fixtures all derive from this corridor declaration. Do this first so all downstream assertions have a concrete router to reference.
+
+**Step 2 — MockStorefront adapter**
+Implement `CrosswakeExample.Commerce.MockStorefront` with `simulate_purchase/1` and `simulate_restore/1`. No persistence, no process, pure functions. Depends only on `Crosswake.Commerce.Contracts` which already exists. Can be written and manually verified in isolation.
+
+**Step 3 — Paywall LiveViews (scaffold level)**
+Create `PaywallEntryLive`, `PurchaseIntentLive`, `RestoreIntentLive` with minimal renders and the `@entitlement_state` assign structure. At this step they do not need PubSub wiring — the hermetic proof drives the data layer directly.
+
+**Step 4 — Hermetic proof test (merge-blocking lane)**
+Write `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs`. Use inline router fixtures as phase23 does; no `CrosswakeExample.Router` import. Prove all assertions listed in Pattern 4 above. This test must pass before Step 5 (wiring) is considered done, because it validates the data layer independently of any runtime or process dependency.
+
+**Step 5 — Wire LiveViews to inbox → projection → PubSub**
+Connect `PurchaseIntentLive` to call `MockStorefront.simulate_purchase/1` → `ReconciliationInbox.ingest_evidence/2` → simulate backend verification → `EntitlementProjection.project_snapshot/2` → `Phoenix.PubSub.broadcast`. Wire `PaywallEntryLive` to subscribe and update `@entitlement_state`. Connect `RestoreIntentLive` to the restore path.
+
+**Step 6 — Example-host integration test**
+Write the `:requires_example_host` tagged test. It loads example modules via `Code.require_file` (same as phase21), drives the full corridor, and asserts LiveView assign transitions through `:stale → :pending → :granted`. This runs in the existing CI example-host lane (phase5-proof.yml) under the `:requires_example_host` tag, not in the hermetic merge-blocking lane.
+
+**Step 7 — CI workflow**
+Add `.github/workflows/phase34-proof.yml` mirroring `phase23-proof.yml`:
+- `merge-blocking-paywall-corridor-proof`: runs hermetic proof test on PR and push to main; `if: github.event_name == 'pull_request' || ...`; no network, no processes.
+- `advisory-paywall-corridor-proof`: placeholder for future real StoreKit/Play Billing corridor validation; runs on schedule with `continue-on-error: true`; never gates merge.
+
+**Step 8 — guides/commerce.md update and docs-contract test**
+Add a "Paywall Corridor Walkthrough" section to `guides/commerce.md`. Extend `test/crosswake/guides/commerce_test.exs` to assert the new section is present and that walkthrough references match the actual example module names. This locks the guide against implementation drift.
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: MockStorefront That Grants Authority Directly
+
+**What people do:** Set `authority_state: :active` or `access_decision: :granted` inside `MockStorefront`, bypassing `ReconciliationInbox` and `EntitlementProjection`.
+
+**Why it's wrong:** This violates ENTL-03 (device/storefront evidence cannot directly grant authority) and breaks the proof. The value of the hermetic lane is demonstrating that the inbox → projection path is the only authority path. A mock that short-circuits the path proves nothing and teaches adopters the wrong architecture.
+
+**Do this instead:** `MockStorefront` returns only `ReconciliationEvidence`. Authority is set only when `EntitlementProjection.project_snapshot/2` is called with a verified snapshot (reconciliation state `:projection_refreshed`). The hermetic proof asserts `authority_mutation_allowed_from_evidence?/1` returns `false`.
+
+---
+
+### Anti-Pattern 2: Placing MockStorefront in `lib/`
+
+**What people do:** Create `lib/crosswake/commerce/mock_storefront.ex` so it is available to the hermetic proof test without `Code.require_file`.
+
+**Why it's wrong:** MockStorefront is example/docs-only per the capability taxonomy. Putting it in `lib/` ships it on hex.pm as part of the Crosswake library — a provider-specific concern polluting the core package boundary.
+
+**Do this instead:** Place it in `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex`. The hermetic proof test constructs `ReconciliationEvidence` structs directly (no `MockStorefront` import needed). The `:requires_example_host` tagged test loads `MockStorefront` via `Code.require_file` as phase21 does with the existing reconciliation modules.
+
+---
+
+### Anti-Pattern 3: Storing Entitlement Truth in LiveView Socket State Only
+
+**What people do:** Treat the `@entitlement_state` socket assign as the authoritative entitlement store. On LiveView reconnect, there is no snapshot to restore from.
+
+**Why it's wrong:** Backend-owned truth means the LiveView is a read model, not the authority store. A LiveView that silently reverts to `:stale` on remount is correct by contract (fail-closed), but a LiveView that "remembers" a prior `:granted` in socket state without re-deriving from a backend snapshot is not.
+
+**Do this instead:** LiveView initializes to `:stale` on mount (correct fail-closed posture). State transitions happen only through the inbox → projection → broadcast path. The proof asserts initial state is `:stale` and that `:granted` can only be reached after a full reconciliation chain.
+
+---
+
+### Anti-Pattern 4: Adding v3.4 Assertions to the Phase23 Proof File
+
+**What people do:** Append paywall-corridor assertions to `phase23_commerce_support_proof_test.exs` to avoid creating a new file.
+
+**Why it's wrong:** Phase 23 is a stable shipped proof that gates v3.2 claims. Mixing v3.4 corridor proof blurs requirements-to-proof traceability. If the v3.4 paywall proof needs rework, v3.2 claims should not be affected by the edit.
+
+**Do this instead:** New file `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` with its own inline fixtures and `@moduletag`. New CI workflow `phase34-proof.yml` mirroring the two-job split from `phase23-proof.yml`.
+
+---
+
+## Integration Points
+
+### Internal Boundaries
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| `MockStorefront` → `ReconciliationInbox` | Direct function call; caller passes `ReconciliationEvidence` struct | No process boundary; both pure-function modules in example host |
+| `ReconciliationInbox` → `EntitlementProjection` | Direct function call by host LiveView | `ReconciliationInbox.ingest_evidence/2` returns an attempt map; the caller constructs the `EntitlementSnapshot` for projection — the inbox does not directly call the projection |
+| `EntitlementProjection` → `PaywallEntryLive` | `Phoenix.PubSub.broadcast/3` → `handle_info/2` | In hermetic proof: `derived_state/1` called directly on constructed snapshots; PubSub wiring validated in `:requires_example_host` tagged test |
+| `CrosswakeExample.Router` → Crosswake core | `commerce:` DSL key at compile time → `Crosswake.Policy.Compiler.compile/2` → manifest | Router modification is the only required Crosswake-core integration point; no runtime callbacks added |
+| Hermetic proof → example modules | Inline structs only; no `Code.require_file` for example-host files | Mirrors phase23 hermeticity guard exactly |
+| `:requires_example_host` test → example modules | `Code.require_file` for mock_storefront, reconciliation_inbox, entitlement_projection | Mirrors phase21 pattern exactly |
+
+### What the Mock Boundary Does Not Cross
+
+| Boundary | Reason |
+|----------|--------|
+| MockStorefront → StoreKit / Play Billing SDK | No SDK calls; `simulate_purchase/1` is deterministic and in-process |
+| MockStorefront → any network | No HTTP, no port, no `:gen_tcp`; hermetic by construction |
+| `ReconciliationEvidence` → authority lanes | Struct has no authority or access fields; `authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally |
+| LiveView socket → entitlement authority | Socket holds derived read state only; `EntitlementProjection` owns the source-of-truth determination |
+| Mock evidence → idempotency authority | `idempotency_ref` in mock evidence is a `correlation_id` which is trace-only per RECN-02; real idempotency identity is `event_key` derived from `provider + provider_reference + event_kind + evidence_ref` |
+
+---
+
+## Confidence Assessment
+
+| Area | Confidence | Basis |
+|------|------------|-------|
+| MockStorefront shape | HIGH | Derived directly from `ReconciliationEvidence` struct in `contracts.ex:150-183`; source: `:storefront` is a canonical vocabulary atom |
+| Router corridor DSL | HIGH | Copied from phase23 fixture routers (`PaywallCorridorRouter`, `PurchaseCorridorRouter`) which already use `commerce: [corridor: :subscription_default, role: :paywall_entry]` and are proven in CI |
+| ReconciliationInbox reuse | HIGH | `phase21_reconciliation_example_test.exs` proves inbox against all four evidence sources with no changes needed; function signatures match exactly |
+| EntitlementProjection reuse | HIGH | `derived_state/1` and `project_snapshot/2` are proven in phase21; the four state branches exactly match v3.4 LiveView requirements |
+| LiveView PubSub pattern | HIGH | Standard Phoenix LiveView pattern; no Crosswake-specific constraint; scope limited to example host |
+| Hermetic proof structure | HIGH | phase23 provides the exact template including the hermeticity guard self-check; replication is mechanical |
+| Build order | HIGH | Dependency graph is explicit; proof-before-wiring matches established milestone discipline |
 
 ---
 
 ## Sources
 
-- `/Users/jon/projects/crosswake/mix.exs` — current package metadata baseline
-- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — Key Decisions table, v3.3 target features
-- `/Users/jon/projects/crosswake/.planning/threads/release-readiness.md` — open investigation, repo-grounded facts
-- `/Users/jon/.claude/skills/bootstrap-elixir-hex-lib/SKILL.md` — canonical paved-path skill with gotcha catalog
-- `/Users/jon/projects/crosswake/.github/workflows/phase23-proof.yml` — hermetic-vs-advisory CI split reference implementation
-- `/Users/jon/projects/crosswake/README.md` — current README structure and relative link baseline
+- `/Users/jon/projects/crosswake/lib/crosswake/commerce/contracts.ex` — `ReconciliationEvidence`, `PurchaseIntent`, `RestoreIntent`, `EntitlementSnapshot` struct definitions
+- `/Users/jon/projects/crosswake/lib/crosswake/commerce/reconciliation.ex` — `ingest_evidence/2`, `authority_mutation_allowed_from_evidence?/1`, outcome vocabulary
+- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — existing inbox implementation
+- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — existing `derived_state/1` and `project_snapshot/2`
+- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` — `event_key/1`, `subject_key/2`
+- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/router.ex` — existing router DSL patterns and corridor fixture shape
+- `/Users/jon/projects/crosswake/test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermetic proof template, hermeticity guard, inline fixture router pattern
+- `/Users/jon/projects/crosswake/test/crosswake/proof/phase21_reconciliation_example_test.exs` — `:requires_example_host` test pattern with `Code.require_file`
+- `/Users/jon/projects/crosswake/.github/workflows/phase23-proof.yml` — two-job hermetic + advisory CI split reference
+- `/Users/jon/projects/crosswake/.planning/threads/commerce-archetype-proof.md` — milestone scope, references, build steps
+- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — locked guardrails, capability taxonomy, ENTL-03 requirement
+- `/Users/jon/projects/crosswake/.planning/MILESTONE-ARC.md` — non-goals (no StoreKit/Play Billing), proof requirements for v3.4
+- `/Users/jon/projects/crosswake/guides/commerce.md` — canonical corridor ownership table, authority-vs-evidence contract, reconciliation flow
 
 ---
 
-*Architecture research for: Crosswake v3.3 Release Readiness — hex.pm publication infrastructure*
-*Researched: 2026-05-27*
+*Architecture research for: v3.4 Commerce Archetype Proof — mocked paywall corridor integration*
+*Researched: 2026-05-29*
