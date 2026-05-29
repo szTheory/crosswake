@@ -1,3 +1,5 @@
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
+
 defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   @moduledoc """
   Hermetic merge-blocking proof lane for the Phase 34 MockStorefront module.
