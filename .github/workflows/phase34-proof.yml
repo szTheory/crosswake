@@ -1,0 +1,164 @@
+name: Phase 34 Proof
+
+# Phase 34+ closes the paywall corridor proof posture for v3.4 by splitting
+# proof lanes into:
+#
+#   - merge-blocking-commerce-proof: hermetic, deterministic, runs on every PR
+#     and push to main. This is the lane that must be added as a required
+#     branch check on `main`. It exercises library-level Elixir tests across
+#     the full test suite (excluding requires_example_host-tagged tests), so
+#     the Phase 36 hermetic paywall corridor proof file is picked up
+#     automatically. No provider SDK, no simulator, no device, no network.
+#
+#   - advisory-commerce-proof: documents where StoreKit / Play Billing
+#     simulator, device, and storefront checks would run once provider
+#     adapter milestones ship. Runs on schedule and on workflow_dispatch.
+#     Cannot fail the merge gate.
+#
+# Advisory-to-merge-blocking promotion is NOT automatic. Promoting an advisory
+# lane to merge-blocking requires:
+#   1. An explicit requirement / roadmap scope change documented in
+#      .planning/REQUIREMENTS.md and .planning/ROADMAP.md.
+#   2. Sustained stability evidence from the advisory lane (typically several
+#      consecutive scheduled runs without flakes).
+#   3. A planned milestone that ships the provider adapter (the proof lane
+#      cannot be merge-blocking before the code it proves is core scope).
+#   4. An explicit workflow edit moving the relevant step from
+#      advisory-commerce-proof into merge-blocking-commerce-proof, plus
+#      branch-protection updates if needed.
+#
+# Until all four conditions are met, advisory lane results are visible in CI
+# but do NOT gate merge. See guides/commerce.md "Proof Posture" and
+# "Rough Edges And Non-Claims" sections for the contract language.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Run the advisory lane weekly (Monday 06:00 UTC) so absence of advisory
+    # results is visible in the CI dashboard even when no PR has triggered it.
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-commerce-proof:
+    # Required branch check. Runs on every PR and push to main. This job MUST
+    # stay hermetic — no network, no simulator, no provider SDK. Any change
+    # that introduces a non-hermetic dependency here is a contract violation.
+    #
+    # Guarded with an `if:` so this job runs ONLY on merge-driving events
+    # (pull_request, push, workflow_dispatch). It is intentionally skipped on
+    # the weekly `schedule` trigger that drives the advisory lane — re-running
+    # the hermetic merge gate weekly was pure cost (the hermetic lane gates
+    # merges; periodic re-verification adds no signal).
+    name: merge-blocking commerce support proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 34+ paywall corridor proof lane
+        # Broad hermetic run: excludes only requires_example_host-tagged tests
+        # (integration tests that need a running server). The Phase 36 proof
+        # file is untagged and uses Code.require_file to reach example-host
+        # modules — so it is picked up automatically here without a per-file
+        # path list. No provider SDK, no simulator, no device, no network.
+        run: mix test --exclude requires_example_host
+
+  advisory-commerce-proof:
+    # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
+    # Does NOT run on pull_request or push to main, so it cannot block merges
+    # even if every step below fails. The current v3.4 milestone ships no
+    # provider adapters, so this lane intentionally emits "advisory — no
+    # provider adapters shipped" status; it is the placeholder where future
+    # StoreKit / Play Billing / storefront / device checks will live.
+    #
+    # Runner is ubuntu-latest because every step today is an echo placeholder
+    # plus dependency setup — none of the placeholder steps exercise macOS-
+    # specific behavior, so paying the ~10x macOS-15 minute cost on every
+    # weekly run is pure waste. When a future provider-adapter milestone
+    # ships a StoreKit simulator step (which DOES require macOS), split this
+    # job: keep the Linux-runnable advisory placeholders here, and add a
+    # separate macos-15 job for the StoreKit-only step, if:-gated on the
+    # presence of the StoreKit adapter (see promotion-path commentary above).
+    name: advisory commerce proof (provider/storefront/simulator/device)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    # `continue-on-error: true` ensures that even if a future advisory step
+    # fails, the workflow run is reported as a non-failing advisory result.
+    # The job appears in the CI dashboard so absence of advisory results is
+    # visible, but never gates merge.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Advisory — StoreKit simulator commerce check (placeholder)
+        # Placeholder for future StoreKit simulator-backed proof. Crosswake
+        # does not ship a StoreKit adapter in v3.4 (see guides/commerce.md
+        # "Rough Edges And Non-Claims" — "StoreKit adapter is not shipped").
+        # When a provider adapter milestone ships, replace this echo with the
+        # actual simulator-backed verification script.
+        run: |
+          echo "advisory — no provider adapters shipped"
+          echo "StoreKit simulator commerce checks will run here once a"
+          echo "provider adapter milestone is explicitly scoped. See"
+          echo "guides/commerce.md Rough Edges And Non-Claims for the"
+          echo "current non-claim contract."
+
+      - name: Advisory — Play Billing test-track commerce check (placeholder)
+        # Placeholder for future Play Billing test-track proof. Crosswake
+        # does not ship a Play Billing adapter in v3.4 (see guides/commerce.md
+        # "Rough Edges And Non-Claims" — "Play Billing adapter is not shipped").
+        run: |
+          echo "advisory — no provider adapters shipped"
+          echo "Play Billing test-track commerce checks will run here once"
+          echo "a provider adapter milestone is explicitly scoped."
+
+      - name: Advisory — Device / storefront commerce smoke check (placeholder)
+        # Placeholder for future device or storefront submission smoke checks.
+        # These remain advisory until a provider adapter ships AND sustained
+        # stability evidence is collected; see the promotion-path commentary
+        # at the top of this workflow.
+        run: |
+          echo "advisory — no provider adapters shipped"
+          echo "Device / storefront commerce smoke checks will run here once"
+          echo "a provider adapter milestone is explicitly scoped."
+
+      - name: Advisory lane status summary
+        # Surface a clear status line so a reviewer scanning the workflow run
+        # sees the advisory boundary explicitly, not as a passing green check.
+        run: |
+          echo "::notice title=Advisory lane::This lane is advisory only and"
+          echo "::notice::cannot gate merge. Failures here do NOT retract any"
+          echo "::notice::merge-blocking commerce support claim. Promotion to"
+          echo "::notice::merge-blocking requires explicit requirement/roadmap"
+          echo "::notice::scope change plus sustained stability evidence."
