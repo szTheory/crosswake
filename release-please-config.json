@@ -6,7 +6,6 @@
   "packages": {
     ".": {
       "release-type": "elixir",
-      "release-as": "0.1.0",
       "skip-changelog": true,
       "changelog-sections": [
         { "type": "feat", "section": "Features" },

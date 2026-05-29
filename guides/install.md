@@ -25,6 +25,24 @@ native route, or one honest offline island, read
 for the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow profiles
 before drilling into the deeper shell, offline, or pack contracts.
 
+## Add Crosswake To Your Dependencies
+
+Add `crosswake` to the deps in your Phoenix host's `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:crosswake, "~> 0.1"}
+  ]
+end
+```
+
+Then fetch it:
+
+```sh
+mix deps.get
+```
+
 ## Step 1: Install Crosswake Into A Phoenix Host
 
 Run:
