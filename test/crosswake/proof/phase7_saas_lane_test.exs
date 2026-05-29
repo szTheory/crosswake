@@ -2,6 +2,11 @@
 defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   use ExUnit.Case, async: false
 
+  # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
+  # compiled. Run by phase5-proof.yml, which builds the example host first;
+  # excluded from the hermetic hex-page-proof full-suite run via --exclude.
+  @moduletag :requires_example_host
+
   alias Crosswake.Manifest
   alias Phoenix.Component
   alias Phoenix.LiveViewTest

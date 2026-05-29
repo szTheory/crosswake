@@ -5,6 +5,11 @@ Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce
 defmodule Crosswake.Proof.Phase21ReconciliationExampleTest do
   use ExUnit.Case, async: false
 
+  # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
+  # compiled. Run by phase5-proof.yml, which builds the example host first;
+  # excluded from the hermetic hex-page-proof full-suite run via --exclude.
+  @moduletag :requires_example_host
+
   alias Crosswake.Commerce.Contracts
   alias CrosswakeExample.Commerce.EntitlementProjection
   alias CrosswakeExample.Commerce.ReconciliationInbox

@@ -45,13 +45,16 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
-      - name: Run full library test suite
-        # Includes test/crosswake/hex_page_test.exs, the hermetic verification of
-        # the Phase 30 hex-page deliverables (README/guide link hygiene, docs
-        # sidebar grouping config, and the package :files allowlist).
+      - name: Run library test suite (hermetic)
+        # Runs the full suite EXCEPT tests tagged :requires_example_host — those
+        # need the checked-in example Phoenix app compiled and are already run on
+        # PRs by phase5-proof.yml / phase23-proof.yml (which build it first).
+        # Everything else, including test/crosswake/hex_page_test.exs (the Phase
+        # 30 hex-page verification), runs here — this is the unit-test coverage
+        # that previously never ran on PRs.
         env:
           MIX_ENV: test
-        run: mix test
+        run: mix test --exclude requires_example_host
 
       - name: Build docs (smoke)
         # Asserts `mix docs` builds and produces HTML. NOT run with
