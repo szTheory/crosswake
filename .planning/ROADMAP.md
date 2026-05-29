@@ -77,7 +77,9 @@
   4. A replay test demonstrates that submitting evidence with the same `provider_reference` (but a different `correlation_id`) returns `replay?: true` from `ReconciliationInbox.ingest_evidence/2`, proving idempotency is keyed on stable provider identity via `ReconciliationKeys`, not transient device IDs
   5. A provider-vocabulary fence test confirms `MockStorefront` source contains no `storekit`, `play_billing`, `play billing`, or `revenuecat` tokens
 
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 34-01-PLAN.md — Create CrosswakeExample.Commerce.MockStorefront (pure-Elixir evidence emitter: simulate_purchase/2, simulate_restore/2, swap-target @moduledoc)
+- [ ] 34-02-PLAN.md — Hermetic untagged proof test: replay/idempotency invariant, restore-shares-subject-key, provider-vocabulary fence
 
 ### Phase 35: Reconciliation Wiring And Four-State LiveView
 
@@ -132,7 +134,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 33. Corridor Routes And CI Infrastructure | 2/2 | Complete    | 2026-05-29 |
-| 34. MockStorefront And Idempotency Invariants | 0/TBD | Not started | - |
+| 34. MockStorefront And Idempotency Invariants | 0/2 | Not started | - |
 | 35. Reconciliation Wiring And Four-State LiveView | 0/TBD | Not started | - |
 | 36. Hermetic Proof Lane | 0/TBD | Not started | - |
 | 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
