@@ -25,3 +25,8 @@ erl_crash.dump
 /**/.gradle/
 /**/build/
 /**/local.properties
+
+# Local tooling / harness state (not part of the package)
+/.claude/
+/.gsd/
+/.bg-shell/

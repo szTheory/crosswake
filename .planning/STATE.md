@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.3
 milestone_name: Release Readiness
-status: milestone-complete
-stopped_at: "v3.3 Release Readiness COMPLETE — crosswake 0.1.0 live on hex.pm (all phases 26–32 done)"
-last_updated: "2026-05-29T12:21:04.967Z"
-last_activity: 2026-05-29 -- v3.3 complete; crosswake 0.1.0 published to hex.pm
+status: Awaiting next milestone
+stopped_at: v3.3 COMPLETE — crosswake 0.1.0 live on hex.pm; Phases 31 (publish) and 32 (post-publish cleanup) done
+last_updated: "2026-05-29T12:39:27.996Z"
+last_activity: 2026-05-29 — Milestone v3.3 completed and archived
 progress:
-  total_phases: 7
-  completed_phases: 7
+  total_phases: 6
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 11
-  percent: 100
+  completed_plans: 10
+  percent: 83
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 
 ## Current Position
 
-Phase: v3.3 COMPLETE (Phases 26–32 all done)
+Phase: Milestone v3.3 complete
 Plan: —
-Status: Milestone v3.3 shipped — `crosswake 0.1.0` published. Ready to define the next milestone (`/gsd-complete-milestone v3.3` to archive, then `/gsd-new-milestone`).
-Last activity: 2026-05-29 -- crosswake 0.1.0 published to hex.pm; post-publish cleanup done
+Status: Awaiting next milestone
+Last activity: 2026-05-29 — Milestone v3.3 completed and archived
 
 ## Performance Metrics
 
@@ -115,12 +115,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Phase 28 (release-please Configuration Files) complete — config, manifest, and `.tool-versions` committed.
-- Phase 29 (Release Workflows And Supply-Chain Hardening) complete — `release-please.yml`, `hex-publish.yml`, `dependabot.yml` shipped + committed; verified against all five ROADMAP success criteria (SC1–SC5 PASS).
-- Phase 30 (Hex Page Polish And Tarball Dry-Run) complete — verification fully automated (HEX-01/02/03, PRF-01); `hex-page-proof.yml` now runs on every PR; PR #1 merged (`5a5a277`), `main` CI green incl. the repaired `phase23-proof` gate.
-- Phase 30 (Hex Page Polish) complete — verification automated; `hex-page-proof.yml` runs on every PR.
-- **Phase 31 (First Hex Publish) COMPLETE** — REL-07 (`default_workflow_permissions=write`) and REL-08 (`HEX_API_KEY`) were already configured by the maintainer; merged release-please Release PR #7 → publish-hex green → **`crosswake 0.1.0` live on hex.pm** (PRF-02). GitHub Release `v0.1.0`; HexDocs HTTP 200.
-- **Phase 32 (Post-Publish Cleanup) COMPLETE** — removed `release-as` pin (PRF-04), added `{:crosswake, "~> 0.1"}` install snippet to `guides/install.md` (HEX-04), smoke-installed from a fresh `mix new` resolving 0.1.0 from hex.pm (PRF-03).
-- **v3.3 is fully shipped.** Next: optionally `/gsd-complete-milestone v3.3` to archive the milestone, then `/gsd-new-milestone` (recommended v3.4: Commerce Archetype Proof, ARCH-02).
-- Optional v3.4 cleanup: ~150 intentional ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause) to enable `mix docs --warnings-as-errors`.
-- Heads-up (cosmetic): the auto-generated **GitHub Release notes** for v0.1.0 still list internal phase-scoped commit lines (e.g. `feat(28-01)`); editable anytime on the Releases page. The hex.pm/tarball CHANGELOG is the clean curated one.
+- Start the next milestone with /gsd-new-milestone

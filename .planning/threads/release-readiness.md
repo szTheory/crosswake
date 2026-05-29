@@ -1,9 +1,10 @@
 ---
 slug: release-readiness
 title: Hex.pm publication path + release infrastructure (v3.3 candidate)
-status: open
+status: done
 created: 2026-05-27
-updated: 2026-05-27
+updated: 2026-05-29
+resolution: Shipped as v3.3 Release Readiness — crosswake 0.1.0 live on hex.pm (2026-05-29).
 ---
 
 # Thread: Release readiness — hex.pm publication

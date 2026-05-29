@@ -1,5 +1,17 @@
 # Project Milestones: Crosswake
 
+## v3.3 Release Readiness (Shipped: 2026-05-29)
+
+**Phases completed:** 6 phases, 11 plans, 5 tasks
+
+**Key accomplishments:**
+
+- Added canonical Apache-2.0 LICENSE file to repo root to back the hex package `:licenses` declaration.
+- Replaced placeholder metadata in mix.exs with canonical szTheory block, introducing `@source_url` single source of truth and an explicit `:files` allowlist.
+- Automated Hex releases via release-please with SHA-pinned Actions and Dependabot updates
+
+---
+
 ## v3.2 Commerce And Entitlement Seams (Shipped: 2026-05-27)
 
 **Phases completed:** 6 phases, 18 plans, 38 tasks

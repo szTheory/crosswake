@@ -75,10 +75,11 @@ Final scope and ordering will be set via `$gsd-new-milestone`.
 - [x] **SUPP-04** Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale entitlement snapshots, and native rebuild requirements. Validated in v3.2 (Phase 23).
 - [x] **SUPP-05** Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped. Validated in v3.2 (Phase 23).
 - [x] **SUPP-06** Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship. Validated in v3.2 (Phase 23).
+- ✓ **v3.3 Release Readiness** (all 28 requirements: META-*, VER-01, LOG-*, REL-*, HEX-*, PRF-*) — `crosswake 0.1.0` published to hex.pm + HexDocs via the release-please pipeline. Validated across Phases 26–32; full detail in `.planning/milestones/v3.3-REQUIREMENTS.md`.
 
 ### Active
 
-_v3.3 Release Readiness requirements defined in `.planning/REQUIREMENTS.md`. Milestone goal: hex.pm publication with honest release metadata, CHANGELOG, real `source_url`, and release-please pipeline._
+_No active milestone. v3.3 Release Readiness SHIPPED 2026-05-29 — `crosswake 0.1.0` is live on hex.pm + HexDocs. Next milestone to be defined via `/gsd-new-milestone` (recommended: v3.4 Commerce Archetype Proof, ARCH-02). Per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
 
 ### Out of Scope
 
