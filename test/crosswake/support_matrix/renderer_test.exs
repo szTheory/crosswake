@@ -51,7 +51,24 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
     assert guide =~ "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
     assert guide =~ "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+    assert guide =~ "freshness posture (fresh/stale/unknown) surfaced before access checks"
+    assert guide =~
+             "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available"
+    assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+    assert guide =~
+             "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
+    refute String.downcase(guide) =~ "storekit"
+    refute String.downcase(guide) =~ "play_billing"
+    refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
+  end
+
+  test "generated support output does not present evidence as direct authority grant" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "non-authoritative reconciliation input"
+    refute String.downcase(guide) =~ "evidence is a direct authority grant"
+    refute String.downcase(guide) =~ "pending_purchase grants authority"
   end
 
   test "generated guide renders packaging ledger, release policy, and change classes from typed support truth" do
@@ -72,6 +89,89 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| core-only/no native rebuild |"
     assert guide =~ "| compatibility-bump only |"
     assert guide =~ "| native or companion rebuild required |"
+  end
+
+  test "generated guide renders commerce corridor support truth with canonical denial codes" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "## Commerce Corridors"
+    assert guide =~
+             "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |"
+    assert guide =~ "| paywall_entry | phoenix_owned |"
+    assert guide =~ "commerce.corridor.undeclared"
+    assert guide =~ "| purchase_intent | native_or_companion_required |"
+    assert guide =~ "commerce.corridor.runtime_incompatible"
+  end
+
+  test "commerce corridor rows expose proof_class, prerequisite_classes, and rebuild_requirement columns" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    # proof_class appears on every commerce corridor row
+    assert guide =~ "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
+
+    assert guide =~
+             "| account_management | phoenix_owned | route_declaration; backend_reconciliation |"
+
+    assert guide =~
+             "| purchase_intent | native_or_companion_required | native_adapter; provider_setup; backend_reconciliation |"
+
+    assert guide =~
+             "| restore_intent | native_or_companion_required | native_adapter; provider_setup; backend_reconciliation |"
+
+    # proof_class merge-blocking label appears on commerce corridor rows
+    assert guide =~ "| merge-blocking | native_rebuild_required=false:"
+    assert guide =~ "| merge-blocking | native_rebuild_required=true:"
+
+    # rebuild_trigger text appears on the corridor row
+    assert guide =~
+             "Phoenix-owned paywall changes do not require a native shell rebuild"
+
+    assert guide =~ "Native adapter or provider SDK code changes require rebuilding"
+    assert guide =~ "Native restore choreography or provider SDK code changes require rebuilding"
+
+    # prerequisite_classes are rendered as semicolon-separated atom names
+    assert guide =~ "route_declaration; backend_reconciliation"
+    assert guide =~ "native_adapter; provider_setup; backend_reconciliation"
+  end
+
+  test "guides/support_matrix.md is byte-identical to canonical renderer output after Plan 23-02 enrichment" do
+    # Plan 23-02 enriched commerce corridor entries with prerequisite_classes,
+    # rebuild_requirement, and proof_class metadata, and added three new columns to
+    # the Commerce Corridors section. Plan 23-03 explicitly re-asserts this byte-identity
+    # so a reviewer or future planner can see the guarantee in the test suite without
+    # having to reason through the broader guide parity test below.
+    rendered = Renderer.render(SupportMatrix.canonical())
+    on_disk = File.read!("guides/support_matrix.md")
+
+    assert rendered == on_disk,
+           "guides/support_matrix.md drifted from canonical Renderer output; regenerate before merging"
+
+    # Determinism guard: re-rendering must produce identical bytes (no nondeterministic ordering).
+    assert rendered == Renderer.render(SupportMatrix.canonical())
+  end
+
+  test "renderer escapes pipe characters in support entry cells so future data cannot rip the markdown column layout" do
+    # Synthesizes a SupportMatrix with a notes string containing a literal
+    # pipe character. Without escaping, the rendered row would silently split
+    # into extra columns and break GitHub markdown parsing for the entire
+    # Phoenix section. Asserts the renderer emits the escaped form (`\|`)
+    # and does not produce a row with a raw inline `|` in the notes cell.
+    base = SupportMatrix.canonical()
+
+    risky_phoenix =
+      Enum.map(base.phoenix, fn entry ->
+        %{entry | notes: "alpha | beta"}
+      end)
+
+    matrix = %{base | phoenix: risky_phoenix}
+
+    rendered = Renderer.render(matrix)
+
+    assert rendered =~ "alpha \\| beta",
+           "renderer must escape `|` in interpolated cells"
+
+    refute rendered =~ "alpha | beta |",
+           "rendered output still contains an unescaped pipe in a cell, which would break the markdown table layout"
   end
 
   test "guides remain mechanically checked against canonical support truth and phase 3 boundaries" do

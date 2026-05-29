@@ -39,6 +39,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       capability_family_section(support_matrix.capability_families),
       "",
+      commerce_corridor_section(Crosswake.SupportMatrix.commerce_corridors()),
+      "",
       package_surface_section(support_matrix.package_surfaces),
       "",
       release_boundary_section(support_matrix.release_boundaries),
@@ -107,6 +109,17 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp commerce_corridor_section(entries) do
+    [
+      "## Commerce Corridors",
+      "",
+      "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |",
+      "|---------------|---------------|----------------------|---------------|--------------|-------------------|-------------|---------------------|",
+      Enum.map_join(entries, "\n", &commerce_corridor_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
   defp release_boundary_section(entries) do
     [
       "## Release And Versioning Policy",
@@ -144,7 +157,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
         "-"
       end
 
-    "| #{entry.target} | #{entry.version} | #{format_status(entry.baseline_status || entry.status)} | #{format_status(entry.proof_status || entry.status)} | #{proof} | #{boundaries} | #{notes} |"
+    "| #{escape_cell(entry.target)} | #{escape_cell(entry.version)} | #{format_status(entry.baseline_status || entry.status)} | #{format_status(entry.proof_status || entry.status)} | #{escape_cell(proof)} | #{boundaries} | #{escape_cell(notes)} |"
   end
 
   defp capability_row(%CapabilitySupportEntry{} = entry) do
@@ -159,22 +172,32 @@ defmodule Crosswake.SupportMatrix.Renderer do
     prerequisites =
       case entry.prerequisites do
         [] -> "-"
-        items -> Enum.join(items, "; ")
+        items -> Enum.map_join(items, "; ", &escape_cell/1)
       end
 
-    "| #{entry.family} | #{Atom.to_string(entry.owner)} | #{entry.posture || "-"} | #{format_status(entry.baseline_status || :supported)} | #{format_status(entry.proof_status || :supported)} | #{format_package_class(entry.package_class)} | #{format_proof_class(entry.proof_class)} | #{format_rebuild(entry.rebuild)} | #{prerequisites} | #{entry.denial || "-"} | #{entry.fallback || "-"} | #{guide} |"
+    "| #{escape_cell(entry.family)} | #{Atom.to_string(entry.owner)} | #{escape_cell(entry.posture || "-")} | #{format_status(entry.baseline_status || :supported)} | #{format_status(entry.proof_status || :supported)} | #{format_package_class(entry.package_class)} | #{format_proof_class(entry.proof_class)} | #{format_rebuild(entry.rebuild)} | #{prerequisites} | #{escape_cell(entry.denial || "-")} | #{escape_cell(entry.fallback || "-")} | #{guide} |"
   end
 
   defp package_surface_row(%PackageSurfaceEntry{} = entry) do
-    "| #{entry.surface} | #{format_package_class(entry.package_class)} | #{entry.why} | #{entry.release_burden} | #{format_guide_link(entry.guide)} |"
+    "| #{escape_cell(entry.surface)} | #{format_package_class(entry.package_class)} | #{escape_cell(entry.why)} | #{escape_cell(entry.release_burden)} | #{format_guide_link(entry.guide)} |"
+  end
+
+  defp commerce_corridor_row(entry) do
+    prerequisite_classes = format_atom_list(entry.prerequisite_classes)
+    prerequisites = format_list(entry.prerequisites)
+    denial_codes = format_list(entry.denial_codes)
+    proof_class = format_proof_class(entry.proof_class)
+    rebuild_requirement = format_rebuild_requirement(entry.rebuild_requirement)
+
+    "| #{escape_cell(entry.corridor_role)} | #{escape_cell(entry.owner_posture)} | #{prerequisite_classes} | #{prerequisites} | #{denial_codes} | #{escape_cell(entry.fallback_behavior)} | #{proof_class} | #{rebuild_requirement} |"
   end
 
   defp release_boundary_row(%ReleaseBoundaryEntry{} = entry) do
-    "| #{entry.target} | #{entry.versioning} | #{entry.compatibility_contract} | #{entry.release_rule} |"
+    "| #{escape_cell(entry.target)} | #{escape_cell(entry.versioning)} | #{escape_cell(entry.compatibility_contract)} | #{escape_cell(entry.release_rule)} |"
   end
 
   defp change_class_row(%ChangeClassEntry{} = entry) do
-    "| #{entry.change_class} | #{entry.what_changed} | #{entry.adopter_action} | #{entry.compatibility_signal} | #{entry.required_proof} |"
+    "| #{escape_cell(entry.change_class)} | #{escape_cell(entry.what_changed)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.compatibility_signal)} | #{escape_cell(entry.required_proof)} |"
   end
 
   defp format_guide_link(guide) do
@@ -191,4 +214,32 @@ defmodule Crosswake.SupportMatrix.Renderer do
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+
+  defp format_list([]), do: "-"
+  defp format_list(items), do: Enum.map_join(items, "; ", &escape_cell/1)
+
+  defp format_atom_list([]), do: "-"
+  defp format_atom_list(items), do: Enum.map_join(items, "; ", &Atom.to_string/1)
+
+  defp format_rebuild_requirement(%{native_rebuild_required: required, rebuild_trigger: trigger}) do
+    "native_rebuild_required=#{required}: #{escape_cell(trigger)}"
+  end
+
+  # Escape a value for inclusion as a single Markdown table cell. Replaces the
+  # pipe character (which would otherwise break column layout) with the
+  # backslash-escaped form GitHub Flavored Markdown understands, and collapses
+  # embedded newlines into spaces so a multi-line value cannot rip the row in
+  # two. Backslashes are doubled first so the cell-escape pass is reversible.
+  # Returns "-" for nil so the renderer keeps emitting a placeholder rather
+  # than an empty cell.
+  defp escape_cell(nil), do: "-"
+
+  defp escape_cell(value) when is_binary(value) do
+    value
+    |> String.replace("\\", "\\\\")
+    |> String.replace("|", "\\|")
+    |> String.replace("\n", " ")
+  end
+
+  defp escape_cell(value), do: escape_cell(to_string(value))
 end

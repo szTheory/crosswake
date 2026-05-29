@@ -91,6 +91,7 @@ defmodule Crosswake.Shell.Activation do
   @spec resolve(Root.t(), Request.t()) :: Decision.t()
   def resolve(%Root{} = manifest, %Request{} = request) do
     route_id = request.route_id || route_id_from_url(manifest, request.url)
+
     decision =
       RouteGate.evaluate(
         manifest,
@@ -105,7 +106,17 @@ defmodule Crosswake.Shell.Activation do
         allow(request, route)
 
       :deny ->
-        deny(request, route_id, Map.get(decision, :denial) || denial_from_gate(manifest, route_id, decision))
+        denial = Map.get(decision, :denial) || denial_from_gate(manifest, route_id, decision)
+
+        if commerce_corridor_denial?(denial) do
+          deny(
+            request,
+            route_id,
+            enrich_commerce_corridor_denial(denial, manifest, route_id)
+          )
+        else
+          deny(request, route_id, denial)
+        end
     end
   end
 
@@ -223,6 +234,58 @@ defmodule Crosswake.Shell.Activation do
     end
   end
 
+  defp commerce_corridor_denial?(%Denial{reason: :commerce_corridor}), do: true
+  defp commerce_corridor_denial?(_denial), do: false
+
+  defp enrich_commerce_corridor_denial(%Denial{} = denial, %Root{} = manifest, route_id) do
+    route_commerce =
+      manifest.routes
+      |> Map.get(route_id)
+      |> case do
+        %RouteEntry{commerce: commerce} -> commerce
+        _other -> nil
+      end
+
+    details =
+      denial.details
+      |> maybe_put(:corridor_ref, route_commerce && route_commerce.corridor_ref)
+      |> maybe_put(:role, route_commerce && route_commerce.role)
+      |> maybe_put(:failing_prerequisite, failing_prerequisite(denial))
+      |> maybe_put(:failing_moment, route_commerce && route_commerce.role)
+
+    recovery =
+      denial.recovery
+      |> Map.put(:fallback, :return_to_phoenix_guidance)
+      |> Map.put(:next_step, :declare_corridor_or_disable_commerce_route)
+      |> Map.put(:guidance, :return_to_phoenix_guidance)
+      |> Map.update(:actions, default_corridor_actions(), fn actions ->
+        actions
+        |> List.wrap()
+        |> Kernel.++(default_corridor_actions())
+        |> Enum.uniq()
+      end)
+
+    %Denial{denial | details: details, recovery: recovery}
+  end
+
+  defp default_corridor_actions do
+    [:return_to_phoenix_guidance, :declare_corridor_or_disable_commerce_route]
+  end
+
+  defp failing_prerequisite(%Denial{code: "commerce.corridor.undeclared"}),
+    do: :declare_corridor_or_disable_commerce_route
+
+  defp failing_prerequisite(%Denial{code: "commerce.corridor.prerequisite_missing"}),
+    do: :declare_corridor_or_disable_commerce_route
+
+  defp failing_prerequisite(%Denial{code: "commerce.corridor.runtime_incompatible"}),
+    do: :return_to_phoenix_guidance
+
+  defp failing_prerequisite(%Denial{code: "commerce.corridor.policy_blocked"}),
+    do: :declare_corridor_or_disable_commerce_route
+
+  defp failing_prerequisite(_denial), do: nil
+
   defp route_path_matches?(route_path, request_path)
        when is_binary(route_path) and is_binary(request_path) do
     route_segments = path_segments(route_path)
@@ -247,4 +310,7 @@ defmodule Crosswake.Shell.Activation do
   defp port_suffix(%URI{scheme: "https", port: 443}), do: ""
   defp port_suffix(%URI{scheme: "http", port: 80}), do: ""
   defp port_suffix(%URI{port: port}), do: ":#{port}"
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 end

@@ -1,5 +1,3 @@
-Code.require_file("../../support/router_fixtures.ex", __DIR__)
-Code.require_file("../../support/compile_router_case.ex", __DIR__)
 
 defmodule Crosswake.Policy.WarningTest do
   use ExUnit.Case, async: true

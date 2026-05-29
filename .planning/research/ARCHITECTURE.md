@@ -1,343 +1,400 @@
-# Architecture Patterns
+# Architecture Research
 
-**Domain:** Phoenix-native mobile substrate for explicit per-route runtime ownership
-**Project:** Crosswake
-**Researched:** 2026-05-12
-**Overall confidence:** HIGH for Phoenix/LiveView and mobile shell constraints, MEDIUM for exact native package split because that is a project choice rather than a dictated standard
+**Domain:** Hex.pm publication infrastructure — v3.3 Release Readiness
+**Researched:** 2026-05-27
+**Confidence:** HIGH (all findings grounded in existing repo artifacts, skill SKILL.md, and PROJECT.md)
 
-## Recommended Architecture
+---
 
-Crosswake should be built as a **policy compiler plus runtime host system**, not as a UI framework. Phoenix remains the authority for route declaration, policy compilation, server truth, sync reconciliation, and compatibility gating. The iOS and Android shells remain the authority for device capabilities, local storage, background execution, and native screens. LiveView remains a route runtime, not the orchestration layer for every mobile concern.
+## System Overview
 
-The core rule is: **every crossing between Phoenix and native code must happen through a named contract**. That means no ad hoc JS messaging, no hidden capability reach-through, and no route behavior that depends on runtime guesses. Route policy should compile into a manifest that both Phoenix and the native shells consume, and all runtime decisions should be explainable from that manifest.
-
-### System Shape
-
-```text
-Phoenix host app
-  -> Crosswake.RoutePolicy DSL
-  -> Crosswake.Manifest compiler
-  -> Crosswake.Compatibility gate
-  -> Crosswake.Capability registry
-  -> Crosswake.Sync contracts
-  -> Crosswake.Pack registry
-  -> Crosswake.Diagnostics / operator surface
-
-Compiled manifest
-  -> shipped with host release
-  -> loaded by iOS shell
-  -> loaded by Android shell
-
-Native shell
-  -> Shell runtime host
-  -> Route resolver
-  -> LiveView container
-  -> Bridge dispatcher
-  -> Offline island host
-  -> Native screen host
-  -> Pack store
-  -> Sync engine
-  -> Capability adapters
-
-Companions and integrations
-  -> attach at auth, flagging, media, notifications, audit, health seams
-  -> never bypass manifest, policy, or bridge contracts
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          COMPONENT CLASSIFICATION                         │
+├────────────────────────┬─────────────────────────┬───────────────────────┤
+│       UNCHANGED        │        MODIFIED          │          NEW          │
+│                        │                          │                       │
+│  lib/                  │  mix.exs                 │  CHANGELOG.md         │
+│  test/                 │    @source_url (real)    │  release-please-      │
+│  examples/             │    package/0 block       │    config.json        │
+│  guides/               │    docs/0 added          │  .release-please-     │
+│  priv/                 │  README.md               │    manifest.json      │
+│  script/               │    hex-page render       │  .github/workflows/   │
+│  .github/workflows/    │    source_url links      │    release-please.yml │
+│    phase5-proof.yml    │  guides/install.md       │  .github/workflows/   │
+│    phase10-proof.yml   │    real install snippet  │    hex-publish.yml    │
+│    phase18-proof.yml   │  .gitignore additions    │  HEX_API_KEY secret   │
+│    phase23-proof.yml   │  Possibly: doctor        │                       │
+│  .planning/            │    install-truth check   │                       │
+└────────────────────────┴─────────────────────────┴───────────────────────┘
 ```
 
-## Component Boundaries
+---
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `Crosswake.RoutePolicy` | DSL for declaring runtime, offline mode, capabilities, packs, sync seams, and sensitivity per route | Phoenix router, manifest compiler |
-| `Crosswake.Manifest` | Compiles route policy into versioned runtime manifest consumed by shells and tests | RoutePolicy, compatibility gate, native shells |
-| `Crosswake.Compatibility` | Enforces bridge version, pack schema version, shell minimum version, and route compatibility before a route activates | Manifest, native shell handshake, diagnostics |
-| `Crosswake.Capabilities` | Defines capability names, versions, allowlists, and route-level activation rules | Manifest, bridge dispatcher, native adapters |
-| `Crosswake.Packs` | Declares content pack and media pack contracts, integrity metadata, and install/update semantics | Manifest, sync contracts, native pack store |
-| `Crosswake.Sync` | Defines journals, outboxes, reconciliation callbacks, idempotency keys, and server commit rules | Phoenix APIs/channels, native sync engine, audit |
-| `Crosswake.Diagnostics` | Doctor tasks, manifest inspection, support matrix, route activation traces, compatibility failures | All components |
-| Phoenix host routes/controllers/LiveViews | Serve server-owned routes and server truth, including sync endpoints and LiveView screens | RoutePolicy, Sync, Diagnostics |
-| Native shell runtime host | Bootstraps app, loads manifest, resolves route ownership, coordinates shell navigation | Manifest, Compatibility, all native runtime hosts |
-| LiveView container | Hosts server-owned screens in the shell and exposes bounded hook/bridge touchpoints | Native shell, bridge dispatcher, Phoenix LiveView |
-| Bridge dispatcher | Single semantic request/reply channel for low-frequency native affordances | LiveView container, capability adapters, diagnostics |
-| Offline island host | Runs local-first modules with local DB, journal, and sync adapters | Pack store, sync engine, capability adapters |
-| Native screen host | Runs full native flows for camera, billing, audio capture, document scan, etc. | Shell navigation, capability adapters, sync engine |
-| Pack store | Stores content/media packs, verifies integrity, exposes pack reads to offline islands and native screens | Manifest, sync engine |
-| Sync engine | Replays outbox entries, refreshes packs, uploads media, reconciles conflicts, schedules background work | Phoenix Sync APIs, pack store, journal DB |
-| Capability adapters | Thin per-capability native implementations behind route-scoped checks | Bridge dispatcher, native screen host, offline islands |
+## Component Responsibilities
 
-## Data Flow
+| Component | Responsibility | Status |
+|-----------|----------------|--------|
+| `mix.exs` `:package` block | Declares Hex package name, licenses, links (Source/Docs/Changelog), files allowlist | Modified — `:maintainers`, `:links` Changelog entry, `name:`, `docs:` all missing |
+| `mix.exs` `@source_url` | Canonical repo URL used in docs source links and hex page | Modified — currently `github.com/example/crosswake` placeholder |
+| `mix.exs` `docs/0` | Configures ExDoc: `main:`, `source_ref:`, `formatters:`, `extras:` (guides + CHANGELOG) | New function — entirely absent today |
+| `CHANGELOG.md` | Keep-a-Changelog format; synthesis from MILESTONES.md history; release-please appends entries on each release | New file — does not exist |
+| `release-please-config.json` | Declares `release-type: elixir`, bump strategy, `changelog-path`, one-time `release-as:` pin | New file |
+| `.release-please-manifest.json` | Baselines current version at `0.0.0` so release-please knows first release is the next bump | New file — MUST be `0.0.0`, not the current mix.exs version |
+| `.github/workflows/release-please.yml` | Listens for merged commits, opens Release PR with CHANGELOG diff and version bump, on merge creates tag, triggers `publish-hex` | New workflow |
+| `.github/workflows/hex-publish.yml` | Manual recovery workflow; dispatches hex publish for a specific tag if release-please auto-publish stalls | New workflow |
+| `HEX_API_KEY` GitHub secret | Authorizes `mix hex.publish` in CI | New secret — human step, not automated |
+| `README.md` | Hex page renders from README; must have correct `source_url`-relative links and render cleanly on hex.pm | Modified — relative links need audit for hex.pm package page |
+| `guides/install.md` | Canonical install guide; should reference `{:crosswake, "~> X.Y"}` with the real published version | Modified |
+| `doctor` diagnostics | Surfaces install-truth check — "is a published version available?" | Possibly modified — see Doctor/Install Truth section |
 
-### 1. Build-time flow
+---
 
-1. Phoenix route policy is declared alongside routes, not in a disconnected YAML file.
-2. Crosswake compiles policies into a versioned manifest.
-3. Manifest validation fails the build if a route references an unknown capability, pack, sync seam, or unsupported runtime mode.
-4. The manifest is embedded into the host release and exported for native-shell fixtures and contract tests.
+## Integration Points with Existing CI Lanes
 
-This is the first test seam. If policy cannot compile deterministically, the substrate is not ready.
+### Existing Workflows (All Unchanged)
 
-### 2. App boot flow
+| Workflow | Trigger | Lane Type | Gate Status |
+|----------|---------|-----------|-------------|
+| `phase5-proof.yml` | PR, push main | Hermetic | Merge-blocking |
+| `phase10-proof.yml` | PR, push main | Hermetic | Merge-blocking |
+| `phase18-proof.yml` | PR, push main | Hermetic | Merge-blocking |
+| `phase23-proof.yml` merge-blocking-commerce-proof job | PR, push main, dispatch | Hermetic | Merge-blocking |
+| `phase23-proof.yml` advisory-commerce-proof job | Schedule (Mon 06:00 UTC), dispatch | Advisory | Never gates merge (`continue-on-error: true`) |
 
-1. Native shell starts and loads the bundled manifest.
-2. Shell performs a compatibility handshake:
-   - shell version
-   - bridge version
-   - supported capability versions
-   - pack schema versions
-3. If compatibility fails, the shell must degrade explicitly:
-   - refuse route activation
-   - route to supported fallback
-   - expose a diagnostic reason
+### New Workflows and Their Relationship to Existing Lanes
 
-No route should activate on inferred compatibility.
+**`release-please.yml`** operates on a different event axis than the proof lanes:
 
-### 3. Route activation flow
+- Triggers on: `push` to `main` (after PR merge), `workflow_dispatch`
+- The `release-please` job runs on every push to main — it opens or updates a Release PR
+- The `publish-hex` job runs ONLY when release-please creates a GitHub release (i.e., after the Release PR is merged) — it is `needs: release-please` gated
+- This workflow does NOT interact with branch protection for any proof lane. The existing merge-blocking hermetic jobs (phase5/10/18/23) must still pass before any PR (including the Release PR opened by release-please) can merge. **The Release PR itself goes through the same merge gate as any other PR** — this is by design.
 
-1. User navigates to a route or deep link.
-2. Route resolver looks up the manifest entry.
-3. The resolver chooses exactly one owner:
-   - `:live_view`
-   - `:live_view_with_bridge`
-   - `:cached_read_only`
-   - `:offline_island`
-   - `:native_screen`
-   - `:adapter`
-4. Before activation, the shell checks:
-   - current auth/session state
-   - required capabilities
-   - required packs installed
-   - offline policy allowed for current connectivity
-   - security sensitivity and cache restrictions
-5. The chosen runtime receives a typed route context, not arbitrary global state.
+**`hex-publish.yml`** (manual recovery):
 
-### 4. LiveView in shell flow
+- Trigger: `workflow_dispatch` only with `tag` and `release_version` inputs
+- No interaction with proof lanes — it runs `mix test` internally to verify before publishing
+- No `sync-release-summary` step (gotcha #6 — that is sigra-specific and would block publish)
 
-Phoenix owns HTML and state transitions for server-centric routes. Native code owns shell navigation and only exposes bounded native affordances through the bridge. This lines up with LiveView’s official hook/event interop model, where the client can `pushEvent`, receive replies, and handle server-pushed events, but the integration point is still an event seam rather than a render loop.[1][2]
+**Advisory lane for publish path** (if needed):
 
-Implication: bridge calls should look like `camera.request_permission`, `haptics.impact`, or `files.pick_upload`, not raw JS-native message passing or high-frequency state sync.
+Per the hermetic-vs-advisory graduation default (PROJECT.md Key Decisions, 2026-05-27), any environment-sensitive publish proof — e.g., a live hex.pm API availability check, or a smoke-test that `mix deps.get crosswake` resolves — should follow the advisory pattern: schedule/dispatch only, `continue-on-error: true`, never in the merge gate. This is analogous to how `advisory-commerce-proof` handles storefront/device checks.
 
-### 5. Offline island flow
+---
 
-1. Route policy resolves to `offline_island`.
-2. Shell verifies required content packs and local schema versions.
-3. Offline island reads from local storage only.
-4. User actions append journal entries or mutate local drafts.
-5. Sync engine later ships journal entries to Phoenix, receives server outcomes, and reconciles local state.
+## Build Order (Dependency Sequence)
 
-This matches current Android guidance for offline-first apps: local storage should be the source read by upper layers, with repositories mediating local and network data rather than letting UI read directly from the network.[3][4]
+This is the correct sequencing for roadmap phase ordering. Each step depends on the previous.
 
-Crosswake implication: an offline island should expose a **repository seam** and **journal seam**, never direct HTTP calls from island UI code.
+**Step 1: Package Metadata Audit**
+- Check hex.pm/api/packages/crosswake for name availability (gotcha #1)
+- Replace `@source_url` placeholder with real GitHub URL (`szTheory/crosswake`)
+- Add `name: "crosswake"` to `package/0` — explicit OTP atom match (gotcha #2 prevention)
+- Expand `links:` to include Source, Docs, Changelog entries
+- Finalize files allowlist: `lib/`, `priv/`, `guides/`, `mix.exs`, `README.md`, `LICENSE`, `CHANGELOG.md`
+- Review `:description` string for hex page rendering
+- mix.exs must be clean before CHANGELOG or release-please can reference it
 
-### 6. Pack flow
+**Step 2: Versioning Decision**
+- 0.1.0 (pre-release signal) vs 1.0.0-rc.0 (contract-mature signal) — decision drives the `release-as:` pin
+- Document rationale in CHANGELOG.md Unreleased section
+- This decision is a prerequisite for both CHANGELOG draft and release-please config
 
-1. Phoenix defines pack metadata and authorization rules.
-2. Native shell downloads packs through the sync engine or pack installer.
-3. Pack store verifies integrity and schema version before install.
-4. Offline islands and native screens read packs as immutable inputs.
-5. Pack refresh is separate from route rendering.
+**Step 3: CHANGELOG.md Draft**
+- Synthesize from MILESTONES.md v1.0 through v3.2 history
+- Use Keep-a-Changelog format with `[Unreleased]` heading
+- Include planning-milestones-vs-hex-releases bridge note (all prior milestone work folds into the first 0.1.0 entry)
+- Do NOT include `### Summary` subsection — that is sigra-specific and breaks the release pipeline (gotcha #6)
+- This file must exist before `release-please-config.json` can reference `changelog-path`
 
-Treat packs as installable artifacts, not as incidental cache entries.
+**Step 4: release-please Config**
+- `release-please-config.json`: `release-type: elixir`, bump strategy, `changelog-path: CHANGELOG.md`
+- `.release-please-manifest.json`: baseline at `0.0.0` — NOT the current mix.exs version (gotcha #4)
+- Include one-time `release-as:` pin matching Step 2 version decision (gotcha #5)
+- CHANGELOG.md must exist first (Step 3 dependency)
 
-### 7. Sync flow
+**Step 5: Release Workflow**
+- `.github/workflows/release-please.yml` — use oarlock template, not sigra (gotcha #6)
+- `.github/workflows/hex-publish.yml` — manual recovery
+- Wire `publish-hex needs: release-please` only — no `sync-release-summary` job
+- GitHub Actions permissions: `default_workflow_permissions=write`, `can_approve_pull_request_reviews=true` (gotcha #3 — must be set immediately after push)
 
-1. Server-authoritative writes from LiveView go directly to Phoenix.
-2. Offline-island writes go into a journal/outbox first.
-3. Sync engine batches and replays entries with idempotency keys.
-4. Phoenix returns accept/reject/conflict results.
-5. Local state is reconciled and diagnostics are emitted.
-6. Background refresh and replay use the native platform schedulers, not LiveView timers:
-   - Android persistent sync work belongs in WorkManager.[5]
-   - iOS background refresh/processing belongs in `BGTaskScheduler`/background tasks.[6][7]
+**Step 6: `mix hex.build` Dry Run and Content Audit**
+- Run `mix hex.build` locally — verify tarball is named `crosswake-X.Y.Z.tar` (not the OTP atom form)
+- Verify files allowlist is complete and correct
+- Clean up tarball after verification
 
-## Suggested Build Order
+**Step 7: ExDoc / Hexdocs Polish**
+- Add `defp docs/0` to mix.exs: `main: "readme"`, `source_ref: "v#{@version}"`, `formatters: ["html"]`
+- `extras:` list must include `README.md` + `CHANGELOG.md` + guides
+- Run `mix docs` locally to verify hexdocs rendering
+- README.md render audit — relative links in README render as ExDoc extras links on hexdocs.pm; on the raw hex.pm package page they should use absolute GitHub URLs
 
-Build order should follow dependency truth, not demo flash.
+**Step 8: HEX_API_KEY Secret (Human Step)**
+- Visit hex.pm/dashboard/keys → Generate key named `crosswake-ci` with write permissions
+- `gh secret set HEX_API_KEY --repo szTheory/crosswake`
+- Cannot be automated — hex.pm key generation is a human browser action
+- Verify with `gh secret list --repo szTheory/crosswake`
 
-1. **Route policy DSL and manifest compiler**
-   - Everything else depends on explicit route truth.
-   - Include compile-time validation and manifest golden tests first.
+**Step 9: Release-Please Bootstrap and First Publish**
+- Push all above commits to main
+- Wait for release-please to open Release PR
+- Verify PR proposes the correct version matching the `release-as:` pin (gotcha #5 check)
+- Confirm HEX_API_KEY secret is set before merging
+- Merge Release PR — triggers `publish-hex` job — verify hex.pm has the release
 
-2. **Compatibility gate and diagnostics**
-   - Before any shell sophistication, prove version mismatch behavior and support-matrix visibility.
+**Step 10: Post-Publish Cleanup and Proof**
+- Remove `release-as:` pin from `release-please-config.json` (gotcha #5 follow-up — if forgotten, future releases will all be pinned)
+- Smoke-test: `mix new scratch`, add `{:crosswake, "~> X.Y"}`, `mix deps.get`, `mix compile`
+- Verify hexdocs.pm/crosswake/X.Y.Z/ resolves
+- Update `guides/install.md` with real `{:crosswake, "~> X.Y"}` snippet
+- Doctor install-truth check (if in scope — comes last because hex version must be live first)
 
-3. **Minimal native shells for iOS and Android**
-   - Boot app, load manifest, resolve route ownership, host a LiveView container, expose diagnostics.
-   - No broad capability set yet.
+---
 
-4. **Bounded bridge and capability registry**
-   - Add semantic request/reply bridge.
-   - Start with a tiny capability set like haptics, app info, and file picker.
-   - Conformance tests should prove route-scoped allowlists and version checks.
+## Architectural Patterns
 
-5. **LiveView-in-shell navigation contract**
-   - Deep links, route activation, fallback behavior, auth/session handoff.
-   - This is where Phoenix-native mobile credibility starts.
+### Pattern 1: release-please as the Single Version Authority
 
-6. **Offline island contract**
-   - Local storage schema, island repository interface, journal format, replay contract.
-   - One serious example flow only.
+**What:** release-please reads conventional commits on `main`, maintains `.release-please-manifest.json` as the version ledger, opens a Release PR with a CHANGELOG diff, and on merge creates the GitHub release and tag that triggers `publish-hex`. No human manually edits `mix.exs` version or CHANGELOG after bootstrap.
 
-7. **Pack system**
-   - Content/media pack metadata, integrity checks, install/update lifecycle, test fixtures.
+**When to use:** After the initial bootstrap. First release requires the one-time `release-as:` pin; subsequent releases are fully automated.
 
-8. **Sync engine and reconciliation**
-   - Background replay, idempotency, conflict handling, operator traces.
+**Trade-offs:** Requires conventional commit discipline (`feat:`, `fix:`, `chore:`, `BREAKING CHANGE:`). The Release PR is a normal PR that goes through all existing merge gates — this is a feature. Misuse of the pin (leaving `release-as:` in config permanently) blocks all future version bumps.
 
-9. **Native screens and specialized adapters**
-   - Add device-heavy flows only after route ownership and sync seams are stable.
+**Key config:**
+```json
+{
+  "release-type": "elixir",
+  "bump-minor-pre-major": false,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "changelog-path": "CHANGELOG.md",
+      "include-v-in-tag": true,
+      "release-as": "0.1.0"
+    }
+  }
+}
+```
 
-10. **Companions and example integrations**
-   - Layer in auth, flags, media, notifications, audit, and health once the core contracts are trustworthy.
+Manifest baseline (CRITICAL — gotcha #4):
+```json
+{ ".": "0.0.0" }
+```
 
-## Patterns to Follow
+### Pattern 2: Hermetic-vs-Advisory Split Applied to Publish Path
 
-### Pattern 1: Policy Compiles to Runtime Truth
-**What:** Route declarations are the single source for runtime ownership and constraints.
-**When:** Always.
-**Example:**
+**What:** Any environment-sensitive publish-path proof follows the same two-job split established in `phase23-proof.yml`. A dry-run `mix hex.build` is hermetic and can be merge-blocking. A live hex.pm API probe or consumer-side `mix deps.get` smoke test is advisory: schedule/dispatch only, `continue-on-error: true`, never in the merge gate.
 
+**When to use:** If the roadmap includes a CI step that checks "is this version live on hex.pm?" — that check is advisory. Matches how provider simulators are not in the commerce merge gate.
+
+**Trade-offs:** Keeps PRs fast and honest. Advisory lane results are visible in CI dashboard without blocking merges. Promotion to merge-blocking requires the 4-condition promotion path documented in `phase23-proof.yml`.
+
+### Pattern 3: CHANGELOG.md as One-Time Synthesis, Then release-please Owned
+
+**What:** CHANGELOG.md is seeded once from MILESTONES.md history (v1.0 through v3.2), then owned by release-please going forward. The no-divergence rule: MILESTONES.md tracks planning milestone labels (v1.0, v2.0, v3.1, v3.2) which are NOT hex version numbers. CHANGELOG.md tracks hex release versions (0.1.0, 0.2.0, etc.). These are parallel axes.
+
+**When to use:** From the very first CHANGELOG.md commit. The planning-milestones-vs-hex-releases bridge note (from skill template) documents this split explicitly inside CHANGELOG.md itself.
+
+**Prevents:** The divergence trap where a maintainer tries to map hex versions to planning milestone labels. v3.2 as a hex release would imply v1.x and v2.x were also published hex releases — they were not. The first hex release is 0.1.0 (or whichever version is decided) regardless of planning milestone history.
+
+---
+
+## CHANGELOG Synthesis: No-Divergence Rule
+
+The MILESTONES.md history spans planning milestones v1.0 through v3.2. CHANGELOG.md must NOT attempt to map these to hex version numbers (which would imply prior hex releases existed). The correct synthesis pattern:
+
+```markdown
+## [Unreleased]
+
+### Added
+
+* Initial public release — incorporates all work from planning milestones
+  v1.0 (Route Policy Foundation) through v3.2 (Commerce And Entitlement Seams).
+  See .planning/MILESTONES.md for the full milestone history.
+```
+
+Release-please then appends a `## [0.1.0] - YYYY-MM-DD` section when the first Release PR merges. All prior work is credited in the Unreleased → 0.1.0 entry. This is honest: there was one published release event, and it contains everything built before it.
+
+The planning-milestones-vs-hex-releases bridge note near the top of CHANGELOG.md documents this explicitly for future readers and prevents future maintainers from treating planning milestone labels as hex version axes.
+
+---
+
+## Doctor / Install Truth Surface
+
+**Current state:** `mix crosswake.doctor` surfaces commerce support truth, capability prerequisites, support matrix, and CI promotion paths. It does NOT currently surface anything about hex publication status or install-path truth.
+
+**v3.3 scope decision:** Whether to add a doctor check for "is the published version available on hex.pm?" is an explicit scope call for the roadmap. It aligns with the "install truth is product truth" house-style anchor (PROJECT.md, Context from OSS DNA). The `bootstrap-elixir-hex-lib` skill does not extend doctor, but the anchor makes it a natural v3.3 surface.
+
+**If in scope — recommended architecture:**
+
+A new check in the existing doctor pipeline that probes the hex.pm API only when an explicit flag is passed:
+
+```
+mix crosswake.doctor --router YourAppWeb.Router --check-publish
+```
+
+Doctor output section:
+
+```
+install truth:
+  hex.pm package: crosswake
+  current version: 0.1.0
+  source_url: https://github.com/szTheory/crosswake
+  hex.pm status: (run with --check-publish to probe live)
+```
+
+The check is advisory-flagged internally — it makes a network call and reports the result without making the entire local doctor run network-dependent. This is analogous to how the advisory CI lane documents provider-adapter truth without blocking merges.
+
+**Phase ordering implication:** Doctor install-truth extension (if in scope) comes AFTER hex publish is verified live at Step 10. You cannot probe a version that has not been published. This is a Step 10+ addition, not a prerequisite for publication.
+
+---
+
+## mix.exs Modifications: Current vs Required
+
+**Current state (abridged):**
 ```elixir
-route "/study/session",
-  runtime: {:offline_island, "study.session"},
-  content_pack: :daily_study,
-  sync: :study_reviews,
-  capabilities: [:audio, :haptics],
-  sensitivity: :private
+@version "0.1.0"
+
+def project do
+  [app: :crosswake, version: @version, ..., description: description(), package: package()]
+end
+
+defp package do
+  [
+    licenses: ["Apache-2.0"],
+    links: %{"GitHub" => "https://github.com/example/crosswake"}
+  ]
+end
 ```
 
-The compiled manifest should be what both the Phoenix host and native shells test against.
+**Required additions for v3.3:**
+- Add `@source_url "https://github.com/szTheory/crosswake"` module attribute (real URL)
+- Add to `project/0`: `name: "crosswake"`, `source_url: @source_url`, `homepage_url: @source_url`, `docs: docs()`
+- Expand `package/0`: add `name: "crosswake"` (gotcha #2), expand `links:` to include Docs and Changelog entries, add `files:` allowlist
+- Add new `defp docs/0`: `main: "readme"`, `source_ref: "v#{@version}"`, `source_url: @source_url`, `formatters: ["html"]`, `extras:` list
 
-### Pattern 2: Semantic Bridge Only
-**What:** Expose named commands and events, not arbitrary payload tunnels.
-**When:** For low-frequency affordances from LiveView routes.
-**Instead of:** `postMessage("camera", payload)`
-**Use:** `Crosswake.Bridge.request("camera.capture", params, reply: true)`
+**Files allowlist:** `~w(lib priv guides .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)`
+- `priv/` is included — `priv/templates/` exists
+- `guides/` is included — 11 guide files should render as ExDoc extras
+- Do NOT include `test/`, `examples/`, `script/`, `.planning/`, or `prompts/` — these are not for consumers
 
-### Pattern 3: Offline Islands are Local-First Mini-Systems
-**What:** Each island owns local reads, local mutation rules, journal append logic, and sync mapping.
-**When:** For flows that must survive network loss.
-**Example boundary:**
+---
 
-```text
-Island UI
-  -> Island Repository
-  -> Local DB + Draft Store
-  -> Journal Append
-  -> Sync Mapper
+## README Hex-Page Render Considerations
+
+**Current README links (all relative):** e.g., `[guides/user_flows.md](guides/user_flows.md)`. These render correctly as ExDoc extras links on hexdocs.pm IF guides are included in `extras:`. On the raw hex.pm package page (not hexdocs), relative links may 404 because the hex.pm package page renders README as-is without resolving relative paths.
+
+**Recommendation:** README links to guides should use absolute GitHub URLs for the hex.pm package page, OR the README should note that full documentation is available at hexdocs.pm. Required audit: `mix hex.build` + `mix docs` dry run to verify rendering before first publish.
+
+**The existing `script/verify_phase5_example_hosts.sh` is NOT relevant to hex page render verification** — that verifies example hosts, not package page rendering.
+
+---
+
+## New vs Modified vs Unchanged Components (Summary Table)
+
+### New Components
+
+| Component | Path | Purpose |
+|-----------|------|---------|
+| CHANGELOG.md | `/CHANGELOG.md` | Keep-a-Changelog; seeded from MILESTONES.md; owned by release-please after bootstrap |
+| release-please config | `/release-please-config.json` | Declares elixir release-type, bump strategy, one-time release-as pin |
+| release-please manifest | `/.release-please-manifest.json` | Baselines at 0.0.0 (gotcha #4 prevention) |
+| Release workflow | `/.github/workflows/release-please.yml` | Opens Release PR → on merge creates tag → triggers hex publish |
+| Recovery workflow | `/.github/workflows/hex-publish.yml` | Manual dispatch fallback for stalled publish |
+| HEX_API_KEY secret | GitHub repo settings | Authorizes mix hex.publish in CI — human step |
+
+### Modified Components
+
+| Component | What Changes |
+|-----------|-------------|
+| `mix.exs` | `@source_url` real URL; `name:`, `homepage_url:`, `source_url:`, `docs:` in project/0; expanded `package/0` with `name:`, full `links:`, `files:` allowlist; new `defp docs/0` |
+| `README.md` | Relative link audit for hex-page render; hex badge and install snippet; version reference |
+| `guides/install.md` | Real `{:crosswake, "~> X.Y"}` mix.exs snippet once version decided |
+| `.gitignore` | Append `crosswake-*.tar` and `crosswake-*.tar` patterns — prevent hex build artifacts from being committed |
+
+### Unchanged Components
+
+| Component | Why Unchanged |
+|-----------|--------------|
+| `lib/` | No behavioral changes in v3.3 |
+| `test/` | No new tests unless doctor install-truth check added |
+| `examples/phoenix_host/` | Proof artifact — not part of hex tarball |
+| `script/` | Internal verification scripts |
+| `.github/workflows/phase5-proof.yml` | Existing hermetic merge gate |
+| `.github/workflows/phase10-proof.yml` | Existing hermetic merge gate |
+| `.github/workflows/phase18-proof.yml` | Existing hermetic merge gate |
+| `.github/workflows/phase23-proof.yml` | Two-job hermetic+advisory commerce gate |
+| `.planning/` | Internal planning artifacts — not in hex tarball |
+| `priv/templates/` | Included in hex tarball via files allowlist — no content changes needed |
+
+---
+
+## Gotcha Map for Roadmap Phases
+
+| Gotcha | Risk | Prevention Phase |
+|--------|------|-----------------|
+| #1 — Hex package name collision | `crosswake` may be taken on hex.pm | Step 1 — check hex.pm/api/packages/crosswake before any mix.exs edit |
+| #2 — Tarball named by OTP atom | `mix hex.build` produces `:crosswake`-named tarball if `name:` is absent from `package/0` | Step 1 (add `name: "crosswake"`) + Step 6 (dry run verifies tarball name) |
+| #3 — GitHub Actions can't create PRs | release-please fails to open Release PRs | Step 5 — set `default_workflow_permissions=write` immediately after first push |
+| #4 — Manifest off-by-one | `.release-please-manifest.json` set to `0.1.0` means release-please thinks 0.1.0 is already released and bumps to 0.1.1 | Step 4 — baseline manifest at `0.0.0` |
+| #5 — First release jumps to 1.0.0 | Accumulated `feat:` commits cause release-please to propose 1.0.0 on first run | Step 4 (add `release-as:` pin) + Step 9 (verify PR proposes correct version) + Step 10 (remove pin after publish) |
+| #6 — sync_release_summary.sh (sigra-specific) | Copying release-please.yml from sigra brings in a job that greps CHANGELOG for `### Summary` subsections and exits 1 if absent | Step 5 — use oarlock template, not sigra; no `sync-release-summary` job |
+
+---
+
+## Data Flow: Release Pipeline
+
+```
+Developer pushes feat:/fix: commit to main (after PR merges through existing gates)
+         |
+         v
+release-please.yml (push to main trigger)
+         |
+         v
+release-please job: reads CHANGELOG.md + .release-please-manifest.json
+  → opens / updates Release PR with version bump + CHANGELOG entry
+         |
+         v
+Release PR goes through existing merge gates (all hermetic, unchanged):
+  phase5-proof (hermetic) must pass
+  phase10-proof (hermetic) must pass
+  phase18-proof (hermetic) must pass
+  phase23-proof merge-blocking-commerce-proof (hermetic) must pass
+         |
+         v
+Maintainer merges Release PR
+         |
+         v
+release-please creates GitHub Release + tag vX.Y.Z
+         |
+         v
+publish-hex job (needs: release-please):
+  mix deps.get
+  mix test
+  mix hex.publish --yes  (uses HEX_API_KEY secret)
+  verify: curl https://hex.pm/api/packages/crosswake/releases/X.Y.Z
+         |
+         v
+Advisory probe (optional, schedule/dispatch, continue-on-error: true):
+  consumer smoke-test: mix new scratch, add dep, mix deps.get, mix compile
+  hexdocs.pm/crosswake/X.Y.Z/ resolves
 ```
 
-### Pattern 4: Native Screens are Escape Hatches, not Prestige Features
-**What:** Use full native ownership where platform behavior is the real requirement.
-**When:** Camera capture, in-app purchase flows, background media, heavy document/file workflows, platform SDK integrations.
-
-### Pattern 5: Operator Truth is a First-Class Surface
-**What:** Ship route inspectors, manifest viewers, compatibility reports, and doctor commands early.
-**When:** From the first milestone.
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Bridge as UI Runtime
-**What:** Streaming high-frequency UI state or render intent over the bridge.
-**Why bad:** It creates an undocumented second rendering system and fights LiveView’s event model.
-**Instead:** Keep LiveView server-owned or move the flow into an offline island or native screen.
-
-### Anti-Pattern 2: Hidden Route Ownership
-**What:** Letting a route decide at runtime through heuristics whether it is LiveView, cached, or native.
-**Why bad:** It destroys testability and support honesty.
-**Instead:** Declare ownership in route policy and compile it into the manifest.
-
-### Anti-Pattern 3: Cache Equals Offline
-**What:** Treating WebView cache as sufficient offline support.
-**Why bad:** Serious offline workflows need local data models, mutation queues, and reconciliation.
-**Instead:** Reserve cache for degraded read-only routes and use offline islands for local-first loops.
-
-### Anti-Pattern 4: Integrations in Core Contracts
-**What:** Embedding auth, billing, media vendors, or notification providers into the core manifest and bridge model.
-**Why bad:** It bloats the trust surface before the substrate is stable.
-**Instead:** Keep the core generic and attach integrations at explicit seams.
-
-### Anti-Pattern 5: Pack Mutation from UI Code
-**What:** Letting route code mutate installed packs directly.
-**Why bad:** Pack integrity and version drift become untestable.
-**Instead:** Treat packs as versioned installed artifacts managed by the pack store and sync engine.
-
-## Where Integrations Belong
-
-| Integration Area | Where It Belongs | Why |
-|------------------|------------------|-----|
-| `sigra` auth/session flows | Companion seam at shell bootstrap, route gating, and auth-sensitive native screens | Auth is common, but should not redefine the core route manifest |
-| `rulestead` flags/remote config | Companion seam at route activation and rollout controls | Good for gating runtime modes and kill switches without baking policy evaluation into core |
-| `rindle` uploads/media | Companion seam at media packs, upload adapters, and native capture flows | Media is central for some apps but too broad for v1 core |
-| `chimeway` notifications | Companion seam for deep link routing and notification truth | Useful, but not part of core runtime ownership |
-| `threadline` audit | Companion seam for route decisions, sync replay, and operator traces | High leverage for supportability without changing architecture fundamentals |
-| `parapet` health/SLO | Example or later companion at diagnostics and journey health | Valuable once route classes are real in production |
-
-## Where Integrations Should Stay Out
-
-| Area | Keep Out Of | Reason |
-|------|-------------|--------|
-| Billing/provider SDKs | Core route policy and bridge vocabulary | Provider rules and store policy are too volatile for v1 core |
-| Identity federation specifics | Manifest compiler and shell bootstrap defaults | Too domain-specific for the substrate layer |
-| App-specific domain search/AI/docs features | Core packs and sync contracts | They belong in downstream apps, not the substrate |
-| Provider-specific network/retry logic | Generic sync engine contract | Sync engine should define seam shape, not encode every vendor |
-
-## Testability Model
-
-Crosswake should be testable at five seams:
-
-1. **Compile-time tests**
-   - route policy validation
-   - manifest golden snapshots
-   - capability and pack reference checks
-
-2. **Contract tests**
-   - shell handshake compatibility
-   - bridge request/reply schemas
-   - sync journal schema and idempotency
-
-3. **Host integration tests**
-   - Phoenix route activation
-   - fallback behavior
-   - auth and sensitivity rules
-
-4. **Native conformance tests**
-   - shell loads manifest
-   - plugin/adapters register correctly
-   - route-scoped capability denial works
-
-5. **End-to-end proof lanes**
-   - example host app
-   - one offline island
-   - one native screen
-   - one companion integration path
-
-## Scalability Considerations
-
-| Concern | At 100 users | At 10K users | At 1M users |
-|---------|--------------|--------------|-------------|
-| Manifest complexity | Single manifest file, compile-time checks | Add manifest diff tooling and stricter support matrix | Add version negotiation discipline and long-tail compatibility tracking |
-| Offline storage | Simple local DB per island | Schema migration tooling and pack pruning | Strong pack lifecycle rules, storage quotas, and background maintenance |
-| Sync volume | Basic replay loop | Batching, retries, idempotency metrics | Backpressure controls, partitioned sync resources, conflict observability |
-| Native capability surface | Small allowlist | Capability-version compatibility matrix | Split optional adapters and companion packages aggressively |
-| Operator support | Doctor commands and manifest viewer | Route-level diagnostics and replay traces | Fleet-style health views and release correlation |
-
-## Roadmap Implications
-
-The first milestone should stop after proving: route policy compilation, shell handshake, LiveView-in-shell hosting, and a bounded bridge. Do not front-load offline islands, packs, sync, and native screens all at once.
-
-The second milestone should add exactly one offline island with one pack type and one replayable sync seam. That is the point where Crosswake becomes more than a shell.
-
-The third milestone should add one native-screen proof lane plus companion seams, because integrations are only useful after core ownership boundaries are already trustworthy.
+---
 
 ## Sources
 
-1. Phoenix LiveView JS interop guide: https://hexdocs.pm/phoenix_live_view/js-interop.html
-2. Phoenix LiveView docs for `push_event/3`: https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html
-3. Android Developers, offline-first architecture: https://developer.android.com/topic/architecture/data-layer/offline-first
-4. Android Developers, data layer guidance: https://developer.android.com/topic/architecture/data-layer
-5. Android Developers, WorkManager persistent background work: https://developer.android.com/develop/background-work/background-tasks/persistent
-6. Apple background tasks overview: https://developer.apple.com/documentation/backgroundtasks/refreshing-and-maintaining-your-app-using-background-tasks
-7. Apple background task scheduling details: https://developer.apple.com/documentation/uikit/using-background-tasks-to-update-your-app
-8. Phoenix routing scopes and pipelines: https://hexdocs.pm/phoenix/Phoenix.Router.html
-9. Capacitor custom plugin registration docs, used only as evidence that native bridge plugins must be explicitly registered per platform: https://capacitorjs.com/docs/ios/custom-code and https://capacitorjs.com/docs/android/custom-code
+- `/Users/jon/projects/crosswake/mix.exs` — current package metadata baseline
+- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — Key Decisions table, v3.3 target features
+- `/Users/jon/projects/crosswake/.planning/threads/release-readiness.md` — open investigation, repo-grounded facts
+- `/Users/jon/.claude/skills/bootstrap-elixir-hex-lib/SKILL.md` — canonical paved-path skill with gotcha catalog
+- `/Users/jon/projects/crosswake/.github/workflows/phase23-proof.yml` — hermetic-vs-advisory CI split reference implementation
+- `/Users/jon/projects/crosswake/README.md` — current README structure and relative link baseline
 
+---
+
+*Architecture research for: Crosswake v3.3 Release Readiness — hex.pm publication infrastructure*
+*Researched: 2026-05-27*

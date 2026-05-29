@@ -17,6 +17,21 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Companion integrations remain explicit seams; Crosswake does not become a generic plugin bus.
 - Diagnostics, proof lanes, support matrices, and rough-edge docs remain product surface, not cleanup work.
 
+## Release Readiness Baseline
+
+Before any v3.3+ strategic-arc milestone ships, Crosswake must be installable from hex.pm with honest release metadata, CHANGELOG, and `source_url`. This baseline was missing from the original arc; flagged 2026-05-27 during `$gsd-new-milestone` assessment. See `.planning/threads/release-readiness.md`.
+
+Concretely required:
+
+- `mix.exs` `version` reflects honest contract maturity (not the placeholder `0.1.0`).
+- `mix.exs` `source_url` points to the real GitHub repository (not `github.com/example/crosswake`).
+- `CHANGELOG.md` exists at repo root and covers v1.0 → current.
+- Release pipeline (release-please or equivalent) wired and green.
+- Hex publish workflow exists and produces a publishable package.
+- Package metadata (`:licenses`, `:links`, `:maintainers`, `:description`, `:files`) audited for hex-page rendering.
+
+Rationale: a Phoenix OSS library that is not installable via `{:crosswake, "~> X"}` from hex.pm is invisible to its target community. szTheory house-style anchors ("install truth is product truth", "release truth matters" — see `prompts/crosswake-elixir-oss-dna.md:103-137`) make this baseline load-bearing rather than optional polish.
+
 ## Capability Taxonomy
 
 ### Core
@@ -50,9 +65,9 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 
 ## Milestone Sequence
 
-### Active: v3.0 Capability Contract And Packaging
+### Shipped: v3.0 Capability Contract And Packaging
 
-**Status:** active on 2026-05-19
+**Status:** shipped on 2026-05-20
 
 **Objective**
 - Freeze capability-family taxonomy, package boundary policy, manifest extensions, bridge command rules, and multi-package release constraints.
@@ -110,27 +125,89 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Closed route-local enforcement, doctor/support posture, and support-matrix truth for the new families.
 - Added a dedicated Phase 18 proof lane that passes Elixir proof slices, checked-in iOS shell proof, and Android JVM BridgeChannel proof.
 
-### Candidate: v3.2 Commerce And Entitlement Seams
+### Active: v3.2 Commerce And Entitlement Seams
 
-**Status:** candidate
+**Status:** active on 2026-05-27
 
 **Objective**
-- Define Crosswake's Phoenix-facing commerce seam: paywall route mode, purchase intent, restore intent, entitlement snapshot, and reconciliation hooks.
+- Operationalize Crosswake's Phoenix-facing commerce seam: route/corridor declarations, purchase intent, restore intent, entitlement snapshot lifecycle truth, reconciliation hooks, support posture, and proof guidance.
 
 **Why now**
-- Subscription and companion-app adopters expect a coherent mobile commerce story, but Crosswake must avoid store-specific core sprawl.
+- `v3.0` defined the core commerce vocabulary and package boundary, and `v3.1` proved low-frequency capability delivery. Subscription and companion-app adopters now need the seam to become usable and provable without store-specific core sprawl.
+
+**Key outputs**
+- Commerce route/corridor declarations
+- Normalized lifecycle semantics for purchase, restore, reconciliation, and entitlement snapshots
+- Minimal Phoenix-owned reconciliation inbox and entitlement projection example
+- Doctor/support-matrix/reviewer guidance for commerce prerequisites and fallbacks
+- Merge-blocking contract proof plus advisory storefront/provider proof posture
 
 **Non-goals**
 - A universal billing engine in core
 - Device-local entitlement truth
 - Provider lock-in disguised as generic architecture
+- StoreKit, Play Billing, or provider SDK implementation in core
 
 **Proof required**
 - Explicit core-vs-companion boundary for commerce
 - Support guidance for storefront, reviewer, and restore flows
 - Backend reconciliation contract examples
+- Denial/fallback tests proving device evidence cannot directly grant entitlement authority
 
-### Candidate: v3.3 First-Party Companions
+### Candidate: v3.3 Release Readiness
+
+**Status:** candidate (recommended next; flagged 2026-05-27 during post-v3.2 assessment)
+
+**Objective**
+- Publish Crosswake to hex.pm with honest release metadata, CHANGELOG, and real `source_url`. Establish the release infrastructure (release-please, hex publish workflow) that every subsequent milestone will depend on.
+
+**Why now**
+- `v3.2` shipped the commerce seam and brings the substrate to ~82% done by adopter-coverage rubric. The lib's biggest remaining gap is not contract surface — it is *discoverability*. Without hex.pm presence the lib is invisible to the Phoenix community and no further milestone gains real-world adopter pressure.
+
+**Key outputs**
+- `mix.exs` version, `source_url`, package metadata audited for hex
+- `CHANGELOG.md` covering v1.0 → v3.2 history
+- Release-please (or equivalent) pipeline wired
+- `.github/workflows/release.yml` for hex publish on tag
+- hexdocs render verified
+- `bootstrap-elixir-hex-lib` skill used as paved path
+
+**Non-goals**
+- New capability families
+- Provider adapters
+- Companion integrations
+- API changes that would require a major version bump for purely cosmetic reasons
+
+**Proof required**
+- First hex release lands cleanly
+- hexdocs.pm renders README + guides
+- Tag → CI → hex publish chain green
+
+### Candidate: v3.4 Commerce Archetype Proof (ARCH-02)
+
+**Status:** candidate (sequenced after v3.3)
+
+**Objective**
+- Turn the v3.2 commerce vocabulary into a copy-able adopter lane. Wire a runnable `paywall_entry` + `purchase_intent` + `restore_intent` + `reconciliation_inbox` example in `examples/phoenix_host` using a mocked storefront corridor.
+
+**Why now**
+- v3.2 shipped contract vocabulary but no live paywall route exists in the example host. Adopters can read the contracts but cannot copy a working corridor. Mocking is sufficient to prove the lane end-to-end; real provider adapters wait for the dedicated provider milestone.
+
+**Key outputs**
+- `paywall_entry` route in example host
+- `MockStorefront` adapter consuming v3.2 commerce contracts
+- End-to-end merge-blocking proof: mock purchase → reconciliation evidence → entitlement snapshot → LiveView reflects state
+- `guides/commerce.md` walkthrough updated and docs-contract-locked
+
+**Non-goals**
+- StoreKit or Play Billing implementation
+- Provider-specific code in core
+
+**Proof required**
+- Merge-blocking hermetic lane drives the full corridor
+- Reviewer playbook docs-contract test stays green
+
+### Candidate: v3.5 First-Party Companions
 
 **Status:** candidate
 
@@ -155,7 +232,7 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Companion classification and dependency docs
 - Example-host integration lanes for each shipped companion
 
-### Candidate: v3.4 Operator Truth And Diagnostics Expansion
+### Candidate: v3.6 Operator Truth And Diagnostics Expansion
 
 **Status:** candidate
 
@@ -174,7 +251,7 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Advisory vs merge-blocking CI lane split
 - Native rebuild matrix and compatibility notes
 
-### Candidate: v3.5 Archetype Proof Lanes
+### Candidate: v3.7 Archetype Proof Lanes
 
 **Status:** candidate
 
@@ -195,16 +272,20 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 ## Dependency Graph
 
 - `v3.0 Capability Contract And Packaging`
-  must land before `v3.1`, `v3.2`, or `v3.3`.
+  must land before `v3.1`, `v3.2`, or later capability work.
 - `v3.1 Native Affordance Families`
   should precede deeper media/scanning or heavy native-screen expansion.
 - `v3.2 Commerce And Entitlement Seams`
   should precede commerce-focused companions or storefront-specific examples.
-- `v3.3 First-Party Companions`
-  depends on `v3.0`, and `rulestead` should precede wider risky feature rollout when possible.
-- `v3.4 Operator Truth And Diagnostics Expansion`
+- `v3.3 Release Readiness`
+  is the baseline for adopter discoverability; should precede any milestone whose value depends on adopter pickup.
+- `v3.4 Commerce Archetype Proof`
+  depends on `v3.2` and benefits from being adopter-visible, so it sequences after `v3.3`.
+- `v3.5 First-Party Companions`
+  depends on `v3.0` and on `v3.3` for adopter discoverability; `rulestead` should precede wider risky feature rollout when possible.
+- `v3.6 Operator Truth And Diagnostics Expansion`
   should track alongside widening support claims and complete before claiming broad readiness.
-- `v3.5 Archetype Proof Lanes`
+- `v3.7 Archetype Proof Lanes`
   should validate what the earlier milestones shipped rather than inventing a disconnected new surface.
 
 ## Support Truth Requirements
@@ -226,4 +307,4 @@ Any milestone in this arc that widens Crosswake's public surface must define:
 - Whether `accrue` should be the first commerce companion anchor or remain an example/docs-only reference at first
 
 ---
-*Last updated: 2026-05-19 after activating milestone v3.0 Capability Contract And Packaging*
+*Last updated: 2026-05-27 after v3.2 milestone completion + post-v3.2 next-step assessment (added Release Readiness Baseline, inserted v3.3 Release Readiness and v3.4 Commerce Archetype Proof as candidates, renumbered companion/operator/archetype milestones to v3.5/v3.6/v3.7)*

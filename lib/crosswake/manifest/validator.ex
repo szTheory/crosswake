@@ -9,6 +9,24 @@ defmodule Crosswake.Manifest.Validator do
   alias Crosswake.SupportMatrix
   alias Crosswake.Transfer.Contracts
 
+  @commerce_role_values Crosswake.Policy.Schema.commerce_role_values()
+  @provider_specific_commerce_terms ["storekit", "play_billing", "play-billing", "play billing", "revenuecat"]
+  @nested_commerce_semantic_keys [
+    "entitlement",
+    "entitlements",
+    "entitlement_snapshot",
+    "evidence",
+    "reconciliation",
+    "authority",
+    "access",
+    "freshness",
+    "effective",
+    "lifecycle",
+    "state",
+    "status"
+  ]
+  @additive_compatibility_hint "commerce corridor fields are additive in manifest schema 1.0.0 and only required when a route declares commerce"
+
   @spec validate(Types.Root.t()) :: [Error.t()]
   def validate(%Types.Root{} = manifest) do
     []
@@ -16,7 +34,13 @@ defmodule Crosswake.Manifest.Validator do
     |> validate_compatibility(manifest.compatibility)
     |> validate_support_matrix(manifest.support_matrix)
     |> validate_capability_registry(manifest.capability_registry)
-    |> validate_routes(manifest.routes, manifest.capability_registry, manifest.pack_registry)
+    |> validate_commerce_corridors(manifest.commerce_corridors)
+    |> validate_routes(
+      manifest.routes,
+      manifest.capability_registry,
+      manifest.pack_registry,
+      manifest.commerce_corridors
+    )
   end
 
   defp validate_top_level_sections(errors, %Types.Root{} = manifest) do
@@ -29,6 +53,7 @@ defmodule Crosswake.Manifest.Validator do
       {:support_matrix, manifest.support_matrix},
       {:capability_registry, manifest.capability_registry},
       {:pack_registry, manifest.pack_registry},
+      {:commerce_corridors, manifest.commerce_corridors},
       {:routes, manifest.routes}
     ]
     |> Enum.reduce(errors, fn {key, value}, acc ->
@@ -68,22 +93,32 @@ defmodule Crosswake.Manifest.Validator do
     end)
   end
 
-  defp validate_routes(errors, routes, capability_registry, pack_registry) do
+  defp validate_commerce_corridors(errors, commerce_corridors) when is_map(commerce_corridors) do
+    Enum.reduce(commerce_corridors, errors, fn {corridor_ref, corridor}, acc ->
+      corridor
+      |> commerce_corridor_errors(corridor_ref)
+      |> Enum.map(&build_error/1)
+      |> Kernel.++(acc)
+    end)
+  end
+
+  defp validate_routes(errors, routes, capability_registry, pack_registry, commerce_corridors) do
     Enum.reduce(routes, errors, fn {_id, route}, acc ->
       route
-      |> route_errors(capability_registry, pack_registry)
+      |> route_errors(capability_registry, pack_registry, commerce_corridors)
       |> Enum.map(&build_error(&1, route))
       |> Kernel.++(acc)
     end)
   end
 
-  defp route_errors(route, capability_registry, pack_registry) do
+  defp route_errors(route, capability_registry, pack_registry, commerce_corridors) do
     []
     |> validate_route_field(route, :path, route.path)
     |> validate_route_field(route, :runtime, route.runtime)
     |> validate_route_entry(route)
     |> validate_route_capabilities(route, capability_registry)
     |> validate_route_packs(route, pack_registry)
+    |> validate_route_commerce(route, commerce_corridors)
     |> validate_route_transfers(route)
   end
 
@@ -138,6 +173,191 @@ defmodule Crosswake.Manifest.Validator do
         ]
       end
     end)
+  end
+
+  defp validate_route_commerce(errors, %{commerce: nil}, _commerce_corridors), do: errors
+
+  defp validate_route_commerce(errors, route, commerce_corridors) do
+    errors
+    |> validate_route_commerce_corridor_ref(route, commerce_corridors)
+    |> validate_route_commerce_role(route)
+    |> validate_route_commerce_vocab(route)
+  end
+
+  defp validate_route_commerce_corridor_ref(errors, route, commerce_corridors) do
+    corridor_ref = commerce_field(route.commerce, :corridor_ref)
+
+    cond do
+      not non_empty_string?(corridor_ref) ->
+        [
+          %{
+            key: :commerce,
+            route_id: route.id,
+            path: route.path,
+            message: "route #{route.id} declares commerce without a corridor_ref",
+            hint:
+              "declare route commerce with a canonical corridor_ref from commerce_corridors; #{@additive_compatibility_hint}"
+          }
+          | errors
+        ]
+
+      Map.has_key?(commerce_corridors, corridor_ref) ->
+        errors
+
+      true ->
+        [
+          %{
+            key: :commerce,
+            route_id: route.id,
+            path: route.path,
+            message:
+              "route #{route.id} declares undeclared corridor_ref #{inspect(corridor_ref)} outside commerce_corridors",
+            hint:
+              "declare #{inspect(corridor_ref)} in Crosswake.Policy.CorridorProfiles before manifest validation"
+          }
+          | errors
+        ]
+    end
+  end
+
+  defp validate_route_commerce_role(errors, route) do
+    role = commerce_field(route.commerce, :role)
+
+    cond do
+      is_nil(role) ->
+        [
+          %{
+            key: :commerce,
+            route_id: route.id,
+            path: route.path,
+            message: "route #{route.id} declares commerce without a role",
+            hint:
+              "declare role with route commerce (for example :paywall_entry); #{@additive_compatibility_hint}"
+          }
+          | errors
+        ]
+
+      role in @commerce_role_values ->
+        errors
+
+      true ->
+        [
+          %{
+            key: :commerce,
+            route_id: route.id,
+            path: route.path,
+            message: "route #{route.id} declares unsupported commerce role #{inspect(role)}",
+            hint: "use provider-neutral roles #{inspect(@commerce_role_values)}"
+          }
+          | errors
+        ]
+    end
+  end
+
+  defp validate_route_commerce_vocab(errors, route) do
+    commerce = route.commerce
+
+    if provider_specific_vocabulary?(commerce) do
+      message =
+        if provider_specific_semantic_vocabulary?(commerce) do
+          "route #{route.id} uses provider-specific commerce vocabulary in nested entitlement or evidence semantics"
+        else
+          "route #{route.id} uses provider-specific commerce vocabulary in corridor_ref or role"
+        end
+
+      [
+        %{
+          key: :commerce,
+          route_id: route.id,
+          path: route.path,
+          message: message,
+          hint: "use provider-neutral commerce corridor vocabulary in core manifest seams"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
+  end
+
+  defp commerce_corridor_errors(corridor, corridor_ref) do
+    []
+    |> validate_commerce_corridor_id(corridor, corridor_ref)
+    |> validate_commerce_corridor_required_string(corridor, corridor_ref, :denial, corridor.denial)
+    |> validate_commerce_corridor_required_string(corridor, corridor_ref, :fallback, corridor.fallback)
+    |> validate_commerce_corridor_prerequisites(corridor, corridor_ref)
+    |> validate_commerce_corridor_vocab(corridor, corridor_ref)
+  end
+
+  defp validate_commerce_corridor_id(errors, corridor, corridor_ref) do
+    if corridor.id == corridor_ref and non_empty_string?(corridor.id) do
+      errors
+    else
+      [
+        %{
+          key: :commerce_corridors,
+          message:
+            "commerce corridor #{inspect(corridor_ref)} must declare matching non-empty id metadata",
+          hint: "set commerce corridor id to match the registry key"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_commerce_corridor_required_string(errors, _corridor, corridor_ref, key, value) do
+    if non_empty_string?(value) do
+      errors
+    else
+      [
+        %{
+          key: :commerce_corridors,
+          message:
+            "commerce corridor #{inspect(corridor_ref)} must provide non-empty #{inspect(key)} posture",
+          hint: "declare explicit denial and fallback posture for every commerce corridor entry"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_commerce_corridor_prerequisites(errors, corridor, corridor_ref) do
+    if is_list(corridor.prerequisites) and corridor.prerequisites != [] and
+         Enum.all?(corridor.prerequisites, &non_empty_string?/1) do
+      errors
+    else
+      [
+        %{
+          key: :commerce_corridors,
+          message:
+            "commerce corridor #{inspect(corridor_ref)} must provide non-empty prerequisites",
+          hint: "declare at least one provider-neutral prerequisite for each corridor profile"
+        }
+        | errors
+      ]
+    end
+  end
+
+  defp validate_commerce_corridor_vocab(errors, corridor, corridor_ref) do
+    if provider_specific_vocabulary?(corridor) do
+      message =
+        if provider_specific_semantic_vocabulary?(corridor) do
+          "commerce corridor #{inspect(corridor_ref)} includes provider-specific vocabulary in nested entitlement or evidence semantics"
+        else
+          "commerce corridor #{inspect(corridor_ref)} includes provider-specific vocabulary"
+        end
+
+      [
+        %{
+          key: :commerce_corridors,
+          message: message,
+          hint: "use provider-neutral commerce corridor vocabulary in core manifest seams"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
   end
 
   defp capability_errors(%Types.Capability{} = capability) do
@@ -363,7 +583,56 @@ defmodule Crosswake.Manifest.Validator do
   defp non_empty_string?(value) when is_binary(value), do: byte_size(String.trim(value)) > 0
   defp non_empty_string?(_value), do: false
 
+  defp provider_specific_vocabulary?(value) when is_binary(value) do
+    normalized = value |> String.downcase() |> String.trim()
+    normalized in @provider_specific_commerce_terms
+  end
+
+  defp provider_specific_vocabulary?(value) when is_atom(value),
+    do: value |> Atom.to_string() |> provider_specific_vocabulary?()
+
+  defp provider_specific_vocabulary?(value) when is_list(value),
+    do: Enum.any?(value, &provider_specific_vocabulary?/1)
+
+  defp provider_specific_vocabulary?(value) when is_map(value),
+    do:
+      value
+      |> normalize_provider_vocab_map()
+      |> Enum.any?(fn {key, nested_value} ->
+        provider_specific_vocabulary?(key) or provider_specific_vocabulary?(nested_value)
+      end)
+
+  defp provider_specific_vocabulary?(_value), do: false
+
+  defp provider_specific_semantic_vocabulary?(value) when is_map(value) do
+    value
+    |> normalize_provider_vocab_map()
+    |> Enum.any?(fn {key, nested_value} ->
+      if commerce_semantic_key?(key) do
+        provider_specific_vocabulary?(nested_value)
+      else
+        provider_specific_semantic_vocabulary?(nested_value)
+      end
+    end)
+  end
+
+  defp provider_specific_semantic_vocabulary?(value) when is_list(value),
+    do: Enum.any?(value, &provider_specific_semantic_vocabulary?/1)
+
+  defp provider_specific_semantic_vocabulary?(_value), do: false
+
+  defp commerce_semantic_key?(value) when is_atom(value), do: value |> Atom.to_string() |> commerce_semantic_key?()
+  defp commerce_semantic_key?(value) when is_binary(value), do: String.downcase(value) in @nested_commerce_semantic_keys
+  defp commerce_semantic_key?(_value), do: false
+
+  defp normalize_provider_vocab_map(%_{} = struct), do: Map.from_struct(struct)
+  defp normalize_provider_vocab_map(map), do: map
+
+  defp commerce_field(nil, _field), do: nil
+  defp commerce_field(commerce, field) when is_map(commerce), do: Map.get(commerce, field)
+
   defp present?(:pack_registry, value) when is_map(value), do: true
+  defp present?(:commerce_corridors, value) when is_map(value), do: true
   defp present?(_key, value) when value in [nil, ""], do: false
   defp present?(_key, value) when is_map(value), do: map_size(value) > 0
   defp present?(_key, value) when is_list(value), do: value != []

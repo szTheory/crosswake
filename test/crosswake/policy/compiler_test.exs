@@ -1,4 +1,3 @@
-Code.require_file("../../support/router_fixtures.ex", __DIR__)
 
 defmodule Crosswake.Policy.CompilerTest do
   use ExUnit.Case, async: true
@@ -111,6 +110,56 @@ defmodule Crosswake.Policy.CompilerTest do
              ])
 
     assert %Route{id: "commerce"} = route
+  end
+
+  test "provider-neutral commerce corridor declarations compile into normalized route metadata" do
+    assert {:ok, %{routes: [route], warnings: []}} =
+             Compiler.compile([
+               route("/paywall",
+                 helper: "paywall",
+                 crosswake: [
+                   id: "paywall",
+                   runtime: :live_view,
+                   security: :standard,
+                   commerce: [corridor: :subscription_default, role: :paywall_entry]
+                 ]
+               )
+             ])
+
+    assert route.commerce == %{corridor: "subscription_default", role: :paywall_entry}
+  end
+
+  test "provider-specific commerce vocabulary fails with explicit errors and guidance" do
+    routes = [
+      route("/paywall",
+        helper: "paywall",
+        crosswake: [
+          id: "paywall",
+          runtime: :live_view,
+          security: :standard,
+          commerce: [corridor: :subscription_default, role: :storekit]
+        ]
+      ),
+      route("/purchase",
+        helper: "purchase",
+        crosswake: [
+          id: "purchase",
+          runtime: :live_view,
+          security: :standard,
+          commerce: [corridor: :play_billing, role: :purchase_intent]
+        ]
+      )
+    ]
+
+    assert {:error, %{errors: errors}} = Compiler.compile(routes)
+
+    assert Enum.any?(errors, &String.contains?(&1.message, "provider-specific commerce role :storekit"))
+    assert Enum.any?(errors, &String.contains?(&1.message, "provider-specific corridor vocabulary \"play_billing\""))
+
+    assert Enum.any?(errors, fn error ->
+             error.hint ==
+               "use commerce: [corridor: :subscription_default, role: :paywall_entry]"
+           end)
   end
 
   test "route entry declarations compile with explicit default and override semantics" do

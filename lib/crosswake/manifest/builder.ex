@@ -5,6 +5,7 @@ defmodule Crosswake.Manifest.Builder do
 
   alias Crosswake.Manifest.Types
   alias Crosswake.Offline.Contracts
+  alias Crosswake.Policy.CorridorProfiles
   alias Crosswake.Policy.Route
 
   @public_route_capability_ids ~w(
@@ -48,6 +49,7 @@ defmodule Crosswake.Manifest.Builder do
       end)
 
     compatibility = Keyword.get(opts, :compatibility, Types.new_compatibility())
+    commerce_corridors = commerce_corridor_registry(routes)
     support_matrix =
       Keyword.get(
         opts,
@@ -69,6 +71,7 @@ defmodule Crosswake.Manifest.Builder do
       support_matrix: support_matrix,
       capability_registry: capability_registry,
       pack_registry: pack_registry(routes),
+      commerce_corridors: commerce_corridors,
       routes: route_entries(routes, managed_routes, host.origin)
     )
   end
@@ -124,6 +127,7 @@ defmodule Crosswake.Manifest.Builder do
           entry: route.entry,
           cache_contract: cache_contract(route),
           island_contract: island_contract(route),
+          commerce: route_commerce(route),
           capabilities: route.capabilities,
           packs: route_pack_references(route.packs),
           sync: route.sync,
@@ -151,6 +155,37 @@ defmodule Crosswake.Manifest.Builder do
     end)
   end
 
+  defp commerce_corridor_registry(routes) do
+    canonical_profiles = CorridorProfiles.commerce_corridors()
+
+    routes
+    |> Enum.flat_map(fn
+      %Route{commerce: nil} -> []
+      %Route{commerce: %{corridor: corridor}} -> [corridor]
+      _route -> []
+    end)
+    |> Enum.uniq()
+    |> Enum.reduce(%{}, fn corridor_ref, acc ->
+      case Map.get(canonical_profiles, corridor_ref) do
+        nil ->
+          acc
+
+        profile ->
+          Map.put(
+            acc,
+            corridor_ref,
+            Types.new_commerce_corridor(
+              id: profile.id,
+              role_ownership: profile.role_ownership,
+              denial: profile.denial,
+              fallback: profile.fallback,
+              prerequisites: profile.prerequisites
+            )
+          )
+      end
+    end)
+  end
+
   defp route_pack_references(packs), do: Enum.map(packs, &pack_reference/1)
 
   defp transfer_seams(transfers) do
@@ -168,6 +203,15 @@ defmodule Crosswake.Manifest.Builder do
   end
 
   defp pack_reference(%{id: id, version: version}), do: "#{id}@#{version}"
+
+  defp route_commerce(%Route{commerce: nil}), do: nil
+
+  defp route_commerce(%Route{commerce: %{corridor: corridor, role: role}})
+       when is_binary(corridor) and is_atom(role) do
+    Types.new_route_commerce(corridor_ref: corridor, role: role)
+  end
+
+  defp route_commerce(_route), do: nil
 
   defp capability_catalog do
     [

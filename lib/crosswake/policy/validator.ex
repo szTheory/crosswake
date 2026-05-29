@@ -20,6 +20,8 @@ defmodule Crosswake.Policy.Validator do
                             webrtc
                           )
                       )
+  @commerce_role_values Crosswake.Policy.Schema.commerce_role_values()
+  @provider_specific_commerce_terms MapSet.new(["storekit", "play_billing", "revenuecat"])
 
   @spec validate([Route.t()], [map()]) :: [Error.t()]
   def validate(routes, managed_routes) do
@@ -39,6 +41,7 @@ defmodule Crosswake.Policy.Validator do
     |> validate_sync(route)
     |> validate_security(route)
     |> validate_capabilities(route)
+    |> validate_commerce(route)
     |> validate_unique_list(route, :capabilities, route.capabilities)
     |> validate_unique_pack_ids(route)
     |> validate_unique_list(route, :sync, route.sync)
@@ -126,6 +129,60 @@ defmodule Crosswake.Policy.Validator do
         ]
       end
     end)
+  end
+
+  defp validate_commerce(errors, %Route{commerce: nil}), do: errors
+
+  defp validate_commerce(errors, %Route{} = route) do
+    errors
+    |> validate_commerce_role(route)
+    |> validate_commerce_corridor(route)
+  end
+
+  defp validate_commerce_role(errors, %Route{commerce: %{role: role}} = route) do
+    cond do
+      role in @commerce_role_values ->
+        errors
+
+      is_binary(role) and MapSet.member?(@provider_specific_commerce_terms, role) ->
+        [
+          %{
+            key: :commerce,
+            message:
+              "route #{inspect(route.id)} uses provider-specific commerce role #{inspect(role)}",
+            hint: "use provider-neutral route roles such as :paywall_entry or :purchase_intent"
+          }
+          | errors
+        ]
+
+      true ->
+        [
+          %{
+            key: :commerce,
+            message:
+              "route #{inspect(route.id)} uses unsupported commerce role #{inspect(role)}",
+            hint: "use one of #{inspect(@commerce_role_values)}"
+          }
+          | errors
+        ]
+    end
+  end
+
+  defp validate_commerce_corridor(errors, %Route{commerce: %{corridor: corridor}} = route) do
+    if MapSet.member?(@provider_specific_commerce_terms, corridor) do
+      [
+        %{
+          key: :commerce,
+          message:
+            "route #{inspect(route.id)} uses provider-specific corridor vocabulary #{inspect(corridor)}",
+          hint:
+            "use provider-neutral corridor names and map storefront/provider terms outside Crosswake core"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
   end
 
   defp validate_unique_list(errors, _route, _key, []), do: errors

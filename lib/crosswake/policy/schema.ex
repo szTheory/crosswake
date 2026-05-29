@@ -10,6 +10,8 @@ defmodule Crosswake.Policy.Schema do
   @entry_values [:internal_only, :external]
   @security_values [:standard, :sensitive]
   @pack_kind_values [:content, :media]
+  @commerce_role_values [:paywall_entry, :purchase_intent, :restore_intent, :account_management]
+  @provider_specific_commerce_terms [:storekit, :play_billing, :revenuecat]
 
   @schema NimbleOptions.new!([
             id: [
@@ -45,6 +47,10 @@ defmodule Crosswake.Policy.Schema do
               default: [],
               type_spec: quote(do: [String.t()])
             ],
+            commerce: [
+              type: {:custom, __MODULE__, :validate_commerce_declaration, []},
+              type_spec: quote(do: commerce_declaration() | nil)
+            ],
             packs: [
               type: {:custom, __MODULE__, :validate_pack_requirements, []},
               default: [],
@@ -71,6 +77,12 @@ defmodule Crosswake.Policy.Schema do
   @type entry :: :internal_only | :external
   @type security :: :standard | :sensitive
   @type pack_kind :: :content | :media
+  @type commerce_role ::
+          :paywall_entry | :purchase_intent | :restore_intent | :account_management
+  @type commerce_declaration :: %{
+          corridor: String.t() | nil,
+          role: commerce_role() | nil
+        }
   @type pack_integrity :: %{algorithm: String.t(), digest: String.t()}
   @type pack_requirement :: %{
           id: String.t(),
@@ -86,6 +98,7 @@ defmodule Crosswake.Policy.Schema do
           cache_contract: String.t() | nil,
           island_contract: String.t() | nil,
           capabilities: [String.t()],
+          commerce: commerce_declaration() | nil,
           packs: [pack_requirement()],
           sync: [String.t()],
           transfers: [Contracts.declaration()],
@@ -94,6 +107,9 @@ defmodule Crosswake.Policy.Schema do
 
   @spec schema() :: NimbleOptions.t()
   def schema, do: @schema
+
+  @spec commerce_role_values() :: [commerce_role()]
+  def commerce_role_values, do: @commerce_role_values
 
   @spec validate(keyword()) :: {:ok, validated_options()} | {:error, NimbleOptions.ValidationError.t()}
   def validate(options) when is_list(options) do
@@ -117,6 +133,28 @@ defmodule Crosswake.Policy.Schema do
   def validate_runtime(value) do
     {:error, "expected one of #{inspect(@runtime_values)}, got: #{inspect(value)}"}
   end
+
+  @spec validate_commerce_declaration(term()) :: {:ok, commerce_declaration() | nil} | {:error, String.t()}
+  def validate_commerce_declaration(nil), do: {:ok, nil}
+
+  def validate_commerce_declaration(declaration) when is_list(declaration) do
+    declaration
+    |> Enum.into(%{})
+    |> validate_commerce_declaration()
+  end
+
+  def validate_commerce_declaration(declaration) when is_map(declaration) do
+    with {:ok, corridor} <-
+           validate_optional_identifier(
+             Map.get(declaration, :corridor, Map.get(declaration, "corridor"))
+           ),
+         {:ok, role} <- validate_commerce_role(Map.get(declaration, :role, Map.get(declaration, "role"))) do
+      {:ok, %{corridor: corridor, role: role}}
+    end
+  end
+
+  def validate_commerce_declaration(_value),
+    do: {:error, "expected commerce declaration as a map or keyword list"}
 
   @spec validate_pack_requirements(term()) :: {:ok, [pack_requirement()]} | {:error, String.t()}
   def validate_pack_requirements(requirements) when is_list(requirements) do
@@ -194,4 +232,31 @@ defmodule Crosswake.Policy.Schema do
 
   defp validate_pack_integrity(_value),
     do: {:error, "pack integrity must be a map or keyword list with algorithm and digest"}
+
+  defp validate_commerce_role(nil), do: {:ok, nil}
+  defp validate_commerce_role(value) when value in @commerce_role_values, do: {:ok, value}
+
+  defp validate_commerce_role(value) when value in @provider_specific_commerce_terms do
+    {:error, "provider-specific commerce role #{inspect(value)} is not supported in route policy"}
+  end
+
+  defp validate_commerce_role(value) when is_binary(value) do
+    cond do
+      value in Enum.map(@commerce_role_values, &Atom.to_string/1) ->
+        {:ok, String.to_existing_atom(value)}
+
+      value in Enum.map(@provider_specific_commerce_terms, &Atom.to_string/1) ->
+        {:error, "provider-specific commerce role #{inspect(value)} is not supported in route policy"}
+
+      true ->
+        {:error, "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
+    end
+  end
+
+  defp validate_commerce_role(value) do
+    {:error, "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
+  end
+
+  defp validate_optional_identifier(nil), do: {:ok, nil}
+  defp validate_optional_identifier(value), do: validate_identifier(value)
 end

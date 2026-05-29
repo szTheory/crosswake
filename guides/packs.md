@@ -6,7 +6,7 @@ generic asset management, generic uploads, or `:adapter` breadth.
 
 If you are evaluating whether your app needs one explicit native route with route-
 local packs and transfers, read
-[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+[guides/adopter_profiles.md](adopter_profiles.md)
 first, then use this guide for the concrete seam contract.
 
 ## Required Packs
@@ -72,7 +72,7 @@ Generated-host verification remains secondary and should stay green alongside it
 - `script/verify_generated_ios_shell.sh`
 - `script/verify_generated_android_shell.sh`
 
-Read [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+Read [guides/support_matrix.md](support_matrix.md)
 for the proof-backed support posture and
-[guides/native_shell.md](/Users/jon/projects/crosswake/guides/native_shell.md) for the
+[guides/native_shell.md](native_shell.md) for the
 runtime ownership boundary.

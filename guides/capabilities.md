@@ -103,6 +103,12 @@ core support claims.
 - StoreKit, Play Billing, RevenueCat-style SDK glue, provider verification clients, webhook helpers, and native purchase command/event contracts are `companion`
 - silent web checkout or generic WebView fallback for digital goods is unsupported
 
+### Commerce Corridor Ownership Guidance
+
+- `paywall_entry` and `account_management` stay Phoenix-owned corridor surfaces.
+- `purchase_intent` and `restore_intent` require native-screen or companion corridor posture before activation.
+- Provider adapters remain out of scope in Phase 19; this guide documents ownership and fail-closed posture, not adapter implementation.
+
 ## Family Naming Rules
 
 - Use stable semantic family names, not generic buckets like `device`, `media`, or `plugins`.
@@ -130,7 +136,7 @@ release burden and support posture; it does not override route ownership.
 - `example/docs-only` = guidance surfaces that teach boundaries without becoming runtime packages
 - `defer` = surfaces intentionally withheld until release choreography and proof stay honest
 
-Read [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+Read [guides/support_matrix.md](support_matrix.md)
 for the generated packaging ledger rendered from canonical support truth.
 
 ## Documentation Strength
@@ -152,7 +158,7 @@ route ownership, denial behavior, fallback behavior, prerequisites, and rebuild
 pressure explicit before Crosswake widens support claims.
 
 - Checked-in example hosts and install walkthroughs are product surfaces, but they are not runtime package boundaries.
-- Docs-only material must link back to [guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md).
+- Docs-only material must link back to [guides/support_matrix.md](support_matrix.md).
 - Runnable docs-only lanes are disallowed. Promotion requires reclassification plus proof and support-matrix updates.
 - Graduation criteria must say what proof, release policy, and rebuild posture would be required before support expands.
 

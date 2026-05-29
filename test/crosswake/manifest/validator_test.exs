@@ -1,4 +1,3 @@
-Code.require_file("../../support/router_fixtures.ex", __DIR__)
 
 defmodule Crosswake.Manifest.ValidatorTest do
   use ExUnit.Case, async: true
@@ -164,6 +163,124 @@ defmodule Crosswake.Manifest.ValidatorTest do
 
     assert Enum.any?(errors, fn error ->
              String.contains?(error.message, "declares unsupported entry policy")
+           end)
+  end
+
+  test "manifest validation rejects undeclared corridor_ref values with deterministic messaging" do
+    manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:routes), "camera", Access.key!(:commerce)],
+        Types.new_route_commerce(corridor_ref: "undeclared", role: :paywall_entry)
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.message ==
+               "route camera declares undeclared corridor_ref \"undeclared\" outside commerce_corridors"
+           end)
+  end
+
+  test "manifest validation stays backward-compatible for routes without commerce declarations" do
+    errors = Validator.validate(manifest_fixture())
+
+    refute Enum.any?(errors, fn error ->
+             error.key in [:commerce, :commerce_corridors]
+           end)
+  end
+
+  test "commerce corridor field guidance only triggers when a route declares commerce" do
+    manifest =
+      manifest_fixture()
+      |> put_in([Access.key!(:routes), "camera", Access.key!(:commerce)], %{role: :paywall_entry})
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.message == "route camera declares commerce without a corridor_ref" and
+               String.contains?(error.hint, "additive in manifest schema 1.0.0")
+           end)
+  end
+
+  test "manifest validation rejects provider-specific terms in nested entitlement and evidence commerce structures" do
+    corridor_ref = "entitlement.lifecycle"
+
+    base_manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:commerce_corridors)],
+        %{
+          corridor_ref => %{
+            id: corridor_ref,
+            role_ownership: %{paywall_entry: :phoenix_owned},
+            denial: "fail_closed",
+            fallback: "return_to_phoenix_guidance",
+            prerequisites: ["backend_projection"]
+          }
+        }
+      )
+
+    for term <- ["storekit", "play_billing", "revenuecat"] do
+      manifest =
+        put_in(
+          base_manifest,
+          [Access.key!(:routes), "camera", Access.key!(:commerce)],
+          %{
+            corridor_ref: corridor_ref,
+            role: :paywall_entry,
+            entitlement_snapshot: %{authority: %{state: term}},
+            reconciliation_evidence: %{provider: term}
+          }
+        )
+
+      errors = Validator.validate(manifest)
+
+      assert Enum.any?(errors, fn error ->
+               error.key == :commerce and
+                 String.contains?(error.message, "provider-specific commerce vocabulary")
+             end),
+             "expected provider-specific term #{term} to be rejected"
+    end
+  end
+
+  test "manifest validation rejects provider-specific terms in corridor semantic metadata" do
+    corridor_ref = "entitlement.lifecycle"
+
+    base_manifest =
+      manifest_fixture()
+      |> put_in(
+        [Access.key!(:commerce_corridors)],
+        %{
+          corridor_ref => %{
+            id: corridor_ref,
+            role_ownership: %{paywall_entry: :phoenix_owned},
+            denial: "fail_closed",
+            fallback: "return_to_phoenix_guidance",
+            prerequisites: ["backend_projection"]
+          }
+        }
+      )
+
+    manifest =
+      put_in(
+        base_manifest,
+        [Access.key!(:commerce_corridors), corridor_ref],
+        %{
+          id: corridor_ref,
+          role_ownership: %{paywall_entry: :phoenix_owned},
+          denial: "fail_closed",
+          fallback: "return_to_phoenix_guidance",
+          prerequisites: ["backend_projection"],
+          entitlement: %{status: "storekit"}
+        }
+      )
+
+    errors = Validator.validate(manifest)
+
+    assert Enum.any?(errors, fn error ->
+             error.key == :commerce_corridors and
+               String.contains?(error.message, "provider-specific vocabulary")
            end)
   end
 

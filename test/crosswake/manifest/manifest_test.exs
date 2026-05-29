@@ -1,10 +1,10 @@
-Code.require_file("../../support/router_fixtures.ex", __DIR__)
 
 defmodule Crosswake.ManifestTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Manifest
   alias Crosswake.Manifest.Types
+  alias Crosswake.Policy.CorridorProfiles
   alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
 
   test "manifest compilation from a managed router yields one route-first artifact keyed by route id" do
@@ -62,6 +62,32 @@ defmodule Crosswake.ManifestTest do
     assert Map.has_key?(manifest.pack_registry, "lesson_library@1.2.0")
     assert manifest.support_matrix.phoenix != []
     assert manifest.support_matrix.capability_families != []
+  end
+
+  test "manifest keeps schema 1.0.0 while commerce corridor fields remain additive" do
+    assert {:ok, %{manifest: baseline_manifest}} = Manifest.compile(ManagedRouter)
+
+    assert baseline_manifest.manifest_schema_version == "1.0.0"
+    assert baseline_manifest.commerce_corridors == %{}
+    assert Enum.all?(baseline_manifest.routes, fn {_id, route} -> is_nil(route.commerce) end)
+
+    assert {:ok, %{manifest: commerce_manifest}} =
+             Manifest.compile([
+               route("/paywall",
+                 helper: "paywall",
+                 crosswake: [
+                   id: "paywall",
+                   runtime: :live_view,
+                   security: :standard,
+                   commerce: [corridor: :subscription_default, role: :paywall_entry]
+                 ]
+               )
+             ])
+
+    assert commerce_manifest.manifest_schema_version == "1.0.0"
+    assert Map.has_key?(commerce_manifest.commerce_corridors, "subscription_default")
+    assert commerce_manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
+    assert commerce_manifest.routes["paywall"].commerce.role == :paywall_entry
   end
 
   test "manifest capability registry exposes typed family metadata and compatibility aliases" do
@@ -202,5 +228,45 @@ defmodule Crosswake.ManifestTest do
              family: "reconciliation_evidence",
              package_class: :core
            } = manifest.capability_registry["reconciliation_evidence"]
+  end
+
+  test "manifest links canonical profile definitions through root commerce_corridors and route corridor_ref entries" do
+    canonical = CorridorProfiles.commerce_corridors()["subscription_default"]
+
+    assert {:ok, %{manifest: manifest}} =
+             Manifest.compile([
+               route("/paywall",
+                 helper: "paywall",
+                 crosswake: [
+                   id: "paywall",
+                   runtime: :live_view,
+                   security: :standard,
+                   commerce: [corridor: :subscription_default, role: :paywall_entry]
+                 ]
+               )
+             ])
+
+    assert manifest.commerce_corridors["subscription_default"].id == canonical.id
+    assert manifest.commerce_corridors["subscription_default"].denial == canonical.denial
+    assert manifest.commerce_corridors["subscription_default"].fallback == canonical.fallback
+    assert manifest.routes["paywall"].commerce.corridor_ref == "subscription_default"
+    assert manifest.routes["paywall"].commerce.role == :paywall_entry
+    assert Types.to_map(manifest)["commerce_corridors"]["subscription_default"]["id"] == "subscription_default"
+    assert Types.to_map(manifest)["routes"]["paywall"]["commerce"]["corridor_ref"] == "subscription_default"
+  end
+
+  defp route(path, opts) do
+    metadata =
+      case Keyword.fetch(opts, :crosswake) do
+        {:ok, crosswake} -> %{crosswake: crosswake}
+        :error -> %{}
+      end
+
+    %{
+      path: path,
+      metadata: metadata,
+      helper: Keyword.get(opts, :helper, "route"),
+      verb: Keyword.get(opts, :verb, :get)
+    }
   end
 end

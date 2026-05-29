@@ -10,20 +10,34 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-Crosswake shipped `v3.1 Native Capabilities and Bridge Expansion` on `2026-05-27`.
+Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
-`v3.1` delivered the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
+`v3.2` delivered provider-neutral commerce route/corridor declarations with canonical `commerce.corridor.*` denial vocabulary, explicit entitlement lifecycle lane semantics that keep device/storefront evidence non-authoritative, a runnable Phoenix-owned reconciliation inbox/projection example, merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides anchored to canonical `SupportMatrix` accessors, a hermetic 14-test CI proof lane separated from a scheduled-only advisory provider lane, and machine-enforced SUMMARY frontmatter parity (`requirements-completed:`) backed by an ExUnit merge-blocking test. Tech-debt closure (Phase 25) hardened the parity test with presence assertion (WR-01) and loud-fail malformed-shape detection (WR-02).
 
-Awaiting definition of the next milestone via `$gsd-new-milestone`.
+`v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-## Current Milestone: TBD
+## Current Milestone: v3.3 Release Readiness
 
-**Goal:** Pending.
+**Goal:** Make Crosswake installable from hex.pm with honest release metadata, CHANGELOG, real `source_url`, and a release-please publication pipeline — turning szTheory's "install truth is product truth" and "release truth matters" anchors into actual product surface before further capability work.
 
 **Target features:**
-- Pending.
+- Package metadata truth — replace placeholder `source_url` in `mix.exs:37-42`, audit `:package` block (licenses, links, maintainers, files allowlist, description) for honest hex-page rendering.
+- Versioning decision — pick initial published version (`0.1.0` pre-release vs `1.0.0-rc.0` contract-mature signal) and document rationale in CHANGELOG plus mix.exs.
+- CHANGELOG.md — synthesize from MILESTONES.md v1.0 → v3.2 history with honest scope per release.
+- Release pipeline — release-please config (canonical per `bootstrap-elixir-hex-lib` skill), `.github/workflows/release.yml`, hex publish on tag, `HEX_API_KEY` secret wiring guidance.
+- Hex page polish — README renders correctly on hex package page; hexdocs render via `mix docs`; `mix hex.build` content audit.
+- Proof + truth — verify hex publish flow end-to-end where possible (dry run / staging), update support truth so install path is part of the product contract.
 
-**Why now:** Pending.
+**Key context:** Paved path is the `bootstrap-elixir-hex-lib` skill. Strategic-arc blindspot — `MILESTONE-ARC.md` did not list release readiness; flagged 2026-05-27 and amended. Downstream milestones (v3.5 Rulestead first-party companion) are blocked on v3.3. Uses the hermetic-vs-advisory CI split pattern (graduated default for v3.3+) for any environment-sensitive proof of the publish path. See `.planning/threads/release-readiness.md`.
+
+Strategic-arc candidates after release readiness, per `MILESTONE-ARC.md` and the 2026-05-27 assessment:
+
+- **Commerce archetype proof (ARCH-02)** — re-run a subscription/paywall adopter-shaped exemplar lane against the v3.2 seam using a mocked storefront corridor (no provider adapter required). Turns v3.2 vocabulary into a copy-able adopter lane. See `.planning/threads/commerce-archetype-proof.md`.
+- **First-party companion: Rulestead** — establishes companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks subsequent companions (sigra, rindle, chimeway, threadline). See `.planning/threads/companion-seam-pattern.md`.
+- **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input.
+- **Operator and companion expansion (OPS-01, COMP-05)** — richer operator inspection for entitlement snapshots, reconciliation attempts, and commerce route support truth; first commerce-adjacent companion integration only after package boundaries and rebuild truth are proven.
+
+Final scope and ordering will be set via `$gsd-new-milestone`.
 
 ## Requirements
 
@@ -49,10 +63,22 @@ Awaiting definition of the next milestone via `$gsd-new-milestone`.
 - [x] Ship the first low-frequency bounded native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) without widening into high-frequency bridge authority. Validated across Phases 15-17.
 - [x] Enforce v3.1 capability declarations route-locally and keep missing prerequisites fail-closed with explicit doctor and support-matrix truth. Validated in Phase 18.
 - [x] Prove the v3.1 capability surface through layered Elixir, checked-in iOS shell, and Android JVM CI proof lanes. Validated by Phase 18 Proof run `26498172516`.
+- [x] **COMM-04** Phoenix teams can declare commerce-sensitive routes that distinguish Phoenix-owned paywall/account surfaces from native-screen or companion-owned storefront loops. Validated in v3.2 (Phase 19).
+- [x] **COMM-05** Crosswake can render commerce route/corridor declarations into manifest and support truth without exposing provider-specific route-policy vocabulary. Validated in v3.2 (Phase 19).
+- [x] **COMM-06** Unsupported or undeclared commerce corridors fail closed with explicit denial/fallback reasons instead of silent WebView or bridge fallback. Validated in v3.2 (Phase 19).
+- [x] **ENTL-01** Phoenix teams can model entitlement snapshots with authority state, access state, reconciliation state, freshness, effective dates, and bounded evidence metadata. Validated in v3.2 (Phase 20).
+- [x] **ENTL-02** Crosswake distinguishes pending purchase, pending restore, awaiting verification, grace/billing retry, canceled scheduled end, revoked/refunded, expired, and stale snapshot states without leaking raw provider enums. Validated in v3.2 (Phase 20).
+- [x] **ENTL-03** Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts. Validated in v3.2 (Phase 20).
+- [x] **RECN-01** Host apps can follow a minimal Phoenix-owned reconciliation inbox example for purchase, restore, webhook, and support evidence. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **RECN-02** Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **RECN-03** Host apps can project one authoritative entitlement snapshot from verified evidence and expose stale, pending, denied, and granted states clearly. Validated in v3.2 (Phase 21; traceability normalized in Phase 24).
+- [x] **SUPP-04** Doctor and support-matrix output identify missing commerce prerequisites, unsupported native corridors, stale entitlement snapshots, and native rebuild requirements. Validated in v3.2 (Phase 23).
+- [x] **SUPP-05** Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped. Validated in v3.2 (Phase 23).
+- [x] **SUPP-06** Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship. Validated in v3.2 (Phase 23).
 
 ### Active
 
-- *(None currently)*
+_v3.3 Release Readiness requirements defined in `.planning/REQUIREMENTS.md`. Milestone goal: hex.pm publication with honest release metadata, CHANGELOG, real `source_url`, and release-please pipeline._
 
 ### Out of Scope
 
@@ -60,7 +86,7 @@ Awaiting definition of the next milestone via `$gsd-new-milestone`.
 - LiveView rendering native widgets directly — it would over-couple the library to unstable or private rendering internals.
 - Generic "wrap your app in a WebView" positioning — it hides the architecture boundaries Crosswake is supposed to clarify.
 - Shipping a broad capability catalog in `v3.0` — this milestone should decide what belongs where before implementing many new families.
-- Store-specific billing implementation in `v3.0` — commerce contract truth comes first; provider adapters follow later.
+- Store-specific billing implementation in `v3.2` — this milestone operationalizes the core seam, while provider adapters and storefront SDK code remain companion or future work.
 - Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
 - Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
@@ -73,7 +99,7 @@ The strongest early app archetypes are Phoenix-backed SaaS portals, subscription
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
-The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.0` activates the harvested post-`v2.0` capability and commerce seed, but it does so as prerequisite contract work rather than as immediate breadth expansion.
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activates the commerce candidate as operational seam work, building on the harvested post-`v2.0` capability and commerce seed plus the Phase 13 contract substrate.
 
 ## Constraints
 
@@ -104,6 +130,13 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Sequence post-v2 capability expansion as contracts-first milestone work | Locking taxonomy, packaging, commerce seams, and support truth before feature breadth reduces plugin-sprawl and support dishonesty risk | Validated through Phases 11-18 |
 | Ship native capabilities only when they remain low-frequency, typed, and route-local | v3.1 proved value in bounded affordances while avoiding continuous client authority | Validated in Milestone v3.1 |
 | Split proof lanes by evidence class when emulator/device proof slows iteration | Android JVM bridge truth closed quickly in CI once separated from emulator-backed connected tests | Validated in Phase 18 closeout |
+| Operationalize commerce as a backend-owned seam before provider adapters | Apple and Google purchase ecosystems both require native storefront evidence plus backend verification/lifecycle truth, matching Crosswake's Phase 13 contract posture | Validated in Milestone v3.2 — provider-neutral corridors, lifecycle lane vocabulary, and reconciliation example all shipped without any provider adapter code |
+| Use canonical `commerce.corridor.*` denial vocabulary as the single source of truth across route policy, manifest, doctor, support matrix, and guides | Provider-specific denial codes would force every consumer of support truth to know provider trivia; a canonical taxonomy lets the same data stitch through `SupportMatrix.commerce_corridors/0`, doctor `commerce_summary`, and merge-blocking docs tests | Validated in v3.2 (Phases 19+23) — parity tests lock taxonomy across all surfaces |
+| Split commerce CI proof into hermetic merge-blocking and scheduled-only advisory lanes | Provider simulator/device/storefront proof is environment-sensitive and would block PRs unfairly; the hermetic lane stays fast and required while advisory proof remains visible at runtime via the doctor `promotion_path` detail | Validated in v3.2 (Phase 23) — `phase23-proof.yml` two-job split with `continue-on-error: true` on the advisory job |
+| Decompose audit-flagged phases before execution rather than executing oversized phases | The v3.2 milestone-audit flagged Phase 22 as the original "support + review + proof" container; splitting into Phase 23 (runtime closure) and Phase 24 (traceability hardening) before execution kept verification scopes sharp and avoided cross-stream drift | Validated in v3.2 — both decomposed phases shipped clean verification |
+| Treat SUMMARY-frontmatter traceability automation as merge-blocking infrastructure | RECN-01/02/03 were initially flagged `partial` purely because of artifact-shape inconsistency (`requirements:` vs canonical `requirements-completed:`); the gap closed by adding a parity ExUnit test wired into the merge-blocking CI job, not by changing behavior | Validated in v3.2 (Phase 24; hardened in Phase 25) — parity test now asserts presence (WR-01) and fails loudly on malformed shapes (WR-02) |
+| Adopt machine-enforced SUMMARY-frontmatter parity as the default automation level for adopter-facing traceability across future milestones | Phase 24/25 demonstrated that `requirements-completed:` parity (parser + presence + malformed-shape detection) is the right level of automation — heavier than a docs convention, lighter than a full traceability matrix tool. Graduation candidate surfaced 2026-05-27 from Phase 24/25 LEARNINGS | — Default for v3.3+ |
+| Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Phase 23's two-job split (hermetic merge-blocking + advisory provider/storefront/device lane with documented 4-condition `promotion_path`) keeps PRs fast and required without dishonest claims about environment-sensitive proof. Should be the default for future provider/device/storefront-sensitive surfaces (StoreKit adapter, Play Billing adapter, push delivery integration, etc.). Graduation candidate surfaced 2026-05-27 | — Default for v3.3+ |
 
 ## Evolution
 
@@ -123,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 after completing Milestone v3.1 Native Capabilities and Bridge Expansion*
+*Last updated: 2026-05-27 — v3.3 Release Readiness milestone started*

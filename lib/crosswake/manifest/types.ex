@@ -18,6 +18,7 @@ defmodule Crosswake.Manifest.Types do
       :support_matrix,
       :capability_registry,
       :pack_registry,
+      :commerce_corridors,
       :routes
     ]
     defstruct [
@@ -29,6 +30,7 @@ defmodule Crosswake.Manifest.Types do
       :support_matrix,
       capability_registry: %{},
       pack_registry: %{},
+      commerce_corridors: %{},
       routes: %{}
     ]
 
@@ -44,6 +46,9 @@ defmodule Crosswake.Manifest.Types do
             },
             pack_registry: %{
               optional(String.t()) => Crosswake.Manifest.Types.PackEntry.t()
+            },
+            commerce_corridors: %{
+              optional(String.t()) => Crosswake.Manifest.Types.CommerceCorridor.t()
             },
             routes: %{optional(String.t()) => Crosswake.Manifest.Types.RouteEntry.t()}
           }
@@ -156,6 +161,34 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
+  defmodule CommerceCorridor do
+    @moduledoc false
+
+    @enforce_keys [:id, :role_ownership, :denial, :fallback, :prerequisites]
+    defstruct [:id, :role_ownership, :denial, :fallback, prerequisites: []]
+
+    @type ownership_posture :: :phoenix_owned | :native_or_companion_required
+    @type t :: %__MODULE__{
+            id: String.t(),
+            role_ownership: %{required(Crosswake.Policy.Schema.commerce_role()) => ownership_posture()},
+            denial: String.t(),
+            fallback: String.t(),
+            prerequisites: [String.t()]
+          }
+  end
+
+  defmodule RouteCommerce do
+    @moduledoc false
+
+    @enforce_keys [:corridor_ref, :role]
+    defstruct [:corridor_ref, :role]
+
+    @type t :: %__MODULE__{
+            corridor_ref: String.t(),
+            role: Crosswake.Policy.Schema.commerce_role()
+          }
+  end
+
   defmodule RouteEntry do
     @moduledoc false
 
@@ -168,6 +201,7 @@ defmodule Crosswake.Manifest.Types do
       :entry,
       :cache_contract,
       :island_contract,
+      :commerce,
       :security,
       capabilities: [],
       packs: [],
@@ -184,6 +218,7 @@ defmodule Crosswake.Manifest.Types do
             entry: Crosswake.Policy.Schema.entry(),
             cache_contract: Crosswake.Manifest.Types.CacheContract.t() | nil,
             island_contract: Crosswake.Manifest.Types.IslandContract.t() | nil,
+            commerce: Crosswake.Manifest.Types.RouteCommerce.t() | nil,
             capabilities: [String.t()],
             packs: [String.t()],
             sync: [String.t()],
@@ -469,6 +504,7 @@ defmodule Crosswake.Manifest.Types do
       support_matrix: Keyword.fetch!(attrs, :support_matrix),
       capability_registry: Keyword.get(attrs, :capability_registry, %{}),
       pack_registry: Keyword.get(attrs, :pack_registry, %{}),
+      commerce_corridors: Keyword.get(attrs, :commerce_corridors, %{}),
       routes: Keyword.get(attrs, :routes, %{})
     })
   end
@@ -529,12 +565,32 @@ defmodule Crosswake.Manifest.Types do
       entry: Keyword.get(attrs, :entry, :internal_only),
       cache_contract: Keyword.get(attrs, :cache_contract),
       island_contract: Keyword.get(attrs, :island_contract),
+      commerce: Keyword.get(attrs, :commerce),
       capabilities: Keyword.get(attrs, :capabilities, []),
       packs: Keyword.get(attrs, :packs, []),
       sync: Keyword.get(attrs, :sync, []),
       transfers: Keyword.get(attrs, :transfers, []),
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, [])
+    })
+  end
+
+  @spec new_commerce_corridor(keyword()) :: CommerceCorridor.t()
+  def new_commerce_corridor(attrs) when is_list(attrs) do
+    struct!(CommerceCorridor, %{
+      id: Keyword.fetch!(attrs, :id),
+      role_ownership: Keyword.fetch!(attrs, :role_ownership),
+      denial: Keyword.fetch!(attrs, :denial),
+      fallback: Keyword.fetch!(attrs, :fallback),
+      prerequisites: Keyword.get(attrs, :prerequisites, [])
+    })
+  end
+
+  @spec new_route_commerce(keyword()) :: RouteCommerce.t()
+  def new_route_commerce(attrs) when is_list(attrs) do
+    struct!(RouteCommerce, %{
+      corridor_ref: Keyword.fetch!(attrs, :corridor_ref),
+      role: Keyword.fetch!(attrs, :role)
     })
   end
 
@@ -681,6 +737,7 @@ defmodule Crosswake.Manifest.Types do
       "support_matrix" => to_map(root.support_matrix),
       "capability_registry" => to_map(root.capability_registry),
       "pack_registry" => to_map(root.pack_registry),
+      "commerce_corridors" => to_map(root.commerce_corridors),
       "routes" => to_map(root.routes)
     }
   end
@@ -732,6 +789,16 @@ defmodule Crosswake.Manifest.Types do
     }
   end
 
+  def to_map(%CommerceCorridor{} = corridor) do
+    %{
+      "id" => corridor.id,
+      "role_ownership" => to_map(corridor.role_ownership),
+      "denial" => corridor.denial,
+      "fallback" => corridor.fallback,
+      "prerequisites" => corridor.prerequisites
+    }
+  end
+
   def to_map(%RouteEntry{} = route) do
     %{
       "id" => route.id,
@@ -741,12 +808,20 @@ defmodule Crosswake.Manifest.Types do
       "entry" => Atom.to_string(route.entry),
       "cache_contract" => to_map(route.cache_contract),
       "island_contract" => to_map(route.island_contract),
+      "commerce" => to_map(route.commerce),
       "capabilities" => route.capabilities,
       "packs" => route.packs,
       "sync" => route.sync,
       "transfers" => Enum.map(route.transfers, &to_map/1),
       "security" => route.security && Atom.to_string(route.security),
       "allowlisted_origins" => route.allowlisted_origins
+    }
+  end
+
+  def to_map(%RouteCommerce{} = commerce) do
+    %{
+      "corridor_ref" => commerce.corridor_ref,
+      "role" => Atom.to_string(commerce.role)
     }
   end
 

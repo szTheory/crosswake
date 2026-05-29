@@ -165,6 +165,20 @@ defmodule Crosswake.Policy.RouteTest do
       assert Exception.message(error) =~ "entry :external is not supported on offline_island routes"
     end
 
+    test "rejects provider-specific commerce role declarations" do
+      assert {:error, error} =
+               Route.new(
+                 id: "paywall",
+                 runtime: :live_view,
+                 offline: :unavailable,
+                 security: :standard,
+                 commerce: [corridor: :subscription_default, role: :storekit]
+               )
+
+      assert Exception.message(error) =~ "provider-specific commerce role"
+      assert Exception.message(error) =~ ":storekit"
+    end
+
     test "normalizes explicit route-local transfer seams for upload, download, import, and export" do
       assert {:ok, route} =
                Route.new(

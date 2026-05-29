@@ -1,7 +1,11 @@
-Code.require_file("../../support/example_host.exs", __DIR__)
 
 defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   use ExUnit.Case, async: false
+
+  # Depends on the checked-in example Phoenix app (CrosswakeExample.*) being
+  # compiled. Run by phase5-proof.yml, which builds the example host first;
+  # excluded from the hermetic hex-page-proof full-suite run via --exclude.
+  @moduletag :requires_example_host
 
   alias Crosswake.Manifest
 

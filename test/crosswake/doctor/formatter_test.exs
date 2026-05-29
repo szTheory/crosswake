@@ -1,5 +1,6 @@
 defmodule Crosswake.Doctor.FormatterTest do
   use ExUnit.Case, async: true
+  alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
   alias Crosswake.SupportMatrix
 
@@ -55,5 +56,184 @@ defmodule Crosswake.Doctor.FormatterTest do
 
     assert output =~ "change classes:"
     assert output =~ "docs-only: signal=\"No compatibility-axis or capability-version change"
+  end
+
+  test "formats commerce corridor findings with canonical IDs and fallback hints" do
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :error,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route billing triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: %{
+            corridor_ref: "subscription_default",
+            role: :purchase_intent,
+            denial_code: "commerce.corridor.runtime_incompatible",
+            fallback_hint: "return_to_phoenix_guidance",
+            proof_class: "merge_blocking"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "commerce.corridor.runtime_incompatible"
+    assert output =~ "corridor_ref=subscription_default"
+    assert output =~ "role=purchase_intent"
+    assert output =~ "denial_code=commerce.corridor.runtime_incompatible"
+    assert output =~ "fallback_hint=return_to_phoenix_guidance"
+    assert output =~ "[merge-blocking] commerce_corridor"
+  end
+
+  test "formats the commerce summary section with corridors, prerequisites, freshness, proof posture, and rebuild requirements" do
+    report = %{
+      status: :error,
+      findings: [],
+      commerce_summary: %{
+        corridors: [
+          %{
+            route_id: "buy",
+            corridor_ref: "subscription_default",
+            role: "purchase_intent",
+            owner_posture: "native_or_companion_required",
+            native_rebuild_required: true,
+            proof_class: :merge_blocking,
+            advisory_provider_proof: true
+          }
+        ],
+        prerequisites: %{
+          "buy" => ["native or companion storefront corridor implemented"]
+        },
+        snapshot_freshness: :stale,
+        proof_posture: %{
+          merge_blocking: ["corridor_contract:buy", "commerce.entitlement.stale_snapshot"],
+          advisory: ["provider_storefront:buy"]
+        },
+        rebuild_requirements: [
+          %{route_id: "buy", corridor_ref: "subscription_default", role: "purchase_intent"}
+        ]
+      }
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "Commerce:"
+    assert output =~ "snapshot_freshness: stale"
+    assert output =~ "corridors:"
+    assert output =~ "proof_class=[merge-blocking]"
+    assert output =~ "prerequisites:"
+    assert output =~ "native or companion storefront corridor implemented"
+    assert output =~ "proof_posture:"
+    assert output =~ "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+    assert output =~ "[advisory]: provider_storefront:buy"
+    assert output =~ "rebuild_requirements:"
+    assert output =~ "buy: corridor_ref=subscription_default, role=purchase_intent"
+    assert output =~ "native rebuild required before commerce support advances"
+  end
+
+  test "format commerce summary section is omitted when commerce_summary is empty" do
+    report = %{status: :ok, findings: [], commerce_summary: %{}}
+    refute Formatter.render(report) =~ "Commerce:"
+  end
+
+  test "formatter does not crash when a commerce.corridor.* check carries nil details (WR-08)" do
+    # %Check{} struct allows details: nil even though %{} is the default. A hand-
+    # built Check (the test fixture pattern, see formatter_test.exs:62-79) with
+    # nil details previously raised FunctionClauseError from the detail/2 calls
+    # inside format_commerce_corridor_fields/1 and format_check_proof_class/1.
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :error,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route billing triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: nil
+        }
+      ]
+    }
+
+    # Must not raise.
+    output = Formatter.render(report)
+
+    assert output =~ "commerce.corridor.runtime_incompatible"
+    # Fallback values still appear when details is nil.
+    assert output =~ "corridor_ref=unknown"
+    assert output =~ "fallback_hint=return_to_phoenix_guidance"
+  end
+
+  test "formatter detail lookup preserves legitimate `false` values without falling through to the string-keyed slot (WR-09)" do
+    # Map.get(...) || Map.get(...) silently overrode `false` at the atom-keyed
+    # slot. Use Map.has_key?-based lookup so false survives. Today no commerce
+    # finding stores a falsy detail, but advisory_provider_proof: false is a
+    # natural future addition. Lock the contract now.
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "commerce.corridor.runtime_incompatible",
+          check: "commerce_corridor",
+          message: "route buy triggered commerce.corridor.runtime_incompatible",
+          hint: "return_to_phoenix_guidance",
+          details: %{
+            corridor_ref: "subscription_default",
+            role: :purchase_intent,
+            denial_code: "commerce.corridor.runtime_incompatible",
+            # Critical: atom-keyed false. Pre-fix this silently fell through
+            # to the string-keyed "fallback_hint" slot and emitted whichever
+            # value sat there (or nil → then `|| check.hint` kicked in,
+            # giving "return_to_phoenix_guidance" instead of "false").
+            fallback_hint: false,
+            proof_class: "merge_blocking"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "fallback_hint=false",
+           "atom-keyed false must survive detail/2 lookup; got: #{output}"
+  end
+
+  test "commerce summary findings render their proof_class label inline" do
+    report = %{
+      status: :error,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "commerce.entitlement.stale_snapshot",
+          check: "commerce_summary",
+          message: "entitlement snapshot freshness is stale",
+          hint: "refresh the backend entitlement projection",
+          details: %{freshness: "stale", proof_class: "merge_blocking"}
+        },
+        %Check{
+          severity: :warning,
+          code: "commerce.corridor.native_rebuild_required",
+          check: "commerce_summary",
+          message: "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
+          hint: "rebuild the corridor",
+          details: %{
+            route_id: "buy",
+            corridor_ref: "subscription_default",
+            role: "purchase_intent",
+            proof_class: "merge_blocking"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[merge-blocking] commerce_summary (commerce.entitlement.stale_snapshot)"
+    assert output =~ "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
   end
 end

@@ -13,6 +13,112 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.SupportMatrix
 
   @statuses [:supported, :verification_required, :unsupported]
+  @commerce_corridor_prerequisite_taxonomy [
+    :route_declaration,
+    :backend_reconciliation,
+    :native_adapter,
+    :provider_setup
+  ]
+  @commerce_corridor_entries [
+    %{
+      corridor_role: "paywall_entry",
+      owner_posture: "phoenix_owned",
+      prerequisite_classes: [:route_declaration, :backend_reconciliation],
+      prerequisites: [
+        "route declares commerce corridor binding",
+        "backend entitlement contract available"
+      ],
+      denial_codes: [
+        "commerce.corridor.undeclared",
+        "commerce.corridor.entry_denied",
+        "commerce.corridor.origin_denied"
+      ],
+      fallback_behavior:
+        "Keep the paywall route Phoenix-owned and return explicit declaration guidance when a corridor check fails.",
+      native_rebuild_required: false,
+      rebuild_requirement: %{
+        native_rebuild_required: false,
+        rebuild_trigger:
+          "Core route/manifest metadata only — Phoenix-owned paywall changes do not require a native shell rebuild."
+      },
+      proof_class: :merge_blocking,
+      advisory_provider_proof: false
+    },
+    %{
+      corridor_role: "account_management",
+      owner_posture: "phoenix_owned",
+      prerequisite_classes: [:route_declaration, :backend_reconciliation],
+      prerequisites: [
+        "route declares commerce corridor binding",
+        "backend entitlement projection available"
+      ],
+      denial_codes: [
+        "commerce.corridor.undeclared",
+        "commerce.corridor.policy_blocked",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Return to backend-owned account management guidance and fail closed until prerequisites are restored.",
+      native_rebuild_required: false,
+      rebuild_requirement: %{
+        native_rebuild_required: false,
+        rebuild_trigger:
+          "Core route/manifest metadata only — backend-owned account surfaces do not require a native shell rebuild."
+      },
+      proof_class: :merge_blocking,
+      advisory_provider_proof: false
+    },
+    %{
+      corridor_role: "purchase_intent",
+      owner_posture: "native_or_companion_required",
+      prerequisite_classes: [:native_adapter, :provider_setup, :backend_reconciliation],
+      prerequisites: [
+        "native or companion storefront corridor implemented",
+        "backend reconciliation ingest enabled"
+      ],
+      denial_codes: [
+        "commerce.corridor.runtime_incompatible",
+        "commerce.corridor.unsupported",
+        "commerce.corridor.pack_incompatible",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Fail closed with return-to-Phoenix guidance; never grant entitlement authority from device intent alone.",
+      native_rebuild_required: true,
+      rebuild_requirement: %{
+        native_rebuild_required: true,
+        rebuild_trigger:
+          "Native adapter or provider SDK code changes require rebuilding and resubmitting the host shell."
+      },
+      proof_class: :merge_blocking,
+      advisory_provider_proof: true
+    },
+    %{
+      corridor_role: "restore_intent",
+      owner_posture: "native_or_companion_required",
+      prerequisite_classes: [:native_adapter, :provider_setup, :backend_reconciliation],
+      prerequisites: [
+        "native or companion restore corridor implemented",
+        "backend reconciliation ingest enabled"
+      ],
+      denial_codes: [
+        "commerce.corridor.runtime_incompatible",
+        "commerce.corridor.unsupported",
+        "commerce.corridor.pack_incompatible",
+        "commerce.corridor.prerequisite_missing"
+      ],
+      fallback_behavior:
+        "Fail closed with restore guidance and keep entitlement truth backend-owned until evidence is reconciled.",
+      native_rebuild_required: true,
+      rebuild_requirement: %{
+        native_rebuild_required: true,
+        rebuild_trigger:
+          "Native restore choreography or provider SDK code changes require rebuilding and resubmitting the host shell."
+      },
+      proof_class: :merge_blocking,
+      advisory_provider_proof: true
+    }
+  ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
@@ -122,6 +228,49 @@ defmodule Crosswake.SupportMatrix do
 
   @spec change_classes(SupportMatrix.t()) :: [ChangeClassEntry.t()]
   def change_classes(%SupportMatrix{} = support_matrix), do: support_matrix.change_classes
+
+  @spec commerce_corridors() :: [map()]
+  def commerce_corridors, do: @commerce_corridor_entries
+
+  @spec commerce_corridor_denial_codes() :: [String.t()]
+  def commerce_corridor_denial_codes do
+    @commerce_corridor_entries
+    |> Enum.flat_map(& &1.denial_codes)
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  @doc """
+  Returns the canonical taxonomy of prerequisite classes that may be referenced by
+  commerce corridor entries. Every `prerequisite_classes` value on a commerce corridor
+  entry must be drawn from this set so doctor/support/guides taxonomy stays parity-locked.
+  """
+  @spec commerce_corridor_prerequisite_taxonomy() :: [atom()]
+  def commerce_corridor_prerequisite_taxonomy, do: @commerce_corridor_prerequisite_taxonomy
+
+  @doc """
+  Returns the canonical commerce corridor proof-class mapping.
+
+  Every commerce corridor declares whether its hermetic Phoenix-owned contract proof is
+  `:merge_blocking` (core route/manifest/denial truth that must pass before merge) and
+  whether it also carries an `advisory_provider_proof` flag for storefront/simulator
+  evidence (StoreKit, Play Billing) that stays advisory in v3.2.
+  """
+  @spec commerce_corridor_proof_classes() :: %{
+          required(String.t()) => %{
+            required(:proof_class) => :merge_blocking | :advisory,
+            required(:advisory_provider_proof) => boolean()
+          }
+        }
+  def commerce_corridor_proof_classes do
+    Map.new(@commerce_corridor_entries, fn entry ->
+      {entry.corridor_role,
+       %{
+         proof_class: entry.proof_class,
+         advisory_provider_proof: entry.advisory_provider_proof
+       }}
+    end)
+  end
 
   defp validate_categories_present(errors, %SupportMatrix{} = support_matrix) do
     Enum.reduce([:phoenix, :live_view, :ios, :android, :shells], errors, fn category, acc ->
@@ -346,9 +495,9 @@ defmodule Crosswake.SupportMatrix do
         package_class: capability.package_class,
         proof_class: capability.proof_class,
         rebuild: capability.rebuild,
-        prerequisites: capability.prerequisites,
+        prerequisites: capability_prerequisites(capability),
         denial: capability.denial,
-        fallback: capability.fallback,
+        fallback: capability_fallback(capability),
         guide: capability.guide
       )
     end)
@@ -389,6 +538,26 @@ defmodule Crosswake.SupportMatrix do
   defp capability_posture(%Capability{owner: :native_screen}), do: "native_screen"
   defp capability_posture(%Capability{owner: :backend_seam}), do: "backend_seam"
   defp capability_posture(%Capability{}), do: "bounded_bridge"
+
+  defp capability_prerequisites(%Capability{id: "entitlement_snapshot", prerequisites: prerequisites}) do
+    prerequisites ++ ["freshness posture (fresh/stale/unknown) surfaced before access checks"]
+  end
+
+  defp capability_prerequisites(%Capability{id: "reconciliation_evidence", prerequisites: prerequisites}) do
+    prerequisites ++ ["pending and awaiting_verification reconciliation states stay non-granting"]
+  end
+
+  defp capability_prerequisites(%Capability{prerequisites: prerequisites}), do: prerequisites
+
+  defp capability_fallback(%Capability{id: "entitlement_snapshot"}) do
+    "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement."
+  end
+
+  defp capability_fallback(%Capability{id: "reconciliation_evidence"}) do
+    "Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority."
+  end
+
+  defp capability_fallback(%Capability{fallback: fallback}), do: fallback
 
   defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported

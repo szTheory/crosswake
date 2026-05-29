@@ -150,6 +150,12 @@ defmodule Crosswake.Policy.Compiler do
       String.contains?(message, "invalid value for :entry") ->
         "use entry: :internal_only | :external"
 
+      String.contains?(message, "commerce declaration requires") ->
+        "use commerce: [corridor: :subscription_default, role: :paywall_entry]"
+
+      String.contains?(message, "commerce role") ->
+        "use commerce: [corridor: :subscription_default, role: :paywall_entry]"
+
       true ->
         nil
     end
@@ -161,6 +167,7 @@ defmodule Crosswake.Policy.Compiler do
       String.contains?(message, ":offline") -> :offline
       String.contains?(message, ":entry") -> :entry
       String.contains?(message, ":id") -> :id
+      String.contains?(message, "commerce") -> :commerce
       true -> nil
     end
   end

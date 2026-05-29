@@ -17,6 +17,7 @@ defmodule Crosswake.Doctor.Formatter do
       format_shells(Map.get(report, :shells, %{})),
       format_bridge(Map.get(report, :bridge, %{})),
       format_offline(Map.get(report, :offline, %{})),
+      format_commerce_summary(Map.get(report, :commerce_summary, %{})),
       format_findings(findings)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -172,6 +173,21 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_bridge(_bridge), do: nil
 
+  defp format_offline(%{status: status, states: states, telemetry: telemetry, routes: routes}) do
+    route_ids =
+      routes
+      |> Map.keys()
+      |> Enum.sort()
+      |> Enum.join(", ")
+
+    [
+      "offline posture: #{status} states=[#{Enum.join(states, ", ")}] routes=[#{route_ids}]",
+      format_offline_telemetry(telemetry)
+    ]
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join("\n")
+  end
+
   defp format_offline(%{status: status, states: states, routes: routes}) do
     route_ids =
       routes
@@ -184,6 +200,95 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_offline(_offline), do: nil
 
+  defp format_offline_telemetry(%{metadata_keys: keys, terminal_outcomes: terminals}) do
+    keys_text = if keys == [], do: "none", else: Enum.join(keys, ", ")
+    terminals_text = if terminals == [], do: "none", else: Enum.join(terminals, ", ")
+    "  telemetry: metadata_keys=[#{keys_text}] terminal_outcomes=[#{terminals_text}]"
+  end
+
+  defp format_offline_telemetry(_telemetry), do: nil
+
+  defp format_commerce_summary(summary) when summary in [nil, %{}], do: nil
+
+  defp format_commerce_summary(%{
+         corridors: corridors,
+         prerequisites: prerequisites,
+         snapshot_freshness: snapshot_freshness,
+         proof_posture: proof_posture,
+         rebuild_requirements: rebuild_requirements
+       }) do
+    lines = [
+      "Commerce:",
+      "  snapshot_freshness: #{snapshot_freshness}",
+      format_commerce_corridors(corridors),
+      format_commerce_prerequisites(prerequisites),
+      format_commerce_proof_posture(proof_posture),
+      format_commerce_rebuild_requirements(rebuild_requirements)
+    ]
+
+    lines
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join("\n")
+  end
+
+  defp format_commerce_summary(_summary), do: nil
+
+  defp format_commerce_corridors([]), do: "  corridors: none"
+
+  defp format_commerce_corridors(corridors) do
+    rendered =
+      Enum.map(corridors, fn corridor ->
+        "    #{corridor.route_id}: corridor_ref=#{corridor.corridor_ref}, role=#{corridor.role}, owner=#{corridor.owner_posture || "unknown"}, rebuild=#{corridor.native_rebuild_required}, proof_class=[#{proof_class_label(corridor.proof_class)}]"
+      end)
+
+    ["  corridors:" | rendered] |> Enum.join("\n")
+  end
+
+  defp format_commerce_prerequisites(prerequisites) when prerequisites == %{}, do: nil
+
+  defp format_commerce_prerequisites(prerequisites) do
+    rendered =
+      prerequisites
+      |> Enum.sort_by(fn {route_id, _} -> route_id end)
+      |> Enum.map(fn {route_id, prereqs} ->
+        prereq_text = if prereqs == [], do: "none", else: Enum.join(prereqs, ", ")
+        "    #{route_id}: #{prereq_text}"
+      end)
+
+    ["  prerequisites:" | rendered] |> Enum.join("\n")
+  end
+
+  defp format_commerce_proof_posture(%{merge_blocking: mb, advisory: adv}) do
+    mb_text = if mb == [], do: "none", else: Enum.join(mb, ", ")
+    adv_text = if adv == [], do: "none", else: Enum.join(adv, ", ")
+
+    [
+      "  proof_posture:",
+      "    [merge-blocking]: #{mb_text}",
+      "    [advisory]: #{adv_text}"
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp format_commerce_proof_posture(_proof_posture), do: nil
+
+  defp format_commerce_rebuild_requirements([]), do: "  rebuild_requirements: none"
+
+  defp format_commerce_rebuild_requirements(requirements) do
+    rendered =
+      Enum.map(requirements, fn requirement ->
+        "    #{requirement.route_id}: corridor_ref=#{requirement.corridor_ref}, role=#{requirement.role} — native rebuild required before commerce support advances"
+      end)
+
+    ["  rebuild_requirements:" | rendered] |> Enum.join("\n")
+  end
+
+  defp proof_class_label(:merge_blocking), do: "merge-blocking"
+  defp proof_class_label(:advisory), do: "advisory"
+  defp proof_class_label("merge_blocking"), do: "merge-blocking"
+  defp proof_class_label("advisory"), do: "advisory"
+  defp proof_class_label(other), do: to_string(other)
+
   defp format_findings(findings) do
     findings
     |> Enum.sort_by(&severity_order/1)
@@ -193,13 +298,32 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_check(%Check{} = check) do
     [
-      "[#{check.severity}] #{check.check} (#{check.code})",
+      "[#{check.severity}] #{format_check_proof_class(check)}#{check.check} (#{check.code})",
       check.message,
       check.hint && "hint: #{check.hint}",
+      format_commerce_corridor_fields(check),
       format_details(check.details)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
     |> Enum.join("\n")
+  end
+
+  defp format_check_proof_class(%Check{code: code, check: check_name, details: details}) do
+    cond do
+      commerce_check?(code, check_name) ->
+        case detail(details, :proof_class) do
+          nil -> ""
+          label -> "[#{proof_class_label(label)}] "
+        end
+
+      true ->
+        ""
+    end
+  end
+
+  defp commerce_check?(code, check_name) do
+    String.starts_with?(code || "", "commerce.") or
+      check_name in ["commerce_corridor", "commerce_summary"]
   end
 
   defp format_details(details) when details in [%{}, nil], do: nil
@@ -218,6 +342,41 @@ defmodule Crosswake.Doctor.Formatter do
   defp format_value(value) when is_list(value), do: Enum.map_join(value, "|", &format_value/1)
   defp format_value(value) when is_map(value), do: Jason.encode!(value)
   defp format_value(value), do: to_string(value)
+
+  defp format_commerce_corridor_fields(%Check{code: code} = check) do
+    if String.starts_with?(code, "commerce.corridor.") do
+      corridor_ref = detail(check.details, :corridor_ref) || "unknown"
+      role = detail(check.details, :role) |> format_value()
+      denial_code = detail(check.details, :denial_code) || code
+      fallback_hint = detail(check.details, :fallback_hint) || check.hint || "return_to_phoenix_guidance"
+
+      "corridor: corridor_ref=#{corridor_ref} role=#{role} denial_code=#{denial_code} fallback_hint=#{fallback_hint}"
+    end
+  end
+
+  # nil-safe: %Check{} allows details: nil even though the default is %{}, so
+  # any caller (including hand-built test fixtures) that passes a nil details
+  # map would otherwise raise FunctionClauseError from every detail/2 call site
+  # (WR-08).
+  defp detail(nil, _key), do: nil
+
+  # Membership-based lookup so legitimate falsy values (e.g.
+  # advisory_provider_proof: false) are returned as-is. The previous
+  # `Map.get(...) || Map.get(...)` form fell through to the string-keyed
+  # lookup whenever the atom-keyed value was false, silently overriding
+  # correct data (WR-09).
+  defp detail(details, key) when is_map(details) do
+    cond do
+      Map.has_key?(details, key) ->
+        Map.get(details, key)
+
+      is_atom(key) and Map.has_key?(details, Atom.to_string(key)) ->
+        Map.get(details, Atom.to_string(key))
+
+      true ->
+        nil
+    end
+  end
 
   defp status_word(true), do: "yes"
   defp status_word(false), do: "no"

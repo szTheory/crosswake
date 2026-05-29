@@ -6,11 +6,11 @@ product shape that best matches your app pressure, then routes you to the existi
 support and contract guides for exact proof and behavior details.
 
 If you want the quickest narrative ramp-up before reading the matrix, start with
-[guides/user_flows.md](/Users/jon/projects/crosswake/guides/user_flows.md).
+[guides/user_flows.md](user_flows.md).
 
-Read [guides/install.md](/Users/jon/projects/crosswake/guides/install.md) for the
-checked-in example-host install path, [guides/commerce.md](/Users/jon/projects/crosswake/guides/commerce.md) for the commerce boundaries, and
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+Read [guides/install.md](install.md) for the
+checked-in example-host install path, [guides/commerce.md](commerce.md) for the commerce boundaries, and
+[guides/support_matrix.md](support_matrix.md)
 for the canonical support-status surface.
 
 ## Adopter Profile Matrix
@@ -74,11 +74,11 @@ Deferred behavior:
 
 Proof posture summary:
 
-Read [guides/native_shell.md](/Users/jon/projects/crosswake/guides/native_shell.md)
+Read [guides/native_shell.md](native_shell.md)
 for shell activation and denial behavior, and
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/support_matrix.md](support_matrix.md)
 for supported baselines and proof-backed support status. Keep
-[guides/install.md](/Users/jon/projects/crosswake/guides/install.md) as the canonical
+[guides/install.md](install.md) as the canonical
 checked-in proof entrypoint.
 
 Why this profile exists:
@@ -142,11 +142,11 @@ Deferred behavior:
 
 Proof posture summary:
 
-Read [guides/packs.md](/Users/jon/projects/crosswake/guides/packs.md) for required
+Read [guides/packs.md](packs.md) for required
 pack and transfer semantics, plus
-[guides/native_shell.md](/Users/jon/projects/crosswake/guides/native_shell.md) for
+[guides/native_shell.md](native_shell.md) for
 native ownership and denial behavior. Keep
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/support_matrix.md](support_matrix.md)
 as the status source.
 
 Why this profile exists:
@@ -188,11 +188,11 @@ Primary failure vocabulary focus:
 
 Proof posture summary:
 
-Read [guides/offline.md](/Users/jon/projects/crosswake/guides/offline.md) for the
+Read [guides/offline.md](offline.md) for the
 cached read-only and replay contract, and
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/support_matrix.md](support_matrix.md)
 for the canonical support-status surface. The install and example-host path stays in
-[guides/install.md](/Users/jon/projects/crosswake/guides/install.md).
+[guides/install.md](install.md).
 
 Supported behavior:
 
