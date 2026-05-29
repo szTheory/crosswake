@@ -46,7 +46,7 @@
 - [x] **Phase 34: MockStorefront And Idempotency Invariants** - Implement `MockStorefront` as a pure Elixir evidence-emitting adapter and prove its idempotency and provider-vocabulary boundary in the same phase (completed 2026-05-29)
 - [x] **Phase 35: Reconciliation Wiring And Four-State LiveView** - Wire purchase/restore evidence through the reconciliation inbox and projection, and build `PaywallEntryLive` with explicit branches for all four `derived_state/1` outputs (completed 2026-05-29)
 - [x] **Phase 36: Hermetic Proof Lane** - Write the merge-blocking `phase34_paywall_corridor_proof_test.exs` against final data-layer code, asserting all states, the `:pending` → `:granted` transition, and the mock-boundary fence (completed 2026-05-29)
-- [ ] **Phase 37: Guides Walkthrough And Docs-Contract Lock** - Add the end-to-end paywall corridor walkthrough to `guides/commerce.md` and extend `commerce_test.exs` to lock all module/function references and non-claims against the shipped example
+- [x] **Phase 37: Guides Walkthrough And Docs-Contract Lock** - Add the end-to-end paywall corridor walkthrough to `guides/commerce.md` and extend `commerce_test.exs` to lock all module/function references and non-claims against the shipped example (completed 2026-05-29)
 
 ## Phase Details
 
@@ -145,7 +145,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 37-01-PLAN.md — Insert Paywall Corridor Walkthrough H3 into guides/commerce.md (anchor-only, mock-vs-real callout, six steps, proof citation) + append hybrid docs-contract assertions (string-presence + six function_exported?/3 live guards, async: false) to commerce_test.exs
+- [x] 37-01-PLAN.md — Insert Paywall Corridor Walkthrough H3 into guides/commerce.md (anchor-only, mock-vs-real callout, six steps, proof citation) + append hybrid docs-contract assertions (string-presence + six function_exported?/3 live guards, async: false) to commerce_test.exs
 
 ## Progress
 
@@ -157,4 +157,4 @@ Plans:
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
 | 35. Reconciliation Wiring And Four-State LiveView | 2/2 | Complete   | 2026-05-29 |
 | 36. Hermetic Proof Lane | 1/1 | Complete    | 2026-05-29 |
-| 37. Guides Walkthrough And Docs-Contract Lock | 0/1 | Not started | - |
+| 37. Guides Walkthrough And Docs-Contract Lock | 1/1 | Complete   | 2026-05-29 |
