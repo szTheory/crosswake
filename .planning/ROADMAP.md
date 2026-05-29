@@ -42,7 +42,7 @@
 
 **Milestone Goal:** Turn v3.2's commerce vocabulary into a copy-able adopter lane — a runnable paywall corridor in `examples/phoenix_host` driven by a mocked storefront, proving purchase → reconciliation → entitlement → UI end-to-end without any provider adapter code.
 
-- [ ] **Phase 33: Corridor Routes And CI Infrastructure** - Declare paywall corridor routes in the example host router and establish the two-job `phase34-proof.yml` CI split that gates all subsequent proof work
+- [ ] **Phase 33: Corridor Routes And CI Infrastructure** (2 plans) - Declare paywall corridor routes in the example host router and establish the two-job `phase34-proof.yml` CI split that gates all subsequent proof work
 - [ ] **Phase 34: MockStorefront And Idempotency Invariants** - Implement `MockStorefront` as a pure Elixir evidence-emitting adapter and prove its idempotency and provider-vocabulary boundary in the same phase
 - [ ] **Phase 35: Reconciliation Wiring And Four-State LiveView** - Wire purchase/restore evidence through the reconciliation inbox and projection, and build `PaywallEntryLive` with explicit branches for all four `derived_state/1` outputs
 - [ ] **Phase 36: Hermetic Proof Lane** - Write the merge-blocking `phase34_paywall_corridor_proof_test.exs` against final data-layer code, asserting all states, the `:pending` → `:granted` transition, and the mock-boundary fence
@@ -59,7 +59,9 @@
   2. The example host router compiles with all three corridor routes (`paywall_entry`, `purchase_intent`, `restore_intent`) and they appear in the manifest with correct corridor metadata
   3. `.github/workflows/phase34-proof.yml` exists with a hermetic merge-blocking job and an advisory job (`continue-on-error: true`) including the 4-condition `promotion_path` comment mirroring `phase23-proof.yml`
   4. The hermetic CI job runs `mix test --exclude requires_example_host` cleanly and the advisory job never gates a merge
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 33-01-PLAN.md — Declare /commerce corridor routes (paywall_entry live + purchase/restore post) in the example host router; forward-reference Phase 35 modules; manifest-introspection proof test
+- [ ] 33-02-PLAN.md — Create phase34-proof.yml two-job hermetic+advisory CI split (merge-blocking `mix test --exclude requires_example_host` + advisory continue-on-error lane)
 
 ### Phase 34: MockStorefront And Idempotency Invariants
 **Goal**: `CrosswakeExample.Commerce.MockStorefront` exists as a pure-Elixir evidence emitter with `simulate_purchase/1` and `simulate_restore/1`, its idempotency invariants are provable against the existing `ReconciliationInbox` and `ReconciliationKeys`, and a provider-vocabulary fence confirms no forbidden tokens appear in the mock source
