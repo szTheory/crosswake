@@ -16,28 +16,26 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-## Current Milestone: v3.3 Release Readiness
+## Current Milestone: v3.4 Commerce Archetype Proof
 
-**Goal:** Make Crosswake installable from hex.pm with honest release metadata, CHANGELOG, real `source_url`, and a release-please publication pipeline — turning szTheory's "install truth is product truth" and "release truth matters" anchors into actual product surface before further capability work.
+**Goal:** Turn v3.2's commerce vocabulary into a copy-able adopter lane — a runnable paywall corridor in `examples/phoenix_host` driven by a mocked storefront, proving purchase → reconciliation → entitlement → UI end-to-end (ARCH-02) without any provider adapter code.
 
 **Target features:**
-- Package metadata truth — replace placeholder `source_url` in `mix.exs:37-42`, audit `:package` block (licenses, links, maintainers, files allowlist, description) for honest hex-page rendering.
-- Versioning decision — pick initial published version (`0.1.0` pre-release vs `1.0.0-rc.0` contract-mature signal) and document rationale in CHANGELOG plus mix.exs.
-- CHANGELOG.md — synthesize from MILESTONES.md v1.0 → v3.2 history with honest scope per release.
-- Release pipeline — release-please config (canonical per `bootstrap-elixir-hex-lib` skill), `.github/workflows/release.yml`, hex publish on tag, `HEX_API_KEY` secret wiring guidance.
-- Hex page polish — README renders correctly on hex package page; hexdocs render via `mix docs`; `mix hex.build` content audit.
-- Proof + truth — verify hex publish flow end-to-end where possible (dry run / staging), update support truth so install path is part of the product contract.
+- `paywall_entry` route in `examples/phoenix_host` with `commerce: :paywall_entry` route policy.
+- `MockStorefront` adapter that consumes the v3.2 commerce contracts (`PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence`) without provider-specific code.
+- `purchase_intent` + `restore_intent` routes wired to MockStorefront.
+- Backend `EntitlementProjection` converting mock storefront evidence → entitlement snapshot, reusing `Crosswake.Commerce.Reconciliation`.
+- Merge-blocking hermetic proof driving the full lane: mock purchase → reconciliation evidence → snapshot → LiveView reflects entitlement state.
+- `guides/commerce.md` end-to-end walkthrough updated and docs-contract-locked against the working example.
 
-**Key context:** Paved path is the `bootstrap-elixir-hex-lib` skill. Strategic-arc blindspot — `MILESTONE-ARC.md` did not list release readiness; flagged 2026-05-27 and amended. Downstream milestones (v3.5 Rulestead first-party companion) are blocked on v3.3. Uses the hermetic-vs-advisory CI split pattern (graduated default for v3.3+) for any environment-sensitive proof of the publish path. See `.planning/threads/release-readiness.md`.
+**Key context:** Mocked storefront only — no StoreKit / Play Billing / provider SDK code (deferred to the dedicated provider-adapter milestone, v3.6). Real-provider proof stays advisory; graduating to merge-blocking requires the 4-condition `promotion_path` documented in `phase23-proof.yml`. First milestone since `crosswake 0.1.0` went live on hex.pm (2026-05-29), so the example is now genuinely copy-able by real adopters. See `.planning/threads/commerce-archetype-proof.md`.
 
-Strategic-arc candidates after release readiness, per `MILESTONE-ARC.md` and the 2026-05-27 assessment:
+Strategic-arc candidates after the commerce archetype proof, per `MILESTONE-ARC.md`:
 
-- **Commerce archetype proof (ARCH-02)** — re-run a subscription/paywall adopter-shaped exemplar lane against the v3.2 seam using a mocked storefront corridor (no provider adapter required). Turns v3.2 vocabulary into a copy-able adopter lane. See `.planning/threads/commerce-archetype-proof.md`.
-- **First-party companion: Rulestead** — establishes companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks subsequent companions (sigra, rindle, chimeway, threadline). See `.planning/threads/companion-seam-pattern.md`.
-- **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input.
-- **Operator and companion expansion (OPS-01, COMP-05)** — richer operator inspection for entitlement snapshots, reconciliation attempts, and commerce route support truth; first commerce-adjacent companion integration only after package boundaries and rebuild truth are proven.
-
-Final scope and ordering will be set via `$gsd-new-milestone`.
+- **First-party companions (v3.5)** — start with Rulestead; establishes the companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks sigra, rindle, chimeway, threadline. See `.planning/threads/companion-seam-pattern.md`.
+- **Operator truth and diagnostics expansion (v3.6)** — richer route/capability inspection, doctor checks, support matrices, and advisory device lanes for the widened surface.
+- **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input and can graduate the v3.4 advisory lane to merge-blocking.
+- **Archetype proof lanes (v3.7)** — re-run adopter-shaped pressure (subscription/paywall, notification-driven companion workflows, richer media/scanning) against the new surfaces.
 
 ## Requirements
 
@@ -79,7 +77,7 @@ Final scope and ordering will be set via `$gsd-new-milestone`.
 
 ### Active
 
-_No active milestone. v3.3 Release Readiness SHIPPED 2026-05-29 — `crosswake 0.1.0` is live on hex.pm + HexDocs. Next milestone to be defined via `/gsd-new-milestone` (recommended: v3.4 Commerce Archetype Proof, ARCH-02). Per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
+_v3.4 Commerce Archetype Proof is the active milestone (started 2026-05-29). Requirements scoped via `/gsd-new-milestone`; see `.planning/REQUIREMENTS.md`. Prior per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
 
 ### Out of Scope
 
@@ -158,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — v3.3 Release Readiness SHIPPED: crosswake 0.1.0 live on hex.pm + HexDocs (Phases 26–32 complete)*
+*Last updated: 2026-05-29 — v3.4 Commerce Archetype Proof started (ARCH-02; mocked storefront paywall lane in examples/phoenix_host)*

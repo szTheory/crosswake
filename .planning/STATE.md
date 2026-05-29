@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.3
-milestone_name: Release Readiness
-status: Awaiting next milestone
-stopped_at: v3.3 COMPLETE — crosswake 0.1.0 live on hex.pm; Phases 31 (publish) and 32 (post-publish cleanup) done
-last_updated: "2026-05-29T12:39:27.996Z"
-last_activity: 2026-05-29 — Milestone v3.3 completed and archived
+milestone: v3.4
+milestone_name: Commerce Archetype Proof
+status: planning
+last_updated: "2026-05-29T13:52:18.780Z"
+last_activity: 2026-05-29
 progress:
-  total_phases: 6
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 10
-  percent: 83
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 
 ## Current Position
 
-Phase: Milestone v3.3 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-29 — Milestone v3.3 completed and archived
+Status: Defining requirements
+Last activity: 2026-05-29 — Milestone v3.4 started
 
 ## Performance Metrics
 
