@@ -32,6 +32,8 @@ defmodule CrosswakeExample.Commerce.MockBackend do
   phase constraints. The Phase 36 proof asserts this via `PROOF-03`.
   """
 
+  require Logger
+
   alias Crosswake.Commerce.Contracts
   alias CrosswakeExample.Commerce.EntitlementProjection
 
@@ -53,16 +55,36 @@ defmodule CrosswakeExample.Commerce.MockBackend do
   @spec verify_and_broadcast(Contracts.ReconciliationEvidence.t(), String.t()) :: :ok
   def verify_and_broadcast(evidence, group_id) do
     snapshot = build_verified_snapshot(evidence, group_id)
-    {:ok, projected} = EntitlementProjection.project_snapshot(nil, snapshot)
-    state = EntitlementProjection.derived_state(projected)
+    topic = "entitlement:" <> group_id
 
-    Phoenix.PubSub.broadcast(
-      CrosswakeExample.PubSub,
-      "entitlement:" <> group_id,
-      {:entitlement_update, state}
-    )
+    # Fail closed: if projection ever rejects the manufactured snapshot, broadcast
+    # :stale rather than letting a bare match crash this fire-and-forget Task — a
+    # silent crash would strand every subscribed LiveView in :pending forever.
+    state =
+      case EntitlementProjection.project_snapshot(nil, snapshot) do
+        {:ok, projected} ->
+          EntitlementProjection.derived_state(projected)
 
-    :ok
+        {:error, reason} ->
+          Logger.warning(
+            "MockBackend.verify_and_broadcast: projection rejected snapshot for #{group_id} " <>
+              "(#{inspect(reason)}); failing closed to :stale"
+          )
+
+          :stale
+      end
+
+    case Phoenix.PubSub.broadcast(CrosswakeExample.PubSub, topic, {:entitlement_update, state}) do
+      :ok ->
+        :ok
+
+      {:error, reason} ->
+        Logger.warning(
+          "MockBackend.verify_and_broadcast: broadcast on #{topic} failed (#{inspect(reason)})"
+        )
+
+        :ok
+    end
   end
 
   @doc """
