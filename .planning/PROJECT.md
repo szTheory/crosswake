@@ -137,6 +137,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Treat SUMMARY-frontmatter traceability automation as merge-blocking infrastructure | RECN-01/02/03 were initially flagged `partial` purely because of artifact-shape inconsistency (`requirements:` vs canonical `requirements-completed:`); the gap closed by adding a parity ExUnit test wired into the merge-blocking CI job, not by changing behavior | Validated in v3.2 (Phase 24; hardened in Phase 25) — parity test now asserts presence (WR-01) and fails loudly on malformed shapes (WR-02) |
 | Adopt machine-enforced SUMMARY-frontmatter parity as the default automation level for adopter-facing traceability across future milestones | Phase 24/25 demonstrated that `requirements-completed:` parity (parser + presence + malformed-shape detection) is the right level of automation — heavier than a docs convention, lighter than a full traceability matrix tool. Graduation candidate surfaced 2026-05-27 from Phase 24/25 LEARNINGS | — Default for v3.3+ |
 | Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Phase 23's two-job split (hermetic merge-blocking + advisory provider/storefront/device lane with documented 4-condition `promotion_path`) keeps PRs fast and required without dishonest claims about environment-sensitive proof. Should be the default for future provider/device/storefront-sensitive surfaces (StoreKit adapter, Play Billing adapter, push delivery integration, etc.). Graduation candidate surfaced 2026-05-27 | — Default for v3.3+ |
+| Verify release-surface deliverables with hermetic ExUnit tests + a per-concern CI proof lane rather than manual UAT | Phase 30's hex-page checks (README/guide link hygiene, docs grouping, package allowlist, tarball contents, publish dry-run) are all mechanically checkable; automating them caught 3 real bugs manual review missed and made the checks repeatable on every PR. Reading config via `Mix.Project.config()` keeps tests in sync with `mix.exs`. Graduation candidate for release/packaging surfaces | Validated in Phase 30 — `hex_page_test.exs` + `hex-page-proof.yml`, PR #1 |
 
 ## Evolution
 
@@ -156,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-27 — v3.3 Release Readiness milestone started*
+*Last updated: 2026-05-29 — after Phase 30 (Hex Page Polish); verification automated, 5 of 6 v3.3 phases complete*
