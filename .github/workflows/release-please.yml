@@ -40,7 +40,7 @@ jobs:
 
       - name: Run Release Please
         id: release
-        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.1.3
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v4.1.3
         with:
           # Optional: set secret RELEASE_PLEASE_TOKEN (fine-grained PAT) if the
           # default token cannot open Release PRs; otherwise github.token suffices.
