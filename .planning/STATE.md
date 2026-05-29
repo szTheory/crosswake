@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
 status: milestone_complete
-last_updated: 2026-05-29T20:49:43.335Z
-last_activity: 2026-05-29 -- Phase 37 execution started
+last_updated: 2026-05-29T21:10:00.000Z
+last_activity: 2026-05-29 -- v3.4 milestone closed and archived
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 8
-  completed_plans: 18
-  percent: 80
-stopped_at: Milestone complete (Phase 37 was final phase)
+  completed_plans: 8
+  percent: 100
+stopped_at: Milestone v3.4 complete and archived; awaiting next milestone
 ---
 
 # Project State
@@ -21,56 +21,35 @@ stopped_at: Milestone complete (Phase 37 was final phase)
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Milestone complete
+**Current focus:** Planning next milestone (`/gsd-new-milestone`)
 
 ## Current Position
 
-Phase: 37
-Plan: Not started
-Status: Milestone complete
+Phase: — (between milestones)
+Plan: —
+Status: v3.4 shipped and archived
 Last activity: 2026-05-29
 
-Progress: [█████████░] 86%
+Progress: [██████████] 100% (v3.4 complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 59 (v1.0–v3.3)
-- Average duration: n/a
-- Total execution time: n/a
+- Total plans completed: 67 (v1.0–v3.4)
+- v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
-**By Phase (v3.2):**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 19. Commerce Route Corridors | 3 | 18 min | 6 min |
-| 23. Commerce Support And Proof Closure | 4 | n/a | n/a |
-| 30. Hex Page Polish | 2 | - | - |
-| 33 | 2 | - | - |
-| 34 | 2 | - | - |
-| 35 | 2 | - | - |
-| 36 | 1 | - | - |
-| 37 | 1 | - | - |
-
-**Recent Trend:** Positive — v3.3 shipped cleanly; v3.4 roadmap ready
+**Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-
-- v3.4 phase ordering: routes + CI before MockStorefront; MockStorefront before LiveView; proof after final code; docs last (same phase as docs-contract test)
-- v3.4 proof isolation: `async: false`, `Phase34`-prefixed fixture module names, `Code.require_file` at module scope only (mirrors phase21/phase23 discipline)
-- v3.4 idempotency: `MockStorefront` must derive `provider_reference` from stable `entry_id`, not transient `correlation_id` (RECN-02 guardrail)
-- v3.4 scope: zero new dependencies; reuse Phase 21 `ReconciliationInbox`, `EntitlementProjection`, `ReconciliationKeys` as-is; no ETS, no Ecto migrations in mock lane
+Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at milestone close).
 
 ### Pending Todos
 
-- v3.4 Phase 33: Confirm whether `CrosswakeExample.PubSub` is already started in `application.ex`; if not, add it before Phase 35 LiveView wiring.
-- v3.4 Phase 35: Decide verification simulation shape (inline in LiveView handler vs. separate context function) so proof test and example use the same construction path.
-- Deferred from v3.3: Clean up ~150 ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause). Low priority for v3.4.
+- Deferred from v3.3: Clean up ~150 ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause). Low priority.
 
 ### Blockers/Concerns
 
@@ -82,13 +61,13 @@ Decisions are logged in PROJECT.md Key Decisions table.
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | Commerce | StoreKit, Play Billing, RevenueCat provider adapters | Deferred to v3.6 | 2026-05-27 |
-| Docs | ExDoc zero-warnings clause (HEX-03) | Deferred to v3.4+ | 2026-05-29 |
-| CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred to v3.4+ | 2026-05-27 |
+| Docs | ExDoc zero-warnings clause (HEX-03) | Deferred | 2026-05-29 |
+| CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
-| Tooling | `mix crosswake.doctor --check-publish` surface | Deferred to v3.4+ | 2026-05-27 |
+| Tooling | `mix crosswake.doctor --check-publish` surface | Deferred | 2026-05-27 |
+| Validation | Finalize Nyquist VALIDATION.md ledger for phases 34-37 (draft → compliant) | Deferred (bookkeeping only) | 2026-05-29 |
 
 ## Session Continuity
 
-Last session: 2026-05-29T19:40:02.426Z
-Stopped at: Phase 37 context gathered
-Resume file: .planning/phases/37-guides-walkthrough-and-docs-contract-lock/37-CONTEXT.md
+Last session: 2026-05-29 — v3.4 milestone close
+Stopped at: Milestone archived; ready for `/gsd-new-milestone`

@@ -86,6 +86,52 @@
 - **Phase decomposition saved rework:** the audit-driven Phase 22 → 23+24 split was set up in planning context and required no executor backtrack.
 - **Tech-debt phase ran fast:** Phase 25 closed both follow-up items in 2 atomic commits (`4e0ed68` doc-fix + `5ca1306` test+SUMMARY) with zero `lib/` or `examples/` changes; scope-fence held end-to-end.
 
+## Milestone: v3.4 Commerce Archetype Proof
+
+**Shipped:** 2026-05-29
+**Phases:** 5 (33, 34, 35, 36, 37)
+**Plans:** 8
+
+### What Was Built
+
+- Three `:subscription_default` commerce corridor routes in `examples/phoenix_host` with canonical `crosswake.commerce` DSL, gated by the new `phase34-proof.yml` hermetic/advisory two-job CI split.
+- `CrosswakeExample.Commerce.MockStorefront` — a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) documented as the StoreKit/Play Billing swap target, with stable `entry_id`-derived provider identity (not transient `correlation_id`).
+- A four-state `PaywallEntryLive` (fail-closed `:stale` mount) wired through MockBackend + CorridorController + PubSub to the real `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1` pipeline.
+- A single merge-blocking hermetic proof (`phase34_paywall_corridor_proof_test.exs`) asserting all four states, the `:pending` → `:granted` transition, the mock-boundary fence, and a hermeticity self-scan guard.
+- A docs-contract-locked Paywall Corridor Walkthrough in `guides/commerce.md`, anchored to shipped exports via `function_exported?/3`.
+
+### What Worked
+
+- **Reuse-not-rebuild guardrail held end-to-end** — the mock lane consumed the shipped v3.2 `Crosswake.Commerce.Contracts`/`Reconciliation` and the Phase-21 reconciliation modules with zero forks and zero new dependencies; the milestone audit confirmed 7/7 integration connections wired with no duplicate contract definitions.
+- **One shared verify→project→derive core for proof and example** — `MockBackend.build_verified_snapshot/2` is exercised identically by `PaywallEntryLive` and the hermetic proof, so the proof tests the real construction path, not a parallel one.
+- **Mocked-archetype-before-adapters sequencing** — proving the full purchase→reconciliation→entitlement→UI lane with `provider: "mock"` and a labeled swap target made the corridor copy-able now while deferring StoreKit/Play Billing risk to v3.6.
+- **Docs-contract lock via `function_exported?/3`** — binding the guide walkthrough to live exports means renaming/removing an anchored example function breaks the guide test, keeping documentation honest by construction.
+- **Reused hermetic-vs-advisory CI pattern** — `phase34-proof.yml` mirrored `phase23-proof.yml` directly, so the proof posture was established in Phase 33 before any proof code existed.
+
+### What Was Inefficient
+
+- **SUMMARY one-liner hygiene** — several phase SUMMARYs had null or literal `One-liner:` frontmatter, so the CLI-generated MILESTONES.md entry came through with placeholder bullets and had to be rewritten by hand at close.
+- **Nyquist VALIDATION ledger left in draft** — phases 34–37 carried pre-execution VALIDATION.md files never finalized to `nyquist_compliant: true`; functionally covered (every phase's tests pass and VERIFICATION.md passed), but the bookkeeping is a deferred cleanup.
+- **Forward-reference CSRF gap** — the P33 forward-referenced `purchase_intent`/`restore_intent` POST routes landed in a `:browser` pipeline without CSRF protection; acceptable for an example host but flagged as INFO tech-debt if the example is ever hardened toward a template.
+
+### Patterns Established
+
+- **Mocked archetype proof lane** — for a new product archetype, ship a pure-language mock that consumes the canonical contracts, a UI that renders the real derived state, a merge-blocking hermetic proof over the real pipeline, and a docs-contract-locked walkthrough — before any provider/vendor SDK code.
+- **Provider-vocabulary fence as a test** — a source-scan test asserting forbidden provider tokens (`storekit`, `play_billing`, `revenuecat`) never appear in the mock keeps "provider-neutral" a runtime invariant, not a review convention.
+- **Fail-closed UI mount** — initialize entitlement-reflecting UI to the least-privileged state (`:stale`) on mount and transition only via the authoritative message path.
+
+### Key Lessons
+
+- **Author SUMMARY one-liners at phase close** — the milestone-complete CLI extracts them verbatim; null/placeholder one-liners surface directly in MILESTONES.md and force manual rework.
+- **A mock that shares the real core is a proof, not a stub** — routing the example and the hermetic proof through the same `build_verified_snapshot/2` made the corridor genuinely copy-able and the proof genuinely load-bearing.
+- **Establish proof posture before proof code** — declaring the CI split and promotion_path in the first phase (33) meant every subsequent PR was gated correctly as it landed.
+
+### Cost Observations
+
+- **Session shape:** Single-day milestone (2026-05-29), executed immediately after v3.3's hex publish on the same day.
+- **Zero shipped-library churn:** v3.4 added example-host code, one proof test, and docs only — no `lib/crosswake/` changes — keeping the published `crosswake 0.1.0` surface stable while proving the archetype.
+- **Tooling friction:** milestone-close CLI output needed manual cleanup (MILESTONES.md placeholder bullets, STATE.md), but archival of ROADMAP/REQUIREMENTS/AUDIT worked.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -95,3 +141,5 @@
 | Environment-sensitive native proof needs lane design | Android JVM proof was fast after splitting from emulator proof; v3.2 commerce proof split hermetic merge-blocking from scheduled-only advisory provider/storefront/device checks | Keep merge-blocking and advisory proof lanes separate, and surface the advisory-to-merge-blocking promotion path inside runtime diagnostics, not only CI YAML |
 | Audit-driven decomposition prevents oversized phases | v3.2 Phase 22 was decomposed into 23 + 24 before execution after the milestone audit flagged scope risk | Run `/gsd:audit-milestone` early in milestone arcs to surface decomposition candidates before plans are written |
 | Re-audits trump rewriting | v3.2 closure required three re-audit appends (Phase 24, milestone closure, Phase 25) rather than rewriting the original `gaps_found` audit | Treat audit files as append-only ledgers — `gaps_found` followed by closure re-audits beats overwriting the original verdict |
+| Prove archetypes with mocks that share the real core | v3.4 shipped a copy-able paywall corridor with a pure-Elixir `MockStorefront` and a merge-blocking hermetic proof, both routed through the real reconciliation/projection pipeline, with zero provider-SDK code | When opening a new product archetype, mock the provider boundary only — keep the contract, reconciliation, and UI-derivation path real and proof-locked, deferring vendor SDK integration to a dedicated adapter milestone |
+| CLI-generated milestone artifacts need author-time input quality | v3.4's milestone-complete CLI emitted placeholder `One-liner:` bullets into MILESTONES.md because phase SUMMARYs lacked clean one-liners | Author SUMMARY one-liners at phase close; treat machine-extracted milestone summaries as drafts to verify, not final copy |

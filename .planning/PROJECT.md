@@ -10,15 +10,12 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-**v3.4 progress:** Phase 37 (Guides Walkthrough And Docs-Contract Lock) complete — `guides/commerce.md` gained an end-to-end **Paywall Corridor Walkthrough** H3 inside Layer 1, anchor-only (names the six shipped example-host steps + relative paths, no copied code), opening with a `provider: "mock"` mock-vs-real callout, using canonical `provider_reference`/`evidence_ref` field names, and citing the hermetic merge-blocking proof `phase34_paywall_corridor_proof_test.exs`. `commerce_test.exs` is now `async: false` with five module-scope `Code.require_file` calls and a hybrid docs-contract `describe` block (5 string-presence + 1 live-code guard via six `function_exported?/3` assertions), so renaming/removing any anchored example function breaks the guide test — the guide is genuinely locked to the shipped example. Phase23 three-layer + four-non-claims regression fences preserved (exactly three H2 headings). 26 guide tests / 352 full-suite tests green, no shipped-lib/example-host changes. DOCS-01, DOCS-02 validated. **This is the last phase of v3.4 — milestone ready for `/gsd-complete-milestone`.**
+**Shipped `v3.4 Commerce Archetype Proof` on `2026-05-29`** (Phases 33-37, 8 plans, 8 tasks). v3.4 turned v3.2's commerce vocabulary into a copy-able adopter lane: a runnable mocked paywall corridor in `examples/phoenix_host` that proves purchase → reconciliation → entitlement → UI end-to-end with **zero provider-SDK code**, reusing the shipped `Crosswake.Commerce.Contracts`/`Reconciliation` and the Phase-21 reconciliation modules. Three `:subscription_default` corridor routes are declared with canonical `crosswake.commerce` DSL; `CrosswakeExample.Commerce.MockStorefront` is a pure-Elixir, provider-neutral evidence emitter documented as the StoreKit/Play Billing swap target; mock evidence flows through `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1` into a four-state `PaywallEntryLive` (fail-closed `:stale` mount); a merge-blocking hermetic proof (`phase34_paywall_corridor_proof_test.exs`) drives all four states, the `:pending` → `:granted` transition, and the mock-boundary fence (`authority_mutation_allowed_from_evidence?/1 == false`); and `guides/commerce.md` gained a Paywall Corridor Walkthrough locked to the shipped example via a hybrid string-presence + `function_exported?/3` docs-contract test. All 14 requirements validated; milestone audit PASSED (14/14 req · 5/5 phase · 7/7 integration · 2/2 E2E). 352 full-suite tests green.
 
-Phase 36 (Hermetic Proof Lane) complete — `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` is the single merge-blocking, fully hermetic ExUnit proof of the mock paywall corridor. It drives the full lane (inline `ReconciliationEvidence` → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`), asserts all four derived states distinctly, the `:pending` → `:granted` transition routed through the shipped `MockBackend.build_verified_snapshot/2`, and the mock-boundary fence (three real truths anchored on `authority_mutation_allowed_from_evidence?/1 == false`), plus a self-scan hermeticity guard — no network, no process start, no example-host runtime dependency. Auto-discovered by the existing `phase34-proof.yml` hermetic job; 14 file-local tests / 308 hermetic-lane tests green under `--exclude requires_example_host --warnings-as-errors`. One new test file, no shipped-code changes. PROOF-01, PROOF-03 validated.
+<details>
+<summary>Earlier milestone history (v3.3, v3.2, v3.1)</summary>
 
-Phase 35 (Reconciliation Wiring And Four-State LiveView) complete — wired the example-host reconciliation inbox/projection into a four-state paywall LiveView sharing one synchronous verify→project→derive core with the proof. WIRE-01, WIRE-02, STATE-01, PWAL-02 validated.
-
-Phase 34 (MockStorefront And Idempotency Invariants) complete — `CrosswakeExample.Commerce.MockStorefront` is a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) that derives stable provider identity from `entry_id`/a canonical `@subscription_entry_id` constant, never from transient `correlation_id`. A hermetic, untagged merge-blocking proof drives `ReconciliationInbox.ingest_evidence/2` to demonstrate the replay invariant (same identity / different correlation_id → `replay?: true`), restore-shares-subject-key, and a provider-vocabulary fence (no `storekit`/`play_billing`/`play billing`/`revenuecat` tokens). No `lib/crosswake/` or existing example-host module changes. MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated.
-
-Phase 33 (Corridor Routes And CI Infrastructure) complete — the `examples/phoenix_host` router declares the three `:subscription_default` corridor routes (paywall_entry `live`, purchase/restore `post`) with canonical `crosswake: [..., commerce: [...]]` DSL, and `.github/workflows/phase34-proof.yml` establishes the hermetic-merge-blocking / advisory two-job CI split now gating the milestone. PWAL-01 and PROOF-02 validated.
+Crosswake shipped `v3.3 Release Readiness` on `2026-05-29` (`crosswake 0.1.0` live on hex.pm via the release-please pipeline).
 
 Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
@@ -26,25 +23,17 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families (`haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`) through the bounded bridge thesis, with route-local enforcement, doctor/support truth, and CI-backed proof across Elixir, checked-in iOS shell code, and Android JVM bridge tests.
 
-## Current Milestone: v3.4 Commerce Archetype Proof
+</details>
 
-**Goal:** Turn v3.2's commerce vocabulary into a copy-able adopter lane — a runnable paywall corridor in `examples/phoenix_host` driven by a mocked storefront, proving purchase → reconciliation → entitlement → UI end-to-end (ARCH-02) without any provider adapter code.
+## Next Milestone
 
-**Target features:**
-- `paywall_entry` route in `examples/phoenix_host` with `commerce: :paywall_entry` route policy.
-- `MockStorefront` adapter that consumes the v3.2 commerce contracts (`PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence`) without provider-specific code.
-- `purchase_intent` + `restore_intent` routes wired to MockStorefront.
-- Backend `EntitlementProjection` converting mock storefront evidence → entitlement snapshot, reusing `Crosswake.Commerce.Reconciliation`.
-- Merge-blocking hermetic proof driving the full lane: mock purchase → reconciliation evidence → snapshot → LiveView reflects entitlement state.
-- `guides/commerce.md` end-to-end walkthrough updated and docs-contract-locked against the working example.
+No active milestone — v3.4 shipped on 2026-05-29. Start the next milestone with `/gsd-new-milestone` (requirements will be scoped fresh).
 
-**Key context:** Mocked storefront only — no StoreKit / Play Billing / provider SDK code (deferred to the dedicated provider-adapter milestone, v3.6). Real-provider proof stays advisory; graduating to merge-blocking requires the 4-condition `promotion_path` documented in `phase23-proof.yml`. First milestone since `crosswake 0.1.0` went live on hex.pm (2026-05-29), so the example is now genuinely copy-able by real adopters. See `.planning/threads/commerce-archetype-proof.md`.
-
-Strategic-arc candidates after the commerce archetype proof, per `MILESTONE-ARC.md`:
+Strategic-arc candidates, per `MILESTONE-ARC.md`:
 
 - **First-party companions (v3.5)** — start with Rulestead; establishes the companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks sigra, rindle, chimeway, threadline. See `.planning/threads/companion-seam-pattern.md`.
 - **Operator truth and diagnostics expansion (v3.6)** — richer route/capability inspection, doctor checks, support matrices, and advisory device lanes for the widened surface.
-- **Provider adapters (ADPT-01/02)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input and can graduate the v3.4 advisory lane to merge-blocking.
+- **Provider adapters (ADPT-01/02/03)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input and can graduate the v3.4 advisory `purchase_intent`/`restore_intent` proof lane to merge-blocking via the 4-condition `promotion_path` in `phase23-proof.yml`.
 - **Archetype proof lanes (v3.7)** — re-run adopter-shaped pressure (subscription/paywall, notification-driven companion workflows, richer media/scanning) against the new surfaces.
 
 ## Requirements
@@ -84,18 +73,11 @@ Strategic-arc candidates after the commerce archetype proof, per `MILESTONE-ARC.
 - [x] **SUPP-05** Public commerce guidance explains reviewer/storefront sandbox setup, restore expectations, fallback behavior, and rough edges without implying provider adapters have shipped. Validated in v3.2 (Phase 23).
 - [x] **SUPP-06** Maintainers can run merge-blocking hermetic commerce proof while treating StoreKit/Play Billing simulator, device, or storefront checks as advisory until adapter milestones ship. Validated in v3.2 (Phase 23).
 - ✓ **v3.3 Release Readiness** (all 28 requirements: META-*, VER-01, LOG-*, REL-*, HEX-*, PRF-*) — `crosswake 0.1.0` published to hex.pm + HexDocs via the release-please pipeline. Validated across Phases 26–32; full detail in `.planning/milestones/v3.3-REQUIREMENTS.md`.
-- [x] **MOCK-01** Adopter can see `MockStorefront` consume a `PurchaseIntent` and return `ReconciliationEvidence{source: :storefront, provider: "mock"}` in pure Elixir. Validated in v3.4 (Phase 34).
-- [x] **MOCK-02** Adopter can see `MockStorefront` consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`). Validated in v3.4 (Phase 34).
-- [x] **MOCK-03** `MockStorefront` is shaped and documented as a drop-in swap target that makes explicit which functions a real provider adapter would replace. Validated in v3.4 (Phase 34).
-- [x] **WIRE-03** Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission). Validated in v3.4 (Phase 34).
-- [x] **PROOF-01** A merge-blocking hermetic ExUnit proof drives the full lane (mock purchase → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`) with no network or native SDK, asserting all four states and the `:pending` → `:granted` transition. Validated in v3.4 (Phase 36).
-- [x] **PROOF-03** The proof asserts that mock evidence routed through `ingest_evidence/2` can never grant entitlement authority directly — the mock-boundary fence, anchored on `authority_mutation_allowed_from_evidence?/1` returning `false`. Validated in v3.4 (Phase 36).
-- [x] **DOCS-01** Adopter can read an end-to-end mock-corridor walkthrough in `guides/commerce.md` that anchors each step (route declaration → MockStorefront → evidence ingestion → snapshot projection → derived state → LiveView) to a named example-host module/function, opening with a `provider: "mock"` mock-vs-real callout and citing the hermetic proof. Validated in v3.4 (Phase 37).
-- [x] **DOCS-02** A docs-contract test in `commerce_test.exs` locks the walkthrough's module/function references, canonical field names, and the four non-claims against the shipped example (hybrid string-presence + `function_exported?/3` live guard) without weakening the phase23 three-layer assertions — making the guide a merge-blocking artifact. Validated in v3.4 (Phase 37).
+- ✓ **v3.4 Commerce Archetype Proof** (all 14 requirements: PWAL-01/02, MOCK-01/02/03, WIRE-01/02/03, STATE-01, PROOF-01/02/03, DOCS-01/02) — a runnable mocked paywall corridor in `examples/phoenix_host` proving purchase → reconciliation → entitlement → UI end-to-end with zero provider-SDK code, plus a merge-blocking hermetic proof and a docs-contract-locked walkthrough. Validated across Phases 33–37; full detail in `.planning/milestones/v3.4-REQUIREMENTS.md`.
 
 ### Active
 
-_v3.4 Commerce Archetype Proof is the active milestone (started 2026-05-29). Requirements scoped via `/gsd-new-milestone`; see `.planning/REQUIREMENTS.md`. Prior per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
+_No active milestone. v3.4 Commerce Archetype Proof shipped 2026-05-29; start the next milestone with `/gsd-new-milestone` (requirements scoped fresh per milestone). Prior per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
 
 ### Out of Scope
 
@@ -103,20 +85,20 @@ _v3.4 Commerce Archetype Proof is the active milestone (started 2026-05-29). Req
 - LiveView rendering native widgets directly — it would over-couple the library to unstable or private rendering internals.
 - Generic "wrap your app in a WebView" positioning — it hides the architecture boundaries Crosswake is supposed to clarify.
 - Shipping a broad capability catalog in `v3.0` — this milestone should decide what belongs where before implementing many new families.
-- Store-specific billing implementation in `v3.2` — this milestone operationalizes the core seam, while provider adapters and storefront SDK code remain companion or future work.
+- Store-specific billing implementation in `v3.2`/`v3.4` — these milestones operationalize the core seam and prove the mocked archetype, while provider adapters and storefront SDK code remain deferred to v3.6 (ADPT-01/02/03).
 - Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
 - Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
 
 ## Context
 
-Crosswake is being planned as a greenfield Elixir/Phoenix OSS library with iOS and Android as first-class targets and web remaining part of the architecture. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
+Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.1.0` live on hex.pm since 2026-05-29) with iOS and Android as first-class targets and web remaining part of the architecture. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
 
-The strongest early app archetypes are Phoenix-backed SaaS portals, subscription apps with selective native flows, and local-first study/training/content apps. The initial value should come from route policy, shell/runtime contracts, offline/native boundary design, and honest support claims rather than wide native capability breadth. Companion integrations are relevant context: `sigra`, `rulestead`, `rindle`, `chimeway`, and `threadline` are plausible first-party companions; billing, identity-provider, and other vendor-heavy integrations should stay deferred or example-only until the core contract is stable.
+The strongest early app archetypes are Phoenix-backed SaaS portals, subscription apps with selective native flows, and local-first study/training/content apps. As of v3.4 the subscription/paywall archetype now has a runnable, copy-able mocked corridor in `examples/phoenix_host` (no provider SDK). The initial value should come from route policy, shell/runtime contracts, offline/native boundary design, and honest support claims rather than wide native capability breadth. Companion integrations are relevant context: `sigra`, `rulestead`, `rindle`, `chimeway`, and `threadline` are plausible first-party companions; billing, identity-provider, and other vendor-heavy integrations should stay deferred or example-only until the core contract is stable.
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
-The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activates the commerce candidate as operational seam work, building on the harvested post-`v2.0` capability and commerce seed plus the Phase 13 contract substrate.
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce as operational seam work; `v3.4` proved the mocked commerce archetype lane end-to-end. The next arc candidates are first-party companions (v3.5), operator/diagnostics expansion (v3.6), and provider adapters (v3.6).
 
 ## Constraints
 
@@ -153,8 +135,9 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Decompose audit-flagged phases before execution rather than executing oversized phases | The v3.2 milestone-audit flagged Phase 22 as the original "support + review + proof" container; splitting into Phase 23 (runtime closure) and Phase 24 (traceability hardening) before execution kept verification scopes sharp and avoided cross-stream drift | Validated in v3.2 — both decomposed phases shipped clean verification |
 | Treat SUMMARY-frontmatter traceability automation as merge-blocking infrastructure | RECN-01/02/03 were initially flagged `partial` purely because of artifact-shape inconsistency (`requirements:` vs canonical `requirements-completed:`); the gap closed by adding a parity ExUnit test wired into the merge-blocking CI job, not by changing behavior | Validated in v3.2 (Phase 24; hardened in Phase 25) — parity test now asserts presence (WR-01) and fails loudly on malformed shapes (WR-02) |
 | Adopt machine-enforced SUMMARY-frontmatter parity as the default automation level for adopter-facing traceability across future milestones | Phase 24/25 demonstrated that `requirements-completed:` parity (parser + presence + malformed-shape detection) is the right level of automation — heavier than a docs convention, lighter than a full traceability matrix tool. Graduation candidate surfaced 2026-05-27 from Phase 24/25 LEARNINGS | — Default for v3.3+ |
-| Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Phase 23's two-job split (hermetic merge-blocking + advisory provider/storefront/device lane with documented 4-condition `promotion_path`) keeps PRs fast and required without dishonest claims about environment-sensitive proof. Should be the default for future provider/device/storefront-sensitive surfaces (StoreKit adapter, Play Billing adapter, push delivery integration, etc.). Graduation candidate surfaced 2026-05-27 | — Default for v3.3+ |
+| Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Phase 23's two-job split (hermetic merge-blocking + advisory provider/storefront/device lane with documented 4-condition `promotion_path`) keeps PRs fast and required without dishonest claims about environment-sensitive proof. Should be the default for future provider/device/storefront-sensitive surfaces (StoreKit adapter, Play Billing adapter, push delivery integration, etc.). Graduation candidate surfaced 2026-05-27 | — Default for v3.3+; reused in v3.4 `phase34-proof.yml` |
 | Verify release-surface deliverables with hermetic ExUnit tests + a per-concern CI proof lane rather than manual UAT | Phase 30's hex-page checks (README/guide link hygiene, docs grouping, package allowlist, tarball contents, publish dry-run) are all mechanically checkable; automating them caught 3 real bugs manual review missed and made the checks repeatable on every PR. Reading config via `Mix.Project.config()` keeps tests in sync with `mix.exs`. Graduation candidate for release/packaging surfaces | Validated in Phase 30 — `hex_page_test.exs` + `hex-page-proof.yml`, PR #1 |
+| Prove a new product archetype as a mocked, hermetic, copy-able adopter lane before any provider-SDK code | v3.4 needed to make the v3.2 commerce vocabulary genuinely copy-able without taking on StoreKit/Play Billing integration risk; a pure-Elixir `MockStorefront` + four-state LiveView + merge-blocking hermetic proof + docs-contract-locked walkthrough proves the full purchase → reconciliation → entitlement → UI lane end-to-end and leaves a labeled swap target for real adapters | Validated in Milestone v3.4 — 14/14 requirements, audit PASSED (7/7 integration, 2/2 E2E), zero provider-SDK code |
 
 ## Evolution
 
@@ -174,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — Phase 37 complete (Paywall Corridor Walkthrough added to `guides/commerce.md`, anchor-only + proof citation; `commerce_test.exs` hybrid docs-contract lock with six `function_exported?/3` live guards, `async: false`, phase23 fences preserved; 352 full-suite tests green); DOCS-01, DOCS-02 validated. v3.4 Commerce Archetype Proof is the last phase — milestone ready for `/gsd-complete-milestone`.*
+*Last updated: 2026-05-29 after v3.4 Commerce Archetype Proof milestone — archived to `.planning/milestones/v3.4-*`; ROADMAP collapsed, REQUIREMENTS rotated for the next milestone.*

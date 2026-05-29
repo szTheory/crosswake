@@ -1,5 +1,22 @@
 # Project Milestones: Crosswake
 
+## v3.4 Commerce Archetype Proof (Shipped: 2026-05-29)
+
+**Phases completed:** 5 phases, 8 plans, 8 tasks
+
+**Key accomplishments:**
+
+- Declared three `:subscription_default` corridor routes (paywall_entry live + purchase/restore_intent post) in `examples/phoenix_host` with canonical `crosswake.commerce` DSL, plus a manifest-introspection proof test confirming correct role_ownership (Phase 33).
+- Established the `phase34-proof.yml` two-job CI split — a hermetic merge-blocking lane (`--exclude requires_example_host`) and an advisory `continue-on-error` lane carrying the 4-condition `promotion_path` (Phase 33).
+- Built `CrosswakeExample.Commerce.MockStorefront` as a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) documented as the StoreKit/Play Billing swap target, with a hermetic replay/idempotency proof (stable `entry_id` identity, not transient `correlation_id`) and a provider-vocabulary fence (Phase 34).
+- Wired the data layer — MockBackend verification-gap bridge, CorridorController POST seams, and PubSub supervision — into a four-state `PaywallEntryLive` LiveView with fail-closed `:stale` mount, exhaustive `case` dispatch to four named components, and dev scenario drivers consuming real `derived_state/1` derivation (Phase 35).
+- Added the merge-blocking hermetic `phase34_paywall_corridor_proof_test.exs` driving the full lane (`ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`), asserting all four states, the `:pending` → `:granted` transition, and the mock-boundary fence (`authority_mutation_allowed_from_evidence?/1 == false`), with a hermeticity self-scan guard (Phase 36).
+- Added an end-to-end Paywall Corridor Walkthrough to `guides/commerce.md` (anchor-only, `provider: "mock"` callout, proof citation) and locked it to the shipped example via a hybrid string-presence + `function_exported?/3` docs-contract test in `commerce_test.exs`, preserving the phase23 three-layer + four-non-claims fences (Phase 37).
+
+**Highlights:** All 14 requirements validated; milestone audit PASSED (14/14 req · 5/5 phase · 7/7 integration · 2/2 E2E flows). Zero provider-SDK code; zero new dependencies; reused the shipped v3.2 commerce contracts and Phase-21 reconciliation modules. 352 full-suite tests green.
+
+---
+
 ## v3.3 Release Readiness (Shipped: 2026-05-29)
 
 **Phases completed:** 6 phases, 11 plans, 5 tasks

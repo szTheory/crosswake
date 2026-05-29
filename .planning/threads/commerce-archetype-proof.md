@@ -1,9 +1,10 @@
 ---
 slug: commerce-archetype-proof
 title: Mocked storefront corridor + paywall archetype proof (v3.4 candidate)
-status: open
+status: completed
 created: 2026-05-27
-updated: 2026-05-27
+updated: 2026-05-29
+resolution: Shipped as milestone v3.4 Commerce Archetype Proof (Phases 33-37) on 2026-05-29.
 ---
 
 # Thread: Commerce archetype proof (ARCH-02)
