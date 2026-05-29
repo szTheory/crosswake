@@ -1,10 +1,11 @@
 ---
 phase: 35
 slug: reconciliation-wiring-and-four-state-liveview
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-29
+reviewed_at: 2026-05-29
 ---
 
 # Phase 35 — UI Design Contract
