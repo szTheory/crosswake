@@ -93,14 +93,22 @@
 **Requirements**: WIRE-01, WIRE-02, STATE-01, PWAL-02
 **Success Criteria** (what must be TRUE):
 
-  1. An adopter can see `PurchaseIntentLive` submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult` (status `:awaiting_verification`)
+  1. An adopter can see `PurchaseIntentLive` submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult` (status `:awaiting_verification`) *(per D-08, satisfied by the purchase-intent flow on `PaywallEntryLive.handle_event("subscribe")` + the `CorridorController.purchase` seam, not a literal `PurchaseIntentLive` module)*
   2. An adopter can see `EntitlementProjection.project_snapshot/2` invoked after simulated backend verification, producing the authoritative entitlement snapshot used to derive UI state
   3. `PaywallEntryLive` renders a single subscription `PaywallEntry` (pricing display + "Subscribe" action) with zero provider-SDK code visible
   4. `PaywallEntryLive` has explicit `case` branches for all four `derived_state/1` values — `:granted`, `:pending`, `:denied`, and `:stale` — where `:stale` is visually distinct from `:denied` and `:pending` shows a "processing" state
   5. `PaywallEntryLive` initializes to `:stale` on mount (fail-closed) and transitions to other states only via the PubSub `{:entitlement_update, derived_state}` message path
 
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+**Wave 1**
+
+- [ ] 35-01-PLAN.md — Data-layer + transport spine: MockBackend verification-gap bridge (WIRE-02), Phoenix.PubSub supervision bootstrap (D-12), thin CorridorController POST seam (WIRE-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 35-02-PLAN.md — PaywallEntryLive four-state LiveView (STATE-01, PWAL-02): fail-closed :stale mount + connected? subscribe, purchase/restore intent flows, exhaustive case dispatch to four named components, dev scenario drivers, router suppression cleanup
 
 ### Phase 36: Hermetic Proof Lane
 
@@ -140,6 +148,6 @@
 |-------|----------------|--------|-----------|
 | 33. Corridor Routes And CI Infrastructure | 2/2 | Complete    | 2026-05-29 |
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
-| 35. Reconciliation Wiring And Four-State LiveView | 0/TBD | Not started | - |
+| 35. Reconciliation Wiring And Four-State LiveView | 0/2 | Planned     | - |
 | 36. Hermetic Proof Lane | 0/TBD | Not started | - |
 | 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
