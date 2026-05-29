@@ -1,10 +1,12 @@
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
 
 defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   @moduledoc """
   Hermetic merge-blocking proof lane for the Phase 34 MockStorefront module.
 
-  Asserts the must-have truths for MOCK-01, MOCK-02, MOCK-03:
+  Asserts the must-have truths for MOCK-01, MOCK-02, MOCK-03, WIRE-03:
   - simulate_purchase/2 returns correctly-shaped ReconciliationEvidence with
     identity derived only from entry_id (never correlation_id)
   - simulate_restore/2 returns correctly-shaped evidence anchored on the
@@ -12,25 +14,50 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   - captured_at clock seam is injectable via opts
   - Both functions return raw structs (no {:ok, _} wrapper)
   - No forbidden provider tokens in the source file
+  - Replay invariant: same entry_id + different correlation_id yields replay?: true
+    via ReconciliationInbox.ingest_evidence/2 (WIRE-03)
+  - Restore shares subject_key with purchase of same product (D-06)
 
-  Provider-vocabulary fence (T-34-01): grep for forbidden tokens runs at
-  module-load time so CI fails fast if a future edit introduces them.
+  Intentionally UNtagged (no @moduletag :requires_example_host) — hermetic via
+  Code.require_file and pure function calls, so it runs in the merge-blocking lane
+  under `mix test --exclude requires_example_host`.
   """
 
   use ExUnit.Case, async: false
 
   alias Crosswake.Commerce.Contracts
   alias CrosswakeExample.Commerce.MockStorefront
-
-  # Provider-vocabulary fence (WIRE-03 / T-34-01) — runs at compile time in CI
-  @source_file "examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex"
+  alias CrosswakeExample.Commerce.ReconciliationInbox
+  alias CrosswakeExample.Commerce.ReconciliationKeys
 
   describe "source fence (T-34-01)" do
     test "no forbidden provider tokens in mock_storefront.ex source" do
-      source = File.read!(@source_file)
-      refute source =~ ~r/storekit/i, "mock_storefront.ex must not contain 'storekit'"
-      refute source =~ ~r/play[ _]billing/i, "mock_storefront.ex must not contain 'play_billing' or 'play billing'"
-      refute source =~ ~r/revenuecat/i, "mock_storefront.ex must not contain 'revenuecat'"
+      forbidden = [
+        "store" <> "kit",
+        "play" <> "_billing",
+        "play" <> " " <> "billing",
+        "revenue" <> "cat"
+      ]
+
+      content =
+        File.read!("examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex")
+        |> String.downcase()
+
+      for token <- forbidden do
+        refute String.contains?(content, token), "mock_storefront.ex leaked provider token #{token}"
+      end
+    end
+  end
+
+  describe "swap-target documentation (MOCK-03)" do
+    test "source names both swap-target functions" do
+      source = File.read!("examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex")
+
+      assert String.contains?(source, "simulate_purchase"),
+             "mock_storefront.ex must document simulate_purchase"
+
+      assert String.contains?(source, "simulate_restore"),
+             "mock_storefront.ex must document simulate_restore"
     end
   end
 
@@ -164,6 +191,56 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       evidence = MockStorefront.simulate_restore(intent, captured_at: fixed_time)
 
       assert evidence.captured_at == fixed_time
+    end
+  end
+
+  describe "replay invariant via ingest_evidence (WIRE-03)" do
+    test "same entry_id with different correlation_id yields replay?: true and identical event_key" do
+      intent1 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
+      intent2 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c2"}
+
+      ev1 = MockStorefront.simulate_purchase(intent1)
+      ev2 = MockStorefront.simulate_purchase(intent2)
+
+      assert {:ok, first} = ReconciliationInbox.ingest_evidence(ev1, correlation_id: "c1")
+
+      assert {:ok, replay} =
+               ReconciliationInbox.ingest_evidence(ev2,
+                 correlation_id: "c2",
+                 seen_event_keys: [first.event_key]
+               )
+
+      assert replay.replay? == true
+      assert replay.event_key == first.event_key
+    end
+
+    test "different entry_id yields distinct event_key and replay?: false" do
+      intent_a = %Contracts.PurchaseIntent{entry_id: "entry_a", correlation_id: "c1"}
+      intent_b = %Contracts.PurchaseIntent{entry_id: "entry_b", correlation_id: "c2"}
+
+      ev_a = MockStorefront.simulate_purchase(intent_a)
+      ev_b = MockStorefront.simulate_purchase(intent_b)
+
+      assert {:ok, a} = ReconciliationInbox.ingest_evidence(ev_a)
+
+      assert {:ok, b} =
+               ReconciliationInbox.ingest_evidence(ev_b, seen_event_keys: [a.event_key])
+
+      refute b.replay?
+      refute a.event_key == b.event_key
+    end
+
+    test "restore shares subject_key with purchase of the canonical product (D-06)" do
+      purchase_intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
+      restore_intent = %Contracts.RestoreIntent{correlation_id: "c2"}
+
+      purchase_ev = MockStorefront.simulate_purchase(purchase_intent)
+      restore_ev = MockStorefront.simulate_restore(restore_intent)
+
+      assert {:ok, p} = ReconciliationInbox.ingest_evidence(purchase_ev)
+      assert {:ok, r} = ReconciliationInbox.ingest_evidence(restore_ev)
+
+      assert p.subject_key == r.subject_key
     end
   end
 end
