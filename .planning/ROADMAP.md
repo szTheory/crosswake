@@ -123,7 +123,10 @@
   4. The proof test file uses `async: false`, phase-prefixed inline fixture module names (e.g. `Phase34PaywallCorridorRouter`) to avoid collision with phase23 fixtures, and contains a hermeticity self-scan guard confirming no `Code.require_file` on example-host paths
   5. The hermetic CI job in `phase34-proof.yml` runs this test file and passes cleanly under `--exclude requires_example_host --warnings-as-errors`
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 36-01-PLAN.md — Hermetic merge-blocking proof of the mock paywall corridor (four states, :pending->:granted transition, mock-boundary fence, self-scan guard)
 
 ### Phase 37: Guides Walkthrough And Docs-Contract Lock
 
