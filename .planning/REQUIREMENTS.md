@@ -13,7 +13,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Paywall Corridor
 
-- [ ] **PWAL-01**: Adopter can copy a `paywall_entry` route declaring `commerce: [corridor: :subscription_default, role: :paywall_entry]` from `examples/phoenix_host`
+- [x] **PWAL-01**: Adopter can copy a `paywall_entry` route declaring `commerce: [corridor: :subscription_default, role: :paywall_entry]` from `examples/phoenix_host`
 - [ ] **PWAL-02**: Adopter can see a `PaywallLive` LiveView render a single subscription `PaywallEntry` (pricing display + "Subscribe" action) with zero provider-SDK code
 
 ### Mock Storefront
@@ -35,7 +35,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 ### Proof Lane
 
 - [ ] **PROOF-01**: A merge-blocking hermetic ExUnit proof drives the full lane (mock purchase → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`) with no network or native SDK, asserting all four states and the `:pending` → `:granted` transition
-- [ ] **PROOF-02**: A `phase34-proof.yml` two-job CI split keeps the hermetic lane merge-blocking (`--exclude requires_example_host` honored) while any provider/storefront/device checks stay advisory-only, with the documented 4-condition `promotion_path` (mirroring `phase23-proof.yml`)
+- [x] **PROOF-02**: A `phase34-proof.yml` two-job CI split keeps the hermetic lane merge-blocking (`--exclude requires_example_host` honored) while any provider/storefront/device checks stay advisory-only, with the documented 4-condition `promotion_path` (mirroring `phase23-proof.yml`)
 - [ ] **PROOF-03**: The proof asserts that mock evidence routed through `ingest_evidence/2` can never grant entitlement authority directly — the mock-boundary fence, anchored on `authority_mutation_allowed_from_evidence?/1` returning `false`
 
 ### Adopter Docs
@@ -74,7 +74,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWAL-01 | Phase 33 | Pending |
+| PWAL-01 | Phase 33 | Complete |
 | PWAL-02 | Phase 35 | Pending |
 | MOCK-01 | Phase 34 | Pending |
 | MOCK-02 | Phase 34 | Pending |
@@ -84,7 +84,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | WIRE-03 | Phase 34 | Pending |
 | STATE-01 | Phase 35 | Pending |
 | PROOF-01 | Phase 36 | Pending |
-| PROOF-02 | Phase 33 | Pending |
+| PROOF-02 | Phase 33 | Complete |
 | PROOF-03 | Phase 36 | Pending |
 | DOCS-01 | Phase 37 | Pending |
 | DOCS-02 | Phase 37 | Pending |
