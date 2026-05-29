@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)** headings like **`[0.1.0]`** for **published Hex releases**. Separately, maintainers track **planning milestones** labeled **v1.0–v3.2** in **`.planning/MILESTONES.md`** — those labels describe shipped *tranches of work*, **not** a second installable version axis on Hex (this repo remains **0.x** on Hex until a real **1.0.0**). When in doubt, treat **`.planning/MILESTONES.md`** as canonical for milestone dates and archive paths.
 
+## 0.1.0 (2026-05-29)
+
+
+### Features
+
+* **28-01:** add release-please config, manifest, and tool-versions ([59831b9](https://github.com/szTheory/crosswake/commit/59831b93ca4c5f3441db5e0483b8d4ebb4f79cb1))
+* **29-01:** add automated release-please pipeline ([845591a](https://github.com/szTheory/crosswake/commit/845591a863dc52b9533a5b69f1bb1cddecb93d28))
+* **29-01:** add Dependabot for Actions and verify workflows ([85632ba](https://github.com/szTheory/crosswake/commit/85632ba9c5746aec009762b29e72e1480c89c737))
+* **29-01:** add manual hex-publish recovery pipeline ([21bd722](https://github.com/szTheory/crosswake/commit/21bd7222be38cc59a679da17d4c1e82e54542cfb))
+
+
+### Bug Fixes
+
+* **30:** rewrite leaked absolute paths in guide links; harden link test ([a273f1a](https://github.com/szTheory/crosswake/commit/a273f1a50500627fe120f83d162ad92bf14005ee))
+* **phase-26:** repair summary frontmatter and test glob ([7aa36e0](https://github.com/szTheory/crosswake/commit/7aa36e07b1ee0876d99506be49a1fa7ed4a418ef))
+
 ## [Unreleased]
 
 ## [0.1.0] — 2026-05-28
