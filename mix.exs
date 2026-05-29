@@ -10,6 +10,7 @@ defmodule Crosswake.MixProject do
       version: @version,
       name: "crosswake",
       elixir: "~> 1.19",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
@@ -25,6 +26,14 @@ defmodule Crosswake.MixProject do
       extra_applications: [:logger]
     ]
   end
+
+  # Shared test fixtures (test/support/*.ex) are compiled once as project
+  # modules in the test env, instead of being loaded per-file via
+  # Code.require_file/2. The latter races during parallel test compilation —
+  # multiple test files requiring the same fixture concurrently intermittently
+  # fails with {:error, :enoent}.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [

@@ -1,7 +1,9 @@
-Code.require_file("../../support/router_fixtures.ex", __DIR__)
-
 defmodule Mix.Tasks.Crosswake.DoctorTest do
-  use ExUnit.Case, async: true
+  # async: false — this test changes the global process working directory via
+  # File.cd!/2 while exercising the mix task. Under async:true it raced with
+  # other async tests doing relative-path reads (e.g. File.read!("guides/...")),
+  # failing intermittently under CI's lower concurrency.
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
 

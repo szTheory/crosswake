@@ -1,4 +1,3 @@
-Code.require_file("../../support/example_host.exs", __DIR__)
 
 defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   use ExUnit.Case, async: false
