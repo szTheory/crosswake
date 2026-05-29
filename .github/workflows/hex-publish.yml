@@ -58,9 +58,13 @@ jobs:
         run: mix compile --warnings-as-errors
 
       - name: Run library tests
+        # Exclude :requires_example_host — those proof tests need the checked-in
+        # example Phoenix app compiled (gated on PRs by phase5-proof.yml). A bare
+        # `mix test` on a clean runner would fail with CrosswakeExample.Router
+        # undefined and block the publish.
         env:
           MIX_ENV: test
-        run: mix test
+        run: mix test --exclude requires_example_host
 
       - name: Dry run Hex publish
         env:
