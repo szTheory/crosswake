@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
 status: planning
-last_updated: "2026-05-29T13:52:18.780Z"
+last_updated: "2026-05-29T14:00:00.000Z"
 last_activity: 2026-05-29
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,20 +20,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** v3.3 Release Readiness is COMPLETE — `crosswake 0.1.0` is live on hex.pm and HexDocs. Next milestone to be defined (recommended: v3.4 Commerce Archetype Proof, ARCH-02).
+**Current focus:** v3.4 Commerce Archetype Proof — Phase 33 ready to plan
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 33 of 37 (Corridor Routes And CI Infrastructure)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-29 — Milestone v3.4 started
+Status: Ready to plan
+Last activity: 2026-05-29 — Roadmap created for v3.4 (Phases 33-37, 14 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 51 (v1.0–v3.2)
+- Total plans completed: 51 (v1.0–v3.3)
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -42,76 +44,45 @@ Last activity: 2026-05-29 — Milestone v3.4 started
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 19. Commerce Route Corridors | 3 | 18 min | 6 min |
-| 20. Entitlement Lifecycle Semantics | 4 | n/a | n/a |
-| 21. Reconciliation Example | 2 | n/a | n/a |
-| 22. Commerce Support, Review, And Proof (decomposed) | 0 | n/a | n/a |
 | 23. Commerce Support And Proof Closure | 4 | n/a | n/a |
-| 24. Reconciliation Traceability Hardening | 3 | n/a | n/a |
-| 25. Tech-debt closure | 2 | n/a | n/a |
-| 30 | 2 | - | - |
-| 31 | 0 | - | - |
+| 30. Hex Page Polish | 2 | - | - |
 
-**Recent Trend:**
-
-- Last milestone shipped: v3.2 Commerce And Entitlement Seams on 2026-05-27
-- Current milestone: v3.3 Release Readiness (planning → execution transition)
-- Trend: Positive
+**Recent Trend:** Positive — v3.3 shipped cleanly; v3.4 roadmap ready
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent milestone + v3.3 framing:
 
-- Phase 31/32: **crosswake 0.1.0 published to hex.pm** (2026-05-29). Switched release-please to `skip-changelog: true` + `changelog-sections` so the hand-curated CHANGELOG.md (curated/honest, no internal phase-scope jargon) is the single source of truth in the tarball — release-please still bumps/tags/releases/publishes. Fixed both publish gates (release-please.yml + hex-publish.yml) to `mix test --exclude requires_example_host` (example-host proofs need the example app built; gated separately by phase5-proof.yml). Removed the one-time `release-as: "0.1.0"` pin so future releases auto-version. Smoke-tested install from a fresh `mix new`.
-- Phase 30: Hex-page verification (HEX-01/02/03, PRF-01) automated to zero human steps — `test/crosswake/hex_page_test.exs` (link hygiene, docs grouping, package allowlist) + `hex-page-proof.yml` CI (full hermetic suite + `mix docs` smoke + `verify_hex_tarball.sh` + publish dry-run). The automation surfaced/fixed 3 real bugs (README `examples/` link, phantom `Crosswake.Bridge` docs group, 29 leaked `/Users/...` absolute paths in guides) and repaired two latent test-suite isolation races (parallel-compile `require_file`, global-cwd `File.cd`). Delivered via PR #1 (merged `5a5a277`).
-- Phase 30: `mix docs` zero-warnings clause of HEX-03 consciously deferred to v3.4 — the ~150 residual warnings are intentional `@moduledoc false` hidden-type warnings and do not block docs/publish.
-- Phase 26-04: Accepted ex_doc resolution to 0.40.3 which satisfies the ~> 0.38 constraint.
-- Milestone v3.2 shipped on 2026-05-27 with provider-neutral commerce route corridors, entitlement lifecycle lane semantics, reconciliation example, merge-blocking commerce proof lane, and SUMMARY frontmatter parity enforcement.
-- v3.3 Release Readiness is the recommended next milestone (planning-blindspot discovery 2026-05-27). Paved path: `bootstrap-elixir-hex-lib` skill (oarlock canonical pattern).
-- v3.3 versioning decision: ship `0.1.0` (not `1.0.0` or `1.0.0-rc.0`). Crosswake has zero external adopters; SemVer §5 prerequisites are not met.
-- v3.3 release-please config: `bump-minor-pre-major: false` (oarlock/lattice_stripe pattern, NOT sigra's `true`). Manifest baselined at `0.0.0` with one-time `release-as: "0.1.0"` pin; pin removed in Phase 32.
-- v3.3 supply-chain hardening: all NEW GitHub Actions workflows SHA-pin every external action; dependabot configured for the `github-actions` ecosystem. Existing phase-proof workflows (phase5, phase10, phase18, phase23) are NOT in scope for retroactive SHA pinning.
+- v3.4 phase ordering: routes + CI before MockStorefront; MockStorefront before LiveView; proof after final code; docs last (same phase as docs-contract test)
+- v3.4 proof isolation: `async: false`, `Phase34`-prefixed fixture module names, `Code.require_file` at module scope only (mirrors phase21/phase23 discipline)
+- v3.4 idempotency: `MockStorefront` must derive `provider_reference` from stable `entry_id`, not transient `correlation_id` (RECN-02 guardrail)
+- v3.4 scope: zero new dependencies; reuse Phase 21 `ReconciliationInbox`, `EntitlementProjection`, `ReconciliationKeys` as-is; no ETS, no Ecto migrations in mock lane
 
 ### Pending Todos
 
-- **v3.3 (in progress):** Release readiness — publish to hex.pm. Phases 26-32 mapped to 28 v3.3 requirements across Categories A-F. Ready for `/gsd:plan-phase 26`.
-- **v3.4 candidate:** Commerce archetype proof (ARCH-02) — wire a runnable paywall_entry + purchase_intent + restore_intent lane in `examples/phoenix_host` using a mocked storefront corridor (no provider adapter needed). See thread `commerce-archetype-proof`.
-- **v3.5 candidate:** Rulestead first-party companion — establishes companion-seam pattern that unblocks sigra/rindle/chimeway/threadline. See thread `companion-seam-pattern`. Blocked on v3.3.
-- Further out: provider adapters (ADPT-01/02 StoreKit + Play Billing), sigra companion + notification-driven re-entry archetype, operator runtime surface (OPS-01) + telemetry instrumentation, v3.5 archetype proof lanes from original ARC.
+- v3.4 Phase 33: Confirm whether `CrosswakeExample.PubSub` is already started in `application.ex`; if not, add it before Phase 35 LiveView wiring.
+- v3.4 Phase 35: Decide verification simulation shape (inline in LiveView handler vs. separate context function) so proof test and example use the same construction path.
+- Deferred from v3.3: Clean up ~150 ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause). Low priority for v3.4.
 
 ### Blockers/Concerns
 
-- This local workstation still lacks a Java runtime, so Android JVM evidence should continue to come from CI unless Java is installed locally.
-- StoreKit and Play Billing proof should remain advisory until a provider adapter milestone intentionally ships native/provider code.
-- **v3.3 human-gated steps** (Phase 26 META-01 + Phase 31 REL-07/REL-08/PRF-02): real GitHub repo URL confirmation, `default_workflow_permissions=write` flip, `HEX_API_KEY` generation, and Release PR merge are all maintainer-only handoffs. Phases 26 and 31 cannot pass verification without these.
-- **Irreversibility window:** Phase 31 publish has a 60-minute republish window and a 24-hour revert window for initial publish. Phases 26-30 collectively gate Phase 31 so dry-run, tarball audit, and render checks all pass before the human-gated merge.
-
-### Roadmap Evolution
-
-- v3.2 milestone archived. ROADMAP.md collapsed; full archive at `.planning/milestones/v3.2-ROADMAP.md`.
-- v3.3 roadmap created 2026-05-27. Phase numbering continues from Phase 25; v3.3 spans Phases 26-32. ROADMAP.md and REQUIREMENTS.md traceability matrix updated in same commit.
+- Android JVM evidence continues to require CI (no local Java runtime).
+- StoreKit/Play Billing proof stays advisory; graduation to merge-blocking deferred to v3.6 (ADPT-01/02/03).
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Integrations | First-party companion integrations remain deferred until the commerce seam is operational and support truth is stable | Deferred | 2026-05-27 |
-| Commerce | StoreKit, Play Billing, RevenueCat, Accrue, or other provider adapters remain deferred to companion/future milestones | Deferred | 2026-05-27 |
-| Platform | Desktop packaging remains out of the near-term arc | Deferred | 2026-05-19 |
-| Human UAT | Phase 15 device checks for share sheet presentation, physical haptics feedback, and app-info runtime fidelity remain human-needed | Deferred | 2026-05-27 |
-| CI infra | Retroactive SHA-pinning of pre-existing phase-proof workflows (phase5, phase10, phase18, phase23) — v3.3 ships the standard for NEW workflows only | Deferred to v3.4+ | 2026-05-27 |
-| Tooling | `mix crosswake.doctor --check-publish` install-truth surface (graduation candidate after v3.3 publish) | Deferred to v3.4+ | 2026-05-27 |
-| Docs | Machine-enforced CHANGELOG shape test (ExUnit `[Unreleased]` presence + format checks) | Deferred to v3.4 | 2026-05-27 |
-| Docs | Clean up ~150 intentional ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause) to enable `mix docs --warnings-as-errors` | Deferred to v3.4 | 2026-05-29 |
+| Commerce | StoreKit, Play Billing, RevenueCat provider adapters | Deferred to v3.6 | 2026-05-27 |
+| Docs | ExDoc zero-warnings clause (HEX-03) | Deferred to v3.4+ | 2026-05-29 |
+| CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred to v3.4+ | 2026-05-27 |
+| Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
+| Tooling | `mix crosswake.doctor --check-publish` surface | Deferred to v3.4+ | 2026-05-27 |
 
 ## Session Continuity
 
-Last session: 2026-05-29T12:21:04.967Z
-Stopped at: v3.3 COMPLETE — crosswake 0.1.0 live on hex.pm; Phases 31 (publish) and 32 (post-publish cleanup) done
+Last session: 2026-05-29T13:52:00.000Z
+Stopped at: v3.4 roadmap created (Phases 33-37); ready for `/gsd-plan-phase 33`
 Resume file: None
-
-## Operator Next Steps
-
-- Start the next milestone with /gsd-new-milestone

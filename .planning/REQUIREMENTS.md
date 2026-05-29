@@ -74,26 +74,26 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWAL-01 | TBD | Pending |
-| PWAL-02 | TBD | Pending |
-| MOCK-01 | TBD | Pending |
-| MOCK-02 | TBD | Pending |
-| MOCK-03 | TBD | Pending |
-| WIRE-01 | TBD | Pending |
-| WIRE-02 | TBD | Pending |
-| WIRE-03 | TBD | Pending |
-| STATE-01 | TBD | Pending |
-| PROOF-01 | TBD | Pending |
-| PROOF-02 | TBD | Pending |
-| PROOF-03 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
-| DOCS-02 | TBD | Pending |
+| PWAL-01 | Phase 33 | Pending |
+| PWAL-02 | Phase 35 | Pending |
+| MOCK-01 | Phase 34 | Pending |
+| MOCK-02 | Phase 34 | Pending |
+| MOCK-03 | Phase 34 | Pending |
+| WIRE-01 | Phase 35 | Pending |
+| WIRE-02 | Phase 35 | Pending |
+| WIRE-03 | Phase 34 | Pending |
+| STATE-01 | Phase 35 | Pending |
+| PROOF-01 | Phase 36 | Pending |
+| PROOF-02 | Phase 33 | Pending |
+| PROOF-03 | Phase 36 | Pending |
+| DOCS-01 | Phase 37 | Pending |
+| DOCS-02 | Phase 37 | Pending |
 
 **Coverage:**
 - v1 requirements: 14 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 14 ⚠️ (roadmapper will resolve)
+- Mapped to phases: 14 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-29*
-*Last updated: 2026-05-29 after initial v3.4 definition*
+*Last updated: 2026-05-29 — traceability populated after roadmap creation (Phases 33-37)*
