@@ -179,16 +179,15 @@ defmodule CrosswakeExample.Commerce.MockStorefront do
   Pure-Elixir mock storefront for the Crosswake v3.4 Commerce Archetype proof corridor.
 
   Manufactures deterministic `ReconciliationEvidence` from `PurchaseIntent` and
-  `RestoreIntent` structs using stable provider identity — no StoreKit, Play Billing,
-  or RevenueCat SDK code.
+  `RestoreIntent` structs using stable provider identity — no native payment SDK code.
 
   ## Drop-in swap target
 
   A real provider adapter would replace exactly two functions in this module:
 
     * `simulate_purchase/1` — returns `ReconciliationEvidence` for a purchase event.
-      A real StoreKit/Play Billing adapter would call the native payment sheet here and
-      return a receipt or transaction token as `provider_reference`.
+      A real adapter (one wrapping a native payment SDK) would call the native payment
+      sheet here and return a receipt or transaction token as `provider_reference`.
 
     * `simulate_restore/1` — returns `ReconciliationEvidence` for a restore event.
       A real adapter would call the native restore flow here.
@@ -568,7 +567,10 @@ assert replay_attempt.event_key == first_attempt.event_key
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Both questions below are answered inline with `[VERIFIED]` source citations; neither
+> blocks planning or execution.
 
 1. **Does `seen_event_keys` accept a plain list in the actual implementation?**
    - What we know: Yes — `ReconciliationInbox` line 60: `defp seen_event_key?(event_key, seen_event_keys) when is_list(seen_event_keys), do: event_key in seen_event_keys` [VERIFIED]
