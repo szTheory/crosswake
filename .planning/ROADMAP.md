@@ -78,7 +78,12 @@
   5. A provider-vocabulary fence test confirms `MockStorefront` source contains no `storekit`, `play_billing`, `play billing`, or `revenuecat` tokens
 
 **Plans**: 2 plans
+**Wave 1**
+
 - [ ] 34-01-PLAN.md — Create CrosswakeExample.Commerce.MockStorefront (pure-Elixir evidence emitter: simulate_purchase/2, simulate_restore/2, swap-target @moduledoc)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 34-02-PLAN.md — Hermetic untagged proof test: replay/idempotency invariant, restore-shares-subject-key, provider-vocabulary fence
 
 ### Phase 35: Reconciliation Wiring And Four-State LiveView
