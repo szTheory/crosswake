@@ -28,7 +28,6 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   alias Crosswake.Commerce.Contracts
   alias CrosswakeExample.Commerce.MockStorefront
   alias CrosswakeExample.Commerce.ReconciliationInbox
-  alias CrosswakeExample.Commerce.ReconciliationKeys
 
   describe "source fence (T-34-01)" do
     test "no forbidden provider tokens in mock_storefront.ex source" do
