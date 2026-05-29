@@ -18,15 +18,15 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Mock Storefront
 
-- [ ] **MOCK-01**: Adopter can see `MockStorefront` consume a `PurchaseIntent` and return `ReconciliationEvidence{source: :storefront, provider: "mock"}` in pure Elixir
-- [ ] **MOCK-02**: Adopter can see `MockStorefront` consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`)
-- [ ] **MOCK-03**: `MockStorefront` is shaped and documented as a drop-in swap target that makes explicit which functions a real StoreKit/Play Billing adapter would replace
+- [x] **MOCK-01**: Adopter can see `MockStorefront` consume a `PurchaseIntent` and return `ReconciliationEvidence{source: :storefront, provider: "mock"}` in pure Elixir
+- [x] **MOCK-02**: Adopter can see `MockStorefront` consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`)
+- [x] **MOCK-03**: `MockStorefront` is shaped and documented as a drop-in swap target that makes explicit which functions a real StoreKit/Play Billing adapter would replace
 
 ### Reconciliation Wiring
 
 - [ ] **WIRE-01**: Adopter can see the example submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult`
 - [ ] **WIRE-02**: Adopter can see `EntitlementProjection.project_snapshot/2` produce the authoritative entitlement snapshot after successful ingestion
-- [ ] **WIRE-03**: Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission)
+- [x] **WIRE-03**: Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission)
 
 ### Entitlement State Reflection
 
@@ -76,12 +76,12 @@ Which phases cover which requirements. Populated during roadmap creation.
 |-------------|-------|--------|
 | PWAL-01 | Phase 33 | Complete |
 | PWAL-02 | Phase 35 | Pending |
-| MOCK-01 | Phase 34 | Pending |
-| MOCK-02 | Phase 34 | Pending |
-| MOCK-03 | Phase 34 | Pending |
+| MOCK-01 | Phase 34 | Complete |
+| MOCK-02 | Phase 34 | Complete |
+| MOCK-03 | Phase 34 | Complete |
 | WIRE-01 | Phase 35 | Pending |
 | WIRE-02 | Phase 35 | Pending |
-| WIRE-03 | Phase 34 | Pending |
+| WIRE-03 | Phase 34 | Complete |
 | STATE-01 | Phase 35 | Pending |
 | PROOF-01 | Phase 36 | Pending |
 | PROOF-02 | Phase 33 | Complete |

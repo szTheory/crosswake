@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
-status: executing
-last_updated: "2026-05-29T16:13:42.496Z"
+status: ready_to_plan
+last_updated: 2026-05-29T16:36:47.822Z
 last_activity: 2026-05-29 -- Phase 34 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 4
   percent: 20
+stopped_at: Phase 34 complete (2/2) — ready to discuss Phase 35
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 34 — mockstorefront-and-idempotency-invariants
+**Current focus:** Phase 35 — reconciliation wiring and four state liveview
 
 ## Current Position
 
-Phase: 34 (mockstorefront-and-idempotency-invariants) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 34
-Last activity: 2026-05-29 -- Phase 34 execution started
+Phase: 35
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-29
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -35,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 53 (v1.0–v3.3)
+- Total plans completed: 55 (v1.0–v3.3)
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -47,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | 23. Commerce Support And Proof Closure | 4 | n/a | n/a |
 | 30. Hex Page Polish | 2 | - | - |
 | 33 | 2 | - | - |
+| 34 | 2 | - | - |
 
 **Recent Trend:** Positive — v3.3 shipped cleanly; v3.4 roadmap ready
 
