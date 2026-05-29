@@ -164,4 +164,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — Phase 33 complete (corridor routes + phase34-proof.yml CI split); PWAL-01, PROOF-02 validated. Next: Phase 34 (MockStorefront and idempotency invariants)*
+*Last updated: 2026-05-29 — Phase 34 complete (MockStorefront pure-Elixir evidence emitter + hermetic replay-invariant & vocabulary-fence proof); MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated. Next: Phase 35 (Reconciliation Wiring And Four-State LiveView)*
