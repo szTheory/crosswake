@@ -600,7 +600,10 @@ All other claims in this research were verified by direct file read — no exter
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Both items below are CONTEXT.md "Claude's Discretion" choices, now resolved in 37-01-PLAN.md
+> (single `test` block for the six `function_exported?` assertions; concrete mock-vs-real callout prose).
 
 1. **`@anchored_functions` module attribute for readability**
    - What we know: The six `function_exported?` assertions can be factored into a module attribute list for readability.
