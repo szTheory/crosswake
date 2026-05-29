@@ -58,8 +58,20 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 
 ## Traceability
 
-_Filled by the roadmapper — maps each REQ-ID to its phase._
-
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| _pending roadmap_ | | |
+| COMP-01 | Phase 38 | Pending |
+| COMP-02 | Phase 38 | Pending |
+| COMP-03 | Phase 38 | Pending |
+| GATE-01 | Phase 39 | Pending |
+| GATE-02 | Phase 39 | Pending |
+| GATE-03 | Phase 40 | Pending |
+| GATE-04 | Phase 40 | Pending |
+| GATE-05 | Phase 41 | Pending |
+| MEDIA-01 | Phase 44 | Pending |
+| MEDIA-02 | Phase 44 | Pending |
+| MEDIA-03 | Phase 45 | Pending |
+| AUTH-01 | Phase 46 | Pending |
+| AUTH-02 | Phase 46 | Pending |
+| PROOF-01 | Phase 43 + Phase 45 | Pending |
+| PROOF-02 | Phase 47 | Pending |
