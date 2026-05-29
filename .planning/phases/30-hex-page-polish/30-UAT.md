@@ -26,9 +26,9 @@ The automated approach surfaced two real bugs the manual SUMMARY had missed (see
 ## Tests
 
 ### 1. README links resolve on hex.pm
-expected: Links to non-package paths use absolute GitHub URLs; in-package guide links stay relative and exist on disk.
+expected: Links to non-package paths use absolute GitHub URLs; in-package guide links stay relative and exist on disk; no absolute filesystem paths.
 result: pass
-note: Caught a real bug first — README.md:45 was still a relative link to examples/phoenix_host/README.md (not shipped → 404 on HexDocs). Fixed to absolute URL; test now green. Enforced by hex_page_test "README + guide link hygiene".
+note: Caught TWO real bugs. (a) README.md:45 was still a relative link to examples/phoenix_host/README.md (not shipped → 404 on HexDocs) → fixed to absolute URL. (b) 29 guide cross-links across 6 files were hardcoded absolute local paths (/Users/jon/projects/crosswake/guides/*.md) — broken on HexDocs — surfaced only when CI ran on a different machine → rewritten to basename relative links. Test hardened to flag absolute filesystem paths deterministically. Enforced by hex_page_test "README + guide link hygiene".
 
 ### 2. Docs sidebar grouping
 expected: groups_for_modules / groups_for_extras define the configured groups and reference real modules/files.

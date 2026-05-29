@@ -21,7 +21,7 @@ docs-only surfaces. Package class does not override route ownership.
 
 If you are deciding whether your app pressure is mostly LiveView, one explicit
 native route, or one honest offline island, read
-[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+[guides/adopter_profiles.md](adopter_profiles.md)
 for the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow profiles
 before drilling into the deeper shell, offline, or pack contracts.
 
@@ -65,8 +65,8 @@ What it does not do:
 - it does not turn unsupported routes into generic container fallback
 - it does not widen support beyond explicit, proof-backed surfaces
 
-Read [guides/native_shell.md](/Users/jon/projects/crosswake/guides/native_shell.md) for
-the shell contract and [guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md)
+Read [guides/native_shell.md](native_shell.md) for
+the shell contract and [guides/bridge.md](bridge.md)
 for the bounded bridge contract.
 
 ## Step 3: Verify Host And Manifest Truth
@@ -120,7 +120,7 @@ The matching proof lanes are:
 - generated-shell or companion verification lanes
 
 The generated support matrix remains authoritative:
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/support_matrix.md](support_matrix.md)
 
 ## Docs-Only Install Boundary
 

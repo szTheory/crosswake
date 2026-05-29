@@ -15,13 +15,13 @@ Think instead:
 That is the real shape of Crosswake today.
 
 If you want the profile matrix first, read
-[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md).
+[guides/adopter_profiles.md](adopter_profiles.md).
 If you want the boundary details after this guide clicks, keep
-[guides/bridge.md](/Users/jon/projects/crosswake/guides/bridge.md),
-[guides/packs.md](/Users/jon/projects/crosswake/guides/packs.md),
-[guides/offline.md](/Users/jon/projects/crosswake/guides/offline.md),
-[guides/commerce.md](/Users/jon/projects/crosswake/guides/commerce.md), and
-[guides/support_matrix.md](/Users/jon/projects/crosswake/guides/support_matrix.md)
+[guides/bridge.md](bridge.md),
+[guides/packs.md](packs.md),
+[guides/offline.md](offline.md),
+[guides/commerce.md](commerce.md), and
+[guides/support_matrix.md](support_matrix.md)
 nearby.
 
 ## Why Crosswake Exists

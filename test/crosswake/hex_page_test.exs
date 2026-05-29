@@ -81,7 +81,7 @@ defmodule Crosswake.HexPageTest do
       violations =
         for md <- markdown_files(),
             {target, rel, abs} <- relative_link_targets(md),
-            reason = link_violation(rel, abs),
+            reason = link_violation(target, rel, abs),
             reason != nil do
           "#{md}: [..](#{target}) — #{reason}"
         end
@@ -93,11 +93,23 @@ defmodule Crosswake.HexPageTest do
     end
   end
 
-  defp link_violation(rel, abs) do
+  defp link_violation(target, rel, abs) do
     cond do
-      not File.exists?(abs) -> "target does not exist on disk"
-      not shipped?(rel) -> "relative link to non-package path '#{rel}' (404s on HexDocs)"
-      true -> nil
+      # Absolute filesystem path (e.g. a leaked /Users/... local path). Never a
+      # valid HexDocs link, regardless of whether it happens to exist on the
+      # machine running the test — checked first so the result is deterministic
+      # across local and CI environments.
+      String.starts_with?(target, "/") ->
+        "absolute filesystem path '#{target}' (not a valid HexDocs link)"
+
+      not File.exists?(abs) ->
+        "target does not exist on disk"
+
+      not shipped?(rel) ->
+        "relative link to non-package path '#{rel}' (404s on HexDocs)"
+
+      true ->
+        nil
     end
   end
 

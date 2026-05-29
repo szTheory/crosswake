@@ -7,7 +7,7 @@ Crosswake Phase 4 proves one narrow offline story on purpose:
 
 If you need help deciding whether your app should stay cached read-only or move one
 route into a true offline island, start with
-[guides/adopter_profiles.md](/Users/jon/projects/crosswake/guides/adopter_profiles.md)
+[guides/adopter_profiles.md](adopter_profiles.md)
 and then return here for the exact offline contract.
 
 Everything else remains out of scope until later phases prove it explicitly.
