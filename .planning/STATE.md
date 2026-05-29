@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
-status: ready_to_plan
-last_updated: 2026-05-29T16:36:47.822Z
-last_activity: 2026-05-29 -- Phase 34 execution started
+status: planning
+last_updated: "2026-05-29T16:54:17.732Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
   completed_plans: 4
-  percent: 20
-stopped_at: Phase 34 complete (2/2) — ready to discuss Phase 35
+  percent: 40
 ---
 
 # Project State
@@ -86,6 +85,6 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 ## Session Continuity
 
-Last session: 2026-05-29T15:41:56.695Z
-Stopped at: Phase 34 context gathered
-Resume file: .planning/phases/34-mockstorefront-and-idempotency-invariants/34-CONTEXT.md
+Last session: 2026-05-29T16:54:17.728Z
+Stopped at: Phase 35 context gathered
+Resume file: .planning/phases/35-reconciliation-wiring-and-four-state-liveview/35-CONTEXT.md
