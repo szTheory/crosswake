@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.3
 milestone_name: Release Readiness
-status: executing
-stopped_at: Phase 30 complete — ready to execute Phase 31 (human-gated)
-last_updated: "2026-05-29T10:20:03.056Z"
-last_activity: 2026-05-29 -- Phase 30 complete (hex-page verification automated)
+status: milestone-complete
+stopped_at: "v3.3 Release Readiness COMPLETE — crosswake 0.1.0 live on hex.pm (all phases 26–32 done)"
+last_updated: "2026-05-29T12:21:04.967Z"
+last_activity: 2026-05-29 -- v3.3 complete; crosswake 0.1.0 published to hex.pm
 progress:
-  total_phases: 6
-  completed_phases: 5
+  total_phases: 7
+  completed_phases: 7
   total_plans: 11
-  completed_plans: 10
-  percent: 91
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 31 — First Hex Publish (human-gated): maintainer flips `default_workflow_permissions=write`, installs `HEX_API_KEY`, and merges the release-please Release PR to publish `crosswake 0.1.0`.
+**Current focus:** v3.3 Release Readiness is COMPLETE — `crosswake 0.1.0` is live on hex.pm and HexDocs. Next milestone to be defined (recommended: v3.4 Commerce Archetype Proof, ARCH-02).
 
 ## Current Position
 
-Phase: 31
-Plan: Not started
-Status: Ready to execute (human-gated — see Operator Next Steps)
-Last activity: 2026-05-29 -- Phase 30 complete; hex-page verification automated (PR #1 merged)
+Phase: v3.3 COMPLETE (Phases 26–32 all done)
+Plan: —
+Status: Milestone v3.3 shipped — `crosswake 0.1.0` published. Ready to define the next milestone (`/gsd-complete-milestone v3.3` to archive, then `/gsd-new-milestone`).
+Last activity: 2026-05-29 -- crosswake 0.1.0 published to hex.pm; post-publish cleanup done
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Last activity: 2026-05-29 -- Phase 30 complete; hex-page verification automated 
 | 24. Reconciliation Traceability Hardening | 3 | n/a | n/a |
 | 25. Tech-debt closure | 2 | n/a | n/a |
 | 30 | 2 | - | - |
+| 31 | 0 | - | - |
 
 **Recent Trend:**
 
@@ -64,6 +65,7 @@ Last activity: 2026-05-29 -- Phase 30 complete; hex-page verification automated 
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent milestone + v3.3 framing:
 
+- Phase 31/32: **crosswake 0.1.0 published to hex.pm** (2026-05-29). Switched release-please to `skip-changelog: true` + `changelog-sections` so the hand-curated CHANGELOG.md (curated/honest, no internal phase-scope jargon) is the single source of truth in the tarball — release-please still bumps/tags/releases/publishes. Fixed both publish gates (release-please.yml + hex-publish.yml) to `mix test --exclude requires_example_host` (example-host proofs need the example app built; gated separately by phase5-proof.yml). Removed the one-time `release-as: "0.1.0"` pin so future releases auto-version. Smoke-tested install from a fresh `mix new`.
 - Phase 30: Hex-page verification (HEX-01/02/03, PRF-01) automated to zero human steps — `test/crosswake/hex_page_test.exs` (link hygiene, docs grouping, package allowlist) + `hex-page-proof.yml` CI (full hermetic suite + `mix docs` smoke + `verify_hex_tarball.sh` + publish dry-run). The automation surfaced/fixed 3 real bugs (README `examples/` link, phantom `Crosswake.Bridge` docs group, 29 leaked `/Users/...` absolute paths in guides) and repaired two latent test-suite isolation races (parallel-compile `require_file`, global-cwd `File.cd`). Delivered via PR #1 (merged `5a5a277`).
 - Phase 30: `mix docs` zero-warnings clause of HEX-03 consciously deferred to v3.4 — the ~150 residual warnings are intentional `@moduledoc false` hidden-type warnings and do not block docs/publish.
 - Phase 26-04: Accepted ex_doc resolution to 0.40.3 which satisfies the ~> 0.38 constraint.
@@ -107,8 +109,8 @@ Recent milestone + v3.3 framing:
 
 ## Session Continuity
 
-Last session: 2026-05-29T10:20:03.056Z
-Stopped at: Phase 30 complete (hex-page verification automated, PR #1 merged); ready to execute Phase 31 (human-gated)
+Last session: 2026-05-29T12:21:04.967Z
+Stopped at: v3.3 COMPLETE — crosswake 0.1.0 live on hex.pm; Phases 31 (publish) and 32 (post-publish cleanup) done
 Resume file: None
 
 ## Operator Next Steps
@@ -116,5 +118,9 @@ Resume file: None
 - Phase 28 (release-please Configuration Files) complete — config, manifest, and `.tool-versions` committed.
 - Phase 29 (Release Workflows And Supply-Chain Hardening) complete — `release-please.yml`, `hex-publish.yml`, `dependabot.yml` shipped + committed; verified against all five ROADMAP success criteria (SC1–SC5 PASS).
 - Phase 30 (Hex Page Polish And Tarball Dry-Run) complete — verification fully automated (HEX-01/02/03, PRF-01); `hex-page-proof.yml` now runs on every PR; PR #1 merged (`5a5a277`), `main` CI green incl. the repaired `phase23-proof` gate.
-- **Next: Phase 31 (First Hex Publish — HUMAN-GATED).** This is a maintainer-only step, not an agent task. Required human actions: (1) flip GitHub `default_workflow_permissions=write` (REL-07), (2) generate `HEX_API_KEY` + `gh secret set HEX_API_KEY` (REL-08), (3) merge the release-please Release PR for `0.1.0` to trigger publish (PRF-02). All pre-publish gates (dry-run, tarball audit, render checks) already pass. Irreversibility: 24h republish window for the brand-new package.
-- Optional follow-up (v3.4): clean up ~150 intentional ExDoc `@moduledoc false` hidden-type warnings to satisfy HEX-03's zero-warnings clause and enable `mix docs --warnings-as-errors`.
+- Phase 30 (Hex Page Polish) complete — verification automated; `hex-page-proof.yml` runs on every PR.
+- **Phase 31 (First Hex Publish) COMPLETE** — REL-07 (`default_workflow_permissions=write`) and REL-08 (`HEX_API_KEY`) were already configured by the maintainer; merged release-please Release PR #7 → publish-hex green → **`crosswake 0.1.0` live on hex.pm** (PRF-02). GitHub Release `v0.1.0`; HexDocs HTTP 200.
+- **Phase 32 (Post-Publish Cleanup) COMPLETE** — removed `release-as` pin (PRF-04), added `{:crosswake, "~> 0.1"}` install snippet to `guides/install.md` (HEX-04), smoke-installed from a fresh `mix new` resolving 0.1.0 from hex.pm (PRF-03).
+- **v3.3 is fully shipped.** Next: optionally `/gsd-complete-milestone v3.3` to archive the milestone, then `/gsd-new-milestone` (recommended v3.4: Commerce Archetype Proof, ARCH-02).
+- Optional v3.4 cleanup: ~150 intentional ExDoc `@moduledoc false` hidden-type warnings (HEX-03 zero-warnings clause) to enable `mix docs --warnings-as-errors`.
+- Heads-up (cosmetic): the auto-generated **GitHub Release notes** for v0.1.0 still list internal phase-scoped commit lines (e.g. `feat(28-01)`); editable anytime on the Releases page. The hex.pm/tarball CHANGELOG is the clean curated one.

@@ -38,8 +38,8 @@
 - [ ] **REL-04** `.github/workflows/hex-publish.yml` exists as a `workflow_dispatch` manual-recovery backup — covers the case where the automated publish-hex job fails after tag creation but inside the 60-minute hex.pm revert window.
 - [ ] **REL-05** All GitHub Actions referenced in both workflows are pinned to a full commit SHA (NOT a tag) — including `googleapis/release-please-action`, `actions/checkout`, `erlef/setup-beam`, `actions/cache`. Prevents CVE-2025-30066-class supply-chain attacks (tj-actions/changed-files tag-move incident, March 2025).
 - [ ] **REL-06** `.github/dependabot.yml` exists with `package-ecosystem: "github-actions"` so SHA pins surface as PRs when upstream Actions ship updates — keeps the supply-chain hardening from becoming a maintenance burden.
-- [ ] **REL-07** The GitHub repo has `default_workflow_permissions` set to `"write"` — required for release-please to open Release PRs (silent failure if unset). Verified via `gh api repos/szTheory/crosswake/actions/permissions/workflow`.
-- [ ] **REL-08** A `HEX_API_KEY` secret is installed in the GitHub repo and wired into `release-please.yml` only via the `env:` block (NOT `with:`, to prevent log leakage). Key is generated at hex.pm dashboard and scoped to writes for the `crosswake` package only.
+- [x] **REL-07** The GitHub repo has `default_workflow_permissions` set to `"write"` — required for release-please to open Release PRs (silent failure if unset). Verified via `gh api repos/szTheory/crosswake/actions/permissions/workflow`. Validated in Phase 31 — `default_workflow_permissions: write`, `can_approve_pull_request_reviews: true`.
+- [x] **REL-08** A `HEX_API_KEY` secret is installed in the GitHub repo and wired into `release-please.yml` only via the `env:` block (NOT `with:`, to prevent log leakage). Key is generated at hex.pm dashboard and scoped to writes for the `crosswake` package only. Validated in Phase 31 — `HEX_API_KEY` secret present and consumed via `env:` in publish-hex.
 - [ ] **REL-09** `.tool-versions` exists at repo root pinning Elixir and Erlang/OTP versions — ensures reproducible builds across local development, CI, and release-please workflows.
 
 ### E. Hex Page Polish
@@ -47,14 +47,14 @@
 - [x] **HEX-01** `README.md` uses absolute URLs only — no relative links to `examples/phoenix_host/README.md`, `guides/`, etc. that would become dead links on the hex.pm package page (which does not ship those paths in the tarball). Validated in Phase 30 — fixed README + 29 guide absolute-path links; now enforced on every PR by `test/crosswake/hex_page_test.exs` link-hygiene.
 - [x] **HEX-02** `mix hex.build --unpack` is run pre-publish and the resulting tarball contents are inspected against the `:files` allowlist — confirms no `.planning/`, `prompts/`, `test/`, or `.github/` leaked into the published package. Validated in Phase 30 — `script/verify_hex_tarball.sh`, wired into `hex-page-proof.yml` CI.
 - [x] **HEX-03** `mix docs` runs clean locally with zero warnings and produces a hexdocs structure where `README.md` is the main page and `guides/` extras render correctly. Validated in Phase 30 — docs build clean (exit 0), README is main, grouped guides render; module/extras grouping enforced by `hex_page_test.exs`. Caveat: ~150 residual ExDoc "hidden module" warnings from intentional `@moduledoc false` internals are accepted for publish (they do not block `mix docs`/`hex.publish`); warning-free docs deferred to v3.4 (see Deferred Items).
-- [ ] **HEX-04** `guides/install.md` is updated with the canonical `{:crosswake, "~> 0.1"}` install snippet so adopters discovering Crosswake via hex.pm get a correct copy-paste install line. (Updated post-publish; pre-publish version may use placeholder.)
+- [x] **HEX-04** `guides/install.md` is updated with the canonical `{:crosswake, "~> 0.1"}` install snippet so adopters discovering Crosswake via hex.pm get a correct copy-paste install line. Validated in Phase 32 — "Add Crosswake To Your Dependencies" section added with the `{:crosswake, "~> 0.1"}` deps snippet.
 
 ### F. Proof
 
 - [x] **PRF-01** `mix hex.publish --dry-run` is run and passes — gates the first publish by verifying metadata, license, files allowlist, and version against hex.pm's preflight checks. Validated in Phase 30 — dry-run passes (exit 0); runs on every PR via `hex-page-proof.yml`.
-- [ ] **PRF-02** The first hex publish succeeds — release-please opens a Release PR for `0.1.0`, the maintainer merges it, the publish-hex job runs, and `https://hex.pm/packages/crosswake/0.1.0` is live.
-- [ ] **PRF-03** Post-publish smoke install — a fresh `mix new` project can add `{:crosswake, "~> 0.1"}` to its deps, run `mix deps.get`, and resolve crosswake from hex.pm successfully.
-- [ ] **PRF-04** The one-time `release-as: "0.1.0"` pin is removed from `release-please-config.json` after the first publish is confirmed — allows release-please to handle future version bumps automatically.
+- [x] **PRF-02** The first hex publish succeeds — release-please opens a Release PR for `0.1.0`, the maintainer merges it, the publish-hex job runs, and `https://hex.pm/packages/crosswake/0.1.0` is live. Validated in Phase 31 — PR #7 merged, publish-hex green, `crosswake 0.1.0` live (has_docs: true); GitHub Release `v0.1.0`; hexdocs HTTP 200.
+- [x] **PRF-03** Post-publish smoke install — a fresh `mix new` project can add `{:crosswake, "~> 0.1"}` to its deps, run `mix deps.get`, and resolve crosswake from hex.pm successfully. Validated in Phase 32 — fresh `mix new` + `{:crosswake, "~> 0.1"}` + `mix deps.get` resolved and fetched `crosswake 0.1.0` from hex.pm.
+- [x] **PRF-04** The one-time `release-as: "0.1.0"` pin is removed from `release-please-config.json` after the first publish is confirmed — allows release-please to handle future version bumps automatically. Validated in Phase 32 — pin removed; manifest baselined at 0.1.0 so future feat/fix commits auto-bump.
 
 ---
 
@@ -111,12 +111,12 @@ Every v3.3 requirement is mapped to exactly one phase. Coverage: 28/28.
 | HEX-02 | Phase 30: Hex Page Polish + Tarball Dry-Run | Complete |
 | HEX-03 | Phase 30: Hex Page Polish + Tarball Dry-Run | Complete (warnings deferred to v3.4) |
 | PRF-01 | Phase 30: Hex Page Polish + Tarball Dry-Run | Complete |
-| REL-07 | Phase 31: First Hex Publish (Human-Gated) | Pending |
-| REL-08 | Phase 31: First Hex Publish (Human-Gated) | Pending |
-| PRF-02 | Phase 31: First Hex Publish (Human-Gated) | Pending |
-| PRF-03 | Phase 32: Post-Publish Cleanup | Pending |
-| PRF-04 | Phase 32: Post-Publish Cleanup | Pending |
-| HEX-04 | Phase 32: Post-Publish Cleanup | Pending |
+| REL-07 | Phase 31: First Hex Publish (Human-Gated) | Complete |
+| REL-08 | Phase 31: First Hex Publish (Human-Gated) | Complete |
+| PRF-02 | Phase 31: First Hex Publish (Human-Gated) | Complete |
+| PRF-03 | Phase 32: Post-Publish Cleanup | Complete |
+| PRF-04 | Phase 32: Post-Publish Cleanup | Complete |
+| HEX-04 | Phase 32: Post-Publish Cleanup | Complete |
 
 ---
 

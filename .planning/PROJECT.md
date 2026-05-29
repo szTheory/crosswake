@@ -157,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — after Phase 30 (Hex Page Polish); verification automated, 5 of 6 v3.3 phases complete*
+*Last updated: 2026-05-29 — v3.3 Release Readiness SHIPPED: crosswake 0.1.0 live on hex.pm + HexDocs (Phases 26–32 complete)*

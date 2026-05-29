@@ -31,8 +31,8 @@
 - [x] **Phase 28: release-please Configuration Files** — Add `release-please-config.json` (oarlock pattern, `release-as: "0.1.0"` pin, `bootstrap-sha`), `.release-please-manifest.json` baselined at `0.0.0`, `.tool-versions` for reproducible builds. (completed 2026-05-28)
 - [x] **Phase 29: Release Workflows And Supply-Chain Hardening** — Add `release-please.yml` (oarlock template, NOT sigra), `hex-publish.yml` recovery workflow, SHA-pin all GitHub Actions, add `dependabot.yml` for Actions ecosystem. (completed 2026-05-28)
 - [x] **Phase 30: Hex Page Polish And Tarball Dry-Run** — Audit `README.md` for absolute URLs, run `mix hex.build --unpack` + `mix docs` + `mix hex.publish --dry-run` clean, with no `.planning/`/`prompts/`/`test/` leakage. (completed 2026-05-29)
-- [ ] **Phase 31: First Hex Publish (Human-Gated)** — Maintainer flips `default_workflow_permissions=write`, installs `HEX_API_KEY` secret, merges release-please's Release PR; `https://hex.pm/packages/crosswake/0.1.0` goes live.
-- [ ] **Phase 32: Post-Publish Cleanup** — Remove one-time `release-as` pin, run smoke install from fresh `mix new`, update `guides/install.md` with canonical `{:crosswake, "~> 0.1"}` snippet.
+- [x] **Phase 31: First Hex Publish (Human-Gated)** — Maintainer flips `default_workflow_permissions=write`, installs `HEX_API_KEY` secret, merges release-please's Release PR; `https://hex.pm/packages/crosswake/0.1.0` goes live. (completed 2026-05-29)
+- [x] **Phase 32: Post-Publish Cleanup** — Remove one-time `release-as` pin, run smoke install from fresh `mix new`, update `guides/install.md` with canonical `{:crosswake, "~> 0.1"}` snippet. (completed 2026-05-29)
 
 ### 📋 Next Milestone (Planning)
 
@@ -177,8 +177,8 @@ To be defined after v3.3 ships. Recommended next per `MILESTONE-ARC.md` and post
 | 28. release-please Configuration Files   | v3.3 | 1/1 | Complete   | 2026-05-28 |
 | 29. Release Workflows + Supply Chain     | v3.3 | 1/1 | Complete    | 2026-05-28 |
 | 30. Hex Page Polish + Tarball Dry-Run    | v3.3 | 2/2 | Complete    | 2026-05-29 |
-| 31. First Hex Publish (Human-Gated)      | v3.3 | 1/1 | Planned     | —         |
-| 32. Post-Publish Cleanup                 | v3.3 | 0/0 | Not started | —         |
+| 31. First Hex Publish (Human-Gated)      | v3.3 | 0/1 | Complete    | 2026-05-29 |
+| 32. Post-Publish Cleanup                 | v3.3 | n/a | Complete    | 2026-05-29 |
 
 ## Architecture Notes
 
