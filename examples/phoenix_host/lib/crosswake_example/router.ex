@@ -26,8 +26,6 @@ defmodule CrosswakeExample.Router do
   import Phoenix.LiveView.Router, only: [live_session: 3]
   import Crosswake.Router
   @compile {:no_warn_undefined, CrosswakeExample.Crosswake.Policy}
-  @compile {:no_warn_undefined, CrosswakeExample.PaywallEntryLive}
-  @compile {:no_warn_undefined, CrosswakeExample.CorridorController}
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
   _ = @crosswake_policy_module
   # crosswake:install:end
