@@ -10,7 +10,11 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
-**v3.4 progress:** Phase 34 (MockStorefront And Idempotency Invariants) complete — `CrosswakeExample.Commerce.MockStorefront` is a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) that derives stable provider identity from `entry_id`/a canonical `@subscription_entry_id` constant, never from transient `correlation_id`. A hermetic, untagged merge-blocking proof drives `ReconciliationInbox.ingest_evidence/2` to demonstrate the replay invariant (same identity / different correlation_id → `replay?: true`), restore-shares-subject-key, and a provider-vocabulary fence (no `storekit`/`play_billing`/`play billing`/`revenuecat` tokens). No `lib/crosswake/` or existing example-host module changes. MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated.
+**v3.4 progress:** Phase 36 (Hermetic Proof Lane) complete — `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` is the single merge-blocking, fully hermetic ExUnit proof of the mock paywall corridor. It drives the full lane (inline `ReconciliationEvidence` → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`), asserts all four derived states distinctly, the `:pending` → `:granted` transition routed through the shipped `MockBackend.build_verified_snapshot/2`, and the mock-boundary fence (three real truths anchored on `authority_mutation_allowed_from_evidence?/1 == false`), plus a self-scan hermeticity guard — no network, no process start, no example-host runtime dependency. Auto-discovered by the existing `phase34-proof.yml` hermetic job; 14 file-local tests / 308 hermetic-lane tests green under `--exclude requires_example_host --warnings-as-errors`. One new test file, no shipped-code changes. PROOF-01, PROOF-03 validated.
+
+Phase 35 (Reconciliation Wiring And Four-State LiveView) complete — wired the example-host reconciliation inbox/projection into a four-state paywall LiveView sharing one synchronous verify→project→derive core with the proof. WIRE-01, WIRE-02, STATE-01, PWAL-02 validated.
+
+Phase 34 (MockStorefront And Idempotency Invariants) complete — `CrosswakeExample.Commerce.MockStorefront` is a pure-Elixir, provider-neutral evidence emitter (`simulate_purchase/2`, `simulate_restore/2`) that derives stable provider identity from `entry_id`/a canonical `@subscription_entry_id` constant, never from transient `correlation_id`. A hermetic, untagged merge-blocking proof drives `ReconciliationInbox.ingest_evidence/2` to demonstrate the replay invariant (same identity / different correlation_id → `replay?: true`), restore-shares-subject-key, and a provider-vocabulary fence (no `storekit`/`play_billing`/`play billing`/`revenuecat` tokens). No `lib/crosswake/` or existing example-host module changes. MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated.
 
 Phase 33 (Corridor Routes And CI Infrastructure) complete — the `examples/phoenix_host` router declares the three `:subscription_default` corridor routes (paywall_entry `live`, purchase/restore `post`) with canonical `crosswake: [..., commerce: [...]]` DSL, and `.github/workflows/phase34-proof.yml` establishes the hermetic-merge-blocking / advisory two-job CI split now gating the milestone. PWAL-01 and PROOF-02 validated.
 
@@ -82,6 +86,8 @@ Strategic-arc candidates after the commerce archetype proof, per `MILESTONE-ARC.
 - [x] **MOCK-02** Adopter can see `MockStorefront` consume a `RestoreIntent` and return restore evidence (`event_kind: "restore"`). Validated in v3.4 (Phase 34).
 - [x] **MOCK-03** `MockStorefront` is shaped and documented as a drop-in swap target that makes explicit which functions a real provider adapter would replace. Validated in v3.4 (Phase 34).
 - [x] **WIRE-03** Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission). Validated in v3.4 (Phase 34).
+- [x] **PROOF-01** A merge-blocking hermetic ExUnit proof drives the full lane (mock purchase → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`) with no network or native SDK, asserting all four states and the `:pending` → `:granted` transition. Validated in v3.4 (Phase 36).
+- [x] **PROOF-03** The proof asserts that mock evidence routed through `ingest_evidence/2` can never grant entitlement authority directly — the mock-boundary fence, anchored on `authority_mutation_allowed_from_evidence?/1` returning `false`. Validated in v3.4 (Phase 36).
 
 ### Active
 
@@ -164,4 +170,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — Phase 34 complete (MockStorefront pure-Elixir evidence emitter + hermetic replay-invariant & vocabulary-fence proof); MOCK-01, MOCK-02, MOCK-03, WIRE-03 validated. Next: Phase 35 (Reconciliation Wiring And Four-State LiveView)*
+*Last updated: 2026-05-29 — Phase 36 complete (single merge-blocking hermetic proof of the mock paywall corridor: four `derived_state/1` states, `:pending`→`:granted` transition, mock-boundary fence, self-scan guard; 308 hermetic-lane tests green); PROOF-01, PROOF-03 validated. Next: Phase 37 (Guides Walkthrough And Docs-Contract Lock)*
