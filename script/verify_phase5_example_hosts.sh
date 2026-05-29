@@ -13,7 +13,8 @@ mix test \
   test/crosswake/proof/adopter_profile_contract_test.exs \
   test/crosswake/proof/phase7_saas_lane_test.exs \
   test/crosswake/proof/phase8_selective_native_lane_test.exs \
-  test/crosswake/proof/phase9_local_first_lane_test.exs
+  test/crosswake/proof/phase9_local_first_lane_test.exs \
+  test/crosswake/proof/phase35_paywall_live_test.exs
 
 if [[ "${CROSSWAKE_PHASE5_NATIVE_PROOFS:-1}" != "1" ]]; then
   exit 0
