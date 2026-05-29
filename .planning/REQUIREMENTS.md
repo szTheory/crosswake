@@ -40,8 +40,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Adopter Docs
 
-- [ ] **DOCS-01**: `guides/commerce.md` gains an end-to-end mock-corridor walkthrough section that anchors each step to a named example-host module and function
-- [ ] **DOCS-02**: A docs-contract test locks the walkthrough's module/function references against the example host without weakening the existing phase23 three-layer guide-structure assertions
+- [x] **DOCS-01**: `guides/commerce.md` gains an end-to-end mock-corridor walkthrough section that anchors each step to a named example-host module and function
+- [x] **DOCS-02**: A docs-contract test locks the walkthrough's module/function references against the example host without weakening the existing phase23 three-layer guide-structure assertions
 
 ## v2 Requirements
 
@@ -86,8 +86,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | PROOF-01 | Phase 36 | Complete |
 | PROOF-02 | Phase 33 | Complete |
 | PROOF-03 | Phase 36 | Complete |
-| DOCS-01 | Phase 37 | Pending |
-| DOCS-02 | Phase 37 | Pending |
+| DOCS-01 | Phase 37 | Complete |
+| DOCS-02 | Phase 37 | Complete |
 
 **Coverage:**
 - v1 requirements: 14 total

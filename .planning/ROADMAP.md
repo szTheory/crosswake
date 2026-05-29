@@ -157,4 +157,4 @@ Plans:
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
 | 35. Reconciliation Wiring And Four-State LiveView | 2/2 | Complete   | 2026-05-29 |
 | 36. Hermetic Proof Lane | 1/1 | Complete    | 2026-05-29 |
-| 37. Guides Walkthrough And Docs-Contract Lock | 1/1 | Complete   | 2026-05-29 |
+| 37. Guides Walkthrough And Docs-Contract Lock | 1/1 | Complete    | 2026-05-29 |
