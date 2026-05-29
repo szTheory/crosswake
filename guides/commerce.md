@@ -114,6 +114,26 @@ Ingestion outcomes are non-authoritative by contract: they can move reconciliati
 
 This reconciliation walkthrough is `example/docs-only` and companion-ready. It is guidance for host implementations, not a required persistence schema, queue layout, or job framework contract.
 
+### Paywall Corridor Walkthrough
+
+This walkthrough uses `provider: "mock"`. The example host ships a pure mock storefront with no native provider SDK dependency — no storefront adapter code is shipped in this example corridor. See `## Rough Edges And Non-Claims` for the explicit non-claims, including which adapters are not shipped.
+
+The following six steps trace the paywall corridor end-to-end through the example host code. Each step names the relevant module and function with its relative file path. No code is copied here — consult the linked source files directly.
+
+**Step 1: Route declaration.** The example Phoenix router declares the paywall corridor using `commerce: [corridor: :subscription_default, role: :paywall_entry]`, anchoring the route's commerce posture to the canonical corridor vocabulary. Source: `examples/phoenix_host/lib/crosswake_example/router.ex`.
+
+**Step 2: Mock storefront — purchase and restore.** `CrosswakeExample.Commerce.MockStorefront.simulate_purchase/2` emits a `ReconciliationEvidence` struct with canonical fields `provider_reference` and `evidence_ref` derived purely from the entry's identity (never from transient correlation IDs). `CrosswakeExample.Commerce.MockStorefront.simulate_restore/2` emits the same field contract for restore evidence. Source: `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex`.
+
+**Step 3: Evidence ingestion.** `CrosswakeExample.Commerce.ReconciliationInbox.ingest_evidence/2` persists the `ReconciliationEvidence` as an append-only event and advances reconciliation state. Ingestion outcomes are non-authoritative — they move reconciliation work forward but do not directly grant access. Source: `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex`.
+
+**Step 4: Snapshot projection.** `CrosswakeExample.Commerce.EntitlementProjection.project_snapshot/2` merges incoming evidence against the current snapshot, enforcing monotonic `as_of` ordering. For the `:granted` path in the example, `CrosswakeExample.Commerce.MockBackend.build_verified_snapshot/2` constructs a verified snapshot that feeds the projection (source: `examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex`). Source: `examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex`.
+
+**Step 5: Derived state.** `CrosswakeExample.Commerce.EntitlementProjection.derived_state/1` maps the projected snapshot to one of four terminal states: `:stale | :pending | :denied | :granted`. These map directly to the Deterministic Projection Precedence table above.
+
+**Step 6: LiveView rendering.** `CrosswakeExample.PaywallEntryLive` renders the paywall surface and branches on the four derived states returned by `derived_state/1`. Source: `examples/phoenix_host/lib/crosswake_example/paywall_entry_live.ex`.
+
+The full lane runs end-to-end in the hermetic, merge-blocking proof `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs`. The `.github/workflows/phase34-proof.yml` hermetic CI job runs this proof in the merge-blocking lane.
+
 ### Backend Idempotency
 
 Idempotency belongs on the backend. Attempt keys should use provider-aware identity such as provider, original transaction id or purchase token, event id, and event kind. Transient device correlation ids are useful evidence but do not define idempotency keys. Duplicate webhook retries or replacement tokens must be safely handled by your host-owned workers.
