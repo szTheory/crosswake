@@ -25,13 +25,25 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 </details>
 
-## Next Milestone
+## Current Milestone: v3.5 First-Party Companions
 
-No active milestone — v3.4 shipped on 2026-05-29. Start the next milestone with `/gsd-new-milestone` (requirements will be scoped fresh).
+**Goal:** Lock a reusable Phoenix-native companion-seam pattern, prove it generalizes across two real companions (rulestead gating + rindle media), and ship the auth-context contract that unblocks the rest — all in-tree, all fail-closed, all proven by the established hermetic+advisory + docs-contract template.
 
-Strategic-arc candidates, per `MILESTONE-ARC.md`:
+**Scope:** Wedge + first generalization. Builds explicit integration *seams* to existing szTheory libraries — not features from scratch.
 
-- **First-party companions (v3.5)** — start with Rulestead; establishes the companion-seam pattern (rollout safety, kill switches, capability gating) that unblocks sigra, rindle, chimeway, threadline. See `.planning/threads/companion-seam-pattern.md`.
+**Target features:**
+- **`Crosswake.Companion` behaviour** generalized from the commerce seam (behaviour + typed contracts + optional-dep `validate_dependency/0` fail-closed handling + `[:crosswake, :companion, …]` telemetry); companions live in-tree under `lib/crosswake/companions/<name>/` for v3.5 (separate-package extraction deferred).
+- **Rulestead gating seam (full):** route-policy `gated_by` DSL + build-time manifest binding / runtime local-snapshot value split; `:gate_denied`/`:kill_switch_active` fail-closed denials injected into `RouteGate` (kill switches short-circuit first); OpenFeature-shaped explainability; doctor category + runtime gate-state support-matrix truth (`gated`/`rolling_out`/`killed`).
+- **Rindle media seam (full):** `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts + a backend-owned non-authoritative reconciliation vocabulary mirroring commerce (device evidence → backend verify → `:available`); pure-Elixir mock swap-target; the generalization proof that the pattern isn't flag-specific.
+- **Sigra auth contract-only slice:** `AuthContext` + `SessionAuthorityLane` (backend-set only) + route auth predicates (`auth_min_level`/`requires_recent_auth` → fail-closed `:step_up_required`). Contract + route gate only; handoff/step-up/passkey machinery deferred to v3.6.
+- **Proof & docs:** hermetic merge-blocking lanes that compile *without* the optional dep and assert fail-closed + advisory lanes with it present; `guides/companions.md` locked by docs-contract tests.
+
+Research synthesis: `.planning/research/v3.5-companions-SUMMARY.md`. Strategic source of truth: `.planning/MILESTONE-ARC.md` (v3.5).
+
+**Deferred to v3.6+ (sequenced, not built in v3.5):** chimeway seam (token + deep-link-to-route resolver, *not* first-party delivery), full sigra machinery (handoff/step-up/passkey), threadline audit capstone. Cross-dependency DAG: sigra-contract unblocks all → rindle leads → chimeway needs sigra → threadline needs all three.
+
+Other strategic-arc candidates, per `MILESTONE-ARC.md`:
+
 - **Operator truth and diagnostics expansion (v3.6)** — richer route/capability inspection, doctor checks, support matrices, and advisory device lanes for the widened surface.
 - **Provider adapters (ADPT-01/02/03)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input and can graduate the v3.4 advisory `purchase_intent`/`restore_intent` proof lane to merge-blocking via the 4-condition `promotion_path` in `phase23-proof.yml`.
 - **Archetype proof lanes (v3.7)** — re-run adopter-shaped pressure (subscription/paywall, notification-driven companion workflows, richer media/scanning) against the new surfaces.
@@ -77,7 +89,7 @@ Strategic-arc candidates, per `MILESTONE-ARC.md`:
 
 ### Active
 
-_No active milestone. v3.4 Commerce Archetype Proof shipped 2026-05-29; start the next milestone with `/gsd-new-milestone` (requirements scoped fresh per milestone). Prior per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`._
+**v3.5 First-Party Companions** — scoped requirements in `.planning/REQUIREMENTS.md` across five categories: **COMP** (companion seam contract + optional-dep + in-tree convention), **GATE** (rulestead gating, kill switches, fail-closed denial, explainability, gate-state truth), **MEDIA** (rindle upload-grant/reconciliation seam), **AUTH** (sigra contract + route auth predicates), **PROOF/DOCS** (hermetic+advisory lanes, docs-contract parity, companions guide). Prior per-milestone requirements are archived under `.planning/milestones/v*-REQUIREMENTS.md`.
 
 ### Out of Scope
 
@@ -157,4 +169,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 after v3.4 Commerce Archetype Proof milestone — archived to `.planning/milestones/v3.4-*`; ROADMAP collapsed, REQUIREMENTS rotated for the next milestone.*
+*Last updated: 2026-05-29 — started milestone v3.5 First-Party Companions (Scope B: wedge + first generalization; in-tree first). Requirements scoped in REQUIREMENTS.md; research in `.planning/research/v3.5-companions-SUMMARY.md`.*

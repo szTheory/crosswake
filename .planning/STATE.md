@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.4
-milestone_name: Commerce Archetype Proof
-status: milestone_complete
-last_updated: 2026-05-29T21:10:00.000Z
-last_activity: 2026-05-29 -- v3.4 milestone closed and archived
+milestone: v3.5
+milestone_name: First-Party Companions
+status: planning
+last_updated: "2026-05-29T21:46:51.313Z"
+last_activity: 2026-05-29
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
-stopped_at: Milestone v3.4 complete and archived; awaiting next milestone
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 
 ## Current Position
 
-Phase: — (between milestones)
+Phase: Not started (defining requirements)
 Plan: —
-Status: v3.4 shipped and archived
-Last activity: 2026-05-29
-
-Progress: [██████████] 100% (v3.4 complete)
+Status: Defining requirements
+Last activity: 2026-05-29 — Milestone v3.5 started
 
 ## Performance Metrics
 
