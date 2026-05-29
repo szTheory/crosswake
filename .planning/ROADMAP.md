@@ -141,7 +141,11 @@ Plans:
   4. The docs-contract test confirms the existing phase23 three-layer guide-structure assertions still pass after the new walkthrough section is added
   5. The docs-contract test asserts all four non-claims (`StoreKit`, `Play Billing`, `Device-local authority`, `Offline purchase replay`) remain present in `guides/commerce.md` after the walkthrough update
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+**Wave 1**
+
+- [ ] 37-01-PLAN.md — Insert Paywall Corridor Walkthrough H3 into guides/commerce.md (anchor-only, mock-vs-real callout, six steps, proof citation) + append hybrid docs-contract assertions (string-presence + six function_exported?/3 live guards, async: false) to commerce_test.exs
 
 ## Progress
 
@@ -153,4 +157,4 @@ Plans:
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
 | 35. Reconciliation Wiring And Four-State LiveView | 2/2 | Complete   | 2026-05-29 |
 | 36. Hermetic Proof Lane | 1/1 | Complete    | 2026-05-29 |
-| 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
+| 37. Guides Walkthrough And Docs-Contract Lock | 0/1 | Not started | - |
