@@ -14,7 +14,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 ### Paywall Corridor
 
 - [x] **PWAL-01**: Adopter can copy a `paywall_entry` route declaring `commerce: [corridor: :subscription_default, role: :paywall_entry]` from `examples/phoenix_host`
-- [ ] **PWAL-02**: Adopter can see a `PaywallLive` LiveView render a single subscription `PaywallEntry` (pricing display + "Subscribe" action) with zero provider-SDK code
+- [x] **PWAL-02**: Adopter can see a `PaywallLive` LiveView render a single subscription `PaywallEntry` (pricing display + "Subscribe" action) with zero provider-SDK code
 
 ### Mock Storefront
 
@@ -24,19 +24,19 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Reconciliation Wiring
 
-- [ ] **WIRE-01**: Adopter can see the example submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult`
-- [ ] **WIRE-02**: Adopter can see `EntitlementProjection.project_snapshot/2` produce the authoritative entitlement snapshot after successful ingestion
+- [x] **WIRE-01**: Adopter can see the example submit mock `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` and handle the returned `EvidenceResult`
+- [x] **WIRE-02**: Adopter can see `EntitlementProjection.project_snapshot/2` produce the authoritative entitlement snapshot after successful ingestion
 - [x] **WIRE-03**: Adopter can observe provider-aware idempotency-key construction (via `ReconciliationKeys`, not transient `correlation_id`) and replay detection (`replay?: true` on duplicate evidence submission)
 
 ### Entitlement State Reflection
 
-- [ ] **STATE-01**: `PaywallLive` reflects entitlement access via `EntitlementProjection.derived_state/1`, surfacing `:granted`, `:pending`, `:denied`, and `:stale` as four distinct UI states (stale is never conflated with denied), without exposing raw `EntitlementSnapshot` lane fields
+- [x] **STATE-01**: `PaywallLive` reflects entitlement access via `EntitlementProjection.derived_state/1`, surfacing `:granted`, `:pending`, `:denied`, and `:stale` as four distinct UI states (stale is never conflated with denied), without exposing raw `EntitlementSnapshot` lane fields
 
 ### Proof Lane
 
-- [ ] **PROOF-01**: A merge-blocking hermetic ExUnit proof drives the full lane (mock purchase → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`) with no network or native SDK, asserting all four states and the `:pending` → `:granted` transition
+- [x] **PROOF-01**: A merge-blocking hermetic ExUnit proof drives the full lane (mock purchase → `ingest_evidence/2` → `project_snapshot/2` → `derived_state/1`) with no network or native SDK, asserting all four states and the `:pending` → `:granted` transition
 - [x] **PROOF-02**: A `phase34-proof.yml` two-job CI split keeps the hermetic lane merge-blocking (`--exclude requires_example_host` honored) while any provider/storefront/device checks stay advisory-only, with the documented 4-condition `promotion_path` (mirroring `phase23-proof.yml`)
-- [ ] **PROOF-03**: The proof asserts that mock evidence routed through `ingest_evidence/2` can never grant entitlement authority directly — the mock-boundary fence, anchored on `authority_mutation_allowed_from_evidence?/1` returning `false`
+- [x] **PROOF-03**: The proof asserts that mock evidence routed through `ingest_evidence/2` can never grant entitlement authority directly — the mock-boundary fence, anchored on `authority_mutation_allowed_from_evidence?/1` returning `false`
 
 ### Adopter Docs
 
@@ -75,17 +75,17 @@ Which phases cover which requirements. Populated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PWAL-01 | Phase 33 | Complete |
-| PWAL-02 | Phase 35 | Pending |
+| PWAL-02 | Phase 35 | Complete |
 | MOCK-01 | Phase 34 | Complete |
 | MOCK-02 | Phase 34 | Complete |
 | MOCK-03 | Phase 34 | Complete |
-| WIRE-01 | Phase 35 | Pending |
-| WIRE-02 | Phase 35 | Pending |
+| WIRE-01 | Phase 35 | Complete |
+| WIRE-02 | Phase 35 | Complete |
 | WIRE-03 | Phase 34 | Complete |
-| STATE-01 | Phase 35 | Pending |
-| PROOF-01 | Phase 36 | Pending |
+| STATE-01 | Phase 35 | Complete |
+| PROOF-01 | Phase 36 | Complete |
 | PROOF-02 | Phase 33 | Complete |
-| PROOF-03 | Phase 36 | Pending |
+| PROOF-03 | Phase 36 | Complete |
 | DOCS-01 | Phase 37 | Pending |
 | DOCS-02 | Phase 37 | Pending |
 
