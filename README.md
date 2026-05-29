@@ -42,7 +42,7 @@ Start with:
 - [guides/adopter_profiles.md](guides/adopter_profiles.md) for the three target app shapes
 - [guides/install.md](guides/install.md) for the public install and proof path
 - [guides/support_matrix.md](guides/support_matrix.md) for the current supported baseline
-- [examples/phoenix_host/README.md](examples/phoenix_host/README.md) for the shared exemplar host contract
+- [examples/phoenix_host/README.md](https://github.com/szTheory/crosswake/blob/main/examples/phoenix_host/README.md) for the shared exemplar host contract
 
 ### Integrating Crosswake
 
@@ -69,7 +69,7 @@ Your Phoenix host and generated shells are **host-owned** after generation.
 
 Read:
 
-- [AGENTS.md](AGENTS.md)
+- [AGENTS.md](https://github.com/szTheory/crosswake/blob/main/AGENTS.md)
 - [guides/install.md](guides/install.md)
 - [guides/native_shell.md](guides/native_shell.md)
 - [guides/packs.md](guides/packs.md)

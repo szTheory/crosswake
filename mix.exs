@@ -77,7 +77,7 @@ defmodule Crosswake.MixProject do
       ],
       groups_for_modules: [
         Policy: [Crosswake.Policy, Crosswake.Router],
-        Bridge: [Crosswake.Bridge],
+        Bridge: ~r/Crosswake\.Bridge(\.|$)/,
         Manifest: [Crosswake.Manifest],
         Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/
       ],

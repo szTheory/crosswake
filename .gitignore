@@ -5,6 +5,14 @@
 *.beam
 .DS_Store
 
+# Generated docs (mix docs)
+/doc/
+
+# Hex build artifacts (mix hex.build / verify_hex_tarball.sh)
+/crosswake-*/
+/*.tar
+erl_crash.dump
+
 # Sub-projects
 /**/_build/
 /**/deps/

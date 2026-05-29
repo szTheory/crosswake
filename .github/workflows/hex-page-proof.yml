@@ -1,0 +1,77 @@
+name: Hex Page Proof
+
+# Merge-blocking, hermetic proof lane for the published hex.pm package surface
+# (the "hex page polish" deliverables). Runs on every PR and push to main so
+# regressions in package metadata, docs grouping, README/guide links, or tarball
+# contents are caught BEFORE a release — not at publish time.
+#
+# This lane also runs the full library test suite on PRs. Until this workflow
+# existed, the complete `mix test` suite only ran at release time (the
+# release-please publish-hex job, gated on a release being cut); the other
+# proof lanes run only hand-picked test files. This closes that gap.
+#
+# Every step here is hermetic: no network, no provider SDK, no simulator, no
+# device. `mix hex.publish --dry-run` builds and validates the package locally
+# without authenticating or uploading.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  hex-page-proof:
+    name: hex page proof (hermetic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run full library test suite
+        # Includes test/crosswake/hex_page_test.exs, the hermetic verification of
+        # the Phase 30 hex-page deliverables (README/guide link hygiene, docs
+        # sidebar grouping config, and the package :files allowlist).
+        env:
+          MIX_ENV: test
+        run: mix test
+
+      - name: Build docs (smoke)
+        # Asserts `mix docs` builds and produces HTML. NOT run with
+        # --warnings-as-errors: the project intentionally carries ExDoc "hidden
+        # module" warnings from public @type definitions that reference
+        # @moduledoc false internals. We verify the build succeeds and emits an
+        # index, not that it is warning-free.
+        run: |
+          mix docs
+          test -f doc/index.html
+
+      - name: Verify hex tarball contents
+        # Builds and unpacks the hex tarball, asserting expected files are present
+        # and banned internal paths (.planning, examples, test, script, ...) are
+        # excluded.
+        run: bash script/verify_hex_tarball.sh
+
+      - name: Hex publish dry-run
+        # Validates package metadata, license, and preflight checks without
+        # publishing. HEX_API_KEY is provided for parity with the release
+        # workflows; the dry run does not require it (and it is empty on
+        # fork-originated PRs, which is fine).
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --dry-run --yes
