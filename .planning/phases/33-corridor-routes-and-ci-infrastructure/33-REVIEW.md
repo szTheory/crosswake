@@ -22,6 +22,15 @@ status: issues_found
 **Files Reviewed:** 3
 **Status:** issues_found
 
+> **Remediation (2026-05-29):** **CR-01 RESOLVED** — the corridor proof test was
+> rewritten to be hermetic (in-line `Crosswake.Router` fixture, mirroring
+> `Phase23CommerceSupportProofTest`), dropping the `:requires_example_host` tag.
+> It now runs untagged inside the merge-blocking `phase34-proof.yml` lane
+> (verified: hermetic suite 271→274 tests, 31→29 excluded). WR-02 (commerce POST
+> routes through `:browser`/CSRF) is deferred to Phase 35 when route handlers
+> land — the routes are handler-less forward-references in Phase 33. Other
+> warnings/info remain tracked here.
+
 ## Summary
 
 Phase 33 adds a `scope "/commerce"` block declaring three corridor routes,

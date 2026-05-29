@@ -29,7 +29,7 @@ created: 2026-05-29
 ## Sampling Rate
 
 - **After every task commit:** Run `mix compile --warnings-as-errors` (root) and, for router changes, `cd examples/phoenix_host && mix compile --warnings-as-errors`.
-- **After every plan wave:** Run `mix test --exclude requires_example_host` (hermetic) plus `mix test test/crosswake/proof/phase33_commerce_corridor_routes_test.exs --include requires_example_host`.
+- **After every plan wave:** Run `mix test --exclude requires_example_host` (hermetic merge-blocking lane — now includes the corridor proof, which is hermetic/untagged after CR-01 remediation).
 - **Before `/gsd-verify-work`:** Full suite green + `phase34-proof.yml` exists and parses as valid YAML.
 - **Max feedback latency:** 30 seconds
 
@@ -40,12 +40,12 @@ created: 2026-05-29
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 33-01-01 | 01 | 1 | PWAL-01 | T-33-01 | Compile-time commerce DSL validation | compile | `cd examples/phoenix_host && mix compile --warnings-as-errors` | ✅ | ⬜ pending |
-| 33-01-02 | 01 | 1 | PWAL-01 | T-33-02 | Manifest role_ownership correctness (no runtime route hit) | manifest-introspection (ExUnit, requires_example_host) | `mix test test/crosswake/proof/phase33_commerce_corridor_routes_test.exs --include requires_example_host` | ❌ Wave 0 gap — new test file (created in this task) | ⬜ pending |
+| 33-01-02 | 01 | 1 | PWAL-01 | T-33-02 | Manifest role_ownership correctness (no runtime route hit) | manifest-introspection (ExUnit, hermetic merge-blocking) | `mix test test/crosswake/proof/phase33_commerce_corridor_routes_test.exs` | ✅ | ⬜ pending |
 | 33-02-01 | 02 | 1 | PROOF-02 | T-33-CI-01, T-33-CI-02 | Advisory lane cannot gate merge; warnings-as-errors kept | YAML structure assertion | `test -f .github/workflows/phase34-proof.yml && grep -q 'continue-on-error: true' ... && grep -q 'mix test --exclude requires_example_host' ... && python3 -c "import yaml; yaml.safe_load(open('.github/workflows/phase34-proof.yml'))"` | ❌ Wave 0 gap — new file (created in this task) | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
-**Note on lane placement:** Task 33-01-02 is `@moduletag :requires_example_host` (it loads the compiled example host via `ExampleHost.load!`), so it runs in the existing example-host CI lane (phase5-proof.yml) and is intentionally EXCLUDED by the new hermetic `phase34-proof.yml` lane (`--exclude requires_example_host`). Per D-08, only the Phase 36 hermetic proof stays untagged; Phase 33's example-host-driven manifest assertion is correctly tagged. The compile gate (`mix compile --warnings-as-errors` on the example host) is what proves Success Criterion #1 inside the hermetic lane via the standing example-host build.
+**Note on lane placement (revised after code-review finding CR-01):** Task 33-01-02 was originally `@moduletag :requires_example_host` and depended on the compiled example host via `ExampleHost.load!`. Code review (33-REVIEW.md, CR-01) found that no CI lane actually ran it — the hermetic lane excludes that tag and the example-host lane (`script/verify_phase5_example_hosts.sh`) uses an explicit file list that omitted the new file, so the corridor proof ran nowhere. **Remediation:** the test was rewritten to be fully hermetic, mirroring `Phase23CommerceSupportProofTest` — it declares an in-line `Crosswake.Router` fixture and asserts manifest landing + `role_ownership` (sourced router-independently from `CorridorProfiles`). It is now untagged and runs inside the merge-blocking `phase34-proof.yml` lane via the broad `mix test --exclude requires_example_host` run. The example host's literal route shapes remain gated by `mix compile --warnings-as-errors` on the example host (Success Criterion #1).
 
 ---
 
