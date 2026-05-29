@@ -1,5 +1,30 @@
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex",
+  __DIR__
+)
+
 defmodule Crosswake.Guides.CommerceTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   @guide_path Path.join([File.cwd!(), "guides", "commerce.md"])
 
@@ -16,7 +41,9 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "reconciliation_evidence"
   end
 
-  test "makes authority vs evidence semantics explicit for entitlement_snapshot", %{content: content} do
+  test "makes authority vs evidence semantics explicit for entitlement_snapshot", %{
+    content: content
+  } do
     assert content =~ "Entitlement Snapshot Lanes"
     assert content =~ "authority"
     assert content =~ "access"
@@ -44,7 +71,10 @@ defmodule Crosswake.Guides.CommerceTest do
   test "documents the canonical flow", %{content: content} do
     assert content =~ "device or native commerce route emits typed purchase or restore evidence"
     assert content =~ "Phoenix persists a reconciliation_attempt"
-    assert content =~ "backend verification/replay runs through host-owned workers and provider adapters"
+
+    assert content =~
+             "backend verification/replay runs through host-owned workers and provider adapters"
+
     assert content =~ "backend updates one authoritative entitlement_snapshot"
     assert content =~ "Phoenix/native consumers refresh from that snapshot"
   end
@@ -76,7 +106,9 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "Thin exception case"
   end
 
-  test "locks corridor ownership matrix and canonical denial taxonomy language", %{content: content} do
+  test "locks corridor ownership matrix and canonical denial taxonomy language", %{
+    content: content
+  } do
     assert content =~ "## Commerce Corridor Ownership"
     assert content =~ "paywall_entry"
     assert content =~ "account_management"
@@ -93,7 +125,9 @@ defmodule Crosswake.Guides.CommerceTest do
     assert content =~ "split-brain"
   end
 
-  test "keeps lifecycle guidance provider-neutral and preserves phase scope fences", %{content: content} do
+  test "keeps lifecycle guidance provider-neutral and preserves phase scope fences", %{
+    content: content
+  } do
     assert content =~ "provider adapters are out of scope"
 
     lifecycle_section =
@@ -198,7 +232,9 @@ defmodule Crosswake.Guides.CommerceTest do
     table_rows =
       ownership_section
       |> String.split("\n")
-      |> Enum.filter(&Regex.match?(~r/^\| `[a-z_]+` \| `(phoenix_owned|native_or_companion_required)` \|/, &1))
+      |> Enum.filter(
+        &Regex.match?(~r/^\| `[a-z_]+` \| `(phoenix_owned|native_or_companion_required)` \|/, &1)
+      )
 
     guide_roles =
       table_rows
@@ -336,9 +372,10 @@ defmodule Crosswake.Guides.CommerceTest do
     end
   end
 
-  test "reviewer template corridor roles cross-reference canonical SupportMatrix corridor roles", %{
-    content: content
-  } do
+  test "reviewer template corridor roles cross-reference canonical SupportMatrix corridor roles",
+       %{
+         content: content
+       } do
     playbook_section =
       content
       |> String.split("## Reviewer And Storefront Playbooks")
@@ -380,5 +417,90 @@ defmodule Crosswake.Guides.CommerceTest do
 
     assert playbook_section =~ "Crosswake.SupportMatrix.commerce_corridors/0",
            "reviewer preamble missing reference to canonical corridors accessor"
+  end
+
+  # --- Phase 37 Plan 01: Paywall Corridor Walkthrough docs-contract assertions ---
+
+  describe "paywall corridor walkthrough (DOCS-01 / DOCS-02)" do
+    # D-06.1: string-presence assertions — lock the walkthrough heading, module names,
+    # canonical field names, mock-vs-real callout, and proof citation against the guide.
+
+    test "walkthrough heading exists in Layer 1 (SC#1)", %{content: content} do
+      assert content =~ "### Paywall Corridor Walkthrough",
+             "commerce guide missing `### Paywall Corridor Walkthrough` heading (DOCS-01 SC#1)"
+    end
+
+    test "MockStorefront named exactly in walkthrough (SC#3)", %{content: content} do
+      assert content =~ "CrosswakeExample.Commerce.MockStorefront",
+             "commerce guide missing exact module name `CrosswakeExample.Commerce.MockStorefront` (DOCS-01 SC#3)"
+    end
+
+    test "canonical field names are present, not invented aliases (SC#3)", %{content: content} do
+      assert content =~ "provider_reference",
+             "commerce guide missing canonical field name `provider_reference` — do not rename to an alias (DOCS-01 SC#3)"
+
+      assert content =~ "evidence_ref",
+             "commerce guide missing canonical field name `evidence_ref` — do not rename to an alias (DOCS-01 SC#3)"
+    end
+
+    test "mock-vs-real callout uses provider: \"mock\" and references non-claims section (SC#2)",
+         %{
+           content: content
+         } do
+      assert content =~ ~s(provider: "mock"),
+             "commerce guide walkthrough missing explicit `provider: \"mock\"` callout (DOCS-01 SC#2 / D-05)"
+
+      assert content =~ "StoreKit",
+             "commerce guide missing StoreKit reference — non-claims section must name it (DOCS-01 SC#2)"
+
+      assert content =~ "Play Billing",
+             "commerce guide missing Play Billing reference — non-claims section must name it (DOCS-01 SC#2)"
+    end
+
+    test "proof file path is cited in the walkthrough (D-08)", %{content: content} do
+      assert content =~ "test/crosswake/proof/phase34_paywall_corridor_proof_test.exs",
+             "commerce guide walkthrough missing proof citation `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` (D-08)"
+    end
+
+    # D-06.2: live-code guard — six function_exported?/3 assertions confirm that every
+    # module and function anchored in the walkthrough resolves to a real export in the
+    # shipped example host. These break immediately when an anchored symbol is renamed or
+    # removed. Modules are loaded at file scope (above defmodule) in dependency order.
+    # Only pure commerce modules are loaded; runtime modules (LiveView, router) are excluded.
+    test "example host functions resolve to real exports (SC#3 live-lock)", _context do
+      assert function_exported?(CrosswakeExample.Commerce.MockStorefront, :simulate_purchase, 2),
+             "CrosswakeExample.Commerce.MockStorefront.simulate_purchase/2 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(CrosswakeExample.Commerce.MockStorefront, :simulate_restore, 2),
+             "CrosswakeExample.Commerce.MockStorefront.simulate_restore/2 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.ReconciliationInbox,
+               :ingest_evidence,
+               2
+             ),
+             "CrosswakeExample.Commerce.ReconciliationInbox.ingest_evidence/2 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.EntitlementProjection,
+               :project_snapshot,
+               2
+             ),
+             "CrosswakeExample.Commerce.EntitlementProjection.project_snapshot/2 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.EntitlementProjection,
+               :derived_state,
+               1
+             ),
+             "CrosswakeExample.Commerce.EntitlementProjection.derived_state/1 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.MockBackend,
+               :build_verified_snapshot,
+               2
+             ),
+             "CrosswakeExample.Commerce.MockBackend.build_verified_snapshot/2 not exported — walkthrough anchor is stale"
+    end
   end
 end
