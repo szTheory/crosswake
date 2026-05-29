@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
-status: verifying
-last_updated: "2026-05-29T19:06:51.110Z"
+status: ready_to_plan
+last_updated: 2026-05-29T19:14:23.227Z
 last_activity: 2026-05-29
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 17
   percent: 60
+stopped_at: Phase 36 complete (1/1) — ready to discuss Phase 37
 ---
 
 # Project State
@@ -20,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 36 — hermetic-proof-lane
+**Current focus:** Phase 37 — guides walkthrough and docs contract lock
 
 ## Current Position
 
-Phase: 36 (hermetic-proof-lane) — EXECUTING
-Plan: 1 of 1
-Status: Phase complete — ready for verification
+Phase: 37
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-05-29
 
 Progress: [█████████░] 86%
@@ -35,7 +36,7 @@ Progress: [█████████░] 86%
 
 **Velocity:**
 
-- Total plans completed: 57 (v1.0–v3.3)
+- Total plans completed: 58 (v1.0–v3.3)
 - Average duration: n/a
 - Total execution time: n/a
 
@@ -49,6 +50,7 @@ Progress: [█████████░] 86%
 | 33 | 2 | - | - |
 | 34 | 2 | - | - |
 | 35 | 2 | - | - |
+| 36 | 1 | - | - |
 
 **Recent Trend:** Positive — v3.3 shipped cleanly; v3.4 roadmap ready
 
