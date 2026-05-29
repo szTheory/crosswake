@@ -10,6 +10,8 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
+**v3.4 progress:** Phase 33 (Corridor Routes And CI Infrastructure) complete — the `examples/phoenix_host` router declares the three `:subscription_default` corridor routes (paywall_entry `live`, purchase/restore `post`) with canonical `crosswake: [..., commerce: [...]]` DSL, and `.github/workflows/phase34-proof.yml` establishes the hermetic-merge-blocking / advisory two-job CI split now gating the milestone. PWAL-01 and PROOF-02 validated.
+
 Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 `v3.2` delivered provider-neutral commerce route/corridor declarations with canonical `commerce.corridor.*` denial vocabulary, explicit entitlement lifecycle lane semantics that keep device/storefront evidence non-authoritative, a runnable Phoenix-owned reconciliation inbox/projection example, merge-blocking-vs-advisory commerce support truth wired into doctor diagnostics, layered reviewer/storefront guides anchored to canonical `SupportMatrix` accessors, a hermetic 14-test CI proof lane separated from a scheduled-only advisory provider lane, and machine-enforced SUMMARY frontmatter parity (`requirements-completed:`) backed by an ExUnit merge-blocking test. Tech-debt closure (Phase 25) hardened the parity test with presence assertion (WR-01) and loud-fail malformed-shape detection (WR-02).
@@ -156,4 +158,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — v3.4 Commerce Archetype Proof started (ARCH-02; mocked storefront paywall lane in examples/phoenix_host)*
+*Last updated: 2026-05-29 — Phase 33 complete (corridor routes + phase34-proof.yml CI split); PWAL-01, PROOF-02 validated. Next: Phase 34 (MockStorefront and idempotency invariants)*
