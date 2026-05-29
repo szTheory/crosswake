@@ -80,7 +80,7 @@
 **Plans**: 2 plans
 **Wave 1**
 
-- [ ] 34-01-PLAN.md — Create CrosswakeExample.Commerce.MockStorefront (pure-Elixir evidence emitter: simulate_purchase/2, simulate_restore/2, swap-target @moduledoc)
+- [x] 34-01-PLAN.md — Create CrosswakeExample.Commerce.MockStorefront (pure-Elixir evidence emitter: simulate_purchase/2, simulate_restore/2, swap-target @moduledoc)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -139,7 +139,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 33. Corridor Routes And CI Infrastructure | 2/2 | Complete    | 2026-05-29 |
-| 34. MockStorefront And Idempotency Invariants | 0/2 | Not started | - |
+| 34. MockStorefront And Idempotency Invariants | 1/2 | In Progress|  |
 | 35. Reconciliation Wiring And Four-State LiveView | 0/TBD | Not started | - |
 | 36. Hermetic Proof Lane | 0/TBD | Not started | - |
 | 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
