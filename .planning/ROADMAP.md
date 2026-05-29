@@ -44,7 +44,7 @@
 
 - [x] **Phase 33: Corridor Routes And CI Infrastructure** (2 plans) - Declare paywall corridor routes in the example host router and establish the two-job `phase34-proof.yml` CI split that gates all subsequent proof work (completed 2026-05-29)
 - [x] **Phase 34: MockStorefront And Idempotency Invariants** - Implement `MockStorefront` as a pure Elixir evidence-emitting adapter and prove its idempotency and provider-vocabulary boundary in the same phase (completed 2026-05-29)
-- [ ] **Phase 35: Reconciliation Wiring And Four-State LiveView** - Wire purchase/restore evidence through the reconciliation inbox and projection, and build `PaywallEntryLive` with explicit branches for all four `derived_state/1` outputs
+- [x] **Phase 35: Reconciliation Wiring And Four-State LiveView** - Wire purchase/restore evidence through the reconciliation inbox and projection, and build `PaywallEntryLive` with explicit branches for all four `derived_state/1` outputs (completed 2026-05-29)
 - [ ] **Phase 36: Hermetic Proof Lane** - Write the merge-blocking `phase34_paywall_corridor_proof_test.exs` against final data-layer code, asserting all states, the `:pending` → `:granted` transition, and the mock-boundary fence
 - [ ] **Phase 37: Guides Walkthrough And Docs-Contract Lock** - Add the end-to-end paywall corridor walkthrough to `guides/commerce.md` and extend `commerce_test.exs` to lock all module/function references and non-claims against the shipped example
 
@@ -108,7 +108,7 @@
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 35-02-PLAN.md — PaywallEntryLive four-state LiveView (STATE-01, PWAL-02): fail-closed :stale mount + connected? subscribe, purchase/restore intent flows, exhaustive case dispatch to four named components, dev scenario drivers, router suppression cleanup
+- [x] 35-02-PLAN.md — PaywallEntryLive four-state LiveView (STATE-01, PWAL-02): fail-closed :stale mount + connected? subscribe, purchase/restore intent flows, exhaustive case dispatch to four named components, dev scenario drivers, router suppression cleanup
 
 ### Phase 36: Hermetic Proof Lane
 
@@ -148,6 +148,6 @@
 |-------|----------------|--------|-----------|
 | 33. Corridor Routes And CI Infrastructure | 2/2 | Complete    | 2026-05-29 |
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
-| 35. Reconciliation Wiring And Four-State LiveView | 1/2 | In Progress|  |
+| 35. Reconciliation Wiring And Four-State LiveView | 2/2 | Complete   | 2026-05-29 |
 | 36. Hermetic Proof Lane | 0/TBD | Not started | - |
 | 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
