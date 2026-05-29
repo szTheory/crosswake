@@ -124,8 +124,8 @@
   5. The hermetic CI job in `phase34-proof.yml` runs this test file and passes cleanly under `--exclude requires_example_host --warnings-as-errors`
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 36-01-PLAN.md — Hermetic merge-blocking proof of the mock paywall corridor (four states, :pending->:granted transition, mock-boundary fence, self-scan guard)
 
 ### Phase 37: Guides Walkthrough And Docs-Contract Lock

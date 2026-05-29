@@ -824,14 +824,14 @@ None — no new test infrastructure is needed. The ExUnit framework is already c
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Private functions vs. separate defmodule for inline helpers (D-07)**
+1. **Private functions vs. separate defmodule for inline helpers (D-07)** — RESOLVED in 36-01-PLAN.md (Task 1): use `phase34_`-prefixed private `defp` helpers in the test module (phase21 precedent), NOT a nested `defmodule`. Classified Claude's Discretion in CONTEXT D-07.
    - What we know: Phase21 uses private `defp` functions directly in the test module. CONTEXT D-07 mentions "Phase34-prefixed inline fixture module names" and gives example `Phase34PaywallCorridorSnapshots`.
    - What's unclear: Does D-07 require a separate `defmodule Phase34PaywallCorridorSnapshots` inside the test file, or are Phase34-prefixed private functions sufficient?
    - Recommendation: Private `defp` functions with `phase34_` prefix in their names (e.g. `defp phase34_snapshot/1`) achieves the collision-avoidance goal without introducing a nested module. The `defmodule` form is also valid and arguably more explicit. This is Claude's discretion per CONTEXT. The planner should choose and specify explicitly.
 
-2. **Whether to assert on `result.event_key` in the :pending transition test**
+2. **Whether to assert on `result.event_key` in the :pending transition test** — RESOLVED in 36-01-PLAN.md (Task 2): status-only assertion (`result.status == :awaiting_verification`); `event_key`/`subject_key` correctness is already proven by `phase34_mock_storefront_test.exs`.
    - What we know: The ingest_evidence/2 return map includes `event_key` and `subject_key` fields. D-05 only requires asserting `result.status == :awaiting_verification`.
    - What's unclear: Should the proof additionally assert `event_key` is constructed from the mock provider fields, or is status sufficient for PROOF-01?
    - Recommendation: Status-only assertion for PROOF-01 clarity. The event_key/subject_key correctness is already proven by phase34_mock_storefront_test.exs.
