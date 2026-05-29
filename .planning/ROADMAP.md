@@ -104,7 +104,7 @@
 
 **Wave 1**
 
-- [ ] 35-01-PLAN.md — Data-layer + transport spine: MockBackend verification-gap bridge (WIRE-02), Phoenix.PubSub supervision bootstrap (D-12), thin CorridorController POST seam (WIRE-01)
+- [x] 35-01-PLAN.md — Data-layer + transport spine: MockBackend verification-gap bridge (WIRE-02), Phoenix.PubSub supervision bootstrap (D-12), thin CorridorController POST seam (WIRE-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -148,6 +148,6 @@
 |-------|----------------|--------|-----------|
 | 33. Corridor Routes And CI Infrastructure | 2/2 | Complete    | 2026-05-29 |
 | 34. MockStorefront And Idempotency Invariants | 2/2 | Complete    | 2026-05-29 |
-| 35. Reconciliation Wiring And Four-State LiveView | 0/2 | Planned     | - |
+| 35. Reconciliation Wiring And Four-State LiveView | 1/2 | In Progress|  |
 | 36. Hermetic Proof Lane | 0/TBD | Not started | - |
 | 37. Guides Walkthrough And Docs-Contract Lock | 0/TBD | Not started | - |
