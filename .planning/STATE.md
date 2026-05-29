@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.4
 milestone_name: Commerce Archetype Proof
-status: ready_to_plan
-last_updated: 2026-05-29T19:14:23.227Z
+status: planning
+last_updated: "2026-05-29T19:40:02.431Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 7
-  completed_plans: 17
-  percent: 60
-stopped_at: Phase 36 complete (1/1) — ready to discuss Phase 37
+  completed_plans: 7
+  percent: 80
 ---
 
 # Project State
@@ -88,6 +87,6 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 ## Session Continuity
 
-Last session: 2026-05-29T19:06:51.108Z
-Stopped at: Phase 36 context gathered
-Resume file: None
+Last session: 2026-05-29T19:40:02.426Z
+Stopped at: Phase 37 context gathered
+Resume file: .planning/phases/37-guides-walkthrough-and-docs-contract-lock/37-CONTEXT.md
