@@ -127,11 +127,13 @@ defmodule Crosswake.Doctor do
 
     {commerce_summary, phase_23_findings} = phase_23_commerce_summary(manifest, opts)
 
+    phase_38_findings = phase_38_companion_seam_findings()
+
     findings =
       findings ++
         phase_3_findings ++
         phase_4_findings ++
-        phase_10_findings ++ phase_19_findings ++ phase_23_findings
+        phase_10_findings ++ phase_19_findings ++ phase_23_findings ++ phase_38_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -495,6 +497,73 @@ defmodule Crosswake.Doctor do
       |> Map.get(:denials, [])
       |> Enum.filter(&commerce_doctor_denial?/1)
       |> Enum.map(&commerce_denial_check(route, &1))
+    end)
+  end
+
+  # Phase 38: Companion seam — fail-closed dependency check (D-04, D-11b)
+  #
+  # Reads the host companion registry at runtime via Application.get_env so that
+  # the proof test can register fixtures via Application.put_env. (compile_env
+  # would be read at compile time and would not observe put_env in tests.)
+  #
+  # Per-companion config map key choice (D-03, Claude's discretion): the enabled?/1
+  # map is fetched as Application.get_env(:crosswake, companion_id, %{}) — i.e. the
+  # companion's own atom ID becomes the key under :crosswake. This mirrors the
+  # FunWithFlags-style convention from CONTEXT.md and avoids coupling the doctor to
+  # any companion-specific config shape. Documented in 38-02-SUMMARY.md.
+  defp phase_38_companion_seam_findings do
+    companions = Application.get_env(:crosswake, :companions, [])
+
+    Enum.flat_map(companions, fn companion ->
+      companion_id = companion.companion_id()
+      config_map = Application.get_env(:crosswake, companion_id, %{})
+      enabled = companion.enabled?(config_map)
+
+      result =
+        :telemetry.span(
+          [:crosswake, :companion, :validate_dependency],
+          %{companion_id: companion_id, route_id: nil},
+          fn ->
+            dep_result = companion.validate_dependency()
+            {dep_result, %{companion_id: companion_id, route_id: nil, result: dep_result}}
+          end
+        )
+
+      case {enabled, result} do
+        {true, {:error, mods}} ->
+          mod_names = Enum.map_join(mods, ", ", &inspect/1)
+
+          [
+            check(
+              :error,
+              "companion.dependency_missing",
+              "companion.#{companion_id}",
+              "Companion #{inspect(companion_id)} is enabled but its optional " <>
+                "dependency is not loaded: #{mod_names}",
+              "Add the missing library to your application's deps in mix.exs. " <>
+                "Optional companion dependencies are not pulled transitively — " <>
+                "the host app must declare them explicitly.",
+              %{missing_modules: mods}
+            )
+          ]
+
+        {false, :ok} ->
+          [
+            check(
+              :advisory,
+              "companion.disabled_dependency_present",
+              "companion.#{companion_id}",
+              "Companion #{inspect(companion_id)} is disabled but its optional " <>
+                "dependency is present.",
+              "No action required. Enable the companion in your host config if you " <>
+                "want to activate it.",
+              %{}
+            )
+          ]
+
+        _ ->
+          []
+      end
     end)
   end
 
