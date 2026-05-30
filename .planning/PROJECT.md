@@ -171,4 +171,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — started milestone v3.5 First-Party Companions (Scope B: wedge + first generalization; in-tree first). Requirements scoped in REQUIREMENTS.md; research in `.planning/research/v3.5-companions-SUMMARY.md`.*
+*Last updated: 2026-05-30 — Phase 40 complete: RouteGate.evaluate/4 now wires kill-switch short-circuit and fail-closed gate evaluation with structured :gate_denied/:kill_switch_active denials (GATE-03, GATE-04 satisfied). 356 tests, 0 failures.*
