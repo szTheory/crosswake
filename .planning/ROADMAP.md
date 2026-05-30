@@ -145,7 +145,15 @@ Plans:
   2. `examples/phoenix_host` contains a route declaring `gated_by: :my_flag` and a pure-Elixir mock flag source that can be swapped to drive the route through `gated`, `rolling_out`, and `killed` states during local development and in the hermetic proof lane.
   3. Enabling the rulestead companion with the `rulestead` library absent causes doctor to emit a named `:error`; enabling it with the library present and the mock source configured produces a clean doctor output.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 42-01-PLAN.md — Crosswake.Companions.Rulestead companion + MockFlagSource named Agent + hermetic proof (SC#1/SC#3; COMP-01/02/03, GATE-02/03/04/05)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 42-02-PLAN.md — phoenix_host /gating scope + BetaFeatureLive + MockFlagSource supervisor child + companion config (SC#2; GATE-01)
 
 ### Phase 43: Rulestead Hermetic+Advisory Proof And Guide
 
