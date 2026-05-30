@@ -1,6 +1,7 @@
 ---
 phase: 42-rulestead-in-tree-companion-and-mock-example
 reviewed: 2026-05-30T00:00:00Z
+fixed_at: 2026-05-30T00:00:00Z
 depth: standard
 files_reviewed: 7
 files_reviewed_list:
@@ -16,7 +17,15 @@ findings:
   warning: 3
   info: 3
   total: 8
-status: issues_found
+findings_fixed:
+  critical: 2
+  warning: 3
+  info: 0
+  total: 5
+findings_open:
+  info: 3
+  total: 3
+status: fixed
 ---
 
 # Phase 42: Code Review Report
