@@ -5,6 +5,9 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
   Proves GATE-01 (DSL validation): `gated_by` and `on_unavailable` keys are
   compile-time-validated, with atom-identifier enforcement and cross-key constraints.
 
+  Proves GATE-02 (manifest binding): the compiled manifest records the flag binding
+  (key + posture) but NO evaluated flag value — binding-vs-value split (SC#3, D-07).
+
   This test is fully hermetic by design: it never depends on the compiled example
   host (CrosswakeExample.*), never hits the network, never launches a simulator,
   and never calls Code.require_file. It runs UNtagged so the existing
@@ -16,6 +19,50 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
 
   alias Crosswake.Policy.Route
   alias Crosswake.Policy.Schema
+  alias Crosswake.Manifest
+  alias Crosswake.Manifest.Types
+
+  # ---------------------------------------------------------------------------
+  # Inline hermetic router fixtures for GATE-02 manifest round-trip tests
+  # ---------------------------------------------------------------------------
+
+  defmodule GatedRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live "/checkout", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [id: "checkout", runtime: :live_view, gated_by: :feature_payment_v2]
+      end
+    end
+  end
+
+  defmodule FallbackRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live "/premium", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "premium",
+            runtime: :live_view,
+            gated_by: :feature_premium,
+            on_unavailable: {:fallback_phoenix, :home}
+          ]
+      end
+    end
+  end
+
+  defmodule NonGatedRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live "/home", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [id: "home", runtime: :live_view]
+      end
+    end
+  end
 
   # ---------------------------------------------------------------------------
   # Hermeticity self-assertion
@@ -193,6 +240,92 @@ defmodule Crosswake.Proof.Phase39RoutePolicyGatingTest do
       assert {:error, error} = Route.new(id: "bad", runtime: :live_view, on_unavailable: :deny)
       assert error.key == :on_unavailable
       assert String.contains?(error.message, "requires gated_by")
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # GATE-02 SC#2: Manifest round-trip — binding recorded in compiled RouteEntry
+  # ---------------------------------------------------------------------------
+
+  describe "GATE-02 SC#2: gated route binding in compiled manifest" do
+    test "compiled RouteEntry carries gated_by atom and on_unavailable posture" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(GatedRouter)
+      route = manifest.routes["checkout"]
+      assert route.gated_by == :feature_payment_v2
+      assert route.on_unavailable == :deny
+      # D-04: atom preserved through compile
+      assert inspect(route.gated_by) == ":feature_payment_v2"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # GATE-02 SC#3: Binding-vs-value split — NO flag value in RouteEntry (D-07)
+  # ---------------------------------------------------------------------------
+
+  describe "GATE-02 SC#3: binding-vs-value split — no flag value stored" do
+    test "RouteEntry carries only the flag key and posture — no evaluated value fields" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(GatedRouter)
+      route = manifest.routes["checkout"]
+      struct_keys = Map.from_struct(route) |> Map.keys()
+
+      refute Map.has_key?(Map.from_struct(route), :gated_by_value),
+             "RouteEntry must not have :gated_by_value — build-time binding/runtime value split (D-07)"
+
+      refute Map.has_key?(Map.from_struct(route), :gate_enabled),
+             "RouteEntry must not have :gate_enabled — no evaluated flag value stored at build time"
+
+      refute Map.has_key?(Map.from_struct(route), :flag_state),
+             "RouteEntry must not have :flag_state — no evaluated flag value stored at build time"
+
+      # Only the binding key and posture are present
+      assert :gated_by in struct_keys
+      assert :on_unavailable in struct_keys
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # GATE-02 SC#2/SC#3: to_map/1 serialization round-trip
+  # ---------------------------------------------------------------------------
+
+  describe "GATE-02: to_map/1 serialization of gated route" do
+    test "to_map of gated RouteEntry includes gated_by and on_unavailable as strings" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(GatedRouter)
+      route_map = Types.to_map(manifest.routes["checkout"])
+      assert route_map["gated_by"] == "feature_payment_v2"
+      assert route_map["on_unavailable"] == "deny"
+    end
+
+    test "fallback_phoenix serializes reversibly to 'fallback_phoenix:<route_id>'" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(FallbackRouter)
+      route_map = Types.to_map(manifest.routes["premium"])
+      assert route_map["on_unavailable"] == "fallback_phoenix:home"
+      # Reversible: split on first colon gives back the two parts
+      assert String.split(route_map["on_unavailable"], ":", parts: 2) == [
+               "fallback_phoenix",
+               "home"
+             ]
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # GATE-02: Non-gated boundary — both keys omitted from to_map/1
+  # ---------------------------------------------------------------------------
+
+  describe "GATE-02: non-gated route boundary (D-06, D-08 nil-omission)" do
+    test "non-gated compiled RouteEntry has nil gated_by and nil on_unavailable" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(NonGatedRouter)
+      assert manifest.routes["home"].gated_by == nil
+      assert manifest.routes["home"].on_unavailable == nil
+    end
+
+    test "to_map of non-gated RouteEntry omits gated_by and on_unavailable keys entirely" do
+      assert {:ok, %{manifest: manifest}} = Manifest.compile(NonGatedRouter)
+      route_map = Types.to_map(manifest.routes["home"])
+      refute Map.has_key?(route_map, "gated_by"),
+             "non-gated route must not emit a 'gated_by' key in to_map (D-08 nil-omission)"
+
+      refute Map.has_key?(route_map, "on_unavailable"),
+             "non-gated route must not emit an 'on_unavailable' key in to_map (D-08 nil-omission)"
     end
   end
 end
