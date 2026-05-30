@@ -8,12 +8,17 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
     - :error "gating.flag_reference_unknown" when gated_by atom resolves to no registered companion
     - :warning "gating.fallback_route_unknown" when {:fallback_phoenix, route_id} target is absent
 
-  SC#2 (support-matrix gate-state column) is added by plan 02.
+  Proves SC#2 (GATE-05 support-matrix half): SupportMatrix.gating_truth/0 maps each
+  registered companion's report_state/0 to the D-08 locked gate-state display strings:
+    - "gated" for gate_status: :active
+    - "rolling_out (N%)" for gate_status: {:rolling_out, n}
+    - "killed" for kill_switch_status: :active (overrides gate_status — kill switch first)
+  The runtime-distinct column label is also proven (contains "runtime" / "not build-proof").
 
   This test is fully hermetic by design: it never depends on the compiled example
   host (CrosswakeExample.*), never hits the network, never launches a simulator,
-  and never calls Code.require_file. It runs with @tag :sc1 so the SC#1 tests can
-  be run via `mix test test/crosswake/proof/phase41_gating_doctor_test.exs --only sc1`.
+  and never calls Code.require_file. It runs with @tag :sc1 / @tag :sc2 so each
+  sub-criterion can be run selectively.
 
   async: false — :companions is a shared global Application key; concurrent tests
   would observe each other's companion registrations.
@@ -22,6 +27,7 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.Doctor
+  alias Crosswake.SupportMatrix
 
   # ---------------------------------------------------------------------------
   # Inline fixture companion — companion_id :test_gating_companion
@@ -54,6 +60,108 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
         dependency_status: :present,
         gate_status: :active,
         kill_switch_status: :unconfigured,
+        checked_at: System.monotonic_time(:millisecond)
+      }
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # SC#2 fixture companions — distinct gate states for gating_truth/0 assertions
+  # ---------------------------------------------------------------------------
+
+  # GatingActiveCompanion: gate_status: :active -> "gated"
+  defmodule GatingActiveCompanion do
+    @behaviour Crosswake.Companion
+
+    @impl true
+    def companion_id, do: :sc2_gating_active
+
+    @impl true
+    def enabled?(_config), do: true
+
+    @impl true
+    def route_gated?(_route, _target), do: :pass
+
+    @impl true
+    def kill_switch_active?(_target), do: false
+
+    @impl true
+    def validate_dependency, do: :ok
+
+    @impl true
+    def report_state do
+      %Crosswake.Companion.State{
+        companion_id: :sc2_gating_active,
+        enabled: true,
+        dependency_status: :present,
+        gate_status: :active,
+        kill_switch_status: :inactive,
+        checked_at: System.monotonic_time(:millisecond)
+      }
+    end
+  end
+
+  # RollingOutCompanion: gate_status: {:rolling_out, 10} -> "rolling_out (10%)"
+  defmodule RollingOutCompanion do
+    @behaviour Crosswake.Companion
+
+    @impl true
+    def companion_id, do: :sc2_rolling_out
+
+    @impl true
+    def enabled?(_config), do: true
+
+    @impl true
+    def route_gated?(_route, _target), do: :pass
+
+    @impl true
+    def kill_switch_active?(_target), do: false
+
+    @impl true
+    def validate_dependency, do: :ok
+
+    @impl true
+    def report_state do
+      %Crosswake.Companion.State{
+        companion_id: :sc2_rolling_out,
+        enabled: true,
+        dependency_status: :present,
+        gate_status: {:rolling_out, 10},
+        kill_switch_status: :inactive,
+        checked_at: System.monotonic_time(:millisecond)
+      }
+    end
+  end
+
+  # KillSwitchActiveCompanion: kill_switch_status: :active AND gate_status: :active
+  # -> "killed" (kill switch overrides gate_status — precedence proof)
+  defmodule KillSwitchActiveCompanion do
+    @behaviour Crosswake.Companion
+
+    @impl true
+    def companion_id, do: :sc2_kill_switch_active
+
+    @impl true
+    def enabled?(_config), do: true
+
+    @impl true
+    def route_gated?(_route, _target), do: :pass
+
+    @impl true
+    def kill_switch_active?(_target), do: true
+
+    @impl true
+    def validate_dependency, do: :ok
+
+    @impl true
+    def report_state do
+      %Crosswake.Companion.State{
+        companion_id: :sc2_kill_switch_active,
+        enabled: true,
+        dependency_status: :present,
+        # gate_status is non-inactive to prove kill switch overrides gate_status
+        gate_status: :active,
+        kill_switch_status: :active,
         checked_at: System.monotonic_time(:millisecond)
       }
     end
@@ -359,5 +467,106 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     assert gating_findings == [],
            "expected no gating findings for non-gated routes; got: #{inspect(gating_findings)}"
+  end
+
+  # ---------------------------------------------------------------------------
+  # SC#2: SupportMatrix.gating_truth/0 gate-state display assertions
+  # ---------------------------------------------------------------------------
+
+  @tag :sc2
+  test "SC#2a: gating_truth/0 returns gate_state 'gated' for a gate_status: :active companion" do
+    Application.put_env(:crosswake, :companions, [GatingActiveCompanion])
+
+    on_exit(fn ->
+      Application.delete_env(:crosswake, :companions)
+    end)
+
+    truth = SupportMatrix.gating_truth()
+
+    entry = Enum.find(truth, &(&1.companion_id == :sc2_gating_active))
+
+    assert entry != nil,
+           "expected a gating_truth entry for :sc2_gating_active; got: #{inspect(truth)}"
+
+    assert entry.gate_state == "gated",
+           "expected gate_state 'gated' for gate_status: :active companion; got #{inspect(entry.gate_state)}"
+  end
+
+  @tag :sc2
+  test "SC#2b: gating_truth/0 returns gate_state 'rolling_out (10%)' for gate_status: {:rolling_out, 10}" do
+    Application.put_env(:crosswake, :companions, [RollingOutCompanion])
+
+    on_exit(fn ->
+      Application.delete_env(:crosswake, :companions)
+    end)
+
+    truth = SupportMatrix.gating_truth()
+
+    entry = Enum.find(truth, &(&1.companion_id == :sc2_rolling_out))
+
+    assert entry != nil,
+           "expected a gating_truth entry for :sc2_rolling_out; got: #{inspect(truth)}"
+
+    assert entry.gate_state == "rolling_out (10%)",
+           "expected gate_state 'rolling_out (10%)' for {:rolling_out, 10} companion; got #{inspect(entry.gate_state)}"
+  end
+
+  @tag :sc2
+  test "SC#2c: gating_truth/0 returns gate_state 'killed' for kill_switch_status: :active even when gate_status: :active" do
+    Application.put_env(:crosswake, :companions, [KillSwitchActiveCompanion])
+
+    on_exit(fn ->
+      Application.delete_env(:crosswake, :companions)
+    end)
+
+    truth = SupportMatrix.gating_truth()
+
+    entry = Enum.find(truth, &(&1.companion_id == :sc2_kill_switch_active))
+
+    assert entry != nil,
+           "expected a gating_truth entry for :sc2_kill_switch_active; got: #{inspect(truth)}"
+
+    assert entry.gate_state == "killed",
+           "expected gate_state 'killed' for kill_switch_status: :active companion (regardless of gate_status); got #{inspect(entry.gate_state)}"
+  end
+
+  @tag :sc2
+  test "SC#2d: gating_truth_label/0 returns text containing 'runtime' and 'not build-proof'" do
+    label = SupportMatrix.gating_truth_label()
+
+    assert is_binary(label),
+           "gating_truth_label/0 must return a string; got #{inspect(label)}"
+
+    assert String.contains?(String.downcase(label), "runtime"),
+           "gating_truth_label/0 must contain 'runtime' (case-insensitive) to be runtime-distinct from build-proof posture; got: #{inspect(label)}"
+
+    assert String.contains?(label, "not build-proof"),
+           "gating_truth_label/0 must contain 'not build-proof' to distinguish from build-proof state; got: #{inspect(label)}"
+  end
+
+  @tag :sc2
+  test "SC#2e: gating_truth/0 returns all three display strings when all three companion types are registered" do
+    Application.put_env(:crosswake, :companions, [
+      GatingActiveCompanion,
+      RollingOutCompanion,
+      KillSwitchActiveCompanion
+    ])
+
+    on_exit(fn ->
+      Application.delete_env(:crosswake, :companions)
+    end)
+
+    truth = SupportMatrix.gating_truth()
+
+    gate_states = MapSet.new(truth, & &1.gate_state)
+
+    assert MapSet.member?(gate_states, "gated"),
+           "expected 'gated' in gate_states; got: #{inspect(MapSet.to_list(gate_states))}"
+
+    assert MapSet.member?(gate_states, "rolling_out (10%)"),
+           "expected 'rolling_out (10%)' in gate_states; got: #{inspect(MapSet.to_list(gate_states))}"
+
+    assert MapSet.member?(gate_states, "killed"),
+           "expected 'killed' in gate_states; got: #{inspect(MapSet.to_list(gate_states))}"
   end
 end
