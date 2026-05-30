@@ -43,7 +43,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 
 **Milestone Goal:** Lock a reusable Phoenix-native companion-seam pattern, prove it generalizes across two real companions (rulestead gating + rindle media), and ship the auth-context contract that unblocks the rest — all in-tree, all fail-closed, all proven by the established hermetic+advisory + docs-contract template.
 
-- [ ] **Phase 38: Companion Seam Contract** — `Crosswake.Companion` behaviour, optional-dep handling, in-tree convention, telemetry
+- [x] **Phase 38: Companion Seam Contract** — `Crosswake.Companion` behaviour, optional-dep handling, in-tree convention, telemetry (completed 2026-05-30)
 - [ ] **Phase 39: Route-Policy Gating DSL And Manifest Binding** — `gated_by` key + `:custom` validator; build-time binding / runtime value split carried into `RouteEntry`
 - [ ] **Phase 40: Runtime Gate Evaluation And Fail-Closed Denial** — `:gate_denied`/`:kill_switch_active` injected into `RouteGate`; kill-switch short-circuit; OpenFeature-shaped `Denial.details`
 - [ ] **Phase 41: Gating Doctor And Support-Matrix Truth** — doctor category for gated routes; runtime gate-state column distinct from build-proof state
@@ -74,7 +74,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 38-02-PLAN.md — Doctor fail-closed wiring + validate_dependency telemetry span + fixture & hermetic proof (SC#1/SC#2/SC#4)
+- [x] 38-02-PLAN.md — Doctor fail-closed wiring + validate_dependency telemetry span + fixture & hermetic proof (SC#1/SC#2/SC#4)
 
 ### Phase 39: Route-Policy Gating DSL And Manifest Binding
 
@@ -204,7 +204,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 | 35. Reconciliation Wiring And Four-State LiveView | v3.4 | 2/2 | Complete | 2026-05-29 |
 | 36. Hermetic Proof Lane | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 37. Guides Walkthrough And Docs-Contract Lock | v3.4 | 1/1 | Complete | 2026-05-29 |
-| 38. Companion Seam Contract | v3.5 | 1/2 | In Progress|  |
+| 38. Companion Seam Contract | v3.5 | 2/2 | Complete   | 2026-05-30 |
 | 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 0/? | Not started | - |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 0/? | Not started | - |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 0/? | Not started | - |
