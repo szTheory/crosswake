@@ -203,6 +203,8 @@ defmodule Crosswake.Manifest.Types do
       :island_contract,
       :commerce,
       :security,
+      :gated_by,
+      :on_unavailable,
       capabilities: [],
       packs: [],
       sync: [],
@@ -224,7 +226,9 @@ defmodule Crosswake.Manifest.Types do
             sync: [String.t()],
             transfers: [Crosswake.Manifest.Types.TransferSeam.t()],
             security: Crosswake.Policy.Schema.security() | nil,
-            allowlisted_origins: [String.t()]
+            allowlisted_origins: [String.t()],
+            gated_by: atom() | nil,
+            on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
           }
   end
 
@@ -571,7 +575,9 @@ defmodule Crosswake.Manifest.Types do
       sync: Keyword.get(attrs, :sync, []),
       transfers: Keyword.get(attrs, :transfers, []),
       security: Keyword.get(attrs, :security),
-      allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, [])
+      allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, []),
+      gated_by: Keyword.get(attrs, :gated_by),
+      on_unavailable: Keyword.get(attrs, :on_unavailable)
     })
   end
 
@@ -814,8 +820,12 @@ defmodule Crosswake.Manifest.Types do
       "sync" => route.sync,
       "transfers" => Enum.map(route.transfers, &to_map/1),
       "security" => route.security && Atom.to_string(route.security),
-      "allowlisted_origins" => route.allowlisted_origins
+      "allowlisted_origins" => route.allowlisted_origins,
+      "gated_by" => route.gated_by && Atom.to_string(route.gated_by),
+      "on_unavailable" => serialize_on_unavailable(route.on_unavailable)
     }
+    |> Enum.reject(fn {k, v} -> k in ["gated_by", "on_unavailable"] and is_nil(v) end)
+    |> Map.new()
   end
 
   def to_map(%RouteCommerce{} = commerce) do
@@ -963,6 +973,10 @@ defmodule Crosswake.Manifest.Types do
       _other -> nil
     end)
   end
+
+  defp serialize_on_unavailable(nil), do: nil
+  defp serialize_on_unavailable(:deny), do: "deny"
+  defp serialize_on_unavailable({:fallback_phoenix, route_id}), do: "fallback_phoenix:#{route_id}"
 
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)
