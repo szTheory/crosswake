@@ -110,8 +110,8 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
   4. Flag evaluation reads from a local snapshot with no network call in the activation decision path.
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 40-01-PLAN.md — wire gate + kill-switch evaluation into RouteGate; :gate_denied/:kill_switch_active denials; OpenFeature-shaped details; on_unavailable redirect; SC#1-4 proof
 
 ### Phase 41: Gating Doctor And Support-Matrix Truth
