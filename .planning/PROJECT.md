@@ -171,4 +171,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-30 — Phase 41 complete: Doctor gating category (`phase_41_gating_findings/1`) emits per-route :advisory/:error/:warning findings; `SupportMatrix.gating_truth/0` maps runtime gate_status to labeled display strings; gate_status typespec extended with `{:rolling_out, non_neg_integer()}` arm (GATE-05 satisfied). 368 tests, 0 failures.*
+*Last updated: 2026-05-30 — Phase 42 complete: First in-tree companion `Crosswake.Companions.Rulestead` satisfies all 6 `Crosswake.Companion` callbacks; `MockFlagSource` named Agent drives gate states hermetically; 13-test proof suite covers all three gate states + doctor fail-closed; phoenix_host example wired with `/gating` scope (`gated_by: :rulestead`, `on_unavailable: :deny`) and MockFlagSource started in supervisor. 420 tests, 0 failures. COMP-01/02/03, GATE-01/02/03/04/05 satisfied.*
