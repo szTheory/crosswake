@@ -20,7 +20,7 @@ defmodule Crosswake.Compatibility.RouteGate do
             status: :allow | :deny,
             denial: Denial.t() | nil,
             denials: [Denial.t()],
-            transition: :activate | :halt | :stay_put
+            transition: :activate | :halt | :stay_put | {:redirect, atom()}
           }
   end
 
@@ -33,13 +33,20 @@ defmodule Crosswake.Compatibility.RouteGate do
   def evaluate(%Root{} = manifest, route_id, %Target{} = target, opts) do
     route = Map.get(manifest.routes, route_id)
 
+    # Gate evaluation produces Denial.t() directly (bypasses finding_to_denial/2)
+    gate_denials = prepend_gate_evaluation_findings([], route, target)
+
     findings =
       manifest
       |> Compatibility.route_findings(route_id, target, opts)
       |> remap_commerce_corridor_findings(route)
       |> prepend_commerce_corridor_findings(route, manifest)
 
-    denials = Enum.map(findings, &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id)))
+    compatibility_denials =
+      Enum.map(findings, &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id)))
+
+    # Gate denials prepend before compatibility denials (fail-closed: gate fires first)
+    denials = gate_denials ++ compatibility_denials
     status = if(denials == [], do: :allow, else: :deny)
 
     %Decision{
@@ -47,18 +54,118 @@ defmodule Crosswake.Compatibility.RouteGate do
       status: status,
       denial: List.first(denials),
       denials: denials,
-      transition: transition_for(status, opts)
+      transition: transition_for(status, route, opts)
     }
   end
 
-  defp transition_for(:allow, _opts), do: :activate
+  defp transition_for(:allow, _route, _opts), do: :activate
 
-  defp transition_for(:deny, opts) do
+  defp transition_for(:deny, %RouteEntry{on_unavailable: {:fallback_phoenix, id}}, _opts) do
+    {:redirect, id}
+  end
+
+  defp transition_for(:deny, _route, opts) do
     if Keyword.get(opts, :activation_source) == :in_app_navigation do
       :stay_put
     else
       :halt
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Gate evaluation step — returns [Denial.t()] directly, bypasses finding_to_denial/2
+  # (flag_key and evaluated_at are RouteGate-scoped, not Finding-scoped)
+  # ---------------------------------------------------------------------------
+
+  # Unknown route (nil) — skip gate evaluation
+  defp prepend_gate_evaluation_findings(acc, nil, _target), do: acc
+
+  # Non-gated route — skip both kill-switch and gate evaluation (D-11)
+  defp prepend_gate_evaluation_findings(acc, %RouteEntry{gated_by: nil}, _target), do: acc
+
+  # Gated route — run kill-switch first (short-circuit), then gate check
+  defp prepend_gate_evaluation_findings(acc, %RouteEntry{} = route, %Target{} = target) do
+    companions =
+      Application.get_env(:crosswake, :companions, [])
+      |> Enum.filter(fn companion ->
+        config = Application.get_env(:crosswake, companion.companion_id(), %{})
+        companion.enabled?(config)
+      end)
+
+    case check_kill_switches(companions, route, target) do
+      {:kill_switch, denial} ->
+        [denial | acc]
+
+      :pass ->
+        case check_gate(companions, route, target) do
+          {:gate_denied, denial} -> [denial | acc]
+          :pass -> acc
+        end
+    end
+  end
+
+  defp check_kill_switches(companions, route, target) do
+    Enum.reduce_while(companions, :pass, fn companion, _acc ->
+      result =
+        :telemetry.span(
+          [:crosswake, :companion, :kill_switch],
+          %{companion_id: companion.companion_id(), route_id: route.id},
+          fn ->
+            active = companion.kill_switch_active?(target)
+            {active, %{companion_id: companion.companion_id(), route_id: route.id}}
+          end
+        )
+
+      if result do
+        denial =
+          Denial.new(
+            reason: :kill_switch_active,
+            message: "kill switch active for companion #{companion.companion_id()}",
+            route_id: route.id,
+            details: %{"companion_id" => Atom.to_string(companion.companion_id())}
+          )
+
+        {:halt, {:kill_switch, denial}}
+      else
+        {:cont, :pass}
+      end
+    end)
+  end
+
+  defp check_gate(companions, route, target) do
+    Enum.reduce_while(companions, :pass, fn companion, _acc ->
+      result =
+        :telemetry.span(
+          [:crosswake, :companion, :route_gate],
+          %{companion_id: companion.companion_id(), route_id: route.id},
+          fn ->
+            gated = companion.route_gated?(route, target)
+            {gated, %{companion_id: companion.companion_id(), route_id: route.id}}
+          end
+        )
+
+      case result do
+        {:deny, _finding} ->
+          denial =
+            Denial.new(
+              reason: :gate_denied,
+              message:
+                "route #{route.id} denied by companion #{companion.companion_id()} — flag #{route.gated_by} is disabled",
+              route_id: route.id,
+              details: %{
+                "flag_key" => Atom.to_string(route.gated_by),
+                "reason" => "DISABLED",
+                "variant" => "off",
+                "evaluated_at" => DateTime.utc_now() |> DateTime.to_iso8601()
+              }
+            )
+
+          {:halt, {:gate_denied, denial}}
+
+        :pass ->
+          {:cont, :pass}
+      end
+    end)
   end
 
   defp prepend_commerce_corridor_findings(findings, %RouteEntry{} = route, %Root{} = manifest) do

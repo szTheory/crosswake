@@ -35,7 +35,6 @@ defmodule Crosswake.Proof.Phase40GateEvaluationTest do
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target
   alias Crosswake.Manifest
-  alias Crosswake.Manifest.Types
   alias Crosswake.Manifest.Types.RouteEntry
 
   # ---------------------------------------------------------------------------
