@@ -91,7 +91,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 
 **Wave 1**
 
-- [ ] 39-01-PLAN.md — `gated_by` + `on_unavailable` DSL keys: `Policy.Schema` validators + `Policy.Route` struct/cross-key validation + GATE-01 hermetic proof (SC#1)
+- [x] 39-01-PLAN.md — `gated_by` + `on_unavailable` DSL keys: `Policy.Schema` validators + `Policy.Route` struct/cross-key validation + GATE-01 hermetic proof (SC#1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -213,7 +213,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 | 36. Hermetic Proof Lane | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 37. Guides Walkthrough And Docs-Contract Lock | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 38. Companion Seam Contract | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 0/2 | Planned | - |
+| 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 1/2 | In Progress|  |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 0/? | Not started | - |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 0/? | Not started | - |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 0/? | Not started | - |
