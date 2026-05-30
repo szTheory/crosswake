@@ -30,32 +30,39 @@ defmodule Crosswake.Companions.Rulestead do
   @impl true
   @doc false
   def route_gated?(route, _target) do
-    case MockFlagSource.get_flag(route.gated_by) do
-      :gated ->
-        {:deny,
-         %Finding{
-           axis: :gate_denied,
-           route_id: route.id,
-           message: "#{route.gated_by} is disabled",
-           subject: "DISABLED"
-         }}
-
-      {:rolling_out, _pct} ->
-        # Phase 42: rolling_out uses the same deny path as :gated.
-        # gate_status is {:rolling_out, pct} in report_state/0 but the route
-        # is still denied — the companion does not yet support partial rollout
-        # (no traffic-splitting logic in this phase).
-        {:deny,
-         %Finding{
-           axis: :gate_denied,
-           route_id: route.id,
-           message: "#{route.gated_by} is disabled",
-           subject: "DISABLED"
-         }}
-
-      _ ->
-        # nil (unknown flag) or any unrecognized value -> :pass (fail-open for gate)
+    # Nil-guard: if MockFlagSource is not running, fail-open for gate (do not block requests).
+    # Mirrors the pattern used in kill_switch_active?/1 and report_state/0.
+    case Process.whereis(MockFlagSource) do
+      nil ->
         :pass
+
+      _pid ->
+        case MockFlagSource.get_flag(route.gated_by) do
+          :gated ->
+            {:deny,
+             %Finding{
+               axis: :gate_denied,
+               route_id: route.id,
+               message: "#{route.gated_by} is gated",
+               subject: "GATED"
+             }}
+
+          {:rolling_out, _pct} ->
+            # Phase 42: rolling_out denies the route — no partial traffic-splitting yet.
+            # gate_status is {:rolling_out, pct} in report_state/0 but the route is
+            # still denied (the companion does not yet support percentage-based routing).
+            {:deny,
+             %Finding{
+               axis: :gate_denied,
+               route_id: route.id,
+               message: "#{route.gated_by} is rolling out (partial gate)",
+               subject: "ROLLING_OUT"
+             }}
+
+          _ ->
+            # nil (unknown flag) or any unrecognized value -> :pass (fail-open for gate)
+            :pass
+        end
     end
   end
 
@@ -107,6 +114,9 @@ defmodule Crosswake.Companions.Rulestead do
   @impl true
   @doc false
   def report_state do
+    config = Application.get_env(:crosswake, :rulestead, %{})
+    enabled = Map.get(config, :enabled, false)
+
     dependency_status =
       if Code.ensure_loaded?(Rulestead) do
         :present
@@ -156,7 +166,7 @@ defmodule Crosswake.Companions.Rulestead do
 
     %State{
       companion_id: :rulestead,
-      enabled: true,
+      enabled: enabled,
       dependency_status: dependency_status,
       gate_status: gate_status,
       kill_switch_status: kill_switch_status,
