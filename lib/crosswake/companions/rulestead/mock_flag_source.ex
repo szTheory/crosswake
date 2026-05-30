@@ -46,6 +46,12 @@ defmodule Crosswake.Companions.Rulestead.MockFlagSource do
     Agent.get(@name, &Map.get(&1, flag_key))
   end
 
+  @doc "Removes the stored gate state for the given flag key."
+  @spec delete_flag(atom()) :: :ok
+  def delete_flag(flag_key) when is_atom(flag_key) do
+    Agent.update(@name, &Map.delete(&1, flag_key))
+  end
+
   @doc """
   Resets all stored flag state to an empty map.
 

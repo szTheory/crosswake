@@ -9,7 +9,7 @@ config :crosswake_example, CrosswakeExample.Repo,
   database: Path.expand("../crosswake_example.db", Path.dirname(__ENV__.file)),
   pool_size: 5,
   stacktrace: true,
-  show_sensitive_data_on_connection_error: true
+  # show_sensitive_data_on_connection_error: true  # dev only — omitted (applies to all Mix envs)
 
 config :crosswake_example, CrosswakeExample.Router,
   url: [host: "example.crosswake.invalid", scheme: "https", port: 443]
@@ -28,7 +28,7 @@ config :crosswake, :companions, [Crosswake.Companions.Rulestead]
 #   MockFlagSource.set_flag(:rulestead, :gated)          # -> :gate_denied denial
 #   MockFlagSource.set_flag(:rulestead, {:rolling_out, 50})  # -> :gate_denied (rolling out)
 #   MockFlagSource.set_flag(:rulestead, :killed)         # -> :kill_switch_active denial
-#   MockFlagSource.set_flag(:rulestead, nil)             # clear flag
+#   MockFlagSource.delete_flag(:rulestead)               # clear flag
 #   MockFlagSource.reset()                               # clear all flags
 # Then visit /gating/beta-feature to observe the gate response across states.
 config :crosswake, :rulestead, %{enabled: true}
