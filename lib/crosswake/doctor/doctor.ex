@@ -620,13 +620,20 @@ defmodule Crosswake.Doctor do
           {"fail-closed (default/implicit deny)", nil}
       end
 
+    on_unavailable_serialized =
+      case route.on_unavailable do
+        {:fallback_phoenix, id} -> "fallback_phoenix:#{id}"
+        :deny -> "deny"
+        nil -> nil
+      end
+
     check(
       :advisory,
       "gating.route_gated",
       "gating.#{route.id}",
       "Route \"#{route.id}\" is gated by :#{route.gated_by}; on_unavailable: #{posture_label}",
       hint,
-      %{route_id: route.id, gated_by: route.gated_by, on_unavailable: route.on_unavailable}
+      %{route_id: route.id, gated_by: route.gated_by, on_unavailable: on_unavailable_serialized}
     )
   end
 
