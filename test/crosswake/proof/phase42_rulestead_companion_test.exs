@@ -260,7 +260,7 @@ defmodule Crosswake.Proof.Phase42RulesteadCompanionTest do
     state = Crosswake.Companions.Rulestead.report_state()
     assert match?(%Crosswake.Companion.State{}, state)
     assert state.companion_id == :rulestead
-    assert is_boolean(state.enabled)
+    assert state.enabled == true  # setup sets %{enabled: true} via Application.put_env
     assert is_integer(state.checked_at)
     # Rulestead Hex package is absent in Phase 42 -> {:missing, [Rulestead (Hex pkg)]}
     assert state.dependency_status == {:missing, [:"Elixir.Rulestead"]}
