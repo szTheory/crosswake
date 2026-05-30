@@ -1,0 +1,158 @@
+name: Phase 43 Proof
+
+# Phase 43 closes the rulestead companion proof posture for v3.5 by splitting
+# proof lanes into:
+#
+#   - merge-blocking-rulestead-proof: hermetic, deterministic, runs on every PR
+#     and push to main. This is the lane that must be added as a required branch
+#     check on `main`. It exercises the full library test suite (excluding
+#     requires_example_host-tagged and advisory_only-tagged tests), so the Phase
+#     42 hermetic rulestead companion proof is picked up automatically. No
+#     rulestead Hex package in the dep tree — proves all fail-closed assertions
+#     pass with the optional dependency absent.
+#
+#   - advisory-rulestead-proof: runs with the rulestead Hex package present
+#     (MIX_INCLUDE_RULESTEAD=1 set at step level only). Proves that
+#     validate_dependency/0 returns :ok when the dep is present. Runs on
+#     schedule and on workflow_dispatch. Cannot fail the merge gate.
+#
+# Advisory-to-merge-blocking promotion is NOT automatic. Promoting the advisory
+# lane to merge-blocking requires ALL FOUR conditions below:
+#
+#   1. The real Rulestead.Snapshot adapter shipped and in-tree — the production
+#      swap target that replaces MockFlagSource, reading actual flag state from
+#      the rulestead library. This is the concrete code change that makes the
+#      advisory lane substantive rather than a dependency-presence check only.
+#
+#   2. The advisory lane exercising actual flag reads (not just dependency
+#      presence) — MockFlagSource tests validate the companion contract; the
+#      Rulestead.Snapshot adapter validates end-to-end flag delivery from the
+#      rulestead library through the companion gate.
+#
+#   3. Sustained stability evidence from the advisory lane — typically several
+#      consecutive scheduled runs (Monday 06:00 UTC) without flakes before
+#      promotion is considered.
+#
+#   4. An explicit requirement and roadmap scope change documented in
+#      .planning/REQUIREMENTS.md and .planning/ROADMAP.md — the advisory lane
+#      cannot be promoted to merge-blocking before the code it proves is core
+#      scope and an explicit milestone decision has been recorded.
+#
+# Until all four conditions are met, advisory lane results are visible in CI
+# but do NOT gate merge. See guides/companions.md "Promotion Path" for the
+# contract language.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Run the advisory lane weekly (Monday 06:00 UTC) so absence of advisory
+    # results is visible in the CI dashboard even when no PR has triggered it.
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-rulestead-proof:
+    # Required branch check. Runs on every PR and push to main. This job MUST
+    # stay hermetic — no rulestead Hex package, no network fetches for optional
+    # deps. Any change that introduces MIX_INCLUDE_RULESTEAD into this job is a
+    # contract violation.
+    #
+    # Guarded with an `if:` so this job runs ONLY on merge-driving events
+    # (pull_request, push, workflow_dispatch). It is intentionally skipped on
+    # the weekly `schedule` trigger that drives the advisory lane — re-running
+    # the hermetic merge gate weekly was pure cost (the hermetic lane gates
+    # merges; periodic re-verification adds no signal).
+    #
+    # The --exclude advisory_only flag keeps phase43_rulestead_advisory_test.exs
+    # (which asserts validate_dependency() == :ok) out of the hermetic run.
+    # The phase42_rulestead_companion_test.exs is untagged and still runs,
+    # proving validate_dependency() == {:error, [:"Elixir.Rulestead"]} — the
+    # canonical fail-closed assertion.
+    name: merge-blocking rulestead proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 42+43 rulestead proof (fail-closed)
+        # Broad hermetic run: excludes requires_example_host-tagged tests (need
+        # a running server) and advisory_only-tagged tests (require rulestead
+        # present). The Phase 42 proof suite is untagged and runs automatically,
+        # proving all fail-closed companion assertions pass with rulestead absent.
+        run: mix test --exclude requires_example_host --exclude advisory_only
+
+  advisory-rulestead-proof:
+    # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
+    # Does NOT run on pull_request or push to main, so it cannot block merges
+    # even if every step below fails.
+    #
+    # MIX_INCLUDE_RULESTEAD=1 is set ONLY at step level (env: per step) — never
+    # at the job level or workflow level. This prevents env var bleed into the
+    # hermetic job (Pitfall 4 from 43-RESEARCH.md).
+    #
+    # The advisory lane runs mix test on the single advisory proof file
+    # (phase43_rulestead_advisory_test.exs) which asserts
+    # validate_dependency() == :ok. Running the full suite here would fail
+    # because phase42_rulestead_companion_test.exs expects {:error, ...} (the
+    # hermetic assertion) but rulestead is present in this lane (Pitfall 1).
+    name: advisory rulestead proof (dep present, validate_dependency :ok)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    # `continue-on-error: true` ensures advisory failures do not gate merge.
+    # The job appears in the CI dashboard so absence of advisory results is
+    # visible, but never blocks PRs.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies (with rulestead)
+        run: mix deps.get
+        env:
+          MIX_INCLUDE_RULESTEAD: "1"
+
+      - name: Compile (with rulestead, warnings as errors)
+        run: mix compile --warnings-as-errors
+        env:
+          MIX_INCLUDE_RULESTEAD: "1"
+
+      - name: Run advisory rulestead proof (validate_dependency :ok)
+        run: mix test test/crosswake/proof/phase43_rulestead_advisory_test.exs
+        env:
+          MIX_INCLUDE_RULESTEAD: "1"
+
+      - name: Advisory lane status summary
+        # Surface a clear status line so a reviewer scanning the workflow run
+        # sees the advisory boundary explicitly, not as a passing green check.
+        run: |
+          echo "::notice title=Advisory lane::This lane is advisory only and"
+          echo "::notice::cannot gate merge. Failures here do NOT retract any"
+          echo "::notice::merge-blocking rulestead companion claim. Promotion to"
+          echo "::notice::merge-blocking requires explicit requirement/roadmap"
+          echo "::notice::scope change plus sustained stability evidence."
