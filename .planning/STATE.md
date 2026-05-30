@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-30T11:40:46.425Z"
+status: ready_to_plan
+stopped_at: Phase 39 complete (2/2) — ready to discuss Phase 40
+last_updated: 2026-05-30T11:59:26.706Z
 last_activity: 2026-05-30 -- Phase 39 execution started
 progress:
   total_phases: 10
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 2
-  percent: 10
+  completed_plans: 22
+  percent: 20
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 39 — route-policy-gating-dsl-and-manifest-binding
+**Current focus:** Phase 40 — runtime gate evaluation and fail closed denial
 
 ## Current Position
 
-Phase: 39 (route-policy-gating-dsl-and-manifest-binding) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 39
-Last activity: 2026-05-30 -- Phase 39 execution started
+Phase: 40
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-30
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -35,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 69 (v1.0–v3.4)
+- Total plans completed: 71 (v1.0–v3.4)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
@@ -68,5 +69,5 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 ## Session Continuity
 
-Last session: 2026-05-30T00:29:22.158Z
-Stopped at: Phase 38 context gathered
+Last session: 2026-05-30T11:56:07.008Z
+Stopped at: context exhaustion at 75% (2026-05-30)
