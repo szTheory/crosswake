@@ -87,7 +87,15 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
   2. The compiled runtime manifest `RouteEntry` carries the `gated_by` binding for every gated route, readable by introspection and visible in doctor output.
   3. The manifest build step records the binding (which flag governs this route) distinctly from the flag value (enabled/disabled/kill-switched), so offline manifest inspection is accurate without any runtime flag evaluation.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 39-01-PLAN.md — `gated_by` + `on_unavailable` DSL keys: `Policy.Schema` validators + `Policy.Route` struct/cross-key validation + GATE-01 hermetic proof (SC#1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 39-02-PLAN.md — manifest binding: `RouteEntry` fields + `Builder` pass-through + `to_map/1` serialization + GATE-02 binding-vs-value proof (SC#2/SC#3)
 
 ### Phase 40: Runtime Gate Evaluation And Fail-Closed Denial
 
@@ -205,7 +213,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 | 36. Hermetic Proof Lane | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 37. Guides Walkthrough And Docs-Contract Lock | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 38. Companion Seam Contract | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 0/? | Not started | - |
+| 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 0/2 | Planned | - |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 0/? | Not started | - |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 0/? | Not started | - |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 0/? | Not started | - |
