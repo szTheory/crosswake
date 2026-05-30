@@ -171,4 +171,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-30 — Phase 40 complete: RouteGate.evaluate/4 now wires kill-switch short-circuit and fail-closed gate evaluation with structured :gate_denied/:kill_switch_active denials (GATE-03, GATE-04 satisfied). 356 tests, 0 failures.*
+*Last updated: 2026-05-30 — Phase 41 complete: Doctor gating category (`phase_41_gating_findings/1`) emits per-route :advisory/:error/:warning findings; `SupportMatrix.gating_truth/0` maps runtime gate_status to labeled display strings; gate_status typespec extended with `{:rolling_out, non_neg_integer()}` arm (GATE-05 satisfied). 368 tests, 0 failures.*
