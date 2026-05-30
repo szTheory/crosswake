@@ -20,7 +20,10 @@ defmodule Crosswake.Proof.Phase38CompanionContractTest do
   calls are paired with on_exit cleanup to avoid leaking state across tests.
   """
 
-  use ExUnit.Case, async: true
+  # async: false — SC#2 and SC#4 both write the shared global
+  # Application.put_env(:crosswake, :companions, ...) key; running them
+  # concurrently lets one test observe another's companion list (CR-01).
+  use ExUnit.Case, async: false
 
   alias Crosswake.Compatibility.Target
   alias Crosswake.Doctor
