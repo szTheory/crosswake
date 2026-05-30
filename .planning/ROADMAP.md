@@ -128,7 +128,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 41-01-PLAN.md — Extend gate_status typespec, implement phase_41_gating_findings/1 doctor category, wire into run/1, create SC#1 proof scaffold
+- [x] 41-01-PLAN.md — Extend gate_status typespec, implement phase_41_gating_findings/1 doctor category, wire into run/1, create SC#1 proof scaffold
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -226,7 +226,7 @@ Plans:
 | 38. Companion Seam Contract | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
-| 41. Gating Doctor And Support-Matrix Truth | v3.5 | 0/? | Not started | - |
+| 41. Gating Doctor And Support-Matrix Truth | v3.5 | 1/2 | In Progress|  |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 0/? | Not started | - |
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 0/? | Not started | - |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |

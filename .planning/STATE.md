@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
 status: executing
-last_updated: "2026-05-30T13:51:07.155Z"
-last_activity: 2026-05-30 -- Phase 41 planning complete
+last_updated: "2026-05-30T14:02:33.311Z"
+last_activity: 2026-05-30 -- Phase 41 execution started
 progress:
   total_phases: 10
   completed_phases: 3
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 41 — gating doctor and support matrix truth
+**Current focus:** Phase 41 — gating-doctor-and-support-matrix-truth
 
 ## Current Position
 
-Phase: 41
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-30 -- Phase 41 planning complete
+Phase: 41 (gating-doctor-and-support-matrix-truth) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 41
+Last activity: 2026-05-30 -- Phase 41 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
