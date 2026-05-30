@@ -229,6 +229,47 @@ defmodule Crosswake.SupportMatrix do
   @spec change_classes(SupportMatrix.t()) :: [ChangeClassEntry.t()]
   def change_classes(%SupportMatrix{} = support_matrix), do: support_matrix.change_classes
 
+  @doc """
+  Runtime gate-state label.
+
+  Returns the column label for the gating-truth section of the support matrix,
+  deliberately runtime-distinct from build-proof posture. This label must never be
+  misread as "supported" — a route in "rolling_out (10%)" state is gated, not
+  supported, and the column label makes that explicit.
+
+  D-08: "Runtime Gate State — not build-proof posture."
+  """
+  @spec gating_truth_label() :: String.t()
+  def gating_truth_label, do: "Runtime Gate State — not build-proof posture"
+
+  @doc """
+  Returns a runtime snapshot of gate state for every registered companion.
+
+  Reads `Application.get_env(:crosswake, :companions, [])` at call time (NOT
+  compile_env) so test fixtures can register companions via `Application.put_env/3`
+  and production callers see live runtime-registered companions.
+
+  Each entry is a map with:
+    - `:companion_id` — the atom id from `companion.companion_id()`
+    - `:gate_state` — one of `"gated"`, `"rolling_out (N%)"`, `"killed"`, or `nil`
+      (nil means the companion's gate is inactive or unconfigured)
+
+  Kill-switch status overrides gate_status — if the kill switch is active,
+  the entry shows `"killed"` regardless of `gate_status`.
+
+  The `:gate_state` values are D-08 locked display strings. `"rolling_out (N%)"` is
+  never equivalent to "supported" — the gating_truth_label/0 column heading
+  reinforces this distinction.
+  """
+  @spec gating_truth() :: [map()]
+  def gating_truth do
+    Application.get_env(:crosswake, :companions, [])
+    |> Enum.map(fn companion ->
+      state = companion.report_state()
+      %{companion_id: state.companion_id, gate_state: gate_state_display(state)}
+    end)
+  end
+
   @spec commerce_corridors() :: [map()]
   def commerce_corridors, do: @commerce_corridor_entries
 
@@ -563,4 +604,13 @@ defmodule Crosswake.SupportMatrix do
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported
   defp capability_proof_status(%Capability{proof_class: :merge_blocking}), do: :verification_required
   defp capability_proof_status(%Capability{proof_class: :advisory}), do: :supported
+
+  # D-08 locked display-string mapping for runtime gate state.
+  # Kill-switch clause MUST come first for precedence — an active kill switch overrides
+  # gate_status regardless of its value (RESEARCH critical pitfall).
+  defp gate_state_display(%Crosswake.Companion.State{kill_switch_status: :active}), do: "killed"
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: :active}), do: "gated"
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}), do: "rolling_out (#{n}%)"
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: :inactive}), do: nil
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: :unconfigured}), do: nil
 end
