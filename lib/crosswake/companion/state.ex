@@ -5,7 +5,7 @@ defmodule Crosswake.Companion.State do
   defstruct [:companion_id, :enabled, :dependency_status, :gate_status, :kill_switch_status, :checked_at, details: %{}]
 
   @type dependency_status :: :present | {:missing, [module()]}
-  @type gate_status :: :active | :inactive | :unconfigured
+  @type gate_status :: :active | :inactive | :unconfigured | {:rolling_out, non_neg_integer()}
   @type kill_switch_status :: :inactive | :active | :unconfigured
 
   @type t :: %__MODULE__{
