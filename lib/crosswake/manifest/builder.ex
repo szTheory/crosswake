@@ -133,7 +133,9 @@ defmodule Crosswake.Manifest.Builder do
           sync: route.sync,
           transfers: transfer_seams(route.transfers),
           security: route.security,
-          allowlisted_origins: [origin]
+          allowlisted_origins: [origin],
+          gated_by: route.gated_by,
+          on_unavailable: route.on_unavailable
         )
 
       {route.id, entry}
