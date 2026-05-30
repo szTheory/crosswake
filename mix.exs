@@ -41,6 +41,7 @@ defmodule Crosswake.MixProject do
       {:nimble_options, "~> 1.1"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
+      {:telemetry, "~> 1.0"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
   end
