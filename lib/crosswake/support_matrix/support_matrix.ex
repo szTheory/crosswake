@@ -613,4 +613,8 @@ defmodule Crosswake.SupportMatrix do
   defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}), do: "rolling_out (#{n}%)"
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :inactive}), do: nil
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :unconfigured}), do: nil
+
+  defp gate_state_display(%Crosswake.Companion.State{} = state) do
+    "unknown(gate_status=#{inspect(state.gate_status)},kill_switch=#{inspect(state.kill_switch_status)})"
+  end
 end
