@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-30T01:12:56.242Z"
+status: ready_to_plan
+last_updated: 2026-05-30T01:36:24.366Z
 last_activity: 2026-05-30 -- Phase 38 execution started
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 20
   percent: 0
+stopped_at: Phase 38 complete (2/2) — ready to discuss Phase 39
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 38 — companion-seam-contract
+**Current focus:** Phase 39 — route policy gating dsl and manifest binding
 
 ## Current Position
 
-Phase: 38 (companion-seam-contract) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 38
-Last activity: 2026-05-30 -- Phase 38 execution started
+Phase: 39
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-30
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -35,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 67 (v1.0–v3.4)
+- Total plans completed: 69 (v1.0–v3.4)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.

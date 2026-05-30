@@ -10,9 +10,9 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 
 ### COMP — Companion Seam Contract
 
-- [ ] **COMP-01**: A maintainer can register a first-party companion through a `Crosswake.Companion` behaviour with declared callbacks (`companion_id/0`, `enabled?/1`, `route_gated?/2`, `kill_switch_active?/1`, `validate_dependency/0`, `report_state/0`), generalized from the commerce seam.
-- [ ] **COMP-02**: A companion that is enabled in host config but whose underlying optional library is missing fails closed with an explicit `mix crosswake.doctor` error naming the missing dependency — never a silent no-op or fail-open.
-- [ ] **COMP-03**: Companions follow a documented in-tree convention (`lib/crosswake/companions/<name>/`) and emit `[:crosswake, :companion, …]` telemetry from core with static event names differentiated by `companion_id` metadata.
+- [x] **COMP-01**: A maintainer can register a first-party companion through a `Crosswake.Companion` behaviour with declared callbacks (`companion_id/0`, `enabled?/1`, `route_gated?/2`, `kill_switch_active?/1`, `validate_dependency/0`, `report_state/0`), generalized from the commerce seam.
+- [x] **COMP-02**: A companion that is enabled in host config but whose underlying optional library is missing fails closed with an explicit `mix crosswake.doctor` error naming the missing dependency — never a silent no-op or fail-open.
+- [x] **COMP-03**: Companions follow a documented in-tree convention (`lib/crosswake/companions/<name>/`) and emit `[:crosswake, :companion, …]` telemetry from core with static event names differentiated by `companion_id` metadata.
 
 ### GATE — Rulestead Gating, Kill Switches, Explainability
 
@@ -60,9 +60,9 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| COMP-01 | Phase 38 | Pending |
-| COMP-02 | Phase 38 | Pending |
-| COMP-03 | Phase 38 | Pending |
+| COMP-01 | Phase 38 | Complete |
+| COMP-02 | Phase 38 | Complete |
+| COMP-03 | Phase 38 | Complete |
 | GATE-01 | Phase 39 | Pending |
 | GATE-02 | Phase 39 | Pending |
 | GATE-03 | Phase 40 | Pending |

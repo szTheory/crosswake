@@ -204,7 +204,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 | 35. Reconciliation Wiring And Four-State LiveView | v3.4 | 2/2 | Complete | 2026-05-29 |
 | 36. Hermetic Proof Lane | v3.4 | 1/1 | Complete | 2026-05-29 |
 | 37. Guides Walkthrough And Docs-Contract Lock | v3.4 | 1/1 | Complete | 2026-05-29 |
-| 38. Companion Seam Contract | v3.5 | 2/2 | Complete   | 2026-05-30 |
+| 38. Companion Seam Contract | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 0/? | Not started | - |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 0/? | Not started | - |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 0/? | Not started | - |
