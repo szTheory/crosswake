@@ -128,12 +128,14 @@ defmodule Crosswake.Doctor do
     {commerce_summary, phase_23_findings} = phase_23_commerce_summary(manifest, opts)
 
     phase_38_findings = phase_38_companion_seam_findings()
+    phase_41_findings = phase_41_gating_findings(manifest)
 
     findings =
       findings ++
         phase_3_findings ++
         phase_4_findings ++
-        phase_10_findings ++ phase_19_findings ++ phase_23_findings ++ phase_38_findings
+        phase_10_findings ++
+        phase_19_findings ++ phase_23_findings ++ phase_38_findings ++ phase_41_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -565,6 +567,111 @@ defmodule Crosswake.Doctor do
           []
       end
     end)
+  end
+
+  # Phase 41: Gating doctor category — one finding per gated route (D-01, D-02)
+  #
+  # Emits:
+  #   - :advisory "gating.route_gated" per gated route (one per route with gated_by != nil)
+  #   - :error "gating.flag_reference_unknown" when gated_by atom resolves to no companion (D-04, D-05)
+  #   - :warning "gating.fallback_route_unknown" when on_unavailable fallback target absent (D-10)
+  #
+  # Uses Application.get_env (not compile_env) so proof tests can register fixtures via put_env.
+  # Does NOT call validate_dependency or report_state — Phase 38 owns dependency validation,
+  # SupportMatrix owns state reads.
+  defp phase_41_gating_findings(nil), do: []
+
+  defp phase_41_gating_findings(manifest) do
+    companions = Application.get_env(:crosswake, :companions, [])
+
+    known_companion_ids =
+      companions
+      |> Enum.map(& &1.companion_id())
+      |> MapSet.new()
+
+    manifest.routes
+    |> Map.values()
+    |> Enum.filter(&(not is_nil(&1.gated_by)))
+    |> Enum.flat_map(fn route ->
+      advisory_finding = gating_advisory_finding(route)
+      error_finding = gating_flag_reference_error(route, known_companion_ids)
+      warning_finding = gating_fallback_route_warning(route, manifest)
+
+      [advisory_finding] ++ error_finding ++ warning_finding
+    end)
+  end
+
+  # One :advisory finding per gated route surfacing the posture and optional fallback hint (D-03, D-09)
+  defp gating_advisory_finding(route) do
+    {posture_label, hint} =
+      case route.on_unavailable do
+        {:fallback_phoenix, fallback_id} ->
+          label = "redirect to :#{fallback_id} (fallback_phoenix)"
+
+          hint_text =
+            "deliberate redirect posture — gate denial navigates to :#{fallback_id} instead of halting"
+
+          {label, hint_text}
+
+        :deny ->
+          {"deny (explicit)", nil}
+
+        nil ->
+          {"fail-closed (default/implicit deny)", nil}
+      end
+
+    check(
+      :advisory,
+      "gating.route_gated",
+      "gating.#{route.id}",
+      "Route \"#{route.id}\" is gated by :#{route.gated_by}; on_unavailable: #{posture_label}",
+      hint,
+      %{route_id: route.id, gated_by: route.gated_by, on_unavailable: route.on_unavailable}
+    )
+  end
+
+  # :error finding when gated_by atom does not resolve to any registered companion (D-04, D-05)
+  defp gating_flag_reference_error(route, known_companion_ids) do
+    if MapSet.member?(known_companion_ids, route.gated_by) do
+      []
+    else
+      [
+        check(
+          :error,
+          "gating.flag_reference_unknown",
+          "gating.#{route.id}",
+          "Route \"#{route.id}\" declares gated_by: :#{route.gated_by} but no registered companion has that companion_id",
+          "Register a companion module whose companion_id/0 returns :#{route.gated_by}, " <>
+            "or correct the gated_by declaration in your route policy.",
+          %{route_id: route.id, gated_by: route.gated_by}
+        )
+      ]
+    end
+  end
+
+  # :warning finding when fallback route target is absent from manifest routes (D-10)
+  defp gating_fallback_route_warning(route, manifest) do
+    case route.on_unavailable do
+      {:fallback_phoenix, fallback_id} ->
+        if Map.has_key?(manifest.routes, to_string(fallback_id)) do
+          []
+        else
+          [
+            check(
+              :warning,
+              "gating.fallback_route_unknown",
+              "gating.#{route.id}",
+              "Route \"#{route.id}\" declares on_unavailable: {:fallback_phoenix, :#{fallback_id}} " <>
+                "but :#{fallback_id} is not present in the manifest routes",
+              "Add route :#{fallback_id} to your router, or correct the on_unavailable declaration.",
+              %{route_id: route.id, fallback_route_id: fallback_id}
+            )
+          ]
+        end
+
+      _ ->
+        []
+    end
   end
 
   defp phase_23_commerce_summary(nil, _opts) do
