@@ -463,6 +463,9 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
         cwd: target
       )
 
+    assert report.manifest != nil,
+           "MinimalRouter must compile to a non-nil manifest for SC#1f to be meaningful; got manifest=nil in report"
+
     gating_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "gating."))
 
     assert gating_findings == [],
