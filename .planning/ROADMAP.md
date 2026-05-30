@@ -65,7 +65,9 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
   2. A companion that is enabled in host config but whose optional library is missing causes `mix crosswake.doctor` to emit an `:error` finding that names the missing dependency — never a silent no-op or a crash.
   3. `lib/crosswake/companions/<name>/` is established as the canonical in-tree location convention, verifiable by inspecting the module namespace of any shipped companion.
   4. Companion events emit as `[:crosswake, :companion, …]` telemetry spans with static event names differentiated by `companion_id` metadata, following Keathley conventions.
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 38-01-PLAN.md — Crosswake.Companion behaviour + Companion.State struct + direct :telemetry dep (contract surface)
+- [ ] 38-02-PLAN.md — Doctor fail-closed wiring + validate_dependency telemetry span + fixture & hermetic proof (SC#1/SC#2/SC#4)
 
 ### Phase 39: Route-Policy Gating DSL And Manifest Binding
 **Goal**: A Phoenix team can declare a named `gated_by` flag on any route in the DSL, and the binding is recorded in the compiled manifest — so the flag relationship is auditable at build time even before any runtime evaluation.
