@@ -13,3 +13,22 @@ config :crosswake_example, CrosswakeExample.Repo,
 
 config :crosswake_example, CrosswakeExample.Router,
   url: [host: "example.crosswake.invalid", scheme: "https", port: 443]
+
+# Register the Rulestead companion in the Crosswake companion dispatch loop.
+# This is read by Doctor.phase_38_companion_seam_findings/0 and
+# RouteGate.prepend_gate_evaluation_findings/3 at runtime.
+config :crosswake, :companions, [Crosswake.Companions.Rulestead]
+
+# Enable the Rulestead companion for this host. This config map is passed to
+# Crosswake.Companions.Rulestead.enabled?/1 — defaults to false (fail-closed)
+# when not configured, so this key must be present to activate the companion.
+#
+# Local dev workflow — drive gate states via IEx:
+#   alias Crosswake.Companions.Rulestead.MockFlagSource
+#   MockFlagSource.set_flag(:rulestead, :gated)          # -> :gate_denied denial
+#   MockFlagSource.set_flag(:rulestead, {:rolling_out, 50})  # -> :gate_denied (rolling out)
+#   MockFlagSource.set_flag(:rulestead, :killed)         # -> :kill_switch_active denial
+#   MockFlagSource.set_flag(:rulestead, nil)             # clear flag
+#   MockFlagSource.reset()                               # clear all flags
+# Then visit /gating/beta-feature to observe the gate response across states.
+config :crosswake, :rulestead, %{enabled: true}
