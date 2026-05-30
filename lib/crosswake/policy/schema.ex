@@ -69,6 +69,14 @@ defmodule Crosswake.Policy.Schema do
             security: [
               type: {:in, @security_values},
               type_spec: quote(do: :standard | :sensitive)
+            ],
+            gated_by: [
+              type: {:custom, __MODULE__, :validate_flag_key, []},
+              type_spec: quote(do: atom() | nil)
+            ],
+            on_unavailable: [
+              type: {:custom, __MODULE__, :validate_on_unavailable, []},
+              type_spec: quote(do: :deny | {:fallback_phoenix, atom()} | nil)
             ]
           ])
 
@@ -102,7 +110,9 @@ defmodule Crosswake.Policy.Schema do
           packs: [pack_requirement()],
           sync: [String.t()],
           transfers: [Contracts.declaration()],
-          security: security()
+          security: security(),
+          gated_by: atom() | nil,
+          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
         ]
 
   @spec schema() :: NimbleOptions.t()
@@ -125,6 +135,42 @@ defmodule Crosswake.Policy.Schema do
   def validate_identifier(value) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
   def validate_identifier(value) when is_atom(value), do: {:ok, Atom.to_string(value)}
   def validate_identifier(_value), do: {:error, "expected a non-empty string or atom"}
+
+  @spec validate_flag_key(term()) :: {:ok, atom()} | {:error, String.t()}
+  def validate_flag_key(value) when is_atom(value) and value not in [true, false, nil] do
+    str = Atom.to_string(value)
+
+    if Regex.match?(~r/^[a-z_][a-z0-9_]*[?!]?$/, str) do
+      {:ok, value}
+    else
+      {:error, "expected a plain atom identifier (e.g. :my_flag), got: #{inspect(value)}"}
+    end
+  end
+
+  def validate_flag_key(value) do
+    {:error, "expected a plain atom identifier (e.g. :my_flag), got: #{inspect(value)}"}
+  end
+
+  @spec validate_on_unavailable(term()) ::
+          {:ok, :deny | {:fallback_phoenix, atom()} | nil} | {:error, String.t()}
+  def validate_on_unavailable(nil), do: {:ok, nil}
+  def validate_on_unavailable(:deny), do: {:ok, :deny}
+
+  def validate_on_unavailable({:fallback_phoenix, route_id}) do
+    case validate_flag_key(route_id) do
+      {:ok, valid_id} ->
+        {:ok, {:fallback_phoenix, valid_id}}
+
+      {:error, _} ->
+        {:error,
+         "on_unavailable fallback_phoenix route_id must be a plain atom identifier (e.g. :home), got: #{inspect(route_id)}"}
+    end
+  end
+
+  def validate_on_unavailable(value) do
+    {:error,
+     "expected on_unavailable to be :deny or {:fallback_phoenix, route_id}, got: #{inspect(value)}"}
+  end
 
   @spec validate_runtime(term()) :: {:ok, runtime()} | {:error, String.t()}
   def validate_runtime(:adapter), do: {:error, "runtime :adapter is a reserved future extension point"}

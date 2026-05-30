@@ -16,6 +16,8 @@ defmodule Crosswake.Policy.Route do
     :cache_contract,
     :island_contract,
     :commerce,
+    :gated_by,
+    :on_unavailable,
     offline: :unavailable,
     entry: :internal_only,
     capabilities: [],
@@ -36,7 +38,9 @@ defmodule Crosswake.Policy.Route do
           packs: [Schema.pack_requirement()],
           sync: [String.t()],
           transfers: [Crosswake.Transfer.Contracts.declaration()],
-          security: Schema.security() | nil
+          security: Schema.security() | nil,
+          gated_by: atom() | nil,
+          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
         }
 
   @spec new(keyword()) :: {:ok, t()} | {:error, NimbleOptions.ValidationError.t()}
@@ -47,6 +51,7 @@ defmodule Crosswake.Policy.Route do
     |> case do
       {:ok, validated} ->
         with {:ok, validated} <- validate_offline_contracts(validated),
+             {:ok, validated} <- validate_gating_posture(validated),
              {:ok, validated} <- validate_entry_policy(validated),
              {:ok, validated} <- validate_commerce_declaration(validated),
              {:ok, validated} <- validate_pack_requirements(validated),
@@ -64,6 +69,7 @@ defmodule Crosswake.Policy.Route do
     |> merged_options()
     |> Schema.validate!()
     |> validate_offline_contracts!()
+    |> validate_gating_posture!()
     |> validate_entry_policy!()
     |> validate_commerce_declaration!()
     |> validate_pack_requirements!()
@@ -102,6 +108,34 @@ defmodule Crosswake.Policy.Route do
 
   defp validate_offline_contracts!(validated) do
     case validate_offline_contracts(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validate_gating_posture(validated) do
+    gated_by = validated[:gated_by]
+    on_unavailable = validated[:on_unavailable]
+
+    cond do
+      on_unavailable != nil and is_nil(gated_by) ->
+        {:error,
+         validation_error(
+           :on_unavailable,
+           on_unavailable,
+           "on_unavailable requires gated_by to be set"
+         )}
+
+      gated_by != nil and is_nil(on_unavailable) ->
+        {:ok, Keyword.put(validated, :on_unavailable, :deny)}
+
+      true ->
+        {:ok, validated}
+    end
+  end
+
+  defp validate_gating_posture!(validated) do
+    case validate_gating_posture(validated) do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end
