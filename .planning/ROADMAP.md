@@ -170,7 +170,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 43-01-PLAN.md — mix.exs MIX_INCLUDE_RULESTEAD conditional dep + advisory proof test (validate_dependency :ok) + phase43-proof.yml two-job hermetic/advisory workflow (PROOF-01)
+- [x] 43-01-PLAN.md — mix.exs MIX_INCLUDE_RULESTEAD conditional dep + advisory proof test (validate_dependency :ok) + phase43-proof.yml two-job hermetic/advisory workflow (PROOF-01)
 
 **Wave 2** *(blocked on Wave 1 completion — shared mix.exs edit)*
 
@@ -244,7 +244,7 @@ Plans:
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 0/2 | Not started | - |
+| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 1/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
