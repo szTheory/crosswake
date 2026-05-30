@@ -166,7 +166,15 @@ Plans:
   2. An advisory CI job runs the same suite with `rulestead` present; it uses `continue-on-error: true` and is documented with a promotion path (the conditions under which it graduates to merge-blocking).
   3. `guides/companions.md` contains a rulestead section covering `gated_by` DSL, gate-state semantics, kill-switch behavior, and the mock swap target; a docs-contract ExUnit test asserts the section exists and that key anchor strings match live code.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 43-01-PLAN.md — mix.exs MIX_INCLUDE_RULESTEAD conditional dep + advisory proof test (validate_dependency :ok) + phase43-proof.yml two-job hermetic/advisory workflow (PROOF-01)
+
+**Wave 2** *(blocked on Wave 1 completion — shared mix.exs edit)*
+
+- [ ] 43-02-PLAN.md — guides/companions.md (intro + rulestead section, exact DSL anchors) + companions_test.exs docs-contract test + ExDoc extras registration (PROOF-02)
 
 ### Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary
 
@@ -236,7 +244,7 @@ Plans:
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 0/? | Not started | - |
+| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 0/2 | Not started | - |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
