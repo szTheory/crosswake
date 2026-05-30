@@ -242,4 +242,17 @@ defmodule CrosswakeExample.Router do
         ]
     end
   end
+
+  scope "/gating", CrosswakeExample do
+    pipe_through [:browser]
+
+    crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+      live "/beta-feature", BetaFeatureLive,
+        crosswake: [
+          id: "gating-beta-feature",
+          gated_by: :rulestead,
+          on_unavailable: :deny
+        ]
+    end
+  end
 end
