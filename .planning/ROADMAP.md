@@ -125,9 +125,13 @@ Plans:
   2. Support-matrix output includes a runtime gate-state column with values `gated`, `rolling_out (N%)`, or `killed` — explicitly labeled as runtime-distinct from build-proof state, so `rolling_out (10%)` is never read as "supported."
 
 **Plans**: 2 plans
-
 Plans:
+**Wave 1**
+
 - [ ] 41-01-PLAN.md — Extend gate_status typespec, implement phase_41_gating_findings/1 doctor category, wire into run/1, create SC#1 proof scaffold
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 41-02-PLAN.md — Add SupportMatrix.gating_truth/0 runtime gate-state accessor (gated/rolling_out (N%)/killed) and SC#2 proof coverage
 
 ### Phase 42: Rulestead In-Tree Companion And Mock Example

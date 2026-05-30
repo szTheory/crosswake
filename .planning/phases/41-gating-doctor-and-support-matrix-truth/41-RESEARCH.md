@@ -522,7 +522,7 @@ end
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`:info` vs `:advisory` severity for gating findings**
    - What we know: D-03 says `:info`; existing `Check.severity()` type has `:advisory` as the closest match; formatter handles `:advisory` already.
