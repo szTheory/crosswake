@@ -149,7 +149,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 42-01-PLAN.md — Crosswake.Companions.Rulestead companion + MockFlagSource named Agent + hermetic proof (SC#1/SC#3; COMP-01/02/03, GATE-02/03/04/05)
+- [x] 42-01-PLAN.md — Crosswake.Companions.Rulestead companion + MockFlagSource named Agent + hermetic proof (SC#1/SC#3; COMP-01/02/03, GATE-02/03/04/05)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -235,7 +235,7 @@ Plans:
 | 39. Route-Policy Gating DSL And Manifest Binding | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 0/? | Not started | - |
+| 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 1/2 | In Progress|  |
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 0/? | Not started | - |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
