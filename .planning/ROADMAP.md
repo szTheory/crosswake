@@ -124,7 +124,11 @@ Plans:
   1. `mix crosswake.doctor` emits a dedicated gating category that lists every gated route by name, flags any `gated_by` reference that does not resolve to a known companion, and reports each route's `on_unavailable` posture.
   2. Support-matrix output includes a runtime gate-state column with values `gated`, `rolling_out (N%)`, or `killed` — explicitly labeled as runtime-distinct from build-proof state, so `rolling_out (10%)` is never read as "supported."
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — Extend gate_status typespec, implement phase_41_gating_findings/1 doctor category, wire into run/1, create SC#1 proof scaffold
+- [ ] 41-02-PLAN.md — Add SupportMatrix.gating_truth/0 runtime gate-state accessor (gated/rolling_out (N%)/killed) and SC#2 proof coverage
 
 ### Phase 42: Rulestead In-Tree Companion And Mock Example
 
