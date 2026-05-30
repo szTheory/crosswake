@@ -36,7 +36,7 @@ defmodule Crosswake.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
-    [
+    base = [
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
       {:phoenix, "~> 1.8"},
@@ -44,6 +44,15 @@ defmodule Crosswake.MixProject do
       {:telemetry, "~> 1.0"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
+
+    rulestead =
+      if System.get_env("MIX_INCLUDE_RULESTEAD") == "1" do
+        [{:rulestead, "~> 0.1.6"}]
+      else
+        []
+      end
+
+    base ++ rulestead
   end
 
   defp description do
@@ -81,6 +90,7 @@ defmodule Crosswake.MixProject do
         "guides/bridge.md",
         "guides/offline.md",
         "guides/commerce.md",
+        "guides/companions.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
         "guides/packs.md"
