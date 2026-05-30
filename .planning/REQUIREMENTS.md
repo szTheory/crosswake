@@ -18,8 +18,8 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 
 - [x] **GATE-01**: A Phoenix team can declare that a route or capability is gated by a named flag (`gated_by`) in the route-policy DSL, validated at compile time as a typed identifier.
 - [x] **GATE-02**: A gated route's flag *binding* is recorded in the runtime manifest at build time, while the flag *value* is evaluated at runtime from a local snapshot with no network call in the activation decision path.
-- [ ] **GATE-03**: When a gate denies, route activation fails closed with a structured `:gate_denied` denial carrying an explainable, OpenFeature-shaped reason (`flag_key`, `reason`, `variant`, `evaluated_at`).
-- [ ] **GATE-04**: Kill switches short-circuit ahead of all other gating and always fail closed (`:kill_switch_active`); the only fail-open path is an explicit, doctor-audited `on_unavailable: :fallback_phoenix` to a fully-owned Phoenix route, never the default.
+- [x] **GATE-03**: When a gate denies, route activation fails closed with a structured `:gate_denied` denial carrying an explainable, OpenFeature-shaped reason (`flag_key`, `reason`, `variant`, `evaluated_at`).
+- [x] **GATE-04**: Kill switches short-circuit ahead of all other gating and always fail closed (`:kill_switch_active`); the only fail-open path is an explicit, doctor-audited `on_unavailable: :fallback_phoenix` to a fully-owned Phoenix route, never the default.
 - [ ] **GATE-05**: `mix crosswake.doctor` lists gated routes, flags unknown-referenced flags, and reports each gate's unavailable-posture; support-matrix output surfaces runtime gate state (`gated` / `rolling_out (N%)` / `killed`) labeled distinct from build-proof state.
 
 ### MEDIA — Rindle Media Seam (generalization proof)
@@ -65,8 +65,8 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 | COMP-03 | Phase 38 | Complete |
 | GATE-01 | Phase 39 | Complete |
 | GATE-02 | Phase 39 | Complete |
-| GATE-03 | Phase 40 | Pending |
-| GATE-04 | Phase 40 | Pending |
+| GATE-03 | Phase 40 | Complete |
+| GATE-04 | Phase 40 | Complete |
 | GATE-05 | Phase 41 | Pending |
 | MEDIA-01 | Phase 44 | Pending |
 | MEDIA-02 | Phase 44 | Pending |
