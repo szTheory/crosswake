@@ -1,5 +1,28 @@
 # Project Milestones: Crosswake
 
+## v3.5 First-Party Companions (Shipped: 2026-05-31)
+
+**Phases completed:** 10 phases, 22 plans, 40 tasks
+
+**Key accomplishments:**
+
+- Locked the shared `Crosswake.Companion` seam: six-callback behaviour, typed state, fail-closed optional dependency diagnostics, companion telemetry, and in-tree `lib/crosswake/companions/<name>/` convention.
+- Shipped the Rulestead gating seam end-to-end: route-policy `gated_by`, manifest binding, local-snapshot runtime evaluation, `:gate_denied`/`:kill_switch_active` denials, doctor/support truth, hermetic/advisory proof, and `/gating` mock example.
+- Shipped the Rindle media seam and mock proof: typed upload grant/capture evidence/media object contracts, backend-owned reconciliation, stable idempotency, queued-not-committed semantics, pure-Elixir `/media/proof` lane, and hermetic/advisory proof split.
+- Shipped Sigra contract-only auth truth: backend-owned `AuthContext` and `SessionAuthorityLane`, route predicates (`auth_min_level`, `requires_recent_auth`), fail-closed `:step_up_required` denials, and doctor/support truth without claiming deferred Sigra machinery.
+- Published `guides/companions.md` as the canonical companion guide and locked it with semantic docs-contract tests against live support matrix, denial vocabulary, and doctor findings.
+
+**Verification:** Milestone audit passed 15/15 requirements; Phase 44 focused proof passed 27 tests; Phase 47 guide/proof passed 12 tests; hermetic suite passed 455 tests with 44 excluded.
+
+**Archive:**
+
+- `.planning/milestones/v3.5-ROADMAP.md`
+- `.planning/milestones/v3.5-REQUIREMENTS.md`
+- `.planning/milestones/v3.5-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.5-phases/`
+
+---
+
 ## v3.4 Commerce Archetype Proof (Shipped: 2026-05-29)
 
 **Phases completed:** 5 phases, 8 plans, 8 tasks

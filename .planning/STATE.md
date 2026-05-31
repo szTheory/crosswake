@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: milestone_complete
-last_updated: 2026-05-31T17:46:55.585Z
-last_activity: 2026-05-31
+status: Awaiting next milestone
+last_updated: "2026-05-31T17:56:01.016Z"
+last_activity: 2026-05-31 — Milestone v3.5 completed and archived
 progress:
   total_phases: 10
   completed_phases: 10
   total_plans: 22
   completed_plans: 22
   percent: 100
-stopped_at: Milestone complete (Phase 47 was final phase)
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-31)
 
 ## Current Position
 
-Phase: 47
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-05-31
-
-Progress: [██████████] 100%
+Phase: Milestone v3.5 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-31 — Milestone v3.5 completed and archived
 
 ## Performance Metrics
 
@@ -84,3 +81,7 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 Last session: 2026-05-31T17:34:13.302Z
 Stopped at: Completed 47-02-PLAN.md
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

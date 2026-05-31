@@ -1,9 +1,10 @@
 ---
 slug: companion-seam-pattern
 title: Companion-package seam pattern (Rulestead probe, unblocks v3.5+)
-status: open
+status: completed
 created: 2026-05-27
-updated: 2026-05-27
+updated: 2026-05-31
+resolution: Shipped as v3.5 First-Party Companions (Phases 38-47), including the shared `Crosswake.Companion` behaviour, in-tree companion convention, Rulestead/Rindle/Sigra companion surfaces, fail-closed optional dependency handling, doctor/support truth, and companion guide/proof parity.
 ---
 
 # Thread: Companion-package seam pattern
@@ -36,7 +37,19 @@ The wedge: until the seam pattern is locked, every subsequent companion (sigra a
 - `/Users/jon/projects/crosswake/lib/crosswake/support_matrix/support_matrix.ex` — companion classification slot already reserved
 - `/Users/jon/projects/crosswake/lib/crosswake/doctor/doctor.ex` — needs a companion check category
 
-## Next Steps
+## Resolution
+
+Closed by v3.5 First-Party Companions:
+
+- Phase 38 defined the shared `Crosswake.Companion` behaviour, `Companion.State`, fail-closed dependency diagnostics, and telemetry span.
+- Phases 39-43 proved the Rulestead gating seam with route DSL, manifest binding, runtime fail-closed evaluation, doctor/support truth, hermetic/advisory proof, and guide coverage.
+- Phases 44-45 proved the Rindle media seam as the non-flag generalization, including backend-owned reconciliation and pure-Elixir mock media proof.
+- Phase 46 added the Sigra contract-only auth surface with route auth predicates and fail-closed `:step_up_required` truth.
+- Phase 47 locked the companion arc in `guides/companions.md` with semantic docs-contract parity and aggregate hermetic proof.
+
+Separate-package extraction, Chimeway, full Sigra machinery, and Threadline remain deferred future work, not open questions for this thread.
+
+## Original Next Steps
 
 - Decide packaging: in-tree (`lib/crosswake/companions/`) vs separate hex package (`crosswake_rulestead`). szTheory house-style typically prefers separate companion packages (per `prompts/crosswake-elixir-oss-dna.md`).
 - Define companion behaviour contract: what callbacks does a companion implement? (e.g., `route_enabled?/2`, `capability_gated?/2`, `kill_switch_active?/1`, `report_state/0` for doctor).

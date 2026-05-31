@@ -132,6 +132,51 @@
 - **Zero shipped-library churn:** v3.4 added example-host code, one proof test, and docs only — no `lib/crosswake/` changes — keeping the published `crosswake 0.1.0` surface stable while proving the archetype.
 - **Tooling friction:** milestone-close CLI output needed manual cleanup (MILESTONES.md placeholder bullets, STATE.md), but archival of ROADMAP/REQUIREMENTS/AUDIT worked.
 
+## Milestone: v3.5 First-Party Companions
+
+**Shipped:** 2026-05-31
+**Phases:** 10 (38-47)
+**Plans:** 22
+
+### What Was Built
+
+- A shared `Crosswake.Companion` behaviour with six callbacks, typed state, fail-closed optional dependency diagnostics, and companion telemetry.
+- Rulestead route gating across DSL, manifest binding, runtime local-snapshot evaluation, `:gate_denied`/`:kill_switch_active` denials, doctor/support truth, hermetic/advisory proof, and guide coverage.
+- Rindle media contracts and reconciliation vocabulary, plus a pure-Elixir mock media lane proving stable idempotency and backend-owned availability without an external SDK.
+- Sigra contract-only auth context with backend-only authority, route auth predicates, fail-closed `:step_up_required` denials, and doctor/support truth without handoff/passkey/OAuth machinery.
+- A canonical `guides/companions.md` guide parity-locked to live support matrix, denial vocabulary, and doctor finding truth.
+
+### What Worked
+
+- **In-tree before package extraction** — keeping Rulestead, Rindle, and Sigra contract surfaces in core let the seam pattern harden before taking on cross-package compatibility ranges.
+- **Multiple companion shapes proved the seam** — route flags, media evidence, and auth contracts stressed different authority boundaries while reusing the same fail-closed companion posture.
+- **Docs-contract parity became semantic** — Phase 47 checked the guide against live support/doctor/denial surfaces rather than relying on string-only prose anchors.
+- **Hermetic/advisory split carried cleanly** — Rulestead and Rindle both kept optional dependencies out of merge-blocking truth while preserving dependency-present advisory paths.
+
+### What Was Inefficient
+
+- **Audit artifact parity lagged behavior** — Phase 44 had passing contract/reconciliation tests and SUMMARY frontmatter but no `44-VERIFICATION.md`, so the milestone audit initially had to fail closed until the verification ledger was reconstructed.
+- **Roadmap status drifted for Phase 43** — Phase 43 had summaries and verification evidence but remained unchecked in `ROADMAP.md`, showing that roadmap parity needs the same closure discipline as SUMMARY frontmatter.
+- **Nyquist validation ledgers remain uneven** — several v3.5 validation files stayed draft/non-Nyquist even though phase verification and tests passed.
+
+### Patterns Established
+
+- **Companion seam pattern** — behaviour + state + optional dependency validation + route-local restrictions + doctor/support truth + hermetic/advisory proof is now the default shape for first-party companions.
+- **Backend-authority lane discipline** — Rindle media and Sigra auth both treat device/client output as evidence only until backend contracts explicitly promote it.
+- **Contract-only auth milestone shape** — high-blast-radius identity work can ship useful route-policy truth without pulling in handoff, ceremony, passkeys, OAuth, or token rotation.
+
+### Key Lessons
+
+- **Every completed phase needs a verification report before milestone close** — behavior can be green and still fail the audit if the third traceability source is missing.
+- **Close thread artifacts when their milestone ships** — the open `companion-seam-pattern` thread was real historical context, but leaving it open blocked milestone close.
+- **Companion docs should cite live truth surfaces** — using exported support/doctor/denial truth in docs tests makes guide drift a compile-time problem.
+
+### Cost Observations
+
+- **Session shape:** Two-day milestone (2026-05-30 to 2026-05-31) with 10 phases and 22 plans.
+- **Verification:** Milestone audit passed 15/15 requirements; Phase 44 focused proof passed 27 tests; Phase 47 guide/proof passed 12 tests; hermetic suite passed 455 tests with 44 excluded.
+- **Closeout friction:** The close workflow needed manual remediation for a missing Phase 44 verification file, stale Phase 43 roadmap status, one open thread, and a resolved UAT marker still in the active phase tree.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -143,3 +188,5 @@
 | Re-audits trump rewriting | v3.2 closure required three re-audit appends (Phase 24, milestone closure, Phase 25) rather than rewriting the original `gaps_found` audit | Treat audit files as append-only ledgers — `gaps_found` followed by closure re-audits beats overwriting the original verdict |
 | Prove archetypes with mocks that share the real core | v3.4 shipped a copy-able paywall corridor with a pure-Elixir `MockStorefront` and a merge-blocking hermetic proof, both routed through the real reconciliation/projection pipeline, with zero provider-SDK code | When opening a new product archetype, mock the provider boundary only — keep the contract, reconciliation, and UI-derivation path real and proof-locked, deferring vendor SDK integration to a dedicated adapter milestone |
 | CLI-generated milestone artifacts need author-time input quality | v3.4's milestone-complete CLI emitted placeholder `One-liner:` bullets into MILESTONES.md because phase SUMMARYs lacked clean one-liners | Author SUMMARY one-liners at phase close; treat machine-extracted milestone summaries as drafts to verify, not final copy |
+| Companion seams need backend-authority discipline | v3.5 proved Rulestead, Rindle, and Sigra as typed, fail-closed companion surfaces while keeping device media/auth evidence non-authoritative | Future companions should start with explicit authority/evidence lanes and route-local restrictions before adding provider or native machinery |
+| Audit artifacts are part of completion truth | v3.5 behavior was green, but closeout initially failed on missing Phase 44 verification, stale Phase 43 roadmap status, an open thread, and active-tree resolved UAT residue | Treat verification reports, thread closure, roadmap parity, and artifact cleanup as required product work, not administrative cleanup |
