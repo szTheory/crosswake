@@ -49,7 +49,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 - [x] **Phase 41: Gating Doctor And Support-Matrix Truth** — doctor category for gated routes; runtime gate-state column distinct from build-proof state (completed 2026-05-30)
 - [x] **Phase 42: Rulestead In-Tree Companion And Mock Example** — `lib/crosswake/companions/rulestead/`; mock flag source in `examples/phoenix_host`; route through all gate states (completed 2026-05-30)
 - [ ] **Phase 43: Rulestead Hermetic+Advisory Proof And Guide** — hermetic CI lane (no optional dep, asserts fail-closed); advisory lane; `guides/companions.md` rulestead section with docs-contract lock
-- [ ] **Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary** — `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts; backend-owned non-authoritative reconciliation vocabulary
+- [x] **Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary** — `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts; backend-owned non-authoritative reconciliation vocabulary (completed 2026-05-31)
 - [ ] **Phase 45: Rindle In-Tree Companion, Mock Example, And Proof** — pure-Elixir mock upload/verify; hermetic proof; generalization proof that the pattern isn't flag-specific
 - [ ] **Phase 46: Sigra Auth Contract-Only Slice** — `AuthContext` + `SessionAuthorityLane` + route auth predicates; fail-closed `:step_up_required`; doctor/support-matrix truth
 - [ ] **Phase 47: Companion Arc Guide And Milestone Proof** — `guides/companions.md` overview; deferred non-goals documented; cross-companion docs-contract parity; milestone-level hermetic proof
@@ -187,7 +187,15 @@ Plans:
   2. The reconciliation vocabulary is backend-owned: device-reported upload success alone does not advance a `MediaObject` to `:available`; only backend verification can; this invariant is enforced at the contract level, not merely by convention.
   3. The `MediaObject` state machine mirrors the `Crosswake.Commerce.Reconciliation` vocabulary structurally, making it recognizable to anyone who has read the commerce contracts.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [x] 44-01-PLAN.md — Rindle contract structs + validators + MEDIA-01 hermetic proof
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 44-02-PLAN.md — backend-owned reconciliation vocabulary + evidence-only availability fence + MEDIA-02 proof
 **UI hint**: yes
 
 ### Phase 45: Rindle In-Tree Companion, Mock Example, And Proof
@@ -245,7 +253,7 @@ Plans:
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
-| 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
+| 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
