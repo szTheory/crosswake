@@ -181,6 +181,12 @@ defmodule Crosswake.OperatorInspection.Types do
     }
   end
 
+  def to_map(%_struct{} = struct) do
+    struct
+    |> Map.from_struct()
+    |> to_map()
+  end
+
   def to_map(map) when is_map(map) do
     map
     |> Enum.map(fn {key, value} -> {to_string(key), to_map(value)} end)
