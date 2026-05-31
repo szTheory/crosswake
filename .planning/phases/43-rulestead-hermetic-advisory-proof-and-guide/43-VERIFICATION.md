@@ -1,20 +1,17 @@
 ---
 phase: 43-rulestead-hermetic-advisory-proof-and-guide
-verified: 2026-05-31T13:57:29Z
-status: human_needed
-score: 2/3 must-haves verified
+verified: 2026-05-31T14:06:45Z
+status: verified
+score: 3/3 must-haves verified
 overrides_applied: 0
-human_verification:
-  - test: "Confirm GitHub branch protection requires `merge-blocking-rulestead-proof` on `main`"
-    expected: "PRs cannot merge when the hermetic job fails or is missing"
-    why_human: "Required-check enforcement is configured in GitHub settings, not in repository files"
+human_verification: []
 ---
 
 # Phase 43: Rulestead Hermetic+Advisory Proof And Guide Verification Report
 
 **Phase Goal:** The rulestead seam has a merge-blocking hermetic CI lane that passes without the optional dependency present, an advisory lane with it present, and a `guides/companions.md` rulestead section locked by a docs-contract test.
-**Verified:** 2026-05-31T13:57:29Z
-**Status:** human_needed
+**Verified:** 2026-05-31T14:06:45Z
+**Status:** verified
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -23,11 +20,11 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Hermetic lane runs without optional dep, asserts fail-closed behavior, and is merge-blocking | ? UNCERTAIN (WARNING) | Workflow has `merge-blocking-rulestead-proof` on `pull_request`/`push`/`workflow_dispatch`, no `MIX_INCLUDE_RULESTEAD` in hermetic steps, and runs `mix test --exclude requires_example_host --exclude advisory_only` in [.github/workflows/phase43-proof.yml](/Users/jon/projects/crosswake/.github/workflows/phase43-proof.yml). Local hermetic run passed: `391 tests, 0 failures`. Required-check enforcement in GitHub branch protection is not verifiable from repo files. |
+| 1 | Hermetic lane runs without optional dep, asserts fail-closed behavior, and is merge-blocking | ✓ VERIFIED | Workflow has `merge-blocking-rulestead-proof` on `pull_request`/`push`/`workflow_dispatch`, no `MIX_INCLUDE_RULESTEAD` in hermetic steps, and runs `mix test --exclude requires_example_host --exclude advisory_only` in [.github/workflows/phase43-proof.yml](/Users/jon/projects/crosswake/.github/workflows/phase43-proof.yml). Local hermetic run passed: `391 tests, 0 failures`. GitHub run `26714770915` passed the `merge-blocking rulestead proof (hermetic)` job, and branch protection on `main` now requires that strict status check. |
 | 2 | Advisory lane runs with optional dep present and stays advisory with promotion path | ✓ VERIFIED | Advisory job is `continue-on-error: true`, scoped to `schedule/workflow_dispatch`, and sets step-level `MIX_INCLUDE_RULESTEAD: \"1\"` for deps/compile/test in [.github/workflows/phase43-proof.yml](/Users/jon/projects/crosswake/.github/workflows/phase43-proof.yml). Promotion conditions and `Rulestead.Snapshot` are documented in workflow header and [guides/companions.md](/Users/jon/projects/crosswake/guides/companions.md). |
 | 3 | `guides/companions.md` rulestead section exists and is locked by docs-contract test | ✓ VERIFIED | Guide includes required anchors (`gated_by`, `on_unavailable`, `kill_switch`, `MockFlagSource`, `fail-closed`) in [guides/companions.md](/Users/jon/projects/crosswake/guides/companions.md). Docs-contract in [test/crosswake/guides/companions_test.exs](/Users/jon/projects/crosswake/test/crosswake/guides/companions_test.exs) passed locally (`9 tests, 0 failures`) and checks `function_exported?/3` for live symbols. |
 
-**Score:** 2/3 truths verified
+**Score:** 3/3 truths verified
 
 ### Required Artifacts
 
@@ -72,7 +69,7 @@ Step 7c: SKIPPED (no phase-specific `scripts/*/tests/probe-*.sh` declared or pre
 
 | Requirement | Source Plan | Description | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| PROOF-01 | 43-01 | Hermetic merge-blocking lane + advisory lane with dep present | ? NEEDS HUMAN | Workflow and tests are correctly wired; human confirmation needed for branch protection required-check enforcement on GitHub. |
+| PROOF-01 | 43-01 | Hermetic merge-blocking lane + advisory lane with dep present | ✓ SATISFIED | Workflow and tests are correctly wired. GitHub branch protection on `main` requires strict status check `merge-blocking rulestead proof (hermetic)`. |
 | PROOF-02 (Phase 43 slice) | 43-02 | Rulestead section in `guides/companions.md` with docs-contract lock | ✓ SATISFIED | Guide + docs-contract test implemented and passing locally. |
 | PROOF-02 (global) | REQUIREMENTS/ROADMAP | Full companions arc guide (rulestead+rindle+sigra + deferred non-goals) | ℹ️ DEFERRED | Explicitly pending for Phase 47 in `.planning/REQUIREMENTS.md`; not a Phase 43 blocker. |
 
@@ -84,11 +81,7 @@ Step 7c: SKIPPED (no phase-specific `scripts/*/tests/probe-*.sh` declared or pre
 
 ### Human Verification Required
 
-### 1. Merge Gate Enforcement
-
-**Test:** In GitHub branch protection for `main`, verify `merge-blocking-rulestead-proof` is a required status check.  
-**Expected:** PR merge is blocked when this job fails or is absent.  
-**Why human:** Required-check policy lives in GitHub settings, outside the repository.
+None. The GitHub branch protection API was checked and updated directly.
 
 ### Warnings
 
@@ -97,5 +90,5 @@ Step 7c: SKIPPED (no phase-specific `scripts/*/tests/probe-*.sh` declared or pre
 
 ---
 
-_Verified: 2026-05-31T13:57:29Z_  
+_Verified: 2026-05-31T14:06:45Z_  
 _Verifier: the agent (gsd-verifier)_
