@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: verifying
-last_updated: "2026-05-31T17:34:13.306Z"
+status: milestone_complete
+last_updated: 2026-05-31T17:46:55.585Z
 last_activity: 2026-05-31
 progress:
   total_phases: 10
@@ -11,6 +11,7 @@ progress:
   total_plans: 22
   completed_plans: 22
   percent: 100
+stopped_at: Milestone complete (Phase 47 was final phase)
 ---
 
 # Project State
@@ -20,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 47 — Companion Arc Guide And Milestone Proof
+**Current focus:** Milestone complete
 
 ## Current Position
 
-Phase: 47 (Companion Arc Guide And Milestone Proof) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Phase: 47
+Plan: Not started
+Status: Milestone complete
 Last activity: 2026-05-31
 
 Progress: [██████████] 100%
@@ -35,7 +36,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 83 (v1.0–v3.4)
+- Total plans completed: 85 (v1.0–v3.5)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
