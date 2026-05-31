@@ -108,6 +108,7 @@ defmodule Crosswake.DoctorTest do
                "kill_switch_active",
                "origin_denied",
                "pack_incompatible",
+               "step_up_required",
                "undeclared_capability",
                "unavailable_capability"
              ])
@@ -698,6 +699,52 @@ defmodule Crosswake.DoctorTest do
       assert promotion_path =~ ~r/requirement|roadmap/i,
              "advisory finding #{finding.code} promotion_path must mention requirement/roadmap scope change, got #{inspect(promotion_path)}"
     end
+  end
+
+  defmodule GatingIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live "/gated-feature", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "gated_feature",
+            runtime: :live_view,
+            gated_by: :unregistered_companion
+          ]
+      end
+    end
+  end
+
+  test "gating findings surface in formatted Doctor output (human and JSON)", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    # No companions registered — Application.get_env returns [] by default.
+    # A route gated by an unregistered companion produces both findings:
+    #   :advisory "gating.route_gated"          — one per gated route
+    #   :error   "gating.flag_reference_unknown" — companion not in registry
+    report =
+      Doctor.run(
+        route_source: GatingIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    gating_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "gating."))
+
+    assert Enum.any?(gating_findings, &(&1.code == "gating.route_gated" and &1.severity == :advisory))
+    assert Enum.any?(gating_findings, &(&1.code == "gating.flag_reference_unknown" and &1.severity == :error))
+
+    human = Formatter.render(report)
+    decoded = JSONFormatter.render(report) |> Jason.decode!()
+
+    assert human =~ "gating.route_gated"
+    assert human =~ "gating.flag_reference_unknown"
+
+    finding_codes = Enum.map(decoded["findings"], & &1["code"])
+    assert "gating.route_gated" in finding_codes
+    assert "gating.flag_reference_unknown" in finding_codes
   end
 
   defp write_shell_artifacts!(target) do
