@@ -174,7 +174,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion — shared mix.exs edit)*
 
-- [ ] 43-02-PLAN.md — guides/companions.md (intro + rulestead section, exact DSL anchors) + companions_test.exs docs-contract test + ExDoc extras registration (PROOF-02)
+- [x] 43-02-PLAN.md — guides/companions.md (intro + rulestead section, exact DSL anchors) + companions_test.exs docs-contract test + ExDoc extras registration (PROOF-02)
 
 ### Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary
 
@@ -244,7 +244,7 @@ Plans:
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 1/2 | In Progress|  |
+| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
