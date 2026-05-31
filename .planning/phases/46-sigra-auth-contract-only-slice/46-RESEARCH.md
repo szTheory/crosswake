@@ -201,17 +201,15 @@ def new_capture_evidence(attrs), do: build_and_validate(attrs, CaptureEvidence, 
 |---|-------|---------|---------------|
 | A1 | Convenience pressure is a common cause of evidence/authority leakage | Common Pitfalls | Medium: may mis-prioritize mitigation rationale, but tests still enforce behavior |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Auth level canonical symbols**
    - What we know: Ordering must be closed and comparable; names are discretionary. [VERIFIED: codebase grep]
-   - What's unclear: Final atom names to align with Phase 47 docs-contract assertions.
-   - Recommendation: Lock symbol names in planner before implementation tasks start.
+   - Resolution: Lock the Phase 46 vocabulary to `:none | :password | :mfa | :phishing_resistant`, ordered exactly in that ascending strength sequence. This matches the context recommendation and gives Phase 47 stable docs-contract anchors.
 
 2. **`requires_recent_auth` input normalization**
    - What we know: Integer seconds is preferred by context and easiest for manifest JSON truth. [VERIFIED: codebase grep]
-   - What's unclear: Whether DSL accepts only integer or duration-like maps too.
-   - Recommendation: Use integer seconds only in Phase 46 unless a hard requirement appears.
+   - Resolution: Accept only positive integer seconds in Phase 46. Do not add duration strings, tuples, or maps; manifest JSON should carry `requires_recent_auth` as a numeric value.
 
 ## Environment Availability
 
