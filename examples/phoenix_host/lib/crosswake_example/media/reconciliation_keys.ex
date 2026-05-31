@@ -10,22 +10,28 @@ defmodule CrosswakeExample.Media.ReconciliationKeys do
 
   @spec event_key(Contracts.CaptureEvidence.t(), String.t() | atom()) :: String.t()
   def event_key(%Contracts.CaptureEvidence{} = evidence, event_kind) do
-    [
-      "event",
-      "media",
-      "mock",
-      evidence.grant_id,
-      evidence.idempotency_key,
-      canonical(event_kind),
-      evidence.storage_key
-    ]
-    |> Enum.map(&component/1)
-    |> Enum.join("::")
+    payload = %{
+      kind: "event",
+      lane: "media",
+      source: "mock",
+      grant_id: evidence.grant_id,
+      idempotency_key: evidence.idempotency_key,
+      event_kind: canonical(event_kind),
+      storage_key: evidence.storage_key
+    }
+
+    payload
+    |> Jason.encode!()
+    |> then(&:crypto.hash(:sha256, &1))
+    |> Base.encode16(case: :lower)
   end
 
   @spec subject_key(Contracts.CaptureEvidence.t() | Contracts.UploadGrant.t()) :: String.t()
-  def subject_key(%Contracts.CaptureEvidence{} = evidence), do: subject_from_storage_key(evidence.storage_key)
-  def subject_key(%Contracts.UploadGrant{} = grant), do: subject_from_storage_key(grant.key_prefix)
+  def subject_key(%Contracts.CaptureEvidence{} = evidence),
+    do: subject_from_storage_key(evidence.storage_key)
+
+  def subject_key(%Contracts.UploadGrant{} = grant),
+    do: subject_from_storage_key(grant.key_prefix)
 
   @spec trace_metadata(Contracts.CaptureEvidence.t(), keyword()) :: map()
   def trace_metadata(%Contracts.CaptureEvidence{} = evidence, opts \\ []) do
@@ -51,5 +57,4 @@ defmodule CrosswakeExample.Media.ReconciliationKeys do
   end
 
   defp canonical(value), do: value |> to_string() |> String.trim() |> String.downcase()
-  defp component(value), do: value |> to_string() |> String.trim()
 end

@@ -12,7 +12,6 @@ defmodule CrosswakeExample.Media.MockCapture do
   @default_subject "user_123"
   @default_media "photo_123"
   @default_idempotency "media-idem-123"
-  @default_time "2026-05-31T00:01:00Z"
 
   @spec issue_upload_grant(String.t(), keyword()) ::
           {:ok, Contracts.UploadGrant.t()} | {:error, keyword()}
@@ -24,7 +23,7 @@ defmodule CrosswakeExample.Media.MockCapture do
     Contracts.new_upload_grant(%{
       grant_id: "grant_#{media_id}",
       idempotency_key: idempotency_key,
-      expires_at: Keyword.get(opts, :expires_at, "2026-05-31T00:15:00Z"),
+      expires_at: Keyword.get_lazy(opts, :expires_at, &default_expires_at/0),
       max_bytes: Keyword.get(opts, :max_bytes, 5_000_000),
       accepted_types: Keyword.get(opts, :accepted_types, ["image/jpeg", "image/png"]),
       key_prefix: key_prefix,
@@ -36,14 +35,15 @@ defmodule CrosswakeExample.Media.MockCapture do
   @spec emit_capture_evidence(Contracts.UploadGrant.t(), keyword()) ::
           {:ok, Contracts.CaptureEvidence.t()} | {:error, term()}
   def emit_capture_evidence(%Contracts.UploadGrant{} = grant, opts \\ []) do
-    with :ok <- validate_idempotency(grant, Keyword.get(opts, :idempotency_key, grant.idempotency_key)) do
+    with :ok <-
+           validate_idempotency(grant, Keyword.get(opts, :idempotency_key, grant.idempotency_key)) do
       Contracts.new_capture_evidence(%{
         grant_id: grant.grant_id,
         idempotency_key: Keyword.get(opts, :idempotency_key, grant.idempotency_key),
         storage_key: Keyword.get(opts, :storage_key, grant.key_prefix <> "capture.jpg"),
         mime: Keyword.get(opts, :mime, "image/jpeg"),
         bytes: Keyword.get(opts, :bytes, 1024),
-        captured_at: Keyword.get(opts, :captured_at, @default_time),
+        captured_at: Keyword.get_lazy(opts, :captured_at, &now_iso/0),
         client_upload_ref: Keyword.get(opts, :client_upload_ref, "local_upload_123"),
         content_hash: Keyword.get(opts, :content_hash, "sha256:abc123"),
         correlation_id: Keyword.get(opts, :correlation_id, "corr_1"),
@@ -64,4 +64,12 @@ defmodule CrosswakeExample.Media.MockCapture do
       {:error, :idempotency_key_mismatch}
     end
   end
+
+  defp default_expires_at do
+    DateTime.utc_now()
+    |> DateTime.add(15 * 60, :second)
+    |> DateTime.to_iso8601()
+  end
+
+  defp now_iso, do: DateTime.utc_now() |> DateTime.to_iso8601()
 end

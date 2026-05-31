@@ -1,8 +1,27 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/media_lane_live.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/media_lane_live.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase45RindleLiveTest do
   use ExUnit.Case, async: false
@@ -52,6 +71,21 @@ defmodule Crosswake.Proof.Phase45RindleLiveTest do
     assert {:noreply, available} = live.handle_event("verify_backend", %{}, scanning)
     assert available.assigns.derived_state == :available
     assert render_assigns(available.assigns) =~ "Backend verified media is available"
+  end
+
+  test "event handlers return fail-closed flashes instead of crashing on missing state" do
+    live = media_live()
+    assert {:ok, socket} = live.mount(%{}, %{}, %Phoenix.LiveView.Socket{})
+    broken = Component.assign(socket, grant: nil, media_object: nil)
+
+    assert {:noreply, upload_failed} = live.handle_event("record_upload", %{}, broken)
+    assert upload_failed.assigns.error_message =~ "Media lane unavailable"
+
+    assert {:noreply, scan_failed} = live.handle_event("start_scan", %{}, broken)
+    assert scan_failed.assigns.error_message =~ "Media lane unavailable"
+
+    assert {:noreply, verify_failed} = live.handle_event("verify_backend", %{}, broken)
+    assert verify_failed.assigns.error_message =~ "Media lane unavailable"
   end
 
   defp media_live, do: Module.concat(["CrosswakeExample", "Media", "MediaLaneLive"])

@@ -1,17 +1,40 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.Companions.Rindle.Contracts
-  alias CrosswakeExample.Media.{MediaProjection, MockCapture, ReconciliationInbox, ReconciliationKeys}
+
+  alias CrosswakeExample.Media.{
+    MediaProjection,
+    MockCapture,
+    ReconciliationInbox,
+    ReconciliationKeys
+  }
 
   test "mock capture issues valid grants and device evidence through Phase 44 contracts" do
     assert {:ok, %Contracts.UploadGrant{} = grant} = MockCapture.issue_upload_grant("user_123")
-    assert {:ok, %Contracts.CaptureEvidence{} = evidence} = MockCapture.emit_capture_evidence(grant)
+
+    assert {:ok, %Contracts.CaptureEvidence{} = evidence} =
+             MockCapture.emit_capture_evidence(grant)
 
     assert grant.idempotency_key == evidence.idempotency_key
     assert evidence.source == :device
@@ -25,7 +48,8 @@ defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
     assert ReconciliationKeys.event_key(first_evidence, "capture_uploaded") ==
              ReconciliationKeys.event_key(second_evidence, "capture_uploaded")
 
-    assert {:ok, first} = ReconciliationInbox.ingest_capture_evidence(first_evidence, correlation_id: "corr_1")
+    assert {:ok, first} =
+             ReconciliationInbox.ingest_capture_evidence(first_evidence, correlation_id: "corr_1")
 
     assert {:ok, replay} =
              ReconciliationInbox.ingest_capture_evidence(second_evidence,
@@ -37,6 +61,30 @@ defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
     assert replay.replay?
     assert replay.event_key == first.event_key
     assert replay.trace_metadata.correlation_id == "corr_2"
+  end
+
+  test "event keys are encoded and do not collapse delimiter-shaped values" do
+    {:ok, grant_a} =
+      MockCapture.issue_upload_grant("user_123",
+        media_id: "photo::a",
+        idempotency_key: "idem::left"
+      )
+
+    {:ok, grant_b} =
+      MockCapture.issue_upload_grant("user_123",
+        media_id: "photo",
+        idempotency_key: "a::idem::left"
+      )
+
+    {:ok, evidence_a} = MockCapture.emit_capture_evidence(grant_a)
+    {:ok, evidence_b} = MockCapture.emit_capture_evidence(grant_b)
+
+    key_a = ReconciliationKeys.event_key(evidence_a, "capture_uploaded")
+    key_b = ReconciliationKeys.event_key(evidence_b, "capture_uploaded")
+
+    assert Regex.match?(~r/^[0-9a-f]{64}$/, key_a)
+    assert Regex.match?(~r/^[0-9a-f]{64}$/, key_b)
+    refute key_a == key_b
   end
 
   test "missing or mismatched idempotency key is rejected before evidence is emitted" do
@@ -62,7 +110,9 @@ defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
   test "projection can model scanning and only backend verification produces available" do
     {:ok, grant} = MockCapture.issue_upload_grant("user_123")
     {:ok, evidence} = MockCapture.emit_capture_evidence(grant)
-    {:ok, scanning_ingestion} = ReconciliationInbox.ingest_capture_evidence(evidence, backend_scan_started: true)
+
+    {:ok, scanning_ingestion} =
+      ReconciliationInbox.ingest_capture_evidence(evidence, backend_scan_started: true)
 
     assert {:ok, scanning} = MediaProjection.project_object(nil, scanning_ingestion)
     assert scanning.state == :scanning
@@ -100,7 +150,14 @@ defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
       "examples/phoenix_host/lib/crosswake_example/media/media_projection.ex"
     ]
 
-    forbidden = ["s" <> "3", "g" <> "cs", "az" <> "ure", "t" <> "us", "store" <> "kit", "play" <> "_billing"]
+    forbidden = [
+      "s" <> "3",
+      "g" <> "cs",
+      "az" <> "ure",
+      "t" <> "us",
+      "store" <> "kit",
+      "play" <> "_billing"
+    ]
 
     for file <- files do
       source = File.read!(file) |> String.downcase()
