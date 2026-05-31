@@ -121,7 +121,7 @@ defmodule Crosswake.SupportMatrix do
   ]
   @auth_contract_truth [
     %{
-      surface: "AuthContext + SessionAuthorityLane contract-only route predicate enforcement",
+      surface: "AuthContext contract-only route predicate enforcement",
       owner: :backend_seam,
       package_class: :companion,
       proof_class: :merge_blocking,

@@ -440,7 +440,7 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.denial_vocabulary == :step_up_required
     assert row.fallback == :step_up_required
     assert row.surface =~ "AuthContext"
-    assert row.surface =~ "SessionAuthorityLane"
+    refute row.surface =~ "SessionAuthorityLane"
     assert row.posture =~ "Contract-only"
     assert row.posture =~ "No handoff"
   end

@@ -189,6 +189,28 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
            ]
   end
 
+  test "step-up denial optional references are sanitized before shell exposure" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(AuthPredicatedRouter)
+    target = %Target{origin: manifest.host.origin}
+
+    safe_decision =
+      RouteGate.evaluate(manifest, "secure", target,
+        challenge_ref: "challenge:phase46.safe-1",
+        step_up_token_ref: "stepup.ref_123"
+      )
+
+    unsafe_decision =
+      RouteGate.evaluate(manifest, "secure", target,
+        challenge_ref: "oauth bearer token with spaces",
+        step_up_token_ref: String.duplicate("a", 129)
+      )
+
+    assert safe_decision.denial.details["challenge_ref"] == "challenge:phase46.safe-1"
+    assert safe_decision.denial.details["step_up_token_ref"] == "stepup.ref_123"
+    refute Map.has_key?(unsafe_decision.denial.details, "challenge_ref")
+    refute Map.has_key?(unsafe_decision.denial.details, "step_up_token_ref")
+  end
+
   test "kill-switch and gate denials short-circuit before auth checks" do
     assert {:ok, %{manifest: kill_manifest}} = Manifest.compile(GatedAndAuthRouter)
     assert {:ok, auth_context} = Contracts.new_auth_context(actor_id: "actor", org_id: "org", mfa_level: :none, auth_age: 9999)
@@ -241,7 +263,7 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
     assert row.denial_vocabulary == :step_up_required
     assert row.fallback == :step_up_required
     assert row.surface =~ "AuthContext"
-    assert row.surface =~ "SessionAuthorityLane"
+    refute row.surface =~ "SessionAuthorityLane"
 
     assert manifest.routes["secure"].auth_min_level == :mfa
     assert manifest.routes["secure"].requires_recent_auth == 600

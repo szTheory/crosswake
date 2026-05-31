@@ -12,6 +12,8 @@ defmodule Crosswake.Compatibility.RouteGate do
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Shell.Denial
 
+  @safe_step_up_ref ~r/^[A-Za-z0-9._:-]{1,128}$/
+
   defmodule Decision do
     @moduledoc false
 
@@ -268,7 +270,15 @@ defmodule Crosswake.Compatibility.RouteGate do
   end
 
   defp maybe_put_optional_ref(details, _key, value) when not is_binary(value), do: details
-  defp maybe_put_optional_ref(details, key, value), do: Map.put(details, key, value)
+  defp maybe_put_optional_ref(details, _key, value) when byte_size(value) > 128, do: details
+
+  defp maybe_put_optional_ref(details, key, value) do
+    if Regex.match?(@safe_step_up_ref, value) do
+      Map.put(details, key, value)
+    else
+      details
+    end
+  end
 
   defp merge_auth_check(details, :ok), do: details
   defp merge_auth_check(details, {:error, check_details}), do: Map.merge(details, check_details)

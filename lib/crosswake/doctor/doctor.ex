@@ -718,7 +718,7 @@ defmodule Crosswake.Doctor do
             "auth.step_up_required_contract",
             "auth.contract_posture",
             "Auth contract surface is route predicate enforcement only in Phase 46.",
-            "Contract-only scope: typed AuthContext + SessionAuthorityLane inputs and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
+            "Contract-only scope: typed AuthContext input and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
             %{fallback: :step_up_required}
           )
         ]
