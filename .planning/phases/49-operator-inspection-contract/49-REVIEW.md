@@ -18,7 +18,8 @@ findings:
   warning: 2
   info: 0
   total: 3
-status: findings
+status: clean
+resolution_commit: 5d9829b
 ---
 
 # Phase 49: Code Review Report
@@ -26,7 +27,7 @@ status: findings
 **Reviewed:** 2026-05-31T21:05:00Z  
 **Depth:** standard  
 **Files Reviewed:** 9  
-**Status:** issues_found
+**Status:** issues_resolved
 
 ## Summary
 
@@ -80,3 +81,11 @@ end
 _Reviewed: 2026-05-31T21:05:00Z_  
 _Reviewer: the agent (gsd-code-reviewer)_  
 _Depth: standard_
+
+## Resolution
+
+All three findings were fixed in `5d9829b`:
+
+- `mix crosswake.inspect` now resolves router modules with `String.to_existing_atom/1`.
+- `support.proof_class` now derives advisory posture from capabilities, commerce, companion, auth, and notification axes.
+- Commerce rebuild data no longer marks companion rebuild required solely because native rebuild is required.
