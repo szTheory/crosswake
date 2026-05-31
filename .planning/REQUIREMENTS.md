@@ -12,8 +12,8 @@
 
 ### Operator Inspection
 
-- [ ] **OPER-01**: Maintainers can inspect route ownership, runtime mode, capability declarations, commerce corridors, companion bindings, auth predicates, and rebuild requirements from a single operator-facing output.
-- [ ] **OPER-02**: CI or support tooling can consume machine-readable inspection output without scraping prose docs.
+- [x] **OPER-01**: Maintainers can inspect route ownership, runtime mode, capability declarations, commerce corridors, companion bindings, auth predicates, and rebuild requirements from a single operator-facing output.
+- [x] **OPER-02**: CI or support tooling can consume machine-readable inspection output without scraping prose docs.
 
 ### Doctor Readiness
 
@@ -66,8 +66,8 @@
 |-------------|-------|--------|
 | STRAT-01 | Phase 48 | Complete |
 | STRAT-02 | Phase 48 | Complete |
-| OPER-01 | Phase 49 | Pending |
-| OPER-02 | Phase 49 | Pending |
+| OPER-01 | Phase 49 | Complete |
+| OPER-02 | Phase 49 | Complete |
 | DIAG-01 | Phase 50 | Pending |
 | DIAG-02 | Phase 50 | Pending |
 | SUPP-01 | Phase 51 | Pending |

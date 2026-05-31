@@ -64,7 +64,7 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 <summary>🔄 v3.6 Operator Truth and Production Diagnostics (Phases 48-53) — ACTIVE</summary>
 
 - [x] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue. (completed 2026-05-31)
-- [ ] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output.
+- [x] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output. (completed 2026-05-31)
 - [ ] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings.
 - [ ] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
 - [ ] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof.
@@ -111,11 +111,11 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 49-01-PLAN.md — create the typed `Crosswake.OperatorInspection` contract, route-authoritative schema, and stable JSON surface with focused ExUnit coverage
+- [x] 49-01-PLAN.md — create the typed `Crosswake.OperatorInspection` contract, route-authoritative schema, and stable JSON surface with focused ExUnit coverage
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 49-02-PLAN.md — add the concise human formatter and `mix crosswake.inspect` CLI without widening into doctor publish checks or deferred provider/auth/notification claims
+- [x] 49-02-PLAN.md — add the concise human formatter and `mix crosswake.inspect` CLI without widening into doctor publish checks or deferred provider/auth/notification claims
 
 **Phase 50: Doctor Publish and Readiness Checks**
 
