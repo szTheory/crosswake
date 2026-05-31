@@ -328,11 +328,11 @@ def reasons, do: @reasons
 |---|-------|---------|---------------|
 | A1 | Existing hermetic lane command is sufficient for milestone aggregate proof pickup without new workflow file. [ASSUMED] | Architecture Patterns | May need explicit workflow wiring if branch protection requires named check. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 1. **Should milestone proof be surfaced as a distinct required CI check name?**
    - What we know: Existing workflows run broad hermetic command that can pick up an untagged Phase 47 proof file.
-   - What's unclear: Branch-protection policy may require a dedicated check name for milestone closure.
-   - Recommendation: Plan default as in-lane inclusion; add explicit workflow check only if governance requires it.
+   - Resolution: Use in-lane inclusion for Phase 47. The plan should add an untagged aggregate proof file that the existing hermetic command picks up, and should not create a distinct `phase47-proof.yml` unless a future branch-protection/governance phase explicitly requires one.
+   - Recommendation: Plan default as in-lane inclusion; add explicit workflow check only in a future governance change if required.
 
 ## Environment Availability
 | Dependency | Required By | Available | Version | Fallback |
@@ -416,4 +416,3 @@ def reasons, do: @reasons
 
 **Research date:** 2026-05-31  
 **Valid until:** 2026-06-30
-
