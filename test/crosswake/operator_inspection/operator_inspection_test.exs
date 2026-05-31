@@ -114,12 +114,15 @@ defmodule Crosswake.OperatorInspectionTest do
     assert checkout.commerce.owner_posture == :native_or_companion_required
     assert checkout.commerce.advisory_provider_proof == true
     assert checkout.rebuild.native_required == true
+    assert checkout.rebuild.companion_required == false
+    assert checkout.support.proof_class == :advisory
     assert "commerce.corridor.unsupported" in checkout.denials
 
     secure = document.routes["secure"]
     assert secure.auth.auth_min_level == :mfa
     assert secure.auth.requires_recent_auth == 600
     assert secure.auth.readiness == :verification_required
+    assert secure.support.proof_class == :advisory
     assert "step_up_required" in secure.denials
 
     notifications = document.routes["notifications"]
@@ -130,6 +133,7 @@ defmodule Crosswake.OperatorInspectionTest do
     gated = document.routes["gated"]
     assert gated.companion.gated_by == :stub_companion
     assert gated.companion.posture == :first_party_typed_companion
+    assert gated.support.proof_class == :advisory
     assert "gate_denied" in gated.denials
   end
 

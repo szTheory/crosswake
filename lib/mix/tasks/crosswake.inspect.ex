@@ -46,7 +46,12 @@ defmodule Mix.Tasks.Crosswake.Inspect do
   end
 
   defp router_module!(name) when is_binary(name) do
-    module = String.to_atom(name)
+    module =
+      try do
+        String.to_existing_atom(name)
+      rescue
+        ArgumentError -> Mix.raise("router module #{name} is not available")
+      end
 
     if Code.ensure_loaded?(module) do
       module

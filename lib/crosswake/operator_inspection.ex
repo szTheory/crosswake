@@ -209,7 +209,7 @@ defmodule Crosswake.OperatorInspection do
        }) do
     %{
       native_required: native_required,
-      companion_required: native_required,
+      companion_required: false,
       reasons: if(native_required, do: [trigger], else: [])
     }
   end
@@ -335,6 +335,8 @@ defmodule Crosswake.OperatorInspection do
 
     unsupported? = "unsupported" in capability_statuses
 
+    proof_class = proof_class(capabilities, commerce, companion, auth, notifications)
+
     %{
       status:
         cond do
@@ -342,14 +344,21 @@ defmodule Crosswake.OperatorInspection do
           verification_required? -> :verification_required
           true -> :supported
         end,
-      proof_class:
-        if(Enum.any?(capabilities, &(&1["proof_class"] == "advisory")),
-          do: :advisory,
-          else: :merge_blocking
-        ),
-      advisory_only: Enum.any?(capabilities, &(&1["proof_class"] == "advisory")),
+      proof_class: proof_class,
+      advisory_only: proof_class == :advisory,
       blocking_reasons: blocking_reasons(unsupported?, verification_required?, rebuild)
     }
+  end
+
+  defp proof_class(capabilities, commerce, companion, auth, notifications) do
+    advisory? =
+      Enum.any?(capabilities, &(&1["proof_class"] == "advisory")) or
+        get_in(commerce || %{}, [:advisory_provider_proof]) == true or
+        companion.gated_by != nil or
+        auth.readiness == :verification_required or
+        notifications.provider_readiness == :verification_required
+
+    if advisory?, do: :advisory, else: :merge_blocking
   end
 
   defp blocking_reasons(true, _verification_required?, _rebuild), do: ["unsupported_capability"]

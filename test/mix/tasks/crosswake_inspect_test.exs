@@ -60,5 +60,16 @@ defmodule Mix.Tasks.Crosswake.InspectTest do
         "yaml"
       ])
     end
+
+    assert_raise Mix.Error,
+                 ~r/router module Elixir.Crosswake.DoesNotExist is not available/,
+                 fn ->
+                   Mix.Task.reenable(@task)
+
+                   Mix.Task.run(@task, [
+                     "--router",
+                     "Elixir.Crosswake.DoesNotExist"
+                   ])
+                 end
   end
 end
