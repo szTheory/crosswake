@@ -318,17 +318,15 @@ gsd-sdk query roadmap.analyze
 | A1 | Closeout ledger filename should default to `.planning/milestones/<milestone>-CLOSEOUT.md`; exact file is planner discretion. [ASSUMED] | Architecture Patterns | Planner may choose alternate shape/location, requiring plan updates. |
 | A2 | Existing `summary_frontmatter` parity-test style is sufficient baseline for additional closeout checks without new framework. [ASSUMED] | Standard Stack / Pattern 3 | Could under-cover edge cases if new checks need richer parsing. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 48 implement executable closeout parity checks now, or only define exact spec for Phase 53?**
+1. **RESOLVED — Phase 48 implements lightweight executable parity checks now and records the exact Phase 53 promotion target.**
    - What we know: D-05 allows deferral only if exact enforcement check is documented, not vague. [VERIFIED: 48-CONTEXT.md]
-   - What's unclear: available implementation budget inside this phase.
-   - Recommendation: planner should include a hard decision checkpoint early in Plan 01.
+   - Decision: Plan 48-03 adds dependency-free ExUnit parity guards for the strategic arc and closeout ledger now; Plan 48-02 records the concrete `closeout.verify` Phase 53 merge-blocking enforcement target.
 
-2. **Where should machine-readable closeout ledger live?**
+2. **RESOLVED — the live closeout ledger lives at `.planning/milestones/v3.6-CLOSEOUT.md`.**
    - What we know: phase context permits either dedicated closeout file or stable section in milestone audit. [VERIFIED: 48-CONTEXT.md]
-   - What's unclear: which shape best matches existing archive tooling.
-   - Recommendation: choose one canonical location in Wave 0 and lock it in plan interfaces.
+   - Decision: Plan 48-02 creates a dedicated live closeout artifact so the later milestone audit can remain append-only evidence rather than the active checklist.
 
 ## Environment Availability
 
