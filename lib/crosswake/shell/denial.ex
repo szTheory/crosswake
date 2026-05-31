@@ -15,7 +15,8 @@ defmodule Crosswake.Shell.Denial do
     :external_entry_denied,
     :pack_incompatible,
     :gate_denied,
-    :kill_switch_active
+    :kill_switch_active,
+    :step_up_required
   ]
 
   @enforce_keys [:reason, :code, :message]
@@ -32,6 +33,7 @@ defmodule Crosswake.Shell.Denial do
           | :pack_incompatible
           | :gate_denied
           | :kill_switch_active
+          | :step_up_required
 
   @type t :: %__MODULE__{
           reason: reason(),

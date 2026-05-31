@@ -6,6 +6,8 @@ defmodule Crosswake.Compatibility.RouteGate do
   alias Crosswake.Compatibility
   alias Crosswake.Compatibility.Finding
   alias Crosswake.Compatibility.Target
+  alias Crosswake.Companions.Sigra.Contracts
+  alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Shell.Denial
@@ -36,6 +38,8 @@ defmodule Crosswake.Compatibility.RouteGate do
     # Gate evaluation produces Denial.t() directly (bypasses finding_to_denial/2)
     gate_denials = prepend_gate_evaluation_findings([], route, target)
 
+    auth_denials = prepend_auth_evaluation_denials([], route, opts, gate_denials)
+
     findings =
       manifest
       |> Compatibility.route_findings(route_id, target, opts)
@@ -46,7 +50,7 @@ defmodule Crosswake.Compatibility.RouteGate do
       Enum.map(findings, &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id)))
 
     # Gate denials prepend before compatibility denials (fail-closed: gate fires first)
-    denials = gate_denials ++ compatibility_denials
+    denials = gate_denials ++ auth_denials ++ compatibility_denials
     status = if(denials == [], do: :allow, else: :deny)
 
     %Decision{
@@ -167,6 +171,107 @@ defmodule Crosswake.Compatibility.RouteGate do
       end
     end)
   end
+
+  defp prepend_auth_evaluation_denials(acc, _route, _opts, gate_denials) when gate_denials != [], do: acc
+  defp prepend_auth_evaluation_denials(acc, nil, _opts, _gate_denials), do: acc
+
+  defp prepend_auth_evaluation_denials(acc, %RouteEntry{} = route, opts, _gate_denials) do
+    auth_predicated? = not is_nil(route.auth_min_level) or not is_nil(route.requires_recent_auth)
+
+    if auth_predicated? do
+      [build_step_up_denial(route, opts) | acc]
+      |> Enum.reject(&is_nil/1)
+    else
+      acc
+    end
+  end
+
+  defp build_step_up_denial(%RouteEntry{} = route, opts) do
+    auth_context = Keyword.get(opts, :auth_context)
+
+    case fetch_valid_auth_context(auth_context) do
+      {:ok, %AuthContext{} = context} ->
+        details =
+          %{}
+          |> merge_auth_check(check_required_mfa(route.auth_min_level, context))
+          |> merge_auth_check(check_auth_age(route.requires_recent_auth, context))
+
+        if details == %{} do
+          nil
+        else
+          Denial.new(
+            reason: :step_up_required,
+            message: "route #{route.id} requires stronger or fresher backend authentication context",
+            route_id: route.id,
+            details: step_up_details(details, opts)
+          )
+        end
+
+      {:error, details} ->
+        Denial.new(
+          reason: :step_up_required,
+          message: "route #{route.id} requires stronger or fresher backend authentication context",
+          route_id: route.id,
+          details: step_up_details(details, opts)
+        )
+    end
+  end
+
+  defp fetch_valid_auth_context(%AuthContext{} = auth_context) do
+    case Contracts.validate_auth_context(auth_context) do
+      :ok -> {:ok, auth_context}
+      {:error, _reasons} -> {:error, %{}}
+    end
+  end
+
+  defp fetch_valid_auth_context(_auth_context), do: {:error, %{}}
+
+  defp check_required_mfa(nil, _context), do: :ok
+
+  defp check_required_mfa(required_mfa_level, %AuthContext{} = context) do
+    if Contracts.mfa_level_meets?(context.mfa_level, required_mfa_level) do
+      :ok
+    else
+      {:error,
+       %{
+         "required_mfa_level" => Atom.to_string(required_mfa_level),
+         "current_mfa_level" => Atom.to_string(context.mfa_level)
+       }}
+    end
+  end
+
+  defp check_auth_age(nil, _context), do: :ok
+
+  defp check_auth_age(max_auth_age_seconds, %AuthContext{} = context) do
+    auth_age_seconds = Contracts.auth_age_seconds(context)
+
+    if auth_age_seconds <= max_auth_age_seconds do
+      :ok
+    else
+      {:error,
+       %{
+         "max_auth_age_seconds" => max_auth_age_seconds,
+         "auth_age_seconds" => auth_age_seconds
+       }}
+    end
+  end
+
+  defp step_up_details(details, opts) do
+    challenge_refs =
+      %{}
+      |> maybe_put_optional_ref("challenge_ref", Keyword.get(opts, :challenge_ref))
+      |> maybe_put_optional_ref("step_up_token_ref", Keyword.get(opts, :step_up_token_ref))
+
+    details
+    |> Map.merge(challenge_refs)
+    |> Map.put("evaluated_at", DateTime.utc_now() |> DateTime.to_iso8601())
+  end
+
+  defp maybe_put_optional_ref(details, _key, value) when not is_binary(value), do: details
+  defp maybe_put_optional_ref(details, key, value), do: Map.put(details, key, value)
+
+  defp merge_auth_check(details, :ok), do: details
+  defp merge_auth_check(details, {:error, check_details}), do: Map.merge(details, check_details)
 
   defp prepend_commerce_corridor_findings(findings, %RouteEntry{} = route, %Root{} = manifest) do
     generated =
