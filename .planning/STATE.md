@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-31T15:23:30.768Z"
-last_activity: 2026-05-31 -- Phase 45 planning complete
+status: ready_to_plan
+last_updated: 2026-05-31T15:46:17.881Z
+last_activity: 2026-05-31
 progress:
   total_phases: 10
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 16
-  completed_plans: 13
-  percent: 70
+  completed_plans: 34
+  percent: 80
+stopped_at: Phase 45 complete (3/3) — ready to discuss Phase 46
 ---
 
 # Project State
@@ -20,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 45 — rindle-in-tree-companion-mock-example-and-proof
+**Current focus:** Phase 46 — sigra auth contract only slice
 
 ## Current Position
 
-Phase: 45 (rindle-in-tree-companion-mock-example-and-proof) — PLANNED
-Plan: 0 of 3
-Status: Ready to execute
-Last activity: 2026-05-31 -- Phase 45 planning complete
+Phase: 46
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-31
 
-Progress: [███████░░░] 70%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 76 (v1.0–v3.4)
+- Total plans completed: 79 (v1.0–v3.4)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
@@ -65,8 +66,11 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
 | Tooling | `mix crosswake.doctor --check-publish` surface | Deferred | 2026-05-27 |
 | Validation | Finalize Nyquist VALIDATION.md ledger for phases 34-37 (draft → compliant) | Deferred (bookkeeping only) | 2026-05-29 |
+| Phase 45 P01 | 10min | 3 tasks | 3 files |
+| Phase 45 P02 | 12min | 3 tasks | 8 files |
+| Phase 45 P03 | 9min | 3 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-05-31T15:05:27.122Z
-Stopped at: Phase 45 context gathered
+Last session: 2026-05-31T15:37:14.101Z
+Stopped at: Completed 45-03-PLAN.md

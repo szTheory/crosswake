@@ -26,7 +26,7 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 
 - [x] **MEDIA-01**: A Phoenix team can model a media upload lane with a typed `UploadGrant` (constrained presign: expiry, max_bytes, accepted_types, key_prefix, idempotency_key), a device-reported `CaptureEvidence` (evidence only), and a `MediaObject` state lane (`:queued | :uploaded | :scanning | :available | :rejected`).
 - [x] **MEDIA-02**: Device-reported upload success is non-authoritative; only backend verification advances a media object to `:available`, via a reconciliation vocabulary mirroring `Crosswake.Commerce.Reconciliation`.
-- [ ] **MEDIA-03**: A runnable pure-Elixir mock upload/verify example proves the media lane end-to-end with no external SDK, enforcing mandatory idempotency and narrow offline-`:queued` semantics (queued media is never presented as committed).
+- [x] **MEDIA-03**: A runnable pure-Elixir mock upload/verify example proves the media lane end-to-end with no external SDK, enforcing mandatory idempotency and narrow offline-`:queued` semantics (queued media is never presented as committed).
 
 ### AUTH — Sigra Auth Contract (contract-only slice)
 
@@ -70,7 +70,7 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 | GATE-05 | Phase 41 | Complete |
 | MEDIA-01 | Phase 44 | Complete |
 | MEDIA-02 | Phase 44 | Complete |
-| MEDIA-03 | Phase 45 | Pending |
+| MEDIA-03 | Phase 45 | Complete |
 | AUTH-01 | Phase 46 | Pending |
 | AUTH-02 | Phase 46 | Pending |
 | PROOF-01 | Phase 43 + Phase 45 | Complete |

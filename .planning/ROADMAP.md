@@ -50,7 +50,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 - [x] **Phase 42: Rulestead In-Tree Companion And Mock Example** — `lib/crosswake/companions/rulestead/`; mock flag source in `examples/phoenix_host`; route through all gate states (completed 2026-05-30)
 - [ ] **Phase 43: Rulestead Hermetic+Advisory Proof And Guide** — hermetic CI lane (no optional dep, asserts fail-closed); advisory lane; `guides/companions.md` rulestead section with docs-contract lock
 - [x] **Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary** — `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts; backend-owned non-authoritative reconciliation vocabulary (completed 2026-05-31)
-- [ ] **Phase 45: Rindle In-Tree Companion, Mock Example, And Proof** — pure-Elixir mock upload/verify; hermetic proof; generalization proof that the pattern isn't flag-specific
+- [x] **Phase 45: Rindle In-Tree Companion, Mock Example, And Proof** — pure-Elixir mock upload/verify; hermetic proof; generalization proof that the pattern isn't flag-specific (completed 2026-05-31)
 - [ ] **Phase 46: Sigra Auth Contract-Only Slice** — `AuthContext` + `SessionAuthorityLane` + route auth predicates; fail-closed `:step_up_required`; doctor/support-matrix truth
 - [ ] **Phase 47: Companion Arc Guide And Milestone Proof** — `guides/companions.md` overview; deferred non-goals documented; cross-companion docs-contract parity; milestone-level hermetic proof
 
@@ -213,15 +213,15 @@ Plans:
 
 **Wave 1**
 
-- [ ] 45-01-PLAN.md — Rindle companion implementation + optional dependency wiring + doctor fail-closed proof (MEDIA-03/PROOF-01)
+- [x] 45-01-PLAN.md — Rindle companion implementation + optional dependency wiring + doctor fail-closed proof (MEDIA-03/PROOF-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 45-02-PLAN.md — phoenix_host pure-Elixir media mock lane + `/media/proof` LiveView route + idempotency/replay proof (MEDIA-03)
+- [x] 45-02-PLAN.md — phoenix_host pure-Elixir media mock lane + `/media/proof` LiveView route + idempotency/replay proof (MEDIA-03)
 
 **Wave 3** *(blocked on Waves 1-2 completion)*
 
-- [ ] 45-03-PLAN.md — Phase 45 hermetic/advisory proof hardening + `phase45-proof.yml` CI workflow (MEDIA-03/PROOF-01)
+- [x] 45-03-PLAN.md — Phase 45 hermetic/advisory proof hardening + `phase45-proof.yml` CI workflow (MEDIA-03/PROOF-01)
 
 ### Phase 46: Sigra Auth Contract-Only Slice
 
@@ -266,6 +266,6 @@ Plans:
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
-| 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/3 | Planned | - |
+| 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
