@@ -12,6 +12,8 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 **Shipped `v3.5 First-Party Companions` on `2026-05-31`** (Phases 38-47, 22 plans, 40 tasks). v3.5 locked Crosswake's first reusable companion seam and proved it across three bounded companion surfaces. `Crosswake.Companion` now defines the shared six-callback behaviour, typed state contract, fail-closed optional dependency diagnostics, and `[:crosswake, :companion, ...]` telemetry. Rulestead proves route gating with `gated_by`, manifest binding, local-snapshot runtime decisions, `:gate_denied` and `:kill_switch_active` fail-closed denials, doctor diagnostics, support-matrix gate truth, and a pure-Elixir mock flag source in `examples/phoenix_host`. Rindle proves the seam is not flag-specific with media upload grants, evidence-only capture reports, backend-owned reconciliation, a pure-Elixir `/media/proof` lane, and hermetic/advisory proof. Sigra shipped the contract-only auth slice: typed backend `AuthContext`, backend-only `SessionAuthorityLane`, route predicates (`auth_min_level`, `requires_recent_auth`), and fail-closed `:step_up_required` route gating without claiming handoff, ceremony, passkey, OAuth, or refresh-token machinery. `guides/companions.md` is now the canonical companion guide and is parity-locked to live doctor/support/denial truth. Milestone audit passed 15/15 requirements; hermetic suite passed at 455 tests.
 
+**Initialized `v3.6 Operator Truth and Production Diagnostics` on `2026-05-31`** (Phases 48-53 planned). v3.6 refreshes the strategic arc after v3.5 and turns route/capability/companion/provider/auth/notification readiness, native rebuild truth, publish checks, support matrices, and docs-contract parity into production-facing operator surface before provider adapters or deeper native breadth.
+
 **Shipped `v3.4 Commerce Archetype Proof` on `2026-05-29`** (Phases 33-37, 8 plans, 8 tasks). v3.4 turned v3.2's commerce vocabulary into a copy-able adopter lane: a runnable mocked paywall corridor in `examples/phoenix_host` that proves purchase → reconciliation → entitlement → UI end-to-end with zero provider-SDK code, reusing the shipped `Crosswake.Commerce.Contracts`/`Reconciliation` and the Phase-21 reconciliation modules. All 14 requirements validated; milestone audit passed; 352 full-suite tests green.
 
 <details>
@@ -27,18 +29,25 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 </details>
 
-## Current Milestone
+## Current Milestone: v3.6 Operator Truth and Production Diagnostics
 
-No active milestone. v3.5 is complete and archived; start the next milestone with `$gsd-new-milestone`.
+**Goal:** Make Crosswake inspectable and supportable for production SaaS mobile apps before adding more provider/native breadth.
+
+**Target features:**
+- Refresh `.planning/MILESTONE-ARC.md` as the durable strategic queue and closeout checklist.
+- Add operator-facing route/capability/companion/provider/auth/notification readiness inspection.
+- Add `mix crosswake.doctor --check-publish` and richer readiness findings for release/support truth.
+- Lock support-matrix, native rebuild, advisory/merge-blocking, and docs-contract parity for the widened surface.
 
 ## Next Milestone Candidates
 
-The strategic source of truth remains `.planning/MILESTONE-ARC.md`. Candidate directions:
+The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section is only a short orientation, not a second queue. Current queue after v3.6:
 
-- **Operator truth and diagnostics expansion (v3.6)** — richer route/capability inspection, doctor checks, support matrices, and advisory device lanes for the widened companion/capability surface.
-- **Provider adapters (ADPT-01/02/03)** — first-party StoreKit and Play Billing adapters that consume the v3.2 commerce contracts as canonical input and can graduate the v3.4 advisory `purchase_intent`/`restore_intent` proof lane to merge-blocking via the 4-condition `promotion_path` in `phase23-proof.yml`.
-- **Next companion slices** — chimeway seam-only work (token lifecycle + deep-link-to-route resolver, not first-party delivery), full Sigra machinery (handoff/step-up/passkey), and Threadline audit capstone. The v3.5 dependency shape remains: sigra-contract unblocks all → rindle leads → chimeway needs sigra → threadline needs the companion contracts stable.
-- **Archetype proof lanes (v3.7)** — re-run adopter-shaped pressure against the companion surfaces: subscription/paywall, notification-driven companion workflows, and richer media/scanning.
+- **Commerce provider adapters (v3.7)** — first-party StoreKit and Play Billing seams that consume the v3.2 commerce contracts as canonical input and preserve backend-owned entitlement truth.
+- **Full Sigra auth/session machinery (v3.8)** — session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
+- **Chimeway notification seam (v3.9)** — token lifecycle, backend token binding, notification-open route resolution, revocation, provider diagnostics, and hermetic/advisory proof split.
+- **Production shell runtime line (v4.0)** — compatibility windows, rebuild policy, permission/entitlement templates, diagnostic export, Android verification closure, and device UAT checklist.
+- **Multi-SaaS archetype proof lanes (v4.1)** — production-shaped pressure across subscription, notification-driven, media/evidence, auth-sensitive admin, and offline/draft recovery workflows.
 
 ## Requirements
 
@@ -82,7 +91,17 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`. Candidate di
 
 ### Active
 
-None. Fresh requirements will be created with the next milestone.
+- [ ] **STRAT-01**: Maintainers can read one current strategic arc that marks shipped milestones accurately and lists the next 4-6 milestone bets with dependencies and why-now rationale.
+- [ ] **STRAT-02**: Maintainers have a milestone closeout checklist that preserves durable lessons, thread/seed status, roadmap parity, requirements state, validation ledgers, and release continuity before context clears.
+- [ ] **OPER-01**: Maintainers can inspect route ownership, runtime mode, capability declarations, commerce corridors, companion bindings, auth predicates, and rebuild requirements from a single operator-facing output.
+- [ ] **OPER-02**: CI or support tooling can consume machine-readable inspection output without scraping prose docs.
+- [ ] **DIAG-01**: `mix crosswake.doctor --check-publish` reports actionable release/support readiness across Hex metadata, changelog status, docs/support parity, proof posture, and known verification-required surfaces.
+- [ ] **DIAG-02**: Doctor output identifies companion dependency health, provider-adapter readiness, notification-token readiness, auth/session predicate readiness, and native shell verification gaps with explicit severity and remediation.
+- [ ] **SUPP-01**: Support matrix truth distinguishes supported, verification-required, advisory, merge-blocking, rebuild-required, and unsupported states across routes, capabilities, companions, commerce, auth, notifications, and shell artifacts.
+- [ ] **SUPP-02**: Public guidance explains native rebuild requirements, advisory-to-merge-blocking promotion criteria, and rough edges without implying StoreKit, Play Billing, full Sigra machinery, Chimeway delivery, or standalone shell packages have shipped.
+- [ ] **PROOF-01**: Hermetic tests lock inspection output, doctor findings, and support matrix rows for the v3.6 operator surface.
+- [ ] **PROOF-02**: Docs-contract tests keep operator guidance synchronized with live doctor/support/denial/rebuild truth.
+- [ ] **REL-01**: Release/changelog guidance reflects all public support claims shipped after `0.1.0` and makes unreleased versus published Hex truth clear.
 
 ### Out of Scope
 
@@ -90,7 +109,7 @@ None. Fresh requirements will be created with the next milestone.
 - LiveView rendering native widgets directly — it would over-couple the library to unstable or private rendering internals.
 - Generic "wrap your app in a WebView" positioning — it hides the architecture boundaries Crosswake is supposed to clarify.
 - Shipping a broad capability catalog in `v3.0` — this milestone should decide what belongs where before implementing many new families.
-- Store-specific billing implementation in `v3.2`/`v3.4` — these milestones operationalize the core seam and prove the mocked archetype, while provider adapters and storefront SDK code remain deferred to v3.6 (ADPT-01/02/03).
+- Store-specific billing implementation in `v3.2`/`v3.4`/`v3.6` — these milestones operationalize the core seam, prove the mocked archetype, and sharpen operator truth while provider adapters and storefront SDK code remain deferred to v3.7 (ADPT-01/02/03).
 - Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
 - Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
@@ -103,7 +122,7 @@ The strongest early app archetypes are Phoenix-backed SaaS portals, subscription
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
-The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce as operational seam work, `v3.4` proved the mocked commerce archetype lane end-to-end, and `v3.5` locked the first-party companion pattern. The next arc candidates are operator/diagnostics expansion, provider adapters, and deeper companion slices such as chimeway seam-only work, full Sigra machinery, and Threadline audit capstone.
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce as operational seam work, `v3.4` proved the mocked commerce archetype lane end-to-end, and `v3.5` locked the first-party companion pattern. `v3.6` now focuses on operator truth because the widened surface needs route/capability/companion/provider/auth/notification readiness inspection before Crosswake adds provider adapters and deeper native breadth. The queue after v3.6 is provider adapters, full Sigra machinery, Chimeway notification seam, production shell runtime line, multi-SaaS archetype proof, and Threadline audit capstone.
 
 ## Constraints
 
@@ -145,6 +164,8 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Prove a new product archetype as a mocked, hermetic, copy-able adopter lane before any provider-SDK code | v3.4 needed to make the v3.2 commerce vocabulary genuinely copy-able without taking on StoreKit/Play Billing integration risk; a pure-Elixir `MockStorefront` + four-state LiveView + merge-blocking hermetic proof + docs-contract-locked walkthrough proves the full purchase → reconciliation → entitlement → UI lane end-to-end and leaves a labeled swap target for real adapters | Validated in Milestone v3.4 — 14/14 requirements, audit PASSED (7/7 integration, 2/2 E2E), zero provider-SDK code |
 | Define companion seams as typed, fail-closed, route-local contracts before splitting companion packages | v3.5 proved the reusable companion pattern in-tree first: one behaviour, explicit optional-dep validation, semantic route restrictions, doctor/support truth, and hermetic/advisory proof across Rulestead, Rindle, and Sigra contract-only auth. Separate-package extraction remains deferred until compatibility ranges are worth supporting. | Validated in Milestone v3.5 — 15/15 requirements, audit PASSED, `guides/companions.md` parity-locked to live support/doctor/denial truth |
 | Keep companion evidence non-authoritative unless backend contracts explicitly promote it | Rindle and Sigra both reinforced the core thesis: device media evidence cannot mark media available, and client auth signals cannot become authority. Route gates consume backend-owned state and fail closed when required authority is absent, weak, or stale. | Validated in v3.5 (Phases 44-46) — `verified_media_object/2` and `:step_up_required` encode the backend-authority boundary |
+| Refresh durable strategic memory before widening provider/native breadth | v3.5 exposed a process gap: execution artifacts were current, but `MILESTONE-ARC.md` still treated shipped work as candidate work. Future GSD runs need a current strategic queue and closeout checklist before choosing the next milestone. | Adopted for v3.6 — `MILESTONE-ARC.md` is the living strategic signal artifact |
+| Prioritize operator truth before StoreKit/Play Billing adapters | Commerce/provider adapters are production-critical, but v3.4/v3.5 already widened the support surface enough that route/capability/companion/provider/auth/notification readiness inspection should land before more native/provider claims. | Adopted for v3.6 — provider adapters move to v3.7 |
 
 ## Evolution
 
@@ -164,4 +185,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-31 — v3.5 First-Party Companions shipped and archived.*
+*Last updated: 2026-05-31 — v3.6 Operator Truth and Production Diagnostics initialized.*

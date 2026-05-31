@@ -2,9 +2,11 @@
 
 ## Arc Thesis
 
-After `v2.0 Adopter Stress Profiles`, Crosswake should shift from proving the substrate to reducing bespoke native and commerce work for Phoenix teams. The next arc is about widening official native capability and commerce support without collapsing the project into a universal app framework, generic plugin bus, or vague WebView wrapper.
+Crosswake has moved from proving the Phoenix-first route-policy substrate to making that substrate credible for production mobile SaaS apps. The next arc should reduce bespoke native, commerce, auth, notification, and operator work without turning Crosswake into a universal UI framework, generic WebView wrapper, or plugin bus.
 
-The planning bias for this arc is **contracts first**. Crosswake should lock capability taxonomy, package boundaries, support truth, and commerce seams before widening feature breadth.
+The planning bias remains **contracts first, proof always**. New breadth should land only when route ownership, typed contracts, support truth, proof lanes, and rough-edge docs land with it.
+
+Strategic planning artifacts follow the same Phoenix/Plug contract posture as runtime seams: required fields are explicit, composable across artifacts, boringly named, and fail closed when required evidence is absent. A missing closeout artifact or vague exception is not treated as success.
 
 ## Locked Guardrails
 
@@ -13,24 +15,18 @@ The planning bias for this arc is **contracts first**. Crosswake should lock cap
 - Capability access stays allowlisted, active-route checked, and fail-closed by default.
 - Native screens remain explicit escape hatches rather than silent fallback behavior.
 - Offline claims remain narrow and typed; cached read-only behavior is not local-first mutation.
-- Entitlement truth remains backend- and Phoenix-owned; device purchase events are not sufficient by themselves.
+- Entitlement truth remains backend- and Phoenix-owned; device purchase events are reconciliation evidence, not authority.
 - Companion integrations remain explicit seams; Crosswake does not become a generic plugin bus.
-- Diagnostics, proof lanes, support matrices, and rough-edge docs remain product surface, not cleanup work.
+- Diagnostics, support matrices, proof lanes, release truth, and rough-edge docs are product surface, not cleanup work.
 
-## Release Readiness Baseline
+## Durable Lessons
 
-Before any v3.3+ strategic-arc milestone ships, Crosswake must be installable from hex.pm with honest release metadata, CHANGELOG, and `source_url`. This baseline was missing from the original arc; flagged 2026-05-27 during `$gsd-new-milestone` assessment. See `.planning/threads/release-readiness.md`.
-
-Concretely required:
-
-- `mix.exs` `version` reflects honest contract maturity (not the placeholder `0.1.0`).
-- `mix.exs` `source_url` points to the real GitHub repository (not `github.com/example/crosswake`).
-- `CHANGELOG.md` exists at repo root and covers v1.0 → current.
-- Release pipeline (release-please or equivalent) wired and green.
-- Hex publish workflow exists and produces a publishable package.
-- Package metadata (`:licenses`, `:links`, `:maintainers`, `:description`, `:files`) audited for hex-page rendering.
-
-Rationale: a Phoenix OSS library that is not installable via `{:crosswake, "~> X"}` from hex.pm is invisible to its target community. szTheory house-style anchors ("install truth is product truth", "release truth matters" — see `prompts/crosswake-elixir-oss-dna.md:103-137`) make this baseline load-bearing rather than optional polish.
+- **Install truth is product truth.** Public value is limited until the Hex package, HexDocs, changelog, and release automation reflect the shipped surface.
+- **Mock the provider boundary before shipping provider SDK code.** v3.4 proved a paywall corridor by mocking only the storefront edge while keeping the real reconciliation/projection path.
+- **Backend authority must be explicit.** Commerce, Rindle media, and Sigra auth all treat device/client signals as evidence until backend contracts promote them.
+- **Hermetic and advisory proof lanes must stay separate.** Merge-blocking proof should be deterministic; device, storefront, simulator, and provider checks stay advisory until promotion criteria are explicit and repeatable.
+- **Docs-contract parity is a product guarantee.** Guides that describe doctor/support/denial truth must be mechanically checked against live code.
+- **Artifact parity is completion truth.** Verification reports, roadmap status, thread closure, validation ledgers, and archived requirements must be current before a milestone is considered closed.
 
 ## Capability Taxonomy
 
@@ -40,7 +36,7 @@ Rationale: a Phoenix OSS library that is not installable via `{:crosswake, "~> X
 - Capability registry metadata and versioning
 - Bounded bridge envelope and command vocabulary rules
 - Native screen declaration and activation contract
-- Shell diagnostics, doctor checks, and proof-lane expectations
+- Shell diagnostics, doctor checks, proof-lane expectations, and release/support inspection
 
 ### Companion
 
@@ -56,255 +52,327 @@ Rationale: a Phoenix OSS library that is not installable via `{:crosswake, "~> X
 - Vendor-specific billing walkthroughs that should not shape core APIs
 - Identity-provider-specific examples
 - Reviewer/test-account playbooks tied to one provider or storefront
+- Mocked adopter lanes that prove the real Crosswake contract path without claiming provider support
 
 ### Defer
 
 - Broad real-time media or call SDK integration
 - Generic high-frequency bridge surfaces
 - Desktop packaging as a near-term arc driver
+- Generic sync engine or universal local-first framework claims
 
-## Milestone Sequence
+## Shipped Milestones
 
-### Shipped: v3.0 Capability Contract And Packaging
+- **v1.0 Route-Policy Substrate** — shipped 2026-05-17. Established route policy, manifest truth, bounded bridge, offline contracts, packs/transfers, checked-in proof lanes, and public guides.
+- **v2.0 Adopter Stress Profiles** — shipped 2026-05-19. Validated the substrate against Phoenix SaaS, selective-native, and local-first study/content lanes.
+- **v3.0 Capability Contract And Packaging** — shipped 2026-05-20. Froze capability taxonomy, package boundary policy, commerce seam vocabulary, and proof/support rules.
+- **v3.1 Native Capabilities and Bridge Expansion** — shipped 2026-05-27. Added low-frequency bounded bridge families: `haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`.
+- **v3.2 Commerce And Entitlement Seams** — shipped 2026-05-27. Added provider-neutral commerce corridors, entitlement lifecycle contracts, reconciliation example, doctor/support truth, reviewer guidance, and hermetic/advisory proof split.
+- **v3.3 Release Readiness** — shipped 2026-05-29. Published `crosswake 0.1.0` to Hex with release-please, package metadata, changelog, and HexDocs path.
+- **v3.4 Commerce Archetype Proof** — shipped 2026-05-29. Proved a copy-able mocked paywall corridor through purchase, reconciliation, entitlement projection, UI state, hermetic proof, and docs-contract lock.
+- **v3.5 First-Party Companions** — shipped 2026-05-31. Locked `Crosswake.Companion`, Rulestead gating, Rindle media evidence, Sigra contract-only auth predicates, and canonical companion docs/proof parity.
 
-**Status:** shipped on 2026-05-20
+## Strategic Queue
+
+### Active: v3.6 Operator Truth and Production Diagnostics
 
 **Objective**
-- Freeze capability-family taxonomy, package boundary policy, manifest extensions, bridge command rules, and multi-package release constraints.
+- Make Crosswake inspectable and supportable for production SaaS apps before adding more provider/native breadth.
 
 **Why now**
-- `v2.0` proved the substrate under realistic app pressure. The next risk is scope drift: adding feature breadth before locking what belongs in core, companion packages, and support claims.
+- v3.4 and v3.5 widened the surface across commerce, companions, auth predicates, media evidence, route gates, and advisory proof. The next support risk is not missing feature breadth; it is operators and maintainers lacking one truthful place to answer "what is supported, what requires a rebuild, what is advisory, and why did this route fail?"
+
+**Depends on**
+- v3.4 commerce archetype proof and v3.5 first-party companion surfaces.
+- Current `.planning/MILESTONE-ARC.md`, roadmap, requirements, state, and milestone audit evidence.
+
+**Risk tags**
+- `operator-truth`
+- `support-truth`
+- `release-truth`
+- `auditability`
 
 **Key outputs**
-- Capability selection rubric
-- Packaging ledger (`core`, `companion`, `example/docs-only`, `defer`)
-- Manifest/support-matrix expansion rules
-- Native rebuild and compatibility guidance
-- Release/versioning policy for companion-ready future
+- Live strategic arc refresh and durable closeout checklist.
+- Route/capability/companion inspection output with machine-readable shape for CI.
+- `mix crosswake.doctor --check-publish` release/support readiness checks.
+- Native rebuild matrix and support-matrix truth for routes, capabilities, companions, commerce/provider readiness, auth predicates, and notification-token readiness.
+- Docs-contract and proof lanes that keep doctor/support/guide truth synchronized.
+- Live closeout ledger: `.planning/milestones/v3.6-CLOSEOUT.md`.
 
 **Non-goals**
-- Shipping a broad capability catalog
-- Store-specific billing implementation
-- Reopening the route-policy thesis
+- StoreKit or Play Billing adapter implementation.
+- Full Sigra handoff, passkey, OAuth, or refresh-token machinery.
+- Chimeway delivery integration.
+- Polished admin UI unrelated to install/debug/support truth.
 
 **Proof required**
-- Public docs for package boundary policy
-- Doctor/support-matrix guidance for newly formalized capability metadata
-- Example classification of first target capability families
+- Hermetic ExUnit tests for inspection output and doctor findings.
+- Docs-contract tests for support matrix, diagnostics guide, denial/support vocabulary, and rebuild truth.
+- CI lane for publish/operator checks plus explicit advisory-vs-merge-blocking classification.
 
-### Shipped: v3.1 Native Affordance Families
-
-**Status:** shipped on 2026-05-27
+### Next: v3.7 Commerce Provider Adapters
 
 **Objective**
-- Ship the first low-frequency, high-DX capability families that fit the existing bridge thesis.
+- Add first-party StoreKit and Play Billing adapter seams that consume existing commerce contracts and feed backend reconciliation without making device/storefront evidence authoritative.
 
-**Recommended first families**
-- `haptics`
-- `share`
-- `app_info`
-- `deep_link`
-- `permissions.status`
-- `notification_token`
-- `file_picker`
+**Why next**
+- Commerce contracts and mocked paywall proof are in place. Production subscription apps now need real storefront evidence capture, restore flows, provider identity normalization, and promotion from advisory proof when environment conditions are stable.
 
-**Why now**
-- These capabilities reduce bespoke native glue for adopters without forcing continuous native authority or deep store-policy complexity.
+**Depends on**
+- v3.2 commerce and entitlement contracts.
+- v3.4 mocked paywall corridor proof.
+- v3.6 operator inspection, doctor readiness, support-matrix, rebuild, and proof-classification truth.
 
-**Non-goals**
-- Real-time sensor/control bridges
-- Broad scanning/media workflows if they want native-screen ownership instead
-
-**Proof required**
-- Route-local allowlist tests
-- Platform support matrix by shell version
-- Doctor output for missing permissions/prerequisites
-
-**Outcome**
-- Shipped the first low-frequency bounded capability families: `haptics`, `share`, `app_info`, `deep_link`, `permissions.status`, `notification_token`, and `file_picker`.
-- Closed route-local enforcement, doctor/support posture, and support-matrix truth for the new families.
-- Added a dedicated Phase 18 proof lane that passes Elixir proof slices, checked-in iOS shell proof, and Android JVM BridgeChannel proof.
-
-### Active: v3.2 Commerce And Entitlement Seams
-
-**Status:** active on 2026-05-27
-
-**Objective**
-- Operationalize Crosswake's Phoenix-facing commerce seam: route/corridor declarations, purchase intent, restore intent, entitlement snapshot lifecycle truth, reconciliation hooks, support posture, and proof guidance.
-
-**Why now**
-- `v3.0` defined the core commerce vocabulary and package boundary, and `v3.1` proved low-frequency capability delivery. Subscription and companion-app adopters now need the seam to become usable and provable without store-specific core sprawl.
+**Risk tags**
+- `provider`
+- `authority`
+- `commerce`
+- `advisory-proof`
 
 **Key outputs**
-- Commerce route/corridor declarations
-- Normalized lifecycle semantics for purchase, restore, reconciliation, and entitlement snapshots
-- Minimal Phoenix-owned reconciliation inbox and entitlement projection example
-- Doctor/support-matrix/reviewer guidance for commerce prerequisites and fallbacks
-- Merge-blocking contract proof plus advisory storefront/provider proof posture
+- StoreKit adapter seam.
+- Play Billing adapter seam.
+- Provider evidence normalization into `ReconciliationEvidence`.
+- Restore/purchase proof lanes with hermetic contract tests and advisory device/provider tests.
+- Updated reviewer/storefront guidance and support matrix.
 
 **Non-goals**
-- A universal billing engine in core
-- Device-local entitlement truth
-- Provider lock-in disguised as generic architecture
-- StoreKit, Play Billing, or provider SDK implementation in core
+- Universal billing engine in core.
+- Device-local entitlement grants.
+- Provider SDK code that bypasses Phoenix-owned reconciliation.
 
 **Proof required**
-- Explicit core-vs-companion boundary for commerce
-- Support guidance for storefront, reviewer, and restore flows
-- Backend reconciliation contract examples
-- Denial/fallback tests proving device evidence cannot directly grant entitlement authority
+- Hermetic adapter contract tests for provider evidence normalization and reconciliation handoff.
+- Advisory StoreKit/Play Billing device or simulator lanes with explicit promotion criteria before merge-blocking promotion.
+- Docs-contract tests for reviewer/storefront guidance and support-matrix provider readiness.
 
-### Candidate: v3.3 Release Readiness
-
-**Status:** candidate (recommended next; flagged 2026-05-27 during post-v3.2 assessment)
+### Next: v3.8 Full Sigra Auth and Session Machinery
 
 **Objective**
-- Publish Crosswake to hex.pm with honest release metadata, CHANGELOG, and real `source_url`. Establish the release infrastructure (release-please, hex publish workflow) that every subsequent milestone will depend on.
+- Expand v3.5's contract-only Sigra slice into production account-security flows: session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
 
-**Why now**
-- `v3.2` shipped the commerce seam and brings the substrate to ~82% done by adopter-coverage rubric. The lib's biggest remaining gap is not contract surface — it is *discoverability*. Without hex.pm presence the lib is invisible to the Phoenix community and no further milestone gains real-world adopter pressure.
+**Why next**
+- Multi-tenant SaaS apps need secure mobile session behavior before notification-driven and audit-heavy flows can be claimed as production-ready.
+
+**Depends on**
+- v3.5 Sigra contract-only `AuthContext`, `SessionAuthorityLane`, route predicates, and `:step_up_required` denial posture.
+- v3.6 auth/session predicate readiness diagnostics and support truth.
+
+**Risk tags**
+- `authority`
+- `security`
+- `auth`
+- `auditability`
 
 **Key outputs**
-- `mix.exs` version, `source_url`, package metadata audited for hex
-- `CHANGELOG.md` covering v1.0 → v3.2 history
-- Release-please (or equivalent) pipeline wired
-- `.github/workflows/release.yml` for hex publish on tag
-- hexdocs render verified
-- `bootstrap-elixir-hex-lib` skill used as paved path
+- Session handoff ticket contract and proof.
+- Step-up challenge/return flow.
+- Auth freshness and session-expiry semantics across route gates.
+- Passkey/OAuth native-return guidance or adapter seams.
+- Minimal sensitive-detail denial posture preserved from v3.5.
 
 **Non-goals**
-- New capability families
-- Provider adapters
-- Companion integrations
-- API changes that would require a major version bump for purely cosmetic reasons
+- Identity-provider-specific product templates.
+- Token storage in WebView localStorage.
+- Client auth signals becoming authority.
 
 **Proof required**
-- First hex release lands cleanly
-- hexdocs.pm renders README + guides
-- Tag → CI → hex publish chain green
+- Hermetic route-gate/session-contract tests for handoff, freshness, expiry, and step-up denial posture.
+- Security review covering token, passkey/OAuth return, and sensitive denial surfaces.
+- Docs-contract tests that keep Sigra machinery claims distinct from v3.5 contract-only truth.
 
-### Candidate: v3.4 Commerce Archetype Proof (ARCH-02)
-
-**Status:** candidate (sequenced after v3.3)
+### Next: v3.9 Chimeway Notification Seam
 
 **Objective**
-- Turn the v3.2 commerce vocabulary into a copy-able adopter lane. Wire a runnable `paywall_entry` + `purchase_intent` + `restore_intent` + `reconciliation_inbox` example in `examples/phoenix_host` using a mocked storefront corridor.
+- Add a notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.
 
-**Why now**
-- v3.2 shipped contract vocabulary but no live paywall route exists in the example host. Adopters can read the contracts but cannot copy a working corridor. Mocking is sufficient to prove the lane end-to-end; real provider adapters wait for the dedicated provider milestone.
+**Why next**
+- Crosswake already has notification-token bridge evidence and auth route truth. Production SaaS workflows need notification registration and open-action routing without claiming first-party delivery guarantees prematurely.
+
+**Depends on**
+- v3.1 notification-token bridge evidence.
+- v3.6 notification readiness diagnostics.
+- v3.8 Sigra session/auth machinery before auth-sensitive notification-open claims.
+
+**Risk tags**
+- `notification`
+- `authority`
+- `provider`
+- `advisory-proof`
 
 **Key outputs**
-- `paywall_entry` route in example host
-- `MockStorefront` adapter consuming v3.2 commerce contracts
-- End-to-end merge-blocking proof: mock purchase → reconciliation evidence → entitlement snapshot → LiveView reflects state
-- `guides/commerce.md` walkthrough updated and docs-contract-locked
+- Push-token registration lifecycle contract.
+- Backend binding/revocation semantics.
+- Deep-link-to-route resolver with auth and route-policy checks.
+- Provider readiness diagnostics.
+- Hermetic/advisory proof split for token/open-action behavior.
 
 **Non-goals**
-- StoreKit or Play Billing implementation
-- Provider-specific code in core
+- First-party delivery platform unless explicitly proven.
+- Silent fallback to home route on deep-link mismatch.
+- Notification opens that bypass auth or route policy.
 
 **Proof required**
-- Merge-blocking hermetic lane drives the full corridor
-- Reviewer playbook docs-contract test stays green
+- Hermetic token lifecycle, backend binding/revocation, and notification-open route-resolution tests.
+- Advisory provider/device lanes for delivery behavior only when scoped.
+- Docs-contract and doctor/support tests that keep delivery support separate from token/open-action readiness.
 
-### Candidate: v3.5 First-Party Companions
-
-**Status:** candidate
+### Next: v4.0 Production Shell Runtime Line
 
 **Objective**
-- Add the highest-leverage optional integrations in an order that improves rollout safety before feature breadth.
+- Harden generated iOS and Android shells into a documented production runtime line.
 
-**Recommended sequence**
-1. `rulestead`
-2. `sigra`
-3. `rindle`
-4. `chimeway`
-5. `threadline`
+**Why next**
+- The shell examples already enforce route, origin, capability, pack, and bridge checks, but production users need compatibility windows, rebuild policy, permission/entitlement templates, diagnostics export, Android verification closure, and device-UAT guidance.
 
-**Why now**
-- Capability breadth becomes materially safer and more useful once rollout controls, auth boundaries, media seams, notification flows, and auditability are available through explicit integrations.
+**Depends on**
+- v3.6 operator truth and native rebuild/support-matrix surface.
+- Existing checked-in iOS and Android shell proof lanes from v1 through v3.1.
+- Advisory device/provider proof promotion criteria from v3.6+.
+
+**Risk tags**
+- `shell-runtime`
+- `native-rebuild`
+- `platform-policy`
+- `device-uat`
+
+**Key outputs**
+- Native runtime-line policy.
+- Rebuild and compatibility matrix.
+- iOS/Android permission and entitlement templates.
+- Crash/diagnostic export guidance.
+- Android verification closure plan and device-lane checklist.
 
 **Non-goals**
-- Silent hard dependencies
-- Companion packages that bypass manifest or route-policy truth
+- Standalone public shell packages unless release choreography is ready.
+- Hiding host-owned native responsibilities.
 
 **Proof required**
-- Companion classification and dependency docs
-- Example-host integration lanes for each shipped companion
+- Hermetic compatibility/rebuild-policy tests plus checked-in shell fixture proof.
+- Android verification closure evidence and explicit device-UAT checklist.
+- Docs-contract tests for permission/entitlement templates, diagnostics export, and native rebuild truth.
 
-### Candidate: v3.6 Operator Truth And Diagnostics Expansion
-
-**Status:** candidate
+### Next: v4.1 Multi-SaaS Archetype Proof Lanes
 
 **Objective**
-- Harden support truth for the widened surface: route/capability inspection, richer doctor checks, support matrices, advisory device lanes, and release guidance.
+- Re-run adopter pressure across production-shaped SaaS workflows using the now-wider surfaces.
 
-**Why now**
-- More capability and commerce breadth raises the support-cost ceiling unless the operator surface becomes sharper first.
+**Why next**
+- After diagnostics, provider adapters, auth/session, notifications, and shell runtime posture mature, Crosswake needs product-shaped proof that the surfaces work together for real app classes.
+
+**Depends on**
+- v3.6 operator/support truth.
+- v3.7 provider adapters.
+- v3.8 Sigra full auth/session machinery.
+- v3.9 notification seam.
+- v4.0 production shell runtime line.
+
+**Risk tags**
+- `archetype-proof`
+- `authority`
+- `provider`
+- `notification`
+- `shell-runtime`
+
+**Key outputs**
+- Subscription SaaS with provider-backed purchase/restore and backend entitlement projection.
+- Notification-driven workflow with route-policy and auth checks.
+- Media/evidence workflow with Rindle reconciliation and failure recovery.
+- Auth-sensitive admin workflow with step-up and audit posture.
+- Offline/draft recovery lane that stays honest about local-first limits.
 
 **Non-goals**
-- Polished UI for its own sake
-- Broad admin surface unrelated to install/debugging/support truth
+- Starter apps as product templates.
+- New abstractions not demanded by these lanes.
 
 **Proof required**
-- Capability inspection outputs
-- Advisory vs merge-blocking CI lane split
-- Native rebuild matrix and compatibility notes
+- Hermetic end-to-end archetype proof for each target lane over the real Crosswake contracts.
+- Advisory provider/device lanes only where they prove distinct runtime claims.
+- Milestone audit that verifies cross-surface integration, support truth, and no new unproven abstraction.
 
-### Candidate: v3.7 Archetype Proof Lanes
-
-**Status:** candidate
+### Later: Threadline Audit Capstone
 
 **Objective**
-- Re-run adopter-shaped pressure using the new surfaces: subscription/paywall, notification-driven companion workflows, and richer media or scanning lanes.
+- Add auditability around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
 
-**Why now**
-- Feature breadth should be validated under real product pressure before future expansion.
+**Why later**
+- Threadline should consume stable sensitive surfaces rather than define them. It becomes more valuable after provider adapters, Sigra machinery, Chimeway, and archetype pressure exist.
+
+**Depends on**
+- Stable commerce, auth, notification, media, shell, and sensitive route-decision surfaces.
+- v4.1 archetype proof identifying the event surfaces worth auditing.
+
+**Risk tags**
+- `auditability`
+- `authority`
+- `privacy`
+- `evidence`
+
+**Key outputs**
+- Provenance lane for route/runtime decisions and backend authority promotion.
+- PII-masked audit vocabulary for commerce, auth, media, notification, offline replay, and sensitive device actions.
+- Append-only evidence posture and tamper-evident guidance if scoped in the milestone.
 
 **Non-goals**
-- Shipping starter apps as product templates
-- Widening scope beyond the new surfaces being proven
+- Defining the commerce, auth, notification, media, or shell contracts it should consume.
+- Logging raw PII, tokens, provider payloads, or unredacted sensitive route context.
+- Shipping before upstream sensitive surfaces are stable enough to audit.
 
 **Proof required**
-- Example-host lanes for each target archetype
-- Updated public guidance and rough-edge documentation
+- Hermetic proof for audit vocabulary, masking rules, and authority/evidence attribution.
+- Docs-contract tests that keep audit claims synchronized with live support and denial truth.
 
 ## Dependency Graph
 
-- `v3.0 Capability Contract And Packaging`
-  must land before `v3.1`, `v3.2`, or later capability work.
-- `v3.1 Native Affordance Families`
-  should precede deeper media/scanning or heavy native-screen expansion.
-- `v3.2 Commerce And Entitlement Seams`
-  should precede commerce-focused companions or storefront-specific examples.
-- `v3.3 Release Readiness`
-  is the baseline for adopter discoverability; should precede any milestone whose value depends on adopter pickup.
-- `v3.4 Commerce Archetype Proof`
-  depends on `v3.2` and benefits from being adopter-visible, so it sequences after `v3.3`.
-- `v3.5 First-Party Companions`
-  depends on `v3.0` and on `v3.3` for adopter discoverability; `rulestead` should precede wider risky feature rollout when possible.
-- `v3.6 Operator Truth And Diagnostics Expansion`
-  should track alongside widening support claims and complete before claiming broad readiness.
-- `v3.7 Archetype Proof Lanes`
-  should validate what the earlier milestones shipped rather than inventing a disconnected new surface.
+- `v3.6 Operator Truth` precedes broad provider/native claims because it sharpens support truth and proof classification.
+- `v3.7 Commerce Provider Adapters` depends on v3.2/v3.4 commerce contracts and benefits from v3.6 diagnostics.
+- `v3.8 Sigra Full Auth` depends on v3.5 Sigra contracts and should precede notification-open and audit-heavy flows.
+- `v3.9 Chimeway` depends on auth route truth and benefits from v3.6 readiness diagnostics.
+- `v4.0 Production Shell Runtime Line` consolidates native runtime truth before broad production archetype proof.
+- `v4.1 Archetype Proof Lanes` validates shipped surfaces together.
+- `Threadline Audit Capstone` follows the sensitive event surfaces it will audit.
+
+## Decision Notes
+
+- **2026-05-31:** After v3.5, v3.6 was locked as the operator-truth milestone before provider/native breadth. Provider adapters moved to v3.7 so support, rebuild, proof, and release truth are inspectable first.
+- **2026-05-31:** Future queue planning uses `Depends on` and `Risk tags` as planning signals, not marketing labels. These fields make provider, authority, notification, shell-runtime, archetype-proof, and auditability risk visible before planning starts.
+- **2026-05-31:** The active milestone closeout contract lives in `.planning/milestones/v3.6-CLOSEOUT.md`; milestone audits remain append-only evidence rather than the live checklist.
 
 ## Support Truth Requirements
 
 Any milestone in this arc that widens Crosswake's public surface must define:
 
-- capability support matrix updates by route mode, platform, and shell version
+- capability support matrix updates by route mode, platform, shell version, and companion/provider readiness
 - explicit denial and fallback behavior
-- doctor coverage for missing permissions, unsupported capabilities, and compatibility mismatches
+- doctor coverage for missing permissions, unsupported capabilities, stale provider state, and compatibility mismatches
 - whether a native rebuild is required
-- whether the proof lane is merge-blocking or advisory
+- whether each proof lane is merge-blocking or advisory
+- promotion criteria for advisory provider/device proof
 - rough-edge and reviewer/storefront guidance when policy-sensitive
+
+## Milestone Closeout Checklist
+
+Every milestone close must update or verify:
+
+- `PROJECT.md` current state, active/validated requirements, and key decisions.
+- `MILESTONE-ARC.md` strategic queue, dependencies, open research flags, and durable lessons.
+- `ROADMAP.md` phase status parity.
+- `REQUIREMENTS.md` archived or reset state.
+- `STATE.md` milestone/frontmatter consistency.
+- Threads/seeds: close shipped threads, create new threads for unresolved strategic signals.
+- Verification reports: every completed phase has an explicit verification artifact or an intentional documented exception.
+- Validation ledgers: Nyquist/validation state is final or explicitly deferred.
+- Changelog/release continuity when public support claims changed.
+- Active milestone closeout ledger: `.planning/milestones/<milestone>-CLOSEOUT.md` is current, with missing artifacts recorded only through explicit `deferred_with_reason` exceptions.
 
 ## Open Research Flags
 
-- Exact multi-package release/versioning posture if companion packages live in the same repo family
-- Whether notifications should begin as a token/deep-link seam only or include first-party delivery integration immediately
-- Which scanning or capture flows truly belong in bounded bridge families versus explicit native screens
-- Whether `accrue` should be the first commerce companion anchor or remain an example/docs-only reference at first
+- Exact package/versioning posture for future separate companion packages.
+- Whether RevenueCat belongs in the first provider-adapter milestone or remains a later/docs-only reference after StoreKit and Play Billing.
+- Whether Chimeway should stay token/open-action seam-only for one milestone or include a first provider delivery lane.
+- Which scanning/capture flows belong in Rindle/native-screen lanes versus bounded bridge families.
+- What minimum Android evidence is required to move shell support from "verification required" to fully verified.
 
 ---
-*Last updated: 2026-05-27 after v3.2 milestone completion + post-v3.2 next-step assessment (added Release Readiness Baseline, inserted v3.3 Release Readiness and v3.4 Commerce Archetype Proof as candidates, renumbered companion/operator/archetype milestones to v3.5/v3.6/v3.7)*
+*Last updated: 2026-05-31 — refreshed after v3.5 completion to make v3.6 Operator Truth and Production Diagnostics the active strategic milestone and preserve durable lessons for future GSD runs.*
