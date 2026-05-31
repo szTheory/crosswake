@@ -1,6 +1,7 @@
 defmodule Crosswake.Policy.SchemaTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Policy.Route
   alias Crosswake.Policy.Schema
   alias Crosswake.Transfer.Contracts
 
@@ -184,6 +185,62 @@ defmodule Crosswake.Policy.SchemaTest do
           transfers: [[id: :asset_upload, intent: :upload, verification: :required]]
         ])
       end
+    end
+
+    test "accepts valid auth predicates" do
+      validated =
+        Schema.validate!([
+          id: "secure-settings",
+          runtime: :live_view,
+          auth_min_level: :mfa,
+          requires_recent_auth: 300
+        ])
+
+      assert validated[:auth_min_level] == :mfa
+      assert validated[:requires_recent_auth] == 300
+    end
+
+    test "rejects invalid auth predicate values" do
+      assert_raise NimbleOptions.ValidationError, ~r/invalid_mfa_level/, fn ->
+        Schema.validate!([
+          id: "secure-settings",
+          runtime: :live_view,
+          auth_min_level: :sms
+        ])
+      end
+
+      assert_raise NimbleOptions.ValidationError, ~r/positive integer seconds/, fn ->
+        Schema.validate!([
+          id: "secure-settings",
+          runtime: :live_view,
+          requires_recent_auth: 0
+        ])
+      end
+
+      assert_raise NimbleOptions.ValidationError, ~r/positive integer seconds/, fn ->
+        Schema.validate!([
+          id: "secure-settings",
+          runtime: :live_view,
+          requires_recent_auth: "300"
+        ])
+      end
+    end
+  end
+
+  describe "route threading for auth predicates" do
+    test "threads auth fields without changing gating defaults" do
+      route =
+        Route.new!([
+          id: "secure-settings",
+          runtime: :live_view,
+          auth_min_level: :mfa,
+          requires_recent_auth: 300
+        ])
+
+      assert route.auth_min_level == :mfa
+      assert route.requires_recent_auth == 300
+      assert route.gated_by == nil
+      assert route.on_unavailable == nil
     end
   end
 end
