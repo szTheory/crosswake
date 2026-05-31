@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-31T16:51:10.859Z"
+status: planning
+last_updated: "2026-05-31T17:01:44.294Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 10
@@ -17,16 +17,16 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-29)
+See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 46 — sigra-auth-contract-only-slice
+**Current focus:** Phase 47 — companion arc guide and milestone proof
 
 ## Current Position
 
-Phase: 46 (sigra-auth-contract-only-slice) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
+Phase: 47
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-05-31
 
 Progress: [██████████] 100%
@@ -35,7 +35,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 79 (v1.0–v3.4)
+- Total plans completed: 83 (v1.0–v3.4)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
@@ -76,5 +76,5 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 ## Session Continuity
 
-Last session: 2026-05-31T16:51:10.855Z
-Stopped at: Completed 46-03-PLAN.md
+Last session: 2026-05-31T17:01:44.291Z
+Stopped at: Phase 46 complete (4/4) — ready to discuss Phase 47

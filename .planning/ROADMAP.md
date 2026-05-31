@@ -285,5 +285,5 @@ Plans:
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
-| 46. Sigra Auth Contract-Only Slice | v3.5 | 4/4 | Complete   | 2026-05-31 |
+| 46. Sigra Auth Contract-Only Slice | v3.5 | 4/4 | Complete    | 2026-05-31 |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
