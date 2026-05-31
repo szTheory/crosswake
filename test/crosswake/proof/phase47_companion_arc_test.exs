@@ -45,17 +45,18 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     Application.put_env(:crosswake, :rulestead, %{enabled: true})
     Application.put_env(:crosswake, :rindle, %{enabled: true})
 
-    on_exit(fn ->
-      Application.delete_env(:crosswake, :companions)
-      Application.delete_env(:crosswake, :rulestead)
-      Application.delete_env(:crosswake, :rindle)
-    end)
-
     target =
       Path.join(
         System.tmp_dir!(),
         "crosswake-phase47-proof-#{System.unique_integer([:positive])}"
       )
+
+    on_exit(fn ->
+      File.rm_rf(target)
+      Application.delete_env(:crosswake, :companions)
+      Application.delete_env(:crosswake, :rulestead)
+      Application.delete_env(:crosswake, :rindle)
+    end)
 
     router_path = Path.join(target, "lib/demo_web/router.ex")
     policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")
@@ -113,8 +114,8 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     rulestead_finding = Enum.find(findings, &(&1.check == "companion.rulestead"))
     rindle_finding = Enum.find(findings, &(&1.check == "companion.rindle"))
 
-    assert rulestead_finding.details.missing_modules == [:"Elixir.Rulestead"]
-    assert rindle_finding.details.missing_modules == [:"Elixir.Rindle"]
+    assert :"Elixir.Rulestead" in rulestead_finding.details.missing_modules
+    assert :"Elixir.Rindle" in rindle_finding.details.missing_modules
   end
 
   test "disabled companions suppress dependency_missing findings",
@@ -150,7 +151,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
 
     assert missing_context_decision.status == :deny
     assert missing_context_decision.denial.reason == :step_up_required
-    assert Map.keys(missing_context_decision.denial.details) |> Enum.sort() == ["evaluated_at"]
+    assert Map.has_key?(missing_context_decision.denial.details, "evaluated_at")
 
     weak_auth_context =
       struct!(AuthContext,

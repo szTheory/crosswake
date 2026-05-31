@@ -41,6 +41,8 @@ Companion guidance in this file is contract truth, not marketing surface.
 
 ## Rulestead Surface (GATE)
 
+Companion id: `:rulestead`.
+
 Rulestead is the shipped feature-gating companion. Route policy binds a route to a gate key using `gated_by`, and unavailable handling uses `on_unavailable`.
 
 ```elixir

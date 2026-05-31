@@ -101,8 +101,8 @@ defmodule Crosswake.Guides.CompanionsTest do
       |> Enum.sort()
 
     for companion_id <- runtime_ids do
-      assert content =~ "#{companion_id}",
-             "guide missing runtime companion id #{inspect(companion_id)} from SupportMatrix.gating_truth/0"
+      assert content =~ "Companion id: `#{inspect(companion_id)}`",
+             "guide missing scoped companion id #{inspect(companion_id)} from its surface section"
     end
   end
 
