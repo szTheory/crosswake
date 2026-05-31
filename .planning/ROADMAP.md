@@ -269,7 +269,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 
-- [ ] 47-01-PLAN.md — expand the single canonical `guides/companions.md` and upgrade `companions_test.exs` to semantic parity against live companion/support/doctor truth
+- [x] 47-01-PLAN.md — expand the single canonical `guides/companions.md` and upgrade `companions_test.exs` to semantic parity against live companion/support/doctor truth
 - [ ] 47-02-PLAN.md — add the aggregate untagged Phase 47 hermetic proof for Rulestead + Rindle fail-closed behavior and Sigra auth posture without new CI sprawl
 
 ## Progress
@@ -290,4 +290,4 @@ Plans:
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 4/4 | Complete    | 2026-05-31 |
-| 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/2 | Not started | - |
+| 47. Companion Arc Guide And Milestone Proof | v3.5 | 1/2 | In Progress|  |

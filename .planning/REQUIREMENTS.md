@@ -36,7 +36,7 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 ### PROOF — Proof Lanes & Docs Contract
 
 - [x] **PROOF-01**: Each shipped companion has a hermetic merge-blocking proof lane that compiles and passes **without** the optional dependency present (proving fail-closed), plus an advisory lane that exercises it with the dependency present.
-- [ ] **PROOF-02**: A `guides/companions.md` guide documents the companion-seam pattern and the rulestead/rindle/sigra surfaces, records the deferred sequencing (chimeway seam-only not delivery, full sigra machinery, threadline capstone) as explicit non-goals, and is locked to support-matrix/doctor truth by a docs-contract test.
+- [x] **PROOF-02**: A `guides/companions.md` guide documents the companion-seam pattern and the rulestead/rindle/sigra surfaces, records the deferred sequencing (chimeway seam-only not delivery, full sigra machinery, threadline capstone) as explicit non-goals, and is locked to support-matrix/doctor truth by a docs-contract test.
 
 ## Future Requirements (deferred — sequenced for v3.6+)
 
@@ -74,4 +74,4 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 | AUTH-01 | Phase 46 | Complete |
 | AUTH-02 | Phase 46 | Complete |
 | PROOF-01 | Phase 43 + Phase 45 | Complete |
-| PROOF-02 | Phase 47 | Pending |
+| PROOF-02 | Phase 47 | Complete |

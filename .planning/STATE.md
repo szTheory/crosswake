@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
 status: executing
-last_updated: "2026-05-31T17:26:33.800Z"
-last_activity: 2026-05-31 -- Phase 47 planning complete
+last_updated: "2026-05-31T17:30:54.622Z"
+last_activity: 2026-05-31
 progress:
   total_phases: 10
   completed_phases: 9
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 90
 ---
 
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 47 — companion arc guide and milestone proof
+**Current focus:** Phase 47 — Companion Arc Guide And Milestone Proof
 
 ## Current Position
 
-Phase: 47
-Plan: Not started
+Phase: 47 (Companion Arc Guide And Milestone Proof) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-05-31 -- Phase 47 planning complete
+Last activity: 2026-05-31
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 - [Phase 46]: Auth predicates evaluate after kill-switch/gate and before compatibility/commerce findings. — Preserves fail-closed precedence and keeps auth denials specific.
 - [Phase 46]: RouteGate uses Sigra contract helpers for MFA order and auth-age normalization. — Avoids duplicate logic and keeps semantics aligned with AUTH-01 contracts.
 - [Phase 46]: step_up_required denial details are minimal and typed only. — Prevents sensitive auth material leakage while preserving operator clarity.
+- [Phase 47]: Canonical companion guide is parity-locked to SupportMatrix, Denial, and live Doctor findings. — Prevents docs drift and keeps PROOF-02 contract truth machine-verifiable.
 
 ### Pending Todos
 
@@ -73,8 +74,9 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Phase 45 P02 | 12min | 3 tasks | 8 files |
 | Phase 45 P03 | 9min | 3 tasks | 2 files |
 | Phase 46 P03 | 28min | 1 tasks | 4 files |
+| Phase 47 P01 | 7min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-05-31T17:07:55.442Z
+Last session: 2026-05-31T17:30:34.774Z
 Stopped at: Phase 47 context gathered
