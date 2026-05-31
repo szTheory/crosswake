@@ -68,16 +68,24 @@ Followed the plan's exact nine-outcome vocabulary. `outcome_implies_availability
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 3 - Blocking] Default full-suite gate ran advisory-only rulestead proof without optional dep**
+- **Found during:** Post-merge full-suite verification
+- **Issue:** `mix test` ran `phase43_rulestead_advisory_test.exs` even when `MIX_INCLUDE_RULESTEAD` was unset, so the advisory proof failed in the hermetic/default dependency context.
+- **Fix:** Configured ExUnit to exclude `:advisory_only` tests by default unless `MIX_INCLUDE_RULESTEAD=1` is set.
+- **Files modified:** `test/test_helper.exs`
+- **Verification:** `mix test`
+- **Committed in:** post-summary fix commit
 
 ---
 
-**Total deviations:** 0 auto-fixed.
-**Impact on plan:** No scope change.
+**Total deviations:** 1 auto-fixed (blocking verification issue).
+**Impact on plan:** No Rindle scope change; restores the documented hermetic/advisory test split needed for full-suite verification.
 
 ## Issues Encountered
 
-None.
+The full-suite gate initially failed on the Phase 43 advisory-only rulestead proof because the optional dependency was absent. The default ExUnit configuration now matches the documented CI contract.
 
 ## User Setup Required
 
