@@ -48,7 +48,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 - [x] **Phase 40: Runtime Gate Evaluation And Fail-Closed Denial** — `:gate_denied`/`:kill_switch_active` injected into `RouteGate`; kill-switch short-circuit; OpenFeature-shaped `Denial.details` (completed 2026-05-30)
 - [x] **Phase 41: Gating Doctor And Support-Matrix Truth** — doctor category for gated routes; runtime gate-state column distinct from build-proof state (completed 2026-05-30)
 - [x] **Phase 42: Rulestead In-Tree Companion And Mock Example** — `lib/crosswake/companions/rulestead/`; mock flag source in `examples/phoenix_host`; route through all gate states (completed 2026-05-30)
-- [ ] **Phase 43: Rulestead Hermetic+Advisory Proof And Guide** — hermetic CI lane (no optional dep, asserts fail-closed); advisory lane; `guides/companions.md` rulestead section with docs-contract lock
+- [x] **Phase 43: Rulestead Hermetic+Advisory Proof And Guide** — hermetic CI lane (no optional dep, asserts fail-closed); advisory lane; `guides/companions.md` rulestead section with docs-contract lock (completed 2026-05-31)
 - [ ] **Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary** — `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts; backend-owned non-authoritative reconciliation vocabulary
 - [ ] **Phase 45: Rindle In-Tree Companion, Mock Example, And Proof** — pure-Elixir mock upload/verify; hermetic proof; generalization proof that the pattern isn't flag-specific
 - [ ] **Phase 46: Sigra Auth Contract-Only Slice** — `AuthContext` + `SessionAuthorityLane` + route auth predicates; fail-closed `:step_up_required`; doctor/support-matrix truth
@@ -244,7 +244,7 @@ Plans:
 | 40. Runtime Gate Evaluation And Fail-Closed Denial | v3.5 | 1/1 | Complete    | 2026-05-30 |
 | 41. Gating Doctor And Support-Matrix Truth | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
-| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
+| 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | Complete    | 2026-05-31 |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 0/? | Not started | - |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |

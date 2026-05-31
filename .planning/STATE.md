@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-30T19:40:41.157Z"
+status: ready_to_plan
+last_updated: 2026-05-31T14:12:53.768Z
 last_activity: 2026-05-30
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 11
-  completed_plans: 10
-  percent: 50
+  completed_plans: 11
+  percent: 60
+stopped_at: Phase 43 complete (2/2) — ready to discuss Phase 44
 ---
 
 # Project State
@@ -20,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 43 — rulestead-hermetic-advisory-proof-and-guide
+**Current focus:** Phase 44 — rindle media seam contracts and reconciliation vocabulary
 
 ## Current Position
 
-Phase: 43 (rulestead-hermetic-advisory-proof-and-guide) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-05-30
+Phase: 44
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-31
 
-Progress: [█████████░] 91%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 76 (v1.0–v3.4)
+- Total plans completed: 78 (v1.0–v3.4)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
@@ -68,5 +69,5 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 ## Session Continuity
 
-Last session: 2026-05-30T19:40:41.154Z
-Stopped at: Phase 43 context gathered
+Last session: 2026-05-31T14:12:53.768Z
+Stopped at: Phase 43 complete; Phase 44 ready to plan
