@@ -196,6 +196,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 44-02-PLAN.md — backend-owned reconciliation vocabulary + evidence-only availability fence + MEDIA-02 proof
+
 **UI hint**: yes
 
 ### Phase 45: Rindle In-Tree Companion, Mock Example, And Proof
@@ -237,9 +238,20 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 46-01-PLAN.md — sigra auth contract structs, validators, and AUTH-01 unit coverage
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 46-02-PLAN.md — route DSL, manifest truth, checked-in shell fixture manifests, and AUTH-02 proof scaffold
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 46-03-PLAN.md — fail-closed `:step_up_required` RouteGate wiring and denial precedence proof
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 46-04-PLAN.md — auth doctor diagnostics and support-matrix contract truth
 
 ### Phase 47: Companion Arc Guide And Milestone Proof
