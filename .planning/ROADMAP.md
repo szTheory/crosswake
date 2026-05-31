@@ -234,7 +234,12 @@ Plans:
   2. `auth_min_level` and `requires_recent_auth` are valid keys in the route-policy DSL; when a route's auth predicates are unmet at evaluation time, `RouteGate.evaluate/4` produces a fail-closed `:step_up_required` denial — no silent pass-through.
   3. `mix crosswake.doctor` reports routes with auth predicates in its output, and support-matrix truth includes a row for the sigra auth contract surface; both outputs are accurate without any sigra machinery (handoff/step-up/passkey) being present.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 46-01-PLAN.md — sigra auth contract structs, validators, and AUTH-01 unit coverage
+- [ ] 46-02-PLAN.md — route DSL, manifest carriage, and fail-closed `:step_up_required` gate wiring
+- [ ] 46-03-PLAN.md — auth doctor diagnostics and support-matrix contract truth
 
 ### Phase 47: Companion Arc Guide And Milestone Proof
 
@@ -267,5 +272,5 @@ Plans:
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
-| 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
+| 46. Sigra Auth Contract-Only Slice | v3.5 | 0/3 | Not started | - |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
