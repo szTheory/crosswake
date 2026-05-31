@@ -10,6 +10,7 @@
 - ✅ **v3.3 Release Readiness** — Phases 26-32 shipped on 2026-05-29 (`crosswake 0.1.0` live on hex.pm). Full archive: [v3.3-ROADMAP.md](milestones/v3.3-ROADMAP.md)
 - ✅ **v3.4 Commerce Archetype Proof** — Phases 33-37 shipped on 2026-05-29. Full archive: [v3.4-ROADMAP.md](milestones/v3.4-ROADMAP.md)
 - ✅ **v3.5 First-Party Companions** — Phases 38-47 shipped on 2026-05-31. Full archive: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
+- 🔄 **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 active. Goal: make Crosswake inspectable and supportable for production SaaS mobile apps before adding more provider/native breadth.
 
 ## Phases
 
@@ -59,6 +60,103 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 
 </details>
 
+<details open>
+<summary>🔄 v3.6 Operator Truth and Production Diagnostics (Phases 48-53) — ACTIVE</summary>
+
+- [ ] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue.
+- [ ] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output.
+- [ ] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings.
+- [ ] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
+- [ ] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof.
+- [ ] Phase 53: Release Continuity and Closeout Hardening — align changelog/release support truth and enforce closeout parity for future milestones.
+
+### Phase Details
+
+**Phase 48: Strategic Signal and Milestone Memory**
+
+Goal: Make `.planning/MILESTONE-ARC.md` the current strategic source of truth after v3.5.
+
+Requirements: STRAT-01, STRAT-02
+
+Success criteria:
+1. Shipped milestones through v3.5 are accurately marked complete.
+2. The next 4-6 milestone bets are listed with dependencies and why-now rationale.
+3. Durable lessons from retrospectives and audits are promoted into planning-time guidance.
+4. The milestone closeout checklist covers roadmap parity, requirements state, verification reports, validation ledgers, threads/seeds, and release continuity.
+
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 48-01-PLAN.md — refresh `MILESTONE-ARC.md` to the locked strategic-memory field contract and collapse project-level queue drift onto that canonical source
+- [ ] 48-02-PLAN.md — create `.planning/milestones/v3.6-CLOSEOUT.md` as the live closeout ledger, checklist, and explicit Phase 53 enforcement target
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 48-03-PLAN.md — add deterministic ExUnit parity guards for the strategic arc, closeout ledger, and exact `closeout.verify` promotion target
+
+**Phase 49: Operator Inspection Contract**
+
+Goal: Define the inspection surface operators and CI use to understand Crosswake route/runtime readiness without reading code.
+
+Requirements: OPER-01, OPER-02
+
+Success criteria:
+1. Inspection output covers route ownership, runtime mode, capability declarations, commerce corridors, companion bindings, auth predicates, notification readiness, and rebuild requirements.
+2. Output has a stable machine-readable shape for CI/support tooling.
+3. Human-facing output remains concise and actionable.
+4. Inspection semantics preserve route ownership and fail-closed support truth.
+
+**Phase 50: Doctor Publish and Readiness Checks**
+
+Goal: Extend doctor into release/support readiness with actionable findings.
+
+Requirements: DIAG-01, DIAG-02
+
+Success criteria:
+1. `mix crosswake.doctor --check-publish` reports Hex metadata, changelog, docs/support parity, proof posture, and verification-required surfaces.
+2. Companion dependency health, provider-adapter readiness, notification-token readiness, auth/session predicate readiness, and native shell verification gaps have explicit severities and remediations.
+3. Findings are machine-readable and human-readable.
+4. Missing readiness never silently passes as supported.
+
+**Phase 51: Support Matrix and Native Rebuild Truth**
+
+Goal: Make public support truth match the widened v3.6 diagnostic surface.
+
+Requirements: SUPP-01, SUPP-02
+
+Success criteria:
+1. Support matrix distinguishes supported, verification-required, advisory, merge-blocking, rebuild-required, and unsupported states.
+2. Rebuild requirements are explicit for native, companion, provider, route/manifest, and docs-only changes.
+3. Public guidance does not imply StoreKit, Play Billing, full Sigra machinery, Chimeway delivery, or standalone shell packages have shipped.
+4. Advisory-to-merge-blocking promotion criteria are visible in docs and runtime diagnostics.
+
+**Phase 52: Operator Proof and Docs-Contract Locks**
+
+Goal: Make v3.6 operator truth mechanically durable.
+
+Requirements: PROOF-01, PROOF-02
+
+Success criteria:
+1. Hermetic tests lock inspection output and doctor readiness findings.
+2. Docs-contract tests keep support matrix, guides, denial vocabulary, and rebuild truth synchronized with live code.
+3. CI clearly separates merge-blocking operator proof from advisory native/device/provider checks.
+4. Proof failures point to actionable support-truth drift.
+
+**Phase 53: Release Continuity and Closeout Hardening**
+
+Goal: Ensure public release/changelog truth and milestone closeout discipline survive future context clears.
+
+Requirements: REL-01
+
+Success criteria:
+1. Changelog/release guidance distinguishes unreleased support claims from published Hex truth.
+2. v3.6 closeout verifies roadmap parity, requirements traceability, state frontmatter, verification reports, validation ledgers, and thread/seed status.
+3. Follow-on milestone candidates remain visible in `PROJECT.md` and `MILESTONE-ARC.md`.
+4. `$gsd-discuss-phase 48` is the clear next execution step.
+
+</details>
+
 ## Progress
 
 | Phase Range | Milestone | Plans Complete | Status | Completed |
@@ -71,7 +169,8 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 | 26-32 | v3.3 Release Readiness | 11/11 | Complete | 2026-05-29 |
 | 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
 | 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
+| 48-53 | v3.6 Operator Truth and Production Diagnostics | 0/3 | Planning | — |
 
 ## Next
 
-Start the next milestone with `$gsd-new-milestone`.
+Start execution with `$gsd-execute-phase 48`.
