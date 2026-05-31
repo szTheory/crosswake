@@ -157,6 +157,8 @@ defmodule CrosswakeExample.Router do
             id: "saas-profile-settings",
             runtime: :live_view,
             entry: :internal_only,
+            auth_min_level: :mfa,
+            requires_recent_auth: 900,
             offline: :cached_read_only,
             security: :standard
           ]

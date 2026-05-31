@@ -205,6 +205,8 @@ defmodule Crosswake.Manifest.Types do
       :security,
       :gated_by,
       :on_unavailable,
+      :auth_min_level,
+      :requires_recent_auth,
       capabilities: [],
       packs: [],
       sync: [],
@@ -228,7 +230,9 @@ defmodule Crosswake.Manifest.Types do
             security: Crosswake.Policy.Schema.security() | nil,
             allowlisted_origins: [String.t()],
             gated_by: atom() | nil,
-            on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
+            on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
+            auth_min_level: atom() | nil,
+            requires_recent_auth: pos_integer() | nil
           }
   end
 
@@ -577,7 +581,9 @@ defmodule Crosswake.Manifest.Types do
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, []),
       gated_by: Keyword.get(attrs, :gated_by),
-      on_unavailable: Keyword.get(attrs, :on_unavailable)
+      on_unavailable: Keyword.get(attrs, :on_unavailable),
+      auth_min_level: Keyword.get(attrs, :auth_min_level),
+      requires_recent_auth: Keyword.get(attrs, :requires_recent_auth)
     })
   end
 
@@ -822,9 +828,13 @@ defmodule Crosswake.Manifest.Types do
       "security" => route.security && Atom.to_string(route.security),
       "allowlisted_origins" => route.allowlisted_origins,
       "gated_by" => route.gated_by && Atom.to_string(route.gated_by),
-      "on_unavailable" => serialize_on_unavailable(route.on_unavailable)
+      "on_unavailable" => serialize_on_unavailable(route.on_unavailable),
+      "auth_min_level" => route.auth_min_level && Atom.to_string(route.auth_min_level),
+      "requires_recent_auth" => route.requires_recent_auth
     }
-    |> Enum.reject(fn {k, v} -> k in ["gated_by", "on_unavailable"] and is_nil(v) end)
+    |> Enum.reject(fn {k, v} ->
+      k in ["gated_by", "on_unavailable", "auth_min_level", "requires_recent_auth"] and is_nil(v)
+    end)
     |> Map.new()
   end
 

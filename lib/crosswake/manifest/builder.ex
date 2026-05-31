@@ -135,7 +135,9 @@ defmodule Crosswake.Manifest.Builder do
           security: route.security,
           allowlisted_origins: [origin],
           gated_by: route.gated_by,
-          on_unavailable: route.on_unavailable
+          on_unavailable: route.on_unavailable,
+          auth_min_level: route.auth_min_level,
+          requires_recent_auth: route.requires_recent_auth
         )
 
       {route.id, entry}
