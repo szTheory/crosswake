@@ -107,6 +107,16 @@ Success criteria:
 3. Human-facing output remains concise and actionable.
 4. Inspection semantics preserve route ownership and fail-closed support truth.
 
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 49-01-PLAN.md — create the typed `Crosswake.OperatorInspection` contract, route-authoritative schema, and stable JSON surface with focused ExUnit coverage
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 49-02-PLAN.md — add the concise human formatter and `mix crosswake.inspect` CLI without widening into doctor publish checks or deferred provider/auth/notification claims
+
 **Phase 50: Doctor Publish and Readiness Checks**
 
 Goal: Extend doctor into release/support readiness with actionable findings.
