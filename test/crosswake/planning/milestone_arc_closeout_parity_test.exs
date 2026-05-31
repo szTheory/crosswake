@@ -45,7 +45,8 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     "release_changelog_continuity",
     "public_support_claim_changes",
     "deferred_with_reason",
-    "exceptions"
+    "exceptions",
+    "resolved_gaps"
   ]
 
   test "milestone arc records shipped milestones through v3.5 and v3.6 as active" do
