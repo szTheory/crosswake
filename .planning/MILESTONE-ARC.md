@@ -116,7 +116,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Add first-party StoreKit and Play Billing adapter seams that consume existing commerce contracts and feed backend reconciliation without making device/storefront evidence authoritative.
 
-**Why next**
+**Why now**
 - Commerce contracts and mocked paywall proof are in place. Production subscription apps now need real storefront evidence capture, restore flows, provider identity normalization, and promotion from advisory proof when environment conditions are stable.
 
 **Depends on**
@@ -152,7 +152,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Expand v3.5's contract-only Sigra slice into production account-security flows: session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
 
-**Why next**
+**Why now**
 - Multi-tenant SaaS apps need secure mobile session behavior before notification-driven and audit-heavy flows can be claimed as production-ready.
 
 **Depends on**
@@ -187,7 +187,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Add a notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.
 
-**Why next**
+**Why now**
 - Crosswake already has notification-token bridge evidence and auth route truth. Production SaaS workflows need notification registration and open-action routing without claiming first-party delivery guarantees prematurely.
 
 **Depends on**
@@ -223,7 +223,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Harden generated iOS and Android shells into a documented production runtime line.
 
-**Why next**
+**Why now**
 - The shell examples already enforce route, origin, capability, pack, and bridge checks, but production users need compatibility windows, rebuild policy, permission/entitlement templates, diagnostics export, Android verification closure, and device-UAT guidance.
 
 **Depends on**
@@ -258,7 +258,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Re-run adopter pressure across production-shaped SaaS workflows using the now-wider surfaces.
 
-**Why next**
+**Why now**
 - After diagnostics, provider adapters, auth/session, notifications, and shell runtime posture mature, Crosswake needs product-shaped proof that the surfaces work together for real app classes.
 
 **Depends on**
@@ -296,7 +296,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 **Objective**
 - Add auditability around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
 
-**Why later**
+**Why now**
 - Threadline should consume stable sensitive surfaces rather than define them. It becomes more valuable after provider adapters, Sigra machinery, Chimeway, and archetype pressure exist.
 
 **Depends on**
