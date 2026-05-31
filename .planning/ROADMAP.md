@@ -209,7 +209,19 @@ Plans:
   2. `examples/phoenix_host` contains a pure-Elixir mock upload/verify flow (no external SDK) that drives a `MediaObject` through `:queued → :uploaded → :scanning → :available`, enforces idempotency (stable `idempotency_key`, not transient correlation), and never presents `:queued` media as committed.
   3. A hermetic CI job compiles and runs the rindle proof suite without the `rindle` library present; fail-closed assertions pass; this is the generalization proof that the companion-seam pattern works for a non-flag use case.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+**Wave 1**
+
+- [ ] 45-01-PLAN.md — Rindle companion implementation + optional dependency wiring + doctor fail-closed proof (MEDIA-03/PROOF-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 45-02-PLAN.md — phoenix_host pure-Elixir media mock lane + `/media/proof` LiveView route + idempotency/replay proof (MEDIA-03)
+
+**Wave 3** *(blocked on Waves 1-2 completion)*
+
+- [ ] 45-03-PLAN.md — Phase 45 hermetic/advisory proof hardening + `phase45-proof.yml` CI workflow (MEDIA-03/PROOF-01)
 
 ### Phase 46: Sigra Auth Contract-Only Slice
 
@@ -254,6 +266,6 @@ Plans:
 | 42. Rulestead In-Tree Companion And Mock Example | v3.5 | 2/2 | Complete    | 2026-05-30 |
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
-| 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/? | Not started | - |
+| 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 0/3 | Planned | - |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 0/? | Not started | - |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
