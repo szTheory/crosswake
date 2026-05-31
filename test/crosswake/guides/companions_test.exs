@@ -107,18 +107,25 @@ defmodule Crosswake.Guides.CompanionsTest do
       |> Enum.sort()
 
     assert documented_ids == runtime_ids
+
+    assert content =~
+             "It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface in v3.5."
   end
 
   test "auth predicates and denial vocabulary stay parity-locked to support and shell truth", %{content: content} do
-    [%{route_predicates: predicates, denial_vocabulary: denial}] = SupportMatrix.auth_contract_truth()
+    rows = SupportMatrix.auth_contract_truth()
 
-    for predicate <- predicates do
-      assert content =~ Atom.to_string(predicate),
-             "guide missing auth predicate #{inspect(predicate)} from SupportMatrix.auth_contract_truth/0"
+    assert [_ | _] = rows
+
+    for %{route_predicates: predicates, denial_vocabulary: denial} <- rows do
+      for predicate <- predicates do
+        assert content =~ Atom.to_string(predicate),
+               "guide missing auth predicate #{inspect(predicate)} from SupportMatrix.auth_contract_truth/0"
+      end
+
+      assert content =~ Atom.to_string(denial),
+             "guide missing auth denial vocabulary #{inspect(denial)} from SupportMatrix.auth_contract_truth/0"
     end
-
-    assert content =~ Atom.to_string(denial),
-           "guide missing auth denial vocabulary #{inspect(denial)} from SupportMatrix.auth_contract_truth/0"
 
     denial_reasons = Crosswake.Shell.Denial.reasons()
 

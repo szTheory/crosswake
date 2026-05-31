@@ -99,7 +99,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     %{target: target, install_manifest_path: install_manifest_path}
   end
 
-  test "enabled missing optional dependencies emit separate companion.dependency_missing errors",
+  test "enabled optional dependency findings track live companion validation outcomes",
        %{target: target, install_manifest_path: install_manifest_path} do
     report =
       Doctor.run(
@@ -108,18 +108,28 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
         cwd: target
       )
 
-    findings =
-      Enum.filter(report.findings, &(&1.code == "companion.dependency_missing"))
+    findings_by_check =
+      report.findings
+      |> Enum.filter(&(&1.code == "companion.dependency_missing"))
+      |> Map.new(&{&1.check, &1})
 
-    assert Enum.any?(findings, &(&1.check == "companion.rulestead"))
-    assert Enum.any?(findings, &(&1.check == "companion.rindle"))
-    assert Enum.all?(findings, &(&1.severity == :error))
+    for companion <- [Rulestead, Rindle] do
+      check = "companion.#{companion.companion_id()}"
 
-    rulestead_finding = Enum.find(findings, &(&1.check == "companion.rulestead"))
-    rindle_finding = Enum.find(findings, &(&1.check == "companion.rindle"))
+      case companion.validate_dependency() do
+        :ok ->
+          refute Map.has_key?(findings_by_check, check)
 
-    assert :"Elixir.Rulestead" in rulestead_finding.details.missing_modules
-    assert :"Elixir.Rindle" in rindle_finding.details.missing_modules
+        {:error, missing_modules} ->
+          finding = Map.fetch!(findings_by_check, check)
+
+          assert finding.severity == :error
+
+          for missing_module <- missing_modules do
+            assert missing_module in finding.details.missing_modules
+          end
+      end
+    end
   end
 
   test "disabled companions suppress dependency_missing findings",

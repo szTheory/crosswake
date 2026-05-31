@@ -90,6 +90,7 @@ This mirrors Crosswake’s reconciliation stance: evidence can move workflow, bu
 ## Sigra Surface (AUTH, Contract-Only)
 
 Sigra in v3.5 is contract-only. It defines typed auth contract surfaces and fail-closed route checks without shipping full auth ceremonies.
+It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface in v3.5.
 
 - `AuthContext`
 - `SessionAuthorityLane`
