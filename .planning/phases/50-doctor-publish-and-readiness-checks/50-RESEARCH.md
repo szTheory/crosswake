@@ -375,17 +375,17 @@ end
 | A1 | Introducing `--fail-on` in Phase 50 is optional and may defer to Phase 52 without DIAG regressions. [ASSUMED] | Summary / Patterns | Could slightly reduce CI ergonomics until later phase. |
 | A2 | A dedicated `Crosswake.Doctor.PublishReadiness` module is the best maintainability split. [ASSUMED] | Recommended Structure | If maintainers prefer single-file edits, plan granularity changes. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should remote Hex checks ship in Phase 50 behind explicit opt-in?**
    - What we know: locked decisions require deterministic local path to remain primary; remote checks must be advisory by default. [VERIFIED: codebase grep]
-   - What's unclear: whether maintainers want any remote check in this phase.
-   - Recommendation: plan local deterministic checks as required scope; remote checks as optional trailing task or defer.
+   - RESOLVED: Phase 50 will not implement remote Hex/public URL checks. The plan will ship only deterministic local publish-readiness checks; remote checks remain a later optional advisory lane after the local machine contract is stable.
+   - Planning impact: no Phase 50 plan may add network I/O, public URL fetching, or merge-blocking remote Hex checks.
 
 2. **Do we ship `publish_readiness.schema_version` independent of existing doctor payload versioning?**
    - What we know: inspect has explicit schema version precedent; doctor JSON currently does not expose top-level schema field. [VERIFIED: codebase grep]
-   - What's unclear: desired backward-compatibility strategy for doctor consumers.
-   - Recommendation: add nested `publish_readiness.schema_version` first for additive safety.
+   - RESOLVED: Phase 50 will ship a nested `publish_readiness.schema_version` independent of the existing doctor payload. The top-level doctor JSON shape remains unchanged unless `--check-publish` is enabled, preserving backward compatibility for current doctor consumers.
+   - Planning impact: `publish_readiness` is the versioned machine contract for the new readiness lane; no top-level doctor schema version migration belongs in Phase 50.
 
 ## Environment Availability
 

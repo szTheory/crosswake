@@ -129,6 +129,16 @@ Success criteria:
 3. Findings are machine-readable and human-readable.
 4. Missing readiness never silently passes as supported.
 
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 50-01-PLAN.md — build the reusable publish-readiness contract and derivation engine from deterministic local project truth plus Phase 49 inspection/support data
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 50-02-PLAN.md — wire `--check-publish` through doctor CLI/report/human/JSON output and lock additive behavior with regression coverage
+
 **Phase 51: Support Matrix and Native Rebuild Truth**
 
 Goal: Make public support truth match the widened v3.6 diagnostic surface.
