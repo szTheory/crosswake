@@ -229,17 +229,17 @@ Source: `lib/crosswake/support_matrix/support_matrix.ex`, `lib/crosswake/shell/d
 |---|-------|---------|---------------|
 | A1 | Ecosystem precedence (Terraform/Kubernetes/Rails/Django split patterns) supports keeping inspect and doctor separate | User Constraints/Summary | Low: project decisions already lock this regardless |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 49 include `--route`/`--only-errors` now or defer to later?**
+1. **RESOLVED: Should Phase 49 include `--route`/`--only-errors` now or defer to later?**
    - What we know: Decision allows simple filters.
    - What's unclear: Minimum scoped option set expected by maintainers.
-   - Recommendation: Plan core contract first; add one optional filter only if low-risk.
+   - Resolution: Phase 49 plans only the required `--router` and `--format human|json` public CLI shape. `--route`, `--only-errors`, `--check`, and query-language behavior are deferred unless a later phase explicitly scopes them.
 
-2. **How much of doctor findings should be mirrored versus recomputed in inspection?**
+2. **RESOLVED: How much of doctor findings should be mirrored versus recomputed in inspection?**
    - What we know: Decisions prefer reuse, not duplication.
    - What's unclear: Exact coupling boundary to keep Phase 50 composition simple.
-   - Recommendation: Include route-relevant findings only; keep full diagnostic expansion in doctor.
+   - Resolution: Phase 49 inspection owns route-authoritative inventory and may include route-relevant findings/condition records derived from canonical route/support truth. Full diagnostic expansion stays in `Crosswake.Doctor`, and Phase 50 can compose over `Crosswake.OperatorInspection` for publish readiness instead of duplicating inspection semantics.
 
 ## Environment Availability
 
