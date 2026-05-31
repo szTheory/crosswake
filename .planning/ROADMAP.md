@@ -266,7 +266,11 @@ Plans:
   3. A docs-contract ExUnit test asserts parity between the guide and live doctor/support-matrix truth: key anchor strings (companion IDs, denial codes, DSL keys) present in the guide match what the shipped code actually emits.
   4. A milestone-level hermetic CI job compiles all three companions (rulestead, rindle, sigra contract) with their optional deps absent and asserts that every enabled-but-missing path produces a doctor `:error` finding rather than a crash or silent no-op.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+
+- [ ] 47-01-PLAN.md — expand the single canonical `guides/companions.md` and upgrade `companions_test.exs` to semantic parity against live companion/support/doctor truth
+- [ ] 47-02-PLAN.md — add the aggregate untagged Phase 47 hermetic proof for Rulestead + Rindle fail-closed behavior and Sigra auth posture without new CI sprawl
 
 ## Progress
 
@@ -286,4 +290,4 @@ Plans:
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 4/4 | Complete    | 2026-05-31 |
-| 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
+| 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/2 | Not started | - |
