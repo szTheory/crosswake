@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
 status: executing
-last_updated: "2026-05-31T16:42:31.645Z"
+last_updated: "2026-05-31T16:46:39.134Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
   percent: 80
 ---
 
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 ## Current Position
 
 Phase: 46 (sigra-auth-contract-only-slice) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-05-31
 
-Progress: [█████████░] 90%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -45,6 +45,10 @@ Progress: [█████████░] 90%
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at milestone close).
+
+- [Phase 46]: Auth predicates evaluate after kill-switch/gate and before compatibility/commerce findings. — Preserves fail-closed precedence and keeps auth denials specific.
+- [Phase 46]: RouteGate uses Sigra contract helpers for MFA order and auth-age normalization. — Avoids duplicate logic and keeps semantics aligned with AUTH-01 contracts.
+- [Phase 46]: step_up_required denial details are minimal and typed only. — Prevents sensitive auth material leakage while preserving operator clarity.
 
 ### Pending Todos
 
@@ -68,8 +72,9 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Phase 45 P01 | 10min | 3 tasks | 3 files |
 | Phase 45 P02 | 12min | 3 tasks | 8 files |
 | Phase 45 P03 | 9min | 3 tasks | 2 files |
+| Phase 46 P03 | 28min | 1 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-05-31T16:42:31.642Z
-Stopped at: Phase 46 context gathered
+Last session: 2026-05-31T16:46:39.130Z
+Stopped at: Completed 46-03-PLAN.md

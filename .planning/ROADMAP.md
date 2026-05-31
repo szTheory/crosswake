@@ -248,7 +248,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 46-03-PLAN.md — fail-closed `:step_up_required` RouteGate wiring and denial precedence proof
+- [x] 46-03-PLAN.md — fail-closed `:step_up_required` RouteGate wiring and denial precedence proof
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -285,5 +285,5 @@ Plans:
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
-| 46. Sigra Auth Contract-Only Slice | v3.5 | 2/4 | In Progress|  |
+| 46. Sigra Auth Contract-Only Slice | v3.5 | 3/4 | In Progress|  |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
