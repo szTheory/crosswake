@@ -255,4 +255,18 @@ defmodule CrosswakeExample.Router do
         ]
     end
   end
+
+  scope "/media", CrosswakeExample do
+    pipe_through [:browser]
+
+    crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+      live "/proof", Media.MediaLaneLive,
+        crosswake: [
+          id: "media-proof-lane",
+          runtime: :live_view,
+          offline: :unavailable,
+          security: :standard
+        ]
+    end
+  end
 end
