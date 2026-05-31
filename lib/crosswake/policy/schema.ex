@@ -4,6 +4,7 @@ defmodule Crosswake.Policy.Schema do
   """
 
   alias Crosswake.Transfer.Contracts
+  alias Crosswake.Companions.Sigra.Contracts, as: SigraContracts
 
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
@@ -77,6 +78,14 @@ defmodule Crosswake.Policy.Schema do
             on_unavailable: [
               type: {:custom, __MODULE__, :validate_on_unavailable, []},
               type_spec: quote(do: :deny | {:fallback_phoenix, atom()} | nil)
+            ],
+            auth_min_level: [
+              type: {:custom, __MODULE__, :validate_auth_min_level, []},
+              type_spec: quote(do: atom() | nil)
+            ],
+            requires_recent_auth: [
+              type: {:custom, __MODULE__, :validate_requires_recent_auth, []},
+              type_spec: quote(do: pos_integer() | nil)
             ]
           ])
 
@@ -112,7 +121,9 @@ defmodule Crosswake.Policy.Schema do
           transfers: [Contracts.declaration()],
           security: security(),
           gated_by: atom() | nil,
-          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
+          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
+          auth_min_level: atom() | nil,
+          requires_recent_auth: pos_integer() | nil
         ]
 
   @spec schema() :: NimbleOptions.t()
@@ -170,6 +181,32 @@ defmodule Crosswake.Policy.Schema do
   def validate_on_unavailable(value) do
     {:error,
      "expected on_unavailable to be :deny or {:fallback_phoenix, route_id}, got: #{inspect(value)}"}
+  end
+
+  @spec validate_auth_min_level(term()) :: {:ok, atom() | nil} | {:error, String.t()}
+  def validate_auth_min_level(nil), do: {:ok, nil}
+
+  def validate_auth_min_level(value) when is_atom(value) do
+    if value in SigraContracts.mfa_level_vocabulary() do
+      {:ok, value}
+    else
+      {:error, "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
+    end
+  end
+
+  def validate_auth_min_level(value) do
+    {:error, "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
+  end
+
+  @spec validate_requires_recent_auth(term()) :: {:ok, pos_integer() | nil} | {:error, String.t()}
+  def validate_requires_recent_auth(nil), do: {:ok, nil}
+
+  def validate_requires_recent_auth(value) when is_integer(value) and value > 0 do
+    {:ok, value}
+  end
+
+  def validate_requires_recent_auth(value) do
+    {:error, "expected requires_recent_auth as positive integer seconds, got: #{inspect(value)}"}
   end
 
   @spec validate_runtime(term()) :: {:ok, runtime()} | {:error, String.t()}

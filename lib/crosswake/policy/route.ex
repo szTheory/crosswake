@@ -18,6 +18,8 @@ defmodule Crosswake.Policy.Route do
     :commerce,
     :gated_by,
     :on_unavailable,
+    :auth_min_level,
+    :requires_recent_auth,
     offline: :unavailable,
     entry: :internal_only,
     capabilities: [],
@@ -40,7 +42,9 @@ defmodule Crosswake.Policy.Route do
           transfers: [Crosswake.Transfer.Contracts.declaration()],
           security: Schema.security() | nil,
           gated_by: atom() | nil,
-          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
+          on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
+          auth_min_level: atom() | nil,
+          requires_recent_auth: pos_integer() | nil
         }
 
   @spec new(keyword()) :: {:ok, t()} | {:error, NimbleOptions.ValidationError.t()}
