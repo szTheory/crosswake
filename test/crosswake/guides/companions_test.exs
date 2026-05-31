@@ -97,13 +97,16 @@ defmodule Crosswake.Guides.CompanionsTest do
 
     runtime_ids =
       SupportMatrix.gating_truth()
-      |> Enum.map(& &1.companion_id)
+      |> Enum.map(&Atom.to_string(&1.companion_id))
       |> Enum.sort()
 
-    for companion_id <- runtime_ids do
-      assert content =~ "Companion id: `#{inspect(companion_id)}`",
-             "guide missing scoped companion id #{inspect(companion_id)} from its surface section"
-    end
+    documented_ids =
+      ~r/Companion id:\s+`:([a-z_]+)`/
+      |> Regex.scan(content)
+      |> Enum.map(fn [_, companion_id] -> companion_id end)
+      |> Enum.sort()
+
+    assert documented_ids == runtime_ids
   end
 
   test "auth predicates and denial vocabulary stay parity-locked to support and shell truth", %{content: content} do

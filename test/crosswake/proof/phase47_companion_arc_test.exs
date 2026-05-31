@@ -41,6 +41,10 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
   end
 
   setup do
+    original_companions = Application.get_env(:crosswake, :companions)
+    original_rulestead = Application.get_env(:crosswake, :rulestead)
+    original_rindle = Application.get_env(:crosswake, :rindle)
+
     Application.put_env(:crosswake, :companions, [Rulestead, Rindle])
     Application.put_env(:crosswake, :rulestead, %{enabled: true})
     Application.put_env(:crosswake, :rindle, %{enabled: true})
@@ -53,9 +57,9 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
 
     on_exit(fn ->
       File.rm_rf(target)
-      Application.delete_env(:crosswake, :companions)
-      Application.delete_env(:crosswake, :rulestead)
-      Application.delete_env(:crosswake, :rindle)
+      restore_env(:companions, original_companions)
+      restore_env(:rulestead, original_rulestead)
+      restore_env(:rindle, original_rindle)
     end)
 
     router_path = Path.join(target, "lib/demo_web/router.ex")
@@ -140,7 +144,9 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     assert row.denial_vocabulary == :step_up_required
     assert row.fallback == :step_up_required
     assert row.surface =~ "AuthContext"
-    assert row.posture =~ "Contract-only in Phase 46"
+    assert row.posture =~ "Contract-only"
+    assert row.posture =~ "No handoff"
+    assert row.posture =~ "passkey"
   end
 
   test "auth-predicated route denies with step_up_required when context is missing or weak" do
@@ -188,4 +194,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
   test "hermetic lane guard: denial vocabulary keeps step_up_required reason" do
     assert :step_up_required in Denial.reasons()
   end
+
+  defp restore_env(key, nil), do: Application.delete_env(:crosswake, key)
+  defp restore_env(key, value), do: Application.put_env(:crosswake, key, value)
 end
