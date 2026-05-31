@@ -52,7 +52,7 @@ Full phase details: [.planning/milestones/v3.4-ROADMAP.md](milestones/v3.4-ROADM
 - [x] **Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary** — `UploadGrant`/`CaptureEvidence`/`MediaObject` contracts; backend-owned non-authoritative reconciliation vocabulary (completed 2026-05-31)
 - [x] **Phase 45: Rindle In-Tree Companion, Mock Example, And Proof** — pure-Elixir mock upload/verify; hermetic proof; generalization proof that the pattern isn't flag-specific (completed 2026-05-31)
 - [x] **Phase 46: Sigra Auth Contract-Only Slice** — `AuthContext` + `SessionAuthorityLane` + route auth predicates; fail-closed `:step_up_required`; doctor/support-matrix truth (completed 2026-05-31)
-- [ ] **Phase 47: Companion Arc Guide And Milestone Proof** — `guides/companions.md` overview; deferred non-goals documented; cross-companion docs-contract parity; milestone-level hermetic proof
+- [x] **Phase 47: Companion Arc Guide And Milestone Proof** — `guides/companions.md` overview; deferred non-goals documented; cross-companion docs-contract parity; milestone-level hermetic proof (completed 2026-05-31)
 
 ## Phase Details
 
@@ -270,7 +270,7 @@ Plans:
 Plans:
 
 - [x] 47-01-PLAN.md — expand the single canonical `guides/companions.md` and upgrade `companions_test.exs` to semantic parity against live companion/support/doctor truth
-- [ ] 47-02-PLAN.md — add the aggregate untagged Phase 47 hermetic proof for Rulestead + Rindle fail-closed behavior and Sigra auth posture without new CI sprawl
+- [x] 47-02-PLAN.md — add the aggregate untagged Phase 47 hermetic proof for Rulestead + Rindle fail-closed behavior and Sigra auth posture without new CI sprawl
 
 ## Progress
 
@@ -290,4 +290,4 @@ Plans:
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
 | 46. Sigra Auth Contract-Only Slice | v3.5 | 4/4 | Complete    | 2026-05-31 |
-| 47. Companion Arc Guide And Milestone Proof | v3.5 | 1/2 | In Progress|  |
+| 47. Companion Arc Guide And Milestone Proof | v3.5 | 2/2 | Complete   | 2026-05-31 |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.5
 milestone_name: First-Party Companions
-status: executing
-last_updated: "2026-05-31T17:30:54.622Z"
+status: verifying
+last_updated: "2026-05-31T17:34:13.306Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 10
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 22
-  completed_plans: 21
-  percent: 90
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-05-31)
 
 Phase: 47 (Companion Arc Guide And Milestone Proof) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-31
 
-Progress: [██████████] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 - [Phase 46]: RouteGate uses Sigra contract helpers for MFA order and auth-age normalization. — Avoids duplicate logic and keeps semantics aligned with AUTH-01 contracts.
 - [Phase 46]: step_up_required denial details are minimal and typed only. — Prevents sensitive auth material leakage while preserving operator clarity.
 - [Phase 47]: Canonical companion guide is parity-locked to SupportMatrix, Denial, and live Doctor findings. — Prevents docs drift and keeps PROOF-02 contract truth machine-verifiable.
+- [Phase 47]: Phase 47 plan 02 uses one untagged aggregate hermetic proof for companion arc claims.
+- [Phase 47]: Sigra milestone proof remains contract-only via auth support truth and :step_up_required route posture assertions.
 
 ### Pending Todos
 
@@ -75,8 +77,9 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Phase 45 P03 | 9min | 3 tasks | 2 files |
 | Phase 46 P03 | 28min | 1 tasks | 4 files |
 | Phase 47 P01 | 7min | 2 tasks | 2 files |
+| Phase 47 P02 | 21min | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-05-31T17:30:34.774Z
-Stopped at: Phase 47 context gathered
+Last session: 2026-05-31T17:34:13.302Z
+Stopped at: Completed 47-02-PLAN.md
