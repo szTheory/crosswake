@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.5
-milestone_name: First-Party Companions
-status: Awaiting next milestone
-last_updated: "2026-05-31T17:56:01.016Z"
-last_activity: 2026-05-31 — Milestone v3.5 completed and archived
+milestone: v3.6
+milestone_name: Operator Truth and Production Diagnostics
+status: Ready for phase discussion
+last_updated: "2026-05-31T18:29:41.418Z"
+last_activity: 2026-05-31 — Milestone v3.6 requirements and roadmap initialized
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Milestone complete
+**Current focus:** v3.6 Operator Truth and Production Diagnostics
 
 ## Current Position
 
-Phase: Milestone v3.5 complete
+Phase: 48 — Strategic Signal and Milestone Memory
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-31 — Milestone v3.5 completed and archived
+Status: Ready for phase discussion
+Last activity: 2026-05-31 — Milestone v3.6 requirements and roadmap initialized
 
 ## Performance Metrics
 
@@ -58,17 +58,18 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 ### Blockers/Concerns
 
 - Android JVM evidence continues to require CI (no local Java runtime).
-- StoreKit/Play Billing proof stays advisory; graduation to merge-blocking deferred to v3.6 (ADPT-01/02/03).
+- StoreKit/Play Billing proof stays advisory; graduation to merge-blocking deferred to v3.7 (ADPT-01/02/03).
+- v3.6 must avoid implying StoreKit, Play Billing, full Sigra machinery, Chimeway delivery, or standalone shell packages have shipped.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Commerce | StoreKit, Play Billing, RevenueCat provider adapters | Deferred to v3.6 | 2026-05-27 |
+| Commerce | StoreKit, Play Billing, RevenueCat provider adapters | Deferred to v3.7 | 2026-05-27 |
 | Docs | ExDoc zero-warnings clause (HEX-03) | Deferred | 2026-05-29 |
 | CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
-| Tooling | `mix crosswake.doctor --check-publish` surface | Deferred | 2026-05-27 |
+| Tooling | `mix crosswake.doctor --check-publish` surface | Active in v3.6 | 2026-05-27 |
 | Validation | Finalize Nyquist VALIDATION.md ledger for phases 34-37 (draft → compliant) | Deferred (bookkeeping only) | 2026-05-29 |
 | Phase 45 P01 | 10min | 3 tasks | 3 files |
 | Phase 45 P02 | 12min | 3 tasks | 8 files |
@@ -79,9 +80,9 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 ## Session Continuity
 
-Last session: 2026-05-31T17:34:13.302Z
-Stopped at: Completed 47-02-PLAN.md
+Last session: 2026-05-31T18:29:41.415Z
+Stopped at: Phase 48 context gathered
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start Phase 48 with /gsd-discuss-phase 48
