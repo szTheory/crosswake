@@ -31,7 +31,7 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 ### AUTH — Sigra Auth Contract (contract-only slice)
 
 - [ ] **AUTH-01**: A Phoenix team can model an `AuthContext` (actor_id, org_id, mfa_level, auth_age) and a backend-set-only `SessionAuthorityLane`, with device/client auth signals treated as evidence and never as authority.
-- [ ] **AUTH-02**: A Phoenix team can declare route auth predicates (`auth_min_level` / `requires_recent_auth`) that fail closed with a `:step_up_required` denial when unmet, surfaced in doctor and support-matrix truth.
+- [x] **AUTH-02**: A Phoenix team can declare route auth predicates (`auth_min_level` / `requires_recent_auth`) that fail closed with a `:step_up_required` denial when unmet, surfaced in doctor and support-matrix truth.
 
 ### PROOF — Proof Lanes & Docs Contract
 
@@ -72,6 +72,6 @@ Research: `.planning/research/v3.5-companions-SUMMARY.md`. Plan: `~/.claude/plan
 | MEDIA-02 | Phase 44 | Complete |
 | MEDIA-03 | Phase 45 | Complete |
 | AUTH-01 | Phase 46 | Pending |
-| AUTH-02 | Phase 46 | Pending |
+| AUTH-02 | Phase 46 | Complete |
 | PROOF-01 | Phase 43 + Phase 45 | Complete |
 | PROOF-02 | Phase 47 | Pending |

@@ -240,11 +240,11 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 46-01-PLAN.md — sigra auth contract structs, validators, and AUTH-01 unit coverage
+- [x] 46-01-PLAN.md — sigra auth contract structs, validators, and AUTH-01 unit coverage
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 46-02-PLAN.md — route DSL, manifest truth, checked-in shell fixture manifests, and AUTH-02 proof scaffold
+- [x] 46-02-PLAN.md — route DSL, manifest truth, checked-in shell fixture manifests, and AUTH-02 proof scaffold
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -285,5 +285,5 @@ Plans:
 | 43. Rulestead Hermetic+Advisory Proof And Guide | v3.5 | 2/2 | In Progress|  |
 | 44. Rindle Media Seam Contracts And Reconciliation Vocabulary | v3.5 | 2/2 | Complete   | 2026-05-31 |
 | 45. Rindle In-Tree Companion, Mock Example, And Proof | v3.5 | 3/3 | Complete    | 2026-05-31 |
-| 46. Sigra Auth Contract-Only Slice | v3.5 | 0/4 | Not started | - |
+| 46. Sigra Auth Contract-Only Slice | v3.5 | 2/4 | In Progress|  |
 | 47. Companion Arc Guide And Milestone Proof | v3.5 | 0/? | Not started | - |
