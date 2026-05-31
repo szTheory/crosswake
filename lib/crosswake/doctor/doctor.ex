@@ -129,13 +129,15 @@ defmodule Crosswake.Doctor do
 
     phase_38_findings = phase_38_companion_seam_findings()
     phase_41_findings = phase_41_gating_findings(manifest)
+    phase_46_findings = phase_46_auth_findings(manifest)
 
     findings =
       findings ++
         phase_3_findings ++
         phase_4_findings ++
         phase_10_findings ++
-        phase_19_findings ++ phase_23_findings ++ phase_38_findings ++ phase_41_findings
+        phase_19_findings ++
+        phase_23_findings ++ phase_38_findings ++ phase_41_findings ++ phase_46_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -679,6 +681,50 @@ defmodule Crosswake.Doctor do
       _ ->
         []
     end
+  end
+
+  defp phase_46_auth_findings(nil), do: []
+
+  defp phase_46_auth_findings(manifest) do
+    routes =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(&(not is_nil(&1.auth_min_level) or not is_nil(&1.requires_recent_auth)))
+
+    route_findings =
+      Enum.map(routes, fn route ->
+        check(
+          :advisory,
+          "auth.route_predicated",
+          "auth.#{route.id}",
+          "Route \"#{route.id}\" declares auth predicates auth_min_level=#{route.auth_min_level} requires_recent_auth=#{route.requires_recent_auth}",
+          "Crosswake enforces fail-closed route denial via :step_up_required when predicate checks fail.",
+          %{
+            route_id: route.id,
+            auth_min_level: route.auth_min_level,
+            requires_recent_auth: route.requires_recent_auth,
+            fallback: :step_up_required
+          }
+        )
+      end)
+
+    contract_finding =
+      if routes == [] do
+        []
+      else
+        [
+          check(
+            :advisory,
+            "auth.step_up_required_contract",
+            "auth.contract_posture",
+            "Auth contract surface is route predicate enforcement only in Phase 46.",
+            "Contract-only scope: typed AuthContext + SessionAuthorityLane inputs and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
+            %{fallback: :step_up_required}
+          )
+        ]
+      end
+
+    route_findings ++ contract_finding
   end
 
   defp phase_23_commerce_summary(nil, _opts) do

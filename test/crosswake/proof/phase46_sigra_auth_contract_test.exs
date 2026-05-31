@@ -5,6 +5,7 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
   alias Crosswake.Compatibility.Target
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.Contracts.AuthContext
+  alias Crosswake.Doctor
   alias Crosswake.Manifest
   alias Crosswake.Manifest.Types.RouteEntry
 
@@ -200,4 +201,28 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
     gate_decision = RouteGate.evaluate(kill_manifest, "gated-auth", target, auth_context: auth_context)
     assert gate_decision.denial.reason == :gate_denied
   end
+
+  test "doctor emits auth route and contract-only findings with stable codes" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(AuthPredicatedRouter)
+
+    report =
+      Doctor.run(
+        route_source: AuthPredicatedRouter,
+        install_manifest_path: "priv/crosswake/install_manifest.json",
+        cwd: File.cwd!()
+      )
+
+    assert manifest.routes["secure"].auth_min_level == :mfa
+    assert manifest.routes["secure"].requires_recent_auth == 600
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "auth.route_predicated" and
+               finding.details[:route_id] == "secure" and
+               finding.details[:auth_min_level] == :mfa and
+               finding.details[:requires_recent_auth] == 600
+           end)
+
+    assert Enum.any?(report.findings, &(&1.code == "auth.step_up_required_contract"))
+  end
+
 end

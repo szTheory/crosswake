@@ -716,6 +716,22 @@ defmodule Crosswake.DoctorTest do
     end
   end
 
+  defmodule AuthPredicatedIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live "/auth-secure", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "auth_secure",
+            runtime: :live_view,
+            auth_min_level: :mfa,
+            requires_recent_auth: 600
+          ]
+      end
+    end
+  end
+
   test "gating findings surface in formatted Doctor output (human and JSON)", %{
     target: target,
     install_manifest_path: install_manifest_path
@@ -745,6 +761,75 @@ defmodule Crosswake.DoctorTest do
     finding_codes = Enum.map(decoded["findings"], & &1["code"])
     assert "gating.route_gated" in finding_codes
     assert "gating.flag_reference_unknown" in finding_codes
+  end
+
+  test "auth findings surface in formatted Doctor output (human and JSON) without sensitive artifacts",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: AuthPredicatedIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    auth_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "auth."))
+
+    assert Enum.any?(
+             auth_findings,
+             &(&1.code == "auth.route_predicated" and
+                 &1.details[:route_id] == "auth_secure" and
+                 &1.details[:auth_min_level] == :mfa and
+                 &1.details[:requires_recent_auth] == 600)
+           )
+
+    assert Enum.any?(auth_findings, &(&1.code == "auth.step_up_required_contract"))
+
+    human = Formatter.render(report)
+    decoded = JSONFormatter.render(report) |> Jason.decode!()
+
+    assert human =~ "auth.route_predicated"
+    assert human =~ "auth.step_up_required_contract"
+    assert human =~ "route_id=auth_secure"
+    assert human =~ "auth_min_level=mfa"
+    assert human =~ "requires_recent_auth=600"
+
+    json_route_finding =
+      Enum.find(decoded["findings"], fn finding ->
+        finding["code"] == "auth.route_predicated"
+      end)
+
+    assert json_route_finding["details"]["route_id"] == "auth_secure"
+    assert json_route_finding["details"]["auth_min_level"] == "mfa"
+    assert json_route_finding["details"]["requires_recent_auth"] == 600
+
+    assert Enum.any?(decoded["findings"], &(&1["code"] == "auth.step_up_required_contract"))
+
+    sensitive_artifacts = [
+      "session_id",
+      "actor_id",
+      "challenge",
+      "token_ref",
+      "access_token",
+      "refresh_token",
+      "passkey_credential"
+    ]
+
+    auth_human_lines =
+      human
+      |> String.split("\n")
+      |> Enum.filter(&String.contains?(&1, " auth."))
+      |> Enum.join("\n")
+
+    auth_json_payload =
+      decoded["findings"]
+      |> Enum.filter(&String.starts_with?((&1["code"] || ""), "auth."))
+      |> Jason.encode!()
+      |> String.downcase()
+
+    for artifact <- sensitive_artifacts do
+      refute String.contains?(String.downcase(auth_human_lines), artifact)
+      refute String.contains?(auth_json_payload, artifact)
+    end
   end
 
   defp write_shell_artifacts!(target) do
