@@ -63,7 +63,7 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 <details open>
 <summary>🔄 v3.6 Operator Truth and Production Diagnostics (Phases 48-53) — ACTIVE</summary>
 
-- [ ] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue.
+- [x] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue. (completed 2026-05-31)
 - [ ] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output.
 - [ ] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings.
 - [ ] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
@@ -88,12 +88,12 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 48-01-PLAN.md — refresh `MILESTONE-ARC.md` to the locked strategic-memory field contract and collapse project-level queue drift onto that canonical source
-- [ ] 48-02-PLAN.md — create `.planning/milestones/v3.6-CLOSEOUT.md` as the live closeout ledger, checklist, and explicit Phase 53 enforcement target
+- [x] 48-01-PLAN.md — refresh `MILESTONE-ARC.md` to the locked strategic-memory field contract and collapse project-level queue drift onto that canonical source
+- [x] 48-02-PLAN.md — create `.planning/milestones/v3.6-CLOSEOUT.md` as the live closeout ledger, checklist, and explicit Phase 53 enforcement target
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 48-03-PLAN.md — add deterministic ExUnit parity guards for the strategic arc, closeout ledger, and exact `closeout.verify` promotion target
+- [x] 48-03-PLAN.md — add deterministic ExUnit parity guards for the strategic arc, closeout ledger, and exact `closeout.verify` promotion target
 
 **Phase 49: Operator Inspection Contract**
 

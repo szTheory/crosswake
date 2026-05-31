@@ -88,7 +88,7 @@ None.
 ### Residual Risk
 
 - `gsd-sdk query verify.key-links` reported false negatives for some Phase 48 regex patterns despite direct string evidence in files; this appears to be a pattern-matching/tooling mismatch, not missing implementation.
-- Full non-advisory suite (`462 tests`) was not re-run in this verification pass; user-provided run evidence was consistent with focused checks.
+- Full non-advisory suite was re-run after review fixes by the orchestrating agent: `mix test --exclude requires_example_host --exclude advisory_only` passed with 462 tests, 0 failures, 44 excluded.
 
 ---
 
