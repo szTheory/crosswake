@@ -8,6 +8,7 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
   alias Crosswake.Doctor
   alias Crosswake.Manifest
   alias Crosswake.Manifest.Types.RouteEntry
+  alias Crosswake.SupportMatrix
 
   defmodule AuthPredicatedRouter do
     use Crosswake.Router
@@ -223,6 +224,28 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
            end)
 
     assert Enum.any?(report.findings, &(&1.code == "auth.step_up_required_contract"))
+  end
+
+  test "support truth and denial vocabulary align with phase 46 stable auth terms" do
+    assert {:ok, %{manifest: manifest}} = Manifest.compile(AuthPredicatedRouter)
+    target = %Target{origin: manifest.host.origin}
+
+    decision = RouteGate.evaluate(manifest, "secure", target, [])
+    auth_truth = SupportMatrix.auth_contract_truth()
+
+    assert [%{} = row] = auth_truth
+    assert row.owner == :backend_seam
+    assert row.package_class == :companion
+    assert row.proof_class == :merge_blocking
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth]
+    assert row.denial_vocabulary == :step_up_required
+    assert row.fallback == :step_up_required
+    assert row.surface =~ "AuthContext"
+    assert row.surface =~ "SessionAuthorityLane"
+
+    assert manifest.routes["secure"].auth_min_level == :mfa
+    assert manifest.routes["secure"].requires_recent_auth == 600
+    assert decision.denial.reason == :step_up_required
   end
 
 end

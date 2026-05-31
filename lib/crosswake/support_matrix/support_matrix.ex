@@ -119,6 +119,19 @@ defmodule Crosswake.SupportMatrix do
       advisory_provider_proof: true
     }
   ]
+  @auth_contract_truth [
+    %{
+      surface: "AuthContext + SessionAuthorityLane contract-only route predicate enforcement",
+      owner: :backend_seam,
+      package_class: :companion,
+      proof_class: :merge_blocking,
+      route_predicates: [:auth_min_level, :requires_recent_auth],
+      denial_vocabulary: :step_up_required,
+      fallback: :step_up_required,
+      posture:
+        "Contract-only in Phase 46: typed auth context and fail-closed route denial only. No handoff, ceremony, passkey, OAuth, or refresh-token machinery."
+    }
+  ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
@@ -272,6 +285,9 @@ defmodule Crosswake.SupportMatrix do
 
   @spec commerce_corridors() :: [map()]
   def commerce_corridors, do: @commerce_corridor_entries
+
+  @spec auth_contract_truth() :: [map()]
+  def auth_contract_truth, do: @auth_contract_truth
 
   @spec commerce_corridor_denial_codes() :: [String.t()]
   def commerce_corridor_denial_codes do

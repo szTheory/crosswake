@@ -418,4 +418,30 @@ defmodule Crosswake.SupportMatrixTest do
     assert MapSet.disjoint?(merge_blocking_required_check_roles, advisory_roles),
            "merge-blocking required-check list #{inspect(MapSet.to_list(merge_blocking_required_check_roles))} must be disjoint from advisory corridors #{inspect(MapSet.to_list(advisory_roles))}"
   end
+
+  test "auth_contract_truth exposes canonical phase 46 auth contract row" do
+    assert [%{} = row] = SupportMatrix.auth_contract_truth()
+
+    assert Map.keys(row) |> Enum.sort() == [
+             :denial_vocabulary,
+             :fallback,
+             :owner,
+             :package_class,
+             :posture,
+             :proof_class,
+             :route_predicates,
+             :surface
+           ]
+
+    assert row.owner == :backend_seam
+    assert row.package_class == :companion
+    assert row.proof_class == :merge_blocking
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth]
+    assert row.denial_vocabulary == :step_up_required
+    assert row.fallback == :step_up_required
+    assert row.surface =~ "AuthContext"
+    assert row.surface =~ "SessionAuthorityLane"
+    assert row.posture =~ "Contract-only"
+    assert row.posture =~ "No handoff"
+  end
 end
