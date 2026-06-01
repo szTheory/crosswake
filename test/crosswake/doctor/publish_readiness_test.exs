@@ -206,8 +206,13 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert report.summary.warning_count >= 1
   end
 
-  test "publish parity rejects empty or malformed source URLs" do
-    for source_url <- ["", "github.com/szTheory/crosswake", "ftp://github.com/szTheory/crosswake"] do
+  test "publish parity rejects empty, malformed, or non-HTTPS source URLs" do
+    for source_url <- [
+          "",
+          "github.com/szTheory/crosswake",
+          "ftp://github.com/szTheory/crosswake",
+          "http://github.com/szTheory/crosswake"
+        ] do
       report =
         readiness_report(
           project_config: [
@@ -223,6 +228,22 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
       assert publish.severity == :error
       assert "source_url must be a non-empty http(s) URL" in publish.details.errors
     end
+  end
+
+  test "publish parity derives the required changelog section from the current project version" do
+    report =
+      readiness_report(
+        project_config: [
+          version: "0.2.0",
+          source_url: "https://github.com/szTheory/crosswake",
+          package: [name: "crosswake"]
+        ]
+      )
+
+    publish = find_check!(report, :publish_parity)
+
+    assert publish.blocking
+    assert "CHANGELOG.md must include the current [0.2.0] release" in publish.details.errors
   end
 
   defp readiness_report(opts \\ []) do

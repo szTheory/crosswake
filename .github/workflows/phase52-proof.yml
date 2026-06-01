@@ -63,7 +63,7 @@ jobs:
     # full Sigra machinery, and does NOT imply standalone public shell packages
     # are supported in v3.6.
     name: advisory operator proof (optional dependency visibility only)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     continue-on-error: true

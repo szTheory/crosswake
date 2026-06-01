@@ -174,14 +174,15 @@ defmodule Crosswake.Doctor.PublishReadiness do
   defp publish_parity_check(cwd, opts) do
     project_config = Keyword.get_lazy(opts, :project_config, &Mix.Project.config/0)
     package = Keyword.get(project_config, :package, [])
+    expected_version = Keyword.get(project_config, :version)
     source_url = Keyword.get(project_config, :source_url)
     changelog = changelog_contents(cwd, opts)
 
     errors =
       []
       |> require_truth(
-        Keyword.get(project_config, :version) == "0.1.0",
-        "mix.exs version must match published 0.1.0 truth"
+        is_binary(expected_version) and expected_version != "",
+        "mix.exs version must be set"
       )
       |> require_truth(
         Keyword.get(package, :name) == "crosswake",
@@ -196,8 +197,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "CHANGELOG.md must keep an [Unreleased] section"
       )
       |> require_truth(
-        changelog =~ "[0.1.0]",
-        "CHANGELOG.md must keep the published [0.1.0] release"
+        is_binary(expected_version) and changelog =~ "[#{expected_version}]",
+        "CHANGELOG.md must include the current [#{expected_version}] release"
       )
 
     result_check(
@@ -221,7 +222,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
       claim_scope: "Hex metadata and release/changelog truth",
       details: %{
         package_name: Keyword.get(package, :name),
-        version: Keyword.get(project_config, :version),
+        version: expected_version,
         source_url: source_url,
         changelog_sections: changelog_sections(changelog),
         errors: Enum.reverse(errors)
@@ -578,7 +579,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp valid_source_url?(source_url) when is_binary(source_url) do
     case URI.parse(source_url) do
-      %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) ->
+      %URI{scheme: "https", host: host} when is_binary(host) ->
         source_url != "" and host != ""
 
       _other ->
