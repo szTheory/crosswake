@@ -21,8 +21,8 @@
       "message": "local Hex metadata and CHANGELOG.md preserve published-versus-unreleased truth",
       "proof_class": "merge_blocking",
       "rebuild_requirement": {
-        "companion_required": "false",
-        "native_required": "false",
+        "companion_required": false,
+        "native_required": false,
         "reasons": []
       },
       "result": "pass",
@@ -42,8 +42,8 @@
       "message": "no companion-gated routes are present in the inspected route set",
       "proof_class": "not_applicable",
       "rebuild_requirement": {
-        "companion_required": "false",
-        "native_required": "false",
+        "companion_required": false,
+        "native_required": false,
         "reasons": []
       },
       "result": "pass",
@@ -72,7 +72,7 @@
           "guides/commerce.md"
         ],
         "route_ids": [],
-        "shipped?": "false"
+        "shipped?": false
       },
       "docs_reference": "guides/commerce.md",
       "hint": "Keep storefront/provider evidence advisory and route entitlement authority through backend reconciliation.",
@@ -83,8 +83,8 @@
         "action_classes": [
           "provider_adapter"
         ],
-        "companion_required": "false",
-        "native_required": "true",
+        "companion_required": false,
+        "native_required": true,
         "reasons": [
           "provider SDK adapter implementation is deferred"
         ]
@@ -98,7 +98,7 @@
       "claim_scope": "Notification token provider readiness, not notification delivery",
       "code": "diag.notification.token_provider_snapshot_only",
       "details": {
-        "delivery_supported?": "false",
+        "delivery_supported?": false,
         "demotion_trigger": "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support.",
         "promotion_rule_ids": [
           "notification_token.provider_snapshot"
@@ -124,8 +124,8 @@
         "action_classes": [
           "companion_native"
         ],
-        "companion_required": "true",
-        "native_required": "false",
+        "companion_required": true,
+        "native_required": false,
         "reasons": [
           "notification_token provider snapshot readiness requires companion-native proof"
         ]
@@ -147,7 +147,7 @@
           "refresh_tokens",
           "native_auth_ui"
         ],
-        "demotion_trigger": "nil",
+        "demotion_trigger": null,
         "fallback": "step_up_required",
         "posture": "contract_only",
         "promotion_rule_ids": [],
@@ -163,8 +163,8 @@
         "action_classes": [
           "companion_native"
         ],
-        "companion_required": "false",
-        "native_required": "false",
+        "companion_required": false,
+        "native_required": false,
         "reasons": [
           "Sigra route predicates remain companion contract-only support truth"
         ]
@@ -206,8 +206,8 @@
           "companion_native",
           "route_manifest"
         ],
-        "companion_required": "true",
-        "native_required": "true",
+        "companion_required": true,
+        "native_required": true,
         "reasons": [
           "capability camera requires native-required",
           "capability notification_token requires companion-required",
@@ -249,8 +249,8 @@
       "message": "docs extras and support guidance cover the v3.6 readiness claim surface",
       "proof_class": "merge_blocking",
       "rebuild_requirement": {
-        "companion_required": "false",
-        "native_required": "false",
+        "companion_required": false,
+        "native_required": false,
         "reasons": []
       },
       "result": "pass",
@@ -282,8 +282,8 @@
       "message": "advisory proof surfaces remain visible and are not equivalent to supported status",
       "proof_class": "advisory",
       "rebuild_requirement": {
-        "companion_required": "false",
-        "native_required": "false",
+        "companion_required": false,
+        "native_required": false,
         "reasons": []
       },
       "result": "advisory",

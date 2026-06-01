@@ -679,6 +679,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
   end
 
   defp stringify(list) when is_list(list), do: Enum.map(list, &stringify/1)
+  defp stringify(value) when is_boolean(value), do: value
+  defp stringify(nil), do: nil
   defp stringify(value) when is_atom(value), do: Atom.to_string(value)
   defp stringify(value), do: value
 end

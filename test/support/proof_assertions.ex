@@ -74,8 +74,19 @@ defmodule Crosswake.TestSupport.ProofAssertions do
     |> Enum.sort_by(fn {key, _v} -> key end)
   end
 
-  defp normalize(value) when is_list(value), do: Enum.map(value, &normalize/1)
+  defp normalize(value) when is_list(value) do
+    normalized = Enum.map(value, &normalize/1)
+
+    if Enum.all?(normalized, &scalar?/1), do: Enum.sort(normalized), else: normalized
+  end
+
   defp normalize(value), do: value
+
+  defp scalar?(value) when is_binary(value), do: true
+  defp scalar?(value) when is_number(value), do: true
+  defp scalar?(value) when is_boolean(value), do: true
+  defp scalar?(nil), do: true
+  defp scalar?(_value), do: false
 
   defp volatile_key?(key) when is_atom(key), do: volatile_key?(Atom.to_string(key))
 

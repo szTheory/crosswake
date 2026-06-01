@@ -12,7 +12,10 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
 
   setup do
     target =
-      Path.join(System.tmp_dir!(), "crosswake-phase52-proof-#{System.unique_integer([:positive])}")
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase52-proof-#{System.unique_integer([:positive])}"
+      )
 
     router_path = Path.join(target, "lib/demo_web/router.ex")
     policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")
@@ -120,13 +123,29 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     decoded = Jason.decode!(output)
     assert decoded["publish_readiness"]["schema_version"] == "1.0.0"
 
+    for check <- decoded["publish_readiness"]["checks"] do
+      assert is_boolean(check["blocking"])
+      assert is_boolean(check["rebuild_requirement"]["native_required"])
+      assert is_boolean(check["rebuild_requirement"]["companion_required"])
+    end
+
+    provider = find_readiness_check!(decoded, "provider.adapter_readiness")
+    refute provider["details"]["shipped?"]
+
+    notification = find_readiness_check!(decoded, "notification.token_readiness")
+    refute notification["details"]["delivery_supported?"]
+
+    auth = find_readiness_check!(decoded, "auth.session_predicate_readiness")
+    assert is_nil(auth["details"]["demotion_trigger"])
+
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
       Jason.encode!(decoded["publish_readiness"]),
       @readiness_fixture,
       source: "mix crosswake.doctor --check-publish --format json",
       path: @readiness_fixture,
-      hint: "preserve readiness category/code/proof-class/rebuild semantics when updating fixture",
+      hint:
+        "preserve readiness category/code/proof-class/rebuild semantics when updating fixture",
       posture: :merge_blocking
     )
   end
@@ -213,7 +232,11 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     statuses = Crosswake.SupportMatrix.statuses()
     assert statuses == [:supported, :verification_required, :unsupported]
 
-    assert Crosswake.SupportMatrix.proof_classes() == [:merge_blocking, :advisory, :not_applicable]
+    assert Crosswake.SupportMatrix.proof_classes() == [
+             :merge_blocking,
+             :advisory,
+             :not_applicable
+           ]
 
     action_classes =
       Crosswake.SupportMatrix.action_classes()
@@ -242,5 +265,10 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
         ] do
       assert required in promotion_ids
     end
+  end
+
+  defp find_readiness_check!(decoded, id) do
+    Enum.find(decoded["publish_readiness"]["checks"], &(&1["id"] == id)) ||
+      flunk("missing publish readiness check #{id}")
   end
 end
