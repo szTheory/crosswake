@@ -495,6 +495,97 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
+  defmodule ActionClassEntry do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [
+      :action_class,
+      :subject,
+      :required_action,
+      :rebuild_required,
+      :reason,
+      :guide_anchor
+    ]
+    defstruct [
+      :action_class,
+      :subject,
+      :required_action,
+      :rebuild_required,
+      :reason,
+      :guide_anchor
+    ]
+
+    @type t :: %__MODULE__{
+            action_class: String.t(),
+            subject: String.t(),
+            required_action: String.t(),
+            rebuild_required: boolean(),
+            reason: String.t(),
+            guide_anchor: String.t()
+          }
+  end
+
+  defmodule PromotionRuleEntry do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [
+      :claim_id,
+      :claim_scope,
+      :current_proof_class,
+      :promotes_to,
+      :evidence_class,
+      :required_evidence,
+      :minimum_consecutive_passes,
+      :freshness_window,
+      :failure_budget,
+      :required_platforms,
+      :required_docs_anchors,
+      :change_class,
+      :action_class,
+      :check_ids,
+      :demotion_trigger
+    ]
+    defstruct [
+      :claim_id,
+      :claim_scope,
+      :current_proof_class,
+      :promotes_to,
+      :evidence_class,
+      :required_evidence,
+      :minimum_consecutive_passes,
+      :freshness_window,
+      :failure_budget,
+      :required_platforms,
+      :required_docs_anchors,
+      :change_class,
+      :action_class,
+      :check_ids,
+      :demotion_trigger
+    ]
+
+    @type proof_target :: :merge_blocking | :advisory | :not_applicable | :supported
+
+    @type t :: %__MODULE__{
+            claim_id: String.t(),
+            claim_scope: String.t(),
+            current_proof_class: proof_target(),
+            promotes_to: proof_target(),
+            evidence_class: String.t(),
+            required_evidence: [String.t()],
+            minimum_consecutive_passes: pos_integer(),
+            freshness_window: String.t(),
+            failure_budget: String.t(),
+            required_platforms: [String.t()],
+            required_docs_anchors: [String.t()],
+            change_class: String.t(),
+            action_class: String.t(),
+            check_ids: [String.t()],
+            demotion_trigger: String.t()
+          }
+  end
+
   @manifest_schema_version "1.0.0"
   @bridge_protocol_version "1.0.0"
   @native_runtime_version "1.0.0"
@@ -738,6 +829,39 @@ defmodule Crosswake.Manifest.Types do
     })
   end
 
+  @spec new_action_class_entry(keyword()) :: ActionClassEntry.t()
+  def new_action_class_entry(attrs) when is_list(attrs) do
+    struct!(ActionClassEntry, %{
+      action_class: Keyword.fetch!(attrs, :action_class),
+      subject: Keyword.fetch!(attrs, :subject),
+      required_action: Keyword.fetch!(attrs, :required_action),
+      rebuild_required: Keyword.fetch!(attrs, :rebuild_required),
+      reason: Keyword.fetch!(attrs, :reason),
+      guide_anchor: Keyword.fetch!(attrs, :guide_anchor)
+    })
+  end
+
+  @spec new_promotion_rule_entry(keyword()) :: PromotionRuleEntry.t()
+  def new_promotion_rule_entry(attrs) when is_list(attrs) do
+    struct!(PromotionRuleEntry, %{
+      claim_id: Keyword.fetch!(attrs, :claim_id),
+      claim_scope: Keyword.fetch!(attrs, :claim_scope),
+      current_proof_class: Keyword.fetch!(attrs, :current_proof_class),
+      promotes_to: Keyword.fetch!(attrs, :promotes_to),
+      evidence_class: Keyword.fetch!(attrs, :evidence_class),
+      required_evidence: Keyword.fetch!(attrs, :required_evidence),
+      minimum_consecutive_passes: Keyword.fetch!(attrs, :minimum_consecutive_passes),
+      freshness_window: Keyword.fetch!(attrs, :freshness_window),
+      failure_budget: Keyword.fetch!(attrs, :failure_budget),
+      required_platforms: Keyword.fetch!(attrs, :required_platforms),
+      required_docs_anchors: Keyword.fetch!(attrs, :required_docs_anchors),
+      change_class: Keyword.fetch!(attrs, :change_class),
+      action_class: Keyword.fetch!(attrs, :action_class),
+      check_ids: Keyword.fetch!(attrs, :check_ids),
+      demotion_trigger: Keyword.fetch!(attrs, :demotion_trigger)
+    })
+  end
+
   @spec to_map(term()) :: term()
   def to_map(%Root{} = root) do
     %{
@@ -963,6 +1087,37 @@ defmodule Crosswake.Manifest.Types do
     }
   end
 
+  def to_map(%ActionClassEntry{} = entry) do
+    %{
+      "action_class" => entry.action_class,
+      "subject" => entry.subject,
+      "required_action" => entry.required_action,
+      "rebuild_required" => entry.rebuild_required,
+      "reason" => entry.reason,
+      "guide_anchor" => entry.guide_anchor
+    }
+  end
+
+  def to_map(%PromotionRuleEntry{} = entry) do
+    %{
+      "claim_id" => entry.claim_id,
+      "claim_scope" => entry.claim_scope,
+      "current_proof_class" => atom_label(entry.current_proof_class),
+      "promotes_to" => atom_label(entry.promotes_to),
+      "evidence_class" => entry.evidence_class,
+      "required_evidence" => entry.required_evidence,
+      "minimum_consecutive_passes" => entry.minimum_consecutive_passes,
+      "freshness_window" => entry.freshness_window,
+      "failure_budget" => entry.failure_budget,
+      "required_platforms" => entry.required_platforms,
+      "required_docs_anchors" => entry.required_docs_anchors,
+      "change_class" => entry.change_class,
+      "action_class" => entry.action_class,
+      "check_ids" => entry.check_ids,
+      "demotion_trigger" => entry.demotion_trigger
+    }
+  end
+
   def to_map(map) when is_map(map) do
     map
     |> Enum.map(fn {key, value} -> {to_string(key), to_map(value)} end)
@@ -997,4 +1152,7 @@ defmodule Crosswake.Manifest.Types do
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+
+  defp atom_label(value) when is_atom(value), do: Atom.to_string(value)
+  defp atom_label(value), do: value
 end

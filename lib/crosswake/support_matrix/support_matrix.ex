@@ -13,6 +13,8 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.SupportMatrix
 
   @statuses [:supported, :verification_required, :unsupported]
+  @proof_classes [:merge_blocking, :advisory, :not_applicable]
+  @diagnostic_severities [:error, :warning, :advisory]
   @commerce_corridor_prerequisite_taxonomy [
     :route_declaration,
     :backend_reconciliation,
@@ -132,6 +134,29 @@ defmodule Crosswake.SupportMatrix do
         "Contract-only in Phase 46: typed auth context and fail-closed route denial only. No handoff, ceremony, passkey, OAuth, or refresh-token machinery."
     }
   ]
+  @companion_support_truth [
+    %{
+      surface: "Sigra contract-only auth predicates",
+      proof_class: :merge_blocking,
+      action_class: "companion_native",
+      docs_anchor: "guides/companions.md#sigra-auth-contract-only",
+      deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
+      posture:
+        "Sigra support is contract-only in v3.6: route predicates and step_up_required denial are supported, while full native auth/session machinery is deferred."
+    }
+  ]
+  @notification_support_truth [
+    %{
+      surface: "notification_token provider snapshot",
+      proof_class: :advisory,
+      action_class: "companion_native",
+      docs_anchor: "guides/capabilities.md#bounded-bridge",
+      delivery_supported: false,
+      deferred: [:chimeway_delivery, :notification_open_routing, :push_delivery_guarantees],
+      posture:
+        "notification_token readiness is provider-snapshot evidence only; Chimeway delivery and notification-open routing are not shipped in v3.6."
+    }
+  ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
@@ -214,10 +239,29 @@ defmodule Crosswake.SupportMatrix do
     |> validate_exact_statuses(support_matrix)
     |> validate_narrow_baseline(support_matrix)
     |> validate_capability_families_present(support_matrix)
+    |> validate_phase51_support_truth()
   end
 
   @spec statuses() :: [atom()]
   def statuses, do: @statuses
+
+  @spec proof_classes() :: [atom()]
+  def proof_classes, do: @proof_classes
+
+  @spec diagnostic_severities() :: [atom()]
+  def diagnostic_severities, do: @diagnostic_severities
+
+  @spec action_classes() :: [Types.ActionClassEntry.t()]
+  def action_classes, do: action_class_entries()
+
+  @spec promotion_rules() :: [Types.PromotionRuleEntry.t()]
+  def promotion_rules, do: promotion_rule_entries()
+
+  @spec companion_support_truth() :: [map()]
+  def companion_support_truth, do: @companion_support_truth
+
+  @spec notification_support_truth() :: [map()]
+  def notification_support_truth, do: @notification_support_truth
 
   @spec fetch_status(SupportMatrix.t(), atom(), String.t()) ::
           {:ok, SupportEntry.status()} | :error
@@ -574,6 +618,284 @@ defmodule Crosswake.SupportMatrix do
       errors
     end
   end
+
+  defp validate_phase51_support_truth(errors) do
+    errors
+    |> validate_action_class_rows()
+    |> validate_promotion_rule_rows()
+  end
+
+  defp validate_action_class_rows(errors) do
+    allowed = ~w(docs_only route_manifest compatibility native_shell companion_native provider_adapter)
+
+    action_classes()
+    |> Enum.reduce(errors, fn entry, acc ->
+      cond do
+        entry.action_class not in allowed ->
+          [
+            %{
+              key: :action_classes,
+              message: "unknown action_class #{inspect(entry.action_class)}",
+              hint: "use one of #{Enum.join(allowed, ", ")}"
+            }
+            | acc
+          ]
+
+        !is_boolean(entry.rebuild_required) or entry.guide_anchor in [nil, ""] ->
+          [
+            %{
+              key: :action_classes,
+              message: "action_class #{entry.action_class} is missing rebuild or guide metadata",
+              hint: "every action class must include rebuild_required and guide_anchor"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  defp validate_promotion_rule_rows(errors) do
+    action_classes = action_classes() |> MapSet.new(& &1.action_class)
+
+    promotion_rules()
+    |> Enum.reduce(errors, fn entry, acc ->
+      cond do
+        entry.action_class not in action_classes ->
+          [
+            %{
+              key: :promotion_rules,
+              message:
+                "promotion rule #{entry.claim_id} references unknown action_class #{inspect(entry.action_class)}",
+              hint: "promotion rules must reference a canonical action class"
+            }
+            | acc
+          ]
+
+        entry.required_evidence == [] or entry.required_docs_anchors == [] or entry.check_ids == [] ->
+          [
+            %{
+              key: :promotion_rules,
+              message: "promotion rule #{entry.claim_id} is missing evidence, docs, or check ids",
+              hint: "criteria-as-code promotion rules must be auditable before support can widen"
+            }
+            | acc
+          ]
+
+        entry.demotion_trigger in [nil, ""] ->
+          [
+            %{
+              key: :promotion_rules,
+              message: "promotion rule #{entry.claim_id} is missing a demotion trigger",
+              hint: "promotion and demotion must both be explicit"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  defp action_class_entries do
+    [
+      Types.new_action_class_entry(
+        action_class: "docs_only",
+        subject: "Public guides, examples, and support notes",
+        required_action: "Read updated guidance and rerun docs integrity checks.",
+        rebuild_required: false,
+        reason:
+          "Docs-only changes do not change manifest semantics, compatibility axes, native code, or proof expectations.",
+        guide_anchor: "guides/support_matrix.md#action-classes"
+      ),
+      Types.new_action_class_entry(
+        action_class: "route_manifest",
+        subject: "Phoenix route policy and manifest metadata",
+        required_action:
+          "Update the Hex package, regenerate manifest truth, and run core contract plus doctor/support proof.",
+        rebuild_required: false,
+        reason:
+          "Route and manifest metadata can stay core-only when schema, bridge, runtime, and capability major versions remain compatible.",
+        guide_anchor: "guides/support_matrix.md#action-classes"
+      ),
+      Types.new_action_class_entry(
+        action_class: "compatibility",
+        subject: "Compatibility windows and required version declarations",
+        required_action:
+          "Check compatibility windows and run fail-closed compatibility fixtures before release.",
+        rebuild_required: false,
+        reason:
+          "A narrowed support window may reject older combinations without requiring already-compatible adopters to rebuild.",
+        guide_anchor: "guides/compatibility.md#runtime-line-rules"
+      ),
+      Types.new_action_class_entry(
+        action_class: "native_shell",
+        subject: "iOS or Android shell artifacts and native runtime line",
+        required_action:
+          "Rebuild affected shells, publish the updated runtime line, and rerun generated-shell verification lanes.",
+        rebuild_required: true,
+        reason:
+          "Native code, entitlements, permissions, platform config, and generated shell projects require host shell rebuild verification.",
+        guide_anchor: "guides/native_shell.md#boundary-warnings--rough-edges"
+      ),
+      Types.new_action_class_entry(
+        action_class: "companion_native",
+        subject: "First-party companion bindings or companion-native surfaces",
+        required_action:
+          "Verify companion dependency health, compatibility ranges, and fail-closed fallback posture before widening support.",
+        rebuild_required: true,
+        reason:
+          "Companion-native integrations can carry native binary churn or backend coupling beyond core route metadata.",
+        guide_anchor: "guides/companions.md#support-truth-and-proof-posture"
+      ),
+      Types.new_action_class_entry(
+        action_class: "provider_adapter",
+        subject: "Storefront/provider SDK adapters",
+        required_action:
+          "Keep provider proof advisory until adapter implementation, provider setup, backend reconciliation, docs, and promotion criteria all pass.",
+        rebuild_required: true,
+        reason:
+          "Provider SDK adapters require native/provider setup and cannot be treated as shipped support from seam-only contracts.",
+        guide_anchor: "guides/commerce.md#provider-adapter-defers"
+      )
+    ]
+  end
+
+  defp promotion_rule_entries do
+    [
+      promotion_rule(
+        claim_id: "shell.ios.generated_project",
+        claim_scope: "Generated iOS shell support",
+        current_proof_class: :merge_blocking,
+        promotes_to: :supported,
+        evidence_class: "generated_shell",
+        required_evidence: ["script/verify_generated_ios_shell.sh", "support matrix parity"],
+        minimum_consecutive_passes: 1,
+        freshness_window: "current release branch",
+        failure_budget: "zero merge-blocking failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/native_shell.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: ["diag.shell.verification_required"],
+        demotion_trigger:
+          "Demote to verification_required when generated-shell proof fails or native_runtime_version support narrows."
+      ),
+      promotion_rule(
+        claim_id: "shell.android.generated_project",
+        claim_scope: "Generated Android shell support",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "generated_shell",
+        required_evidence: ["script/verify_generated_android_shell.sh", "Java-enabled BridgeChannel proof"],
+        minimum_consecutive_passes: 2,
+        freshness_window: "current release branch",
+        failure_budget: "zero merge-blocking failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/native_shell.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: ["diag.shell.verification_required"],
+        demotion_trigger:
+          "Keep or demote to verification_required when Android JVM or generated-shell proof is stale or unavailable."
+      ),
+      promotion_rule(
+        claim_id: "notification_token.provider_snapshot",
+        claim_scope: "Notification token provider snapshot readiness",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_snapshot",
+        required_evidence: ["notification_token capability contract", "provider-tagged snapshot fixtures"],
+        minimum_consecutive_passes: 2,
+        freshness_window: "current release branch",
+        failure_budget: "zero contract failures",
+        required_platforms: ["ios", "android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/capabilities.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "companion_native",
+        check_ids: ["diag.notification.token_provider_snapshot_only"],
+        demotion_trigger:
+          "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support."
+      ),
+      promotion_rule(
+        claim_id: "purchase_intent.provider.storekit",
+        claim_scope: "StoreKit purchase-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: ["StoreKit adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: ["diag.provider.adapters_not_shipped"],
+        demotion_trigger:
+          "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass."
+      ),
+      promotion_rule(
+        claim_id: "restore_intent.provider.storekit",
+        claim_scope: "StoreKit restore-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: ["StoreKit restore adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: ["diag.provider.adapters_not_shipped"],
+        demotion_trigger:
+          "Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass."
+      ),
+      promotion_rule(
+        claim_id: "purchase_intent.provider.play_billing",
+        claim_scope: "Play Billing purchase-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: ["Play Billing adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: ["diag.provider.adapters_not_shipped"],
+        demotion_trigger:
+          "Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass."
+      ),
+      promotion_rule(
+        claim_id: "restore_intent.provider.play_billing",
+        claim_scope: "Play Billing restore-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: ["Play Billing restore adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: ["diag.provider.adapters_not_shipped"],
+        demotion_trigger:
+          "Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass."
+      )
+    ]
+  end
+
+  defp promotion_rule(attrs), do: Types.new_promotion_rule_entry(attrs)
 
   defp support_entry(target, version, status, opts) do
     Types.new_support_entry(
