@@ -190,7 +190,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
       )
       |> require_truth(
         valid_source_url?(source_url),
-        "source_url must be a non-empty http(s) URL"
+        "source_url must be a non-empty https URL"
       )
       |> require_truth(
         changelog =~ "[Unreleased]",

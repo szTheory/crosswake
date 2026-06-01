@@ -4,7 +4,6 @@ defmodule Crosswake.TestSupport.ProofAssertions do
   import ExUnit.Assertions
 
   @volatile_keys ~w(evaluated_at generated_at generated_on timestamp inserted_at updated_at)a
-  @volatile_suffixes ["_at", "_on", "_timestamp"]
 
   def stable_id_message(id, subject, source, observed, path, hint, posture) do
     """
@@ -91,7 +90,6 @@ defmodule Crosswake.TestSupport.ProofAssertions do
   defp volatile_key?(key) when is_atom(key), do: volatile_key?(Atom.to_string(key))
 
   defp volatile_key?(key) when is_binary(key) do
-    key in Enum.map(@volatile_keys, &Atom.to_string/1) or
-      Enum.any?(@volatile_suffixes, &String.ends_with?(key, &1))
+    key in Enum.map(@volatile_keys, &Atom.to_string/1)
   end
 end

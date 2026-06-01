@@ -17,6 +17,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      lane:
+        description: "Proof lane to run"
+        required: true
+        default: merge-blocking
+        type: choice
+        options:
+          - merge-blocking
+          - advisory
+          - all
   schedule:
     - cron: "0 6 * * 1"
 
@@ -24,13 +34,13 @@ jobs:
   merge-blocking-operator-proof:
     # Required branch-check lane for v3.6 operator truth. This lane is the same
     # local command maintainers run by hand and must remain hermetic:
-    # `mix test test/crosswake/proof/phase52_operator_truth_test.exs`.
-    # It intentionally runs only on merge-driving events and is skipped on the
-    # scheduled trigger used for advisory visibility.
+    # `mix test test/crosswake/proof/phase52_operator_truth_test.exs`. It runs
+    # on merge-driving events and on manual dispatch only when the operator
+    # chooses the merge-blocking lane.
     name: merge-blocking operator proof (hermetic)
     runs-on: macos-15
     timeout-minutes: 20
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
 
     steps:
       - name: Checkout
@@ -52,11 +62,12 @@ jobs:
         run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
 
   advisory-operator-proof:
-    # Advisory visibility only. Runs on schedule and manual dispatch, never on
-    # pull_request or push, and cannot gate merge. This job intentionally reuses
-    # existing optional-dependency advisory proofs as presentation-layer signal;
-    # it is not a new support contract and does not promote deferred provider,
-    # auth, notification-delivery, or standalone shell-package claims.
+    # Advisory visibility only. Runs on schedule and on manual dispatch only
+    # when the operator chooses the advisory lane, never on pull_request or
+    # push, and cannot gate merge. This job intentionally reuses existing
+    # optional-dependency advisory proofs as presentation-layer signal; it is
+    # not a new support contract and does not promote deferred provider, auth,
+    # notification-delivery, or standalone shell-package claims.
     #
     # In particular, this job does NOT imply StoreKit or Play Billing adapters
     # have shipped, does NOT imply Chimeway delivery support, does NOT imply
@@ -65,7 +76,7 @@ jobs:
     name: advisory operator proof (optional dependency visibility only)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'advisory' || inputs.lane == 'all')) }}
     continue-on-error: true
 
     steps:

@@ -226,7 +226,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
       assert publish.blocking
       assert publish.severity == :error
-      assert "source_url must be a non-empty http(s) URL" in publish.details.errors
+      assert "source_url must be a non-empty https URL" in publish.details.errors
     end
   end
 
