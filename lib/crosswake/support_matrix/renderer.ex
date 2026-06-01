@@ -5,9 +5,11 @@ defmodule Crosswake.SupportMatrix.Renderer do
 
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
+  alias Crosswake.Manifest.Types.ActionClassEntry
   alias Crosswake.Manifest.Types.ChangeClassEntry
   alias Crosswake.Manifest.Types.CapabilitySupportEntry
   alias Crosswake.Manifest.Types.PackageSurfaceEntry
+  alias Crosswake.Manifest.Types.PromotionRuleEntry
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
 
   @type action :: :created | :reused | :updated
@@ -46,6 +48,12 @@ defmodule Crosswake.SupportMatrix.Renderer do
       release_boundary_section(support_matrix.release_boundaries),
       "",
       change_class_section(support_matrix.change_classes),
+      "",
+      action_class_section(Crosswake.SupportMatrix.action_classes()),
+      "",
+      promotion_rule_section(Crosswake.SupportMatrix.promotion_rules()),
+      "",
+      public_non_claims_section(),
       ""
     ]
     |> Enum.join("\n")
@@ -144,6 +152,42 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp action_class_section(entries) do
+    [
+      "## Action Classes",
+      "",
+      "| action_class | subject | required_action | rebuild_required | reason | guide_anchor |",
+      "|--------------|---------|-----------------|------------------|--------|--------------|",
+      Enum.map_join(entries, "\n", &action_class_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp promotion_rule_section(entries) do
+    [
+      "## Promotion Rules",
+      "",
+      "Promotion rules keep advisory proof visible until evidence, docs, platform, and demotion criteria are all satisfied.",
+      "",
+      "| claim_id | current_state | promotes_to | evidence_class | required_evidence | minimum_consecutive_passes | freshness_window | failure_budget | required_platforms | required_docs_anchors | change_class | action_class | check_ids | demotion_trigger |",
+      "|----------|---------------|-------------|----------------|-------------------|----------------------------|------------------|----------------|--------------------|-----------------------|--------------|--------------|-----------|------------------|",
+      Enum.map_join(entries, "\n", &promotion_rule_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp public_non_claims_section do
+    [
+      "## Public Non-Claims And Rough Edges",
+      "",
+      "- StoreKit and Play Billing adapters are not shipped in v3.6; provider adapter proof remains advisory until implementation, setup, reconciliation, docs parity, and promotion criteria pass.",
+      "- Sigra is contract-only for route predicates and `:step_up_required`; handoff, ceremony, passkey, OAuth, refresh-token, and native auth UI machinery are deferred.",
+      "- notification-token readiness is provider-snapshot only and not delivery support; Chimeway delivery, notification-open routing, and push-delivery guarantees are not shipped in v3.6.",
+      "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
+    ]
+    |> Enum.join("\n")
+  end
+
   defp row(%SupportEntry{} = entry) do
     proof = entry.proof || "-"
     notes = entry.notes || "-"
@@ -200,6 +244,14 @@ defmodule Crosswake.SupportMatrix.Renderer do
     "| #{escape_cell(entry.change_class)} | #{escape_cell(entry.what_changed)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.compatibility_signal)} | #{escape_cell(entry.required_proof)} |"
   end
 
+  defp action_class_row(%ActionClassEntry{} = entry) do
+    "| #{escape_cell(entry.action_class)} | #{escape_cell(entry.subject)} | #{escape_cell(entry.required_action)} | #{format_boolean(entry.rebuild_required)} | #{escape_cell(entry.reason)} | #{escape_cell(entry.guide_anchor)} |"
+  end
+
+  defp promotion_rule_row(%PromotionRuleEntry{} = entry) do
+    "| #{escape_cell(entry.claim_id)} | #{format_proof_class(entry.current_proof_class)} | #{format_promotion_target(entry.promotes_to)} | #{escape_cell(entry.evidence_class)} | #{format_list(entry.required_evidence)} | #{entry.minimum_consecutive_passes} | #{escape_cell(entry.freshness_window)} | #{escape_cell(entry.failure_budget)} | #{format_list(entry.required_platforms)} | #{format_list(entry.required_docs_anchors)} | #{escape_cell(entry.change_class)} | #{escape_cell(entry.action_class)} | #{format_list(entry.check_ids)} | #{escape_cell(entry.demotion_trigger)} |"
+  end
+
   defp format_guide_link(guide) do
     link = String.replace(guide, ~r/^guides\//, "")
     "[Guide](#{link})"
@@ -211,6 +263,10 @@ defmodule Crosswake.SupportMatrix.Renderer do
   defp format_package_class(package_class), do: Atom.to_string(package_class)
   defp format_proof_class(:merge_blocking), do: "merge-blocking"
   defp format_proof_class(proof_class), do: Atom.to_string(proof_class)
+  defp format_promotion_target(:merge_blocking), do: "merge-blocking"
+  defp format_promotion_target(target), do: Atom.to_string(target)
+  defp format_boolean(true), do: "true"
+  defp format_boolean(false), do: "false"
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)

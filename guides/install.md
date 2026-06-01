@@ -140,6 +140,13 @@ The matching proof lanes are:
 The generated support matrix remains authoritative:
 [guides/support_matrix.md](support_matrix.md)
 
+See the canonical action-class table at `guides/support_matrix.md#action-classes`
+and Promotion rules at `guides/support_matrix.md#promotion-rules`.
+
+Promotion rules keep advisory support explicit: StoreKit/Play Billing adapters are not shipped in v3.6, Sigra remains contract-only, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+
+compatibility-window narrowing is distinct from a native rebuild; it can be `compatibility-bump only` when the shipped native runtime line remains compatible.
+
 ## Docs-Only Install Boundary
 
 The install walkthrough is useful product guidance, but it is `not first-class supported`

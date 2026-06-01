@@ -38,25 +38,55 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Capability Families"
-    assert guide =~ "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |"
+
+    assert guide =~
+             "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |"
+
     assert guide =~ "| deep_link | activation | activation_first | supported | supported | core |"
-    assert guide =~ "| app_info | bounded_bridge | bounded_bridge | supported | verification required | core |"
-    assert guide =~ "| haptics | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
+    assert guide =~
+             "| app_info | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
+    assert guide =~
+             "| haptics | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
     assert guide =~ "| share | bounded_bridge | bounded_bridge | supported | supported | core |"
-    assert guide =~ "| media_capture | native_screen | native_screen | supported | verification required | companion |"
-    assert guide =~ "| notification_token | bounded_bridge | provider_snapshot | supported | verification required | companion |"
-    assert guide =~ "| permissions.status | bounded_bridge | alias_snapshot | supported | verification required | core |"
-    assert guide =~ "| paywall_entry | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| purchase_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| media_capture | native_screen | native_screen | supported | verification required | companion |"
+
+    assert guide =~
+             "| notification_token | bounded_bridge | provider_snapshot | supported | verification required | companion |"
+
+    assert guide =~
+             "| permissions.status | bounded_bridge | alias_snapshot | supported | verification required | core |"
+
+    assert guide =~
+             "| paywall_entry | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| purchase_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
     assert guide =~ "freshness posture (fresh/stale/unknown) surfaced before access checks"
+
     assert guide =~
              "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available"
-    assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+
+    assert guide =~
+             "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+
     assert guide =~
              "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
+
     assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
     assert guide =~ "provider adapter proof remains advisory"
     refute String.downcase(guide) =~ "revenuecat"
@@ -84,7 +114,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "bridge_protocol_version"
     assert guide =~ "native_runtime_version"
     assert guide =~ "## Change Classes"
-    assert guide =~ "| Change Class | What Changed | Adopter Action | Compatibility Signal | Required Proof |"
+
+    assert guide =~
+             "| Change Class | What Changed | Adopter Action | Compatibility Signal | Required Proof |"
+
     assert guide =~ "| docs-only |"
     assert guide =~ "| core-only/no native rebuild |"
     assert guide =~ "| compatibility-bump only |"
@@ -121,7 +154,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
 
     assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
     assert guide =~ "Sigra is contract-only for route predicates and `:step_up_required`"
-    assert guide =~ "notification-token readiness is provider-snapshot only and not delivery support"
+
+    assert guide =~
+             "notification-token readiness is provider-snapshot only and not delivery support"
+
     assert guide =~ "Standalone public shell packages are deferred"
   end
 
@@ -129,8 +165,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Commerce Corridors"
+
     assert guide =~
              "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |"
+
     assert guide =~ "| paywall_entry | phoenix_owned |"
     assert guide =~ "commerce.corridor.undeclared"
     assert guide =~ "| purchase_intent | native_or_companion_required |"
@@ -141,7 +179,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     # proof_class appears on every commerce corridor row
-    assert guide =~ "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
+    assert guide =~
+             "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
 
     assert guide =~
              "| account_management | phoenix_owned | route_declaration; backend_reconciliation |"

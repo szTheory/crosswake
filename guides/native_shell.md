@@ -46,16 +46,24 @@ Crosswake does not silently fall back to a generic web container.
 - In-app activation denials keep the current route stable and interrupt with native UI.
 - `pack_incompatible`, `origin_denied`, `inactive_route`, `external_entry_denied`, and compatibility failures stay visible instead of transitioning to a degraded state silently.
 
-## Rebuild Guidance
+## Do I need to rebuild?
 
 Use the change class first:
 
+- `docs-only` applies to guide or release-note updates that do not alter compatibility declarations.
 - `core-only/no native rebuild` does not require a shell rebuild when the native runtime line and generated shell contract stay unchanged.
 - `compatibility-bump only` may tighten support windows without forcing a fresh binary if the shipped shell/runtime is still compatible.
 - `native or companion rebuild required` applies when shell templates, native code, entitlements, permissions, platform configuration, or native dependencies change.
 
 Package class must not imply native ownership. Route ownership still comes from the
 route policy and manifest contract.
+
+See the canonical action-class table at `guides/support_matrix.md#action-classes`
+and Promotion rules at `guides/support_matrix.md#promotion-rules`.
+
+Promotion rules keep advisory support explicit: StoreKit/Play Billing adapters are not shipped in v3.6, Sigra remains contract-only, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+
+compatibility-window narrowing is distinct from a native rebuild; it can reject older combinations without changing shell code when the shipped native runtime line remains compatible.
 
 ## Proof Hooks
 
