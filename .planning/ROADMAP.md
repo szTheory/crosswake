@@ -66,7 +66,7 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 - [x] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue. (completed 2026-05-31)
 - [x] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output. (completed 2026-05-31)
 - [x] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings. (completed 2026-06-01)
-- [ ] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
+- [x] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
 - [ ] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof.
 - [ ] Phase 53: Release Continuity and Closeout Hardening — align changelog/release support truth and enforce closeout parity for future milestones.
 
@@ -160,7 +160,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 51-02-PLAN.md — render the canonical rebuild, promotion, and non-claim contract into support_matrix/install/native_shell/compatibility docs with deterministic guide tests
-- [ ] 51-03-PLAN.md — feed canonical rebuild and promotion metadata through operator inspection and publish-readiness runtime surfaces without inventing a second readiness model
+- [x] 51-03-PLAN.md — feed canonical rebuild and promotion metadata through operator inspection and publish-readiness runtime surfaces without inventing a second readiness model
 
 **Phase 52: Operator Proof and Docs-Contract Locks**
 
