@@ -6,6 +6,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
 
   @group_id "sub_pro_monthly"
   @dev_mode Mix.env() == :dev
+  @default_storefront_adapter MockStorefront
 
   @impl true
   def mount(_params, _session, socket) do
@@ -28,7 +29,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_purchase(intent)
+    evidence = storefront_adapter().simulate_purchase(intent)
 
     case ReconciliationInbox.ingest_evidence(evidence) do
       {:ok, _attempt} ->
@@ -61,7 +62,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_restore(intent)
+    evidence = storefront_adapter().simulate_restore(intent)
 
     case ReconciliationInbox.ingest_evidence(evidence) do
       {:ok, _attempt} ->
@@ -343,5 +344,11 @@ defmodule CrosswakeExample.PaywallEntryLive do
         "Priority support"
       ]
     }
+  end
+
+  # Default remains the pure mock storefront corridor; swap via:
+  # config :crosswake_example, :paywall_storefront_adapter, YourAdapterModule
+  defp storefront_adapter do
+    Application.get_env(:crosswake_example, :paywall_storefront_adapter, @default_storefront_adapter)
   end
 end
