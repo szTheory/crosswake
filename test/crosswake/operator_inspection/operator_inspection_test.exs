@@ -115,6 +115,8 @@ defmodule Crosswake.OperatorInspectionTest do
     assert checkout.commerce.advisory_provider_proof == true
     assert checkout.rebuild.native_required == true
     assert checkout.rebuild.companion_required == false
+    assert checkout.rebuild.change_class == "native or companion rebuild required"
+    assert "native_shell" in checkout.rebuild.action_classes
     assert checkout.support.proof_class == :advisory
     assert "commerce.corridor.unsupported" in checkout.denials
 
@@ -129,6 +131,7 @@ defmodule Crosswake.OperatorInspectionTest do
     assert notifications.notifications.token_capability_declared == true
     assert notifications.notifications.provider_readiness == :verification_required
     assert notifications.notifications.delivery_supported == false
+    assert "notification_token.provider_snapshot" in notifications.support.promotion_rule_ids
 
     gated = document.routes["gated"]
     assert gated.companion.gated_by == :stub_companion
@@ -186,5 +189,34 @@ defmodule Crosswake.OperatorInspectionTest do
     assert document.indexes.by_auth_predicate["step_up_required"] == ["secure"]
     assert "checkout" in document.indexes.by_rebuild_requirement["native_required"]
     assert "notifications" in document.indexes.by_rebuild_requirement["companion_required"]
+  end
+
+  test "routes expose canonical rebuild action classes and promotion rule ids" do
+    document =
+      OperatorInspection.inspect(
+        route_source: InspectionRouter,
+        generated_at: "2026-05-31T00:00:00Z"
+      )
+
+    checkout = document.routes["checkout"]
+    notifications = document.routes["notifications"]
+    secure = document.routes["secure"]
+    gated = document.routes["gated"]
+
+    assert checkout.rebuild.change_class == "native or companion rebuild required"
+    assert checkout.rebuild.action_classes == ["native_shell", "provider_adapter"]
+    assert checkout.rebuild.compatibility_signal == "native_runtime_version"
+    assert "purchase_intent.provider.storekit" in checkout.support.promotion_rule_ids
+    assert "purchase_intent.provider.play_billing" in checkout.support.promotion_rule_ids
+
+    assert notifications.rebuild.change_class == "native or companion rebuild required"
+    assert notifications.rebuild.action_classes == ["companion_native"]
+    assert "notification_token.provider_snapshot" in notifications.support.promotion_rule_ids
+
+    assert secure.support.status == :verification_required
+    assert secure.support.proof_class == :advisory
+    assert "auth.sigra.contract_only" in secure.support.promotion_rule_ids
+
+    assert gated.rebuild.action_classes == ["companion_native"]
   end
 end

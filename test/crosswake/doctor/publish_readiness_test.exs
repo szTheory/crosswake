@@ -144,20 +144,35 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert provider.message =~ "Play Billing"
     assert provider.message =~ "not shipped"
     assert provider.details.shipped? == false
+    assert "purchase_intent.provider.storekit" in provider.details.promotion_rule_ids
+    assert "purchase_intent.provider.play_billing" in provider.details.promotion_rule_ids
+    assert provider.details.required_docs_anchors == ["guides/support_matrix.md", "guides/commerce.md"]
+    assert is_binary(provider.details.demotion_trigger)
+    assert "provider_adapter" in provider.rebuild_requirement.action_classes
 
     auth = find_check!(report, :auth_session_predicate_readiness)
     assert auth.message =~ "Sigra"
     assert auth.message =~ "contract-only"
     assert :handoff in auth.details.deferred
+    assert auth.details.promotion_rule_ids == ["auth.sigra.contract_only"]
+    assert "companion_native" in auth.rebuild_requirement.action_classes
 
     notifications = find_check!(report, :notification_token_readiness)
     assert notifications.message =~ "delivery is not supported"
     assert notifications.details.delivery_supported? == false
+    assert notifications.details.promotion_rule_ids == ["notification_token.provider_snapshot"]
+    assert notifications.details.required_docs_anchors == ["guides/support_matrix.md", "guides/capabilities.md"]
+    assert is_binary(notifications.details.demotion_trigger)
+    assert "companion_native" in notifications.rebuild_requirement.action_classes
 
     shell = find_check!(report, :native_shell_verification_gap)
     assert shell.result == :verification_required
     assert shell.message =~ "verification-required"
     refute shell.message =~ "fully supported"
+    assert "shell.android.generated_project" in shell.details.promotion_rule_ids
+    assert "guides/native_shell.md" in shell.details.required_docs_anchors
+    assert is_binary(shell.details.demotion_trigger)
+    assert "native_shell" in shell.rebuild_requirement.action_classes
   end
 
   test "blocking status is driven by deterministic local publish errors only" do
