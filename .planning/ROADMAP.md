@@ -155,7 +155,7 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 51-01-PLAN.md — extend canonical support truth with typed action classes, promotion rules, and deferred-scope support rows without collapsing the existing split axes
+- [x] 51-01-PLAN.md — extend canonical support truth with typed action classes, promotion rules, and deferred-scope support rows without collapsing the existing split axes
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
