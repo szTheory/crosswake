@@ -240,7 +240,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 48-03-PLAN.md — add shared purchase/restore result contracts and example-host swap-target wiring for provider evidence emitters
-- [ ] 48-04-PLAN.md — update support matrix, operator inspection, and doctor readiness for shipped provider seams plus advisory proof posture
+- [x] 48-04-PLAN.md — update support matrix, operator inspection, and doctor readiness for shipped provider seams plus advisory proof posture
 
 **Wave 3** *(blocked on Wave 2 completion)*
 

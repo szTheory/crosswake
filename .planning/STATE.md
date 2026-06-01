@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
 status: planned
-last_updated: "2026-06-01T18:42:58.019Z"
+last_updated: "2026-06-01T18:48:11.519Z"
 last_activity: 2026-06-01 -- Phase 48 planned with six provider-adapter execution plans
 progress:
   total_phases: 17
   completed_phases: 11
   total_plans: 29
-  completed_plans: 36
+  completed_plans: 37
   percent: 65
 ---
 
@@ -54,6 +54,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 48]: Provider evidence normalization remains evidence-only and cannot mutate entitlement authority/access lanes.
 - [Phase 48]: Lifecycle hints remain non-authoritative UX/recovery metadata in shared provider contracts.
 - [Phase 48]: Example-host paywall keeps MockStorefront default while exposing a config swap point for provider adapters.
+- [Phase 48]: Provider adapter readiness now reports shipped seams separately from advisory provider proof. — Keeps support truth multi-axis and avoids stale adapters_not_shipped semantics.
+- [Phase 48]: StoreKit and Play Billing promotion rules now use provider-specific readiness check IDs. — Aligns promotion criteria-as-code with shipped provider seams and advisory proof status.
 
 ### Pending Todos
 
@@ -76,10 +78,11 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Validation | Finalize Nyquist VALIDATION.md ledgers for phases 48, 49, 52, and 53 | Deferred with closeout reason | 2026-06-01 |
 | Phase 48 P01 | 5min | 2 tasks | 6 files |
 | Phase 48 P03 | 11min | 2 tasks | 5 files |
+| Phase 48 P04 | 4min | 2 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-06-01T18:42:38.724Z
+Last session: 2026-06-01T18:47:46.591Z
 Stopped at: Phase 48 planned
 
 ## Operator Next Steps
