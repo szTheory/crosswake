@@ -230,7 +230,22 @@ Success criteria:
 3. Provider/device proof stays advisory unless explicit repeatability and environment criteria are met.
 4. Reviewer/storefront guidance and support matrix truth clearly distinguish shipped adapters from advisory proof posture.
 
-**Plans**: Not planned yet.
+**Plans**: 6 plans
+Plans:
+**Wave 1**
+
+- [ ] 48-01-PLAN.md — add the StoreKit first-party adapter seam and evidence normalizer that feeds backend-owned reconciliation contracts
+- [ ] 48-02-PLAN.md — add the Play Billing first-party adapter seam and evidence normalizer against the same provider-neutral reconciliation contract
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 48-03-PLAN.md — add shared purchase/restore result contracts and example-host swap-target wiring for provider evidence emitters
+- [ ] 48-04-PLAN.md — update support matrix, operator inspection, and doctor readiness for shipped provider seams plus advisory proof posture
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 48-05-PLAN.md — update commerce/support/release guidance so public claims match the v3.7 provider adapter seam and proof posture
+- [ ] 48-06-PLAN.md — create the Phase 48 hermetic proof lane and advisory provider-proof wiring
 
 </details>
 
