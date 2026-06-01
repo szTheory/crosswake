@@ -2,11 +2,13 @@ Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
 
 defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Commerce.Contracts
+  alias Crosswake.SupportMatrix
   alias CrosswakeExample.Commerce.EntitlementProjection
   alias CrosswakeExample.Commerce.MockBackend
   alias CrosswakeExample.Commerce.ProviderAdapterStorefront
@@ -66,5 +68,28 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     assert EntitlementProjection.derived_state(pending_snapshot) == :pending
     assert {:error, :unverified_reconciliation_outcome} =
              EntitlementProjection.project_snapshot(nil, pending_snapshot)
+  end
+
+  test "provider promotion claims remain advisory with provider_adapter action class and demotion semantics" do
+    provider_rules =
+      SupportMatrix.promotion_rules()
+      |> Enum.filter(fn rule ->
+        rule.claim_id in [
+          "purchase_intent.provider.storekit",
+          "restore_intent.provider.storekit",
+          "purchase_intent.provider.play_billing",
+          "restore_intent.provider.play_billing"
+        ]
+      end)
+
+    assert length(provider_rules) == 4
+
+    for rule <- provider_rules do
+      assert rule.action_class == "provider_adapter"
+      assert rule.current_proof_class == :advisory
+      assert rule.promotes_to == :merge_blocking
+      assert rule.check_ids != []
+      assert is_binary(rule.demotion_trigger) and rule.demotion_trigger != ""
+    end
   end
 end
