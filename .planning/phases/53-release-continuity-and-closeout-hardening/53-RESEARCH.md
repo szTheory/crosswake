@@ -296,12 +296,12 @@ end
 |---|-------|---------|---------------|
 | A1 | CI should add a dedicated `closeout.verify` merge-blocking invocation (new or existing workflow). [ASSUMED] | Architecture Patterns / Validation | Medium: could require different lane integration strategy. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Where should `mix closeout.verify` run in CI?**
+1. **RESOLVED: Where should `mix closeout.verify` run in CI?**
    - What we know: Existing proof workflow pattern supports merge-blocking + advisory split.
-   - What's unclear: Reuse `phase52-proof.yml` versus add phase53/closeout workflow.
-   - Recommendation: Keep one merge-blocking command (`mix closeout.verify`) in whichever workflow already gates v3.6 operator truth.
+   - Decision: Reuse `.github/workflows/phase52-proof.yml` and add `mix closeout.verify` to the existing merge-blocking operator-proof job.
+   - Rationale: This keeps one v3.6 operator-truth proof topology, avoids a second release-continuity workflow, and preserves the existing advisory lane as non-blocking/non-promotional.
 
 ## Environment Availability
 

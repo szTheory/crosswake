@@ -19,18 +19,18 @@ created: 2026-06-01
 |----------|-------|
 | **Framework** | ExUnit on Elixir 1.19.5 |
 | **Config file** | `test/test_helper.exs` |
-| **Quick run command** | `mix test test/crosswake/planning/milestone_arc_closeout_parity_test.exs test/crosswake/planning/closeout_verifier_test.exs` |
+| **Quick run command** | `mix test test/crosswake/planning/closeout_verifier_test.exs` |
 | **Full suite command** | `mix test` |
-| **Estimated runtime** | ~60 seconds for focused planning tests; full suite varies |
+| **Estimated runtime** | ~30 seconds for the targeted closeout verifier test; full suite varies |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `mix test test/crosswake/planning/milestone_arc_closeout_parity_test.exs test/crosswake/planning/closeout_verifier_test.exs`
+- **After every task commit:** Run `mix test test/crosswake/planning/closeout_verifier_test.exs`
 - **After every plan wave:** Run `mix test test/crosswake/planning test/crosswake/doctor/publish_readiness_test.exs test/crosswake/hex_page_test.exs`
 - **Before `$gsd-verify-work`:** Full suite must be green
-- **Max feedback latency:** 90 seconds for focused phase checks
+- **Max feedback latency:** 30 seconds for the targeted per-task verifier check; broader wave checks may exceed this because they intentionally include release/docs parity.
 
 ---
 
@@ -69,7 +69,7 @@ created: 2026-06-01
 - [ ] Sampling continuity: no 3 consecutive tasks without automated verify
 - [ ] Wave 0 covers all MISSING references
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 90s
+- [ ] Feedback latency < 30s for per-task verifier checks
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
