@@ -1,8 +1,8 @@
 # Phase 51: Support Matrix and Native Rebuild Truth - Pattern Map
 
 **Mapped:** 2026-06-01
-**Files analyzed:** 12
-**Analogs found:** 12 / 12
+**Files analyzed:** 17
+**Analogs found:** 17 / 17
 
 ## File Classification
 
@@ -18,8 +18,13 @@
 | `test/crosswake/operator_inspection/operator_inspection_test.exs` | test | request-response | `test/crosswake/operator_inspection/operator_inspection_test.exs` | exact |
 | `test/crosswake/doctor/publish_readiness_test.exs` | test | request-response | `test/crosswake/doctor/publish_readiness_test.exs` | exact |
 | `guides/support_matrix.md` | config | file-I/O | `guides/support_matrix.md` (renderer-owned) | exact |
+| `guides/install.md` | docs | file-I/O | `guides/install.md` | exact |
+| `guides/native_shell.md` | docs | file-I/O | `guides/native_shell.md` | exact |
+| `guides/compatibility.md` | docs | file-I/O | `guides/compatibility.md` | exact |
 | `test/crosswake/guides/companions_test.exs` | test | file-I/O | `test/crosswake/guides/companions_test.exs` | role-match |
 | `test/crosswake/guides/commerce_test.exs` | test | file-I/O | `test/crosswake/guides/commerce_test.exs` | role-match |
+| `test/crosswake/guides/capabilities_test.exs` | test | file-I/O | `test/crosswake/guides/capabilities_test.exs` | role-match |
+| `test/crosswake/guides/release_boundaries_test.exs` | test | file-I/O | `test/crosswake/guides/release_boundaries_test.exs` | exact |
 
 ## Pattern Assignments
 
@@ -193,12 +198,20 @@ end
 - non-claim checks in readiness output (publish readiness test lines 137-161)
 
 ### Guide non-claim tests
-**Analogs:** `test/crosswake/guides/companions_test.exs`, `test/crosswake/guides/commerce_test.exs`, `test/crosswake/guides/capabilities_test.exs`
+**Analogs:** `test/crosswake/guides/companions_test.exs`, `test/crosswake/guides/commerce_test.exs`, `test/crosswake/guides/capabilities_test.exs`, `test/crosswake/guides/release_boundaries_test.exs`
 
 **Pattern to copy:**
 - `setup_all` reads guide once and shares content (companions lines 25-28; commerce lines 31-34)
 - explicit deferred/non-claim assertions (companions lines 57-62; commerce lines 128-145, 190-195)
 - parity lock to runtime/canonical module output where possible (companions lines 82-113, 115-135; commerce lines 207-249)
+
+### Guide rebuild and release-boundary docs
+**Analogs:** `guides/install.md`, `guides/native_shell.md`, `guides/compatibility.md`, `test/crosswake/guides/release_boundaries_test.exs`
+
+**Pattern to copy:**
+- keep rebuild guidance close to install/native-shell/compatibility wording users already read before release work
+- cross-link public guide claims back to `guides/support_matrix.md#action-classes` and `guides/support_matrix.md#promotion-rules`
+- assert exact deferred/non-claim phrases in `release_boundaries_test.exs` when guide wording affects public release support
 
 ## Shared Patterns
 
@@ -229,5 +242,5 @@ None for requested Phase 51 focus files; all have direct in-repo analogs.
 ## Metadata
 
 **Analog search scope:** `lib/crosswake/**`, `test/crosswake/**`, `guides/**`  
-**Files scanned:** 12 primary + 3 guide-lock tests  
+**Files scanned:** 17 primary + guide-lock tests  
 **Pattern extraction date:** 2026-06-01

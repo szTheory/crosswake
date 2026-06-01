@@ -261,17 +261,17 @@ doc.routes["checkout"].rebuild
 |---|-------|---------|---------------|
 | A1 | ASVS category mapping below reflects project threat model for this phase. [ASSUMED] | Security Domain | Medium; planner may under/over-specify controls. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Action-class encoding location**
    - What we know: Must be machine-visible and canonical. [VERIFIED: codebase grep]
-   - What's unclear: Whether to attach per change-class only, or also per route/capability row.
-   - Recommendation: Put canonical action-class registry in `SupportMatrix` and reference by id from rows/checks.
+   - Resolution: Put the canonical action-class registry in `Crosswake.SupportMatrix` and reference action-class ids from change-class rows, route-derived rebuild maps, doctor checks, and docs renderer output. Do not attach an independent hand-authored action-class table to each consumer.
+   - Planning implication: Plan 51-01 should create the typed registry and accessors first; Plans 51-02 and 51-03 consume those accessors only.
 
 2. **Promotion-rule persistence**
    - What we know: Criteria-as-code required, auditable promotion/demotion required. [VERIFIED: codebase grep]
-   - What's unclear: Static module constants vs manifest-embedded structure.
-   - Recommendation: Start with typed module constants in `SupportMatrix`; defer persistence migration unless planner finds strong need.
+   - Resolution: Start with typed module constants/accessors in `Crosswake.SupportMatrix`, using `PromotionRuleEntry` structs from `Crosswake.Manifest.Types`. Do not embed promotion rules into generated manifests in Phase 51 unless a consumer already needs manifest transport.
+   - Planning implication: Phase 51 should expose promotion rules through support-matrix, renderer, operator-inspection, and doctor-readiness contracts; persistence or manifest transport is deferred until a future native/provider runtime line needs it.
 
 ## Environment Availability
 

@@ -19,7 +19,7 @@ created: 2026-06-01
 |----------|-------|
 | **Framework** | ExUnit via Mix |
 | **Config file** | `mix.exs` |
-| **Quick run command** | `mix test test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs` |
+| **Quick run command** | `mix test test/crosswake/support_matrix/support_matrix_test.exs` |
 | **Full suite command** | `mix test` |
 | **Estimated runtime** | ~30-90 seconds for focused tests; full suite runtime depends on local environment |
 
@@ -27,7 +27,7 @@ created: 2026-06-01
 
 ## Sampling Rate
 
-- **After every task commit:** Run `mix test test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs`
+- **After every task commit:** Run the narrowest touched-file ExUnit command for that task, starting with `mix test test/crosswake/support_matrix/support_matrix_test.exs` for canonical support-truth changes.
 - **After every plan wave:** Run focused support/inspection/doctor/guide tests listed below.
 - **Before `$gsd-verify-work`:** `mix test` full suite must be green.
 - **Max feedback latency:** One focused ExUnit run per task.
@@ -39,8 +39,9 @@ created: 2026-06-01
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 51-01-01 | 01 | 1 | SUPP-01 | T-51-01 | Support/proof/severity/rebuild/action axes stay separate and machine-visible. | unit/contract | `mix test test/crosswake/support_matrix/support_matrix_test.exs` | ✅ | ⬜ pending |
-| 51-01-02 | 01 | 1 | SUPP-01 | T-51-02 | Operator/doctor consumers derive from canonical support truth without inventing support states. | integration/contract | `mix test test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/doctor/publish_readiness_test.exs` | ✅ | ⬜ pending |
-| 51-02-01 | 02 | 2 | SUPP-02 | T-51-03 | Public support guidance exposes rebuild requirements, promotion criteria, and deferred non-claims. | docs-contract | `mix test test/crosswake/support_matrix/renderer_test.exs test/crosswake/guides/companions_test.exs test/crosswake/guides/capabilities_test.exs` | ✅ | ⬜ pending |
+| 51-01-02 | 01 | 1 | SUPP-01 | T-51-02 | Operator/doctor consumers derive from canonical support truth without inventing support states. | integration/contract | `mix test test/crosswake/operator_inspection/operator_inspection_test.exs` | ✅ | ⬜ pending |
+| 51-02-01 | 02 | 2 | SUPP-02 | T-51-03 | Public support guidance exposes rebuild requirements, promotion criteria, and deferred non-claims. | docs-contract | `mix test test/crosswake/support_matrix/renderer_test.exs` | ✅ | ⬜ pending |
+| 51-03-01 | 03 | 2 | SUPP-01/SUPP-02 | T-51-07/T-51-08 | Runtime consumers expose canonical rebuild/action/promotion metadata without collapsing support/proof axes. | integration/contract | `mix test test/crosswake/doctor/publish_readiness_test.exs` | ✅ | ⬜ pending |
 
 *Status: pending until plans assign exact task IDs.*
 
