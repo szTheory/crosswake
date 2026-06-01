@@ -19,5 +19,9 @@ defmodule Crosswake.Commerce.ProviderEvidenceTest do
     test "includes storekit provider name" do
       assert "storekit" in ProviderEvidence.provider_vocabulary()
     end
+
+    test "includes play billing provider name" do
+      assert "play_billing" in ProviderEvidence.provider_vocabulary()
+    end
   end
 end
