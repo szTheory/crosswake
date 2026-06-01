@@ -94,3 +94,21 @@ mix test test/crosswake/doctor/publish_readiness_test.exs test/crosswake/doctor/
 ```
 
 Result: 39 tests, 0 failures.
+
+## Validation Re-Audit 2026-06-01
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+State A audit confirmed the Phase 50 validation ledger still covers every completed task and both requirements (`DIAG-01`, `DIAG-02`) through automated ExUnit and Mix task tests. No additional test files were needed.
+
+Verification evidence:
+
+```bash
+mix test test/crosswake/doctor/publish_readiness_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/doctor/formatter_test.exs test/mix/tasks/crosswake_doctor_test.exs
+```
+
+Result: 39 tests, 0 failures.
