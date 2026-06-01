@@ -160,6 +160,102 @@ defmodule Crosswake.SupportMatrixTest do
            ]
   end
 
+  test "phase 51 split support axes are exposed as canonical vocabularies" do
+    assert SupportMatrix.proof_classes() == [:merge_blocking, :advisory, :not_applicable]
+    assert SupportMatrix.diagnostic_severities() == [:error, :warning, :advisory]
+    assert SupportMatrix.statuses() == [:supported, :verification_required, :unsupported]
+  end
+
+  test "phase 51 action classes define machine-visible rebuild actions" do
+    entries = SupportMatrix.action_classes()
+
+    assert Enum.map(entries, & &1.action_class) == [
+             "docs_only",
+             "route_manifest",
+             "compatibility",
+             "native_shell",
+             "companion_native",
+             "provider_adapter"
+           ]
+
+    for entry <- entries do
+      assert %Types.ActionClassEntry{} = entry
+      assert is_binary(entry.subject)
+      assert is_binary(entry.required_action)
+      assert is_boolean(entry.rebuild_required)
+      assert is_binary(entry.reason)
+      assert String.starts_with?(entry.guide_anchor, "guides/")
+    end
+  end
+
+  test "phase 51 promotion rules keep advisory proof criteria explicit" do
+    entries = SupportMatrix.promotion_rules()
+
+    assert Enum.map(entries, & &1.claim_id) == [
+             "shell.ios.generated_project",
+             "shell.android.generated_project",
+             "notification_token.provider_snapshot",
+             "purchase_intent.provider.storekit",
+             "restore_intent.provider.storekit",
+             "purchase_intent.provider.play_billing",
+             "restore_intent.provider.play_billing"
+           ]
+
+    for entry <- entries do
+      assert %Types.PromotionRuleEntry{} = entry
+      assert entry.current_proof_class in [:merge_blocking, :advisory, :not_applicable]
+      assert entry.promotes_to in [:merge_blocking, :supported]
+      assert is_binary(entry.evidence_class)
+      assert is_list(entry.required_evidence) and entry.required_evidence != []
+      assert is_integer(entry.minimum_consecutive_passes) and entry.minimum_consecutive_passes > 0
+      assert is_binary(entry.freshness_window)
+      assert is_binary(entry.failure_budget)
+      assert is_list(entry.required_platforms)
+      assert is_list(entry.required_docs_anchors) and entry.required_docs_anchors != []
+      assert is_binary(entry.change_class)
+      assert entry.action_class in [
+               "native_shell",
+               "companion_native",
+               "provider_adapter"
+             ]
+
+      assert is_list(entry.check_ids) and entry.check_ids != []
+      assert is_binary(entry.demotion_trigger)
+    end
+
+    assert Enum.any?(entries, fn entry ->
+             entry.claim_id == "purchase_intent.provider.storekit" and
+               "guides/commerce.md" in entry.required_docs_anchors
+           end)
+
+    assert Enum.any?(entries, fn entry ->
+             entry.claim_id == "notification_token.provider_snapshot" and
+               "guides/capabilities.md" in entry.required_docs_anchors
+           end)
+  end
+
+  test "phase 51 companion and notification support truth preserve deferred non-claims" do
+    assert [companion_truth] = SupportMatrix.companion_support_truth()
+    assert companion_truth.surface == "Sigra contract-only auth predicates"
+    assert companion_truth.proof_class == :merge_blocking
+    assert companion_truth.action_class == "companion_native"
+    assert companion_truth.deferred == [
+             :handoff,
+             :ceremony,
+             :passkey,
+             :oauth,
+             :refresh_tokens,
+             :native_auth_ui
+           ]
+
+    assert [notification_truth] = SupportMatrix.notification_support_truth()
+    assert notification_truth.surface == "notification_token provider snapshot"
+    assert notification_truth.proof_class == :advisory
+    assert notification_truth.action_class == "companion_native"
+    assert notification_truth.delivery_supported == false
+    assert :chimeway_delivery in notification_truth.deferred
+  end
+
   test "entitlement and evidence support entries encode freshness and non-authoritative posture" do
     capability_families = SupportMatrix.canonical().capability_families
     entitlement_snapshot = Enum.find(capability_families, &(&1.family == "entitlement_snapshot"))
