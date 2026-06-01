@@ -35,6 +35,13 @@ defmodule Crosswake.Commerce.ProviderEvidence do
   @spec lifecycle_hint_vocabulary() :: [atom()]
   def lifecycle_hint_vocabulary, do: @lifecycle_hint_vocabulary
 
+  @spec authority_mutation_allowed_from_lifecycle_hint?(term()) :: boolean()
+  def authority_mutation_allowed_from_lifecycle_hint?(lifecycle_hint)
+      when lifecycle_hint in @lifecycle_hint_vocabulary,
+      do: false
+
+  def authority_mutation_allowed_from_lifecycle_hint?(_lifecycle_hint), do: false
+
   @spec canonical_provider(term()) :: {:ok, String.t()} | {:error, {:invalid_provider, keyword()}}
   def canonical_provider(provider) when is_atom(provider), do: canonical_provider(Atom.to_string(provider))
 
