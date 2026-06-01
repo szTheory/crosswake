@@ -151,6 +151,17 @@ Success criteria:
 3. Public guidance does not imply StoreKit, Play Billing, full Sigra machinery, Chimeway delivery, or standalone shell packages have shipped.
 4. Advisory-to-merge-blocking promotion criteria are visible in docs and runtime diagnostics.
 
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 51-01-PLAN.md — extend canonical support truth with typed action classes, promotion rules, and deferred-scope support rows without collapsing the existing split axes
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 51-02-PLAN.md — render the canonical rebuild, promotion, and non-claim contract into support_matrix/install/native_shell/compatibility docs with deterministic guide tests
+- [ ] 51-03-PLAN.md — feed canonical rebuild and promotion metadata through operator inspection and publish-readiness runtime surfaces without inventing a second readiness model
+
 **Phase 52: Operator Proof and Docs-Contract Locks**
 
 Goal: Make v3.6 operator truth mechanically durable.
@@ -189,8 +200,8 @@ Success criteria:
 | 26-32 | v3.3 Release Readiness | 11/11 | Complete | 2026-05-29 |
 | 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
 | 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
-| 48-53 | v3.6 Operator Truth and Production Diagnostics | 7/7 | Active | — |
+| 48-53 | v3.6 Operator Truth and Production Diagnostics | 7/10 | Active | — |
 
 ## Next
 
-Start execution with `$gsd-discuss-phase 51`.
+Start execution with `$gsd-execute-phase 51`.
