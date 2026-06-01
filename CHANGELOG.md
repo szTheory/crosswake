@@ -14,14 +14,16 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Unpublished support claims
 
 * v3.6 operator-truth work adds local diagnostics, support-matrix parity, closeout verification, and docs-contract proof around route/runtime support claims. These are unreleased planning milestone claims until the next Hex package is cut.
+* v3.7 StoreKit and Play Billing adapter seams are unreleased support claims until the next Hex package is cut.
 
 ### Verification-required and advisory surfaces
 
 * Storefront, provider, device, generated-shell, and optional companion proof lanes remain visible as advisory or verification-required evidence. They are not equivalent to fully supported native runtime breadth.
+* Provider/device sandbox proof remains advisory unless promotion criteria pass.
 
 ### Deferred non-shipped claims
 
-* StoreKit, Play Billing, RevenueCat provider adapters, full Sigra auth/session machinery, Chimeway notification delivery, and standalone generated shell packages are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, and standalone generated shell packages are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
 
 ### Published Hex truth
 
