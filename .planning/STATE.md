@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
 status: planned
-last_updated: "2026-06-01T18:25:00.000Z"
+last_updated: "2026-06-01T18:35:25.934Z"
 last_activity: 2026-06-01 -- Phase 48 planned with six provider-adapter execution plans
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 6
-  completed_plans: 0
-  percent: 0
+  total_phases: 17
+  completed_phases: 11
+  total_plans: 29
+  completed_plans: 34
+  percent: 65
 ---
 
 # Project State
@@ -50,6 +50,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 52]: Use stable-id proof assertion helpers with normalized fixture and semantic parity checks for operator truth drift.
 - [Phase 53]: Closeout verification uses `Crosswake.Planning.CloseoutVerifier` and `mix closeout.verify` as the deterministic REL-01 gate.
 - [Phase 53]: v3.6 roadmap and requirements snapshots are archived under `.planning/milestones/`; live planning state now routes to v3.7.
+- [Phase 48]: StoreKit adapter requires original transaction lineage and treats transaction IDs/digests as event evidence only.
+- [Phase 48]: Provider evidence normalization remains evidence-only and cannot mutate entitlement authority/access lanes.
 
 ### Pending Todos
 
@@ -70,10 +72,11 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
 | Validation | Finalize Nyquist VALIDATION.md ledgers for phases 48, 49, 52, and 53 | Deferred with closeout reason | 2026-06-01 |
+| Phase 48 P01 | 5min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-06-01T18:25:00.000Z
+Last session: 2026-06-01T18:34:59.233Z
 Stopped at: Phase 48 planned
 
 ## Operator Next Steps
