@@ -1,5 +1,28 @@
 # Project Milestones: Crosswake
 
+## v3.7 Commerce Provider Adapters (Shipped: 2026-06-01)
+
+**Phases completed:** 2 phases, 7 plans, 17 tasks
+
+**Key accomplishments:**
+
+- Shipped first-party StoreKit and Play Billing companion seams that normalize provider evidence into backend-owned reconciliation contracts without granting device-local entitlement authority.
+- Added shared provider evidence and purchase/restore result contracts, preserving provider-specific lineage while keeping entitlement truth backend-projected.
+- Wired the example-host paywall through a behaviour-backed storefront adapter contract so the mock remains default and StoreKit/Play Billing provider facades are explicit swap targets.
+- Updated support matrix, operator inspection, doctor readiness, commerce guidance, changelog posture, and proof fixtures so provider seams are shipped while provider/device proof remains advisory.
+- Closed the milestone-audit blocker with tagged LiveView storefront result handling and merge-blocking proof for the configured provider facade path.
+
+**Verification:** Milestone audit passed 3/3 requirements, 2/2 phases, 10/10 integration checks, and 4/4 E2E flows. Phase 48.1 proof ran 69 focused tests with 0 failures.
+
+**Archive:**
+
+- `.planning/milestones/v3.7-ROADMAP.md`
+- `.planning/milestones/v3.7-REQUIREMENTS.md`
+- `.planning/milestones/v3.7-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.7-phases/`
+
+---
+
 ## v3.5 First-Party Companions (Shipped: 2026-05-31)
 
 **Phases completed:** 10 phases, 22 plans, 40 tasks

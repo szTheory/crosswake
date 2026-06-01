@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
-status: completed
-last_updated: "2026-06-01T21:44:31.554Z"
-last_activity: 2026-06-01 -- Phase 48.1 marked complete
+status: Awaiting next milestone
+last_updated: "2026-06-01T22:15:33.985Z"
+last_activity: 2026-06-01 — Milestone v3.7 completed and archived
 progress:
   total_phases: 1
   completed_phases: 1
@@ -20,30 +20,32 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-01)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** v3.7 Commerce Provider Adapters.
+**Current focus:** Planning the next milestone after v3.7 Commerce Provider Adapters.
 
 ## Current Position
 
-Phase: 48.1 — COMPLETE
-Plan: 48.1-01 complete
-Status: Phase 48.1 complete
-Last activity: 2026-06-01 -- Phase 48.1 marked complete
+Phase: Milestone v3.7 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-01 — Milestone v3.7 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 101 (v1.0–v3.6 Phase 53)
+- Total plans completed: 108 (v1.0–v3.7 Phase 48.1)
+- v3.7: 2 phases, 7 plans — shipped 2026-06-01
 - v3.6: 6 phases, 15 plans — shipped 2026-06-01
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
-**Recent Trend:** Positive — v3.3, v3.4, v3.5, and v3.6 all closed with deterministic proof and release/support truth in place.
+**Recent Trend:** Positive — v3.3 through v3.7 all closed with deterministic proof, audit evidence, and explicit support truth in place.
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
 - Phase 48.1 inserted after Phase 48: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (URGENT)
+- v3.7 archived under `.planning/milestones/v3.7-*` with phase directories in `.planning/milestones/v3.7-phases/`.
 
 ### Decisions
 
@@ -92,5 +94,4 @@ Stopped at: Phase 48.1 complete
 
 ## Operator Next Steps
 
-- Re-run milestone audit for v3.7 ADPT-01/ADPT-02 closure.
-- Continue milestone transition routing after the audit result.
+- Start the next milestone with `$gsd-new-milestone`

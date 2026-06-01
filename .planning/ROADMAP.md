@@ -11,7 +11,8 @@
 - ✅ **v3.4 Commerce Archetype Proof** — Phases 33-37 shipped on 2026-05-29. Full archive: [v3.4-ROADMAP.md](milestones/v3.4-ROADMAP.md)
 - ✅ **v3.5 First-Party Companions** — Phases 38-47 shipped on 2026-05-31. Full archive: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 - ✅ **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 shipped on 2026-06-01. Full archive: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
-- 🔄 **v3.7 Commerce Provider Adapters** — ready to discuss. Goal: add StoreKit and Play Billing adapter seams without making device/storefront evidence authoritative.
+- ✅ **v3.7 Commerce Provider Adapters** — Phases 48 and 48.1 shipped on 2026-06-01. Full archive: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
+- 📋 **Next milestone** — start with `$gsd-new-milestone`.
 
 ## Phases
 
@@ -64,218 +65,28 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 <details>
 <summary>✅ v3.6 Operator Truth and Production Diagnostics (Phases 48-53) — SHIPPED 2026-06-01</summary>
 
-- [x] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue. (completed 2026-05-31)
-- [x] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output. (completed 2026-05-31)
-- [x] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings. (completed 2026-06-01)
-- [x] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
-- [x] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof. (completed 2026-06-01)
-- [x] Phase 53: Release Continuity and Closeout Hardening — closeout verifier, changelog/release support truth, proof-lane wiring, and archive/reset parity. (completed 2026-06-01)
+- [x] Phase 48: Strategic Signal and Milestone Memory (3/3 plans) — completed 2026-05-31
+- [x] Phase 49: Operator Inspection Contract (2/2 plans) — completed 2026-05-31
+- [x] Phase 50: Doctor Publish and Readiness Checks (2/2 plans) — completed 2026-06-01
+- [x] Phase 51: Support Matrix and Native Rebuild Truth (3/3 plans) — completed 2026-06-01
+- [x] Phase 52: Operator Proof and Docs-Contract Locks (2/2 plans) — completed 2026-06-01
+- [x] Phase 53: Release Continuity and Closeout Hardening (3/3 plans) — completed 2026-06-01
 
-### Phase Details
-
-**Phase 48: Strategic Signal and Milestone Memory**
-
-Goal: Make `.planning/MILESTONE-ARC.md` the current strategic source of truth after v3.5.
-
-Requirements: STRAT-01, STRAT-02
-
-Success criteria:
-1. Shipped milestones through v3.5 are accurately marked complete.
-2. The next 4-6 milestone bets are listed with dependencies and why-now rationale.
-3. Durable lessons from retrospectives and audits are promoted into planning-time guidance.
-4. The milestone closeout checklist covers roadmap parity, requirements state, verification reports, validation ledgers, threads/seeds, and release continuity.
-
-**Plans**: 3 plans
-Plans:
-**Wave 1**
-
-- [x] 48-01-PLAN.md — refresh `MILESTONE-ARC.md` to the locked strategic-memory field contract and collapse project-level queue drift onto that canonical source
-- [x] 48-02-PLAN.md — create `.planning/milestones/v3.6-CLOSEOUT.md` as the live closeout ledger, checklist, and explicit Phase 53 enforcement target
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 48-03-PLAN.md — add deterministic ExUnit parity guards for the strategic arc, closeout ledger, and exact `closeout.verify` promotion target
-
-**Phase 49: Operator Inspection Contract**
-
-Goal: Define the inspection surface operators and CI use to understand Crosswake route/runtime readiness without reading code.
-
-Requirements: OPER-01, OPER-02
-
-Success criteria:
-1. Inspection output covers route ownership, runtime mode, capability declarations, commerce corridors, companion bindings, auth predicates, notification readiness, and rebuild requirements.
-2. Output has a stable machine-readable shape for CI/support tooling.
-3. Human-facing output remains concise and actionable.
-4. Inspection semantics preserve route ownership and fail-closed support truth.
-
-**Plans**: 2 plans
-Plans:
-**Wave 1**
-
-- [x] 49-01-PLAN.md — create the typed `Crosswake.OperatorInspection` contract, route-authoritative schema, and stable JSON surface with focused ExUnit coverage
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 49-02-PLAN.md — add the concise human formatter and `mix crosswake.inspect` CLI without widening into doctor publish checks or deferred provider/auth/notification claims
-
-**Phase 50: Doctor Publish and Readiness Checks**
-
-Goal: Extend doctor into release/support readiness with actionable findings.
-
-Requirements: DIAG-01, DIAG-02
-
-Success criteria:
-1. `mix crosswake.doctor --check-publish` reports Hex metadata, changelog, docs/support parity, proof posture, and verification-required surfaces.
-2. Companion dependency health, provider-adapter readiness, notification-token readiness, auth/session predicate readiness, and native shell verification gaps have explicit severities and remediations.
-3. Findings are machine-readable and human-readable.
-4. Missing readiness never silently passes as supported.
-
-**Plans**: 2 plans
-Plans:
-**Wave 1**
-
-- [x] 50-01-PLAN.md — build the reusable publish-readiness contract and derivation engine from deterministic local project truth plus Phase 49 inspection/support data
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 50-02-PLAN.md — wire `--check-publish` through doctor CLI/report/human/JSON output and lock additive behavior with regression coverage
-
-**Phase 51: Support Matrix and Native Rebuild Truth**
-
-Goal: Make public support truth match the widened v3.6 diagnostic surface.
-
-Requirements: SUPP-01, SUPP-02
-
-Success criteria:
-1. Support matrix distinguishes supported, verification-required, advisory, merge-blocking, rebuild-required, and unsupported states.
-2. Rebuild requirements are explicit for native, companion, provider, route/manifest, and docs-only changes.
-3. Public guidance does not imply StoreKit, Play Billing, full Sigra machinery, Chimeway delivery, or standalone shell packages have shipped.
-4. Advisory-to-merge-blocking promotion criteria are visible in docs and runtime diagnostics.
-
-**Plans**: 3 plans
-Plans:
-**Wave 1**
-
-- [x] 51-01-PLAN.md — extend canonical support truth with typed action classes, promotion rules, and deferred-scope support rows without collapsing the existing split axes
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 51-02-PLAN.md — render the canonical rebuild, promotion, and non-claim contract into support_matrix/install/native_shell/compatibility docs with deterministic guide tests
-- [x] 51-03-PLAN.md — feed canonical rebuild and promotion metadata through operator inspection and publish-readiness runtime surfaces without inventing a second readiness model
-
-**Phase 52: Operator Proof and Docs-Contract Locks**
-
-Goal: Make v3.6 operator truth mechanically durable.
-
-Requirements: PROOF-01, PROOF-02
-
-Success criteria:
-1. Hermetic tests lock inspection output and doctor readiness findings.
-2. Docs-contract tests keep support matrix, guides, denial vocabulary, and rebuild truth synchronized with live code.
-3. CI clearly separates merge-blocking operator proof from advisory native/device/provider checks.
-4. Proof failures point to actionable support-truth drift.
-
-**Plans**: 2 plans
-Plans:
-**Wave 1**
-
-- [x] 52-01-PLAN.md — add the hermetic Phase 52 proof contract, stable-id drift helpers, and normalized JSON golden fixtures for operator truth
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 52-02-PLAN.md — wire a dedicated phase52-proof workflow with one merge-blocking hermetic job and one advisory-only visibility job
-
-**Phase 53: Release Continuity and Closeout Hardening**
-
-Goal: Ensure public release/changelog truth and milestone closeout discipline survive future context clears.
-
-Requirements: REL-01
-
-Success criteria:
-1. Changelog/release guidance distinguishes unreleased support claims from published Hex truth.
-2. v3.6 closeout verifies roadmap parity, requirements traceability, state frontmatter, verification reports, validation ledgers, and thread/seed status.
-3. Follow-on milestone candidates remain visible in `PROJECT.md` and `MILESTONE-ARC.md`.
-4. `$gsd-discuss-phase 48` is the clear next execution step.
-
-**Plans**: 3 plans
-Plans:
-**Wave 1**
-
-- [x] 53-01-PLAN.md — build `Crosswake.Planning.CloseoutVerifier`, lock fail-closed closeout tests, and harden changelog/publish-readiness truth without creating a second release ledger
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 53-02-PLAN.md — add `mix closeout.verify` plus merge-blocking proof-lane wiring around the shared verifier with focused command and workflow parity tests
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 53-03-PLAN.md — archive/reset v3.6 planning artifacts, preserve the next-milestone queue order, and make `$gsd-discuss-phase 48` the explicit next step
+Full phase details: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
 
 </details>
 
-<details open>
-<summary>🔄 v3.7 Commerce Provider Adapters — READY TO DISCUSS</summary>
+<details>
+<summary>✅ v3.7 Commerce Provider Adapters (Phases 48 and 48.1) — SHIPPED 2026-06-01</summary>
 
-Phase numbering for v3.7 starts at Phase 48 in the next milestone cycle.
+- [x] Phase 48: Commerce Provider Adapter Context (6/6 plans) — completed 2026-06-01
+- [x] Phase 48.1: Close gap: ADPT-01/ADPT-02 provider facade paywall swap-target contract (1/1 plan) — completed 2026-06-01
 
-**Phase 48: Commerce Provider Adapter Context**
-
-Goal: Plan first-party StoreKit and Play Billing adapter seams that feed existing backend-owned commerce reconciliation contracts.
-
-Requirements: ADPT-01, ADPT-02, ADPT-03
-
-Success criteria:
-1. StoreKit and Play Billing evidence normalize into Crosswake commerce contracts without granting device-local entitlement authority.
-2. Purchase and restore flows preserve Phoenix-owned reconciliation as the authority boundary.
-3. Provider/device proof stays advisory unless explicit repeatability and environment criteria are met.
-4. Reviewer/storefront guidance and support matrix truth clearly distinguish shipped adapters from advisory proof posture.
-
-**Plans**: 6 plans
-Plans:
-**Wave 1**
-
-- [x] 48-01-PLAN.md — add the StoreKit first-party adapter seam and evidence normalizer that feeds backend-owned reconciliation contracts
-- [x] 48-02-PLAN.md — add the Play Billing first-party adapter seam and evidence normalizer against the same provider-neutral reconciliation contract
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 48-03-PLAN.md — add shared purchase/restore result contracts and example-host swap-target wiring for provider evidence emitters
-- [x] 48-04-PLAN.md — update support matrix, operator inspection, and doctor readiness for shipped provider seams plus advisory proof posture
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 48-05-PLAN.md — update commerce/support/release guidance so public claims match the v3.7 provider adapter seam and proof posture
-- [x] 48-06-PLAN.md — create the Phase 48 hermetic proof lane and advisory provider-proof wiring
-
-### Phase 48.1: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (INSERTED)
-
-**Goal:** Close the milestone-audit blocker where the example-host provider facade cannot satisfy the existing paywall storefront adapter contract.
-**Requirements**: ADPT-01, ADPT-02
-**Depends on:** Phase 48
-**Plans:** 1/1 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 48.1-01-PLAN.md — add a behaviour-backed paywall storefront contract, explicit provider-facade dispatch, tagged LiveView wiring, and merge-blocking proof/docs locks for the exact ADPT-01/ADPT-02 swap-target gap
+Full phase details: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
+Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 
 </details>
-
-## Progress
-
-| Phase Range | Milestone | Plans Complete | Status | Completed |
-|-------------|-----------|----------------|--------|-----------|
-| 1-5 | v1.0 Route-Policy Substrate | — | Complete | 2026-05-17 |
-| 6-10 | v2.0 Adopter Stress Profiles | 16/16 | Complete | 2026-05-19 |
-| 11-14 | v3.0 Capability Contract And Packaging | 12/12 | Complete | 2026-05-20 |
-| 15-18 | v3.1 Native Capabilities and Bridge Expansion | 16/16 | Complete | 2026-05-27 |
-| 19-25 | v3.2 Commerce And Entitlement Seams | 18/18 | Complete | 2026-05-27 |
-| 26-32 | v3.3 Release Readiness | 11/11 | Complete | 2026-05-29 |
-| 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
-| 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
-| 48-53 | v3.6 Operator Truth and Production Diagnostics | 15/15 | Complete | 2026-06-01 |
-| 48+ | v3.7 Commerce Provider Adapters | 1/1 | Gap closure complete | — |
 
 ## Next
 
-Re-run the v3.7 milestone audit to confirm ADPT-01/ADPT-02 closure.
+Start the next milestone with `$gsd-new-milestone`. The strategic queue is tracked in `.planning/MILESTONE-ARC.md`.

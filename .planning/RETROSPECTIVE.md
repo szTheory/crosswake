@@ -177,6 +177,51 @@
 - **Verification:** Milestone audit passed 15/15 requirements; Phase 44 focused proof passed 27 tests; Phase 47 guide/proof passed 12 tests; hermetic suite passed 455 tests with 44 excluded.
 - **Closeout friction:** The close workflow needed manual remediation for a missing Phase 44 verification file, stale Phase 43 roadmap status, one open thread, and a resolved UAT marker still in the active phase tree.
 
+## Milestone: v3.7 Commerce Provider Adapters
+
+**Shipped:** 2026-06-01
+**Phases:** 2 (48 and 48.1)
+**Plans:** 7
+
+### What Was Built
+
+- First-party StoreKit and Play Billing companion seams that normalize provider evidence into `ReconciliationEvidence` while keeping entitlement authority backend-owned.
+- Shared provider evidence and purchase/restore result contracts with closed provider/event/status vocabulary and explicit subject/event identity separation.
+- Example-host paywall storefront adapter behaviour with mock-default behavior and explicit StoreKit/Play Billing provider facade swap targets.
+- Support matrix, operator inspection, doctor readiness, commerce guidance, changelog posture, and proof fixtures that distinguish shipped provider seams from advisory provider/device proof.
+- A merge-blocking hermetic Phase 48 proof lane plus advisory StoreKit/Play Billing provider visibility wiring.
+
+### What Worked
+
+- **Backend-authority fence held under real provider pressure** — StoreKit original transaction lineage and Play Billing purchase-token lineage feed reconciliation evidence, but neither path can grant entitlement authority without backend projection.
+- **Mock-default plus provider swap target was the right adoption shape** — the example host remains runnable without provider SDKs while exposing a compiler-visible seam for StoreKit/Play Billing evidence emitters.
+- **Audit-driven closure found a real integration gap** — Phase 48.1 closed the provider facade/paywall contract mismatch before milestone close rather than carrying a misleading "adapter shipped" claim.
+- **Readiness truth stayed multi-axis** — support/doctor/operator outputs now say provider seams are shipped while provider sandbox/device proof remains advisory until explicit promotion criteria pass.
+
+### What Was Inefficient
+
+- **Milestone analyzer under-counted inserted scope** — the closeout SDK saw only Phase 48.1 in live roadmap analysis and generated `1 phase, 1 plan`; the human archive had to correct v3.7 to 2 phases and 7 plans.
+- **Provider walkthrough prose is split** — the mock walkthrough remains the default guide path and provider swap-target guidance lives separately. This is accurate but less ergonomic for operators scanning for the adapter path.
+- **Advisory provider lane is still scaffolded** — the workflow has credential gates and notices, not real StoreKit/Play Billing sandbox/device scripts yet. That matches ADPT-03 but should remain visible.
+
+### Patterns Established
+
+- **Evidence-only provider adapter seam** — provider SDK output should normalize to closed Crosswake evidence contracts and never bypass Phoenix-owned reconciliation.
+- **Behaviour-backed example swap targets** — adopter examples should expose explicit behaviours for provider facades instead of encoding provider selection in LiveView params or route context.
+- **Provider proof promotion criteria as product truth** — advisory lanes need runtime/readiness visibility and explicit promotion requirements, not only CI comments.
+
+### Key Lessons
+
+- **Run milestone audit before trusting completion labels** — the first v3.7 audit found the exact ADPT-01/ADPT-02 paywall swap-target blocker; closure was small but materially changed the shipped claim.
+- **Inserted phases need closeout-aware stats** — decimal phases can fall outside naive roadmap analysis, so milestone closeout should verify scope against archived phase directories and audit files.
+- **Provider adapter work should preserve mock ergonomics** — first-party adapters should make the real path available without making provider credentials mandatory for the default proof lane.
+
+### Cost Observations
+
+- **Session shape:** Single-day milestone on 2026-06-01, with Phase 48 plus one inserted closure phase.
+- **Verification:** Milestone audit passed 3/3 requirements, 2/2 phases, 10/10 integration checks, and 4/4 E2E flows; Phase 48.1 focused proof ran 69 tests with 0 failures.
+- **Closeout friction:** The close workflow needed manual correction for generated stats and roadmap collapse after the archive step.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -190,3 +235,4 @@
 | CLI-generated milestone artifacts need author-time input quality | v3.4's milestone-complete CLI emitted placeholder `One-liner:` bullets into MILESTONES.md because phase SUMMARYs lacked clean one-liners | Author SUMMARY one-liners at phase close; treat machine-extracted milestone summaries as drafts to verify, not final copy |
 | Companion seams need backend-authority discipline | v3.5 proved Rulestead, Rindle, and Sigra as typed, fail-closed companion surfaces while keeping device media/auth evidence non-authoritative | Future companions should start with explicit authority/evidence lanes and route-local restrictions before adding provider or native machinery |
 | Audit artifacts are part of completion truth | v3.5 behavior was green, but closeout initially failed on missing Phase 44 verification, stale Phase 43 roadmap status, an open thread, and active-tree resolved UAT residue | Treat verification reports, thread closure, roadmap parity, and artifact cleanup as required product work, not administrative cleanup |
+| Provider adapters must stay evidence-only | v3.7 shipped StoreKit/Play Billing seams and a paywall facade only after audit proved evidence flows into backend-owned reconciliation and grants wait for backend projection | Future provider or native adapter work should expose explicit swap targets, closed vocabularies, advisory proof posture, and authority-fence tests before widening claims |

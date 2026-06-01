@@ -72,46 +72,11 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v3.4 Commerce Archetype Proof** — shipped 2026-05-29. Proved a copy-able mocked paywall corridor through purchase, reconciliation, entitlement projection, UI state, hermetic proof, and docs-contract lock.
 - **v3.5 First-Party Companions** — shipped 2026-05-31. Locked `Crosswake.Companion`, Rulestead gating, Rindle media evidence, Sigra contract-only auth predicates, and canonical companion docs/proof parity.
 - **v3.6 Operator Truth and Production Diagnostics** — shipped 2026-06-01. Added route/capability/companion/provider/auth/notification readiness inspection, publish-readiness diagnostics, native rebuild/support truth, docs-contract proof, closeout verification, and release/changelog parity without promoting deferred provider/native claims.
+- **v3.7 Commerce Provider Adapters** — shipped 2026-06-01. Added first-party StoreKit and Play Billing evidence adapter seams, example-host provider facade swap targets, backend-owned reconciliation proof, and advisory provider-proof promotion criteria.
 
 ## Strategic Queue
 
-### Active: v3.7 Commerce Provider Adapters
-
-**Objective**
-- Add first-party StoreKit and Play Billing adapter seams that consume existing commerce contracts and feed backend reconciliation without making device/storefront evidence authoritative.
-
-**Why now**
-- Commerce contracts and mocked paywall proof are in place. Production subscription apps now need real storefront evidence capture, restore flows, provider identity normalization, and promotion from advisory proof when environment conditions are stable.
-
-**Depends on**
-- v3.2 commerce and entitlement contracts.
-- v3.4 mocked paywall corridor proof.
-- v3.6 operator inspection, doctor readiness, support-matrix, rebuild, and proof-classification truth.
-
-**Risk tags**
-- `provider`
-- `authority`
-- `commerce`
-- `advisory-proof`
-
-**Key outputs**
-- StoreKit adapter seam.
-- Play Billing adapter seam.
-- Provider evidence normalization into `ReconciliationEvidence`.
-- Restore/purchase proof lanes with hermetic contract tests and advisory device/provider tests.
-- Updated reviewer/storefront guidance and support matrix.
-
-**Non-goals**
-- Universal billing engine in core.
-- Device-local entitlement grants.
-- Provider SDK code that bypasses Phoenix-owned reconciliation.
-
-**Proof required**
-- Hermetic adapter contract tests for provider evidence normalization and reconciliation handoff.
-- Advisory StoreKit/Play Billing device or simulator lanes with explicit promotion criteria before merge-blocking promotion.
-- Docs-contract tests for reviewer/storefront guidance and support-matrix provider readiness.
-
-### Next: v3.8 Full Sigra Auth and Session Machinery
+### Active: v3.8 Full Sigra Auth and Session Machinery
 
 **Objective**
 - Expand v3.5's contract-only Sigra slice into production account-security flows: session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
@@ -303,6 +268,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-05-31:** Future queue planning uses `Depends on` and `Risk tags` as planning signals, not marketing labels. These fields make provider, authority, notification, shell-runtime, archetype-proof, and auditability risk visible before planning starts.
 - **2026-05-31:** The active milestone closeout contract lives in `.planning/milestones/v3.6-CLOSEOUT.md`; milestone audits remain append-only evidence rather than the live checklist.
 - **2026-06-01:** v3.6 closeout archived the roadmap and requirements snapshots in `.planning/milestones/`, promoted `mix closeout.verify` to deterministic closeout truth, and made v3.7 Commerce Provider Adapters the active strategic milestone.
+- **2026-06-01:** v3.7 closeout archived provider-adapter roadmap, requirements, audit, and phase evidence; v3.8 Full Sigra Auth and Session Machinery is now the active strategic candidate.
 
 ## Support Truth Requirements
 
@@ -334,10 +300,10 @@ Every milestone close must update or verify:
 ## Open Research Flags
 
 - Exact package/versioning posture for future separate companion packages.
-- Whether RevenueCat belongs in the first provider-adapter milestone or remains a later/docs-only reference after StoreKit and Play Billing.
+- Whether RevenueCat belongs as a future adapter after the first-party StoreKit and Play Billing seam hardens.
 - Whether Chimeway should stay token/open-action seam-only for one milestone or include a first provider delivery lane.
 - Which scanning/capture flows belong in Rindle/native-screen lanes versus bounded bridge families.
 - What minimum Android evidence is required to move shell support from "verification required" to fully verified.
 
 ---
-*Last updated: 2026-06-01 — v3.6 closed and v3.7 Commerce Provider Adapters became the active strategic milestone.*
+*Last updated: 2026-06-01 — v3.7 closed and v3.8 Full Sigra Auth became the active strategic candidate.*
