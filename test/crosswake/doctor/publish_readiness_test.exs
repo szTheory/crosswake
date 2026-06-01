@@ -81,7 +81,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert report.status in [:ready, :not_ready]
     assert is_map(report.summary)
     assert is_list(report.checks)
-    assert report.checks != []
+    assert length(report.checks) > 0
 
     for check <- report.checks do
       assert is_binary(check.id)
@@ -91,6 +91,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
       assert is_boolean(check.blocking)
       assert is_binary(check.message)
       assert is_binary(check.hint)
+
       assert check.docs_reference in [
                "guides/support_matrix.md",
                "guides/compatibility.md",
@@ -195,6 +196,8 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
   defp find_check!(report, category) do
     Enum.find(report.checks, &(&1.category == category)) ||
-      flunk("expected #{inspect(category)} check in #{inspect(Enum.map(report.checks, & &1.category))}")
+      flunk(
+        "expected #{inspect(category)} check in #{inspect(Enum.map(report.checks, & &1.category))}"
+      )
   end
 end
