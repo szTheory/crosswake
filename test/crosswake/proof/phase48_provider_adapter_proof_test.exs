@@ -1,6 +1,8 @@
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex", __DIR__)
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
 
@@ -16,12 +18,92 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   alias Crosswake.TestSupport.ProofAssertions
   alias CrosswakeExample.Commerce.EntitlementProjection
   alias CrosswakeExample.Commerce.MockBackend
+  alias CrosswakeExample.Commerce.MockStorefront
   alias CrosswakeExample.Commerce.ProviderAdapterStorefront
   alias CrosswakeExample.Commerce.ReconciliationInbox
   alias CrosswakeExample.Commerce.ReconciliationKeys
+  alias CrosswakeExample.Commerce.StorefrontAdapter
 
   @group_id "sub_pro_monthly"
   @readiness_fixture "test/fixtures/proof/phase48_provider_adapter_readiness.json"
+
+  setup do
+    previous_adapter = Application.get_env(:crosswake_example, :paywall_storefront_adapter)
+    previous_provider = Application.get_env(:crosswake_example, :paywall_storefront_provider)
+
+    on_exit(fn ->
+      restore_env(:paywall_storefront_adapter, previous_adapter)
+      restore_env(:paywall_storefront_provider, previous_provider)
+    end)
+
+    :ok
+  end
+
+  test "provider facade and mock storefront satisfy the public paywall storefront contract" do
+    assert function_exported?(StorefrontAdapter, :behaviour_info, 1)
+    assert {:callbacks, callbacks} = {:callbacks, StorefrontAdapter.behaviour_info(:callbacks)}
+    assert {:simulate_purchase, 1} in callbacks
+    assert {:simulate_restore, 1} in callbacks
+
+    assert function_exported?(MockStorefront, :simulate_purchase, 1)
+    assert function_exported?(MockStorefront, :simulate_restore, 1)
+    assert function_exported?(ProviderAdapterStorefront, :simulate_purchase, 1)
+    assert function_exported?(ProviderAdapterStorefront, :simulate_restore, 1)
+  end
+
+  test "provider facade fails closed when provider selection is missing or invalid" do
+    intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-missing-provider"}
+
+    Application.delete_env(:crosswake_example, :paywall_storefront_provider)
+    assert {:error, :provider_not_configured} = ProviderAdapterStorefront.simulate_purchase(intent)
+
+    Application.put_env(:crosswake_example, :paywall_storefront_provider, :revenue_cat)
+    assert {:error, {:invalid_provider, :revenue_cat}} = ProviderAdapterStorefront.simulate_purchase(intent)
+  end
+
+  test "storekit facade works as the configured paywall swap target without granting authority early" do
+    Application.put_env(:crosswake_example, :paywall_storefront_adapter, ProviderAdapterStorefront)
+    Application.put_env(:crosswake_example, :paywall_storefront_provider, :storekit)
+
+    adapter = Application.fetch_env!(:crosswake_example, :paywall_storefront_adapter)
+    intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit-swap"}
+
+    assert {:ok, evidence} = adapter.simulate_purchase(intent)
+    assert evidence.provider == "storekit"
+    assert evidence.event_kind == "purchase"
+
+    assert {:ok, attempt} = ReconciliationInbox.ingest_evidence(evidence)
+    assert attempt.status == :awaiting_verification
+
+    pending_snapshot = pending_snapshot(attempt.event_key)
+    assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+    assert {:error, :unverified_reconciliation_outcome} =
+             EntitlementProjection.project_snapshot(nil, pending_snapshot)
+
+    verified = MockBackend.build_verified_snapshot(evidence, @group_id)
+    assert {:ok, projected} = EntitlementProjection.project_snapshot(nil, verified)
+    assert EntitlementProjection.derived_state(projected) == :granted
+  end
+
+  test "play billing facade works as the configured paywall swap target for restore" do
+    Application.put_env(:crosswake_example, :paywall_storefront_adapter, ProviderAdapterStorefront)
+    Application.put_env(:crosswake_example, :paywall_storefront_provider, :play_billing)
+
+    adapter = Application.fetch_env!(:crosswake_example, :paywall_storefront_adapter)
+    intent = %Contracts.RestoreIntent{correlation_id: "corr-play-swap"}
+
+    assert {:ok, evidence} = adapter.simulate_restore(intent)
+    assert evidence.provider == "play_billing"
+    assert evidence.event_kind == "restore"
+
+    assert {:ok, attempt} = ReconciliationInbox.ingest_evidence(evidence)
+    assert attempt.status == :awaiting_verification
+
+    pending_snapshot = pending_snapshot(attempt.event_key)
+    assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+    assert {:error, :unverified_reconciliation_outcome} =
+             EntitlementProjection.project_snapshot(nil, pending_snapshot)
+  end
 
   test "storekit purchase evidence uses provider-neutral inbox/projection path" do
     intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit"}
@@ -240,5 +322,35 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
       hint: "keep provider sandbox/device checks advisory and non-blocking",
       posture: :merge_blocking
     )
+  end
+
+  defp restore_env(key, nil), do: Application.delete_env(:crosswake_example, key)
+  defp restore_env(key, value), do: Application.put_env(:crosswake_example, key, value)
+
+  defp pending_snapshot(reference) do
+    struct!(Contracts.EntitlementSnapshot, %{
+      group_id: @group_id,
+      authority: %Contracts.EntitlementSnapshot.AuthorityLane{state: :none, reason: nil},
+      access: %Contracts.EntitlementSnapshot.AccessLane{decision: :denied, reason: nil},
+      reconciliation: %Contracts.EntitlementSnapshot.ReconciliationLane{
+        state: :awaiting_verification,
+        reference: reference
+      },
+      freshness: %Contracts.EntitlementSnapshot.FreshnessLane{
+        state: :fresh,
+        checked_at: "2026-06-01T00:00:00Z",
+        stale_after: nil
+      },
+      effective: %Contracts.EntitlementSnapshot.EffectiveLane{
+        effective_from: "2026-06-01T00:00:00Z",
+        effective_until: nil
+      },
+      evidence: %Contracts.EntitlementSnapshot.EvidenceLane{
+        source: :storefront,
+        reference: reference,
+        observed_at: "2026-06-01T00:00:00Z"
+      },
+      as_of: 200
+    })
   end
 end
