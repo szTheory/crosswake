@@ -9,6 +9,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
 
   alias Crosswake.Commerce.Contracts
   alias Crosswake.SupportMatrix
+  alias Crosswake.TestSupport.ProofAssertions
   alias CrosswakeExample.Commerce.EntitlementProjection
   alias CrosswakeExample.Commerce.MockBackend
   alias CrosswakeExample.Commerce.ProviderAdapterStorefront
@@ -91,5 +92,34 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
       assert rule.check_ids != []
       assert is_binary(rule.demotion_trigger) and rule.demotion_trigger != ""
     end
+  end
+
+  test "changelog keeps unreleased v3.7 seam claims distinct from published hex truth" do
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.changelog_unreleased",
+      "CHANGELOG.md",
+      "v3.7 StoreKit and Play Billing adapter seams are unreleased support claims until the next Hex package is cut.",
+      source: "CHANGELOG.md [Unreleased] support claims",
+      hint: "separate local support truth from published Hex release truth",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.changelog_advisory_proof",
+      "CHANGELOG.md",
+      "Provider/device sandbox proof remains advisory unless promotion criteria pass.",
+      source: "CHANGELOG.md [Unreleased] advisory provider proof posture",
+      hint: "do not collapse advisory provider proof into shipped support claims",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.changelog_hex_truth",
+      "CHANGELOG.md",
+      "The latest published Hex release remains `0.1.0`.",
+      source: "CHANGELOG.md published release section",
+      hint: "preserve distinction between unreleased planning claims and published package truth",
+      posture: :merge_blocking
+    )
   end
 end

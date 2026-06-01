@@ -25,6 +25,7 @@ Code.require_file(
 
 defmodule Crosswake.Guides.CommerceTest do
   use ExUnit.Case, async: false
+  alias Crosswake.TestSupport.ProofAssertions
 
   @guide_path Path.join([File.cwd!(), "guides", "commerce.md"])
 
@@ -142,6 +143,53 @@ defmodule Crosswake.Guides.CommerceTest do
     refute lifecycle_section =~ "play_billing"
     refute lifecycle_section =~ "play billing"
     refute lifecycle_section =~ "revenuecat"
+  end
+
+  test "provider adapter docs lock shipped seam, backend authority, advisory proof, and restore first-class language" do
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.seams_shipped",
+      "guides/commerce.md",
+      "StoreKit and Play Billing adapter seams ship as reconciliation evidence emitters only.",
+      source: "guides/commerce.md provider adapter posture",
+      hint: "keep adapter seams evidence-only and never storefront-authoritative",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.backend_authority",
+      "guides/commerce.md",
+      "backend projection grants entitlement authority",
+      source: "guides/commerce.md entitlement authority contract",
+      hint: "device/provider evidence must never grant access directly",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.advisory_proof",
+      "guides/commerce.md",
+      "provider/device sandbox proof remains advisory unless promotion criteria pass",
+      source: "guides/commerce.md provider proof posture",
+      hint: "preserve advisory-vs-merge-blocking distinction for provider lanes",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.restore_required",
+      "guides/commerce.md",
+      "Restore is first-class for both StoreKit and Play Billing",
+      source: "guides/commerce.md reviewer/storefront restore guidance",
+      hint: "restore guidance must remain explicit for both providers",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.revenuecat_deferred",
+      "guides/commerce.md",
+      "RevenueCat remains deferred.",
+      source: "guides/commerce.md deferred provider scope",
+      hint: "do not imply RevenueCat shipped in v3.7 docs",
+      posture: :merge_blocking
+    )
   end
 
   test "keeps reconciliation guidance provider-neutral and non-authoritative", %{content: content} do
