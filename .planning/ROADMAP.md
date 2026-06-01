@@ -252,12 +252,12 @@ Plans:
 **Goal:** Close the milestone-audit blocker where the example-host provider facade cannot satisfy the existing paywall storefront adapter contract.
 **Requirements**: ADPT-01, ADPT-02
 **Depends on:** Phase 48
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 48.1-01-PLAN.md — add a behaviour-backed paywall storefront contract, explicit provider-facade dispatch, tagged LiveView wiring, and merge-blocking proof/docs locks for the exact ADPT-01/ADPT-02 swap-target gap
+- [x] 48.1-01-PLAN.md — add a behaviour-backed paywall storefront contract, explicit provider-facade dispatch, tagged LiveView wiring, and merge-blocking proof/docs locks for the exact ADPT-01/ADPT-02 swap-target gap
 
 </details>
 
@@ -274,8 +274,8 @@ Plans:
 | 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
 | 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
 | 48-53 | v3.6 Operator Truth and Production Diagnostics | 15/15 | Complete | 2026-06-01 |
-| 48+ | v3.7 Commerce Provider Adapters | 0/1 | Gap closure inserted | — |
+| 48+ | v3.7 Commerce Provider Adapters | 1/1 | Gap closure complete | — |
 
 ## Next
 
-Plan inserted closure Phase 48.1 with `$gsd-plan-phase 48.1`.
+Re-run the v3.7 milestone audit to confirm ADPT-01/ADPT-02 closure.

@@ -39,8 +39,8 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert roadmap =~ "Phases 48-53 shipped"
     assert requirements =~ "REL-01 | Phase 53 | Complete"
     assert project =~ "Shipped `v3.6 Operator Truth and Production Diagnostics`"
-    assert state =~ "Phase: 48.1 (close-gap-provider-facade-paywall-swap-target) — INSERTED"
-    assert state =~ "Status: Ready to execute"
+    assert state =~ "Phase: 48.1 — COMPLETE"
+    assert state =~ "Status: Phase 48.1 complete"
     assert closeout =~ "status: complete"
 
     refute roadmap =~ "Phase 53: Release Continuity and Closeout Hardening — align"
@@ -60,12 +60,12 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert project =~ "not a second queue"
   end
 
-  test "state and roadmap route the next operator step to the inserted phase 48.1 closure" do
+  test "state and roadmap route the next operator step to the v3.7 closure audit" do
     roadmap = File.read!(@roadmap)
     state = File.read!(@state)
 
-    assert roadmap =~ "$gsd-plan-phase 48.1"
-    assert state =~ "$gsd-plan-phase 48.1"
+    assert roadmap =~ "Re-run the v3.7 milestone audit"
+    assert state =~ "Re-run milestone audit for v3.7 ADPT-01/ADPT-02 closure."
     refute roadmap =~ ".continue-here.md"
     refute state =~ ".continue-here.md"
   end
