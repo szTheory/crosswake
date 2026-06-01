@@ -196,6 +196,20 @@ Success criteria:
 3. Follow-on milestone candidates remain visible in `PROJECT.md` and `MILESTONE-ARC.md`.
 4. `$gsd-discuss-phase 48` is the clear next execution step.
 
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 53-01-PLAN.md — build `Crosswake.Planning.CloseoutVerifier`, lock fail-closed closeout tests, and harden changelog/publish-readiness truth without creating a second release ledger
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 53-02-PLAN.md — add `mix closeout.verify` plus merge-blocking proof-lane wiring around the shared verifier with focused command and workflow parity tests
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 53-03-PLAN.md — archive/reset v3.6 planning artifacts, preserve the next-milestone queue order, and make `$gsd-discuss-phase 48` the explicit next step
+
 </details>
 
 ## Progress
