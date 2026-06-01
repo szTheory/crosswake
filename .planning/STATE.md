@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
-status: planned
-last_updated: "2026-06-01T18:59:01.900Z"
-last_activity: 2026-06-01 -- Phase 48 planned with six provider-adapter execution plans
+status: inserted
+last_updated: "2026-06-01T21:09:30.933Z"
+last_activity: 2026-06-01 -- inserted Phase 48.1 to close ADPT-01/ADPT-02 provider facade paywall swap-target gap
 progress:
   total_phases: 17
   completed_phases: 12
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-01)
 
 ## Current Position
 
-Phase: 48 (commerce-provider-adapters) — READY TO DISCUSS
-Plan: 48-01-PLAN.md ready
-Status: planned
-Last activity: 2026-06-01 -- Phase 48 planned with six provider-adapter execution plans
+Phase: 48.1 (close-gap-provider-facade-paywall-swap-target) — INSERTED
+Plan: not planned yet
+Status: inserted
+Last activity: 2026-06-01 -- inserted Phase 48.1 to close ADPT-01/ADPT-02 provider facade paywall swap-target gap
 
 ## Performance Metrics
 
@@ -40,6 +40,10 @@ Last activity: 2026-06-01 -- Phase 48 planned with six provider-adapter executio
 **Recent Trend:** Positive — v3.3, v3.4, v3.5, and v3.6 all closed with deterministic proof and release/support truth in place.
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 48.1 inserted after Phase 48: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (URGENT)
 
 ### Decisions
 
@@ -83,10 +87,10 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-01T18:59:01.897Z
-Stopped at: Completed 48-06-PLAN.md
+Last session: 2026-06-01T21:09:30.929Z
+Stopped at: Phase 48.1 context gathered
 
 ## Operator Next Steps
 
-- Execute v3.7 provider adapters with `$gsd-execute-phase 48`
+- Plan inserted gap-closure phase with `$gsd-plan-phase 48.1`
 - Continue milestone transition routing with `$gsd-discuss-phase 48`
