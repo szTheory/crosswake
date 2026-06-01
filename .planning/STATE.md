@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
 status: planned
-last_updated: "2026-06-01T18:38:49.766Z"
+last_updated: "2026-06-01T18:42:58.019Z"
 last_activity: 2026-06-01 -- Phase 48 planned with six provider-adapter execution plans
 progress:
   total_phases: 17
   completed_phases: 11
   total_plans: 29
-  completed_plans: 35
+  completed_plans: 36
   percent: 65
 ---
 
@@ -52,6 +52,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 53]: v3.6 roadmap and requirements snapshots are archived under `.planning/milestones/`; live planning state now routes to v3.7.
 - [Phase 48]: StoreKit adapter requires original transaction lineage and treats transaction IDs/digests as event evidence only.
 - [Phase 48]: Provider evidence normalization remains evidence-only and cannot mutate entitlement authority/access lanes.
+- [Phase 48]: Lifecycle hints remain non-authoritative UX/recovery metadata in shared provider contracts.
+- [Phase 48]: Example-host paywall keeps MockStorefront default while exposing a config swap point for provider adapters.
 
 ### Pending Todos
 
@@ -73,10 +75,11 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
 | Validation | Finalize Nyquist VALIDATION.md ledgers for phases 48, 49, 52, and 53 | Deferred with closeout reason | 2026-06-01 |
 | Phase 48 P01 | 5min | 2 tasks | 6 files |
+| Phase 48 P03 | 11min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-06-01T18:38:49.763Z
+Last session: 2026-06-01T18:42:38.724Z
 Stopped at: Phase 48 planned
 
 ## Operator Next Steps
