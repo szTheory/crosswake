@@ -22,6 +22,7 @@ defmodule Mix.Tasks.Crosswake.Doctor do
 
   @impl Mix.Task
   def run(args) do
+    {check_publish?, args} = pop_flag(args, "--check-publish")
     {opts, _argv, invalid} = OptionParser.parse(args, strict: @switches)
 
     if invalid != [] do
@@ -33,7 +34,7 @@ defmodule Mix.Tasks.Crosswake.Doctor do
         route_source: router_module!(opts[:router]),
         install_manifest_path: opts[:install_manifest],
         check_native_tools?: opts[:native_checks],
-        check_publish?: opts[:check_publish],
+        check_publish?: check_publish? or opts[:check_publish],
         cwd: File.cwd!()
       )
 
@@ -50,6 +51,11 @@ defmodule Mix.Tasks.Crosswake.Doctor do
     if report.status == :error do
       Mix.raise("Crosswake doctor found blocking issues")
     end
+  end
+
+  defp pop_flag(args, flag) do
+    {matches, rest} = Enum.split_with(args, &(&1 == flag))
+    {matches != [], rest}
   end
 
   defp router_module!(nil) do

@@ -353,8 +353,9 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         if String.trim(block) == "" do
           []
         else
-          block
-          |> String.split(~r/\n\s*-\s+/, trim: true)
+          ~r/^\s*-\s+(.*?)(?=^\s*-\s+|\z)/ms
+          |> Regex.scan(block, capture: :all_but_first)
+          |> Enum.map(fn [entry] -> entry end)
           |> Enum.with_index(1)
           |> Enum.flat_map(fn {entry, index} ->
             missing = Enum.reject(@exception_fields, &Regex.match?(~r/(^|\n)\s*#{&1}:/, entry))

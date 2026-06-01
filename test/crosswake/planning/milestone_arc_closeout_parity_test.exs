@@ -13,11 +13,11 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     "v3.2 Commerce And Entitlement Seams",
     "v3.3 Release Readiness",
     "v3.4 Commerce Archetype Proof",
-    "v3.5 First-Party Companions"
+    "v3.5 First-Party Companions",
+    "v3.6 Operator Truth and Production Diagnostics"
   ]
 
   @queued_milestones [
-    "v3.7 Commerce Provider Adapters",
     "v3.8 Full Sigra Auth and Session Machinery",
     "v3.9 Chimeway Notification Seam",
     "v4.0 Production Shell Runtime Line",
@@ -49,7 +49,7 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     "resolved_gaps"
   ]
 
-  test "milestone arc records shipped milestones through v3.5 and v3.6 as active" do
+  test "milestone arc records shipped milestones through v3.6 and v3.7 as active" do
     arc = File.read!(@arc_path)
 
     for milestone <- @shipped_milestones do
@@ -57,8 +57,8 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
              "MILESTONE-ARC.md is missing shipped milestone #{inspect(milestone)}"
     end
 
-    assert arc =~ "### Active: v3.6 Operator Truth and Production Diagnostics",
-           "MILESTONE-ARC.md must mark v3.6 as the active milestone"
+    assert arc =~ "### Active: v3.7 Commerce Provider Adapters",
+           "MILESTONE-ARC.md must mark v3.7 as the active milestone"
   end
 
   test "queued milestone sections expose the strategic field contract" do
@@ -71,6 +71,13 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
         assert section =~ "**#{field}**",
                "#{milestone} is missing required strategic field #{inspect(field)}"
       end
+    end
+
+    active = active_section!(arc, "v3.7 Commerce Provider Adapters")
+
+    for field <- @queue_fields do
+      assert active =~ "**#{field}**",
+             "active v3.7 section is missing required strategic field #{inspect(field)}"
     end
   end
 
@@ -161,6 +168,17 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
          ) do
       [section] -> section
       nil -> flunk("MILESTONE-ARC.md is missing queued milestone section #{inspect(title)}")
+    end
+  end
+
+  defp active_section!(content, title) do
+    case Regex.run(
+           ~r/^### Active: #{Regex.escape(title)}\r?\n(.*?)(?=^### |\z)/ms,
+           content,
+           capture: :all_but_first
+         ) do
+      [section] -> section
+      nil -> flunk("MILESTONE-ARC.md is missing active milestone section #{inspect(title)}")
     end
   end
 

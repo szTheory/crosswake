@@ -5,6 +5,10 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
 
   @task "closeout.verify"
 
+  setup do
+    on_exit(fn -> Mix.Task.reenable(@task) end)
+  end
+
   test "mix closeout.verify prints the shared verifier report and exits cleanly when closeout passes" do
     cwd = complete_fixture!("pass")
 
@@ -36,9 +40,13 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
   end
 
   test "mix closeout.verify rejects unsupported options" do
-    assert_raise Mix.Error, ~r/invalid options/, fn ->
+    try do
+      assert_raise Mix.Error, ~r/invalid options/, fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--format", "json"])
+      end
+    after
       Mix.Task.reenable(@task)
-      Mix.Task.run(@task, ["--format", "json"])
     end
   end
 

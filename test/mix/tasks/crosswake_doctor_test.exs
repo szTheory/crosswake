@@ -20,8 +20,6 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     "transfer.upload.prepare"
   ]
 
-  @task "crosswake.doctor"
-
   defmodule CommerceCorridorRouter do
     use Crosswake.Router
 
@@ -93,9 +91,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
               "--install-manifest",
@@ -128,9 +124,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     output =
       capture_io(fn ->
         File.cd!(target, fn ->
-          Mix.Task.reenable(@task)
-
-          Mix.Task.run(@task, [
+          Mix.Tasks.Crosswake.Doctor.run([
             "--router",
             "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
             "--install-manifest",
@@ -166,9 +160,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",
@@ -205,9 +197,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",
@@ -229,9 +219,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
   test "blocking failures raise instead of hiding behind warnings" do
     assert_raise Mix.Error, fn ->
       File.cd!(System.tmp_dir!(), fn ->
-        Mix.Task.reenable(@task)
-
-        Mix.Task.run(@task, [
+        Mix.Tasks.Crosswake.Doctor.run([
           "--router",
           "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
           "--install-manifest",
@@ -249,9 +237,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",
@@ -278,9 +264,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",

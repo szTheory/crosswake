@@ -6,7 +6,6 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
   alias Crosswake.TestSupport.ProofAssertions
 
   @inspect_task "crosswake.inspect"
-  @doctor_task "crosswake.doctor"
   @inspect_fixture "test/fixtures/proof/phase52_operator_inspection.json"
   @readiness_fixture "test/fixtures/proof/phase52_publish_readiness.json"
 
@@ -103,10 +102,8 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
        %{install_manifest_path: install_manifest_path} do
     output =
       capture_io(fn ->
-        Mix.Task.reenable(@doctor_task)
-
         assert_raise Mix.Error, "Crosswake doctor found blocking issues", fn ->
-          Mix.Task.run(@doctor_task, [
+          Mix.Tasks.Crosswake.Doctor.run([
             "--router",
             "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
             "--install-manifest",

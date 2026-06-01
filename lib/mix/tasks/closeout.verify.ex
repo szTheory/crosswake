@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Closeout.Verify do
     {opts, _argv, invalid} = OptionParser.parse(args, strict: @switches)
 
     if invalid != [] do
-      Mix.raise("invalid options: #{inspect(invalid)}")
+      Mix.raise("closeout.verify invalid options: #{inspect(invalid)}")
     end
 
     report = CloseoutVerifier.run(cwd: opts[:cwd] || File.cwd!())

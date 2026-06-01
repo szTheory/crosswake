@@ -71,47 +71,11 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v3.3 Release Readiness** — shipped 2026-05-29. Published `crosswake 0.1.0` to Hex with release-please, package metadata, changelog, and HexDocs path.
 - **v3.4 Commerce Archetype Proof** — shipped 2026-05-29. Proved a copy-able mocked paywall corridor through purchase, reconciliation, entitlement projection, UI state, hermetic proof, and docs-contract lock.
 - **v3.5 First-Party Companions** — shipped 2026-05-31. Locked `Crosswake.Companion`, Rulestead gating, Rindle media evidence, Sigra contract-only auth predicates, and canonical companion docs/proof parity.
+- **v3.6 Operator Truth and Production Diagnostics** — shipped 2026-06-01. Added route/capability/companion/provider/auth/notification readiness inspection, publish-readiness diagnostics, native rebuild/support truth, docs-contract proof, closeout verification, and release/changelog parity without promoting deferred provider/native claims.
 
 ## Strategic Queue
 
-### Active: v3.6 Operator Truth and Production Diagnostics
-
-**Objective**
-- Make Crosswake inspectable and supportable for production SaaS apps before adding more provider/native breadth.
-
-**Why now**
-- v3.4 and v3.5 widened the surface across commerce, companions, auth predicates, media evidence, route gates, and advisory proof. The next support risk is not missing feature breadth; it is operators and maintainers lacking one truthful place to answer "what is supported, what requires a rebuild, what is advisory, and why did this route fail?"
-
-**Depends on**
-- v3.4 commerce archetype proof and v3.5 first-party companion surfaces.
-- Current `.planning/MILESTONE-ARC.md`, roadmap, requirements, state, and milestone audit evidence.
-
-**Risk tags**
-- `operator-truth`
-- `support-truth`
-- `release-truth`
-- `auditability`
-
-**Key outputs**
-- Live strategic arc refresh and durable closeout checklist.
-- Route/capability/companion inspection output with machine-readable shape for CI.
-- `mix crosswake.doctor --check-publish` release/support readiness checks.
-- Native rebuild matrix and support-matrix truth for routes, capabilities, companions, commerce/provider readiness, auth predicates, and notification-token readiness.
-- Docs-contract and proof lanes that keep doctor/support/guide truth synchronized.
-- Live closeout ledger: `.planning/milestones/v3.6-CLOSEOUT.md`.
-
-**Non-goals**
-- StoreKit or Play Billing adapter implementation.
-- Full Sigra handoff, passkey, OAuth, or refresh-token machinery.
-- Chimeway delivery integration.
-- Polished admin UI unrelated to install/debug/support truth.
-
-**Proof required**
-- Hermetic ExUnit tests for inspection output and doctor findings.
-- Docs-contract tests for support matrix, diagnostics guide, denial/support vocabulary, and rebuild truth.
-- CI lane for publish/operator checks plus explicit advisory-vs-merge-blocking classification.
-
-### Next: v3.7 Commerce Provider Adapters
+### Active: v3.7 Commerce Provider Adapters
 
 **Objective**
 - Add first-party StoreKit and Play Billing adapter seams that consume existing commerce contracts and feed backend reconciliation without making device/storefront evidence authoritative.
@@ -338,6 +302,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-05-31:** After v3.5, v3.6 was locked as the operator-truth milestone before provider/native breadth. Provider adapters moved to v3.7 so support, rebuild, proof, and release truth are inspectable first.
 - **2026-05-31:** Future queue planning uses `Depends on` and `Risk tags` as planning signals, not marketing labels. These fields make provider, authority, notification, shell-runtime, archetype-proof, and auditability risk visible before planning starts.
 - **2026-05-31:** The active milestone closeout contract lives in `.planning/milestones/v3.6-CLOSEOUT.md`; milestone audits remain append-only evidence rather than the live checklist.
+- **2026-06-01:** v3.6 closeout archived the roadmap and requirements snapshots in `.planning/milestones/`, promoted `mix closeout.verify` to deterministic closeout truth, and made v3.7 Commerce Provider Adapters the active strategic milestone.
 
 ## Support Truth Requirements
 
@@ -375,4 +340,4 @@ Every milestone close must update or verify:
 - What minimum Android evidence is required to move shell support from "verification required" to fully verified.
 
 ---
-*Last updated: 2026-05-31 — refreshed after v3.5 completion to make v3.6 Operator Truth and Production Diagnostics the active strategic milestone and preserve durable lessons for future GSD runs.*
+*Last updated: 2026-06-01 — v3.6 closed and v3.7 Commerce Provider Adapters became the active strategic milestone.*

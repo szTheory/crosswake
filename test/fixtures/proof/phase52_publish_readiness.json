@@ -6,15 +6,21 @@
       "claim_scope": "Hex metadata and release/changelog truth",
       "code": "diag.publish.local_truth",
       "details": {
-        "changelog_sections": [
-          "Unreleased",
-          "0.1.0"
-        ],
-        "errors": [],
-        "package_name": "crosswake",
-        "source_url": "https://github.com/szTheory/crosswake",
-        "version": "0.1.0"
-      },
+      "changelog_sections": [
+        "Unreleased",
+        "0.1.0"
+      ],
+      "errors": [],
+      "package_name": "crosswake",
+      "source_url": "https://github.com/szTheory/crosswake",
+      "unreleased_subsections": [
+        "Unpublished support claims",
+        "Verification-required and advisory surfaces",
+        "Deferred non-shipped claims",
+        "Published Hex truth"
+      ],
+      "version": "0.1.0"
+    },
       "docs_reference": "CHANGELOG.md",
       "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
       "id": "publish.parity",
