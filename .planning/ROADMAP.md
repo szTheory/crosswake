@@ -65,7 +65,7 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 
 - [x] Phase 48: Strategic Signal and Milestone Memory — refresh the durable milestone arc, closeout checklist, and future queue. (completed 2026-05-31)
 - [x] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output. (completed 2026-05-31)
-- [ ] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings.
+- [x] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings. (completed 2026-06-01)
 - [ ] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
 - [ ] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof.
 - [ ] Phase 53: Release Continuity and Closeout Hardening — align changelog/release support truth and enforce closeout parity for future milestones.
@@ -133,11 +133,11 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 50-01-PLAN.md — build the reusable publish-readiness contract and derivation engine from deterministic local project truth plus Phase 49 inspection/support data
+- [x] 50-01-PLAN.md — build the reusable publish-readiness contract and derivation engine from deterministic local project truth plus Phase 49 inspection/support data
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 50-02-PLAN.md — wire `--check-publish` through doctor CLI/report/human/JSON output and lock additive behavior with regression coverage
+- [x] 50-02-PLAN.md — wire `--check-publish` through doctor CLI/report/human/JSON output and lock additive behavior with regression coverage
 
 **Phase 51: Support Matrix and Native Rebuild Truth**
 
@@ -189,8 +189,8 @@ Success criteria:
 | 26-32 | v3.3 Release Readiness | 11/11 | Complete | 2026-05-29 |
 | 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
 | 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
-| 48-53 | v3.6 Operator Truth and Production Diagnostics | 0/3 | Planning | — |
+| 48-53 | v3.6 Operator Truth and Production Diagnostics | 7/7 | Active | — |
 
 ## Next
 
-Start execution with `$gsd-execute-phase 48`.
+Start execution with `$gsd-discuss-phase 51`.

@@ -17,8 +17,8 @@
 
 ### Doctor Readiness
 
-- [ ] **DIAG-01**: `mix crosswake.doctor --check-publish` reports actionable release/support readiness across Hex metadata, changelog status, docs/support parity, proof posture, and known verification-required surfaces.
-- [ ] **DIAG-02**: Doctor output identifies companion dependency health, provider-adapter readiness, notification-token readiness, auth/session predicate readiness, and native shell verification gaps with explicit severity and remediation.
+- [x] **DIAG-01**: `mix crosswake.doctor --check-publish` reports actionable release/support readiness across Hex metadata, changelog status, docs/support parity, proof posture, and known verification-required surfaces.
+- [x] **DIAG-02**: Doctor output identifies companion dependency health, provider-adapter readiness, notification-token readiness, auth/session predicate readiness, and native shell verification gaps with explicit severity and remediation.
 
 ### Support Truth
 
@@ -68,8 +68,8 @@
 | STRAT-02 | Phase 48 | Complete |
 | OPER-01 | Phase 49 | Complete |
 | OPER-02 | Phase 49 | Complete |
-| DIAG-01 | Phase 50 | Pending |
-| DIAG-02 | Phase 50 | Pending |
+| DIAG-01 | Phase 50 | Complete |
+| DIAG-02 | Phase 50 | Complete |
 | SUPP-01 | Phase 51 | Pending |
 | SUPP-02 | Phase 51 | Pending |
 | PROOF-01 | Phase 52 | Pending |
@@ -83,4 +83,4 @@
 
 ---
 *Requirements defined: 2026-05-31*
-*Last updated: 2026-05-31 after Phase 48 completion*
+*Last updated: 2026-05-31 after Phase 50 completion*

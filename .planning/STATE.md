@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.6
 milestone_name: Operator Truth and Production Diagnostics
-status: executing
-last_updated: "2026-06-01T00:21:25.257Z"
-last_activity: 2026-06-01 -- Phase 50 execution started
+status: active
+stopped_at: Phase 50 complete; ready for Phase 51 discussion
+last_updated: "2026-06-01T00:33:10.780Z"
+last_activity: 2026-06-01 -- Phase 50 marked complete
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 5
-  percent: 33
+  completed_plans: 7
+  percent: 50
 ---
 
 # Project State
@@ -20,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 50 — doctor-publish-and-readiness-checks
+**Current focus:** Phase 51 — support-matrix-and-native-rebuild-truth
 
 ## Current Position
 
-Phase: 50 (doctor-publish-and-readiness-checks) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 50
-Last activity: 2026-06-01 -- Phase 50 execution started
+Phase: 51
+Plan: Not started
+Status: Phase 50 complete; ready for Phase 51 discussion
+Last activity: 2026-06-01 -- Phase 50 marked complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 90 (v1.0–v3.6 Phase 48)
+- Total plans completed: 94 (v1.0–v3.6 Phase 50)
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
 **Recent Trend:** Positive — v3.3 (hex publish) and v3.4 (commerce archetype proof) both shipped cleanly on 2026-05-29.
@@ -69,7 +70,7 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Docs | ExDoc zero-warnings clause (HEX-03) | Deferred | 2026-05-29 |
 | CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
-| Tooling | `mix crosswake.doctor --check-publish` surface | Active in v3.6 | 2026-05-27 |
+| Tooling | `mix crosswake.doctor --check-publish` surface | Completed in Phase 50 | 2026-05-27 |
 | Validation | Finalize Nyquist VALIDATION.md ledger for phases 34-37 (draft → compliant) | Deferred (bookkeeping only) | 2026-05-29 |
 | Phase 45 P01 | 10min | 3 tasks | 3 files |
 | Phase 45 P02 | 12min | 3 tasks | 8 files |
@@ -80,9 +81,9 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 
 ## Session Continuity
 
-Last session: 2026-05-31T21:19:01.109Z
-Stopped at: Phase 50 context gathered
+Last session: 2026-06-01T00:33:10.780Z
+Stopped at: Phase 50 complete; ready for Phase 51 discussion
 
 ## Operator Next Steps
 
-- Start Phase 49 with /gsd-discuss-phase 49
+- Start Phase 51 with /gsd-discuss-phase 51
