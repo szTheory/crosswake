@@ -48,7 +48,7 @@ defmodule CrosswakeExample.CorridorController do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_purchase(intent)
+    evidence = MockStorefront.simulate_purchase(intent, [])
     {:ok, attempt} = ReconciliationInbox.ingest_evidence(evidence)
     Task.start(fn -> MockBackend.verify_and_broadcast(evidence, group_id) end)
     json(conn, %{status: attempt.status})
@@ -68,7 +68,7 @@ defmodule CrosswakeExample.CorridorController do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_restore(intent)
+    evidence = MockStorefront.simulate_restore(intent, [])
     {:ok, attempt} = ReconciliationInbox.ingest_evidence(evidence)
     Task.start(fn -> MockBackend.verify_and_broadcast(evidence, group_id) end)
     json(conn, %{status: attempt.status})

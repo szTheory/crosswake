@@ -9,7 +9,17 @@ Code.require_file(
 )
 
 Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex",
+  __DIR__
+)
+
+Code.require_file(
   "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex",
   __DIR__
 )
 
@@ -193,16 +203,13 @@ defmodule Crosswake.Guides.CommerceTest do
   end
 
   test "keeps reconciliation guidance provider-neutral and non-authoritative", %{content: content} do
-    # The reconciliation flow narrative lives inside Layer 1 (Commerce Support Truth) and
-    # must remain provider-neutral. The layered restructure introduces Layer 2 (Reviewer
-    # And Storefront Playbooks) right after the Layer 1 fallback section, so the
-    # reconciliation section now terminates at the Layer 2 boundary rather than the old
-    # H2 "## Non-Goals & explicit Rejections" boundary (which moved into Layer 3).
+    # The reconciliation flow narrative must remain provider-neutral. The paywall
+    # walkthrough below it may name provider swap targets, so stop at that boundary.
     reconciliation_section =
       content
       |> String.split("### The Canonical Reconciliation Flow")
       |> List.last()
-      |> String.split("## Reviewer And Storefront Playbooks")
+      |> String.split("### Paywall Corridor Walkthrough")
       |> hd()
       |> String.downcase()
 
@@ -483,6 +490,24 @@ defmodule Crosswake.Guides.CommerceTest do
              "commerce guide missing exact module name `CrosswakeExample.Commerce.MockStorefront` (DOCS-01 SC#3)"
     end
 
+    test "provider facade swap target and evidence-only posture are named exactly", %{
+      content: content
+    } do
+      assert content =~ "CrosswakeExample.Commerce.ProviderAdapterStorefront",
+             "commerce guide missing provider facade swap-target module name"
+
+      assert content =~
+               "config :crosswake_example, :paywall_storefront_provider, :storekit | :play_billing",
+             "commerce guide missing closed provider selection config example"
+
+      assert content =~
+               "StoreKit and Play Billing adapter seams emit reconciliation evidence only; backend projection grants entitlement authority.",
+             "commerce guide must keep provider evidence separate from entitlement authority"
+
+      refute content =~ "no storefront adapter code is shipped in this example corridor",
+             "commerce guide still contains stale no-storefront-adapter claim"
+    end
+
     test "canonical field names are present, not invented aliases (SC#3)", %{content: content} do
       assert content =~ "provider_reference",
              "commerce guide missing canonical field name `provider_reference` — do not rename to an alias (DOCS-01 SC#3)"
@@ -521,6 +546,27 @@ defmodule Crosswake.Guides.CommerceTest do
 
       assert function_exported?(CrosswakeExample.Commerce.MockStorefront, :simulate_restore, 2),
              "CrosswakeExample.Commerce.MockStorefront.simulate_restore/2 not exported — walkthrough anchor is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.StorefrontAdapter,
+               :behaviour_info,
+               1
+             ),
+             "CrosswakeExample.Commerce.StorefrontAdapter behaviour not exported — swap-target contract is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.ProviderAdapterStorefront,
+               :simulate_purchase,
+               1
+             ),
+             "CrosswakeExample.Commerce.ProviderAdapterStorefront.simulate_purchase/1 not exported — provider swap target is stale"
+
+      assert function_exported?(
+               CrosswakeExample.Commerce.ProviderAdapterStorefront,
+               :simulate_restore,
+               1
+             ),
+             "CrosswakeExample.Commerce.ProviderAdapterStorefront.simulate_restore/1 not exported — provider swap target is stale"
 
       assert function_exported?(
                CrosswakeExample.Commerce.ReconciliationInbox,

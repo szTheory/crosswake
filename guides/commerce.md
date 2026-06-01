@@ -116,7 +116,7 @@ This reconciliation walkthrough is `example/docs-only` and companion-ready. It i
 
 ### Paywall Corridor Walkthrough
 
-This walkthrough uses `provider: "mock"`. The example host ships a pure mock storefront with no native provider SDK dependency — no storefront adapter code is shipped in this example corridor. See `## Rough Edges And Non-Claims` for the explicit non-claims, including which adapters are not shipped.
+This walkthrough uses `provider: "mock"`. The example host ships `CrosswakeExample.Commerce.MockStorefront` as the default pure-Elixir storefront adapter with no native provider SDK dependency. `CrosswakeExample.Commerce.ProviderAdapterStorefront` is the explicit provider swap target when host config sets `config :crosswake_example, :paywall_storefront_adapter, CrosswakeExample.Commerce.ProviderAdapterStorefront` and `config :crosswake_example, :paywall_storefront_provider, :storekit | :play_billing`. StoreKit and Play Billing adapter seams emit reconciliation evidence only; backend projection grants entitlement authority.
 
 The following six steps trace the paywall corridor end-to-end through the example host code. Each step names the relevant module and function with its relative file path. No code is copied here — consult the linked source files directly.
 
