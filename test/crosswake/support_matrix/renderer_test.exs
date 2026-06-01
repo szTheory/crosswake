@@ -57,8 +57,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
     assert guide =~
              "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
-    refute String.downcase(guide) =~ "storekit"
-    refute String.downcase(guide) =~ "play_billing"
+    assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
+    assert guide =~ "provider adapter proof remains advisory"
     refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
   end
@@ -89,6 +89,40 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "| core-only/no native rebuild |"
     assert guide =~ "| compatibility-bump only |"
     assert guide =~ "| native or companion rebuild required |"
+  end
+
+  test "generated guide renders phase 51 action classes, promotion rules, and public non-claims" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "## Action Classes"
+    assert guide =~ "## Promotion Rules"
+    assert guide =~ "## Public Non-Claims And Rough Edges"
+
+    for action_class <- [
+          "docs_only",
+          "route_manifest",
+          "compatibility",
+          "native_shell",
+          "companion_native",
+          "provider_adapter"
+        ] do
+      assert guide =~ action_class
+    end
+
+    for claim_id <- [
+          "shell.ios.generated_project",
+          "shell.android.generated_project",
+          "notification_token.provider_snapshot",
+          "purchase_intent.provider.storekit",
+          "purchase_intent.provider.play_billing"
+        ] do
+      assert guide =~ claim_id
+    end
+
+    assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
+    assert guide =~ "Sigra is contract-only for route predicates and `:step_up_required`"
+    assert guide =~ "notification-token readiness is provider-snapshot only and not delivery support"
+    assert guide =~ "Standalone public shell packages are deferred"
   end
 
   test "generated guide renders commerce corridor support truth with canonical denial codes" do
