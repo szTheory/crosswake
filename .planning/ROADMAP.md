@@ -159,7 +159,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 51-02-PLAN.md — render the canonical rebuild, promotion, and non-claim contract into support_matrix/install/native_shell/compatibility docs with deterministic guide tests
+- [x] 51-02-PLAN.md — render the canonical rebuild, promotion, and non-claim contract into support_matrix/install/native_shell/compatibility docs with deterministic guide tests
 - [ ] 51-03-PLAN.md — feed canonical rebuild and promotion metadata through operator inspection and publish-readiness runtime surfaces without inventing a second readiness model
 
 **Phase 52: Operator Proof and Docs-Contract Locks**
