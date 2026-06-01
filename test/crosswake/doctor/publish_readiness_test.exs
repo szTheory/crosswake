@@ -206,6 +206,75 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert report.summary.warning_count >= 1
   end
 
+  test "publish parity requires the v3.6 unreleased support-truth split" do
+    report =
+      readiness_report(
+        changelog_contents: """
+        # Changelog
+
+        ## Planning milestones vs Hex releases
+
+        planning milestones and published Hex release truth are distinct.
+
+        ## [Unreleased]
+
+        ### Unpublished support claims
+
+        ### Deferred non-shipped claims
+
+        ## [0.1.0]
+        """
+      )
+
+    publish = find_check!(report, :publish_parity)
+
+    assert publish.blocking
+
+    assert publish.code in [
+             "diag.publish.local_truth_failed",
+             "diag.publish.changelog_missing_unreleased"
+           ]
+
+    assert Enum.any?(publish.details.errors, fn error ->
+             error =~ "[Unreleased] must split unpublished support claims"
+           end)
+  end
+
+  test "publish parity rejects false shipped language for deferred surfaces" do
+    report =
+      readiness_report(
+        changelog_contents: """
+        # Changelog
+
+        ## Planning milestones vs Hex releases
+
+        planning milestones and published Hex release truth are distinct.
+
+        ## [Unreleased]
+
+        ### Unpublished support claims
+
+        ### Verification-required and advisory surfaces
+
+        ### Deferred non-shipped claims
+
+        StoreKit provider adapter shipped.
+
+        ### Published Hex truth
+
+        Latest published Hex release is 0.1.0.
+
+        ## [0.1.0]
+        """
+      )
+
+    publish = find_check!(report, :publish_parity)
+
+    assert publish.blocking
+
+    assert "CHANGELOG.md must not describe deferred provider, auth, notification, or shell work as shipped" in publish.details.errors
+  end
+
   test "publish parity rejects empty, malformed, or non-HTTPS source URLs" do
     for source_url <- [
           "",

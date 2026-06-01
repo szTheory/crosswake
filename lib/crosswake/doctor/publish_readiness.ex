@@ -197,6 +197,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "CHANGELOG.md must keep an [Unreleased] section"
       )
       |> require_truth(
+        unreleased_split?(changelog),
+        "CHANGELOG.md [Unreleased] must split unpublished support claims, advisory surfaces, deferred non-shipped claims, and published Hex truth"
+      )
+      |> require_truth(
+        published_hex_truth?(changelog),
+        "CHANGELOG.md must distinguish planning milestones from published Hex 0.1.0"
+      )
+      |> require_truth(
+        no_false_shipped_claims?(changelog),
+        "CHANGELOG.md must not describe deferred provider, auth, notification, or shell work as shipped"
+      )
+      |> require_truth(
         is_binary(expected_version) and changelog =~ "[#{expected_version}]",
         "CHANGELOG.md must include the current [#{expected_version}] release"
       )
@@ -221,6 +233,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
         version: expected_version,
         source_url: source_url,
         changelog_sections: changelog_sections(changelog),
+        unreleased_subsections: unreleased_subsections(changelog),
         errors: Enum.reverse(errors)
       }
     )
@@ -607,6 +620,52 @@ defmodule Crosswake.Doctor.PublishReadiness do
   defp changelog_sections(contents) do
     Regex.scan(~r/^## \[([^\]]+)\]/m, contents)
     |> Enum.map(fn [_full, section] -> section end)
+  end
+
+  defp unreleased_split?(contents) do
+    required = [
+      "Unpublished support claims",
+      "Verification-required and advisory surfaces",
+      "Deferred non-shipped claims",
+      "Published Hex truth"
+    ]
+
+    subsections = unreleased_subsections(contents)
+    Enum.all?(required, &(&1 in subsections))
+  end
+
+  defp unreleased_subsections(contents) do
+    contents
+    |> changelog_section("## [Unreleased]")
+    |> then(&Regex.scan(~r/^### (.+)$/m, &1))
+    |> Enum.map(fn [_full, heading] -> heading end)
+  end
+
+  defp published_hex_truth?(contents) do
+    String.contains?(contents, "published Hex release") and
+      String.contains?(contents, "planning milestones") and
+      String.contains?(contents, "## [0.1.0]")
+  end
+
+  defp no_false_shipped_claims?(contents) do
+    false_claims = [
+      "StoreKit provider adapter shipped",
+      "Play Billing provider adapter shipped",
+      "Chimeway delivery is supported",
+      "standalone native shell packages are shipped",
+      "full Sigra machinery is shipped"
+    ]
+
+    Enum.all?(false_claims, &(not String.contains?(contents, &1)))
+  end
+
+  defp changelog_section(contents, heading) do
+    pattern = ~r/^#{Regex.escape(heading)}\r?\n(.*?)(?=^## \[|\z)/ms
+
+    case Regex.run(pattern, contents, capture: :all_but_first) do
+      [section] -> section
+      nil -> ""
+    end
   end
 
   defp routes(nil), do: []

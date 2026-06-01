@@ -56,7 +56,9 @@ defmodule Crosswake.HexPageTest do
   defp relative_link_targets(md_rel_path) do
     base_dir = Path.dirname(md_rel_path)
 
-    (Path.join(@root, md_rel_path) |> File.read!() |> strip_code_fences())
+    Path.join(@root, md_rel_path)
+    |> File.read!()
+    |> strip_code_fences()
     |> then(&Regex.scan(@link_regex, &1))
     |> Enum.map(fn [_full, url] -> url |> String.split(~r/\s+/, parts: 2) |> hd() end)
     |> Enum.reject(fn url ->
@@ -149,7 +151,9 @@ defmodule Crosswake.HexPageTest do
     test "no guide file is orphaned from the docs extras list" do
       referenced =
         config()[:docs][:extras]
-        |> Enum.map(fn entry -> if is_binary(entry), do: entry, else: elem(entry, 0) |> to_string() end)
+        |> Enum.map(fn entry ->
+          if is_binary(entry), do: entry, else: elem(entry, 0) |> to_string()
+        end)
         |> MapSet.new()
 
       orphans = Enum.reject(Path.wildcard("guides/*.md"), &MapSet.member?(referenced, &1))
@@ -186,6 +190,40 @@ defmodule Crosswake.HexPageTest do
       assert is_list(package[:licenses]) and package[:licenses] != []
       assert is_map(package[:links]) and map_size(package[:links]) > 0
       assert is_binary(config()[:description]) and config()[:description] != ""
+    end
+  end
+
+  describe "release truth continuity" do
+    test "CHANGELOG keeps unreleased support claims separate from published Hex truth" do
+      changelog = File.read!(Path.join(@root, "CHANGELOG.md"))
+      unreleased = section!(changelog, "## [Unreleased]")
+
+      for heading <- [
+            "### Unpublished support claims",
+            "### Verification-required and advisory surfaces",
+            "### Deferred non-shipped claims",
+            "### Published Hex truth"
+          ] do
+        assert unreleased =~ heading,
+               "CHANGELOG.md [Unreleased] is missing #{inspect(heading)}"
+      end
+
+      assert changelog =~ "published Hex release"
+      assert changelog =~ "planning milestones"
+      assert unreleased =~ "not shipped"
+      refute unreleased =~ "StoreKit provider adapter shipped"
+      refute unreleased =~ "Play Billing provider adapter shipped"
+      refute unreleased =~ "Chimeway delivery is supported"
+      refute unreleased =~ "standalone generated shell packages are shipped"
+    end
+  end
+
+  defp section!(content, heading) do
+    pattern = ~r/^#{Regex.escape(heading)}\r?\n(.*?)(?=^## \[|\z)/ms
+
+    case Regex.run(pattern, content, capture: :all_but_first) do
+      [section] -> section
+      nil -> flunk("missing section #{heading}")
     end
   end
 end

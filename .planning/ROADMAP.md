@@ -200,7 +200,7 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 53-01-PLAN.md — build `Crosswake.Planning.CloseoutVerifier`, lock fail-closed closeout tests, and harden changelog/publish-readiness truth without creating a second release ledger
+- [x] 53-01-PLAN.md — build `Crosswake.Planning.CloseoutVerifier`, lock fail-closed closeout tests, and harden changelog/publish-readiness truth without creating a second release ledger
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
