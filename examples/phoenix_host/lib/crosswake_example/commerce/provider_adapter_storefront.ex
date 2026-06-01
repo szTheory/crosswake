@@ -10,7 +10,31 @@ defmodule CrosswakeExample.Commerce.ProviderAdapterStorefront do
   alias Crosswake.Companions.PlayBilling.Evidence, as: PlayBillingEvidence
   alias Crosswake.Companions.StoreKit.Evidence, as: StoreKitEvidence
 
+  @behaviour CrosswakeExample.Commerce.StorefrontAdapter
+
   @group_id "sub_pro_monthly"
+
+  @impl true
+  @spec simulate_purchase(Contracts.PurchaseIntent.t()) ::
+          {:ok, Contracts.ReconciliationEvidence.t()} | {:error, term()}
+  def simulate_purchase(%Contracts.PurchaseIntent{} = intent) do
+    case configured_provider() do
+      {:ok, :storekit} -> simulate_storekit_purchase(intent)
+      {:ok, :play_billing} -> simulate_play_billing_purchase(intent)
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @impl true
+  @spec simulate_restore(Contracts.RestoreIntent.t()) ::
+          {:ok, Contracts.ReconciliationEvidence.t()} | {:error, term()}
+  def simulate_restore(%Contracts.RestoreIntent{} = intent) do
+    case configured_provider() do
+      {:ok, :storekit} -> simulate_storekit_restore(intent)
+      {:ok, :play_billing} -> simulate_play_billing_restore(intent)
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   @spec simulate_storekit_purchase(Contracts.PurchaseIntent.t(), keyword()) ::
           {:ok, Contracts.ReconciliationEvidence.t()} | {:error, term()}
@@ -89,6 +113,15 @@ defmodule CrosswakeExample.Commerce.ProviderAdapterStorefront do
 
     with {:ok, normalized} <- PlayBillingEvidence.new(play_attrs) do
       PlayBillingEvidence.to_reconciliation_evidence(normalized)
+    end
+  end
+
+  defp configured_provider do
+    case Application.get_env(:crosswake_example, :paywall_storefront_provider, nil) do
+      nil -> {:error, :provider_not_configured}
+      :storekit -> {:ok, :storekit}
+      :play_billing -> {:ok, :play_billing}
+      provider -> {:error, {:invalid_provider, provider}}
     end
   end
 end

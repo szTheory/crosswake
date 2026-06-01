@@ -47,11 +47,18 @@ defmodule CrosswakeExample.Commerce.MockStorefront do
 
   alias Crosswake.Commerce.Contracts
 
+  @behaviour CrosswakeExample.Commerce.StorefrontAdapter
+
   @subscription_entry_id "sub_pro_monthly"
+
+  @impl true
+  @spec simulate_purchase(Contracts.PurchaseIntent.t()) ::
+          {:ok, Contracts.ReconciliationEvidence.t()}
+  def simulate_purchase(%Contracts.PurchaseIntent{} = intent), do: {:ok, simulate_purchase(intent, [])}
 
   @spec simulate_purchase(Contracts.PurchaseIntent.t(), keyword()) ::
           Contracts.ReconciliationEvidence.t()
-  def simulate_purchase(%Contracts.PurchaseIntent{} = intent, opts \\ []) do
+  def simulate_purchase(%Contracts.PurchaseIntent{} = intent, opts) do
     %Contracts.ReconciliationEvidence{
       source: :storefront,
       provider: "mock",
@@ -62,9 +69,14 @@ defmodule CrosswakeExample.Commerce.MockStorefront do
     }
   end
 
+  @impl true
+  @spec simulate_restore(Contracts.RestoreIntent.t()) ::
+          {:ok, Contracts.ReconciliationEvidence.t()}
+  def simulate_restore(%Contracts.RestoreIntent{} = intent), do: {:ok, simulate_restore(intent, [])}
+
   @spec simulate_restore(Contracts.RestoreIntent.t(), keyword()) ::
           Contracts.ReconciliationEvidence.t()
-  def simulate_restore(%Contracts.RestoreIntent{} = _intent, opts \\ []) do
+  def simulate_restore(%Contracts.RestoreIntent{} = _intent, opts) do
     %Contracts.ReconciliationEvidence{
       source: :storefront,
       provider: "mock",
