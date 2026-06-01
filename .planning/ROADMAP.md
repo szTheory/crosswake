@@ -244,7 +244,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 48-05-PLAN.md — update commerce/support/release guidance so public claims match the v3.7 provider adapter seam and proof posture
+- [x] 48-05-PLAN.md — update commerce/support/release guidance so public claims match the v3.7 provider adapter seam and proof posture
 - [ ] 48-06-PLAN.md — create the Phase 48 hermetic proof lane and advisory provider-proof wiring
 
 </details>
