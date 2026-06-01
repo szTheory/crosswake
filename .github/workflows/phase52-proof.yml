@@ -1,5 +1,8 @@
 name: Phase 52 Proof
 
+permissions:
+  contents: read
+
 # Phase 52 introduces a dedicated operator-proof workflow with two explicit
 # lanes:
 #

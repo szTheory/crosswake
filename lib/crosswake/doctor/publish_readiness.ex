@@ -203,11 +203,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
     result_check(
       id: "publish.parity",
-      code:
-        if(Enum.any?(errors, &String.contains?(&1, "[Unreleased]")),
-          do: "diag.publish.changelog_missing_unreleased",
-          else: "diag.publish.local_truth"
-        ),
+      code: publish_parity_code(errors),
       category: :publish_parity,
       passed?: errors == [],
       message:
@@ -216,7 +212,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
           else: "local publish parity failed: #{Enum.join(Enum.reverse(errors), "; ")}"
         ),
       hint:
-        "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
+        "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [#{expected_version}] aligned before publishing.",
       docs_reference: "CHANGELOG.md",
       proof_class: :merge_blocking,
       claim_scope: "Hex metadata and release/changelog truth",
@@ -439,7 +435,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
     project_config = Keyword.get_lazy(opts, :project_config, &Mix.Project.config/0)
     docs = Keyword.get(project_config, :docs, [])
     extras = Keyword.get(docs, :extras, [])
-    missing = Enum.reject(@allowed_docs, &(&1 in extras or &1 == "CHANGELOG.md"))
+    missing = Enum.reject(@allowed_docs, &(&1 in extras))
     missing_files = Enum.reject(@allowed_docs, &File.exists?(Path.join(cwd, &1)))
 
     result_check(
@@ -576,6 +572,16 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp require_truth(errors, true, _message), do: errors
   defp require_truth(errors, false, message), do: [message | errors]
+
+  defp publish_parity_code([]), do: "diag.publish.local_truth"
+
+  defp publish_parity_code(errors) do
+    if Enum.any?(errors, &String.contains?(&1, "[Unreleased]")) do
+      "diag.publish.changelog_missing_unreleased"
+    else
+      "diag.publish.local_truth_failed"
+    end
+  end
 
   defp valid_source_url?(source_url) when is_binary(source_url) do
     case URI.parse(source_url) do

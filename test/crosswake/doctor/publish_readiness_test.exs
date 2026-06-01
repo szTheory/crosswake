@@ -226,6 +226,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
       assert publish.blocking
       assert publish.severity == :error
+      assert publish.code == "diag.publish.local_truth_failed"
       assert "source_url must be a non-empty https URL" in publish.details.errors
     end
   end
@@ -243,6 +244,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     publish = find_check!(report, :publish_parity)
 
     assert publish.blocking
+    assert publish.code == "diag.publish.local_truth_failed"
     assert "CHANGELOG.md must include the current [0.2.0] release" in publish.details.errors
   end
 
