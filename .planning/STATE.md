@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.7
 milestone_name: Commerce Provider Adapters
-status: ready_to_discuss
-last_updated: "2026-06-01T17:45:00Z"
-last_activity: 2026-06-01 -- v3.6 closed and v3.7 ready to discuss
+status: ready_to_plan
+last_updated: "2026-06-01T17:55:19.134Z"
+last_activity: 2026-06-01 -- Phase 48 context gathered; ready to plan v3.7 provider adapters
 progress:
   total_phases: 0
   completed_phases: 0
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-01)
 
 ## Current Position
 
-Phase: 48 (commerce-provider-adapters) — READY TO DISCUSS
+Phase: 48 (commerce-provider-adapters) — READY TO PLAN
 Plan: Not planned
-Status: Ready to discuss v3.7
-Last activity: 2026-06-01 -- v3.6 closeout archived roadmap/requirements and reset live planning state
+Status: ready_to_plan
+Last activity: 2026-06-01 -- Phase 48 context gathered; ready to plan v3.7 provider adapters
 
 ## Performance Metrics
 
@@ -73,9 +73,9 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-01T17:45:00Z
-Stopped at: v3.6 closed; v3.7 ready to discuss
+Last session: 2026-06-01T17:54:47.463Z
+Stopped at: Phase 48 context gathered
 
 ## Operator Next Steps
 
-- Start v3.7 planning with `$gsd-discuss-phase 48`
+- Plan v3.7 provider adapters with `$gsd-plan-phase 48`
