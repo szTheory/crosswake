@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.7
-milestone_name: Commerce Provider Adapters
-status: Awaiting next milestone
-last_updated: "2026-06-01T22:15:33.985Z"
-last_activity: 2026-06-01 — Milestone v3.7 completed and archived
+milestone: v3.8
+milestone_name: Full Sigra Auth and Session Machinery
+status: planning
+last_updated: "2026-06-01T22:35:06.175Z"
+last_activity: 2026-06-01
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-01)
 
 ## Current Position
 
-Phase: Milestone v3.7 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-01 — Milestone v3.7 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-01 — Milestone v3.8 started
 
 ## Performance Metrics
 

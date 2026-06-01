@@ -31,11 +31,16 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 </details>
 
-## Current Milestone: Awaiting Next Milestone
+## Current Milestone: v3.8 Full Sigra Auth and Session Machinery
 
-Start the next milestone with `$gsd-new-milestone`. The current strategic queue points next at v3.8 Full Sigra Auth and Session Machinery, but the next milestone should be re-confirmed through the normal requirements flow.
+**Goal:** Expand v3.5's contract-only Sigra slice into production account-security flows while preserving backend-owned authority and route-local fail-closed behavior.
 
-**Recently shipped:** v3.7 Commerce Provider Adapters.
+**Target features:**
+- Backend-owned session authority projection with explicit freshness, expiry, revocation, remembered-session, and assurance semantics.
+- Single-use session handoff tickets that upgrade authority only through backend redemption and Phoenix session renewal.
+- Server-issued step-up intents and shared Plug/LiveView return flow for routes requiring stronger or fresher auth.
+- Typed OAuth/passkey/native-return adapter seams that validate return envelopes before backend authority promotion.
+- Safe denial codes, auth telemetry, doctor/support/operator truth, example-host UX, and docs-contract proof for full Sigra machinery.
 
 ## Next Milestone Candidates
 
@@ -176,4 +181,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-01 — v3.7 Commerce Provider Adapters completed and archived.*
+*Last updated: 2026-06-01 — v3.8 Full Sigra Auth and Session Machinery started from strategic queue and research synthesis.*
