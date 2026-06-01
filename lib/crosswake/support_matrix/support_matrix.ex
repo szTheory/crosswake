@@ -856,9 +856,10 @@ defmodule Crosswake.SupportMatrix do
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
         required_evidence: [
-          "StoreKit adapter implementation",
-          "backend reconciliation proof",
-          "storefront advisory lane"
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
@@ -867,7 +868,10 @@ defmodule Crosswake.SupportMatrix do
         required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
         change_class: "native or companion rebuild required",
         action_class: "provider_adapter",
-        check_ids: ["diag.provider.adapters_not_shipped"],
+        check_ids: [
+          "diag.provider.storekit.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
         demotion_trigger:
           "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass."
       ),
@@ -878,9 +882,10 @@ defmodule Crosswake.SupportMatrix do
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
         required_evidence: [
-          "StoreKit restore adapter implementation",
-          "backend reconciliation proof",
-          "storefront advisory lane"
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
@@ -889,7 +894,10 @@ defmodule Crosswake.SupportMatrix do
         required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
         change_class: "native or companion rebuild required",
         action_class: "provider_adapter",
-        check_ids: ["diag.provider.adapters_not_shipped"],
+        check_ids: [
+          "diag.provider.storekit.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
         demotion_trigger:
           "Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass."
       ),
@@ -900,9 +908,10 @@ defmodule Crosswake.SupportMatrix do
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
         required_evidence: [
-          "Play Billing adapter implementation",
-          "backend reconciliation proof",
-          "storefront advisory lane"
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
@@ -911,7 +920,10 @@ defmodule Crosswake.SupportMatrix do
         required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
         change_class: "native or companion rebuild required",
         action_class: "provider_adapter",
-        check_ids: ["diag.provider.adapters_not_shipped"],
+        check_ids: [
+          "diag.provider.play_billing.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
         demotion_trigger:
           "Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass."
       ),
@@ -922,9 +934,10 @@ defmodule Crosswake.SupportMatrix do
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
         required_evidence: [
-          "Play Billing restore adapter implementation",
-          "backend reconciliation proof",
-          "storefront advisory lane"
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
@@ -933,7 +946,10 @@ defmodule Crosswake.SupportMatrix do
         required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
         change_class: "native or companion rebuild required",
         action_class: "provider_adapter",
-        check_ids: ["diag.provider.adapters_not_shipped"],
+        check_ids: [
+          "diag.provider.play_billing.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
         demotion_trigger:
           "Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass."
       )

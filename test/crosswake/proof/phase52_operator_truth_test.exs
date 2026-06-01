@@ -125,7 +125,8 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     end
 
     provider = find_readiness_check!(decoded, "provider.adapter_readiness")
-    refute provider["details"]["shipped?"]
+    assert provider["details"]["shipped_seams?"]
+    assert provider["details"]["advisory_provider_proof?"]
 
     notification = find_readiness_check!(decoded, "notification.token_readiness")
     refute notification["details"]["delivery_supported?"]

@@ -142,10 +142,16 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert provider.blocking == false
     assert provider.message =~ "StoreKit"
     assert provider.message =~ "Play Billing"
-    assert provider.message =~ "not shipped"
-    assert provider.details.shipped? == false
+    assert provider.message =~ "seams are shipped"
+    assert provider.details.shipped_seams? == true
+    assert provider.details.advisory_provider_proof? == true
+    assert provider.details.storekit_check_id == "diag.provider.storekit.advisory_proof"
+    assert provider.details.play_billing_check_id == "diag.provider.play_billing.advisory_proof"
+    assert provider.details.native_rebuild_required? == true
     assert "purchase_intent.provider.storekit" in provider.details.promotion_rule_ids
     assert "purchase_intent.provider.play_billing" in provider.details.promotion_rule_ids
+    assert "storekit_sandbox_account" in provider.details.setup_required
+    assert "play_billing_license_tester" in provider.details.setup_required
 
     assert provider.details.required_docs_anchors == [
              "guides/support_matrix.md",

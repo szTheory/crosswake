@@ -289,12 +289,12 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
     advisory_check(
       id: "provider.adapter_readiness",
-      code: "diag.provider.adapters_not_shipped",
+      code: "diag.provider.adapter_shipped_seams",
       category: :provider_adapter_readiness,
       result: :verification_required,
       severity: :warning,
       message:
-        "StoreKit and Play Billing provider adapters are not shipped; commerce routes stay seam-only until v3.7 adapters land",
+        "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass",
       hint:
         "Keep storefront/provider evidence advisory and route entitlement authority through backend reconciliation.",
       docs_reference: "guides/commerce.md",
@@ -302,13 +302,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
       rebuild_requirement: %{
         native_required: true,
         companion_required: false,
-        reasons: ["provider SDK adapter implementation is deferred"],
+        reasons: ["provider SDK proof remains advisory until promotion criteria pass"],
         action_classes: ["provider_adapter"]
       },
       claim_scope: "Commerce provider adapter readiness",
       details: %{
-        shipped?: false,
-        deferred: [:storekit, :play_billing, :revenue_cat],
+        shipped_seams?: true,
+        advisory_provider_proof?: true,
+        storekit_check_id: "diag.provider.storekit.advisory_proof",
+        play_billing_check_id: "diag.provider.play_billing.advisory_proof",
+        setup_required: ["storekit_sandbox_account", "play_billing_license_tester"],
+        native_rebuild_required?: true,
+        deferred: [:revenue_cat],
         route_ids: route_ids,
         promotion_rule_ids: promotion_rule_ids(provider_adapter_claim_ids()),
         required_docs_anchors: required_docs_anchors(provider_adapter_claim_ids()),

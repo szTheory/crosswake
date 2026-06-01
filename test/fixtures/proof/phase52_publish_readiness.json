@@ -6,21 +6,21 @@
       "claim_scope": "Hex metadata and release/changelog truth",
       "code": "diag.publish.local_truth",
       "details": {
-      "changelog_sections": [
-        "Unreleased",
-        "0.1.0"
-      ],
-      "errors": [],
-      "package_name": "crosswake",
-      "source_url": "https://github.com/szTheory/crosswake",
-      "unreleased_subsections": [
-        "Unpublished support claims",
-        "Verification-required and advisory surfaces",
-        "Deferred non-shipped claims",
-        "Published Hex truth"
-      ],
-      "version": "0.1.0"
-    },
+        "changelog_sections": [
+          "Unreleased",
+          "0.1.0"
+        ],
+        "errors": [],
+        "package_name": "crosswake",
+        "source_url": "https://github.com/szTheory/crosswake",
+        "unreleased_subsections": [
+          "Unpublished support claims",
+          "Verification-required and advisory surfaces",
+          "Deferred non-shipped claims",
+          "Published Hex truth"
+        ],
+        "version": "0.1.0"
+      },
       "docs_reference": "CHANGELOG.md",
       "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
       "id": "publish.parity",
@@ -59,14 +59,15 @@
       "blocking": false,
       "category": "provider_adapter_readiness",
       "claim_scope": "Commerce provider adapter readiness",
-      "code": "diag.provider.adapters_not_shipped",
+      "code": "diag.provider.adapter_shipped_seams",
       "details": {
+        "advisory_provider_proof?": true,
         "deferred": [
-          "storekit",
-          "play_billing",
           "revenue_cat"
         ],
         "demotion_trigger": "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass. Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass.",
+        "native_rebuild_required?": true,
+        "play_billing_check_id": "diag.provider.play_billing.advisory_proof",
         "promotion_rule_ids": [
           "purchase_intent.provider.storekit",
           "restore_intent.provider.storekit",
@@ -78,12 +79,17 @@
           "guides/commerce.md"
         ],
         "route_ids": [],
-        "shipped?": false
+        "setup_required": [
+          "storekit_sandbox_account",
+          "play_billing_license_tester"
+        ],
+        "shipped_seams?": true,
+        "storekit_check_id": "diag.provider.storekit.advisory_proof"
       },
       "docs_reference": "guides/commerce.md",
       "hint": "Keep storefront/provider evidence advisory and route entitlement authority through backend reconciliation.",
       "id": "provider.adapter_readiness",
-      "message": "StoreKit and Play Billing provider adapters are not shipped; commerce routes stay seam-only until v3.7 adapters land",
+      "message": "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass",
       "proof_class": "advisory",
       "rebuild_requirement": {
         "action_classes": [
@@ -92,7 +98,7 @@
         "companion_required": false,
         "native_required": true,
         "reasons": [
-          "provider SDK adapter implementation is deferred"
+          "provider SDK proof remains advisory until promotion criteria pass"
         ]
       },
       "result": "verification_required",
@@ -208,16 +214,16 @@
       "proof_class": "advisory",
       "rebuild_requirement": {
         "action_classes": [
-          "native_shell",
           "companion_native",
+          "native_shell",
           "route_manifest"
         ],
         "companion_required": true,
         "native_required": true,
         "reasons": [
           "capability camera requires native-required",
-          "capability notification_token requires companion-required",
-          "capability file_picker requires native-required"
+          "capability file_picker requires native-required",
+          "capability notification_token requires companion-required"
         ]
       },
       "result": "verification_required",
