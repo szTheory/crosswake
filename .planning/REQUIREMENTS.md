@@ -73,28 +73,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SESS-01 | — | Pending |
-| SESS-02 | — | Pending |
-| SESS-03 | — | Pending |
-| HAND-01 | — | Pending |
-| HAND-02 | — | Pending |
-| HAND-03 | — | Pending |
-| STEP-01 | — | Pending |
-| STEP-02 | — | Pending |
-| STEP-03 | — | Pending |
-| RETN-01 | — | Pending |
-| RETN-02 | — | Pending |
-| RETN-03 | — | Pending |
-| DIAG-01 | — | Pending |
-| DIAG-02 | — | Pending |
-| DIAG-03 | — | Pending |
-| PROOF-01 | — | Pending |
+| SESS-01 | Phase 54 | Pending |
+| SESS-02 | Phase 54 | Pending |
+| SESS-03 | Phase 54 | Pending |
+| HAND-01 | Phase 55 | Pending |
+| HAND-02 | Phase 55 | Pending |
+| HAND-03 | Phase 55 | Pending |
+| STEP-01 | Phase 56 | Pending |
+| STEP-02 | Phase 56 | Pending |
+| STEP-03 | Phase 56 | Pending |
+| RETN-01 | Phase 57 | Pending |
+| RETN-02 | Phase 57 | Pending |
+| RETN-03 | Phase 57 | Pending |
+| DIAG-01 | Phase 54 | Pending |
+| DIAG-02 | Phase 58 | Pending |
+| DIAG-03 | Phase 58 | Pending |
+| PROOF-01 | Phase 58 | Pending |
 
 **Coverage:**
 - v3.8 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16
+- Mapped to phases: 16
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-01 from v3.8 research synthesis.*
-*Last updated: 2026-06-01 after v3.8 requirements definition.*
+*Last updated: 2026-06-01 after v3.8 roadmap creation.*

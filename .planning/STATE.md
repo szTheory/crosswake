@@ -6,7 +6,7 @@ status: planning
 last_updated: "2026-06-01T22:35:06.175Z"
 last_activity: 2026-06-01
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-01)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Planning the next milestone after v3.7 Commerce Provider Adapters.
+**Current focus:** v3.8 Full Sigra Auth and Session Machinery — ready to discuss Phase 54.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 54 — Sigra Session Authority Contract And Route-Gate Semantics
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-01 — Milestone v3.8 started
+Status: Roadmap ready
+Last activity: 2026-06-01 — v3.8 roadmap created with 5 phases and 16 requirements mapped
 
 ## Performance Metrics
 
@@ -94,4 +94,5 @@ Stopped at: Phase 48.1 complete
 
 ## Operator Next Steps
 
-- Start the next milestone with `$gsd-new-milestone`
+- Start Phase 54 with `$gsd-discuss-phase 54`
+- Or skip discussion and plan directly with `$gsd-plan-phase 54`
