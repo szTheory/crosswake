@@ -174,6 +174,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
   defp publish_parity_check(cwd, opts) do
     project_config = Keyword.get_lazy(opts, :project_config, &Mix.Project.config/0)
     package = Keyword.get(project_config, :package, [])
+    source_url = Keyword.get(project_config, :source_url)
     changelog = changelog_contents(cwd, opts)
 
     errors =
@@ -187,8 +188,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "Hex package name must be crosswake"
       )
       |> require_truth(
-        is_binary(Keyword.get(project_config, :source_url)),
-        "source_url must be present"
+        valid_source_url?(source_url),
+        "source_url must be a non-empty http(s) URL"
       )
       |> require_truth(
         changelog =~ "[Unreleased]",
@@ -221,7 +222,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
       details: %{
         package_name: Keyword.get(package, :name),
         version: Keyword.get(project_config, :version),
-        source_url: Keyword.get(project_config, :source_url),
+        source_url: source_url,
         changelog_sections: changelog_sections(changelog),
         errors: Enum.reverse(errors)
       }
@@ -575,6 +576,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
   defp require_truth(errors, true, _message), do: errors
   defp require_truth(errors, false, message), do: [message | errors]
 
+  defp valid_source_url?(source_url) when is_binary(source_url) do
+    case URI.parse(source_url) do
+      %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) ->
+        source_url != "" and host != ""
+
+      _other ->
+        false
+    end
+  end
+
+  defp valid_source_url?(_source_url), do: false
+
   defp changelog_contents(cwd, opts) do
     Keyword.get_lazy(opts, :changelog_contents, fn ->
       case cwd |> Path.join("CHANGELOG.md") |> File.read() do
@@ -590,9 +603,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
   end
 
   defp routes(nil), do: []
-  defp routes(%{routes: routes}) when is_map(routes), do: Map.to_list(routes)
 
-  defp route_ids(routes), do: Enum.map(routes, fn {id, _route} -> id end)
+  defp routes(%{routes: routes}) when is_map(routes) do
+    routes
+    |> Map.to_list()
+    |> Enum.sort_by(fn {id, _route} -> to_string(id) end)
+  end
+
+  defp route_ids(routes) do
+    routes
+    |> Enum.map(fn {id, _route} -> id end)
+    |> Enum.sort()
+  end
 
   defp route_ids_with(inspection, fun) do
     inspection
@@ -608,6 +630,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
     |> routes()
     |> Enum.flat_map(fn {_id, route} -> route.notifications.supported_providers || [] end)
     |> Enum.uniq()
+    |> Enum.sort()
   end
 
   defp companion_rebuild?(inspection) do
@@ -623,6 +646,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
     |> routes()
     |> Enum.flat_map(fn {_id, route} -> route.rebuild.reasons end)
     |> Enum.uniq()
+    |> Enum.sort()
   end
 
   defp rebuild_action_classes(nil, fallback), do: fallback
@@ -633,6 +657,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
       |> routes()
       |> Enum.flat_map(fn {_id, route} -> Map.get(route.rebuild, :action_classes, []) end)
       |> Enum.uniq()
+      |> Enum.sort()
 
     if action_classes == [], do: fallback, else: action_classes
   end

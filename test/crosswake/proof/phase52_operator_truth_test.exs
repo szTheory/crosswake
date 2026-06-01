@@ -105,7 +105,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        try do
+        assert_raise Mix.Error, "Crosswake doctor found blocking issues", fn ->
           Mix.Task.run(@doctor_task, [
             "--router",
             "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
@@ -115,8 +115,6 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
             "json",
             "--check-publish"
           ])
-        rescue
-          Mix.Error -> :ok
         end
       end)
 

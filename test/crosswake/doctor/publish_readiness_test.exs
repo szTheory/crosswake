@@ -206,6 +206,25 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert report.summary.warning_count >= 1
   end
 
+  test "publish parity rejects empty or malformed source URLs" do
+    for source_url <- ["", "github.com/szTheory/crosswake", "ftp://github.com/szTheory/crosswake"] do
+      report =
+        readiness_report(
+          project_config: [
+            version: "0.1.0",
+            source_url: source_url,
+            package: [name: "crosswake"]
+          ]
+        )
+
+      publish = find_check!(report, :publish_parity)
+
+      assert publish.blocking
+      assert publish.severity == :error
+      assert "source_url must be a non-empty http(s) URL" in publish.details.errors
+    end
+  end
+
   defp readiness_report(opts \\ []) do
     PublishReadiness.run(
       Keyword.merge(
