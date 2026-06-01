@@ -152,9 +152,76 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
     assert decoded["offline"]["status"] == "supported"
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
+    refute Map.has_key?(decoded, "publish_readiness")
 
     assert File.read!(ios_proof) =~ "ios proof passed"
     assert File.read!(android_proof) =~ "android proof passed"
+  end
+
+  test "mix crosswake.doctor --check-publish emits conditional json readiness and raises on blocking readiness",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Task.reenable(@task)
+
+            Mix.Task.run(@task, [
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--format",
+              "json",
+              "--check-publish"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    decoded = Jason.decode!(output)
+
+    assert decoded["publish_readiness"]["schema_version"] == "1.0.0"
+    assert decoded["publish_readiness"]["status"] == "not_ready"
+
+    assert Enum.any?(decoded["publish_readiness"]["checks"], fn check ->
+             check["code"] == "diag.provider.adapters_not_shipped" and
+               check["blocking"] == false
+           end)
+
+    assert Enum.any?(decoded["findings"], fn finding ->
+             finding["code"] == "diag.provider.adapters_not_shipped" and
+               finding["check"] == "provider_adapter_readiness"
+           end)
+  end
+
+  test "mix crosswake.doctor --check-publish human output includes publish readiness sidecar",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Task.reenable(@task)
+
+            Mix.Task.run(@task, [
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--check-publish"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    assert output =~ "Publish readiness"
+    assert output =~ "diag.publish."
+    assert output =~ "diag.provider.adapters_not_shipped"
+    assert output =~ "claim_scope=Commerce provider adapter readiness"
   end
 
   test "blocking failures raise instead of hiding behind warnings" do

@@ -184,6 +184,50 @@ defmodule Crosswake.DoctorTest do
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
     assert "conflict_requires_attention" in decoded["offline"]["states"]
     assert Enum.any?(decoded["findings"], &(&1["severity"] == "advisory"))
+    refute Map.has_key?(decoded, "publish_readiness")
+    refute human =~ "Publish readiness"
+  end
+
+  test "doctor exposes publish readiness only when check_publish? is enabled", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    default_report =
+      Doctor.run(
+        route_source: __MODULE__.CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert default_report.publish_readiness == nil
+
+    report =
+      Doctor.run(
+        route_source: __MODULE__.CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        check_publish?: true
+      )
+
+    assert report.publish_readiness.schema_version == "1.0.0"
+    assert report.publish_readiness.status == :not_ready
+    assert is_map(report.publish_readiness.summary)
+
+    categories = Enum.map(report.publish_readiness.checks, & &1.category)
+    assert :publish_parity in categories
+    assert :provider_adapter_readiness in categories
+    assert :native_shell_verification_gap in categories
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "diag.provider.adapters_not_shipped" and
+               finding.check == "provider_adapter_readiness" and
+               finding.message =~ "StoreKit" and finding.message =~ "Play Billing"
+           end)
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "diag.shell.verification_required" and
+               finding.details.claim_scope == "Native shell verification and rebuild readiness"
+           end)
   end
 
   defmodule CommerceCorridorRouter do

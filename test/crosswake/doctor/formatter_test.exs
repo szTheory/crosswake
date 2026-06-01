@@ -2,7 +2,28 @@ defmodule Crosswake.Doctor.FormatterTest do
   use ExUnit.Case, async: true
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
+  alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.SupportMatrix
+
+  defmodule PageController do
+    def init(opts), do: opts
+    def call(conn, _opts), do: conn
+  end
+
+  defmodule ReadinessRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/billing", Elixir.Crosswake.Doctor.FormatterTest.PageController, :billing,
+        crosswake: [
+          id: "billing",
+          runtime: :live_view,
+          security: :sensitive,
+          commerce: [corridor: :subscription_default, role: :purchase_intent]
+        ]
+      )
+    end
+  end
 
   test "formats release policy with structured truth blocks" do
     manifest = %{
@@ -235,5 +256,32 @@ defmodule Crosswake.Doctor.FormatterTest do
 
     assert output =~ "[merge-blocking] commerce_summary (commerce.entitlement.stale_snapshot)"
     assert output =~ "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
+  end
+
+  test "formats publish readiness as a concise sidecar section ordered by blocking posture" do
+    publish_readiness =
+      PublishReadiness.run(
+        route_source: ReadinessRouter,
+        cwd: File.cwd!(),
+        generated_at: "2026-05-31T00:00:00Z",
+        changelog_contents: "# Changelog\n\n## [0.1.0]\n"
+      )
+
+    output =
+      Formatter.render(%{
+        status: :error,
+        findings: [],
+        publish_readiness: publish_readiness
+      })
+
+    assert output =~ "Publish readiness"
+    assert output =~ "status: not_ready"
+    assert output =~ "diag.publish.changelog_missing_unreleased"
+    assert output =~ "severity=error result=fail blocking=true"
+    assert output =~ "claim_scope=Hex metadata and release/changelog truth"
+    assert output =~ "docs=CHANGELOG.md"
+    assert output =~ "remediation=Keep package metadata"
+    assert output =~ "diag.provider.adapters_not_shipped"
+    assert output =~ "blocking=false"
   end
 end
