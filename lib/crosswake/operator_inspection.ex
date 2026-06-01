@@ -288,17 +288,43 @@ defmodule Crosswake.OperatorInspection do
 
     reasons = capability_reasons ++ commerce_reasons ++ companion_reasons
 
+    native_required? =
+      Enum.any?(capabilities, &(&1["rebuild"] == "native-required")) or
+        get_in(commerce || %{}, [:rebuild, :native_required]) == true
+
+    companion_required? =
+      Enum.any?(capabilities, &(&1["rebuild"] == "companion-required")) or
+        get_in(commerce || %{}, [:rebuild, :companion_required]) == true or
+        companion.gated_by != nil
+
+    action_classes =
+      []
+      |> maybe_action_class(native_required?, "native_shell")
+      |> maybe_action_class(commerce && commerce.advisory_provider_proof, "provider_adapter")
+      |> maybe_action_class(companion_required?, "companion_native")
+      |> Enum.uniq()
+
     %{
-      native_required:
-        Enum.any?(capabilities, &(&1["rebuild"] == "native-required")) or
-          get_in(commerce || %{}, [:rebuild, :native_required]) == true,
-      companion_required:
-        Enum.any?(capabilities, &(&1["rebuild"] == "companion-required")) or
-          get_in(commerce || %{}, [:rebuild, :companion_required]) == true or
-          companion.gated_by != nil,
-      reasons: Enum.uniq(reasons)
+      native_required: native_required?,
+      companion_required: companion_required?,
+      reasons: Enum.uniq(reasons),
+      change_class:
+        if(native_required? or companion_required?,
+          do: "native or companion rebuild required",
+          else: "core-only/no native rebuild"
+        ),
+      action_classes: if(action_classes == [], do: ["route_manifest"], else: action_classes),
+      compatibility_signal:
+        cond do
+          native_required? -> "native_runtime_version"
+          companion_required? -> "companion_dependency"
+          true -> "manifest_schema_version"
+        end
     }
   end
+
+  defp maybe_action_class(classes, true, action_class), do: classes ++ [action_class]
+  defp maybe_action_class(classes, _falsey, _action_class), do: classes
 
   defp denials_entry(capabilities, commerce, companion, auth) do
     capability_denials = capabilities |> Enum.map(& &1["denial"]) |> Enum.reject(&is_nil/1)
@@ -337,6 +363,8 @@ defmodule Crosswake.OperatorInspection do
 
     proof_class = proof_class(capabilities, commerce, companion, auth, notifications)
 
+    promotion_rule_ids = promotion_rule_ids(commerce, auth, notifications)
+
     %{
       status:
         cond do
@@ -346,9 +374,39 @@ defmodule Crosswake.OperatorInspection do
         end,
       proof_class: proof_class,
       advisory_only: proof_class == :advisory,
+      promotion_rule_ids: promotion_rule_ids,
       blocking_reasons: blocking_reasons(unsupported?, verification_required?, rebuild)
     }
   end
+
+  defp promotion_rule_ids(commerce, auth, notifications) do
+    []
+    |> commerce_promotion_rule_ids(commerce)
+    |> notification_promotion_rule_ids(notifications)
+    |> auth_promotion_rule_ids(auth)
+    |> Enum.uniq()
+  end
+
+  defp commerce_promotion_rule_ids(ids, %{role: :purchase_intent}) do
+    ids ++ ["purchase_intent.provider.storekit", "purchase_intent.provider.play_billing"]
+  end
+
+  defp commerce_promotion_rule_ids(ids, %{role: :restore_intent}) do
+    ids ++ ["restore_intent.provider.storekit", "restore_intent.provider.play_billing"]
+  end
+
+  defp commerce_promotion_rule_ids(ids, _commerce), do: ids
+
+  defp notification_promotion_rule_ids(ids, %{token_capability_declared: true}) do
+    ids ++ ["notification_token.provider_snapshot"]
+  end
+
+  defp notification_promotion_rule_ids(ids, _notifications), do: ids
+
+  defp auth_promotion_rule_ids(ids, %{fallback: :step_up_required}),
+    do: ids ++ ["auth.sigra.contract_only"]
+
+  defp auth_promotion_rule_ids(ids, _auth), do: ids
 
   defp proof_class(capabilities, commerce, companion, auth, notifications) do
     advisory? =

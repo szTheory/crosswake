@@ -146,7 +146,12 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert provider.details.shipped? == false
     assert "purchase_intent.provider.storekit" in provider.details.promotion_rule_ids
     assert "purchase_intent.provider.play_billing" in provider.details.promotion_rule_ids
-    assert provider.details.required_docs_anchors == ["guides/support_matrix.md", "guides/commerce.md"]
+
+    assert provider.details.required_docs_anchors == [
+             "guides/support_matrix.md",
+             "guides/commerce.md"
+           ]
+
     assert is_binary(provider.details.demotion_trigger)
     assert "provider_adapter" in provider.rebuild_requirement.action_classes
 
@@ -161,7 +166,12 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert notifications.message =~ "delivery is not supported"
     assert notifications.details.delivery_supported? == false
     assert notifications.details.promotion_rule_ids == ["notification_token.provider_snapshot"]
-    assert notifications.details.required_docs_anchors == ["guides/support_matrix.md", "guides/capabilities.md"]
+
+    assert notifications.details.required_docs_anchors == [
+             "guides/support_matrix.md",
+             "guides/capabilities.md"
+           ]
+
     assert is_binary(notifications.details.demotion_trigger)
     assert "companion_native" in notifications.rebuild_requirement.action_classes
 

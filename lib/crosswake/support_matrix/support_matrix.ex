@@ -210,7 +210,8 @@ defmodule Crosswake.SupportMatrix do
           baseline_status: :supported,
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
-          notes: "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
+          notes:
+            "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         support_entry(
@@ -275,7 +276,8 @@ defmodule Crosswake.SupportMatrix do
   end
 
   @spec capability_families(SupportMatrix.t()) :: [CapabilitySupportEntry.t()]
-  def capability_families(%SupportMatrix{} = support_matrix), do: support_matrix.capability_families
+  def capability_families(%SupportMatrix{} = support_matrix),
+    do: support_matrix.capability_families
 
   @spec package_surfaces(SupportMatrix.t()) :: [PackageSurfaceEntry.t()]
   def package_surfaces(%SupportMatrix{} = support_matrix), do: support_matrix.package_surfaces
@@ -521,7 +523,8 @@ defmodule Crosswake.SupportMatrix do
       ),
       Types.new_release_boundary_entry(
         target: "ios_shell",
-        versioning: "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+        versioning:
+          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -529,7 +532,8 @@ defmodule Crosswake.SupportMatrix do
       ),
       Types.new_release_boundary_entry(
         target: "android_shell",
-        versioning: "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+        versioning:
+          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -576,8 +580,7 @@ defmodule Crosswake.SupportMatrix do
           "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
         compatibility_signal:
           "Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.",
-        required_proof:
-          "core proof plus generated-shell or companion verification lanes"
+        required_proof: "core proof plus generated-shell or companion verification lanes"
       )
     ]
   end
@@ -626,7 +629,8 @@ defmodule Crosswake.SupportMatrix do
   end
 
   defp validate_action_class_rows(errors) do
-    allowed = ~w(docs_only route_manifest compatibility native_shell companion_native provider_adapter)
+    allowed =
+      ~w(docs_only route_manifest compatibility native_shell companion_native provider_adapter)
 
     action_classes()
     |> Enum.reduce(errors, fn entry, acc ->
@@ -674,7 +678,8 @@ defmodule Crosswake.SupportMatrix do
             | acc
           ]
 
-        entry.required_evidence == [] or entry.required_docs_anchors == [] or entry.check_ids == [] ->
+        entry.required_evidence == [] or entry.required_docs_anchors == [] or
+            entry.check_ids == [] ->
           [
             %{
               key: :promotion_rules,
@@ -790,7 +795,10 @@ defmodule Crosswake.SupportMatrix do
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "generated_shell",
-        required_evidence: ["script/verify_generated_android_shell.sh", "Java-enabled BridgeChannel proof"],
+        required_evidence: [
+          "script/verify_generated_android_shell.sh",
+          "Java-enabled BridgeChannel proof"
+        ],
         minimum_consecutive_passes: 2,
         freshness_window: "current release branch",
         failure_budget: "zero merge-blocking failures",
@@ -808,7 +816,10 @@ defmodule Crosswake.SupportMatrix do
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "provider_snapshot",
-        required_evidence: ["notification_token capability contract", "provider-tagged snapshot fixtures"],
+        required_evidence: [
+          "notification_token capability contract",
+          "provider-tagged snapshot fixtures"
+        ],
         minimum_consecutive_passes: 2,
         freshness_window: "current release branch",
         failure_budget: "zero contract failures",
@@ -821,12 +832,34 @@ defmodule Crosswake.SupportMatrix do
           "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support."
       ),
       promotion_rule(
+        claim_id: "auth.sigra.contract_only",
+        claim_scope: "Sigra contract-only route predicate support",
+        current_proof_class: :merge_blocking,
+        promotes_to: :merge_blocking,
+        evidence_class: "contract_only",
+        required_evidence: ["auth predicate route fixtures", "step_up_required denial proof"],
+        minimum_consecutive_passes: 1,
+        freshness_window: "current release branch",
+        failure_budget: "zero contract failures",
+        required_platforms: ["ios", "android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/companions.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "companion_native",
+        check_ids: ["diag.auth.sigra_contract_only"],
+        demotion_trigger:
+          "Demote if route predicates, step_up_required denial, or contract-only docs drift from support truth."
+      ),
+      promotion_rule(
         claim_id: "purchase_intent.provider.storekit",
         claim_scope: "StoreKit purchase-intent provider adapter",
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
-        required_evidence: ["StoreKit adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        required_evidence: [
+          "StoreKit adapter implementation",
+          "backend reconciliation proof",
+          "storefront advisory lane"
+        ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
         failure_budget: "zero entitlement-authority failures",
@@ -844,7 +877,11 @@ defmodule Crosswake.SupportMatrix do
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
-        required_evidence: ["StoreKit restore adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        required_evidence: [
+          "StoreKit restore adapter implementation",
+          "backend reconciliation proof",
+          "storefront advisory lane"
+        ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
         failure_budget: "zero entitlement-authority failures",
@@ -862,7 +899,11 @@ defmodule Crosswake.SupportMatrix do
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
-        required_evidence: ["Play Billing adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        required_evidence: [
+          "Play Billing adapter implementation",
+          "backend reconciliation proof",
+          "storefront advisory lane"
+        ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
         failure_budget: "zero entitlement-authority failures",
@@ -880,7 +921,11 @@ defmodule Crosswake.SupportMatrix do
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "provider_adapter",
-        required_evidence: ["Play Billing restore adapter implementation", "backend reconciliation proof", "storefront advisory lane"],
+        required_evidence: [
+          "Play Billing restore adapter implementation",
+          "backend reconciliation proof",
+          "storefront advisory lane"
+        ],
         minimum_consecutive_passes: 3,
         freshness_window: "current adapter release",
         failure_budget: "zero entitlement-authority failures",
@@ -918,11 +963,17 @@ defmodule Crosswake.SupportMatrix do
   defp capability_posture(%Capability{owner: :backend_seam}), do: "backend_seam"
   defp capability_posture(%Capability{}), do: "bounded_bridge"
 
-  defp capability_prerequisites(%Capability{id: "entitlement_snapshot", prerequisites: prerequisites}) do
+  defp capability_prerequisites(%Capability{
+         id: "entitlement_snapshot",
+         prerequisites: prerequisites
+       }) do
     prerequisites ++ ["freshness posture (fresh/stale/unknown) surfaced before access checks"]
   end
 
-  defp capability_prerequisites(%Capability{id: "reconciliation_evidence", prerequisites: prerequisites}) do
+  defp capability_prerequisites(%Capability{
+         id: "reconciliation_evidence",
+         prerequisites: prerequisites
+       }) do
     prerequisites ++ ["pending and awaiting_verification reconciliation states stay non-granting"]
   end
 
@@ -940,7 +991,10 @@ defmodule Crosswake.SupportMatrix do
 
   defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported
-  defp capability_proof_status(%Capability{proof_class: :merge_blocking}), do: :verification_required
+
+  defp capability_proof_status(%Capability{proof_class: :merge_blocking}),
+    do: :verification_required
+
   defp capability_proof_status(%Capability{proof_class: :advisory}), do: :supported
 
   # D-08 locked display-string mapping for runtime gate state.
@@ -948,7 +1002,10 @@ defmodule Crosswake.SupportMatrix do
   # gate_status regardless of its value (RESEARCH critical pitfall).
   defp gate_state_display(%Crosswake.Companion.State{kill_switch_status: :active}), do: "killed"
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :active}), do: "gated"
-  defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}), do: "rolling_out (#{n}%)"
+
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}),
+    do: "rolling_out (#{n}%)"
+
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :inactive}), do: nil
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :unconfigured}), do: nil
 

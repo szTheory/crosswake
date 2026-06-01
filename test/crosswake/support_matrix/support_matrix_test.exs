@@ -48,10 +48,12 @@ defmodule Crosswake.SupportMatrixTest do
     assert Enum.map(matrix.phoenix, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.proof_status) == [:verification_required]
+
     assert Enum.map(matrix.shells, &{&1.target, &1.proof_status}) |> Enum.sort() == [
              {"android_shell", :verification_required},
              {"ios_shell", :supported}
            ]
+
     assert SupportMatrix.statuses() == [:supported, :verification_required, :unsupported]
   end
 
@@ -141,7 +143,9 @@ defmodule Crosswake.SupportMatrixTest do
     matrix = SupportMatrix.canonical()
 
     assert Enum.any?(matrix.release_boundaries, fn entry ->
-             entry.target == "core" and entry.compatibility_contract =~ "package versions alone do not define support truth"
+             entry.target == "core" and
+               entry.compatibility_contract =~
+                 "package versions alone do not define support truth"
            end)
 
     refute Enum.any?(matrix.release_boundaries, fn entry ->
@@ -195,6 +199,7 @@ defmodule Crosswake.SupportMatrixTest do
              "shell.ios.generated_project",
              "shell.android.generated_project",
              "notification_token.provider_snapshot",
+             "auth.sigra.contract_only",
              "purchase_intent.provider.storekit",
              "restore_intent.provider.storekit",
              "purchase_intent.provider.play_billing",
@@ -213,6 +218,7 @@ defmodule Crosswake.SupportMatrixTest do
       assert is_list(entry.required_platforms)
       assert is_list(entry.required_docs_anchors) and entry.required_docs_anchors != []
       assert is_binary(entry.change_class)
+
       assert entry.action_class in [
                "native_shell",
                "companion_native",
@@ -239,6 +245,7 @@ defmodule Crosswake.SupportMatrixTest do
     assert companion_truth.surface == "Sigra contract-only auth predicates"
     assert companion_truth.proof_class == :merge_blocking
     assert companion_truth.action_class == "companion_native"
+
     assert companion_truth.deferred == [
              :handoff,
              :ceremony,
@@ -259,7 +266,9 @@ defmodule Crosswake.SupportMatrixTest do
   test "entitlement and evidence support entries encode freshness and non-authoritative posture" do
     capability_families = SupportMatrix.canonical().capability_families
     entitlement_snapshot = Enum.find(capability_families, &(&1.family == "entitlement_snapshot"))
-    reconciliation_evidence = Enum.find(capability_families, &(&1.family == "reconciliation_evidence"))
+
+    reconciliation_evidence =
+      Enum.find(capability_families, &(&1.family == "reconciliation_evidence"))
 
     assert Enum.any?(entitlement_snapshot.prerequisites, fn prerequisite ->
              String.contains?(prerequisite, "freshness posture")

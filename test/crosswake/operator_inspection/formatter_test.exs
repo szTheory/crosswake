@@ -21,7 +21,10 @@ defmodule Crosswake.OperatorInspection.FormatterTest do
     scope "/" do
       pipe_through(:browser)
 
-      get("/checkout", Elixir.Crosswake.OperatorInspection.FormatterTest.PageController, :checkout,
+      get(
+        "/checkout",
+        Elixir.Crosswake.OperatorInspection.FormatterTest.PageController,
+        :checkout,
         crosswake: [
           id: "checkout",
           runtime: :live_view,

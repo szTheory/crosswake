@@ -98,8 +98,9 @@ defmodule Crosswake.OperatorInspection.Formatter do
   defp format_route_rebuild(route) do
     rebuild = route.rebuild
     reasons = if rebuild.reasons == [], do: "none", else: Enum.join(rebuild.reasons, "; ")
+    actions = rebuild.action_classes |> List.wrap() |> Enum.join(", ")
 
-    "    rebuild: native=#{yes_no(rebuild.native_required)} companion=#{yes_no(rebuild.companion_required)} reasons=#{reasons}"
+    "    rebuild: native=#{yes_no(rebuild.native_required)} companion=#{yes_no(rebuild.companion_required)} change_class=#{rebuild.change_class} actions=#{actions} reasons=#{reasons}"
   end
 
   defp format_route_denials(%{denials: []}), do: nil

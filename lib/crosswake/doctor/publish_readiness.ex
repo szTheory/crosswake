@@ -163,7 +163,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
       publish_parity_check(cwd, opts),
       companion_dependency_health_check(inspection),
       provider_adapter_readiness_check(support_matrix, inspection),
-      notification_token_readiness_check(inspection),
+      notification_token_readiness_check(support_matrix, inspection),
       auth_session_predicate_readiness_check(support_matrix, inspection),
       native_shell_verification_gap_check(support_matrix, inspection),
       docs_support_parity_check(cwd, opts),
@@ -291,19 +291,24 @@ defmodule Crosswake.Doctor.PublishReadiness do
       rebuild_requirement: %{
         native_required: true,
         companion_required: false,
-        reasons: ["provider SDK adapter implementation is deferred"]
+        reasons: ["provider SDK adapter implementation is deferred"],
+        action_classes: ["provider_adapter"]
       },
       claim_scope: "Commerce provider adapter readiness",
       details: %{
         shipped?: false,
         deferred: [:storekit, :play_billing, :revenue_cat],
-        route_ids: route_ids
+        route_ids: route_ids,
+        promotion_rule_ids: promotion_rule_ids(provider_adapter_claim_ids()),
+        required_docs_anchors: required_docs_anchors(provider_adapter_claim_ids()),
+        demotion_trigger: demotion_trigger(provider_adapter_claim_ids())
       }
     )
   end
 
-  defp notification_token_readiness_check(inspection) do
+  defp notification_token_readiness_check(_support_matrix, inspection) do
     route_ids = route_ids_with(inspection, & &1.notifications.token_capability_declared)
+    claim_ids = ["notification_token.provider_snapshot"]
 
     advisory_check(
       id: "notification.token_readiness",
@@ -321,11 +326,23 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "Use notification token posture for readiness diagnostics only; delivery integration is deferred to Chimeway.",
       docs_reference: "guides/capabilities.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
+      rebuild_requirement: %{
+        native_required: false,
+        companion_required: route_ids != [],
+        reasons: [
+          "notification_token provider snapshot readiness requires companion-native proof"
+        ],
+        action_classes: ["companion_native"]
+      },
       claim_scope: "Notification token provider readiness, not notification delivery",
       details: %{
         delivery_supported?: false,
         supported_providers: notification_providers(inspection),
-        route_ids: route_ids
+        route_ids: route_ids,
+        promotion_rule_ids: if(route_ids == [], do: [], else: promotion_rule_ids(claim_ids)),
+        required_docs_anchors:
+          if(route_ids == [], do: [], else: required_docs_anchors(claim_ids)),
+        demotion_trigger: if(route_ids == [], do: nil, else: demotion_trigger(claim_ids))
       }
     )
   end
@@ -334,6 +351,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
     _auth_truth = SupportMatrix.auth_contract_truth()
     _release = SupportMatrix.release_boundaries(support_matrix)
     route_ids = route_ids_with(inspection, &(&1.auth.fallback == :step_up_required))
+    claim_ids = ["auth.sigra.contract_only"]
 
     advisory_check(
       id: "auth.session_predicate_readiness",
@@ -351,12 +369,22 @@ defmodule Crosswake.Doctor.PublishReadiness do
         "Keep auth predicates backend-owned and fail closed with step_up_required until full Sigra machinery ships.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
+      rebuild_requirement: %{
+        native_required: false,
+        companion_required: route_ids != [],
+        reasons: ["Sigra route predicates remain companion contract-only support truth"],
+        action_classes: ["companion_native"]
+      },
       claim_scope: "Sigra auth predicate readiness",
       details: %{
         posture: :contract_only,
         fallback: :step_up_required,
         deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
-        route_ids: route_ids
+        route_ids: route_ids,
+        promotion_rule_ids: if(route_ids == [], do: [], else: promotion_rule_ids(claim_ids)),
+        required_docs_anchors:
+          if(route_ids == [], do: [], else: required_docs_anchors(claim_ids)),
+        demotion_trigger: if(route_ids == [], do: nil, else: demotion_trigger(claim_ids))
       }
     )
   end
@@ -373,6 +401,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
       |> Map.get(:shells, [])
       |> Enum.find(&(&1.target == "android_shell"))
 
+    claim_ids = ["shell.ios.generated_project", "shell.android.generated_project"]
+
     advisory_check(
       id: "shell.native_verification_gap",
       code: "diag.shell.verification_required",
@@ -388,13 +418,17 @@ defmodule Crosswake.Doctor.PublishReadiness do
       rebuild_requirement: %{
         native_required: route_ids != [],
         companion_required: companion_rebuild?(inspection),
-        reasons: rebuild_reasons(inspection)
+        reasons: rebuild_reasons(inspection),
+        action_classes: rebuild_action_classes(inspection, ["native_shell"])
       },
       claim_scope: "Native shell verification and rebuild readiness",
       details: %{
         support_status: android_shell && android_shell.status,
         proof_status: android_shell && android_shell.proof_status,
-        route_ids: route_ids
+        route_ids: route_ids,
+        promotion_rule_ids: promotion_rule_ids(claim_ids),
+        required_docs_anchors: required_docs_anchors(claim_ids),
+        demotion_trigger: demotion_trigger(claim_ids)
       }
     )
   end
@@ -460,6 +494,41 @@ defmodule Crosswake.Doctor.PublishReadiness do
           SupportMatrix.release_boundaries(support_matrix) |> Enum.map(& &1.target)
       }
     )
+  end
+
+  defp provider_adapter_claim_ids do
+    [
+      "purchase_intent.provider.storekit",
+      "purchase_intent.provider.play_billing",
+      "restore_intent.provider.storekit",
+      "restore_intent.provider.play_billing"
+    ]
+  end
+
+  defp promotion_rule_ids(claim_ids) do
+    claim_ids
+    |> promotion_rules_for()
+    |> Enum.map(& &1.claim_id)
+  end
+
+  defp required_docs_anchors(claim_ids) do
+    claim_ids
+    |> promotion_rules_for()
+    |> Enum.flat_map(& &1.required_docs_anchors)
+    |> Enum.uniq()
+  end
+
+  defp demotion_trigger(claim_ids) do
+    claim_ids
+    |> promotion_rules_for()
+    |> Enum.map(& &1.demotion_trigger)
+    |> Enum.uniq()
+    |> Enum.join(" ")
+  end
+
+  defp promotion_rules_for(claim_ids) do
+    claim_ids = MapSet.new(claim_ids)
+    Enum.filter(SupportMatrix.promotion_rules(), &(&1.claim_id in claim_ids))
   end
 
   defp result_check(opts) do
@@ -554,6 +623,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
     |> routes()
     |> Enum.flat_map(fn {_id, route} -> route.rebuild.reasons end)
     |> Enum.uniq()
+  end
+
+  defp rebuild_action_classes(nil, fallback), do: fallback
+
+  defp rebuild_action_classes(inspection, fallback) do
+    action_classes =
+      inspection
+      |> routes()
+      |> Enum.flat_map(fn {_id, route} -> Map.get(route.rebuild, :action_classes, []) end)
+      |> Enum.uniq()
+
+    if action_classes == [], do: fallback, else: action_classes
   end
 
   defp summary(checks) do
