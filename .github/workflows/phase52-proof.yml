@@ -1,0 +1,52 @@
+name: Phase 52 Proof
+
+# Phase 52 introduces a dedicated operator-proof workflow with two explicit
+# lanes:
+#
+#   - merge-blocking-operator-proof: hermetic, deterministic, and required for
+#     merge-driving events.
+#   - advisory-operator-proof: informational visibility for optional-dependency
+#     proof files on schedule/manual events only.
+#
+# This split keeps merge gates tied to the same focused local command
+# maintainers run by hand while preserving visibility for env-sensitive checks.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-operator-proof:
+    # Required branch-check lane for v3.6 operator truth. This lane is the same
+    # local command maintainers run by hand and must remain hermetic:
+    # `mix test test/crosswake/proof/phase52_operator_truth_test.exs`.
+    # It intentionally runs only on merge-driving events and is skipped on the
+    # scheduled trigger used for advisory visibility.
+    name: merge-blocking operator proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 52 operator proof
+        run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
