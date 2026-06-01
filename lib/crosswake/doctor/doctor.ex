@@ -10,6 +10,7 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.FindingPolicy
+  alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.Manifest
   alias Crosswake.Offline.Status, as: OfflineStatus
   alias Crosswake.Offline.Telemetry, as: OfflineTelemetry
@@ -30,6 +31,7 @@ defmodule Crosswake.Doctor do
       offline: %{},
       support: %{},
       commerce_summary: %{},
+      publish_readiness: nil,
       findings: []
     ]
 
@@ -42,6 +44,7 @@ defmodule Crosswake.Doctor do
             offline: map(),
             support: map(),
             commerce_summary: map(),
+            publish_readiness: PublishReadiness.Report.t() | nil,
             findings: [Check.t()]
           }
   end
@@ -75,7 +78,14 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"CrosswakeShell/BridgeChannel.swift",
-         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
+         [
+           "app.info.get",
+           "haptics.impact",
+           "permissions.status",
+           "files.pick",
+           "request",
+           "reply"
+         ]}
       ]
     },
     android: %{
@@ -92,8 +102,7 @@ defmodule Crosswake.Doctor do
       manifest_first: [
         {"app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt",
          ["pack_incompatible", "inactive_route", "external_entry_denied"]},
-        {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
-         ["WebView", "Allowlisted"]},
+        {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt", ["WebView", "Allowlisted"]},
         {"app/src/main/AndroidManifest.xml",
          ["android.intent.category.BROWSABLE", "android.intent.action.VIEW"]}
       ],
@@ -104,7 +113,14 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"app/src/main/java/dev/crosswake/shell/BridgeChannel.kt",
-         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
+         [
+           "app.info.get",
+           "haptics.impact",
+           "permissions.status",
+           "files.pick",
+           "request",
+           "reply"
+         ]}
       ]
     }
   }
@@ -130,6 +146,10 @@ defmodule Crosswake.Doctor do
     phase_38_findings = phase_38_companion_seam_findings()
     phase_41_findings = phase_41_gating_findings(manifest)
     phase_46_findings = phase_46_auth_findings(manifest)
+    publish_readiness = publish_readiness(manifest, opts, cwd)
+
+    publish_findings =
+      if publish_readiness, do: PublishReadiness.findings(publish_readiness), else: []
 
     findings =
       findings ++
@@ -137,7 +157,8 @@ defmodule Crosswake.Doctor do
         phase_4_findings ++
         phase_10_findings ++
         phase_19_findings ++
-        phase_23_findings ++ phase_38_findings ++ phase_41_findings ++ phase_46_findings
+        phase_23_findings ++
+        phase_38_findings ++ phase_41_findings ++ phase_46_findings ++ publish_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -148,8 +169,19 @@ defmodule Crosswake.Doctor do
       offline: offline,
       support: support,
       commerce_summary: commerce_summary,
+      publish_readiness: publish_readiness,
       findings: findings
     }
+  end
+
+  defp publish_readiness(manifest, opts, cwd) do
+    if Keyword.get(opts, :check_publish?) == true do
+      PublishReadiness.run(
+        opts
+        |> Keyword.put(:manifest, manifest)
+        |> Keyword.put(:cwd, cwd)
+      )
+    end
   end
 
   @doc """
@@ -751,13 +783,19 @@ defmodule Crosswake.Doctor do
     prerequisites = commerce_prerequisites_summary(commerce_routes, corridor_entries_by_role)
 
     snapshot_freshness =
-      commerce_snapshot_freshness(commerce_routes, Keyword.get(opts, :entitlement_snapshot_freshness))
+      commerce_snapshot_freshness(
+        commerce_routes,
+        Keyword.get(opts, :entitlement_snapshot_freshness)
+      )
 
-    rebuild_requirements = commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role)
+    rebuild_requirements =
+      commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role)
 
     stale_findings = stale_snapshot_findings(commerce_routes, snapshot_freshness)
     rebuild_findings = native_rebuild_findings(rebuild_requirements, opts)
-    unknown_role_findings = unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role)
+
+    unknown_role_findings =
+      unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role)
 
     extra_findings = stale_findings ++ rebuild_findings ++ unknown_role_findings
 
@@ -1073,8 +1111,7 @@ defmodule Crosswake.Doctor do
       manifest_schema_version: compatibility.manifest_schema_version,
       bridge_protocol_version: compatibility.bridge_protocol_version,
       native_runtime_version: compatibility.native_runtime_version,
-      package_version_truth:
-        "Package versions alone do not determine support truth.",
+      package_version_truth: "Package versions alone do not determine support truth.",
       companion_requirement:
         "Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.",
       capability_families: support_matrix.capability_families,

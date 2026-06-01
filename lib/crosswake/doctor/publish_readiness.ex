@@ -508,7 +508,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp changelog_contents(cwd, opts) do
     Keyword.get_lazy(opts, :changelog_contents, fn ->
-      cwd |> Path.join("CHANGELOG.md") |> File.read!()
+      case cwd |> Path.join("CHANGELOG.md") |> File.read() do
+        {:ok, contents} -> contents
+        {:error, _reason} -> ""
+      end
     end)
   end
 

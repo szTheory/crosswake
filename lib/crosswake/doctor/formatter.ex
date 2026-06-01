@@ -4,6 +4,7 @@ defmodule Crosswake.Doctor.Formatter do
   """
 
   alias Crosswake.Doctor.Check
+  alias Crosswake.Doctor.PublishReadiness
 
   @spec render(map()) :: String.t()
   def render(report) do
@@ -18,6 +19,7 @@ defmodule Crosswake.Doctor.Formatter do
       format_bridge(Map.get(report, :bridge, %{})),
       format_offline(Map.get(report, :offline, %{})),
       format_commerce_summary(Map.get(report, :commerce_summary, %{})),
+      format_publish_readiness(Map.get(report, :publish_readiness)),
       format_findings(findings)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -109,7 +111,9 @@ defmodule Crosswake.Doctor.Formatter do
   defp format_capability_families(families) do
     lines =
       Enum.map(families, fn family ->
-        prereqs = if family.prerequisites == [], do: "none", else: Enum.join(family.prerequisites, ", ")
+        prereqs =
+          if family.prerequisites == [], do: "none", else: Enum.join(family.prerequisites, ", ")
+
         "    #{family.family}: prerequisites=#{prereqs}, denial=#{family.denial || "none"}, fallback=#{family.fallback || "none"}"
       end)
 
@@ -233,6 +237,43 @@ defmodule Crosswake.Doctor.Formatter do
 
   defp format_commerce_summary(_summary), do: nil
 
+  defp format_publish_readiness(nil), do: nil
+
+  defp format_publish_readiness(%PublishReadiness.Report{} = report) do
+    lines =
+      report.checks
+      |> Enum.sort_by(&publish_readiness_order/1)
+      |> Enum.map(&format_publish_readiness_check/1)
+
+    [
+      "Publish readiness",
+      "  status: #{report.status}",
+      "  summary: blocking=#{report.summary.blocking_count}, warnings=#{report.summary.warning_count}, advisory=#{report.summary.advisory_count}, verification_required=#{report.summary.verification_required_count}",
+      "  checks:" | lines
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp format_publish_readiness(_other), do: nil
+
+  defp format_publish_readiness_check(check) do
+    [
+      "    #{check.code}: severity=#{check.severity} result=#{check.result} blocking=#{check.blocking}",
+      "      claim_scope=#{check.claim_scope}",
+      "      docs=#{check.docs_reference}",
+      "      remediation=#{check.hint}"
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp publish_readiness_order(check) do
+    {
+      if(check.blocking, do: 0, else: 1),
+      severity_rank(check.severity),
+      check.code
+    }
+  end
+
   defp format_commerce_corridors([]), do: "  corridors: none"
 
   defp format_commerce_corridors(corridors) do
@@ -334,7 +375,7 @@ defmodule Crosswake.Doctor.Formatter do
     |> Enum.map_join(", ", fn {key, value} ->
       "#{key}=#{format_value(value)}"
     end)
-    |> then(&"details: " <> &1)
+    |> then(&("details: " <> &1))
   end
 
   defp format_value(value) when is_binary(value), do: value
@@ -348,7 +389,9 @@ defmodule Crosswake.Doctor.Formatter do
       corridor_ref = detail(check.details, :corridor_ref) || "unknown"
       role = detail(check.details, :role) |> format_value()
       denial_code = detail(check.details, :denial_code) || code
-      fallback_hint = detail(check.details, :fallback_hint) || check.hint || "return_to_phoenix_guidance"
+
+      fallback_hint =
+        detail(check.details, :fallback_hint) || check.hint || "return_to_phoenix_guidance"
 
       "corridor: corridor_ref=#{corridor_ref} role=#{role} denial_code=#{denial_code} fallback_hint=#{fallback_hint}"
     end
@@ -389,4 +432,8 @@ defmodule Crosswake.Doctor.Formatter do
   defp severity_order(%Check{severity: :error}), do: 0
   defp severity_order(%Check{severity: :warning}), do: 1
   defp severity_order(%Check{severity: :advisory}), do: 2
+
+  defp severity_rank(:error), do: 0
+  defp severity_rank(:warning), do: 1
+  defp severity_rank(:advisory), do: 2
 end

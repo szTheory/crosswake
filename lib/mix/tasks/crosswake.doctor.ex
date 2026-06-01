@@ -16,7 +16,8 @@ defmodule Mix.Tasks.Crosswake.Doctor do
     format: :string,
     router: :string,
     install_manifest: :string,
-    native_checks: :boolean
+    native_checks: :boolean,
+    check_publish: :boolean
   ]
 
   @impl Mix.Task
@@ -32,6 +33,7 @@ defmodule Mix.Tasks.Crosswake.Doctor do
         route_source: router_module!(opts[:router]),
         install_manifest_path: opts[:install_manifest],
         check_native_tools?: opts[:native_checks],
+        check_publish?: opts[:check_publish],
         cwd: File.cwd!()
       )
 

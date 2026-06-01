@@ -35,7 +35,7 @@ defmodule Crosswake.Doctor.FormatterTest do
       },
       support_matrix: SupportMatrix.canonical()
     }
-    
+
     # We construct the same snapshot map Doctor builds
     snapshot = %{
       crosswake_version: manifest.crosswake_version,
@@ -64,11 +64,11 @@ defmodule Crosswake.Doctor.FormatterTest do
     # Check some basic parts
     assert output =~ "release policy:"
     assert output =~ "crosswake_version=0.1.0"
-    
+
     # Check new blocks
     assert output =~ "capability families:"
     assert output =~ "app_info: prerequisites=" || output =~ "app_info"
-    
+
     assert output =~ "package surfaces:"
     assert output =~ "crosswake` primary package: class=core"
 
@@ -149,7 +149,10 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "prerequisites:"
     assert output =~ "native or companion storefront corridor implemented"
     assert output =~ "proof_posture:"
-    assert output =~ "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+
+    assert output =~
+             "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+
     assert output =~ "[advisory]: provider_storefront:buy"
     assert output =~ "rebuild_requirements:"
     assert output =~ "buy: corridor_ref=subscription_default, role=purchase_intent"
@@ -240,7 +243,8 @@ defmodule Crosswake.Doctor.FormatterTest do
           severity: :warning,
           code: "commerce.corridor.native_rebuild_required",
           check: "commerce_summary",
-          message: "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
+          message:
+            "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
           hint: "rebuild the corridor",
           details: %{
             route_id: "buy",
@@ -255,7 +259,9 @@ defmodule Crosswake.Doctor.FormatterTest do
     output = Formatter.render(report)
 
     assert output =~ "[merge-blocking] commerce_summary (commerce.entitlement.stale_snapshot)"
-    assert output =~ "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
+
+    assert output =~
+             "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
   end
 
   test "formats publish readiness as a concise sidecar section ordered by blocking posture" do

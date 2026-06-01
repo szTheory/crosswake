@@ -27,13 +27,14 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -83,10 +84,11 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     %{target: target, install_manifest_path: install_manifest_path}
   end
 
-  test "mix crosswake.doctor emits human-readable output with verification required proof posture", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "mix crosswake.doctor emits human-readable output with verification required proof posture",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     output =
       capture_io(fn ->
         try do
@@ -128,12 +130,12 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
         File.cd!(target, fn ->
           Mix.Task.reenable(@task)
 
-            Mix.Task.run(@task, [
-              "--router",
-              "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
-              "--install-manifest",
-              install_manifest_path,
-              "--format",
+          Mix.Task.run(@task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+            "--install-manifest",
+            install_manifest_path,
+            "--format",
             "json",
             "--native-checks"
           ])
@@ -323,7 +325,11 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     android_root = Path.join(target, "native/android/crosswake_shell")
 
     write_file!(Path.join(ios_root, "README.md"), "host-owned scaffold once\n")
-    write_file!(Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"), "PBXNativeTarget\n")
+
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"),
+      "PBXNativeTarget\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/CrosswakeShellApp.swift"),
@@ -363,6 +369,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     )
 
     write_file!(Path.join(android_root, "README.md"), "host-owned scaffold once\n")
+
     write_file!(
       Path.join(android_root, "app/build.gradle"),
       "applicationId \"dev.crosswake.shell\"\n"

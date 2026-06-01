@@ -1,4 +1,3 @@
-
 defmodule Crosswake.DoctorTest do
   use ExUnit.Case, async: true
 
@@ -94,10 +93,13 @@ defmodule Crosswake.DoctorTest do
     assert report.support.release_policy.native_runtime_version == "1.0.0"
     assert report.support.release_policy.package_version_truth =~ "Package versions alone"
     assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
+
     assert report.offline.telemetry.metadata_keys ==
              Enum.map(Telemetry.metadata_keys(), &Atom.to_string/1)
+
     assert report.offline.routes["library"]["offline"] == "cached_read_only"
     assert report.offline.routes["study-session"]["sync_seam"] == "study_reviews"
+
     assert report.bridge.denial_reasons |> Enum.sort() ==
              Enum.sort([
                "commerce_corridor",
@@ -113,7 +115,11 @@ defmodule Crosswake.DoctorTest do
                "unavailable_capability"
              ])
 
-    assert Enum.any?(report.findings, &(&1.check == "shell_activation" and &1.severity == :advisory))
+    assert Enum.any?(
+             report.findings,
+             &(&1.check == "shell_activation" and &1.severity == :advisory)
+           )
+
     assert Enum.any?(report.findings, &(&1.check == "bridge_posture" and &1.severity == :warning))
 
     assert Enum.any?(
@@ -127,10 +133,11 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
-  test "doctor findings are structured and formatter output stays stable when proof hooks pass", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "doctor findings are structured and formatter output stays stable when proof hooks pass",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     ios_proof = write_proof_hook!(target, "ios", 0, "ios proof passed")
     android_proof = write_proof_hook!(target, "android", 0, "android proof passed")
 
@@ -176,7 +183,10 @@ defmodule Crosswake.DoctorTest do
     assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
     assert decoded["support"]["release_policy"]["bridge_protocol_version"] == "1.0.0"
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
-    assert decoded["support"]["release_policy"]["package_version_truth"] =~ "Package versions alone"
+
+    assert decoded["support"]["release_policy"]["package_version_truth"] =~
+             "Package versions alone"
+
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
@@ -235,13 +245,14 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -251,21 +262,23 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :missing_subscription_profile, role: :purchase_intent]
           ]
+        )
       end
     end
   end
 
-  test "doctor emits canonical commerce corridor findings and keeps taxonomy parity with support matrix", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "doctor emits canonical commerce corridor findings and keeps taxonomy parity with support matrix",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     report =
       Doctor.run(
         route_source: CommerceCorridorRouter,
@@ -349,12 +362,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/paywall", Crosswake.TestSupport.StudySessionLive,
+        live("/paywall", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "paywall",
             runtime: :live_view,
             commerce: [corridor: :subscription_default, role: :paywall_entry]
           ]
+        )
       end
     end
   end
@@ -364,12 +378,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :native_screen, offline: :unavailable, security: :sensitive do
-        live "/buy", Crosswake.TestSupport.StudySessionLive,
+        live("/buy", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "buy",
             runtime: :native_screen,
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -474,6 +489,7 @@ defmodule Crosswake.DoctorTest do
     assert stale_finding.details[:proof_class] == "merge_blocking"
     assert stale_finding.details[:freshness] == "stale"
     assert report.commerce_summary.snapshot_freshness == :stale
+
     assert "commerce.entitlement.stale_snapshot" in report.commerce_summary.proof_posture.merge_blocking
   end
 
@@ -612,12 +628,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :offline_island, offline: :local_first, security: :standard do
-        live "/violator", Crosswake.TestSupport.StudySessionLive,
+        live("/violator", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "violator",
             island_contract: :violator_v1,
             capabilities: ["background_sync", "generic_plugin_bus"]
           ]
+        )
       end
     end
   end
@@ -634,16 +651,28 @@ defmodule Crosswake.DoctorTest do
       )
 
     assert report.status == :error
-    
-    sync_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "background_sync"))
+
+    sync_finding =
+      Enum.find(
+        report.findings,
+        &(&1.code == "unsupported_capability" and &1.details.capability == "background_sync")
+      )
+
     assert sync_finding
     assert sync_finding.severity == :error
     assert sync_finding.message =~ "requests background_sync which is an explicit v1 boundary"
 
-    plugin_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "generic_plugin_bus"))
+    plugin_finding =
+      Enum.find(
+        report.findings,
+        &(&1.code == "unsupported_capability" and &1.details.capability == "generic_plugin_bus")
+      )
+
     assert plugin_finding
     assert plugin_finding.severity == :error
-    assert plugin_finding.message =~ "requests generic_plugin_bus which is an explicit v1 boundary"
+
+    assert plugin_finding.message =~
+             "requests generic_plugin_bus which is an explicit v1 boundary"
   end
 
   # -- Phase 23 Plan 04 Task 3: advisory proof-boundary contract --
@@ -750,12 +779,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/gated-feature", Crosswake.TestSupport.StudySessionLive,
+        live("/gated-feature", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "gated_feature",
             runtime: :live_view,
             gated_by: :unregistered_companion
           ]
+        )
       end
     end
   end
@@ -765,13 +795,14 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/auth-secure", Crosswake.TestSupport.StudySessionLive,
+        live("/auth-secure", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "auth_secure",
             runtime: :live_view,
             auth_min_level: :mfa,
             requires_recent_auth: 600
           ]
+        )
       end
     end
   end
@@ -793,8 +824,15 @@ defmodule Crosswake.DoctorTest do
 
     gating_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "gating."))
 
-    assert Enum.any?(gating_findings, &(&1.code == "gating.route_gated" and &1.severity == :advisory))
-    assert Enum.any?(gating_findings, &(&1.code == "gating.flag_reference_unknown" and &1.severity == :error))
+    assert Enum.any?(
+             gating_findings,
+             &(&1.code == "gating.route_gated" and &1.severity == :advisory)
+           )
+
+    assert Enum.any?(
+             gating_findings,
+             &(&1.code == "gating.flag_reference_unknown" and &1.severity == :error)
+           )
 
     human = Formatter.render(report)
     decoded = JSONFormatter.render(report) |> Jason.decode!()
@@ -866,7 +904,7 @@ defmodule Crosswake.DoctorTest do
 
     auth_json_payload =
       decoded["findings"]
-      |> Enum.filter(&String.starts_with?((&1["code"] || ""), "auth."))
+      |> Enum.filter(&String.starts_with?(&1["code"] || "", "auth."))
       |> Jason.encode!()
       |> String.downcase()
 
@@ -881,7 +919,11 @@ defmodule Crosswake.DoctorTest do
     android_root = Path.join(target, "native/android/crosswake_shell")
 
     write_file!(Path.join(ios_root, "README.md"), "host-owned scaffold once\n")
-    write_file!(Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"), "PBXNativeTarget\n")
+
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"),
+      "PBXNativeTarget\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/CrosswakeShellApp.swift"),
@@ -921,6 +963,7 @@ defmodule Crosswake.DoctorTest do
     )
 
     write_file!(Path.join(android_root, "README.md"), "host-owned scaffold once\n")
+
     write_file!(
       Path.join(android_root, "app/build.gradle"),
       "applicationId \"dev.crosswake.shell\"\n"
