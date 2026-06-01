@@ -235,7 +235,7 @@ Plans:
 **Wave 1**
 
 - [x] 48-01-PLAN.md — add the StoreKit first-party adapter seam and evidence normalizer that feeds backend-owned reconciliation contracts
-- [ ] 48-02-PLAN.md — add the Play Billing first-party adapter seam and evidence normalizer against the same provider-neutral reconciliation contract
+- [x] 48-02-PLAN.md — add the Play Billing first-party adapter seam and evidence normalizer against the same provider-neutral reconciliation contract
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

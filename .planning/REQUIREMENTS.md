@@ -36,7 +36,7 @@
 ### Commerce Provider Adapters
 
 - [x] **ADPT-01**: Host apps can use a StoreKit adapter seam that emits provider evidence into Crosswake's backend-owned reconciliation contracts.
-- [ ] **ADPT-02**: Host apps can use a Play Billing adapter seam that emits provider evidence into Crosswake's backend-owned reconciliation contracts.
+- [x] **ADPT-02**: Host apps can use a Play Billing adapter seam that emits provider evidence into Crosswake's backend-owned reconciliation contracts.
 - [x] **ADPT-03**: Maintainers can promote storefront/provider proof from advisory to merge-blocking only when explicit environment and repeatability criteria are met.
 
 ## Future Requirements
@@ -78,7 +78,7 @@
 | PROOF-02 | Phase 52 | Complete |
 | REL-01 | Phase 53 | Complete |
 | ADPT-01 | Phase 48 | Complete |
-| ADPT-02 | Phase 48 | Pending |
+| ADPT-02 | Phase 48 | Complete |
 | ADPT-03 | Phase 48 | Complete |
 
 **Coverage:**
