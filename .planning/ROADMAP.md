@@ -67,7 +67,7 @@ Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 - [x] Phase 49: Operator Inspection Contract — define route/capability/companion/provider/auth/notification readiness inspection and machine-readable output. (completed 2026-05-31)
 - [x] Phase 50: Doctor Publish and Readiness Checks — implement `mix crosswake.doctor --check-publish` and richer actionable findings. (completed 2026-06-01)
 - [x] Phase 51: Support Matrix and Native Rebuild Truth — synchronize support, rebuild, advisory, merge-blocking, companion, commerce, auth, notification, and shell truth.
-- [ ] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof.
+- [x] Phase 52: Operator Proof and Docs-Contract Locks — lock inspection, doctor, support matrix, denial/rebuild vocabulary, and guidance with hermetic proof. (completed 2026-06-01)
 - [ ] Phase 53: Release Continuity and Closeout Hardening — align changelog/release support truth and enforce closeout parity for future milestones.
 
 ### Phase Details
@@ -182,7 +182,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 52-02-PLAN.md — wire a dedicated phase52-proof workflow with one merge-blocking hermetic job and one advisory-only visibility job
+- [x] 52-02-PLAN.md — wire a dedicated phase52-proof workflow with one merge-blocking hermetic job and one advisory-only visibility job
 
 **Phase 53: Release Continuity and Closeout Hardening**
 
@@ -210,8 +210,8 @@ Success criteria:
 | 26-32 | v3.3 Release Readiness | 11/11 | Complete | 2026-05-29 |
 | 33-37 | v3.4 Commerce Archetype Proof | 8/8 | Complete | 2026-05-29 |
 | 38-47 | v3.5 First-Party Companions | 22/22 | Complete | 2026-05-31 |
-| 48-53 | v3.6 Operator Truth and Production Diagnostics | 7/10 | Active | — |
+| 48-53 | v3.6 Operator Truth and Production Diagnostics | 12/12 planned | Active | — |
 
 ## Next
 
-Start execution with `$gsd-execute-phase 52`.
+Start discussion with `$gsd-discuss-phase 53`.
