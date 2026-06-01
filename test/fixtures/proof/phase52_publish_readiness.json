@@ -1,8 +1,305 @@
 {
+  "checks": [
+    {
+      "blocking": false,
+      "category": "publish_parity",
+      "claim_scope": "Hex metadata and release/changelog truth",
+      "code": "diag.publish.local_truth",
+      "details": {
+        "changelog_sections": [
+          "Unreleased",
+          "0.1.0"
+        ],
+        "errors": [],
+        "package_name": "crosswake",
+        "source_url": "https://github.com/szTheory/crosswake",
+        "version": "0.1.0"
+      },
+      "docs_reference": "CHANGELOG.md",
+      "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
+      "id": "publish.parity",
+      "message": "local Hex metadata and CHANGELOG.md preserve published-versus-unreleased truth",
+      "proof_class": "merge_blocking",
+      "rebuild_requirement": {
+        "companion_required": "false",
+        "native_required": "false",
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "companion_dependency_health",
+      "claim_scope": "First-party companion dependency health",
+      "code": "diag.companion.no_bound_routes",
+      "details": {
+        "route_ids": []
+      },
+      "docs_reference": "guides/companions.md",
+      "hint": "Run this check against the host router that declares companion-gated routes.",
+      "id": "companion.dependency_health",
+      "message": "no companion-gated routes are present in the inspected route set",
+      "proof_class": "not_applicable",
+      "rebuild_requirement": {
+        "companion_required": "false",
+        "native_required": "false",
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "provider_adapter_readiness",
+      "claim_scope": "Commerce provider adapter readiness",
+      "code": "diag.provider.adapters_not_shipped",
+      "details": {
+        "deferred": [
+          "storekit",
+          "play_billing",
+          "revenue_cat"
+        ],
+        "demotion_trigger": "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass. Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass.",
+        "promotion_rule_ids": [
+          "purchase_intent.provider.storekit",
+          "restore_intent.provider.storekit",
+          "purchase_intent.provider.play_billing",
+          "restore_intent.provider.play_billing"
+        ],
+        "required_docs_anchors": [
+          "guides/support_matrix.md",
+          "guides/commerce.md"
+        ],
+        "route_ids": [],
+        "shipped?": "false"
+      },
+      "docs_reference": "guides/commerce.md",
+      "hint": "Keep storefront/provider evidence advisory and route entitlement authority through backend reconciliation.",
+      "id": "provider.adapter_readiness",
+      "message": "StoreKit and Play Billing provider adapters are not shipped; commerce routes stay seam-only until v3.7 adapters land",
+      "proof_class": "advisory",
+      "rebuild_requirement": {
+        "action_classes": [
+          "provider_adapter"
+        ],
+        "companion_required": "false",
+        "native_required": "true",
+        "reasons": [
+          "provider SDK adapter implementation is deferred"
+        ]
+      },
+      "result": "verification_required",
+      "severity": "warning"
+    },
+    {
+      "blocking": false,
+      "category": "notification_token_readiness",
+      "claim_scope": "Notification token provider readiness, not notification delivery",
+      "code": "diag.notification.token_provider_snapshot_only",
+      "details": {
+        "delivery_supported?": "false",
+        "demotion_trigger": "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support.",
+        "promotion_rule_ids": [
+          "notification_token.provider_snapshot"
+        ],
+        "required_docs_anchors": [
+          "guides/support_matrix.md",
+          "guides/capabilities.md"
+        ],
+        "route_ids": [
+          "dashboard"
+        ],
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ]
+      },
+      "docs_reference": "guides/capabilities.md",
+      "hint": "Use notification token posture for readiness diagnostics only; delivery integration is deferred to Chimeway.",
+      "id": "notification.token_readiness",
+      "message": "notification_token readiness is provider snapshot only; Chimeway delivery is not supported in v3.6",
+      "proof_class": "advisory",
+      "rebuild_requirement": {
+        "action_classes": [
+          "companion_native"
+        ],
+        "companion_required": "true",
+        "native_required": "false",
+        "reasons": [
+          "notification_token provider snapshot readiness requires companion-native proof"
+        ]
+      },
+      "result": "verification_required",
+      "severity": "warning"
+    },
+    {
+      "blocking": false,
+      "category": "auth_session_predicate_readiness",
+      "claim_scope": "Sigra auth predicate readiness",
+      "code": "diag.auth.sigra_contract_only",
+      "details": {
+        "deferred": [
+          "handoff",
+          "ceremony",
+          "passkey",
+          "oauth",
+          "refresh_tokens",
+          "native_auth_ui"
+        ],
+        "demotion_trigger": "nil",
+        "fallback": "step_up_required",
+        "posture": "contract_only",
+        "promotion_rule_ids": [],
+        "required_docs_anchors": [],
+        "route_ids": []
+      },
+      "docs_reference": "guides/companions.md",
+      "hint": "Keep auth predicates backend-owned and fail closed with step_up_required until full Sigra machinery ships.",
+      "id": "auth.session_predicate_readiness",
+      "message": "no Sigra auth predicate routes are present in the inspected route set",
+      "proof_class": "not_applicable",
+      "rebuild_requirement": {
+        "action_classes": [
+          "companion_native"
+        ],
+        "companion_required": "false",
+        "native_required": "false",
+        "reasons": [
+          "Sigra route predicates remain companion contract-only support truth"
+        ]
+      },
+      "result": "pass",
+      "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "native_shell_verification_gap",
+      "claim_scope": "Native shell verification and rebuild readiness",
+      "code": "diag.shell.verification_required",
+      "details": {
+        "demotion_trigger": "Demote to verification_required when generated-shell proof fails or native_runtime_version support narrows. Keep or demote to verification_required when Android JVM or generated-shell proof is stale or unavailable.",
+        "promotion_rule_ids": [
+          "shell.ios.generated_project",
+          "shell.android.generated_project"
+        ],
+        "proof_status": "verification_required",
+        "required_docs_anchors": [
+          "guides/support_matrix.md",
+          "guides/native_shell.md"
+        ],
+        "route_ids": [
+          "camera",
+          "dashboard",
+          "library"
+        ],
+        "support_status": "verification_required"
+      },
+      "docs_reference": "guides/native_shell.md",
+      "hint": "Run generated-shell proof and document rebuild requirements before claiming fully verified native support.",
+      "id": "shell.native_verification_gap",
+      "message": "native shell support is verification-required where route rebuild, Android shell, or companion/provider posture applies",
+      "proof_class": "advisory",
+      "rebuild_requirement": {
+        "action_classes": [
+          "native_shell",
+          "companion_native",
+          "route_manifest"
+        ],
+        "companion_required": "true",
+        "native_required": "true",
+        "reasons": [
+          "capability camera requires native-required",
+          "capability notification_token requires companion-required",
+          "capability file_picker requires native-required"
+        ]
+      },
+      "result": "verification_required",
+      "severity": "warning"
+    },
+    {
+      "blocking": false,
+      "category": "docs_support_parity",
+      "claim_scope": "Docs/support parity",
+      "code": "diag.docs.support_parity",
+      "details": {
+        "docs_extras": [
+          "README.md",
+          "CHANGELOG.md",
+          "LICENSE",
+          "guides/install.md",
+          "guides/support_matrix.md",
+          "guides/adopter_profiles.md",
+          "guides/user_flows.md",
+          "guides/capabilities.md",
+          "guides/bridge.md",
+          "guides/offline.md",
+          "guides/commerce.md",
+          "guides/companions.md",
+          "guides/compatibility.md",
+          "guides/native_shell.md",
+          "guides/packs.md"
+        ],
+        "missing_docs_extras": [],
+        "missing_files": []
+      },
+      "docs_reference": "guides/support_matrix.md",
+      "hint": "Keep support, compatibility, companions, commerce, native shell, capabilities, install, and changelog guidance in docs extras.",
+      "id": "docs.support_parity",
+      "message": "docs extras and support guidance cover the v3.6 readiness claim surface",
+      "proof_class": "merge_blocking",
+      "rebuild_requirement": {
+        "companion_required": "false",
+        "native_required": "false",
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "proof_posture",
+      "claim_scope": "Proof posture and advisory promotion readiness",
+      "code": "diag.docs.proof_posture_advisory_surfaces",
+      "details": {
+        "advisory_route_ids": [
+          "dashboard"
+        ],
+        "commerce_advisory_provider_proof": [
+          "purchase_intent",
+          "restore_intent"
+        ],
+        "release_boundaries": [
+          "core",
+          "companion",
+          "ios_shell",
+          "android_shell"
+        ]
+      },
+      "docs_reference": "guides/support_matrix.md",
+      "hint": "Keep hermetic merge-blocking proof separate from provider, storefront, device, and shell advisory checks.",
+      "id": "proof.posture",
+      "message": "advisory proof surfaces remain visible and are not equivalent to supported status",
+      "proof_class": "advisory",
+      "rebuild_requirement": {
+        "companion_required": "false",
+        "native_required": "false",
+        "reasons": []
+      },
+      "result": "advisory",
+      "severity": "warning"
+    }
+  ],
   "schema_version": "1.0.0",
   "status": "ready",
   "summary": {
-    "total_checks": 0
-  },
-  "checks": []
+    "advisory_count": 4,
+    "advisory_result_count": 1,
+    "blocking_count": 0,
+    "error_count": 0,
+    "pass_count": 4,
+    "total_count": 8,
+    "verification_required_count": 3,
+    "warning_count": 4
+  }
 }

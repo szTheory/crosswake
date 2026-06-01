@@ -10,6 +10,49 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
   @inspect_fixture "test/fixtures/proof/phase52_operator_inspection.json"
   @readiness_fixture "test/fixtures/proof/phase52_publish_readiness.json"
 
+  setup do
+    target =
+      Path.join(System.tmp_dir!(), "crosswake-phase52-proof-#{System.unique_integer([:positive])}")
+
+    router_path = Path.join(target, "lib/demo_web/router.ex")
+    policy_path = Path.join(target, "lib/demo_web/crosswake/policy.ex")
+    install_manifest_path = Path.join(target, "priv/crosswake/install_manifest.json")
+
+    File.mkdir_p!(Path.dirname(router_path))
+    File.mkdir_p!(Path.dirname(policy_path))
+    File.mkdir_p!(Path.dirname(install_manifest_path))
+
+    File.write!(
+      router_path,
+      """
+      defmodule DemoWeb.Router do
+        # crosswake:install:start
+        import Crosswake.Router
+        # crosswake:install:end
+      end
+      """
+    )
+
+    File.write!(policy_path, "defmodule DemoWeb.Crosswake.Policy do\nend\n")
+
+    File.write!(
+      install_manifest_path,
+      Jason.encode!(%{
+        schema_version: 1,
+        crosswake_version: "0.1.0",
+        router_path: Path.relative_to(router_path, target),
+        web_module: "DemoWeb",
+        policy_module: "DemoWeb.Crosswake.Policy",
+        files: %{created_or_reused: [Path.relative_to(policy_path, target)]},
+        markers: ["# crosswake:install:start", "# crosswake:install:end"]
+      })
+    )
+
+    on_exit(fn -> File.rm_rf(target) end)
+
+    %{install_manifest_path: install_manifest_path}
+  end
+
   @tag :phase52_smoke
   test "stable proof id helper contract is present for operator drift checks" do
     message =
@@ -53,7 +96,8 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     )
   end
 
-  test "normalized publish-readiness json matches fixture and keeps readiness semantics stable" do
+  test "normalized publish-readiness json matches fixture and keeps readiness semantics stable",
+       %{install_manifest_path: install_manifest_path} do
     output =
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
@@ -62,6 +106,8 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
           Mix.Task.run(@doctor_task, [
             "--router",
             "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+            "--install-manifest",
+            install_manifest_path,
             "--format",
             "json",
             "--check-publish"
@@ -107,9 +153,45 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.non_claims.sigra_contract_only",
       "guides/companions.md",
-      "Sigra is contract-only",
+      "Sigra in v3.5 is contract-only",
       source: "guides/companions.md and auth contract support truth",
       hint: "do not imply full Sigra machinery shipped",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.non_claims.notification_snapshot",
+      "guides/compatibility.md",
+      "notification-token readiness is provider-snapshot only",
+      source: "guides/compatibility.md and support truth notification posture",
+      hint: "do not imply notification delivery support shipped",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.non_claims.chimeway_deferred",
+      "guides/companions.md",
+      "Chimeway delivery implementation",
+      source: "guides/companions.md and support truth notification posture",
+      hint: "keep deferred push-delivery truth explicit",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.non_claims.shell_packages_deferred",
+      "guides/support_matrix.md",
+      "Standalone public shell packages are deferred",
+      source: "Crosswake.SupportMatrix.canonical/1 package surfaces",
+      hint: "preserve deferred shell package claim scope",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.non_claims.compatibility_window_distinct",
+      "guides/compatibility.md",
+      "compatibility-window narrowing is distinct from a native rebuild",
+      source: "guides/compatibility.md runtime line rules",
+      hint: "keep compatibility-window narrowing distinct from rebuild claims",
       posture: :merge_blocking
     )
   end
@@ -119,6 +201,46 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
 
     refute Regex.match?(~r/^\s*@moduletag\s+:/m, source)
     refute String.contains?(source, "Crosswake" <> "Example.")
-    refute String.contains?(source, "MIX_INCLUDE_")
+    refute String.contains?(source, "MIX_INCLUDE_" <> "RULESTEAD")
+    refute String.contains?(source, "MIX_INCLUDE_" <> "RINDLE")
+  end
+
+  test "denial, support-status, proof-class, action-class, and promotion-rule vocabularies stay canonical" do
+    reasons = Crosswake.Shell.Denial.reasons()
+    assert :step_up_required in reasons
+    assert :gate_denied in reasons
+
+    statuses = Crosswake.SupportMatrix.statuses()
+    assert statuses == [:supported, :verification_required, :unsupported]
+
+    assert Crosswake.SupportMatrix.proof_classes() == [:merge_blocking, :advisory, :not_applicable]
+
+    action_classes =
+      Crosswake.SupportMatrix.action_classes()
+      |> Enum.map(& &1.action_class)
+
+    for required <- [
+          "docs_only",
+          "route_manifest",
+          "compatibility",
+          "native_shell",
+          "companion_native",
+          "provider_adapter"
+        ] do
+      assert required in action_classes
+    end
+
+    promotion_ids =
+      Crosswake.SupportMatrix.promotion_rules()
+      |> Enum.map(& &1.claim_id)
+
+    for required <- [
+          "notification_token.provider_snapshot",
+          "auth.sigra.contract_only",
+          "purchase_intent.provider.storekit",
+          "purchase_intent.provider.play_billing"
+        ] do
+      assert required in promotion_ids
+    end
   end
 end
