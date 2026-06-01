@@ -204,7 +204,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 53-02-PLAN.md — add `mix closeout.verify` plus merge-blocking proof-lane wiring around the shared verifier with focused command and workflow parity tests
+- [x] 53-02-PLAN.md — add `mix closeout.verify` plus merge-blocking proof-lane wiring around the shared verifier with focused command and workflow parity tests
 
 **Wave 3** *(blocked on Wave 2 completion)*
 

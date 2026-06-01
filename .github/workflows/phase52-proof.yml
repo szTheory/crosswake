@@ -61,6 +61,9 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
+      - name: Run milestone closeout verification
+        run: mix closeout.verify
+
       - name: Run hermetic Phase 52 operator proof
         run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
 
