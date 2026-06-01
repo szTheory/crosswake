@@ -298,12 +298,12 @@ assert check.proof_class in [:merge_blocking, :advisory, :not_applicable]
 | A2 | Required jobs failing on missing optional deps is a common symptom pattern. | Common Pitfalls | Low: operational guidance still valid. |
 | A3 | CI triage delay mainly driven by generic assertion output. | Common Pitfalls | Low: stable-ID helper still improves clarity. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 52 use one proof module or split into `operator` + `docs` modules?**
+1. **RESOLVED: Should Phase 52 use one proof module or split into `operator` + `docs` modules?**
    - What we know: Context preference is a focused single file with optional helpers. [VERIFIED: codebase grep]
-   - What's unclear: Final granularity threshold for readability vs failure locality.
-   - Recommendation: Start single module + helper; split only if module exceeds maintainability bounds.
+   - Resolution: Start with one focused `phase52_operator_truth_test.exs` module plus `Crosswake.TestSupport.ProofAssertions`.
+   - Rationale: Phase 52 is a requirement-mapped rollup, so one proof module keeps PROOF-01/PROOF-02 auditable. Split later only if the module becomes hard to scan after implementation.
 
 ## Environment Availability
 
@@ -327,18 +327,18 @@ assert check.proof_class in [:merge_blocking, :advisory, :not_applicable]
 |----------|-------|
 | Framework | ExUnit (bundled with Elixir/Mix) |
 | Config file | `test/test_helper.exs` [VERIFIED: codebase grep] |
-| Quick run command | `mix test test/crosswake/proof/phase52_operator_truth_test.exs -x` |
+| Quick run command | `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke` |
 | Full suite command | `mix test --exclude requires_example_host` |
 
 ### Phase Requirements -> Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| PROOF-01 | Lock inspect output + doctor findings + support matrix rows | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs -x` | ❌ Wave 0 |
-| PROOF-02 | Lock docs-contract parity for support/denial/rebuild/non-claims | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs -x` | ❌ Wave 0 |
+| PROOF-01 | Lock inspect output + doctor findings + support matrix rows | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke` per task; full file per wave | ❌ Wave 0 |
+| PROOF-02 | Lock docs-contract parity for support/denial/rebuild/non-claims | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke` per task; full file per wave | ❌ Wave 0 |
 
 ### Sampling Rate
-- **Per task commit:** `mix test test/crosswake/proof/phase52_operator_truth_test.exs -x`
-- **Per wave merge:** `mix test --exclude requires_example_host`
+- **Per task commit:** `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke`
+- **Per wave merge:** `mix test test/crosswake/proof/phase52_operator_truth_test.exs` then `mix test --exclude requires_example_host`
 - **Phase gate:** `phase52-proof.yml` required hermetic job green
 
 ### Wave 0 Gaps

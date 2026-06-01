@@ -174,6 +174,16 @@ Success criteria:
 3. CI clearly separates merge-blocking operator proof from advisory native/device/provider checks.
 4. Proof failures point to actionable support-truth drift.
 
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 52-01-PLAN.md — add the hermetic Phase 52 proof contract, stable-id drift helpers, and normalized JSON golden fixtures for operator truth
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 52-02-PLAN.md — wire a dedicated phase52-proof workflow with one merge-blocking hermetic job and one advisory-only visibility job
+
 **Phase 53: Release Continuity and Closeout Hardening**
 
 Goal: Ensure public release/changelog truth and milestone closeout discipline survive future context clears.
@@ -204,4 +214,4 @@ Success criteria:
 
 ## Next
 
-Start execution with `$gsd-execute-phase 51`.
+Start execution with `$gsd-execute-phase 52`.

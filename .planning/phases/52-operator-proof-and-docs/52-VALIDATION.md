@@ -19,18 +19,18 @@ created: 2026-06-01
 |----------|-------|
 | **Framework** | ExUnit |
 | **Config file** | `test/test_helper.exs` |
-| **Quick run command** | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` |
+| **Quick run command** | `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke` |
 | **Full suite command** | `mix test --exclude requires_example_host` |
-| **Estimated runtime** | ~30-90 seconds for quick proof, project-dependent for full suite |
+| **Estimated runtime** | <30 seconds for smoke proof, project-dependent for full proof/full suite |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `mix test test/crosswake/proof/phase52_operator_truth_test.exs`
-- **After every plan wave:** Run `mix test --exclude requires_example_host`
+- **After every task commit:** Run `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke`
+- **After every plan wave:** Run `mix test test/crosswake/proof/phase52_operator_truth_test.exs` and `mix test --exclude requires_example_host`
 - **Before `$gsd-verify-work`:** Full suite must be green
-- **Max feedback latency:** 90 seconds for the focused Phase 52 proof
+- **Max feedback latency:** 30 seconds for the focused smoke proof
 
 ---
 
@@ -38,9 +38,9 @@ created: 2026-06-01
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 52-01-01 | 01 | 1 | PROOF-01 / PROOF-02 | T-52-01 | Drift failures identify stable proof ids, source truth, observed drift, path, and remediation. | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` | ❌ W0 | ⬜ pending |
-| 52-02-01 | 02 | 1 | PROOF-01 / PROOF-02 | T-52-02 | Hermetic operator proof locks inspection, doctor, support, denial, rebuild, promotion, and guide non-claim truth. | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` | ❌ W0 | ⬜ pending |
-| 52-03-01 | 03 | 2 | PROOF-01 / PROOF-02 | T-52-03 | CI keeps merge-blocking hermetic proof separate from advisory provider/device/native visibility. | ci | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` | ❌ W0 | ⬜ pending |
+| 52-01-01 | 01 | 1 | PROOF-01 / PROOF-02 | T-52-01 | Drift failures identify stable proof ids, source truth, observed drift, path, and remediation. | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs --only phase52_smoke` | ❌ W0 | ⬜ pending |
+| 52-02-01 | 01 | 1 | PROOF-01 / PROOF-02 | T-52-02 | Hermetic operator proof locks inspection, doctor, support, denial, rebuild, promotion, and guide non-claim truth. | integration | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` | ❌ W0 | ⬜ pending |
+| 52-03-01 | 02 | 2 | PROOF-01 / PROOF-02 | T-52-03 | CI keeps merge-blocking hermetic proof separate from advisory provider/device/native visibility. | ci | `mix test test/crosswake/proof/phase52_operator_truth_test.exs` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,7 +48,7 @@ created: 2026-06-01
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/proof/phase52_operator_truth_test.exs` — central PROOF-01/PROOF-02 rollup.
+- [ ] `test/crosswake/proof/phase52_operator_truth_test.exs` — central PROOF-01/PROOF-02 rollup with at least one `@tag :phase52_smoke` fast assertion subset.
 - [ ] `test/support/proof_assertions.ex` — stable proof id assertion helpers, if needed to keep failures actionable.
 - [ ] `.github/workflows/phase52-proof.yml` — required/advisory lane topology.
 
@@ -68,7 +68,7 @@ created: 2026-06-01
 - [ ] Sampling continuity: no 3 consecutive tasks without automated verify
 - [ ] Wave 0 covers all MISSING references
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 90s for focused proof
+- [ ] Feedback latency < 30s for focused smoke proof
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
