@@ -7,15 +7,21 @@ Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce
 defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Commerce.ProviderEvidence
+  alias Crosswake.Companions.PlayBilling.Evidence, as: PlayBillingEvidence
+  alias Crosswake.Companions.StoreKit.Evidence, as: StoreKitEvidence
   alias Crosswake.Commerce.Contracts
+  alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.SupportMatrix
   alias Crosswake.TestSupport.ProofAssertions
   alias CrosswakeExample.Commerce.EntitlementProjection
   alias CrosswakeExample.Commerce.MockBackend
   alias CrosswakeExample.Commerce.ProviderAdapterStorefront
   alias CrosswakeExample.Commerce.ReconciliationInbox
+  alias CrosswakeExample.Commerce.ReconciliationKeys
 
   @group_id "sub_pro_monthly"
+  @readiness_fixture "test/fixtures/proof/phase48_provider_adapter_readiness.json"
 
   test "storekit purchase evidence uses provider-neutral inbox/projection path" do
     intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit"}
@@ -71,6 +77,60 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
              EntitlementProjection.project_snapshot(nil, pending_snapshot)
   end
 
+  test "provider evidence stays in canonical event vocabulary and event/subject identity is stable" do
+    purchase_intent = %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: "corr-storekit-keys"}
+    restore_intent = %Contracts.RestoreIntent{correlation_id: "corr-play-keys"}
+
+    assert {:ok, storekit_evidence} =
+             ProviderAdapterStorefront.simulate_storekit_purchase(purchase_intent,
+               captured_at: "2026-06-01T00:00:00Z",
+               transaction_id: "storekit_txn_001"
+             )
+
+    assert {:ok, play_restore_evidence} =
+             ProviderAdapterStorefront.simulate_play_billing_restore(restore_intent,
+               captured_at: "2026-06-01T00:00:00Z",
+               rtdn_message_id: "play_rtdn_001"
+             )
+
+    assert storekit_evidence.event_kind in ProviderEvidence.event_kind_vocabulary()
+    assert play_restore_evidence.event_kind in ProviderEvidence.event_kind_vocabulary()
+
+    assert ReconciliationKeys.subject_key(storekit_evidence) ==
+             "subject::storekit::storekit_original_#{@group_id}"
+
+    assert ReconciliationKeys.event_key(storekit_evidence) ==
+             "event::storekit::storekit_original_#{@group_id}::purchase::storekit_txn_001"
+
+    assert ReconciliationKeys.subject_key(play_restore_evidence) ==
+             "subject::play_billing::play_token_#{@group_id}"
+
+    assert ReconciliationKeys.event_key(play_restore_evidence) ==
+             "event::play_billing::play_token_#{@group_id}::restore::play_rtdn_001"
+  end
+
+  test "raw provider enum/status values are rejected from core event kinds" do
+    assert {:error, {:invalid_event_kind, _details}} =
+             StoreKitEvidence.new(
+               original_transaction_id: "orig-1",
+               transaction_id: "txn-1",
+               event_kind: "DID_RENEW",
+               environment: :sandbox,
+               source: :storefront,
+               captured_at: "2026-06-01T00:00:00Z"
+             )
+
+    assert {:error, {:invalid_event_kind, _details}} =
+             PlayBillingEvidence.new(
+               purchase_token: "token-1",
+               order_id: "GPA.1234",
+               event_kind: "PURCHASED",
+               environment: :license_test,
+               source: :storefront,
+               captured_at: "2026-06-01T00:00:00Z"
+             )
+  end
+
   test "provider promotion claims remain advisory with provider_adapter action class and demotion semantics" do
     provider_rules =
       SupportMatrix.promotion_rules()
@@ -92,6 +152,36 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
       assert rule.check_ids != []
       assert is_binary(rule.demotion_trigger) and rule.demotion_trigger != ""
     end
+  end
+
+  test "provider readiness keeps shipped seams and advisory proof contract in stable fixture" do
+    report =
+      PublishReadiness.run(
+        generated_at: "2026-06-01T00:00:00Z",
+        cwd: File.cwd!()
+      )
+
+    provider =
+      report.checks
+      |> Enum.find(&(&1.id == "provider.adapter_readiness"))
+
+    assert provider.result == :verification_required
+    assert provider.proof_class == :advisory
+    assert provider.blocking == false
+    assert provider.details.shipped_seams? == true
+    assert provider.details.advisory_provider_proof? == true
+    assert provider.details.storekit_check_id == "diag.provider.storekit.advisory_proof"
+    assert provider.details.play_billing_check_id == "diag.provider.play_billing.advisory_proof"
+
+    ProofAssertions.assert_normalized_json_fixture(
+      "proof.provider_adapters.readiness.json_contract",
+      Jason.encode!(PublishReadiness.to_map(report)["checks"] |> Enum.find(&(&1["id"] == "provider.adapter_readiness"))),
+      @readiness_fixture,
+      source: "Crosswake.Doctor.PublishReadiness.run/1 provider.adapter_readiness check",
+      path: @readiness_fixture,
+      hint: "update fixture only for intended provider-readiness semantic changes",
+      posture: :merge_blocking
+    )
   end
 
   test "changelog keeps unreleased v3.7 seam claims distinct from published hex truth" do
@@ -119,6 +209,35 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
       "The latest published Hex release remains `0.1.0`.",
       source: "CHANGELOG.md published release section",
       hint: "preserve distinction between unreleased planning claims and published package truth",
+      posture: :merge_blocking
+    )
+  end
+
+  test "docs keep provider adapter support and advisory posture explicit" do
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.commerce_shipped_seams",
+      "guides/commerce.md",
+      "StoreKit and Play Billing adapter seams ship as reconciliation evidence emitters only.",
+      source: "guides/commerce.md provider adapter seam contract section",
+      hint: "preserve shipped seam claim while keeping backend authority explicit",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.support_matrix_advisory_boundary",
+      "guides/support_matrix.md",
+      "StoreKit and Play Billing adapters are not shipped in v3.6",
+      source: "guides/support_matrix.md non-claim compatibility boundary",
+      hint: "preserve prior non-claim language for v3.6 archive truth",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
+      "proof.docs.provider_adapters.commerce_advisory_boundary",
+      "guides/commerce.md",
+      "Provider/device verification lanes remain `advisory` and cannot redefine core merge-blocking support truth.",
+      source: "guides/commerce.md rough edges and advisory proof posture",
+      hint: "keep provider sandbox/device checks advisory and non-blocking",
       posture: :merge_blocking
     )
   end
