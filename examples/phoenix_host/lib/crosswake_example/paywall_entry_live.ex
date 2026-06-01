@@ -29,22 +29,31 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = storefront_adapter().simulate_purchase(intent)
+    case storefront_adapter().simulate_purchase(intent) do
+      {:ok, evidence} ->
+        case ReconciliationInbox.ingest_evidence(evidence) do
+          {:ok, _attempt} ->
+            Phoenix.PubSub.broadcast(
+              CrosswakeExample.PubSub,
+              "entitlement:" <> @group_id,
+              {:entitlement_update, :pending}
+            )
 
-    case ReconciliationInbox.ingest_evidence(evidence) do
-      {:ok, _attempt} ->
-        Phoenix.PubSub.broadcast(
-          CrosswakeExample.PubSub,
-          "entitlement:" <> @group_id,
-          {:entitlement_update, :pending}
-        )
+            Task.start(fn ->
+              :timer.sleep(1_500)
+              MockBackend.verify_and_broadcast(evidence, @group_id)
+            end)
 
-        Task.start(fn ->
-          :timer.sleep(1_500)
-          MockBackend.verify_and_broadcast(evidence, @group_id)
-        end)
+            {:noreply, socket}
 
-        {:noreply, socket}
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Something went wrong submitting your purchase. Please try again."
+             )}
+        end
 
       {:error, _reason} ->
         {:noreply,
@@ -62,29 +71,38 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = storefront_adapter().simulate_restore(intent)
+    case storefront_adapter().simulate_restore(intent) do
+      {:ok, evidence} ->
+        case ReconciliationInbox.ingest_evidence(evidence) do
+          {:ok, _attempt} ->
+            Phoenix.PubSub.broadcast(
+              CrosswakeExample.PubSub,
+              "entitlement:" <> @group_id,
+              {:entitlement_update, :pending}
+            )
 
-    case ReconciliationInbox.ingest_evidence(evidence) do
-      {:ok, _attempt} ->
-        Phoenix.PubSub.broadcast(
-          CrosswakeExample.PubSub,
-          "entitlement:" <> @group_id,
-          {:entitlement_update, :pending}
-        )
+            Task.start(fn ->
+              :timer.sleep(1_500)
+              MockBackend.verify_and_broadcast(evidence, @group_id)
+            end)
 
-        Task.start(fn ->
-          :timer.sleep(1_500)
-          MockBackend.verify_and_broadcast(evidence, @group_id)
-        end)
+            {:noreply, socket}
 
-        {:noreply, socket}
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Something went wrong submitting your restore. Please try again."
+             )}
+        end
 
       {:error, _reason} ->
         {:noreply,
          put_flash(
            socket,
            :error,
-           "Something went wrong submitting your purchase. Please try again."
+           "Something went wrong submitting your restore. Please try again."
          )}
     end
   end
