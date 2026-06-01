@@ -229,7 +229,7 @@ defmodule Crosswake.DoctorTest do
     assert :native_shell_verification_gap in categories
 
     assert Enum.any?(report.findings, fn finding ->
-             finding.code == "diag.provider.adapters_not_shipped" and
+             finding.code == "diag.provider.adapter_shipped_seams" and
                finding.check == "provider_adapter_readiness" and
                finding.message =~ "StoreKit" and finding.message =~ "Play Billing"
            end)

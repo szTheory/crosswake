@@ -5,6 +5,7 @@ defmodule Crosswake.TestSupport.ExampleHost do
     @app_root
     |> Path.join("_build/dev/lib/*/ebin")
     |> Path.wildcard()
+    |> Enum.reject(&(Path.basename(Path.dirname(&1)) == "crosswake"))
     |> Enum.each(&Code.prepend_path/1)
 
     :ok

@@ -42,7 +42,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       assert guide =~ "Promotion rules"
       assert guide =~ "guides/support_matrix.md#action-classes"
       assert guide =~ "guides/support_matrix.md#promotion-rules"
-      assert guide =~ "StoreKit/Play Billing adapters are not shipped in v3.6"
+      assert guide =~ "StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only"
       assert guide =~ "Sigra remains contract-only"
       assert guide =~ "notification-token readiness is provider-snapshot only"
       assert guide =~ "standalone public shell packages are deferred"

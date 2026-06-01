@@ -22,8 +22,11 @@ defmodule Mix.Tasks.Crosswake.Doctor do
 
   @impl Mix.Task
   def run(args) do
+    args = normalize_args(args)
     {check_publish?, args} = pop_flag(args, "--check-publish")
     {opts, _argv, invalid} = OptionParser.parse(args, strict: @switches)
+    {check_publish_from_invalid?, invalid} = pop_invalid_flag(invalid, "--check-publish")
+    check_publish? = check_publish? or check_publish_from_invalid?
 
     if invalid != [] do
       Mix.raise("invalid options: #{inspect(invalid)}")
@@ -56,6 +59,24 @@ defmodule Mix.Tasks.Crosswake.Doctor do
   defp pop_flag(args, flag) do
     {matches, rest} = Enum.split_with(args, &(&1 == flag))
     {matches != [], rest}
+  end
+
+  defp pop_invalid_flag(invalid, flag) do
+    {matches, rest} =
+      Enum.split_with(invalid, fn
+        {candidate, _value} -> to_string(candidate) == flag
+        candidate -> to_string(candidate) == flag
+      end)
+
+    {matches != [], rest}
+  end
+
+  defp normalize_args(args) do
+    Enum.flat_map(args, fn
+      {flag, nil} -> [to_string(flag)]
+      {flag, value} when is_binary(value) -> [to_string(flag), value]
+      arg when is_binary(arg) -> [arg]
+    end)
   end
 
   defp router_module!(nil) do

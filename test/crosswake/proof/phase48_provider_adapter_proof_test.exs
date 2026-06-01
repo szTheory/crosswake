@@ -226,9 +226,9 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.provider_adapters.support_matrix_advisory_boundary",
       "guides/support_matrix.md",
-      "StoreKit and Play Billing adapters are not shipped in v3.6",
+      "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass",
       source: "guides/support_matrix.md non-claim compatibility boundary",
-      hint: "preserve prior non-claim language for v3.6 archive truth",
+      hint: "preserve shipped seam plus advisory provider proof boundary",
       posture: :merge_blocking
     )
 

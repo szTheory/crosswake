@@ -287,7 +287,7 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "claim_scope=Hex metadata and release/changelog truth"
     assert output =~ "docs=CHANGELOG.md"
     assert output =~ "remediation=Keep package metadata"
-    assert output =~ "diag.provider.adapters_not_shipped"
+    assert output =~ "diag.provider.adapter_shipped_seams"
     assert output =~ "blocking=false"
   end
 end

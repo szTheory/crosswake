@@ -87,8 +87,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~
              "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
 
-    assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
-    assert guide =~ "provider adapter proof remains advisory"
+    assert guide =~
+             "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
     refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
   end
@@ -152,7 +152,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
       assert guide =~ claim_id
     end
 
-    assert guide =~ "StoreKit and Play Billing adapters are not shipped in v3.6"
+    assert guide =~
+             "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
     assert guide =~ "Sigra is contract-only for route predicates and `:step_up_required`"
 
     assert guide =~

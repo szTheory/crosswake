@@ -1,4 +1,4 @@
-defmodule Crosswake.SupportMatrixTest do
+defmodule Crosswake.SupportMatrixProviderAdapterTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.SupportMatrix

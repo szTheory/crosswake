@@ -181,12 +181,12 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["publish_readiness"]["status"] == "not_ready"
 
     assert Enum.any?(decoded["publish_readiness"]["checks"], fn check ->
-             check["code"] == "diag.provider.adapters_not_shipped" and
+             check["code"] == "diag.provider.adapter_shipped_seams" and
                check["blocking"] == false
            end)
 
     assert Enum.any?(decoded["findings"], fn finding ->
-             finding["code"] == "diag.provider.adapters_not_shipped" and
+             finding["code"] == "diag.provider.adapter_shipped_seams" and
                finding["check"] == "provider_adapter_readiness"
            end)
   end
@@ -212,7 +212,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     assert output =~ "Publish readiness"
     assert output =~ "diag.publish."
-    assert output =~ "diag.provider.adapters_not_shipped"
+    assert output =~ "diag.provider.adapter_shipped_seams"
     assert output =~ "claim_scope=Commerce provider adapter readiness"
   end
 
