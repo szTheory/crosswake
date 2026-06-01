@@ -178,7 +178,7 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 52-01-PLAN.md — add the hermetic Phase 52 proof contract, stable-id drift helpers, and normalized JSON golden fixtures for operator truth
+- [x] 52-01-PLAN.md — add the hermetic Phase 52 proof contract, stable-id drift helpers, and normalized JSON golden fixtures for operator truth
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.6
 milestone_name: Operator Truth and Production Diagnostics
 status: executing
-last_updated: "2026-06-01T16:29:40.658Z"
-last_activity: 2026-06-01 -- Phase 52 planning complete
+last_updated: "2026-06-01T16:34:46.662Z"
+last_activity: 2026-06-01
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 67
 ---
 
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 52 — operator-proof-and-docs-contract-locks
+**Current focus:** Phase 52 — operator-proof-and-docs
 
 ## Current Position
 
-Phase: 52
-Plan: Not started
+Phase: 52 (operator-proof-and-docs) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-01 -- Phase 52 planning complete
+Last activity: 2026-06-01
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 - [Phase 47]: Canonical companion guide is parity-locked to SupportMatrix, Denial, and live Doctor findings. — Prevents docs drift and keeps PROOF-02 contract truth machine-verifiable.
 - [Phase 47]: Phase 47 plan 02 uses one untagged aggregate hermetic proof for companion arc claims.
 - [Phase 47]: Sigra milestone proof remains contract-only via auth support truth and :step_up_required route posture assertions.
+- [Phase 52]: Use stable-id proof assertion helpers with normalized fixture and semantic parity checks for operator truth drift.
+- [Phase 52]: Keep generated support matrix byte-locked while locking authored non-claims semantically to canonical support, denial, and readiness truth.
 
 ### Pending Todos
 
@@ -77,10 +79,11 @@ Decisions are logged in PROJECT.md Key Decisions table (v3.4 decisions added at 
 | Phase 46 P03 | 28min | 1 tasks | 4 files |
 | Phase 47 P01 | 7min | 2 tasks | 2 files |
 | Phase 47 P02 | 21min | 2 tasks | 1 files |
+| Phase 52 P01 | 36min | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-01T16:03:33.045Z
+Last session: 2026-06-01T16:34:30.764Z
 Stopped at: Phase 52 context gathered
 
 ## Operator Next Steps

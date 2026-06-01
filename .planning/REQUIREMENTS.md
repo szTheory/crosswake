@@ -27,8 +27,8 @@
 
 ### Proof and Release Continuity
 
-- [ ] **PROOF-01**: Hermetic tests lock inspection output, doctor findings, and support matrix rows for the v3.6 operator surface.
-- [ ] **PROOF-02**: Docs-contract tests keep operator guidance synchronized with live doctor/support/denial/rebuild truth.
+- [x] **PROOF-01**: Hermetic tests lock inspection output, doctor findings, and support matrix rows for the v3.6 operator surface.
+- [x] **PROOF-02**: Docs-contract tests keep operator guidance synchronized with live doctor/support/denial/rebuild truth.
 - [ ] **REL-01**: Release/changelog guidance reflects all public support claims shipped after `0.1.0` and makes unreleased versus published Hex truth clear.
 
 ## Future Requirements
@@ -72,8 +72,8 @@
 | DIAG-02 | Phase 50 | Complete |
 | SUPP-01 | Phase 51 | Pending |
 | SUPP-02 | Phase 51 | Pending |
-| PROOF-01 | Phase 52 | Pending |
-| PROOF-02 | Phase 52 | Pending |
+| PROOF-01 | Phase 52 | Complete |
+| PROOF-02 | Phase 52 | Complete |
 | REL-01 | Phase 53 | Pending |
 
 **Coverage:**
