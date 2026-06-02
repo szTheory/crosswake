@@ -123,6 +123,13 @@ Plans:
 
 **Requirements:** HAND-01, HAND-02, HAND-03
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] `55-01-PLAN.md` — Add pure Sigra handoff contracts plus the canonical `auth.handoff.*` denial registry and proof scaffold.
+- [ ] `55-02-PLAN.md` — Prove example-host issue/redeem/revoke flow with Ecto-backed one-time records, audit events, and Phoenix session-renewal instructions.
+- [ ] `55-03-PLAN.md` — Close diagnostics, support truth, guides, fixtures, and merge-blocking proof for shipped handoff machinery and explicit non-claims.
+
 **Success criteria:**
 1. Hosts can issue signed short-lived handoff envelopes backed by server-side one-time ticket records.
 2. Redemption atomically consumes the ticket, renews the Phoenix session, and projects a refreshed backend `SessionAuthorityLane`.
