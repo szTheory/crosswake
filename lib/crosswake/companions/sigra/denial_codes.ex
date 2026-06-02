@@ -18,7 +18,16 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
     "auth.step_up.insufficient_assurance",
     "auth.step_up.stale_auth",
     "auth.step_up.remembered_not_allowed",
-    "auth.step_up.cached_not_allowed"
+    "auth.step_up.cached_not_allowed",
+    "auth.handoff.missing_ticket",
+    "auth.handoff.invalid_ticket",
+    "auth.handoff.expired_ticket",
+    "auth.handoff.replayed_ticket",
+    "auth.handoff.revoked_ticket",
+    "auth.handoff.binding_mismatch",
+    "auth.handoff.intent_mismatch",
+    "auth.handoff.route_mismatch",
+    "auth.handoff.projection_failed"
   ]
 
   @allowed_detail_keys [
@@ -34,7 +43,17 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
     "challenge_ref",
     "step_up_token_ref",
     "expected_session_version",
-    "current_session_version"
+    "current_session_version",
+    "handoff_ref",
+    "handoff_state",
+    "handoff_kind",
+    "handoff_version",
+    "handoff_transport",
+    "binding_kind",
+    "intent_kind",
+    "route_binding",
+    "ticket_expires_at",
+    "ticket_age_seconds"
   ]
 
   @safe_ref ~r/^[A-Za-z0-9._:-]{1,128}$/
@@ -72,10 +91,12 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
   defp stringify_key(key), do: inspect(key)
 
   defp safe_value?(key, value)
-       when key in ["challenge_ref", "step_up_token_ref"] and is_binary(value),
+       when key in ["challenge_ref", "step_up_token_ref", "handoff_ref"] and is_binary(value),
        do: Regex.match?(@safe_ref, value)
 
-  defp safe_value?(key, _value) when key in ["challenge_ref", "step_up_token_ref"], do: false
+  defp safe_value?(key, _value) when key in ["challenge_ref", "step_up_token_ref", "handoff_ref"],
+    do: false
+
   defp safe_value?(_key, value) when is_atom(value) and value not in [true, false, nil], do: true
   defp safe_value?(_key, value) when is_binary(value), do: String.length(value) <= 128
   defp safe_value?(_key, value) when is_integer(value) and value >= 0, do: true
