@@ -119,6 +119,13 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 
 **Requirements:** TOKN-01, TOKN-02
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 59-01-PLAN.md — Chimeway companion entrypoint and token-binding contract vocabulary
+- [ ] 59-02-PLAN.md — Raw-token redaction boundary, provider feedback normalization, and telemetry sanitizer
+- [ ] 59-03-PLAN.md — Phase proof and narrow Chimeway guide anchor
+
 **Success criteria:**
 1. `notifications.token.get` remains device evidence only and does not become auth, session, delivery, or route authority.
 2. Chimeway token evidence and token binding contracts cover provider, platform, environment, installation ref, subject scope, token fingerprint, state, timestamps, and safe audit fields.
