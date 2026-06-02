@@ -122,11 +122,20 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 59-01-PLAN.md — Chimeway companion entrypoint and token-binding contract vocabulary
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 59-02-PLAN.md — Raw-token redaction boundary, provider feedback normalization, and telemetry sanitizer
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 59-03-PLAN.md — Phase proof and narrow Chimeway guide anchor
 
 **Success criteria:**
+
 1. `notifications.token.get` remains device evidence only and does not become auth, session, delivery, or route authority.
 2. Chimeway token evidence and token binding contracts cover provider, platform, environment, installation ref, subject scope, token fingerprint, state, timestamps, and safe audit fields.
 3. APNs/FCM provider facts normalize into canonical Chimeway vocabulary without leaking provider-specific route-policy vocabulary.
@@ -139,6 +148,7 @@ Plans:
 **Requirements:** TOKN-03
 
 **Success criteria:**
+
 1. Example-host Phoenix registry shape uses idiomatic Ecto changesets and `Ecto.Multi` for revoke displaced binding, upsert current binding, and emit safe audit/telemetry evidence.
 2. Binding only occurs after backend auth/session context exists; shell token possession is never treated as identity.
 3. Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning all produce explicit backend lifecycle state.
@@ -151,6 +161,7 @@ Plans:
 **Requirements:** OPEN-01, OPEN-02, OPEN-03
 
 **Success criteria:**
+
 1. Notification opens use bounded refs such as notification/open/action refs plus route id rather than arbitrary URL authority.
 2. Route resolution calls existing route-gate behavior with `activation_source: :notification`.
 3. Auth-sensitive opens reuse Sigra session authority and step-up semantics before route activation.
@@ -163,6 +174,7 @@ Plans:
 **Requirements:** DIAG-01, DIAG-02
 
 **Success criteria:**
+
 1. Doctor, operator inspection, support matrix, fixtures, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
 2. Notification support truth reports provider support, app identity/environment match, binding readiness, stale-window posture, revocation hooks, redaction posture, route-open resolver support, and advisory lane freshness.
 3. Notification telemetry uses stable low-cardinality events for token observed/bound/rotated/revoked/pruned, provider feedback, and open received/resolved/denied outcomes.
@@ -175,6 +187,7 @@ Plans:
 **Requirements:** PROOF-01, PROOF-02
 
 **Success criteria:**
+
 1. Merge-blocking proof covers token evidence, binding, rotation, revocation, stale/invalid states, open validation, replay, route mismatch, policy denial, Sigra step-up, docs parity, and telemetry redaction.
 2. APNs/FCM token issuance, real delivery/open behavior, provider credentials, notification-tray behavior, Focus/Doze/background behavior, and provider console metrics remain advisory.
 3. Advisory-to-merge-blocking promotion criteria require current-branch repeated passes on iOS and Android, current docs anchors, explicit demotion triggers, and zero raw-token/PII findings.
