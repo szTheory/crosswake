@@ -170,7 +170,9 @@ defmodule Crosswake.Manifest.Types do
     @type ownership_posture :: :phoenix_owned | :native_or_companion_required
     @type t :: %__MODULE__{
             id: String.t(),
-            role_ownership: %{required(Crosswake.Policy.Schema.commerce_role()) => ownership_posture()},
+            role_ownership: %{
+              required(Crosswake.Policy.Schema.commerce_role()) => ownership_posture()
+            },
             denial: String.t(),
             fallback: String.t(),
             prerequisites: [String.t()]
@@ -207,6 +209,7 @@ defmodule Crosswake.Manifest.Types do
       :on_unavailable,
       :auth_min_level,
       :requires_recent_auth,
+      :auth_posture,
       capabilities: [],
       packs: [],
       sync: [],
@@ -232,7 +235,8 @@ defmodule Crosswake.Manifest.Types do
             gated_by: atom() | nil,
             on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
             auth_min_level: atom() | nil,
-            requires_recent_auth: pos_integer() | nil
+            requires_recent_auth: pos_integer() | nil,
+            auth_posture: Crosswake.Policy.Schema.auth_posture() | nil
           }
   end
 
@@ -477,7 +481,13 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
     @derive Jason.Encoder
 
-    @enforce_keys [:change_class, :what_changed, :adopter_action, :compatibility_signal, :required_proof]
+    @enforce_keys [
+      :change_class,
+      :what_changed,
+      :adopter_action,
+      :compatibility_signal,
+      :required_proof
+    ]
     defstruct [
       :change_class,
       :what_changed,
@@ -674,7 +684,8 @@ defmodule Crosswake.Manifest.Types do
       gated_by: Keyword.get(attrs, :gated_by),
       on_unavailable: Keyword.get(attrs, :on_unavailable),
       auth_min_level: Keyword.get(attrs, :auth_min_level),
-      requires_recent_auth: Keyword.get(attrs, :requires_recent_auth)
+      requires_recent_auth: Keyword.get(attrs, :requires_recent_auth),
+      auth_posture: Keyword.get(attrs, :auth_posture)
     })
   end
 
@@ -954,10 +965,18 @@ defmodule Crosswake.Manifest.Types do
       "gated_by" => route.gated_by && Atom.to_string(route.gated_by),
       "on_unavailable" => serialize_on_unavailable(route.on_unavailable),
       "auth_min_level" => route.auth_min_level && Atom.to_string(route.auth_min_level),
-      "requires_recent_auth" => route.requires_recent_auth
+      "requires_recent_auth" => route.requires_recent_auth,
+      "auth_posture" => route.auth_posture && Atom.to_string(route.auth_posture)
     }
     |> Enum.reject(fn {k, v} ->
-      k in ["gated_by", "on_unavailable", "auth_min_level", "requires_recent_auth"] and is_nil(v)
+      k in [
+        "gated_by",
+        "on_unavailable",
+        "auth_min_level",
+        "requires_recent_auth",
+        "auth_posture"
+      ] and
+        is_nil(v)
     end)
     |> Map.new()
   end
@@ -1028,7 +1047,8 @@ defmodule Crosswake.Manifest.Types do
       "target" => support_entry.target,
       "version" => support_entry.version,
       "status" => format_status(support_entry.status),
-      "baseline_status" => support_entry.baseline_status && format_status(support_entry.baseline_status),
+      "baseline_status" =>
+        support_entry.baseline_status && format_status(support_entry.baseline_status),
       "proof_status" => support_entry.proof_status && format_status(support_entry.proof_status),
       "proof" => support_entry.proof,
       "notes" => support_entry.notes,

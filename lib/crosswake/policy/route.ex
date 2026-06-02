@@ -20,6 +20,7 @@ defmodule Crosswake.Policy.Route do
     :on_unavailable,
     :auth_min_level,
     :requires_recent_auth,
+    :auth_posture,
     offline: :unavailable,
     entry: :internal_only,
     capabilities: [],
@@ -44,7 +45,8 @@ defmodule Crosswake.Policy.Route do
           gated_by: atom() | nil,
           on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
           auth_min_level: atom() | nil,
-          requires_recent_auth: pos_integer() | nil
+          requires_recent_auth: pos_integer() | nil,
+          auth_posture: Schema.auth_posture() | nil
         }
 
   @spec new(keyword()) :: {:ok, t()} | {:error, NimbleOptions.ValidationError.t()}
@@ -58,12 +60,14 @@ defmodule Crosswake.Policy.Route do
              {:ok, validated} <- validate_gating_posture(validated),
              {:ok, validated} <- validate_entry_policy(validated),
              {:ok, validated} <- validate_commerce_declaration(validated),
+             {:ok, validated} <- validate_auth_posture(validated),
              {:ok, validated} <- validate_pack_requirements(validated),
              {:ok, validated} <- validate_transfer_declarations(validated) do
           {:ok, struct!(__MODULE__, validated)}
         end
 
-      {:error, error} -> {:error, error}
+      {:error, error} ->
+        {:error, error}
     end
   end
 
@@ -76,6 +80,7 @@ defmodule Crosswake.Policy.Route do
     |> validate_gating_posture!()
     |> validate_entry_policy!()
     |> validate_commerce_declaration!()
+    |> validate_auth_posture!()
     |> validate_pack_requirements!()
     |> validate_transfer_declarations!()
     |> then(&struct!(__MODULE__, &1))
@@ -266,6 +271,74 @@ defmodule Crosswake.Policy.Route do
       {:error, error} -> raise error
     end
   end
+
+  defp validate_auth_posture(validated) do
+    resolved = resolved_auth_posture(validated)
+    validated = Keyword.put(validated, :auth_posture, resolved)
+
+    cond do
+      validated[:requires_recent_auth] && resolved != :strict_recent ->
+        {:error,
+         validation_error(
+           :auth_posture,
+           resolved,
+           "requires_recent_auth requires auth_posture :strict_recent"
+         )}
+
+      validated[:security] == :sensitive && resolved != :strict_recent ->
+        {:error,
+         validation_error(
+           :auth_posture,
+           resolved,
+           "sensitive routes require auth_posture :strict_recent"
+         )}
+
+      resolved == :cached_read_only_ok && not cached_read_only_auth_allowed?(validated) ->
+        {:error,
+         validation_error(
+           :auth_posture,
+           resolved,
+           "auth_posture :cached_read_only_ok requires a provably read-only/degraded cached route"
+         )}
+
+      true ->
+        {:ok, validated}
+    end
+  end
+
+  defp validate_auth_posture!(validated) do
+    case validate_auth_posture(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp resolved_auth_posture(validated) do
+    cond do
+      not is_nil(validated[:auth_posture]) -> validated[:auth_posture]
+      not is_nil(validated[:requires_recent_auth]) -> :strict_recent
+      validated[:security] == :sensitive -> :strict_recent
+      not is_nil(validated[:auth_min_level]) -> :strict_recent
+      true -> nil
+    end
+  end
+
+  defp cached_read_only_auth_allowed?(validated) do
+    read_only_or_degraded? =
+      validated[:runtime] == :live_view and
+        validated[:offline] == :cached_read_only and
+        (not is_nil(validated[:cache_contract]) or validated[:on_unavailable] == :deny)
+
+    commerce_role = commerce_role(validated[:commerce])
+    commerce_safe? = commerce_role not in [:purchase_intent, :restore_intent, :account_management]
+
+    read_only_or_degraded? and validated[:security] != :sensitive and
+      validated[:requires_recent_auth] == nil and
+      commerce_safe?
+  end
+
+  defp commerce_role(%{role: role}), do: role
+  defp commerce_role(_commerce), do: nil
 
   defp invalid_transfer_for_runtime?(transfer, runtime) do
     transfer.source == :native_capture and runtime != :native_screen

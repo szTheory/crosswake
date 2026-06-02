@@ -10,11 +10,12 @@ defmodule Crosswake.Policy.Schema do
   @offline_values [:unavailable, :cached_read_only, :local_first]
   @entry_values [:internal_only, :external]
   @security_values [:standard, :sensitive]
+  @auth_posture_values [:strict_recent, :remembered_ok, :cached_read_only_ok]
   @pack_kind_values [:content, :media]
   @commerce_role_values [:paywall_entry, :purchase_intent, :restore_intent, :account_management]
   @provider_specific_commerce_terms [:storekit, :play_billing, :revenuecat]
 
-  @schema NimbleOptions.new!([
+  @schema NimbleOptions.new!(
             id: [
               type: {:custom, __MODULE__, :validate_identifier, []},
               required: true,
@@ -86,13 +87,18 @@ defmodule Crosswake.Policy.Schema do
             requires_recent_auth: [
               type: {:custom, __MODULE__, :validate_requires_recent_auth, []},
               type_spec: quote(do: pos_integer() | nil)
+            ],
+            auth_posture: [
+              type: {:in, @auth_posture_values},
+              type_spec: quote(do: auth_posture() | nil)
             ]
-          ])
+          )
 
   @type runtime :: :live_view | :offline_island | :native_screen
   @type offline :: :unavailable | :cached_read_only | :local_first
   @type entry :: :internal_only | :external
   @type security :: :standard | :sensitive
+  @type auth_posture :: :strict_recent | :remembered_ok | :cached_read_only_ok
   @type pack_kind :: :content | :media
   @type commerce_role ::
           :paywall_entry | :purchase_intent | :restore_intent | :account_management
@@ -123,7 +129,8 @@ defmodule Crosswake.Policy.Schema do
           gated_by: atom() | nil,
           on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
           auth_min_level: atom() | nil,
-          requires_recent_auth: pos_integer() | nil
+          requires_recent_auth: pos_integer() | nil,
+          auth_posture: auth_posture() | nil
         ]
 
   @spec schema() :: NimbleOptions.t()
@@ -132,7 +139,11 @@ defmodule Crosswake.Policy.Schema do
   @spec commerce_role_values() :: [commerce_role()]
   def commerce_role_values, do: @commerce_role_values
 
-  @spec validate(keyword()) :: {:ok, validated_options()} | {:error, NimbleOptions.ValidationError.t()}
+  @spec auth_posture_values() :: [auth_posture()]
+  def auth_posture_values, do: @auth_posture_values
+
+  @spec validate(keyword()) ::
+          {:ok, validated_options()} | {:error, NimbleOptions.ValidationError.t()}
   def validate(options) when is_list(options) do
     NimbleOptions.validate(options, @schema)
   end
@@ -190,12 +201,14 @@ defmodule Crosswake.Policy.Schema do
     if value in SigraContracts.mfa_level_vocabulary() do
       {:ok, value}
     else
-      {:error, "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
+      {:error,
+       "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
     end
   end
 
   def validate_auth_min_level(value) do
-    {:error, "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
+    {:error,
+     "expected auth_min_level in sigra MFA vocabulary, got invalid_mfa_level: #{inspect(value)}"}
   end
 
   @spec validate_requires_recent_auth(term()) :: {:ok, pos_integer() | nil} | {:error, String.t()}
@@ -210,14 +223,17 @@ defmodule Crosswake.Policy.Schema do
   end
 
   @spec validate_runtime(term()) :: {:ok, runtime()} | {:error, String.t()}
-  def validate_runtime(:adapter), do: {:error, "runtime :adapter is a reserved future extension point"}
+  def validate_runtime(:adapter),
+    do: {:error, "runtime :adapter is a reserved future extension point"}
+
   def validate_runtime(value) when value in @runtime_values, do: {:ok, value}
 
   def validate_runtime(value) do
     {:error, "expected one of #{inspect(@runtime_values)}, got: #{inspect(value)}"}
   end
 
-  @spec validate_commerce_declaration(term()) :: {:ok, commerce_declaration() | nil} | {:error, String.t()}
+  @spec validate_commerce_declaration(term()) ::
+          {:ok, commerce_declaration() | nil} | {:error, String.t()}
   def validate_commerce_declaration(nil), do: {:ok, nil}
 
   def validate_commerce_declaration(declaration) when is_list(declaration) do
@@ -231,7 +247,8 @@ defmodule Crosswake.Policy.Schema do
            validate_optional_identifier(
              Map.get(declaration, :corridor, Map.get(declaration, "corridor"))
            ),
-         {:ok, role} <- validate_commerce_role(Map.get(declaration, :role, Map.get(declaration, "role"))) do
+         {:ok, role} <-
+           validate_commerce_role(Map.get(declaration, :role, Map.get(declaration, "role"))) do
       {:ok, %{corridor: corridor, role: role}}
     end
   end
@@ -245,8 +262,11 @@ defmodule Crosswake.Policy.Schema do
     |> Enum.with_index()
     |> Enum.reduce_while({:ok, []}, fn {requirement, index}, {:ok, acc} ->
       case validate_pack_requirement(requirement) do
-        {:ok, normalized} -> {:cont, {:ok, acc ++ [normalized]}}
-        {:error, reason} -> {:halt, {:error, "invalid pack declaration at position #{index}: #{reason}"}}
+        {:ok, normalized} ->
+          {:cont, {:ok, acc ++ [normalized]}}
+
+        {:error, reason} ->
+          {:halt, {:error, "invalid pack declaration at position #{index}: #{reason}"}}
       end
     end)
   end
@@ -260,8 +280,11 @@ defmodule Crosswake.Policy.Schema do
     |> Enum.with_index()
     |> Enum.reduce_while({:ok, []}, fn {declaration, index}, {:ok, acc} ->
       case Contracts.normalize_declaration(declaration) do
-        {:ok, normalized} -> {:cont, {:ok, acc ++ [normalized]}}
-        {:error, reason} -> {:halt, {:error, "invalid transfer declaration at position #{index}: #{reason}"}}
+        {:ok, normalized} ->
+          {:cont, {:ok, acc ++ [normalized]}}
+
+        {:error, reason} ->
+          {:halt, {:error, "invalid transfer declaration at position #{index}: #{reason}"}}
       end
     end)
   end
@@ -277,23 +300,31 @@ defmodule Crosswake.Policy.Schema do
 
   defp validate_pack_requirement(requirement) when is_map(requirement) do
     with {:ok, id} <- validate_identifier(Map.get(requirement, :id, Map.get(requirement, "id"))),
-         {:ok, version} <- validate_pack_version(Map.get(requirement, :version, Map.get(requirement, "version"))),
-         {:ok, kind} <- validate_pack_kind(Map.get(requirement, :kind, Map.get(requirement, "kind"))),
+         {:ok, version} <-
+           validate_pack_version(Map.get(requirement, :version, Map.get(requirement, "version"))),
+         {:ok, kind} <-
+           validate_pack_kind(Map.get(requirement, :kind, Map.get(requirement, "kind"))),
          {:ok, integrity} <-
-           validate_pack_integrity(Map.get(requirement, :integrity, Map.get(requirement, "integrity"))) do
+           validate_pack_integrity(
+             Map.get(requirement, :integrity, Map.get(requirement, "integrity"))
+           ) do
       {:ok, %{id: id, version: version, kind: kind, integrity: integrity}}
     end
   end
 
   defp validate_pack_requirement(_value), do: {:error, "expected a keyword list or map"}
 
-  defp validate_pack_version(value) when is_binary(value) and byte_size(value) > 0, do: {:ok, value}
-  defp validate_pack_version(_value), do: {:error, "pack version is required and must be a non-empty string"}
+  defp validate_pack_version(value) when is_binary(value) and byte_size(value) > 0,
+    do: {:ok, value}
+
+  defp validate_pack_version(_value),
+    do: {:error, "pack version is required and must be a non-empty string"}
 
   defp validate_pack_kind(value) when value in @pack_kind_values, do: {:ok, value}
 
   defp validate_pack_kind(value) do
-    {:error, "expected pack kind to be one of #{inspect(@pack_kind_values)}, got: #{inspect(value)}"}
+    {:error,
+     "expected pack kind to be one of #{inspect(@pack_kind_values)}, got: #{inspect(value)}"}
   end
 
   defp validate_pack_integrity(nil), do: {:ok, nil}
@@ -329,15 +360,18 @@ defmodule Crosswake.Policy.Schema do
         {:ok, String.to_existing_atom(value)}
 
       value in Enum.map(@provider_specific_commerce_terms, &Atom.to_string/1) ->
-        {:error, "provider-specific commerce role #{inspect(value)} is not supported in route policy"}
+        {:error,
+         "provider-specific commerce role #{inspect(value)} is not supported in route policy"}
 
       true ->
-        {:error, "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
+        {:error,
+         "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
     end
   end
 
   defp validate_commerce_role(value) do
-    {:error, "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
+    {:error,
+     "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
   end
 
   defp validate_optional_identifier(nil), do: {:ok, nil}
