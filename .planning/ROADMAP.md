@@ -90,7 +90,7 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 <details open>
 <summary>◆ v3.8 Full Sigra Auth and Session Machinery (Phases 54-58) — PLANNED 2026-06-01</summary>
 
-- [ ] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics — planned
+- [ ] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5 plans) — planned
 - [ ] Phase 55: Session Handoff Tickets And Authority Projection — planned
 - [ ] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned
 - [ ] Phase 57: OAuth, Passkey, And Native Return Boundaries — planned
@@ -101,6 +101,15 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 **Goal:** Expand v3.5's contract-only auth lane into a full backend-owned session authority projection and fail-closed route-gate evaluator.
 
 **Requirements:** SESS-01, SESS-02, SESS-03, DIAG-01
+
+**Plans:** 5 plans
+
+Plans:
+- [ ] `54-01-PLAN.md` — Expand Sigra authority contracts and the canonical auth denial-code registry.
+- [ ] `54-02-PLAN.md` — Add explicit `auth_posture` validation and manifest-visible route truth.
+- [ ] `54-03-PLAN.md` — Implement `Sigra.Evaluator` and delegate RouteGate auth checks to it.
+- [ ] `54-04-PLAN.md` — Promote doctor, publish-readiness, support-matrix, and operator inspection to session-authority truth.
+- [ ] `54-05-PLAN.md` — Close guides, docs-contract, and merge-blocking proof for full Phase 54 auth posture.
 
 **Success criteria:**
 1. `SessionAuthorityLane` and `AuthContext` expose explicit state, assurance, freshness, expiry, remembered-session, and revocation/version fields with validators.
