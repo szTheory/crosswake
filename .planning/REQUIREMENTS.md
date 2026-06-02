@@ -24,7 +24,7 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 - [x] **STEP-01**: A Phoenix host can create server-owned step-up intents for routes that require stronger assurance or fresher authentication, with bounded lifecycle states and manifest-known return targets.
 - [ ] **STEP-02**: Plug/controller routes and LiveView `on_mount` entry points share one step-up evaluator and fail closed into the same challenge/intent flow.
-- [ ] **STEP-03**: Successful step-up consumes the intent, renews session/CSRF posture, refreshes backend session authority, and returns only to a validated Crosswake route target.
+- [x] **STEP-03**: Successful step-up consumes the intent, renews session/CSRF posture, refreshes backend session authority, and returns only to a validated Crosswake route target.
 
 ### Auth Return Boundaries
 
@@ -81,7 +81,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HAND-03 | Phase 55 | Complete |
 | STEP-01 | Phase 56 | Complete |
 | STEP-02 | Phase 56 | Pending |
-| STEP-03 | Phase 56 | Pending |
+| STEP-03 | Phase 56 | Complete |
 | RETN-01 | Phase 57 | Pending |
 | RETN-02 | Phase 57 | Pending |
 | RETN-03 | Phase 57 | Pending |
