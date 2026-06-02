@@ -28,9 +28,9 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Auth Return Boundaries
 
-- [ ] **RETN-01**: A Phoenix host can declare OAuth, passkey, or native auth-return boundaries as typed, route-local seams rather than provider-specific global magic.
-- [ ] **RETN-02**: Auth-return envelopes validate state, nonce, PKCE posture, redirect matching, link verification status, expiry, and replay posture before any backend authority promotion.
-- [ ] **RETN-03**: OAuth callbacks, passkey assertions, native deep links, and shell bridge events remain evidence-only until backend validation updates session authority.
+- [x] **RETN-01**: A Phoenix host can declare OAuth, passkey, or native auth-return boundaries as typed, route-local seams rather than provider-specific global magic.
+- [x] **RETN-02**: Auth-return envelopes validate state, nonce, PKCE posture, redirect matching, link verification status, expiry, and replay posture before any backend authority promotion.
+- [x] **RETN-03**: OAuth callbacks, passkey assertions, native deep links, and shell bridge events remain evidence-only until backend validation updates session authority.
 
 ### Diagnostics And Proof
 
@@ -82,9 +82,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STEP-01 | Phase 56 | Complete |
 | STEP-02 | Phase 56 | Complete |
 | STEP-03 | Phase 56 | Complete |
-| RETN-01 | Phase 57 | Pending |
-| RETN-02 | Phase 57 | Pending |
-| RETN-03 | Phase 57 | Pending |
+| RETN-01 | Phase 57 | Complete |
+| RETN-02 | Phase 57 | Complete |
+| RETN-03 | Phase 57 | Complete |
 | DIAG-01 | Phase 54 | Complete |
 | DIAG-02 | Phase 58 | Pending |
 | DIAG-03 | Phase 58 | Pending |

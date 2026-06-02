@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.8
 milestone_name: Full Sigra Auth and Session Machinery
-status: executing
-last_updated: "2026-06-02T09:15:40.913Z"
-last_activity: 2026-06-02 -- Phase 57 planning complete
+status: verifying
+last_updated: "2026-06-02T09:23:25.286Z"
+last_activity: 2026-06-02
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 12
-  percent: 60
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-01)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 56 — step-up-intent-and-plug-liveview-ceremony
+**Current focus:** Phase 58 — auth-diagnostics-proof-and-security-closeout
 
 ## Current Position
 
-Phase: 56 (step-up-intent-and-plug-liveview-ceremony) — COMPLETE
+Phase: 57 (oauth-passkey-and-native-return-boundaries) — COMPLETE
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-06-02 -- Phase 57 planning complete
+Status: Phase complete — ready for Phase 58
+Last activity: 2026-06-02
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 48]: StoreKit and Play Billing promotion rules now use provider-specific readiness check IDs. — Aligns promotion criteria-as-code with shipped provider seams and advisory proof status.
 - [Phase 54]: Sigra route auth now uses backend-owned `SessionAuthorityLane` evaluation with explicit `auth_posture`, canonical `auth.step_up.*` subcodes, and shell-safe `:step_up_required` denial details.
 - [Phase 54]: Session-authority support truth is intentionally narrower than full auth machinery; handoff tickets, ceremony, OAuth/passkey returns, refresh tokens, and native auth UI remain deferred to later v3.8 phases.
+- [Phase 57]: OAuth, passkey, and native auth-return boundaries are provider-neutral route-local seams. Return envelopes are evidence only; host-owned attempt records and backend `SessionAuthorityLane` projection remain authoritative.
 
 ### Pending Todos
 
@@ -74,7 +75,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - Android JVM evidence continues to require CI (no local Java runtime).
 - StoreKit/Play Billing proof starts advisory in v3.7 until explicit promotion criteria are satisfied.
 - Provider adapters must preserve Phoenix-owned entitlement authority; device/storefront events remain reconciliation evidence.
-- Full `mix test` currently has 5 known planning-transition parity failures in `Crosswake.Planning.MilestoneTransitionResetTest` and `Crosswake.Planning.MilestoneArcCloseoutParityTest`; Phase 56 focused proof is green.
+- Phase 57 focused proof, example-host compile, and full `mix test` are green.
 
 ## Deferred Items
 
@@ -93,13 +94,14 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Phase 56 P02 | 7 min | 2 tasks | 7 files |
 | Phase 56 P03 | 5 min | 2 tasks | 4 files |
 | Phase 56 P04 | 5 min | 2 tasks | 15 files |
+| Phase 57 | integrated | 8 tasks | 37 files |
 
 ## Session Continuity
 
-Last session: 2026-06-02T08:53:03.621Z
-Stopped at: Phase 57 context gathered
+Last session: 2026-06-02T09:23:25.283Z
+Stopped at: Completed Phase 57 auth-return boundaries
 
 ## Operator Next Steps
 
-- Start Phase 57 with `$gsd-discuss-phase 57`
-- Or skip discussion and plan directly with `$gsd-plan-phase 57`
+- Start Phase 58 with `$gsd-discuss-phase 58`
+- Or skip discussion and plan directly with `$gsd-plan-phase 58`

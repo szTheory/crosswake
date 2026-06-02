@@ -92,8 +92,8 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 
 - [x] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5/5 plans) — completed 2026-06-02
 - [x] Phase 55: Session Handoff Tickets And Authority Projection (3/3 plans) — completed 2026-06-02
-- [x] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned (completed 2026-06-02)
-- [ ] Phase 57: OAuth, Passkey, And Native Return Boundaries — planned
+- [x] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — completed 2026-06-02
+- [x] Phase 57: OAuth, Passkey, And Native Return Boundaries — completed 2026-06-02
 - [ ] Phase 58: Auth Diagnostics, Proof, And Security Closeout — planned
 
 ### Phase 54: Sigra Session Authority Contract And Route-Gate Semantics
@@ -176,6 +176,6 @@ Plans:
 
 ## Next
 
-Continue v3.8 execution with `$gsd-discuss-phase 55`.
+Continue v3.8 execution with `$gsd-discuss-phase 58`.
 
 Also available: `$gsd-plan-phase 55` to skip discussion and plan directly.
