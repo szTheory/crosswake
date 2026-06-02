@@ -147,6 +147,21 @@ Plans:
 
 **Requirements:** TOKN-03
 
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 60-01-PLAN.md — Chimeway binding/event schemas, migrations, metadata sanitizer, and proof scaffold
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 60-02-PLAN.md — Registry lifecycle APIs with Ecto.Multi, audit rows, and post-commit telemetry proof
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 60-03-PLAN.md — Final Phase 60 proof lane and optional non-compiled worker guidance/no-dependency checks
+
 **Success criteria:**
 
 1. Example-host Phoenix registry shape uses idiomatic Ecto changesets and `Ecto.Multi` for revoke displaced binding, upsert current binding, and emit safe audit/telemetry evidence.
