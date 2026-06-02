@@ -583,7 +583,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
           platform: opts[:platform] || :ios,
           environment: opts[:environment] || :sandbox,
           installation_ref: opts[:installation_ref] || "inst_test_001",
-          token_ref: opts[:token_ref] || "tok_ref_#{token_fingerprint}",
+          token_ref: opts[:token_ref] || "tok_ref_\#{token_fingerprint}",
           token_fingerprint: token_fingerprint,
           notification_status: opts[:notification_status] || :granted,
           observed_at: DateTime.to_iso8601(DateTime.utc_now()),
@@ -613,7 +613,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     revoked_bindings = Repo.all(from b in TokenBinding,
       where: b.subject_ref == "sub_logout_001" and b.session_ref == "sess_logout_001")
     for b <- revoked_bindings do
-      assert b.state == :revoked, "binding #{b.binding_ref} must be revoked after logout"
+      assert b.state == :revoked, "binding \#{b.binding_ref} must be revoked after logout"
       assert b.reason == :logout_revoked
       assert b.revoked_at != nil
     end
@@ -792,8 +792,12 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     # --- Telemetry rollback safety ---
     # Force a transaction failure by inserting a duplicate binding_ref and
     # assert no success telemetry fires for the rolled-back write.
-    # Flush any existing telemetry messages
-    receive do {:telemetry_fired, _, _} -> :ok after 0 -> :ok end
+    # Flush ALL pending telemetry messages accumulated from earlier in the test
+    # so the rollback assertion starts with a clean mailbox
+    :timer.sleep(50)
+    Enum.each(1..50, fn _ ->
+      receive do {:telemetry_fired, _, _} -> :ok after 0 -> :ok end
+    end)
 
     {:ok, existing_bind} = Phase60TestHelpers.bind_session(
       "sub_rollback_test", "sess_rollback", "hmac-sha256:fp_rollback_001",
@@ -801,8 +805,11 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     )
     existing_ref = existing_bind.binding.binding_ref
 
-    # Flush telemetry from the successful bind above
-    receive do {:telemetry_fired, [:crosswake, :notification, :token, :bound], _} -> :ok after 500 -> :ok end
+    # Flush telemetry from the successful bind above; give it time to arrive
+    :timer.sleep(50)
+    Enum.each(1..10, fn _ ->
+      receive do {:telemetry_fired, _, _} -> :ok after 0 -> :ok end
+    end)
 
     # Attempt to insert a duplicate: will fail at DB level
     rollback_result = CrosswakeExample.Repo.transaction(fn repo ->
@@ -837,7 +844,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     # Transaction rolled back — no success telemetry should fire
     receive do
       {:telemetry_fired, event_name, _} ->
-        flunk("Success telemetry #{inspect(event_name)} must not fire for rolled-back transaction")
+        flunk("Success telemetry \#{inspect(event_name)} must not fire for rolled-back transaction")
     after
       100 -> :ok
     end
