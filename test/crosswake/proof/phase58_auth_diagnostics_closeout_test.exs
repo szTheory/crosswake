@@ -22,7 +22,10 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
     scope "/" do
       pipe_through(:browser)
 
-      get("/secure", Elixir.Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest.PageController, :secure,
+      get(
+        "/secure",
+        Elixir.Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest.PageController,
+        :secure,
         crosswake: [
           id: "secure",
           runtime: :live_view,
@@ -121,7 +124,11 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
   test "guides and security closeout preserve provider device non-claims and secret bans" do
     companions = File.read!("guides/companions.md")
     support = File.read!("guides/support_matrix.md")
-    security = File.read!(".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md")
+
+    security =
+      File.read!(
+        ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+      )
 
     assert companions =~ "Crosswake.Companions.Sigra.Telemetry"
     assert companions =~ "low-cardinality telemetry metadata"

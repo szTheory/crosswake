@@ -32,6 +32,33 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     "Deferred non-shipped claims",
     "Published Hex truth"
   ]
+  @phase58_security_sections [
+    "## Token And Locator Handling",
+    "## Handoff Tickets",
+    "## Step-Up Ceremony",
+    "## Auth Return Boundaries",
+    "## Telemetry And Diagnostics",
+    "## Denial Sanitization",
+    "## Session Renewal And LiveView Invalidation",
+    "## Doctor Support Operator And Docs Truth",
+    "## Proof And Non-Claims",
+    "## Findings Disposition"
+  ]
+  @phase58_security_table_columns [
+    "Surface",
+    "STRIDE",
+    "Adversarial scenario",
+    "Control",
+    "Evidence",
+    "Residual risk",
+    "Disposition"
+  ]
+  @phase58_security_required_phrases [
+    "SessionAuthorityLane",
+    "diagnostic evidence only",
+    "provider/device proof remains advisory",
+    "direct shell/WebView token authority"
+  ]
 
   defmodule Report do
     @moduledoc false
@@ -60,17 +87,22 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     cwd = Keyword.get(opts, :cwd, File.cwd!())
 
     checks =
-      [
-        closeout_frontmatter_check(cwd, opts),
-        deferred_shape_check(cwd, opts),
-        release_continuity_check(cwd, opts),
-        requirements_state_check(cwd, opts),
-        roadmap_state_check(cwd, opts),
-        phase_verification_check(cwd, opts),
-        summary_frontmatter_check(cwd, opts),
-        validation_ledger_check(cwd, opts),
-        thread_seed_disposition_check(cwd, opts)
-      ]
+      if Keyword.get(opts, :security_only?) == true do
+        []
+      else
+        [
+          closeout_frontmatter_check(cwd, opts),
+          deferred_shape_check(cwd, opts),
+          release_continuity_check(cwd, opts),
+          requirements_state_check(cwd, opts),
+          roadmap_state_check(cwd, opts),
+          phase_verification_check(cwd, opts),
+          summary_frontmatter_check(cwd, opts),
+          validation_ledger_check(cwd, opts),
+          thread_seed_disposition_check(cwd, opts)
+        ]
+      end
+      |> maybe_security_closeout_check(cwd, opts)
 
     status = if Enum.any?(checks, & &1.blocking), do: :failed, else: :passed
 
@@ -311,6 +343,88 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       "Route open threads/seeds to future milestone ownership or mark shipped signals closed.",
       %{}
     )
+  end
+
+  defp maybe_security_closeout_check(checks, _cwd, opts) do
+    case Keyword.get(opts, :security_closeout_path) do
+      nil -> checks
+      "" -> checks
+      _path -> checks ++ [security_closeout_check(opts)]
+    end
+  end
+
+  defp security_closeout_check(opts) do
+    path = Keyword.fetch!(opts, :security_closeout_path)
+    content = read_file(path)
+
+    missing_sections = Enum.reject(@phase58_security_sections, &String.contains?(content, &1))
+    missing_table_sections = missing_security_table_sections(content, missing_sections)
+
+    missing_phrases =
+      Enum.reject(@phase58_security_required_phrases, &String.contains?(content, &1))
+
+    unresolved = unresolved_security_rows(content)
+
+    passed =
+      not String.starts_with?(content, "FILE_READ_ERROR") and missing_sections == [] and
+        missing_table_sections == [] and missing_phrases == [] and unresolved == []
+
+    check(
+      "closeout.security.phase58",
+      "Phase 58 Sigra security closeout",
+      path,
+      passed,
+      "missing sections: #{Enum.join(missing_sections, ", ")}; missing table sections: #{Enum.join(missing_table_sections, ", ")}; missing phrases: #{Enum.join(missing_phrases, ", ")}; unresolved high/critical findings: #{length(unresolved)}",
+      "Add bounded STRIDE ledger tables for Sigra auth surfaces and close or mitigate every Critical/High finding.",
+      %{
+        missing_sections: missing_sections,
+        missing_table_sections: missing_table_sections,
+        missing_phrases: missing_phrases,
+        unresolved: unresolved
+      }
+    )
+  end
+
+  defp missing_security_table_sections(content, missing_sections) do
+    @phase58_security_sections
+    |> Enum.reject(&(&1 in missing_sections))
+    |> Enum.reject(fn section ->
+      section_body(content, section) |> security_table_header?()
+    end)
+  end
+
+  defp section_body(content, section) do
+    [_before, rest] = String.split(content, section, parts: 2)
+
+    case Regex.split(~r/\n## /, rest, parts: 2) do
+      [body] -> body
+      [body, _next] -> body
+    end
+  end
+
+  defp security_table_header?(section_body) do
+    Enum.any?(String.split(section_body, "\n"), fn line ->
+      Enum.all?(@phase58_security_table_columns, &String.contains?(line, &1))
+    end)
+  end
+
+  defp unresolved_security_rows(content) do
+    content
+    |> String.split("\n")
+    |> Enum.filter(&String.starts_with?(&1, "|"))
+    |> Enum.reject(&String.contains?(&1, "---"))
+    |> Enum.filter(fn row ->
+      cells =
+        row
+        |> String.trim("|")
+        |> String.split("|")
+        |> Enum.map(&String.trim/1)
+
+      severity? = Enum.any?(cells, &Regex.match?(~r/\b(Critical|High)\b/i, &1))
+      disposition = List.last(cells) || ""
+
+      severity? and not Regex.match?(~r/^(Closed|Mitigated)$/i, disposition)
+    end)
   end
 
   defp check(id, subject, source, passed?, observed, hint, details) do

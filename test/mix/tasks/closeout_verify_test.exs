@@ -50,6 +50,108 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     end
   end
 
+  test "mix closeout.verify accepts an explicit Phase 58 security closeout artifact" do
+    cwd = complete_fixture!("security")
+    security_path = Path.join(cwd, ".planning/phases/58-fixture/58-SECURITY.md")
+    File.mkdir_p!(Path.dirname(security_path))
+    File.write!(security_path, security_closeout())
+
+    output =
+      capture_io(fn ->
+        Mix.Task.reenable(@task)
+        Mix.Task.run(@task, ["--cwd", cwd, "--security-closeout", security_path])
+      end)
+
+    assert output =~ "closeout.verify passed"
+    assert output =~ "closeout.security.phase58"
+  end
+
+  test "mix closeout.verify can run Phase 58 security closeout without v3.6 ledger checks" do
+    cwd = complete_fixture!("security-only")
+    File.write!(Path.join(cwd, ".planning/REQUIREMENTS.md"), "v3.8 active requirements\n")
+    File.write!(Path.join(cwd, ".planning/ROADMAP.md"), "$gsd-discuss-phase 58\n")
+
+    security_path = Path.join(cwd, ".planning/phases/58-fixture/58-SECURITY.md")
+    File.mkdir_p!(Path.dirname(security_path))
+    File.write!(security_path, security_closeout())
+
+    output =
+      capture_io(fn ->
+        Mix.Task.reenable(@task)
+
+        Mix.Task.run(@task, [
+          "--cwd",
+          cwd,
+          "--security-only",
+          "--security-closeout",
+          security_path
+        ])
+      end)
+
+    assert output =~ "closeout.verify passed"
+    assert output =~ "closeout.security.phase58"
+    refute output =~ "closeout.requirements.state"
+  end
+
+  test "mix closeout.verify rejects Phase 58 security closeout missing ledger table structure" do
+    cwd = complete_fixture!("security-missing-table")
+    security_path = Path.join(cwd, ".planning/phases/58-fixture/58-SECURITY.md")
+    File.mkdir_p!(Path.dirname(security_path))
+
+    File.write!(
+      security_path,
+      String.replace(security_closeout(), "| Surface | STRIDE |", "| Surface |")
+    )
+
+    output =
+      capture_io(fn ->
+        assert_raise Mix.Error, ~r/closeout verification found blocking issues/, fn ->
+          Mix.Task.reenable(@task)
+
+          Mix.Task.run(@task, [
+            "--cwd",
+            cwd,
+            "--security-only",
+            "--security-closeout",
+            security_path
+          ])
+        end
+      end)
+
+    assert output =~ "closeout.verify failed"
+    assert output =~ "closeout.security.phase58"
+    assert output =~ "missing table sections:"
+  end
+
+  test "mix closeout.verify rejects unresolved high or critical Phase 58 findings" do
+    cwd = complete_fixture!("security-unresolved-high")
+    security_path = Path.join(cwd, ".planning/phases/58-fixture/58-SECURITY.md")
+    File.mkdir_p!(Path.dirname(security_path))
+
+    File.write!(
+      security_path,
+      String.replace(security_closeout(), "| Closed |", "| Open |", global: false)
+    )
+
+    output =
+      capture_io(fn ->
+        assert_raise Mix.Error, ~r/closeout verification found blocking issues/, fn ->
+          Mix.Task.reenable(@task)
+
+          Mix.Task.run(@task, [
+            "--cwd",
+            cwd,
+            "--security-only",
+            "--security-closeout",
+            security_path
+          ])
+        end
+      end)
+
+    assert output =~ "closeout.verify failed"
+    assert output =~ "unresolved high/critical findings: 1"
+  end
+
   defp complete_fixture!(name) do
     cwd =
       Path.join(
@@ -147,6 +249,38 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     Latest published Hex release remains 0.1.0.
 
     ## [0.1.0]
+    """
+  end
+
+  defp security_closeout do
+    sections = [
+      "## Token And Locator Handling",
+      "## Handoff Tickets",
+      "## Step-Up Ceremony",
+      "## Auth Return Boundaries",
+      "## Telemetry And Diagnostics",
+      "## Denial Sanitization",
+      "## Session Renewal And LiveView Invalidation",
+      "## Doctor Support Operator And Docs Truth",
+      "## Proof And Non-Claims",
+      "## Findings Disposition"
+    ]
+
+    section_tables =
+      Enum.map_join(sections, "\n", fn section ->
+        """
+        #{section}
+
+        | Surface | STRIDE | Adversarial scenario | Control | Evidence | Residual risk | Disposition |
+        |---------|--------|----------------------|---------|----------|---------------|-------------|
+        | High - Sigra auth surface | Spoofing/Tampering | Client evidence attempts to set `SessionAuthorityLane`. | Telemetry is diagnostic evidence only; provider/device proof remains advisory; direct shell/WebView token authority is non-shipped. | test fixture | None | Closed |
+        """
+      end)
+
+    """
+    # Phase 58 Security Closeout
+
+    #{section_tables}
     """
   end
 end
