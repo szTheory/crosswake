@@ -163,9 +163,13 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
     auth = find_check!(report, :auth_session_predicate_readiness)
     assert auth.message =~ "Sigra"
-    assert auth.message =~ "contract-only"
+    assert auth.message =~ "session-authority"
     assert :handoff in auth.details.deferred
-    assert auth.details.promotion_rule_ids == ["auth.sigra.contract_only"]
+    assert auth.code == "diag.auth.sigra_session_authority"
+    assert auth.details.posture == :session_authority
+    assert :auth_posture in auth.details.route_predicates
+    assert "auth.step_up.missing_context" in auth.details.denial_codes
+    assert auth.details.promotion_rule_ids == ["auth.sigra.session_authority"]
     assert "companion_native" in auth.rebuild_requirement.action_classes
 
     notifications = find_check!(report, :notification_token_readiness)

@@ -123,7 +123,10 @@ defmodule Crosswake.OperatorInspectionTest do
     secure = document.routes["secure"]
     assert secure.auth.auth_min_level == :mfa
     assert secure.auth.requires_recent_auth == 600
+    assert secure.auth.auth_posture == :strict_recent
     assert secure.auth.readiness == :verification_required
+    assert secure.auth.posture == :session_authority
+    assert "auth.step_up.missing_context" in secure.auth.denial_codes
     assert secure.support.proof_class == :advisory
     assert "step_up_required" in secure.denials
 
@@ -186,7 +189,7 @@ defmodule Crosswake.OperatorInspectionTest do
 
     assert document.indexes.by_capability["notification_token"] == ["notifications"]
     assert document.indexes.by_companion["stub_companion"] == ["gated"]
-    assert document.indexes.by_auth_predicate["step_up_required"] == ["secure"]
+    assert document.indexes.by_auth_predicate["step_up_required"] == ["checkout", "secure"]
     assert "checkout" in document.indexes.by_rebuild_requirement["native_required"]
     assert "notifications" in document.indexes.by_rebuild_requirement["companion_required"]
   end

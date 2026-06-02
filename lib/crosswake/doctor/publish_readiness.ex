@@ -364,14 +364,14 @@ defmodule Crosswake.Doctor.PublishReadiness do
   end
 
   defp auth_session_predicate_readiness_check(support_matrix, inspection) do
-    _auth_truth = SupportMatrix.auth_contract_truth()
+    auth_truth = SupportMatrix.auth_contract_truth()
     _release = SupportMatrix.release_boundaries(support_matrix)
     route_ids = route_ids_with(inspection, &(&1.auth.fallback == :step_up_required))
-    claim_ids = ["auth.sigra.contract_only"]
+    claim_ids = ["auth.sigra.session_authority"]
 
     advisory_check(
       id: "auth.session_predicate_readiness",
-      code: "diag.auth.sigra_contract_only",
+      code: "diag.auth.sigra_session_authority",
       category: :auth_session_predicate_readiness,
       result: if(route_ids == [], do: :pass, else: :verification_required),
       severity: if(route_ids == [], do: :advisory, else: :warning),
@@ -379,22 +379,24 @@ defmodule Crosswake.Doctor.PublishReadiness do
         if(route_ids == [],
           do: "no Sigra auth predicate routes are present in the inspected route set",
           else:
-            "Sigra auth/session readiness is contract-only; handoff, ceremony, passkey, OAuth, and refresh-token machinery are not shipped"
+            "Sigra session-authority route evaluation is shipped; handoff, ceremony, passkey, OAuth, and refresh-token machinery are not shipped"
         ),
       hint:
-        "Keep auth predicates backend-owned and fail closed with step_up_required until full Sigra machinery ships.",
+        "Keep auth predicates backend-owned and fail closed with step_up_required; use later phases for handoff, ceremony, and auth-return machinery.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
       rebuild_requirement: %{
         native_required: false,
         companion_required: route_ids != [],
-        reasons: ["Sigra route predicates remain companion contract-only support truth"],
+        reasons: ["Sigra session-authority route evaluation requires companion support truth"],
         action_classes: ["companion_native"]
       },
-      claim_scope: "Sigra auth predicate readiness",
+      claim_scope: "Sigra session-authority route readiness",
       details: %{
-        posture: :contract_only,
+        posture: :session_authority,
         fallback: :step_up_required,
+        route_predicates: auth_truth |> List.first(%{}) |> Map.get(:route_predicates, []),
+        denial_codes: auth_truth |> List.first(%{}) |> Map.get(:denial_codes, []),
         deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
         route_ids: route_ids,
         promotion_rule_ids: if(route_ids == [], do: [], else: promotion_rule_ids(claim_ids)),

@@ -43,9 +43,11 @@ defmodule Crosswake.OperatorInspection.JSONFormatterTest do
               auth: %{
                 auth_min_level: nil,
                 requires_recent_auth: nil,
+                auth_posture: nil,
                 readiness: :supported,
                 posture: :not_applicable,
                 fallback: nil,
+                denial_codes: [],
                 non_goals: []
               },
               notifications: %{

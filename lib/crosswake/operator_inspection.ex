@@ -239,14 +239,18 @@ defmodule Crosswake.OperatorInspection do
   defp on_unavailable_label(value), do: value
 
   defp auth_entry(route) do
-    predicated? = not is_nil(route.auth_min_level) or not is_nil(route.requires_recent_auth)
+    predicated? =
+      not is_nil(route.auth_min_level) or not is_nil(route.requires_recent_auth) or
+        not is_nil(route.auth_posture)
 
     %{
       auth_min_level: route.auth_min_level,
       requires_recent_auth: route.requires_recent_auth,
+      auth_posture: route.auth_posture,
       readiness: if(predicated?, do: :verification_required, else: :supported),
-      posture: if(predicated?, do: :contract_only, else: :not_applicable),
+      posture: if(predicated?, do: :session_authority, else: :not_applicable),
       fallback: if(predicated?, do: :step_up_required, else: nil),
+      denial_codes: if(predicated?, do: Crosswake.Companions.Sigra.DenialCodes.codes(), else: []),
       non_goals:
         if(predicated?,
           do: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],

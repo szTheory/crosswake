@@ -199,7 +199,7 @@ defmodule Crosswake.SupportMatrixTest do
              "shell.ios.generated_project",
              "shell.android.generated_project",
              "notification_token.provider_snapshot",
-             "auth.sigra.contract_only",
+             "auth.sigra.session_authority",
              "purchase_intent.provider.storekit",
              "restore_intent.provider.storekit",
              "purchase_intent.provider.play_billing",
@@ -242,7 +242,7 @@ defmodule Crosswake.SupportMatrixTest do
 
   test "phase 51 companion and notification support truth preserve deferred non-claims" do
     assert [companion_truth] = SupportMatrix.companion_support_truth()
-    assert companion_truth.surface == "Sigra contract-only auth predicates"
+    assert companion_truth.surface == "Sigra session-authority route evaluator"
     assert companion_truth.proof_class == :merge_blocking
     assert companion_truth.action_class == "companion_native"
 
@@ -528,6 +528,7 @@ defmodule Crosswake.SupportMatrixTest do
     assert [%{} = row] = SupportMatrix.auth_contract_truth()
 
     assert Map.keys(row) |> Enum.sort() == [
+             :denial_codes,
              :denial_vocabulary,
              :fallback,
              :owner,
@@ -535,18 +536,20 @@ defmodule Crosswake.SupportMatrixTest do
              :posture,
              :proof_class,
              :route_predicates,
+             :safe_detail_keys,
              :surface
            ]
 
     assert row.owner == :backend_seam
     assert row.package_class == :companion
     assert row.proof_class == :merge_blocking
-    assert row.route_predicates == [:auth_min_level, :requires_recent_auth]
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_vocabulary == :step_up_required
+    assert "auth.step_up.missing_context" in row.denial_codes
+    assert "auth_posture" in row.safe_detail_keys
     assert row.fallback == :step_up_required
-    assert row.surface =~ "AuthContext"
-    refute row.surface =~ "SessionAuthorityLane"
-    assert row.posture =~ "Contract-only"
+    assert row.surface =~ "SessionAuthorityLane"
+    assert row.posture =~ "session-authority"
     assert row.posture =~ "No handoff"
   end
 end

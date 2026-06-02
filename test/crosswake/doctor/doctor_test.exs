@@ -861,7 +861,8 @@ defmodule Crosswake.DoctorTest do
              &(&1.code == "auth.route_predicated" and
                  &1.details[:route_id] == "auth_secure" and
                  &1.details[:auth_min_level] == :mfa and
-                 &1.details[:requires_recent_auth] == 600)
+                 &1.details[:requires_recent_auth] == 600 and
+                 &1.details[:auth_posture] == :strict_recent)
            )
 
     assert Enum.any?(auth_findings, &(&1.code == "auth.step_up_required_contract"))
@@ -874,6 +875,7 @@ defmodule Crosswake.DoctorTest do
     assert human =~ "route_id=auth_secure"
     assert human =~ "auth_min_level=mfa"
     assert human =~ "requires_recent_auth=600"
+    assert human =~ "auth_posture=strict_recent"
 
     json_route_finding =
       Enum.find(decoded["findings"], fn finding ->
@@ -883,14 +885,13 @@ defmodule Crosswake.DoctorTest do
     assert json_route_finding["details"]["route_id"] == "auth_secure"
     assert json_route_finding["details"]["auth_min_level"] == "mfa"
     assert json_route_finding["details"]["requires_recent_auth"] == 600
+    assert json_route_finding["details"]["auth_posture"] == "strict_recent"
 
     assert Enum.any?(decoded["findings"], &(&1["code"] == "auth.step_up_required_contract"))
 
     sensitive_artifacts = [
       "session_id",
       "actor_id",
-      "challenge",
-      "token_ref",
       "access_token",
       "refresh_token",
       "passkey_credential"

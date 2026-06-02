@@ -123,26 +123,28 @@ defmodule Crosswake.SupportMatrix do
   ]
   @auth_contract_truth [
     %{
-      surface: "AuthContext contract-only route predicate enforcement",
+      surface: "Sigra SessionAuthorityLane route authority evaluator",
       owner: :backend_seam,
       package_class: :companion,
       proof_class: :merge_blocking,
-      route_predicates: [:auth_min_level, :requires_recent_auth],
+      route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
       denial_vocabulary: :step_up_required,
+      denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
+      safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys(),
       fallback: :step_up_required,
       posture:
-        "Contract-only in Phase 46: typed auth context and fail-closed route denial only. No handoff, ceremony, passkey, OAuth, or refresh-token machinery."
+        "Phase 54 session-authority posture: backend-owned SessionAuthorityLane, explicit auth_posture, shared evaluator, and canonical auth.step_up.* denial codes. No handoff, ceremony, passkey, OAuth, or refresh-token machinery."
     }
   ]
   @companion_support_truth [
     %{
-      surface: "Sigra contract-only auth predicates",
+      surface: "Sigra session-authority route evaluator",
       proof_class: :merge_blocking,
       action_class: "companion_native",
       docs_anchor: "guides/companions.md#sigra-auth-contract-only",
       deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
       posture:
-        "Sigra support is contract-only in v3.6: route predicates and step_up_required denial are supported, while full native auth/session machinery is deferred."
+        "Sigra support includes backend session-authority contracts, auth_posture route truth, and fail-closed step_up_required denial codes; handoff, ceremony, passkey, OAuth, and native auth UI remain deferred."
     }
   ]
   @notification_support_truth [
@@ -832,12 +834,16 @@ defmodule Crosswake.SupportMatrix do
           "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support."
       ),
       promotion_rule(
-        claim_id: "auth.sigra.contract_only",
-        claim_scope: "Sigra contract-only route predicate support",
+        claim_id: "auth.sigra.session_authority",
+        claim_scope: "Sigra session-authority route evaluator support",
         current_proof_class: :merge_blocking,
         promotes_to: :merge_blocking,
-        evidence_class: "contract_only",
-        required_evidence: ["auth predicate route fixtures", "step_up_required denial proof"],
+        evidence_class: "session_authority",
+        required_evidence: [
+          "auth posture route fixtures",
+          "session authority evaluator proof",
+          "step_up_required denial-code proof"
+        ],
         minimum_consecutive_passes: 1,
         freshness_window: "current release branch",
         failure_budget: "zero contract failures",
@@ -845,9 +851,9 @@ defmodule Crosswake.SupportMatrix do
         required_docs_anchors: ["guides/support_matrix.md", "guides/companions.md"],
         change_class: "native or companion rebuild required",
         action_class: "companion_native",
-        check_ids: ["diag.auth.sigra_contract_only"],
+        check_ids: ["diag.auth.sigra_session_authority"],
         demotion_trigger:
-          "Demote if route predicates, step_up_required denial, or contract-only docs drift from support truth."
+          "Demote if route predicates, auth_posture, step_up_required denial codes, or session-authority docs drift from support truth."
       ),
       promotion_rule(
         claim_id: "purchase_intent.provider.storekit",

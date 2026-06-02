@@ -729,12 +729,13 @@ defmodule Crosswake.Doctor do
           :advisory,
           "auth.route_predicated",
           "auth.#{route.id}",
-          "Route \"#{route.id}\" declares auth predicates auth_min_level=#{route.auth_min_level} requires_recent_auth=#{route.requires_recent_auth}",
-          "Crosswake enforces fail-closed route denial via :step_up_required when predicate checks fail.",
+          "Route \"#{route.id}\" declares auth predicates auth_min_level=#{route.auth_min_level} requires_recent_auth=#{route.requires_recent_auth} auth_posture=#{route.auth_posture}",
+          "Crosswake enforces fail-closed session-authority evaluation via :step_up_required when predicate checks fail.",
           %{
             route_id: route.id,
             auth_min_level: route.auth_min_level,
             requires_recent_auth: route.requires_recent_auth,
+            auth_posture: route.auth_posture,
             fallback: :step_up_required
           }
         )
@@ -749,9 +750,14 @@ defmodule Crosswake.Doctor do
             :advisory,
             "auth.step_up_required_contract",
             "auth.contract_posture",
-            "Auth contract surface is route predicate enforcement only in Phase 46.",
-            "Contract-only scope: typed AuthContext input and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
-            %{fallback: :step_up_required}
+            "Auth contract surface includes Phase 54 backend session-authority evaluation.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.* denial codes, and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
+            %{
+              fallback: :step_up_required,
+              posture: :session_authority,
+              denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
+              safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys()
+            }
           )
         ]
       end
