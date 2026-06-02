@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.8
 milestone_name: Full Sigra Auth and Session Machinery
-status: executing
-last_updated: "2026-06-02T15:22:49.494Z"
-last_activity: 2026-06-02 -- Phase 58 execution started
+status: completed
+last_updated: "2026-06-02T15:28:50.370Z"
+last_activity: 2026-06-02 -- Phase 58 marked complete
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 19
-  completed_plans: 16
-  percent: 80
+  completed_plans: 19
+  percent: 100
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-01)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 58 — auth-diagnostics-proof-and-security-closeout
+**Current focus:** v3.8 milestone closeout
 
 ## Current Position
 
-Phase: 58 (auth-diagnostics-proof-and-security-closeout) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 58
-Last activity: 2026-06-02 -- Phase 58 execution started
+Phase: 58 — COMPLETE
+Plan: 3 of 3
+Status: Phase 58 complete
+Last activity: 2026-06-02 -- Phase 58 marked complete
 
 ## Performance Metrics
 
@@ -95,13 +95,13 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Phase 56 P03 | 5 min | 2 tasks | 4 files |
 | Phase 56 P04 | 5 min | 2 tasks | 15 files |
 | Phase 57 | integrated | 8 tasks | 37 files |
+| Phase 58 P3 | integrated | 3 tasks | 4 files |
 
 ## Session Continuity
 
 Last session: 2026-06-02T15:04:39.617Z
-Stopped at: Phase 58 context gathered
+Stopped at: Phase 58 complete
 
 ## Operator Next Steps
 
-- Start Phase 58 with `$gsd-discuss-phase 58`
-- Or skip discussion and plan directly with `$gsd-plan-phase 58`
+- Run `$gsd-complete-milestone` to archive v3.8 and prepare the next version.

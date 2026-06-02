@@ -35,9 +35,9 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 ### Diagnostics And Proof
 
 - [x] **DIAG-01**: Crosswake exposes a canonical Sigra auth denial code taxonomy, safe user-facing denial messages, and rich operator/developer detail without leaking tokens, provider payloads, passkey credential IDs, or PII.
-- [ ] **DIAG-02**: Crosswake emits stable `[:crosswake, :auth, ...]` telemetry events with documented low-cardinality metadata for session evaluation, denial, handoff, step-up, OAuth return, and passkey return flows.
-- [ ] **DIAG-03**: Doctor, support matrix, operator inspection, guides, and docs-contract tests distinguish full Sigra machinery from provider/device advisory proof and from v3.5 contract-only truth.
-- [ ] **PROOF-01**: Merge-blocking hermetic proof covers contracts, route gates, replay/expiry/revocation, step-up returns, denial sanitization, telemetry/docs parity, and security-sensitive non-claims; provider/device proof remains advisory until promotion criteria pass.
+- [x] **DIAG-02**: Crosswake emits stable `[:crosswake, :auth, ...]` telemetry events with documented low-cardinality metadata for session evaluation, denial, handoff, step-up, OAuth return, and passkey return flows.
+- [x] **DIAG-03**: Doctor, support matrix, operator inspection, guides, and docs-contract tests distinguish full Sigra machinery from provider/device advisory proof and from v3.5 contract-only truth.
+- [x] **PROOF-01**: Merge-blocking hermetic proof covers contracts, route gates, replay/expiry/revocation, step-up returns, denial sanitization, telemetry/docs parity, and security-sensitive non-claims; provider/device proof remains advisory until promotion criteria pass.
 
 ## Future Requirements
 
@@ -86,9 +86,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RETN-02 | Phase 57 | Complete |
 | RETN-03 | Phase 57 | Complete |
 | DIAG-01 | Phase 54 | Complete |
-| DIAG-02 | Phase 58 | Pending |
-| DIAG-03 | Phase 58 | Pending |
-| PROOF-01 | Phase 58 | Pending |
+| DIAG-02 | Phase 58 | Complete |
+| DIAG-03 | Phase 58 | Complete |
+| PROOF-01 | Phase 58 | Complete |
 
 **Coverage:**
 - v3.8 requirements: 16 total

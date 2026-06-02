@@ -1,27 +1,50 @@
 defmodule Crosswake.Planning.CloseoutCIParityTest do
   use ExUnit.Case, async: true
 
-  @workflow Path.join(File.cwd!(), ".github/workflows/phase52-proof.yml")
+  @workflow Path.join(File.cwd!(), ".github/workflows/phase58-proof.yml")
 
-  test "merge-blocking proof lane runs mix closeout.verify" do
+  test "phase 58 merge-blocking proof lane runs hermetic auth closeout checks" do
     workflow = File.read!(@workflow)
-    merge_blocking = job_section!(workflow, "merge-blocking-operator-proof")
+    merge_blocking = job_section!(workflow, "merge-blocking-auth-closeout-proof")
 
-    assert merge_blocking =~ "Run milestone closeout verification"
-    assert merge_blocking =~ "mix closeout.verify"
-    assert merge_blocking =~ "Run hermetic Phase 52 operator proof"
+    assert merge_blocking =~ "mix compile --warnings-as-errors"
+
+    assert merge_blocking =~
+             "mix closeout.verify --security-only --security-closeout .planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+
+    assert merge_blocking =~ "test/crosswake/proof/phase54_sigra_session_authority_test.exs"
+    assert merge_blocking =~ "test/crosswake/proof/phase55_session_handoff_tickets_test.exs"
+    assert merge_blocking =~ "test/crosswake/proof/phase56_step_up_ceremony_test.exs"
+    assert merge_blocking =~ "test/crosswake/proof/phase57_auth_return_boundaries_test.exs"
+    assert merge_blocking =~ "test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs"
+    assert merge_blocking =~ "test/crosswake/companions/sigra/telemetry_test.exs"
+    assert merge_blocking =~ "test/mix/tasks/closeout_verify_test.exs"
+    refute merge_blocking =~ "continue-on-error: true"
   end
 
-  test "advisory operator proof remains non-blocking and non-promotional" do
+  test "phase 58 advisory provider device proof remains non-blocking and non-promotional" do
     workflow = File.read!(@workflow)
-    advisory = job_section!(workflow, "advisory-operator-proof")
+    advisory = job_section!(workflow, "advisory-auth-provider-device-proof")
 
     assert advisory =~ "continue-on-error: true"
-    assert advisory =~ "StoreKit or Play Billing adapters"
-    assert advisory =~ "Chimeway delivery support"
-    assert advisory =~ "full Sigra machinery"
-    assert advisory =~ "standalone public shell packages"
+    assert advisory =~ "Provider/device OAuth"
+    assert advisory =~ "passkey"
+    assert advisory =~ "verified-link"
+    assert advisory =~ "native auth UI"
+    assert advisory =~ "refresh-token"
+    assert advisory =~ "shell/WebView token-authority proof"
+    assert advisory =~ "not merge-blocking support claims"
     refute advisory =~ "mix closeout.verify"
+  end
+
+  test "phase 58 workflow keeps advisory lane off pull request and push triggers" do
+    workflow = File.read!(@workflow)
+    advisory = job_section!(workflow, "advisory-auth-provider-device-proof")
+
+    assert advisory =~ "github.event_name == 'schedule'"
+    assert advisory =~ "workflow_dispatch"
+    refute advisory =~ "github.event_name == 'pull_request'"
+    refute advisory =~ "github.event_name == 'push'"
   end
 
   defp job_section!(workflow, job_name) do
