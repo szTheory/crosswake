@@ -92,7 +92,7 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 
 - [x] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5/5 plans) — completed 2026-06-02
 - [x] Phase 55: Session Handoff Tickets And Authority Projection (3/3 plans) — completed 2026-06-02
-- [ ] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned
+- [x] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned (completed 2026-06-02)
 - [ ] Phase 57: OAuth, Passkey, And Native Return Boundaries — planned
 - [ ] Phase 58: Auth Diagnostics, Proof, And Security Closeout — planned
 
