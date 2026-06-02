@@ -147,12 +147,12 @@ Plans:
 
 **Requirements:** TOKN-03
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 60-01-PLAN.md — Chimeway binding/event schemas, migrations, metadata sanitizer, and proof scaffold
+- [x] 60-01-PLAN.md — Chimeway binding/event schemas, migrations, metadata sanitizer, and proof scaffold
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
