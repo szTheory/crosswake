@@ -3,6 +3,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
 
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.StepUp
+  alias Crosswake.Companions.Sigra.StepUpCeremony
   alias Crosswake.Shell.Denial
 
   @step_up_intent_codes [
@@ -128,6 +129,125 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     assert {:step_up_intent_locator, {:session_authority_lane, :forbidden}} in errors
   end
 
+  test "shared ceremony core allows sufficient auth challenges step-up denials and preserves host denials" do
+    route =
+      struct!(Crosswake.Manifest.Types.RouteEntry,
+        id: "saas-profile-settings",
+        path: "/saas/settings/profile",
+        runtime: :live_view,
+        offline: :cached_read_only,
+        security: :standard,
+        auth_min_level: :mfa,
+        requires_recent_auth: 900,
+        auth_posture: :strict_recent
+      )
+
+    lane = session_authority_lane(:password, 43)
+    auth_context = auth_context(lane)
+
+    assert {:allow, %{ok: true}} =
+             StepUpCeremony.evaluate_or_issue(route, auth_context,
+               evaluator_result: {:allow, %{facts: %{ok: true}}}
+             )
+
+    assert {:challenge, %StepUp.StepUpIntentRecord{}, %StepUp.StepUpChallenge{} = challenge} =
+             StepUpCeremony.evaluate_or_issue(route, auth_context,
+               evaluator_result:
+                 {:deny,
+                  Denial.new(
+                    reason: :step_up_required,
+                    code: "auth.step_up.insufficient_assurance",
+                    message: "Additional authentication is required."
+                  )},
+               issue_intent: fn _attrs ->
+                 {:ok, %{intent: step_up_intent_record(), challenge: step_up_challenge()}}
+               end
+             )
+
+    assert challenge.return_route_id == "saas-profile-settings"
+    assert challenge.required_assurance_level == :mfa
+
+    host_denial =
+      Denial.new(
+        reason: :step_up_required,
+        code: "auth.step_up_intent.route_mismatch",
+        message: "Additional authentication is required."
+      )
+
+    assert {:deny, ^host_denial} =
+             StepUpCeremony.evaluate_or_issue(route, auth_context,
+               evaluator_result:
+                 {:deny,
+                  Denial.new(
+                    reason: :step_up_required,
+                    code: "auth.step_up.stale_auth",
+                    message: "Additional authentication is required."
+                  )},
+               issue_intent: fn _attrs -> {:error, host_denial} end
+             )
+
+    non_challengeable =
+      Denial.new(
+        reason: :step_up_required,
+        code: "auth.step_up.revoked",
+        message: "Additional authentication is required."
+      )
+
+    assert {:deny, ^non_challengeable} =
+             StepUpCeremony.evaluate_or_issue(route, auth_context,
+               evaluator_result: {:deny, non_challengeable},
+               issue_intent: fn _attrs -> flunk("non-challengeable denial must not issue") end
+             )
+  end
+
+  test "ceremony core and evaluator preserve pure transport and persistence boundaries" do
+    ceremony_source = File.read!("lib/crosswake/companions/sigra/step_up_ceremony.ex")
+    evaluator_source = File.read!("lib/crosswake/companions/sigra/evaluator.ex")
+
+    for forbidden <- [
+          "Ecto",
+          "Phoenix.Controller",
+          "Plug.Conn",
+          "Phoenix.LiveView",
+          "Phoenix.Token",
+          "CrosswakeExample"
+        ] do
+      refute String.contains?(ceremony_source, forbidden)
+    end
+
+    refute evaluator_source =~ "StepUp.issue"
+    refute evaluator_source =~ "redirect("
+    refute evaluator_source =~ "halt("
+    refute evaluator_source =~ "configure_session"
+    refute String.contains?(String.downcase(evaluator_source), "csrf")
+  end
+
+  test "plug and liveview adapters call shared ceremony and avoid duplicated auth checks" do
+    plug_source =
+      File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_plug.ex")
+
+    on_mount_source =
+      File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_on_mount.ex")
+
+    for source <- [plug_source, on_mount_source] do
+      assert source =~ "StepUpCeremony.evaluate_or_issue"
+
+      for forbidden <- [
+            "idle_expires_at",
+            "absolute_expires_at",
+            "assurance_level_meets?",
+            "Contracts.auth_age_seconds",
+            "remembered",
+            "cached"
+          ] do
+        refute String.contains?(source, forbidden)
+      end
+    end
+
+    assert plug_source =~ "halt()"
+    assert on_mount_source =~ "{:halt, redirected}"
+  end
+
   test "example host proves issue challenge consume replay expiry cancel revoke binding and renewal" do
     script = """
     Logger.configure(level: :warning)
@@ -149,11 +269,15 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     Ecto.Migrator.run(CrosswakeExample.Repo, path, :up, all: true)
 
     alias Crosswake.Companions.Sigra.Contracts
+    alias Crosswake.Manifest
     alias CrosswakeExample.Repo
+    alias CrosswakeExample.Router
     alias CrosswakeExample.SaaSPortal.Auth
     alias CrosswakeExample.SaaSPortal.StepUp
     alias CrosswakeExample.SaaSPortal.StepUpAuditEvent
     alias CrosswakeExample.SaaSPortal.StepUpIntent
+    alias CrosswakeExample.SaaSPortal.StepUpOnMount
+    alias CrosswakeExample.SaaSPortal.StepUpPlug
 
     base = %{
       subject_ref: "sub_backend",
@@ -171,10 +295,54 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     assert {:error, route_denial} = StepUp.issue(%{base | return_route_id: "unknown-route"})
     assert route_denial.code == "auth.step_up_intent.route_mismatch"
 
+    {:ok, %{manifest: manifest}} = Manifest.compile(Router)
+    route = manifest.routes["saas-profile-settings"]
+
+    weak_lane =
+      struct!(Contracts.SessionAuthorityLane,
+        session_ref: "sess_old",
+        subject_ref: "sub_backend",
+        org_id: "org_backend",
+        state: :active,
+        assurance_level: :password,
+        authn_methods: [:password],
+        authenticated_at: "2026-06-02T11:00:00Z",
+        last_seen_at: "2026-06-02T12:00:00Z",
+        idle_expires_at: "2026-06-02T12:30:00Z",
+        absolute_expires_at: "2026-06-03T12:00:00Z",
+        session_version: 42,
+        as_of: "2026-06-02T12:00:00Z"
+      )
+
+    weak_context =
+      struct!(Contracts.AuthContext,
+        actor_id: "sub_backend",
+        org_id: "org_backend",
+        mfa_level: :password,
+        auth_age: 3600,
+        session_authority_lane: weak_lane,
+        as_of: weak_lane.as_of
+      )
+
+    assert {:challenge, _plug_intent, plug_challenge} =
+             StepUpPlug.decision(route, weak_context, expected_session_version: 42)
+
+    assert {:challenge, _mount_intent, mount_challenge} =
+             StepUpOnMount.decision(route, weak_context, expected_session_version: 42)
+
+    assert plug_challenge.challenge_kind == mount_challenge.challenge_kind
+    assert plug_challenge.return_route_id == mount_challenge.return_route_id
+    assert plug_challenge.required_assurance_level == mount_challenge.required_assurance_level
+    assert plug_challenge.max_auth_age_seconds == mount_challenge.max_auth_age_seconds
+    assert plug_challenge.return_route_id == "saas-profile-settings"
+    refute plug_challenge.support_ref =~ "return_to"
+
+    intent_count_before_direct_issue = Repo.aggregate(StepUpIntent, :count)
+
     assert {:ok, issued} = StepUp.issue(base)
     assert issued.intent.state == "issued"
-    assert Repo.aggregate(StepUpIntent, :count) == 1
-    assert Repo.aggregate(StepUpAuditEvent, :count) == 1
+    assert Repo.aggregate(StepUpIntent, :count) == intent_count_before_direct_issue + 1
+    assert Repo.aggregate(StepUpAuditEvent, :count) >= 1
 
     {:ok, payload} =
       Phoenix.Token.verify(
@@ -296,5 +464,79 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
              )
 
     assert output =~ "phase56-step-up-host-proof: ok"
+  end
+
+  defp auth_context(lane) do
+    struct!(Crosswake.Companions.Sigra.Contracts.AuthContext,
+      actor_id: lane.subject_ref,
+      org_id: lane.org_id,
+      mfa_level: lane.assurance_level,
+      auth_age: 0,
+      session_authority_lane: lane,
+      as_of: lane.as_of
+    )
+  end
+
+  defp step_up_intent_record do
+    {:ok, record} =
+      StepUp.new_step_up_intent_record(%{
+        intent_ref: "sup_record_123",
+        locator_digest: "sha256.locator",
+        state: :issued,
+        subject_ref: "sub_backend_123",
+        org_id: "org_backend_123",
+        source_session_ref: "sess_source_123",
+        expected_session_version: 42,
+        source_route_id: "saas-dashboard",
+        return_route_id: "saas-profile-settings",
+        required_assurance_level: :mfa,
+        required_auth_posture: :strict_recent,
+        max_auth_age_seconds: 300,
+        challenge_kind: :host_confirm_password,
+        issued_at: "2026-06-02T12:00:00Z",
+        expires_at: "2026-06-02T12:05:00Z",
+        audit_correlation_ref: "support:sup.safe",
+        projected_session_authority_lane: session_authority_lane(:mfa, 43)
+      })
+
+    record
+  end
+
+  defp step_up_challenge do
+    {:ok, challenge} =
+      StepUp.new_step_up_challenge(%{
+        challenge_ref: "support:sup.safe",
+        intent_ref: "support:sup.safe",
+        challenge_kind: :host_confirm_password,
+        challenge_route_id: "sigra-step-up",
+        return_route_id: "saas-profile-settings",
+        required_assurance_level: :mfa,
+        max_auth_age_seconds: 300,
+        issued_at: "2026-06-02T12:00:00Z",
+        expires_at: "2026-06-02T12:05:00Z",
+        support_ref: "support:sup.safe"
+      })
+
+    challenge
+  end
+
+  defp session_authority_lane(assurance, version) do
+    {:ok, lane} =
+      Crosswake.Companions.Sigra.Contracts.new_session_authority_lane(%{
+        session_ref: "sess_projected_123",
+        subject_ref: "sub_backend_123",
+        org_id: "org_backend_123",
+        state: :active,
+        assurance_level: assurance,
+        authn_methods: [:password, :totp],
+        authenticated_at: "2026-06-02T12:00:00Z",
+        last_seen_at: "2026-06-02T12:01:00Z",
+        idle_expires_at: "2026-06-02T12:31:00Z",
+        absolute_expires_at: "2026-06-03T12:00:00Z",
+        session_version: version,
+        as_of: "2026-06-02T12:01:00Z"
+      })
+
+    lane
   end
 end
