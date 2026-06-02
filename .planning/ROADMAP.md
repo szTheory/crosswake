@@ -107,7 +107,7 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 <details open>
 <summary>🔄 v3.9 Chimeway Notification Seam (Phases 59-63) — ACTIVE</summary>
 
-- [ ] Phase 59: Chimeway Contract And Token Binding Semantics — Not started
+- [x] Phase 59: Chimeway Contract And Token Binding Semantics — Not started (completed 2026-06-02)
 - [ ] Phase 60: Example Host Registry And Phoenix Wiring — Not started
 - [ ] Phase 61: Notification-Open Resolver And Route Policy — Not started
 - [ ] Phase 62: Diagnostics, Support Truth, And Docs — Not started
@@ -119,20 +119,20 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 
 **Requirements:** TOKN-01, TOKN-02
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 59-01-PLAN.md — Chimeway companion entrypoint and token-binding contract vocabulary
+- [x] 59-01-PLAN.md — Chimeway companion entrypoint and token-binding contract vocabulary
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 59-02-PLAN.md — Raw-token redaction boundary, provider feedback normalization, and telemetry sanitizer
+- [x] 59-02-PLAN.md — Raw-token redaction boundary, provider feedback normalization, and telemetry sanitizer
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 59-03-PLAN.md — Phase proof and narrow Chimeway guide anchor
+- [x] 59-03-PLAN.md — Phase proof and narrow Chimeway guide anchor
 
 **Success criteria:**
 

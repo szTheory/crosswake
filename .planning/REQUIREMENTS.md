@@ -10,8 +10,8 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Token Binding
 
-- [ ] **TOKN-01**: A Phoenix host can register APNs/FCM token evidence from the existing bounded bridge into a backend-owned Chimeway token binding record.
-- [ ] **TOKN-02**: Token binding distinguishes active, rotated, revoked, stale, invalid, permission-denied, environment-mismatched, and app-identity-mismatched states.
+- [x] **TOKN-01**: A Phoenix host can register APNs/FCM token evidence from the existing bounded bridge into a backend-owned Chimeway token binding record.
+- [x] **TOKN-02**: Token binding distinguishes active, rotated, revoked, stale, invalid, permission-denied, environment-mismatched, and app-identity-mismatched states.
 - [ ] **TOKN-03**: Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning revoke or supersede bindings without deleting safe audit truth.
 
 ### Notification Opens
@@ -65,8 +65,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKN-01 | Phase 59 | Pending |
-| TOKN-02 | Phase 59 | Pending |
+| TOKN-01 | Phase 59 | Complete |
+| TOKN-02 | Phase 59 | Complete |
 | TOKN-03 | Phase 60 | Pending |
 | OPEN-01 | Phase 61 | Pending |
 | OPEN-02 | Phase 61 | Pending |
