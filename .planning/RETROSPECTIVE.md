@@ -222,6 +222,51 @@
 - **Verification:** Milestone audit passed 3/3 requirements, 2/2 phases, 10/10 integration checks, and 4/4 E2E flows; Phase 48.1 focused proof ran 69 tests with 0 failures.
 - **Closeout friction:** The close workflow needed manual correction for generated stats and roadmap collapse after the archive step.
 
+## Milestone: v3.8 Full Sigra Auth and Session Machinery
+
+**Shipped:** 2026-06-02
+**Phases:** 5 (54-58)
+**Plans:** 19
+
+### What Was Built
+
+- Backend-owned Sigra session authority projection with explicit state, assurance, freshness, expiry, remembered-session, revocation/version, and fail-closed route-gate semantics.
+- Single-use session handoff ticket contracts and example-host server-record proof for issue, redemption, replay, revocation, expiry, audit evidence, and host session-renewal instructions.
+- Server-owned step-up intent machinery with shared Plug/controller and LiveView ceremony semantics, one-time consume/cancel/revoke paths, and validated Crosswake return targets.
+- Provider-neutral OAuth, passkey, and native auth-return route seams with evidence-only envelopes, replay/expiry checks, host-owned attempt records, and backend authority projection boundaries.
+- Auth telemetry, denial taxonomy, doctor/support/operator truth, guides, fixtures, security closeout, and CI parity that distinguish shipped Sigra machinery from advisory provider/device proof.
+
+### What Worked
+
+- **Backend-owned authority held across every auth surface** — session state, handoff tickets, step-up outcomes, and auth-return events all project through backend validation instead of granting authority from shell/native/provider evidence.
+- **One evaluator/denial vocabulary scaled cleanly** — route gates, handoff, step-up, auth returns, support truth, and docs all use stable auth denial/subcode semantics with sanitized shell-safe details.
+- **Proof lane stayed product-shaped** — the Phase 58 proof covers contracts, route gates, replay/expiry/revocation, step-up returns, denial sanitization, telemetry/docs parity, and security-sensitive non-claims without requiring provider/device services.
+- **Security closeout became machine-checkable** — the STRIDE ledger and `mix closeout.verify --security-only` make blocking auth findings explicit instead of relying on prose review.
+
+### What Was Inefficient
+
+- **Validation ledgers lagged behind proof** — requirements, phase verification, integration, and E2E flows passed, but Nyquist VALIDATION.md files for Phases 54-58 stayed stale/partial and kept the audit at `tech_debt`.
+- **Closeout still needs manual archive polish** — the SDK created correct base archives, but ROADMAP, PROJECT, STATE, MILESTONES, and retrospective edits still needed human/agent judgment.
+- **Provider/device auth proof remains intentionally advisory** — this is the right claim boundary, but it means future provider-specific OAuth/passkey work must create separate promotion criteria before support claims widen.
+
+### Patterns Established
+
+- **Evidence-only auth-return seam** — OAuth callbacks, passkey assertions, native deep links, and bridge events should validate as evidence and only promote authority through backend-owned session projection.
+- **Shared ceremony core for Plug and LiveView** — auth flows that span controllers and LiveView should route through one core evaluator/intent lifecycle so fail-closed behavior and return validation stay consistent.
+- **Security ledger as closeout input** — security-sensitive milestones should produce a dedicated closeout artifact that a deterministic verifier can check before archive.
+
+### Key Lessons
+
+- **Validation bookkeeping should close during phase execution** — stale VALIDATION.md ledgers create milestone-close debt even when behavior and proof are green.
+- **Auth support truth needs two axes** — Crosswake should separately report shipped contract machinery and advisory provider/device evidence, because collapsing them would overstate production support.
+- **Backend authority language must be repeated in every adopter-facing surface** — guides, support matrices, denials, telemetry, and examples all need to reinforce that client evidence cannot grant session authority directly.
+
+### Cost Observations
+
+- **Session shape:** One-day milestone on 2026-06-02, closing five phases and 19 plans.
+- **Verification:** Milestone audit satisfied 16/16 requirements, 5/5 phases, 10/10 integration checks, and 5/5 E2E flows; focused proof ran 115 tests with 0 failures.
+- **Closeout friction:** Nyquist ledger cleanup remains deferred tech debt even though the proof lane and milestone audit evidence are green for requirements and flows.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -236,3 +281,4 @@
 | Companion seams need backend-authority discipline | v3.5 proved Rulestead, Rindle, and Sigra as typed, fail-closed companion surfaces while keeping device media/auth evidence non-authoritative | Future companions should start with explicit authority/evidence lanes and route-local restrictions before adding provider or native machinery |
 | Audit artifacts are part of completion truth | v3.5 behavior was green, but closeout initially failed on missing Phase 44 verification, stale Phase 43 roadmap status, an open thread, and active-tree resolved UAT residue | Treat verification reports, thread closure, roadmap parity, and artifact cleanup as required product work, not administrative cleanup |
 | Provider adapters must stay evidence-only | v3.7 shipped StoreKit/Play Billing seams and a paywall facade only after audit proved evidence flows into backend-owned reconciliation and grants wait for backend projection | Future provider or native adapter work should expose explicit swap targets, closed vocabularies, advisory proof posture, and authority-fence tests before widening claims |
+| Auth/session machinery must stay backend-authoritative | v3.8 shipped Sigra session authority, handoff, step-up, and auth-return seams while keeping shell/native/provider events evidence-only until backend projection | Future auth/provider/native UX work should start with authority projection, denial sanitization, replay/expiry proof, and support-truth split before adding provider-specific templates |

@@ -1,5 +1,44 @@
 # Project Milestones: Crosswake
 
+## v3.8 Full Sigra Auth and Session Machinery (Shipped: 2026-06-02)
+
+**Phases completed:** 5 phases, 19 plans, 42 tasks
+
+**Key accomplishments:**
+
+- Backend-owned Sigra session authority contract with canonical auth.step_up denial subcodes and sanitized shell details
+- Route-local auth_posture validation and manifest serialization for remembered/cached auth weakening
+- Pure Sigra route-auth evaluator wired into RouteGate with canonical fail-closed denial codes
+- Session-authority auth posture surfaced through doctor, publish readiness, support matrix, and operator inspection
+- Guides, support matrix, release-boundary docs, and proof fixtures now reflect Sigra session-authority route evaluation
+- Pure Sigra handoff contracts with backend-authority projection and canonical auth.handoff denial proof
+- Ecto-backed one-time Sigra handoff tickets with Phoenix.Token locators, atomic redemption, audit evidence, and host-owned session renewal instructions
+- Sigra handoff contract/server-record machinery is now reflected in doctor, support matrix, operator inspection, guides, fixtures, and proof without claiming later auth flows.
+- Pure Sigra step-up intent contracts with backend authority projection requirements and canonical intent denial subcodes
+- Ecto-backed step-up intent issue and one-time consume flow with backend authority projection and host session renewal instructions
+- Shared Sigra ceremony core with Plug and LiveView adapters that fail closed into the same host-issued challenge flow
+- Canonical support and docs truth for shipped Sigra step-up intent plus Plug/LiveView ceremony without auth-return overclaims
+- Provider-neutral route-local auth-return policy and manifest serialization
+- Pure evidence-only auth-return contracts with semantic validation and denial vocabulary
+- Example-host server-record proof for auth-return replay, audit, and backend promotion authority
+- Public and operator truth for shipped auth-return boundaries without provider/device overclaims
+- Stable Sigra auth telemetry and two-axis auth truth now flow through diagnostics, support, operator inspection, and guides.
+- Phase 58 security closeout now has a machine-checkable STRIDE ledger and deterministic security-only verifier gate.
+- Phase 58 now has CI parity for merge-blocking auth closeout proof and advisory provider/device proof.
+
+**Verification:** Milestone audit satisfied 16/16 requirements, 5/5 phases, 10/10 integration checks, and 5/5 E2E flows. Audit evidence included `mix compile --warnings-as-errors`, security-only closeout verification, and 115 focused proof/support/operator/docs tests with 0 failures.
+
+**Known tech debt:** Nyquist validation ledgers for Phases 54-58 remain stale or partial and are tracked in `STATE.md` Deferred Items.
+
+**Archive:**
+
+- `.planning/milestones/v3.8-ROADMAP.md`
+- `.planning/milestones/v3.8-REQUIREMENTS.md`
+- `.planning/milestones/v3.8-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.8-phases/`
+
+---
+
 ## v3.7 Commerce Provider Adapters (Shipped: 2026-06-01)
 
 **Phases completed:** 2 phases, 7 plans, 17 tasks

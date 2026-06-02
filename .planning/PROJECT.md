@@ -10,6 +10,8 @@ Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps 
 
 ## Current State
 
+**Shipped `v3.8 Full Sigra Auth and Session Machinery` on `2026-06-02`** (Phases 54-58, 19 plans, 42 tasks). v3.8 expands Sigra from v3.5's contract-only auth slice into production account-security machinery while keeping authority backend-owned: session authority projection, fail-closed route gates, one-time handoff tickets, server-owned step-up intents, shared Plug/LiveView ceremony, and typed OAuth/passkey/native auth-return seams. Auth returns and native/shell events remain evidence-only until backend validation promotes session authority. Doctor, support matrix, operator inspection, guides, telemetry, denial vocabulary, proof fixtures, and security closeout now distinguish shipped Sigra machinery from provider/device-advisory claims. Milestone audit satisfied 16/16 requirements, 5/5 phases, 10/10 integration checks, and 5/5 E2E flows; validation-ledger cleanup remains deferred tech debt.
+
 **Shipped `v3.7 Commerce Provider Adapters` on `2026-06-01`** (Phases 48 and 48.1, 7 plans). v3.7 added first-party StoreKit and Play Billing adapter seams that emit normalized provider evidence into the existing backend-owned commerce reconciliation contracts. The example-host paywall now has a behaviour-backed storefront adapter contract with mock-default behavior and explicit StoreKit/Play Billing swap targets. Provider proof remains advisory until promotion criteria are met, and the support matrix, operator inspection, doctor readiness, commerce guidance, changelog posture, and proof fixtures now distinguish shipped provider seams from non-blocking sandbox/device evidence. Milestone audit passed 3/3 requirements, 2/2 phases, 10/10 integration checks, and 4/4 E2E flows.
 
 **Shipped `v3.5 First-Party Companions` on `2026-05-31`** (Phases 38-47, 22 plans, 40 tasks). v3.5 locked Crosswake's first reusable companion seam and proved it across three bounded companion surfaces. `Crosswake.Companion` now defines the shared six-callback behaviour, typed state contract, fail-closed optional dependency diagnostics, and `[:crosswake, :companion, ...]` telemetry. Rulestead proves route gating with `gated_by`, manifest binding, local-snapshot runtime decisions, `:gate_denied` and `:kill_switch_active` fail-closed denials, doctor diagnostics, support-matrix gate truth, and a pure-Elixir mock flag source in `examples/phoenix_host`. Rindle proves the seam is not flag-specific with media upload grants, evidence-only capture reports, backend-owned reconciliation, a pure-Elixir `/media/proof` lane, and hermetic/advisory proof. Sigra shipped the contract-only auth slice: typed backend `AuthContext`, backend-only `SessionAuthorityLane`, route predicates (`auth_min_level`, `requires_recent_auth`), and fail-closed `:step_up_required` route gating without claiming handoff, ceremony, passkey, OAuth, or refresh-token machinery. `guides/companions.md` is now the canonical companion guide and is parity-locked to live doctor/support/denial truth. Milestone audit passed 15/15 requirements; hermetic suite passed at 455 tests.
@@ -31,16 +33,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 </details>
 
-## Current Milestone: v3.8 Full Sigra Auth and Session Machinery
+## Current Milestone
 
-**Goal:** Expand v3.5's contract-only Sigra slice into production account-security flows while preserving backend-owned authority and route-local fail-closed behavior.
-
-**Target features:**
-- Backend-owned session authority projection with explicit freshness, expiry, revocation, remembered-session, and assurance semantics.
-- Single-use session handoff tickets that upgrade authority only through backend redemption and Phoenix session renewal.
-- Server-issued step-up intents and shared Plug/LiveView return flow for routes requiring stronger or fresher auth.
-- Typed OAuth/passkey/native-return adapter seams that validate return envelopes before backend authority promotion.
-- Safe denial codes, auth telemetry, doctor/support/operator truth, example-host UX, and docs-contract proof for full Sigra machinery.
+No active milestone is defined. Start the next milestone with `$gsd-new-milestone` so requirements, roadmap scope, and phase ordering are created from the current strategic queue instead of extending stale v3.8 artifacts.
 
 ## Next Milestone Candidates
 
@@ -93,6 +88,7 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section
 - ✓ **v3.5 First-Party Companions** (all 15 requirements: COMP-*, GATE-*, MEDIA-*, AUTH-*, PROOF-*) — a reusable in-tree companion seam with fail-closed optional dependency diagnostics, Rulestead route gating, Rindle media contracts and mock proof, Sigra contract-only auth predicates, and canonical companion docs/proof parity. Validated across Phases 38–47; full detail in `.planning/milestones/v3.5-REQUIREMENTS.md`.
 - ✓ **v3.6 Operator Truth and Production Diagnostics** (all 11 requirements: STRAT-*, OPER-*, DIAG-*, SUPP-*, PROOF-*, REL-01) — operator inspection, publish/readiness doctor checks, support/rebuild truth, docs-contract proof, release/changelog truth, and deterministic closeout verification. Validated across Phases 48–53; full detail in `.planning/milestones/v3.6-REQUIREMENTS.md`.
 - ✓ **v3.7 Commerce Provider Adapters** (all 3 requirements: ADPT-01/02/03) — first-party StoreKit and Play Billing evidence adapter seams, example-host provider facade swap target, support/doctor/docs proof posture, and advisory provider-proof promotion criteria. Validated across Phase 48 and Phase 48.1; full detail in `.planning/milestones/v3.7-REQUIREMENTS.md`.
+- ✓ **v3.8 Full Sigra Auth and Session Machinery** (all 16 requirements: SESS-*, HAND-*, STEP-*, RETN-*, DIAG-*, PROOF-01) — backend-owned session authority projection, one-time handoff tickets, server-owned step-up ceremony, evidence-only auth-return seams, sanitized auth telemetry/denials, support/operator truth, and merge-blocking hermetic closeout proof. Validated across Phases 54–58; full detail in `.planning/milestones/v3.8-REQUIREMENTS.md`.
 
 ### Active
 
@@ -117,7 +113,7 @@ The strongest early app archetypes are Phoenix-backed SaaS portals, subscription
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
-The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce as operational seam work, `v3.4` proved the mocked commerce archetype lane end-to-end, `v3.5` locked the first-party companion pattern, `v3.6` made the widened surface inspectable by operators, and `v3.7` added first-party StoreKit/Play Billing evidence adapter seams while preserving backend-owned entitlement truth. The queue after v3.7 is full Sigra machinery, Chimeway notification seam, production shell runtime line, multi-SaaS archetype proof, and Threadline audit capstone.
+The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce as operational seam work, `v3.4` proved the mocked commerce archetype lane end-to-end, `v3.5` locked the first-party companion pattern, `v3.6` made the widened surface inspectable by operators, `v3.7` added first-party StoreKit/Play Billing evidence adapter seams while preserving backend-owned entitlement truth, and `v3.8` expanded Sigra into full backend-owned auth/session machinery. The queue after v3.8 is Chimeway notification seam, production shell runtime line, multi-SaaS archetype proof, and Threadline audit capstone.
 
 ## Constraints
 
@@ -162,6 +158,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Refresh durable strategic memory before widening provider/native breadth | v3.5 exposed a process gap: execution artifacts were current, but `MILESTONE-ARC.md` still treated shipped work as candidate work. Future GSD runs need a current strategic queue and closeout checklist before choosing the next milestone. | Adopted for v3.6 — `MILESTONE-ARC.md` is the living strategic signal artifact |
 | Prioritize operator truth before StoreKit/Play Billing adapters | Commerce/provider adapters are production-critical, but v3.4/v3.5 already widened the support surface enough that route/capability/companion/provider/auth/notification readiness inspection should land before more native/provider claims. | Adopted for v3.6 — provider adapters move to v3.7 |
 | Keep provider adapters evidence-only until backend projection grants authority | v3.7 StoreKit and Play Billing seams normalize provider evidence, expose provider state, and feed the example-host paywall facade without letting device/storefront events mutate entitlement authority directly. | Validated in v3.7 — ADPT-01/02/03 passed audit with 4/4 E2E flows and advisory provider proof posture |
+| Keep Sigra auth authority backend-owned across session, handoff, step-up, and auth-return flows | v3.8 proved session authority projection, one-time handoff tickets, server-owned step-up ceremony, and OAuth/passkey/native return seams without letting shell/native/provider evidence directly promote authority. | Validated in v3.8 — 16/16 requirements, 10/10 integration checks, 5/5 E2E flows, and security closeout proof |
 
 ## Evolution
 
@@ -181,4 +178,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-01 — v3.8 Full Sigra Auth and Session Machinery started from strategic queue and research synthesis.*
+*Last updated: 2026-06-02 — v3.8 Full Sigra Auth and Session Machinery shipped and archived.*

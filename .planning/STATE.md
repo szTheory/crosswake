@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.8
 milestone_name: Full Sigra Auth and Session Machinery
-status: completed
-last_updated: "2026-06-02T15:28:50.370Z"
-last_activity: 2026-06-02 -- Phase 58 marked complete
+status: Awaiting next milestone
+last_updated: "2026-06-02T16:28:42.322Z"
+last_activity: 2026-06-02 — Milestone v3.8 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -17,28 +17,29 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-01)
+See: .planning/PROJECT.md (updated 2026-06-02)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** v3.8 milestone closeout
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 58 — COMPLETE
-Plan: 3 of 3
-Status: Phase 58 complete
-Last activity: 2026-06-02 -- Phase 58 marked complete
+Phase: Milestone v3.8 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-02 — Milestone v3.8 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 111 (v1.0–v3.7 Phase 48.1)
+- Total plans completed: 130 (v1.0–v3.8 Phase 58)
+- v3.8: 5 phases, 19 plans, 42 tasks — shipped 2026-06-02
 - v3.7: 2 phases, 7 plans — shipped 2026-06-01
 - v3.6: 6 phases, 15 plans — shipped 2026-06-01
 - v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
 
-**Recent Trend:** Positive — v3.3 through v3.7 all closed with deterministic proof, audit evidence, and explicit support truth in place.
+**Recent Trend:** Positive — v3.3 through v3.8 all closed with deterministic proof, audit evidence, and explicit support truth in place.
 
 ## Accumulated Context
 
@@ -46,6 +47,7 @@ Last activity: 2026-06-02 -- Phase 58 marked complete
 
 - Phase 48.1 inserted after Phase 48: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (URGENT)
 - v3.7 archived under `.planning/milestones/v3.7-*` with phase directories in `.planning/milestones/v3.7-phases/`.
+- v3.8 archived under `.planning/milestones/v3.8-*` with phase directories in `.planning/milestones/v3.8-phases/`.
 
 ### Decisions
 
@@ -65,6 +67,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 54]: Sigra route auth now uses backend-owned `SessionAuthorityLane` evaluation with explicit `auth_posture`, canonical `auth.step_up.*` subcodes, and shell-safe `:step_up_required` denial details.
 - [Phase 54]: Session-authority support truth is intentionally narrower than full auth machinery; handoff tickets, ceremony, OAuth/passkey returns, refresh tokens, and native auth UI remain deferred to later v3.8 phases.
 - [Phase 57]: OAuth, passkey, and native auth-return boundaries are provider-neutral route-local seams. Return envelopes are evidence only; host-owned attempt records and backend `SessionAuthorityLane` projection remain authoritative.
+- [Phase 58]: Full Sigra machinery is shipped as backend-owned auth/session contracts with sanitized telemetry, support/operator truth, security closeout, and hermetic proof; provider/device auth proof remains advisory.
 
 ### Pending Todos
 
@@ -75,7 +78,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - Android JVM evidence continues to require CI (no local Java runtime).
 - StoreKit/Play Billing proof starts advisory in v3.7 until explicit promotion criteria are satisfied.
 - Provider adapters must preserve Phoenix-owned entitlement authority; device/storefront events remain reconciliation evidence.
-- Phase 57 focused proof, example-host compile, and full `mix test` are green.
+- Provider/device auth proof remains advisory after v3.8; shell/native/OAuth/passkey events remain evidence-only until backend validation promotes authority.
 
 ## Deferred Items
 
@@ -96,6 +99,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Phase 56 P04 | 5 min | 2 tasks | 15 files |
 | Phase 57 | integrated | 8 tasks | 37 files |
 | Phase 58 P3 | integrated | 3 tasks | 4 files |
+| Validation | Refresh v3.8 Nyquist VALIDATION.md ledgers for phases 54-58 | Deferred from milestone audit; requirements/proof/integration passed | 2026-06-02 |
 
 ## Session Continuity
 
@@ -104,4 +108,4 @@ Stopped at: Phase 58 complete
 
 ## Operator Next Steps
 
-- Run `$gsd-complete-milestone` to archive v3.8 and prepare the next version.
+- Start the next milestone with /gsd-new-milestone
