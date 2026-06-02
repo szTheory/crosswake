@@ -128,8 +128,10 @@ defmodule CrosswakeExample.Chimeway.TokenBinding do
   defp validate_scope_consistency(changeset) do
     case get_field(changeset, :subject_scope) do
       :subject_session ->
+        # WR-05: session_version is semantically required for session-scoped bindings;
+        # without it, version-guarded revocation (D-21) always matches the nil-version row.
         changeset
-        |> validate_required([:session_ref])
+        |> validate_required([:session_ref, :session_version])
         |> validate_number(:session_version, greater_than_or_equal_to: 0)
 
       :subject_installation ->

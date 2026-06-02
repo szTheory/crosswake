@@ -283,14 +283,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
           {:ok, repo.get!(TokenBinding, same.id)}
         else
-          # New binding or rotation
+          # New binding or rotation — WR-04: use correct reason for rotation
           is_rotation = not Enum.empty?(displaced)
-          reason = if is_rotation, do: :initial_bind, else: :initial_bind
-
-          _ = reason
+          reason = if is_rotation, do: :token_rotated, else: :initial_bind
 
           binding_attrs =
-            build_binding_attrs(ctx, ev, installation_ref, now)
+            build_binding_attrs(ctx, ev, installation_ref, now, reason)
 
           changeset = TokenBinding.changeset(%TokenBinding{}, binding_attrs)
           repo.insert(changeset)
@@ -364,6 +362,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
                 )
               end)
 
+            # WR-04: rotated binding must record :token_rotated reason, not :initial_bind
             bound_event_attrs = build_audit_attrs(
               %{
                 event_type: :bound,
@@ -377,7 +376,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
                 subject_scope: binding.subject_scope,
                 state_before: nil,
                 state_after: :active,
-                reason: :initial_bind,
+                reason: :token_rotated,
                 notification_status: ev.notification_status,
                 app_identity_posture: ev.app_identity_posture || :unknown,
                 occurred_at: now_dt,
@@ -484,6 +483,18 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # ---------------------------------------------------------------------------
 
   defp do_revoke_for_logout(ctx, opts) do
+    # WR-03: require session_ref to prevent silent widening to subject+org-wide revocation.
+    # Callers wanting to revoke all sessions for a subject/org must opt in explicitly.
+    case ctx[:session_ref] do
+      session_ref when is_binary(session_ref) and byte_size(session_ref) > 0 ->
+        do_revoke_for_logout_scoped(ctx, session_ref, opts)
+
+      _ ->
+        {:error, {:session_ref, :required}}
+    end
+  end
+
+  defp do_revoke_for_logout_scoped(ctx, session_ref, opts) do
     now = utc_now()
 
     query =
@@ -491,17 +502,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
         where:
           b.subject_ref == ^ctx.subject_ref and
             b.org_ref == ^ctx.org_ref and
+            b.session_ref == ^session_ref and
             b.state == :active
       )
-
-    query =
-      case ctx[:session_ref] do
-        session_ref when is_binary(session_ref) ->
-          where(query, [b], b.session_ref == ^session_ref)
-
-        _ ->
-          query
-      end
 
     result =
       Ecto.Multi.new()
@@ -532,7 +535,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
       end)
       |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
         binding_refs = Enum.map(bindings, & &1.binding_ref)
-        {:ok, repo.all(from(b in TokenBinding, where: b.binding_ref in ^binding_refs))}
+        # WR-02: order_by so telemetry zip aligns with events (which are sorted by binding_ref)
+        {:ok,
+         repo.all(
+           from(b in TokenBinding,
+             where: b.binding_ref in ^binding_refs,
+             order_by: b.binding_ref
+           )
+         )}
       end)
       |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
         insert_revocation_events(repo, pre_bindings, :logout_revoked, now, ctx, opts)
@@ -549,7 +559,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
             reason: :logout_revoked
           })
 
-        for {binding, event} <- Enum.zip(bindings, events) do
+        # WR-02: key events by binding_ref for correct per-binding telemetry attribution
+        events_by_ref = Map.new(events, &{&1.binding_ref, &1})
+
+        for binding <- bindings,
+            event = events_by_ref[binding.binding_ref],
+            not is_nil(event) do
           Telemetry.execute(
             [:crosswake, :notification, :token, :revoked],
             %{},
@@ -620,7 +635,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
       end)
       |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
         binding_refs = Enum.map(bindings, & &1.binding_ref)
-        {:ok, repo.all(from(b in TokenBinding, where: b.binding_ref in ^binding_refs))}
+        # WR-02: order_by so telemetry zip aligns with events (which are sorted by binding_ref)
+        {:ok,
+         repo.all(
+           from(b in TokenBinding,
+             where: b.binding_ref in ^binding_refs,
+             order_by: b.binding_ref
+           )
+         )}
       end)
       |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
         ctx = %{subject_ref: nil, org_ref: nil, correlation_id: opts[:correlation_id]}
@@ -638,7 +660,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
             reason: :session_revoked
           })
 
-        for {binding, event} <- Enum.zip(bindings, events) do
+        # WR-02: key events by binding_ref for correct per-binding telemetry attribution
+        events_by_ref = Map.new(events, &{&1.binding_ref, &1})
+
+        for binding <- bindings,
+            event = events_by_ref[binding.binding_ref],
+            not is_nil(event) do
           Telemetry.execute(
             [:crosswake, :notification, :token, :revoked],
             %{},
@@ -701,7 +728,14 @@ defmodule CrosswakeExample.Chimeway.Registry do
       end)
       |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
         binding_refs = Enum.map(bindings, & &1.binding_ref)
-        {:ok, repo.all(from(b in TokenBinding, where: b.binding_ref in ^binding_refs))}
+        # WR-02: order_by so telemetry zip aligns with events (which are sorted by binding_ref)
+        {:ok,
+         repo.all(
+           from(b in TokenBinding,
+             where: b.binding_ref in ^binding_refs,
+             order_by: b.binding_ref
+           )
+         )}
       end)
       |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
         insert_permission_loss_events(repo, pre_bindings, now, ctx, opts)
@@ -718,7 +752,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
             reason: :permission_denied
           })
 
-        for {binding, event} <- Enum.zip(bindings, events) do
+        # WR-02: key events by binding_ref for correct per-binding telemetry attribution
+        events_by_ref = Map.new(events, &{&1.binding_ref, &1})
+
+        for binding <- bindings,
+            event = events_by_ref[binding.binding_ref],
+            not is_nil(event) do
           Telemetry.execute(
             [:crosswake, :notification, :token, :revoked],
             %{},
@@ -815,78 +854,98 @@ defmodule CrosswakeExample.Chimeway.Registry do
     end
   end
 
+  # CR-01: Builds a provider/platform/environment-scoped query for the given
+  # feedback struct. Fails closed when no token selector is present — avoids
+  # unbounded fan-out across the whole active set.
+  defp feedback_target_query(fb) do
+    fp = fb.token_fingerprint
+    tr = fb.token_ref
+
+    cond do
+      is_binary(fp) and byte_size(fp) > 0 ->
+        {:ok,
+         from(b in TokenBinding,
+           where:
+             b.state == :active and b.token_fingerprint == ^fp and
+               b.provider == ^fb.provider and b.platform == ^fb.platform and
+               b.environment == ^fb.environment
+         )}
+
+      is_binary(tr) and byte_size(tr) > 0 ->
+        {:ok,
+         from(b in TokenBinding,
+           where:
+             b.state == :active and b.token_ref == ^tr and
+               b.provider == ^fb.provider and b.platform == ^fb.platform and
+               b.environment == ^fb.environment
+         )}
+
+      true ->
+        {:error, :feedback_missing_token_selector}
+    end
+  end
+
   defp do_feedback_invalidate(fb, binding_state, binding_reason, now, opts) do
-    query =
-      from(b in TokenBinding,
-        where: b.state == :active
-      )
+    with {:ok, query} <- feedback_target_query(fb) do
+      result =
+        Ecto.Multi.new()
+        |> Ecto.Multi.run(:active_bindings, fn repo, _changes ->
+          {:ok, repo.all(query)}
+        end)
+        |> Ecto.Multi.run(:invalidate, fn repo, %{active_bindings: bindings} ->
+          # WR-01: fail instead of reporting fabricated success on zero matches
+          if Enum.empty?(bindings) do
+            {:error, :no_active_bindings}
+          else
+            binding_refs = Enum.map(bindings, & &1.binding_ref)
 
-    query =
-      case fb.token_fingerprint do
-        fp when is_binary(fp) and byte_size(fp) > 0 ->
-          where(query, [b], b.token_fingerprint == ^fp)
+            terminal_ts_field =
+              case binding_state do
+                :revoked -> [revoked_at: now]
+                :invalid -> [invalidated_at: now]
+                :stale -> [stale_at: now]
+                _ -> []
+              end
 
-        _ ->
-          case fb.token_ref do
-            tr when is_binary(tr) and byte_size(tr) > 0 ->
-              where(query, [b], b.token_ref == ^tr)
+            {count, _} =
+              repo.update_all(
+                from(b in TokenBinding,
+                  where: b.binding_ref in ^binding_refs and b.state == :active
+                ),
+                set:
+                  [
+                    state: binding_state,
+                    reason: binding_reason,
+                    updated_at: now
+                  ] ++ terminal_ts_field
+              )
 
-            _ ->
-              query
+            {:ok, count}
           end
-      end
-
-    result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.run(:active_bindings, fn repo, _changes ->
-        {:ok, repo.all(query)}
-      end)
-      |> Ecto.Multi.run(:invalidate, fn repo, %{active_bindings: bindings} ->
-        if Enum.empty?(bindings) do
-          {:ok, 0}
-        else
+        end)
+        |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
           binding_refs = Enum.map(bindings, & &1.binding_ref)
-
-          terminal_ts_field =
-            case binding_state do
-              :revoked -> [revoked_at: now]
-              :invalid -> [invalidated_at: now]
-              :stale -> [stale_at: now]
-              _ -> []
-            end
-
-          {count, _} =
-            repo.update_all(
-              from(b in TokenBinding,
-                where: b.binding_ref in ^binding_refs and b.state == :active
-              ),
-              set:
-                [
-                  state: binding_state,
-                  reason: binding_reason,
-                  updated_at: now
-                ] ++ terminal_ts_field
-            )
-
-          {:ok, count}
-        end
-      end)
-      |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
-        binding_refs = Enum.map(bindings, & &1.binding_ref)
-        {:ok, repo.all(from(b in TokenBinding, where: b.binding_ref in ^binding_refs))}
-      end)
-      |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
-        if Enum.empty?(pre_bindings) do
-          {:ok, []}
-        else
+          # WR-02: order by binding_ref so telemetry zip aligns with events
+          {:ok,
+           repo.all(
+             from(b in TokenBinding,
+               where: b.binding_ref in ^binding_refs,
+               order_by: b.binding_ref
+             )
+           )}
+        end)
+        |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
           event_type =
             case binding_state do
               :revoked -> :revoked
               _ -> :invalidated
             end
 
+          # WR-02: sort pre_bindings by binding_ref to match :bindings re-query order
+          sorted_pre_bindings = Enum.sort_by(pre_bindings, & &1.binding_ref)
+
           events =
-            Enum.reduce_while(pre_bindings, [], fn pre_binding, acc ->
+            Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
               event_attrs = build_audit_attrs(
                 %{
                   event_type: event_type,
@@ -922,52 +981,60 @@ defmodule CrosswakeExample.Chimeway.Registry do
             {:error, changeset} -> {:error, changeset}
             events -> {:ok, Enum.reverse(events)}
           end
-        end
-      end)
-      |> Repo.transaction()
+        end)
+        |> Repo.transaction()
 
-    case result do
-      {:ok, %{bindings: bindings, audit_events: events}} ->
-        telemetry_event =
-          case binding_state do
-            :revoked -> [:crosswake, :notification, :token, :revoked]
-            _ -> [:crosswake, :notification, :token, :invalidated]
+      case result do
+        {:ok, %{bindings: bindings, audit_events: events}} ->
+          telemetry_event =
+            case binding_state do
+              :revoked -> [:crosswake, :notification, :token, :revoked]
+              _ -> [:crosswake, :notification, :token, :invalidated]
+            end
+
+          # WR-02: key events by binding_ref for correct per-binding telemetry attribution
+          events_by_ref = Map.new(events, &{&1.binding_ref, &1})
+
+          for binding <- bindings,
+              event = events_by_ref[binding.binding_ref],
+              not is_nil(event) do
+            Telemetry.execute(
+              telemetry_event,
+              %{},
+              telemetry_meta(binding, event)
+            )
           end
 
-        for {binding, event} <- Enum.zip(bindings, events) do
+          # Also emit provider feedback telemetry
           Telemetry.execute(
-            telemetry_event,
+            [:crosswake, :notification, :provider, :feedback],
             %{},
-            telemetry_meta(binding, event)
+            %{
+              provider: fb.provider,
+              platform: fb.platform,
+              environment: fb.environment,
+              feedback_event: fb.feedback_event,
+              proof_class: :advisory,
+              correlation_id: fb.correlation_id
+            }
           )
-        end
 
-        # Also emit provider feedback telemetry
-        Telemetry.execute(
-          [:crosswake, :notification, :provider, :feedback],
-          %{},
-          %{
-            provider: fb.provider,
-            platform: fb.platform,
-            environment: fb.environment,
-            feedback_event: fb.feedback_event,
-            proof_class: :advisory,
-            correlation_id: fb.correlation_id
-          }
-        )
+          result_struct =
+            Contracts.new_binding_result!(%{
+              status: :invalidated,
+              binding_ref: List.first(bindings).binding_ref,
+              state: binding_state,
+              reason: binding_reason
+            })
 
-        result_struct =
-          Contracts.new_binding_result!(%{
-            status: :invalidated,
-            binding_ref: List.first(bindings, %{binding_ref: fb.token_ref || "unknown"}).binding_ref,
-            state: binding_state,
-            reason: binding_reason
-          })
+          {:ok, %{bindings: bindings, audit_events: events, result: result_struct}}
 
-        {:ok, %{bindings: bindings, audit_events: events, result: result_struct}}
+        {:error, :invalidate, :no_active_bindings, _changes} ->
+          {:error, :no_active_bindings}
 
-      {:error, _step, reason, _changes} ->
-        {:error, reason}
+        {:error, _step, reason, _changes} ->
+          {:error, reason}
+      end
     end
   end
 
@@ -1036,14 +1103,24 @@ defmodule CrosswakeExample.Chimeway.Registry do
       end)
       |> Ecto.Multi.run(:bindings, fn repo, %{active_bindings: bindings} ->
         binding_refs = Enum.map(bindings, & &1.binding_ref)
-        {:ok, repo.all(from(b in TokenBinding, where: b.binding_ref in ^binding_refs))}
+        # WR-02: order_by so telemetry zip aligns with events (which are sorted by binding_ref)
+        {:ok,
+         repo.all(
+           from(b in TokenBinding,
+             where: b.binding_ref in ^binding_refs,
+             order_by: b.binding_ref
+           )
+         )}
       end)
       |> Ecto.Multi.run(:audit_events, fn repo, %{active_bindings: pre_bindings} ->
         if Enum.empty?(pre_bindings) do
           {:ok, []}
         else
+          # WR-02: sort by binding_ref so event order matches the order_by :bindings re-query
+          sorted_pre_bindings = Enum.sort_by(pre_bindings, & &1.binding_ref)
+
           events =
-            Enum.reduce_while(pre_bindings, [], fn pre_binding, acc ->
+            Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
               event_attrs = build_audit_attrs(
                 %{
                   event_type: :stale,
@@ -1084,7 +1161,12 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
     case result do
       {:ok, %{bindings: bindings, audit_events: events}} ->
-        for {binding, event} <- Enum.zip(bindings, events) do
+        # WR-02: key events by binding_ref for correct per-binding telemetry attribution
+        events_by_ref = Map.new(events, &{&1.binding_ref, &1})
+
+        for binding <- bindings,
+            event = events_by_ref[binding.binding_ref],
+            not is_nil(event) do
           Telemetry.execute(
             [:crosswake, :notification, :token, :stale],
             %{},
@@ -1191,7 +1273,8 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # Helper: binding attrs builder
   # ---------------------------------------------------------------------------
 
-  defp build_binding_attrs(ctx, ev, installation_ref, now) do
+  # WR-04: accept reason so rotation callers can pass :token_rotated
+  defp build_binding_attrs(ctx, ev, installation_ref, now, reason \\ :initial_bind) do
     %{
       binding_ref: unique_ref("bnd"),
       subject_scope: ctx.subject_scope,
@@ -1208,7 +1291,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
       token_fingerprint: ev.token_fingerprint,
       notification_status: ev.notification_status,
       state: :active,
-      reason: :initial_bind,
+      reason: reason,
       bound_at: now,
       last_seen_at: now,
       audit_correlation_ref: ctx[:correlation_id] || unique_ref("corr"),
@@ -1257,8 +1340,11 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # ---------------------------------------------------------------------------
 
   defp insert_revocation_events(repo, pre_bindings, reason, now, ctx, opts) do
+    # WR-02: sort by binding_ref so event order matches the order_by :bindings re-query
+    sorted_pre_bindings = Enum.sort_by(pre_bindings, & &1.binding_ref)
+
     events =
-      Enum.reduce_while(pre_bindings, [], fn pre_binding, acc ->
+      Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
         event_attrs = build_audit_attrs(
           %{
             event_type: :revoked,
@@ -1296,8 +1382,11 @@ defmodule CrosswakeExample.Chimeway.Registry do
   end
 
   defp insert_permission_loss_events(repo, pre_bindings, now, ctx, opts) do
+    # WR-02: sort by binding_ref so event order matches the order_by :bindings re-query
+    sorted_pre_bindings = Enum.sort_by(pre_bindings, & &1.binding_ref)
+
     events =
-      Enum.reduce_while(pre_bindings, [], fn pre_binding, acc ->
+      Enum.reduce_while(sorted_pre_bindings, [], fn pre_binding, acc ->
         event_attrs = build_audit_attrs(
           %{
             event_type: :revoked,

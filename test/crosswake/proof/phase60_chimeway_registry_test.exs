@@ -968,4 +968,218 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     assert output =~ "phase60-revoke-feedback-prune-telemetry-proof: ok"
   end
+
+  # ---------------------------------------------------------------------------
+  # Regression: CR-01 — empty token selector must not invalidate all bindings
+  # Regression: WR-01 — zero-match invalidation must return an error
+  # Regression: WR-05 — subject_session binding requires session_version
+  # ---------------------------------------------------------------------------
+
+  test "CR-01 regression: feedback with no token selector fails closed and leaves active bindings intact" do
+    script = """
+    Logger.configure(level: :warning)
+    import ExUnit.Assertions
+    import Ecto.Query
+    Mix.Task.run("app.config")
+    db =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake_chimeway_cr01_proof_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db"
+      )
+
+    File.rm(db)
+    Application.put_env(:crosswake_example, CrosswakeExample.Repo, database: db, pool_size: 1, log: false)
+    Application.ensure_all_started(:phoenix)
+    Application.ensure_all_started(:ecto_sql)
+    {:ok, _pid} = CrosswakeExample.Repo.start_link()
+    path = Path.expand("priv/repo/migrations", File.cwd!())
+    Ecto.Migrator.run(CrosswakeExample.Repo, path, :up, all: true)
+
+    alias CrosswakeExample.Chimeway.Registry
+    alias CrosswakeExample.Chimeway.TokenBinding
+    alias CrosswakeExample.Repo
+    alias Crosswake.Companions.Chimeway.Contracts.ProviderFeedback
+
+    # Bind two active bindings for different subjects
+    context_a = %{
+      subject_scope: :subject_session,
+      subject_ref: "sub_cr01_a",
+      org_ref: "org_cr01",
+      session_ref: "sess_cr01_a",
+      session_version: 1,
+      installation_ref: "inst_cr01_a",
+      actor_kind: :backend
+    }
+    evidence_a = %{
+      provider: :apns, platform: :ios, environment: :sandbox,
+      installation_ref: "inst_cr01_a", token_ref: "tok_cr01_a",
+      token_fingerprint: "hmac-sha256:fp_cr01_a",
+      notification_status: :granted,
+      observed_at: DateTime.to_iso8601(DateTime.utc_now())
+    }
+    {:ok, bind_a} = Registry.bind_or_rotate(context_a, evidence_a)
+
+    context_b = %{
+      subject_scope: :subject_session,
+      subject_ref: "sub_cr01_b",
+      org_ref: "org_cr01",
+      session_ref: "sess_cr01_b",
+      session_version: 1,
+      installation_ref: "inst_cr01_b",
+      actor_kind: :backend
+    }
+    evidence_b = %{
+      provider: :apns, platform: :ios, environment: :sandbox,
+      installation_ref: "inst_cr01_b", token_ref: "tok_cr01_b",
+      token_fingerprint: "hmac-sha256:fp_cr01_b",
+      notification_status: :granted,
+      observed_at: DateTime.to_iso8601(DateTime.utc_now())
+    }
+    {:ok, bind_b} = Registry.bind_or_rotate(context_b, evidence_b)
+
+    # Sanity: both bindings are active
+    assert bind_a.binding.state == :active
+    assert bind_b.binding.state == :active
+
+    # CR-01: feedback with NEITHER token_fingerprint NOR token_ref must fail closed
+    feedback_no_selector = %ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      feedback_event: :token_unregistered,
+      occurred_at: DateTime.to_iso8601(DateTime.utc_now()),
+      token_ref: nil,
+      token_fingerprint: nil
+    }
+
+    result = Registry.apply_provider_feedback(feedback_no_selector)
+    assert result == {:error, :feedback_missing_token_selector},
+           "feedback with no token selector must return {:error, :feedback_missing_token_selector}, got: \#{inspect(result)}"
+
+    # Both bindings must still be active — no unbounded fan-out occurred
+    binding_a_after = Repo.get!(TokenBinding, bind_a.binding.id)
+    binding_b_after = Repo.get!(TokenBinding, bind_b.binding.id)
+    assert binding_a_after.state == :active,
+           "binding A must remain :active after empty-selector feedback was rejected"
+    assert binding_b_after.state == :active,
+           "binding B must remain :active after empty-selector feedback was rejected"
+
+    IO.puts("phase60-cr01-regression-proof: ok")
+    """
+
+    assert {output, 0} =
+             System.cmd("mix", ["run", "--no-start", "-e", script],
+               cd: "examples/phoenix_host",
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "phase60-cr01-regression-proof: ok"
+  end
+
+  test "WR-01 regression: invalidating feedback matching zero active bindings returns error" do
+    script = """
+    Logger.configure(level: :warning)
+    import ExUnit.Assertions
+    Mix.Task.run("app.config")
+    db =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake_chimeway_wr01_proof_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db"
+      )
+
+    File.rm(db)
+    Application.put_env(:crosswake_example, CrosswakeExample.Repo, database: db, pool_size: 1, log: false)
+    Application.ensure_all_started(:phoenix)
+    Application.ensure_all_started(:ecto_sql)
+    {:ok, _pid} = CrosswakeExample.Repo.start_link()
+    path = Path.expand("priv/repo/migrations", File.cwd!())
+    Ecto.Migrator.run(CrosswakeExample.Repo, path, :up, all: true)
+
+    alias CrosswakeExample.Chimeway.Registry
+    alias Crosswake.Companions.Chimeway.Contracts.ProviderFeedback
+
+    # Invalidating feedback referencing a token fingerprint that has no active binding
+    feedback_no_match = %ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      feedback_event: :token_unregistered,
+      occurred_at: DateTime.to_iso8601(DateTime.utc_now()),
+      token_fingerprint: "hmac-sha256:nonexistent_fingerprint_xyzzy"
+    }
+
+    result = Registry.apply_provider_feedback(feedback_no_match)
+    assert result == {:error, :no_active_bindings},
+           "invalidating feedback matching zero bindings must return {:error, :no_active_bindings}, got: \#{inspect(result)}"
+
+    IO.puts("phase60-wr01-regression-proof: ok")
+    """
+
+    assert {output, 0} =
+             System.cmd("mix", ["run", "--no-start", "-e", script],
+               cd: "examples/phoenix_host",
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "phase60-wr01-regression-proof: ok"
+  end
+
+  test "WR-05 regression: subject_session changeset without session_version is invalid" do
+    script = """
+    Logger.configure(level: :warning)
+    import ExUnit.Assertions
+    Mix.Task.run("app.config")
+
+    alias CrosswakeExample.Chimeway.TokenBinding
+
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    base_attrs = %{
+      binding_ref: "bnd_wr05_test",
+      subject_scope: :subject_session,
+      subject_ref: "sub_wr05",
+      org_ref: "org_wr05",
+      session_ref: "sess_wr05",
+      installation_ref: "inst_wr05",
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      token_ref: "tok_wr05",
+      token_fingerprint: "hmac-sha256:fp_wr05",
+      notification_status: :granted,
+      state: :active,
+      reason: :initial_bind,
+      bound_at: now,
+      last_seen_at: now,
+      audit_correlation_ref: "corr_wr05"
+    }
+
+    # Without session_version — must be invalid
+    cs_no_version = TokenBinding.changeset(%TokenBinding{}, base_attrs)
+    refute cs_no_version.valid?,
+           "subject_session binding without session_version must be invalid (WR-05)"
+    assert cs_no_version.errors[:session_version] != nil,
+           "changeset must carry a :session_version error"
+
+    # With session_version: 0 — must be valid
+    cs_with_version = TokenBinding.changeset(%TokenBinding{}, Map.put(base_attrs, :session_version, 0))
+    assert cs_with_version.valid?,
+           "subject_session binding with session_version: 0 must be valid: \#{inspect(cs_with_version.errors)}"
+
+    # With negative session_version — must be invalid
+    cs_negative = TokenBinding.changeset(%TokenBinding{}, Map.put(base_attrs, :session_version, -1))
+    refute cs_negative.valid?,
+           "subject_session binding with session_version: -1 must be invalid"
+
+    IO.puts("phase60-wr05-regression-proof: ok")
+    """
+
+    assert {output, 0} =
+             System.cmd("mix", ["run", "--no-start", "-e", script],
+               cd: "examples/phoenix_host",
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "phase60-wr05-regression-proof: ok"
+  end
 end
