@@ -73,43 +73,9 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v3.5 First-Party Companions** — shipped 2026-05-31. Locked `Crosswake.Companion`, Rulestead gating, Rindle media evidence, Sigra contract-only auth predicates, and canonical companion docs/proof parity.
 - **v3.6 Operator Truth and Production Diagnostics** — shipped 2026-06-01. Added route/capability/companion/provider/auth/notification readiness inspection, publish-readiness diagnostics, native rebuild/support truth, docs-contract proof, closeout verification, and release/changelog parity without promoting deferred provider/native claims.
 - **v3.7 Commerce Provider Adapters** — shipped 2026-06-01. Added first-party StoreKit and Play Billing evidence adapter seams, example-host provider facade swap targets, backend-owned reconciliation proof, and advisory provider-proof promotion criteria.
+- **v3.8 Full Sigra Auth and Session Machinery** — shipped 2026-06-02. Added backend-owned session authority, one-time handoff tickets, server-owned step-up ceremony, OAuth/passkey/native auth-return boundaries, sanitized auth telemetry, support/operator truth, and security closeout while keeping provider/device auth proof advisory.
 
 ## Strategic Queue
-
-### Active: v3.8 Full Sigra Auth and Session Machinery
-
-**Objective**
-- Expand v3.5's contract-only Sigra slice into production account-security flows: session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
-
-**Why now**
-- Multi-tenant SaaS apps need secure mobile session behavior before notification-driven and audit-heavy flows can be claimed as production-ready.
-
-**Depends on**
-- v3.5 Sigra contract-only `AuthContext`, `SessionAuthorityLane`, route predicates, and `:step_up_required` denial posture.
-- v3.6 auth/session predicate readiness diagnostics and support truth.
-
-**Risk tags**
-- `authority`
-- `security`
-- `auth`
-- `auditability`
-
-**Key outputs**
-- Session handoff ticket contract and proof.
-- Step-up challenge/return flow.
-- Auth freshness and session-expiry semantics across route gates.
-- Passkey/OAuth native-return guidance or adapter seams.
-- Minimal sensitive-detail denial posture preserved from v3.5.
-
-**Non-goals**
-- Identity-provider-specific product templates.
-- Token storage in WebView localStorage.
-- Client auth signals becoming authority.
-
-**Proof required**
-- Hermetic route-gate/session-contract tests for handoff, freshness, expiry, and step-up denial posture.
-- Security review covering token, passkey/OAuth return, and sensitive denial surfaces.
-- Docs-contract tests that keep Sigra machinery claims distinct from v3.5 contract-only truth.
 
 ### Next: v3.9 Chimeway Notification Seam
 
@@ -269,6 +235,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-05-31:** The active milestone closeout contract lives in `.planning/milestones/v3.6-CLOSEOUT.md`; milestone audits remain append-only evidence rather than the live checklist.
 - **2026-06-01:** v3.6 closeout archived the roadmap and requirements snapshots in `.planning/milestones/`, promoted `mix closeout.verify` to deterministic closeout truth, and made v3.7 Commerce Provider Adapters the active strategic milestone.
 - **2026-06-01:** v3.7 closeout archived provider-adapter roadmap, requirements, audit, and phase evidence; v3.8 Full Sigra Auth and Session Machinery is now the active strategic candidate.
+- **2026-06-02:** Milestone-next-step assessment after v3.8 selected v3.9 Chimeway as the highest-leverage next wedge. The shipped reality already has notification-token and permission snapshots, support/operator truth, and Sigra route auth; the missing adopter job is backend token binding, revocation, and notification-open route resolution that still respects route policy and auth. Production shell runtime hardening stays next after Chimeway because it is important support truth but unlocks less new adopter value than notification re-entry.
 
 ## Support Truth Requirements
 
@@ -301,9 +268,9 @@ Every milestone close must update or verify:
 
 - Exact package/versioning posture for future separate companion packages.
 - Whether RevenueCat belongs as a future adapter after the first-party StoreKit and Play Billing seam hardens.
-- Whether Chimeway should stay token/open-action seam-only for one milestone or include a first provider delivery lane.
+- Whether Chimeway should stay token/open-action seam-only for one milestone or include a first provider delivery lane; default to seam-only unless provider/device delivery proof can be kept advisory and clearly separated from backend binding/open-action readiness.
 - Which scanning/capture flows belong in Rindle/native-screen lanes versus bounded bridge families.
 - What minimum Android evidence is required to move shell support from "verification required" to fully verified.
 
 ---
-*Last updated: 2026-06-01 — v3.7 closed and v3.8 Full Sigra Auth became the active strategic candidate.*
+*Last updated: 2026-06-02 — v3.8 closed and v3.9 Chimeway Notification Seam selected as the recommended next milestone.*

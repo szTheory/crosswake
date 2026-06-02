@@ -79,6 +79,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - StoreKit/Play Billing proof starts advisory in v3.7 until explicit promotion criteria are satisfied.
 - Provider adapters must preserve Phoenix-owned entitlement authority; device/storefront events remain reconciliation evidence.
 - Provider/device auth proof remains advisory after v3.8; shell/native/OAuth/passkey events remain evidence-only until backend validation promotes authority.
+- Milestone-next-step assessment selected v3.9 Chimeway Notification Seam as the highest-leverage next milestone; keep delivery/provider proof advisory unless explicitly promoted by proof criteria.
 
 ## Deferred Items
 
@@ -108,4 +109,4 @@ Stopped at: Phase 58 complete
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start the next milestone with /gsd-new-milestone, using v3.9 Chimeway Notification Seam as the recommended scope.

@@ -41,7 +41,6 @@ No active milestone is defined. Start the next milestone with `$gsd-new-mileston
 
 The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section is only a short orientation, not a second queue. Current queue:
 
-- **v3.8 Full Sigra Auth and Session Machinery** — session handoff, step-up ceremony, auth freshness, passkey/OAuth return boundaries, and secure denial/telemetry posture.
 - **v3.9 Chimeway Notification Seam** — token lifecycle, backend token binding, notification-open route resolution, revocation, provider diagnostics, and hermetic/advisory proof split.
 - **v4.0 Production Shell Runtime Line** — compatibility windows, rebuild policy, permission/entitlement templates, diagnostic export, Android verification closure, and device UAT checklist.
 - **v4.1 Multi-SaaS Archetype Proof Lanes** — production-shaped pressure across subscription, notification-driven, media/evidence, auth-sensitive admin, and offline/draft recovery workflows.
