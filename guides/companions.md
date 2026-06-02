@@ -128,6 +128,14 @@ Support truth accessor:
 
 Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, and Phase 58 stable auth telemetry plus STRIDE-style security closeout. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, or native auth UI.
 
+## Chimeway Surface (NOTIFICATIONS, Token Binding Contract)
+
+Chimeway ships as `Crosswake.Companions.Chimeway` with a narrow contract surface for notification token evidence and backend-owned binding records. The contract modules are `TokenEvidence`, `TokenBinding`, `ProviderFeedback`, `BindingEvent`, and `BindingResult` under `Crosswake.Companions.Chimeway.Contracts`.
+
+`notifications.token.get` and provider feedback are evidence only. Host code owns raw APNs/FCM token handling at the boundary, then Chimeway public contracts carry `token_ref` and `token_fingerprint` for support-safe correlation and lifecycle decisions. Backend-owned binding records remain authoritative for subject/session/app/installation scope, lifecycle state, revocation, stale pruning, and audit truth.
+
+Phase 59 does not ship APNs/FCM delivery, provider credentials, notification-open routing, RouteGate activation via notification, topic APIs, or tray behavior. Provider handoff events such as `:delivery_accepted` mean provider acceptance evidence only; they do not prove delivery, display, open behavior, route activation, auth, or session authority.
+
 ## Support Truth Surfaces
 
 Do not treat guide prose as independent truth. Operators and tests should anchor on exported runtime surfaces:

@@ -51,6 +51,14 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "Crosswake.Companions.Sigra.StepUp"
     assert content =~ "Crosswake.Companions.Sigra.Telemetry"
     assert content =~ "Crosswake.Companions.Sigra.StepUpCeremony.evaluate_or_issue/3"
+    assert content =~ "Crosswake.Companions.Chimeway"
+    assert content =~ "TokenEvidence"
+    assert content =~ "TokenBinding"
+    assert content =~ "ProviderFeedback"
+    assert content =~ "BindingEvent"
+    assert content =~ "BindingResult"
+    assert content =~ "token_ref"
+    assert content =~ "token_fingerprint"
     assert content =~ "auth_min_level"
     assert content =~ "requires_recent_auth"
     assert content =~ "auth_posture"
@@ -73,10 +81,33 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "includes explicit deferred non-goals", %{content: content} do
     assert content =~ "Chimeway"
     assert content =~ "Later Sigra machinery"
-    assert content =~ "Phase 58 ships telemetry/security closeout for provider-neutral Sigra contracts"
+
+    assert content =~
+             "Phase 58 ships telemetry/security closeout for provider-neutral Sigra contracts"
+
     assert content =~ "provider/device auth proof"
     assert content =~ "Threadline"
     assert content =~ "Separate-package extraction"
+  end
+
+  test "Chimeway anchor locks token evidence and backend binding non-claims", %{content: content} do
+    assert content =~ "`notifications.token.get` and provider feedback are evidence only"
+    assert content =~ "Backend-owned binding records remain authoritative"
+    assert content =~ "token_ref"
+    assert content =~ "token_fingerprint"
+
+    for non_claim <- [
+          "APNs/FCM delivery",
+          "provider credentials",
+          "notification-open routing",
+          "RouteGate activation via notification",
+          "topic APIs",
+          "tray behavior"
+        ] do
+      assert content =~ non_claim
+    end
+
+    refute content =~ "public `token` field"
   end
 
   test "live code guard — contract and support modules export expected functions" do
@@ -88,6 +119,8 @@ defmodule Crosswake.Guides.CompanionsTest do
     Code.ensure_loaded!(Crosswake.Companions.Sigra.Contracts)
     Code.ensure_loaded!(Crosswake.Companions.Sigra.Handoff)
     Code.ensure_loaded!(Crosswake.Companions.Sigra.Telemetry)
+    Code.ensure_loaded!(Crosswake.Companions.Chimeway)
+    Code.ensure_loaded!(Crosswake.Companions.Chimeway.Contracts)
     Code.ensure_loaded!(Crosswake.SupportMatrix)
     Code.ensure_loaded!(Crosswake.Shell.Denial)
 
@@ -95,6 +128,8 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert function_exported?(Crosswake.Companions.Rulestead.MockFlagSource, :set_flag, 2)
     assert function_exported?(Crosswake.Companions.Rindle, :validate_dependency, 0)
     assert function_exported?(Crosswake.Companions.Sigra.Telemetry, :event_names, 0)
+    assert function_exported?(Crosswake.Companions.Chimeway, :report_state, 0)
+    assert function_exported?(Crosswake.Companions.Chimeway.Contracts, :new_token_evidence, 1)
     assert function_exported?(Crosswake.SupportMatrix, :gating_truth, 0)
     assert function_exported?(Crosswake.SupportMatrix, :auth_contract_truth, 0)
     assert function_exported?(Crosswake.Shell.Denial, :reasons, 0)
