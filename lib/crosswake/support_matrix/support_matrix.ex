@@ -123,28 +123,73 @@ defmodule Crosswake.SupportMatrix do
   ]
   @auth_contract_truth [
     %{
-      surface: "Sigra SessionAuthorityLane route authority evaluator",
+      surface: "Sigra SessionAuthorityLane route authority evaluator and handoff contract",
       owner: :backend_seam,
       package_class: :companion,
       proof_class: :merge_blocking,
+      shipped_contracts: [:session_authority, :handoff_ticket, :server_record_redemption],
+      handoff: %{
+        status: :shipped,
+        authority_source: :server_record,
+        envelope_authority: false,
+        audit_fields: [
+          :event_id,
+          :event_type,
+          :handoff_ref,
+          :state_before,
+          :state_after,
+          :outcome,
+          :denial_code,
+          :occurred_at,
+          :route_id,
+          :intent_kind,
+          :source_session_ref,
+          :projected_session_ref,
+          :session_version_before,
+          :session_version_after,
+          :assurance_after,
+          :auth_methods_after,
+          :binding_result,
+          :request_ref,
+          :actor_kind
+        ],
+        proof_class: :merge_blocking
+      },
       route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
       denial_vocabulary: :step_up_required,
       denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
       safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys(),
       fallback: :step_up_required,
+      deferred: [
+        :ceremony,
+        :passkey,
+        :oauth,
+        :auth_return_boundaries,
+        :refresh_tokens,
+        :native_auth_ui,
+        :provider_device_proof
+      ],
       posture:
-        "Phase 54 session-authority posture: backend-owned SessionAuthorityLane, explicit auth_posture, shared evaluator, and canonical auth.step_up.* denial codes. No handoff, ceremony, passkey, OAuth, or refresh-token machinery."
+        "Phase 55 Sigra session-authority posture: backend-owned SessionAuthorityLane route evaluation plus shipped short-lived handoff ticket contracts and server-record redemption proof. Handoff envelopes are locators only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Phase 56 ceremony, Phase 57 OAuth/passkey/native auth-return boundaries, refresh-token helpers, provider/device proof, and native auth UI remain deferred."
     }
   ]
   @companion_support_truth [
     %{
-      surface: "Sigra session-authority route evaluator",
+      surface: "Sigra session-authority route evaluator and handoff contract",
       proof_class: :merge_blocking,
       action_class: "companion_native",
       docs_anchor: "guides/companions.md#sigra-auth-contract-only",
-      deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
+      deferred: [
+        :ceremony,
+        :passkey,
+        :oauth,
+        :auth_return_boundaries,
+        :refresh_tokens,
+        :native_auth_ui,
+        :provider_device_proof
+      ],
       posture:
-        "Sigra support includes backend session-authority contracts, auth_posture route truth, and fail-closed step_up_required denial codes; handoff, ceremony, passkey, OAuth, and native auth UI remain deferred."
+        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, and shipped handoff ticket/server-record contracts; ceremony, passkey, OAuth, auth-return validation, refresh tokens, provider/device proof, and native auth UI remain deferred."
     }
   ]
   @notification_support_truth [
@@ -835,14 +880,16 @@ defmodule Crosswake.SupportMatrix do
       ),
       promotion_rule(
         claim_id: "auth.sigra.session_authority",
-        claim_scope: "Sigra session-authority route evaluator support",
+        claim_scope: "Sigra session-authority route evaluator and handoff contract support",
         current_proof_class: :merge_blocking,
         promotes_to: :merge_blocking,
-        evidence_class: "session_authority",
+        evidence_class: "session_authority_handoff_contract",
         required_evidence: [
           "auth posture route fixtures",
           "session authority evaluator proof",
-          "step_up_required denial-code proof"
+          "step_up_required denial-code proof",
+          "single-use handoff ticket lifecycle proof",
+          "server-record redemption and audit proof"
         ],
         minimum_consecutive_passes: 1,
         freshness_window: "current release branch",
@@ -853,7 +900,7 @@ defmodule Crosswake.SupportMatrix do
         action_class: "companion_native",
         check_ids: ["diag.auth.sigra_session_authority"],
         demotion_trigger:
-          "Demote if route predicates, auth_posture, step_up_required denial codes, or session-authority docs drift from support truth."
+          "Demote if route predicates, auth_posture, step_up_required/auth.handoff denial codes, handoff server-record proof, or Sigra docs drift from support truth."
       ),
       promotion_rule(
         claim_id: "purchase_intent.provider.storekit",

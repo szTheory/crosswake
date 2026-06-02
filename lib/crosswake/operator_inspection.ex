@@ -243,17 +243,23 @@ defmodule Crosswake.OperatorInspection do
       not is_nil(route.auth_min_level) or not is_nil(route.requires_recent_auth) or
         not is_nil(route.auth_posture)
 
+    auth_truth = Crosswake.SupportMatrix.auth_contract_truth() |> List.first(%{})
+
     %{
       auth_min_level: route.auth_min_level,
       requires_recent_auth: route.requires_recent_auth,
       auth_posture: route.auth_posture,
       readiness: if(predicated?, do: :verification_required, else: :supported),
       posture: if(predicated?, do: :session_authority, else: :not_applicable),
+      shipped_contracts:
+        if(predicated?, do: Map.get(auth_truth, :shipped_contracts, []), else: []),
+      handoff: if(predicated?, do: Map.get(auth_truth, :handoff, %{}), else: %{}),
       fallback: if(predicated?, do: :step_up_required, else: nil),
-      denial_codes: if(predicated?, do: Crosswake.Companions.Sigra.DenialCodes.codes(), else: []),
+      denial_codes: if(predicated?, do: Map.get(auth_truth, :denial_codes, []), else: []),
+      safe_detail_keys: if(predicated?, do: Map.get(auth_truth, :safe_detail_keys, []), else: []),
       non_goals:
         if(predicated?,
-          do: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
+          do: Map.get(auth_truth, :deferred, []),
           else: []
         )
     }

@@ -5,6 +5,7 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.Handoff
   alias Crosswake.Shell.Denial
+  alias Crosswake.SupportMatrix
 
   @handoff_codes [
     "auth.handoff.missing_ticket",
@@ -77,6 +78,34 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
         ] do
       refute key in allowed
     end
+  end
+
+  test "support truth promotes shipped handoff contracts without later-phase claims" do
+    assert [%{} = row] = SupportMatrix.auth_contract_truth()
+
+    assert row.shipped_contracts == [
+             :session_authority,
+             :handoff_ticket,
+             :server_record_redemption
+           ]
+
+    assert row.handoff.status == :shipped
+    assert row.handoff.authority_source == :server_record
+    assert row.handoff.envelope_authority == false
+    assert row.handoff.proof_class == :merge_blocking
+    assert :denial_code in row.handoff.audit_fields
+    assert :binding_result in row.handoff.audit_fields
+    assert row.denial_codes == DenialCodes.codes()
+    assert "auth.handoff.route_mismatch" in row.denial_codes
+    assert "handoff_ref" in row.safe_detail_keys
+    assert "ticket_ref" not in row.safe_detail_keys
+    assert row.fallback == :step_up_required
+    refute :handoff in row.deferred
+    assert :ceremony in row.deferred
+    assert :auth_return_boundaries in row.deferred
+    assert :refresh_tokens in row.deferred
+    assert :provider_device_proof in row.deferred
+    assert :native_auth_ui in row.deferred
   end
 
   test "handoff envelope cannot become self-contained authority" do
@@ -190,7 +219,13 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
     Logger.configure(level: :warning)
     import ExUnit.Assertions
     Mix.Task.run("app.config")
-    db = Path.join(System.tmp_dir!(), "crosswake_handoff_proof_\#{System.unique_integer([:positive])}.db")
+    db =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake_handoff_proof_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db"
+      )
+
+    File.rm(db)
     Application.put_env(:crosswake_example, CrosswakeExample.Repo, database: db, pool_size: 1, log: false)
     Application.ensure_all_started(:phoenix)
     Application.ensure_all_started(:ecto_sql)
@@ -346,7 +381,25 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
     assert output =~ "phase55-host-proof: ok"
   end
 
-  test "phase 55-02 proof does not claim ceremony diagnostics or provider return flows" do
+  test "phase 55 proof keeps public docs on handoff support and later-phase non-claims" do
+    companions = File.read!("guides/companions.md")
+    support = File.read!("guides/support_matrix.md")
+    native_shell = File.read!("guides/native_shell.md")
+
+    for doc <- [companions, support, native_shell] do
+      assert doc =~ "handoff"
+      assert doc =~ "server-record"
+      assert doc =~ "refresh-token"
+      assert doc =~ "native auth UI"
+    end
+
+    assert companions =~ "Handoff envelopes are signed locators only"
+    assert companions =~ "Phase 55 only ships handoff ticket contracts"
+    assert support =~ "auth.handoff.*"
+    assert native_shell =~ "the bridge is not an auth authority"
+  end
+
+  test "phase 55-03 proof does not claim ceremony diagnostics or provider return flows" do
     source = File.read!(__ENV__.file)
 
     refute String.contains?(source, "LiveView " <> "on_mount")

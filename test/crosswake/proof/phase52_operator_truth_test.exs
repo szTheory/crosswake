@@ -132,7 +132,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     refute notification["details"]["delivery_supported?"]
 
     auth = find_readiness_check!(decoded, "auth.session_predicate_readiness")
-    assert auth["details"]["demotion_trigger"] =~ "session-authority docs drift"
+    assert auth["details"]["demotion_trigger"] =~ "handoff server-record proof"
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
@@ -168,9 +168,10 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.non_claims.sigra_session_authority",
       "guides/companions.md",
-      "Sigra now ships the Phase 54 backend-owned session-authority route evaluator",
+      "Sigra now ships the backend-owned session-authority route evaluator plus Phase 55 handoff ticket contract machinery",
       source: "guides/companions.md and auth contract support truth",
-      hint: "distinguish Phase 54 route authority from later Sigra machinery",
+      hint:
+        "distinguish shipped Phase 55 handoff contracts from later Sigra ceremony and returns",
       posture: :merge_blocking
     )
 

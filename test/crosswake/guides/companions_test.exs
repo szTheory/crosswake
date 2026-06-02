@@ -47,6 +47,7 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ ":kill_switch_active"
     assert content =~ "AuthContext"
     assert content =~ "SessionAuthorityLane"
+    assert content =~ "Crosswake.Companions.Sigra.Handoff"
     assert content =~ "auth_min_level"
     assert content =~ "requires_recent_auth"
     assert content =~ "auth_posture"
@@ -56,6 +57,8 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ ":step_up_required"
     assert content =~ "auth.step_up.missing_context"
     assert content =~ "auth.step_up.cached_not_allowed"
+    assert content =~ "auth.handoff.invalid_ticket"
+    assert content =~ "server-side ticket record"
     assert content =~ "companion.dependency_missing"
     assert content =~ "auth.route_predicated"
     assert content =~ "auth.step_up_required_contract"
@@ -65,6 +68,8 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "includes explicit deferred non-goals", %{content: content} do
     assert content =~ "Chimeway"
     assert content =~ "Later Sigra machinery"
+    assert content =~ "Phase 55 only ships handoff ticket contracts"
+    assert content =~ "provider/device auth proof"
     assert content =~ "Threadline"
     assert content =~ "Separate-package extraction"
   end
@@ -76,6 +81,7 @@ defmodule Crosswake.Guides.CompanionsTest do
     Code.ensure_loaded!(Crosswake.Companions.Rulestead.MockFlagSource)
     Code.ensure_loaded!(Crosswake.Companions.Rindle)
     Code.ensure_loaded!(Crosswake.Companions.Sigra.Contracts)
+    Code.ensure_loaded!(Crosswake.Companions.Sigra.Handoff)
     Code.ensure_loaded!(Crosswake.SupportMatrix)
     Code.ensure_loaded!(Crosswake.Shell.Denial)
 
@@ -134,6 +140,13 @@ defmodule Crosswake.Guides.CompanionsTest do
         assert content =~ Atom.to_string(predicate),
                "guide missing auth predicate #{inspect(predicate)} from SupportMatrix.auth_contract_truth/0"
       end
+
+      assert %{handoff: %{authority_source: :server_record}, deferred: deferred} =
+               Enum.find(rows, &(:handoff_ticket in &1.shipped_contracts))
+
+      refute :handoff in deferred
+      assert :ceremony in deferred
+      assert :auth_return_boundaries in deferred
 
       assert content =~ Atom.to_string(denial),
              "guide missing auth denial vocabulary #{inspect(denial)} from SupportMatrix.auth_contract_truth/0"

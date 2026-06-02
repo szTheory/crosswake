@@ -158,7 +158,11 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     assert row.fallback == :step_up_required
     assert row.surface =~ "SessionAuthorityLane"
     assert row.posture =~ "session-authority"
-    assert row.posture =~ "No handoff"
+    assert row.posture =~ "handoff ticket contracts"
+    assert row.posture =~ "server-record redemption proof"
+    assert "auth.handoff.invalid_ticket" in row.denial_codes
+    assert :ceremony in row.deferred
+    refute :handoff in row.deferred
     assert row.posture =~ "passkey"
   end
 

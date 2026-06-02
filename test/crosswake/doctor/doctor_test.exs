@@ -887,13 +887,28 @@ defmodule Crosswake.DoctorTest do
     assert json_route_finding["details"]["requires_recent_auth"] == 600
     assert json_route_finding["details"]["auth_posture"] == "strict_recent"
 
-    assert Enum.any?(decoded["findings"], &(&1["code"] == "auth.step_up_required_contract"))
+    contract_finding =
+      Enum.find(decoded["findings"], &(&1["code"] == "auth.step_up_required_contract"))
+
+    assert contract_finding
+
+    assert contract_finding["details"]["shipped_contracts"] == [
+             "session_authority",
+             "handoff_ticket",
+             "server_record_redemption"
+           ]
+
+    assert contract_finding["details"]["handoff"]["authority_source"] == "server_record"
+    assert "auth.handoff.invalid_ticket" in contract_finding["details"]["denial_codes"]
+    assert "handoff_ref" in contract_finding["details"]["safe_detail_keys"]
+    refute "handoff" in contract_finding["details"]["deferred"]
+    assert "ceremony" in contract_finding["details"]["deferred"]
 
     sensitive_artifacts = [
       "session_id",
       "actor_id",
       "access_token",
-      "refresh_token",
+      "raw_refresh_token",
       "passkey_credential"
     ]
 

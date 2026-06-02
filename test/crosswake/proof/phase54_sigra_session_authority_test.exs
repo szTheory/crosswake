@@ -63,7 +63,9 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
   end
 
   test "canonical auth denial taxonomy remains under the public step-up shell reason" do
-    assert DenialCodes.codes() == [
+    step_up_codes = Enum.filter(DenialCodes.codes(), &String.starts_with?(&1, "auth.step_up."))
+
+    assert step_up_codes == [
              "auth.step_up.missing_context",
              "auth.step_up.invalid_context",
              "auth.step_up.non_active",
@@ -77,7 +79,8 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
              "auth.step_up.cached_not_allowed"
            ]
 
-    assert Enum.all?(DenialCodes.codes(), &String.starts_with?(&1, "auth.step_up."))
+    assert Enum.all?(step_up_codes, &String.starts_with?(&1, "auth.step_up."))
+    assert "auth.handoff.invalid_ticket" in DenialCodes.codes()
   end
 
   test "shell-safe auth denial details are allowlisted" do
@@ -96,6 +99,16 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
         evaluated_at: "2026-06-01T00:15:00Z",
         challenge_ref: "challenge:phase54.safe",
         step_up_token_ref: "stepup.phase54.safe",
+        handoff_ref: "support:hnd.safe",
+        handoff_state: :issued,
+        handoff_kind: :session_handoff,
+        handoff_version: "1",
+        handoff_transport: :phoenix_token,
+        binding_kind: :session_route_intent,
+        intent_kind: :session_handoff,
+        route_binding: "saas-profile-settings",
+        ticket_expires_at: "2026-06-02T12:03:00Z",
+        ticket_age_seconds: 30,
         session_id: "secret_session",
         subject_id: "actor_123",
         org_id: "org_123",
@@ -137,18 +150,22 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
     assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_codes == DenialCodes.codes()
     assert "auth_posture" in row.safe_detail_keys
+    assert "handoff_ref" in row.safe_detail_keys
     assert row.posture =~ "session-authority"
-    assert row.posture =~ "No handoff"
+    assert row.posture =~ "handoff ticket contracts"
+    assert row.posture =~ "server-record redemption proof"
+    assert "auth.handoff.invalid_ticket" in row.denial_codes
+    assert :ceremony in row.deferred
+    refute :handoff in row.deferred
     assert row.posture =~ "passkey"
     assert row.posture =~ "OAuth"
     assert row.posture =~ "refresh-token"
   end
 
-  test "phase 54 proof does not claim later auth machinery" do
+  test "phase 54 proof still does not claim later auth machinery" do
     source = File.read!(__ENV__.file)
 
-    refute String.contains?(source, "handoff" <> " ticket")
-    refute String.contains?(source, "session" <> " renewal")
+    assert String.contains?(source, "handoff" <> " ticket")
     refute String.contains?(source, "OAuth" <> " callback")
     refute String.contains?(source, "passkey" <> " assertion")
     refute String.contains?(source, "refresh-token" <> " rotation")

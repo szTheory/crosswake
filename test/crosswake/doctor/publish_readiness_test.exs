@@ -164,11 +164,24 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     auth = find_check!(report, :auth_session_predicate_readiness)
     assert auth.message =~ "Sigra"
     assert auth.message =~ "session-authority"
-    assert :handoff in auth.details.deferred
+    assert auth.message =~ "handoff ticket/server-record contract machinery are shipped"
+    refute :handoff in auth.details.deferred
+    assert :ceremony in auth.details.deferred
+    assert :auth_return_boundaries in auth.details.deferred
+
+    assert auth.details.shipped_contracts == [
+             :session_authority,
+             :handoff_ticket,
+             :server_record_redemption
+           ]
+
+    assert auth.details.handoff.authority_source == :server_record
     assert auth.code == "diag.auth.sigra_session_authority"
     assert auth.details.posture == :session_authority
     assert :auth_posture in auth.details.route_predicates
     assert "auth.step_up.missing_context" in auth.details.denial_codes
+    assert "auth.handoff.invalid_ticket" in auth.details.denial_codes
+    assert "handoff_ref" in auth.details.safe_detail_keys
     assert auth.details.promotion_rule_ids == ["auth.sigra.session_authority"]
     assert "companion_native" in auth.rebuild_requirement.action_classes
 

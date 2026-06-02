@@ -18,21 +18,88 @@
           "auth.step_up.insufficient_assurance",
           "auth.step_up.stale_auth",
           "auth.step_up.remembered_not_allowed",
-          "auth.step_up.cached_not_allowed"
+          "auth.step_up.cached_not_allowed",
+          "auth.handoff.missing_ticket",
+          "auth.handoff.invalid_ticket",
+          "auth.handoff.expired_ticket",
+          "auth.handoff.replayed_ticket",
+          "auth.handoff.revoked_ticket",
+          "auth.handoff.binding_mismatch",
+          "auth.handoff.intent_mismatch",
+          "auth.handoff.route_mismatch",
+          "auth.handoff.projection_failed"
         ],
         "fallback": "step_up_required",
+        "handoff": {
+          "audit_fields": [
+            "event_id",
+            "event_type",
+            "handoff_ref",
+            "state_before",
+            "state_after",
+            "outcome",
+            "denial_code",
+            "occurred_at",
+            "route_id",
+            "intent_kind",
+            "source_session_ref",
+            "projected_session_ref",
+            "session_version_before",
+            "session_version_after",
+            "assurance_after",
+            "auth_methods_after",
+            "binding_result",
+            "request_ref",
+            "actor_kind"
+          ],
+          "authority_source": "server_record",
+          "envelope_authority": false,
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        },
         "non_goals": [
-          "handoff",
           "ceremony",
           "passkey",
           "oauth",
+          "auth_return_boundaries",
           "refresh_tokens",
-          "native_auth_ui"
+          "native_auth_ui",
+          "provider_device_proof"
         ],
         "posture": "session_authority",
         "readiness": "verification_required",
         "requires_recent_auth": null,
-        "route_id": "camera"
+        "route_id": "camera",
+        "safe_detail_keys": [
+          "required_assurance_level",
+          "current_assurance_level",
+          "required_mfa_level",
+          "current_mfa_level",
+          "max_auth_age_seconds",
+          "auth_age_seconds",
+          "auth_posture",
+          "authority_state",
+          "evaluated_at",
+          "challenge_ref",
+          "step_up_token_ref",
+          "expected_session_version",
+          "current_session_version",
+          "handoff_ref",
+          "handoff_state",
+          "handoff_kind",
+          "handoff_version",
+          "handoff_transport",
+          "binding_kind",
+          "intent_kind",
+          "route_binding",
+          "ticket_expires_at",
+          "ticket_age_seconds"
+        ],
+        "shipped_contracts": [
+          "session_authority",
+          "handoff_ticket",
+          "server_record_redemption"
+        ]
       },
       "hint": "inspect route camera support, proof, rebuild, and denial fields",
       "message": "route camera uses contract-only auth predicates",
@@ -150,7 +217,7 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-02T01:34:22Z",
+  "generated_at": "2026-06-02T06:43:06Z",
   "indexes": {
     "by_auth_predicate": {
       "step_up_required": [
@@ -237,20 +304,87 @@
           "auth.step_up.insufficient_assurance",
           "auth.step_up.stale_auth",
           "auth.step_up.remembered_not_allowed",
-          "auth.step_up.cached_not_allowed"
+          "auth.step_up.cached_not_allowed",
+          "auth.handoff.missing_ticket",
+          "auth.handoff.invalid_ticket",
+          "auth.handoff.expired_ticket",
+          "auth.handoff.replayed_ticket",
+          "auth.handoff.revoked_ticket",
+          "auth.handoff.binding_mismatch",
+          "auth.handoff.intent_mismatch",
+          "auth.handoff.route_mismatch",
+          "auth.handoff.projection_failed"
         ],
         "fallback": "step_up_required",
+        "handoff": {
+          "audit_fields": [
+            "event_id",
+            "event_type",
+            "handoff_ref",
+            "state_before",
+            "state_after",
+            "outcome",
+            "denial_code",
+            "occurred_at",
+            "route_id",
+            "intent_kind",
+            "source_session_ref",
+            "projected_session_ref",
+            "session_version_before",
+            "session_version_after",
+            "assurance_after",
+            "auth_methods_after",
+            "binding_result",
+            "request_ref",
+            "actor_kind"
+          ],
+          "authority_source": "server_record",
+          "envelope_authority": false,
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        },
         "non_goals": [
-          "handoff",
           "ceremony",
           "passkey",
           "oauth",
+          "auth_return_boundaries",
           "refresh_tokens",
-          "native_auth_ui"
+          "native_auth_ui",
+          "provider_device_proof"
         ],
         "posture": "session_authority",
         "readiness": "verification_required",
-        "requires_recent_auth": null
+        "requires_recent_auth": null,
+        "safe_detail_keys": [
+          "required_assurance_level",
+          "current_assurance_level",
+          "required_mfa_level",
+          "current_mfa_level",
+          "max_auth_age_seconds",
+          "auth_age_seconds",
+          "auth_posture",
+          "authority_state",
+          "evaluated_at",
+          "challenge_ref",
+          "step_up_token_ref",
+          "expected_session_version",
+          "current_session_version",
+          "handoff_ref",
+          "handoff_state",
+          "handoff_kind",
+          "handoff_version",
+          "handoff_transport",
+          "binding_kind",
+          "intent_kind",
+          "route_binding",
+          "ticket_expires_at",
+          "ticket_age_seconds"
+        ],
+        "shipped_contracts": [
+          "session_authority",
+          "handoff_ticket",
+          "server_record_redemption"
+        ]
       },
       "capabilities": [
         {
@@ -325,20 +459,87 @@
               "auth.step_up.insufficient_assurance",
               "auth.step_up.stale_auth",
               "auth.step_up.remembered_not_allowed",
-              "auth.step_up.cached_not_allowed"
+              "auth.step_up.cached_not_allowed",
+              "auth.handoff.missing_ticket",
+              "auth.handoff.invalid_ticket",
+              "auth.handoff.expired_ticket",
+              "auth.handoff.replayed_ticket",
+              "auth.handoff.revoked_ticket",
+              "auth.handoff.binding_mismatch",
+              "auth.handoff.intent_mismatch",
+              "auth.handoff.route_mismatch",
+              "auth.handoff.projection_failed"
             ],
             "fallback": "step_up_required",
+            "handoff": {
+              "audit_fields": [
+                "event_id",
+                "event_type",
+                "handoff_ref",
+                "state_before",
+                "state_after",
+                "outcome",
+                "denial_code",
+                "occurred_at",
+                "route_id",
+                "intent_kind",
+                "source_session_ref",
+                "projected_session_ref",
+                "session_version_before",
+                "session_version_after",
+                "assurance_after",
+                "auth_methods_after",
+                "binding_result",
+                "request_ref",
+                "actor_kind"
+              ],
+              "authority_source": "server_record",
+              "envelope_authority": false,
+              "proof_class": "merge_blocking",
+              "status": "shipped"
+            },
             "non_goals": [
-              "handoff",
               "ceremony",
               "passkey",
               "oauth",
+              "auth_return_boundaries",
               "refresh_tokens",
-              "native_auth_ui"
+              "native_auth_ui",
+              "provider_device_proof"
             ],
             "posture": "session_authority",
             "readiness": "verification_required",
-            "requires_recent_auth": null
+            "requires_recent_auth": null,
+            "safe_detail_keys": [
+              "required_assurance_level",
+              "current_assurance_level",
+              "required_mfa_level",
+              "current_mfa_level",
+              "max_auth_age_seconds",
+              "auth_age_seconds",
+              "auth_posture",
+              "authority_state",
+              "evaluated_at",
+              "challenge_ref",
+              "step_up_token_ref",
+              "expected_session_version",
+              "current_session_version",
+              "handoff_ref",
+              "handoff_state",
+              "handoff_kind",
+              "handoff_version",
+              "handoff_transport",
+              "binding_kind",
+              "intent_kind",
+              "route_binding",
+              "ticket_expires_at",
+              "ticket_age_seconds"
+            ],
+            "shipped_contracts": [
+              "session_authority",
+              "handoff_ticket",
+              "server_record_redemption"
+            ]
           },
           "message": "route camera uses contract-only auth predicates",
           "reason": "step_up_required",
@@ -405,10 +606,13 @@
         "auth_posture": null,
         "denial_codes": [],
         "fallback": null,
+        "handoff": {},
         "non_goals": [],
         "posture": "not_applicable",
         "readiness": "supported",
-        "requires_recent_auth": null
+        "requires_recent_auth": null,
+        "safe_detail_keys": [],
+        "shipped_contracts": []
       },
       "capabilities": [
         {
@@ -610,10 +814,13 @@
         "auth_posture": null,
         "denial_codes": [],
         "fallback": null,
+        "handoff": {},
         "non_goals": [],
         "posture": "not_applicable",
         "readiness": "supported",
-        "requires_recent_auth": null
+        "requires_recent_auth": null,
+        "safe_detail_keys": [],
+        "shipped_contracts": []
       },
       "capabilities": [
         {
@@ -730,10 +937,13 @@
         "auth_posture": null,
         "denial_codes": [],
         "fallback": null,
+        "handoff": {},
         "non_goals": [],
         "posture": "not_applicable",
         "readiness": "supported",
-        "requires_recent_auth": null
+        "requires_recent_auth": null,
+        "safe_detail_keys": [],
+        "shipped_contracts": []
       },
       "capabilities": [],
       "commerce": null,

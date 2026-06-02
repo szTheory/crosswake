@@ -157,7 +157,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
 
-    assert guide =~ "Sigra session-authority route evaluation is shipped"
+    assert guide =~
+             "Sigra session-authority route evaluation and Phase 55 handoff ticket/server-record contract machinery are shipped"
+
+    assert guide =~ "auth.handoff.*"
     assert guide =~ "auth.sigra.session_authority"
     assert guide =~ "diag.auth.sigra_session_authority"
 

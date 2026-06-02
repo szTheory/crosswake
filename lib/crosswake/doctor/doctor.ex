@@ -745,18 +745,29 @@ defmodule Crosswake.Doctor do
       if routes == [] do
         []
       else
+        auth_truth = Crosswake.SupportMatrix.auth_contract_truth() |> List.first(%{})
+
         [
           check(
             :advisory,
             "auth.step_up_required_contract",
             "auth.contract_posture",
-            "Auth contract surface includes Phase 54 backend session-authority evaluation.",
-            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.* denial codes, and fail-closed :step_up_required denial. No handoff, ceremony, passkey, OAuth, or refresh-token machinery shipped.",
+            "Auth contract surface includes backend session-authority evaluation and shipped Phase 55 handoff contract machinery.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.* and auth.handoff.* denial codes, fail-closed :step_up_required denial, and backend-owned handoff ticket/server-record redemption proof. Phase 56 ceremony, Phase 57 OAuth/passkey/native auth returns, refresh-token helpers, provider/device proof, and native auth UI remain deferred.",
             %{
               fallback: :step_up_required,
               posture: :session_authority,
-              denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
-              safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys()
+              shipped_contracts: Map.get(auth_truth, :shipped_contracts, []),
+              handoff: Map.get(auth_truth, :handoff, %{}),
+              denial_codes:
+                Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
+              safe_detail_keys:
+                Map.get(
+                  auth_truth,
+                  :safe_detail_keys,
+                  Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys()
+                ),
+              deferred: Map.get(auth_truth, :deferred, [])
             }
           )
         ]

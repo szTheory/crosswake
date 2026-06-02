@@ -152,14 +152,15 @@
       "code": "diag.auth.sigra_session_authority",
       "details": {
         "deferred": [
-          "handoff",
           "ceremony",
           "passkey",
           "oauth",
+          "auth_return_boundaries",
           "refresh_tokens",
-          "native_auth_ui"
+          "native_auth_ui",
+          "provider_device_proof"
         ],
-        "demotion_trigger": "Demote if route predicates, auth_posture, step_up_required denial codes, or session-authority docs drift from support truth.",
+        "demotion_trigger": "Demote if route predicates, auth_posture, step_up_required/auth.handoff denial codes, handoff server-record proof, or Sigra docs drift from support truth.",
         "denial_codes": [
           "auth.step_up.missing_context",
           "auth.step_up.invalid_context",
@@ -171,9 +172,45 @@
           "auth.step_up.insufficient_assurance",
           "auth.step_up.stale_auth",
           "auth.step_up.remembered_not_allowed",
-          "auth.step_up.cached_not_allowed"
+          "auth.step_up.cached_not_allowed",
+          "auth.handoff.missing_ticket",
+          "auth.handoff.invalid_ticket",
+          "auth.handoff.expired_ticket",
+          "auth.handoff.replayed_ticket",
+          "auth.handoff.revoked_ticket",
+          "auth.handoff.binding_mismatch",
+          "auth.handoff.intent_mismatch",
+          "auth.handoff.route_mismatch",
+          "auth.handoff.projection_failed"
         ],
         "fallback": "step_up_required",
+        "handoff": {
+          "audit_fields": [
+            "event_id",
+            "event_type",
+            "handoff_ref",
+            "state_before",
+            "state_after",
+            "outcome",
+            "denial_code",
+            "occurred_at",
+            "route_id",
+            "intent_kind",
+            "source_session_ref",
+            "projected_session_ref",
+            "session_version_before",
+            "session_version_after",
+            "assurance_after",
+            "auth_methods_after",
+            "binding_result",
+            "request_ref",
+            "actor_kind"
+          ],
+          "authority_source": "server_record",
+          "envelope_authority": false,
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        },
         "posture": "session_authority",
         "promotion_rule_ids": [
           "auth.sigra.session_authority"
@@ -189,12 +226,42 @@
           "auth_min_level",
           "requires_recent_auth",
           "auth_posture"
+        ],
+        "safe_detail_keys": [
+          "required_assurance_level",
+          "current_assurance_level",
+          "required_mfa_level",
+          "current_mfa_level",
+          "max_auth_age_seconds",
+          "auth_age_seconds",
+          "auth_posture",
+          "authority_state",
+          "evaluated_at",
+          "challenge_ref",
+          "step_up_token_ref",
+          "expected_session_version",
+          "current_session_version",
+          "handoff_ref",
+          "handoff_state",
+          "handoff_kind",
+          "handoff_version",
+          "handoff_transport",
+          "binding_kind",
+          "intent_kind",
+          "route_binding",
+          "ticket_expires_at",
+          "ticket_age_seconds"
+        ],
+        "shipped_contracts": [
+          "session_authority",
+          "handoff_ticket",
+          "server_record_redemption"
         ]
       },
       "docs_reference": "guides/companions.md",
-      "hint": "Keep auth predicates backend-owned and fail closed with step_up_required; use later phases for handoff, ceremony, and auth-return machinery.",
+      "hint": "Keep auth predicates and handoff redemption backend-owned, fail closed with step_up_required, and use later phases for ceremony and auth-return machinery.",
       "id": "auth.session_predicate_readiness",
-      "message": "Sigra session-authority route evaluation is shipped; handoff, ceremony, passkey, OAuth, and refresh-token machinery are not shipped",
+      "message": "Sigra session-authority route evaluation and handoff ticket/server-record contract machinery are shipped; ceremony, passkey, OAuth, auth-return validation, refresh-token helpers, provider/device proof, and native auth UI are not shipped",
       "proof_class": "advisory",
       "rebuild_requirement": {
         "action_classes": [

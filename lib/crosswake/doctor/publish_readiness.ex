@@ -365,6 +365,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp auth_session_predicate_readiness_check(support_matrix, inspection) do
     auth_truth = SupportMatrix.auth_contract_truth()
+    auth_row = List.first(auth_truth, %{})
     _release = SupportMatrix.release_boundaries(support_matrix)
     route_ids = route_ids_with(inspection, &(&1.auth.fallback == :step_up_required))
     claim_ids = ["auth.sigra.session_authority"]
@@ -379,10 +380,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
         if(route_ids == [],
           do: "no Sigra auth predicate routes are present in the inspected route set",
           else:
-            "Sigra session-authority route evaluation is shipped; handoff, ceremony, passkey, OAuth, and refresh-token machinery are not shipped"
+            "Sigra session-authority route evaluation and handoff ticket/server-record contract machinery are shipped; ceremony, passkey, OAuth, auth-return validation, refresh-token helpers, provider/device proof, and native auth UI are not shipped"
         ),
       hint:
-        "Keep auth predicates backend-owned and fail closed with step_up_required; use later phases for handoff, ceremony, and auth-return machinery.",
+        "Keep auth predicates and handoff redemption backend-owned, fail closed with step_up_required, and use later phases for ceremony and auth-return machinery.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
       rebuild_requirement: %{
@@ -395,9 +396,12 @@ defmodule Crosswake.Doctor.PublishReadiness do
       details: %{
         posture: :session_authority,
         fallback: :step_up_required,
-        route_predicates: auth_truth |> List.first(%{}) |> Map.get(:route_predicates, []),
-        denial_codes: auth_truth |> List.first(%{}) |> Map.get(:denial_codes, []),
-        deferred: [:handoff, :ceremony, :passkey, :oauth, :refresh_tokens, :native_auth_ui],
+        shipped_contracts: Map.get(auth_row, :shipped_contracts, []),
+        handoff: Map.get(auth_row, :handoff, %{}),
+        route_predicates: Map.get(auth_row, :route_predicates, []),
+        denial_codes: Map.get(auth_row, :denial_codes, []),
+        safe_detail_keys: Map.get(auth_row, :safe_detail_keys, []),
+        deferred: Map.get(auth_row, :deferred, []),
         route_ids: route_ids,
         promotion_rule_ids: if(route_ids == [], do: [], else: promotion_rule_ids(claim_ids)),
         required_docs_anchors:
