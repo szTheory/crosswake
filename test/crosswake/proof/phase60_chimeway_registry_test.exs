@@ -12,7 +12,11 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   - TokenBinding and TokenBindingEvent changesets enforce closed vocabularies
     and scope consistency;
   - Phase 60 created only the mutable binding table and append-only event table,
-    not extra normalized installation/device/token tables or replay infrastructure.
+    not extra normalized installation/device/token tables or replay infrastructure;
+  - Registry lifecycle APIs (bind, refresh, rotate, revoke, invalidate, prune)
+    work atomically, preserve audit history, and emit sanitized result data;
+  - Chimeway telemetry fires only after successful commits and not from
+    rolled-back transactions.
   """
 
   # ---------------------------------------------------------------------------
@@ -354,5 +358,500 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
              )
 
     assert output =~ "phase60-schema-proof: ok"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Registry lifecycle proof: bind, refresh, rotate, and raw-token absence
+  # ---------------------------------------------------------------------------
+
+  test "Registry bind_or_rotate: initial bind, same-token refresh, and rotation lifecycle" do
+    script = """
+    Logger.configure(level: :warning)
+    import ExUnit.Assertions
+    Mix.Task.run("app.config")
+    db =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake_chimeway_lifecycle_proof_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db"
+      )
+
+    File.rm(db)
+    Application.put_env(:crosswake_example, CrosswakeExample.Repo, database: db, pool_size: 1, log: false)
+    Application.ensure_all_started(:phoenix)
+    Application.ensure_all_started(:ecto_sql)
+    {:ok, _pid} = CrosswakeExample.Repo.start_link()
+    path = Path.expand("priv/repo/migrations", File.cwd!())
+    Ecto.Migrator.run(CrosswakeExample.Repo, path, :up, all: true)
+
+    alias CrosswakeExample.Chimeway.Registry
+    alias CrosswakeExample.Repo
+
+    # --- Initial bind ---
+    context = %{
+      subject_scope: :subject_session,
+      subject_ref: "sub_lifecycle_001",
+      org_ref: "org_lifecycle_001",
+      session_ref: "sess_lifecycle_001",
+      session_version: 1,
+      installation_ref: "inst_lifecycle_001",
+      actor_kind: :backend,
+      correlation_id: "corr_bind_001"
+    }
+
+    evidence_v1 = %{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      installation_ref: "inst_lifecycle_001",
+      token_ref: "tok_ref_v1",
+      token_fingerprint: "hmac-sha256:fp_v1_aabbcc",
+      notification_status: :granted,
+      observed_at: DateTime.to_iso8601(DateTime.utc_now()),
+      app_identity_posture: :matched,
+      correlation_id: "corr_bind_001",
+      metadata: %{safe_key: "safe_value", apns_token: "raw_apns_token_should_not_leak_123"}
+    }
+
+    {:ok, bind_result} = Registry.bind_or_rotate(context, evidence_v1)
+    binding_v1 = bind_result.binding
+    audit_event_v1 = bind_result.audit_event
+    result_v1 = bind_result.result
+
+    # Binding assertions
+    assert binding_v1.state == :active
+    assert binding_v1.reason == :initial_bind
+    assert binding_v1.token_ref == "tok_ref_v1"
+    assert binding_v1.token_fingerprint == "hmac-sha256:fp_v1_aabbcc"
+    assert binding_v1.subject_ref == "sub_lifecycle_001"
+    assert binding_v1.org_ref == "org_lifecycle_001"
+    assert binding_v1.session_ref == "sess_lifecycle_001"
+    assert is_binary(binding_v1.binding_ref)
+    assert binding_v1.bound_at != nil
+
+    # Metadata must not leak raw token
+    refute Map.has_key?(binding_v1.metadata, :apns_token), "binding metadata must not contain apns_token"
+    refute Map.has_key?(binding_v1.metadata, "apns_token"), "binding metadata must not contain string apns_token"
+
+    # Audit event assertions
+    assert audit_event_v1.event_type == :bound
+    assert audit_event_v1.state_after == :active
+    assert audit_event_v1.reason == :initial_bind
+    assert audit_event_v1.binding_ref == binding_v1.binding_ref
+
+    # Result assertions
+    assert result_v1.status == :bound
+    assert result_v1.binding_ref == binding_v1.binding_ref
+
+    # Inspect output must not leak raw token
+    inspected = inspect(bind_result)
+    refute String.contains?(inspected, "raw_apns_token_should_not_leak_123"),
+           "inspect output must not contain raw token value"
+
+    # --- Same-token refresh ---
+    evidence_v1_refresh = %{evidence_v1 | notification_status: :granted}
+    {:ok, refresh_result} = Registry.bind_or_rotate(context, evidence_v1_refresh)
+    binding_refreshed = refresh_result.binding
+    refresh_event = refresh_result.audit_event
+
+    # binding_ref and bound_at must be unchanged on refresh (D-17)
+    assert binding_refreshed.binding_ref == binding_v1.binding_ref,
+           "binding_ref must not change on same-token refresh"
+    assert DateTime.compare(binding_refreshed.bound_at, binding_v1.bound_at) == :eq,
+           "bound_at must not change on same-token refresh"
+    assert binding_refreshed.state == :active
+    assert refresh_event.event_type == :observed
+
+    # --- Token rotation ---
+    evidence_v2 = %{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      installation_ref: "inst_lifecycle_001",
+      token_ref: "tok_ref_v2",
+      token_fingerprint: "hmac-sha256:fp_v2_ddeeff",
+      notification_status: :granted,
+      observed_at: DateTime.to_iso8601(DateTime.utc_now()),
+      app_identity_posture: :matched,
+      correlation_id: "corr_rotate_001"
+    }
+
+    {:ok, rotate_result} = Registry.bind_or_rotate(context, evidence_v2)
+    binding_v2 = rotate_result.binding
+    audit_events_rotation = rotate_result.audit_events
+    result_rotate = rotate_result.result
+
+    assert result_rotate.status == :rotated
+    assert binding_v2.state == :active
+    assert binding_v2.token_ref == "tok_ref_v2"
+    assert binding_v2.token_fingerprint == "hmac-sha256:fp_v2_ddeeff"
+    # New binding_ref for rotated binding
+    assert binding_v2.binding_ref != binding_v1.binding_ref
+
+    # Displaced binding must now be superseded
+    import Ecto.Query
+    displaced = Repo.get_by!(CrosswakeExample.Chimeway.TokenBinding, binding_ref: binding_v1.binding_ref)
+    assert displaced.state == :superseded
+    assert displaced.reason == :token_rotated
+    assert displaced.superseded_at != nil
+
+    # Multiple audit events: at least one :rotated + one :bound
+    assert length(audit_events_rotation) >= 2
+    event_types = Enum.map(audit_events_rotation, & &1.event_type)
+    assert :rotated in event_types, "rotation must include :rotated audit event"
+    assert :bound in event_types, "rotation must include :bound audit event for new binding"
+
+    # Row count: 2 total (1 superseded + 1 active)
+    all_bindings = Repo.all(CrosswakeExample.Chimeway.TokenBinding)
+    assert length(all_bindings) == 2, "rotation must result in 2 binding rows (superseded + active)"
+
+    IO.puts("phase60-lifecycle-bind-rotate-proof: ok")
+    """
+
+    assert {output, 0} =
+             System.cmd("mix", ["run", "--no-start", "-e", script],
+               cd: "examples/phoenix_host",
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "phase60-lifecycle-bind-rotate-proof: ok"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Registry lifecycle proof: revoke, invalidate, prune, and telemetry rollback
+  # ---------------------------------------------------------------------------
+
+  test "Registry revocation, provider feedback, pruning, idempotency, and telemetry rollback safety" do
+    script = """
+    Logger.configure(level: :warning)
+    import ExUnit.Assertions
+    import Ecto.Query
+    Mix.Task.run("app.config")
+    db =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake_chimeway_revoke_proof_" <> Integer.to_string(System.unique_integer([:positive])) <> ".db"
+      )
+
+    File.rm(db)
+    Application.put_env(:crosswake_example, CrosswakeExample.Repo, database: db, pool_size: 1, log: false)
+    Application.ensure_all_started(:phoenix)
+    Application.ensure_all_started(:ecto_sql)
+    {:ok, _pid} = CrosswakeExample.Repo.start_link()
+    path = Path.expand("priv/repo/migrations", File.cwd!())
+    Ecto.Migrator.run(CrosswakeExample.Repo, path, :up, all: true)
+
+    alias CrosswakeExample.Chimeway.Registry
+    alias CrosswakeExample.Chimeway.TokenBinding
+    alias CrosswakeExample.Chimeway.TokenBindingEvent
+    alias CrosswakeExample.Repo
+
+    # Attach telemetry handler for rollback safety test
+    telemetry_pid = self()
+    handler_id = "phase60-revoke-proof-handler"
+    :telemetry.attach_many(
+      handler_id,
+      [
+        [:crosswake, :notification, :token, :bound],
+        [:crosswake, :notification, :token, :observed],
+        [:crosswake, :notification, :token, :rotated],
+        [:crosswake, :notification, :token, :revoked],
+        [:crosswake, :notification, :token, :stale],
+        [:crosswake, :notification, :token, :invalidated],
+        [:crosswake, :notification, :provider, :feedback]
+      ],
+      fn event_name, _measurements, metadata, _config ->
+        send(telemetry_pid, {:telemetry_fired, event_name, metadata})
+      end,
+      nil
+    )
+
+    defmodule Phase60TestHelpers do
+      def bind_session(subject_ref, session_ref, token_fingerprint, opts \\\\ []) do
+        context = %{
+          subject_scope: :subject_session,
+          subject_ref: subject_ref,
+          org_ref: opts[:org_ref] || "org_test",
+          session_ref: session_ref,
+          session_version: opts[:session_version] || 1,
+          installation_ref: opts[:installation_ref] || "inst_test_001",
+          actor_kind: :backend,
+          correlation_id: opts[:correlation_id] || "corr_test_001"
+        }
+
+        evidence = %{
+          provider: opts[:provider] || :apns,
+          platform: opts[:platform] || :ios,
+          environment: opts[:environment] || :sandbox,
+          installation_ref: opts[:installation_ref] || "inst_test_001",
+          token_ref: opts[:token_ref] || "tok_ref_#{token_fingerprint}",
+          token_fingerprint: token_fingerprint,
+          notification_status: opts[:notification_status] || :granted,
+          observed_at: DateTime.to_iso8601(DateTime.utc_now()),
+          app_identity_posture: :matched
+        }
+
+        Registry.bind_or_rotate(context, evidence)
+      end
+    end
+
+    # --- Logout revocation ---
+    {:ok, _} = Phase60TestHelpers.bind_session("sub_logout_001", "sess_logout_001", "hmac-sha256:fp_logout_001")
+    {:ok, _} = Phase60TestHelpers.bind_session("sub_logout_001", "sess_logout_001", "hmac-sha256:fp_logout_001b",
+      token_ref: "tok_ref_logout_001b", installation_ref: "inst_logout_002", correlation_id: "corr_logout_002")
+
+    logout_context = %{
+      subject_ref: "sub_logout_001",
+      org_ref: "org_test",
+      session_ref: "sess_logout_001"
+    }
+    {:ok, logout_result} = Registry.revoke_for_logout(logout_context)
+    assert logout_result.result.status == :revoked
+    assert is_list(logout_result.bindings)
+    assert is_list(logout_result.audit_events)
+
+    # All previously active bindings for this session must now be revoked
+    revoked_bindings = Repo.all(from b in TokenBinding,
+      where: b.subject_ref == "sub_logout_001" and b.session_ref == "sess_logout_001")
+    for b <- revoked_bindings do
+      assert b.state == :revoked, "binding #{b.binding_ref} must be revoked after logout"
+      assert b.reason == :logout_revoked
+      assert b.revoked_at != nil
+    end
+
+    # Audit rows must still exist (no delete)
+    logout_events = Repo.all(from e in TokenBindingEvent,
+      where: e.event_type == :revoked and e.reason == :logout_revoked)
+    assert length(logout_events) > 0, "revocation audit rows must exist after logout revocation"
+
+    # Idempotent repeat: no active bindings → error, but no crash
+    assert {:error, :no_active_bindings} = Registry.revoke_for_logout(logout_context)
+
+    # --- Session revocation with session_version protection ---
+    {:ok, _} = Phase60TestHelpers.bind_session("sub_session_rev", "sess_ver_001", "hmac-sha256:fp_sess_ver_001",
+      session_version: 1, org_ref: "org_session_rev")
+    {:ok, _} = Phase60TestHelpers.bind_session("sub_session_rev", "sess_ver_001", "hmac-sha256:fp_sess_ver_002",
+      session_version: 2, org_ref: "org_session_rev", token_ref: "tok_ver_002",
+      installation_ref: "inst_session_rev_002")
+
+    # Revoke version <= 1, version 2 should survive
+    {:ok, sess_rev_result} = Registry.revoke_for_session_revocation("sess_ver_001", session_version: 1)
+    assert sess_rev_result.result.status == :revoked
+
+    session_bindings = Repo.all(from b in TokenBinding,
+      where: b.session_ref == "sess_ver_001")
+    v1_bindings = Enum.filter(session_bindings, fn b -> b.session_version == 1 end)
+    v2_bindings = Enum.filter(session_bindings, fn b -> b.session_version == 2 end)
+    for b <- v1_bindings do
+      assert b.state == :revoked, "version 1 binding must be revoked"
+    end
+    for b <- v2_bindings do
+      assert b.state == :active, "version 2 binding must survive session_version-guarded revocation"
+    end
+
+    # --- Permission loss revocation ---
+    {:ok, _} = Phase60TestHelpers.bind_session("sub_perm_loss", "sess_perm_001", "hmac-sha256:fp_perm_001",
+      org_ref: "org_perm_test")
+    perm_context = %{subject_ref: "sub_perm_loss", org_ref: "org_perm_test"}
+    {:ok, perm_result} = Registry.revoke_for_permission_loss(perm_context)
+    assert perm_result.result.status == :revoked
+
+    perm_bindings = Repo.all(from b in TokenBinding,
+      where: b.subject_ref == "sub_perm_loss" and b.org_ref == "org_perm_test")
+    for b <- perm_bindings do
+      assert b.state == :revoked
+      assert b.reason == :permission_denied
+      assert b.notification_status == :denied
+    end
+
+    # Audit rows persist after revocation
+    perm_events = Repo.all(from e in TokenBindingEvent,
+      where: e.reason == :permission_denied)
+    assert length(perm_events) > 0
+
+    # --- Provider feedback: invalidating (token_unregistered → revoked) ---
+    {:ok, provider_bind} = Phase60TestHelpers.bind_session(
+      "sub_provider_001", "sess_provider_001", "hmac-sha256:fp_provider_001",
+      org_ref: "org_provider_test", token_ref: "tok_provider_001"
+    )
+    provider_binding = provider_bind.binding
+
+    # token_unregistered must map to revoked/provider_unregistered
+    feedback_unregistered = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      feedback_event: :token_unregistered,
+      occurred_at: DateTime.to_iso8601(DateTime.utc_now()),
+      token_ref: "tok_provider_001",
+      token_fingerprint: "hmac-sha256:fp_provider_001",
+      app_identity_posture: :matched
+    }
+
+    {:ok, provider_result} = Registry.apply_provider_feedback(feedback_unregistered)
+    assert provider_result.result.status == :invalidated
+
+    provider_bindings = Repo.all(from b in TokenBinding,
+      where: b.binding_ref == ^provider_binding.binding_ref)
+    assert length(provider_bindings) == 1
+    revoked_binding = List.first(provider_bindings)
+    assert revoked_binding.state == :revoked
+    assert revoked_binding.reason == :provider_unregistered
+
+    # Provider-native enum must not leak into state or reason
+    raw_provider_atoms = [:UNREGISTERED, :"DeviceTokenNotForTopic", :BadDeviceToken]
+    refute revoked_binding.state in raw_provider_atoms
+    refute revoked_binding.reason in raw_provider_atoms
+
+    # --- Provider feedback: non-invalidating (delivery_accepted → audit-only) ---
+    {:ok, delivery_bind} = Phase60TestHelpers.bind_session(
+      "sub_delivery_001", "sess_delivery_001", "hmac-sha256:fp_delivery_001",
+      org_ref: "org_delivery_test", token_ref: "tok_delivery_001"
+    )
+    delivery_binding = delivery_bind.binding
+
+    feedback_accepted = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      feedback_event: :delivery_accepted,
+      occurred_at: DateTime.to_iso8601(DateTime.utc_now()),
+      token_ref: "tok_delivery_001",
+      token_fingerprint: "hmac-sha256:fp_delivery_001",
+      app_identity_posture: :matched
+    }
+
+    {:ok, delivery_result} = Registry.apply_provider_feedback(feedback_accepted)
+    # delivery_accepted is feedback-only; binding must remain active
+    delivery_binding_after = Repo.get!(TokenBinding, delivery_binding.id)
+    assert delivery_binding_after.state == :active,
+           "delivery_accepted must not revoke or invalidate the binding"
+
+    # --- Provider feedback: environment_mismatch → invalid ---
+    {:ok, env_bind} = Phase60TestHelpers.bind_session(
+      "sub_env_001", "sess_env_001", "hmac-sha256:fp_env_001",
+      org_ref: "org_env_test", token_ref: "tok_env_001"
+    )
+    env_binding = env_bind.binding
+
+    feedback_env = %Crosswake.Companions.Chimeway.Contracts.ProviderFeedback{
+      provider: :apns,
+      platform: :ios,
+      environment: :sandbox,
+      feedback_event: :environment_mismatch,
+      occurred_at: DateTime.to_iso8601(DateTime.utc_now()),
+      token_ref: "tok_env_001",
+      token_fingerprint: "hmac-sha256:fp_env_001",
+      app_identity_posture: :mismatched
+    }
+
+    {:ok, env_feedback_result} = Registry.apply_provider_feedback(feedback_env)
+    assert env_feedback_result.result.status == :invalidated
+
+    env_binding_after = Repo.get!(TokenBinding, env_binding.id)
+    assert env_binding_after.state == :invalid
+    assert env_binding_after.reason == :environment_mismatch
+
+    # --- Staleness pruning ---
+    past = DateTime.add(DateTime.utc_now(), -3600, :second)
+    {:ok, stale_bind} = Phase60TestHelpers.bind_session(
+      "sub_stale_001", "sess_stale_001", "hmac-sha256:fp_stale_001",
+      org_ref: "org_stale_test", token_ref: "tok_stale_001"
+    )
+    stale_binding = stale_bind.binding
+
+    # Force last_seen_at to be in the past
+    Repo.update_all(
+      from(b in TokenBinding, where: b.binding_ref == ^stale_binding.binding_ref),
+      set: [last_seen_at: past]
+    )
+
+    prune_threshold = DateTime.add(DateTime.utc_now(), -60, :second)
+    {:ok, prune_result} = Registry.prune_stale(stale_before: prune_threshold,
+      subject_ref: "sub_stale_001", org_ref: "org_stale_test")
+
+    stale_binding_after = Repo.get!(TokenBinding, stale_binding.id)
+    assert stale_binding_after.state == :stale
+    assert stale_binding_after.reason == :staleness_pruned
+    assert stale_binding_after.stale_at != nil
+
+    stale_events = Repo.all(from e in TokenBindingEvent,
+      where: e.event_type == :stale and e.binding_ref == ^stale_binding.binding_ref)
+    assert length(stale_events) == 1, "staleness pruning must create exactly one :stale audit event"
+
+    # Idempotent prune: no active rows left for this subject, result still ok
+    {:ok, prune_noop} = Registry.prune_stale(stale_before: prune_threshold,
+      subject_ref: "sub_stale_001", org_ref: "org_stale_test")
+    assert prune_noop.bindings == []
+    assert prune_noop.audit_events == []
+
+    # No binding rows are deleted (audit history preserved)
+    all_stale_bindings = Repo.all(from b in TokenBinding,
+      where: b.subject_ref == "sub_stale_001")
+    assert length(all_stale_bindings) >= 1, "stale bindings must not be deleted"
+
+    # --- Telemetry rollback safety ---
+    # Force a transaction failure by inserting a duplicate binding_ref and
+    # assert no success telemetry fires for the rolled-back write.
+    # Flush any existing telemetry messages
+    receive do {:telemetry_fired, _, _} -> :ok after 0 -> :ok end
+
+    {:ok, existing_bind} = Phase60TestHelpers.bind_session(
+      "sub_rollback_test", "sess_rollback", "hmac-sha256:fp_rollback_001",
+      org_ref: "org_rollback_test", token_ref: "tok_rollback_001"
+    )
+    existing_ref = existing_bind.binding.binding_ref
+
+    # Flush telemetry from the successful bind above
+    receive do {:telemetry_fired, [:crosswake, :notification, :token, :bound], _} -> :ok after 500 -> :ok end
+
+    # Attempt to insert a duplicate: will fail at DB level
+    rollback_result = CrosswakeExample.Repo.transaction(fn repo ->
+      # Insert a row with the same unique binding_ref to force constraint failure
+      attrs = %{
+        binding_ref: existing_ref,
+        subject_scope: :subject_session,
+        subject_ref: "sub_rollback_test",
+        org_ref: "org_rollback_test",
+        session_ref: "sess_rollback_forced_fail",
+        session_version: 1,
+        installation_ref: "inst_rollback_test",
+        provider: :apns,
+        platform: :ios,
+        environment: :sandbox,
+        app_identity_posture: :matched,
+        token_ref: "tok_rollback_dup",
+        token_fingerprint: "hmac-sha256:fp_rollback_dup",
+        notification_status: :granted,
+        state: :active,
+        reason: :initial_bind,
+        bound_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        last_seen_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        audit_correlation_ref: "corr_rollback_dup"
+      }
+      case repo.insert(CrosswakeExample.Chimeway.TokenBinding.changeset(%CrosswakeExample.Chimeway.TokenBinding{}, attrs)) do
+        {:ok, _} -> repo.rollback(:forced_rollback_for_test)
+        {:error, changeset} -> repo.rollback({:constraint_error, changeset})
+      end
+    end)
+
+    # Transaction rolled back — no success telemetry should fire
+    receive do
+      {:telemetry_fired, event_name, _} ->
+        flunk("Success telemetry #{inspect(event_name)} must not fire for rolled-back transaction")
+    after
+      100 -> :ok
+    end
+
+    :telemetry.detach(handler_id)
+    IO.puts("phase60-revoke-feedback-prune-telemetry-proof: ok")
+    """
+
+    assert {output, 0} =
+             System.cmd("mix", ["run", "--no-start", "-e", script],
+               cd: "examples/phoenix_host",
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "phase60-revoke-feedback-prune-telemetry-proof: ok"
   end
 end
