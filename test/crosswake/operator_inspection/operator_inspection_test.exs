@@ -240,6 +240,15 @@ defmodule Crosswake.OperatorInspectionTest do
     assert secure.support.status == :verification_required
     assert secure.support.proof_class == :advisory
     assert "auth.sigra.session_authority" in secure.support.promotion_rule_ids
+    assert secure.auth.contract_surface == :full_sigra_machinery
+    assert secure.auth.contract_proof_class == :merge_blocking
+    assert secure.auth.route_authority_source == :session_authority_lane
+    assert secure.auth.evidence_authority.handoff_envelope == false
+    assert secure.auth.host_readiness == :verification_required
+    assert secure.auth.provider_device_proof == :advisory
+    assert secure.auth.telemetry.status == :shipped
+    assert [:crosswake, :auth, :denial] in secure.auth.telemetry.event_names
+    assert secure.auth.security_closeout.status == :shipped
 
     assert gated.rebuild.action_classes == ["companion_native"]
   end

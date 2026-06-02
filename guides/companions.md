@@ -89,7 +89,7 @@ This mirrors Crosswake’s reconciliation stance: evidence can move workflow, bu
 
 ## Sigra Surface (AUTH, Session Authority)
 
-Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, and Phase 57 OAuth/passkey/native auth-return boundary contracts. It defines typed auth contract surfaces, explicit route-local auth posture, route-local `auth_return` seams, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, host-owned auth-return attempt records, and fail-closed route checks without shipping provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, or native auth UI.
+Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry plus security closeout. It defines typed auth contract surfaces, explicit route-local auth posture, route-local `auth_return` seams, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, host-owned auth-return attempt records, low-cardinality telemetry metadata, and fail-closed route checks without shipping provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, or native auth UI.
 It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface.
 
 - `AuthContext`
@@ -97,6 +97,7 @@ It intentionally has no runtime `Companion id:` marker yet because it is not a `
 - `Crosswake.Companions.Sigra.Handoff`
 - `Crosswake.Companions.Sigra.StepUp`
 - `Crosswake.Companions.Sigra.AuthReturn`
+- `Crosswake.Companions.Sigra.Telemetry`
 - `Crosswake.Companions.Sigra.StepUpCeremony.evaluate_or_issue/3`
 - `Crosswake.Companions.Sigra.Evaluator.evaluate_route_auth/3`
 - Route predicates: `auth_min_level`, `requires_recent_auth`, `auth_posture`
@@ -105,7 +106,9 @@ It intentionally has no runtime `Companion id:` marker yet because it is not a `
 - Denial vocabulary: `:step_up_required`
 - Canonical subcodes: `auth.step_up.missing_context`, `auth.step_up.invalid_context`, `auth.step_up.non_active`, `auth.step_up.idle_expired`, `auth.step_up.absolute_expired`, `auth.step_up.revoked`, `auth.step_up.version_mismatch`, `auth.step_up.insufficient_assurance`, `auth.step_up.stale_auth`, `auth.step_up.remembered_not_allowed`, `auth.step_up.cached_not_allowed`, `auth.handoff.missing_ticket`, `auth.handoff.invalid_ticket`, `auth.handoff.expired_ticket`, `auth.handoff.replayed_ticket`, `auth.handoff.revoked_ticket`, `auth.handoff.binding_mismatch`, `auth.handoff.intent_mismatch`, `auth.handoff.route_mismatch`, `auth.handoff.projection_failed`, `auth.step_up_intent.missing_intent`, `auth.step_up_intent.invalid_intent`, `auth.step_up_intent.expired_intent`, `auth.step_up_intent.consumed_intent`, `auth.step_up_intent.canceled_intent`, `auth.step_up_intent.revoked_intent`, `auth.step_up_intent.route_mismatch`, `auth.step_up_intent.binding_mismatch`, `auth.step_up_intent.challenge_failed`, `auth.step_up_intent.projection_failed`, `auth.return.oauth.missing_return`, `auth.return.oauth.invalid_return`, `auth.return.oauth.expired_return`, `auth.return.oauth.replayed_return`, `auth.return.oauth.state_mismatch`, `auth.return.oauth.nonce_mismatch`, `auth.return.oauth.pkce_missing`, `auth.return.oauth.redirect_mismatch`, `auth.return.passkey.missing_return`, `auth.return.passkey.invalid_return`, `auth.return.passkey.expired_return`, `auth.return.passkey.replayed_return`, `auth.return.passkey.challenge_mismatch`, `auth.return.passkey.origin_mismatch`, `auth.return.passkey.rp_id_mismatch`, `auth.return.passkey.user_verification_missing`, `auth.return.native_auth.missing_return`, `auth.return.native_auth.invalid_return`, `auth.return.native_auth.expired_return`, `auth.return.native_auth.replayed_return`, `auth.return.native_auth.link_unverified`, `auth.return.native_auth.callback_mismatch`, `auth.return.native_auth.projection_failed`
 
-Route authority comes from backend projection into `SessionAuthorityLane`. Handoff envelopes, step-up locators, auth-return envelopes, deep links, and bridge events are signed or typed evidence only; the server-side ticket, intent, or auth-return attempt record remains the source of truth for replay, cancellation/revocation, expiry, route binding, intent binding, audit evidence, Phoenix session-renewal instructions, CSRF rotation posture, LiveView invalidation posture, and refreshed authority projection. Shell bridge state, mobile cache state, OAuth/passkey returns, native deep links, and provider payloads are evidence only until backend validation updates that projection.
+Route authority comes from backend projection into `SessionAuthorityLane`. Handoff envelopes, step-up locators, auth-return envelopes, deep links, bridge events, provider payloads, and telemetry events are signed, typed, or diagnostic evidence only; the server-side ticket, intent, or auth-return attempt record remains the source of truth for replay, cancellation/revocation, expiry, route binding, intent binding, audit evidence, Phoenix session-renewal instructions, CSRF rotation posture, LiveView invalidation posture, and refreshed authority projection. Shell bridge state, mobile cache state, OAuth/passkey returns, native deep links, and provider payloads are evidence only until backend validation updates that projection.
+
+Auth telemetry uses stable `[:crosswake, :auth, ...]` event names with low-cardinality metadata. It may expose route ids, flow, outcome, denial code, shell reason, auth posture, freshness bucket, lifecycle state, binding result, link verification, validation posture, proof class, and support-safe correlation refs. It must not expose raw tokens, authorization codes, refresh tokens, credential ids, raw nonces, PKCE verifiers, session refs, actor/org/device identifiers, IPs, user agents, provider payloads, emails, or raw `return_to` values.
 
 `auth_posture` makes weakening explicit:
 
@@ -123,7 +126,7 @@ Support truth accessor:
 
 - `Crosswake.SupportMatrix.auth_contract_truth/0`
 
-Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, and Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, Phase 58 telemetry/security closeout, direct shell/WebView token authority, or native auth UI.
+Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, and Phase 58 stable auth telemetry plus STRIDE-style security closeout. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, or native auth UI.
 
 ## Support Truth Surfaces
 
@@ -150,7 +153,7 @@ Advisory checks are evidence, not promotion. A green advisory lane does not wide
 These are deferred by design and are not shipped by the current companion/auth surface:
 
 - Chimeway delivery implementation. Chimeway is seam-only sequencing context, not first-party notification delivery in this milestone.
-- Later Sigra machinery: provider-specific OAuth templates, passkey SDK wrappers, refresh-token machinery, provider/device auth proof, telemetry/security closeout, direct shell/WebView token authority, and native auth UI. Phase 57 ships provider-neutral auth-return boundary contracts and verified-link-first posture, not provider/device authority.
+- Later Sigra machinery: provider-specific OAuth templates, passkey SDK wrappers, refresh-token machinery, provider/device auth proof, direct shell/WebView token authority, and native auth UI. Phase 58 ships telemetry/security closeout for provider-neutral Sigra contracts, not provider/device authority.
 - Threadline audit capstone.
 - Separate-package extraction of companions. v3.5 keeps companions in-tree under `lib/crosswake/companions/<name>/`.
 

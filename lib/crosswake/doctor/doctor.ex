@@ -752,8 +752,8 @@ defmodule Crosswake.Doctor do
             :advisory,
             "auth.step_up_required_contract",
             "auth.contract_posture",
-            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, shipped Phase 56 step-up intent ceremony, and shipped Phase 57 auth-return boundary contracts.",
-            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, route-local auth_return seams, canonical auth.step_up.*, auth.handoff.*, auth.step_up_intent.*, and auth.return.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, server-owned step-up intent plus Plug/LiveView ceremony proof, and host-owned auth-return attempt replay proof. Refresh-token helpers, provider/device proof, Phase 58 telemetry/security closeout, provider templates, passkey SDK wrappers, and native auth UI remain deferred.",
+            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, shipped Phase 56 step-up intent ceremony, shipped Phase 57 auth-return boundary contracts, stable Phase 58 auth telemetry, and Phase 58 security closeout.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, route-local auth_return seams, canonical auth.step_up.*, auth.handoff.*, auth.step_up_intent.*, and auth.return.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, server-owned step-up intent plus Plug/LiveView ceremony proof, host-owned auth-return attempt replay proof, low-cardinality auth telemetry, and STRIDE-style security closeout. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.",
             %{
               fallback: :step_up_required,
               posture: :session_authority,
@@ -761,6 +761,17 @@ defmodule Crosswake.Doctor do
               handoff: Map.get(auth_truth, :handoff, %{}),
               step_up: Map.get(auth_truth, :step_up, %{}),
               auth_return: Map.get(auth_truth, :auth_return, %{}),
+              contract_surface: Map.get(auth_truth, :contract_surface),
+              contract_proof_class: Map.get(auth_truth, :contract_proof_class),
+              route_authority_source: Map.get(auth_truth, :route_authority_source),
+              evidence_authority: Map.get(auth_truth, :evidence_authority, %{}),
+              host_readiness: Map.get(auth_truth, :host_readiness),
+              provider_device_proof: Map.get(auth_truth, :provider_device_proof),
+              telemetry:
+                auth_truth
+                |> Map.get(:telemetry, %{})
+                |> Map.drop([:forbidden_metadata_keys]),
+              security_closeout: Map.get(auth_truth, :security_closeout, %{}),
               denial_codes:
                 Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
               safe_detail_keys:

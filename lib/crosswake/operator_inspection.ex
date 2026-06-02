@@ -255,6 +255,22 @@ defmodule Crosswake.OperatorInspection do
         if(predicated?, do: Map.get(auth_truth, :shipped_contracts, []), else: []),
       handoff: if(predicated?, do: Map.get(auth_truth, :handoff, %{}), else: %{}),
       step_up: if(predicated?, do: Map.get(auth_truth, :step_up, %{}), else: %{}),
+      auth_return: if(predicated?, do: Map.get(auth_truth, :auth_return, %{}), else: %{}),
+      contract_surface:
+        if(predicated?, do: Map.get(auth_truth, :contract_surface), else: :not_applicable),
+      contract_proof_class:
+        if(predicated?, do: Map.get(auth_truth, :contract_proof_class), else: :not_applicable),
+      route_authority_source:
+        if(predicated?, do: Map.get(auth_truth, :route_authority_source), else: :not_applicable),
+      evidence_authority:
+        if(predicated?, do: Map.get(auth_truth, :evidence_authority, %{}), else: %{}),
+      host_readiness:
+        if(predicated?, do: Map.get(auth_truth, :host_readiness), else: :not_applicable),
+      provider_device_proof:
+        if(predicated?, do: Map.get(auth_truth, :provider_device_proof), else: :not_applicable),
+      telemetry: if(predicated?, do: Map.get(auth_truth, :telemetry, %{}), else: %{}),
+      security_closeout:
+        if(predicated?, do: Map.get(auth_truth, :security_closeout, %{}), else: %{}),
       fallback: if(predicated?, do: :step_up_required, else: nil),
       denial_codes: if(predicated?, do: Map.get(auth_truth, :denial_codes, []), else: []),
       safe_detail_keys: if(predicated?, do: Map.get(auth_truth, :safe_detail_keys, []), else: []),
@@ -501,7 +517,7 @@ defmodule Crosswake.OperatorInspection do
       status: :unknown,
       reason: :step_up_required,
       severity: :advisory,
-      message: "route #{route.id} uses contract-only auth predicates",
+      message: "route #{route.id} uses Sigra auth predicates with host verification required",
       route_id: route.id,
       details: auth
     )

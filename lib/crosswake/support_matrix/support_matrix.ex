@@ -11,6 +11,7 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
+  alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
 
   @statuses [:supported, :verification_required, :unsupported]
   @proof_classes [:merge_blocking, :advisory, :not_applicable]
@@ -189,6 +190,34 @@ defmodule Crosswake.SupportMatrix do
         proof_class: :merge_blocking
       },
       route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
+      contract_surface: :full_sigra_machinery,
+      contract_proof_class: :merge_blocking,
+      route_authority_source: :session_authority_lane,
+      evidence_authority: %{
+        handoff_envelope: false,
+        step_up_locator: false,
+        auth_return_envelope: false,
+        deep_link: false,
+        bridge_event: false,
+        provider_payload: false
+      },
+      host_readiness: :verification_required,
+      provider_device_proof: :advisory,
+      telemetry: %{
+        status: :shipped,
+        event_names: SigraTelemetry.event_names(),
+        metadata_keys: SigraTelemetry.metadata_keys(),
+        forbidden_metadata_keys: SigraTelemetry.forbidden_metadata_keys(),
+        authority_source: :diagnostic_evidence_only,
+        proof_class: :merge_blocking
+      },
+      security_closeout: %{
+        status: :shipped,
+        artifact: ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+        review_model: :stride,
+        proof_class: :merge_blocking,
+        unresolved_high_or_critical_findings: 0
+      },
       denial_vocabulary: :step_up_required,
       denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
       safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys(),
@@ -199,7 +228,7 @@ defmodule Crosswake.SupportMatrix do
         :provider_device_proof
       ],
       posture:
-        "Phase 57 Sigra posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, and shipped OAuth/passkey/native auth-return boundary contracts. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, and bridge events are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, and native auth UI remain deferred."
+        "Phase 58 Sigra posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, and dedicated security closeout. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred."
     }
   ]
   @companion_support_truth [
@@ -208,14 +237,14 @@ defmodule Crosswake.SupportMatrix do
         "Sigra session-authority route evaluator, handoff contract, step-up ceremony, and auth-return boundaries",
       proof_class: :merge_blocking,
       action_class: "companion_native",
-      docs_anchor: "guides/companions.md#sigra-auth-contract-only",
+      docs_anchor: "guides/companions.md#sigra-surface-auth-session-authority",
       deferred: [
         :refresh_tokens,
         :native_auth_ui,
         :provider_device_proof
       ],
       posture:
-        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, and shipped OAuth/passkey/native auth-return boundary contracts; refresh tokens, provider/device proof, and native auth UI remain deferred."
+        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable auth telemetry, and security closeout; refresh tokens, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred."
     }
   ]
   @notification_support_truth [
@@ -907,7 +936,7 @@ defmodule Crosswake.SupportMatrix do
       promotion_rule(
         claim_id: "auth.sigra.session_authority",
         claim_scope:
-          "Sigra session-authority route evaluator, handoff contract, step-up ceremony, and auth-return boundary support",
+          "Sigra session-authority route evaluator, handoff contract, step-up ceremony, auth-return boundary, telemetry, and security closeout support",
         current_proof_class: :merge_blocking,
         promotes_to: :merge_blocking,
         evidence_class: "session_authority_handoff_step_up_auth_return_contract",
@@ -921,7 +950,9 @@ defmodule Crosswake.SupportMatrix do
           "shared Plug/LiveView ceremony proof",
           "OAuth/passkey/native auth-return envelope proof",
           "host-owned auth-return attempt replay proof",
-          "verified-link-first native return proof"
+          "verified-link-first native return proof",
+          "low-cardinality auth telemetry proof",
+          "security closeout proof"
         ],
         minimum_consecutive_passes: 1,
         freshness_window: "current release branch",
@@ -932,7 +963,7 @@ defmodule Crosswake.SupportMatrix do
         action_class: "companion_native",
         check_ids: ["diag.auth.sigra_session_authority"],
         demotion_trigger:
-          "Demote if route predicates, auth_posture, auth_return route policy, step_up_required/auth.handoff/auth.step_up_intent/auth.return denial codes, handoff/step-up/auth-return server-record proof, or Sigra docs drift from support truth."
+          "Demote if route predicates, auth_posture, auth_return route policy, step_up_required/auth.handoff/auth.step_up_intent/auth.return denial codes, auth telemetry metadata, handoff/step-up/auth-return server-record proof, security closeout, or Sigra docs drift from support truth."
       ),
       promotion_rule(
         claim_id: "purchase_intent.provider.storekit",

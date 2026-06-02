@@ -380,10 +380,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
         if(route_ids == [],
           do: "no Sigra auth predicate routes are present in the inspected route set",
           else:
-            "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, step-up intent plus Plug/LiveView ceremony, and OAuth/passkey/native auth-return boundary contracts are shipped; refresh-token helpers, provider/device proof, telemetry/security closeout, provider templates, passkey SDK wrappers, and native auth UI are not shipped"
+            "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, step-up intent plus Plug/LiveView ceremony, OAuth/passkey/native auth-return boundary contracts are shipped, and stable auth telemetry plus security closeout are shipped; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are not shipped"
         ),
       hint:
-        "Keep auth predicates, handoff redemption, step-up completion, and auth-return validation backend-owned; fail closed with step_up_required, and use later phases for telemetry and security closeout machinery.",
+        "Keep auth predicates, handoff redemption, step-up completion, auth-return validation, telemetry, and security closeout backend-owned or evidence-only; fail closed with step_up_required.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
       rebuild_requirement: %{
@@ -399,6 +399,18 @@ defmodule Crosswake.Doctor.PublishReadiness do
         shipped_contracts: Map.get(auth_row, :shipped_contracts, []),
         handoff: Map.get(auth_row, :handoff, %{}),
         step_up: Map.get(auth_row, :step_up, %{}),
+        auth_return: Map.get(auth_row, :auth_return, %{}),
+        contract_surface: Map.get(auth_row, :contract_surface),
+        contract_proof_class: Map.get(auth_row, :contract_proof_class),
+        route_authority_source: Map.get(auth_row, :route_authority_source),
+        evidence_authority: Map.get(auth_row, :evidence_authority, %{}),
+        host_readiness: Map.get(auth_row, :host_readiness),
+        provider_device_proof: Map.get(auth_row, :provider_device_proof),
+        telemetry:
+          auth_row
+          |> Map.get(:telemetry, %{})
+          |> Map.drop([:forbidden_metadata_keys]),
+        security_closeout: Map.get(auth_row, :security_closeout, %{}),
         route_predicates: Map.get(auth_row, :route_predicates, []),
         denial_codes: Map.get(auth_row, :denial_codes, []),
         safe_detail_keys: Map.get(auth_row, :safe_detail_keys, []),

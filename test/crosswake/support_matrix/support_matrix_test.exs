@@ -534,22 +534,39 @@ defmodule Crosswake.SupportMatrixTest do
                :deferred,
                :fallback,
                :auth_return,
+               :contract_proof_class,
+               :contract_surface,
                :handoff,
+               :evidence_authority,
                :owner,
                :package_class,
                :posture,
+               :provider_device_proof,
                :proof_class,
+               :host_readiness,
+               :route_authority_source,
                :route_predicates,
                :safe_detail_keys,
+               :security_closeout,
                :shipped_contracts,
                :step_up,
-               :surface
+               :surface,
+               :telemetry
              ]
              |> Enum.sort()
 
     assert row.owner == :backend_seam
     assert row.package_class == :companion
     assert row.proof_class == :merge_blocking
+    assert row.contract_surface == :full_sigra_machinery
+    assert row.contract_proof_class == :merge_blocking
+    assert row.route_authority_source == :session_authority_lane
+    assert row.evidence_authority.handoff_envelope == false
+    assert row.evidence_authority.step_up_locator == false
+    assert row.evidence_authority.auth_return_envelope == false
+    assert row.evidence_authority.bridge_event == false
+    assert row.host_readiness == :verification_required
+    assert row.provider_device_proof == :advisory
 
     assert row.shipped_contracts == [
              :session_authority,
@@ -572,6 +589,14 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.auth_return.authority_source == :server_record
     assert row.auth_return.envelope_authority == false
     assert row.auth_return.route_policy_seam == :auth_return
+    assert row.telemetry.status == :shipped
+    assert [:crosswake, :auth, :denial] in row.telemetry.event_names
+    assert :denial_code in row.telemetry.metadata_keys
+    assert :access_token in row.telemetry.forbidden_metadata_keys
+    assert row.telemetry.authority_source == :diagnostic_evidence_only
+    assert row.security_closeout.status == :shipped
+    assert row.security_closeout.review_model == :stride
+    assert row.security_closeout.unresolved_high_or_critical_findings == 0
 
     assert row.step_up.lifecycle_states == [
              :issued,
@@ -599,6 +624,8 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.surface =~ "step-up"
     assert row.posture =~ "SessionAuthorityLane route evaluation"
     assert row.posture =~ "handoff ticket/server-record redemption"
+    assert row.posture =~ "stable low-cardinality auth telemetry"
+    assert row.posture =~ "security closeout"
     refute :ceremony in row.deferred
     refute :auth_return_boundaries in row.deferred
     refute :native_auth_return in row.deferred
