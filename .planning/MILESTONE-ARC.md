@@ -77,7 +77,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 
 ## Strategic Queue
 
-### Next: v3.9 Chimeway Notification Seam
+### Active: v3.9 Chimeway Notification Seam
 
 **Objective**
 - Add a notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.

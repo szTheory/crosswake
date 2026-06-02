@@ -15,11 +15,11 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     "v3.4 Commerce Archetype Proof",
     "v3.5 First-Party Companions",
     "v3.6 Operator Truth and Production Diagnostics",
-    "v3.7 Commerce Provider Adapters"
+    "v3.7 Commerce Provider Adapters",
+    "v3.8 Full Sigra Auth and Session Machinery"
   ]
 
   @queued_milestones [
-    "v3.9 Chimeway Notification Seam",
     "v4.0 Production Shell Runtime Line",
     "v4.1 Multi-SaaS Archetype Proof Lanes",
     "Threadline Audit Capstone"
@@ -49,7 +49,7 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
     "resolved_gaps"
   ]
 
-  test "milestone arc records shipped milestones through v3.7 and v3.8 as active" do
+  test "milestone arc records shipped milestones through v3.8 and v3.9 as active" do
     arc = File.read!(@arc_path)
 
     for milestone <- @shipped_milestones do
@@ -57,8 +57,8 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
              "MILESTONE-ARC.md is missing shipped milestone #{inspect(milestone)}"
     end
 
-    assert arc =~ "### Active: v3.8 Full Sigra Auth and Session Machinery",
-           "MILESTONE-ARC.md must mark v3.8 as the active milestone"
+    assert arc =~ "### Active: v3.9 Chimeway Notification Seam",
+           "MILESTONE-ARC.md must mark v3.9 as the active milestone"
   end
 
   test "queued milestone sections expose the strategic field contract" do
@@ -73,11 +73,11 @@ defmodule Crosswake.Planning.MilestoneArcCloseoutParityTest do
       end
     end
 
-    active = active_section!(arc, "v3.8 Full Sigra Auth and Session Machinery")
+    active = active_section!(arc, "v3.9 Chimeway Notification Seam")
 
     for field <- @queue_fields do
       assert active =~ "**#{field}**",
-             "active v3.8 section is missing required strategic field #{inspect(field)}"
+             "active v3.9 section is missing required strategic field #{inspect(field)}"
     end
   end
 

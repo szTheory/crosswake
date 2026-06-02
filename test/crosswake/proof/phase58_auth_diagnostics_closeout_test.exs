@@ -127,7 +127,7 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
 
     security =
       File.read!(
-        ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+        ".planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
       )
 
     assert companions =~ "Crosswake.Companions.Sigra.Telemetry"
