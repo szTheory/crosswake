@@ -28,6 +28,21 @@ defmodule CrosswakeExample.SaaSPortal.Auth do
     put_session(conn, @session_key, id)
   end
 
+  def apply_handoff_renewal(conn, %{
+        session_renewal_instructions: %{renew_session?: true} = instructions
+      }) do
+    renewed = configure_session(conn, renew: true)
+
+    renewed =
+      Enum.reduce(instructions.delete_session, renewed, fn key, acc ->
+        delete_session(acc, key)
+      end)
+
+    Enum.reduce(instructions.put_session, renewed, fn {key, value}, acc ->
+      put_session(acc, key, value)
+    end)
+  end
+
   def current_user(conn) do
     conn
     |> get_session(@session_key, Fixtures.user!(:member).id)
