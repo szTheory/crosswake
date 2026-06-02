@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.8
-milestone_name: Full Sigra Auth and Session Machinery
-status: Awaiting next milestone
-last_updated: "2026-06-02T16:28:42.322Z"
-last_activity: 2026-06-02 — Milestone v3.8 completed and archived
+milestone: v3.9
+milestone_name: Chimeway Notification Seam
+status: planning
+last_updated: "2026-06-02T17:53:58.636Z"
+last_activity: 2026-06-02 — Milestone v3.9 requirements and roadmap initialized
 progress:
   total_phases: 5
-  completed_phases: 5
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-02)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Planning next milestone
+**Current focus:** v3.9 Chimeway Notification Seam
 
 ## Current Position
 
-Phase: Milestone v3.8 complete
+Phase: 59 — Chimeway Contract And Token Binding Semantics
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-02 — Milestone v3.8 completed and archived
+Status: Ready for phase discussion
+Last activity: 2026-06-02 — Milestone v3.9 requirements and roadmap initialized
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Last activity: 2026-06-02 — Milestone v3.8 completed and archived
 - Phase 48.1 inserted after Phase 48: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (URGENT)
 - v3.7 archived under `.planning/milestones/v3.7-*` with phase directories in `.planning/milestones/v3.7-phases/`.
 - v3.8 archived under `.planning/milestones/v3.8-*` with phase directories in `.planning/milestones/v3.8-phases/`.
+- v3.9 initialized as Chimeway Notification Seam with Phases 59-63: token binding contracts, example-host registry, notification-open resolver, diagnostics/docs, and hermetic/advisory proof.
 
 ### Decisions
 
@@ -68,6 +69,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 54]: Session-authority support truth is intentionally narrower than full auth machinery; handoff tickets, ceremony, OAuth/passkey returns, refresh tokens, and native auth UI remain deferred to later v3.8 phases.
 - [Phase 57]: OAuth, passkey, and native auth-return boundaries are provider-neutral route-local seams. Return envelopes are evidence only; host-owned attempt records and backend `SessionAuthorityLane` projection remain authoritative.
 - [Phase 58]: Full Sigra machinery is shipped as backend-owned auth/session contracts with sanitized telemetry, support/operator truth, security closeout, and hermetic proof; provider/device auth proof remains advisory.
+- [Milestone v3.9]: Chimeway notification work is companion-first with a narrow core route-policy hook; token/open evidence stays non-authoritative, backend binding and RouteGate decide, and provider/device delivery proof remains advisory.
 
 ### Pending Todos
 
@@ -109,4 +111,4 @@ Stopped at: Phase 58 complete
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone, using v3.9 Chimeway Notification Seam as the recommended scope.
+- Start Phase 59 with /gsd-discuss-phase 59 to refine Chimeway token binding contract details before planning.

@@ -13,6 +13,7 @@
 - ✅ **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 shipped on 2026-06-01. Full archive: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
 - ✅ **v3.7 Commerce Provider Adapters** — Phases 48 and 48.1 shipped on 2026-06-01. Full archive: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
 - ✅ **v3.8 Full Sigra Auth and Session Machinery** — Phases 54-58 shipped on 2026-06-02. Full archive: [v3.8-ROADMAP.md](milestones/v3.8-ROADMAP.md)
+- 🔄 **v3.9 Chimeway Notification Seam** — Phases 59-63 active. Token binding, notification-open route resolution, diagnostics, and proof posture.
 
 ## Phases
 
@@ -103,6 +104,77 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 
 </details>
 
+<details open>
+<summary>🔄 v3.9 Chimeway Notification Seam (Phases 59-63) — ACTIVE</summary>
+
+- [ ] Phase 59: Chimeway Contract And Token Binding Semantics — Not started
+- [ ] Phase 60: Example Host Registry And Phoenix Wiring — Not started
+- [ ] Phase 61: Notification-Open Resolver And Route Policy — Not started
+- [ ] Phase 62: Diagnostics, Support Truth, And Docs — Not started
+- [ ] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Not started
+
+### Phase 59: Chimeway Contract And Token Binding Semantics
+
+**Goal:** Define the first-party Chimeway companion contract for provider-neutral notification evidence and backend-owned token binding.
+
+**Requirements:** TOKN-01, TOKN-02
+
+**Success criteria:**
+1. `notifications.token.get` remains device evidence only and does not become auth, session, delivery, or route authority.
+2. Chimeway token evidence and token binding contracts cover provider, platform, environment, installation ref, subject scope, token fingerprint, state, timestamps, and safe audit fields.
+3. APNs/FCM provider facts normalize into canonical Chimeway vocabulary without leaking provider-specific route-policy vocabulary.
+4. Raw token material is explicitly host-owned and excluded from telemetry, fixtures, denials, support output, and docs.
+
+### Phase 60: Example Host Registry And Phoenix Wiring
+
+**Goal:** Provide a copyable Phoenix-owned registry path for binding, rotating, revoking, pruning, and invalidating notification tokens.
+
+**Requirements:** TOKN-03
+
+**Success criteria:**
+1. Example-host Phoenix registry shape uses idiomatic Ecto changesets and `Ecto.Multi` for revoke displaced binding, upsert current binding, and emit safe audit/telemetry evidence.
+2. Binding only occurs after backend auth/session context exists; shell token possession is never treated as identity.
+3. Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning all produce explicit backend lifecycle state.
+4. Oban or Chimeway worker integration remains optional guidance, not a Crosswake dependency.
+
+### Phase 61: Notification-Open Resolver And Route Policy
+
+**Goal:** Resolve notification-open evidence through manifest-known routes, RouteGate, and Sigra session authority.
+
+**Requirements:** OPEN-01, OPEN-02, OPEN-03
+
+**Success criteria:**
+1. Notification opens use bounded refs such as notification/open/action refs plus route id rather than arbitrary URL authority.
+2. Route resolution calls existing route-gate behavior with `activation_source: :notification`.
+3. Auth-sensitive opens reuse Sigra session authority and step-up semantics before route activation.
+4. Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes and no silent dashboard/home fallback.
+
+### Phase 62: Diagnostics, Support Truth, And Docs
+
+**Goal:** Publish operator-facing truth for what v3.9 ships and what remains provider/device advisory.
+
+**Requirements:** DIAG-01, DIAG-02
+
+**Success criteria:**
+1. Doctor, operator inspection, support matrix, fixtures, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
+2. Notification support truth reports provider support, app identity/environment match, binding readiness, stale-window posture, revocation hooks, redaction posture, route-open resolver support, and advisory lane freshness.
+3. Notification telemetry uses stable low-cardinality events for token observed/bound/rotated/revoked/pruned, provider feedback, and open received/resolved/denied outcomes.
+4. Telemetry and diagnostic metadata forbid raw tokens, raw payloads, title/body content, route params, provider response bodies, and PII.
+
+### Phase 63: Hermetic Proof And Advisory Promotion Criteria
+
+**Goal:** Prove the shipped notification seam deterministically while keeping provider/device delivery proof honest.
+
+**Requirements:** PROOF-01, PROOF-02
+
+**Success criteria:**
+1. Merge-blocking proof covers token evidence, binding, rotation, revocation, stale/invalid states, open validation, replay, route mismatch, policy denial, Sigra step-up, docs parity, and telemetry redaction.
+2. APNs/FCM token issuance, real delivery/open behavior, provider credentials, notification-tray behavior, Focus/Doze/background behavior, and provider console metrics remain advisory.
+3. Advisory-to-merge-blocking promotion criteria require current-branch repeated passes on iOS and Android, current docs anchors, explicit demotion triggers, and zero raw-token/PII findings.
+4. Milestone closeout verifies 10/10 requirements mapped and no support surface implies first-party push delivery guarantees.
+
+</details>
+
 ## Next
 
-Start the next milestone with `$gsd-new-milestone`.
+Start Phase 59 with `$gsd-discuss-phase 59`.

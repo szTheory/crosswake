@@ -33,15 +33,20 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 </details>
 
-## Current Milestone
+## Current Milestone: v3.9 Chimeway Notification Seam
 
-No active milestone is defined. Start the next milestone with `$gsd-new-milestone` so requirements, roadmap scope, and phase ordering are created from the current strategic queue instead of extending stale v3.8 artifacts.
+**Goal:** Make notification registration and notification-open routing trustworthy for Phoenix mobile apps without claiming Crosswake is now a push delivery platform.
+
+**Target features:**
+- First-party in-tree Chimeway companion seam for backend-owned token binding, revocation, provider evidence normalization, notification-open envelopes, resolver evaluation, telemetry, and provider diagnostics.
+- Minimal core route-policy and manifest hook for notification-open eligibility while preserving RouteGate, Sigra session authority, and backend-only promotion semantics.
+- Example-host Phoenix registry and route-open proof that treats `notifications.token.get` and notification taps as evidence only, never as auth, delivery, or route authority.
+- Doctor, support matrix, operator inspection, guide, and proof-lane truth that distinguishes token/open readiness from APNs/FCM delivery guarantees.
 
 ## Next Milestone Candidates
 
-The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section is only a short orientation, not a second queue. Current queue:
+The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section is only a short orientation, not a second queue. Queue after v3.9:
 
-- **v3.9 Chimeway Notification Seam** — token lifecycle, backend token binding, notification-open route resolution, revocation, provider diagnostics, and hermetic/advisory proof split.
 - **v4.0 Production Shell Runtime Line** — compatibility windows, rebuild policy, permission/entitlement templates, diagnostic export, Android verification closure, and device UAT checklist.
 - **v4.1 Multi-SaaS Archetype Proof Lanes** — production-shaped pressure across subscription, notification-driven, media/evidence, auth-sensitive admin, and offline/draft recovery workflows.
 - **Threadline Audit Capstone** — auditability around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
@@ -91,7 +96,16 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section
 
 ### Active
 
-No active requirements are defined. `$gsd-new-milestone` should create a fresh `.planning/REQUIREMENTS.md` for the next milestone.
+- [ ] **TOKN-01**: A Phoenix host can register APNs/FCM token evidence from the existing bounded bridge into a backend-owned Chimeway token binding record.
+- [ ] **TOKN-02**: Token binding distinguishes active, rotated, revoked, stale, invalid, permission-denied, environment-mismatched, and app-identity-mismatched states.
+- [ ] **TOKN-03**: Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning revoke or supersede bindings without deleting safe audit truth.
+- [ ] **OPEN-01**: Notification-open evidence resolves only through manifest-known route ids and route policy with `activation_source: :notification`.
+- [ ] **OPEN-02**: Notification opens for auth-sensitive routes reuse Sigra session authority and step-up semantics before allowing route activation.
+- [ ] **OPEN-03**: Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes.
+- [ ] **DIAG-01**: Doctor, operator inspection, support matrix, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
+- [ ] **DIAG-02**: Notification telemetry uses stable low-cardinality events and forbids raw tokens, raw payloads, PII, route params, and provider payload bodies.
+- [ ] **PROOF-01**: Merge-blocking hermetic proof covers token contracts, binding/revocation lifecycle, open resolution, Sigra route gating, denial sanitization, support/docs parity, and telemetry redaction.
+- [ ] **PROOF-02**: APNs/FCM device delivery, real token issuance, provider credentials, notification-tray behavior, and provider console metrics remain advisory with explicit promotion criteria.
 
 ### Out of Scope
 
@@ -103,6 +117,8 @@ No active requirements are defined. `$gsd-new-milestone` should create a fresh `
 - Generic plugin-bus semantics for native or companion integrations — Crosswake must preserve typed, bounded, route-local seams.
 - Desktop packaging as a near-term arc driver — it remains a later extension after the mobile-first companion posture is mature.
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
+- First-party push delivery guarantees in v3.9 — this milestone ships token binding and open-routing readiness; APNs/FCM delivery behavior remains provider/device advisory proof until promotion criteria pass.
+- Notification action registries that bypass route policy — notification actions may carry typed refs, but route activation still flows through manifest-known routes, RouteGate, and backend auth.
 
 ## Context
 
@@ -158,6 +174,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Prioritize operator truth before StoreKit/Play Billing adapters | Commerce/provider adapters are production-critical, but v3.4/v3.5 already widened the support surface enough that route/capability/companion/provider/auth/notification readiness inspection should land before more native/provider claims. | Adopted for v3.6 — provider adapters move to v3.7 |
 | Keep provider adapters evidence-only until backend projection grants authority | v3.7 StoreKit and Play Billing seams normalize provider evidence, expose provider state, and feed the example-host paywall facade without letting device/storefront events mutate entitlement authority directly. | Validated in v3.7 — ADPT-01/02/03 passed audit with 4/4 E2E flows and advisory provider proof posture |
 | Keep Sigra auth authority backend-owned across session, handoff, step-up, and auth-return flows | v3.8 proved session authority projection, one-time handoff tickets, server-owned step-up ceremony, and OAuth/passkey/native return seams without letting shell/native/provider evidence directly promote authority. | Validated in v3.8 — 16/16 requirements, 10/10 integration checks, 5/5 E2E flows, and security closeout proof |
+| Build Chimeway as a companion seam with a narrow core route-policy hook | Notification registration and opens are provider/native/backend-heavy, while Crosswake's durable value is route-policy-aware backend authority and support truth | Adopted for v3.9 — token/open evidence stays non-authoritative, backend binding and RouteGate decide, and provider/device delivery proof remains advisory |
 
 ## Evolution
 
@@ -177,4 +194,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-02 — v3.8 Full Sigra Auth and Session Machinery shipped and archived.*
+*Last updated: 2026-06-02 — v3.9 Chimeway Notification Seam initialized.*
