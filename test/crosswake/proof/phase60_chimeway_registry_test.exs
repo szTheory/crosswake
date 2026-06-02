@@ -97,7 +97,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     refute source =~ ":broadway", "examples/phoenix_host must not depend on Broadway"
   end
 
-  test "no compiled chimeway file uses Oban, Quantum, or Broadway worker behaviours" do
+  test "no compiled chimeway file uses Oban, Quantum, Broadway, or in-tree scheduler loops" do
     chimeway_dir = "examples/phoenix_host/lib/crosswake_example/chimeway"
 
     if File.dir?(chimeway_dir) do
@@ -114,6 +114,46 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
         refute source =~ "use Broadway",
                "#{file} must not use Broadway in compiled Phase 60 code"
+
+        refute source =~ ":timer.send_interval",
+               "#{file} must not implement an in-tree scheduler loop (use Oban/Quantum as host-owned guidance)"
+
+        refute source =~ "Process.send_after",
+               "#{file} must not implement a GenServer scheduler loop (use Oban/Quantum as host-owned guidance)"
+      end
+    end
+  end
+
+  test "example host mix.exs dependency list does not widen to worker or scheduler packages" do
+    source = File.read!("examples/phoenix_host/mix.exs")
+
+    # Strict package-name denial list per D-34 and D-37
+    refute source =~ ~s({:oban,), "examples/phoenix_host must not depend on Oban"
+    refute source =~ ~s({:quantum,), "examples/phoenix_host must not depend on Quantum"
+    refute source =~ ~s({:broadway,), "examples/phoenix_host must not depend on Broadway"
+    refute source =~ ~s({:gen_stage,), "examples/phoenix_host must not depend on GenStage scheduler"
+  end
+
+  test "phase 60 proof raw-token sentinel absence is source-level verifiable" do
+    # The raw-token sentinel value used throughout this proof module must NOT appear
+    # in any migration, schema, or registry source file — only in test assertions.
+    sentinel = "raw_apns_token_should_not_leak_123"
+
+    production_files = [
+      "examples/phoenix_host/priv/repo/migrations/20260602100000_create_chimeway_token_bindings.exs",
+      "examples/phoenix_host/priv/repo/migrations/20260602100100_create_chimeway_token_binding_events.exs",
+      "examples/phoenix_host/lib/crosswake_example/chimeway/token_binding.ex",
+      "examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex",
+      "examples/phoenix_host/lib/crosswake_example/chimeway/metadata_sanitizer.ex",
+      "examples/phoenix_host/lib/crosswake_example/chimeway/registry.ex"
+    ]
+
+    for file <- production_files do
+      if File.exists?(file) do
+        source = File.read!(file)
+
+        refute source =~ sentinel,
+               "Production file #{file} must not contain the raw-token sentinel value"
       end
     end
   end
@@ -446,6 +486,16 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     inspected = inspect(bind_result)
     refute String.contains?(inspected, "raw_apns_token_should_not_leak_123"),
            "inspect output must not contain raw token value"
+
+    # Audit event must not leak raw token in any field
+    audit_inspected = inspect(audit_event_v1)
+    refute String.contains?(audit_inspected, "raw_apns_token_should_not_leak_123"),
+           "audit event inspect must not contain raw token value"
+
+    # Result map must not leak raw token
+    result_inspected = inspect(result_v1)
+    refute String.contains?(result_inspected, "raw_apns_token_should_not_leak_123"),
+           "binding result inspect must not contain raw token value"
 
     # --- Same-token refresh ---
     evidence_v1_refresh = %{evidence_v1 | notification_status: :granted}
