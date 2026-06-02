@@ -40,7 +40,7 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert requirements =~ "**Milestone:** v3.8 Full Sigra Auth and Session Machinery"
     assert project =~ "Shipped `v3.6 Operator Truth and Production Diagnostics`"
     assert state =~ "milestone: v3.8"
-    assert state =~ "Status: Ready to execute"
+    assert state =~ "Status: Phase complete"
     assert closeout =~ "status: complete"
 
     refute roadmap =~ "Phase 53: Release Continuity and Closeout Hardening — align"
@@ -65,7 +65,7 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     state = File.read!(@state)
 
     assert roadmap =~ "v3.8 Full Sigra Auth and Session Machinery"
-    assert state =~ "Phase 57 planning complete"
+    assert state =~ "Completed Phase 57 auth-return boundaries"
     refute roadmap =~ ".continue-here.md"
     refute state =~ ".continue-here.md"
   end
