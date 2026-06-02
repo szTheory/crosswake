@@ -158,6 +158,63 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     end
   end
 
+  test "example host README contains Optional Chimeway background jobs section with correct scope and API names" do
+    readme = File.read!("examples/phoenix_host/README.md")
+
+    # Section must exist
+    assert readme =~ "Optional Chimeway background jobs",
+           "README must contain an 'Optional Chimeway background jobs' section"
+
+    # Must name the two synchronous registry APIs
+    assert readme =~ "prune_stale/1",
+           "README background jobs section must name prune_stale/1"
+
+    assert readme =~ "apply_provider_feedback/2",
+           "README background jobs section must name apply_provider_feedback/2"
+
+    # Must state APIs are synchronous and workers remain host-owned
+    assert readme =~ "synchronous registry APIs only",
+           "README must state Crosswake ships synchronous registry APIs only"
+
+    assert readme =~ "host-owned",
+           "README must state background jobs remain host-owned"
+
+    # Must not claim bundled workers, delivery guarantees, or open/route authority
+    refute readme =~ "bundled Chimeway workers",
+           "README must not claim bundled Chimeway workers"
+
+    refute readme =~ "push delivery " <> "guarantees",
+           "README must not claim push delivery guarantees"
+
+    refute readme =~ "notification-open " <> "routing authority",
+           "README must not claim notification-open routing authority"
+
+    refute readme =~ "bundled background " <> "orchestration",
+           "README must not claim bundled background orchestration"
+
+    # Oban must be identified as the primary durable recipe
+    assert readme =~ "Oban",
+           "README must mention Oban as the primary durable background job option"
+
+    # Quantum/cron must be mentioned only as secondary alternatives for pruning
+    assert readme =~ "Quantum",
+           "README must mention Quantum as a secondary scheduling alternative"
+
+    # Broadway scope must be restricted to future high-volume use and explicitly out of scope for Phase 60
+    assert readme =~ "Broadway",
+           "README must mention Broadway scope boundary"
+
+    assert readme =~ "out of scope for Phase 60",
+           "README must explicitly state Broadway is out of scope for Phase 60"
+
+    # Worker examples must call registry APIs, not duplicate lifecycle writes
+    assert readme =~ "CrosswakeExample.Chimeway.Registry.prune_stale/1",
+           "README worker example must call CrosswakeExample.Chimeway.Registry.prune_stale/1"
+
+    assert readme =~ "CrosswakeExample.Chimeway.Registry.apply_provider_feedback/2",
+           "README worker example must call CrosswakeExample.Chimeway.Registry.apply_provider_feedback/2"
+  end
+
   test "phase 60 proof does not claim notification-open resolution or delivery support" do
     source = File.read!(__ENV__.file)
 
