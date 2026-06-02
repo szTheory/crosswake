@@ -132,7 +132,9 @@ defmodule Crosswake.OperatorInspectionTest do
              :handoff_ticket,
              :server_record_redemption,
              :step_up_intent,
-             :plug_liveview_ceremony
+             :plug_liveview_ceremony,
+             :auth_return_boundary,
+             :auth_return_attempt
            ]
 
     assert secure.auth.handoff.authority_source == :server_record

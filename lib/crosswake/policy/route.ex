@@ -7,6 +7,21 @@ defmodule Crosswake.Policy.Route do
   alias Crosswake.Policy.Schema
 
   @commerce_role_values [:paywall_entry, :purchase_intent, :restore_intent, :account_management]
+  @auth_return_required_validations %{
+    oauth: [:state, :pkce, :redirect_uri, :expiry, :replay],
+    passkey: [:challenge, :origin, :rp_id, :user_verification, :expiry, :replay],
+    native_auth: [:callback_binding, :link_verification, :expiry, :replay]
+  }
+  @auth_return_provider_specific_terms [
+    :google,
+    :github,
+    :apple,
+    :microsoft,
+    :okta,
+    :auth0,
+    :google_oauth,
+    :apple_passkey
+  ]
 
   @enforce_keys [:id, :runtime]
   defstruct [
@@ -21,6 +36,7 @@ defmodule Crosswake.Policy.Route do
     :auth_min_level,
     :requires_recent_auth,
     :auth_posture,
+    :auth_return,
     offline: :unavailable,
     entry: :internal_only,
     capabilities: [],
@@ -46,7 +62,8 @@ defmodule Crosswake.Policy.Route do
           on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
           auth_min_level: atom() | nil,
           requires_recent_auth: pos_integer() | nil,
-          auth_posture: Schema.auth_posture() | nil
+          auth_posture: Schema.auth_posture() | nil,
+          auth_return: Schema.auth_return_declaration() | nil
         }
 
   @spec new(keyword()) :: {:ok, t()} | {:error, NimbleOptions.ValidationError.t()}
@@ -60,6 +77,7 @@ defmodule Crosswake.Policy.Route do
              {:ok, validated} <- validate_gating_posture(validated),
              {:ok, validated} <- validate_entry_policy(validated),
              {:ok, validated} <- validate_commerce_declaration(validated),
+             {:ok, validated} <- validate_auth_return_declaration(validated),
              {:ok, validated} <- validate_auth_posture(validated),
              {:ok, validated} <- validate_pack_requirements(validated),
              {:ok, validated} <- validate_transfer_declarations(validated) do
@@ -80,6 +98,7 @@ defmodule Crosswake.Policy.Route do
     |> validate_gating_posture!()
     |> validate_entry_policy!()
     |> validate_commerce_declaration!()
+    |> validate_auth_return_declaration!()
     |> validate_auth_posture!()
     |> validate_pack_requirements!()
     |> validate_transfer_declarations!()
@@ -308,6 +327,78 @@ defmodule Crosswake.Policy.Route do
 
   defp validate_auth_posture!(validated) do
     case validate_auth_posture(validated) do
+      {:ok, validated} -> validated
+      {:error, error} -> raise error
+    end
+  end
+
+  defp validate_auth_return_declaration(validated) do
+    case validated[:auth_return] do
+      nil ->
+        {:ok, validated}
+
+      %{kind: nil} = auth_return ->
+        {:error,
+         validation_error(:auth_return, auth_return, "auth_return declaration requires :kind")}
+
+      %{transport: nil} = auth_return ->
+        {:error,
+         validation_error(
+           :auth_return,
+           auth_return,
+           "auth_return declaration requires :transport"
+         )}
+
+      %{return_route_id: nil} = auth_return ->
+        {:error,
+         validation_error(
+           :auth_return,
+           auth_return,
+           "auth_return declaration requires manifest-known :return_route_id"
+         )}
+
+      %{kind: kind} = auth_return when kind in @auth_return_provider_specific_terms ->
+        {:error,
+         validation_error(
+           :auth_return,
+           auth_return,
+           "provider-specific auth_return vocabulary is not supported in route policy"
+         )}
+
+      %{kind: kind, validates: validates} = auth_return ->
+        missing = Map.fetch!(@auth_return_required_validations, kind) -- validates
+        effective_security = validated[:security] || :sensitive
+
+        cond do
+          missing != [] ->
+            {:error,
+             validation_error(
+               :auth_return,
+               auth_return,
+               "auth_return #{inspect(kind)} requires validations #{inspect(missing)}"
+             )}
+
+          effective_security == :sensitive and auth_return.transport == :custom_scheme ->
+            {:error,
+             validation_error(
+               :auth_return,
+               auth_return,
+               "sensitive auth_return routes require verified_https_link or http_callback transport; custom_scheme is advisory only"
+             )}
+
+          true ->
+            validated =
+              validated
+              |> Keyword.put(:security, validated[:security] || :sensitive)
+              |> Keyword.put(:auth_posture, validated[:auth_posture] || :strict_recent)
+
+            {:ok, validated}
+        end
+    end
+  end
+
+  defp validate_auth_return_declaration!(validated) do
+    case validate_auth_return_declaration(validated) do
       {:ok, validated} -> validated
       {:error, error} -> raise error
     end

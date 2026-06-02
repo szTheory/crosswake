@@ -83,11 +83,12 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
   test "support truth promotes shipped handoff contracts without later-phase claims" do
     assert [%{} = row] = SupportMatrix.auth_contract_truth()
 
-    assert row.shipped_contracts == [
+    assert [
              :session_authority,
              :handoff_ticket,
              :server_record_redemption
-           ]
+             | _
+           ] = row.shipped_contracts
 
     assert row.handoff.status == :shipped
     assert row.handoff.authority_source == :server_record
@@ -101,8 +102,8 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
     assert "ticket_ref" not in row.safe_detail_keys
     assert row.fallback == :step_up_required
     refute :handoff in row.deferred
-    assert :ceremony in row.deferred
-    assert :auth_return_boundaries in row.deferred
+    refute :ceremony in row.deferred
+    refute :auth_return_boundaries in row.deferred
     assert :refresh_tokens in row.deferred
     assert :provider_device_proof in row.deferred
     assert :native_auth_ui in row.deferred
@@ -393,8 +394,8 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
       assert doc =~ "native auth UI"
     end
 
-    assert companions =~ "Handoff envelopes are signed locators only"
-    assert companions =~ "Phase 55 only ships handoff ticket contracts"
+    assert companions =~ "Handoff envelopes, step-up locators, auth-return envelopes"
+    assert companions =~ "Phase 55 handoff ticket contracts"
     assert support =~ "auth.handoff.*"
     assert native_shell =~ "the bridge is not an auth authority"
   end

@@ -255,7 +255,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     assert :step_up_intent in row.shipped_contracts
     assert :plug_liveview_ceremony in row.shipped_contracts
     refute :ceremony in row.deferred
-    assert :auth_return_boundaries in row.deferred
+    refute :auth_return_boundaries in row.deferred
     assert :refresh_tokens in row.deferred
     assert :provider_device_proof in row.deferred
     assert :native_auth_ui in row.deferred

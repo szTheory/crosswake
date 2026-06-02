@@ -27,7 +27,40 @@
           "auth.handoff.binding_mismatch",
           "auth.handoff.intent_mismatch",
           "auth.handoff.route_mismatch",
-          "auth.handoff.projection_failed"
+          "auth.handoff.projection_failed",
+          "auth.step_up_intent.missing_intent",
+          "auth.step_up_intent.invalid_intent",
+          "auth.step_up_intent.expired_intent",
+          "auth.step_up_intent.consumed_intent",
+          "auth.step_up_intent.canceled_intent",
+          "auth.step_up_intent.revoked_intent",
+          "auth.step_up_intent.route_mismatch",
+          "auth.step_up_intent.binding_mismatch",
+          "auth.step_up_intent.challenge_failed",
+          "auth.step_up_intent.projection_failed",
+          "auth.return.oauth.missing_return",
+          "auth.return.oauth.invalid_return",
+          "auth.return.oauth.expired_return",
+          "auth.return.oauth.replayed_return",
+          "auth.return.oauth.state_mismatch",
+          "auth.return.oauth.nonce_mismatch",
+          "auth.return.oauth.pkce_missing",
+          "auth.return.oauth.redirect_mismatch",
+          "auth.return.passkey.missing_return",
+          "auth.return.passkey.invalid_return",
+          "auth.return.passkey.expired_return",
+          "auth.return.passkey.replayed_return",
+          "auth.return.passkey.challenge_mismatch",
+          "auth.return.passkey.origin_mismatch",
+          "auth.return.passkey.rp_id_mismatch",
+          "auth.return.passkey.user_verification_missing",
+          "auth.return.native_auth.missing_return",
+          "auth.return.native_auth.invalid_return",
+          "auth.return.native_auth.expired_return",
+          "auth.return.native_auth.replayed_return",
+          "auth.return.native_auth.link_unverified",
+          "auth.return.native_auth.callback_mismatch",
+          "auth.return.native_auth.projection_failed"
         ],
         "fallback": "step_up_required",
         "handoff": {
@@ -58,10 +91,6 @@
           "status": "shipped"
         },
         "non_goals": [
-          "ceremony",
-          "passkey",
-          "oauth",
-          "auth_return_boundaries",
           "refresh_tokens",
           "native_auth_ui",
           "provider_device_proof"
@@ -93,13 +122,52 @@
           "intent_kind",
           "route_binding",
           "ticket_expires_at",
-          "ticket_age_seconds"
+          "ticket_age_seconds",
+          "step_up_intent_ref",
+          "intent_state",
+          "challenge_kind",
+          "intent_expires_at",
+          "intent_age_seconds",
+          "auth_return_ref",
+          "auth_return_kind",
+          "auth_return_transport",
+          "auth_return_state",
+          "return_route_id",
+          "link_verification",
+          "validation_posture",
+          "return_expires_at",
+          "return_age_seconds"
         ],
         "shipped_contracts": [
           "session_authority",
           "handoff_ticket",
-          "server_record_redemption"
-        ]
+          "server_record_redemption",
+          "step_up_intent",
+          "plug_liveview_ceremony",
+          "auth_return_boundary",
+          "auth_return_attempt"
+        ],
+        "step_up": {
+          "authority_source": "server_record",
+          "challenge_kinds": [
+            "host_confirm_password"
+          ],
+          "csrf_rotation": "host_instruction",
+          "lifecycle_states": [
+            "issued",
+            "challenged",
+            "consumed",
+            "expired",
+            "canceled",
+            "revoked"
+          ],
+          "liveview_invalidation": "required",
+          "locator_authority": false,
+          "proof_class": "merge_blocking",
+          "route_target_validation": "manifest_route_id",
+          "session_renewal": "host_instructions",
+          "status": "shipped"
+        }
       },
       "hint": "inspect route camera support, proof, rebuild, and denial fields",
       "message": "route camera uses contract-only auth predicates",
@@ -217,7 +285,7 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-02T06:43:06Z",
+  "generated_at": "2026-06-02T09:19:12Z",
   "indexes": {
     "by_auth_predicate": {
       "step_up_required": [
@@ -313,7 +381,40 @@
           "auth.handoff.binding_mismatch",
           "auth.handoff.intent_mismatch",
           "auth.handoff.route_mismatch",
-          "auth.handoff.projection_failed"
+          "auth.handoff.projection_failed",
+          "auth.step_up_intent.missing_intent",
+          "auth.step_up_intent.invalid_intent",
+          "auth.step_up_intent.expired_intent",
+          "auth.step_up_intent.consumed_intent",
+          "auth.step_up_intent.canceled_intent",
+          "auth.step_up_intent.revoked_intent",
+          "auth.step_up_intent.route_mismatch",
+          "auth.step_up_intent.binding_mismatch",
+          "auth.step_up_intent.challenge_failed",
+          "auth.step_up_intent.projection_failed",
+          "auth.return.oauth.missing_return",
+          "auth.return.oauth.invalid_return",
+          "auth.return.oauth.expired_return",
+          "auth.return.oauth.replayed_return",
+          "auth.return.oauth.state_mismatch",
+          "auth.return.oauth.nonce_mismatch",
+          "auth.return.oauth.pkce_missing",
+          "auth.return.oauth.redirect_mismatch",
+          "auth.return.passkey.missing_return",
+          "auth.return.passkey.invalid_return",
+          "auth.return.passkey.expired_return",
+          "auth.return.passkey.replayed_return",
+          "auth.return.passkey.challenge_mismatch",
+          "auth.return.passkey.origin_mismatch",
+          "auth.return.passkey.rp_id_mismatch",
+          "auth.return.passkey.user_verification_missing",
+          "auth.return.native_auth.missing_return",
+          "auth.return.native_auth.invalid_return",
+          "auth.return.native_auth.expired_return",
+          "auth.return.native_auth.replayed_return",
+          "auth.return.native_auth.link_unverified",
+          "auth.return.native_auth.callback_mismatch",
+          "auth.return.native_auth.projection_failed"
         ],
         "fallback": "step_up_required",
         "handoff": {
@@ -344,10 +445,6 @@
           "status": "shipped"
         },
         "non_goals": [
-          "ceremony",
-          "passkey",
-          "oauth",
-          "auth_return_boundaries",
           "refresh_tokens",
           "native_auth_ui",
           "provider_device_proof"
@@ -378,13 +475,52 @@
           "intent_kind",
           "route_binding",
           "ticket_expires_at",
-          "ticket_age_seconds"
+          "ticket_age_seconds",
+          "step_up_intent_ref",
+          "intent_state",
+          "challenge_kind",
+          "intent_expires_at",
+          "intent_age_seconds",
+          "auth_return_ref",
+          "auth_return_kind",
+          "auth_return_transport",
+          "auth_return_state",
+          "return_route_id",
+          "link_verification",
+          "validation_posture",
+          "return_expires_at",
+          "return_age_seconds"
         ],
         "shipped_contracts": [
           "session_authority",
           "handoff_ticket",
-          "server_record_redemption"
-        ]
+          "server_record_redemption",
+          "step_up_intent",
+          "plug_liveview_ceremony",
+          "auth_return_boundary",
+          "auth_return_attempt"
+        ],
+        "step_up": {
+          "authority_source": "server_record",
+          "challenge_kinds": [
+            "host_confirm_password"
+          ],
+          "csrf_rotation": "host_instruction",
+          "lifecycle_states": [
+            "issued",
+            "challenged",
+            "consumed",
+            "expired",
+            "canceled",
+            "revoked"
+          ],
+          "liveview_invalidation": "required",
+          "locator_authority": false,
+          "proof_class": "merge_blocking",
+          "route_target_validation": "manifest_route_id",
+          "session_renewal": "host_instructions",
+          "status": "shipped"
+        }
       },
       "capabilities": [
         {
@@ -468,7 +604,40 @@
               "auth.handoff.binding_mismatch",
               "auth.handoff.intent_mismatch",
               "auth.handoff.route_mismatch",
-              "auth.handoff.projection_failed"
+              "auth.handoff.projection_failed",
+              "auth.step_up_intent.missing_intent",
+              "auth.step_up_intent.invalid_intent",
+              "auth.step_up_intent.expired_intent",
+              "auth.step_up_intent.consumed_intent",
+              "auth.step_up_intent.canceled_intent",
+              "auth.step_up_intent.revoked_intent",
+              "auth.step_up_intent.route_mismatch",
+              "auth.step_up_intent.binding_mismatch",
+              "auth.step_up_intent.challenge_failed",
+              "auth.step_up_intent.projection_failed",
+              "auth.return.oauth.missing_return",
+              "auth.return.oauth.invalid_return",
+              "auth.return.oauth.expired_return",
+              "auth.return.oauth.replayed_return",
+              "auth.return.oauth.state_mismatch",
+              "auth.return.oauth.nonce_mismatch",
+              "auth.return.oauth.pkce_missing",
+              "auth.return.oauth.redirect_mismatch",
+              "auth.return.passkey.missing_return",
+              "auth.return.passkey.invalid_return",
+              "auth.return.passkey.expired_return",
+              "auth.return.passkey.replayed_return",
+              "auth.return.passkey.challenge_mismatch",
+              "auth.return.passkey.origin_mismatch",
+              "auth.return.passkey.rp_id_mismatch",
+              "auth.return.passkey.user_verification_missing",
+              "auth.return.native_auth.missing_return",
+              "auth.return.native_auth.invalid_return",
+              "auth.return.native_auth.expired_return",
+              "auth.return.native_auth.replayed_return",
+              "auth.return.native_auth.link_unverified",
+              "auth.return.native_auth.callback_mismatch",
+              "auth.return.native_auth.projection_failed"
             ],
             "fallback": "step_up_required",
             "handoff": {
@@ -499,10 +668,6 @@
               "status": "shipped"
             },
             "non_goals": [
-              "ceremony",
-              "passkey",
-              "oauth",
-              "auth_return_boundaries",
               "refresh_tokens",
               "native_auth_ui",
               "provider_device_proof"
@@ -533,13 +698,52 @@
               "intent_kind",
               "route_binding",
               "ticket_expires_at",
-              "ticket_age_seconds"
+              "ticket_age_seconds",
+              "step_up_intent_ref",
+              "intent_state",
+              "challenge_kind",
+              "intent_expires_at",
+              "intent_age_seconds",
+              "auth_return_ref",
+              "auth_return_kind",
+              "auth_return_transport",
+              "auth_return_state",
+              "return_route_id",
+              "link_verification",
+              "validation_posture",
+              "return_expires_at",
+              "return_age_seconds"
             ],
             "shipped_contracts": [
               "session_authority",
               "handoff_ticket",
-              "server_record_redemption"
-            ]
+              "server_record_redemption",
+              "step_up_intent",
+              "plug_liveview_ceremony",
+              "auth_return_boundary",
+              "auth_return_attempt"
+            ],
+            "step_up": {
+              "authority_source": "server_record",
+              "challenge_kinds": [
+                "host_confirm_password"
+              ],
+              "csrf_rotation": "host_instruction",
+              "lifecycle_states": [
+                "issued",
+                "challenged",
+                "consumed",
+                "expired",
+                "canceled",
+                "revoked"
+              ],
+              "liveview_invalidation": "required",
+              "locator_authority": false,
+              "proof_class": "merge_blocking",
+              "route_target_validation": "manifest_route_id",
+              "session_renewal": "host_instructions",
+              "status": "shipped"
+            }
           },
           "message": "route camera uses contract-only auth predicates",
           "reason": "step_up_required",
@@ -612,7 +816,8 @@
         "readiness": "supported",
         "requires_recent_auth": null,
         "safe_detail_keys": [],
-        "shipped_contracts": []
+        "shipped_contracts": [],
+        "step_up": {}
       },
       "capabilities": [
         {
@@ -820,7 +1025,8 @@
         "readiness": "supported",
         "requires_recent_auth": null,
         "safe_detail_keys": [],
-        "shipped_contracts": []
+        "shipped_contracts": [],
+        "step_up": {}
       },
       "capabilities": [
         {
@@ -943,7 +1149,8 @@
         "readiness": "supported",
         "requires_recent_auth": null,
         "safe_detail_keys": [],
-        "shipped_contracts": []
+        "shipped_contracts": [],
+        "step_up": {}
       },
       "capabilities": [],
       "commerce": null,

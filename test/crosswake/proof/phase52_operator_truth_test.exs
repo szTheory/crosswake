@@ -132,7 +132,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     refute notification["details"]["delivery_supported?"]
 
     auth = find_readiness_check!(decoded, "auth.session_predicate_readiness")
-    assert auth["details"]["demotion_trigger"] =~ "handoff server-record proof"
+    assert auth["details"]["demotion_trigger"] =~ "handoff/step-up/auth-return server-record proof"
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
@@ -168,7 +168,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.non_claims.sigra_session_authority",
       "guides/companions.md",
-      "Sigra now ships the backend-owned session-authority route evaluator plus Phase 55 handoff ticket contract machinery",
+      "Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, and Phase 57 OAuth/passkey/native auth-return boundary contracts.",
       source: "guides/companions.md and auth contract support truth",
       hint:
         "distinguish shipped Phase 55 handoff contracts from later Sigra ceremony and returns",

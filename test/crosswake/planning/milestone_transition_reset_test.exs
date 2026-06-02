@@ -12,7 +12,6 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   @closeout Path.join(@root, ".planning/milestones/v3.6-CLOSEOUT.md")
 
   @queue_order [
-    "v3.7 Commerce Provider Adapters",
     "v3.8 Full Sigra Auth and Session Machinery",
     "v3.9 Chimeway Notification Seam",
     "v4.0 Production Shell Runtime Line",
@@ -37,10 +36,11 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
 
     assert roadmap =~ "v3.6 Operator Truth and Production Diagnostics"
     assert roadmap =~ "Phases 48-53 shipped"
-    assert requirements =~ "REL-01 | Phase 53 | Complete"
+    assert File.read!(@archive_requirements) =~ "**REL-01**"
+    assert requirements =~ "**Milestone:** v3.8 Full Sigra Auth and Session Machinery"
     assert project =~ "Shipped `v3.6 Operator Truth and Production Diagnostics`"
-    assert state =~ "Phase: 48.1 — COMPLETE"
-    assert state =~ "Status: Phase 48.1 complete"
+    assert state =~ "milestone: v3.8"
+    assert state =~ "Status: Ready to execute"
     assert closeout =~ "status: complete"
 
     refute roadmap =~ "Phase 53: Release Continuity and Closeout Hardening — align"
@@ -55,17 +55,17 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert_in_order(arc, @queue_order)
     assert_in_order(project, @queue_order)
 
-    assert arc =~ "### Active: v3.7 Commerce Provider Adapters"
+    assert arc =~ "### Active: v3.8 Full Sigra Auth and Session Machinery"
     assert project =~ "The strategic source of truth remains `.planning/MILESTONE-ARC.md`"
     assert project =~ "not a second queue"
   end
 
-  test "state and roadmap route the next operator step to the v3.7 closure audit" do
+  test "state and roadmap route the next operator step to active v3.8 work" do
     roadmap = File.read!(@roadmap)
     state = File.read!(@state)
 
-    assert roadmap =~ "Re-run the v3.7 milestone audit"
-    assert state =~ "Re-run milestone audit for v3.7 ADPT-01/ADPT-02 closure."
+    assert roadmap =~ "v3.8 Full Sigra Auth and Session Machinery"
+    assert state =~ "Phase 57 planning complete"
     refute roadmap =~ ".continue-here.md"
     refute state =~ ".continue-here.md"
   end

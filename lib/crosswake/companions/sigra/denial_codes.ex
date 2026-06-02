@@ -37,7 +37,30 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
     "auth.step_up_intent.route_mismatch",
     "auth.step_up_intent.binding_mismatch",
     "auth.step_up_intent.challenge_failed",
-    "auth.step_up_intent.projection_failed"
+    "auth.step_up_intent.projection_failed",
+    "auth.return.oauth.missing_return",
+    "auth.return.oauth.invalid_return",
+    "auth.return.oauth.expired_return",
+    "auth.return.oauth.replayed_return",
+    "auth.return.oauth.state_mismatch",
+    "auth.return.oauth.nonce_mismatch",
+    "auth.return.oauth.pkce_missing",
+    "auth.return.oauth.redirect_mismatch",
+    "auth.return.passkey.missing_return",
+    "auth.return.passkey.invalid_return",
+    "auth.return.passkey.expired_return",
+    "auth.return.passkey.replayed_return",
+    "auth.return.passkey.challenge_mismatch",
+    "auth.return.passkey.origin_mismatch",
+    "auth.return.passkey.rp_id_mismatch",
+    "auth.return.passkey.user_verification_missing",
+    "auth.return.native_auth.missing_return",
+    "auth.return.native_auth.invalid_return",
+    "auth.return.native_auth.expired_return",
+    "auth.return.native_auth.replayed_return",
+    "auth.return.native_auth.link_unverified",
+    "auth.return.native_auth.callback_mismatch",
+    "auth.return.native_auth.projection_failed"
   ]
 
   @allowed_detail_keys [
@@ -68,7 +91,16 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
     "intent_state",
     "challenge_kind",
     "intent_expires_at",
-    "intent_age_seconds"
+    "intent_age_seconds",
+    "auth_return_ref",
+    "auth_return_kind",
+    "auth_return_transport",
+    "auth_return_state",
+    "return_route_id",
+    "link_verification",
+    "validation_posture",
+    "return_expires_at",
+    "return_age_seconds"
   ]
 
   @safe_ref ~r/^[A-Za-z0-9._:-]{1,128}$/
@@ -106,12 +138,24 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
   defp stringify_key(key), do: inspect(key)
 
   defp safe_value?(key, value)
-       when key in ["challenge_ref", "step_up_token_ref", "handoff_ref", "step_up_intent_ref"] and
+       when key in [
+              "challenge_ref",
+              "step_up_token_ref",
+              "handoff_ref",
+              "step_up_intent_ref",
+              "auth_return_ref"
+            ] and
               is_binary(value),
        do: Regex.match?(@safe_ref, value)
 
   defp safe_value?(key, _value)
-       when key in ["challenge_ref", "step_up_token_ref", "handoff_ref", "step_up_intent_ref"],
+       when key in [
+              "challenge_ref",
+              "step_up_token_ref",
+              "handoff_ref",
+              "step_up_intent_ref",
+              "auth_return_ref"
+            ],
        do: false
 
   defp safe_value?(_key, value) when is_atom(value) and value not in [true, false, nil], do: true

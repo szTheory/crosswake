@@ -71,7 +71,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "includes explicit deferred non-goals", %{content: content} do
     assert content =~ "Chimeway"
     assert content =~ "Later Sigra machinery"
-    assert content =~ "Phase 56 ships server-owned step-up intent records"
+    assert content =~ "Phase 57 ships provider-neutral auth-return boundary contracts"
     assert content =~ "provider/device auth proof"
     assert content =~ "Threadline"
     assert content =~ "Separate-package extraction"
@@ -153,7 +153,7 @@ defmodule Crosswake.Guides.CompanionsTest do
 
       refute :handoff in deferred
       refute :ceremony in deferred
-      assert :auth_return_boundaries in deferred
+      refute :auth_return_boundaries in deferred
 
       assert content =~ Atom.to_string(denial),
              "guide missing auth denial vocabulary #{inspect(denial)} from SupportMatrix.auth_contract_truth/0"

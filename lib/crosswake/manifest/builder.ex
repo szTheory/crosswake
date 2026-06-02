@@ -139,7 +139,8 @@ defmodule Crosswake.Manifest.Builder do
           on_unavailable: route.on_unavailable,
           auth_min_level: route.auth_min_level,
           requires_recent_auth: route.requires_recent_auth,
-          auth_posture: route.auth_posture
+          auth_posture: route.auth_posture,
+          auth_return: route_auth_return(route)
         )
 
       {route.id, entry}
@@ -218,6 +219,26 @@ defmodule Crosswake.Manifest.Builder do
   end
 
   defp route_commerce(_route), do: nil
+
+  defp route_auth_return(%Route{auth_return: nil}), do: nil
+
+  defp route_auth_return(%Route{
+         auth_return: %{
+           kind: kind,
+           transport: transport,
+           return_route_id: return_route_id,
+           validates: validates
+         }
+       }) do
+    Types.new_route_auth_return(
+      kind: kind,
+      transport: transport,
+      return_route_id: return_route_id,
+      validates: validates
+    )
+  end
+
+  defp route_auth_return(_route), do: nil
 
   defp capability_catalog do
     [

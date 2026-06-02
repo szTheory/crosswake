@@ -109,6 +109,20 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
         route_binding: "saas-profile-settings",
         ticket_expires_at: "2026-06-02T12:03:00Z",
         ticket_age_seconds: 30,
+        step_up_intent_ref: "support:sup.safe",
+        intent_state: :issued,
+        challenge_kind: :host_confirm_password,
+        intent_expires_at: "2026-06-02T12:05:00Z",
+        intent_age_seconds: 60,
+        auth_return_ref: "support:ret.safe",
+        auth_return_kind: :oauth,
+        auth_return_transport: :verified_https_link,
+        auth_return_state: :issued,
+        return_route_id: "saas-profile-settings",
+        link_verification: :verified,
+        validation_posture: "state_pkce_redirect_replay",
+        return_expires_at: "2026-06-02T12:05:00Z",
+        return_age_seconds: 60,
         session_id: "secret_session",
         subject_id: "actor_123",
         org_id: "org_123",
@@ -151,15 +165,15 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
     assert row.denial_codes == DenialCodes.codes()
     assert "auth_posture" in row.safe_detail_keys
     assert "handoff_ref" in row.safe_detail_keys
-    assert row.posture =~ "session-authority"
-    assert row.posture =~ "handoff ticket contracts"
-    assert row.posture =~ "server-record redemption proof"
+    assert row.posture =~ "SessionAuthorityLane route evaluation"
+    assert row.posture =~ "handoff ticket/server-record redemption"
+    assert row.posture =~ "server records, audit evidence"
     assert "auth.handoff.invalid_ticket" in row.denial_codes
-    assert :ceremony in row.deferred
+    refute :ceremony in row.deferred
     refute :handoff in row.deferred
-    assert row.posture =~ "passkey"
-    assert row.posture =~ "OAuth"
-    assert row.posture =~ "refresh-token"
+    assert :auth_return_boundaries not in row.deferred
+    assert row.posture =~ "OAuth/passkey/native auth-return boundary contracts"
+    assert String.downcase(row.posture) =~ "refresh-token"
   end
 
   test "phase 54 proof still does not claim later auth machinery" do

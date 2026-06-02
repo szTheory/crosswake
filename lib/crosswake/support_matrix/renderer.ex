@@ -181,7 +181,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "## Public Non-Claims And Rough Edges",
       "",
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
-      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, and Phase 56 step-up intent plus Plug/LiveView ceremony are shipped for route predicates, `auth_posture`, `:step_up_required`, canonical `auth.handoff.*`, and canonical `auth.step_up_intent.*` denial codes; passkey/OAuth/native auth-return validation, refresh-token helpers, provider/device proof, telemetry/security closeout, and native auth UI remain deferred.",
+      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, and Phase 57 OAuth/passkey/native auth-return boundary contracts are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, and canonical `auth.return.*` denial codes; refresh-token helpers, provider/device proof, telemetry/security closeout, and native auth UI remain deferred.",
       "- notification-token readiness is provider-snapshot only and not delivery support; Chimeway delivery, notification-open routing, and push-delivery guarantees are not shipped in v3.6.",
       "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
     ]

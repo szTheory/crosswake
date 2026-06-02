@@ -244,16 +244,12 @@ defmodule Crosswake.SupportMatrixTest do
     assert [companion_truth] = SupportMatrix.companion_support_truth()
 
     assert companion_truth.surface ==
-             "Sigra session-authority route evaluator, handoff contract, and step-up ceremony"
+             "Sigra session-authority route evaluator, handoff contract, step-up ceremony, and auth-return boundaries"
 
     assert companion_truth.proof_class == :merge_blocking
     assert companion_truth.action_class == "companion_native"
 
     assert companion_truth.deferred == [
-             :passkey,
-             :oauth,
-             :auth_return_boundaries,
-             :native_auth_return,
              :refresh_tokens,
              :native_auth_ui,
              :provider_device_proof
@@ -537,6 +533,7 @@ defmodule Crosswake.SupportMatrixTest do
                :denial_vocabulary,
                :deferred,
                :fallback,
+               :auth_return,
                :handoff,
                :owner,
                :package_class,
@@ -559,7 +556,9 @@ defmodule Crosswake.SupportMatrixTest do
              :handoff_ticket,
              :server_record_redemption,
              :step_up_intent,
-             :plug_liveview_ceremony
+             :plug_liveview_ceremony,
+             :auth_return_boundary,
+             :auth_return_attempt
            ]
 
     assert row.handoff.status == :shipped
@@ -569,6 +568,10 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.step_up.status == :shipped
     assert row.step_up.authority_source == :server_record
     assert row.step_up.locator_authority == false
+    assert row.auth_return.status == :shipped
+    assert row.auth_return.authority_source == :server_record
+    assert row.auth_return.envelope_authority == false
+    assert row.auth_return.route_policy_seam == :auth_return
 
     assert row.step_up.lifecycle_states == [
              :issued,
@@ -586,6 +589,7 @@ defmodule Crosswake.SupportMatrixTest do
     assert "auth.step_up.missing_context" in row.denial_codes
     assert "auth.handoff.invalid_ticket" in row.denial_codes
     assert "auth.step_up_intent.invalid_intent" in row.denial_codes
+    assert "auth.return.oauth.invalid_return" in row.denial_codes
     assert "auth_posture" in row.safe_detail_keys
     assert "handoff_ref" in row.safe_detail_keys
     assert "step_up_intent_ref" in row.safe_detail_keys
@@ -596,8 +600,8 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.posture =~ "SessionAuthorityLane route evaluation"
     assert row.posture =~ "handoff ticket/server-record redemption"
     refute :ceremony in row.deferred
-    assert :auth_return_boundaries in row.deferred
-    assert :native_auth_return in row.deferred
+    refute :auth_return_boundaries in row.deferred
+    refute :native_auth_return in row.deferred
     refute :handoff in row.deferred
   end
 end

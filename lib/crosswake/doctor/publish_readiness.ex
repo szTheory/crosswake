@@ -380,10 +380,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
         if(route_ids == [],
           do: "no Sigra auth predicate routes are present in the inspected route set",
           else:
-            "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, and step-up intent plus Plug/LiveView ceremony are shipped; passkey, OAuth, auth-return validation, refresh-token helpers, provider/device proof, telemetry/security closeout, and native auth UI are not shipped"
+            "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, step-up intent plus Plug/LiveView ceremony, and OAuth/passkey/native auth-return boundary contracts are shipped; refresh-token helpers, provider/device proof, telemetry/security closeout, provider templates, passkey SDK wrappers, and native auth UI are not shipped"
         ),
       hint:
-        "Keep auth predicates, handoff redemption, and step-up completion backend-owned; fail closed with step_up_required, and use later phases for auth-return, telemetry, and security closeout machinery.",
+        "Keep auth predicates, handoff redemption, step-up completion, and auth-return validation backend-owned; fail closed with step_up_required, and use later phases for telemetry and security closeout machinery.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
       rebuild_requirement: %{

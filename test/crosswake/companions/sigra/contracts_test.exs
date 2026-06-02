@@ -156,7 +156,7 @@ defmodule Crosswake.Companions.Sigra.ContractsTest do
 
   describe "DenialCodes" do
     test "locks canonical auth step-up subcodes and shell-safe detail allowlist" do
-      assert DenialCodes.codes() == [
+      assert Enum.filter(DenialCodes.codes(), &String.starts_with?(&1, "auth.step_up.")) == [
                "auth.step_up.missing_context",
                "auth.step_up.invalid_context",
                "auth.step_up.non_active",

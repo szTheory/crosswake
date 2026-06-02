@@ -752,14 +752,15 @@ defmodule Crosswake.Doctor do
             :advisory,
             "auth.step_up_required_contract",
             "auth.contract_posture",
-            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, and shipped Phase 56 step-up intent ceremony.",
-            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.*, auth.handoff.*, and auth.step_up_intent.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, and server-owned step-up intent plus Plug/LiveView ceremony proof. Phase 57 OAuth/passkey/native auth returns, refresh-token helpers, provider/device proof, Phase 58 telemetry/security closeout, and native auth UI remain deferred.",
+            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, shipped Phase 56 step-up intent ceremony, and shipped Phase 57 auth-return boundary contracts.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, route-local auth_return seams, canonical auth.step_up.*, auth.handoff.*, auth.step_up_intent.*, and auth.return.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, server-owned step-up intent plus Plug/LiveView ceremony proof, and host-owned auth-return attempt replay proof. Refresh-token helpers, provider/device proof, Phase 58 telemetry/security closeout, provider templates, passkey SDK wrappers, and native auth UI remain deferred.",
             %{
               fallback: :step_up_required,
               posture: :session_authority,
               shipped_contracts: Map.get(auth_truth, :shipped_contracts, []),
               handoff: Map.get(auth_truth, :handoff, %{}),
               step_up: Map.get(auth_truth, :step_up, %{}),
+              auth_return: Map.get(auth_truth, :auth_return, %{}),
               denial_codes:
                 Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
               safe_detail_keys:

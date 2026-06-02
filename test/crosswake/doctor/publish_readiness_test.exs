@@ -165,17 +165,20 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert auth.message =~ "Sigra"
     assert auth.message =~ "session-authority"
     assert auth.message =~ "handoff ticket/server-record contract machinery"
-    assert auth.message =~ "step-up intent plus Plug/LiveView ceremony are shipped"
+    assert auth.message =~ "step-up intent plus Plug/LiveView ceremony"
+    assert auth.message =~ "auth-return boundary contracts are shipped"
     refute :handoff in auth.details.deferred
     refute :ceremony in auth.details.deferred
-    assert :auth_return_boundaries in auth.details.deferred
+    refute :auth_return_boundaries in auth.details.deferred
 
     assert auth.details.shipped_contracts == [
              :session_authority,
              :handoff_ticket,
              :server_record_redemption,
              :step_up_intent,
-             :plug_liveview_ceremony
+             :plug_liveview_ceremony,
+             :auth_return_boundary,
+             :auth_return_attempt
            ]
 
     assert auth.details.handoff.authority_source == :server_record

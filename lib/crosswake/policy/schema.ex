@@ -11,6 +11,37 @@ defmodule Crosswake.Policy.Schema do
   @entry_values [:internal_only, :external]
   @security_values [:standard, :sensitive]
   @auth_posture_values [:strict_recent, :remembered_ok, :cached_read_only_ok]
+  @auth_return_kind_values [:oauth, :passkey, :native_auth]
+  @auth_return_transport_values [
+    :http_callback,
+    :verified_https_link,
+    :custom_scheme,
+    :bridge_event
+  ]
+  @auth_return_validation_values [
+    :state,
+    :nonce,
+    :pkce,
+    :redirect_uri,
+    :link_verification,
+    :expiry,
+    :replay,
+    :challenge,
+    :origin,
+    :rp_id,
+    :user_verification,
+    :callback_binding
+  ]
+  @provider_specific_auth_return_terms [
+    :google,
+    :github,
+    :apple,
+    :microsoft,
+    :okta,
+    :auth0,
+    :google_oauth,
+    :apple_passkey
+  ]
   @pack_kind_values [:content, :media]
   @commerce_role_values [:paywall_entry, :purchase_intent, :restore_intent, :account_management]
   @provider_specific_commerce_terms [:storekit, :play_billing, :revenuecat]
@@ -91,6 +122,10 @@ defmodule Crosswake.Policy.Schema do
             auth_posture: [
               type: {:in, @auth_posture_values},
               type_spec: quote(do: auth_posture() | nil)
+            ],
+            auth_return: [
+              type: {:custom, __MODULE__, :validate_auth_return_declaration, []},
+              type_spec: quote(do: auth_return_declaration() | nil)
             ]
           )
 
@@ -99,6 +134,28 @@ defmodule Crosswake.Policy.Schema do
   @type entry :: :internal_only | :external
   @type security :: :standard | :sensitive
   @type auth_posture :: :strict_recent | :remembered_ok | :cached_read_only_ok
+  @type auth_return_kind :: :oauth | :passkey | :native_auth
+  @type auth_return_transport ::
+          :http_callback | :verified_https_link | :custom_scheme | :bridge_event
+  @type auth_return_validation ::
+          :state
+          | :nonce
+          | :pkce
+          | :redirect_uri
+          | :link_verification
+          | :expiry
+          | :replay
+          | :challenge
+          | :origin
+          | :rp_id
+          | :user_verification
+          | :callback_binding
+  @type auth_return_declaration :: %{
+          kind: auth_return_kind() | nil,
+          transport: auth_return_transport() | nil,
+          return_route_id: String.t() | nil,
+          validates: [auth_return_validation()]
+        }
   @type pack_kind :: :content | :media
   @type commerce_role ::
           :paywall_entry | :purchase_intent | :restore_intent | :account_management
@@ -130,7 +187,8 @@ defmodule Crosswake.Policy.Schema do
           on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
           auth_min_level: atom() | nil,
           requires_recent_auth: pos_integer() | nil,
-          auth_posture: auth_posture() | nil
+          auth_posture: auth_posture() | nil,
+          auth_return: auth_return_declaration() | nil
         ]
 
   @spec schema() :: NimbleOptions.t()
@@ -141,6 +199,12 @@ defmodule Crosswake.Policy.Schema do
 
   @spec auth_posture_values() :: [auth_posture()]
   def auth_posture_values, do: @auth_posture_values
+
+  @spec auth_return_kind_values() :: [auth_return_kind()]
+  def auth_return_kind_values, do: @auth_return_kind_values
+
+  @spec auth_return_transport_values() :: [auth_return_transport()]
+  def auth_return_transport_values, do: @auth_return_transport_values
 
   @spec validate(keyword()) ::
           {:ok, validated_options()} | {:error, NimbleOptions.ValidationError.t()}
@@ -292,6 +356,44 @@ defmodule Crosswake.Policy.Schema do
   def validate_transfer_declarations(_value),
     do: {:error, "expected a list of transfer declarations"}
 
+  @spec validate_auth_return_declaration(term()) ::
+          {:ok, auth_return_declaration() | nil} | {:error, String.t()}
+  def validate_auth_return_declaration(nil), do: {:ok, nil}
+
+  def validate_auth_return_declaration(declaration) when is_list(declaration) do
+    declaration
+    |> Enum.into(%{})
+    |> validate_auth_return_declaration()
+  end
+
+  def validate_auth_return_declaration(declaration) when is_map(declaration) do
+    with {:ok, kind} <-
+           validate_auth_return_kind(Map.get(declaration, :kind, Map.get(declaration, "kind"))),
+         {:ok, transport} <-
+           validate_auth_return_transport(
+             Map.get(declaration, :transport, Map.get(declaration, "transport"))
+           ),
+         {:ok, return_route_id} <-
+           validate_optional_identifier(
+             Map.get(declaration, :return_route_id, Map.get(declaration, "return_route_id"))
+           ),
+         {:ok, validates} <-
+           validate_auth_return_validates(
+             Map.get(declaration, :validates, Map.get(declaration, "validates", []))
+           ) do
+      {:ok,
+       %{
+         kind: kind,
+         transport: transport,
+         return_route_id: return_route_id,
+         validates: validates
+       }}
+    end
+  end
+
+  def validate_auth_return_declaration(_value),
+    do: {:error, "expected auth_return declaration as a map or keyword list"}
+
   defp validate_pack_requirement(requirement) when is_list(requirement) do
     requirement
     |> Enum.into(%{})
@@ -372,6 +474,78 @@ defmodule Crosswake.Policy.Schema do
   defp validate_commerce_role(value) do
     {:error,
      "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
+  end
+
+  defp validate_auth_return_kind(nil), do: {:ok, nil}
+
+  defp validate_auth_return_kind(value) when value in @auth_return_kind_values, do: {:ok, value}
+
+  defp validate_auth_return_kind(value) when value in @provider_specific_auth_return_terms do
+    {:error,
+     "provider-specific auth_return kind #{inspect(value)} is not supported in route policy"}
+  end
+
+  defp validate_auth_return_kind(value) when is_binary(value) do
+    normalized = String.to_existing_atom(value)
+    validate_auth_return_kind(normalized)
+  rescue
+    ArgumentError ->
+      {:error,
+       "unsupported auth_return kind #{inspect(value)}; expected one of #{inspect(@auth_return_kind_values)}"}
+  end
+
+  defp validate_auth_return_kind(value) do
+    {:error,
+     "unsupported auth_return kind #{inspect(value)}; expected one of #{inspect(@auth_return_kind_values)}"}
+  end
+
+  defp validate_auth_return_transport(nil), do: {:ok, nil}
+
+  defp validate_auth_return_transport(value) when value in @auth_return_transport_values,
+    do: {:ok, value}
+
+  defp validate_auth_return_transport(value) when is_binary(value) do
+    normalized = String.to_existing_atom(value)
+    validate_auth_return_transport(normalized)
+  rescue
+    ArgumentError ->
+      {:error,
+       "unsupported auth_return transport #{inspect(value)}; expected one of #{inspect(@auth_return_transport_values)}"}
+  end
+
+  defp validate_auth_return_transport(value) do
+    {:error,
+     "unsupported auth_return transport #{inspect(value)}; expected one of #{inspect(@auth_return_transport_values)}"}
+  end
+
+  defp validate_auth_return_validates(values) when is_list(values) do
+    values
+    |> Enum.reduce_while({:ok, []}, fn value, {:ok, acc} ->
+      case validate_auth_return_validation(value) do
+        {:ok, normalized} -> {:cont, {:ok, acc ++ [normalized]}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp validate_auth_return_validates(_values),
+    do: {:error, "auth_return validates must be a list"}
+
+  defp validate_auth_return_validation(value) when value in @auth_return_validation_values,
+    do: {:ok, value}
+
+  defp validate_auth_return_validation(value) when is_binary(value) do
+    normalized = String.to_existing_atom(value)
+    validate_auth_return_validation(normalized)
+  rescue
+    ArgumentError ->
+      {:error,
+       "unsupported auth_return validation #{inspect(value)}; expected one of #{inspect(@auth_return_validation_values)}"}
+  end
+
+  defp validate_auth_return_validation(value) do
+    {:error,
+     "unsupported auth_return validation #{inspect(value)}; expected one of #{inspect(@auth_return_validation_values)}"}
   end
 
   defp validate_optional_identifier(nil), do: {:ok, nil}

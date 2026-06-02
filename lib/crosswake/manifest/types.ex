@@ -191,6 +191,20 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
+  defmodule RouteAuthReturn do
+    @moduledoc false
+
+    @enforce_keys [:kind, :transport, :return_route_id, :validates]
+    defstruct [:kind, :transport, :return_route_id, validates: []]
+
+    @type t :: %__MODULE__{
+            kind: Crosswake.Policy.Schema.auth_return_kind(),
+            transport: Crosswake.Policy.Schema.auth_return_transport(),
+            return_route_id: String.t(),
+            validates: [Crosswake.Policy.Schema.auth_return_validation()]
+          }
+  end
+
   defmodule RouteEntry do
     @moduledoc false
 
@@ -210,6 +224,7 @@ defmodule Crosswake.Manifest.Types do
       :auth_min_level,
       :requires_recent_auth,
       :auth_posture,
+      :auth_return,
       capabilities: [],
       packs: [],
       sync: [],
@@ -236,7 +251,8 @@ defmodule Crosswake.Manifest.Types do
             on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
             auth_min_level: atom() | nil,
             requires_recent_auth: pos_integer() | nil,
-            auth_posture: Crosswake.Policy.Schema.auth_posture() | nil
+            auth_posture: Crosswake.Policy.Schema.auth_posture() | nil,
+            auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil
           }
   end
 
@@ -685,7 +701,18 @@ defmodule Crosswake.Manifest.Types do
       on_unavailable: Keyword.get(attrs, :on_unavailable),
       auth_min_level: Keyword.get(attrs, :auth_min_level),
       requires_recent_auth: Keyword.get(attrs, :requires_recent_auth),
-      auth_posture: Keyword.get(attrs, :auth_posture)
+      auth_posture: Keyword.get(attrs, :auth_posture),
+      auth_return: Keyword.get(attrs, :auth_return)
+    })
+  end
+
+  @spec new_route_auth_return(keyword()) :: RouteAuthReturn.t()
+  def new_route_auth_return(attrs) when is_list(attrs) do
+    struct!(RouteAuthReturn, %{
+      kind: Keyword.fetch!(attrs, :kind),
+      transport: Keyword.fetch!(attrs, :transport),
+      return_route_id: Keyword.fetch!(attrs, :return_route_id),
+      validates: Keyword.get(attrs, :validates, [])
     })
   end
 

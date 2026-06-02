@@ -897,11 +897,14 @@ defmodule Crosswake.DoctorTest do
              "handoff_ticket",
              "server_record_redemption",
              "step_up_intent",
-             "plug_liveview_ceremony"
+             "plug_liveview_ceremony",
+             "auth_return_boundary",
+             "auth_return_attempt"
            ]
 
     assert contract_finding["details"]["handoff"]["authority_source"] == "server_record"
     assert contract_finding["details"]["step_up"]["status"] == "shipped"
+    assert contract_finding["details"]["auth_return"]["status"] == "shipped"
     assert "auth.handoff.invalid_ticket" in contract_finding["details"]["denial_codes"]
     assert "auth.step_up_intent.invalid_intent" in contract_finding["details"]["denial_codes"]
     assert "handoff_ref" in contract_finding["details"]["safe_detail_keys"]
