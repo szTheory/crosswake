@@ -93,7 +93,7 @@ None - no external service configuration required.
 
 ## Verification
 
-- `mix test test/crosswake/companions/chimeway/redaction_test.exs test/crosswake/companions/chimeway/telemetry_test.exs --trace` — passed, 11 tests, 0 failures.
+- `mix test test/crosswake/companions/chimeway/redaction_test.exs test/crosswake/companions/chimeway/telemetry_test.exs --trace` — passed, 11 tests all passing.
 
 ## Self-Check: PASSED
 

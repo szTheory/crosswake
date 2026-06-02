@@ -82,7 +82,7 @@ None - no external service configuration required.
 
 ## Verification
 
-- `mix test test/crosswake/proof/phase59_chimeway_contract_test.exs test/crosswake/guides/companions_test.exs --trace` — passed, 12 tests, 0 failures.
+- `mix test test/crosswake/proof/phase59_chimeway_contract_test.exs test/crosswake/guides/companions_test.exs --trace` — passed, 12 tests all passing.
 
 ## Self-Check: PASSED
 
