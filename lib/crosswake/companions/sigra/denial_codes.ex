@@ -24,6 +24,8 @@ defmodule Crosswake.Companions.Sigra.DenialCodes do
   @allowed_detail_keys [
     "required_assurance_level",
     "current_assurance_level",
+    "required_mfa_level",
+    "current_mfa_level",
     "max_auth_age_seconds",
     "auth_age_seconds",
     "auth_posture",

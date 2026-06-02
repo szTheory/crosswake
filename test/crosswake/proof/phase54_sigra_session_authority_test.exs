@@ -3,6 +3,8 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
 
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.DenialCodes
+  alias Crosswake.Companions.Sigra.Evaluator
+  alias Crosswake.Manifest.Types.RouteEntry
 
   test "phase 54 authority contract is backend owned and lifecycle explicit" do
     assert {:ok, lane} =
@@ -82,6 +84,8 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
       DenialCodes.sanitize_details(%{
         required_assurance_level: :phishing_resistant,
         current_assurance_level: :password,
+        required_mfa_level: :phishing_resistant,
+        current_mfa_level: :password,
         max_auth_age_seconds: 300,
         auth_age_seconds: 900,
         auth_posture: :strict_recent,
@@ -105,6 +109,25 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
     refute Map.has_key?(sanitized, "subject_id")
     refute Map.has_key?(sanitized, "provider_payload")
     refute Map.has_key?(sanitized, "passkey_credential_id")
+  end
+
+  test "evaluator keeps auth failures under stable step-up reason with canonical subcodes" do
+    route = %RouteEntry{
+      id: "secure",
+      path: "/secure",
+      runtime: :live_view,
+      offline: :unavailable,
+      entry: :internal_only,
+      auth_min_level: :mfa,
+      requires_recent_auth: 300,
+      auth_posture: :strict_recent
+    }
+
+    assert {:deny, denial} = Evaluator.evaluate_route_auth(route, nil, [])
+
+    assert denial.reason == :step_up_required
+    assert denial.code == "auth.step_up.missing_context"
+    assert Map.keys(denial.details) == ["evaluated_at"]
   end
 
   test "phase 54 proof does not claim later auth machinery" do
