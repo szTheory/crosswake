@@ -16,9 +16,9 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Handoff Tickets
 
-- [ ] **HAND-01**: A Phoenix host can issue short-lived, signed, single-use session handoff tickets whose server-side records remain the replay, revocation, expiry, and audit source of truth.
-- [ ] **HAND-02**: A Phoenix host can redeem a valid handoff ticket through an atomic backend flow that consumes the ticket, renews the Phoenix session, and projects a refreshed `SessionAuthorityLane`.
-- [ ] **HAND-03**: Missing, invalid, expired, replayed, revoked, binding-mismatched, intent-mismatched, and route-mismatched handoff tickets deny with stable auth codes and sanitized shell-safe details.
+- [x] **HAND-01**: A Phoenix host can issue short-lived, signed, single-use session handoff tickets whose server-side records remain the replay, revocation, expiry, and audit source of truth.
+- [x] **HAND-02**: A Phoenix host can redeem a valid handoff ticket through an atomic backend flow that consumes the ticket, renews the Phoenix session, and projects a refreshed `SessionAuthorityLane`.
+- [x] **HAND-03**: Missing, invalid, expired, replayed, revoked, binding-mismatched, intent-mismatched, and route-mismatched handoff tickets deny with stable auth codes and sanitized shell-safe details.
 
 ### Step-Up Ceremony
 
@@ -76,9 +76,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SESS-01 | Phase 54 | Complete |
 | SESS-02 | Phase 54 | Complete |
 | SESS-03 | Phase 54 | Complete |
-| HAND-01 | Phase 55 | Pending |
-| HAND-02 | Phase 55 | Pending |
-| HAND-03 | Phase 55 | Pending |
+| HAND-01 | Phase 55 | Complete |
+| HAND-02 | Phase 55 | Complete |
+| HAND-03 | Phase 55 | Complete |
 | STEP-01 | Phase 56 | Pending |
 | STEP-02 | Phase 56 | Pending |
 | STEP-03 | Phase 56 | Pending |

@@ -91,7 +91,7 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 <summary>◆ v3.8 Full Sigra Auth and Session Machinery (Phases 54-58) — ACTIVE 2026-06-02</summary>
 
 - [x] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5/5 plans) — completed 2026-06-02
-- [ ] Phase 55: Session Handoff Tickets And Authority Projection — planned
+- [x] Phase 55: Session Handoff Tickets And Authority Projection (3/3 plans) — completed 2026-06-02
 - [ ] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned
 - [ ] Phase 57: OAuth, Passkey, And Native Return Boundaries — planned
 - [ ] Phase 58: Auth Diagnostics, Proof, And Security Closeout — planned
@@ -123,12 +123,12 @@ Plans:
 
 **Requirements:** HAND-01, HAND-02, HAND-03
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] `55-01-PLAN.md` — Add pure Sigra handoff contracts plus the canonical `auth.handoff.*` denial registry and proof scaffold.
-- [ ] `55-02-PLAN.md` — Prove example-host issue/redeem/revoke flow with Ecto-backed one-time records, audit events, and Phoenix session-renewal instructions.
-- [ ] `55-03-PLAN.md` — Close diagnostics, support truth, guides, fixtures, and merge-blocking proof for shipped handoff machinery and explicit non-claims.
+- [x] `55-01-PLAN.md` — Add pure Sigra handoff contracts plus the canonical `auth.handoff.*` denial registry and proof scaffold.
+- [x] `55-02-PLAN.md` — Prove example-host issue/redeem/revoke flow with Ecto-backed one-time records, audit events, and Phoenix session-renewal instructions.
+- [x] `55-03-PLAN.md` — Close diagnostics, support truth, guides, fixtures, and merge-blocking proof for shipped handoff machinery and explicit non-claims.
 
 **Success criteria:**
 1. Hosts can issue signed short-lived handoff envelopes backed by server-side one-time ticket records.

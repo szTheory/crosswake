@@ -1,7 +1,7 @@
 ---
 phase: 55
 slug: session-handoff-tickets-and-authority-projection
-status: draft
+status: passed
 nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-02
@@ -38,12 +38,12 @@ created: 2026-06-02
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 55-01-01 | 01 | 1 | HAND-01 | T-55-01 | Handoff envelope rejects authority-bearing and sensitive fields | unit | `mix test test/crosswake/companions/sigra/handoff_test.exs` | no | pending |
-| 55-01-02 | 01 | 1 | HAND-03 | T-55-02 | `auth.handoff.*` codes preserve public `:step_up_required` and sanitize shell details | unit | `mix test test/crosswake/companions/sigra/handoff_test.exs test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | pending |
-| 55-02-01 | 02 | 1 | HAND-01 | T-55-03 | Example host issues signed envelopes backed by one-time server records | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | pending |
-| 55-02-02 | 02 | 1 | HAND-02 | T-55-04 | Redemption atomically consumes one ticket, appends audit evidence, renews host session instructions, and projects `SessionAuthorityLane` | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | pending |
-| 55-02-03 | 02 | 1 | HAND-03 | T-55-05 | Expired, replayed, revoked, binding-mismatched, intent-mismatched, and route-mismatched tickets deny with stable sanitized codes | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | pending |
-| 55-03-01 | 03 | 2 | HAND-01, HAND-02, HAND-03 | T-55-06 | Doctor/support/operator/docs truth claims shipped handoff contracts without claiming ceremony, OAuth/passkey returns, provider proof, or refresh-token helpers | docs-contract | `mix test test/crosswake/guides/companions_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/doctor/doctor_test.exs` | yes | pending |
+| 55-01-01 | 01 | 1 | HAND-01 | T-55-01 | Handoff envelope rejects authority-bearing and sensitive fields | unit | `mix test test/crosswake/companions/sigra/handoff_test.exs` | no | passed |
+| 55-01-02 | 01 | 1 | HAND-03 | T-55-02 | `auth.handoff.*` codes preserve public `:step_up_required` and sanitize shell details | unit | `mix test test/crosswake/companions/sigra/handoff_test.exs test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | passed |
+| 55-02-01 | 02 | 1 | HAND-01 | T-55-03 | Example host issues signed envelopes backed by one-time server records | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | passed |
+| 55-02-02 | 02 | 1 | HAND-02 | T-55-04 | Redemption atomically consumes one ticket, appends audit evidence, renews host session instructions, and projects `SessionAuthorityLane` | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | passed |
+| 55-02-03 | 02 | 1 | HAND-03 | T-55-05 | Expired, replayed, revoked, binding-mismatched, intent-mismatched, and route-mismatched tickets deny with stable sanitized codes | integration | `mix test test/crosswake/proof/phase55_session_handoff_tickets_test.exs` | no | passed |
+| 55-03-01 | 03 | 2 | HAND-01, HAND-02, HAND-03 | T-55-06 | Doctor/support/operator/docs truth claims shipped handoff contracts without claiming ceremony, OAuth/passkey returns, provider proof, or refresh-token helpers | docs-contract | `mix test test/crosswake/guides/companions_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/doctor/doctor_test.exs` | yes | passed |
 
 *Status: pending · green · red · flaky*
 
