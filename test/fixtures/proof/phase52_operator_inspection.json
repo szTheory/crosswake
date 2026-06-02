@@ -3,6 +3,43 @@
   "findings": [
     {
       "check": "operator_inspection",
+      "code": "operator.auth_contract.step_up_required",
+      "details": {
+        "auth_min_level": null,
+        "auth_posture": "strict_recent",
+        "denial_codes": [
+          "auth.step_up.missing_context",
+          "auth.step_up.invalid_context",
+          "auth.step_up.non_active",
+          "auth.step_up.idle_expired",
+          "auth.step_up.absolute_expired",
+          "auth.step_up.revoked",
+          "auth.step_up.version_mismatch",
+          "auth.step_up.insufficient_assurance",
+          "auth.step_up.stale_auth",
+          "auth.step_up.remembered_not_allowed",
+          "auth.step_up.cached_not_allowed"
+        ],
+        "fallback": "step_up_required",
+        "non_goals": [
+          "handoff",
+          "ceremony",
+          "passkey",
+          "oauth",
+          "refresh_tokens",
+          "native_auth_ui"
+        ],
+        "posture": "session_authority",
+        "readiness": "verification_required",
+        "requires_recent_auth": null,
+        "route_id": "camera"
+      },
+      "hint": "inspect route camera support, proof, rebuild, and denial fields",
+      "message": "route camera uses contract-only auth predicates",
+      "severity": "advisory"
+    },
+    {
+      "check": "operator_inspection",
       "code": "operator.notification_token.provider_snapshot",
       "details": {
         "delivery_supported": false,
@@ -113,9 +150,13 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-01T16:33:20Z",
+  "generated_at": "2026-06-02T01:34:22Z",
   "indexes": {
-    "by_auth_predicate": {},
+    "by_auth_predicate": {
+      "step_up_required": [
+        "camera"
+      ]
+    },
     "by_capability": {
       "app_info": [
         "dashboard"
@@ -184,10 +225,31 @@
     "camera": {
       "auth": {
         "auth_min_level": null,
-        "fallback": null,
-        "non_goals": [],
-        "posture": "not_applicable",
-        "readiness": "supported",
+        "auth_posture": "strict_recent",
+        "denial_codes": [
+          "auth.step_up.missing_context",
+          "auth.step_up.invalid_context",
+          "auth.step_up.non_active",
+          "auth.step_up.idle_expired",
+          "auth.step_up.absolute_expired",
+          "auth.step_up.revoked",
+          "auth.step_up.version_mismatch",
+          "auth.step_up.insufficient_assurance",
+          "auth.step_up.stale_auth",
+          "auth.step_up.remembered_not_allowed",
+          "auth.step_up.cached_not_allowed"
+        ],
+        "fallback": "step_up_required",
+        "non_goals": [
+          "handoff",
+          "ceremony",
+          "passkey",
+          "oauth",
+          "refresh_tokens",
+          "native_auth_ui"
+        ],
+        "posture": "session_authority",
+        "readiness": "verification_required",
         "requires_recent_auth": null
       },
       "capabilities": [
@@ -247,10 +309,48 @@
           "severity": "warning",
           "status": false,
           "type": "rebuild_required"
+        },
+        {
+          "details": {
+            "auth_min_level": null,
+            "auth_posture": "strict_recent",
+            "denial_codes": [
+              "auth.step_up.missing_context",
+              "auth.step_up.invalid_context",
+              "auth.step_up.non_active",
+              "auth.step_up.idle_expired",
+              "auth.step_up.absolute_expired",
+              "auth.step_up.revoked",
+              "auth.step_up.version_mismatch",
+              "auth.step_up.insufficient_assurance",
+              "auth.step_up.stale_auth",
+              "auth.step_up.remembered_not_allowed",
+              "auth.step_up.cached_not_allowed"
+            ],
+            "fallback": "step_up_required",
+            "non_goals": [
+              "handoff",
+              "ceremony",
+              "passkey",
+              "oauth",
+              "refresh_tokens",
+              "native_auth_ui"
+            ],
+            "posture": "session_authority",
+            "readiness": "verification_required",
+            "requires_recent_auth": null
+          },
+          "message": "route camera uses contract-only auth predicates",
+          "reason": "step_up_required",
+          "route_id": "camera",
+          "severity": "advisory",
+          "status": "unknown",
+          "type": "auth_contract"
         }
       ],
       "denials": [
-        "pack_incompatible"
+        "pack_incompatible",
+        "step_up_required"
       ],
       "entry": "internal_only",
       "id": "camera",
@@ -288,18 +388,22 @@
       },
       "runtime": "native_screen",
       "support": {
-        "advisory_only": false,
+        "advisory_only": true,
         "blocking_reasons": [
           "capability camera requires native-required"
         ],
-        "promotion_rule_ids": [],
-        "proof_class": "merge_blocking",
+        "promotion_rule_ids": [
+          "auth.sigra.session_authority"
+        ],
+        "proof_class": "advisory",
         "status": "verification_required"
       }
     },
     "dashboard": {
       "auth": {
         "auth_min_level": null,
+        "auth_posture": null,
+        "denial_codes": [],
         "fallback": null,
         "non_goals": [],
         "posture": "not_applicable",
@@ -503,6 +607,8 @@
     "library": {
       "auth": {
         "auth_min_level": null,
+        "auth_posture": null,
+        "denial_codes": [],
         "fallback": null,
         "non_goals": [],
         "posture": "not_applicable",
@@ -621,6 +727,8 @@
     "study-session": {
       "auth": {
         "auth_min_level": null,
+        "auth_posture": null,
+        "denial_codes": [],
         "fallback": null,
         "non_goals": [],
         "posture": "not_applicable",
@@ -718,7 +826,7 @@
   },
   "summary": {
     "blocking_count": 0,
-    "finding_count": 7,
+    "finding_count": 8,
     "rebuild_required_count": 3,
     "route_count": 4,
     "status": "ok",

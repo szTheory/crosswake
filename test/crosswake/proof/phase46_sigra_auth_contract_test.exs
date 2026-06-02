@@ -259,11 +259,10 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
     assert row.owner == :backend_seam
     assert row.package_class == :companion
     assert row.proof_class == :merge_blocking
-    assert row.route_predicates == [:auth_min_level, :requires_recent_auth]
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_vocabulary == :step_up_required
     assert row.fallback == :step_up_required
-    assert row.surface =~ "AuthContext"
-    refute row.surface =~ "SessionAuthorityLane"
+    assert row.surface =~ "SessionAuthorityLane"
 
     assert manifest.routes["secure"].auth_min_level == :mfa
     assert manifest.routes["secure"].requires_recent_auth == 600

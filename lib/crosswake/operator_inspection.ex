@@ -408,7 +408,7 @@ defmodule Crosswake.OperatorInspection do
   defp notification_promotion_rule_ids(ids, _notifications), do: ids
 
   defp auth_promotion_rule_ids(ids, %{fallback: :step_up_required}),
-    do: ids ++ ["auth.sigra.contract_only"]
+    do: ids ++ ["auth.sigra.session_authority"]
 
   defp auth_promotion_rule_ids(ids, _auth), do: ids
 

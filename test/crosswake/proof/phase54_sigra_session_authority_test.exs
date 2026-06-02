@@ -5,6 +5,7 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Manifest.Types.RouteEntry
+  alias Crosswake.SupportMatrix
 
   test "phase 54 authority contract is backend owned and lifecycle explicit" do
     assert {:ok, lane} =
@@ -128,6 +129,19 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
     assert denial.reason == :step_up_required
     assert denial.code == "auth.step_up.missing_context"
     assert Map.keys(denial.details) == ["evaluated_at"]
+  end
+
+  test "support truth locks route posture vocabulary, denial codes, and later-phase non-claims" do
+    assert [%{} = row] = SupportMatrix.auth_contract_truth()
+
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
+    assert row.denial_codes == DenialCodes.codes()
+    assert "auth_posture" in row.safe_detail_keys
+    assert row.posture =~ "session-authority"
+    assert row.posture =~ "No handoff"
+    assert row.posture =~ "passkey"
+    assert row.posture =~ "OAuth"
+    assert row.posture =~ "refresh-token"
   end
 
   test "phase 54 proof does not claim later auth machinery" do

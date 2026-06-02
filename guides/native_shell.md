@@ -61,7 +61,7 @@ route policy and manifest contract.
 See the canonical action-class table at `guides/support_matrix.md#action-classes`
 and Promotion rules at `guides/support_matrix.md#promotion-rules`.
 
-Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra remains contract-only, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation is shipped while handoff, ceremony, OAuth/passkey returns, refresh tokens, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
 
 compatibility-window narrowing is distinct from a native rebuild; it can reject older combinations without changing shell code when the shipped native runtime line remains compatible.
 

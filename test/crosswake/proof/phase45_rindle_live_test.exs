@@ -39,7 +39,7 @@ defmodule Crosswake.Proof.Phase45RindleLiveTest do
   test "router declares the /media/proof LiveView route with honest policy" do
     source = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
 
-    assert source =~ ~s(live "/proof", Media.MediaLaneLive)
+    assert source =~ ~r/live\("?\/proof"?, Media\.MediaLaneLive\)?/
     assert source =~ ~s(id: "media-proof-lane")
     assert source =~ "runtime: :live_view"
     assert source =~ "offline: :unavailable"

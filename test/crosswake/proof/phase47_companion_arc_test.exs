@@ -16,10 +16,11 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/companion/proof", Crosswake.TestSupport.StudySessionLive,
+        live("/companion/proof", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "companion-proof-route"
           ]
+        )
       end
     end
   end
@@ -29,13 +30,14 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/secure", Crosswake.TestSupport.StudySessionLive,
+        live("/secure", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "secure",
             runtime: :live_view,
             auth_min_level: :mfa,
             requires_recent_auth: 600
           ]
+        )
       end
     end
   end
@@ -147,14 +149,15 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     assert Enum.filter(report.findings, &(&1.code == "companion.dependency_missing")) == []
   end
 
-  test "sigra auth contract truth stays contract-only with step_up_required posture" do
+  test "sigra auth truth reflects session-authority posture with step_up_required fallback" do
     assert [%{} = row] = SupportMatrix.auth_contract_truth()
 
-    assert row.route_predicates == [:auth_min_level, :requires_recent_auth]
+    assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_vocabulary == :step_up_required
+    assert "auth.step_up.missing_context" in row.denial_codes
     assert row.fallback == :step_up_required
-    assert row.surface =~ "AuthContext"
-    assert row.posture =~ "Contract-only"
+    assert row.surface =~ "SessionAuthorityLane"
+    assert row.posture =~ "session-authority"
     assert row.posture =~ "No handoff"
     assert row.posture =~ "passkey"
   end
@@ -178,9 +181,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
       )
 
     weak_context_decision =
-      RouteGate.evaluate(manifest, "secure", target,
-        auth_context: weak_auth_context
-      )
+      RouteGate.evaluate(manifest, "secure", target, auth_context: weak_auth_context)
 
     assert weak_context_decision.status == :deny
     assert weak_context_decision.denial.reason == :step_up_required
@@ -194,8 +195,10 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     source = File.read!(__ENV__.file)
 
     refute Regex.match?(~r/^\s*@moduletag\s+:advisory_only\b/m, source)
+
     refute String.contains?(source, "Crosswake" <> "Example."),
            "phase 47 proof must not depend on example host modules"
+
     refute Regex.match?(~r/code\.require_file\s*\(/, source)
     refute String.contains?(source, "MIX_INCLUDE_" <> "RULESTEAD")
     refute String.contains?(source, "MIX_INCLUDE_" <> "RINDLE")

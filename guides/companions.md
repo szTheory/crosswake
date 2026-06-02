@@ -87,26 +87,38 @@ Critical posture:
 
 This mirrors Crosswake’s reconciliation stance: evidence can move workflow, but authority stays backend-owned.
 
-## Sigra Surface (AUTH, Contract-Only)
+## Sigra Surface (AUTH, Session Authority)
 
-Sigra in v3.5 is contract-only. It defines typed auth contract surfaces and fail-closed route checks without shipping full auth ceremonies.
-It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface in v3.5.
+Sigra now ships the Phase 54 backend-owned session-authority route evaluator. It defines typed auth contract surfaces, explicit route-local auth posture, and fail-closed route checks without shipping handoff, ceremony, or auth-return flows.
+It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface.
 
 - `AuthContext`
 - `SessionAuthorityLane`
-- Route predicates: `auth_min_level`, `requires_recent_auth`
+- `Crosswake.Companions.Sigra.Evaluator.evaluate_route_auth/3`
+- Route predicates: `auth_min_level`, `requires_recent_auth`, `auth_posture`
+- Auth posture vocabulary: `:strict_recent`, `:remembered_ok`, `:cached_read_only_ok`
 - Denial vocabulary: `:step_up_required`
+- Canonical subcodes: `auth.step_up.missing_context`, `auth.step_up.invalid_context`, `auth.step_up.non_active`, `auth.step_up.idle_expired`, `auth.step_up.absolute_expired`, `auth.step_up.revoked`, `auth.step_up.version_mismatch`, `auth.step_up.insufficient_assurance`, `auth.step_up.stale_auth`, `auth.step_up.remembered_not_allowed`, `auth.step_up.cached_not_allowed`
+
+Route authority comes from backend projection into `SessionAuthorityLane`. Shell bridge state, mobile cache state, OAuth/passkey returns, and provider payloads are evidence only until backend validation updates that projection.
+
+`auth_posture` makes weakening explicit:
+
+- `:strict_recent` is the default for auth-predicated and sensitive routes. Remembered or cached authority cannot satisfy routes that require recent auth.
+- `:remembered_ok` permits remembered backend authority only when assurance, expiry, revocation, and freshness checks pass and no recent-auth predicate is present.
+- `:cached_read_only_ok` is limited to explicitly read-only/degraded cached routes; sensitive, mutation-capable, billing, admin, commerce purchase/restore, and native authority-promotion routes fail closed.
 
 Doctor and support truth use stable contract signals, including:
 
 - `auth.route_predicated`
 - `auth.step_up_required_contract`
+- `diag.auth.sigra_session_authority`
 
 Support truth accessor:
 
 - `Crosswake.SupportMatrix.auth_contract_truth/0`
 
-Contract-only means this guide intentionally does not claim handoff ticket machinery, step-up ceremony UX, passkey delivery, OAuth delivery, or refresh-token orchestration.
+Session-authority support means this guide intentionally does not claim Phase 55 handoff ticket machinery, Phase 56 step-up ceremony UX or Phoenix session renewal, Phase 57 OAuth/passkey/native auth-return validation, or refresh-token orchestration.
 
 ## Support Truth Surfaces
 
@@ -133,7 +145,7 @@ Advisory checks are evidence, not promotion. A green advisory lane does not wide
 These are deferred by design and are not shipped in v3.5:
 
 - Chimeway delivery implementation. Chimeway is seam-only sequencing context, not first-party notification delivery in this milestone.
-- Full Sigra machinery: handoff ticket issuance, full step-up ceremony flow, passkey delivery stack, OAuth choreography, and refresh-token machinery.
+- Later Sigra machinery: handoff ticket issuance, full step-up ceremony flow, Phoenix session renewal, passkey delivery stack, OAuth choreography, native auth-return validation, and refresh-token machinery.
 - Threadline audit capstone.
 - Separate-package extraction of companions. v3.5 keeps companions in-tree under `lib/crosswake/companions/<name>/`.
 
@@ -152,7 +164,7 @@ Use this checklist before claiming companion support:
 1. Companion module implements all six callbacks from `Crosswake.Companion`.
 2. Module is registered in host `:companions` config intentionally.
 3. `validate_dependency/0` emits expected outcome under doctor with telemetry span `[:crosswake, :companion, :validate_dependency]`.
-4. Route policy usage is explicit (`gated_by`, `on_unavailable`, `auth_min_level`, `requires_recent_auth`) and denial vocabulary is fail-closed.
+4. Route policy usage is explicit (`gated_by`, `on_unavailable`, `auth_min_level`, `requires_recent_auth`, `auth_posture`) and denial vocabulary is fail-closed.
 5. Support truth from `Crosswake.SupportMatrix.gating_truth/0` and `Crosswake.SupportMatrix.auth_contract_truth/0` matches guide language.
 6. Hermetic proof lane passes without optional deps; advisory lane behavior stays advisory.
 

@@ -89,6 +89,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
 
     assert guide =~
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
+
     refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
   end
@@ -146,6 +147,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
           "shell.ios.generated_project",
           "shell.android.generated_project",
           "notification_token.provider_snapshot",
+          "auth.sigra.session_authority",
           "purchase_intent.provider.storekit",
           "purchase_intent.provider.play_billing"
         ] do
@@ -154,7 +156,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
 
     assert guide =~
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
-    assert guide =~ "Sigra is contract-only for route predicates and `:step_up_required`"
+
+    assert guide =~ "Sigra session-authority route evaluation is shipped"
+    assert guide =~ "auth.sigra.session_authority"
+    assert guide =~ "diag.auth.sigra_session_authority"
 
     assert guide =~
              "notification-token readiness is provider-snapshot only and not delivery support"

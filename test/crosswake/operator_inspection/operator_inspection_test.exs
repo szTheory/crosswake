@@ -218,7 +218,7 @@ defmodule Crosswake.OperatorInspectionTest do
 
     assert secure.support.status == :verification_required
     assert secure.support.proof_class == :advisory
-    assert "auth.sigra.contract_only" in secure.support.promotion_rule_ids
+    assert "auth.sigra.session_authority" in secure.support.promotion_rule_ids
 
     assert gated.rebuild.action_classes == ["companion_native"]
   end

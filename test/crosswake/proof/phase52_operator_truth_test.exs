@@ -132,7 +132,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     refute notification["details"]["delivery_supported?"]
 
     auth = find_readiness_check!(decoded, "auth.session_predicate_readiness")
-    assert is_nil(auth["details"]["demotion_trigger"])
+    assert auth["details"]["demotion_trigger"] =~ "session-authority docs drift"
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
@@ -166,11 +166,11 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     )
 
     ProofAssertions.assert_contains_exact(
-      "proof.docs.non_claims.sigra_contract_only",
+      "proof.docs.non_claims.sigra_session_authority",
       "guides/companions.md",
-      "Sigra in v3.5 is contract-only",
+      "Sigra now ships the Phase 54 backend-owned session-authority route evaluator",
       source: "guides/companions.md and auth contract support truth",
-      hint: "do not imply full Sigra machinery shipped",
+      hint: "distinguish Phase 54 route authority from later Sigra machinery",
       posture: :merge_blocking
     )
 
@@ -255,7 +255,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
 
     for required <- [
           "notification_token.provider_snapshot",
-          "auth.sigra.contract_only",
+          "auth.sigra.session_authority",
           "purchase_intent.provider.storekit",
           "purchase_intent.provider.play_billing"
         ] do

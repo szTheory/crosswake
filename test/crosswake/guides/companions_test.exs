@@ -11,13 +11,14 @@ defmodule Crosswake.Guides.CompanionsTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
-        live "/secure", Crosswake.TestSupport.StudySessionLive,
+        live("/secure", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "secure",
             runtime: :live_view,
             auth_min_level: :mfa,
             requires_recent_auth: 600
           ]
+        )
       end
     end
   end
@@ -48,15 +49,22 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "SessionAuthorityLane"
     assert content =~ "auth_min_level"
     assert content =~ "requires_recent_auth"
+    assert content =~ "auth_posture"
+    assert content =~ ":strict_recent"
+    assert content =~ ":remembered_ok"
+    assert content =~ ":cached_read_only_ok"
     assert content =~ ":step_up_required"
+    assert content =~ "auth.step_up.missing_context"
+    assert content =~ "auth.step_up.cached_not_allowed"
     assert content =~ "companion.dependency_missing"
     assert content =~ "auth.route_predicated"
     assert content =~ "auth.step_up_required_contract"
+    assert content =~ "diag.auth.sigra_session_authority"
   end
 
   test "includes explicit deferred non-goals", %{content: content} do
     assert content =~ "Chimeway"
-    assert content =~ "Full Sigra machinery"
+    assert content =~ "Later Sigra machinery"
     assert content =~ "Threadline"
     assert content =~ "Separate-package extraction"
   end
@@ -79,7 +87,9 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert function_exported?(Crosswake.Shell.Denial, :reasons, 0)
   end
 
-  test "documented companion ids stay parity-locked with runtime gating truth", %{content: content} do
+  test "documented companion ids stay parity-locked with runtime gating truth", %{
+    content: content
+  } do
     original_companions = Application.get_env(:crosswake, :companions)
 
     Application.put_env(:crosswake, :companions, [
@@ -109,15 +119,17 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert documented_ids == runtime_ids
 
     assert content =~
-             "It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface in v3.5."
+             "It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface."
   end
 
-  test "auth predicates and denial vocabulary stay parity-locked to support and shell truth", %{content: content} do
+  test "auth predicates and denial vocabulary stay parity-locked to support and shell truth", %{
+    content: content
+  } do
     rows = SupportMatrix.auth_contract_truth()
 
     assert [_ | _] = rows
 
-    for %{route_predicates: predicates, denial_vocabulary: denial} <- rows do
+    for %{route_predicates: predicates, denial_vocabulary: denial, denial_codes: codes} <- rows do
       for predicate <- predicates do
         assert content =~ Atom.to_string(predicate),
                "guide missing auth predicate #{inspect(predicate)} from SupportMatrix.auth_contract_truth/0"
@@ -125,6 +137,10 @@ defmodule Crosswake.Guides.CompanionsTest do
 
       assert content =~ Atom.to_string(denial),
              "guide missing auth denial vocabulary #{inspect(denial)} from SupportMatrix.auth_contract_truth/0"
+
+      for code <- codes do
+        assert content =~ code, "guide missing auth denial code #{code}"
+      end
     end
 
     denial_reasons = Crosswake.Shell.Denial.reasons()
@@ -169,6 +185,7 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "companion.dependency_missing"
     assert content =~ "auth.route_predicated"
     assert content =~ "auth.step_up_required_contract"
+    assert content =~ "diag.auth.sigra_session_authority"
   end
 
   defp restore_env(key, nil), do: Application.delete_env(:crosswake, key)

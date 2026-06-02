@@ -148,8 +148,8 @@
     {
       "blocking": false,
       "category": "auth_session_predicate_readiness",
-      "claim_scope": "Sigra auth predicate readiness",
-      "code": "diag.auth.sigra_contract_only",
+      "claim_scope": "Sigra session-authority route readiness",
+      "code": "diag.auth.sigra_session_authority",
       "details": {
         "deferred": [
           "handoff",
@@ -159,30 +159,55 @@
           "refresh_tokens",
           "native_auth_ui"
         ],
-        "demotion_trigger": null,
+        "demotion_trigger": "Demote if route predicates, auth_posture, step_up_required denial codes, or session-authority docs drift from support truth.",
+        "denial_codes": [
+          "auth.step_up.missing_context",
+          "auth.step_up.invalid_context",
+          "auth.step_up.non_active",
+          "auth.step_up.idle_expired",
+          "auth.step_up.absolute_expired",
+          "auth.step_up.revoked",
+          "auth.step_up.version_mismatch",
+          "auth.step_up.insufficient_assurance",
+          "auth.step_up.stale_auth",
+          "auth.step_up.remembered_not_allowed",
+          "auth.step_up.cached_not_allowed"
+        ],
         "fallback": "step_up_required",
-        "posture": "contract_only",
-        "promotion_rule_ids": [],
-        "required_docs_anchors": [],
-        "route_ids": []
+        "posture": "session_authority",
+        "promotion_rule_ids": [
+          "auth.sigra.session_authority"
+        ],
+        "required_docs_anchors": [
+          "guides/support_matrix.md",
+          "guides/companions.md"
+        ],
+        "route_ids": [
+          "camera"
+        ],
+        "route_predicates": [
+          "auth_min_level",
+          "requires_recent_auth",
+          "auth_posture"
+        ]
       },
       "docs_reference": "guides/companions.md",
-      "hint": "Keep auth predicates backend-owned and fail closed with step_up_required until full Sigra machinery ships.",
+      "hint": "Keep auth predicates backend-owned and fail closed with step_up_required; use later phases for handoff, ceremony, and auth-return machinery.",
       "id": "auth.session_predicate_readiness",
-      "message": "no Sigra auth predicate routes are present in the inspected route set",
-      "proof_class": "not_applicable",
+      "message": "Sigra session-authority route evaluation is shipped; handoff, ceremony, passkey, OAuth, and refresh-token machinery are not shipped",
+      "proof_class": "advisory",
       "rebuild_requirement": {
         "action_classes": [
           "companion_native"
         ],
-        "companion_required": false,
+        "companion_required": true,
         "native_required": false,
         "reasons": [
-          "Sigra route predicates remain companion contract-only support truth"
+          "Sigra session-authority route evaluation requires companion support truth"
         ]
       },
-      "result": "pass",
-      "severity": "advisory"
+      "result": "verification_required",
+      "severity": "warning"
     },
     {
       "blocking": false,
@@ -275,6 +300,7 @@
       "code": "diag.docs.proof_posture_advisory_surfaces",
       "details": {
         "advisory_route_ids": [
+          "camera",
           "dashboard"
         ],
         "commerce_advisory_provider_proof": [
@@ -305,13 +331,13 @@
   "schema_version": "1.0.0",
   "status": "ready",
   "summary": {
-    "advisory_count": 4,
+    "advisory_count": 3,
     "advisory_result_count": 1,
     "blocking_count": 0,
     "error_count": 0,
-    "pass_count": 4,
+    "pass_count": 3,
     "total_count": 8,
-    "verification_required_count": 3,
-    "warning_count": 4
+    "verification_required_count": 4,
+    "warning_count": 5
   }
 }

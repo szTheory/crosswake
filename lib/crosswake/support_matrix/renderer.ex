@@ -181,7 +181,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "## Public Non-Claims And Rough Edges",
       "",
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
-      "- Sigra is contract-only for route predicates and `:step_up_required`; handoff, ceremony, passkey, OAuth, refresh-token, and native auth UI machinery are deferred.",
+      "- Sigra session-authority route evaluation is shipped for route predicates, `auth_posture`, and `:step_up_required` denial codes; handoff, ceremony, passkey, OAuth, refresh-token, and native auth UI machinery are deferred.",
       "- notification-token readiness is provider-snapshot only and not delivery support; Chimeway delivery, notification-open routing, and push-delivery guarantees are not shipped in v3.6.",
       "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
     ]
