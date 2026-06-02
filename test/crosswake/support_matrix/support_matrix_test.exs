@@ -244,16 +244,16 @@ defmodule Crosswake.SupportMatrixTest do
     assert [companion_truth] = SupportMatrix.companion_support_truth()
 
     assert companion_truth.surface ==
-             "Sigra session-authority route evaluator and handoff contract"
+             "Sigra session-authority route evaluator, handoff contract, and step-up ceremony"
 
     assert companion_truth.proof_class == :merge_blocking
     assert companion_truth.action_class == "companion_native"
 
     assert companion_truth.deferred == [
-             :ceremony,
              :passkey,
              :oauth,
              :auth_return_boundaries,
+             :native_auth_return,
              :refresh_tokens,
              :native_auth_ui,
              :provider_device_proof
@@ -545,6 +545,7 @@ defmodule Crosswake.SupportMatrixTest do
                :route_predicates,
                :safe_detail_keys,
                :shipped_contracts,
+               :step_up,
                :surface
              ]
              |> Enum.sort()
@@ -556,26 +557,47 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.shipped_contracts == [
              :session_authority,
              :handoff_ticket,
-             :server_record_redemption
+             :server_record_redemption,
+             :step_up_intent,
+             :plug_liveview_ceremony
            ]
 
     assert row.handoff.status == :shipped
     assert row.handoff.authority_source == :server_record
     assert row.handoff.envelope_authority == false
     assert :denial_code in row.handoff.audit_fields
+    assert row.step_up.status == :shipped
+    assert row.step_up.authority_source == :server_record
+    assert row.step_up.locator_authority == false
+
+    assert row.step_up.lifecycle_states == [
+             :issued,
+             :challenged,
+             :consumed,
+             :expired,
+             :canceled,
+             :revoked
+           ]
+
+    assert row.step_up.route_target_validation == :manifest_route_id
+    assert row.step_up.liveview_invalidation == :required
     assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_vocabulary == :step_up_required
     assert "auth.step_up.missing_context" in row.denial_codes
     assert "auth.handoff.invalid_ticket" in row.denial_codes
+    assert "auth.step_up_intent.invalid_intent" in row.denial_codes
     assert "auth_posture" in row.safe_detail_keys
     assert "handoff_ref" in row.safe_detail_keys
+    assert "step_up_intent_ref" in row.safe_detail_keys
     assert row.fallback == :step_up_required
     assert row.surface =~ "SessionAuthorityLane"
     assert row.surface =~ "handoff"
-    assert row.posture =~ "session-authority"
-    assert row.posture =~ "server-record redemption proof"
-    assert :ceremony in row.deferred
+    assert row.surface =~ "step-up"
+    assert row.posture =~ "SessionAuthorityLane route evaluation"
+    assert row.posture =~ "handoff ticket/server-record redemption"
+    refute :ceremony in row.deferred
     assert :auth_return_boundaries in row.deferred
+    assert :native_auth_return in row.deferred
     refute :handoff in row.deferred
   end
 end

@@ -48,6 +48,8 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "AuthContext"
     assert content =~ "SessionAuthorityLane"
     assert content =~ "Crosswake.Companions.Sigra.Handoff"
+    assert content =~ "Crosswake.Companions.Sigra.StepUp"
+    assert content =~ "Crosswake.Companions.Sigra.StepUpCeremony.evaluate_or_issue/3"
     assert content =~ "auth_min_level"
     assert content =~ "requires_recent_auth"
     assert content =~ "auth_posture"
@@ -58,6 +60,7 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "auth.step_up.missing_context"
     assert content =~ "auth.step_up.cached_not_allowed"
     assert content =~ "auth.handoff.invalid_ticket"
+    assert content =~ "auth.step_up_intent.invalid_intent"
     assert content =~ "server-side ticket record"
     assert content =~ "companion.dependency_missing"
     assert content =~ "auth.route_predicated"
@@ -68,7 +71,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "includes explicit deferred non-goals", %{content: content} do
     assert content =~ "Chimeway"
     assert content =~ "Later Sigra machinery"
-    assert content =~ "Phase 55 only ships handoff ticket contracts"
+    assert content =~ "Phase 56 ships server-owned step-up intent records"
     assert content =~ "provider/device auth proof"
     assert content =~ "Threadline"
     assert content =~ "Separate-package extraction"
@@ -141,11 +144,15 @@ defmodule Crosswake.Guides.CompanionsTest do
                "guide missing auth predicate #{inspect(predicate)} from SupportMatrix.auth_contract_truth/0"
       end
 
-      assert %{handoff: %{authority_source: :server_record}, deferred: deferred} =
+      assert %{
+               handoff: %{authority_source: :server_record},
+               step_up: %{status: :shipped},
+               deferred: deferred
+             } =
                Enum.find(rows, &(:handoff_ticket in &1.shipped_contracts))
 
       refute :handoff in deferred
-      assert :ceremony in deferred
+      refute :ceremony in deferred
       assert :auth_return_boundaries in deferred
 
       assert content =~ Atom.to_string(denial),

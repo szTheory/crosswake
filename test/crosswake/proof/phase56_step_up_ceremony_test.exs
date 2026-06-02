@@ -5,6 +5,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
   alias Crosswake.Companions.Sigra.StepUp
   alias Crosswake.Companions.Sigra.StepUpCeremony
   alias Crosswake.Shell.Denial
+  alias Crosswake.SupportMatrix
 
   @step_up_intent_codes [
     "auth.step_up_intent.missing_intent",
@@ -246,6 +247,72 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
 
     assert plug_source =~ "halt()"
     assert on_mount_source =~ "{:halt, redirected}"
+  end
+
+  test "support truth diagnostics and docs promote phase 56 without auth-return overclaims" do
+    assert [%{} = row] = SupportMatrix.auth_contract_truth()
+
+    assert :step_up_intent in row.shipped_contracts
+    assert :plug_liveview_ceremony in row.shipped_contracts
+    refute :ceremony in row.deferred
+    assert :auth_return_boundaries in row.deferred
+    assert :refresh_tokens in row.deferred
+    assert :provider_device_proof in row.deferred
+    assert :native_auth_ui in row.deferred
+    assert "auth.step_up_intent.invalid_intent" in row.denial_codes
+    assert "step_up_intent_ref" in row.safe_detail_keys
+    assert row.step_up.lifecycle_states == StepUp.lifecycle_states()
+    assert row.step_up.route_target_validation == :manifest_route_id
+    assert row.step_up.csrf_rotation == :host_instruction
+    assert row.step_up.liveview_invalidation == :required
+
+    companions = File.read!("guides/companions.md")
+    support = File.read!("guides/support_matrix.md")
+    native_shell = File.read!("guides/native_shell.md")
+
+    for doc <- [companions, support, native_shell] do
+      assert doc =~ "step-up intent"
+      assert doc =~ "Plug/LiveView ceremony"
+      assert doc =~ "OAuth"
+      assert doc =~ "passkey"
+      assert doc =~ "native auth"
+      assert doc =~ "refresh-token"
+      assert doc =~ "provider/device"
+      refute doc =~ "ceremony remains deferred"
+    end
+
+    assert companions =~ "direct shell/WebView token authority"
+    assert native_shell =~ "the bridge is not an auth authority"
+  end
+
+  test "phase 56 roadmap success criteria are represented by code host proof diagnostics and docs" do
+    assert File.exists?("lib/crosswake/companions/sigra/step_up.ex")
+    assert File.exists?("lib/crosswake/companions/sigra/step_up_ceremony.ex")
+    assert File.exists?("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up.ex")
+    assert File.exists?("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_plug.ex")
+
+    assert File.exists?(
+             "examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_on_mount.ex"
+           )
+
+    proof_source = File.read!(__ENV__.file)
+
+    for required <- [
+          "sigra_step_up_intents",
+          "auth.step_up_intent.consumed_intent",
+          "auth.step_up_intent.expired_intent",
+          "auth.step_up_intent.canceled_intent",
+          "auth.step_up_intent.revoked_intent",
+          "auth.step_up_intent.route_mismatch",
+          "auth.step_up_intent.binding_mismatch",
+          "auth.step_up_intent.projection_failed",
+          "renew_session?",
+          "rotate_csrf?",
+          "live_socket_invalidation",
+          "StepUpCeremony.evaluate_or_issue"
+        ] do
+      assert proof_source =~ required
+    end
   end
 
   test "example host proves issue challenge consume replay expiry cancel revoke binding and renewal" do

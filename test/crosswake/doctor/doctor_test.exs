@@ -895,14 +895,19 @@ defmodule Crosswake.DoctorTest do
     assert contract_finding["details"]["shipped_contracts"] == [
              "session_authority",
              "handoff_ticket",
-             "server_record_redemption"
+             "server_record_redemption",
+             "step_up_intent",
+             "plug_liveview_ceremony"
            ]
 
     assert contract_finding["details"]["handoff"]["authority_source"] == "server_record"
+    assert contract_finding["details"]["step_up"]["status"] == "shipped"
     assert "auth.handoff.invalid_ticket" in contract_finding["details"]["denial_codes"]
+    assert "auth.step_up_intent.invalid_intent" in contract_finding["details"]["denial_codes"]
     assert "handoff_ref" in contract_finding["details"]["safe_detail_keys"]
+    assert "step_up_intent_ref" in contract_finding["details"]["safe_detail_keys"]
     refute "handoff" in contract_finding["details"]["deferred"]
-    assert "ceremony" in contract_finding["details"]["deferred"]
+    refute "ceremony" in contract_finding["details"]["deferred"]
 
     sensitive_artifacts = [
       "session_id",

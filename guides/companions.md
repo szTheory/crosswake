@@ -89,19 +89,21 @@ This mirrors Crosswake’s reconciliation stance: evidence can move workflow, bu
 
 ## Sigra Surface (AUTH, Session Authority)
 
-Sigra now ships the backend-owned session-authority route evaluator plus Phase 55 handoff ticket contract machinery. It defines typed auth contract surfaces, explicit route-local auth posture, short-lived handoff envelopes, authoritative server-side ticket records, and fail-closed route checks without shipping ceremony or auth-return flows.
+Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, and Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony. It defines typed auth contract surfaces, explicit route-local auth posture, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, and fail-closed route checks without shipping OAuth/passkey/native auth-return flows.
 It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface.
 
 - `AuthContext`
 - `SessionAuthorityLane`
 - `Crosswake.Companions.Sigra.Handoff`
+- `Crosswake.Companions.Sigra.StepUp`
+- `Crosswake.Companions.Sigra.StepUpCeremony.evaluate_or_issue/3`
 - `Crosswake.Companions.Sigra.Evaluator.evaluate_route_auth/3`
 - Route predicates: `auth_min_level`, `requires_recent_auth`, `auth_posture`
 - Auth posture vocabulary: `:strict_recent`, `:remembered_ok`, `:cached_read_only_ok`
 - Denial vocabulary: `:step_up_required`
-- Canonical subcodes: `auth.step_up.missing_context`, `auth.step_up.invalid_context`, `auth.step_up.non_active`, `auth.step_up.idle_expired`, `auth.step_up.absolute_expired`, `auth.step_up.revoked`, `auth.step_up.version_mismatch`, `auth.step_up.insufficient_assurance`, `auth.step_up.stale_auth`, `auth.step_up.remembered_not_allowed`, `auth.step_up.cached_not_allowed`, `auth.handoff.missing_ticket`, `auth.handoff.invalid_ticket`, `auth.handoff.expired_ticket`, `auth.handoff.replayed_ticket`, `auth.handoff.revoked_ticket`, `auth.handoff.binding_mismatch`, `auth.handoff.intent_mismatch`, `auth.handoff.route_mismatch`, `auth.handoff.projection_failed`
+- Canonical subcodes: `auth.step_up.missing_context`, `auth.step_up.invalid_context`, `auth.step_up.non_active`, `auth.step_up.idle_expired`, `auth.step_up.absolute_expired`, `auth.step_up.revoked`, `auth.step_up.version_mismatch`, `auth.step_up.insufficient_assurance`, `auth.step_up.stale_auth`, `auth.step_up.remembered_not_allowed`, `auth.step_up.cached_not_allowed`, `auth.handoff.missing_ticket`, `auth.handoff.invalid_ticket`, `auth.handoff.expired_ticket`, `auth.handoff.replayed_ticket`, `auth.handoff.revoked_ticket`, `auth.handoff.binding_mismatch`, `auth.handoff.intent_mismatch`, `auth.handoff.route_mismatch`, `auth.handoff.projection_failed`, `auth.step_up_intent.missing_intent`, `auth.step_up_intent.invalid_intent`, `auth.step_up_intent.expired_intent`, `auth.step_up_intent.consumed_intent`, `auth.step_up_intent.canceled_intent`, `auth.step_up_intent.revoked_intent`, `auth.step_up_intent.route_mismatch`, `auth.step_up_intent.binding_mismatch`, `auth.step_up_intent.challenge_failed`, `auth.step_up_intent.projection_failed`
 
-Route authority comes from backend projection into `SessionAuthorityLane`. Handoff envelopes are signed locators only; the server-side ticket record remains the source of truth for replay, revocation, expiry, route binding, intent binding, audit evidence, Phoenix session-renewal instructions, and refreshed authority projection. Shell bridge state, mobile cache state, OAuth/passkey returns, and provider payloads are evidence only until backend validation updates that projection.
+Route authority comes from backend projection into `SessionAuthorityLane`. Handoff envelopes and step-up locators are signed locators only; the server-side ticket or intent record remains the source of truth for replay, cancellation/revocation, expiry, route binding, intent binding, audit evidence, Phoenix session-renewal instructions, CSRF rotation posture, LiveView invalidation posture, and refreshed authority projection. Shell bridge state, mobile cache state, OAuth/passkey returns, and provider payloads are evidence only until backend validation updates that projection.
 
 `auth_posture` makes weakening explicit:
 
@@ -119,7 +121,7 @@ Support truth accessor:
 
 - `Crosswake.SupportMatrix.auth_contract_truth/0`
 
-Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof. It intentionally does not claim Phase 56 step-up ceremony UX, Phase 57 OAuth/passkey/native auth-return validation, refresh-token orchestration, provider/device proof, or native auth UI.
+Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof plus Phase 56 step-up intent and Plug/LiveView ceremony proof. It intentionally does not claim Phase 57 OAuth/passkey/native auth-return validation, refresh-token orchestration, provider/device proof, Phase 58 telemetry/security closeout, direct shell/WebView token authority, or native auth UI.
 
 ## Support Truth Surfaces
 
@@ -146,7 +148,7 @@ Advisory checks are evidence, not promotion. A green advisory lane does not wide
 These are deferred by design and are not shipped by the current companion/auth surface:
 
 - Chimeway delivery implementation. Chimeway is seam-only sequencing context, not first-party notification delivery in this milestone.
-- Later Sigra machinery: full step-up ceremony flow, passkey delivery stack, OAuth choreography, native auth-return validation, refresh-token machinery, provider/device auth proof, and native auth UI. Phase 55 only ships handoff ticket contracts, server-record redemption proof, audit posture, and host-owned Phoenix session-renewal instructions.
+- Later Sigra machinery: passkey delivery stack, OAuth choreography, native auth-return validation, refresh-token machinery, provider/device auth proof, telemetry/security closeout, direct shell/WebView token authority, and native auth UI. Phase 56 ships server-owned step-up intent records, shared Plug/LiveView ceremony, audit posture, host-owned Phoenix session-renewal instructions, CSRF rotation instructions, and LiveView invalidation posture.
 - Threadline audit capstone.
 - Separate-package extraction of companions. v3.5 keeps companions in-tree under `lib/crosswake/companions/<name>/`.
 

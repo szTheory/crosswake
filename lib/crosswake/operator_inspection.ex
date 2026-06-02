@@ -254,6 +254,7 @@ defmodule Crosswake.OperatorInspection do
       shipped_contracts:
         if(predicated?, do: Map.get(auth_truth, :shipped_contracts, []), else: []),
       handoff: if(predicated?, do: Map.get(auth_truth, :handoff, %{}), else: %{}),
+      step_up: if(predicated?, do: Map.get(auth_truth, :step_up, %{}), else: %{}),
       fallback: if(predicated?, do: :step_up_required, else: nil),
       denial_codes: if(predicated?, do: Map.get(auth_truth, :denial_codes, []), else: []),
       safe_detail_keys: if(predicated?, do: Map.get(auth_truth, :safe_detail_keys, []), else: []),

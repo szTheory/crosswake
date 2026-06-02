@@ -130,16 +130,22 @@ defmodule Crosswake.OperatorInspectionTest do
     assert secure.auth.shipped_contracts == [
              :session_authority,
              :handoff_ticket,
-             :server_record_redemption
+             :server_record_redemption,
+             :step_up_intent,
+             :plug_liveview_ceremony
            ]
 
     assert secure.auth.handoff.authority_source == :server_record
     assert secure.auth.handoff.envelope_authority == false
+    assert secure.auth.step_up.status == :shipped
+    assert secure.auth.step_up.route_target_validation == :manifest_route_id
     assert "auth.step_up.missing_context" in secure.auth.denial_codes
     assert "auth.handoff.invalid_ticket" in secure.auth.denial_codes
+    assert "auth.step_up_intent.invalid_intent" in secure.auth.denial_codes
     assert "handoff_ref" in secure.auth.safe_detail_keys
+    assert "step_up_intent_ref" in secure.auth.safe_detail_keys
     refute :handoff in secure.auth.non_goals
-    assert :ceremony in secure.auth.non_goals
+    refute :ceremony in secure.auth.non_goals
     assert secure.support.proof_class == :advisory
     assert "step_up_required" in secure.denials
 

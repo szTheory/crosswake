@@ -752,13 +752,14 @@ defmodule Crosswake.Doctor do
             :advisory,
             "auth.step_up_required_contract",
             "auth.contract_posture",
-            "Auth contract surface includes backend session-authority evaluation and shipped Phase 55 handoff contract machinery.",
-            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.* and auth.handoff.* denial codes, fail-closed :step_up_required denial, and backend-owned handoff ticket/server-record redemption proof. Phase 56 ceremony, Phase 57 OAuth/passkey/native auth returns, refresh-token helpers, provider/device proof, and native auth UI remain deferred.",
+            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, and shipped Phase 56 step-up intent ceremony.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, canonical auth.step_up.*, auth.handoff.*, and auth.step_up_intent.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, and server-owned step-up intent plus Plug/LiveView ceremony proof. Phase 57 OAuth/passkey/native auth returns, refresh-token helpers, provider/device proof, Phase 58 telemetry/security closeout, and native auth UI remain deferred.",
             %{
               fallback: :step_up_required,
               posture: :session_authority,
               shipped_contracts: Map.get(auth_truth, :shipped_contracts, []),
               handoff: Map.get(auth_truth, :handoff, %{}),
+              step_up: Map.get(auth_truth, :step_up, %{}),
               denial_codes:
                 Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
               safe_detail_keys:

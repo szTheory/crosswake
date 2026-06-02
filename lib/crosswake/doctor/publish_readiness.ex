@@ -380,10 +380,10 @@ defmodule Crosswake.Doctor.PublishReadiness do
         if(route_ids == [],
           do: "no Sigra auth predicate routes are present in the inspected route set",
           else:
-            "Sigra session-authority route evaluation and handoff ticket/server-record contract machinery are shipped; ceremony, passkey, OAuth, auth-return validation, refresh-token helpers, provider/device proof, and native auth UI are not shipped"
+            "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, and step-up intent plus Plug/LiveView ceremony are shipped; passkey, OAuth, auth-return validation, refresh-token helpers, provider/device proof, telemetry/security closeout, and native auth UI are not shipped"
         ),
       hint:
-        "Keep auth predicates and handoff redemption backend-owned, fail closed with step_up_required, and use later phases for ceremony and auth-return machinery.",
+        "Keep auth predicates, handoff redemption, and step-up completion backend-owned; fail closed with step_up_required, and use later phases for auth-return, telemetry, and security closeout machinery.",
       docs_reference: "guides/companions.md",
       proof_class: if(route_ids == [], do: :not_applicable, else: :advisory),
       rebuild_requirement: %{
@@ -398,6 +398,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
         fallback: :step_up_required,
         shipped_contracts: Map.get(auth_row, :shipped_contracts, []),
         handoff: Map.get(auth_row, :handoff, %{}),
+        step_up: Map.get(auth_row, :step_up, %{}),
         route_predicates: Map.get(auth_row, :route_predicates, []),
         denial_codes: Map.get(auth_row, :denial_codes, []),
         safe_detail_keys: Map.get(auth_row, :safe_detail_keys, []),
