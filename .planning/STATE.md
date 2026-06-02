@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.8
 milestone_name: Full Sigra Auth and Session Machinery
-status: executing
-last_updated: "2026-06-02T01:06:24.102Z"
-last_activity: 2026-06-02 -- Phase 54 planning complete
+status: ready_for_next_phase
+last_updated: "2026-06-02T01:39:26Z"
+last_activity: 2026-06-02 -- Phase 54 completed with focused proof green; full suite blocked only by existing planning-transition parity tests
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 5
+  percent: 20
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-01)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** v3.8 Full Sigra Auth and Session Machinery — ready to discuss Phase 54.
+**Current focus:** Phase 55 — Session Handoff Tickets And Authority Projection
 
 ## Current Position
 
-Phase: 54 — Sigra Session Authority Contract And Route-Gate Semantics
-Plan: —
-Status: Ready to execute
-Last activity: 2026-06-02 -- Phase 54 planning complete
+Phase: 54 (Sigra Session Authority Contract And Route-Gate Semantics) — COMPLETE
+Plan: 5 of 5
+Status: Ready for Phase 55
+Last activity: 2026-06-02 -- Phase 54 completed with focused proof green; full suite blocked only by existing planning-transition parity tests
 
 ## Performance Metrics
 
@@ -62,6 +62,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 48]: Example-host paywall keeps MockStorefront default while exposing a config swap point for provider adapters.
 - [Phase 48]: Provider adapter readiness now reports shipped seams separately from advisory provider proof. — Keeps support truth multi-axis and avoids stale adapters_not_shipped semantics.
 - [Phase 48]: StoreKit and Play Billing promotion rules now use provider-specific readiness check IDs. — Aligns promotion criteria-as-code with shipped provider seams and advisory proof status.
+- [Phase 54]: Sigra route auth now uses backend-owned `SessionAuthorityLane` evaluation with explicit `auth_posture`, canonical `auth.step_up.*` subcodes, and shell-safe `:step_up_required` denial details.
+- [Phase 54]: Session-authority support truth is intentionally narrower than full auth machinery; handoff tickets, ceremony, OAuth/passkey returns, refresh tokens, and native auth UI remain deferred to later v3.8 phases.
 
 ### Pending Todos
 
@@ -72,6 +74,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - Android JVM evidence continues to require CI (no local Java runtime).
 - StoreKit/Play Billing proof starts advisory in v3.7 until explicit promotion criteria are satisfied.
 - Provider adapters must preserve Phoenix-owned entitlement authority; device/storefront events remain reconciliation evidence.
+- Full `mix test` currently has 5 known planning-transition parity failures in `Crosswake.Planning.MilestoneTransitionResetTest` and `Crosswake.Planning.MilestoneArcCloseoutParityTest`; Phase 54 focused proof is green.
 
 ## Deferred Items
 
@@ -89,10 +92,10 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-02T01:06:24.098Z
-Stopped at: Phase 54 planning complete
+Last session: 2026-06-02T01:39:26Z
+Stopped at: Phase 54 complete
 
 ## Operator Next Steps
 
-- Start Phase 54 with `$gsd-discuss-phase 54`
-- Or skip discussion and plan directly with `$gsd-plan-phase 54`
+- Start Phase 55 with `$gsd-discuss-phase 55`
+- Or skip discussion and plan directly with `$gsd-plan-phase 55`

@@ -10,9 +10,9 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Session Authority
 
-- [ ] **SESS-01**: A Phoenix host can model backend-owned session authority with explicit state, assurance level, auth methods, authenticated-at, idle expiry, absolute expiry, renewal horizon, remembered-session posture, and session-version/revocation fields.
-- [ ] **SESS-02**: Route gates evaluate session authority fail-closed for missing context, non-active state, idle expiry, absolute expiry, revocation/version mismatch, insufficient assurance, and stale recent-auth before allowing sensitive routes.
-- [ ] **SESS-03**: Remembered or cached auth state cannot satisfy sensitive recent-auth route predicates unless the route explicitly opts into that weaker posture.
+- [x] **SESS-01**: A Phoenix host can model backend-owned session authority with explicit state, assurance level, auth methods, authenticated-at, idle expiry, absolute expiry, renewal horizon, remembered-session posture, and session-version/revocation fields.
+- [x] **SESS-02**: Route gates evaluate session authority fail-closed for missing context, non-active state, idle expiry, absolute expiry, revocation/version mismatch, insufficient assurance, and stale recent-auth before allowing sensitive routes.
+- [x] **SESS-03**: Remembered or cached auth state cannot satisfy sensitive recent-auth route predicates unless the route explicitly opts into that weaker posture.
 
 ### Handoff Tickets
 
@@ -34,7 +34,7 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Diagnostics And Proof
 
-- [ ] **DIAG-01**: Crosswake exposes a canonical Sigra auth denial code taxonomy, safe user-facing denial messages, and rich operator/developer detail without leaking tokens, provider payloads, passkey credential IDs, or PII.
+- [x] **DIAG-01**: Crosswake exposes a canonical Sigra auth denial code taxonomy, safe user-facing denial messages, and rich operator/developer detail without leaking tokens, provider payloads, passkey credential IDs, or PII.
 - [ ] **DIAG-02**: Crosswake emits stable `[:crosswake, :auth, ...]` telemetry events with documented low-cardinality metadata for session evaluation, denial, handoff, step-up, OAuth return, and passkey return flows.
 - [ ] **DIAG-03**: Doctor, support matrix, operator inspection, guides, and docs-contract tests distinguish full Sigra machinery from provider/device advisory proof and from v3.5 contract-only truth.
 - [ ] **PROOF-01**: Merge-blocking hermetic proof covers contracts, route gates, replay/expiry/revocation, step-up returns, denial sanitization, telemetry/docs parity, and security-sensitive non-claims; provider/device proof remains advisory until promotion criteria pass.
@@ -73,9 +73,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SESS-01 | Phase 54 | Pending |
-| SESS-02 | Phase 54 | Pending |
-| SESS-03 | Phase 54 | Pending |
+| SESS-01 | Phase 54 | Complete |
+| SESS-02 | Phase 54 | Complete |
+| SESS-03 | Phase 54 | Complete |
 | HAND-01 | Phase 55 | Pending |
 | HAND-02 | Phase 55 | Pending |
 | HAND-03 | Phase 55 | Pending |
@@ -85,7 +85,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RETN-01 | Phase 57 | Pending |
 | RETN-02 | Phase 57 | Pending |
 | RETN-03 | Phase 57 | Pending |
-| DIAG-01 | Phase 54 | Pending |
+| DIAG-01 | Phase 54 | Complete |
 | DIAG-02 | Phase 58 | Pending |
 | DIAG-03 | Phase 58 | Pending |
 | PROOF-01 | Phase 58 | Pending |
@@ -97,4 +97,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-01 from v3.8 research synthesis.*
-*Last updated: 2026-06-01 after v3.8 roadmap creation.*
+*Last updated: 2026-06-02 after Phase 54 completion.*

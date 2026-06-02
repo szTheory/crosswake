@@ -12,7 +12,7 @@
 - ✅ **v3.5 First-Party Companions** — Phases 38-47 shipped on 2026-05-31. Full archive: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
 - ✅ **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 shipped on 2026-06-01. Full archive: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
 - ✅ **v3.7 Commerce Provider Adapters** — Phases 48 and 48.1 shipped on 2026-06-01. Full archive: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
-- ◆ **v3.8 Full Sigra Auth and Session Machinery** — Phases 54-58 planned. Requirements: [REQUIREMENTS.md](REQUIREMENTS.md)
+- ◆ **v3.8 Full Sigra Auth and Session Machinery** — Phase 54 complete; Phases 55-58 planned. Requirements: [REQUIREMENTS.md](REQUIREMENTS.md)
 
 ## Phases
 
@@ -88,9 +88,9 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 </details>
 
 <details open>
-<summary>◆ v3.8 Full Sigra Auth and Session Machinery (Phases 54-58) — PLANNED 2026-06-01</summary>
+<summary>◆ v3.8 Full Sigra Auth and Session Machinery (Phases 54-58) — ACTIVE 2026-06-02</summary>
 
-- [ ] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5 plans) — planned
+- [x] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5/5 plans) — completed 2026-06-02
 - [ ] Phase 55: Session Handoff Tickets And Authority Projection — planned
 - [ ] Phase 56: Step-Up Intent And Plug/LiveView Ceremony — planned
 - [ ] Phase 57: OAuth, Passkey, And Native Return Boundaries — planned
@@ -102,14 +102,14 @@ Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
 
 **Requirements:** SESS-01, SESS-02, SESS-03, DIAG-01
 
-**Plans:** 5 plans
+**Plans:** 5 plans — completed 2026-06-02
 
 Plans:
-- [ ] `54-01-PLAN.md` — Expand Sigra authority contracts and the canonical auth denial-code registry.
-- [ ] `54-02-PLAN.md` — Add explicit `auth_posture` validation and manifest-visible route truth.
-- [ ] `54-03-PLAN.md` — Implement `Sigra.Evaluator` and delegate RouteGate auth checks to it.
-- [ ] `54-04-PLAN.md` — Promote doctor, publish-readiness, support-matrix, and operator inspection to session-authority truth.
-- [ ] `54-05-PLAN.md` — Close guides, docs-contract, and merge-blocking proof for full Phase 54 auth posture.
+- [x] `54-01-PLAN.md` — Expand Sigra authority contracts and the canonical auth denial-code registry.
+- [x] `54-02-PLAN.md` — Add explicit `auth_posture` validation and manifest-visible route truth.
+- [x] `54-03-PLAN.md` — Implement `Sigra.Evaluator` and delegate RouteGate auth checks to it.
+- [x] `54-04-PLAN.md` — Promote doctor, publish-readiness, support-matrix, and operator inspection to session-authority truth.
+- [x] `54-05-PLAN.md` — Close guides, docs-contract, and merge-blocking proof for full Phase 54 auth posture.
 
 **Success criteria:**
 1. `SessionAuthorityLane` and `AuthContext` expose explicit state, assurance, freshness, expiry, remembered-session, and revocation/version fields with validators.
@@ -169,6 +169,6 @@ Plans:
 
 ## Next
 
-Start v3.8 execution with `$gsd-discuss-phase 54`.
+Continue v3.8 execution with `$gsd-discuss-phase 55`.
 
-Also available: `$gsd-plan-phase 54` to skip discussion and plan directly.
+Also available: `$gsd-plan-phase 55` to skip discussion and plan directly.
