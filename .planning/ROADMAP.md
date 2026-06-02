@@ -147,7 +147,7 @@ Plans:
 
 **Requirements:** TOKN-03
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -156,7 +156,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 60-02-PLAN.md — Registry lifecycle APIs with Ecto.Multi, audit rows, and post-commit telemetry proof
+- [x] 60-02-PLAN.md — Registry lifecycle APIs with Ecto.Multi, audit rows, and post-commit telemetry proof
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
