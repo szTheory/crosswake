@@ -99,6 +99,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
           phase_verification_check(cwd, opts),
           summary_frontmatter_check(cwd, opts),
           validation_ledger_check(cwd, opts),
+          prior_validation_debt_check(cwd, opts),
           thread_seed_disposition_check(cwd, opts)
         ]
       end
@@ -504,7 +505,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     end
   end
 
-  defp malformed_deferred_entries(frontmatter) do
+  defp deferred_entries(frontmatter) do
     case Regex.run(~r/^deferred_with_reason:\s*\n((?:\s+-.*\n(?:\s{4,}.+\n?)*)*)/m, frontmatter,
            capture: :all_but_first
          ) do
@@ -515,16 +516,90 @@ defmodule Crosswake.Planning.CloseoutVerifier do
           ~r/^\s*-\s+(.*?)(?=^\s*-\s+|\z)/ms
           |> Regex.scan(block, capture: :all_but_first)
           |> Enum.map(fn [entry] -> entry end)
-          |> Enum.with_index(1)
-          |> Enum.flat_map(fn {entry, index} ->
-            missing = Enum.reject(@exception_fields, &Regex.match?(~r/(^|\n)\s*#{&1}:/, entry))
-            if missing == [], do: [], else: ["entry #{index} missing #{Enum.join(missing, "/")}"]
-          end)
         end
 
       _ ->
         []
     end
+  end
+
+  defp malformed_deferred_entries(frontmatter) do
+    frontmatter
+    |> deferred_entries()
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {entry, index} ->
+      missing = Enum.reject(@exception_fields, &Regex.match?(~r/(^|\n)\s*#{&1}:/, entry))
+      if missing == [], do: [], else: ["entry #{index} missing #{Enum.join(missing, "/")}"]
+    end)
+  end
+
+  defp entry_field(entry, field) do
+    case Regex.run(
+           ~r/(?:^|\n)\s*#{Regex.escape(field)}:\s*"?([^"\n]+)"?/,
+           entry,
+           capture: :all_but_first
+         ) do
+      [value] -> String.trim(value)
+      nil -> nil
+    end
+  end
+
+  defp stale_deferral?(cwd, entry) do
+    case entry_field(entry, "revisit_phase") do
+      nil ->
+        false
+
+      "" ->
+        false
+
+      revisit ->
+        Path.wildcard(Path.join(cwd, ".planning/milestones/*-phases/#{revisit}-*")) != []
+    end
+  end
+
+  defp prior_validation_debt_check(cwd, opts) do
+    current = closeout_path(cwd, opts)
+
+    prior_closeouts =
+      Path.wildcard(Path.join(cwd, ".planning/milestones/v*-CLOSEOUT.md"))
+      |> Enum.reject(&(&1 == current))
+
+    unsatisfied =
+      Enum.flat_map(prior_closeouts, fn path ->
+        content = read_file(path)
+        fm = parse_frontmatter(content)
+        ms = milestone(fm)
+        phases = expected_phases(fm)
+
+        deferred_entries(fm)
+        |> Enum.filter(fn entry ->
+          entry_field(entry, "scope") == "validation-ledger-finalization" and
+            entry_field(entry, "status") not in ["resolved", "closed"]
+        end)
+        |> Enum.reject(fn _entry ->
+          Enum.all?(phases, fn phase ->
+            paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
+            paths != [] and Enum.all?(paths, &(read_file(&1) =~ "nyquist_compliant: true"))
+          end)
+        end)
+        |> Enum.map(fn entry ->
+          reason = entry_field(entry, "reason") || "no reason"
+          stale_note = if stale_deferral?(cwd, entry), do: " (stale)", else: ""
+          "#{ms}: #{reason}#{stale_note}"
+        end)
+      end)
+
+    passed = unsatisfied == []
+
+    check(
+      "closeout.validation.prior_debt",
+      "prior milestone validation-ledger debt",
+      ".planning/milestones/*-CLOSEOUT.md",
+      passed,
+      Enum.join(unsatisfied, "; "),
+      "Resolve prior validation-ledger deferrals (make named ledgers nyquist_compliant: true or mark the deferral status: resolved with evidence) before closing a new milestone.",
+      %{unsatisfied: unsatisfied}
+    )
   end
 
   defp section(content, heading, next_heading_regex) do
