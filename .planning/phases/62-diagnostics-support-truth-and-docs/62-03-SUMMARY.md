@@ -23,6 +23,7 @@ decisions:
 metrics:
   duration: 5
   completed_at: 2024-05-18T00:00:00Z
+requirements-completed: [DIAG-01, DIAG-02]
 ---
 
 # Phase 62 Plan 03: Notification Diagnostic Findings Summary

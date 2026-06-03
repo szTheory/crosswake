@@ -1,3 +1,12 @@
+---
+phase: 63-hermetic-proof-and-advisory-promotion-criteria
+plan: 03
+subsystem: proof
+tags: [closeout, roadmap, v3.9]
+requirements-completed: [PROOF-01, PROOF-02, REL-01]
+completed: 2026-06-03
+---
+
 # Phase 63-03 Completion Summary
 
 ## Outcomes

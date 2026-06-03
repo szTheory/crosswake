@@ -22,6 +22,7 @@ decisions: []
 metrics:
   duration: 10m
   completed_date: "2024-05-31"
+requirements-completed: [DIAG-01, DIAG-02]
 ---
 
 # Phase 62 Plan 02: Expose open_routing_active in OperatorInspection Summary

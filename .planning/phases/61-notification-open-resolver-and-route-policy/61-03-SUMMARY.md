@@ -33,6 +33,7 @@ decisions:
 metrics:
   duration: 5
   completed_date: "2024-06-03"
+requirements-completed: [OPEN-01, OPEN-02, OPEN-03]
 ---
 
 # Phase 61 Plan 3: Issue and Consume Notification Open Intents Summary

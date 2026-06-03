@@ -32,6 +32,7 @@ decisions: []
 metrics:
   duration: 5
   completed_at: 2024-05-18T10:00:00Z
+requirements-completed: [OPEN-01, OPEN-02, OPEN-03]
 ---
 
 # Phase 61 Plan 1: Chimeway Notification Open Evidence Contracts Summary

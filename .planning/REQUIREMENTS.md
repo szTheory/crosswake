@@ -69,17 +69,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-02 | Phase 59 | Complete |
 | TOKN-03 | Phase 60 | Complete |
 | OPEN-01 | Phase 61 | Complete |
-| OPEN-02 | Phase 61 | Pending |
+| OPEN-02 | Phase 61 | Complete |
 | OPEN-03 | Phase 61 | Complete |
 | DIAG-01 | Phase 62 | Complete |
 | DIAG-02 | Phase 62 | Complete |
 | PROOF-01 | Phase 63 | Complete |
 | PROOF-02 | Phase 63 | Complete |
+| REL-01 | Phase 63 | Validated |
 
 **Coverage:**
-- v3.9 requirements: 10 total
-- Mapped to phases: 10
+- v3.9 requirements: 11 total
+- Mapped to phases: 11
 - Unmapped: 0
+
+---
+*Requirements defined: 2026-06-02 from v3.9 research synthesis.*
+*Last updated: 2026-06-02 after milestone initialization.*
+: 0
 
 ---
 *Requirements defined: 2026-06-02 from v3.9 research synthesis.*

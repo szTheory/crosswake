@@ -1,3 +1,12 @@
+---
+phase: 61-notification-open-resolver-and-route-policy
+plan: 4
+subsystem: Chimeway
+tags: [resolver, route-policy, chimeway]
+requirements-completed: [OPEN-01, OPEN-02, OPEN-03]
+completed: 2026-06-03
+---
+
 # Phase 61-04 Completion Summary
 
 ## Outcomes

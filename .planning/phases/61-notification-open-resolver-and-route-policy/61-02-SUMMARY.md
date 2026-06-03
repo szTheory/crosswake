@@ -38,7 +38,8 @@ metrics:
   tasks-completed: 3
   tasks-total: 3
   files-modified: 5
-  completed-date: 2024-05-18T00:00:00Z
+  completed_at: 2024-05-18T10:00:00Z
+requirements-completed: [OPEN-01, OPEN-02, OPEN-03]
 ---
 
 # Phase 61 Plan 2: Notification Open Opt-In Summary

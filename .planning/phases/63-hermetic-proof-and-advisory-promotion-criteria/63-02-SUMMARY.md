@@ -17,6 +17,7 @@ decisions: []
 metrics:
   duration_minutes: 5
   completed_date: "2024-06-03"
+requirements-completed: [PROOF-01, PROOF-02, REL-01]
 ---
 
 # Phase 63 Plan 02: Advisory Promotion Criteria Summary

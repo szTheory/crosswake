@@ -22,6 +22,7 @@ decisions:
 metrics:
   duration: 1m
   completed_date: "2026-06-03"
+requirements-completed: [DIAG-01, DIAG-02]
 ---
 
 # Phase 62 Plan 01: Diagnostics, Support Truth, And Docs Summary

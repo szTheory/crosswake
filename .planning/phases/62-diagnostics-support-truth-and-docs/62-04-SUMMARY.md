@@ -29,6 +29,7 @@ metrics:
   duration: 10m
   tasks_completed: 1
   total_files_changed: 5
+requirements-completed: [DIAG-01, DIAG-02]
 ---
 
 # Phase 62 Plan 04: Public Notification Support Truth

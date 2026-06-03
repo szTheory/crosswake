@@ -1,3 +1,8 @@
+---
+phase: 61-notification-open-resolver-and-route-policy
+nyquist_compliant: true
+---
+
 # Phase 61: Notification-Open Resolver And Route Policy - Validation
 
 ## Phase Goal

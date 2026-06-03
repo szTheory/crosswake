@@ -25,6 +25,7 @@ key_decisions:
 metrics:
   duration_minutes: 2
   completed_date: "2024-05-18" # placeholder, irrelevant for execution but format requires it
+requirements-completed: [PROOF-01, PROOF-02, REL-01]
 ---
 
 # Phase 63 Plan 01: Notification Seam Proof Summary
