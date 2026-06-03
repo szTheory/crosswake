@@ -56,7 +56,8 @@ defmodule Crosswake.OperatorInspectionTest do
           id: "notifications",
           runtime: :live_view,
           security: :standard,
-          capabilities: ["notification_token"]
+          capabilities: ["notification_token"],
+          notification_open: true
         ]
       )
 
@@ -110,6 +111,7 @@ defmodule Crosswake.OperatorInspectionTest do
     assert document.routes["dashboard"].support.status == :supported
 
     checkout = document.routes["checkout"]
+    assert checkout.notifications.open_routing_active == false
     assert checkout.commerce.role == :purchase_intent
     assert checkout.commerce.owner_posture == :native_or_companion_required
     assert checkout.commerce.advisory_provider_proof == true
@@ -155,6 +157,7 @@ defmodule Crosswake.OperatorInspectionTest do
     assert notifications.notifications.token_capability_declared == true
     assert notifications.notifications.provider_readiness == :verification_required
     assert notifications.notifications.delivery_supported == false
+    assert notifications.notifications.open_routing_active == true
     assert "notification_token.provider_snapshot" in notifications.support.promotion_rule_ids
 
     gated = document.routes["gated"]
