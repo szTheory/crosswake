@@ -86,13 +86,13 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - Provider adapters must preserve Phoenix-owned entitlement authority; device/storefront events remain reconciliation evidence.
 - Provider/device auth proof remains advisory after v3.8; shell/native/OAuth/passkey events remain evidence-only until backend validation promotes authority.
 - Milestone-next-step assessment selected v3.9 Chimeway Notification Seam as the highest-leverage next milestone; keep delivery/provider proof advisory unless explicitly promoted by proof criteria.
-- `mix closeout.verify` surfaced a second, pre-existing blocker beyond validation-ledger debt: `closeout.requirements.state` fails because the v3.9 archival removed `.planning/REQUIREMENTS.md` while the requirements check still hardcodes v3.9-mid-flight REL-01 expectations (same brittleness class as the validation gate). Two ExUnit suites (`milestone_transition_reset_test`, `summary_frontmatter_test`) fail for the same root cause. Out of scope for quick task 260603-nzr; resolve alongside Step 2 backlog cleanup.
+- RESOLVED 2026-06-03: the post-close removal of live `.planning/REQUIREMENTS.md` (deliberate, recreated next milestone via /gsd:new-milestone) had broken `closeout.requirements.state` plus two transition suites (`milestone_transition_reset_test`, `summary_frontmatter_test`). Un-brittled to fall back to the archived `milestones/<version>-REQUIREMENTS.md` snapshot (commit f59b06d). `mix closeout.verify` now passes 0-blocking and full `mix test` is green.
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 260603-nzr | Tighten validation-ledger closeout gate (Step 1: Option B backstop + staleness + un-brittled globs) | 2026-06-03 | f366f61 | [260603-nzr-tighten-validation-ledger-closeout-gate](./quick/260603-nzr-tighten-validation-ledger-closeout-gate/) |
+| 260603-nzr | Fix recurring validation-ledger debt — Step 1: closeout gate teeth (Option B backstop + staleness + un-brittled globs); Step 2: cleared backlog (v3.8/v3.9 ledgers signed, v3.6 accept-closed) + un-brittled requirements.state. closeout.verify green, 746 tests pass. | 2026-06-03 | f59b06d | [260603-nzr-tighten-validation-ledger-closeout-gate](./quick/260603-nzr-tighten-validation-ledger-closeout-gate/) |
 
 ## Deferred Items
 
