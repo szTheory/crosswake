@@ -254,9 +254,17 @@ defmodule Crosswake.SupportMatrix do
       action_class: "companion_native",
       docs_anchor: "guides/capabilities.md#bounded-bridge",
       delivery_supported: false,
+      telemetry: %{
+        status: :shipped,
+        event_names: Crosswake.Companions.Chimeway.Telemetry.event_names(),
+        metadata_keys: Crosswake.Companions.Chimeway.Telemetry.metadata_keys(),
+        forbidden_metadata_keys: Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys(),
+        authority_source: :diagnostic_evidence_only,
+        proof_class: :merge_blocking
+      },
       deferred: [:chimeway_delivery, :push_delivery_guarantees],
       posture:
-        "notification_token readiness is provider-snapshot evidence only; Chimeway delivery is not shipped in v3.9."
+        "notification_token and notification_open readiness are fully supported/resolvable; Chimeway APNs/FCM push delivery execution remains deferred and unsupported."
     }
   ]
 
