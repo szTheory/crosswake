@@ -43,7 +43,7 @@ defmodule Crosswake.Companions.Chimeway do
         surface: :notification_contract,
         mode: :token_binding_contract,
         delivery_support: :not_shipped,
-        open_routing: :not_shipped,
+        open_routing: :active,
         raw_token_posture: :redacted
       }
     }

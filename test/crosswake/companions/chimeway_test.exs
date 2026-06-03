@@ -17,7 +17,7 @@ defmodule Crosswake.Companions.ChimewayTest do
     assert Chimeway.kill_switch_active?(:target) == false
   end
 
-  test "reports contract-only notification state without delivery or open support claims" do
+  test "reports notification state with active open_routing but no delivery claims" do
     assert %State{} = state = Chimeway.report_state()
     assert state.companion_id == :chimeway
     assert state.dependency_status == :present
@@ -28,7 +28,7 @@ defmodule Crosswake.Companions.ChimewayTest do
              surface: :notification_contract,
              mode: :token_binding_contract,
              delivery_support: :not_shipped,
-             open_routing: :not_shipped,
+             open_routing: :active,
              raw_token_posture: :redacted
            }
   end

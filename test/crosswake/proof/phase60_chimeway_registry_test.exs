@@ -440,10 +440,10 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
     # Assert Phase 60 schema is minimal — no extra normalized chimeway tables
     extra_tables_result = Repo.query!(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'chimeway_%' AND name NOT IN ('chimeway_token_bindings', 'chimeway_token_binding_events')"
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'chimeway_%' AND name NOT IN ('chimeway_token_bindings', 'chimeway_token_binding_events', 'chimeway_notification_open_intents', 'chimeway_notification_open_intent_events')"
     )
     assert extra_tables_result.rows == [],
-           "Phase 60 must not create extra chimeway_* tables beyond binding and event tables"
+           "Phase 60+ must not create extra chimeway_* tables beyond allowed binding, event, and notification open tables"
 
     IO.puts("phase60-schema-proof: ok")
     """

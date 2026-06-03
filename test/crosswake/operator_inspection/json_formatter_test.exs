@@ -80,7 +80,7 @@ defmodule Crosswake.OperatorInspection.JSONFormatterTest do
                   status: :unknown,
                   reason: :step_up_required,
                   severity: :advisory,
-                  message: "contract-only auth state is unknown",
+                  message: "Sigra auth state requires host verification",
                   route_id: "dashboard",
                   details: %{fallback: :step_up_required}
                 )

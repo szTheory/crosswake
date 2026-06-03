@@ -82,10 +82,10 @@ defmodule Crosswake.Proof.Phase59ChimewayContractTest do
     refute inspect(telemetry) =~ @raw_token
   end
 
-  test "companion state and support matrix do not promote delivery or notification-open support" do
+  test "companion state and support matrix do not promote delivery, but support notification-open" do
     assert %{
              delivery_support: :not_shipped,
-             open_routing: :not_shipped,
+             open_routing: :active,
              mode: :token_binding_contract
            } = Chimeway.report_state().details
 
@@ -94,7 +94,9 @@ defmodule Crosswake.Proof.Phase59ChimewayContractTest do
     assert notification_truth.proof_class == :advisory
     assert notification_truth.delivery_supported == false
     assert :chimeway_delivery in notification_truth.deferred
-    assert :notification_open_routing in notification_truth.deferred
+    refute :notification_open_routing in notification_truth.deferred
+
+    assert notification_truth.posture =~ "Chimeway delivery is not shipped in v3.9"
   end
 
   test "public Chimeway structs never define raw token aliases" do

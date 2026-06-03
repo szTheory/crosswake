@@ -31,7 +31,6 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
   alias Crosswake.Companions.Chimeway.Contracts
   alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
-  alias Crosswake.Companions.Chimeway.Contracts.OpenResolution
   alias Crosswake.Companions.Chimeway.Contracts.ProviderFeedback
   alias Crosswake.Companions.Chimeway.Contracts.TokenEvidence
   alias Crosswake.Companions.Chimeway.Redaction
@@ -1410,7 +1409,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
   # ---------------------------------------------------------------------------
 
   # WR-04: accept reason so rotation callers can pass :token_rotated
-  defp build_binding_attrs(ctx, ev, installation_ref, now, reason \\ :initial_bind) do
+  defp build_binding_attrs(ctx, ev, installation_ref, now, reason) do
     %{
       binding_ref: unique_ref("bnd"),
       subject_scope: ctx.subject_scope,

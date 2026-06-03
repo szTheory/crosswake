@@ -7,10 +7,7 @@ depends_on: []
 files_modified:
   - lib/crosswake/shell/denial.ex
   - lib/crosswake/companions/chimeway/contracts.ex
-  - lib/crosswake/companions/chimeway/intent_consumer.ex
   - lib/crosswake/companions/chimeway/denial_codes.ex
-  - test/crosswake/shell/denial_test.exs
-  - test/crosswake/companions/chimeway/contracts_test.exs
 autonomous: true
 requirements:
   - OPEN-01
@@ -38,7 +35,7 @@ must_haves:
 Define the Chimeway notification-open evidence contracts and the core denial boundaries.
 
 Purpose: Provide the struct definitions that the host registry and resolver will use, and register `:notification_open_denied` with RouteGate so the resolver can fail closed with clear, stable error subcodes that do not leak PII.
-Output: `NotificationOpenEvidence` and `OpenResolution` structs, `Chimeway.DenialCodes`, updated `Shell.Denial` reasons, and the `IntentConsumer` behaviour.
+Output: `NotificationOpenEvidence` and `OpenResolution` structs, `Chimeway.DenialCodes`, and updated `Shell.Denial` reasons.
 </objective>
 
 <execution_context>
@@ -55,30 +52,28 @@ Output: `NotificationOpenEvidence` and `OpenResolution` structs, `Chimeway.Denia
 
 <task type="auto">
   <name>Task 1: Add core denial reason</name>
-  <files>lib/crosswake/shell/denial.ex, test/crosswake/shell/denial_test.exs</files>
+  <files>lib/crosswake/shell/denial.ex</files>
   <action>
     Add `:notification_open_denied` to the `@reasons` list and its corresponding `@type reason` spec in `Shell.Denial`.
     This ensures that discrete notification failures (e.g. expired, revoked) have their own reason atom rather than being buried under `:gate_denied`. (Decision D-18)
-    Create `test/crosswake/shell/denial_test.exs` and assert the new core denial reason is present.
   </action>
   <verify>
-    <automated>mix test test/crosswake/shell/denial_test.exs</automated>
+    <automated>mix compile --warnings-as-errors</automated>
   </verify>
-  <done>The `:notification_open_denied` atom is present in the `Denial.reason` type and `@reasons` list, with an automated test to assert it.</done>
+  <done>The `:notification_open_denied` atom is present in the `Denial.reason` type and `@reasons` list.</done>
 </task>
 
 <task type="auto">
-  <name>Task 2: Define open evidence contracts and consumer behaviour</name>
-  <files>lib/crosswake/companions/chimeway/contracts.ex, lib/crosswake/companions/chimeway/intent_consumer.ex, test/crosswake/companions/chimeway/contracts_test.exs</files>
+  <name>Task 2: Define open evidence contracts</name>
+  <files>lib/crosswake/companions/chimeway/contracts.ex</files>
   <action>
     Add `NotificationOpenEvidence` and `OpenResolution` structs to the Chimeway contracts.
-    `NotificationOpenEvidence` must require at least: `route_id`, `open_ref`, `binding_ref`, `provider`, `action_ref`, and `auth_context`. Mirror the existing struct creation pattern (e.g. `new_token_binding/1` -> `new_notification_open_evidence/1`). (Decision D-09)
-    Create `lib/crosswake/companions/chimeway/intent_consumer.ex` defining the `Crosswake.Companions.Chimeway.IntentConsumer` behaviour specifying a callback (e.g., `consume_intent/1`) that hosts must implement to orchestrate the state checks (expired, replayed, revoked, valid).
+    `NotificationOpenEvidence` must require at least: `route_id`, `open_ref`, `binding_ref`, `provider`, `action_ref`, `auth_context`, and `intent_status` (e.g., `:valid`, `:expired`, `:replayed`). Mirror the existing struct creation pattern (e.g. `new_token_binding/1` -> `new_notification_open_evidence/1`). (Decision D-09)
   </action>
   <verify>
     <automated>mix test test/crosswake/companions/chimeway/contracts_test.exs</automated>
   </verify>
-  <done>Both structs are defined without `intent_status`, and the consumer behaviour is specified for host implementation.</done>
+  <done>Both structs are defined, enforce their keys, and provide constructor functions.</done>
 </task>
 
 <task type="auto" tdd="true">

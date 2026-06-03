@@ -7,6 +7,29 @@
       "details": {
         "auth_min_level": null,
         "auth_posture": "strict_recent",
+        "auth_return": {
+          "authority_source": "server_record",
+          "custom_scheme_posture": "advisory_only",
+          "envelope_authority": false,
+          "kinds": [
+            "oauth",
+            "passkey",
+            "native_auth"
+          ],
+          "proof_class": "merge_blocking",
+          "route_policy_seam": "auth_return",
+          "route_target_validation": "manifest_route_id",
+          "sensitive_transport": "verified_https_link_required",
+          "status": "shipped",
+          "transports": [
+            "http_callback",
+            "verified_https_link",
+            "custom_scheme",
+            "bridge_event"
+          ]
+        },
+        "contract_proof_class": "merge_blocking",
+        "contract_surface": "full_sigra_machinery",
         "denial_codes": [
           "auth.step_up.missing_context",
           "auth.step_up.invalid_context",
@@ -62,6 +85,14 @@
           "auth.return.native_auth.callback_mismatch",
           "auth.return.native_auth.projection_failed"
         ],
+        "evidence_authority": {
+          "auth_return_envelope": false,
+          "bridge_event": false,
+          "deep_link": false,
+          "handoff_envelope": false,
+          "provider_payload": false,
+          "step_up_locator": false
+        },
         "fallback": "step_up_required",
         "handoff": {
           "audit_fields": [
@@ -90,14 +121,17 @@
           "proof_class": "merge_blocking",
           "status": "shipped"
         },
+        "host_readiness": "verification_required",
         "non_goals": [
           "refresh_tokens",
           "native_auth_ui",
           "provider_device_proof"
         ],
         "posture": "session_authority",
+        "provider_device_proof": "advisory",
         "readiness": "verification_required",
         "requires_recent_auth": null,
+        "route_authority_source": "session_authority_lane",
         "route_id": "camera",
         "safe_detail_keys": [
           "required_assurance_level",
@@ -138,6 +172,13 @@
           "return_expires_at",
           "return_age_seconds"
         ],
+        "security_closeout": {
+          "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+          "proof_class": "merge_blocking",
+          "review_model": "stride",
+          "status": "shipped",
+          "unresolved_high_or_critical_findings": 0
+        },
         "shipped_contracts": [
           "session_authority",
           "handoff_ticket",
@@ -167,10 +208,144 @@
           "route_target_validation": "manifest_route_id",
           "session_renewal": "host_instructions",
           "status": "shipped"
+        },
+        "telemetry": {
+          "authority_source": "diagnostic_evidence_only",
+          "event_names": [
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "start"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "stop"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "exception"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "denial"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "redeem"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "challenge"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "validate"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "deny"
+            ]
+          ],
+          "forbidden_metadata_keys": [
+            "access_token",
+            "actor_id",
+            "authorization_code",
+            "credential_id",
+            "device_id",
+            "email",
+            "id_token",
+            "ip",
+            "nonce",
+            "org_id",
+            "passkey_credential_id",
+            "pkce_verifier",
+            "provider_payload",
+            "raw_return_to",
+            "refresh_token",
+            "return_to",
+            "session_ref",
+            "subject_ref",
+            "user_agent"
+          ],
+          "metadata_keys": [
+            "route_id",
+            "flow",
+            "return_kind",
+            "transport",
+            "outcome",
+            "denial_code",
+            "shell_reason",
+            "authority_state",
+            "auth_posture",
+            "required_assurance_level",
+            "current_assurance_level",
+            "freshness_bucket",
+            "lifecycle_state",
+            "binding_result",
+            "link_verification",
+            "validation_posture",
+            "proof_class",
+            "correlation_id"
+          ],
+          "proof_class": "merge_blocking",
+          "status": "shipped"
         }
       },
       "hint": "inspect route camera support, proof, rebuild, and denial fields",
-      "message": "route camera uses contract-only auth predicates",
+      "message": "route camera uses Sigra auth predicates with host verification required",
       "severity": "advisory"
     },
     {
@@ -285,7 +460,7 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-02T09:19:12Z",
+  "generated_at": "2026-06-02T14:46:51Z",
   "indexes": {
     "by_auth_predicate": {
       "step_up_required": [
@@ -361,6 +536,29 @@
       "auth": {
         "auth_min_level": null,
         "auth_posture": "strict_recent",
+        "auth_return": {
+          "authority_source": "server_record",
+          "custom_scheme_posture": "advisory_only",
+          "envelope_authority": false,
+          "kinds": [
+            "oauth",
+            "passkey",
+            "native_auth"
+          ],
+          "proof_class": "merge_blocking",
+          "route_policy_seam": "auth_return",
+          "route_target_validation": "manifest_route_id",
+          "sensitive_transport": "verified_https_link_required",
+          "status": "shipped",
+          "transports": [
+            "http_callback",
+            "verified_https_link",
+            "custom_scheme",
+            "bridge_event"
+          ]
+        },
+        "contract_proof_class": "merge_blocking",
+        "contract_surface": "full_sigra_machinery",
         "denial_codes": [
           "auth.step_up.missing_context",
           "auth.step_up.invalid_context",
@@ -416,6 +614,14 @@
           "auth.return.native_auth.callback_mismatch",
           "auth.return.native_auth.projection_failed"
         ],
+        "evidence_authority": {
+          "auth_return_envelope": false,
+          "bridge_event": false,
+          "deep_link": false,
+          "handoff_envelope": false,
+          "provider_payload": false,
+          "step_up_locator": false
+        },
         "fallback": "step_up_required",
         "handoff": {
           "audit_fields": [
@@ -444,14 +650,17 @@
           "proof_class": "merge_blocking",
           "status": "shipped"
         },
+        "host_readiness": "verification_required",
         "non_goals": [
           "refresh_tokens",
           "native_auth_ui",
           "provider_device_proof"
         ],
         "posture": "session_authority",
+        "provider_device_proof": "advisory",
         "readiness": "verification_required",
         "requires_recent_auth": null,
+        "route_authority_source": "session_authority_lane",
         "safe_detail_keys": [
           "required_assurance_level",
           "current_assurance_level",
@@ -491,6 +700,13 @@
           "return_expires_at",
           "return_age_seconds"
         ],
+        "security_closeout": {
+          "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+          "proof_class": "merge_blocking",
+          "review_model": "stride",
+          "status": "shipped",
+          "unresolved_high_or_critical_findings": 0
+        },
         "shipped_contracts": [
           "session_authority",
           "handoff_ticket",
@@ -519,6 +735,140 @@
           "proof_class": "merge_blocking",
           "route_target_validation": "manifest_route_id",
           "session_renewal": "host_instructions",
+          "status": "shipped"
+        },
+        "telemetry": {
+          "authority_source": "diagnostic_evidence_only",
+          "event_names": [
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "start"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "stop"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "exception"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "denial"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "redeem"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "challenge"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "validate"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "deny"
+            ]
+          ],
+          "forbidden_metadata_keys": [
+            "access_token",
+            "actor_id",
+            "authorization_code",
+            "credential_id",
+            "device_id",
+            "email",
+            "id_token",
+            "ip",
+            "nonce",
+            "org_id",
+            "passkey_credential_id",
+            "pkce_verifier",
+            "provider_payload",
+            "raw_return_to",
+            "refresh_token",
+            "return_to",
+            "session_ref",
+            "subject_ref",
+            "user_agent"
+          ],
+          "metadata_keys": [
+            "route_id",
+            "flow",
+            "return_kind",
+            "transport",
+            "outcome",
+            "denial_code",
+            "shell_reason",
+            "authority_state",
+            "auth_posture",
+            "required_assurance_level",
+            "current_assurance_level",
+            "freshness_bucket",
+            "lifecycle_state",
+            "binding_result",
+            "link_verification",
+            "validation_posture",
+            "proof_class",
+            "correlation_id"
+          ],
+          "proof_class": "merge_blocking",
           "status": "shipped"
         }
       },
@@ -584,6 +934,29 @@
           "details": {
             "auth_min_level": null,
             "auth_posture": "strict_recent",
+            "auth_return": {
+              "authority_source": "server_record",
+              "custom_scheme_posture": "advisory_only",
+              "envelope_authority": false,
+              "kinds": [
+                "oauth",
+                "passkey",
+                "native_auth"
+              ],
+              "proof_class": "merge_blocking",
+              "route_policy_seam": "auth_return",
+              "route_target_validation": "manifest_route_id",
+              "sensitive_transport": "verified_https_link_required",
+              "status": "shipped",
+              "transports": [
+                "http_callback",
+                "verified_https_link",
+                "custom_scheme",
+                "bridge_event"
+              ]
+            },
+            "contract_proof_class": "merge_blocking",
+            "contract_surface": "full_sigra_machinery",
             "denial_codes": [
               "auth.step_up.missing_context",
               "auth.step_up.invalid_context",
@@ -639,6 +1012,14 @@
               "auth.return.native_auth.callback_mismatch",
               "auth.return.native_auth.projection_failed"
             ],
+            "evidence_authority": {
+              "auth_return_envelope": false,
+              "bridge_event": false,
+              "deep_link": false,
+              "handoff_envelope": false,
+              "provider_payload": false,
+              "step_up_locator": false
+            },
             "fallback": "step_up_required",
             "handoff": {
               "audit_fields": [
@@ -667,14 +1048,17 @@
               "proof_class": "merge_blocking",
               "status": "shipped"
             },
+            "host_readiness": "verification_required",
             "non_goals": [
               "refresh_tokens",
               "native_auth_ui",
               "provider_device_proof"
             ],
             "posture": "session_authority",
+            "provider_device_proof": "advisory",
             "readiness": "verification_required",
             "requires_recent_auth": null,
+            "route_authority_source": "session_authority_lane",
             "safe_detail_keys": [
               "required_assurance_level",
               "current_assurance_level",
@@ -714,6 +1098,13 @@
               "return_expires_at",
               "return_age_seconds"
             ],
+            "security_closeout": {
+              "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+              "proof_class": "merge_blocking",
+              "review_model": "stride",
+              "status": "shipped",
+              "unresolved_high_or_critical_findings": 0
+            },
             "shipped_contracts": [
               "session_authority",
               "handoff_ticket",
@@ -743,9 +1134,143 @@
               "route_target_validation": "manifest_route_id",
               "session_renewal": "host_instructions",
               "status": "shipped"
+            },
+            "telemetry": {
+              "authority_source": "diagnostic_evidence_only",
+              "event_names": [
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "start"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "stop"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "exception"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "denial"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "issue"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "redeem"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "deny"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "issue"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "challenge"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "consume"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "deny"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "validate"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "consume"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "deny"
+                ]
+              ],
+              "forbidden_metadata_keys": [
+                "access_token",
+                "actor_id",
+                "authorization_code",
+                "credential_id",
+                "device_id",
+                "email",
+                "id_token",
+                "ip",
+                "nonce",
+                "org_id",
+                "passkey_credential_id",
+                "pkce_verifier",
+                "provider_payload",
+                "raw_return_to",
+                "refresh_token",
+                "return_to",
+                "session_ref",
+                "subject_ref",
+                "user_agent"
+              ],
+              "metadata_keys": [
+                "route_id",
+                "flow",
+                "return_kind",
+                "transport",
+                "outcome",
+                "denial_code",
+                "shell_reason",
+                "authority_state",
+                "auth_posture",
+                "required_assurance_level",
+                "current_assurance_level",
+                "freshness_bucket",
+                "lifecycle_state",
+                "binding_result",
+                "link_verification",
+                "validation_posture",
+                "proof_class",
+                "correlation_id"
+              ],
+              "proof_class": "merge_blocking",
+              "status": "shipped"
             }
           },
-          "message": "route camera uses contract-only auth predicates",
+          "message": "route camera uses Sigra auth predicates with host verification required",
           "reason": "step_up_required",
           "route_id": "camera",
           "severity": "advisory",
@@ -808,16 +1333,25 @@
       "auth": {
         "auth_min_level": null,
         "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
         "denial_codes": [],
+        "evidence_authority": {},
         "fallback": null,
         "handoff": {},
+        "host_readiness": "not_applicable",
         "non_goals": [],
         "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
         "readiness": "supported",
         "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
         "safe_detail_keys": [],
+        "security_closeout": {},
         "shipped_contracts": [],
-        "step_up": {}
+        "step_up": {},
+        "telemetry": {}
       },
       "capabilities": [
         {
@@ -1017,16 +1551,25 @@
       "auth": {
         "auth_min_level": null,
         "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
         "denial_codes": [],
+        "evidence_authority": {},
         "fallback": null,
         "handoff": {},
+        "host_readiness": "not_applicable",
         "non_goals": [],
         "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
         "readiness": "supported",
         "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
         "safe_detail_keys": [],
+        "security_closeout": {},
         "shipped_contracts": [],
-        "step_up": {}
+        "step_up": {},
+        "telemetry": {}
       },
       "capabilities": [
         {
@@ -1141,16 +1684,25 @@
       "auth": {
         "auth_min_level": null,
         "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
         "denial_codes": [],
+        "evidence_authority": {},
         "fallback": null,
         "handoff": {},
+        "host_readiness": "not_applicable",
         "non_goals": [],
         "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
         "readiness": "supported",
         "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
         "safe_detail_keys": [],
+        "security_closeout": {},
         "shipped_contracts": [],
-        "step_up": {}
+        "step_up": {},
+        "telemetry": {}
       },
       "capabilities": [],
       "commerce": null,

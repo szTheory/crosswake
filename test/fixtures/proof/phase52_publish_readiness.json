@@ -151,12 +151,35 @@
       "claim_scope": "Sigra session-authority route readiness",
       "code": "diag.auth.sigra_session_authority",
       "details": {
+        "auth_return": {
+          "authority_source": "server_record",
+          "custom_scheme_posture": "advisory_only",
+          "envelope_authority": false,
+          "kinds": [
+            "oauth",
+            "passkey",
+            "native_auth"
+          ],
+          "proof_class": "merge_blocking",
+          "route_policy_seam": "auth_return",
+          "route_target_validation": "manifest_route_id",
+          "sensitive_transport": "verified_https_link_required",
+          "status": "shipped",
+          "transports": [
+            "http_callback",
+            "verified_https_link",
+            "custom_scheme",
+            "bridge_event"
+          ]
+        },
+        "contract_proof_class": "merge_blocking",
+        "contract_surface": "full_sigra_machinery",
         "deferred": [
           "refresh_tokens",
           "native_auth_ui",
           "provider_device_proof"
         ],
-        "demotion_trigger": "Demote if route predicates, auth_posture, auth_return route policy, step_up_required/auth.handoff/auth.step_up_intent/auth.return denial codes, handoff/step-up/auth-return server-record proof, or Sigra docs drift from support truth.",
+        "demotion_trigger": "Demote if route predicates, auth_posture, auth_return route policy, step_up_required/auth.handoff/auth.step_up_intent/auth.return denial codes, auth telemetry metadata, handoff/step-up/auth-return server-record proof, security closeout, or Sigra docs drift from support truth.",
         "denial_codes": [
           "auth.step_up.missing_context",
           "auth.step_up.invalid_context",
@@ -212,6 +235,14 @@
           "auth.return.native_auth.callback_mismatch",
           "auth.return.native_auth.projection_failed"
         ],
+        "evidence_authority": {
+          "auth_return_envelope": false,
+          "bridge_event": false,
+          "deep_link": false,
+          "handoff_envelope": false,
+          "provider_payload": false,
+          "step_up_locator": false
+        },
         "fallback": "step_up_required",
         "handoff": {
           "audit_fields": [
@@ -240,14 +271,17 @@
           "proof_class": "merge_blocking",
           "status": "shipped"
         },
+        "host_readiness": "verification_required",
         "posture": "session_authority",
         "promotion_rule_ids": [
           "auth.sigra.session_authority"
         ],
+        "provider_device_proof": "advisory",
         "required_docs_anchors": [
           "guides/support_matrix.md",
           "guides/companions.md"
         ],
+        "route_authority_source": "session_authority_lane",
         "route_ids": [
           "camera"
         ],
@@ -295,6 +329,13 @@
           "return_expires_at",
           "return_age_seconds"
         ],
+        "security_closeout": {
+          "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+          "proof_class": "merge_blocking",
+          "review_model": "stride",
+          "status": "shipped",
+          "unresolved_high_or_critical_findings": 0
+        },
         "shipped_contracts": [
           "session_authority",
           "handoff_ticket",
@@ -324,12 +365,125 @@
           "route_target_validation": "manifest_route_id",
           "session_renewal": "host_instructions",
           "status": "shipped"
+        },
+        "telemetry": {
+          "authority_source": "diagnostic_evidence_only",
+          "event_names": [
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "start"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "stop"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "exception"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "denial"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "redeem"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "challenge"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "validate"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "deny"
+            ]
+          ],
+          "metadata_keys": [
+            "route_id",
+            "flow",
+            "return_kind",
+            "transport",
+            "outcome",
+            "denial_code",
+            "shell_reason",
+            "authority_state",
+            "auth_posture",
+            "required_assurance_level",
+            "current_assurance_level",
+            "freshness_bucket",
+            "lifecycle_state",
+            "binding_result",
+            "link_verification",
+            "validation_posture",
+            "proof_class",
+            "correlation_id"
+          ],
+          "proof_class": "merge_blocking",
+          "status": "shipped"
         }
       },
       "docs_reference": "guides/companions.md",
-      "hint": "Keep auth predicates, handoff redemption, step-up completion, and auth-return validation backend-owned; fail closed with step_up_required, and use later phases for telemetry and security closeout machinery.",
+      "hint": "Keep auth predicates, handoff redemption, step-up completion, auth-return validation, telemetry, and security closeout backend-owned or evidence-only; fail closed with step_up_required.",
       "id": "auth.session_predicate_readiness",
-      "message": "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, step-up intent plus Plug/LiveView ceremony, and OAuth/passkey/native auth-return boundary contracts are shipped; refresh-token helpers, provider/device proof, telemetry/security closeout, provider templates, passkey SDK wrappers, and native auth UI are not shipped",
+      "message": "Sigra session-authority route evaluation, handoff ticket/server-record contract machinery, step-up intent plus Plug/LiveView ceremony, OAuth/passkey/native auth-return boundary contracts are shipped, and stable auth telemetry plus security closeout are shipped; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are not shipped",
       "proof_class": "advisory",
       "rebuild_requirement": {
         "action_classes": [

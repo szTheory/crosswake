@@ -254,9 +254,9 @@ defmodule Crosswake.SupportMatrix do
       action_class: "companion_native",
       docs_anchor: "guides/capabilities.md#bounded-bridge",
       delivery_supported: false,
-      deferred: [:chimeway_delivery, :notification_open_routing, :push_delivery_guarantees],
+      deferred: [:chimeway_delivery, :push_delivery_guarantees],
       posture:
-        "notification_token readiness is provider-snapshot evidence only; Chimeway delivery and notification-open routing are not shipped in v3.6."
+        "notification_token readiness is provider-snapshot evidence only; Chimeway delivery is not shipped in v3.9."
     }
   ]
 
