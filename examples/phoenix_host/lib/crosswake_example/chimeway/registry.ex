@@ -27,12 +27,18 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
   import Ecto.Query
 
+  @behaviour Crosswake.Companions.Chimeway.IntentConsumer
+
   alias Crosswake.Companions.Chimeway.Contracts
+  alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
+  alias Crosswake.Companions.Chimeway.Contracts.OpenResolution
   alias Crosswake.Companions.Chimeway.Contracts.ProviderFeedback
   alias Crosswake.Companions.Chimeway.Contracts.TokenEvidence
   alias Crosswake.Companions.Chimeway.Redaction
   alias Crosswake.Companions.Chimeway.Telemetry
   alias CrosswakeExample.Chimeway.MetadataSanitizer
+  alias CrosswakeExample.Chimeway.NotificationOpenIntent
+  alias CrosswakeExample.Chimeway.NotificationOpenIntentEvent
   alias CrosswakeExample.Chimeway.TokenBinding
   alias CrosswakeExample.Chimeway.TokenBindingEvent
   alias CrosswakeExample.Repo
@@ -1186,6 +1192,136 @@ defmodule CrosswakeExample.Chimeway.Registry do
 
       {:error, _step, reason, _changes} ->
         {:error, reason}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Implementation: Notification Open Intent
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Issues a one-time notification open intent.
+  """
+  def issue_notification_open_intent(attrs) do
+    intent_changeset = NotificationOpenIntent.changeset(%NotificationOpenIntent{}, attrs)
+
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:intent, intent_changeset)
+      |> Ecto.Multi.run(:event, fn repo, %{intent: intent} ->
+        event_changeset = NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
+          open_intent_id: intent.id,
+          event_type: "issued",
+          occurred_at: utc_now(),
+          details: %{}
+        })
+        repo.insert(event_changeset)
+      end)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{intent: intent, event: event}} ->
+        {:ok, %{intent: intent, event: event}}
+
+      {:error, _step, changeset, _changes} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Consumes a notification open intent, returning its resolution state.
+  """
+  @impl Crosswake.Companions.Chimeway.IntentConsumer
+  def consume_intent(%NotificationOpenEvidence{} = evidence) do
+    now = utc_now()
+    
+    intent_query =
+      from(i in NotificationOpenIntent,
+        where: i.open_ref == ^evidence.open_ref
+      )
+
+    result =
+      Ecto.Multi.new()
+      |> Ecto.Multi.run(:intent, fn repo, _changes ->
+        case repo.one(intent_query) do
+          nil -> {:error, :not_found}
+          intent -> {:ok, intent}
+        end
+      end)
+      |> Ecto.Multi.run(:validate, fn _repo, %{intent: intent} ->
+        cond do
+          intent.state != "issued" ->
+            {:error, :replayed}
+
+          DateTime.compare(intent.expires_at, now) == :lt ->
+            {:error, :expired}
+
+          intent.binding_ref != evidence.binding_ref ->
+            {:error, :binding_mismatch}
+
+          intent.route_id != evidence.route_id ->
+            {:error, :route_mismatch}
+
+          true ->
+            {:ok, :valid}
+        end
+      end)
+      |> Ecto.Multi.run(:binding, fn repo, %{intent: intent} ->
+        binding_query =
+          from(b in TokenBinding,
+            where: b.binding_ref == ^intent.binding_ref and b.state == :active
+          )
+
+        case repo.one(binding_query) do
+          nil -> {:error, :revoked}
+          binding -> {:ok, binding}
+        end
+      end)
+      |> Ecto.Multi.update(:consume, fn %{intent: intent} ->
+        NotificationOpenIntent.changeset(intent, %{
+          state: "consumed",
+          consumed_at: now
+        })
+      end)
+      |> Ecto.Multi.run(:event, fn repo, %{consume: intent} ->
+        event_changeset = NotificationOpenIntentEvent.changeset(%NotificationOpenIntentEvent{}, %{
+          open_intent_id: intent.id,
+          event_type: "consumed",
+          occurred_at: now,
+          details: %{}
+        })
+        repo.insert(event_changeset)
+      end)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{consume: _intent}} ->
+        {:ok, Contracts.new_open_resolution!(%{
+          open_ref: evidence.open_ref,
+          state: :valid,
+          resolved_at: now
+        })}
+
+      {:error, :intent, :not_found, _changes} ->
+        {:ok, Contracts.new_open_resolution!(%{
+          open_ref: evidence.open_ref,
+          state: :invalid,
+          resolved_at: now
+        })}
+
+      {:error, :binding, :revoked, _changes} ->
+        {:ok, Contracts.new_open_resolution!(%{
+          open_ref: evidence.open_ref,
+          state: :revoked,
+          resolved_at: now
+        })}
+
+      {:error, :validate, reason, _changes} ->
+        {:ok, Contracts.new_open_resolution!(%{
+          open_ref: evidence.open_ref,
+          state: reason,
+          resolved_at: now
+        })}
     end
   end
 
