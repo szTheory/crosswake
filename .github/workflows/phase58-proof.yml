@@ -50,7 +50,7 @@ jobs:
 
       - name: Run layered Sigra auth proof
         run: |
-          mix test \
+          mix test --exclude requires_example_host \
             test/crosswake/proof/phase54_sigra_session_authority_test.exs \
             test/crosswake/proof/phase55_session_handoff_tickets_test.exs \
             test/crosswake/proof/phase56_step_up_ceremony_test.exs \
