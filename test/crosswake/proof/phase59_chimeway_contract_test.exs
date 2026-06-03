@@ -96,7 +96,7 @@ defmodule Crosswake.Proof.Phase59ChimewayContractTest do
     assert :chimeway_delivery in notification_truth.deferred
     refute :notification_open_routing in notification_truth.deferred
 
-    assert notification_truth.posture =~ "Chimeway delivery is not shipped in v3.9"
+    assert notification_truth.posture =~ "Chimeway APNs/FCM push delivery execution remains deferred and unsupported"
   end
 
   test "public Chimeway structs never define raw token aliases" do

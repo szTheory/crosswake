@@ -167,8 +167,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "auth.sigra.session_authority"
     assert guide =~ "diag.auth.sigra_session_authority"
 
-    assert guide =~
-             "notification-token readiness is provider-snapshot only and not delivery support"
+    assert guide =~ "notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry"
 
     assert guide =~ "Standalone public shell packages are deferred"
   end

@@ -53,6 +53,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       promotion_rule_section(Crosswake.SupportMatrix.promotion_rules()),
       "",
+      notification_surface_section(),
+      "",
       public_non_claims_section(),
       ""
     ]
@@ -176,13 +178,36 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp notification_surface_section do
+    [
+      "## Notification Surface (v3.9)",
+      "",
+      "Crosswake provides explicitly bounded support for notifications via the Chimeway companion.",
+      "",
+      "**Supported:**",
+      "- **Token binding:** The `notification_token` capability resolves local push tokens.",
+      "- **notification-open routing:** Direct routing to Phoenix views upon notification interaction.",
+      "- **Resolution limits:** Bounded bridge operations ensure requests complete predictably.",
+      "- **Evidence redaction:** Diagnostic output actively redacts sensitive identifiers.",
+      "",
+      "**Deferred (Not Supported):**",
+      "- **APNs/FCM delivery execution:** Crosswake does not act as a push delivery service.",
+      "- **Push metrics:** Delivery and read-receipt metrics are not tracked by the core framework.",
+      "- **Deep UI native presentation:** Custom native notification UI presentation is left to the host shell.",
+      "",
+      "**Strict Telemetry Contract:**",
+      "The telemetry event structure `[:crosswake, :notification, :*]` exposes low-cardinality delivery status and routing outcomes. **Raw payload data, device tokens, and PII are strictly forbidden and explicitly stripped from all diagnostic output.**"
+    ]
+    |> Enum.join("\n")
+  end
+
   defp public_non_claims_section do
     [
       "## Public Non-Claims And Rough Edges",
       "",
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
       "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, and low-cardinality diagnostic metadata; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.",
-      "- notification-token readiness is provider-snapshot only and not delivery support; Chimeway delivery, notification-open routing, and push-delivery guarantees are not shipped in v3.6.",
+      "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry.",
       "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
     ]
     |> Enum.join("\n")

@@ -353,6 +353,7 @@
       "code": "operator.notification_token.provider_snapshot",
       "details": {
         "delivery_supported": false,
+        "open_routing_active": false,
         "posture": "provider_snapshot",
         "provider_readiness": "verification_required",
         "route_id": "dashboard",
@@ -460,7 +461,7 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-02T14:46:51Z",
+  "generated_at": "2026-06-03T17:10:12Z",
   "indexes": {
     "by_auth_predicate": {
       "step_up_required": [
@@ -1286,6 +1287,7 @@
       "id": "camera",
       "notifications": {
         "delivery_supported": false,
+        "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
         "supported_providers": [
@@ -1480,6 +1482,7 @@
         {
           "details": {
             "delivery_supported": false,
+            "open_routing_active": false,
             "posture": "provider_snapshot",
             "provider_readiness": "verification_required",
             "supported_providers": [
@@ -1504,6 +1507,7 @@
       "id": "dashboard",
       "notifications": {
         "delivery_supported": false,
+        "open_routing_active": false,
         "posture": "provider_snapshot",
         "provider_readiness": "verification_required",
         "supported_providers": [
@@ -1639,6 +1643,7 @@
       "id": "library",
       "notifications": {
         "delivery_supported": false,
+        "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
         "supported_providers": [
@@ -1749,6 +1754,7 @@
       "id": "study-session",
       "notifications": {
         "delivery_supported": false,
+        "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
         "supported_providers": [
