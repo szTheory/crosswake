@@ -175,6 +175,17 @@ Plans:
 
 **Requirements:** OPEN-01, OPEN-02, OPEN-03
 
+**Plans:** 4 plans
+
+Plans:
+**Wave 1**
+- [ ] 61-01-PLAN.md — Evidence Contracts and Error Boundaries
+- [ ] 61-02-PLAN.md — Notification-Open Policy Opt-In
+- [ ] 61-03-PLAN.md — Host Open-Intent Schema and Transaction Flow
+
+**Wave 2** *(depends on Wave 1)*
+- [ ] 61-04-PLAN.md — Notification-Open Resolver and RouteGate Integration
+
 **Success criteria:**
 
 1. Notification opens use bounded refs such as notification/open/action refs plus route id rather than arbitrary URL authority.
