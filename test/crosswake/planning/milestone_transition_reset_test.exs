@@ -33,7 +33,7 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
 
   test "live planning surfaces no longer leave v3.8 active or unfinished" do
     roadmap = File.read!(@roadmap)
-    requirements = File.read!(@requirements)
+    requirements = live_or_archived_requirements()
     project = File.read!(@project)
     state = File.read!(@state)
 
@@ -81,5 +81,18 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
 
     assert positions == Enum.sort(positions),
            "queue terms are out of order: #{inspect(ordered_terms)}"
+  end
+
+  # After a milestone closes, the live REQUIREMENTS.md is intentionally removed
+  # (recreated for the next milestone via /gsd:new-milestone) and history is
+  # preserved in milestones/<version>-REQUIREMENTS.md. During this "awaiting next
+  # milestone" interlude, read the closing milestone's archived snapshot so the
+  # transition assertions still describe the shipped state.
+  defp live_or_archived_requirements do
+    if File.exists?(@requirements) do
+      File.read!(@requirements)
+    else
+      File.read!(Path.join(@root, ".planning/milestones/v3.9-REQUIREMENTS.md"))
+    end
   end
 end

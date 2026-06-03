@@ -214,7 +214,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp requirements_state_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
-    requirements = read_file(Path.join(cwd, ".planning/REQUIREMENTS.md"))
+    requirements = requirements_source(cwd, milestone(parse_frontmatter(closeout)))
 
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
@@ -453,6 +453,20 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp closeout_path(cwd, opts) do
     Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"))
+  end
+
+  # The live REQUIREMENTS.md is intentionally removed at milestone close and
+  # recreated for the next milestone via /gsd:new-milestone. When it is absent,
+  # fall back to the closing milestone's archived snapshot so closeout truth
+  # survives the post-close "awaiting next milestone" interlude.
+  defp requirements_source(cwd, milestone) do
+    live = Path.join(cwd, ".planning/REQUIREMENTS.md")
+
+    cond do
+      File.exists?(live) -> read_file(live)
+      milestone -> read_file(Path.join(cwd, ".planning/milestones/#{milestone}-REQUIREMENTS.md"))
+      true -> read_file(live)
+    end
   end
 
   defp milestone(frontmatter) do
