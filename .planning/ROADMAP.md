@@ -145,7 +145,13 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
   3. An operator running `mix crosswake.doctor` and reading `SupportMatrix` sees a rebuild & compatibility matrix mapping shell/runtime-line version to supported manifest/capability surface.
   4. Support truth reports `:jvm_hermetic` distinctly from `:device_verified` and never labels CI-only evidence as device-verified.
   5. Android support state carries explicit, documented promotion criteria (required evidence, minimum consecutive passes, demotion trigger) for moving from `:verification_required` to `:supported`.
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 64-01-PLAN.md — Wave-0 hermetic proof lane scaffold (RLINE-01..05)
+- [ ] 64-02-PLAN.md — types.ex foundation: RuntimeLineRow + verification_method/required_verification_method + SupportMatrix.rebuild_matrix field
+- [ ] 64-03-PLAN.md — RebuildPolicy module (classify/2, diff/2, rebuild_required?/1)
+- [ ] 64-04-PLAN.md — SupportMatrix rebuild_matrix data, CI-only-never-device validation, two gated Android promotion rows
+- [ ] 64-05-PLAN.md — Doctor human+JSON rebuild matrix + evidence posture rendering
 
 ### Phase 65: Diagnostic Export Seam (Elixir)
 **Goal**: Define the diagnostics-export contract in Elixir before any native export code exists — a typed, versioned envelope with layer attribution and an explicit, tested redaction allowlist — delivered as a fire-and-forget HTTP seam, not a bridge command.
@@ -212,7 +218,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 0/TBD | Not started | - |
+| 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 0/5 | Planned | - |
 | 65. Diagnostic Export Seam (Elixir) | v4.0 | 0/TBD | Not started | - |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
 | 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
