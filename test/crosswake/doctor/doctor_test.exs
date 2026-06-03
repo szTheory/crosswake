@@ -939,6 +939,47 @@ defmodule Crosswake.DoctorTest do
     end
   end
 
+  defmodule NotificationIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live("/notify", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "notify",
+            runtime: :live_view,
+            capabilities: ["notification_token"],
+            notification_open: true
+          ]
+        )
+      end
+    end
+  end
+
+  test "notification findings surface in formatted Doctor output when configured", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: NotificationIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    notification_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "notification."))
+
+    assert Enum.any?(
+             notification_findings,
+             &(&1.code == "notification.telemetry_contract" and &1.severity == :advisory)
+           )
+
+    assert Enum.any?(
+             notification_findings,
+             &(&1.code == "notification.delivery_deferred" and &1.severity == :advisory)
+           )
+  end
+
   defp write_shell_artifacts!(target) do
     ios_root = Path.join(target, "native/ios/crosswake_shell")
     android_root = Path.join(target, "native/android/crosswake_shell")

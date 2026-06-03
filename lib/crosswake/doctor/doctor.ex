@@ -146,6 +146,7 @@ defmodule Crosswake.Doctor do
     phase_38_findings = phase_38_companion_seam_findings()
     phase_41_findings = phase_41_gating_findings(manifest)
     phase_46_findings = phase_46_auth_findings(manifest)
+    phase_62_findings = phase_62_notification_findings(manifest)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -158,7 +159,11 @@ defmodule Crosswake.Doctor do
         phase_10_findings ++
         phase_19_findings ++
         phase_23_findings ++
-        phase_38_findings ++ phase_41_findings ++ phase_46_findings ++ publish_findings
+        phase_38_findings ++
+        phase_41_findings ++
+        phase_46_findings ++
+        phase_62_findings ++
+        publish_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -787,6 +792,52 @@ defmodule Crosswake.Doctor do
       end
 
     route_findings ++ contract_finding
+  end
+
+  defp phase_62_notification_findings(nil), do: []
+
+  defp phase_62_notification_findings(manifest) do
+    routes = manifest.routes |> Map.values()
+    capabilities = Map.keys(manifest.capability_registry || %{})
+    
+    has_notifications? = Enum.any?(routes, fn route ->
+      "notification_token" in route.capabilities or route.notification_open == true
+    end) or "notification_token" in capabilities
+
+    if has_notifications? do
+      truth = SupportMatrix.notification_support_truth() |> List.first(%{})
+      telemetry = Map.get(truth, :telemetry, %{})
+      
+      [
+        check(
+          :advisory,
+          "notification.telemetry_contract",
+          "notification_posture",
+          "Crosswake notifications expose strict telemetry for diagnostics. Raw APNs/FCM payloads, device tokens, and PII are forbidden.",
+          "Check chimeway telemetry events for delivery status. Do not attempt to log raw push tokens.",
+          %{
+            event_names: Map.get(telemetry, :event_names, []),
+            metadata_keys: Map.get(telemetry, :metadata_keys, []),
+            forbidden_metadata_keys: Map.get(telemetry, :forbidden_metadata_keys, []),
+            authority_source: Map.get(telemetry, :authority_source),
+            proof_class: Map.get(telemetry, :proof_class)
+          }
+        ),
+        check(
+          :advisory,
+          "notification.delivery_deferred",
+          "notification_posture",
+          Map.get(truth, :posture, ""),
+          "Use the local notification_token capability to read push tokens. Do not expect Crosswake to deliver remote push notifications to APNs or FCM; delivery execution remains deferred.",
+          %{
+            delivery_supported: Map.get(truth, :delivery_supported, false),
+            deferred: Map.get(truth, :deferred, [])
+          }
+        )
+      ]
+    else
+      []
+    end
   end
 
   defp phase_23_commerce_summary(nil, _opts) do
