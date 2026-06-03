@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.9
 milestone_name: Chimeway Notification Seam
-status: executing
-last_updated: "2026-06-02T20:58:55.446Z"
+status: ready_to_plan
+last_updated: 2026-06-03T00:04:45.021Z
 last_activity: 2026-06-02 -- Phase 60 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 6
   percent: 20
+stopped_at: Phase 60 complete (3/3) — ready to discuss Phase 61
 ---
 
 # Project State
@@ -20,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-02)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 60 — example-host-registry-and-phoenix-wiring
+**Current focus:** Phase 61 — notification open resolver and route policy
 
 ## Current Position
 
-Phase: 60 (example-host-registry-and-phoenix-wiring) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 60
-Last activity: 2026-06-02 -- Phase 60 execution started
+Phase: 61
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-03
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 133 (v1.0–v3.8 Phase 58)
+- Total plans completed: 139 (v1.0–v3.8 Phase 58)
 - v3.8: 5 phases, 19 plans, 42 tasks — shipped 2026-06-02
 - v3.7: 2 phases, 7 plans — shipped 2026-06-01
 - v3.6: 6 phases, 15 plans — shipped 2026-06-01
