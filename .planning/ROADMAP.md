@@ -199,11 +199,11 @@ Plans:
 
 **Requirements:** DIAG-01, DIAG-02
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 62-01-PLAN.md — Support Matrix & Telemetry Contract Update
+- [x] 62-01-PLAN.md — Support Matrix & Telemetry Contract Update
 - [ ] 62-02-PLAN.md — Operator Inspection Posture
 
 **Wave 2**
