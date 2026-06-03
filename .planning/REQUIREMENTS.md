@@ -28,7 +28,7 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 ### Proof
 
 - [x] **PROOF-01**: Merge-blocking hermetic proof covers token contracts, binding/revocation lifecycle, open resolution, Sigra route gating, denial sanitization, support/docs parity, and telemetry redaction.
-- [ ] **PROOF-02**: APNs/FCM device delivery, real token issuance, provider credentials, notification-tray behavior, and provider console metrics remain advisory with explicit promotion criteria.
+- [x] **PROOF-02**: APNs/FCM device delivery, real token issuance, provider credentials, notification-tray behavior, and provider console metrics remain advisory with explicit promotion criteria.
 
 ## Future Requirements
 
@@ -74,7 +74,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIAG-01 | Phase 62 | Complete |
 | DIAG-02 | Phase 62 | Complete |
 | PROOF-01 | Phase 63 | Complete |
-| PROOF-02 | Phase 63 | Pending |
+| PROOF-02 | Phase 63 | Complete |
 
 **Coverage:**
 - v3.9 requirements: 10 total
