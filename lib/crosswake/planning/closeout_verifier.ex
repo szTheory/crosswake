@@ -322,7 +322,17 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         paths != [] and Enum.all?(paths, &(read_file(&1) =~ "nyquist_compliant: true"))
       end)
 
-    deferred = closeout =~ "validation-ledger-finalization"
+    # The escape hatch only applies to an ACTIVE deferral: a deferred_with_reason
+    # entry whose scope is validation-ledger-finalization and whose status is not
+    # yet resolved/closed. A naive `closeout =~ "validation-ledger-finalization"`
+    # would also match the same scope keyword inside a resolved_gaps entry, which
+    # would silently re-open the hatch after cleanup and let a tampered ledger pass.
+    deferred =
+      deferred_entries(fm)
+      |> Enum.any?(fn entry ->
+        entry_field(entry, "scope") == "validation-ledger-finalization" and
+          entry_field(entry, "status") not in ["resolved", "closed"]
+      end)
 
     passed =
       closeout =~

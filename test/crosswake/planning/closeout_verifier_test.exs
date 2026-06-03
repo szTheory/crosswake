@@ -224,6 +224,58 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     assert check.observed =~ "49"
   end
 
+  test "resolved_gaps scope keyword does not re-open the validation-ledger escape hatch" do
+    tmp = tmp_dir!("resolved-gaps-no-escape")
+    File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
+
+    # Current-milestone closeout where validation-ledger-finalization appears
+    # ONLY inside a resolved_gaps entry (no active deferral). A non-compliant
+    # ledger must still block — the resolved gap must NOT keep the escape open.
+    File.write!(
+      Path.join(tmp, ".planning/milestones/v3.9-CLOSEOUT.md"),
+      """
+      ---
+      milestone: v3.9
+      milestone_name: Test Milestone
+      status: complete
+      shipped_date: 2026-01-01
+      requirements_state: {status: complete}
+      roadmap_parity: {status: complete}
+      phase_verification_coverage:
+        status: complete
+        expected_phases: ["59"]
+      summary_frontmatter_coverage: {status: complete}
+      validation_ledger_status:
+        status: complete
+      thread_seed_disposition: {status: complete}
+      release_changelog_continuity: {status: complete}
+      public_support_claim_changes: {status: complete}
+      deferred_with_reason: []
+      exceptions: []
+      resolved_gaps:
+        - owner: maintainer
+          scope: validation-ledger-finalization
+          reason: "Closed in a prior pass."
+          revisit_phase: 64
+          evidence: "archived"
+          status: resolved
+      ---
+      """
+    )
+
+    write_minimal_files!(tmp)
+
+    # Non-compliant ledger for the only expected phase
+    ledger_dir = Path.join(tmp, ".planning/milestones/v3.9-phases/59-x")
+    File.mkdir_p!(ledger_dir)
+    File.write!(Path.join(ledger_dir, "59-VALIDATION.md"), "nyquist_compliant: false\n")
+
+    check = find_check!(CloseoutVerifier.run(cwd: tmp), "closeout.validation.ledger")
+
+    assert check.blocking
+    assert check.observed =~ "59"
+  end
+
   defp find_check!(report, id) do
     Enum.find(report.checks, &(&1.id == id)) || flunk("missing check #{id}")
   end
