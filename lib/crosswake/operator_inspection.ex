@@ -290,7 +290,8 @@ defmodule Crosswake.OperatorInspection do
       provider_readiness: if(declared?, do: :verification_required, else: :not_applicable),
       posture: if(declared?, do: :provider_snapshot, else: :not_applicable),
       supported_providers: NotificationToken.supported_providers(),
-      delivery_supported: false
+      delivery_supported: false,
+      open_routing_active: route.notification_open != false and route.notification_open != nil
     }
   end
 
