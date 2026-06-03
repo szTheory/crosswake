@@ -16,9 +16,9 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Notification Opens
 
-- [ ] **OPEN-01**: Notification-open evidence resolves only through manifest-known route ids and route policy with `activation_source: :notification`.
+- [x] **OPEN-01**: Notification-open evidence resolves only through manifest-known route ids and route policy with `activation_source: :notification`.
 - [ ] **OPEN-02**: Notification opens for auth-sensitive routes reuse Sigra session authority and step-up semantics before allowing route activation.
-- [ ] **OPEN-03**: Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes.
+- [x] **OPEN-03**: Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes.
 
 ### Diagnostics
 
@@ -68,9 +68,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-01 | Phase 59 | Complete |
 | TOKN-02 | Phase 59 | Complete |
 | TOKN-03 | Phase 60 | Complete |
-| OPEN-01 | Phase 61 | Pending |
+| OPEN-01 | Phase 61 | Complete |
 | OPEN-02 | Phase 61 | Pending |
-| OPEN-03 | Phase 61 | Pending |
+| OPEN-03 | Phase 61 | Complete |
 | DIAG-01 | Phase 62 | Pending |
 | DIAG-02 | Phase 62 | Pending |
 | PROOF-01 | Phase 63 | Pending |

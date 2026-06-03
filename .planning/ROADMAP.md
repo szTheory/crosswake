@@ -175,11 +175,11 @@ Plans:
 
 **Requirements:** OPEN-01, OPEN-02, OPEN-03
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 61-01-PLAN.md — Evidence Contracts and Error Boundaries
+- [x] 61-01-PLAN.md — Evidence Contracts and Error Boundaries
 - [ ] 61-02-PLAN.md — Notification-Open Policy Opt-In
 - [ ] 61-03-PLAN.md — Host Open-Intent Schema and Transaction Flow
 
