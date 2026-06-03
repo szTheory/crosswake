@@ -22,7 +22,7 @@ Requirements for the current milestone. Each requirement maps to exactly one roa
 
 ### Diagnostics
 
-- [ ] **DIAG-01**: Doctor, operator inspection, support matrix, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
+- [x] **DIAG-01**: Doctor, operator inspection, support matrix, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
 - [x] **DIAG-02**: Notification telemetry uses stable low-cardinality events and forbids raw tokens, raw payloads, PII, route params, and provider payload bodies.
 
 ### Proof
@@ -71,7 +71,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPEN-01 | Phase 61 | Complete |
 | OPEN-02 | Phase 61 | Pending |
 | OPEN-03 | Phase 61 | Complete |
-| DIAG-01 | Phase 62 | Pending |
+| DIAG-01 | Phase 62 | Complete |
 | DIAG-02 | Phase 62 | Complete |
 | PROOF-01 | Phase 63 | Pending |
 | PROOF-02 | Phase 63 | Pending |
