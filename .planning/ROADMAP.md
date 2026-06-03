@@ -109,7 +109,7 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 
 - [x] Phase 59: Chimeway Contract And Token Binding Semantics — Not started (completed 2026-06-02)
 - [x] Phase 60: Example Host Registry And Phoenix Wiring — 3/3 plans complete (completed 2026-06-02)
-- [ ] Phase 61: Notification-Open Resolver And Route Policy — Not started
+- [x] Phase 61: Notification-Open Resolver And Route Policy — Completed 2026-06-03
 - [ ] Phase 62: Diagnostics, Support Truth, And Docs — Not started
 - [ ] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Not started
 
@@ -198,6 +198,19 @@ Plans:
 **Goal:** Publish operator-facing truth for what v3.9 ships and what remains provider/device advisory.
 
 **Requirements:** DIAG-01, DIAG-02
+
+**Plans:** 4 plans
+
+Plans:
+**Wave 1**
+- [ ] 62-01-PLAN.md — Support Matrix & Telemetry Contract Update
+- [ ] 62-02-PLAN.md — Operator Inspection Posture
+
+**Wave 2**
+- [ ] 62-03-PLAN.md — Doctor Notification Findings
+
+**Wave 3**
+- [ ] 62-04-PLAN.md — Documentation Update
 
 **Success criteria:**
 
