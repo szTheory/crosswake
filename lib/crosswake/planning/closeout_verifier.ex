@@ -252,10 +252,13 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp phase_verification_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
+    fm = parse_frontmatter(closeout)
+    ms = milestone(fm)
+    phases = expected_phases(fm)
 
     missing =
-      Enum.reject(@v39_phases, fn phase ->
-        Path.wildcard(Path.join(cwd, ".planning/phases/#{phase}-*/*-VERIFICATION.md")) != []
+      Enum.reject(phases, fn phase ->
+        phase_paths(cwd, ms, phase, "*-VERIFICATION.md") != []
       end)
 
     passed =
@@ -276,9 +279,14 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp summary_frontmatter_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
+    fm = parse_frontmatter(closeout)
+    ms = milestone(fm)
+    phases = expected_phases(fm)
 
     summary_paths =
-      Path.wildcard(Path.join(cwd, ".planning/phases/{59,60,61,62,63}-*/*-SUMMARY.md"))
+      Enum.flat_map(phases, fn phase ->
+        phase_paths(cwd, ms, phase, "*-SUMMARY.md")
+      end)
 
     malformed =
       Enum.reject(summary_paths, fn path ->
@@ -303,29 +311,31 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp validation_ledger_check(cwd, opts) do
     closeout = read_file(closeout_path(cwd, opts))
-
-    validation_paths =
-      Path.wildcard(Path.join(cwd, ".planning/phases/{59,60,61,62,63}-*/*-VALIDATION.md"))
+    fm = parse_frontmatter(closeout)
+    ms = milestone(fm)
+    phases = expected_phases(fm)
 
     problematic =
-      Enum.reject(validation_paths, fn path ->
-        content = read_file(path)
-        content =~ "nyquist_compliant: true" or content =~ "deferred_with_reason"
+      Enum.reject(phases, fn phase ->
+        paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
+        paths != [] and Enum.all?(paths, &(read_file(&1) =~ "nyquist_compliant: true"))
       end)
+
+    deferred = closeout =~ "validation-ledger-finalization"
 
     passed =
       closeout =~
         ~r/validation_ledger_status:\s*\n\s*status:\s*(complete|deferred_with_reason|archived)/ and
-        (problematic == [] or closeout =~ "validation-ledger-finalization")
+        (problematic == [] or deferred)
 
     check(
       "closeout.validation.ledger",
       "validation ledger status",
       ".planning/phases",
       passed,
-      "non-compliant validation ledgers: #{Enum.map_join(problematic, ", ", &rel(cwd, &1))}",
+      "non-compliant or missing validation ledgers for phases: #{Enum.join(problematic, ", ")}",
       "Mark validation ledgers Nyquist-compliant or defer them with owner/scope/reason evidence.",
-      %{problematic: Enum.map(problematic, &rel(cwd, &1))}
+      %{problematic: problematic}
     )
   end
 
@@ -442,6 +452,42 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp closeout_path(cwd, opts) do
     Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"))
+  end
+
+  defp milestone(frontmatter) do
+    case Regex.run(~r/^milestone:\s*(\S+)/m, frontmatter, capture: :all_but_first) do
+      [ms] -> ms
+      nil -> nil
+    end
+  end
+
+  defp expected_phases(frontmatter) do
+    case Regex.run(~r/expected_phases:\s*(\[.*?\])/s, frontmatter, capture: :all_but_first) do
+      [list_str] ->
+        phases =
+          ~r/"?(\d+(?:\.\d+)?)"?/
+          |> Regex.scan(list_str, capture: :all_but_first)
+          |> Enum.map(fn [p] -> p end)
+
+        if phases == [], do: @v39_phases, else: phases
+
+      nil ->
+        @v39_phases
+    end
+  end
+
+  defp phase_paths(cwd, milestone, phase, suffix) do
+    archived =
+      if milestone do
+        Path.wildcard(
+          Path.join(cwd, ".planning/milestones/#{milestone}-phases/#{phase}-*/#{suffix}")
+        )
+      else
+        []
+      end
+
+    live = Path.wildcard(Path.join(cwd, ".planning/phases/#{phase}-*/#{suffix}"))
+    archived ++ live
   end
 
   defp read_file(path) do
