@@ -1,7 +1,7 @@
 ---
 phase: 56
 slug: step-up-intent-and-plug-liveview-ceremony
-status: draft
+status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
@@ -38,15 +38,15 @@ created: 2026-06-02
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 56-01-01 | 01 | 1 | STEP-01 | T-56-01 / T-56-02 | Step-up locator rejects authority-bearing fields and record lifecycle is closed. | unit | `mix test test/crosswake/companions/sigra/step_up_test.exs --trace` | W0 | pending |
-| 56-01-02 | 01 | 1 | STEP-01 | T-56-03 | `auth.step_up_intent.*` codes preserve public `:step_up_required` and sanitize shell details. | unit/proof | `mix test test/crosswake/companions/sigra/step_up_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
-| 56-02-01 | 02 | 2 | STEP-01, STEP-03 | T-56-04 / T-56-05 | Example-host intent issue/consume/cancel/revoke/expire uses server record authority and one-time conditional consume. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
-| 56-02-02 | 02 | 2 | STEP-03 | T-56-06 / T-56-07 | Completion projects `SessionAuthorityLane`, renews host session instructions, rotates CSRF posture, and revalidates manifest route target. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
-| 56-03-01 | 03 | 3 | STEP-02 | T-56-08 | Plug and LiveView adapters call the same ceremony core and fail closed into identical challenge decisions. | unit/proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
-| 56-03-02 | 03 | 3 | STEP-02, STEP-03 | T-56-09 | Plug redirects/halts and LiveView redirects/halts without duplicating route assurance/freshness logic or leaving stale socket state. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
-| 56-04-01 | 04 | 4 | STEP-01, STEP-02, STEP-03 | T-56-10 | Doctor/support/operator/docs truth says ceremony shipped and later auth-return/provider/native UI claims remain deferred. | docs/proof | `mix test test/crosswake/guides/companions_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/doctor/publish_readiness_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | W0 | pending |
+| 56-01-01 | 01 | 1 | STEP-01 | T-56-01 / T-56-02 | Step-up locator rejects authority-bearing fields and record lifecycle is closed. | unit | `mix test test/crosswake/companions/sigra/step_up_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-01-02 | 01 | 1 | STEP-01 | T-56-03 | `auth.step_up_intent.*` codes preserve public `:step_up_required` and sanitize shell details. | unit/proof | `mix test test/crosswake/companions/sigra/step_up_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-02-01 | 02 | 2 | STEP-01, STEP-03 | T-56-04 / T-56-05 | Example-host intent issue/consume/cancel/revoke/expire uses server record authority and one-time conditional consume. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-02-02 | 02 | 2 | STEP-03 | T-56-06 / T-56-07 | Completion projects `SessionAuthorityLane`, renews host session instructions, rotates CSRF posture, and revalidates manifest route target. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-03-01 | 03 | 3 | STEP-02 | T-56-08 | Plug and LiveView adapters call the same ceremony core and fail closed into identical challenge decisions. | unit/proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-03-02 | 03 | 3 | STEP-02, STEP-03 | T-56-09 | Plug redirects/halts and LiveView redirects/halts without duplicating route assurance/freshness logic or leaving stale socket state. | proof | `mix test test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
+| 56-04-01 | 04 | 4 | STEP-01, STEP-02, STEP-03 | T-56-10 | Doctor/support/operator/docs truth says ceremony shipped and later auth-return/provider/native UI claims remain deferred. | docs/proof | `mix test test/crosswake/guides/companions_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/support_matrix/renderer_test.exs test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/doctor/publish_readiness_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace` | ✅ W0 | ✅ green |
 
-*Status: pending · green · red · flaky*
+*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
 ---
 
@@ -75,4 +75,16 @@ All Phase 56 behaviors have automated hermetic verification. Provider/device OAu
 - [x] Feedback latency < 90s for focused proof commands
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** approved 2026-06-02
+**Approval:** approved 2026-06-02; audit confirmed 2026-06-03
+
+---
+
+## Validation Audit 2026-06-03
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+All 7 tasks (STEP-01, STEP-02, STEP-03; T-56-01 … T-56-10) verify through the merge-blocking proof `test/crosswake/proof/phase56_step_up_ceremony_test.exs` and the `test/crosswake/companions/sigra/step_up_test.exs` unit suite. Audit re-ran the proof (`11 tests, 0 failures`) and the layered Phase 54-58 proof lane (`40 tests, 0 failures`). Per-Task Map statuses advanced from `pending` → `✅ green`, `File Exists` updated from `W0` → `✅ W0`. Frontmatter advanced from `status: draft` to `status: validated`. No MISSING or PARTIAL requirements remain. Phase 56 is Nyquist-compliant.

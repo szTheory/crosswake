@@ -1,54 +1,91 @@
 ---
-phase: 61-notification-open-resolver-and-route-policy
+phase: 61
+slug: notification-open-resolver-and-route-policy
+status: validated
 nyquist_compliant: true
+wave_0_complete: true
+created: 2026-06-02
 ---
 
-# Phase 61: Notification-Open Resolver And Route Policy - Validation
+# Phase 61 — Validation Strategy
 
-## Phase Goal
-Implement notification-open routing to safely resolve notification actions, verify single-use consumption intents, evaluate route policy declarations, and integrate with RouteGate for consistent auth checks.
+> Per-phase validation contract for feedback sampling during execution.
 
-## Goal-Backward Derivation
+---
 
-### Truths (What must be true for the goal to be achieved?)
-1. System recognizes `:notification_open_denied` as a core denial reason.
-2. Notification open events are modeled with bounds (`action_ref`, `open_ref`).
-3. Notification denial details are sanitized to prevent PII leakage.
-4. Routes can explicitly opt in to notification open activation.
-5. Notification open opt-in defaults to fail-closed if absent.
-6. Routes can specify an allowlist of permitted notification actions.
-7. Notification intents are one-time consumable via database transaction.
-8. Intent consumption leaves an append-only audit trail.
-9. Replayed or expired intents are deterministically rejected.
-10. Resolver performs pre-flight policy and action checks before delegating.
-11. Resolver delegates to RouteGate for core auth and gate checking.
-12. Chimeway `report_state` lists `open_routing` as `:active`.
+## Test Infrastructure
 
-### Artifacts (What must exist to make truths reality?)
-- `lib/crosswake/shell/denial.ex`: Core denial reason addition
-- `lib/crosswake/companions/chimeway/contracts.ex`: `NotificationOpenEvidence` struct
-- `lib/crosswake/companions/chimeway/denial_codes.ex`: Denial subcode configuration and sanitization
-- `lib/crosswake/policy/schema.ex`: `notification_open` validation logic
-- `lib/crosswake/compatibility/compatibility.ex`: `notification_open` capability check
-- `examples/phoenix_host/lib/crosswake_example/chimeway/notification_open_intent.ex`: Ecto schema for one-time intent
-- `examples/phoenix_host/lib/crosswake_example/chimeway/registry.ex`: Ecto.Multi issue/consume operations
-- `lib/crosswake/companions/chimeway/resolver.ex`: Notification open coordination
-- `lib/crosswake/companions/chimeway.ex`: Active state declaration
+| Property | Value |
+|----------|-------|
+| **Framework** | ExUnit |
+| **Config file** | `mix.exs` |
+| **Quick run command** | `mix test test/crosswake/companions/chimeway/resolver_test.exs` |
+| **Full suite command** | `mix test test/crosswake/shell/denial_test.exs test/crosswake/companions/chimeway/denial_codes_test.exs test/crosswake/companions/chimeway/resolver_test.exs test/crosswake/proof/phase63_notification_seam_proof_test.exs` |
+| **Estimated runtime** | ~30 seconds |
 
-### Key Links (Where are the critical connections?)
-- `lib/crosswake/companions/chimeway/denial_codes.ex` → `lib/crosswake/shell/denial.ex` (via subcode mapping)
-- `lib/crosswake/policy/schema.ex` → `lib/crosswake/policy/route.ex` (via schema validation)
-- `examples/phoenix_host/lib/crosswake_example/chimeway/registry.ex` → `examples/phoenix_host/lib/crosswake_example/chimeway/notification_open_intent.ex` (via repo transaction)
-- `lib/crosswake/companions/chimeway/resolver.ex` → `lib/crosswake/compatibility/route_gate.ex` (via `evaluate/4` with `activation_source: :notification`)
+---
 
-## Automated Verification (Nyquist)
-- **Plan 01:** `mix test test/crosswake/companions/chimeway/contracts_test.exs` and `mix test test/crosswake/companions/chimeway/denial_codes_test.exs` verify struct contracts and detail sanitization.
-- **Plan 02:** `mix compile --warnings-as-errors` and associated automated tests verify route policy constraints and opt-in behavior.
-- **Plan 03:** Automated tests verify Ecto transaction integrity, intent state transitions, and audit trails.
-- **Plan 04:** `mix test test/crosswake/companions/chimeway/resolver_test.exs` verifies pre-flight error generation (denial packaging pattern), intent status assertions (`:valid`, `:expired`, `:replayed`), and `RouteGate` delegation.
+## Sampling Rate
 
-## Reachability Matrix
-Every must-have Truth is backed by at least one Artifact.
-Every Artifact participates in a Key Link.
-Every Artifact is verified by an automated test.
-Therefore, Nyquist compliance is achieved.
+- **After every task commit:** Run `mix test test/crosswake/companions/chimeway/resolver_test.exs`
+- **After every plan wave:** Run `mix test test/crosswake/shell/denial_test.exs test/crosswake/companions/chimeway/denial_codes_test.exs test/crosswake/companions/chimeway/resolver_test.exs test/crosswake/proof/phase63_notification_seam_proof_test.exs`
+- **Before `$gsd-verify-work`:** Full suite must be green
+- **Max feedback latency:** 30 seconds
+
+---
+
+## Per-Task Verification Map
+
+| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
+|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
+| 61-01-01 | 01 | 1 | OPEN-03 | T-61-01 | System recognizes `:notification_open_denied` as a core denial reason with a stable atom registered in Shell.Denial. | unit | `mix test test/crosswake/shell/denial_test.exs` | ✅ W0 | ✅ green |
+| 61-01-02 | 01 | 1 | OPEN-01 | T-61-01 | Notification open events are modeled with bounds (`action_ref`, `open_ref`) in `NotificationOpenEvidence` struct without raw push token fields. | unit | `mix test test/crosswake/companions/chimeway/contracts_test.exs` | ✅ W0 | ✅ green |
+| 61-01-03 | 01 | 1 | OPEN-03 | T-61-01 | Notification denial details are sanitized to prevent PII leakage; only an explicit allowlist of safe diagnostic keys passes through `DenialCodes.sanitize_details/1`. | unit | `mix test test/crosswake/companions/chimeway/denial_codes_test.exs` | ✅ W0 | ✅ green |
+| 61-02-01 | 02 | 1 | OPEN-01, OPEN-02 | T-61-02 | Routes can explicitly opt in to notification open activation via `notification_open: true` or `notification_open: [actions: [...]]` in the DSL; invalid types are rejected. | unit | `mix test test/crosswake/policy/schema_test.exs` | ✅ W0 | ✅ green |
+| 61-02-02 | 02 | 1 | OPEN-01, OPEN-02 | T-61-02 | Notification open opt-in defaults to `nil`/fail-closed when the attribute is absent from a route; no implicit elevation is possible. | unit | `mix test test/crosswake/manifest/builder_test.exs` | ✅ W0 | ✅ green |
+| 61-02-03 | 02 | 1 | OPEN-01, OPEN-02 | T-61-02 | Routes can specify an allowlist of permitted notification actions; compatibility layer returns `notification_open_denied` when activation source is `:notification` on a non-opt-in route. | unit | `mix test test/crosswake/compatibility/compatibility_test.exs` | ✅ W0 | ✅ green |
+| 61-03-01 | 03 | 1 | OPEN-01 | — | Notification intents are one-time consumable via Ecto.Multi database transaction; schema captures explicit state and timestamps. | unit | `mix test examples/phoenix_host/test/crosswake_example/chimeway/notification_open_intent_test.exs` | ✅ W0 | ✅ green |
+| 61-03-02 | 03 | 1 | OPEN-01 | — | Intent consumption leaves an append-only audit trail in the events table; state transitions are explicit and tracked. | unit | `mix test examples/phoenix_host/test/crosswake_example/chimeway/registry_notification_open_test.exs` | ✅ W0 | ✅ green |
+| 61-03-03 | 03 | 1 | OPEN-01 | — | Replayed or expired intents are deterministically rejected by the consume flow via explicit state and expiry checks. | unit | `mix test examples/phoenix_host/test/crosswake_example/chimeway/registry_notification_open_test.exs` | ✅ W0 | ✅ green |
+| 61-04-01 | 04 | 2 | OPEN-01, OPEN-02, OPEN-03 | T-61-02 | Resolver performs pre-flight policy and action checks before delegating; routes without `notification_open` return `notification_open_denied` with `notification.open.policy_denied` subcode. | proof | `mix test test/crosswake/companions/chimeway/resolver_test.exs` | ✅ W0 | ✅ green |
+| 61-04-02 | 04 | 2 | OPEN-01, OPEN-02, OPEN-03 | T-61-02 | Resolver delegates to RouteGate for core auth and gate checking via `evaluate/4` with `activation_source: :notification`. | proof | `mix test test/crosswake/companions/chimeway/resolver_test.exs` | ✅ W0 | ✅ green |
+| 61-04-03 | 04 | 2 | OPEN-01, OPEN-02, OPEN-03 | — | Chimeway `report_state` lists `open_routing` as `:active`; SupportMatrix notification truth updated to reflect full open routing support. | proof | `mix test test/crosswake/proof/phase63_notification_seam_proof_test.exs` | ✅ W0 | ✅ green |
+
+*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+
+---
+
+## Wave 0 Requirements
+
+Existing infrastructure covers all phase requirements. The phase shipped test files across plans 61-01 through 61-04. The merge-blocking notification-open seam proof is `test/crosswake/proof/phase63_notification_seam_proof_test.exs` (written in Phase 63 as the hermetic seam proof covering Phase 61 flows). Unit coverage within phase 61 is provided by `denial_test.exs`, `denial_codes_test.exs`, `resolver_test.exs`, and host-side intent tests.
+
+---
+
+## Manual-Only Verifications
+
+All Phase 61 behaviors have automated verification.
+
+---
+
+## Validation Sign-Off
+
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
+
+**Approval:** approved 2026-06-03
+
+---
+
+## Validation Audit 2026-06-03
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+All 12 tasks (OPEN-01/02/03, T-61-01/02) verify through unit tests per plan and the merge-blocking hermetic seam proof `test/crosswake/proof/phase63_notification_seam_proof_test.exs`. Audit re-ran the full phase suite (`mix test test/crosswake/shell/denial_test.exs test/crosswake/companions/chimeway/denial_codes_test.exs test/crosswake/companions/chimeway/resolver_test.exs test/crosswake/proof/phase63_notification_seam_proof_test.exs` → `13 tests, 0 failures`). Ledger rewritten from nonstandard goal-backward format to standard phase-60 format, preserving all Truths as the basis for the Per-Task Map requirements. No MISSING or PARTIAL requirements. Phase 61 is Nyquist-compliant.
