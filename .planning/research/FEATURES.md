@@ -1,230 +1,470 @@
-# Feature Research: v3.4 Commerce Archetype Proof (Mocked Storefront Paywall Corridor)
+# Feature Research
 
-**Milestone:** v3.4 Commerce Archetype Proof
-**Domain:** Mocked-storefront paywall corridor example for a Phoenix-native OSS library
-**Researched:** 2026-05-29
-**Confidence:** HIGH — sourced from checked-in contracts, reconciliation module, example-host commerce modules, guides/commerce.md, phase23 proof test, and commerce-archetype-proof thread. All contract surfaces are real code, not aspirational design.
-
----
-
-## Grounding Facts
-
-What already exists in the repo that v3.4 builds on (do NOT re-research or re-implement):
-
-- `Crosswake.Commerce.Contracts` defines all five typed vocabulary surfaces: `PaywallEntry`, `PurchaseIntent`, `RestoreIntent`, `EntitlementSnapshot` (6 lanes), `ReconciliationEvidence`, `CommerceEvent`.
-- `Crosswake.Commerce.Reconciliation` defines `ingest_evidence/2`, `EvidenceResult`, `Attempt`, `IdempotencyKey`, and the full outcome vocabulary. `authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally — authority mutation is backend-owned by contract.
-- `CrosswakeExample.Commerce.EntitlementProjection` implements `project_snapshot/2` (monotonic `as_of` guard, verified reconciliation check) and `derived_state/1` (4-output projection: `:stale`, `:pending`, `:denied`, `:granted`).
-- `CrosswakeExample.Commerce.ReconciliationInbox` implements `ingest_evidence/2` with `event_key`, `subject_key`, replay detection, and `trace_metadata`.
-- `CrosswakeExample.Commerce.ReconciliationKeys` defines provider-aware key construction (`event_key`, `subject_key`, `trace_metadata`).
-- No `paywall_entry` route exists in `examples/phoenix_host/lib/crosswake_example/router.ex` — the corridor is declared in test fixtures only.
-- No `MockStorefront` module exists anywhere in the repo.
-- No `PaywallLive` or equivalent LiveView exists in the example host.
-- The phase23 proof test uses inline `PaywallCorridorRouter` / `PurchaseCorridorRouter` fixtures, not the example host router.
-
-What v3.4 must add: a runnable adopter lane wiring all of the above into a copy-able `examples/phoenix_host` paywall corridor, proved end-to-end by a merge-blocking hermetic test.
+**Domain:** Production mobile shell runtime line for a Phoenix-native OSS library (v4.0)
+**Researched:** 2026-06-03
+**Confidence:** HIGH (core rebuild/OTA policy, permission templates), MEDIUM (diagnostics export seam, Android verification closure pattern)
 
 ---
 
-## Feature Landscape
+## Context and Framing
 
-### Table Stakes — Adopter Expects These (Missing = Example Is Not Copy-able)
+v4.0's five target features are not independent product additions. They are hardening
+work on a shell that already exists and already ships in `examples/`. The correct
+question per feature is not "should we build X?" but "what does X need to express to be
+credible for production adopters, and how does it connect to the existing manifest /
+doctor / support / shell surfaces?"
 
-Features a Phoenix dev trying to ship subscriptions requires to trust the corridor as a real pattern. Missing any of these means the example does not teach what it is supposed to teach.
+Anti-feature thinking is especially important here because Crosswake is route-policy-first
+and shell-second. Any feature that makes the shell feel like the product — rather than the
+route-policy contract — erodes the thesis.
 
-| Feature | Why Expected | User-Centric Statement | Complexity | v3.2 Contract Dependency |
-|---------|--------------|------------------------|------------|--------------------------|
-| TS-01: `paywall_entry` route in example host router | Without a real declared route the pattern is only a test fixture, not copy-able | Adopter can copy a `live "/paywall"` route with `commerce: [corridor: :subscription_default, role: :paywall_entry]` policy from `examples/phoenix_host/router.ex` and see a working route declaration | LOW | `Crosswake.Router` `crosswake:` option with commerce key (v3.2) |
-| TS-02: `PaywallLive` LiveView showing pricing and a mock purchase action | Adopter needs to see the UI ownership — Phoenix owns the paywall display, not native | Adopter can see a LiveView that renders a pricing plan and a "Subscribe" action without any provider SDK code | LOW | `PaywallEntry` struct (`:id`, `:price_display`, `:group_id`, `:features`) from `Contracts` |
-| TS-03: `MockStorefront` adapter that consumes `PurchaseIntent` and returns `ReconciliationEvidence` | The whole point of the mock lane is to stand in for a real StoreKit/Play Billing adapter | Adopter can see how a real storefront adapter would ingest a `PurchaseIntent`, produce a `ReconciliationEvidence` struct, and return it to the backend — all in pure Elixir with no native code | MEDIUM | `PurchaseIntent` (`:entry_id`, `:correlation_id`), `ReconciliationEvidence` (`:source`, `:provider`, `:provider_reference`, `:event_kind`, `:evidence_ref`, `:captured_at`) from `Contracts` |
-| TS-04: `MockStorefront` handling `RestoreIntent` | Restore is the second required corridor; omitting it leaves a gap in the copy-able pattern | Adopter can see how a restore trigger produces `ReconciliationEvidence` with `event_kind: "restore"` | LOW | `RestoreIntent` (`:correlation_id`) from `Contracts` |
-| TS-05: Backend route or handler that submits `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` | Adopter must see the evidence handoff from the mock storefront call back to the Phoenix backend | Adopter can see a Phoenix controller or LiveView handle event that calls `ReconciliationInbox.ingest_evidence/2` with mock evidence and receives an `EvidenceResult` | LOW | `ReconciliationInbox.ingest_evidence/2` and `ReconciliationEvidence` (already in example host) |
-| TS-06: `EntitlementProjection.project_snapshot/2` called to refresh the authoritative snapshot | This is the authority update step — missing it means the projection half of the pattern is invisible | Adopter can see `EntitlementProjection.project_snapshot/2` called after successful evidence ingestion and the resulting snapshot stored as the new authority source | LOW | `EntitlementProjection.project_snapshot/2` and `EntitlementSnapshot` (already in example host) |
-| TS-07: LiveView reflecting `:granted` state after mock purchase completes reconciliation | Without a real UI state change, the "end-to-end" claim is hollow | Adopter can observe their `PaywallLive` (or a sibling `EntitledLive`) display a "granted" access state after a mock purchase flows through reconciliation | MEDIUM | `EntitlementProjection.derived_state/1` returning `:granted` |
-| TS-08: LiveView reflecting `:pending` state during reconciliation in-progress | Reconciliation takes time; the pending state is a first-class corridor moment the adopter must be able to handle | Adopter can see how to render a "pending" UI state while `reconciliation.state` is `:pending_purchase` or `:awaiting_verification` | LOW | `derived_state/1` returning `:pending`, reconciliation vocabulary in `Reconciliation` |
-| TS-09: LiveView reflecting `:denied` state (no active entitlement) | Denied is the default cold-start state — showing how the paywall gates access is the primary teaching goal | Adopter can see how a LiveView gates access with `:denied` returned by `derived_state/1` and redirects or renders a paywall prompt | LOW | `derived_state/1` returning `:denied` |
-| TS-10: LiveView reflecting `:stale` state (freshness degraded) | Stale is the fail-closed state — it must be shown as distinct from denied so adopters do not conflate "stale snapshot" with "no entitlement" | Adopter can see how a stale snapshot (freshness `:stale` or `:unknown`) surfaces as a distinct "checking..." or "refresh needed" state, not a silent access denial | LOW | `derived_state/1` returning `:stale`, `FreshnessLane` states |
-| TS-11: Merge-blocking hermetic proof test driving the full mock lane | Without a CI-gated proof the example is aspirational, not proven | Adopter can see a passing ExUnit test that drives mock purchase → ingestion → projection → derived state transitions without hitting a network or native SDK | MEDIUM | All v3.2 contract surfaces; existing hermetic proof pattern from phase23-proof.yml |
-| TS-12: `guides/commerce.md` updated with end-to-end mock walkthrough section | Adopters use the guide to understand the corridor before copying the example | Adopter can read a step-by-step walkthrough in `guides/commerce.md` that anchors each step to a named module and function in the example host | LOW | Existing three-layer guide structure (docs-contract tests must not break) |
+---
 
-### Differentiators — What Makes the Example Genuinely Useful
+## Feature Area 1: Native Runtime-Line Policy (OTA-safe vs. Rebuild Contract)
 
-Not strictly required to make the example "work," but these are what separate a copy-able pattern from a toy stub.
+### What adopters expect
 
-| Feature | Value Proposition | User-Centric Statement | Complexity | Dependency |
-|---------|-------------------|------------------------|------------|------------|
-| DIF-01: `MockStorefront` designed as a drop-in swap target | Shows adopters exactly what a real StoreKit or Play Billing adapter must implement at the seam | Adopter can see a clear `@behaviour` or well-commented module shape for `MockStorefront` that documents which functions a real provider adapter would replace | MEDIUM | `PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence` from `Contracts` |
-| DIF-02: All four `derived_state/1` outputs exercised by the proof test with explicit assertions | Proves that every UI state the LiveView must handle is covered by contract, not just the happy path | Adopter can read the proof test and see `:granted`, `:pending`, `:denied`, and `:stale` all explicitly asserted — not just `:granted` | MEDIUM | `EntitlementProjection.derived_state/1` |
-| DIF-03: Idempotency key construction demonstrated via `ReconciliationKeys` | One of the trickiest real-world pitfalls (duplicate webhook retries) is invisible without a working example | Adopter can see `ReconciliationKeys.event_key/1` and `subject_key/1` called with mock evidence and understand why `correlation_id` is trace-only | LOW | `ReconciliationKeys` (already in example host) |
-| DIF-04: Replay detection shown explicitly in the mock purchase path | Duplicate evidence submission is a real-world concern; the mock lane is the place to make it visible | Adopter can submit the same mock `ReconciliationEvidence` twice and see `replay?: true` in the second `EvidenceResult` | LOW | `ReconciliationInbox.ingest_evidence/2` with `seen_event_keys:` opt |
-| DIF-05: Docs-contract test locking the commerce.md walkthrough against the example modules | Keeps the guide honest — if the example modules change, the test breaks | Adopter can trust that the `guides/commerce.md` walkthrough references real module and function names that exist in the example host | LOW | Existing docs-contract test pattern from phase23 proof |
-| DIF-06: `MockStorefront` uses `source: :storefront` not `source: :device` | Shows adopters the semantic distinction between a simulated native storefront callback (`:storefront`) and a hypothetical device-side assertion (`:device`) | Adopter can see why the mock uses `source: :storefront` and what that means for `EvidenceLane.source` in the resulting snapshot | LOW | `ReconciliationEvidence.source` vocabulary: `:device`, `:storefront`, `:webhook`, `:support` |
+Teams running hybrid/embedded-webview-plus-native apps reason about change safety through
+a simple binary: "did this change touch anything in the native binary?" If yes, a store
+submission is required (full rebuild cycle). If no, the change can ship over-the-air
+without store review.
 
-### Anti-Features — Do Not Include
+The well-established industry pattern (Expo runtime versions, Capacitor, CodePush) is:
 
-Features that seem helpful for a paywall example but undermine the v3.4 teaching goal or the mock-vs-real boundary.
+**OTA-safe changes** (web/server layer only):
+- LiveView/Phoenix content changes
+- Route configuration changes that only affect server-side routing logic
+- Asset updates, copy, styling changes within the web layer
+- Backend business logic, auth, and entitlement changes
+- Crosswake library version bumps that only touch Elixir/Phoenix-side modules
 
-| Anti-Feature | Why Requested | Why It's Wrong for v3.4 | What to Do Instead |
-|--------------|---------------|--------------------------|-------------------|
-| AF-01: Any StoreKit or Play Billing adapter code in MockStorefront | "Make it realistic by using the real SDK shape" | Shipping provider SDK imports or callbacks would imply provider adapters have shipped (they have not; v3.6 is the provider adapter milestone). Breaks the mock-vs-real boundary and the non-claims documented in guides/commerce.md | Keep MockStorefront pure Elixir, no native SDK references. Document the swap point clearly in comments. |
-| AF-02: Persistent storage (Ecto, ETS) in the mock purchase flow | "A real adopter would use a database" | A persistence layer adds setup complexity (migrations, repos, test DB) that obscures the corridor shape being taught. The example must be hermetically runnable. | Use in-memory `Agent` or process state for the mock lane. A real adopter adds persistence to their own host; the example shows the contract shape, not the persistence layer. |
-| AF-03: Live WebSocket push of entitlement state changes | "Make it feel real with PubSub/Presence" | Real-time push is a valid adopter concern but adds PubSub setup and channel complexity that obscures the reconciliation flow. The example's job is to teach the flow boundary, not Phoenix Channels. | Show a synchronous handle_event → assign → re-render loop. Document that real adopters can add PubSub push on top of the same `derived_state/1` result. |
-| AF-04: Multi-product paywall (consumable, non-consumable, subscription) | "Show all purchase types" | Product-type complexity is not what v3.4 teaches. Multiple `PaywallEntry` rows would multiply the fixture surface without adding corridor insight. | Use a single subscription-style `PaywallEntry` with a single `group_id`. Adopters can extend to multiple entries; the corridor shape is the same. |
-| AF-05: Auth/session gating on the paywall route | "A real paywall needs authentication" | Auth setup (Pow, phx_gen_auth, etc.) would require the example host to ship session fixtures, adding setup that obscures the commerce lane. v3.4 is about the corridor, not auth. | Leave the paywall route unauthenticated in the example. Document that real adopters add their own auth pipeline. The `commerce: [corridor: :subscription_default, role: :paywall_entry]` declaration is the teaching artifact. |
-| AF-06: Graceful degradation / offline paywall fallback | "Show what happens if the native corridor is unavailable" | The mock lane deliberately bypasses native availability checks — simulating availability failures would require mocking the capability/native shell layer, which is a separate proof surface. | The mock lane proves the happy path. Document `commerce.corridor.prerequisite_missing` as the canonical fallback code (already in guides/commerce.md). Offline fallback stays in the non-claims layer. |
-| AF-07: Revenue Cat or third-party billing SDK references in mock or example code | "RevenueCat simplifies the provider layer" | Importing RevenueCat normalizes a third-party billing SDK dependency in the Crosswake example, contradicting the provider-neutral posture. The canonical v3.2 proof tests already assert that forbidden provider tokens do not appear in merge-blocking surfaces. | Keep `provider: "mock"` in all `ReconciliationEvidence` structs. Provider-specific adapters are v3.6 work. |
-| AF-08: Displaying raw `EntitlementSnapshot` fields in the LiveView | "Show the full snapshot for transparency" | Exposing `authority.state`, `reconciliation.state`, `freshness.state` directly in the UI couples the LiveView to internal lane vocabulary. The teaching point is `derived_state/1` as the single UI decision function. | LiveView renders only the four `derived_state/1` outputs: `:granted`, `:pending`, `:denied`, `:stale`. Internal snapshot lanes are a projection implementation detail. |
+**Forces a native rebuild** (binary layer changes):
+- Adding or removing a native permission declaration (Info.plist / AndroidManifest.xml)
+- Adding or updating a native entitlement (Entitlements.plist)
+- Updating the iOS deployment target or minimum SDK version
+- Updating or adding a native SDK dependency (Swift Package / Gradle dependency)
+- Changing the WKWebView configuration or native bridge message handler registration
+- Updating the Android JVM bridge code, package name, or signing config
+- Any change to files inside the `ios/` or `android/` shell directories
+
+**The compatibility window** is the range of native shell versions that can safely run
+without a rebuild when the Crosswake library version changes. If the library change is
+OTA-safe, the existing shell binary remains compatible. If the library change includes a
+rebuild-required item, the compatibility window closes for that version pair.
+
+The Expo `fingerprint` policy is the state-of-the-art pattern: the runtime version
+increments automatically whenever anything that may impact the native runtime changes,
+making incompatible OTA pushes impossible while requiring builds more frequently. The
+`appVersion` policy is weaker but common — it relies on developer discipline to bump the
+version when native code changes. Crosswake's policy contract should express something
+equivalent: a machine-checkable criterion for whether a library version bump is
+OTA-safe or forces a rebuild.
+
+### Table Stakes (missing = shell runtime line is not credible)
+
+| Feature | Why Expected | Complexity | Dependencies |
+|---------|--------------|------------|--------------|
+| Explicit OTA-safe vs. rebuild-required classification per library version bump | Adopters cannot confidently ship or pin shell versions without this; every hybrid runtime line publishes this — Capacitor, Expo, Cordova all do it | MEDIUM | Existing manifest/support matrix surface from v3.6; changelog pipeline from v3.3 |
+| Compatibility window expression in support matrix | Operators need to answer "which shell version range is valid for my current Crosswake version?" | MEDIUM | `SupportMatrix` from v3.6; `mix crosswake.doctor` |
+| Doctor check that detects version pair outside compatibility window | Without this, incompatibility is silent until runtime breakage | LOW | `mix crosswake.doctor` from v2/v3.6 |
+| Rebuild-required flag in CHANGELOG entries | Every breaking native change must be labeled so adopters do not have to read diffs | LOW | Changelog pipeline from v3.3 |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Dependencies |
+|---------|-------------------|------------|--------------|
+| Fingerprint-style rebuild trigger list in doctor output | Surfaces the exact set of conditions that closed the compatibility window, not just a flag | MEDIUM | Doctor surface; manifest |
+| Support matrix `rebuild_required: true/false` field surfaced per version pair | Operators can machine-read rebuild requirements across upgrade paths | MEDIUM | `SupportMatrix` from v3.6 |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Automatic OTA push / silent bundle swapping in the shell | Sounds like zero-downtime deploys | Would require Crosswake to own delivery infrastructure and claim OTA safety for content it cannot verify; Apple App Store rules restrict feature-level changes via OTA even when the mechanism is technically allowed | Document OTA-safe boundary; let the adopter's server/deployment system handle content delivery |
+| Pinning Crosswake to a specific shell binary version at runtime | Would "solve" compatibility automatically | Hidden coupling between library version and binary state; breaks adopters who update the library through normal package management without knowing the shell pin | Explicit documented compatibility windows; doctor warning; adopter-owned upgrade path |
+| Declaring shell compatibility globally across all native platforms in one flag | Simpler to understand | iOS and Android have distinct rebuild triggers and compatibility postures; collapsing them loses signal | Platform-specific compatibility fields in the matrix |
+
+---
+
+## Feature Area 2: Rebuild and Compatibility Matrix via Support Truth and Doctor
+
+### What adopters expect
+
+A compatibility matrix in a mobile library should answer:
+- Which Crosswake version requires which minimum iOS/Android SDK/OS version
+- Which shell version is required for a given Crosswake version
+- Which changes are OTA-safe vs. require a native rebuild
+- Whether the current installed combination is valid (doctor check)
+
+The matrix is not just documentation — it is a machine-readable contract. Teams comparing
+"what version of the library shipped with what shell" need this to be authoritative, not
+aspirational. The pattern from Titanium, Capacitor, and React Native native modules:
+a table with explicit minimum/maximum columns and a clear "rebuild required for upgrade"
+column per row.
+
+iOS-specific: Apple requires apps to keep pace with minimum supported iOS versions as part
+of App Store review (apps must target current SDK within a year of new SDK release). The
+compatibility matrix must express the iOS deployment target range and flag when a
+Crosswake version requires a deployment target bump that forces a rebuild.
+
+Android-specific: minSdkVersion and targetSdkVersion drive compatibility. Google Play
+requires apps to target the current year's API level by August 31 each year. The matrix
+must express the required minSdkVersion and targetSdkVersion and flag when they advance.
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Dependencies |
+|---------|--------------|------------|--------------|
+| Crosswake version to shell version compatibility table (per platform) | Adopters must know which shell they need for a given library version without reading source | MEDIUM | `SupportMatrix` from v3.6 |
+| Min/target iOS deployment target range per Crosswake version | App Store requires current SDK targeting; teams need advance warning | LOW | `SupportMatrix` |
+| Min/target Android SDK version range per Crosswake version | Google Play enforcement is time-based; stale targets cause Play Store rejection | LOW | `SupportMatrix` |
+| Doctor warning when current shell is outside compatibility window | Silent incompatibility is a production incident waiting to happen | LOW | `mix crosswake.doctor` |
+| Doctor warning when iOS deployment target or Android minSdk is below required | Proactive upgrade warning prevents app store rejection surprises | LOW | `mix crosswake.doctor` |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Dependencies |
+|---------|-------------------|------------|--------------|
+| Upgrade path narrative in doctor output for out-of-window version pairs | "You need to rebuild the shell for this upgrade" is more actionable than a bare version mismatch | MEDIUM | Doctor; support matrix |
+| Support matrix `mix crosswake.support_matrix` output with rebuild-required column | Machine-readable for adopters who script their upgrade verification | MEDIUM | `SupportMatrix` from v3.6 |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Automated migration scripts that mutate the shell's native files | Solves the upgrade problem automatically | Crosswake does not own the host app's native files; mutating them silently violates the host-owned authority principle established throughout v3.x | Upgrade guidance as doctor output; explicit adopter action required for native file changes |
+| Cross-platform single-version claim ("Crosswake 4.0 supports iOS 16+ and Android 8+") without per-feature granularity | Marketing simplicity | Different capabilities require different OS minimums; a single claim hides which capabilities require which floor | Per-capability and per-platform matrix rows |
+
+---
+
+## Feature Area 3: iOS/Android Permission and Entitlement Templates (Host-Owned Generated Artifacts)
+
+### What adopters expect
+
+Permission and entitlement setup is one of the highest-friction parts of shipping a hybrid
+app. Adopters expect the library to:
+1. Tell them exactly which permissions and entitlements are required for which capabilities
+2. Provide copy-pasteable or generated starting templates
+3. Make it clear that the adopter owns these files, not the library
+
+The "honest" requirement is critical. Apple's App Store review rejects apps that declare
+permissions without usage descriptions or entitlements without demonstrated use. Since iOS
+Spring 2024 (enforced from May 1, 2024), all iOS apps must include a `PrivacyInfo.xcprivacy`
+file declaring required-reason API access (NSPrivacyAccessedAPITypes). Failing to include
+accurate required-reason entries causes App Store rejection. This is not aspirational — it
+is a hard review gate.
+
+Android uses AndroidManifest.xml for permissions. Normal, dangerous, and signature
+permissions have different behaviors. `dangerous` permissions (camera, location, contacts,
+notification post) require runtime request dialogs. Permissions declared but not used can
+trigger Play Store policy violations.
+
+Entitlements (iOS-specific) are key-value pairs in Entitlements.plist that expand the
+app sandbox. WKWebView-based shells may require specific entitlements for push
+notifications (APS environment), app groups (shared container access), or associated
+domains. These must match the provisioning profile exactly or the app fails to build.
+
+The adopter ownership principle is: the library shows what is required and provides a
+correct template; the adopter adds it to their project and signs it. The library must not
+attempt to inject into or overwrite the adopter's native project files.
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Dependencies |
+|---------|--------------|------------|--------------|
+| Documented per-capability permission requirements (iOS Info.plist keys + Android AndroidManifest.xml entries) | Adopters hit App Store / Play Store rejection without this; it is the most common first-time adopter failure | MEDIUM | Capability registry from v3.1; existing shell code |
+| Generated or copy-pasteable Info.plist permission entry templates with usage description placeholders | Usage descriptions are required by Apple review; missing them = rejection; adopters must customize the strings | MEDIUM | Existing iOS shell in `examples/` |
+| Generated or copy-pasteable AndroidManifest.xml permission entry templates | Same principle for Android; dangerous permissions need to be declared | LOW | Existing Android shell in `examples/` |
+| iOS PrivacyInfo.xcprivacy template with NSPrivacyAccessedAPITypes entries for APIs used by the shell | Required by Apple since May 2024; missing = App Store rejection; WKWebView and common APIs have required-reason categories | HIGH | iOS shell; capability registry |
+| iOS Entitlements.plist template for capabilities that require entitlements (push, associated domains) | Missing entitlements = build failure or app rejection | MEDIUM | iOS shell; Chimeway (v3.9) for APS environment entitlement |
+| Doctor check that identifies missing permissions for enabled capabilities | Adopters should not learn about missing permissions from App Store review rejection | MEDIUM | `mix crosswake.doctor`; capability registry |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Dependencies |
+|---------|-------------------|------------|--------------|
+| Host-owned vs. library-injected language explicitly documented | Prevents the mistake of letting Crosswake touch native project files; keeps the contract honest | LOW | Generator surface from v1 |
+| Per-capability permission/entitlement diff in doctor — "you enabled X, which requires Y" | More actionable than a static template; surfaces only what the adopter's current capability set requires | MEDIUM | Capability registry; doctor |
+| Explicit guidance on which permissions are dangerous and require runtime request dialog | Adopters who miss this ship apps that silently fail on devices | MEDIUM | Docs surface |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Library-injected permission mutations (writing to Info.plist, AndroidManifest.xml, Entitlements.plist) | Automates a friction-heavy step | Crosswake does not own the host's native files; mutating them silently violates host-owned authority, prevents adopters from reasoning about their own entitlements, and can corrupt provisioning profiles | Generated templates + doctor guidance; adopter must apply them explicitly |
+| Bundling a PrivacyInfo.xcprivacy on behalf of the adopter as a library artifact | Convenience | A library's PrivacyInfo.xcprivacy covers the library's own API usage, not the host app's; conflating the two causes an incomplete privacy manifest at review time | Separate: shell template (host-owned, generated) vs. library privacy manifest (Crosswake's own required-reason API usage if any) |
+| "Enable all permissions" default template | Reduces adopter friction | Declares permissions the adopter may not use, triggering Play Store policy violations and App Store questions about unused permission requests | Capability-scoped templates that include only what the declared capabilities require |
+
+---
+
+## Feature Area 4: Crash and Diagnostic Export Seam
+
+### What adopters expect
+
+In hybrid/embedded-webview-plus-native architectures, crash attribution is hard because
+a single user-visible failure can originate in three distinct layers:
+1. The native shell (Swift/Kotlin crash, OOM, OS kill)
+2. The web/LiveView layer (unhandled JS exception, network failure, WebView process termination)
+3. The bridge (message dispatch failure, capability timeout, deserialization error)
+
+Adopters expect:
+- The shell to not swallow crash signals silently
+- Some form of structured export that lets the adopter wire up their own crash reporter
+  (Sentry, Crashlytics, Bugsnag, New Relic, etc.)
+- The library to NOT ship a crash reporter of its own (dependency injection nightmare)
+- Clarity about which layer a failure came from
+
+The "seam" pattern is correct: the shell exposes callbacks / hooks that fire when something
+goes wrong, and the adopter routes those events to whatever observability toolchain they
+use. This keeps the library dependency-free on the observability side while giving adopters
+actionable diagnostic signals.
+
+For WebView/web-layer diagnostics, the shell needs to surface:
+- WebView process termination (iOS: `webViewWebContentProcessDidTerminate`; Android:
+  `onRenderProcessGone`)
+- Navigation load failures with error codes
+- Bridge message dispatch failures
+
+For native-layer diagnostics, the shell exposes:
+- Launch failure reasons (missing capabilities, compatibility mismatch)
+- Route activation failures with denial codes
+- Bridge timeout or malformed-message events
+
+The existing Crosswake denial vocabulary and telemetry redaction posture (from v3.6-v3.9)
+establishes the right baseline: structured, low-cardinality events with no raw tokens,
+PII, or provider payloads. The diagnostic export seam should follow the same posture.
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Dependencies |
+|---------|--------------|------------|--------------|
+| WebView termination callback seam in the iOS shell (webViewWebContentProcessDidTerminate equivalent) | WebView process kills are silent without this; adopters who hit OOM crashes have no signal | MEDIUM | Existing iOS shell WKWebView setup |
+| WebView render process gone callback seam in the Android shell (onRenderProcessGone equivalent) | Same principle for Android WebView | MEDIUM | Existing Android shell WebView setup |
+| Bridge error / dispatch failure export hook in both shells | Bridge failures are currently opaque; adopters wiring up observability need this | MEDIUM | Existing bridge contract |
+| Structured diagnostic event taxonomy (layer attribution: native / web / bridge) | Without layer attribution, crash reporters show undifferentiated noise | MEDIUM | Existing telemetry posture from v3.6 |
+| Guidance on wiring the seam to common crash reporters | Adopters do not know how to connect the seam to Sentry/Crashlytics without an example | LOW | Docs surface |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Dependencies |
+|---------|-------------------|------------|--------------|
+| Navigation failure export with Crosswake denial codes where applicable | Connects crash/diagnostic export to the existing denial vocabulary, making observability data actionable | MEDIUM | Denial vocabulary from v3.x |
+| Shell readiness failure export at launch (compatibility mismatch, missing permissions, unsupported capability) | Surfaces setup errors as structured events rather than silent fallback or crash | MEDIUM | Doctor surface; compatibility matrix |
+| Doctor check that verifies the diagnostic export seam is wired (detects no-op / missing hook) | Prevents adopters from shipping with diagnostics disabled | LOW | Doctor surface |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Crosswake shipping a first-party crash reporter / SDK dependency | Single-library convenience | Adds a non-optional native SDK dependency to every adopter's shell, forces a native rebuild if the SDK updates, creates licensing and privacy manifest complications | Diagnostic export seam + guidance; adopter chooses their reporter |
+| Automatic crash report upload from the shell | Reduces operator effort | Requires network access, data collection consent, and crash reporter account setup that Crosswake cannot own; also risks shipping PII before the adopter has configured redaction | Seam-only; adopter handles upload |
+| Raw WebView console log export in production | Useful for debugging | Production log export is a PII/token leak vector; LiveView socket traffic and route params can appear in console | Structured event taxonomy with redaction rules; debug-only console export |
+
+---
+
+## Feature Area 5: Android Verification Closure
+
+### What adopters expect
+
+The existing hermetic/advisory CI split (established in v3.2, validated repeatedly
+through v3.9) is the correct pattern. Android verification closure for v4.0 means:
+
+1. **CI-hermetic / merge-blocking**: JVM bridge tests and unit-level shell logic tests
+   run in CI with no Android runtime required. These have run since v3.1 and are the
+   existing merge-blocking evidence class.
+
+2. **Advisory emulator/device lane**: An instrumented test lane that runs against an
+   Android emulator (via `android-emulator-runner` GitHub Action on Ubuntu runners with
+   hardware acceleration). This lane is advisory — it does not block PRs — but it has
+   explicit promotion criteria that must be met before a production-ready claim is made.
+
+3. **Device-UAT checklist**: A written checklist of behaviors that require physical device
+   or real-user verification that CI cannot provide. For a CI-only / no-local-device
+   maintainer, this checklist is the honesty instrument: it explicitly names what has not
+   been proven hermetically, who is responsible for verifying it, and what the promotion
+   path looks like.
+
+The industry pattern for OSS mobile libraries with CI-only maintainers:
+- Firebase Test Lab (free tier: 10 virtual + 5 physical device-hours/day): suitable for
+  advisory lane on a scheduled workflow, not PR-blocking
+- BrowserStack/Sauce Labs/AWS Device Farm: pay-per-use advisory cloud devices
+- Emulator-based hermetic CI: fastest, most reproducible, suitable for merge-blocking
+  logic tests; cannot prove hardware sensor behavior, real push delivery, or
+  biometric/face ID flows
+
+A credible device-UAT checklist for a CI-only maintainer distinguishes:
+- **Emulator-provable**: UI rendering, route activation, bridge message dispatch,
+  capability deny/grant flows in emulated environments
+- **Device-advisory**: Physical sensor behavior (haptics feel, camera capture quality),
+  real push delivery, Play Integrity attestation, biometric prompt appearance, real
+  network handoffs (WiFi to cellular)
+- **Provider-advisory**: Play Store review flow, in-app purchase transaction
+  (Play Billing), real FCM delivery
+
+The existing Crosswake pattern (advisory with explicit promotion criteria, documented in
+doctor `promotion_path` output) maps exactly onto this structure.
+
+### Table Stakes (Android verification closure is not credible without these)
+
+| Feature | Why Expected | Complexity | Dependencies |
+|---------|--------------|------------|--------------|
+| Android emulator CI lane (advisory, scheduled) with `android-emulator-runner` on Ubuntu | Shows that the shell boots, navigates, and bridges correctly on a real Android runtime; fills the gap between JVM tests and physical device proof | MEDIUM | Existing Android shell + JVM CI from v3.1 |
+| Explicit promotion criteria for the emulator/device advisory lane | Without criteria, "advisory" is just "untested"; criteria define what must pass before a "production verified" claim is made | LOW | Hermetic/advisory split pattern from v3.2 |
+| Device-UAT checklist with explicit column for CI-provable vs. device-advisory vs. provider-advisory | Honest labeling of what the CI-only maintainer cannot prove | LOW | Doctor; support matrix |
+| Doctor output that distinguishes CI-verified from advisory-only Android claims | Adopters should not treat JVM bridge test passage as full Android verification | LOW | Doctor surface |
+| Emulator lane result surfaced in support matrix (merge-blocking vs. advisory state) | Keeps the advisory lane visible; prevents it from being quietly dropped | MEDIUM | `SupportMatrix` from v3.6 |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Dependencies |
+|---------|-------------------|------------|--------------|
+| Firebase Test Lab integration (scheduled advisory, free tier) for real-device matrix coverage | Elevates advisory lane from emulator-only to real-device coverage on a subset of API levels without hardware cost | HIGH | Android shell build pipeline |
+| Advisory promotion criteria documented in `mix crosswake.doctor` output | Surfaces the checklist items that block production promotion directly in the developer tool | MEDIUM | Doctor surface |
+| Explicit "verification closure" language in support matrix for Android | Communicates to adopters that Android support has a separate verification tier from CI-hermetic | LOW | `SupportMatrix` |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Claiming full Android verification from JVM tests alone | JVM tests are fast and reproducible | JVM tests do not exercise the Android runtime, WebView rendering, OS permission dialogs, or Play Integrity; calling them "verified" is dishonest about what is actually proven | Explicit hermetic/advisory split with labeled evidence classes |
+| Blocking PRs on the emulator lane | Adds real-device-level confidence to every PR | Android emulator startup on CI is 5-10 minutes; emulator-dependent tests have non-zero flake rates; blocking PRs on a flaky lane destroys developer experience | Emulator lane advisory on schedule; merge-blocking stays JVM-only |
+| Broad real-device provider farm (AWS Device Farm, BrowserStack) as merge-blocking | Maximum device coverage | External device farm latency, cost, and flake make it unsuitable for PR blocking; adds external service dependency to the merge gate | Advisory scheduled lane with provider farm; document result in support matrix |
 
 ---
 
 ## Feature Dependencies
 
 ```
-TS-01 (paywall_entry route)
-    └──required by──> TS-02 (PaywallLive LiveView)
-    └──required by──> TS-11 (proof test exercises real route declaration)
+[Native Runtime-Line Policy]
+    └──expressed in──> [Compatibility Matrix / Support Truth]
+                           └──surfaced by──> [mix crosswake.doctor]
+                           └──communicated via──> [CHANGELOG rebuild-required flags]
 
-TS-03 (MockStorefront / PurchaseIntent → ReconciliationEvidence)
-    └──required by──> TS-04 (MockStorefront / RestoreIntent)
-    └──required by──> TS-05 (evidence submission to ReconciliationInbox)
-    └──enables──> DIF-01 (MockStorefront as swap target)
-    └──enables──> DIF-06 (source: :storefront semantic)
+[Permission/Entitlement Templates]
+    └──driven by──> [Capability Registry (v3.1)]
+    └──verified by──> [mix crosswake.doctor]
+    └──requires input from──> [iOS PrivacyInfo.xcprivacy requirements (Apple 2024)]
 
-TS-05 (ReconciliationInbox.ingest_evidence/2 called)
-    └──required by──> TS-06 (EntitlementProjection.project_snapshot/2 called)
-    └──enables──> DIF-03 (idempotency key construction visible)
-    └──enables──> DIF-04 (replay detection)
+[Crash/Diagnostic Export Seam]
+    └──follows posture of──> [Denial vocabulary + telemetry redaction (v3.6-v3.9)]
+    └──surfaces via──> [Structured events with layer attribution]
+    └──verified by──> [Doctor hook-wired check]
 
-TS-06 (project_snapshot/2 called)
-    └──required by──> TS-07 (granted state in LiveView)
-    └──required by──> TS-08 (pending state in LiveView)
-    └──required by──> TS-09 (denied state in LiveView)
-    └──required by──> TS-10 (stale state in LiveView)
-    └──enables──> DIF-02 (all four derived_state outputs asserted in proof)
-
-TS-11 (merge-blocking proof test)
-    └──requires──> TS-01, TS-03, TS-04, TS-05, TS-06, TS-07, TS-08, TS-09, TS-10
-    └──enables──> DIF-02 (all four states proved)
-    └──enables──> DIF-04 (replay path proved)
-    └──enables──> DIF-05 (docs-contract lock) [separate test]
-
-TS-12 (guides/commerce.md walkthrough)
-    └──requires──> TS-03, TS-05, TS-06 (must reference real module names)
-    └──requires──> DIF-05 (docs-contract test locks walkthrough against example)
-    └──must not break──> existing phase23 guide structure tests (three H2 layers, non-claims section)
+[Android Verification Closure]
+    └──depends on──> [Existing JVM CI hermetic lane (v3.1+)]
+    └──extends to──> [Advisory emulator lane]
+    └──expressed in──> [Compatibility Matrix / Support Truth]
+    └──documented in──> [Device-UAT checklist]
+    └──surfaced by──> [mix crosswake.doctor]
 ```
 
 ### Dependency Notes
 
-- **TS-03 before TS-05**: `ReconciliationEvidence` must be constructible from mock data before `ReconciliationInbox.ingest_evidence/2` can be called. `MockStorefront` is the factory.
-- **TS-06 before UI states (TS-07–TS-10)**: `project_snapshot/2` must be called before any `derived_state/1` output can be tested. The projection is the single path from evidence to UI state.
-- **TS-11 hermetic constraint**: The proof test must not import `CrosswakeExample.Router` directly (following the phase23 pattern). It must use isolated module fixtures or call example-host modules directly in a unit-test style. The example host router itself is not on the library's `mix test` compile path.
-- **DIF-05 docs-contract test**: Must only check that walkthrough section headings and module/function names in `guides/commerce.md` match what exists in the example host — it must not weaken or replace the existing phase23 guide structure assertions.
+- Compatibility matrix requires existing support truth surface: `SupportMatrix` from
+  v3.6 is the canonical surface; v4.0 adds fields (rebuild_required, shell_version_range,
+  min_ios_target, min_android_sdk) rather than replacing it.
+- Permission templates require capability registry: Templates should be scoped to
+  what the adopter's declared capabilities actually require, not a blanket list. This
+  ties the template generation to the capability registry from v3.1.
+- Diagnostic export seam follows telemetry posture from v3.6-v3.9: No raw tokens,
+  PII, route params, or provider payloads. Same redaction rules apply.
+- Android verification closure extends, not replaces, the hermetic/advisory split:
+  The JVM lane stays merge-blocking; the emulator lane is advisory. The split is the same
+  pattern used in v3.2 (commerce), v3.7 (provider), v3.8 (auth), v3.9 (notification).
+- PrivacyInfo.xcprivacy is a hard iOS gate since May 2024: This is not a nice-to-have;
+  it is a current App Store review requirement. It must be in the template scope.
 
 ---
 
-## MVP Definition
+## MVP Definition (for v4.0)
 
-### What v3.4 Must Deliver (Milestone Scope)
+All five feature areas are in scope for v4.0. The MVP within each area is the table-stakes
+items. Differentiators are worth shipping if they fit within the milestone without
+requiring new surfaces; defer to v4.1 if they require significant new infrastructure.
 
-All table-stakes features are required to close the "adopter can copy this" gap.
+### Launch With (v4.0 minimum)
 
-- [x] TS-01: `paywall_entry` route in `examples/phoenix_host/router.ex`
-- [x] TS-02: `PaywallLive` LiveView with pricing display and mock purchase action
-- [x] TS-03: `MockStorefront` consuming `PurchaseIntent` → `ReconciliationEvidence`
-- [x] TS-04: `MockStorefront` consuming `RestoreIntent` → `ReconciliationEvidence`
-- [x] TS-05: Backend evidence submission path (`ReconciliationInbox.ingest_evidence/2`)
-- [x] TS-06: Backend projection path (`EntitlementProjection.project_snapshot/2`)
-- [x] TS-07: LiveView rendering `:granted`
-- [x] TS-08: LiveView rendering `:pending`
-- [x] TS-09: LiveView rendering `:denied`
-- [x] TS-10: LiveView rendering `:stale`
-- [x] TS-11: Merge-blocking hermetic proof test
-- [x] TS-12: `guides/commerce.md` walkthrough section updated
+- [ ] OTA-safe vs. rebuild-required classification per library version change, expressed
+      in the changelog and support matrix
+- [ ] Compatibility matrix fields in `SupportMatrix` (shell version range, min iOS
+      target, min Android SDK, rebuild_required) — machine-readable
+- [ ] Doctor checks for version out-of-window, iOS deployment target below floor, Android
+      minSdk below floor
+- [ ] Per-capability permission/entitlement requirement docs and copy-pasteable templates
+      for iOS Info.plist, Entitlements.plist, PrivacyInfo.xcprivacy, and Android
+      AndroidManifest.xml
+- [ ] Doctor check for missing permissions given enabled capabilities
+- [ ] WebView termination / render-process-gone callback seams in both shells
+- [ ] Bridge dispatch failure export hook in both shells
+- [ ] Structured diagnostic event taxonomy (layer: native/web/bridge) following existing
+      telemetry redaction posture
+- [ ] Android emulator advisory CI lane (scheduled, not PR-blocking) with explicit
+      promotion criteria
+- [ ] Device-UAT checklist with CI-provable vs. device-advisory vs. provider-advisory
+      columns and honest labels
 
-Differentiators DIF-01, DIF-02, DIF-05, DIF-06 should be included in v3.4 — they are low-complexity and directly reinforce what makes the example credible. DIF-03 and DIF-04 are medium-confidence additions: include if the proof test naturally exercises them; do not add separate example-host UI for them.
+### Add After Validation (v4.x)
 
-### Defer to Later Milestones
+- [ ] Firebase Test Lab integration in the advisory lane (trigger: emulator lane proves
+      sufficient but real-device matrix coverage is worth the setup cost)
+- [ ] Doctor output of advisory promotion criteria for Android verification closure
+      (trigger: emulator lane is stable and adopters ask about production verification
+      criteria)
+- [ ] Per-capability permission/entitlement diff in doctor output (trigger: adopter
+      feedback that the static template is too broad)
 
-- Real StoreKit / Play Billing adapter code → v3.6 (provider adapters milestone)
-- PubSub / real-time entitlement push → adopter responsibility; documented as extension pattern
-- Multi-product paywall → adopter responsibility; single `PaywallEntry` is sufficient to teach the corridor
+### Future Consideration (v4.1+)
+
+- [ ] Fingerprint-style rebuild trigger list exposed in doctor output — depends on
+      compatibility matrix being stable across two milestones
+- [ ] Rebuild trigger detection automation (flag when a PR would require a rebuild based
+      on changed files) — high complexity, deferred until the policy is proven stable
 
 ---
 
 ## Feature Prioritization Matrix
 
-| Feature | Adopter Value | Implementation Cost | Priority | Phase Cluster |
-|---------|--------------|---------------------|----------|---------------|
-| TS-01: paywall_entry route | HIGH | LOW | P1 | Route declaration |
-| TS-02: PaywallLive w/ pricing + action | HIGH | LOW | P1 | Route declaration |
-| TS-03: MockStorefront / PurchaseIntent | HIGH | MEDIUM | P1 | MockStorefront |
-| TS-04: MockStorefront / RestoreIntent | HIGH | LOW | P1 | MockStorefront |
-| TS-05: Evidence submission to inbox | HIGH | LOW | P1 | Reconciliation wiring |
-| TS-06: project_snapshot/2 call | HIGH | LOW | P1 | Reconciliation wiring |
-| TS-07: granted state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-08: pending state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-09: denied state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-10: stale state in LiveView | MEDIUM | LOW | P1 | LiveView states |
-| TS-11: hermetic proof test | HIGH | MEDIUM | P1 | Proof lane |
-| TS-12: commerce.md walkthrough | HIGH | LOW | P1 | Docs |
-| DIF-01: MockStorefront as swap target | HIGH | LOW | P1 | MockStorefront |
-| DIF-02: all four states asserted in proof | HIGH | LOW | P1 | Proof lane |
-| DIF-05: docs-contract test | MEDIUM | LOW | P2 | Proof lane |
-| DIF-06: source: :storefront semantic | MEDIUM | LOW | P2 | MockStorefront |
-| DIF-03: idempotency key demonstration | LOW | LOW | P3 | Reconciliation wiring |
-| DIF-04: replay detection demonstrated | LOW | LOW | P3 | Reconciliation wiring |
-
----
-
-## Mock-vs-Real Boundary Reference
-
-This table is the canonical authority for what v3.4 ships vs. what stays deferred. Any phase or PR that blurs this line is out of scope.
-
-| Surface | v3.4 Status | Deferred To |
-|---------|-------------|-------------|
-| `MockStorefront` (pure Elixir, `source: :storefront`) | SHIP | — |
-| `PaywallEntry`, `PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence` | ALREADY EXIST (v3.2 contracts) | — |
-| `ReconciliationInbox`, `EntitlementProjection`, `ReconciliationKeys` | ALREADY EXIST (example host) | — |
-| StoreKit adapter code | DO NOT SHIP | v3.6 |
-| Play Billing adapter code | DO NOT SHIP | v3.6 |
-| Real provider SDK imports in any example or library module | DO NOT SHIP | v3.6 |
-| Advisory → merge-blocking promotion for purchase_intent / restore_intent | DO NOT SHIP | v3.6 (4-condition promotion_path from phase23-proof.yml) |
-| Persistent entitlement storage (Ecto/ETS) in mock lane | DO NOT SHIP | Adopter responsibility |
-| PubSub / real-time entitlement push in example | DO NOT SHIP | Adopter responsibility |
-
----
-
-## Category Reference Summary
-
-| Category | Label | Count | Phase Cluster |
-|----------|-------|-------|---------------|
-| Route declaration (`paywall_entry` route + `PaywallLive`) | Table Stakes | TS-01, TS-02 | Route |
-| MockStorefront adapter (`PurchaseIntent`, `RestoreIntent`) | Table Stakes + Differentiator | TS-03, TS-04, DIF-01, DIF-06 | MockStorefront |
-| Reconciliation wiring (inbox ingestion + projection) | Table Stakes + Differentiator | TS-05, TS-06, DIF-03, DIF-04 | Reconciliation |
-| LiveView state reflection (granted/pending/denied/stale) | Table Stakes | TS-07, TS-08, TS-09, TS-10 | LiveView states |
-| Hermetic proof lane | Table Stakes + Differentiator | TS-11, DIF-02, DIF-05 | Proof |
-| Docs walkthrough | Table Stakes | TS-12 | Docs |
-| Provider adapter code (StoreKit, Play Billing) | Anti-Feature | AF-01, AF-07 | Out of scope |
-| Persistence, PubSub, auth, multi-product | Anti-Feature | AF-02, AF-03, AF-04, AF-05 | Out of scope |
-| Raw snapshot field exposure in UI | Anti-Feature | AF-08 | Architecture concern |
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| OTA-safe vs. rebuild-required classification in changelog + support matrix | HIGH | MEDIUM | P1 |
+| Compatibility matrix fields in SupportMatrix | HIGH | MEDIUM | P1 |
+| Doctor: version out-of-window + deployment target / minSdk floor warnings | HIGH | LOW | P1 |
+| iOS permission + Entitlements.plist + PrivacyInfo.xcprivacy templates | HIGH | MEDIUM | P1 |
+| Android AndroidManifest.xml permission templates | HIGH | LOW | P1 |
+| Doctor: missing permissions for enabled capabilities | HIGH | MEDIUM | P1 |
+| WebView termination / render-process-gone seam (both shells) | HIGH | MEDIUM | P1 |
+| Bridge dispatch failure export hook | HIGH | MEDIUM | P1 |
+| Structured diagnostic event taxonomy (layer attribution) | HIGH | MEDIUM | P1 |
+| Android emulator advisory CI lane with promotion criteria | HIGH | MEDIUM | P1 |
+| Device-UAT checklist (CI vs. device vs. provider columns) | HIGH | LOW | P1 |
+| Upgrade path narrative in doctor for out-of-window pairs | MEDIUM | MEDIUM | P2 |
+| Support matrix rebuild-required column readable by mix crosswake.support_matrix | MEDIUM | MEDIUM | P2 |
+| Per-capability permission diff in doctor (not full static template) | MEDIUM | HIGH | P2 |
+| Doctor: diagnostic export seam wired check | MEDIUM | LOW | P2 |
+| Firebase Test Lab advisory lane integration | MEDIUM | HIGH | P3 |
+| Fingerprint-style rebuild trigger detection | MEDIUM | HIGH | P3 |
 
 ---
 
 ## Sources
 
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/contracts.ex` — typed contract vocabulary (HIGH confidence)
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/reconciliation.ex` — `ingest_evidence/2`, `authority_mutation_allowed_from_evidence?/1` (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — `project_snapshot/2`, `derived_state/1` (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — `ingest_evidence/2` with event_key/subject_key (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` — provider-aware key construction (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/router.ex` — confirmed no paywall_entry route exists (HIGH confidence)
-- `/Users/jon/projects/crosswake/guides/commerce.md` — three-layer guide structure, reviewer playbooks, non-claims (HIGH confidence)
-- `/Users/jon/projects/crosswake/test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermetic proof pattern and hermeticity constraints (HIGH confidence)
-- `/Users/jon/projects/crosswake/.planning/threads/commerce-archetype-proof.md` — v3.4 design intent and next-step list (HIGH confidence)
-- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — validated requirements COMM-04–COMM-06, ENTL-01–03, RECN-01–03, non-claims, key decisions (HIGH confidence)
-- SEED-002 — Masilotti Bridge Components and PurchaseKit noted as category comparison only, not implementation targets (HIGH confidence)
+- [Bitrise: What App Stores allow with OTA updates](https://bitrise.io/blog/post/what-app-stores-allow-with-ota-updates-apple-and-google-policy-explained) — MEDIUM confidence; policy details verified against Expo docs
+- [Expo runtime versions documentation](https://docs.expo.dev/eas-update/runtime-versions/) — HIGH confidence; authoritative Expo source on fingerprint/appVersion/nativeVersion policies
+- [Expo CNG documentation](https://docs.expo.dev/workflow/continuous-native-generation/) — HIGH confidence; authoritative source on config plugin and permission generation pattern
+- [Codemagic: React Native OTA what can be deployed](https://blog.codemagic.io/react-native-ota-what-can-be-deployed/) — MEDIUM confidence; practical rebuild-trigger list
+- [Codemagic: React Native OTA Updates Guide 2026](https://blog.codemagic.io/react-native-ota-updates-guide/) — MEDIUM confidence; current state of OTA tooling
+- [Apple Developer: Privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files) — HIGH confidence; official Apple documentation
+- [Apple Developer: Adding a privacy manifest to your app or third-party SDK](https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk) — HIGH confidence; official Apple enforcement documentation
+- [Bitrise: Enforcement of Apple Privacy Manifest starting from May 1, 2024](https://bitrise.io/blog/post/enforcement-of-apple-privacy-manifest-starting-from-may-1-2024) — HIGH confidence; confirms enforcement date
+- [Capgo: Privacy Manifest for iOS Apps](https://capgo.app/blog/privacy-manifest-for-ios-apps/) — MEDIUM confidence; practical guidance
+- [Android Emulator Runner GitHub Action](https://github.com/marketplace/actions/android-emulator-runner) — HIGH confidence; standard mechanism for Android emulator CI
+- [Android Developers: Types of CI automation](https://developer.android.com/training/testing/continuous-integration/automation) — HIGH confidence; official Android documentation on hermetic vs. instrumented test classification
+- [Firebase Test Lab](https://firebase.google.com/docs/test-lab) — HIGH confidence; official Firebase documentation
+- [Google OSS Library Breaking Change Policy](https://opensource.google/documentation/policies/library-breaking-change) — HIGH confidence; establishes major version bump and migration note requirements for breaking native changes
+- [New Relic Android: native crash tracking](https://docs.newrelic.com/docs/mobile-monitoring/mobile-monitoring-ui/crashes/investigate-mobile-app-crash-report/) — MEDIUM confidence; crash export seam pattern reference
+- [Median.co: WebView app diagnostics guide](https://median.co/blog/how-to-troubleshoot-webview-apps-debugging-guide) — MEDIUM confidence; layer-attribution diagnostic tooling overview
 
 ---
 
-*Feature research for: v3.4 Commerce Archetype Proof — mocked-storefront paywall corridor example*
-*Researched: 2026-05-29*
+*Feature research for: v4.0 Production Shell Runtime Line (Crosswake)*
+*Researched: 2026-06-03*

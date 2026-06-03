@@ -1,472 +1,514 @@
 # Architecture Research
 
-**Domain:** Mocked-storefront paywall archetype integration (v3.4 Commerce Archetype Proof)
-**Researched:** 2026-05-29
-**Confidence:** HIGH — all findings grounded in committed source code and planning files; no external sources required.
+**Domain:** Production Shell Runtime Line — v4.0 integration architecture
+**Researched:** 2026-06-03
+**Confidence:** HIGH — all findings grounded in committed source code (manifest/types, compatibility, doctor, SupportMatrix, checked-in iOS/Android shells, operator_inspection, gen.shell); no external sources needed.
 
 ---
 
-## Standard Architecture
+## System Overview
 
-### System Overview
+The existing architecture already has most of the structure v4.0 needs. The five v4.0 feature areas all attach to existing surfaces without introducing new high-frequency bridge paths or standalone packages. The key constraint is that every new behavior must be derivable from existing canonical truth (manifest, capability registry, SupportMatrix) rather than creating a parallel policy ledger.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         EXAMPLE HOST LAYER                           │
-│              examples/phoenix_host/lib/crosswake_example/            │
-├────────────────────┬────────────────────┬───────────────────────────┤
-│   Router (MODIFY)  │  PaywallLive (NEW) │  Paywall corridor routes  │
-│   /paywall         │  /purchase_intent  │  wired via commerce: DSL  │
-│   /purchase_intent │  /restore_intent   │                           │
-│   /restore_intent  │  PaywallEntryLive  │                           │
-├────────────────────┴────────────────────┴───────────────────────────┤
-│                       MOCK ADAPTER LAYER (NEW)                       │
-│            commerce/mock_storefront.ex  (example host only)          │
+│                  HOST PHOENIX APPLICATION (adopter-owned)            │
+│  Route Policy DSL  →  mix crosswake.gen.shell  →  host shell proj   │
+│  (NEW) runtime_line: / rebuild_policy: fields in route/capability    │
+├────────────────────────────────────────────────────────────────────┤
+│                   CORE ELIXIR LIBRARY (crosswake)                   │
 │                                                                      │
-│  Consumes PurchaseIntent + RestoreIntent structs from Contracts.     │
-│  Emits ReconciliationEvidence with source: :storefront.              │
-│  Provider-neutral: provider field = "mock"; no real SDK code.        │
-├──────────────────────────────────────────────────────────────────────┤
-│                   BACKEND RECONCILIATION LAYER (EXISTING + EXTEND)   │
-│  commerce/reconciliation_inbox.ex    (EXISTS — used as-is)           │
-│  commerce/reconciliation_keys.ex     (EXISTS — used as-is)           │
-│  commerce/entitlement_projection.ex  (EXISTS — used as-is)           │
-├──────────────────────────────────────────────────────────────────────┤
-│                        CROSSWAKE CORE LIBRARY                        │
-│  Crosswake.Commerce.Contracts        (EXISTS — do not modify)        │
-│  Crosswake.Commerce.Reconciliation   (EXISTS — do not modify)        │
-│  Crosswake.Router DSL                (EXISTS — add commerce: routes) │
-└──────────────────────────────────────────────────────────────────────┘
-
-                             DATA FLOW
-MockStorefront.simulate_purchase/1
-    ↓  returns ReconciliationEvidence{source: :storefront, provider: "mock", ...}
-ReconciliationInbox.ingest_evidence/2
-    ↓  returns {:ok, attempt}  (status: :awaiting_verification, never grants authority)
-[Host backend simulates verification — sets reconciliation to :projection_refreshed]
-EntitlementProjection.project_snapshot/2
-    ↓  returns {:ok, EntitlementSnapshot.t()}  (monotonic as_of, verified reconciliation)
-EntitlementProjection.derived_state/1
-    ↓  returns :stale | :pending | :denied | :granted
-Phoenix.PubSub.broadcast/3
-    ↓  {:entitlement_update, derived_state}
-PaywallEntryLive.handle_info/2
-    ↓  assign(socket, entitlement_state: derived_state)
+│  ┌───────────────┐  ┌────────────────┐  ┌──────────────────────┐   │
+│  │   Manifest    │  │ Compatibility  │  │  SupportMatrix       │   │
+│  │   Types.Root  │  │ Types.Compat.  │  │  canonical/0         │   │
+│  │  + runtime    │  │ + runtime_line │  │  + runtime_line rows │   │
+│  │    _line_     │  │   _policy_     │  │  + permission rows   │   │
+│  └──────┬────────┘  └───────┬────────┘  └──────────┬───────────┘   │
+│         │                   │                       │               │
+│  ┌──────▼───────────────────▼───────────────────────▼───────────┐  │
+│  │                   Crosswake.Doctor                            │  │
+│  │  (phase_3 shells + NEW phase_v4_runtime_line_findings)        │  │
+│  │  (NEW phase_v4_permission_template_findings)                  │  │
+│  │  (NEW phase_v4_diagnostic_export_findings)                    │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │          OperatorInspection  (rebuild_entry already exists)   │   │
+│  │  + runtime_line_entry  + permission_template_entry            │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+├────────────────────────────────────────────────────────────────────┤
+│              CHECKED-IN NATIVE SHELLS  (examples/)                  │
+│                                                                      │
+│  iOS (Swift)                     Android (Kotlin/JVM)               │
+│  ActivationCoordinator           ActivationCoordinator.kt            │
+│  BridgeChannel.swift             BridgeChannel.kt                    │
+│  (NEW) DiagnosticExport.swift    (NEW) DiagnosticExport.kt          │
+│  (NEW) PermissionTemplate refs   (NEW) PermissionTemplate refs      │
+│  (NEW) RuntimeLinePolicyReader   (NEW) RuntimeLinePolicyReader      │
+├────────────────────────────────────────────────────────────────────┤
+│              GENERATORS + PROOF SCRIPTS                             │
+│                                                                      │
+│  mix crosswake.gen.shell (ios|android)                              │
+│   + emits permission/entitlement template stubs                     │
+│   + emits runtime-line policy fixture in shell README               │
+│  script/verify_generated_ios_shell.sh  (modified)                   │
+│  script/verify_generated_android_shell.sh  (closure)                │
+│  (NEW) CI: phase_v4_runtime_line_proof.yml (hermetic, merge-block)  │
+│  (NEW) CI: advisory emulator/device lane (continue-on-error: true)  │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Component Boundaries
+## Component Responsibilities
 
-### Integration Points: New vs. Modified vs. Existing
-
-| Component | Path | Status | Role |
-|-----------|------|--------|------|
-| `CrosswakeExample.Router` | `examples/phoenix_host/lib/crosswake_example/router.ex` | MODIFY | Add `/paywall` scope with three corridor routes |
-| `CrosswakeExample.Commerce.MockStorefront` | `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex` | NEW | Mock adapter; emits `ReconciliationEvidence` without provider SDK |
-| `CrosswakeExample.Paywall.PaywallEntryLive` | `examples/phoenix_host/lib/crosswake_example/paywall/paywall_entry_live.ex` | NEW | LiveView for paywall display; subscribes to entitlement state via PubSub |
-| `CrosswakeExample.Paywall.PurchaseIntentLive` | `examples/phoenix_host/lib/crosswake_example/paywall/purchase_intent_live.ex` | NEW | LiveView that calls MockStorefront, feeds evidence into ReconciliationInbox |
-| `CrosswakeExample.Paywall.RestoreIntentLive` | `examples/phoenix_host/lib/crosswake_example/paywall/restore_intent_live.ex` | NEW | LiveView that calls MockStorefront restore path, feeds evidence into inbox |
-| `CrosswakeExample.Commerce.ReconciliationInbox` | `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` | EXISTING (unchanged) | Ingests evidence; returns attempt map; never grants authority |
-| `CrosswakeExample.Commerce.EntitlementProjection` | `examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` | EXISTING (unchanged) | `derived_state/1` and `project_snapshot/2` are already correct and proven in phase21 |
-| `CrosswakeExample.Commerce.ReconciliationKeys` | `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` | EXISTING (unchanged) | `event_key/1`, `subject_key/2` for idempotency |
-| `Crosswake.Commerce.Contracts` | `lib/crosswake/commerce/contracts.ex` | EXISTING (do not modify) | Canonical struct definitions consumed by the example host |
-| `Crosswake.Commerce.Reconciliation` | `lib/crosswake/commerce/reconciliation.ex` | EXISTING (do not modify) | Outcome vocabulary; `ingest_evidence/2` is the reference contract |
-| Hermetic proof test | `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` | NEW | Merge-blocking; drives full data layer without example-host runtime or PubSub |
-| Advisory CI workflow | `.github/workflows/phase34-proof.yml` | NEW | Mirrors phase23-proof.yml two-job split; hermetic job + advisory placeholder |
-| `guides/commerce.md` | `guides/commerce.md` | MODIFY | Add end-to-end paywall corridor walkthrough; docs-contract test locks it |
-
----
-
-## Recommended Project Structure
-
-```
-examples/phoenix_host/lib/crosswake_example/
-├── commerce/
-│   ├── mock_storefront.ex          # NEW — mock adapter only; example/docs-only
-│   ├── reconciliation_inbox.ex     # EXISTS — unchanged
-│   ├── reconciliation_keys.ex      # EXISTS — unchanged
-│   └── entitlement_projection.ex  # EXISTS — unchanged
-├── paywall/
-│   ├── paywall_entry_live.ex      # NEW — subscribes to entitlement state
-│   ├── purchase_intent_live.ex    # NEW — triggers mock purchase path
-│   └── restore_intent_live.ex     # NEW — triggers mock restore path
-├── router.ex                      # MODIFY — add /paywall scope
-
-test/crosswake/proof/
-├── phase34_paywall_corridor_proof_test.exs  # NEW — hermetic merge-blocking
-├── phase21_reconciliation_example_test.exs  # EXISTS — unchanged
-├── phase23_commerce_support_proof_test.exs  # EXISTS — unchanged
-
-.github/workflows/
-├── phase34-proof.yml              # NEW — hermetic + advisory split
-├── phase23-proof.yml              # EXISTS — unchanged
-
-guides/
-└── commerce.md                    # MODIFY — add paywall walkthrough section
-```
-
-### Structure Rationale
-
-- **`commerce/`:** Groups all reconciliation plumbing. `mock_storefront.ex` belongs here (not in `paywall/`) because it is the adapter layer, not a UI layer. This mirrors how a real StoreKit adapter would be organized by an adopter. Keeping it adjacent to the existing inbox/projection/keys files makes the adoption pattern explicit.
-- **`paywall/`:** A dedicated namespace for corridor LiveViews mirrors how `saas_portal/` and `selective_native/` are organized in the existing example host. Route owners live next to their corridor declaration context.
-- **No GenServer or ETS for v3.4:** The proof is hermetic-first. `EntitlementProjection` stays a pure-function module. LiveViews hold in-socket state derived from `EntitlementProjection.derived_state/1`. A persistent state process is a valid adopter extension but is not required by this proof and would add non-hermetic scope.
+| Component | Responsibility | New vs. Modified |
+|-----------|----------------|-----------------|
+| `Manifest.Types.Compatibility` | Three version axes: manifest_schema, bridge_protocol, native_runtime | **Modified** — add `rebuild_policy` struct with OTA-safe vs. rebuild decision rules derived from version axes |
+| `Manifest.Types.SupportMatrix` | Canonical support truth rows | **Modified** — add `runtime_line` entries, `permission_template` entries, `diagnostic_export` entry |
+| `Crosswake.SupportMatrix` | `canonical/0` and all accessor functions | **Modified** — add runtime_line_truth, permission_template_truth, diagnostic_export_truth accessor functions; add new promotion_rule entries for Android verification closure |
+| `Crosswake.Compatibility` | Version axis evaluation and route findings | **Modified** — `validate_native_runtime` extended to emit `:rebuild_required` vs. `:ota_safe` signal from policy |
+| `Crosswake.Doctor` | Diagnostic findings pipeline | **Modified** — add `phase_v4_runtime_line_findings/2`, `phase_v4_permission_template_findings/2`, `phase_v4_diagnostic_export_findings/2`; extend `Doctor.Report` struct |
+| `Crosswake.OperatorInspection` | Route-level inspection surface | **Modified** — add `runtime_line_entry/2` and `permission_template_entry/2` per route |
+| `Crosswake.Shell.Fixtures` | Bundled shell fixture JSON | **Modified** — add `diagnostics_export_fixture` and `permission_template_fixture` exports |
+| iOS shell `ActivationCoordinator.swift` | Native route activation | **Modified** — read runtime_line_policy from manifest fixture; enforce rebuild check |
+| iOS shell `BridgeChannel.swift` | Bounded bridge dispatch | **Not modified** — diagnostic export is NOT a bridge command |
+| iOS shell `DiagnosticExport.swift` | Shell-to-host diagnostic flush | **New** — fire-and-forget POST to host `/api/crosswake/diagnostic_export`; no bridge path |
+| Android shell `ActivationCoordinator.kt` | Native route activation | **Modified** — read runtime_line_policy from manifest fixture; enforce rebuild check |
+| Android shell `DiagnosticExport.kt` | Shell-to-host diagnostic flush | **New** — same pattern as iOS |
+| Permission/entitlement template stubs | Host-owned generated artifacts | **New** — `.eex` templates emitted by `gen.shell`; not runtime code |
+| `mix crosswake.gen.shell` | Shell scaffold generator | **Modified** — emit permission template stubs and runtime-line policy README section |
+| `script/verify_generated_android_shell.sh` | Android JVM proof | **Modified** — add hermetic verification for runtime-line policy reader + diagnostic export seam |
+| CI workflow `phase_v4_*.yml` | Merge-blocking hermetic + advisory lanes | **New** — follows phase18/phase23 two-job hermetic+advisory pattern |
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: MockStorefront as a Thin Evidence Emitter
+### Pattern 1: Rebuild Policy Derived from Existing Version Axes (not a new field)
 
-**What:** `MockStorefront` is a single pure-function module with two public functions: `simulate_purchase/1` (takes `PurchaseIntent.t()`) and `simulate_restore/1` (takes `RestoreIntent.t()`). Both return `{:ok, %ReconciliationEvidence{}}`. The mock sets `provider: "mock"` and derives `provider_reference` deterministically from the intent's `entry_id` or `correlation_id`. No external calls, no processes.
+**What:** The OTA-safe-vs-rebuild decision is not a new manifest field. It is derived at evaluation time from the three existing version axes (`manifest_schema_version`, `bridge_protocol_version`, `native_runtime_version`) plus the `change_classes` table in `SupportMatrix`. When the required `native_runtime_version` in the manifest is newer than what the installed shell reports, a rebuild is required. The `SupportMatrix.change_classes/1` table already encodes "native or companion rebuild required" as a change class with an explicit `required_proof`. v4.0 formalizes this into a typed `RebuildPolicy` struct attached to `Compatibility` rather than adding a new top-level manifest field.
 
-**When to use:** In example-host LiveViews and the hermetic proof test. In real adopter apps, `MockStorefront` is replaced by a StoreKit or Play Billing adapter that emits the same `ReconciliationEvidence` contract struct. The rest of the pipeline (inbox, projection, LiveView) is identical.
+**Where it lives:** `Crosswake.Compatibility.RebuildPolicy` — new struct, derived in `Compatibility.validate_native_runtime/4`. The decision is then projected into `Doctor.Report.runtime_line` and `OperatorInspection` rebuild entries.
 
-**Why this shape preserves the non-authoritative boundary:** `ReconciliationEvidence` is the struct boundary between storefront and Phoenix. It structurally cannot express authority — there are no authority or access fields. Downstream modules (`ReconciliationInbox`, `EntitlementProjection`) behave identically whether evidence came from the mock or a real storefront. `Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally as the contract-level guard.
+**Why not a new manifest field:** The manifest already carries `compatibility.native_runtime_version`. Adding a separate `rebuild_policy` top-level key would create two sources of truth for the same decision. The policy is a function of version data the manifest already has.
 
-**Example:**
-```elixir
-defmodule CrosswakeExample.Commerce.MockStorefront do
-  alias Crosswake.Commerce.Contracts.{PurchaseIntent, RestoreIntent, ReconciliationEvidence}
+**Confidence:** HIGH — `validate_native_runtime/4` already emits a finding when `native_runtime_version` is incompatible. The new work is: (a) classifying the finding as `:rebuild_required` vs. `:ota_safe` with a typed result, and (b) surfacing that classification through doctor and operator inspection.
 
-  @provider "mock"
+### Pattern 2: Permission/Entitlement Templates as Host-Owned Generated Artifacts
 
-  @spec simulate_purchase(PurchaseIntent.t()) :: {:ok, ReconciliationEvidence.t()}
-  def simulate_purchase(%PurchaseIntent{entry_id: entry_id, correlation_id: correlation_id}) do
-    {:ok, %ReconciliationEvidence{
-      source: :storefront,
-      provider: @provider,
-      provider_reference: "mock-purchase-#{entry_id}",
-      event_kind: "purchase",
-      evidence_ref: "mock-evidence-#{correlation_id}",
-      captured_at: DateTime.utc_now() |> DateTime.to_iso8601(),
-      integrity_digest: nil,
-      idempotency_ref: correlation_id
-    }}
-  end
+**What:** iOS entitlement (`.entitlements`) and Android permission (`AndroidManifest.xml` permission stubs) are generated by `mix crosswake.gen.shell` as commented scaffold files, not as runtime code Crosswake touches. They live alongside other generated shell artifacts in the host project. They are parity-locked to declared capabilities via a doctor check: if the manifest's `capability_registry` declares a capability with `rebuild: :native_required`, doctor verifies that the corresponding permission template stub is present in the generated shell root.
 
-  @spec simulate_restore(RestoreIntent.t()) :: {:ok, ReconciliationEvidence.t()}
-  def simulate_restore(%RestoreIntent{correlation_id: correlation_id}) do
-    {:ok, %ReconciliationEvidence{
-      source: :storefront,
-      provider: @provider,
-      provider_reference: "mock-restore-#{correlation_id}",
-      event_kind: "restore",
-      evidence_ref: "mock-restore-evidence-#{correlation_id}",
-      captured_at: DateTime.utc_now() |> DateTime.to_iso8601(),
-      integrity_digest: nil,
-      idempotency_ref: correlation_id
-    }}
-  end
-end
+**Where it lives:** New `.eex` templates in `priv/templates/crosswake/shell/ios/` and `priv/templates/crosswake/shell/android/`. New doctor check `phase_v4_permission_template_findings/2` reads the manifest capability registry and verifies template presence. The check is analogous to the existing `@platform_definitions` artifact checks in `Doctor`.
+
+**Why host-owned:** The capability taxonomy already classifies capabilities by `rebuild: :native_required` vs. `:none`. Permissions are the native side of that rebuild requirement. They are host-owned because only the host knows which app bundle identifier, provisioning profile, and entitlement server URL to use. Crosswake generates the scaffold; the host fills in the specifics.
+
+**Parity lock mechanism:** `SupportMatrix` gains a `permission_template_truth/0` accessor that maps capability family → expected permission stub filename. Doctor verifies this mapping at `check_native_tools?: true` time, the same gating used for existing proof hooks.
+
+### Pattern 3: Diagnostic Export Seam (Not a Bridge Command)
+
+**What:** The shell emits typed diagnostic envelopes to a host-owned HTTP endpoint (`/api/crosswake/diagnostic_export`) rather than through the bounded bridge. The bridge thesis (low-frequency, typed, versioned, request/reply) is preserved because diagnostic export is fire-and-forget from the shell and does not require a LiveView reply. It is a separate native seam analogous to how Chimeway token registration uses a host-side HTTP endpoint rather than the bridge.
+
+**Shape of the diagnostic envelope:**
+```
+{
+  "schema_version": "1.0.0",
+  "shell_platform": "ios" | "android",
+  "native_runtime_version": "...",
+  "crosswake_version": "...",
+  "event_class": "crash_tombstone" | "activation_failure" | "bridge_denial" | "compat_mismatch",
+  "route_id": "..." | null,
+  "denial_code": "..." | null,
+  "occurred_at": "ISO8601",
+  "correlation_id": "...",
+  "sanitized_context": {}
+}
 ```
 
-**Critical constraints:**
-- `MockStorefront` must live in `examples/phoenix_host/`, not in `lib/`. It is example/docs-only per the capability taxonomy. Putting it in `lib/` would ship it to hex.pm as part of the Crosswake library.
-- The hermetic proof test does NOT import `CrosswakeExample.MockStorefront`. It constructs `ReconciliationEvidence` directly (same as phase21 proof constructs evidence inline). The `:requires_example_host` tagged test loads it via `Code.require_file` as phase21 does.
+**What it must not carry:** Raw stack traces with PII, raw WebView URLs with query params, raw capability payloads, or any data that would make the endpoint a surveillance surface. The `sanitized_context` field is explicit about this: only enum-valued fields and pre-approved string labels are allowed, following the same redaction posture as Chimeway and Sigra telemetry.
 
----
+**Why not a bridge command:** A new `diagnostics.export` bridge command would widen the bounded bridge vocabulary and require a LiveView response path. That violates the bounded-bridge thesis. The HTTP seam pattern already exists (token registration in Chimeway).
 
-### Pattern 2: Paywall Corridor Route Policy Declaration
+**Integration point:** New `DiagnosticExport.swift` / `DiagnosticExport.kt` in both shells. New `Crosswake.Shell.DiagnosticExport` Elixir module defining the typed envelope struct and `sanitize/1` helper. A new `mix crosswake.gen.shell` output section documents the endpoint contract. Doctor check `phase_v4_diagnostic_export_findings/2` verifies the shell template is present and the envelope schema version is consistent with the manifest schema version.
 
-**What:** Three routes in a new `/paywall` scope, each with a `commerce:` key matching the canonical corridor vocabulary from `Crosswake.SupportMatrix.commerce_corridors/0`. The corridor role values must exactly match the support matrix atoms `:paywall_entry`, `:purchase_intent`, `:restore_intent`.
+### Pattern 4: Compatibility Matrix Projection through SupportMatrix + Doctor
 
-**When to use:** This is the only correct shape. The `commerce:` DSL key is already wired to manifest compilation and doctor output. Incorrect role atoms will fail corridor checks.
+**What:** The existing `SupportMatrix.canonical/0` already holds `shells`, `release_boundaries`, and `change_classes`. v4.0 adds `runtime_line` entries that explicitly encode the current compatibility window: minimum supported `native_runtime_version`, current line, and the end-of-life posture for older lines. These entries are projected into:
+1. `Doctor.Report.runtime_line` — new field, populated by `phase_v4_runtime_line_findings/2`
+2. `OperatorInspection.Types.RuntimeLineEntry` — new type attached to route inspection
+3. `SupportMatrix.runtime_line_truth/0` — new public accessor following the pattern of `auth_contract_truth/0` and `notification_support_truth/0`
 
-**Example (addition to router.ex):**
-```elixir
-scope "/paywall", CrosswakeExample.Paywall do
-  pipe_through [:browser]
+**Derivation rule:** The runtime_line entry is derived from `manifest.compatibility.native_runtime_version` (the current line) and `SupportMatrix.release_boundaries/1` (the policy for shell artifacts). No new manifest field is introduced. The window (minimum supported version → current) is encoded in `SupportMatrix` module-level constants, not in the manifest JSON, so it stays a library-owned claim rather than a per-host manifest claim.
 
-  crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-    live "/", PaywallEntryLive,
-      crosswake: [
-        id: "paywall-entry",
-        runtime: :live_view,
-        commerce: [corridor: :subscription_default, role: :paywall_entry]
-      ]
+**Why this way:** Per the existing pattern in `SupportMatrix.validate_phase51_support_truth/1`, support truth validation lives in the SupportMatrix module as compile-time data. Runtime-line windows follow the same model.
 
-    live "/purchase", PurchaseIntentLive,
-      crosswake: [
-        id: "paywall-purchase-intent",
-        runtime: :native_screen,
-        commerce: [corridor: :subscription_default, role: :purchase_intent]
-      ]
+### Pattern 5: Android Verification Closure (Hermetic + Advisory Split)
 
-    live "/restore", RestoreIntentLive,
-      crosswake: [
-        id: "paywall-restore-intent",
-        runtime: :native_screen,
-        commerce: [corridor: :subscription_default, role: :restore_intent]
-      ]
-  end
-end
-```
+**What:** The existing Android support truth shows `status: :verification_required` in `SupportMatrix.canonical/0` with an explicit `notes` field citing the "Java-enabled BridgeChannel proof lane." v4.0 must close this by producing a hermetic CI-passable proof for the runtime-line policy reader and diagnostic export seam, and an advisory lane for emulator/device tests.
 
-**Rationale for `runtime: :native_screen` on purchase/restore:** The support matrix declares `purchase_intent` and `restore_intent` as `native_or_companion_required`. Using `:native_screen` is semantically correct — it signals the storefront execution is native-side. The mock simulates that evidence path from Phoenix for proof purposes; the runtime declaration is not changed by the mock.
+**Hermetic lane:** Adds Android JVM unit tests for `RuntimeLinePolicyReader` and `DiagnosticExport` (following the Phase 18 pattern where Android BridgeChannel tests ran in CI with `setup-java`). These tests run in the existing phase18-proof job structure — either as a new `phase_v4_android_hermetic.yml` or appended to the Android test step.
 
-**Rationale for `offline: :unavailable`:** Commerce routes must not cache or degrade silently. Fail-closed posture matches the corridor denial vocabulary (`commerce.corridor.prerequisite_missing`, etc.).
+**Advisory lane:** Emulator/device connected tests remain advisory with `continue-on-error: true`, following the `phase23-proof.yml` two-job hermetic+advisory split. A new `device_uat_checklist.md` in the shell README documents the manual verification steps for real-device promotion.
 
----
-
-### Pattern 3: LiveView Entitlement State Subscription
-
-**What:** `PaywallEntryLive` subscribes to a PubSub topic on mount and receives `{:entitlement_update, derived_state}` messages. The assign `@entitlement_state` holds one of `:stale | :pending | :denied | :granted`. `render/1` pattern-matches on it.
-
-**When to use:** This is the mechanism that closes the end-to-end proof: mock purchase emits evidence → inbox ingests → projection derives state → PubSub broadcast → LiveView assigns update.
-
-**Why not a GenServer for v3.4:** A persistent state process is a valid adopter implementation choice, but adds non-hermetic scope that the proof does not need. The hermetic lane calls `EntitlementProjection.derived_state/1` directly on constructed snapshots. The `:requires_example_host` integration test drives the LiveView assign-update path by triggering `PurchaseIntentLive` actions and asserting `PaywallEntryLive`'s socket assigns update.
-
-**Example (PaywallEntryLive skeleton):**
-```elixir
-def mount(_params, _session, socket) do
-  if connected?(socket), do: Phoenix.PubSub.subscribe(CrosswakeExample.PubSub, "entitlement")
-  {:ok, assign(socket, entitlement_state: :stale)}
-end
-
-def handle_info({:entitlement_update, derived_state}, socket) do
-  {:noreply, assign(socket, entitlement_state: derived_state)}
-end
-```
-
-**Projection precedence (from existing `EntitlementProjection.derived_state/1` — do not reimplement):**
-1. freshness `:stale` or `:unknown` — returns `:stale` (fail-closed)
-2. reconciliation in `[:pending_purchase, :pending_restore, :awaiting_verification]` — returns `:pending`
-3. freshness `:fresh`, reconciliation `:projection_refreshed`, authority in grantable states, access `:granted` — returns `:granted`
-4. all other resolved outcomes — returns `:denied`
-
-This function already exists and is proven correct in phase21. Do not reimplement it.
-
----
-
-### Pattern 4: Hermetic Proof Test Structure (mirrors phase23)
-
-**What:** The merge-blocking proof test uses inline router fixture modules (as phase23 does), never imports `CrosswakeExample.Router` or loads any example-host file via `Code.require_file`, makes no network calls, starts no processes.
-
-**Key assertions the hermetic lane must drive:**
-1. A router with `commerce: [corridor: :subscription_default, role: :paywall_entry]` compiles and the route appears in the manifest with correct corridor metadata.
-2. A `ReconciliationEvidence` struct with `source: :storefront, provider: "mock", event_kind: "purchase"` validates against `Crosswake.Commerce.Contracts` (no error from `canonical_reconciliation_evidence_source/1`).
-3. `ReconciliationInbox.ingest_evidence/2` returns `{:ok, attempt}` where `attempt.status == :awaiting_verification` and the attempt map has no authority or access fields.
-4. `Crosswake.Commerce.Reconciliation.authority_mutation_allowed_from_evidence?/1` returns `false` for any `ReconciliationEvidence`.
-5. `EntitlementProjection.derived_state/1` returns `:stale` for a snapshot with freshness `:stale` or `:unknown`.
-6. `EntitlementProjection.derived_state/1` returns `:pending` for a snapshot with reconciliation `:awaiting_verification` and fresh freshness.
-7. `EntitlementProjection.project_snapshot/2` promotes a snapshot to `{:ok, snapshot}` when given `:projection_refreshed` reconciliation + `:active` authority + `:granted` access + fresh freshness + monotonic `as_of`.
-8. `EntitlementProjection.derived_state/1` returns `:granted` for that promoted snapshot.
-9. Provider-vocabulary fence: the proof test's own source must not contain "storekit", "play_billing", "play billing", or "revenuecat".
-
-The `:requires_example_host` tagged test (run in the CI example-host lane, not the hermetic lane) loads MockStorefront via `Code.require_file` and drives the full LiveView assign-update path.
+**Promotion criteria:** `SupportMatrix.promotion_rules/0` gains a new `promotion_rule_entry` for `shell.android.runtime_line_policy` with explicit `required_evidence`, `minimum_consecutive_passes: 2`, and a `demotion_trigger`. This follows the existing `shell.android.generated_project` promotion rule shape.
 
 ---
 
 ## Data Flow
 
-### Full Purchase Flow (Mock Corridor)
+### Rebuild Policy Decision Flow
 
 ```
-[User views PaywallEntryLive — @entitlement_state: :stale on mount]
-    ↓ (user taps "Subscribe" → navigate to /paywall/purchase)
-[PurchaseIntentLive mounts]
-    ↓ builds PurchaseIntent{entry_id: "pro", correlation_id: UUID}
-[MockStorefront.simulate_purchase/1]
-    ↓ {:ok, %ReconciliationEvidence{
-         source: :storefront, provider: "mock",
-         event_kind: "purchase", provider_reference: "mock-purchase-pro", ...}}
-[ReconciliationInbox.ingest_evidence/2]
-    ↓ {:ok, %{source: :storefront, status: :awaiting_verification,
-              event_key: "event::mock::mock-purchase-pro::purchase::...",
-              subject_key: "subject::mock::mock-purchase-pro",
-              replay?: false, ...}}
-    ↓ (status is :awaiting_verification — no authority or access fields set)
-[Host backend verification step — in example: inline, in production: worker/job]
-    ↓ builds EntitlementSnapshot with:
-         authority: %AuthorityLane{state: :active}
-         access: %AccessLane{decision: :granted}
-         reconciliation: %ReconciliationLane{state: :projection_refreshed}
-         freshness: %FreshnessLane{state: :fresh, checked_at: now}
-         evidence: %EvidenceLane{source: :storefront, reference: attempt.event_key}
-         as_of: System.monotonic_time()
-[EntitlementProjection.project_snapshot/2]
-    ↓ {:ok, %EntitlementSnapshot{...}}  (monotonic as_of passes)
-[EntitlementProjection.derived_state/1]
-    ↓ :granted
-[Phoenix.PubSub.broadcast(CrosswakeExample.PubSub, "entitlement", {:entitlement_update, :granted})]
+Host Route Policy DSL
     ↓
-[PaywallEntryLive.handle_info({:entitlement_update, :granted}, socket)]
-    ↓ assign(socket, entitlement_state: :granted)
-[LiveView renders "Access granted" UI state]
+Manifest.compile → Types.Root.compatibility.native_runtime_version = "1.0.0"
+    ↓
+Shell boot: reads bundled crosswake_manifest.json
+    ↓
+ActivationCoordinator → RuntimeLinePolicyReader.evaluate(manifest, shell_version)
+    ↓
+  shell_version >= manifest.native_runtime_version?
+    YES → :ota_safe, activate normally
+    NO  → :rebuild_required, activate but surface upgrade advisory OR deny per rebuild_policy
+    ↓
+Doctor.run → phase_v4_runtime_line_findings → Finding{code: "runtime_line.rebuild_required"}
+    ↓
+OperatorInspection.from_manifest → route.rebuild_entry includes runtime_line classification
 ```
 
-### Full Restore Flow (Mock Corridor)
+### Permission Template Parity Flow
 
 ```
-[User taps "Restore Purchases" on PaywallEntryLive]
-    ↓ (navigate to /paywall/restore)
-[RestoreIntentLive mounts]
-    ↓ builds RestoreIntent{correlation_id: UUID}
-[MockStorefront.simulate_restore/1]
-    ↓ {:ok, %ReconciliationEvidence{event_kind: "restore", source: :storefront, provider: "mock", ...}}
-[ReconciliationInbox.ingest_evidence/2]
-    ↓ {:ok, %{status: :awaiting_verification, ...}}
-— same projection path as purchase from this point forward —
-→ derived_state → :granted → broadcast → LiveView assign update
+mix crosswake.gen.shell ios
+    ↓
+gen.shell reads manifest capability_registry
+    ↓
+For each capability with rebuild: :native_required → emit permission template stub
+    ↓
+Host owns and fills in: app bundle ID, entitlement server, provisioning profile
+    ↓
+Doctor.run (check_native_tools?: true)
+    ↓
+phase_v4_permission_template_findings reads manifest capability_registry
+    ↓
+For each rebuild-required capability → check permission_template stub present in shell root
+    ↓
+SupportMatrix.permission_template_truth() → parity lock between manifest caps + template list
 ```
 
-### Stale and Denied States (LiveView reflects correctly)
+### Diagnostic Export Flow
 
 ```
-Initial PaywallEntryLive mount:
-    entitlement_state: :stale
-    (fail-closed default; no snapshot yet)
+Shell native code: crash, activation failure, bridge denial
+    ↓
+DiagnosticExport.swift / .kt: build typed envelope, sanitize, omit PII
+    ↓
+POST /api/crosswake/diagnostic_export  (fire-and-forget, no bridge involvement)
+    ↓
+Host Phoenix app handles endpoint (host-owned, not generated by Crosswake)
+    ↓
+Doctor.run → phase_v4_diagnostic_export_findings
+    → verifies DiagnosticExport template present in shell root
+    → verifies envelope schema version matches manifest schema version
+```
 
-After ReconciliationInbox.ingest_evidence, before backend verification:
-    reconciliation.state == :awaiting_verification
-    → EntitlementProjection.derived_state → :pending
-    → broadcast → LiveView renders "Purchase processing..." UI
+### Compatibility Matrix Projection Flow
 
-After verification_failed (unknown event kind or integrity failure):
-    reconciliation.state == :verification_failed
-    access.decision == :denied
-    → derived_state → :denied
-    → broadcast → LiveView renders "Access denied" UI
-
-Out-of-order as_of update rejected by project_snapshot/2:
-    {:error, {:stale_authority, snapshot}}
-    reconciliation.state set to :stale_authority on returned snapshot
-    → derived_state(stale_authority_snapshot) → :denied
+```
+SupportMatrix.canonical(opts)
+    ↓
+SupportMatrix.runtime_line_truth/0  ← new module-level constant
+    ↓
+manifest.compatibility.native_runtime_version = current line
+    ↓
+Doctor.Report.runtime_line = %{current_line: "1.0.0", min_supported: "1.0.0", policy: :ota_safe | :rebuild_required}
+    ↓
+OperatorInspection.from_manifest → route.runtime_line entry
 ```
 
 ---
 
-## Build Order
+## Integration Points Against Existing Surfaces
 
-The following order respects module dependencies and the proof-before-wiring discipline established by prior milestones.
+### Manifest (`Manifest.Types`)
 
-**Step 1 — Route policy (router.ex modification)**
-Add the `/paywall` scope with three corridor routes. This is the contract anchor — the manifest, doctor output, and proof test fixtures all derive from this corridor declaration. Do this first so all downstream assertions have a concrete router to reference.
+No new top-level manifest JSON fields. The three compatibility version axes already exist. The only manifest-level change is that `Compatibility.RebuildPolicy` is a new derived struct (not persisted in JSON) computed from existing `native_runtime_version` data.
 
-**Step 2 — MockStorefront adapter**
-Implement `CrosswakeExample.Commerce.MockStorefront` with `simulate_purchase/1` and `simulate_restore/1`. No persistence, no process, pure functions. Depends only on `Crosswake.Commerce.Contracts` which already exists. Can be written and manually verified in isolation.
+**Specifically not modified:** `Types.Root`, `Types.Compatibility` struct fields, manifest JSON schema version. This is critical — adding a new manifest field would be a `manifest_schema_version` bump, which is a breaking change for all deployed shells. v4.0 should not force that.
 
-**Step 3 — Paywall LiveViews (scaffold level)**
-Create `PaywallEntryLive`, `PurchaseIntentLive`, `RestoreIntentLive` with minimal renders and the `@entitlement_state` assign structure. At this step they do not need PubSub wiring — the hermetic proof drives the data layer directly.
+### Doctor (`Crosswake.Doctor`)
 
-**Step 4 — Hermetic proof test (merge-blocking lane)**
-Write `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs`. Use inline router fixtures as phase23 does; no `CrosswakeExample.Router` import. Prove all assertions listed in Pattern 4 above. This test must pass before Step 5 (wiring) is considered done, because it validates the data layer independently of any runtime or process dependency.
+The existing doctor pipeline uses a named-phase pattern (`phase_3_posture`, `phase_4_posture`, etc.). v4.0 adds three new named phase functions following this exact pattern:
 
-**Step 5 — Wire LiveViews to inbox → projection → PubSub**
-Connect `PurchaseIntentLive` to call `MockStorefront.simulate_purchase/1` → `ReconciliationInbox.ingest_evidence/2` → simulate backend verification → `EntitlementProjection.project_snapshot/2` → `Phoenix.PubSub.broadcast`. Wire `PaywallEntryLive` to subscribe and update `@entitlement_state`. Connect `RestoreIntentLive` to the restore path.
+- `phase_v4_runtime_line_findings(manifest, opts)` — emits `runtime_line.rebuild_required`, `runtime_line.window_expired`, `runtime_line.current`
+- `phase_v4_permission_template_findings(manifest, opts, cwd)` — emits `permission_template.missing`, `permission_template.present` per capability family with `rebuild: :native_required`
+- `phase_v4_diagnostic_export_findings(manifest, opts, cwd)` — emits `diagnostic_export.template_missing`, `diagnostic_export.schema_mismatch`
 
-**Step 6 — Example-host integration test**
-Write the `:requires_example_host` tagged test. It loads example modules via `Code.require_file` (same as phase21), drives the full corridor, and asserts LiveView assign transitions through `:stale → :pending → :granted`. This runs in the existing CI example-host lane (phase5-proof.yml) under the `:requires_example_host` tag, not in the hermetic merge-blocking lane.
+`Doctor.Report` gains a `runtime_line` field alongside existing `shells`, `bridge`, `offline`, `support` fields.
 
-**Step 7 — CI workflow**
-Add `.github/workflows/phase34-proof.yml` mirroring `phase23-proof.yml`:
-- `merge-blocking-paywall-corridor-proof`: runs hermetic proof test on PR and push to main; `if: github.event_name == 'pull_request' || ...`; no network, no processes.
-- `advisory-paywall-corridor-proof`: placeholder for future real StoreKit/Play Billing corridor validation; runs on schedule with `continue-on-error: true`; never gates merge.
+### SupportMatrix (`Crosswake.SupportMatrix`)
 
-**Step 8 — guides/commerce.md update and docs-contract test**
-Add a "Paywall Corridor Walkthrough" section to `guides/commerce.md`. Extend `test/crosswake/guides/commerce_test.exs` to assert the new section is present and that walkthrough references match the actual example module names. This locks the guide against implementation drift.
+New public accessor functions following existing patterns:
+
+- `runtime_line_truth/0` — returns `@runtime_line_truth` module attribute (list of maps, same shape as `@notification_support_truth`)
+- `permission_template_truth/0` — maps capability family → expected permission stub filenames per platform
+- `diagnostic_export_truth/0` — schema version and redaction posture for the diagnostic export seam
+
+New `promotion_rule_entry/1` added to `promotion_rules/0` for `shell.android.runtime_line_policy`.
+
+The existing `android` `SupportEntry` with `status: :verification_required` is updated to `status: :supported` only after the hermetic Android proof passes. This is a SupportMatrix change gated on proof, not a pre-emptive claim.
+
+### OperatorInspection (`Crosswake.OperatorInspection`)
+
+The existing `rebuild_entry/2` function already aggregates capability rebuild signals per route. v4.0 adds:
+
+- `runtime_line_entry/2` — projects runtime_line classification onto the route entry (whether the current shell version is OTA-safe or requires rebuild for this route's required version)
+- `permission_template_entry/2` — lists expected permission stubs for the route's declared capabilities with `rebuild: :native_required`
+
+These attach to `Types.route/1` alongside existing `rebuild`, `support`, `denials` entries.
+
+### Bounded Bridge (`Crosswake.Bridge.Contract`)
+
+**Not modified.** Diagnostic export is an HTTP seam, not a bridge command. No new bridge command vocabulary is introduced. This is the most critical architectural constraint of v4.0.
+
+### Checked-in Shells (`examples/ios_shell_host`, `examples/android_shell_host`)
+
+iOS additions:
+- `CrosswakeShell/RuntimeLinePolicyReader.swift` — reads `manifest.compatibility.native_runtime_version`, compares to shell's declared version, returns `:ota_safe` or `:rebuild_required`
+- `CrosswakeShell/DiagnosticExport.swift` — typed envelope, sanitize, POST to `/api/crosswake/diagnostic_export`
+- `CrosswakeShell/Info.plist` — permission template annotations added as comments (not new entitlements)
+
+Android additions:
+- `dev.crosswake.shell/RuntimeLinePolicyReader.kt` — same logic as iOS counterpart
+- `dev.crosswake.shell/DiagnosticExport.kt` — same pattern as iOS counterpart
+- `app/src/main/AndroidManifest.xml` — permission template annotations as comments
+
+### Shell Generator (`mix crosswake.gen.shell`)
+
+New `.eex` templates:
+- `ios/RuntimeLinePolicyReader.swift.eex`
+- `ios/DiagnosticExport.swift.eex`
+- `android/.../RuntimeLinePolicyReader.kt.eex`
+- `android/.../DiagnosticExport.kt.eex`
+- `ios/CrosswakeShell.entitlements.eex` — permission/entitlement template stub
+- `android/permission_template_stub.xml.eex` — permission template annotations
+
+New README section generated by `shell_readme/1` in `gen.shell` covering:
+- Runtime-line policy: current version, OTA-safe-vs-rebuild rules
+- Permission/entitlement template ownership instructions
+- Diagnostic export endpoint contract
+
+Doctor `@platform_definitions` map gains new entries for `permission_templates` and `diagnostic_export` artifact checks on both platforms, following the existing `generated`, `manifest_first`, `bridge` check structure.
+
+### Closeout Verifier (`mix closeout.verify`)
+
+No changes needed. `closeout.verify` checks planning artifact presence and SUMMARY frontmatter, not specific module content. The new phase proof workflows will be discovered automatically by the existing CI proof lane detection.
+
+---
+
+## New vs. Modified Components — Explicit List
+
+### New Elixir modules / types
+
+| Module | Category |
+|--------|----------|
+| `Crosswake.Compatibility.RebuildPolicy` | New struct — derived rebuild decision |
+| `Crosswake.Shell.DiagnosticExport` | New — typed envelope, sanitize/1, schema constants |
+| `Crosswake.OperatorInspection.Types.RuntimeLineEntry` | New type |
+| `Crosswake.OperatorInspection.Types.PermissionTemplateEntry` | New type |
+
+### Modified Elixir modules
+
+| Module | Change |
+|--------|--------|
+| `Crosswake.Compatibility` | `validate_native_runtime` emits `RebuildPolicy`; new `rebuild_decision/2` function |
+| `Crosswake.Doctor` | Add three new phase functions; extend `Report` struct |
+| `Crosswake.SupportMatrix` | Add `runtime_line_truth/0`, `permission_template_truth/0`, `diagnostic_export_truth/0`; add Android runtime-line promotion rule; update Android `SupportEntry` status after proof |
+| `Crosswake.OperatorInspection` | Add `runtime_line_entry/2`, `permission_template_entry/2` |
+| `Crosswake.Shell.Fixtures` | Add `diagnostics_export_fixture` and `permission_template_fixture` exports |
+| `Mix.Tasks.Crosswake.Gen.Shell` | Add new `.eex` template references; extend README generation |
+
+### New native shell files (both `examples/` and generator templates)
+
+| File | Platform |
+|------|----------|
+| `RuntimeLinePolicyReader.swift` / `.kt` | iOS + Android |
+| `DiagnosticExport.swift` / `.kt` | iOS + Android |
+| `CrosswakeShell.entitlements.eex` | iOS only |
+| `permission_template_stub.xml.eex` | Android only |
+
+### Modified native shell files
+
+| File | Change |
+|------|--------|
+| `ActivationCoordinator.swift` / `.kt` | Consume `RuntimeLinePolicyReader` output |
+| `Info.plist` / `AndroidManifest.xml` | Commented permission template annotations |
+
+### New CI workflows
+
+| File | Purpose |
+|------|---------|
+| `.github/workflows/phase_v4_runtime_line_proof.yml` | Hermetic merge-blocking: runtime-line policy, permission template doctor, diagnostic export seam |
+| Advisory Android emulator lane | `continue-on-error: true` job in same workflow |
+
+### New guide sections
+
+| File | Change |
+|------|--------|
+| `guides/native_shell.md` | New sections: Runtime-Line Policy, Permission Templates, Diagnostic Export Seam |
+| `guides/compatibility.md` | New section: Runtime-Line Windows and OTA-Safe vs. Rebuild |
+| New `guides/device_uat.md` | Android device UAT checklist |
+
+---
+
+## Suggested Build Order (dependency-aware)
+
+The order respects the contracts-first posture: define the Elixir contract and support truth before touching native code or CI workflows.
+
+### Step 1: Elixir contracts and support truth (no shell changes)
+
+1. `Crosswake.Compatibility.RebuildPolicy` struct + `rebuild_decision/2` function
+2. Extend `Compatibility.validate_native_runtime` to return a typed rebuild signal
+3. `SupportMatrix.runtime_line_truth/0` module attribute + accessor
+4. `SupportMatrix.permission_template_truth/0` module attribute + accessor
+5. `SupportMatrix.diagnostic_export_truth/0` module attribute + accessor
+6. New Android runtime-line `promotion_rule_entry` in `SupportMatrix.promotion_rules/0`
+7. `Doctor.Report` struct extension + three new phase functions (stubs that return `[]` initially)
+8. `OperatorInspection.Types.RuntimeLineEntry` and `PermissionTemplateEntry` types
+9. `OperatorInspection.runtime_line_entry/2` and `permission_template_entry/2` functions
+10. Hermetic ExUnit proof for all of the above
+
+**Dependency:** Steps 1-2 must precede step 3 (support truth derives from compatibility behavior). Steps 3-5 must precede step 7 (doctor functions read support truth).
+
+### Step 2: Diagnostic export seam (Elixir side)
+
+11. `Crosswake.Shell.DiagnosticExport` module — typed envelope struct, `sanitize/1`, schema version constant
+12. `Shell.Fixtures` additions for diagnostic export fixture
+13. Extend doctor `phase_v4_diagnostic_export_findings/2` to check template presence
+14. ExUnit proof for diagnostic export envelope sanitization and schema constants
+
+**Dependency:** Steps 11-13 require step 1 (envelope carries `native_runtime_version` from `RebuildPolicy`).
+
+### Step 3: Generator templates and permission template stubs
+
+15. New `.eex` templates for `RuntimeLinePolicyReader`, `DiagnosticExport` (both platforms)
+16. New `.eex` permission/entitlement template stubs (iOS `.entitlements`, Android permission comments)
+17. Extend `mix crosswake.gen.shell` to emit all new templates and README section
+18. Extend doctor `@platform_definitions` with permission_template and diagnostic_export artifact checks
+19. ExUnit proof for `gen.shell` output presence
+
+**Dependency:** Steps 15-17 require steps 11-14 (templates instantiate the Elixir contract shapes). Step 18 requires step 17 (doctor checks against generated artifact filenames).
+
+### Step 4: Native shell implementation (examples/)
+
+20. `RuntimeLinePolicyReader.swift` in `examples/ios_shell_host`
+21. `DiagnosticExport.swift` in `examples/ios_shell_host`
+22. Modify `ActivationCoordinator.swift` to consume `RuntimeLinePolicyReader`
+23. iOS permission/entitlement template annotations in `Info.plist`
+24. iOS proof: extend `verify_generated_ios_shell.sh` to check new artifacts
+25. `RuntimeLinePolicyReader.kt` in `examples/android_shell_host`
+26. `DiagnosticExport.kt` in `examples/android_shell_host`
+27. Modify `ActivationCoordinator.kt` to consume `RuntimeLinePolicyReader`
+28. Android permission template annotations in `AndroidManifest.xml`
+29. Android JVM unit tests for `RuntimeLinePolicyReader` and `DiagnosticExport`
+30. Extend `verify_generated_android_shell.sh` to check new artifacts
+
+**Dependency:** Steps 20-24 require step 17 (iOS templates must exist before example implementation mirrors them). Steps 25-30 require steps 20-24 (Android mirrors iOS; iOS proves the pattern first). Step 30 (Android script) requires step 29 (tests must exist before script checks them).
+
+### Step 5: CI proof workflows and Android verification closure
+
+31. New `phase_v4_runtime_line_proof.yml` — hermetic merge-blocking job (Elixir + iOS shell check + Android JVM)
+32. Advisory Android emulator/device job in same workflow (`continue-on-error: true`)
+33. `guides/device_uat.md` — Android device UAT checklist (manual verification steps, explicit promotion criteria)
+34. Update `SupportMatrix` Android `SupportEntry` from `:verification_required` to `:supported` only after step 31 passes in CI
+
+**Dependency:** Step 31 requires steps 24 + 30 (both shell proof scripts updated). Step 34 is the last step — it is the promotion gate, not a pre-emptive claim.
+
+### Step 6: Guide updates and docs-contract proof
+
+35. Extend `guides/native_shell.md` — runtime-line policy section, permission templates section, diagnostic export section
+36. Extend `guides/compatibility.md` — runtime-line windows and OTA-safe-vs-rebuild section
+37. Add `guides/device_uat.md`
+38. Extend docs-contract parity tests to cover new guide anchors in `SupportMatrix.permission_template_truth/0` and `SupportMatrix.runtime_line_truth/0`
+
+**Dependency:** Step 38 requires steps 35-37 (parity tests check that guide sections exist and match support truth).
 
 ---
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: MockStorefront That Grants Authority Directly
+### Anti-Pattern 1: New `rebuild_policy:` field in manifest JSON
 
-**What people do:** Set `authority_state: :active` or `access_decision: :granted` inside `MockStorefront`, bypassing `ReconciliationInbox` and `EntitlementProjection`.
+**What people do:** Add a `rebuild_policy` top-level key to `Types.Root` and serialize it into the manifest JSON so native shells can read it directly.
 
-**Why it's wrong:** This violates ENTL-03 (device/storefront evidence cannot directly grant authority) and breaks the proof. The value of the hermetic lane is demonstrating that the inbox → projection path is the only authority path. A mock that short-circuits the path proves nothing and teaches adopters the wrong architecture.
+**Why it's wrong:** The manifest already carries `native_runtime_version`. A new field duplicates truth and forces a `manifest_schema_version` bump, which breaks every deployed shell. The rebuild decision is a function of version data, not new data.
 
-**Do this instead:** `MockStorefront` returns only `ReconciliationEvidence`. Authority is set only when `EntitlementProjection.project_snapshot/2` is called with a verified snapshot (reconciliation state `:projection_refreshed`). The hermetic proof asserts `authority_mutation_allowed_from_evidence?/1` returns `false`.
+**Do this instead:** Derive `RebuildPolicy` in `Compatibility.validate_native_runtime/4` from existing version axes. Surface the decision through doctor and operator inspection only.
 
----
+### Anti-Pattern 2: `diagnostics.export` bridge command
 
-### Anti-Pattern 2: Placing MockStorefront in `lib/`
+**What people do:** Add a new `diagnostics.export` command to `Bridge.Contract` so the shell can report crash context through the existing WebSocket/JS bridge.
 
-**What people do:** Create `lib/crosswake/commerce/mock_storefront.ex` so it is available to the hermetic proof test without `Code.require_file`.
+**Why it's wrong:** Diagnostic export is fire-and-forget with no reply needed. Adding it to the bridge widens the bounded bridge vocabulary and introduces a new high-frequency path (crash context can be large). The bridge thesis is "low-frequency, typed, versioned, request/reply."
 
-**Why it's wrong:** MockStorefront is example/docs-only per the capability taxonomy. Putting it in `lib/` ships it on hex.pm as part of the Crosswake library — a provider-specific concern polluting the core package boundary.
+**Do this instead:** Use the HTTP POST pattern from Chimeway's token registration seam. The shell emits a typed, sanitized envelope to a host-owned endpoint with no bridge involvement.
 
-**Do this instead:** Place it in `examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex`. The hermetic proof test constructs `ReconciliationEvidence` structs directly (no `MockStorefront` import needed). The `:requires_example_host` tagged test loads `MockStorefront` via `Code.require_file` as phase21 does with the existing reconciliation modules.
+### Anti-Pattern 3: Crosswake-generated permission/entitlement values
 
----
+**What people do:** Generate actual entitlement keys (Push Notifications, Associated Domains, etc.) with real values in the `.entitlements` file, or generate `<uses-permission android:name="..."/>` elements in `AndroidManifest.xml`.
 
-### Anti-Pattern 3: Storing Entitlement Truth in LiveView Socket State Only
+**Why it's wrong:** Permission values depend on the host app bundle ID, provisioning profile, and app-store entitlements — all host-owned, not Crosswake-owned. Generating wrong values silently causes app review rejections.
 
-**What people do:** Treat the `@entitlement_state` socket assign as the authoritative entitlement store. On LiveView reconnect, there is no snapshot to restore from.
+**Do this instead:** Generate commented stubs that list required permissions by capability, with explicit instructions for the host to fill in correct values. Doctor checks for stub presence, not for specific permission values.
 
-**Why it's wrong:** Backend-owned truth means the LiveView is a read model, not the authority store. A LiveView that silently reverts to `:stale` on remount is correct by contract (fail-closed), but a LiveView that "remembers" a prior `:granted` in socket state without re-deriving from a backend snapshot is not.
+### Anti-Pattern 4: Updating Android `SupportEntry` to `:supported` before hermetic proof
 
-**Do this instead:** LiveView initializes to `:stale` on mount (correct fail-closed posture). State transitions happen only through the inbox → projection → broadcast path. The proof asserts initial state is `:stale` and that `:granted` can only be reached after a full reconciliation chain.
+**What people do:** Update `SupportMatrix.canonical/0` Android entry from `:verification_required` to `:supported` as part of writing the implementation, before CI passes.
 
----
+**Why it's wrong:** Support truth is evidence-backed. The Android entry is currently `:verification_required` precisely because hermetic JVM proof is incomplete. Updating the claim before the proof fires makes the support matrix dishonest.
 
-### Anti-Pattern 4: Adding v3.4 Assertions to the Phase23 Proof File
+**Do this instead:** Keep Android at `:verification_required` through steps 1-30. Update to `:supported` only after the hermetic CI proof job in step 31 passes and the promotion criteria in the new promotion_rule_entry are satisfied.
 
-**What people do:** Append paywall-corridor assertions to `phase23_commerce_support_proof_test.exs` to avoid creating a new file.
+### Anti-Pattern 5: Standalone shell packages before release choreography
 
-**Why it's wrong:** Phase 23 is a stable shipped proof that gates v3.2 claims. Mixing v3.4 corridor proof blurs requirements-to-proof traceability. If the v3.4 paywall proof needs rework, v3.2 claims should not be affected by the edit.
+**What people do:** Split `RuntimeLinePolicyReader`, `DiagnosticExport`, and the permission templates into a separately published Swift package or Android library, reasoning that "production hardening" implies package promotion.
 
-**Do this instead:** New file `test/crosswake/proof/phase34_paywall_corridor_proof_test.exs` with its own inline fixtures and `@moduletag`. New CI workflow `phase34-proof.yml` mirroring the two-job split from `phase23-proof.yml`.
+**Why it's wrong:** The existing `SupportMatrix` explicitly marks "Standalone public shell packages" as `package_class: :defer` with the note "No first-class package commitment yet; any future promotion must land with runtime-line rules and rebuild guidance." The release choreography (versioned compatibility ranges, supported platform windows, companion compatibility declarations) is not yet defined.
 
----
-
-## Integration Points
-
-### Internal Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| `MockStorefront` → `ReconciliationInbox` | Direct function call; caller passes `ReconciliationEvidence` struct | No process boundary; both pure-function modules in example host |
-| `ReconciliationInbox` → `EntitlementProjection` | Direct function call by host LiveView | `ReconciliationInbox.ingest_evidence/2` returns an attempt map; the caller constructs the `EntitlementSnapshot` for projection — the inbox does not directly call the projection |
-| `EntitlementProjection` → `PaywallEntryLive` | `Phoenix.PubSub.broadcast/3` → `handle_info/2` | In hermetic proof: `derived_state/1` called directly on constructed snapshots; PubSub wiring validated in `:requires_example_host` tagged test |
-| `CrosswakeExample.Router` → Crosswake core | `commerce:` DSL key at compile time → `Crosswake.Policy.Compiler.compile/2` → manifest | Router modification is the only required Crosswake-core integration point; no runtime callbacks added |
-| Hermetic proof → example modules | Inline structs only; no `Code.require_file` for example-host files | Mirrors phase23 hermeticity guard exactly |
-| `:requires_example_host` test → example modules | `Code.require_file` for mock_storefront, reconciliation_inbox, entitlement_projection | Mirrors phase21 pattern exactly |
-
-### What the Mock Boundary Does Not Cross
-
-| Boundary | Reason |
-|----------|--------|
-| MockStorefront → StoreKit / Play Billing SDK | No SDK calls; `simulate_purchase/1` is deterministic and in-process |
-| MockStorefront → any network | No HTTP, no port, no `:gen_tcp`; hermetic by construction |
-| `ReconciliationEvidence` → authority lanes | Struct has no authority or access fields; `authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally |
-| LiveView socket → entitlement authority | Socket holds derived read state only; `EntitlementProjection` owns the source-of-truth determination |
-| Mock evidence → idempotency authority | `idempotency_ref` in mock evidence is a `correlation_id` which is trace-only per RECN-02; real idempotency identity is `event_key` derived from `provider + provider_reference + event_kind + evidence_ref` |
+**Do this instead:** Keep all v4.0 shell code as `example/docs-only` artifacts in `examples/`. The `gen.shell` task copies these patterns into host-owned projects. No standalone package promotion in v4.0.
 
 ---
 
-## Confidence Assessment
+## Scaling Considerations
 
-| Area | Confidence | Basis |
-|------|------------|-------|
-| MockStorefront shape | HIGH | Derived directly from `ReconciliationEvidence` struct in `contracts.ex:150-183`; source: `:storefront` is a canonical vocabulary atom |
-| Router corridor DSL | HIGH | Copied from phase23 fixture routers (`PaywallCorridorRouter`, `PurchaseCorridorRouter`) which already use `commerce: [corridor: :subscription_default, role: :paywall_entry]` and are proven in CI |
-| ReconciliationInbox reuse | HIGH | `phase21_reconciliation_example_test.exs` proves inbox against all four evidence sources with no changes needed; function signatures match exactly |
-| EntitlementProjection reuse | HIGH | `derived_state/1` and `project_snapshot/2` are proven in phase21; the four state branches exactly match v3.4 LiveView requirements |
-| LiveView PubSub pattern | HIGH | Standard Phoenix LiveView pattern; no Crosswake-specific constraint; scope limited to example host |
-| Hermetic proof structure | HIGH | phase23 provides the exact template including the hermeticity guard self-check; replication is mechanical |
-| Build order | HIGH | Dependency graph is explicit; proof-before-wiring matches established milestone discipline |
+These are not scalability concerns in the user-count sense — Crosswake is a library, not a service. The relevant scale axis is the number of adopters using the shell templates and the number of capability families that may require permission templates.
+
+| Concern | Current scale | v4.0 posture |
+|---------|---------------|--------------|
+| Capability families requiring rebuild | 3-4 families today | Permission template truth stays in SupportMatrix module attributes, O(families). No new query path. |
+| Doctor check performance | Linear over routes | New phase_v4 checks are O(routes * capabilities). Equivalent to existing phase_19 commerce check. |
+| Android proof lane speed | JVM tests: ~5min | New RuntimeLinePolicyReader + DiagnosticExport unit tests add ~1-2min. Acceptable. |
+| Device UAT frequency | Currently ad-hoc | Checklist codifies it; advisory CI lane runs on PR but does not block. |
 
 ---
 
 ## Sources
 
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/contracts.ex` — `ReconciliationEvidence`, `PurchaseIntent`, `RestoreIntent`, `EntitlementSnapshot` struct definitions
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/reconciliation.ex` — `ingest_evidence/2`, `authority_mutation_allowed_from_evidence?/1`, outcome vocabulary
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — existing inbox implementation
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — existing `derived_state/1` and `project_snapshot/2`
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` — `event_key/1`, `subject_key/2`
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/router.ex` — existing router DSL patterns and corridor fixture shape
-- `/Users/jon/projects/crosswake/test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermetic proof template, hermeticity guard, inline fixture router pattern
-- `/Users/jon/projects/crosswake/test/crosswake/proof/phase21_reconciliation_example_test.exs` — `:requires_example_host` test pattern with `Code.require_file`
-- `/Users/jon/projects/crosswake/.github/workflows/phase23-proof.yml` — two-job hermetic + advisory CI split reference
-- `/Users/jon/projects/crosswake/.planning/threads/commerce-archetype-proof.md` — milestone scope, references, build steps
-- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — locked guardrails, capability taxonomy, ENTL-03 requirement
-- `/Users/jon/projects/crosswake/.planning/MILESTONE-ARC.md` — non-goals (no StoreKit/Play Billing), proof requirements for v3.4
-- `/Users/jon/projects/crosswake/guides/commerce.md` — canonical corridor ownership table, authority-vs-evidence contract, reconciliation flow
+- `lib/crosswake/manifest/types.ex` — `Compatibility`, `SupportMatrix`, `CapabilitySupportEntry`, `ReleaseBoundaryEntry`, `ChangeClassEntry` structs
+- `lib/crosswake/support_matrix/support_matrix.ex` — `canonical/0`, `promotion_rules/0`, `action_classes/0`, existing `@notification_support_truth` and `@auth_contract_truth` patterns
+- `lib/crosswake/doctor/doctor.ex` — named-phase pattern, `@platform_definitions`, `Doctor.Report` struct
+- `lib/crosswake/compatibility/compatibility.ex` — `validate_native_runtime/4`, `route_findings/4`
+- `lib/crosswake/compatibility/route_gate.ex` — gate evaluation pipeline
+- `lib/crosswake/operator_inspection.ex` — `rebuild_entry/2` existing aggregation pattern
+- `lib/crosswake/shell/fixtures.ex` — fixture export shape
+- `lib/mix/tasks/crosswake.gen.shell.ex` — template list and generation pattern
+- `examples/ios_shell_host/CrosswakeShell/*.swift` — existing iOS shell surface
+- `examples/android_shell_host/app/src/main/java/dev/crosswake/shell/*.kt` — existing Android shell surface
+- `.github/workflows/phase18-proof.yml` — hermetic+advisory CI split reference
+- `.planning/MILESTONE-ARC.md` — dependency graph, v4.0 non-goals, support truth requirements
+- `.planning/PROJECT.md` — key decisions, locked guardrails
 
 ---
 
-*Architecture research for: v3.4 Commerce Archetype Proof — mocked paywall corridor integration*
-*Researched: 2026-05-29*
+*Architecture research for: v4.0 Production Shell Runtime Line*
+*Researched: 2026-06-03*
