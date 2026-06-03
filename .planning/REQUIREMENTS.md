@@ -76,33 +76,33 @@ Which phases cover which requirements. Filled during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RLINE-01 | TBD | Pending |
-| RLINE-02 | TBD | Pending |
-| RLINE-03 | TBD | Pending |
-| RLINE-04 | TBD | Pending |
-| RLINE-05 | TBD | Pending |
-| TMPL-01 | TBD | Pending |
-| TMPL-02 | TBD | Pending |
-| TMPL-03 | TBD | Pending |
-| TMPL-04 | TBD | Pending |
-| DIAG-01 | TBD | Pending |
-| DIAG-02 | TBD | Pending |
-| DIAG-03 | TBD | Pending |
-| DIAG-04 | TBD | Pending |
-| AVER-01 | TBD | Pending |
-| AVER-02 | TBD | Pending |
-| AVER-03 | TBD | Pending |
-| AVER-04 | TBD | Pending |
-| AVER-05 | TBD | Pending |
-| PROOF-01 | TBD | Pending |
-| PROOF-02 | TBD | Pending |
-| PROOF-03 | TBD | Pending |
+| RLINE-01 | Phase 64 | Pending |
+| RLINE-02 | Phase 64 | Pending |
+| RLINE-03 | Phase 64 | Pending |
+| RLINE-04 | Phase 64 | Pending |
+| RLINE-05 | Phase 64 | Pending |
+| TMPL-01 | Phase 66 | Pending |
+| TMPL-02 | Phase 66 | Pending |
+| TMPL-03 | Phase 66 | Pending |
+| TMPL-04 | Phase 66 | Pending |
+| DIAG-01 | Phase 65 | Pending |
+| DIAG-02 | Phase 65 | Pending |
+| DIAG-03 | Phase 65 | Pending |
+| DIAG-04 | Phase 65 | Pending |
+| AVER-01 | Phase 67 | Pending |
+| AVER-02 | Phase 67 | Pending |
+| AVER-03 | Phase 68 | Pending |
+| AVER-04 | Phase 68 | Pending |
+| AVER-05 | Phase 66 | Pending |
+| PROOF-01 | Phase 69 | Pending |
+| PROOF-02 | Phase 69 | Pending |
+| PROOF-03 | Phase 69 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 21 ⚠️
+- Mapped to phases: 21 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-03*
-*Last updated: 2026-06-03 — initial v4.0 definition*
+*Last updated: 2026-06-03 — roadmap created; all 21 v1 requirements mapped across Phases 64-69.*
