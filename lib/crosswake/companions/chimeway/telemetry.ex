@@ -14,7 +14,10 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
     [:crosswake, :notification, :token, :revoked],
     [:crosswake, :notification, :token, :stale],
     [:crosswake, :notification, :token, :invalidated],
-    [:crosswake, :notification, :provider, :feedback]
+    [:crosswake, :notification, :provider, :feedback],
+    [:crosswake, :notification, :open, :received],
+    [:crosswake, :notification, :open, :resolved],
+    [:crosswake, :notification, :open, :denied]
   ]
 
   @metadata_keys [
@@ -28,7 +31,10 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
     :app_identity_posture,
     :subject_scope,
     :proof_class,
-    :correlation_id
+    :correlation_id,
+    :route_id,
+    :action_ref,
+    :denial_code
   ]
 
   @forbidden_metadata_keys [
@@ -69,7 +75,10 @@ defmodule Crosswake.Companions.Chimeway.Telemetry do
       :app_identity_posture,
       :subject_scope,
       :proof_class,
-      :correlation_id
+      :correlation_id,
+      :route_id,
+      :action_ref,
+      :denial_code
     ]
 
     @type t :: %__MODULE__{name: [atom()]}

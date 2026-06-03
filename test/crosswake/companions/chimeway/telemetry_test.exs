@@ -10,7 +10,10 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
     [:crosswake, :notification, :token, :revoked],
     [:crosswake, :notification, :token, :stale],
     [:crosswake, :notification, :token, :invalidated],
-    [:crosswake, :notification, :provider, :feedback]
+    [:crosswake, :notification, :provider, :feedback],
+    [:crosswake, :notification, :open, :received],
+    [:crosswake, :notification, :open, :resolved],
+    [:crosswake, :notification, :open, :denied]
   ]
 
   test "exposes exact ordered event names and metadata keys" do
@@ -27,7 +30,10 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
              :app_identity_posture,
              :subject_scope,
              :proof_class,
-             :correlation_id
+             :correlation_id,
+             :route_id,
+             :action_ref,
+             :denial_code
            ]
   end
 
