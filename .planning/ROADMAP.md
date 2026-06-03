@@ -199,7 +199,7 @@ Plans:
 
 **Requirements:** DIAG-01, DIAG-02
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 **Wave 1**
@@ -207,7 +207,7 @@ Plans:
 - [x] 62-02-PLAN.md — Operator Inspection Posture
 
 **Wave 2**
-- [ ] 62-03-PLAN.md — Doctor Notification Findings
+- [x] 62-03-PLAN.md — Doctor Notification Findings
 
 **Wave 3**
 - [ ] 62-04-PLAN.md — Documentation Update
