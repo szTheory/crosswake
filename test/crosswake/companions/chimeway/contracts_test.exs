@@ -4,6 +4,8 @@ defmodule Crosswake.Companions.Chimeway.ContractsTest do
   alias Crosswake.Companions.Chimeway.Contracts
   alias Crosswake.Companions.Chimeway.Contracts.BindingEvent
   alias Crosswake.Companions.Chimeway.Contracts.BindingResult
+  alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
+  alias Crosswake.Companions.Chimeway.Contracts.OpenResolution
   alias Crosswake.Companions.Chimeway.Contracts.ProviderFeedback
   alias Crosswake.Companions.Chimeway.Contracts.TokenBinding
   alias Crosswake.Companions.Chimeway.Contracts.TokenEvidence
@@ -190,7 +192,9 @@ defmodule Crosswake.Companions.Chimeway.ContractsTest do
       Contracts.new_token_binding!(token_binding_attrs()),
       Contracts.new_provider_feedback!(provider_feedback_attrs()),
       Contracts.new_binding_event!(binding_event_attrs()),
-      Contracts.new_binding_result!(binding_result_attrs())
+      Contracts.new_binding_result!(binding_result_attrs()),
+      Contracts.new_notification_open_evidence!(notification_open_evidence_attrs()),
+      Contracts.new_open_resolution!(open_resolution_attrs())
     ]
 
     for struct <- structs do
@@ -201,6 +205,36 @@ defmodule Crosswake.Companions.Chimeway.ContractsTest do
 
     assert Contracts.to_map(Contracts.new_token_binding!(token_binding_attrs()))["state"] ==
              "active"
+  end
+
+  test "builds notification open evidence" do
+    assert {:ok, %NotificationOpenEvidence{} = evidence} =
+             Contracts.new_notification_open_evidence(notification_open_evidence_attrs())
+    assert evidence.open_ref == "open_123"
+  end
+
+  test "builds open resolution" do
+    assert {:ok, %OpenResolution{} = resolution} =
+             Contracts.new_open_resolution(open_resolution_attrs())
+    assert resolution.open_ref == "open_123"
+  end
+
+  defp notification_open_evidence_attrs do
+    %{
+      route_id: "rt_123",
+      open_ref: "open_123",
+      binding_ref: "bind_123",
+      provider: :apns,
+      action_ref: "act_123",
+      auth_context: %{session_id: "sess_1"}
+    }
+  end
+
+  defp open_resolution_attrs do
+    %{
+      open_ref: "open_123",
+      state: :valid
+    }
   end
 
   defp token_evidence_attrs do

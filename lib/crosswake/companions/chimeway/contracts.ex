@@ -243,6 +243,63 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
     @type t :: %__MODULE__{status: atom(), binding_ref: String.t()}
   end
 
+  defmodule NotificationOpenEvidence do
+    @moduledoc false
+
+    @enforce_keys [
+      :route_id,
+      :open_ref,
+      :binding_ref,
+      :provider,
+      :action_ref,
+      :auth_context
+    ]
+    defstruct [
+      :route_id,
+      :open_ref,
+      :binding_ref,
+      :provider,
+      :action_ref,
+      :auth_context,
+      :action_kind,
+      :evaluated_at,
+      metadata: %{}
+    ]
+
+    @type t :: %__MODULE__{
+            route_id: String.t(),
+            open_ref: String.t(),
+            binding_ref: String.t(),
+            provider: atom(),
+            action_ref: String.t(),
+            auth_context: map(),
+            action_kind: atom() | nil,
+            evaluated_at: String.t() | nil,
+            metadata: map()
+          }
+  end
+
+  defmodule OpenResolution do
+    @moduledoc false
+
+    @enforce_keys [:open_ref, :state]
+    defstruct [
+      :open_ref,
+      :state,
+      :reason,
+      :resolved_at,
+      metadata: %{}
+    ]
+
+    @type t :: %__MODULE__{
+            open_ref: String.t(),
+            state: atom(),
+            reason: atom() | nil,
+            resolved_at: String.t() | nil,
+            metadata: map()
+          }
+  end
+
   @spec providers() :: [atom()]
   def providers, do: @providers
 
@@ -326,6 +383,26 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
 
   @spec new_binding_result!(map() | keyword()) :: BindingResult.t()
   def new_binding_result!(attrs), do: unwrap!(new_binding_result(attrs))
+
+  @spec new_notification_open_evidence(map() | keyword()) :: {:ok, NotificationOpenEvidence.t()} | {:error, keyword()}
+  def new_notification_open_evidence(attrs),
+    do:
+      attrs
+      |> normalize_attrs()
+      |> build(NotificationOpenEvidence, &validate_notification_open_evidence/1)
+
+  @spec new_notification_open_evidence!(map() | keyword()) :: NotificationOpenEvidence.t()
+  def new_notification_open_evidence!(attrs), do: unwrap!(new_notification_open_evidence(attrs))
+
+  @spec new_open_resolution(map() | keyword()) :: {:ok, OpenResolution.t()} | {:error, keyword()}
+  def new_open_resolution(attrs),
+    do:
+      attrs
+      |> normalize_attrs()
+      |> build(OpenResolution, &validate_open_resolution/1)
+
+  @spec new_open_resolution!(map() | keyword()) :: OpenResolution.t()
+  def new_open_resolution!(attrs), do: unwrap!(new_open_resolution(attrs))
 
   @spec validate_token_evidence(TokenEvidence.t()) :: :ok | {:error, keyword()}
   def validate_token_evidence(%TokenEvidence{} = evidence) do
@@ -431,6 +508,28 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
 
   def validate_binding_result(_result), do: {:error, [binding_result: :invalid_contract]}
 
+  @spec validate_notification_open_evidence(NotificationOpenEvidence.t()) :: :ok | {:error, keyword()}
+  def validate_notification_open_evidence(%NotificationOpenEvidence{} = evidence) do
+    []
+    |> validate_required_string(:route_id, evidence.route_id)
+    |> validate_required_string(:open_ref, evidence.open_ref)
+    |> validate_required_string(:binding_ref, evidence.binding_ref)
+    |> validate_closed(:provider, evidence.provider, @providers)
+    |> validate_required_string(:action_ref, evidence.action_ref)
+    |> to_result()
+  end
+
+  def validate_notification_open_evidence(_evidence), do: {:error, [notification_open_evidence: :invalid_contract]}
+
+  @spec validate_open_resolution(OpenResolution.t()) :: :ok | {:error, keyword()}
+  def validate_open_resolution(%OpenResolution{} = resolution) do
+    []
+    |> validate_required_string(:open_ref, resolution.open_ref)
+    |> to_result()
+  end
+
+  def validate_open_resolution(_resolution), do: {:error, [open_resolution: :invalid_contract]}
+
   @spec lifecycle_mapping() :: map()
   def lifecycle_mapping do
     %{
@@ -450,7 +549,15 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
 
   @spec to_map(struct()) :: map()
   def to_map(%module{} = struct)
-      when module in [TokenEvidence, TokenBinding, ProviderFeedback, BindingEvent, BindingResult] do
+      when module in [
+             TokenEvidence,
+             TokenBinding,
+             ProviderFeedback,
+             BindingEvent,
+             BindingResult,
+             NotificationOpenEvidence,
+             OpenResolution
+           ] do
     struct
     |> Map.from_struct()
     |> Enum.reject(fn {_key, value} -> is_nil(value) end)
