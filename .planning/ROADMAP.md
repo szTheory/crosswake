@@ -108,7 +108,7 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 <summary>🔄 v3.9 Chimeway Notification Seam (Phases 59-63) — ACTIVE</summary>
 
 - [x] Phase 59: Chimeway Contract And Token Binding Semantics — Not started (completed 2026-06-02)
-- [x] Phase 60: Example Host Registry And Phoenix Wiring — Not started (completed 2026-06-02)
+- [x] Phase 60: Example Host Registry And Phoenix Wiring — 3/3 plans complete (completed 2026-06-02)
 - [ ] Phase 61: Notification-Open Resolver And Route Policy — Not started
 - [ ] Phase 62: Diagnostics, Support Truth, And Docs — Not started
 - [ ] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Not started
