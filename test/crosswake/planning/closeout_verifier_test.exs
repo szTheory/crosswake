@@ -31,7 +31,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
 
     File.write!(
-      Path.join(tmp, ".planning/milestones/v3.6-CLOSEOUT.md"),
+      Path.join(tmp, ".planning/milestones/v3.9-CLOSEOUT.md"),
       "# Missing frontmatter\n"
     )
 
@@ -51,10 +51,10 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
 
     File.write!(
-      Path.join(tmp, ".planning/milestones/v3.6-CLOSEOUT.md"),
+      Path.join(tmp, ".planning/milestones/v3.9-CLOSEOUT.md"),
       """
       ---
-      milestone: v3.6
+      milestone: v3.9
       milestone_name: Operator Truth and Production Diagnostics
       status: live
       shipped_date: null
@@ -131,10 +131,10 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
 
     File.write!(
-      Path.join(tmp, ".planning/milestones/v3.6-CLOSEOUT.md"),
+      Path.join(tmp, ".planning/milestones/v3.9-CLOSEOUT.md"),
       """
       ---
-      milestone: v3.6
+      milestone: v3.9
       milestone_name: Operator Truth and Production Diagnostics
       status: complete
       shipped_date: 2026-06-01
@@ -156,7 +156,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
   defp write_minimal_files!(tmp) do
     File.mkdir_p!(Path.join(tmp, ".planning"))
-    File.write!(Path.join(tmp, ".planning/REQUIREMENTS.md"), "| REL-01 | Phase 53 | Validated |")
+    File.write!(Path.join(tmp, ".planning/REQUIREMENTS.md"), "| REL-01 | Phase 63 | Validated |")
     File.write!(Path.join(tmp, ".planning/ROADMAP.md"), "$gsd-discuss-phase 48")
     File.write!(Path.join(tmp, "CHANGELOG.md"), File.read!("CHANGELOG.md"))
   end

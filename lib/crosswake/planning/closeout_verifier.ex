@@ -25,7 +25,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     resolved_gaps
   )
   @exception_fields ~w(owner scope reason revisit_phase evidence status)
-  @v36_phases ~w(48 49 50 51 52 53)
+  @v39_phases ~w(59 60 61 62 63)
   @unreleased_sections [
     "Unpublished support claims",
     "Verification-required and advisory surfaces",
@@ -154,7 +154,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       rel(cwd, path),
       missing == [],
       "missing keys: #{Enum.join(missing, ", ")}",
-      "Preserve the v3.6-CLOSEOUT.md frontmatter contract before closeout.",
+      "Preserve the v3.9-CLOSEOUT.md frontmatter contract before closeout.",
       %{missing: missing}
     )
   end
@@ -237,16 +237,15 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/roadmap_parity:\s*\n\s*status:\s*(complete|archived)/ and
-        roadmap =~ "$gsd-discuss-phase 48" and
-        not (roadmap =~ "Phase 53: Release Continuity and Closeout Hardening — align")
+        not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align")
 
     check(
       "closeout.roadmap.parity",
       "roadmap closeout parity",
       ".planning/ROADMAP.md",
       passed,
-      "v3.6 roadmap parity or next-step routing is stale",
-      "Archive v3.6 roadmap evidence and route the live roadmap to $gsd-discuss-phase 48.",
+      "v3.9 roadmap parity or next-step routing is stale",
+      "Archive v3.9 roadmap evidence and complete Phase 63 alignment.",
       %{}
     )
   end
@@ -255,7 +254,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     closeout = read_file(closeout_path(cwd, opts))
 
     missing =
-      Enum.reject(@v36_phases, fn phase ->
+      Enum.reject(@v39_phases, fn phase ->
         Path.wildcard(Path.join(cwd, ".planning/phases/#{phase}-*/*-VERIFICATION.md")) != []
       end)
 
@@ -279,7 +278,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     closeout = read_file(closeout_path(cwd, opts))
 
     summary_paths =
-      Path.wildcard(Path.join(cwd, ".planning/phases/{48,49,50,51,52,53}-*/*-SUMMARY.md"))
+      Path.wildcard(Path.join(cwd, ".planning/phases/{59,60,61,62,63}-*/*-SUMMARY.md"))
 
     malformed =
       Enum.reject(summary_paths, fn path ->
@@ -297,7 +296,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       ".planning/phases",
       passed,
       "malformed summaries: #{Enum.map_join(malformed, ", ", &rel(cwd, &1))}",
-      "Ensure every v3.6 SUMMARY.md has requirements-completed frontmatter.",
+      "Ensure every v3.9 SUMMARY.md has requirements-completed frontmatter.",
       %{malformed: Enum.map(malformed, &rel(cwd, &1))}
     )
   end
@@ -306,7 +305,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     closeout = read_file(closeout_path(cwd, opts))
 
     validation_paths =
-      Path.wildcard(Path.join(cwd, ".planning/phases/{48,49,50,51,52,53}-*/*-VALIDATION.md"))
+      Path.wildcard(Path.join(cwd, ".planning/phases/{59,60,61,62,63}-*/*-VALIDATION.md"))
 
     problematic =
       Enum.reject(validation_paths, fn path ->
@@ -442,7 +441,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   end
 
   defp closeout_path(cwd, opts) do
-    Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.6-CLOSEOUT.md"))
+    Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"))
   end
 
   defp read_file(path) do

@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
 
   test "mix closeout.verify raises on blocking closeout drift" do
     cwd = complete_fixture!("fail")
-    File.write!(Path.join(cwd, ".planning/milestones/v3.6-CLOSEOUT.md"), "# no frontmatter\n")
+    File.write!(Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"), "# no frontmatter\n")
 
     output =
       capture_io(fn ->
@@ -166,16 +166,16 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     File.mkdir_p!(Path.join(cwd, ".planning/seeds"))
 
     File.write!(Path.join(cwd, "CHANGELOG.md"), changelog())
-    File.write!(Path.join(cwd, ".planning/REQUIREMENTS.md"), "| REL-01 | Phase 53 | Validated |")
-    File.write!(Path.join(cwd, ".planning/ROADMAP.md"), "$gsd-discuss-phase 48")
+    File.write!(Path.join(cwd, ".planning/REQUIREMENTS.md"), "| REL-01 | Phase 63 | Validated |")
+    File.write!(Path.join(cwd, ".planning/ROADMAP.md"), "$gsd-discuss-phase 59")
     File.write!(Path.join(cwd, ".planning/STATE.md"), "Status: Ready to discuss\n")
 
     File.write!(
-      Path.join(cwd, ".planning/milestones/v3.6-CLOSEOUT.md"),
+      Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"),
       complete_closeout()
     )
 
-    for phase <- 48..53 do
+    for phase <- 59..63 do
       phase_dir = Path.join(cwd, ".planning/phases/#{phase}-fixture")
       File.mkdir_p!(phase_dir)
       File.write!(Path.join(phase_dir, "#{phase}-VERIFICATION.md"), "status: passed\n")
@@ -199,10 +199,10 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
   defp complete_closeout do
     """
     ---
-    milestone: v3.6
-    milestone_name: Operator Truth and Production Diagnostics
+    milestone: v3.9
+    milestone_name: Chimeway Notification Seam
     status: complete
-    shipped_date: 2026-06-01
+    shipped_date: 2026-06-03
     requirements_state:
       status: complete
     roadmap_parity:

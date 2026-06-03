@@ -13,7 +13,7 @@
 - ✅ **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 shipped on 2026-06-01. Full archive: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
 - ✅ **v3.7 Commerce Provider Adapters** — Phases 48 and 48.1 shipped on 2026-06-01. Full archive: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
 - ✅ **v3.8 Full Sigra Auth and Session Machinery** — Phases 54-58 shipped on 2026-06-02. Full archive: [v3.8-ROADMAP.md](milestones/v3.8-ROADMAP.md)
-- 🔄 **v3.9 Chimeway Notification Seam** — Phases 59-63 active. Token binding, notification-open route resolution, diagnostics, and proof posture.
+- ✅ **v3.9 Chimeway Notification Seam** — Phases 59-63 shipped on 2026-06-03.
 
 ## Phases
 
@@ -104,14 +104,14 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 
 </details>
 
-<details open>
-<summary>🔄 v3.9 Chimeway Notification Seam (Phases 59-63) — ACTIVE</summary>
+<details>
+<summary>✅ v3.9 Chimeway Notification Seam (Phases 59-63) — SHIPPED 2026-06-03</summary>
 
 - [x] Phase 59: Chimeway Contract And Token Binding Semantics — Not started (completed 2026-06-02)
 - [x] Phase 60: Example Host Registry And Phoenix Wiring — 3/3 plans complete (completed 2026-06-02)
 - [x] Phase 61: Notification-Open Resolver And Route Policy — Completed 2026-06-03
-- [ ] Phase 62: Diagnostics, Support Truth, And Docs — Not started
-- [ ] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Not started
+- [x] Phase 62: Diagnostics, Support Truth, And Docs — Completed 2026-06-03
+- [x] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Completed 2026-06-03
 
 ### Phase 59: Chimeway Contract And Token Binding Semantics
 
@@ -225,6 +225,21 @@ Plans:
 
 **Requirements:** PROOF-01, PROOF-02
 
+**Plans:** 3/3 plans complete
+
+Plans:
+**Wave 1**
+
+- [x] 63-01-PLAN.md — Implement the merge-blocking hermetic proof test for the notification seam.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 63-02-PLAN.md — Implement the advisory promotion criteria proof test.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 63-03-PLAN.md — Update milestone closeout verification and roadmap to mark v3.9 shipped.
+
 **Success criteria:**
 
 1. Merge-blocking proof covers token evidence, binding, rotation, revocation, stale/invalid states, open validation, replay, route mismatch, policy denial, Sigra step-up, docs parity, and telemetry redaction.
@@ -236,4 +251,4 @@ Plans:
 
 ## Next
 
-Start Phase 59 with `$gsd-discuss-phase 59`.
+v3.9 Chimeway Notification Seam is complete. Future work will be initialized in the next milestone.
