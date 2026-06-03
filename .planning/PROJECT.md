@@ -8,6 +8,19 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
 
+## Current Milestone: v4.0 Production Shell Runtime Line
+
+**Goal:** Harden Crosswake's checked-in iOS/Android shells into a documented, proof-backed production runtime line so adopters can ship and maintain real mobile apps without guessing at compatibility, rebuilds, permissions, or diagnostics.
+
+**Target features:**
+- Native runtime-line policy — compatibility windows and a rebuild policy contract (what forces a native rebuild vs. stays OTA-safe)
+- Rebuild and compatibility matrix surfaced through support truth and doctor
+- iOS/Android permission and entitlement templates as honest, host-owned, generated artifacts
+- Crash/diagnostic export seam plus guidance from the shell
+- Android verification closure — CI-hermetic merge-blocking proof, an advisory emulator/device lane with explicit promotion criteria, and a device-UAT checklist
+
+**Scope posture:** Shells stay checked-in proof artifacts in `examples/`, not standalone publishable packages (arc non-goal until release choreography is ready). Hermetic proof is merge-blocking; device/emulator/provider proof stays advisory with explicit promotion criteria. Android JVM evidence is CI-only (no local Java runtime). Backend/host-owned authority and per-route runtime ownership remain authoritative.
+
 ## Current State
 
 **Shipped `v3.9 Chimeway Notification Seam` on `2026-06-03`** (Phases 59-63, 17 plans, 12 tasks). v3.9 made notification registration and notification-open routing trustworthy without claiming Crosswake is a push delivery platform. The first-party in-tree Chimeway companion seam binds APNs/FCM token evidence from the bounded bridge into backend-owned token binding records that distinguish active/rotated/revoked/stale/invalid/permission-denied/environment-mismatched/app-identity-mismatched states, with rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning all producing explicit backend lifecycle state. A notification-open resolver routes opens only through manifest-known route ids and `RouteGate` with `activation_source: :notification`, reusing Sigra session authority and step-up before activation and failing closed with stable denial codes (no silent dashboard/home fallback). Doctor, operator inspection, support matrix, fixtures, and guides distinguish token-binding/open-routing readiness from APNs/FCM delivery, backed by low-cardinality telemetry that forbids raw tokens, payloads, route params, and PII. A merge-blocking hermetic proof lane covers the shipped seam while real device delivery, token issuance, provider credentials, and tray behavior remain advisory under explicit promotion criteria. Closeout passed all checks via `mix closeout.verify`; Nyquist validation-ledger cleanup for Phases 59/60/62/63 remains deferred tech debt (routed to Phase 64).
@@ -89,7 +102,7 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section
 
 ### Active
 
-_No active requirements — planning next milestone. v4.0 Production Shell Runtime Line is the leading candidate (see `.planning/MILESTONE-ARC.md`)._
+_Defining requirements for **v4.0 Production Shell Runtime Line** — native runtime-line policy, rebuild/compatibility matrix, iOS/Android permission and entitlement templates, crash/diagnostic export, and Android verification closure. See `## Current Milestone` above and `.planning/MILESTONE-ARC.md`._
 
 ### Out of Scope
 
@@ -178,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-03 after v3.9 Chimeway Notification Seam milestone — Phases 59-63 shipped (11/11 requirements validated). All v3.9 requirements moved to Validated; Active cleared pending next-milestone planning.*
+*Last updated: 2026-06-03 — started milestone v4.0 Production Shell Runtime Line. Added Current Milestone section (shell runtime-line policy, rebuild/compat matrix, permission/entitlement templates, diagnostics export, Android verification closure); Active requirements now point at v4.0 pending requirement definition.*

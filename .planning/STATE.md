@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.9
-milestone_name: Chimeway Notification Seam
-status: Awaiting next milestone
-last_updated: "2026-06-03T18:28:10.063Z"
-last_activity: 2026-06-03 — Milestone v3.9 completed and archived
+milestone: v4.0
+milestone_name: Production Shell Runtime Line
+status: planning
+last_updated: "2026-06-03T22:34:00.819Z"
+last_activity: 2026-06-03
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-03)
 
 ## Current Position
 
-Phase: Milestone v3.9 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-03 — Completed quick task 260603-nzr: tighten validation-ledger closeout gate
+Status: Defining requirements
+Last activity: 2026-06-03 — Milestone v4.0 started
 
 ## Performance Metrics
 
