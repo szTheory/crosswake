@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v3.9
 milestone_name: Chimeway Notification Seam
-status: planning
-last_updated: "2026-06-03T15:24:14.991Z"
+status: executing
+last_updated: "2026-06-03T15:45:38.588Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 40
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-06-02)
 ## Current Position
 
 Phase: 61
-Plan: Not started
-Status: Ready to plan
+Plan: 3 (of 4)
+Status: Ready to execute
 Last activity: 2026-06-03
 
 ## Performance Metrics
@@ -34,6 +34,7 @@ Last activity: 2026-06-03
 **Velocity:**
 
 - Total plans completed: 142 (v1.0–v3.8 Phase 58)
+- Phase 61-02 completed in 1m (3 tasks, 5 files)
 - v3.8: 5 phases, 19 plans, 42 tasks — shipped 2026-06-02
 - v3.7: 2 phases, 7 plans — shipped 2026-06-01
 - v3.6: 6 phases, 15 plans — shipped 2026-06-01
@@ -54,6 +55,9 @@ Last activity: 2026-06-03
 
 Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-ARC.md`.
 
+- [Phase 61]: Implement notification_open to safely opt-in to push entry. (D-14)
+- [Phase 61]: Default notification_open to nil/false for fail-closed security. (D-15)
+- [Phase 61]: RouteGate will return `notification_open_denied` when notification source hits a non-opt-in route. (D-17)
 - [Phase 46]: Auth predicates evaluate after kill-switch/gate and before compatibility/commerce findings.
 - [Phase 47]: Canonical companion guide is parity-locked to SupportMatrix, Denial, and live Doctor findings.
 - [Phase 52]: Use stable-id proof assertion helpers with normalized fixture and semantic parity checks for operator truth drift.
@@ -106,7 +110,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-03T15:24:14.986Z
+Last session: 2026-06-03T15:45:38.584Z
 Stopped at: Phase 61 context gathered
 
 ## Operator Next Steps
