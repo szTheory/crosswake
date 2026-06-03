@@ -102,7 +102,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Docs | ExDoc zero-warnings clause (HEX-03) | Deferred | 2026-05-29 |
 | CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Human UAT | Phase 15 device checks (share, haptics, app-info) | Acknowledged | 2026-05-27 |
-| Validation | Finalize Nyquist VALIDATION.md ledgers for phases 48, 49, 52, and 53 | Deferred with closeout reason | 2026-06-01 |
+| Validation | Finalize Nyquist VALIDATION.md ledgers for phases 48, 49, 52, and 53 | Resolved 2026-06-03 — accepted-and-closed in v3.6-CLOSEOUT.md (phase dirs never archived; evidence-backed) | 2026-06-01 |
 | Phase 48 P01 | 5min | 2 tasks | 6 files |
 | Phase 48 P03 | 11min | 2 tasks | 5 files |
 | Phase 48 P04 | 4min | 2 tasks | 8 files |
@@ -113,7 +113,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Phase 56 P04 | 5 min | 2 tasks | 15 files |
 | Phase 57 | integrated | 8 tasks | 37 files |
 | Phase 58 P3 | integrated | 3 tasks | 4 files |
-| Validation | Refresh v3.8 Nyquist VALIDATION.md ledgers for phases 54-58 | Deferred from milestone audit; requirements/proof/integration passed | 2026-06-02 |
+| Validation | Refresh v3.8 Nyquist VALIDATION.md ledgers for phases 54-58 | Resolved 2026-06-03 — ledgers signed nyquist_compliant: true against green proof (commit fe406a1) | 2026-06-02 |
 
 ## Session Continuity
 
