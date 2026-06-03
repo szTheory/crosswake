@@ -96,9 +96,9 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`; this section
 
 ### Active
 
-- [ ] **TOKN-01**: A Phoenix host can register APNs/FCM token evidence from the existing bounded bridge into a backend-owned Chimeway token binding record.
-- [ ] **TOKN-02**: Token binding distinguishes active, rotated, revoked, stale, invalid, permission-denied, environment-mismatched, and app-identity-mismatched states.
-- [ ] **TOKN-03**: Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning revoke or supersede bindings without deleting safe audit truth.
+- [x] **TOKN-01**: A Phoenix host can register APNs/FCM token evidence from the existing bounded bridge into a backend-owned Chimeway token binding record. Validated in Phase 59: Chimeway Contract And Token Binding Semantics.
+- [x] **TOKN-02**: Token binding distinguishes active, rotated, revoked, stale, invalid, permission-denied, environment-mismatched, and app-identity-mismatched states. Validated in Phase 59: Chimeway Contract And Token Binding Semantics.
+- [x] **TOKN-03**: Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning revoke or supersede bindings without deleting safe audit truth. Validated in Phase 60: Example Host Registry And Phoenix Wiring.
 - [ ] **OPEN-01**: Notification-open evidence resolves only through manifest-known route ids and route policy with `activation_source: :notification`.
 - [ ] **OPEN-02**: Notification opens for auth-sensitive routes reuse Sigra session authority and step-up semantics before allowing route activation.
 - [ ] **OPEN-03**: Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes.
@@ -194,4 +194,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-02 — v3.9 Chimeway Notification Seam initialized.*
+*Last updated: 2026-06-02 — Phase 60 complete: host-owned Chimeway registry path for binding, rotating, revoking, pruning, and invalidating notification tokens (TOKN-03). Phases 59-60 done; OPEN/DIAG/PROOF remain for Phases 61-63.*
