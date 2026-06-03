@@ -10,7 +10,7 @@ defmodule Crosswake.Planning.CloseoutCIParityTest do
     assert merge_blocking =~ "mix compile --warnings-as-errors"
 
     assert merge_blocking =~
-             "mix closeout.verify --security-only --security-closeout .planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+             "mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
 
     assert merge_blocking =~ "test/crosswake/proof/phase54_sigra_session_authority_test.exs"
     assert merge_blocking =~ "test/crosswake/proof/phase55_session_handoff_tickets_test.exs"

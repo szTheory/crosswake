@@ -46,7 +46,7 @@ jobs:
         run: mix compile --warnings-as-errors
 
       - name: Run closeout verification with Phase 58 security artifact
-        run: mix closeout.verify --security-only --security-closeout .planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md
+        run: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md
 
       - name: Run layered Sigra auth proof
         run: |
