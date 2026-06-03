@@ -315,6 +315,7 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     end
   end
 
+  @tag :requires_example_host
   test "example host proves issue challenge consume replay expiry cancel revoke binding and renewal" do
     script = """
     Logger.configure(level: :warning)

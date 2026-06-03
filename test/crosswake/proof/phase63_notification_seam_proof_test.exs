@@ -6,6 +6,10 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
   Validates token binding, open intent resolution, routing policy, and telemetry redaction.
   """
 
+  # Shells into examples/phoenix_host via System.cmd; excluded from hermetic CI
+  # lanes (deps not built there) and run locally, matching the project convention.
+  @moduletag :requires_example_host
+
   test "end-to-end notification seam proof: binding, intent resolution, and telemetry redaction" do
     script = """
     Logger.configure(level: :warning)
@@ -77,12 +81,12 @@ defmodule Crosswake.Proof.Phase63NotificationSeamProofTest do
 
     # 3. Assert Telemetry Redaction
     assert_receive {:telemetry_fired, [:crosswake, :notification, :token, :bound], metadata}, 1000
-    
+
     # Metadata should have safe keys and no raw tokens
     assert metadata.provider == :apns
     refute Map.has_key?(metadata, :apns_token)
     refute Map.has_key?(metadata, "apns_token")
-    
+
     # Ensure raw tokens do not leak via inspect
     inspected = inspect(bind_result)
     refute String.contains?(inspected, "synthetic_raw_token_that_must_not_leak_12345"),

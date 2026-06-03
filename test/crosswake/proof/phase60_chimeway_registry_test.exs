@@ -79,9 +79,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
 
   test "TokenBindingEvent schema does not include raw-token field declarations" do
     source =
-      File.read!(
-        "examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex"
-      )
+      File.read!("examples/phoenix_host/lib/crosswake_example/chimeway/token_binding_event.ex")
 
     for forbidden_field <- [:token, :raw_token, :device_token, :apns_token, :fcm_token] do
       refute source =~ "field(:#{forbidden_field},",
@@ -131,7 +129,9 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     refute source =~ ~s({:oban,), "examples/phoenix_host must not depend on Oban"
     refute source =~ ~s({:quantum,), "examples/phoenix_host must not depend on Quantum"
     refute source =~ ~s({:broadway,), "examples/phoenix_host must not depend on Broadway"
-    refute source =~ ~s({:gen_stage,), "examples/phoenix_host must not depend on GenStage scheduler"
+
+    refute source =~ ~s({:gen_stage,),
+           "examples/phoenix_host must not depend on GenStage scheduler"
   end
 
   test "phase 60 proof raw-token sentinel absence is source-level verifiable" do
@@ -228,6 +228,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   # MetadataSanitizer and TokenBinding changeset proof via example-host script
   # ---------------------------------------------------------------------------
 
+  @tag :requires_example_host
   test "metadata sanitizer drops raw-token atom and string keys, and TokenBinding enforces scope rules" do
     script = """
     Logger.configure(level: :warning)
@@ -378,6 +379,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   # Migration schema assertions (SQLite boot harness)
   # ---------------------------------------------------------------------------
 
+  @tag :requires_example_host
   test "example host migrations create binding and audit tables with expected partial unique indexes" do
     script = """
     Logger.configure(level: :warning)
@@ -461,6 +463,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   # Registry lifecycle proof: bind, refresh, rotate, and raw-token absence
   # ---------------------------------------------------------------------------
 
+  @tag :requires_example_host
   test "Registry bind_or_rotate: initial bind, same-token refresh, and rotation lifecycle" do
     script = """
     Logger.configure(level: :warning)
@@ -627,6 +630,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   # Registry lifecycle proof: revoke, invalidate, prune, and telemetry rollback
   # ---------------------------------------------------------------------------
 
+  @tag :requires_example_host
   test "Registry revocation, provider feedback, pruning, idempotency, and telemetry rollback safety" do
     script = """
     Logger.configure(level: :warning)
@@ -975,6 +979,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
   # Regression: WR-05 — subject_session binding requires session_version
   # ---------------------------------------------------------------------------
 
+  @tag :requires_example_host
   test "CR-01 regression: feedback with no token selector fails closed and leaves active bindings intact" do
     script = """
     Logger.configure(level: :warning)
@@ -1076,6 +1081,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     assert output =~ "phase60-cr01-regression-proof: ok"
   end
 
+  @tag :requires_example_host
   test "WR-01 regression: invalidating feedback matching zero active bindings returns error" do
     script = """
     Logger.configure(level: :warning)
@@ -1124,6 +1130,7 @@ defmodule Crosswake.Proof.Phase60ChimewayRegistryTest do
     assert output =~ "phase60-wr01-regression-proof: ok"
   end
 
+  @tag :requires_example_host
   test "WR-05 regression: subject_session changeset without session_version is invalid" do
     script = """
     Logger.configure(level: :warning)

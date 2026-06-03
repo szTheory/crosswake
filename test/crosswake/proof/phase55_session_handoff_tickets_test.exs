@@ -215,6 +215,7 @@ defmodule Crosswake.Proof.Phase55SessionHandoffTicketsTest do
            )
   end
 
+  @tag :requires_example_host
   test "example host proves issue redeem replay expiry revocation mismatch and audit flow" do
     script = """
     Logger.configure(level: :warning)
