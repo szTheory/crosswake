@@ -1,5 +1,30 @@
 # Project Milestones: Crosswake
 
+## v3.9 Chimeway Notification Seam (Shipped: 2026-06-03)
+
+**Phases completed:** 5 phases, 17 plans, 12 tasks
+
+**Key accomplishments:**
+
+- Chimeway contract-only companion entrypoint with provider-neutral token evidence and backend-owned token binding contracts (TOKN-01/02); raw bridge token evidence redacts into Chimeway contracts and is excluded from telemetry, fixtures, denials, and docs
+- Host-owned Phoenix registry for binding, rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning via `Ecto.Multi` with safe audit rows and post-commit telemetry (TOKN-03)
+- Notification-open resolver that routes opens through manifest-known route ids, `RouteGate` with `activation_source: :notification`, and Sigra session-authority/step-up reuse — failing closed with stable denial codes for expired/replayed/revoked/route-mismatched/binding-mismatched/unsupported-action/policy-denied opens and no silent fallback (OPEN-01/02/03)
+- Operator truth: doctor, operator inspection, support matrix, fixtures, and guides distinguish token-binding/open-routing readiness from APNs/FCM delivery support, backed by stable low-cardinality telemetry that forbids raw tokens, payloads, route params, and PII (DIAG-01/02)
+- Merge-blocking hermetic proof covering token contracts, binding/revocation lifecycle, open resolution, Sigra route gating, denial sanitization, support/docs parity, and telemetry redaction (PROOF-01)
+- APNs/FCM device delivery, real token issuance, provider credentials, notification-tray behavior, and console metrics kept advisory with explicit promotion criteria; closeout verifies 10/10 requirements mapped and no surface implies first-party push delivery (PROOF-02, REL-01)
+
+**Verification:** Milestone closeout (`.planning/milestones/v3.9-CLOSEOUT.md`) passed all checks — project state, roadmap parity, requirements state, phase verification, SUMMARY frontmatter, thread/seed disposition, release continuity, and support-claim parity all `complete`; validation ledgers `deferred_with_reason`. Closeout enforced by `mix closeout.verify`.
+
+**Known tech debt:** Draft Nyquist VALIDATION.md ledgers for Phases 59, 60, 62, and 63 remain bookkeeping gaps (routed to Phase 64); merge-blocking ExUnit proof and `closeout.verify` cover shipped public support truth.
+
+**Archive:**
+
+- `.planning/milestones/v3.9-ROADMAP.md`
+- `.planning/milestones/v3.9-REQUIREMENTS.md`
+- `.planning/milestones/v3.9-CLOSEOUT.md`
+
+---
+
 ## v3.8 Full Sigra Auth and Session Machinery (Shipped: 2026-06-02)
 
 **Phases completed:** 5 phases, 19 plans, 42 tasks

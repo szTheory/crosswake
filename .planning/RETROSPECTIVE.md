@@ -267,6 +267,51 @@
 - **Verification:** Milestone audit satisfied 16/16 requirements, 5/5 phases, 10/10 integration checks, and 5/5 E2E flows; focused proof ran 115 tests with 0 failures.
 - **Closeout friction:** Nyquist ledger cleanup remains deferred tech debt even though the proof lane and milestone audit evidence are green for requirements and flows.
 
+## Milestone: v3.9 Chimeway Notification Seam
+
+**Shipped:** 2026-06-03
+**Phases:** 5 (59-63)
+**Plans:** 17
+
+### What Was Built
+
+- First-party in-tree Chimeway companion contract with provider-neutral notification token evidence and backend-owned token binding records spanning active/rotated/revoked/stale/invalid/permission-denied/environment-mismatched/app-identity-mismatched states.
+- Host-owned Phoenix registry path for binding, rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning via `Ecto.Multi` with safe audit rows and post-commit telemetry.
+- Notification-open resolver that routes opens only through manifest-known route ids and `RouteGate` with `activation_source: :notification`, reusing Sigra session authority/step-up and failing closed with stable denial codes.
+- Operator-facing truth across doctor, operator inspection, support matrix, fixtures, and guides that separates token-binding/open-routing readiness from APNs/FCM delivery, plus low-cardinality telemetry that forbids raw tokens, payloads, route params, and PII.
+- Merge-blocking hermetic proof lane covering the full shipped seam with APNs/FCM device delivery kept advisory under explicit, demotion-aware promotion criteria.
+
+### What Worked
+
+- **RouteGate reuse made OPEN-02 nearly free** — because the resolver delegates to existing `RouteGate.evaluate/4` with `activation_source: :notification`, Sigra session-authority and step-up reuse came with zero duplicated auth logic.
+- **Evidence-only discipline held end to end** — `notifications.token.get` and notification taps stayed device evidence; backend binding and RouteGate decide, and no surface implies first-party push delivery.
+- **Closeout-as-contract worked** — `v3.9-CLOSEOUT.md` plus `mix closeout.verify` gave a machine-checkable, multi-axis definition of "shipped" instead of prose review.
+- **Raw-token redaction was proven, not asserted** — sentinel/source checks and telemetry redaction tests lock the no-raw-token boundary into merge-blocking proof.
+
+### What Was Inefficient
+
+- **Validation ledgers lagged again** — Nyquist VALIDATION.md ledgers for Phases 59/60/62/63 stayed draft and were deferred to Phase 64, repeating the v3.8 closeout-debt pattern.
+- **SUMMARY one-liners were thin** — phases 60-63 SUMMARYs lacked clean one-liners, so the CLI-generated MILESTONES.md entry needed manual enrichment (same v3.4 lesson recurring).
+- **Stale checkbox/footer drift in REQUIREMENTS.md** — OPEN-02 stayed `[ ]` despite being complete in traceability, and the file carried duplicated-footer cruft that needed manual cleanup at archive time.
+
+### Patterns Established
+
+- **Narrow core hook + companion seam for provider-heavy surfaces** — notification work lived in the Chimeway companion with only a minimal core route-policy/manifest hook, keeping core small while delivering real value.
+- **Delegate auth-sensitive activation to the existing route gate** — new activation sources should call `RouteGate` with a typed `activation_source` rather than re-implementing auth/step-up.
+- **Ship closeout as a machine-readable contract per milestone** — a frontmatter checklist verified by `closeout.verify` is the right closing gate for support-truth-sensitive milestones.
+
+### Key Lessons
+
+- **Close validation bookkeeping during execution** — v3.8 and now v3.9 both carried deferred Nyquist ledgers into close; this is now a recurring process gap, not a one-off.
+- **Author SUMMARY one-liners at phase close** — machine-extracted milestone summaries remain drafts until SUMMARYs carry clean one-liners.
+- **A new activation source is cheap when authority already lives in one evaluator** — the payoff of backend-owned RouteGate/Sigra compounds each time a new entry path (notification, deep link, future seams) reuses it.
+
+### Cost Observations
+
+- **Session shape:** One-day milestone on 2026-06-03, closing five phases and 17 plans.
+- **Verification:** Closeout passed all support-truth checks via `mix closeout.verify`; merge-blocking hermetic proof covers the shipped seam; validation ledgers deferred with reason to Phase 64.
+- **Closeout friction:** Same manual archive-polish and validation-ledger debt as v3.8 — strong candidate for a process fix before v4.0.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -282,3 +327,6 @@
 | Audit artifacts are part of completion truth | v3.5 behavior was green, but closeout initially failed on missing Phase 44 verification, stale Phase 43 roadmap status, an open thread, and active-tree resolved UAT residue | Treat verification reports, thread closure, roadmap parity, and artifact cleanup as required product work, not administrative cleanup |
 | Provider adapters must stay evidence-only | v3.7 shipped StoreKit/Play Billing seams and a paywall facade only after audit proved evidence flows into backend-owned reconciliation and grants wait for backend projection | Future provider or native adapter work should expose explicit swap targets, closed vocabularies, advisory proof posture, and authority-fence tests before widening claims |
 | Auth/session machinery must stay backend-authoritative | v3.8 shipped Sigra session authority, handoff, step-up, and auth-return seams while keeping shell/native/provider events evidence-only until backend projection | Future auth/provider/native UX work should start with authority projection, denial sanitization, replay/expiry proof, and support-truth split before adding provider-specific templates |
+| Backend authority compounds across entry paths | v3.9's notification-open resolver reused `RouteGate.evaluate/4` with `activation_source: :notification`, getting Sigra step-up reuse (OPEN-02) for free | New activation sources (notifications, deep links, future seams) should delegate to the existing route gate via a typed `activation_source` rather than re-implementing auth/step-up |
+| Validation-ledger debt is now systemic | v3.8 and v3.9 both closed with deferred Nyquist VALIDATION.md ledgers despite green proof and requirements | Close validation bookkeeping during phase execution, or add a closeout gate that blocks on draft ledgers, before v4.0 |
+| Closeout-as-contract beats prose review | v3.9 used a `CLOSEOUT.md` frontmatter checklist verified by `mix closeout.verify` as the closing gate | Support-truth-sensitive milestones should ship a machine-readable closeout contract alongside the proof lane |

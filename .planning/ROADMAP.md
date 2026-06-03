@@ -107,146 +107,16 @@ Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
 <details>
 <summary>✅ v3.9 Chimeway Notification Seam (Phases 59-63) — SHIPPED 2026-06-03</summary>
 
-- [x] Phase 59: Chimeway Contract And Token Binding Semantics — Not started (completed 2026-06-02)
-- [x] Phase 60: Example Host Registry And Phoenix Wiring — 3/3 plans complete (completed 2026-06-02)
-- [x] Phase 61: Notification-Open Resolver And Route Policy — Completed 2026-06-03
-- [x] Phase 62: Diagnostics, Support Truth, And Docs — Completed 2026-06-03
-- [x] Phase 63: Hermetic Proof And Advisory Promotion Criteria — Completed 2026-06-03
+- [x] Phase 59: Chimeway Contract And Token Binding Semantics (3/3 plans) — completed 2026-06-02
+- [x] Phase 60: Example Host Registry And Phoenix Wiring (3/3 plans) — completed 2026-06-02
+- [x] Phase 61: Notification-Open Resolver And Route Policy (4/4 plans) — completed 2026-06-03
+- [x] Phase 62: Diagnostics, Support Truth, And Docs (4/4 plans) — completed 2026-06-03
+- [x] Phase 63: Hermetic Proof And Advisory Promotion Criteria (3/3 plans) — completed 2026-06-03
 
-### Phase 59: Chimeway Contract And Token Binding Semantics
-
-**Goal:** Define the first-party Chimeway companion contract for provider-neutral notification evidence and backend-owned token binding.
-
-**Requirements:** TOKN-01, TOKN-02
-
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 59-01-PLAN.md — Chimeway companion entrypoint and token-binding contract vocabulary
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 59-02-PLAN.md — Raw-token redaction boundary, provider feedback normalization, and telemetry sanitizer
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 59-03-PLAN.md — Phase proof and narrow Chimeway guide anchor
-
-**Success criteria:**
-
-1. `notifications.token.get` remains device evidence only and does not become auth, session, delivery, or route authority.
-2. Chimeway token evidence and token binding contracts cover provider, platform, environment, installation ref, subject scope, token fingerprint, state, timestamps, and safe audit fields.
-3. APNs/FCM provider facts normalize into canonical Chimeway vocabulary without leaking provider-specific route-policy vocabulary.
-4. Raw token material is explicitly host-owned and excluded from telemetry, fixtures, denials, support output, and docs.
-
-### Phase 60: Example Host Registry And Phoenix Wiring
-
-**Goal:** Provide a copyable Phoenix-owned registry path for binding, rotating, revoking, pruning, and invalidating notification tokens.
-
-**Requirements:** TOKN-03
-
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 60-01-PLAN.md — Chimeway binding/event schemas, migrations, metadata sanitizer, and proof scaffold
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 60-02-PLAN.md — Registry lifecycle APIs with Ecto.Multi, audit rows, and post-commit telemetry proof
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 60-03-PLAN.md — Final Phase 60 proof lane and optional non-compiled worker guidance/no-dependency checks
-
-**Success criteria:**
-
-1. Example-host Phoenix registry shape uses idiomatic Ecto changesets and `Ecto.Multi` for revoke displaced binding, upsert current binding, and emit safe audit/telemetry evidence.
-2. Binding only occurs after backend auth/session context exists; shell token possession is never treated as identity.
-3. Token rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning all produce explicit backend lifecycle state.
-4. Oban or Chimeway worker integration remains optional guidance, not a Crosswake dependency.
-
-### Phase 61: Notification-Open Resolver And Route Policy
-
-**Goal:** Resolve notification-open evidence through manifest-known routes, RouteGate, and Sigra session authority.
-
-**Requirements:** OPEN-01, OPEN-02, OPEN-03
-
-**Plans:** 4/4 plans executed
-
-Plans:
-**Wave 1**
-- [x] 61-01-PLAN.md — Evidence Contracts and Error Boundaries
-- [x] 61-02-PLAN.md — Notification-Open Policy Opt-In
-- [x] 61-03-PLAN.md — Host Open-Intent Schema and Transaction Flow
-
-**Wave 2** *(depends on Wave 1)*
-- [x] 61-04-PLAN.md — Notification-Open Resolver and RouteGate Integration
-
-**Success criteria:**
-
-1. Notification opens use bounded refs such as notification/open/action refs plus route id rather than arbitrary URL authority.
-2. Route resolution calls existing route-gate behavior with `activation_source: :notification`.
-3. Auth-sensitive opens reuse Sigra session authority and step-up semantics before route activation.
-4. Expired, replayed, revoked, route-mismatched, binding-mismatched, unsupported-action, and policy-denied opens fail closed with stable notification denial codes and no silent dashboard/home fallback.
-
-### Phase 62: Diagnostics, Support Truth, And Docs
-
-**Goal:** Publish operator-facing truth for what v3.9 ships and what remains provider/device advisory.
-
-**Requirements:** DIAG-01, DIAG-02
-
-**Plans:** 4/4 plans executed
-
-Plans:
-**Wave 1**
-- [x] 62-01-PLAN.md — Support Matrix & Telemetry Contract Update
-- [x] 62-02-PLAN.md — Operator Inspection Posture
-
-**Wave 2**
-- [x] 62-03-PLAN.md — Doctor Notification Findings
-
-**Wave 3**
-- [x] 62-04-PLAN.md — Documentation Update
-
-**Success criteria:**
-
-1. Doctor, operator inspection, support matrix, fixtures, and guides distinguish token binding/open-routing readiness from APNs/FCM delivery support.
-2. Notification support truth reports provider support, app identity/environment match, binding readiness, stale-window posture, revocation hooks, redaction posture, route-open resolver support, and advisory lane freshness.
-3. Notification telemetry uses stable low-cardinality events for token observed/bound/rotated/revoked/pruned, provider feedback, and open received/resolved/denied outcomes.
-4. Telemetry and diagnostic metadata forbid raw tokens, raw payloads, title/body content, route params, provider response bodies, and PII.
-
-### Phase 63: Hermetic Proof And Advisory Promotion Criteria
-
-**Goal:** Prove the shipped notification seam deterministically while keeping provider/device delivery proof honest.
-
-**Requirements:** PROOF-01, PROOF-02
-
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 63-01-PLAN.md — Implement the merge-blocking hermetic proof test for the notification seam.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 63-02-PLAN.md — Implement the advisory promotion criteria proof test.
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 63-03-PLAN.md — Update milestone closeout verification and roadmap to mark v3.9 shipped.
-
-**Success criteria:**
-
-1. Merge-blocking proof covers token evidence, binding, rotation, revocation, stale/invalid states, open validation, replay, route mismatch, policy denial, Sigra step-up, docs parity, and telemetry redaction.
-2. APNs/FCM token issuance, real delivery/open behavior, provider credentials, notification-tray behavior, Focus/Doze/background behavior, and provider console metrics remain advisory.
-3. Advisory-to-merge-blocking promotion criteria require current-branch repeated passes on iOS and Android, current docs anchors, explicit demotion triggers, and zero raw-token/PII findings.
-4. Milestone closeout verifies 10/10 requirements mapped and no support surface implies first-party push delivery guarantees.
-
+Full phase details: [v3.9-ROADMAP.md](milestones/v3.9-ROADMAP.md)
+Requirement archive: [v3.9-REQUIREMENTS.md](milestones/v3.9-REQUIREMENTS.md)
+Closeout contract: [v3.9-CLOSEOUT.md](milestones/v3.9-CLOSEOUT.md)
+Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 </details>
 
 ## Next
