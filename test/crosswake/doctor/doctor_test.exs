@@ -108,6 +108,7 @@ defmodule Crosswake.DoctorTest do
                "gate_denied",
                "inactive_route",
                "kill_switch_active",
+               "notification_open_denied",
                "origin_denied",
                "pack_incompatible",
                "step_up_required",

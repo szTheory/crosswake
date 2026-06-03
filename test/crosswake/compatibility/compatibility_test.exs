@@ -88,6 +88,50 @@ defmodule Crosswake.CompatibilityTest do
            }
   end
 
+  test "notification open denial happens when notification_open is absent on a notification activation" do
+    manifest =
+      Types.new_root(
+        crosswake_version: "0.1.0",
+        generated_at: "2026-05-15T00:00:00Z",
+        host: Types.new_host(),
+        compatibility: Types.new_compatibility(),
+        support_matrix: SupportMatrix.canonical(),
+        capability_registry: %{},
+        routes: %{
+          "external_route" =>
+            Types.new_route_entry(
+              id: "external_route",
+              path: "/external",
+              runtime: :live_view,
+              entry: :external,
+              offline: :unavailable,
+              allowlisted_origins: [Types.default_origin()]
+            )
+        }
+      )
+
+    decision =
+      RouteGate.evaluate(
+        manifest,
+        "external_route",
+        %Target{
+          manifest_schema_version: "1.0.0",
+          bridge_protocol_version: "1.0.0",
+          native_runtime_version: "1.0.0",
+          manifest_source: :bundled,
+          capabilities: %{},
+          packs: %{},
+          origin: Types.default_origin()
+        },
+        activation_source: :notification,
+        fallback_route_id: "dashboard"
+      )
+
+    assert decision.status == :deny
+    assert %Denial{reason: :notification_open_denied} = decision.denial
+    assert decision.denial.message =~ "does not allow notification open"
+  end
+
   test "in app navigation denial keeps the current route stable and reports an interrupting pack denial" do
     manifest = manifest_fixture()
 
