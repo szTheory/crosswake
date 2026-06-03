@@ -1,0 +1,1810 @@
+{
+  "crosswake_version": "0.1.0",
+  "findings": [
+    {
+      "check": "operator_inspection",
+      "code": "operator.auth_contract.step_up_required",
+      "details": {
+        "auth_min_level": null,
+        "auth_posture": "strict_recent",
+        "auth_return": {
+          "authority_source": "server_record",
+          "custom_scheme_posture": "advisory_only",
+          "envelope_authority": false,
+          "kinds": [
+            "oauth",
+            "passkey",
+            "native_auth"
+          ],
+          "proof_class": "merge_blocking",
+          "route_policy_seam": "auth_return",
+          "route_target_validation": "manifest_route_id",
+          "sensitive_transport": "verified_https_link_required",
+          "status": "shipped",
+          "transports": [
+            "http_callback",
+            "verified_https_link",
+            "custom_scheme",
+            "bridge_event"
+          ]
+        },
+        "contract_proof_class": "merge_blocking",
+        "contract_surface": "full_sigra_machinery",
+        "denial_codes": [
+          "auth.step_up.missing_context",
+          "auth.step_up.invalid_context",
+          "auth.step_up.non_active",
+          "auth.step_up.idle_expired",
+          "auth.step_up.absolute_expired",
+          "auth.step_up.revoked",
+          "auth.step_up.version_mismatch",
+          "auth.step_up.insufficient_assurance",
+          "auth.step_up.stale_auth",
+          "auth.step_up.remembered_not_allowed",
+          "auth.step_up.cached_not_allowed",
+          "auth.handoff.missing_ticket",
+          "auth.handoff.invalid_ticket",
+          "auth.handoff.expired_ticket",
+          "auth.handoff.replayed_ticket",
+          "auth.handoff.revoked_ticket",
+          "auth.handoff.binding_mismatch",
+          "auth.handoff.intent_mismatch",
+          "auth.handoff.route_mismatch",
+          "auth.handoff.projection_failed",
+          "auth.step_up_intent.missing_intent",
+          "auth.step_up_intent.invalid_intent",
+          "auth.step_up_intent.expired_intent",
+          "auth.step_up_intent.consumed_intent",
+          "auth.step_up_intent.canceled_intent",
+          "auth.step_up_intent.revoked_intent",
+          "auth.step_up_intent.route_mismatch",
+          "auth.step_up_intent.binding_mismatch",
+          "auth.step_up_intent.challenge_failed",
+          "auth.step_up_intent.projection_failed",
+          "auth.return.oauth.missing_return",
+          "auth.return.oauth.invalid_return",
+          "auth.return.oauth.expired_return",
+          "auth.return.oauth.replayed_return",
+          "auth.return.oauth.state_mismatch",
+          "auth.return.oauth.nonce_mismatch",
+          "auth.return.oauth.pkce_missing",
+          "auth.return.oauth.redirect_mismatch",
+          "auth.return.passkey.missing_return",
+          "auth.return.passkey.invalid_return",
+          "auth.return.passkey.expired_return",
+          "auth.return.passkey.replayed_return",
+          "auth.return.passkey.challenge_mismatch",
+          "auth.return.passkey.origin_mismatch",
+          "auth.return.passkey.rp_id_mismatch",
+          "auth.return.passkey.user_verification_missing",
+          "auth.return.native_auth.missing_return",
+          "auth.return.native_auth.invalid_return",
+          "auth.return.native_auth.expired_return",
+          "auth.return.native_auth.replayed_return",
+          "auth.return.native_auth.link_unverified",
+          "auth.return.native_auth.callback_mismatch",
+          "auth.return.native_auth.projection_failed"
+        ],
+        "evidence_authority": {
+          "auth_return_envelope": false,
+          "bridge_event": false,
+          "deep_link": false,
+          "handoff_envelope": false,
+          "provider_payload": false,
+          "step_up_locator": false
+        },
+        "fallback": "step_up_required",
+        "handoff": {
+          "audit_fields": [
+            "event_id",
+            "event_type",
+            "handoff_ref",
+            "state_before",
+            "state_after",
+            "outcome",
+            "denial_code",
+            "occurred_at",
+            "route_id",
+            "intent_kind",
+            "source_session_ref",
+            "projected_session_ref",
+            "session_version_before",
+            "session_version_after",
+            "assurance_after",
+            "auth_methods_after",
+            "binding_result",
+            "request_ref",
+            "actor_kind"
+          ],
+          "authority_source": "server_record",
+          "envelope_authority": false,
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        },
+        "host_readiness": "verification_required",
+        "non_goals": [
+          "refresh_tokens",
+          "native_auth_ui",
+          "provider_device_proof"
+        ],
+        "posture": "session_authority",
+        "provider_device_proof": "advisory",
+        "readiness": "verification_required",
+        "requires_recent_auth": null,
+        "route_authority_source": "session_authority_lane",
+        "route_id": "camera",
+        "safe_detail_keys": [
+          "required_assurance_level",
+          "current_assurance_level",
+          "required_mfa_level",
+          "current_mfa_level",
+          "max_auth_age_seconds",
+          "auth_age_seconds",
+          "auth_posture",
+          "authority_state",
+          "evaluated_at",
+          "challenge_ref",
+          "step_up_token_ref",
+          "expected_session_version",
+          "current_session_version",
+          "handoff_ref",
+          "handoff_state",
+          "handoff_kind",
+          "handoff_version",
+          "handoff_transport",
+          "binding_kind",
+          "intent_kind",
+          "route_binding",
+          "ticket_expires_at",
+          "ticket_age_seconds",
+          "step_up_intent_ref",
+          "intent_state",
+          "challenge_kind",
+          "intent_expires_at",
+          "intent_age_seconds",
+          "auth_return_ref",
+          "auth_return_kind",
+          "auth_return_transport",
+          "auth_return_state",
+          "return_route_id",
+          "link_verification",
+          "validation_posture",
+          "return_expires_at",
+          "return_age_seconds"
+        ],
+        "security_closeout": {
+          "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+          "proof_class": "merge_blocking",
+          "review_model": "stride",
+          "status": "shipped",
+          "unresolved_high_or_critical_findings": 0
+        },
+        "shipped_contracts": [
+          "session_authority",
+          "handoff_ticket",
+          "server_record_redemption",
+          "step_up_intent",
+          "plug_liveview_ceremony",
+          "auth_return_boundary",
+          "auth_return_attempt"
+        ],
+        "step_up": {
+          "authority_source": "server_record",
+          "challenge_kinds": [
+            "host_confirm_password"
+          ],
+          "csrf_rotation": "host_instruction",
+          "lifecycle_states": [
+            "issued",
+            "challenged",
+            "consumed",
+            "expired",
+            "canceled",
+            "revoked"
+          ],
+          "liveview_invalidation": "required",
+          "locator_authority": false,
+          "proof_class": "merge_blocking",
+          "route_target_validation": "manifest_route_id",
+          "session_renewal": "host_instructions",
+          "status": "shipped"
+        },
+        "telemetry": {
+          "authority_source": "diagnostic_evidence_only",
+          "event_names": [
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "start"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "stop"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "exception"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "denial"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "redeem"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "challenge"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "validate"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "deny"
+            ]
+          ],
+          "forbidden_metadata_keys": [
+            "access_token",
+            "actor_id",
+            "authorization_code",
+            "credential_id",
+            "device_id",
+            "email",
+            "id_token",
+            "ip",
+            "nonce",
+            "org_id",
+            "passkey_credential_id",
+            "pkce_verifier",
+            "provider_payload",
+            "raw_return_to",
+            "refresh_token",
+            "return_to",
+            "session_ref",
+            "subject_ref",
+            "user_agent"
+          ],
+          "metadata_keys": [
+            "route_id",
+            "flow",
+            "return_kind",
+            "transport",
+            "outcome",
+            "denial_code",
+            "shell_reason",
+            "authority_state",
+            "auth_posture",
+            "required_assurance_level",
+            "current_assurance_level",
+            "freshness_bucket",
+            "lifecycle_state",
+            "binding_result",
+            "link_verification",
+            "validation_posture",
+            "proof_class",
+            "correlation_id"
+          ],
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        }
+      },
+      "hint": "inspect route camera support, proof, rebuild, and denial fields",
+      "message": "route camera uses Sigra auth predicates with host verification required",
+      "severity": "advisory"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.notification_token.provider_snapshot",
+      "details": {
+        "delivery_supported": false,
+        "open_routing_active": false,
+        "posture": "provider_snapshot",
+        "provider_readiness": "verification_required",
+        "route_id": "dashboard",
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ],
+        "token_capability_declared": true
+      },
+      "hint": "inspect route dashboard support, proof, rebuild, and denial fields",
+      "message": "route dashboard declares notification token provider snapshot readiness",
+      "severity": "advisory"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.rebuild_required.rebuild_required",
+      "details": {
+        "action_classes": [
+          "native_shell"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": false,
+        "compatibility_signal": "native_runtime_version",
+        "native_required": true,
+        "reasons": [
+          "capability camera requires native-required"
+        ],
+        "route_id": "camera"
+      },
+      "hint": "inspect route camera support, proof, rebuild, and denial fields",
+      "message": "route camera requires native or companion rebuild verification",
+      "severity": "warning"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.rebuild_required.rebuild_required",
+      "details": {
+        "action_classes": [
+          "companion_native"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": true,
+        "compatibility_signal": "companion_dependency",
+        "native_required": false,
+        "reasons": [
+          "capability notification_token requires companion-required"
+        ],
+        "route_id": "dashboard"
+      },
+      "hint": "inspect route dashboard support, proof, rebuild, and denial fields",
+      "message": "route dashboard requires native or companion rebuild verification",
+      "severity": "warning"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.rebuild_required.rebuild_required",
+      "details": {
+        "action_classes": [
+          "native_shell"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": false,
+        "compatibility_signal": "native_runtime_version",
+        "native_required": true,
+        "reasons": [
+          "capability file_picker requires native-required"
+        ],
+        "route_id": "library"
+      },
+      "hint": "inspect route library support, proof, rebuild, and denial fields",
+      "message": "route library requires native or companion rebuild verification",
+      "severity": "warning"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.support_status.verification_required",
+      "details": {
+        "route_id": "camera",
+        "support_status": "verification_required"
+      },
+      "hint": "inspect route camera support, proof, rebuild, and denial fields",
+      "message": "route camera support status is verification_required",
+      "severity": "warning"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.support_status.verification_required",
+      "details": {
+        "route_id": "dashboard",
+        "support_status": "verification_required"
+      },
+      "hint": "inspect route dashboard support, proof, rebuild, and denial fields",
+      "message": "route dashboard support status is verification_required",
+      "severity": "warning"
+    },
+    {
+      "check": "operator_inspection",
+      "code": "operator.support_status.verification_required",
+      "details": {
+        "route_id": "library",
+        "support_status": "verification_required"
+      },
+      "hint": "inspect route library support, proof, rebuild, and denial fields",
+      "message": "route library support status is verification_required",
+      "severity": "warning"
+    }
+  ],
+  "generated_at": "2026-06-03T17:10:12Z",
+  "indexes": {
+    "by_auth_predicate": {
+      "step_up_required": [
+        "camera"
+      ]
+    },
+    "by_capability": {
+      "app_info": [
+        "dashboard"
+      ],
+      "camera": [
+        "camera"
+      ],
+      "file_picker": [
+        "library"
+      ],
+      "haptics": [
+        "dashboard"
+      ],
+      "notification_token": [
+        "dashboard"
+      ],
+      "permissions.status": [
+        "dashboard"
+      ],
+      "share": [
+        "dashboard"
+      ]
+    },
+    "by_companion": {},
+    "by_rebuild_requirement": {
+      "companion_required": [
+        "dashboard"
+      ],
+      "native_required": [
+        "camera",
+        "library"
+      ]
+    },
+    "by_runtime": {
+      "live_view": [
+        "dashboard",
+        "library"
+      ],
+      "native_screen": [
+        "camera"
+      ],
+      "offline_island": [
+        "study-session"
+      ]
+    },
+    "by_support_status": {
+      "supported": [
+        "study-session"
+      ],
+      "verification_required": [
+        "camera",
+        "dashboard",
+        "library"
+      ]
+    }
+  },
+  "provenance": {
+    "generator": "Crosswake.OperatorInspection",
+    "inputs": [
+      "manifest",
+      "support_matrix",
+      "route_policy"
+    ]
+  },
+  "routes": {
+    "camera": {
+      "auth": {
+        "auth_min_level": null,
+        "auth_posture": "strict_recent",
+        "auth_return": {
+          "authority_source": "server_record",
+          "custom_scheme_posture": "advisory_only",
+          "envelope_authority": false,
+          "kinds": [
+            "oauth",
+            "passkey",
+            "native_auth"
+          ],
+          "proof_class": "merge_blocking",
+          "route_policy_seam": "auth_return",
+          "route_target_validation": "manifest_route_id",
+          "sensitive_transport": "verified_https_link_required",
+          "status": "shipped",
+          "transports": [
+            "http_callback",
+            "verified_https_link",
+            "custom_scheme",
+            "bridge_event"
+          ]
+        },
+        "contract_proof_class": "merge_blocking",
+        "contract_surface": "full_sigra_machinery",
+        "denial_codes": [
+          "auth.step_up.missing_context",
+          "auth.step_up.invalid_context",
+          "auth.step_up.non_active",
+          "auth.step_up.idle_expired",
+          "auth.step_up.absolute_expired",
+          "auth.step_up.revoked",
+          "auth.step_up.version_mismatch",
+          "auth.step_up.insufficient_assurance",
+          "auth.step_up.stale_auth",
+          "auth.step_up.remembered_not_allowed",
+          "auth.step_up.cached_not_allowed",
+          "auth.handoff.missing_ticket",
+          "auth.handoff.invalid_ticket",
+          "auth.handoff.expired_ticket",
+          "auth.handoff.replayed_ticket",
+          "auth.handoff.revoked_ticket",
+          "auth.handoff.binding_mismatch",
+          "auth.handoff.intent_mismatch",
+          "auth.handoff.route_mismatch",
+          "auth.handoff.projection_failed",
+          "auth.step_up_intent.missing_intent",
+          "auth.step_up_intent.invalid_intent",
+          "auth.step_up_intent.expired_intent",
+          "auth.step_up_intent.consumed_intent",
+          "auth.step_up_intent.canceled_intent",
+          "auth.step_up_intent.revoked_intent",
+          "auth.step_up_intent.route_mismatch",
+          "auth.step_up_intent.binding_mismatch",
+          "auth.step_up_intent.challenge_failed",
+          "auth.step_up_intent.projection_failed",
+          "auth.return.oauth.missing_return",
+          "auth.return.oauth.invalid_return",
+          "auth.return.oauth.expired_return",
+          "auth.return.oauth.replayed_return",
+          "auth.return.oauth.state_mismatch",
+          "auth.return.oauth.nonce_mismatch",
+          "auth.return.oauth.pkce_missing",
+          "auth.return.oauth.redirect_mismatch",
+          "auth.return.passkey.missing_return",
+          "auth.return.passkey.invalid_return",
+          "auth.return.passkey.expired_return",
+          "auth.return.passkey.replayed_return",
+          "auth.return.passkey.challenge_mismatch",
+          "auth.return.passkey.origin_mismatch",
+          "auth.return.passkey.rp_id_mismatch",
+          "auth.return.passkey.user_verification_missing",
+          "auth.return.native_auth.missing_return",
+          "auth.return.native_auth.invalid_return",
+          "auth.return.native_auth.expired_return",
+          "auth.return.native_auth.replayed_return",
+          "auth.return.native_auth.link_unverified",
+          "auth.return.native_auth.callback_mismatch",
+          "auth.return.native_auth.projection_failed"
+        ],
+        "evidence_authority": {
+          "auth_return_envelope": false,
+          "bridge_event": false,
+          "deep_link": false,
+          "handoff_envelope": false,
+          "provider_payload": false,
+          "step_up_locator": false
+        },
+        "fallback": "step_up_required",
+        "handoff": {
+          "audit_fields": [
+            "event_id",
+            "event_type",
+            "handoff_ref",
+            "state_before",
+            "state_after",
+            "outcome",
+            "denial_code",
+            "occurred_at",
+            "route_id",
+            "intent_kind",
+            "source_session_ref",
+            "projected_session_ref",
+            "session_version_before",
+            "session_version_after",
+            "assurance_after",
+            "auth_methods_after",
+            "binding_result",
+            "request_ref",
+            "actor_kind"
+          ],
+          "authority_source": "server_record",
+          "envelope_authority": false,
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        },
+        "host_readiness": "verification_required",
+        "non_goals": [
+          "refresh_tokens",
+          "native_auth_ui",
+          "provider_device_proof"
+        ],
+        "posture": "session_authority",
+        "provider_device_proof": "advisory",
+        "readiness": "verification_required",
+        "requires_recent_auth": null,
+        "route_authority_source": "session_authority_lane",
+        "safe_detail_keys": [
+          "required_assurance_level",
+          "current_assurance_level",
+          "required_mfa_level",
+          "current_mfa_level",
+          "max_auth_age_seconds",
+          "auth_age_seconds",
+          "auth_posture",
+          "authority_state",
+          "evaluated_at",
+          "challenge_ref",
+          "step_up_token_ref",
+          "expected_session_version",
+          "current_session_version",
+          "handoff_ref",
+          "handoff_state",
+          "handoff_kind",
+          "handoff_version",
+          "handoff_transport",
+          "binding_kind",
+          "intent_kind",
+          "route_binding",
+          "ticket_expires_at",
+          "ticket_age_seconds",
+          "step_up_intent_ref",
+          "intent_state",
+          "challenge_kind",
+          "intent_expires_at",
+          "intent_age_seconds",
+          "auth_return_ref",
+          "auth_return_kind",
+          "auth_return_transport",
+          "auth_return_state",
+          "return_route_id",
+          "link_verification",
+          "validation_posture",
+          "return_expires_at",
+          "return_age_seconds"
+        ],
+        "security_closeout": {
+          "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+          "proof_class": "merge_blocking",
+          "review_model": "stride",
+          "status": "shipped",
+          "unresolved_high_or_critical_findings": 0
+        },
+        "shipped_contracts": [
+          "session_authority",
+          "handoff_ticket",
+          "server_record_redemption",
+          "step_up_intent",
+          "plug_liveview_ceremony",
+          "auth_return_boundary",
+          "auth_return_attempt"
+        ],
+        "step_up": {
+          "authority_source": "server_record",
+          "challenge_kinds": [
+            "host_confirm_password"
+          ],
+          "csrf_rotation": "host_instruction",
+          "lifecycle_states": [
+            "issued",
+            "challenged",
+            "consumed",
+            "expired",
+            "canceled",
+            "revoked"
+          ],
+          "liveview_invalidation": "required",
+          "locator_authority": false,
+          "proof_class": "merge_blocking",
+          "route_target_validation": "manifest_route_id",
+          "session_renewal": "host_instructions",
+          "status": "shipped"
+        },
+        "telemetry": {
+          "authority_source": "diagnostic_evidence_only",
+          "event_names": [
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "start"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "stop"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "session",
+              "evaluate",
+              "exception"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "denial"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "redeem"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "handoff",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "issue"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "challenge"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "step_up",
+              "deny"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "validate"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "consume"
+            ],
+            [
+              "crosswake",
+              "auth",
+              "return",
+              "deny"
+            ]
+          ],
+          "forbidden_metadata_keys": [
+            "access_token",
+            "actor_id",
+            "authorization_code",
+            "credential_id",
+            "device_id",
+            "email",
+            "id_token",
+            "ip",
+            "nonce",
+            "org_id",
+            "passkey_credential_id",
+            "pkce_verifier",
+            "provider_payload",
+            "raw_return_to",
+            "refresh_token",
+            "return_to",
+            "session_ref",
+            "subject_ref",
+            "user_agent"
+          ],
+          "metadata_keys": [
+            "route_id",
+            "flow",
+            "return_kind",
+            "transport",
+            "outcome",
+            "denial_code",
+            "shell_reason",
+            "authority_state",
+            "auth_posture",
+            "required_assurance_level",
+            "current_assurance_level",
+            "freshness_bucket",
+            "lifecycle_state",
+            "binding_result",
+            "link_verification",
+            "validation_posture",
+            "proof_class",
+            "correlation_id"
+          ],
+          "proof_class": "merge_blocking",
+          "status": "shipped"
+        }
+      },
+      "capabilities": [
+        {
+          "denial": "pack_incompatible",
+          "fallback": "fail closed instead of degrading into a bounded web upload flow",
+          "family": "media_capture",
+          "guide": "guides/native_shell.md#native-capture-escape-hatch",
+          "id": "camera",
+          "owner": "native_screen",
+          "package_class": "companion",
+          "prerequisites": [
+            "native screen route",
+            "capture pack availability"
+          ],
+          "proof_class": "merge-blocking",
+          "rebuild": "native-required",
+          "status": "supported"
+        }
+      ],
+      "commerce": null,
+      "companion": {
+        "dependency_status": "not_applicable",
+        "gate_state": null,
+        "gated_by": null,
+        "on_unavailable": null,
+        "posture": "not_applicable"
+      },
+      "conditions": [
+        {
+          "details": {
+            "support_status": "verification_required"
+          },
+          "message": "route camera support status is verification_required",
+          "reason": "verification_required",
+          "route_id": "camera",
+          "severity": "warning",
+          "status": false,
+          "type": "support_status"
+        },
+        {
+          "details": {
+            "action_classes": [
+              "native_shell"
+            ],
+            "change_class": "native or companion rebuild required",
+            "companion_required": false,
+            "compatibility_signal": "native_runtime_version",
+            "native_required": true,
+            "reasons": [
+              "capability camera requires native-required"
+            ]
+          },
+          "message": "route camera requires native or companion rebuild verification",
+          "reason": "rebuild_required",
+          "route_id": "camera",
+          "severity": "warning",
+          "status": false,
+          "type": "rebuild_required"
+        },
+        {
+          "details": {
+            "auth_min_level": null,
+            "auth_posture": "strict_recent",
+            "auth_return": {
+              "authority_source": "server_record",
+              "custom_scheme_posture": "advisory_only",
+              "envelope_authority": false,
+              "kinds": [
+                "oauth",
+                "passkey",
+                "native_auth"
+              ],
+              "proof_class": "merge_blocking",
+              "route_policy_seam": "auth_return",
+              "route_target_validation": "manifest_route_id",
+              "sensitive_transport": "verified_https_link_required",
+              "status": "shipped",
+              "transports": [
+                "http_callback",
+                "verified_https_link",
+                "custom_scheme",
+                "bridge_event"
+              ]
+            },
+            "contract_proof_class": "merge_blocking",
+            "contract_surface": "full_sigra_machinery",
+            "denial_codes": [
+              "auth.step_up.missing_context",
+              "auth.step_up.invalid_context",
+              "auth.step_up.non_active",
+              "auth.step_up.idle_expired",
+              "auth.step_up.absolute_expired",
+              "auth.step_up.revoked",
+              "auth.step_up.version_mismatch",
+              "auth.step_up.insufficient_assurance",
+              "auth.step_up.stale_auth",
+              "auth.step_up.remembered_not_allowed",
+              "auth.step_up.cached_not_allowed",
+              "auth.handoff.missing_ticket",
+              "auth.handoff.invalid_ticket",
+              "auth.handoff.expired_ticket",
+              "auth.handoff.replayed_ticket",
+              "auth.handoff.revoked_ticket",
+              "auth.handoff.binding_mismatch",
+              "auth.handoff.intent_mismatch",
+              "auth.handoff.route_mismatch",
+              "auth.handoff.projection_failed",
+              "auth.step_up_intent.missing_intent",
+              "auth.step_up_intent.invalid_intent",
+              "auth.step_up_intent.expired_intent",
+              "auth.step_up_intent.consumed_intent",
+              "auth.step_up_intent.canceled_intent",
+              "auth.step_up_intent.revoked_intent",
+              "auth.step_up_intent.route_mismatch",
+              "auth.step_up_intent.binding_mismatch",
+              "auth.step_up_intent.challenge_failed",
+              "auth.step_up_intent.projection_failed",
+              "auth.return.oauth.missing_return",
+              "auth.return.oauth.invalid_return",
+              "auth.return.oauth.expired_return",
+              "auth.return.oauth.replayed_return",
+              "auth.return.oauth.state_mismatch",
+              "auth.return.oauth.nonce_mismatch",
+              "auth.return.oauth.pkce_missing",
+              "auth.return.oauth.redirect_mismatch",
+              "auth.return.passkey.missing_return",
+              "auth.return.passkey.invalid_return",
+              "auth.return.passkey.expired_return",
+              "auth.return.passkey.replayed_return",
+              "auth.return.passkey.challenge_mismatch",
+              "auth.return.passkey.origin_mismatch",
+              "auth.return.passkey.rp_id_mismatch",
+              "auth.return.passkey.user_verification_missing",
+              "auth.return.native_auth.missing_return",
+              "auth.return.native_auth.invalid_return",
+              "auth.return.native_auth.expired_return",
+              "auth.return.native_auth.replayed_return",
+              "auth.return.native_auth.link_unverified",
+              "auth.return.native_auth.callback_mismatch",
+              "auth.return.native_auth.projection_failed"
+            ],
+            "evidence_authority": {
+              "auth_return_envelope": false,
+              "bridge_event": false,
+              "deep_link": false,
+              "handoff_envelope": false,
+              "provider_payload": false,
+              "step_up_locator": false
+            },
+            "fallback": "step_up_required",
+            "handoff": {
+              "audit_fields": [
+                "event_id",
+                "event_type",
+                "handoff_ref",
+                "state_before",
+                "state_after",
+                "outcome",
+                "denial_code",
+                "occurred_at",
+                "route_id",
+                "intent_kind",
+                "source_session_ref",
+                "projected_session_ref",
+                "session_version_before",
+                "session_version_after",
+                "assurance_after",
+                "auth_methods_after",
+                "binding_result",
+                "request_ref",
+                "actor_kind"
+              ],
+              "authority_source": "server_record",
+              "envelope_authority": false,
+              "proof_class": "merge_blocking",
+              "status": "shipped"
+            },
+            "host_readiness": "verification_required",
+            "non_goals": [
+              "refresh_tokens",
+              "native_auth_ui",
+              "provider_device_proof"
+            ],
+            "posture": "session_authority",
+            "provider_device_proof": "advisory",
+            "readiness": "verification_required",
+            "requires_recent_auth": null,
+            "route_authority_source": "session_authority_lane",
+            "safe_detail_keys": [
+              "required_assurance_level",
+              "current_assurance_level",
+              "required_mfa_level",
+              "current_mfa_level",
+              "max_auth_age_seconds",
+              "auth_age_seconds",
+              "auth_posture",
+              "authority_state",
+              "evaluated_at",
+              "challenge_ref",
+              "step_up_token_ref",
+              "expected_session_version",
+              "current_session_version",
+              "handoff_ref",
+              "handoff_state",
+              "handoff_kind",
+              "handoff_version",
+              "handoff_transport",
+              "binding_kind",
+              "intent_kind",
+              "route_binding",
+              "ticket_expires_at",
+              "ticket_age_seconds",
+              "step_up_intent_ref",
+              "intent_state",
+              "challenge_kind",
+              "intent_expires_at",
+              "intent_age_seconds",
+              "auth_return_ref",
+              "auth_return_kind",
+              "auth_return_transport",
+              "auth_return_state",
+              "return_route_id",
+              "link_verification",
+              "validation_posture",
+              "return_expires_at",
+              "return_age_seconds"
+            ],
+            "security_closeout": {
+              "artifact": ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+              "proof_class": "merge_blocking",
+              "review_model": "stride",
+              "status": "shipped",
+              "unresolved_high_or_critical_findings": 0
+            },
+            "shipped_contracts": [
+              "session_authority",
+              "handoff_ticket",
+              "server_record_redemption",
+              "step_up_intent",
+              "plug_liveview_ceremony",
+              "auth_return_boundary",
+              "auth_return_attempt"
+            ],
+            "step_up": {
+              "authority_source": "server_record",
+              "challenge_kinds": [
+                "host_confirm_password"
+              ],
+              "csrf_rotation": "host_instruction",
+              "lifecycle_states": [
+                "issued",
+                "challenged",
+                "consumed",
+                "expired",
+                "canceled",
+                "revoked"
+              ],
+              "liveview_invalidation": "required",
+              "locator_authority": false,
+              "proof_class": "merge_blocking",
+              "route_target_validation": "manifest_route_id",
+              "session_renewal": "host_instructions",
+              "status": "shipped"
+            },
+            "telemetry": {
+              "authority_source": "diagnostic_evidence_only",
+              "event_names": [
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "start"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "stop"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "session",
+                  "evaluate",
+                  "exception"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "denial"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "issue"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "redeem"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "handoff",
+                  "deny"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "issue"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "challenge"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "consume"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "step_up",
+                  "deny"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "validate"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "consume"
+                ],
+                [
+                  "crosswake",
+                  "auth",
+                  "return",
+                  "deny"
+                ]
+              ],
+              "forbidden_metadata_keys": [
+                "access_token",
+                "actor_id",
+                "authorization_code",
+                "credential_id",
+                "device_id",
+                "email",
+                "id_token",
+                "ip",
+                "nonce",
+                "org_id",
+                "passkey_credential_id",
+                "pkce_verifier",
+                "provider_payload",
+                "raw_return_to",
+                "refresh_token",
+                "return_to",
+                "session_ref",
+                "subject_ref",
+                "user_agent"
+              ],
+              "metadata_keys": [
+                "route_id",
+                "flow",
+                "return_kind",
+                "transport",
+                "outcome",
+                "denial_code",
+                "shell_reason",
+                "authority_state",
+                "auth_posture",
+                "required_assurance_level",
+                "current_assurance_level",
+                "freshness_bucket",
+                "lifecycle_state",
+                "binding_result",
+                "link_verification",
+                "validation_posture",
+                "proof_class",
+                "correlation_id"
+              ],
+              "proof_class": "merge_blocking",
+              "status": "shipped"
+            }
+          },
+          "message": "route camera uses Sigra auth predicates with host verification required",
+          "reason": "step_up_required",
+          "route_id": "camera",
+          "severity": "advisory",
+          "status": "unknown",
+          "type": "auth_contract"
+        }
+      ],
+      "denials": [
+        "pack_incompatible",
+        "step_up_required"
+      ],
+      "entry": "internal_only",
+      "id": "camera",
+      "notifications": {
+        "delivery_supported": false,
+        "open_routing_active": false,
+        "posture": "not_applicable",
+        "provider_readiness": "not_applicable",
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ],
+        "token_capability_declared": false
+      },
+      "offline": {
+        "cache_contract": false,
+        "island_contract": false,
+        "mode": "cached_read_only"
+      },
+      "ownership": {
+        "fail_closed": true,
+        "owner_plane": "native_screen"
+      },
+      "path": "/camera",
+      "rebuild": {
+        "action_classes": [
+          "native_shell"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": false,
+        "compatibility_signal": "native_runtime_version",
+        "native_required": true,
+        "reasons": [
+          "capability camera requires native-required"
+        ]
+      },
+      "runtime": "native_screen",
+      "support": {
+        "advisory_only": true,
+        "blocking_reasons": [
+          "capability camera requires native-required"
+        ],
+        "promotion_rule_ids": [
+          "auth.sigra.session_authority"
+        ],
+        "proof_class": "advisory",
+        "status": "verification_required"
+      }
+    },
+    "dashboard": {
+      "auth": {
+        "auth_min_level": null,
+        "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
+        "denial_codes": [],
+        "evidence_authority": {},
+        "fallback": null,
+        "handoff": {},
+        "host_readiness": "not_applicable",
+        "non_goals": [],
+        "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
+        "readiness": "supported",
+        "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
+        "safe_detail_keys": [],
+        "security_closeout": {},
+        "shipped_contracts": [],
+        "step_up": {},
+        "telemetry": {}
+      },
+      "capabilities": [
+        {
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native app metadata",
+          "family": "app_info",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "id": "app_info",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "rebuild": "none",
+          "status": "supported"
+        },
+        {
+          "denial": "undeclared_capability",
+          "fallback": "Phoenix route continues without native confirmation feedback",
+          "family": "haptics",
+          "guide": "guides/bridge.md#bounded-bridge",
+          "id": "haptics",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support"
+          ],
+          "proof_class": "merge-blocking",
+          "rebuild": "none",
+          "status": "supported"
+        },
+        {
+          "denial": "undeclared_capability",
+          "fallback": "route continues without native notification permission snapshot authority",
+          "family": "permissions.status",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "id": "permissions.status",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notifications alias only"
+          ],
+          "proof_class": "merge-blocking",
+          "rebuild": "none",
+          "status": "supported"
+        },
+        {
+          "denial": "unavailable_capability",
+          "fallback": "treat notification token replies as provider-tagged evidence instead of backend registration truth",
+          "family": "notification_token",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "id": "notification_token",
+          "owner": "bounded_bridge",
+          "package_class": "companion",
+          "prerequisites": [
+            "declared route capability",
+            "bounded bridge support",
+            "notification authorization already resolved",
+            "provider token snapshot available"
+          ],
+          "proof_class": "advisory",
+          "rebuild": "companion-required",
+          "status": "supported"
+        },
+        {
+          "denial": "undeclared_capability",
+          "fallback": "keep content in the Phoenix-owned route until a share family is declared",
+          "family": "share",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "id": "share",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "prerequisites": [
+            "truthful semantic share contract"
+          ],
+          "proof_class": "advisory",
+          "rebuild": "none",
+          "status": "supported"
+        }
+      ],
+      "commerce": null,
+      "companion": {
+        "dependency_status": "not_applicable",
+        "gate_state": null,
+        "gated_by": null,
+        "on_unavailable": null,
+        "posture": "not_applicable"
+      },
+      "conditions": [
+        {
+          "details": {
+            "support_status": "verification_required"
+          },
+          "message": "route dashboard support status is verification_required",
+          "reason": "verification_required",
+          "route_id": "dashboard",
+          "severity": "warning",
+          "status": false,
+          "type": "support_status"
+        },
+        {
+          "details": {
+            "action_classes": [
+              "companion_native"
+            ],
+            "change_class": "native or companion rebuild required",
+            "companion_required": true,
+            "compatibility_signal": "companion_dependency",
+            "native_required": false,
+            "reasons": [
+              "capability notification_token requires companion-required"
+            ]
+          },
+          "message": "route dashboard requires native or companion rebuild verification",
+          "reason": "rebuild_required",
+          "route_id": "dashboard",
+          "severity": "warning",
+          "status": false,
+          "type": "rebuild_required"
+        },
+        {
+          "details": {
+            "delivery_supported": false,
+            "open_routing_active": false,
+            "posture": "provider_snapshot",
+            "provider_readiness": "verification_required",
+            "supported_providers": [
+              "apns",
+              "fcm"
+            ],
+            "token_capability_declared": true
+          },
+          "message": "route dashboard declares notification token provider snapshot readiness",
+          "reason": "provider_snapshot",
+          "route_id": "dashboard",
+          "severity": "advisory",
+          "status": "unknown",
+          "type": "notification_token"
+        }
+      ],
+      "denials": [
+        "undeclared_capability",
+        "unavailable_capability"
+      ],
+      "entry": "internal_only",
+      "id": "dashboard",
+      "notifications": {
+        "delivery_supported": false,
+        "open_routing_active": false,
+        "posture": "provider_snapshot",
+        "provider_readiness": "verification_required",
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ],
+        "token_capability_declared": true
+      },
+      "offline": {
+        "cache_contract": false,
+        "island_contract": false,
+        "mode": "cached_read_only"
+      },
+      "ownership": {
+        "fail_closed": true,
+        "owner_plane": "phoenix"
+      },
+      "path": "/dashboard",
+      "rebuild": {
+        "action_classes": [
+          "companion_native"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": true,
+        "compatibility_signal": "companion_dependency",
+        "native_required": false,
+        "reasons": [
+          "capability notification_token requires companion-required"
+        ]
+      },
+      "runtime": "live_view",
+      "support": {
+        "advisory_only": true,
+        "blocking_reasons": [
+          "capability notification_token requires companion-required"
+        ],
+        "promotion_rule_ids": [
+          "notification_token.provider_snapshot"
+        ],
+        "proof_class": "advisory",
+        "status": "verification_required"
+      }
+    },
+    "library": {
+      "auth": {
+        "auth_min_level": null,
+        "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
+        "denial_codes": [],
+        "evidence_authority": {},
+        "fallback": null,
+        "handoff": {},
+        "host_readiness": "not_applicable",
+        "non_goals": [],
+        "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
+        "readiness": "supported",
+        "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
+        "safe_detail_keys": [],
+        "security_closeout": {},
+        "shipped_contracts": [],
+        "step_up": {},
+        "telemetry": {}
+      },
+      "capabilities": [
+        {
+          "denial": "undeclared_capability",
+          "fallback": "keep the route on Phoenix-owned import guidance until a copy-first native_picker seam is declared and verified",
+          "family": "file_picker",
+          "guide": "guides/capabilities.md#bounded-bridge",
+          "id": "file_picker",
+          "owner": "bounded_bridge",
+          "package_class": "core",
+          "prerequisites": [
+            "declared transfer_id",
+            "bounded bridge support",
+            "inbound native_picker transfer seam",
+            "copy-first staged handle plus transfer verification"
+          ],
+          "proof_class": "merge-blocking",
+          "rebuild": "native-required",
+          "status": "supported"
+        }
+      ],
+      "commerce": null,
+      "companion": {
+        "dependency_status": "not_applicable",
+        "gate_state": null,
+        "gated_by": null,
+        "on_unavailable": null,
+        "posture": "not_applicable"
+      },
+      "conditions": [
+        {
+          "details": {
+            "support_status": "verification_required"
+          },
+          "message": "route library support status is verification_required",
+          "reason": "verification_required",
+          "route_id": "library",
+          "severity": "warning",
+          "status": false,
+          "type": "support_status"
+        },
+        {
+          "details": {
+            "action_classes": [
+              "native_shell"
+            ],
+            "change_class": "native or companion rebuild required",
+            "companion_required": false,
+            "compatibility_signal": "native_runtime_version",
+            "native_required": true,
+            "reasons": [
+              "capability file_picker requires native-required"
+            ]
+          },
+          "message": "route library requires native or companion rebuild verification",
+          "reason": "rebuild_required",
+          "route_id": "library",
+          "severity": "warning",
+          "status": false,
+          "type": "rebuild_required"
+        }
+      ],
+      "denials": [
+        "undeclared_capability"
+      ],
+      "entry": "internal_only",
+      "id": "library",
+      "notifications": {
+        "delivery_supported": false,
+        "open_routing_active": false,
+        "posture": "not_applicable",
+        "provider_readiness": "not_applicable",
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ],
+        "token_capability_declared": false
+      },
+      "offline": {
+        "cache_contract": true,
+        "island_contract": false,
+        "mode": "cached_read_only"
+      },
+      "ownership": {
+        "fail_closed": true,
+        "owner_plane": "phoenix"
+      },
+      "path": "/library",
+      "rebuild": {
+        "action_classes": [
+          "native_shell"
+        ],
+        "change_class": "native or companion rebuild required",
+        "companion_required": false,
+        "compatibility_signal": "native_runtime_version",
+        "native_required": true,
+        "reasons": [
+          "capability file_picker requires native-required"
+        ]
+      },
+      "runtime": "live_view",
+      "support": {
+        "advisory_only": false,
+        "blocking_reasons": [
+          "capability file_picker requires native-required"
+        ],
+        "promotion_rule_ids": [],
+        "proof_class": "merge_blocking",
+        "status": "verification_required"
+      }
+    },
+    "study-session": {
+      "auth": {
+        "auth_min_level": null,
+        "auth_posture": null,
+        "auth_return": {},
+        "contract_proof_class": "not_applicable",
+        "contract_surface": "not_applicable",
+        "denial_codes": [],
+        "evidence_authority": {},
+        "fallback": null,
+        "handoff": {},
+        "host_readiness": "not_applicable",
+        "non_goals": [],
+        "posture": "not_applicable",
+        "provider_device_proof": "not_applicable",
+        "readiness": "supported",
+        "requires_recent_auth": null,
+        "route_authority_source": "not_applicable",
+        "safe_detail_keys": [],
+        "security_closeout": {},
+        "shipped_contracts": [],
+        "step_up": {},
+        "telemetry": {}
+      },
+      "capabilities": [],
+      "commerce": null,
+      "companion": {
+        "dependency_status": "not_applicable",
+        "gate_state": null,
+        "gated_by": null,
+        "on_unavailable": null,
+        "posture": "not_applicable"
+      },
+      "conditions": [
+        {
+          "details": {
+            "support_status": "supported"
+          },
+          "message": "route study-session support status is supported",
+          "reason": "supported",
+          "route_id": "study-session",
+          "severity": "advisory",
+          "status": true,
+          "type": "support_status"
+        },
+        {
+          "details": {
+            "action_classes": [
+              "route_manifest"
+            ],
+            "change_class": "core-only/no native rebuild",
+            "companion_required": false,
+            "compatibility_signal": "manifest_schema_version",
+            "native_required": false,
+            "reasons": []
+          },
+          "message": "route study-session has no rebuild requirement",
+          "reason": "none",
+          "route_id": "study-session",
+          "severity": "advisory",
+          "status": true,
+          "type": "rebuild_required"
+        }
+      ],
+      "denials": [],
+      "entry": "internal_only",
+      "id": "study-session",
+      "notifications": {
+        "delivery_supported": false,
+        "open_routing_active": false,
+        "posture": "not_applicable",
+        "provider_readiness": "not_applicable",
+        "supported_providers": [
+          "apns",
+          "fcm"
+        ],
+        "token_capability_declared": false
+      },
+      "offline": {
+        "cache_contract": false,
+        "island_contract": true,
+        "mode": "local_first"
+      },
+      "ownership": {
+        "fail_closed": true,
+        "owner_plane": "offline_island"
+      },
+      "path": "/study-session",
+      "rebuild": {
+        "action_classes": [
+          "route_manifest"
+        ],
+        "change_class": "core-only/no native rebuild",
+        "companion_required": false,
+        "compatibility_signal": "manifest_schema_version",
+        "native_required": false,
+        "reasons": []
+      },
+      "runtime": "offline_island",
+      "support": {
+        "advisory_only": false,
+        "blocking_reasons": [],
+        "promotion_rule_ids": [],
+        "proof_class": "merge_blocking",
+        "status": "supported"
+      }
+    }
+  },
+  "schema_version": "1.0.0",
+  "source": {
+    "bridge_protocol_version": "1.0.0",
+    "manifest_schema_version": "1.0.0",
+    "native_runtime_version": "1.0.0"
+  },
+  "summary": {
+    "blocking_count": 0,
+    "finding_count": 8,
+    "rebuild_required_count": 3,
+    "route_count": 4,
+    "status": "ok",
+    "verification_required_count": 3
+  }
+}

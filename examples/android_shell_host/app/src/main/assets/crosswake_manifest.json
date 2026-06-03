@@ -328,6 +328,24 @@
       "version": "1.0.0"
     }
   },
+  "commerce_corridors": {
+    "subscription_default": {
+      "denial": "commerce.corridor.unsupported",
+      "fallback": "return_to_phoenix_guidance",
+      "id": "subscription_default",
+      "prerequisites": [
+        "backend_entitlement_contract",
+        "storefront_adapter_or_companion",
+        "reviewer_playbook"
+      ],
+      "role_ownership": {
+        "account_management": "phoenix_owned",
+        "paywall_entry": "phoenix_owned",
+        "purchase_intent": "native_or_companion_required",
+        "restore_intent": "native_or_companion_required"
+      }
+    }
+  },
   "compatibility": {
     "bridge_protocol_version": "1.0.0",
     "manifest_schema_version": "1.0.0",
@@ -343,7 +361,7 @@
     ]
   },
   "crosswake_version": "0.1.0",
-  "generated_at": "2026-05-27T08:06:00Z",
+  "generated_at": "2026-06-02T01:19:43Z",
   "host": {
     "live_view_version": "~> 1.1",
     "manifest_sources": [
@@ -376,12 +394,96 @@
     }
   },
   "routes": {
+    "commerce-paywall-entry": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "commerce": {
+        "corridor_ref": "subscription_default",
+        "role": "paywall_entry"
+      },
+      "entry": "internal_only",
+      "id": "commerce-paywall-entry",
+      "island_contract": null,
+      "offline": "unavailable",
+      "packs": [],
+      "path": "/commerce/paywall",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "commerce-purchase-intent": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "commerce": {
+        "corridor_ref": "subscription_default",
+        "role": "purchase_intent"
+      },
+      "entry": "internal_only",
+      "id": "commerce-purchase-intent",
+      "island_contract": null,
+      "offline": "unavailable",
+      "packs": [],
+      "path": "/commerce/purchase",
+      "runtime": "native_screen",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "commerce-restore-intent": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "commerce": {
+        "corridor_ref": "subscription_default",
+        "role": "restore_intent"
+      },
+      "entry": "internal_only",
+      "id": "commerce-restore-intent",
+      "island_contract": null,
+      "offline": "unavailable",
+      "packs": [],
+      "path": "/commerce/restore",
+      "runtime": "native_screen",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
+    "gating-beta-feature": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "commerce": null,
+      "entry": "internal_only",
+      "gated_by": "rulestead",
+      "id": "gating-beta-feature",
+      "island_contract": null,
+      "offline": "unavailable",
+      "on_unavailable": "deny",
+      "packs": [],
+      "path": "/gating/beta-feature",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
     "home": {
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "home",
       "island_contract": null,
@@ -408,6 +510,7 @@
         "storage": "sqlite"
       },
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "library",
       "island_contract": null,
@@ -494,6 +597,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "local-first-study-history",
       "island_contract": null,
@@ -511,6 +615,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "local-first-study-session",
       "island_contract": null,
@@ -524,12 +629,31 @@
       "sync": [],
       "transfers": []
     },
+    "media-proof-lane": {
+      "allowlisted_origins": [
+        "https://example.crosswake.invalid"
+      ],
+      "cache_contract": null,
+      "capabilities": [],
+      "commerce": null,
+      "entry": "internal_only",
+      "id": "media-proof-lane",
+      "island_contract": null,
+      "offline": "unavailable",
+      "packs": [],
+      "path": "/media/proof",
+      "runtime": "live_view",
+      "security": "standard",
+      "sync": [],
+      "transfers": []
+    },
     "saas-account": {
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "saas-account",
       "island_contract": null,
@@ -549,6 +673,7 @@
       "capabilities": [
         "haptics.impact"
       ],
+      "commerce": null,
       "entry": "external",
       "id": "saas-approval",
       "island_contract": null,
@@ -566,6 +691,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "saas-approvals",
       "island_contract": null,
@@ -583,6 +709,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "saas-dashboard",
       "island_contract": null,
@@ -598,14 +725,18 @@
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
       ],
+      "auth_min_level": "mfa",
+      "auth_posture": "strict_recent",
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "saas-profile-settings",
       "island_contract": null,
       "offline": "cached_read_only",
       "packs": [],
       "path": "/saas/settings/profile",
+      "requires_recent_auth": 900,
       "runtime": "live_view",
       "security": "standard",
       "sync": [],
@@ -617,6 +748,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "selective-native-claim",
       "island_contract": null,
@@ -632,10 +764,12 @@
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
       ],
+      "auth_posture": "strict_recent",
       "cache_contract": null,
       "capabilities": [
         "camera"
       ],
+      "commerce": null,
       "entry": "internal_only",
       "id": "selective-native-claim-capture",
       "island_contract": null,
@@ -678,6 +812,7 @@
       ],
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "selective-native-claims",
       "island_contract": null,
@@ -693,8 +828,10 @@
       "allowlisted_origins": [
         "https://example.crosswake.invalid"
       ],
+      "auth_posture": "strict_recent",
       "cache_contract": null,
       "capabilities": [],
+      "commerce": null,
       "entry": "internal_only",
       "id": "selective-native-submission-review",
       "island_contract": null,
@@ -776,7 +913,7 @@
       {
         "baseline_status": "supported",
         "denial": "unavailable_capability",
-        "fallback": "treat device-side state as evidence instead of final entitlement truth",
+        "fallback": "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available; pending and awaiting_verification states never grant entitlement.",
         "family": "entitlement_snapshot",
         "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
         "owner": "backend_seam",
@@ -784,7 +921,8 @@
         "posture": "backend_seam",
         "prerequisites": [
           "backend entitlement authority",
-          "reconciliation hook"
+          "reconciliation hook",
+          "freshness posture (fresh/stale/unknown) surfaced before access checks"
         ],
         "proof_class": "merge-blocking",
         "proof_status": "verification required",
@@ -917,7 +1055,7 @@
       {
         "baseline_status": "supported",
         "denial": "unavailable_capability",
-        "fallback": "treat evidence as asynchronous payload without blocking route entry",
+        "fallback": "Treat device/storefront/webhook/support evidence as non-authoritative reconciliation input; pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority.",
         "family": "reconciliation_evidence",
         "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
         "owner": "backend_seam",
@@ -925,7 +1063,8 @@
         "posture": "backend_seam",
         "prerequisites": [
           "backend reconciliation",
-          "device callback or webhook"
+          "device callback or webhook",
+          "pending and awaiting_verification reconciliation states stay non-granting"
         ],
         "proof_class": "merge-blocking",
         "proof_status": "verification required",

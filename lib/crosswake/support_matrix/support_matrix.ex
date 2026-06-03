@@ -11,8 +11,11 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
+  alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
 
   @statuses [:supported, :verification_required, :unsupported]
+  @proof_classes [:merge_blocking, :advisory, :not_applicable]
+  @diagnostic_severities [:error, :warning, :advisory]
   @commerce_corridor_prerequisite_taxonomy [
     :route_declaration,
     :backend_reconciliation,
@@ -119,6 +122,151 @@ defmodule Crosswake.SupportMatrix do
       advisory_provider_proof: true
     }
   ]
+  @auth_contract_truth [
+    %{
+      surface:
+        "Sigra SessionAuthorityLane route authority evaluator, handoff contract, step-up ceremony, and auth-return boundaries",
+      owner: :backend_seam,
+      package_class: :companion,
+      proof_class: :merge_blocking,
+      shipped_contracts: [
+        :session_authority,
+        :handoff_ticket,
+        :server_record_redemption,
+        :step_up_intent,
+        :plug_liveview_ceremony,
+        :auth_return_boundary,
+        :auth_return_attempt
+      ],
+      handoff: %{
+        status: :shipped,
+        authority_source: :server_record,
+        envelope_authority: false,
+        audit_fields: [
+          :event_id,
+          :event_type,
+          :handoff_ref,
+          :state_before,
+          :state_after,
+          :outcome,
+          :denial_code,
+          :occurred_at,
+          :route_id,
+          :intent_kind,
+          :source_session_ref,
+          :projected_session_ref,
+          :session_version_before,
+          :session_version_after,
+          :assurance_after,
+          :auth_methods_after,
+          :binding_result,
+          :request_ref,
+          :actor_kind
+        ],
+        proof_class: :merge_blocking
+      },
+      step_up: %{
+        status: :shipped,
+        authority_source: :server_record,
+        locator_authority: false,
+        lifecycle_states: [:issued, :challenged, :consumed, :expired, :canceled, :revoked],
+        challenge_kinds: [:host_confirm_password],
+        route_target_validation: :manifest_route_id,
+        session_renewal: :host_instructions,
+        csrf_rotation: :host_instruction,
+        liveview_invalidation: :required,
+        proof_class: :merge_blocking
+      },
+      auth_return: %{
+        status: :shipped,
+        authority_source: :server_record,
+        envelope_authority: false,
+        route_policy_seam: :auth_return,
+        kinds: [:oauth, :passkey, :native_auth],
+        transports: [:http_callback, :verified_https_link, :custom_scheme, :bridge_event],
+        sensitive_transport: :verified_https_link_required,
+        custom_scheme_posture: :advisory_only,
+        route_target_validation: :manifest_route_id,
+        proof_class: :merge_blocking
+      },
+      route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
+      contract_surface: :full_sigra_machinery,
+      contract_proof_class: :merge_blocking,
+      route_authority_source: :session_authority_lane,
+      evidence_authority: %{
+        handoff_envelope: false,
+        step_up_locator: false,
+        auth_return_envelope: false,
+        deep_link: false,
+        bridge_event: false,
+        provider_payload: false
+      },
+      host_readiness: :verification_required,
+      provider_device_proof: :advisory,
+      telemetry: %{
+        status: :shipped,
+        event_names: SigraTelemetry.event_names(),
+        metadata_keys: SigraTelemetry.metadata_keys(),
+        forbidden_metadata_keys: SigraTelemetry.forbidden_metadata_keys(),
+        authority_source: :diagnostic_evidence_only,
+        proof_class: :merge_blocking
+      },
+      security_closeout: %{
+        status: :shipped,
+        artifact: ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+        review_model: :stride,
+        proof_class: :merge_blocking,
+        unresolved_high_or_critical_findings: 0
+      },
+      denial_vocabulary: :step_up_required,
+      denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
+      safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys(),
+      fallback: :step_up_required,
+      deferred: [
+        :refresh_tokens,
+        :native_auth_ui,
+        :provider_device_proof
+      ],
+      posture:
+        "Phase 58 Sigra posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, and dedicated security closeout. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred."
+    }
+  ]
+  @companion_support_truth [
+    %{
+      surface:
+        "Sigra session-authority route evaluator, handoff contract, step-up ceremony, and auth-return boundaries",
+      proof_class: :merge_blocking,
+      action_class: "companion_native",
+      docs_anchor: "guides/companions.md#sigra-surface-auth-session-authority",
+      deferred: [
+        :refresh_tokens,
+        :native_auth_ui,
+        :provider_device_proof
+      ],
+      posture:
+        "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable auth telemetry, and security closeout; refresh tokens, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred."
+    }
+  ]
+  @notification_support_truth [
+    %{
+      surface: "notification_token provider snapshot",
+      proof_class: :advisory,
+      action_class: "companion_native",
+      docs_anchor: "guides/capabilities.md#bounded-bridge",
+      delivery_supported: false,
+      telemetry: %{
+        status: :shipped,
+        event_names: Crosswake.Companions.Chimeway.Telemetry.event_names(),
+        metadata_keys: Crosswake.Companions.Chimeway.Telemetry.metadata_keys(),
+        forbidden_metadata_keys: Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys(),
+        authority_source: :diagnostic_evidence_only,
+        proof_class: :merge_blocking
+      },
+      deferred: [:chimeway_delivery, :push_delivery_guarantees],
+      posture:
+        "notification_token and notification_open readiness are fully supported/resolvable; Chimeway APNs/FCM push delivery execution remains deferred and unsupported."
+    }
+  ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
@@ -172,7 +320,8 @@ defmodule Crosswake.SupportMatrix do
           baseline_status: :supported,
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
-          notes: "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
+          notes:
+            "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         support_entry(
@@ -201,10 +350,29 @@ defmodule Crosswake.SupportMatrix do
     |> validate_exact_statuses(support_matrix)
     |> validate_narrow_baseline(support_matrix)
     |> validate_capability_families_present(support_matrix)
+    |> validate_phase51_support_truth()
   end
 
   @spec statuses() :: [atom()]
   def statuses, do: @statuses
+
+  @spec proof_classes() :: [atom()]
+  def proof_classes, do: @proof_classes
+
+  @spec diagnostic_severities() :: [atom()]
+  def diagnostic_severities, do: @diagnostic_severities
+
+  @spec action_classes() :: [Types.ActionClassEntry.t()]
+  def action_classes, do: action_class_entries()
+
+  @spec promotion_rules() :: [Types.PromotionRuleEntry.t()]
+  def promotion_rules, do: promotion_rule_entries()
+
+  @spec companion_support_truth() :: [map()]
+  def companion_support_truth, do: @companion_support_truth
+
+  @spec notification_support_truth() :: [map()]
+  def notification_support_truth, do: @notification_support_truth
 
   @spec fetch_status(SupportMatrix.t(), atom(), String.t()) ::
           {:ok, SupportEntry.status()} | :error
@@ -218,7 +386,8 @@ defmodule Crosswake.SupportMatrix do
   end
 
   @spec capability_families(SupportMatrix.t()) :: [CapabilitySupportEntry.t()]
-  def capability_families(%SupportMatrix{} = support_matrix), do: support_matrix.capability_families
+  def capability_families(%SupportMatrix{} = support_matrix),
+    do: support_matrix.capability_families
 
   @spec package_surfaces(SupportMatrix.t()) :: [PackageSurfaceEntry.t()]
   def package_surfaces(%SupportMatrix{} = support_matrix), do: support_matrix.package_surfaces
@@ -272,6 +441,9 @@ defmodule Crosswake.SupportMatrix do
 
   @spec commerce_corridors() :: [map()]
   def commerce_corridors, do: @commerce_corridor_entries
+
+  @spec auth_contract_truth() :: [map()]
+  def auth_contract_truth, do: @auth_contract_truth
 
   @spec commerce_corridor_denial_codes() :: [String.t()]
   def commerce_corridor_denial_codes do
@@ -461,7 +633,8 @@ defmodule Crosswake.SupportMatrix do
       ),
       Types.new_release_boundary_entry(
         target: "ios_shell",
-        versioning: "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+        versioning:
+          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -469,7 +642,8 @@ defmodule Crosswake.SupportMatrix do
       ),
       Types.new_release_boundary_entry(
         target: "android_shell",
-        versioning: "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+        versioning:
+          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -516,8 +690,7 @@ defmodule Crosswake.SupportMatrix do
           "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
         compatibility_signal:
           "Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts.",
-        required_proof:
-          "core proof plus generated-shell or companion verification lanes"
+        required_proof: "core proof plus generated-shell or companion verification lanes"
       )
     ]
   end
@@ -559,6 +732,356 @@ defmodule Crosswake.SupportMatrix do
     end
   end
 
+  defp validate_phase51_support_truth(errors) do
+    errors
+    |> validate_action_class_rows()
+    |> validate_promotion_rule_rows()
+  end
+
+  defp validate_action_class_rows(errors) do
+    allowed =
+      ~w(docs_only route_manifest compatibility native_shell companion_native provider_adapter)
+
+    action_classes()
+    |> Enum.reduce(errors, fn entry, acc ->
+      cond do
+        entry.action_class not in allowed ->
+          [
+            %{
+              key: :action_classes,
+              message: "unknown action_class #{inspect(entry.action_class)}",
+              hint: "use one of #{Enum.join(allowed, ", ")}"
+            }
+            | acc
+          ]
+
+        !is_boolean(entry.rebuild_required) or entry.guide_anchor in [nil, ""] ->
+          [
+            %{
+              key: :action_classes,
+              message: "action_class #{entry.action_class} is missing rebuild or guide metadata",
+              hint: "every action class must include rebuild_required and guide_anchor"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  defp validate_promotion_rule_rows(errors) do
+    action_classes = action_classes() |> MapSet.new(& &1.action_class)
+
+    promotion_rules()
+    |> Enum.reduce(errors, fn entry, acc ->
+      cond do
+        entry.action_class not in action_classes ->
+          [
+            %{
+              key: :promotion_rules,
+              message:
+                "promotion rule #{entry.claim_id} references unknown action_class #{inspect(entry.action_class)}",
+              hint: "promotion rules must reference a canonical action class"
+            }
+            | acc
+          ]
+
+        entry.required_evidence == [] or entry.required_docs_anchors == [] or
+            entry.check_ids == [] ->
+          [
+            %{
+              key: :promotion_rules,
+              message: "promotion rule #{entry.claim_id} is missing evidence, docs, or check ids",
+              hint: "criteria-as-code promotion rules must be auditable before support can widen"
+            }
+            | acc
+          ]
+
+        entry.demotion_trigger in [nil, ""] ->
+          [
+            %{
+              key: :promotion_rules,
+              message: "promotion rule #{entry.claim_id} is missing a demotion trigger",
+              hint: "promotion and demotion must both be explicit"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  defp action_class_entries do
+    [
+      Types.new_action_class_entry(
+        action_class: "docs_only",
+        subject: "Public guides, examples, and support notes",
+        required_action: "Read updated guidance and rerun docs integrity checks.",
+        rebuild_required: false,
+        reason:
+          "Docs-only changes do not change manifest semantics, compatibility axes, native code, or proof expectations.",
+        guide_anchor: "guides/support_matrix.md#action-classes"
+      ),
+      Types.new_action_class_entry(
+        action_class: "route_manifest",
+        subject: "Phoenix route policy and manifest metadata",
+        required_action:
+          "Update the Hex package, regenerate manifest truth, and run core contract plus doctor/support proof.",
+        rebuild_required: false,
+        reason:
+          "Route and manifest metadata can stay core-only when schema, bridge, runtime, and capability major versions remain compatible.",
+        guide_anchor: "guides/support_matrix.md#action-classes"
+      ),
+      Types.new_action_class_entry(
+        action_class: "compatibility",
+        subject: "Compatibility windows and required version declarations",
+        required_action:
+          "Check compatibility windows and run fail-closed compatibility fixtures before release.",
+        rebuild_required: false,
+        reason:
+          "A narrowed support window may reject older combinations without requiring already-compatible adopters to rebuild.",
+        guide_anchor: "guides/compatibility.md#runtime-line-rules"
+      ),
+      Types.new_action_class_entry(
+        action_class: "native_shell",
+        subject: "iOS or Android shell artifacts and native runtime line",
+        required_action:
+          "Rebuild affected shells, publish the updated runtime line, and rerun generated-shell verification lanes.",
+        rebuild_required: true,
+        reason:
+          "Native code, entitlements, permissions, platform config, and generated shell projects require host shell rebuild verification.",
+        guide_anchor: "guides/native_shell.md#boundary-warnings--rough-edges"
+      ),
+      Types.new_action_class_entry(
+        action_class: "companion_native",
+        subject: "First-party companion bindings or companion-native surfaces",
+        required_action:
+          "Verify companion dependency health, compatibility ranges, and fail-closed fallback posture before widening support.",
+        rebuild_required: true,
+        reason:
+          "Companion-native integrations can carry native binary churn or backend coupling beyond core route metadata.",
+        guide_anchor: "guides/companions.md#support-truth-and-proof-posture"
+      ),
+      Types.new_action_class_entry(
+        action_class: "provider_adapter",
+        subject: "Storefront/provider SDK adapters",
+        required_action:
+          "Keep provider proof advisory until adapter implementation, provider setup, backend reconciliation, docs, and promotion criteria all pass.",
+        rebuild_required: true,
+        reason:
+          "Provider SDK adapters require native/provider setup and cannot be treated as shipped support from seam-only contracts.",
+        guide_anchor: "guides/commerce.md#provider-adapter-defers"
+      )
+    ]
+  end
+
+  defp promotion_rule_entries do
+    [
+      promotion_rule(
+        claim_id: "shell.ios.generated_project",
+        claim_scope: "Generated iOS shell support",
+        current_proof_class: :merge_blocking,
+        promotes_to: :supported,
+        evidence_class: "generated_shell",
+        required_evidence: ["script/verify_generated_ios_shell.sh", "support matrix parity"],
+        minimum_consecutive_passes: 1,
+        freshness_window: "current release branch",
+        failure_budget: "zero merge-blocking failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/native_shell.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: ["diag.shell.verification_required"],
+        demotion_trigger:
+          "Demote to verification_required when generated-shell proof fails or native_runtime_version support narrows."
+      ),
+      promotion_rule(
+        claim_id: "shell.android.generated_project",
+        claim_scope: "Generated Android shell support",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "generated_shell",
+        required_evidence: [
+          "script/verify_generated_android_shell.sh",
+          "Java-enabled BridgeChannel proof"
+        ],
+        minimum_consecutive_passes: 2,
+        freshness_window: "current release branch",
+        failure_budget: "zero merge-blocking failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/native_shell.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: ["diag.shell.verification_required"],
+        demotion_trigger:
+          "Keep or demote to verification_required when Android JVM or generated-shell proof is stale or unavailable."
+      ),
+      promotion_rule(
+        claim_id: "notification_token.provider_snapshot",
+        claim_scope: "Notification token provider snapshot readiness",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_snapshot",
+        required_evidence: [
+          "notification_token capability contract",
+          "provider-tagged snapshot fixtures"
+        ],
+        minimum_consecutive_passes: 2,
+        freshness_window: "current release branch",
+        failure_budget: "zero contract failures",
+        required_platforms: ["ios", "android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/capabilities.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "companion_native",
+        check_ids: ["diag.notification.token_provider_snapshot_only"],
+        demotion_trigger:
+          "Demote when provider snapshot proof is stale, missing, or confused with Chimeway delivery support."
+      ),
+      promotion_rule(
+        claim_id: "auth.sigra.session_authority",
+        claim_scope:
+          "Sigra session-authority route evaluator, handoff contract, step-up ceremony, auth-return boundary, telemetry, and security closeout support",
+        current_proof_class: :merge_blocking,
+        promotes_to: :merge_blocking,
+        evidence_class: "session_authority_handoff_step_up_auth_return_contract",
+        required_evidence: [
+          "auth posture route fixtures",
+          "session authority evaluator proof",
+          "step_up_required denial-code proof",
+          "single-use handoff ticket lifecycle proof",
+          "server-record redemption and audit proof",
+          "server-owned step-up intent lifecycle proof",
+          "shared Plug/LiveView ceremony proof",
+          "OAuth/passkey/native auth-return envelope proof",
+          "host-owned auth-return attempt replay proof",
+          "verified-link-first native return proof",
+          "low-cardinality auth telemetry proof",
+          "security closeout proof"
+        ],
+        minimum_consecutive_passes: 1,
+        freshness_window: "current release branch",
+        failure_budget: "zero contract failures",
+        required_platforms: ["ios", "android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/companions.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "companion_native",
+        check_ids: ["diag.auth.sigra_session_authority"],
+        demotion_trigger:
+          "Demote if route predicates, auth_posture, auth_return route policy, step_up_required/auth.handoff/auth.step_up_intent/auth.return denial codes, auth telemetry metadata, handoff/step-up/auth-return server-record proof, security closeout, or Sigra docs drift from support truth."
+      ),
+      promotion_rule(
+        claim_id: "purchase_intent.provider.storekit",
+        claim_scope: "StoreKit purchase-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: [
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: [
+          "diag.provider.storekit.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
+        demotion_trigger:
+          "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass."
+      ),
+      promotion_rule(
+        claim_id: "restore_intent.provider.storekit",
+        claim_scope: "StoreKit restore-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: [
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["ios"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: [
+          "diag.provider.storekit.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
+        demotion_trigger:
+          "Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass."
+      ),
+      promotion_rule(
+        claim_id: "purchase_intent.provider.play_billing",
+        claim_scope: "Play Billing purchase-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: [
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: [
+          "diag.provider.play_billing.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
+        demotion_trigger:
+          "Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass."
+      ),
+      promotion_rule(
+        claim_id: "restore_intent.provider.play_billing",
+        claim_scope: "Play Billing restore-intent provider adapter",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "provider_adapter",
+        required_evidence: [
+          "deterministic adapter contract proof",
+          "backend reconciliation authority proof",
+          "docs-contract parity proof",
+          "advisory storefront/provider lane evidence"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current adapter release",
+        failure_budget: "zero entitlement-authority failures",
+        required_platforms: ["android"],
+        required_docs_anchors: ["guides/support_matrix.md", "guides/commerce.md"],
+        change_class: "native or companion rebuild required",
+        action_class: "provider_adapter",
+        check_ids: [
+          "diag.provider.play_billing.advisory_proof",
+          "diag.provider.adapter_shipped_seams"
+        ],
+        demotion_trigger:
+          "Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass."
+      )
+    ]
+  end
+
+  defp promotion_rule(attrs), do: Types.new_promotion_rule_entry(attrs)
+
   defp support_entry(target, version, status, opts) do
     Types.new_support_entry(
       target: target,
@@ -580,11 +1103,17 @@ defmodule Crosswake.SupportMatrix do
   defp capability_posture(%Capability{owner: :backend_seam}), do: "backend_seam"
   defp capability_posture(%Capability{}), do: "bounded_bridge"
 
-  defp capability_prerequisites(%Capability{id: "entitlement_snapshot", prerequisites: prerequisites}) do
+  defp capability_prerequisites(%Capability{
+         id: "entitlement_snapshot",
+         prerequisites: prerequisites
+       }) do
     prerequisites ++ ["freshness posture (fresh/stale/unknown) surfaced before access checks"]
   end
 
-  defp capability_prerequisites(%Capability{id: "reconciliation_evidence", prerequisites: prerequisites}) do
+  defp capability_prerequisites(%Capability{
+         id: "reconciliation_evidence",
+         prerequisites: prerequisites
+       }) do
     prerequisites ++ ["pending and awaiting_verification reconciliation states stay non-granting"]
   end
 
@@ -602,7 +1131,10 @@ defmodule Crosswake.SupportMatrix do
 
   defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported
-  defp capability_proof_status(%Capability{proof_class: :merge_blocking}), do: :verification_required
+
+  defp capability_proof_status(%Capability{proof_class: :merge_blocking}),
+    do: :verification_required
+
   defp capability_proof_status(%Capability{proof_class: :advisory}), do: :supported
 
   # D-08 locked display-string mapping for runtime gate state.
@@ -610,7 +1142,10 @@ defmodule Crosswake.SupportMatrix do
   # gate_status regardless of its value (RESEARCH critical pitfall).
   defp gate_state_display(%Crosswake.Companion.State{kill_switch_status: :active}), do: "killed"
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :active}), do: "gated"
-  defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}), do: "rolling_out (#{n}%)"
+
+  defp gate_state_display(%Crosswake.Companion.State{gate_status: {:rolling_out, n}}),
+    do: "rolling_out (#{n}%)"
+
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :inactive}), do: nil
   defp gate_state_display(%Crosswake.Companion.State{gate_status: :unconfigured}), do: nil
 

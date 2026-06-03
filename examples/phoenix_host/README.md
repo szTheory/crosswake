@@ -71,6 +71,69 @@ This lane is backed by `script/verify_phase5_example_hosts.sh` to keep the proof
 
 Only when the changed work falls into `native or companion rebuild required`. README edits and docs-only wording do not imply a rebuild by themselves.
 
+## Optional Chimeway background jobs
+
+Crosswake ships synchronous registry APIs only. Background jobs remain host-owned optional
+recipes that call those synchronous registry functions. No Oban, Quantum, Broadway, or
+scheduler dependency is included in `crosswake` or in this example host.
+
+Workers are host-owned. Crosswake does not claim APNs/FCM delivery assurance,
+route-open authority from notification taps, or managed job scheduling through these APIs.
+
+### Primary: Oban (recommended for durable jobs)
+
+Oban is the idiomatic durable Phoenix background job library. A host team can insert Oban
+jobs inside an `Ecto.Multi` so the job enqueue is atomic with any application write. The
+worker calls the synchronous registry function directly.
+
+Staleness pruning example:
+
+```elixir
+defmodule MyApp.Workers.ChimewayPruneStaleWorker do
+  use Oban.Worker, queue: :chimeway_maintenance
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{}) do
+    stale_before = DateTime.add(DateTime.utc_now(), -7 * 24 * 3600, :second)
+    CrosswakeExample.Chimeway.Registry.prune_stale(stale_before: stale_before)
+    :ok
+  end
+end
+```
+
+Provider feedback handling example:
+
+```elixir
+defmodule MyApp.Workers.ChimewayProviderFeedbackWorker do
+  use Oban.Worker, queue: :chimeway_provider
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{args: %{"feedback" => feedback_attrs}}) do
+    feedback = Crosswake.Companions.Chimeway.Contracts.ProviderFeedback.from_attrs(feedback_attrs)
+    CrosswakeExample.Chimeway.Registry.apply_provider_feedback(feedback)
+    :ok
+  end
+end
+```
+
+These workers are host-owned. They call `CrosswakeExample.Chimeway.Registry.prune_stale/1`
+and `CrosswakeExample.Chimeway.Registry.apply_provider_feedback/2` and do not duplicate
+lifecycle writes or claim delivery authority.
+
+### Secondary: Quantum or cron scheduling (for pruning)
+
+For simple scheduled pruning without Oban, a host team can use Quantum or a cron trigger
+to call `CrosswakeExample.Chimeway.Registry.prune_stale/1` on a schedule. Quantum and cron
+are secondary scheduling alternatives for pruning. They are not recommended for durable
+provider feedback handling because they lack Oban's transactional job enqueue and retry
+guarantees.
+
+### Not recommended in Phase 60: Broadway
+
+Broadway belongs only to future high-volume provider feedback queue ingestion scenarios
+(Kafka, SQS, PubSub, RabbitMQ). Phase 60 ships synchronous registry APIs for typical
+per-request feedback handling. Broadway is out of scope for Phase 60 and this example host.
+
 ## Graduation Rule
 
 Runnable docs-only lanes are not allowed here. Any reclassification from docs-only

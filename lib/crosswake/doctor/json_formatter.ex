@@ -4,20 +4,29 @@ defmodule Crosswake.Doctor.JSONFormatter do
   """
 
   alias Crosswake.Doctor.Check
+  alias Crosswake.Doctor.PublishReadiness
 
   @spec render(map()) :: String.t()
   def render(report) do
-    payload = %{
-      status: Map.get(report, :status) |> Atom.to_string(),
-      support: format_support(Map.get(report, :support, %{})),
-      shells: format_shells(Map.get(report, :shells, %{})),
-      bridge: format_bridge(Map.get(report, :bridge, %{})),
-      offline: format_offline(Map.get(report, :offline, %{})),
-      commerce_summary: format_commerce_summary(Map.get(report, :commerce_summary, %{})),
-      findings: Enum.map(Map.get(report, :findings, []), &check_to_map/1)
-    }
+    payload =
+      %{
+        status: Map.get(report, :status) |> Atom.to_string(),
+        support: format_support(Map.get(report, :support, %{})),
+        shells: format_shells(Map.get(report, :shells, %{})),
+        bridge: format_bridge(Map.get(report, :bridge, %{})),
+        offline: format_offline(Map.get(report, :offline, %{})),
+        commerce_summary: format_commerce_summary(Map.get(report, :commerce_summary, %{})),
+        findings: Enum.map(Map.get(report, :findings, []), &check_to_map/1)
+      }
+      |> maybe_put_publish_readiness(Map.get(report, :publish_readiness))
 
     Jason.encode!(payload, pretty: true)
+  end
+
+  defp maybe_put_publish_readiness(payload, nil), do: payload
+
+  defp maybe_put_publish_readiness(payload, %PublishReadiness.Report{} = report) do
+    Map.put(payload, :publish_readiness, PublishReadiness.to_map(report))
   end
 
   defp format_commerce_summary(summary) when summary in [nil, %{}], do: %{}
@@ -133,8 +142,7 @@ defmodule Crosswake.Doctor.JSONFormatter do
       allowed_commands: Map.get(bridge, :allowed_commands, []),
       denial_reasons: Map.get(bridge, :denial_reasons, []),
       command_posture: Map.get(bridge, :command_posture, []),
-      unsupported_declared_capabilities:
-        Map.get(bridge, :unsupported_declared_capabilities, [])
+      unsupported_declared_capabilities: Map.get(bridge, :unsupported_declared_capabilities, [])
     }
   end
 
@@ -171,13 +179,18 @@ defmodule Crosswake.Doctor.JSONFormatter do
     base =
       cond do
         commerce_check?(check.code, check.check) and detail(check.details, :proof_class) ->
-          Map.put(base, :proof_class, detail(check.details, :proof_class) |> maybe_atom_to_string())
+          Map.put(
+            base,
+            :proof_class,
+            detail(check.details, :proof_class) |> maybe_atom_to_string()
+          )
 
         true ->
           base
       end
 
-    if String.starts_with?(check.code, "commerce.corridor.") and check.check == "commerce_corridor" do
+    if String.starts_with?(check.code, "commerce.corridor.") and
+         check.check == "commerce_corridor" do
       Map.merge(base, %{
         corridor_ref: detail(check.details, :corridor_ref),
         role: detail(check.details, :role) |> maybe_atom_to_string(),

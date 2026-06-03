@@ -1,5 +1,115 @@
 # Project Milestones: Crosswake
 
+## v3.9 Chimeway Notification Seam (Shipped: 2026-06-03)
+
+**Phases completed:** 5 phases, 17 plans, 12 tasks
+
+**Key accomplishments:**
+
+- Chimeway contract-only companion entrypoint with provider-neutral token evidence and backend-owned token binding contracts (TOKN-01/02); raw bridge token evidence redacts into Chimeway contracts and is excluded from telemetry, fixtures, denials, and docs
+- Host-owned Phoenix registry for binding, rotation, logout/session revocation, permission loss, provider invalidation, and staleness pruning via `Ecto.Multi` with safe audit rows and post-commit telemetry (TOKN-03)
+- Notification-open resolver that routes opens through manifest-known route ids, `RouteGate` with `activation_source: :notification`, and Sigra session-authority/step-up reuse — failing closed with stable denial codes for expired/replayed/revoked/route-mismatched/binding-mismatched/unsupported-action/policy-denied opens and no silent fallback (OPEN-01/02/03)
+- Operator truth: doctor, operator inspection, support matrix, fixtures, and guides distinguish token-binding/open-routing readiness from APNs/FCM delivery support, backed by stable low-cardinality telemetry that forbids raw tokens, payloads, route params, and PII (DIAG-01/02)
+- Merge-blocking hermetic proof covering token contracts, binding/revocation lifecycle, open resolution, Sigra route gating, denial sanitization, support/docs parity, and telemetry redaction (PROOF-01)
+- APNs/FCM device delivery, real token issuance, provider credentials, notification-tray behavior, and console metrics kept advisory with explicit promotion criteria; closeout verifies 10/10 requirements mapped and no surface implies first-party push delivery (PROOF-02, REL-01)
+
+**Verification:** Milestone closeout (`.planning/milestones/v3.9-CLOSEOUT.md`) passed all checks — project state, roadmap parity, requirements state, phase verification, SUMMARY frontmatter, thread/seed disposition, release continuity, and support-claim parity all `complete`; validation ledgers `deferred_with_reason`. Closeout enforced by `mix closeout.verify`.
+
+**Known tech debt:** Draft Nyquist VALIDATION.md ledgers for Phases 59, 60, 62, and 63 remain bookkeeping gaps (routed to Phase 64); merge-blocking ExUnit proof and `closeout.verify` cover shipped public support truth.
+
+**Archive:**
+
+- `.planning/milestones/v3.9-ROADMAP.md`
+- `.planning/milestones/v3.9-REQUIREMENTS.md`
+- `.planning/milestones/v3.9-CLOSEOUT.md`
+
+---
+
+## v3.8 Full Sigra Auth and Session Machinery (Shipped: 2026-06-02)
+
+**Phases completed:** 5 phases, 19 plans, 42 tasks
+
+**Key accomplishments:**
+
+- Backend-owned Sigra session authority contract with canonical auth.step_up denial subcodes and sanitized shell details
+- Route-local auth_posture validation and manifest serialization for remembered/cached auth weakening
+- Pure Sigra route-auth evaluator wired into RouteGate with canonical fail-closed denial codes
+- Session-authority auth posture surfaced through doctor, publish readiness, support matrix, and operator inspection
+- Guides, support matrix, release-boundary docs, and proof fixtures now reflect Sigra session-authority route evaluation
+- Pure Sigra handoff contracts with backend-authority projection and canonical auth.handoff denial proof
+- Ecto-backed one-time Sigra handoff tickets with Phoenix.Token locators, atomic redemption, audit evidence, and host-owned session renewal instructions
+- Sigra handoff contract/server-record machinery is now reflected in doctor, support matrix, operator inspection, guides, fixtures, and proof without claiming later auth flows.
+- Pure Sigra step-up intent contracts with backend authority projection requirements and canonical intent denial subcodes
+- Ecto-backed step-up intent issue and one-time consume flow with backend authority projection and host session renewal instructions
+- Shared Sigra ceremony core with Plug and LiveView adapters that fail closed into the same host-issued challenge flow
+- Canonical support and docs truth for shipped Sigra step-up intent plus Plug/LiveView ceremony without auth-return overclaims
+- Provider-neutral route-local auth-return policy and manifest serialization
+- Pure evidence-only auth-return contracts with semantic validation and denial vocabulary
+- Example-host server-record proof for auth-return replay, audit, and backend promotion authority
+- Public and operator truth for shipped auth-return boundaries without provider/device overclaims
+- Stable Sigra auth telemetry and two-axis auth truth now flow through diagnostics, support, operator inspection, and guides.
+- Phase 58 security closeout now has a machine-checkable STRIDE ledger and deterministic security-only verifier gate.
+- Phase 58 now has CI parity for merge-blocking auth closeout proof and advisory provider/device proof.
+
+**Verification:** Milestone audit satisfied 16/16 requirements, 5/5 phases, 10/10 integration checks, and 5/5 E2E flows. Audit evidence included `mix compile --warnings-as-errors`, security-only closeout verification, and 115 focused proof/support/operator/docs tests with 0 failures.
+
+**Known tech debt:** Nyquist validation ledgers for Phases 54-58 remain stale or partial and are tracked in `STATE.md` Deferred Items.
+
+**Archive:**
+
+- `.planning/milestones/v3.8-ROADMAP.md`
+- `.planning/milestones/v3.8-REQUIREMENTS.md`
+- `.planning/milestones/v3.8-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.8-phases/`
+
+---
+
+## v3.7 Commerce Provider Adapters (Shipped: 2026-06-01)
+
+**Phases completed:** 2 phases, 7 plans, 17 tasks
+
+**Key accomplishments:**
+
+- Shipped first-party StoreKit and Play Billing companion seams that normalize provider evidence into backend-owned reconciliation contracts without granting device-local entitlement authority.
+- Added shared provider evidence and purchase/restore result contracts, preserving provider-specific lineage while keeping entitlement truth backend-projected.
+- Wired the example-host paywall through a behaviour-backed storefront adapter contract so the mock remains default and StoreKit/Play Billing provider facades are explicit swap targets.
+- Updated support matrix, operator inspection, doctor readiness, commerce guidance, changelog posture, and proof fixtures so provider seams are shipped while provider/device proof remains advisory.
+- Closed the milestone-audit blocker with tagged LiveView storefront result handling and merge-blocking proof for the configured provider facade path.
+
+**Verification:** Milestone audit passed 3/3 requirements, 2/2 phases, 10/10 integration checks, and 4/4 E2E flows. Phase 48.1 proof ran 69 focused tests with 0 failures.
+
+**Archive:**
+
+- `.planning/milestones/v3.7-ROADMAP.md`
+- `.planning/milestones/v3.7-REQUIREMENTS.md`
+- `.planning/milestones/v3.7-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.7-phases/`
+
+---
+
+## v3.5 First-Party Companions (Shipped: 2026-05-31)
+
+**Phases completed:** 10 phases, 22 plans, 40 tasks
+
+**Key accomplishments:**
+
+- Locked the shared `Crosswake.Companion` seam: six-callback behaviour, typed state, fail-closed optional dependency diagnostics, companion telemetry, and in-tree `lib/crosswake/companions/<name>/` convention.
+- Shipped the Rulestead gating seam end-to-end: route-policy `gated_by`, manifest binding, local-snapshot runtime evaluation, `:gate_denied`/`:kill_switch_active` denials, doctor/support truth, hermetic/advisory proof, and `/gating` mock example.
+- Shipped the Rindle media seam and mock proof: typed upload grant/capture evidence/media object contracts, backend-owned reconciliation, stable idempotency, queued-not-committed semantics, pure-Elixir `/media/proof` lane, and hermetic/advisory proof split.
+- Shipped Sigra contract-only auth truth: backend-owned `AuthContext` and `SessionAuthorityLane`, route predicates (`auth_min_level`, `requires_recent_auth`), fail-closed `:step_up_required` denials, and doctor/support truth without claiming deferred Sigra machinery.
+- Published `guides/companions.md` as the canonical companion guide and locked it with semantic docs-contract tests against live support matrix, denial vocabulary, and doctor findings.
+
+**Verification:** Milestone audit passed 15/15 requirements; Phase 44 focused proof passed 27 tests; Phase 47 guide/proof passed 12 tests; hermetic suite passed 455 tests with 44 excluded.
+
+**Archive:**
+
+- `.planning/milestones/v3.5-ROADMAP.md`
+- `.planning/milestones/v3.5-REQUIREMENTS.md`
+- `.planning/milestones/v3.5-MILESTONE-AUDIT.md`
+- `.planning/milestones/v3.5-phases/`
+
+---
+
 ## v3.4 Commerce Archetype Proof (Shipped: 2026-05-29)
 
 **Phases completed:** 5 phases, 8 plans, 8 tasks

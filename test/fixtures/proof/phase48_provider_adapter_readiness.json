@@ -1,0 +1,49 @@
+{
+  "blocking": false,
+  "category": "provider_adapter_readiness",
+  "claim_scope": "Commerce provider adapter readiness",
+  "code": "diag.provider.adapter_shipped_seams",
+  "details": {
+    "advisory_provider_proof?": true,
+    "deferred": [
+      "revenue_cat"
+    ],
+    "demotion_trigger": "Remain advisory until StoreKit adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass. Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass. Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass.",
+    "native_rebuild_required?": true,
+    "play_billing_check_id": "diag.provider.play_billing.advisory_proof",
+    "promotion_rule_ids": [
+      "purchase_intent.provider.storekit",
+      "restore_intent.provider.storekit",
+      "purchase_intent.provider.play_billing",
+      "restore_intent.provider.play_billing"
+    ],
+    "required_docs_anchors": [
+      "guides/support_matrix.md",
+      "guides/commerce.md"
+    ],
+    "route_ids": [],
+    "setup_required": [
+      "storekit_sandbox_account",
+      "play_billing_license_tester"
+    ],
+    "shipped_seams?": true,
+    "storekit_check_id": "diag.provider.storekit.advisory_proof"
+  },
+  "docs_reference": "guides/commerce.md",
+  "hint": "Keep storefront/provider evidence advisory and route entitlement authority through backend reconciliation.",
+  "id": "provider.adapter_readiness",
+  "message": "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass",
+  "proof_class": "advisory",
+  "rebuild_requirement": {
+    "action_classes": [
+      "provider_adapter"
+    ],
+    "companion_required": false,
+    "native_required": true,
+    "reasons": [
+      "provider SDK proof remains advisory until promotion criteria pass"
+    ]
+  },
+  "result": "verification_required",
+  "severity": "warning"
+}

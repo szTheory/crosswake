@@ -1,4 +1,3 @@
-
 defmodule Crosswake.DoctorTest do
   use ExUnit.Case, async: true
 
@@ -94,10 +93,13 @@ defmodule Crosswake.DoctorTest do
     assert report.support.release_policy.native_runtime_version == "1.0.0"
     assert report.support.release_policy.package_version_truth =~ "Package versions alone"
     assert report.offline.states == Enum.map(Status.states(), &Atom.to_string/1)
+
     assert report.offline.telemetry.metadata_keys ==
              Enum.map(Telemetry.metadata_keys(), &Atom.to_string/1)
+
     assert report.offline.routes["library"]["offline"] == "cached_read_only"
     assert report.offline.routes["study-session"]["sync_seam"] == "study_reviews"
+
     assert report.bridge.denial_reasons |> Enum.sort() ==
              Enum.sort([
                "commerce_corridor",
@@ -106,13 +108,19 @@ defmodule Crosswake.DoctorTest do
                "gate_denied",
                "inactive_route",
                "kill_switch_active",
+               "notification_open_denied",
                "origin_denied",
                "pack_incompatible",
+               "step_up_required",
                "undeclared_capability",
                "unavailable_capability"
              ])
 
-    assert Enum.any?(report.findings, &(&1.check == "shell_activation" and &1.severity == :advisory))
+    assert Enum.any?(
+             report.findings,
+             &(&1.check == "shell_activation" and &1.severity == :advisory)
+           )
+
     assert Enum.any?(report.findings, &(&1.check == "bridge_posture" and &1.severity == :warning))
 
     assert Enum.any?(
@@ -126,10 +134,11 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
-  test "doctor findings are structured and formatter output stays stable when proof hooks pass", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "doctor findings are structured and formatter output stays stable when proof hooks pass",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     ios_proof = write_proof_hook!(target, "ios", 0, "ios proof passed")
     android_proof = write_proof_hook!(target, "android", 0, "android proof passed")
 
@@ -175,7 +184,10 @@ defmodule Crosswake.DoctorTest do
     assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
     assert decoded["support"]["release_policy"]["bridge_protocol_version"] == "1.0.0"
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
-    assert decoded["support"]["release_policy"]["package_version_truth"] =~ "Package versions alone"
+
+    assert decoded["support"]["release_policy"]["package_version_truth"] =~
+             "Package versions alone"
+
     assert decoded["shells"]["ios"]["proof"]["status"] == "supported"
     assert decoded["shells"]["android"]["proof"]["status"] == "supported"
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
@@ -183,6 +195,50 @@ defmodule Crosswake.DoctorTest do
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
     assert "conflict_requires_attention" in decoded["offline"]["states"]
     assert Enum.any?(decoded["findings"], &(&1["severity"] == "advisory"))
+    refute Map.has_key?(decoded, "publish_readiness")
+    refute human =~ "Publish readiness"
+  end
+
+  test "doctor exposes publish readiness only when check_publish? is enabled", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    default_report =
+      Doctor.run(
+        route_source: __MODULE__.CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    assert default_report.publish_readiness == nil
+
+    report =
+      Doctor.run(
+        route_source: __MODULE__.CommerceCorridorRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        check_publish?: true
+      )
+
+    assert report.publish_readiness.schema_version == "1.0.0"
+    assert report.publish_readiness.status == :not_ready
+    assert is_map(report.publish_readiness.summary)
+
+    categories = Enum.map(report.publish_readiness.checks, & &1.category)
+    assert :publish_parity in categories
+    assert :provider_adapter_readiness in categories
+    assert :native_shell_verification_gap in categories
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "diag.provider.adapter_shipped_seams" and
+               finding.check == "provider_adapter_readiness" and
+               finding.message =~ "StoreKit" and finding.message =~ "Play Billing"
+           end)
+
+    assert Enum.any?(report.findings, fn finding ->
+             finding.code == "diag.shell.verification_required" and
+               finding.details.claim_scope == "Native shell verification and rebuild readiness"
+           end)
   end
 
   defmodule CommerceCorridorRouter do
@@ -190,13 +246,14 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -206,21 +263,23 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :missing_subscription_profile, role: :purchase_intent]
           ]
+        )
       end
     end
   end
 
-  test "doctor emits canonical commerce corridor findings and keeps taxonomy parity with support matrix", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "doctor emits canonical commerce corridor findings and keeps taxonomy parity with support matrix",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     report =
       Doctor.run(
         route_source: CommerceCorridorRouter,
@@ -304,12 +363,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/paywall", Crosswake.TestSupport.StudySessionLive,
+        live("/paywall", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "paywall",
             runtime: :live_view,
             commerce: [corridor: :subscription_default, role: :paywall_entry]
           ]
+        )
       end
     end
   end
@@ -319,12 +379,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :native_screen, offline: :unavailable, security: :sensitive do
-        live "/buy", Crosswake.TestSupport.StudySessionLive,
+        live("/buy", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "buy",
             runtime: :native_screen,
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -429,6 +490,7 @@ defmodule Crosswake.DoctorTest do
     assert stale_finding.details[:proof_class] == "merge_blocking"
     assert stale_finding.details[:freshness] == "stale"
     assert report.commerce_summary.snapshot_freshness == :stale
+
     assert "commerce.entitlement.stale_snapshot" in report.commerce_summary.proof_posture.merge_blocking
   end
 
@@ -567,12 +629,13 @@ defmodule Crosswake.DoctorTest do
 
     scope "/" do
       crosswake_defaults runtime: :offline_island, offline: :local_first, security: :standard do
-        live "/violator", Crosswake.TestSupport.StudySessionLive,
+        live("/violator", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "violator",
             island_contract: :violator_v1,
             capabilities: ["background_sync", "generic_plugin_bus"]
           ]
+        )
       end
     end
   end
@@ -589,16 +652,28 @@ defmodule Crosswake.DoctorTest do
       )
 
     assert report.status == :error
-    
-    sync_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "background_sync"))
+
+    sync_finding =
+      Enum.find(
+        report.findings,
+        &(&1.code == "unsupported_capability" and &1.details.capability == "background_sync")
+      )
+
     assert sync_finding
     assert sync_finding.severity == :error
     assert sync_finding.message =~ "requests background_sync which is an explicit v1 boundary"
 
-    plugin_finding = Enum.find(report.findings, &(&1.code == "unsupported_capability" and &1.details.capability == "generic_plugin_bus"))
+    plugin_finding =
+      Enum.find(
+        report.findings,
+        &(&1.code == "unsupported_capability" and &1.details.capability == "generic_plugin_bus")
+      )
+
     assert plugin_finding
     assert plugin_finding.severity == :error
-    assert plugin_finding.message =~ "requests generic_plugin_bus which is an explicit v1 boundary"
+
+    assert plugin_finding.message =~
+             "requests generic_plugin_bus which is an explicit v1 boundary"
   end
 
   # -- Phase 23 Plan 04 Task 3: advisory proof-boundary contract --
@@ -700,12 +775,221 @@ defmodule Crosswake.DoctorTest do
     end
   end
 
+  defmodule GatingIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live("/gated-feature", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "gated_feature",
+            runtime: :live_view,
+            gated_by: :unregistered_companion
+          ]
+        )
+      end
+    end
+  end
+
+  defmodule AuthPredicatedIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live("/auth-secure", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "auth_secure",
+            runtime: :live_view,
+            auth_min_level: :mfa,
+            requires_recent_auth: 600
+          ]
+        )
+      end
+    end
+  end
+
+  test "gating findings surface in formatted Doctor output (human and JSON)", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    # No companions registered — Application.get_env returns [] by default.
+    # A route gated by an unregistered companion produces both findings:
+    #   :advisory "gating.route_gated"          — one per gated route
+    #   :error   "gating.flag_reference_unknown" — companion not in registry
+    report =
+      Doctor.run(
+        route_source: GatingIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    gating_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "gating."))
+
+    assert Enum.any?(
+             gating_findings,
+             &(&1.code == "gating.route_gated" and &1.severity == :advisory)
+           )
+
+    assert Enum.any?(
+             gating_findings,
+             &(&1.code == "gating.flag_reference_unknown" and &1.severity == :error)
+           )
+
+    human = Formatter.render(report)
+    decoded = JSONFormatter.render(report) |> Jason.decode!()
+
+    assert human =~ "gating.route_gated"
+    assert human =~ "gating.flag_reference_unknown"
+
+    finding_codes = Enum.map(decoded["findings"], & &1["code"])
+    assert "gating.route_gated" in finding_codes
+    assert "gating.flag_reference_unknown" in finding_codes
+  end
+
+  test "auth findings surface in formatted Doctor output (human and JSON) without sensitive artifacts",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    report =
+      Doctor.run(
+        route_source: AuthPredicatedIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    auth_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "auth."))
+
+    assert Enum.any?(
+             auth_findings,
+             &(&1.code == "auth.route_predicated" and
+                 &1.details[:route_id] == "auth_secure" and
+                 &1.details[:auth_min_level] == :mfa and
+                 &1.details[:requires_recent_auth] == 600 and
+                 &1.details[:auth_posture] == :strict_recent)
+           )
+
+    assert Enum.any?(auth_findings, &(&1.code == "auth.step_up_required_contract"))
+
+    human = Formatter.render(report)
+    decoded = JSONFormatter.render(report) |> Jason.decode!()
+
+    assert human =~ "auth.route_predicated"
+    assert human =~ "auth.step_up_required_contract"
+    assert human =~ "route_id=auth_secure"
+    assert human =~ "auth_min_level=mfa"
+    assert human =~ "requires_recent_auth=600"
+    assert human =~ "auth_posture=strict_recent"
+
+    json_route_finding =
+      Enum.find(decoded["findings"], fn finding ->
+        finding["code"] == "auth.route_predicated"
+      end)
+
+    assert json_route_finding["details"]["route_id"] == "auth_secure"
+    assert json_route_finding["details"]["auth_min_level"] == "mfa"
+    assert json_route_finding["details"]["requires_recent_auth"] == 600
+    assert json_route_finding["details"]["auth_posture"] == "strict_recent"
+
+    contract_finding =
+      Enum.find(decoded["findings"], &(&1["code"] == "auth.step_up_required_contract"))
+
+    assert contract_finding
+
+    assert contract_finding["details"]["shipped_contracts"] == [
+             "session_authority",
+             "handoff_ticket",
+             "server_record_redemption",
+             "step_up_intent",
+             "plug_liveview_ceremony",
+             "auth_return_boundary",
+             "auth_return_attempt"
+           ]
+
+    assert contract_finding["details"]["handoff"]["authority_source"] == "server_record"
+    assert contract_finding["details"]["step_up"]["status"] == "shipped"
+    assert contract_finding["details"]["auth_return"]["status"] == "shipped"
+    assert "auth.handoff.invalid_ticket" in contract_finding["details"]["denial_codes"]
+    assert "auth.step_up_intent.invalid_intent" in contract_finding["details"]["denial_codes"]
+    assert "handoff_ref" in contract_finding["details"]["safe_detail_keys"]
+    assert "step_up_intent_ref" in contract_finding["details"]["safe_detail_keys"]
+    refute "handoff" in contract_finding["details"]["deferred"]
+    refute "ceremony" in contract_finding["details"]["deferred"]
+
+    sensitive_artifacts = [
+      "session_id",
+      "actor_id",
+      "access_token",
+      "raw_refresh_token",
+      "passkey_credential"
+    ]
+
+    auth_human_lines =
+      human
+      |> String.split("\n")
+      |> Enum.filter(&String.contains?(&1, " auth."))
+      |> Enum.join("\n")
+
+    auth_json_payload =
+      decoded["findings"]
+      |> Enum.filter(&String.starts_with?(&1["code"] || "", "auth."))
+      |> Jason.encode!()
+      |> String.downcase()
+
+    for artifact <- sensitive_artifacts do
+      refute String.contains?(String.downcase(auth_human_lines), artifact)
+      refute String.contains?(auth_json_payload, artifact)
+    end
+  end
+
+  defmodule NotificationIntegrationRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      crosswake_defaults runtime: :live_view, offline: :unavailable, security: :standard do
+        live("/notify", Crosswake.TestSupport.StudySessionLive,
+          crosswake: [
+            id: "notify",
+            runtime: :live_view,
+            capabilities: ["notification_token"],
+            notification_open: true
+          ]
+        )
+      end
+    end
+  end
+
+  test "notification findings surface in formatted Doctor output when configured", %{
+    target: target,
+    install_manifest_path: install_manifest_path
+  } do
+    report =
+      Doctor.run(
+        route_source: NotificationIntegrationRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target
+      )
+
+    notification_findings = Enum.filter(report.findings, &String.starts_with?(&1.code, "notification."))
+
+    assert Enum.any?(
+             notification_findings,
+             &(&1.code == "notification.telemetry_contract" and &1.severity == :advisory)
+           )
+
+    assert Enum.any?(
+             notification_findings,
+             &(&1.code == "notification.delivery_deferred" and &1.severity == :advisory)
+           )
+  end
+
   defp write_shell_artifacts!(target) do
     ios_root = Path.join(target, "native/ios/crosswake_shell")
     android_root = Path.join(target, "native/android/crosswake_shell")
 
     write_file!(Path.join(ios_root, "README.md"), "host-owned scaffold once\n")
-    write_file!(Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"), "PBXNativeTarget\n")
+
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"),
+      "PBXNativeTarget\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/CrosswakeShellApp.swift"),
@@ -745,6 +1029,7 @@ defmodule Crosswake.DoctorTest do
     )
 
     write_file!(Path.join(android_root, "README.md"), "host-owned scaffold once\n")
+
     write_file!(
       Path.join(android_root, "app/build.gradle"),
       "applicationId \"dev.crosswake.shell\"\n"

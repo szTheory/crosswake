@@ -27,4 +27,32 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert example_host =~ "supported example"
     assert example_host =~ "not a separate supported runtime package"
   end
+
+  test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do
+    guide_paths = [
+      "guides/install.md",
+      "guides/native_shell.md",
+      "guides/compatibility.md"
+    ]
+
+    for path <- guide_paths do
+      guide = File.read!(path)
+
+      assert guide =~ "Do I need to rebuild?"
+      assert guide =~ "Promotion rules"
+      assert guide =~ "guides/support_matrix.md#action-classes"
+      assert guide =~ "guides/support_matrix.md#promotion-rules"
+      assert guide =~ "StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only"
+      assert guide =~ "Sigra session-authority route evaluation"
+      assert guide =~ "Phase 55 handoff ticket/server-record contracts"
+      assert guide =~ "Phase 56 step-up intent plus Plug/LiveView ceremony"
+      assert guide =~ "Phase 57 OAuth/passkey/native auth-return boundary contracts"
+      assert guide =~ "Phase 58 telemetry/security closeout are shipped"
+      assert guide =~ "refresh-token helpers"
+      assert guide =~ "native auth UI are deferred"
+      assert guide =~ "notification-token readiness is provider-snapshot only"
+      assert guide =~ "standalone public shell packages are deferred"
+      assert guide =~ "compatibility-window narrowing is distinct from a native rebuild"
+    end
+  end
 end

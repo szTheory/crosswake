@@ -2,7 +2,28 @@ defmodule Crosswake.Doctor.FormatterTest do
   use ExUnit.Case, async: true
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.Formatter
+  alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.SupportMatrix
+
+  defmodule PageController do
+    def init(opts), do: opts
+    def call(conn, _opts), do: conn
+  end
+
+  defmodule ReadinessRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/billing", Elixir.Crosswake.Doctor.FormatterTest.PageController, :billing,
+        crosswake: [
+          id: "billing",
+          runtime: :live_view,
+          security: :sensitive,
+          commerce: [corridor: :subscription_default, role: :purchase_intent]
+        ]
+      )
+    end
+  end
 
   test "formats release policy with structured truth blocks" do
     manifest = %{
@@ -14,7 +35,7 @@ defmodule Crosswake.Doctor.FormatterTest do
       },
       support_matrix: SupportMatrix.canonical()
     }
-    
+
     # We construct the same snapshot map Doctor builds
     snapshot = %{
       crosswake_version: manifest.crosswake_version,
@@ -43,11 +64,11 @@ defmodule Crosswake.Doctor.FormatterTest do
     # Check some basic parts
     assert output =~ "release policy:"
     assert output =~ "crosswake_version=0.1.0"
-    
+
     # Check new blocks
     assert output =~ "capability families:"
     assert output =~ "app_info: prerequisites=" || output =~ "app_info"
-    
+
     assert output =~ "package surfaces:"
     assert output =~ "crosswake` primary package: class=core"
 
@@ -128,7 +149,10 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "prerequisites:"
     assert output =~ "native or companion storefront corridor implemented"
     assert output =~ "proof_posture:"
-    assert output =~ "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+
+    assert output =~
+             "[merge-blocking]: corridor_contract:buy, commerce.entitlement.stale_snapshot"
+
     assert output =~ "[advisory]: provider_storefront:buy"
     assert output =~ "rebuild_requirements:"
     assert output =~ "buy: corridor_ref=subscription_default, role=purchase_intent"
@@ -219,7 +243,8 @@ defmodule Crosswake.Doctor.FormatterTest do
           severity: :warning,
           code: "commerce.corridor.native_rebuild_required",
           check: "commerce_summary",
-          message: "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
+          message:
+            "route buy corridor subscription_default (purchase_intent) requires a native or companion rebuild",
           hint: "rebuild the corridor",
           details: %{
             route_id: "buy",
@@ -234,6 +259,35 @@ defmodule Crosswake.Doctor.FormatterTest do
     output = Formatter.render(report)
 
     assert output =~ "[merge-blocking] commerce_summary (commerce.entitlement.stale_snapshot)"
-    assert output =~ "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
+
+    assert output =~
+             "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
+  end
+
+  test "formats publish readiness as a concise sidecar section ordered by blocking posture" do
+    publish_readiness =
+      PublishReadiness.run(
+        route_source: ReadinessRouter,
+        cwd: File.cwd!(),
+        generated_at: "2026-05-31T00:00:00Z",
+        changelog_contents: "# Changelog\n\n## [0.1.0]\n"
+      )
+
+    output =
+      Formatter.render(%{
+        status: :error,
+        findings: [],
+        publish_readiness: publish_readiness
+      })
+
+    assert output =~ "Publish readiness"
+    assert output =~ "status: not_ready"
+    assert output =~ "diag.publish.changelog_missing_unreleased"
+    assert output =~ "severity=error result=fail blocking=true"
+    assert output =~ "claim_scope=Hex metadata and release/changelog truth"
+    assert output =~ "docs=CHANGELOG.md"
+    assert output =~ "remediation=Keep package metadata"
+    assert output =~ "diag.provider.adapter_shipped_seams"
+    assert output =~ "blocking=false"
   end
 end

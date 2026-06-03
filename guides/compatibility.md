@@ -60,15 +60,25 @@ Use the compatibility axes to describe release impact.
 - Native-code or entitlement change: move to a new `native_runtime_version` line and mark the change as rebuild required.
 - Compatibility-window narrowing: treat it as `compatibility-bump only`, publish the new supported ranges, and keep older combinations fail closed.
 
-## Rebuild Guidance
+## Do I need to rebuild?
 
 Crosswake enforces explicit rebuild guidance to maintain honest support claims and compatibility boundaries:
 
+- **Docs-only changes:** Do not require native rebuilds and should run docs integrity checks.
+- **Core-only/no native rebuild changes:** Update core route/manifest logic and rerun doctor/support proof while the native runtime line stays unchanged.
+- **Compatibility-bump only changes:** Narrow supported ranges and keep older combinations fail-closed without treating the narrowing itself as shell code churn.
 - **Bumping `native_runtime_version`:** Mandates an explicit native rebuild and submission to the app stores.
 - **Bumping `bridge_protocol_version`:** Requires generating and publishing a compatible shell artifact update, followed by an explicit rebuild.
 - **Adding new `companion` packages:** Especially native-backed ones, requires updating the shell project dependencies, adjusting entitlements, and performing an explicit native rebuild and submission.
 
 You cannot bypass these rules with hot code pushes or cached manifests. Changing runtime native dependencies or bridge protocols requires a full native build cycle.
+
+See the canonical action-class table at `guides/support_matrix.md#action-classes`
+and Promotion rules at `guides/support_matrix.md#promotion-rules`.
+
+Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contracts, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 telemetry/security closeout are shipped, refresh-token helpers, provider/device auth proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+
+compatibility-window narrowing is distinct from a native rebuild; it belongs to `compatibility-bump only` when only the accepted version window changes.
 
 ## Runtime Line Rules
 

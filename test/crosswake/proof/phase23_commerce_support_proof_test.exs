@@ -379,15 +379,15 @@ defmodule Crosswake.Proof.Phase23CommerceSupportProofTest do
 
   test "canonical reconciliation flow subsection of guides/commerce.md stays provider-neutral" do
     # The reconciliation flow is the merge-blocking docs surface for the canonical
-    # reconciliation contract. It must stay provider-neutral — provider naming
-    # belongs in the Reviewer And Storefront Playbooks advisory layer, not here.
+    # reconciliation contract. It must stay provider-neutral. The paywall walkthrough
+    # below it may name explicit provider swap targets.
     content = File.read!(@guide_path)
 
     reconciliation_section =
       content
       |> String.split("### The Canonical Reconciliation Flow")
       |> List.last()
-      |> String.split("## Reviewer And Storefront Playbooks")
+      |> String.split("### Paywall Corridor Walkthrough")
       |> hd()
       |> String.downcase()
 

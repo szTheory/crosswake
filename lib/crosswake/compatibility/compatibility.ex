@@ -78,6 +78,7 @@ defmodule Crosswake.Compatibility do
     []
     |> validate_route_presence(route_id, route)
     |> validate_external_entry(route, opts)
+    |> validate_notification_open(route, opts)
     |> validate_manifest_schema(manifest.compatibility, target, route)
     |> validate_bridge_protocol(manifest.compatibility, target, route)
     |> validate_native_runtime(manifest.compatibility, target, route)
@@ -116,6 +117,9 @@ defmodule Crosswake.Compatibility do
 
         :entry ->
           {:external_entry_denied, nil, recovery_for(:external_entry_denied, opts), %{}}
+
+        :notification_open ->
+          {:notification_open_denied, nil, recovery_for(:notification_open_denied, opts), %{}}
 
         :origin ->
           {:origin_denied, nil, %{}, %{}}
@@ -240,6 +244,26 @@ defmodule Crosswake.Compatibility do
           available: route.entry,
           message: "route #{route.id} does not allow external entry",
           hint: "declare entry: :external on the route policy before opening it from an inbound deep link"
+        }
+        | errors
+      ]
+    else
+      errors
+    end
+  end
+
+  defp validate_notification_open(errors, nil, _opts), do: errors
+
+  defp validate_notification_open(errors, %RouteEntry{} = route, opts) do
+    if Keyword.get(opts, :activation_source) == :notification and is_nil(route.notification_open) do
+      [
+        %Finding{
+          axis: :notification_open,
+          route_id: route.id,
+          required: "notification_open: true",
+          available: "nil",
+          message: "route #{route.id} does not allow notification open",
+          hint: "declare notification_open: true on the route policy before opening it from a push notification"
         }
         | errors
       ]
@@ -717,6 +741,20 @@ defmodule Crosswake.Compatibility do
   end
 
   defp recovery_for(:external_entry_denied, opts) do
+    case Keyword.get(opts, :fallback_route_id) do
+      nil ->
+        %{actions: [:retry]}
+
+      fallback_route_id ->
+        %{
+          mode: :safe_fallback,
+          fallback_route_id: fallback_route_id,
+          actions: [:retry, :open_safe_fallback]
+        }
+    end
+  end
+
+  defp recovery_for(:notification_open_denied, opts) do
     case Keyword.get(opts, :fallback_route_id) do
       nil ->
         %{actions: [:retry]}

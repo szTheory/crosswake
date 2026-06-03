@@ -10,6 +10,7 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Doctor.Check
   alias Crosswake.Doctor.FindingPolicy
+  alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.Manifest
   alias Crosswake.Offline.Status, as: OfflineStatus
   alias Crosswake.Offline.Telemetry, as: OfflineTelemetry
@@ -30,6 +31,7 @@ defmodule Crosswake.Doctor do
       offline: %{},
       support: %{},
       commerce_summary: %{},
+      publish_readiness: nil,
       findings: []
     ]
 
@@ -42,6 +44,7 @@ defmodule Crosswake.Doctor do
             offline: map(),
             support: map(),
             commerce_summary: map(),
+            publish_readiness: PublishReadiness.Report.t() | nil,
             findings: [Check.t()]
           }
   end
@@ -75,7 +78,14 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"CrosswakeShell/BridgeChannel.swift",
-         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
+         [
+           "app.info.get",
+           "haptics.impact",
+           "permissions.status",
+           "files.pick",
+           "request",
+           "reply"
+         ]}
       ]
     },
     android: %{
@@ -92,8 +102,7 @@ defmodule Crosswake.Doctor do
       manifest_first: [
         {"app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt",
          ["pack_incompatible", "inactive_route", "external_entry_denied"]},
-        {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
-         ["WebView", "Allowlisted"]},
+        {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt", ["WebView", "Allowlisted"]},
         {"app/src/main/AndroidManifest.xml",
          ["android.intent.category.BROWSABLE", "android.intent.action.VIEW"]}
       ],
@@ -104,7 +113,14 @@ defmodule Crosswake.Doctor do
       ],
       bridge: [
         {"app/src/main/java/dev/crosswake/shell/BridgeChannel.kt",
-         ["app.info.get", "haptics.impact", "permissions.status", "files.pick", "request", "reply"]}
+         [
+           "app.info.get",
+           "haptics.impact",
+           "permissions.status",
+           "files.pick",
+           "request",
+           "reply"
+         ]}
       ]
     }
   }
@@ -129,13 +145,25 @@ defmodule Crosswake.Doctor do
 
     phase_38_findings = phase_38_companion_seam_findings()
     phase_41_findings = phase_41_gating_findings(manifest)
+    phase_46_findings = phase_46_auth_findings(manifest)
+    phase_62_findings = phase_62_notification_findings(manifest)
+    publish_readiness = publish_readiness(manifest, opts, cwd)
+
+    publish_findings =
+      if publish_readiness, do: PublishReadiness.findings(publish_readiness), else: []
 
     findings =
       findings ++
         phase_3_findings ++
         phase_4_findings ++
         phase_10_findings ++
-        phase_19_findings ++ phase_23_findings ++ phase_38_findings ++ phase_41_findings
+        phase_19_findings ++
+        phase_23_findings ++
+        phase_38_findings ++
+        phase_41_findings ++
+        phase_46_findings ++
+        phase_62_findings ++
+        publish_findings
 
     %Report{
       status: if(Enum.any?(findings, &(&1.severity == :error)), do: :error, else: :ok),
@@ -146,8 +174,19 @@ defmodule Crosswake.Doctor do
       offline: offline,
       support: support,
       commerce_summary: commerce_summary,
+      publish_readiness: publish_readiness,
       findings: findings
     }
+  end
+
+  defp publish_readiness(manifest, opts, cwd) do
+    if Keyword.get(opts, :check_publish?) == true do
+      PublishReadiness.run(
+        opts
+        |> Keyword.put(:manifest, manifest)
+        |> Keyword.put(:cwd, cwd)
+      )
+    end
   end
 
   @doc """
@@ -681,6 +720,126 @@ defmodule Crosswake.Doctor do
     end
   end
 
+  defp phase_46_auth_findings(nil), do: []
+
+  defp phase_46_auth_findings(manifest) do
+    routes =
+      manifest.routes
+      |> Map.values()
+      |> Enum.filter(&(not is_nil(&1.auth_min_level) or not is_nil(&1.requires_recent_auth)))
+
+    route_findings =
+      Enum.map(routes, fn route ->
+        check(
+          :advisory,
+          "auth.route_predicated",
+          "auth.#{route.id}",
+          "Route \"#{route.id}\" declares auth predicates auth_min_level=#{route.auth_min_level} requires_recent_auth=#{route.requires_recent_auth} auth_posture=#{route.auth_posture}",
+          "Crosswake enforces fail-closed session-authority evaluation via :step_up_required when predicate checks fail.",
+          %{
+            route_id: route.id,
+            auth_min_level: route.auth_min_level,
+            requires_recent_auth: route.requires_recent_auth,
+            auth_posture: route.auth_posture,
+            fallback: :step_up_required
+          }
+        )
+      end)
+
+    contract_finding =
+      if routes == [] do
+        []
+      else
+        auth_truth = Crosswake.SupportMatrix.auth_contract_truth() |> List.first(%{})
+
+        [
+          check(
+            :advisory,
+            "auth.step_up_required_contract",
+            "auth.contract_posture",
+            "Auth contract surface includes backend session-authority evaluation, shipped Phase 55 handoff contract machinery, shipped Phase 56 step-up intent ceremony, shipped Phase 57 auth-return boundary contracts, stable Phase 58 auth telemetry, and Phase 58 security closeout.",
+            "Session-authority scope: typed AuthContext/SessionAuthorityLane input, explicit auth_posture, route-local auth_return seams, canonical auth.step_up.*, auth.handoff.*, auth.step_up_intent.*, and auth.return.* denial codes, fail-closed :step_up_required denial, backend-owned handoff ticket/server-record redemption proof, server-owned step-up intent plus Plug/LiveView ceremony proof, host-owned auth-return attempt replay proof, low-cardinality auth telemetry, and STRIDE-style security closeout. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.",
+            %{
+              fallback: :step_up_required,
+              posture: :session_authority,
+              shipped_contracts: Map.get(auth_truth, :shipped_contracts, []),
+              handoff: Map.get(auth_truth, :handoff, %{}),
+              step_up: Map.get(auth_truth, :step_up, %{}),
+              auth_return: Map.get(auth_truth, :auth_return, %{}),
+              contract_surface: Map.get(auth_truth, :contract_surface),
+              contract_proof_class: Map.get(auth_truth, :contract_proof_class),
+              route_authority_source: Map.get(auth_truth, :route_authority_source),
+              evidence_authority: Map.get(auth_truth, :evidence_authority, %{}),
+              host_readiness: Map.get(auth_truth, :host_readiness),
+              provider_device_proof: Map.get(auth_truth, :provider_device_proof),
+              telemetry:
+                auth_truth
+                |> Map.get(:telemetry, %{})
+                |> Map.drop([:forbidden_metadata_keys]),
+              security_closeout: Map.get(auth_truth, :security_closeout, %{}),
+              denial_codes:
+                Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
+              safe_detail_keys:
+                Map.get(
+                  auth_truth,
+                  :safe_detail_keys,
+                  Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys()
+                ),
+              deferred: Map.get(auth_truth, :deferred, [])
+            }
+          )
+        ]
+      end
+
+    route_findings ++ contract_finding
+  end
+
+  defp phase_62_notification_findings(nil), do: []
+
+  defp phase_62_notification_findings(manifest) do
+    routes = manifest.routes |> Map.values()
+    capabilities = Map.keys(manifest.capability_registry || %{})
+    
+    has_notifications? = Enum.any?(routes, fn route ->
+      "notification_token" in route.capabilities or route.notification_open == true
+    end) or "notification_token" in capabilities
+
+    if has_notifications? do
+      truth = SupportMatrix.notification_support_truth() |> List.first(%{})
+      telemetry = Map.get(truth, :telemetry, %{})
+      
+      [
+        check(
+          :advisory,
+          "notification.telemetry_contract",
+          "notification_posture",
+          "Crosswake notifications expose strict telemetry for diagnostics. Raw APNs/FCM payloads, device tokens, and PII are forbidden.",
+          "Check chimeway telemetry events for delivery status. Do not attempt to log raw push tokens.",
+          %{
+            event_names: Map.get(telemetry, :event_names, []),
+            metadata_keys: Map.get(telemetry, :metadata_keys, []),
+            forbidden_metadata_keys: Map.get(telemetry, :forbidden_metadata_keys, []),
+            authority_source: Map.get(telemetry, :authority_source),
+            proof_class: Map.get(telemetry, :proof_class)
+          }
+        ),
+        check(
+          :advisory,
+          "notification.delivery_deferred",
+          "notification_posture",
+          Map.get(truth, :posture, ""),
+          "Use the local notification_token capability to read push tokens. Do not expect Crosswake to deliver remote push notifications to APNs or FCM; delivery execution remains deferred.",
+          %{
+            delivery_supported: Map.get(truth, :delivery_supported, false),
+            deferred: Map.get(truth, :deferred, [])
+          }
+        )
+      ]
+    else
+      []
+    end
+  end
+
   defp phase_23_commerce_summary(nil, _opts) do
     {%{
        corridors: [],
@@ -705,13 +864,19 @@ defmodule Crosswake.Doctor do
     prerequisites = commerce_prerequisites_summary(commerce_routes, corridor_entries_by_role)
 
     snapshot_freshness =
-      commerce_snapshot_freshness(commerce_routes, Keyword.get(opts, :entitlement_snapshot_freshness))
+      commerce_snapshot_freshness(
+        commerce_routes,
+        Keyword.get(opts, :entitlement_snapshot_freshness)
+      )
 
-    rebuild_requirements = commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role)
+    rebuild_requirements =
+      commerce_rebuild_requirements(commerce_routes, corridor_entries_by_role)
 
     stale_findings = stale_snapshot_findings(commerce_routes, snapshot_freshness)
     rebuild_findings = native_rebuild_findings(rebuild_requirements, opts)
-    unknown_role_findings = unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role)
+
+    unknown_role_findings =
+      unknown_corridor_role_findings(commerce_routes, corridor_entries_by_role)
 
     extra_findings = stale_findings ++ rebuild_findings ++ unknown_role_findings
 
@@ -1027,8 +1192,7 @@ defmodule Crosswake.Doctor do
       manifest_schema_version: compatibility.manifest_schema_version,
       bridge_protocol_version: compatibility.bridge_protocol_version,
       native_runtime_version: compatibility.native_runtime_version,
-      package_version_truth:
-        "Package versions alone do not determine support truth.",
+      package_version_truth: "Package versions alone do not determine support truth.",
       companion_requirement:
         "Future companions must declare minimum compatible ranges for core, manifest_schema_version, bridge_protocol_version, native_runtime_version, and exposed capability-family majors.",
       capability_families: support_matrix.capability_families,

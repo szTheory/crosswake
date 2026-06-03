@@ -104,11 +104,21 @@ defmodule Crosswake.Planning.SummaryFrontmatterTest do
   # Matches both checked [ ] and unchecked [x]/[X] bullets so the test does not
   # couple to completion status — only to existence of the requirement ID.
   defp parse_requirement_ids_from_requirements_md do
-    @requirements_path
-    |> File.read!()
-    |> then(fn content ->
-      Regex.scan(~r/- \[[xX ]\] \*\*([A-Z]+-\d+)\*\*/, content)
-      |> Enum.map(fn [_, id] -> id end)
-    end)
+    Regex.scan(~r/- \[[xX ]\] \*\*([A-Z]+-\d+)\*\*/, requirements_content())
+    |> Enum.map(fn [_, id] -> id end)
+  end
+
+  # The live REQUIREMENTS.md is intentionally removed between milestones
+  # (recreated for the next milestone via /gsd:new-milestone). When it is
+  # absent, fall back to the archived per-milestone snapshots so historical
+  # requirement IDs remain known and this parity check survives the interlude.
+  defp requirements_content do
+    if File.exists?(@requirements_path) do
+      File.read!(@requirements_path)
+    else
+      Path.join(File.cwd!(), ".planning/milestones/*-REQUIREMENTS.md")
+      |> Path.wildcard()
+      |> Enum.map_join("\n", &File.read!/1)
+    end
   end
 end

@@ -1,0 +1,51 @@
+name: Phase 41 Proof
+
+# Phase 41 closes the gating doctor and support matrix truth proof posture for v3.5.
+#
+# This workflow proves:
+#   SC#1 — Doctor.run/1 emits dedicated gating category findings per route
+#           (:advisory gating.route_gated, :error gating.flag_reference_unknown,
+#            :warning gating.fallback_route_unknown)
+#   SC#2 — SupportMatrix.gating_truth/0 maps companion gate state to D-08 locked
+#           display strings (gated / rolling_out / killed) with kill-switch precedence
+#   Formatter integration — gating findings surface in human and JSON formatted output
+#
+# All proof steps are hermetic: no network, no simulator, no provider SDK, no device.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  merge-blocking-gating-proof:
+    name: merge-blocking gating doctor and support matrix proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 41 proof (SC#1 + SC#2)
+        run: mix test test/crosswake/proof/phase41_gating_doctor_test.exs
+
+      - name: Run full suite including gating formatter integration test
+        # Broad hermetic run: excludes only requires_example_host-tagged tests.
+        # Picks up the new gating formatter integration test in doctor_test.exs
+        # alongside all existing proof lanes. No network, no simulator, no device.
+        run: mix test --exclude requires_example_host

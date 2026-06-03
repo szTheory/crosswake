@@ -6,6 +6,7 @@ defmodule Crosswake.Compatibility.RouteGate do
   alias Crosswake.Compatibility
   alias Crosswake.Compatibility.Finding
   alias Crosswake.Compatibility.Target
+  alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Shell.Denial
@@ -36,6 +37,8 @@ defmodule Crosswake.Compatibility.RouteGate do
     # Gate evaluation produces Denial.t() directly (bypasses finding_to_denial/2)
     gate_denials = prepend_gate_evaluation_findings([], route, target)
 
+    auth_denials = prepend_auth_evaluation_denials([], route, opts, gate_denials)
+
     findings =
       manifest
       |> Compatibility.route_findings(route_id, target, opts)
@@ -43,10 +46,13 @@ defmodule Crosswake.Compatibility.RouteGate do
       |> prepend_commerce_corridor_findings(route, manifest)
 
     compatibility_denials =
-      Enum.map(findings, &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id)))
+      Enum.map(
+        findings,
+        &Compatibility.finding_to_denial(&1, Keyword.put(opts, :route_id, route_id))
+      )
 
     # Gate denials prepend before compatibility denials (fail-closed: gate fires first)
-    denials = gate_denials ++ compatibility_denials
+    denials = gate_denials ++ auth_denials ++ compatibility_denials
     status = if(denials == [], do: :allow, else: :deny)
 
     %Decision{
@@ -168,6 +174,18 @@ defmodule Crosswake.Compatibility.RouteGate do
     end)
   end
 
+  defp prepend_auth_evaluation_denials(acc, _route, _opts, gate_denials) when gate_denials != [],
+    do: acc
+
+  defp prepend_auth_evaluation_denials(acc, nil, _opts, _gate_denials), do: acc
+
+  defp prepend_auth_evaluation_denials(acc, %RouteEntry{} = route, opts, _gate_denials) do
+    case Evaluator.evaluate_route_auth(route, Keyword.get(opts, :auth_context), opts) do
+      {:allow, _result} -> acc
+      {:deny, denial} -> [denial | acc]
+    end
+  end
+
   defp prepend_commerce_corridor_findings(findings, %RouteEntry{} = route, %Root{} = manifest) do
     generated =
       []
@@ -217,7 +235,8 @@ defmodule Crosswake.Compatibility.RouteGate do
         required: corridor_ref,
         available: route.commerce.role,
         subject: corridor_ref,
-        message: "route #{route.id} declares undeclared commerce corridor #{inspect(corridor_ref)}",
+        message:
+          "route #{route.id} declares undeclared commerce corridor #{inspect(corridor_ref)}",
         hint: "declare the corridor profile or disable commerce for this route"
       }
     end
@@ -228,7 +247,8 @@ defmodule Crosswake.Compatibility.RouteGate do
   defp commerce_corridor_runtime_incompatible(%RouteEntry{} = route, %Root{} = manifest) do
     with corridor_ref when is_binary(corridor_ref) <- route.commerce.corridor_ref,
          corridor when not is_nil(corridor) <- Map.get(manifest.commerce_corridors, corridor_ref),
-         ownership when not is_nil(ownership) <- Map.get(corridor.role_ownership, route.commerce.role),
+         ownership when not is_nil(ownership) <-
+           Map.get(corridor.role_ownership, route.commerce.role),
          true <- ownership == :native_or_companion_required and route.runtime != :native_screen do
       %Finding{
         axis: :commerce_corridor_runtime_incompatible,
@@ -258,7 +278,8 @@ defmodule Crosswake.Compatibility.RouteGate do
           %Finding{
             axis: :commerce_corridor_policy_blocked,
             route_id: route.id,
-            required: corridor.role_ownership |> Map.keys() |> Enum.map_join(", ", &Atom.to_string/1),
+            required:
+              corridor.role_ownership |> Map.keys() |> Enum.map_join(", ", &Atom.to_string/1),
             available: role,
             subject: corridor_ref,
             message:

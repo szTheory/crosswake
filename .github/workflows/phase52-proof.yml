@@ -1,0 +1,121 @@
+name: Phase 52 Proof
+
+permissions:
+  contents: read
+
+# Phase 52 introduces a dedicated operator-proof workflow with two explicit
+# lanes:
+#
+#   - merge-blocking-operator-proof: hermetic, deterministic, and required for
+#     merge-driving events.
+#   - advisory-operator-proof: informational visibility for optional-dependency
+#     proof files on schedule/manual events only.
+#
+# This split keeps merge gates tied to the same focused local command
+# maintainers run by hand while preserving visibility for env-sensitive checks.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Proof lane to run"
+        required: true
+        default: merge-blocking
+        type: choice
+        options:
+          - merge-blocking
+          - advisory
+          - all
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-operator-proof:
+    # Required branch-check lane for v3.6 operator truth. This lane is the same
+    # local command maintainers run by hand and must remain hermetic:
+    # `mix test test/crosswake/proof/phase52_operator_truth_test.exs`. It runs
+    # on merge-driving events and on manual dispatch only when the operator
+    # chooses the merge-blocking lane.
+    name: merge-blocking operator proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run milestone closeout verification
+        run: mix closeout.verify
+
+      - name: Run hermetic Phase 52 operator proof
+        run: mix test test/crosswake/proof/phase52_operator_truth_test.exs
+
+  advisory-operator-proof:
+    # Advisory visibility only. Runs on schedule and on manual dispatch only
+    # when the operator chooses the advisory lane, never on pull_request or
+    # push, and cannot gate merge. This job intentionally reuses existing
+    # optional-dependency advisory proofs as presentation-layer signal; it is
+    # not a new support contract and does not promote deferred provider, auth,
+    # notification-delivery, or standalone shell-package claims.
+    #
+    # In particular, this job does NOT imply StoreKit or Play Billing adapters
+    # have shipped, does NOT imply Chimeway delivery support, does NOT imply
+    # full Sigra machinery, and does NOT imply standalone public shell packages
+    # are supported in v3.6.
+    name: advisory operator proof (optional dependency visibility only)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'advisory' || inputs.lane == 'all')) }}
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile base project (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run advisory rulestead proof
+        run: mix test test/crosswake/proof/phase43_rulestead_advisory_test.exs
+        env:
+          MIX_INCLUDE_RULESTEAD: "1"
+
+      - name: Run advisory rindle proof
+        run: mix test test/crosswake/proof/phase45_rindle_advisory_test.exs
+        env:
+          MIX_INCLUDE_RINDLE: "1"
+
+      - name: Advisory lane status summary
+        run: |
+          echo "::notice title=Advisory lane::This lane is advisory only and"
+          echo "::notice::cannot gate merge. Failures here do NOT promote or"
+          echo "::notice::retract merge-blocking Phase 52 operator truth."
+          echo "::notice::It does not imply StoreKit, Play Billing, Chimeway"
+          echo "::notice::delivery, full Sigra machinery, or standalone public"
+          echo "::notice::shell packages have shipped."

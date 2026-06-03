@@ -1,0 +1,85 @@
+name: Phase 58 Proof
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Proof lane to run"
+        required: true
+        default: merge-blocking
+        type: choice
+        options:
+          - merge-blocking
+          - advisory
+          - all
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-auth-closeout-proof:
+    name: merge-blocking auth closeout proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 25
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run closeout verification with Phase 58 security artifact
+        run: mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md
+
+      - name: Run layered Sigra auth proof
+        run: |
+          mix test --exclude requires_example_host \
+            test/crosswake/proof/phase54_sigra_session_authority_test.exs \
+            test/crosswake/proof/phase55_session_handoff_tickets_test.exs \
+            test/crosswake/proof/phase56_step_up_ceremony_test.exs \
+            test/crosswake/proof/phase57_auth_return_boundaries_test.exs \
+            test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs
+
+      - name: Run Sigra diagnostics parity tests
+        run: |
+          mix test \
+            test/crosswake/companions/sigra/telemetry_test.exs \
+            test/crosswake/support_matrix/support_matrix_test.exs \
+            test/crosswake/operator_inspection/operator_inspection_test.exs \
+            test/crosswake/doctor/doctor_test.exs \
+            test/crosswake/doctor/publish_readiness_test.exs \
+            test/crosswake/guides/companions_test.exs \
+            test/mix/tasks/closeout_verify_test.exs
+
+  advisory-auth-provider-device-proof:
+    name: advisory auth provider/device proof (non-promoting)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'advisory' || inputs.lane == 'all')) }}
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Report advisory posture
+        run: |
+          echo "Phase 58 advisory lane only."
+          echo "Provider/device OAuth, passkey, verified-link, native auth UI, refresh-token, and shell/WebView token-authority proof are not merge-blocking support claims."

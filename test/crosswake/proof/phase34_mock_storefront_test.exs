@@ -1,5 +1,6 @@
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
+Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex", __DIR__)
 Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
 
 defmodule Crosswake.Proof.Phase34MockStorefrontTest do
@@ -63,14 +64,14 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   describe "simulate_purchase/2" do
     test "returns a raw ReconciliationEvidence struct (no {:ok, _} wrapper)" do
       intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      result = MockStorefront.simulate_purchase(intent)
+      result = MockStorefront.simulate_purchase(intent, [])
 
       assert %Contracts.ReconciliationEvidence{} = result
     end
 
     test "returns correct source, provider, event_kind" do
       intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      evidence = MockStorefront.simulate_purchase(intent)
+      evidence = MockStorefront.simulate_purchase(intent, [])
 
       assert evidence.source == :storefront
       assert evidence.provider == "mock"
@@ -79,14 +80,14 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
 
     test "derives provider_reference from entry_id" do
       intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      evidence = MockStorefront.simulate_purchase(intent)
+      evidence = MockStorefront.simulate_purchase(intent, [])
 
       assert evidence.provider_reference == "mock_txn_sub_pro_monthly"
     end
 
     test "derives evidence_ref from entry_id and event_kind" do
       intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      evidence = MockStorefront.simulate_purchase(intent)
+      evidence = MockStorefront.simulate_purchase(intent, [])
 
       assert evidence.evidence_ref == "mock_evt_sub_pro_monthly_purchase"
     end
@@ -95,8 +96,8 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       intent1 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
       intent2 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c2_different"}
 
-      ev1 = MockStorefront.simulate_purchase(intent1)
-      ev2 = MockStorefront.simulate_purchase(intent2)
+      ev1 = MockStorefront.simulate_purchase(intent1, [])
+      ev2 = MockStorefront.simulate_purchase(intent2, [])
 
       assert ev1.provider_reference == ev2.provider_reference
       assert ev1.evidence_ref == ev2.evidence_ref
@@ -106,15 +107,15 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       intent_a = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
       intent_b = %Contracts.PurchaseIntent{entry_id: "sub_pro_annual", correlation_id: "c1"}
 
-      ev_a = MockStorefront.simulate_purchase(intent_a)
-      ev_b = MockStorefront.simulate_purchase(intent_b)
+      ev_a = MockStorefront.simulate_purchase(intent_a, [])
+      ev_b = MockStorefront.simulate_purchase(intent_b, [])
 
       refute ev_a.provider_reference == ev_b.provider_reference
     end
 
     test "captured_at defaults to a non-nil ISO 8601 string when not provided" do
       intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
-      evidence = MockStorefront.simulate_purchase(intent)
+      evidence = MockStorefront.simulate_purchase(intent, [])
 
       assert is_binary(evidence.captured_at)
       assert String.length(evidence.captured_at) > 0
@@ -133,14 +134,14 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
   describe "simulate_restore/2" do
     test "returns a raw ReconciliationEvidence struct (no {:ok, _} wrapper)" do
       intent = %Contracts.RestoreIntent{correlation_id: "whatever"}
-      result = MockStorefront.simulate_restore(intent)
+      result = MockStorefront.simulate_restore(intent, [])
 
       assert %Contracts.ReconciliationEvidence{} = result
     end
 
     test "returns correct source, provider, event_kind" do
       intent = %Contracts.RestoreIntent{correlation_id: "whatever"}
-      evidence = MockStorefront.simulate_restore(intent)
+      evidence = MockStorefront.simulate_restore(intent, [])
 
       assert evidence.source == :storefront
       assert evidence.provider == "mock"
@@ -151,8 +152,8 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       intent1 = %Contracts.RestoreIntent{correlation_id: "c1"}
       intent2 = %Contracts.RestoreIntent{correlation_id: "completely_different"}
 
-      ev1 = MockStorefront.simulate_restore(intent1)
-      ev2 = MockStorefront.simulate_restore(intent2)
+      ev1 = MockStorefront.simulate_restore(intent1, [])
+      ev2 = MockStorefront.simulate_restore(intent2, [])
 
       assert ev1.provider_reference == "mock_txn_sub_pro_monthly"
       assert ev1.provider_reference == ev2.provider_reference
@@ -160,7 +161,7 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
 
     test "evidence_ref is anchored on @subscription_entry_id and event_kind restore" do
       intent = %Contracts.RestoreIntent{correlation_id: "whatever"}
-      evidence = MockStorefront.simulate_restore(intent)
+      evidence = MockStorefront.simulate_restore(intent, [])
 
       assert evidence.evidence_ref == "mock_evt_sub_pro_monthly_restore"
     end
@@ -169,15 +170,15 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       purchase_intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
       restore_intent = %Contracts.RestoreIntent{correlation_id: "c2"}
 
-      purchase_ev = MockStorefront.simulate_purchase(purchase_intent)
-      restore_ev = MockStorefront.simulate_restore(restore_intent)
+      purchase_ev = MockStorefront.simulate_purchase(purchase_intent, [])
+      restore_ev = MockStorefront.simulate_restore(restore_intent, [])
 
       assert purchase_ev.provider_reference == restore_ev.provider_reference
     end
 
     test "captured_at defaults to a non-nil ISO 8601 string when not provided" do
       intent = %Contracts.RestoreIntent{correlation_id: "whatever"}
-      evidence = MockStorefront.simulate_restore(intent)
+      evidence = MockStorefront.simulate_restore(intent, [])
 
       assert is_binary(evidence.captured_at)
       assert String.length(evidence.captured_at) > 0
@@ -198,8 +199,8 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       intent1 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
       intent2 = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c2"}
 
-      ev1 = MockStorefront.simulate_purchase(intent1)
-      ev2 = MockStorefront.simulate_purchase(intent2)
+      ev1 = MockStorefront.simulate_purchase(intent1, [])
+      ev2 = MockStorefront.simulate_purchase(intent2, [])
 
       assert {:ok, first} = ReconciliationInbox.ingest_evidence(ev1, correlation_id: "c1")
 
@@ -217,8 +218,8 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       intent_a = %Contracts.PurchaseIntent{entry_id: "entry_a", correlation_id: "c1"}
       intent_b = %Contracts.PurchaseIntent{entry_id: "entry_b", correlation_id: "c2"}
 
-      ev_a = MockStorefront.simulate_purchase(intent_a)
-      ev_b = MockStorefront.simulate_purchase(intent_b)
+      ev_a = MockStorefront.simulate_purchase(intent_a, [])
+      ev_b = MockStorefront.simulate_purchase(intent_b, [])
 
       assert {:ok, a} = ReconciliationInbox.ingest_evidence(ev_a)
 
@@ -233,8 +234,8 @@ defmodule Crosswake.Proof.Phase34MockStorefrontTest do
       purchase_intent = %Contracts.PurchaseIntent{entry_id: "sub_pro_monthly", correlation_id: "c1"}
       restore_intent = %Contracts.RestoreIntent{correlation_id: "c2"}
 
-      purchase_ev = MockStorefront.simulate_purchase(purchase_intent)
-      restore_ev = MockStorefront.simulate_restore(restore_intent)
+      purchase_ev = MockStorefront.simulate_purchase(purchase_intent, [])
+      restore_ev = MockStorefront.simulate_restore(restore_intent, [])
 
       assert {:ok, p} = ReconciliationInbox.ingest_evidence(purchase_ev)
       assert {:ok, r} = ReconciliationInbox.ingest_evidence(restore_ev)

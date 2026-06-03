@@ -6,6 +6,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
 
   @group_id "sub_pro_monthly"
   @dev_mode Mix.env() == :dev
+  @default_storefront_adapter MockStorefront
 
   @impl true
   def mount(_params, _session, socket) do
@@ -28,22 +29,31 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_purchase(intent)
+    case storefront_adapter().simulate_purchase(intent) do
+      {:ok, evidence} ->
+        case ReconciliationInbox.ingest_evidence(evidence) do
+          {:ok, _attempt} ->
+            Phoenix.PubSub.broadcast(
+              CrosswakeExample.PubSub,
+              "entitlement:" <> @group_id,
+              {:entitlement_update, :pending}
+            )
 
-    case ReconciliationInbox.ingest_evidence(evidence) do
-      {:ok, _attempt} ->
-        Phoenix.PubSub.broadcast(
-          CrosswakeExample.PubSub,
-          "entitlement:" <> @group_id,
-          {:entitlement_update, :pending}
-        )
+            Task.start(fn ->
+              :timer.sleep(1_500)
+              MockBackend.verify_and_broadcast(evidence, @group_id)
+            end)
 
-        Task.start(fn ->
-          :timer.sleep(1_500)
-          MockBackend.verify_and_broadcast(evidence, @group_id)
-        end)
+            {:noreply, socket}
 
-        {:noreply, socket}
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Something went wrong submitting your purchase. Please try again."
+             )}
+        end
 
       {:error, _reason} ->
         {:noreply,
@@ -61,29 +71,38 @@ defmodule CrosswakeExample.PaywallEntryLive do
       correlation_id: Ecto.UUID.generate()
     }
 
-    evidence = MockStorefront.simulate_restore(intent)
+    case storefront_adapter().simulate_restore(intent) do
+      {:ok, evidence} ->
+        case ReconciliationInbox.ingest_evidence(evidence) do
+          {:ok, _attempt} ->
+            Phoenix.PubSub.broadcast(
+              CrosswakeExample.PubSub,
+              "entitlement:" <> @group_id,
+              {:entitlement_update, :pending}
+            )
 
-    case ReconciliationInbox.ingest_evidence(evidence) do
-      {:ok, _attempt} ->
-        Phoenix.PubSub.broadcast(
-          CrosswakeExample.PubSub,
-          "entitlement:" <> @group_id,
-          {:entitlement_update, :pending}
-        )
+            Task.start(fn ->
+              :timer.sleep(1_500)
+              MockBackend.verify_and_broadcast(evidence, @group_id)
+            end)
 
-        Task.start(fn ->
-          :timer.sleep(1_500)
-          MockBackend.verify_and_broadcast(evidence, @group_id)
-        end)
+            {:noreply, socket}
 
-        {:noreply, socket}
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Something went wrong submitting your restore. Please try again."
+             )}
+        end
 
       {:error, _reason} ->
         {:noreply,
          put_flash(
            socket,
            :error,
-           "Something went wrong submitting your purchase. Please try again."
+           "Something went wrong submitting your restore. Please try again."
          )}
     end
   end
@@ -343,5 +362,11 @@ defmodule CrosswakeExample.PaywallEntryLive do
         "Priority support"
       ]
     }
+  end
+
+  # Default remains the pure mock storefront corridor; swap via:
+  # config :crosswake_example, :paywall_storefront_adapter, YourAdapterModule
+  defp storefront_adapter do
+    Application.get_env(:crosswake_example, :paywall_storefront_adapter, @default_storefront_adapter)
   end
 end

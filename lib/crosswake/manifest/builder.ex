@@ -50,6 +50,7 @@ defmodule Crosswake.Manifest.Builder do
 
     compatibility = Keyword.get(opts, :compatibility, Types.new_compatibility())
     commerce_corridors = commerce_corridor_registry(routes)
+
     support_matrix =
       Keyword.get(
         opts,
@@ -135,8 +136,13 @@ defmodule Crosswake.Manifest.Builder do
           security: route.security,
           allowlisted_origins: [origin],
           gated_by: route.gated_by,
-          on_unavailable: route.on_unavailable
-        )
+          on_unavailable: route.on_unavailable,
+          auth_min_level: route.auth_min_level,
+          requires_recent_auth: route.requires_recent_auth,
+          auth_posture: route.auth_posture,
+          auth_return: route_auth_return(route),
+          notification_open: route.notification_open
+          )
 
       {route.id, entry}
     end)
@@ -214,6 +220,26 @@ defmodule Crosswake.Manifest.Builder do
   end
 
   defp route_commerce(_route), do: nil
+
+  defp route_auth_return(%Route{auth_return: nil}), do: nil
+
+  defp route_auth_return(%Route{
+         auth_return: %{
+           kind: kind,
+           transport: transport,
+           return_route_id: return_route_id,
+           validates: validates
+         }
+       }) do
+    Types.new_route_auth_return(
+      kind: kind,
+      transport: transport,
+      return_route_id: return_route_id,
+      validates: validates
+    )
+  end
+
+  defp route_auth_return(_route), do: nil
 
   defp capability_catalog do
     [
@@ -458,7 +484,11 @@ defmodule Crosswake.Manifest.Builder do
 
   defp island_contract(%Route{island_contract: nil}), do: nil
 
-  defp island_contract(%Route{id: route_id, island_contract: contract_id, sync: [sync_seam | _rest]}) do
+  defp island_contract(%Route{
+         id: route_id,
+         island_contract: contract_id,
+         sync: [sync_seam | _rest]
+       }) do
     contract_id
     |> Contracts.new_study_session_island(route_id: route_id, sync_seam: sync_seam)
     |> Contracts.island_contract()

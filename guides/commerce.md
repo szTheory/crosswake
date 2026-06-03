@@ -116,7 +116,7 @@ This reconciliation walkthrough is `example/docs-only` and companion-ready. It i
 
 ### Paywall Corridor Walkthrough
 
-This walkthrough uses `provider: "mock"`. The example host ships a pure mock storefront with no native provider SDK dependency — no storefront adapter code is shipped in this example corridor. See `## Rough Edges And Non-Claims` for the explicit non-claims, including which adapters are not shipped.
+This walkthrough uses `provider: "mock"`. The example host ships `CrosswakeExample.Commerce.MockStorefront` as the default pure-Elixir storefront adapter with no native provider SDK dependency. `CrosswakeExample.Commerce.ProviderAdapterStorefront` is the explicit provider swap target when host config sets `config :crosswake_example, :paywall_storefront_adapter, CrosswakeExample.Commerce.ProviderAdapterStorefront` and `config :crosswake_example, :paywall_storefront_provider, :storekit | :play_billing`. StoreKit and Play Billing adapter seams emit reconciliation evidence only; backend projection grants entitlement authority.
 
 The following six steps trace the paywall corridor end-to-end through the example host code. Each step names the relevant module and function with its relative file path. No code is copied here — consult the linked source files directly.
 
@@ -169,6 +169,11 @@ When commerce capabilities are unavailable, undeclared, or missing evidence, the
 >
 > Everything in this layer is **advisory**. Reviewer notes, storefront sandbox setup, and provider-specific steps are NOT core support truth. They are copy-and-customize templates for adopters preparing App Store / Play Store submissions and they describe expected behavior of host apps that integrate Crosswake — they do not assert that Crosswake itself ships any storefront adapter. Advisory checks cannot redefine core support truth and advisory lanes are not core support truth.
 
+StoreKit and Play Billing adapter seams ship as reconciliation evidence emitters only.
+backend projection grants entitlement authority.
+provider/device sandbox proof remains advisory unless promotion criteria pass.
+Restore is first-class for both StoreKit and Play Billing.
+
 ### How To Use These Templates
 
 Adopters copy these templates into their own reviewer notes, replace placeholders with real sandbox accounts and reconciliation endpoints, and submit the resulting notes to App Store or Play Store reviewers. Crosswake intentionally publishes provider-neutral templates so adopters can pin them to whichever storefront adapter (StoreKit, Play Billing, or future companion adapters) their host app ships. Each template row declares `owner`, `proof_class`, `failure_posture`, and `rebuild_requirement` so reviewers can see exactly what is expected to happen, what does not block merge of Crosswake core, and whether a native rebuild is required to land a fix.
@@ -193,7 +198,7 @@ Adopters who add reviewer rows for additional surfaces (for example, an offer-co
 
 > **Advisory — provider-specific guidance**
 >
-> This template is advisory. Crosswake does not ship a StoreKit adapter and does not assert StoreKit-specific behavior as core support truth. The host app team is responsible for the StoreKit integration and for proving its behavior to App Store reviewers.
+> This template is advisory. Crosswake ships a StoreKit adapter seam that emits reconciliation evidence and preserves backend authority; host app teams still own provider runtime integration details and App Store submission proof.
 
 **Sandbox account setup:** Provide the App Store reviewer with a sandbox Apple ID provisioned with at least one auto-renewable subscription product and one non-consumable purchase product matching the host app's paywall offerings. Document the path to reach the paywall (deep link or guided navigation). Sandbox provisioning is a provider-setup prerequisite (`provider_setup` per `Crosswake.SupportMatrix.commerce_corridor_prerequisite_taxonomy/0`) and is owned by the host app, not Crosswake.
 
@@ -215,13 +220,13 @@ Adopters who add reviewer rows for additional surfaces (for example, an offer-co
 
 **Backend availability assumptions:** The reviewer should be informed that the host's backend reconciliation endpoints must be reachable for entitlement projection to refresh. Offline purchase replay is explicitly not supported (see Rough Edges And Non-Claims). If the backend is temporarily unreachable, the host should surface a `stale` projection state and continue to fail closed for access decisions until the backend projection refreshes.
 
-**Advisory note on StoreKit adapter:** Crosswake does not ship a StoreKit adapter. The host app team integrates StoreKit directly (or via a future companion adapter) and is responsible for proving StoreKit behavior in submission. StoreKit-specific lanes remain `advisory` and cannot redefine core merge-blocking support truth.
+**Advisory note on StoreKit adapter:** Crosswake ships the StoreKit evidence seam and backend-owned reconciliation contract. Provider/device verification lanes remain `advisory` and cannot redefine core merge-blocking support truth.
 
 ### Play Store Reviewer Notes
 
 > **Advisory — provider-specific guidance**
 >
-> This template is advisory. Crosswake does not ship a Play Billing adapter and does not assert Play Billing-specific behavior as core support truth. The host app team is responsible for the Play Billing integration and for proving its behavior to Play Store reviewers.
+> This template is advisory. Crosswake ships a Play Billing adapter seam that emits reconciliation evidence and preserves backend authority; host app teams still own provider runtime integration details and Play Store submission proof.
 
 **Test account setup:** Add the Play Store reviewer's Google account to the host app's licensed testers list in Play Console, and provision at least one subscription product and one in-app product matching the host app's paywall offerings. Document the path to reach the paywall. Test account provisioning is a provider-setup prerequisite (`provider_setup` per the canonical taxonomy) and is owned by the host app, not Crosswake.
 
@@ -243,7 +248,7 @@ Adopters who add reviewer rows for additional surfaces (for example, an offer-co
 
 **Backend availability assumptions:** Same as the App Store template — the host's backend reconciliation endpoints must be reachable for entitlement projection to refresh. Offline purchase replay is explicitly not supported (see Rough Edges And Non-Claims). If the backend is temporarily unreachable, the host should surface a `stale` projection state and continue to fail closed for access decisions.
 
-**Advisory note on Play Billing adapter:** Crosswake does not ship a Play Billing adapter. The host app team integrates Play Billing directly (or via a future companion adapter) and is responsible for proving Play Billing behavior in submission. Play Billing-specific lanes remain `advisory` and cannot redefine core merge-blocking support truth.
+**Advisory note on Play Billing adapter:** Crosswake ships the Play Billing evidence seam and backend-owned reconciliation contract. Provider/device verification lanes remain `advisory` and cannot redefine core merge-blocking support truth.
 
 ### Reviewer/Storefront Notes (Baseline Guidance)
 
@@ -263,15 +268,17 @@ Crosswake intentionally explicitly avoids:
 - **split-brain truth**: We explicitly reject split-brain paths where client callbacks and server notifications maintain separate truths. Both must feed the same authoritative reconciliation boundary.
 - **provider-specific core logic**: Raw Apple, Google, or RevenueCat enum details must not leak into core snapshot contracts.
 
-### Explicit Non-Claims For v3.2
+### Explicit Non-Claims For v3.7
 
-The following surfaces are explicitly **not shipped** in v3.2 and are not asserted as core support truth. Reviewers, adopters, and downstream tooling should treat any provider-specific behavior as host-app responsibility, not Crosswake responsibility:
+The following surfaces are explicitly **not shipped** in v3.7 and are not asserted as core support truth. Reviewers, adopters, and downstream tooling should treat provider runtime certification and entitlement authority as backend-owned responsibilities, not device callbacks:
 
-- **StoreKit adapter is not shipped.** Crosswake does not ship a StoreKit adapter or provide StoreKit-specific runtime code. Any StoreKit integration is host-app or future-companion work; StoreKit lanes remain `advisory` and cannot redefine core merge-blocking support truth. Fallback when StoreKit is unavailable: fail closed with `commerce.corridor.prerequisite_missing` and `return_to_phoenix_guidance`.
-- **Play Billing adapter is not shipped.** Crosswake does not ship a Play Billing adapter or provide Play Billing-specific runtime code. Any Play Billing integration is host-app or future-companion work; Play Billing lanes remain `advisory` and cannot redefine core merge-blocking support truth. Fallback when Play Billing is unavailable: fail closed with `commerce.corridor.prerequisite_missing` and `return_to_phoenix_guidance`.
+- **Provider runtime certification is not shipped.** Crosswake ships StoreKit and Play Billing seam contracts that emit reconciliation evidence; it does not claim full provider/device certification as merge-blocking support. Provider/device lanes remain `advisory` unless promotion criteria pass.
+- **StoreKit adapter is not shipped** as a standalone entitlement-authority grant path. Crosswake ships a StoreKit seam for reconciliation evidence only; backend projection remains authoritative.
+- **Play Billing adapter is not shipped** as a standalone entitlement-authority grant path. Crosswake ships a Play Billing seam for reconciliation evidence only; backend projection remains authoritative.
 - **Storefront purchase UI is not shipped.** Crosswake does not render storefront purchase or restore UI. Native storefront UI is owned by the host app's StoreKit or Play Billing integration. Fallback when storefront UI is missing: fail closed with `commerce.corridor.runtime_incompatible` and `return_to_phoenix_guidance`.
 - **Device-local entitlement authority is not shipped.** Storefront device callbacks are evidence, not authority. The core contract explicitly rejects device-local authority and requires backend-owned entitlement projection. There is no v3.2 path to grant entitlement from a device callback alone.
-- **Offline purchase replay is not shipped.** Commerce requires an online verification step. Offline purchase replay is explicitly outside the v3.2 scope and is not on the v3.2 roadmap.
+- **Offline purchase replay is not shipped.** Commerce requires an online verification step. Offline purchase replay is explicitly outside the v3.7 scope and is not on the v3.7 roadmap.
+- **RevenueCat provider adapter is deferred.** RevenueCat remains deferred.
 
 ### Known Rough Edges
 

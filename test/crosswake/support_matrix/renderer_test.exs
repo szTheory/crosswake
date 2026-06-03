@@ -38,27 +38,58 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Capability Families"
-    assert guide =~ "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |"
+
+    assert guide =~
+             "| Family | Owner | Posture | Baseline | Proof Status | Package | Proof | Rebuild | Prerequisites | Denial | Fallback | Guide |"
+
     assert guide =~ "| deep_link | activation | activation_first | supported | supported | core |"
-    assert guide =~ "| app_info | bounded_bridge | bounded_bridge | supported | verification required | core |"
-    assert guide =~ "| haptics | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
+    assert guide =~
+             "| app_info | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
+    assert guide =~
+             "| haptics | bounded_bridge | bounded_bridge | supported | verification required | core |"
+
     assert guide =~ "| share | bounded_bridge | bounded_bridge | supported | supported | core |"
-    assert guide =~ "| media_capture | native_screen | native_screen | supported | verification required | companion |"
-    assert guide =~ "| notification_token | bounded_bridge | provider_snapshot | supported | verification required | companion |"
-    assert guide =~ "| permissions.status | bounded_bridge | alias_snapshot | supported | verification required | core |"
-    assert guide =~ "| paywall_entry | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| purchase_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
-    assert guide =~ "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| media_capture | native_screen | native_screen | supported | verification required | companion |"
+
+    assert guide =~
+             "| notification_token | bounded_bridge | provider_snapshot | supported | verification required | companion |"
+
+    assert guide =~
+             "| permissions.status | bounded_bridge | alias_snapshot | supported | verification required | core |"
+
+    assert guide =~
+             "| paywall_entry | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| purchase_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| restore_intent | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| entitlement_snapshot | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
+    assert guide =~
+             "| reconciliation_evidence | backend_seam | backend_seam | supported | verification required | core | merge-blocking"
+
     assert guide =~ "freshness posture (fresh/stale/unknown) surfaced before access checks"
+
     assert guide =~
              "Fail closed for access decisions when snapshot freshness is stale or unknown until refreshed backend authority is available"
-    assert guide =~ "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+
+    assert guide =~
+             "device/storefront/webhook/support evidence as non-authoritative reconciliation input"
+
     assert guide =~
              "pending_purchase, pending_restore, and awaiting_verification remain non-granting until backend projection refreshes authority"
-    refute String.downcase(guide) =~ "storekit"
-    refute String.downcase(guide) =~ "play_billing"
+
+    assert guide =~
+             "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
+
     refute String.downcase(guide) =~ "revenuecat"
     assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
   end
@@ -84,19 +115,71 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "bridge_protocol_version"
     assert guide =~ "native_runtime_version"
     assert guide =~ "## Change Classes"
-    assert guide =~ "| Change Class | What Changed | Adopter Action | Compatibility Signal | Required Proof |"
+
+    assert guide =~
+             "| Change Class | What Changed | Adopter Action | Compatibility Signal | Required Proof |"
+
     assert guide =~ "| docs-only |"
     assert guide =~ "| core-only/no native rebuild |"
     assert guide =~ "| compatibility-bump only |"
     assert guide =~ "| native or companion rebuild required |"
   end
 
+  test "generated guide renders phase 51 action classes, promotion rules, and public non-claims" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "## Action Classes"
+    assert guide =~ "## Promotion Rules"
+    assert guide =~ "## Public Non-Claims And Rough Edges"
+
+    for action_class <- [
+          "docs_only",
+          "route_manifest",
+          "compatibility",
+          "native_shell",
+          "companion_native",
+          "provider_adapter"
+        ] do
+      assert guide =~ action_class
+    end
+
+    for claim_id <- [
+          "shell.ios.generated_project",
+          "shell.android.generated_project",
+          "notification_token.provider_snapshot",
+          "auth.sigra.session_authority",
+          "purchase_intent.provider.storekit",
+          "purchase_intent.provider.play_billing"
+        ] do
+      assert guide =~ claim_id
+    end
+
+    assert guide =~
+             "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
+
+    assert guide =~
+             "Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped"
+
+    assert guide =~ "auth.handoff.*"
+    assert guide =~ "auth.step_up_intent.*"
+    assert guide =~ "auth.return.*"
+    assert guide =~ "[:crosswake, :auth, ...]"
+    assert guide =~ "auth.sigra.session_authority"
+    assert guide =~ "diag.auth.sigra_session_authority"
+
+    assert guide =~ "notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry"
+
+    assert guide =~ "Standalone public shell packages are deferred"
+  end
+
   test "generated guide renders commerce corridor support truth with canonical denial codes" do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~ "## Commerce Corridors"
+
     assert guide =~
              "| corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |"
+
     assert guide =~ "| paywall_entry | phoenix_owned |"
     assert guide =~ "commerce.corridor.undeclared"
     assert guide =~ "| purchase_intent | native_or_companion_required |"
@@ -107,7 +190,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     # proof_class appears on every commerce corridor row
-    assert guide =~ "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
+    assert guide =~
+             "| paywall_entry | phoenix_owned | route_declaration; backend_reconciliation |"
 
     assert guide =~
              "| account_management | phoenix_owned | route_declaration; backend_reconciliation |"

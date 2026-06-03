@@ -1,0 +1,105 @@
+name: Phase 45 Proof
+
+# Phase 45 closes the rindle companion proof posture for v3.5 by splitting
+# proof lanes into:
+#
+#   - merge-blocking-rindle-proof: hermetic, deterministic, runs on every PR
+#     and push to main. This is the lane that should become a required branch
+#     check. It exercises the full hermetic suite while excluding example-host
+#     LiveView tests and advisory-only dependency-present tests. No rindle Hex
+#     package is included in this job, proving fail-closed behavior with the
+#     optional dependency absent.
+#
+#   - advisory-rindle-proof: runs with the rindle Hex package present
+#     (MIX_INCLUDE_RINDLE=1 set at step level only). It proves that
+#     validate_dependency/0 returns :ok when the dep is present. It runs on
+#     schedule and workflow_dispatch and cannot fail the merge gate.
+#
+# Advisory-to-merge-blocking promotion is NOT automatic. Promoting the advisory
+# lane to merge-blocking requires ALL FOUR conditions below:
+#
+#   1. Real Rindle adapter work is in scope and shipped in-tree, not just the
+#      contract-only companion and pure-Elixir mock lane.
+#   2. The advisory lane exercises real upload/verify behavior through the
+#      optional rindle library, not only dependency presence.
+#   3. Sustained stable scheduled runs have accumulated without flakes.
+#   4. An explicit requirement and roadmap scope change is documented in
+#      .planning/REQUIREMENTS.md and .planning/ROADMAP.md.
+#
+# Until all four conditions are met, advisory lane results are visible in CI
+# but do NOT gate merge.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-rindle-proof:
+    name: merge-blocking rindle proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 45 rindle proof (fail-closed)
+        run: mix test --exclude requires_example_host --exclude advisory_only
+
+  advisory-rindle-proof:
+    name: advisory rindle proof (dep present, validate_dependency :ok)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies (with rindle)
+        run: mix deps.get
+        env:
+          MIX_INCLUDE_RINDLE: "1"
+
+      - name: Compile (with rindle, warnings as errors)
+        run: mix compile --warnings-as-errors
+        env:
+          MIX_INCLUDE_RINDLE: "1"
+
+      - name: Run advisory rindle proof (validate_dependency :ok)
+        run: mix test test/crosswake/proof/phase45_rindle_advisory_test.exs
+        env:
+          MIX_INCLUDE_RINDLE: "1"
+
+      - name: Advisory lane status summary
+        run: |
+          echo "::notice title=Advisory lane::This lane is advisory only and"
+          echo "::notice::cannot gate merge. Failures here do NOT retract any"
+          echo "::notice::merge-blocking rindle companion claim. Promotion to"
+          echo "::notice::merge-blocking requires explicit requirement/roadmap"
+          echo "::notice::scope change plus sustained stability evidence."

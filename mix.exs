@@ -52,7 +52,14 @@ defmodule Crosswake.MixProject do
         []
       end
 
-    base ++ rulestead
+    rindle =
+      if System.get_env("MIX_INCLUDE_RINDLE") == "1" do
+        [{:rindle, "~> 0.1"}]
+      else
+        []
+      end
+
+    base ++ rulestead ++ rindle
   end
 
   defp description do

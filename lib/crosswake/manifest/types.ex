@@ -170,7 +170,9 @@ defmodule Crosswake.Manifest.Types do
     @type ownership_posture :: :phoenix_owned | :native_or_companion_required
     @type t :: %__MODULE__{
             id: String.t(),
-            role_ownership: %{required(Crosswake.Policy.Schema.commerce_role()) => ownership_posture()},
+            role_ownership: %{
+              required(Crosswake.Policy.Schema.commerce_role()) => ownership_posture()
+            },
             denial: String.t(),
             fallback: String.t(),
             prerequisites: [String.t()]
@@ -186,6 +188,20 @@ defmodule Crosswake.Manifest.Types do
     @type t :: %__MODULE__{
             corridor_ref: String.t(),
             role: Crosswake.Policy.Schema.commerce_role()
+          }
+  end
+
+  defmodule RouteAuthReturn do
+    @moduledoc false
+
+    @enforce_keys [:kind, :transport, :return_route_id, :validates]
+    defstruct [:kind, :transport, :return_route_id, validates: []]
+
+    @type t :: %__MODULE__{
+            kind: Crosswake.Policy.Schema.auth_return_kind(),
+            transport: Crosswake.Policy.Schema.auth_return_transport(),
+            return_route_id: String.t(),
+            validates: [Crosswake.Policy.Schema.auth_return_validation()]
           }
   end
 
@@ -205,6 +221,11 @@ defmodule Crosswake.Manifest.Types do
       :security,
       :gated_by,
       :on_unavailable,
+      :auth_min_level,
+      :requires_recent_auth,
+      :auth_posture,
+      :auth_return,
+      :notification_open,
       capabilities: [],
       packs: [],
       sync: [],
@@ -228,7 +249,12 @@ defmodule Crosswake.Manifest.Types do
             security: Crosswake.Policy.Schema.security() | nil,
             allowlisted_origins: [String.t()],
             gated_by: atom() | nil,
-            on_unavailable: :deny | {:fallback_phoenix, atom()} | nil
+            on_unavailable: :deny | {:fallback_phoenix, atom()} | nil,
+            auth_min_level: atom() | nil,
+            requires_recent_auth: pos_integer() | nil,
+            auth_posture: Crosswake.Policy.Schema.auth_posture() | nil,
+            auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil,
+            notification_open: Crosswake.Policy.Schema.notification_open_declaration() | nil
           }
   end
 
@@ -473,7 +499,13 @@ defmodule Crosswake.Manifest.Types do
     @moduledoc false
     @derive Jason.Encoder
 
-    @enforce_keys [:change_class, :what_changed, :adopter_action, :compatibility_signal, :required_proof]
+    @enforce_keys [
+      :change_class,
+      :what_changed,
+      :adopter_action,
+      :compatibility_signal,
+      :required_proof
+    ]
     defstruct [
       :change_class,
       :what_changed,
@@ -488,6 +520,97 @@ defmodule Crosswake.Manifest.Types do
             adopter_action: String.t(),
             compatibility_signal: String.t(),
             required_proof: String.t()
+          }
+  end
+
+  defmodule ActionClassEntry do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [
+      :action_class,
+      :subject,
+      :required_action,
+      :rebuild_required,
+      :reason,
+      :guide_anchor
+    ]
+    defstruct [
+      :action_class,
+      :subject,
+      :required_action,
+      :rebuild_required,
+      :reason,
+      :guide_anchor
+    ]
+
+    @type t :: %__MODULE__{
+            action_class: String.t(),
+            subject: String.t(),
+            required_action: String.t(),
+            rebuild_required: boolean(),
+            reason: String.t(),
+            guide_anchor: String.t()
+          }
+  end
+
+  defmodule PromotionRuleEntry do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [
+      :claim_id,
+      :claim_scope,
+      :current_proof_class,
+      :promotes_to,
+      :evidence_class,
+      :required_evidence,
+      :minimum_consecutive_passes,
+      :freshness_window,
+      :failure_budget,
+      :required_platforms,
+      :required_docs_anchors,
+      :change_class,
+      :action_class,
+      :check_ids,
+      :demotion_trigger
+    ]
+    defstruct [
+      :claim_id,
+      :claim_scope,
+      :current_proof_class,
+      :promotes_to,
+      :evidence_class,
+      :required_evidence,
+      :minimum_consecutive_passes,
+      :freshness_window,
+      :failure_budget,
+      :required_platforms,
+      :required_docs_anchors,
+      :change_class,
+      :action_class,
+      :check_ids,
+      :demotion_trigger
+    ]
+
+    @type proof_target :: :merge_blocking | :advisory | :not_applicable | :supported
+
+    @type t :: %__MODULE__{
+            claim_id: String.t(),
+            claim_scope: String.t(),
+            current_proof_class: proof_target(),
+            promotes_to: proof_target(),
+            evidence_class: String.t(),
+            required_evidence: [String.t()],
+            minimum_consecutive_passes: pos_integer(),
+            freshness_window: String.t(),
+            failure_budget: String.t(),
+            required_platforms: [String.t()],
+            required_docs_anchors: [String.t()],
+            change_class: String.t(),
+            action_class: String.t(),
+            check_ids: [String.t()],
+            demotion_trigger: String.t()
           }
   end
 
@@ -577,7 +700,22 @@ defmodule Crosswake.Manifest.Types do
       security: Keyword.get(attrs, :security),
       allowlisted_origins: Keyword.get(attrs, :allowlisted_origins, []),
       gated_by: Keyword.get(attrs, :gated_by),
-      on_unavailable: Keyword.get(attrs, :on_unavailable)
+      on_unavailable: Keyword.get(attrs, :on_unavailable),
+      auth_min_level: Keyword.get(attrs, :auth_min_level),
+      requires_recent_auth: Keyword.get(attrs, :requires_recent_auth),
+      auth_posture: Keyword.get(attrs, :auth_posture),
+      auth_return: Keyword.get(attrs, :auth_return),
+      notification_open: Keyword.get(attrs, :notification_open)
+    })
+  end
+
+  @spec new_route_auth_return(keyword()) :: RouteAuthReturn.t()
+  def new_route_auth_return(attrs) when is_list(attrs) do
+    struct!(RouteAuthReturn, %{
+      kind: Keyword.fetch!(attrs, :kind),
+      transport: Keyword.fetch!(attrs, :transport),
+      return_route_id: Keyword.fetch!(attrs, :return_route_id),
+      validates: Keyword.get(attrs, :validates, [])
     })
   end
 
@@ -732,6 +870,39 @@ defmodule Crosswake.Manifest.Types do
     })
   end
 
+  @spec new_action_class_entry(keyword()) :: ActionClassEntry.t()
+  def new_action_class_entry(attrs) when is_list(attrs) do
+    struct!(ActionClassEntry, %{
+      action_class: Keyword.fetch!(attrs, :action_class),
+      subject: Keyword.fetch!(attrs, :subject),
+      required_action: Keyword.fetch!(attrs, :required_action),
+      rebuild_required: Keyword.fetch!(attrs, :rebuild_required),
+      reason: Keyword.fetch!(attrs, :reason),
+      guide_anchor: Keyword.fetch!(attrs, :guide_anchor)
+    })
+  end
+
+  @spec new_promotion_rule_entry(keyword()) :: PromotionRuleEntry.t()
+  def new_promotion_rule_entry(attrs) when is_list(attrs) do
+    struct!(PromotionRuleEntry, %{
+      claim_id: Keyword.fetch!(attrs, :claim_id),
+      claim_scope: Keyword.fetch!(attrs, :claim_scope),
+      current_proof_class: Keyword.fetch!(attrs, :current_proof_class),
+      promotes_to: Keyword.fetch!(attrs, :promotes_to),
+      evidence_class: Keyword.fetch!(attrs, :evidence_class),
+      required_evidence: Keyword.fetch!(attrs, :required_evidence),
+      minimum_consecutive_passes: Keyword.fetch!(attrs, :minimum_consecutive_passes),
+      freshness_window: Keyword.fetch!(attrs, :freshness_window),
+      failure_budget: Keyword.fetch!(attrs, :failure_budget),
+      required_platforms: Keyword.fetch!(attrs, :required_platforms),
+      required_docs_anchors: Keyword.fetch!(attrs, :required_docs_anchors),
+      change_class: Keyword.fetch!(attrs, :change_class),
+      action_class: Keyword.fetch!(attrs, :action_class),
+      check_ids: Keyword.fetch!(attrs, :check_ids),
+      demotion_trigger: Keyword.fetch!(attrs, :demotion_trigger)
+    })
+  end
+
   @spec to_map(term()) :: term()
   def to_map(%Root{} = root) do
     %{
@@ -822,9 +993,23 @@ defmodule Crosswake.Manifest.Types do
       "security" => route.security && Atom.to_string(route.security),
       "allowlisted_origins" => route.allowlisted_origins,
       "gated_by" => route.gated_by && Atom.to_string(route.gated_by),
-      "on_unavailable" => serialize_on_unavailable(route.on_unavailable)
+      "on_unavailable" => serialize_on_unavailable(route.on_unavailable),
+      "auth_min_level" => route.auth_min_level && Atom.to_string(route.auth_min_level),
+      "requires_recent_auth" => route.requires_recent_auth,
+      "auth_posture" => route.auth_posture && Atom.to_string(route.auth_posture),
+      "notification_open" => serialize_notification_open(route.notification_open)
     }
-    |> Enum.reject(fn {k, v} -> k in ["gated_by", "on_unavailable"] and is_nil(v) end)
+    |> Enum.reject(fn {k, v} ->
+      k in [
+        "gated_by",
+        "on_unavailable",
+        "auth_min_level",
+        "requires_recent_auth",
+        "auth_posture",
+        "notification_open"
+      ] and
+        is_nil(v)
+    end)
     |> Map.new()
   end
 
@@ -894,7 +1079,8 @@ defmodule Crosswake.Manifest.Types do
       "target" => support_entry.target,
       "version" => support_entry.version,
       "status" => format_status(support_entry.status),
-      "baseline_status" => support_entry.baseline_status && format_status(support_entry.baseline_status),
+      "baseline_status" =>
+        support_entry.baseline_status && format_status(support_entry.baseline_status),
       "proof_status" => support_entry.proof_status && format_status(support_entry.proof_status),
       "proof" => support_entry.proof,
       "notes" => support_entry.notes,
@@ -953,6 +1139,37 @@ defmodule Crosswake.Manifest.Types do
     }
   end
 
+  def to_map(%ActionClassEntry{} = entry) do
+    %{
+      "action_class" => entry.action_class,
+      "subject" => entry.subject,
+      "required_action" => entry.required_action,
+      "rebuild_required" => entry.rebuild_required,
+      "reason" => entry.reason,
+      "guide_anchor" => entry.guide_anchor
+    }
+  end
+
+  def to_map(%PromotionRuleEntry{} = entry) do
+    %{
+      "claim_id" => entry.claim_id,
+      "claim_scope" => entry.claim_scope,
+      "current_proof_class" => atom_label(entry.current_proof_class),
+      "promotes_to" => atom_label(entry.promotes_to),
+      "evidence_class" => entry.evidence_class,
+      "required_evidence" => entry.required_evidence,
+      "minimum_consecutive_passes" => entry.minimum_consecutive_passes,
+      "freshness_window" => entry.freshness_window,
+      "failure_budget" => entry.failure_budget,
+      "required_platforms" => entry.required_platforms,
+      "required_docs_anchors" => entry.required_docs_anchors,
+      "change_class" => entry.change_class,
+      "action_class" => entry.action_class,
+      "check_ids" => entry.check_ids,
+      "demotion_trigger" => entry.demotion_trigger
+    }
+  end
+
   def to_map(map) when is_map(map) do
     map
     |> Enum.map(fn {key, value} -> {to_string(key), to_map(value)} end)
@@ -978,6 +1195,10 @@ defmodule Crosswake.Manifest.Types do
   defp serialize_on_unavailable(:deny), do: "deny"
   defp serialize_on_unavailable({:fallback_phoenix, route_id}), do: "fallback_phoenix:#{route_id}"
 
+  defp serialize_notification_open(nil), do: nil
+  defp serialize_notification_open(true), do: true
+  defp serialize_notification_open(%{actions: actions}), do: %{"actions" => Enum.map(actions, &Atom.to_string/1)}
+
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)
   defp format_package_class(:example_docs_only), do: "example/docs-only"
@@ -987,4 +1208,7 @@ defmodule Crosswake.Manifest.Types do
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+
+  defp atom_label(value) when is_atom(value), do: Atom.to_string(value)
+  defp atom_label(value), do: value
 end

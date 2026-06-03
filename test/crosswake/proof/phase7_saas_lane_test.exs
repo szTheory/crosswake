@@ -97,7 +97,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     fixtures = CrosswakeExample.SaaSPortal.Fixtures
     router = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
 
-    assert router =~ "pipe_through [:browser, :saas_portal]"
+    assert router =~ ~r/pipe_through\(?\[:browser, :saas_portal\]\)?/
     assert router =~ "live_session :saas_portal"
     assert router =~ "CrosswakeExample.SaaSPortal.OnMount"
 

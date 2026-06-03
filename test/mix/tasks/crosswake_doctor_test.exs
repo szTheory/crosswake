@@ -20,20 +20,19 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     "transfer.upload.prepare"
   ]
 
-  @task "crosswake.doctor"
-
   defmodule CommerceCorridorRouter do
     use Crosswake.Router
 
     scope "/" do
       crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
-        live "/billing", Crosswake.TestSupport.StudySessionLive,
+        live("/billing", Crosswake.TestSupport.StudySessionLive,
           crosswake: [
             id: "billing",
             runtime: :live_view,
             capabilities: ["purchase_intent"],
             commerce: [corridor: :subscription_default, role: :purchase_intent]
           ]
+        )
       end
     end
   end
@@ -83,17 +82,16 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     %{target: target, install_manifest_path: install_manifest_path}
   end
 
-  test "mix crosswake.doctor emits human-readable output with verification required proof posture", %{
-    target: target,
-    install_manifest_path: install_manifest_path
-  } do
+  test "mix crosswake.doctor emits human-readable output with verification required proof posture",
+       %{
+         target: target,
+         install_manifest_path: install_manifest_path
+       } do
     output =
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
               "--install-manifest",
@@ -126,14 +124,12 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     output =
       capture_io(fn ->
         File.cd!(target, fn ->
-          Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
-              "--router",
-              "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
-              "--install-manifest",
-              install_manifest_path,
-              "--format",
+          Mix.Tasks.Crosswake.Doctor.run([
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+            "--install-manifest",
+            install_manifest_path,
+            "--format",
             "json",
             "--native-checks"
           ])
@@ -152,17 +148,78 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     assert decoded["bridge"]["allowed_commands"] == @allowed_bridge_commands
     assert decoded["offline"]["status"] == "supported"
     assert decoded["offline"]["routes"]["study-session"]["sync_seam"] == "study_reviews"
+    refute Map.has_key?(decoded, "publish_readiness")
 
     assert File.read!(ios_proof) =~ "ios proof passed"
     assert File.read!(android_proof) =~ "android proof passed"
   end
 
+  test "mix crosswake.doctor --check-publish emits conditional json readiness and raises on blocking readiness",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Tasks.Crosswake.Doctor.run([
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--format",
+              "json",
+              "--check-publish"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    decoded = Jason.decode!(output)
+
+    assert decoded["publish_readiness"]["schema_version"] == "1.0.0"
+    assert decoded["publish_readiness"]["status"] == "not_ready"
+
+    assert Enum.any?(decoded["publish_readiness"]["checks"], fn check ->
+             check["code"] == "diag.provider.adapter_shipped_seams" and
+               check["blocking"] == false
+           end)
+
+    assert Enum.any?(decoded["findings"], fn finding ->
+             finding["code"] == "diag.provider.adapter_shipped_seams" and
+               finding["check"] == "provider_adapter_readiness"
+           end)
+  end
+
+  test "mix crosswake.doctor --check-publish human output includes publish readiness sidecar",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    output =
+      capture_io(fn ->
+        try do
+          File.cd!(target, fn ->
+            Mix.Tasks.Crosswake.Doctor.run([
+              "--router",
+              "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
+              "--install-manifest",
+              install_manifest_path,
+              "--check-publish"
+            ])
+          end)
+        rescue
+          Mix.Error -> :ok
+        end
+      end)
+
+    assert output =~ "Publish readiness"
+    assert output =~ "diag.publish."
+    assert output =~ "diag.provider.adapter_shipped_seams"
+    assert output =~ "claim_scope=Commerce provider adapter readiness"
+  end
+
   test "blocking failures raise instead of hiding behind warnings" do
     assert_raise Mix.Error, fn ->
       File.cd!(System.tmp_dir!(), fn ->
-        Mix.Task.reenable(@task)
-
-        Mix.Task.run(@task, [
+        Mix.Tasks.Crosswake.Doctor.run([
           "--router",
           "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
           "--install-manifest",
@@ -180,9 +237,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",
@@ -209,9 +264,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       capture_io(fn ->
         try do
           File.cd!(target, fn ->
-            Mix.Task.reenable(@task)
-
-            Mix.Task.run(@task, [
+            Mix.Tasks.Crosswake.Doctor.run([
               "--router",
               "Elixir.Mix.Tasks.Crosswake.DoctorTest.CommerceCorridorRouter",
               "--install-manifest",
@@ -256,7 +309,11 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     android_root = Path.join(target, "native/android/crosswake_shell")
 
     write_file!(Path.join(ios_root, "README.md"), "host-owned scaffold once\n")
-    write_file!(Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"), "PBXNativeTarget\n")
+
+    write_file!(
+      Path.join(ios_root, "CrosswakeShell.xcodeproj/project.pbxproj"),
+      "PBXNativeTarget\n"
+    )
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/CrosswakeShellApp.swift"),
@@ -296,6 +353,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
     )
 
     write_file!(Path.join(android_root, "README.md"), "host-owned scaffold once\n")
+
     write_file!(
       Path.join(android_root, "app/build.gradle"),
       "applicationId \"dev.crosswake.shell\"\n"
