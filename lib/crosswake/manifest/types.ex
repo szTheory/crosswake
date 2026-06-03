@@ -225,6 +225,7 @@ defmodule Crosswake.Manifest.Types do
       :requires_recent_auth,
       :auth_posture,
       :auth_return,
+      :notification_open,
       capabilities: [],
       packs: [],
       sync: [],
@@ -252,7 +253,8 @@ defmodule Crosswake.Manifest.Types do
             auth_min_level: atom() | nil,
             requires_recent_auth: pos_integer() | nil,
             auth_posture: Crosswake.Policy.Schema.auth_posture() | nil,
-            auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil
+            auth_return: Crosswake.Manifest.Types.RouteAuthReturn.t() | nil,
+            notification_open: Crosswake.Policy.Schema.notification_open_declaration() | nil
           }
   end
 
@@ -702,7 +704,8 @@ defmodule Crosswake.Manifest.Types do
       auth_min_level: Keyword.get(attrs, :auth_min_level),
       requires_recent_auth: Keyword.get(attrs, :requires_recent_auth),
       auth_posture: Keyword.get(attrs, :auth_posture),
-      auth_return: Keyword.get(attrs, :auth_return)
+      auth_return: Keyword.get(attrs, :auth_return),
+      notification_open: Keyword.get(attrs, :notification_open)
     })
   end
 
@@ -993,7 +996,8 @@ defmodule Crosswake.Manifest.Types do
       "on_unavailable" => serialize_on_unavailable(route.on_unavailable),
       "auth_min_level" => route.auth_min_level && Atom.to_string(route.auth_min_level),
       "requires_recent_auth" => route.requires_recent_auth,
-      "auth_posture" => route.auth_posture && Atom.to_string(route.auth_posture)
+      "auth_posture" => route.auth_posture && Atom.to_string(route.auth_posture),
+      "notification_open" => serialize_notification_open(route.notification_open)
     }
     |> Enum.reject(fn {k, v} ->
       k in [
@@ -1001,7 +1005,8 @@ defmodule Crosswake.Manifest.Types do
         "on_unavailable",
         "auth_min_level",
         "requires_recent_auth",
-        "auth_posture"
+        "auth_posture",
+        "notification_open"
       ] and
         is_nil(v)
     end)
@@ -1189,6 +1194,10 @@ defmodule Crosswake.Manifest.Types do
   defp serialize_on_unavailable(nil), do: nil
   defp serialize_on_unavailable(:deny), do: "deny"
   defp serialize_on_unavailable({:fallback_phoenix, route_id}), do: "fallback_phoenix:#{route_id}"
+
+  defp serialize_notification_open(nil), do: nil
+  defp serialize_notification_open(true), do: true
+  defp serialize_notification_open(%{actions: actions}), do: %{"actions" => Enum.map(actions, &Atom.to_string/1)}
 
   defp format_status(:verification_required), do: "verification required"
   defp format_status(status), do: Atom.to_string(status)

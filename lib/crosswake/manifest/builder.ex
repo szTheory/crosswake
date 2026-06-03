@@ -140,8 +140,9 @@ defmodule Crosswake.Manifest.Builder do
           auth_min_level: route.auth_min_level,
           requires_recent_auth: route.requires_recent_auth,
           auth_posture: route.auth_posture,
-          auth_return: route_auth_return(route)
-        )
+          auth_return: route_auth_return(route),
+          notification_open: route.notification_open
+          )
 
       {route.id, entry}
     end)
