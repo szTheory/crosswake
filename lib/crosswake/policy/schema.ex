@@ -126,6 +126,10 @@ defmodule Crosswake.Policy.Schema do
             auth_return: [
               type: {:custom, __MODULE__, :validate_auth_return_declaration, []},
               type_spec: quote(do: auth_return_declaration() | nil)
+            ],
+            notification_open: [
+              type: {:custom, __MODULE__, :validate_notification_open, []},
+              type_spec: quote(do: notification_open_declaration() | nil)
             ]
           )
 
@@ -135,6 +139,7 @@ defmodule Crosswake.Policy.Schema do
   @type security :: :standard | :sensitive
   @type auth_posture :: :strict_recent | :remembered_ok | :cached_read_only_ok
   @type auth_return_kind :: :oauth | :passkey | :native_auth
+  @type notification_open_declaration :: true | %{actions: [atom()]}
   @type auth_return_transport ::
           :http_callback | :verified_https_link | :custom_scheme | :bridge_event
   @type auth_return_validation ::
@@ -188,7 +193,8 @@ defmodule Crosswake.Policy.Schema do
           auth_min_level: atom() | nil,
           requires_recent_auth: pos_integer() | nil,
           auth_posture: auth_posture() | nil,
-          auth_return: auth_return_declaration() | nil
+          auth_return: auth_return_declaration() | nil,
+          notification_open: notification_open_declaration() | nil
         ]
 
   @spec schema() :: NimbleOptions.t()
@@ -475,6 +481,31 @@ defmodule Crosswake.Policy.Schema do
     {:error,
      "unsupported commerce role #{inspect(value)}; expected one of #{inspect(@commerce_role_values)}"}
   end
+
+  @spec validate_notification_open(term()) ::
+          {:ok, true | %{actions: [atom()]} | nil} | {:error, String.t()}
+  def validate_notification_open(nil), do: {:ok, nil}
+  def validate_notification_open(false), do: {:ok, nil}
+  def validate_notification_open(true), do: {:ok, true}
+
+  def validate_notification_open(declaration) when is_list(declaration) do
+    declaration
+    |> Enum.into(%{})
+    |> validate_notification_open()
+  end
+
+  def validate_notification_open(declaration) when is_map(declaration) do
+    actions = Map.get(declaration, :actions, Map.get(declaration, "actions", []))
+
+    if is_list(actions) and Enum.all?(actions, &is_atom/1) do
+      {:ok, %{actions: actions}}
+    else
+      {:error, "expected notification_open actions to be a list of atoms"}
+    end
+  end
+
+  def validate_notification_open(_value),
+    do: {:error, "expected notification_open declaration to be a boolean, a keyword list, or a map"}
 
   defp validate_auth_return_kind(nil), do: {:ok, nil}
 

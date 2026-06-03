@@ -356,4 +356,31 @@ defmodule Crosswake.Policy.SchemaTest do
       assert Types.to_map(entry)["auth_posture"] == "strict_recent"
     end
   end
+
+  describe "notification_open validation" do
+    test "accepts true" do
+      validated = Schema.validate!(id: "home", runtime: :live_view, notification_open: true)
+      assert validated[:notification_open] == true
+    end
+
+    test "accepts actions keyword list and normalizes to map" do
+      validated = Schema.validate!(id: "home", runtime: :live_view, notification_open: [actions: [:view, :reply]])
+      assert validated[:notification_open] == %{actions: [:view, :reply]}
+    end
+
+    test "defaults to nil when not provided" do
+      validated = Schema.validate!(id: "home", runtime: :live_view)
+      assert validated[:notification_open] == nil
+    end
+
+    test "rejects invalid values" do
+      assert_raise NimbleOptions.ValidationError, ~r/expected notification_open/, fn ->
+        Schema.validate!(id: "home", runtime: :live_view, notification_open: "yes")
+      end
+
+      assert_raise NimbleOptions.ValidationError, ~r/list of atoms/, fn ->
+        Schema.validate!(id: "home", runtime: :live_view, notification_open: [actions: ["view"]])
+      end
+    end
+  end
 end
