@@ -175,7 +175,7 @@ Plans:
 
 **Requirements:** OPEN-01, OPEN-02, OPEN-03
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -184,7 +184,7 @@ Plans:
 - [x] 61-03-PLAN.md — Host Open-Intent Schema and Transaction Flow
 
 **Wave 2** *(depends on Wave 1)*
-- [ ] 61-04-PLAN.md — Notification-Open Resolver and RouteGate Integration
+- [x] 61-04-PLAN.md — Notification-Open Resolver and RouteGate Integration
 
 **Success criteria:**
 
@@ -199,7 +199,7 @@ Plans:
 
 **Requirements:** DIAG-01, DIAG-02
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -210,7 +210,7 @@ Plans:
 - [x] 62-03-PLAN.md — Doctor Notification Findings
 
 **Wave 3**
-- [ ] 62-04-PLAN.md — Documentation Update
+- [x] 62-04-PLAN.md — Documentation Update
 
 **Success criteria:**
 
