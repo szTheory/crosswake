@@ -203,7 +203,10 @@ defmodule Crosswake.SupportMatrixTest do
              "purchase_intent.provider.storekit",
              "restore_intent.provider.storekit",
              "purchase_intent.provider.play_billing",
-             "restore_intent.provider.play_billing"
+             "restore_intent.provider.play_billing",
+             # Phase 64: Android JVM hermetic and device-verified gated promotion rows
+             "shell.android.jvm_hermetic",
+             "shell.android.device_verified"
            ]
 
     for entry <- entries do
