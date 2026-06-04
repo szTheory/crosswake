@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Production Shell Runtime Line
-status: executing
-last_updated: "2026-06-04T06:39:38.093Z"
+status: ready_to_plan
+last_updated: 2026-06-04T06:47:25.972Z
 last_activity: 2026-06-04
 progress:
   total_phases: 6
@@ -11,6 +11,7 @@ progress:
   total_plans: 6
   completed_plans: 6
   percent: 17
+stopped_at: Phase 64 complete (6/6) — ready to discuss Phase 65
 ---
 
 # Project State
@@ -20,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-03)
 
 **Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 64 — runtime-line-policy-contract-support-truth-taxonomy
+**Current focus:** Phase 65 — diagnostic export seam (elixir)
 
 ## Current Position
 
-Phase: 64 (runtime-line-policy-contract-support-truth-taxonomy) — EXECUTING
-Plan: 2 of 6
-Status: Ready to execute
+Phase: 65
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-06-04
 
 Progress: [██████████] 100%
@@ -46,7 +47,7 @@ Contracts-first, proof-always build order (converged across all four research tr
 
 **Velocity:**
 
-- Total plans completed: 146 (v1.0–v3.8 Phase 58, plus Phase 59-61)
+- Total plans completed: 152 (v1.0–v3.8 Phase 58, plus Phase 59-61)
 - v3.9: 5 phases, 17 plans, 12 tasks — shipped 2026-06-03
 - v3.8: 5 phases, 19 plans, 42 tasks — shipped 2026-06-02
 - v3.7: 2 phases, 7 plans — shipped 2026-06-01
