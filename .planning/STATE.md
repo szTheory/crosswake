@@ -1,128 +1,94 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Production Shell Runtime Line
-status: executed
-last_updated: "2026-06-04T16:02:08.762Z"
-last_activity: 2026-06-04
+milestone: v4.1
+milestone_name: Multi-SaaS Archetype Proof Lanes
+status: executing
+last_updated: "2026-06-04T22:09:01.369Z"
+last_activity: 2026-06-04 -- Phase 71 complete
 progress:
   total_phases: 6
-  completed_phases: 6
-  total_plans: 18
-  completed_plans: 18
-  percent: 100
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 33
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-03)
+See: .planning/PROJECT.md
 
-**Core value:** Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
-**Current focus:** Phase 69 — Docs-Contract Parity Gate, Android Promotion & Closeout
+**Core value:** Prove the shipped capabilities (commerce, auth, notifications, offline, media) work coherently together in production-shaped E2E archetype lanes without introducing generic sync abstractions.
+**Current focus:** Phase 72 — media/evidence workflow proof
 
 ## Current Position
 
-Phase: 69
-Plan: 02
-Status: Complete
-Last activity: 2026-06-04
+Phase: 72
+Plan: not planned
+Status: Phase 71 complete; ready to plan Phase 72
+Last activity: 2026-06-04 -- Phase 71 complete
 
-Progress: [██████████] 100%
+Progress: [███.......] 33%
 
-## v4.0 Roadmap (Phases 64-69)
+## v4.1 Roadmap (Phases 70-75)
 
-Contracts-first, proof-always build order (converged across all four research tracks):
-
-1. **Phase 64** — Runtime-Line Policy Contract & Support-Truth Taxonomy (RLINE-01..05): lock OTA-safe vs. rebuild change classification, `:jvm_hermetic` vs. `:device_verified` taxonomy, compatibility matrix, Android promotion criteria — derived from existing `native_runtime_version` axis, no native code, no new manifest field.
-2. **Phase 65** — Diagnostic Export Seam (Elixir) (DIAG-01..04): redaction allowlist + typed envelope before any native export code; fire-and-forget HTTP seam, not a bridge command.
-3. **Phase 66** — Generator Templates & Xcode 26 CI Fix (TMPL-01..04, AVER-05): host-owned iOS/Android permission/entitlement + runtime-line templates with `ADOPT:` markers, placeholder/drift doctor checks, iOS CI on Xcode 26 SDK.
-4. **Phase 67** — Native Shell Implementation & Android JVM Hermetic Proof (AVER-01, AVER-02): iOS + Android shells mirror contracts/templates, Android toolchain bumps (minSdk 30, compileSdk/targetSdk 35), merge-blocking JVM proof. Android stays `:verification_required`.
-5. **Phase 68** — Android Verification Closure & Device-UAT (AVER-03, AVER-04): advisory emulator lane + capability-parity-locked device-UAT checklist with CI-provable/device-advisory/provider-advisory columns.
-6. **Phase 69** — Docs-Contract Parity Gate, Android Promotion & Closeout (PROOF-01..03): merge-blocking manifest↔shell↔guide↔doctor parity gate, guides parity-locked to live truth, Android promotion only if criteria pass, `mix closeout.verify`.
+1. **Phase 70** — Subscription SaaS Commerce Proof: Validate commerce corridors and backend entitlement projections.
+2. **Phase 71** — Notification-Driven Workflow Proof: Prove secure, route-policy aware deep-linking and notification re-entry.
+3. **Phase 72** — Media/Evidence Workflow Proof: Validate Rindle reconciliation and failure recovery for media uploads.
+4. **Phase 73** — Auth-Sensitive Admin Workflow Proof: Stress-test Sigra step-up ceremonies and strict auth posturing.
+5. **Phase 74** — Offline/Draft Recovery Proof: Prove degraded read-only caching and offline-island limits.
+6. **Phase 75** — Multi-SaaS Archetype Closeout Gate: Verify all archetype proofs are CI-hermetic and requirements are met.
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 155 (v1.0–v3.8 Phase 58, plus Phase 59-61)
-- v3.9: 5 phases, 17 plans, 12 tasks — shipped 2026-06-03
-- v3.8: 5 phases, 19 plans, 42 tasks — shipped 2026-06-02
-- v3.7: 2 phases, 7 plans — shipped 2026-06-01
-- v3.6: 6 phases, 15 plans — shipped 2026-06-01
-- v3.4: 5 phases, 8 plans, 8 tasks — shipped in a single day (2026-05-29)
+- Total plans completed: 176 (v1.0–v4.0)
+- v4.0: 6 phases, 18 plans — shipped 2026-06-04
+- v3.9: 5 phases, 17 plans — shipped 2026-06-03
+- v3.8: 5 phases, 19 plans — shipped 2026-06-02
 
-**Recent Trend:** Positive — v3.3 through v3.9 all closed with deterministic proof, audit evidence, and explicit support truth in place.
+**Recent Trend:** Positive — Transitioning from runtime hardening (v4.0) to multi-SaaS archetype E2E proof lanes (v4.1).
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
-- v4.0 roadmapped 2026-06-03 as Production Shell Runtime Line with Phases 64-69 (continuing numbering from v3.9's Phase 63). 21/21 requirements mapped, 0 unmapped. Build order is contracts-and-support-truth first, diagnostics seam, generator templates + Xcode 26 fix, native shell + JVM hermetic proof, Android verification closure + device-UAT, then docs-contract parity gate + Android promotion + closeout.
-- Phase 48.1 inserted after Phase 48: Close gap: ADPT-01/ADPT-02 — provider facade paywall swap-target contract (URGENT)
-- v3.7 archived under `.planning/milestones/v3.7-*` with phase directories in `.planning/milestones/v3.7-phases/`.
-- v3.8 archived under `.planning/milestones/v3.8-*` with phase directories in `.planning/milestones/v3.8-phases/`.
-- v3.9 archived under `.planning/milestones/v3.9-*` with phase directories in `.planning/milestones/v3.9-phases/`.
+- v4.1 roadmapped 2026-06-04 as Multi-SaaS Archetype Proof Lanes with Phases 70-75. 11/11 requirements mapped. Build order tackles highest risk authority boundaries first (Commerce, Auth/Notifications), followed by Media, Offline, and Closeout.
+- v4.0 closed out successfully, establishing the production shell runtime line.
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-ARC.md`.
 
-- [Milestone v4.0]: Rebuild/OTA policy derives from the existing `native_runtime_version` axis — NO new manifest schema field (would force a `manifest_schema_version` bump and break deployed shells).
-- [Milestone v4.0]: Diagnostics export is a fire-and-forget HTTP seam (the Chimeway pattern), NOT a bounded-bridge command — preserves the low-frequency bridge thesis.
-- [Milestone v4.0]: Support truth distinguishes `:jvm_hermetic` from `:device_verified`; Android stays `:verification_required` until the final docs-contract gate + promotion criteria pass. Android JVM/emulator evidence is CI-only (no local Java runtime).
-- [Milestone v4.0]: Shells stay checked-in proof artifacts in `examples/`, not standalone publishable packages (arc non-goal). Hermetic proof merge-blocking; emulator/device/provider proof advisory with explicit promotion criteria.
-- [Milestone v3.9]: Chimeway notification work is companion-first with a narrow core route-policy hook; token/open evidence stays non-authoritative, backend binding and RouteGate decide, and provider/device delivery proof remains advisory.
-- [Phase 58]: Full Sigra machinery is shipped as backend-owned auth/session contracts with sanitized telemetry, support/operator truth, security closeout, and hermetic proof; provider/device auth proof remains advisory.
-- [Phase 53]: Closeout verification uses `Crosswake.Planning.CloseoutVerifier` and `mix closeout.verify` as the deterministic REL-01 gate.
-- [Phase 64-06]: Removed @rebuild_matrix_rows "2.x" entry (evidence_tier: :device_verified) — the 2.x band does not exist; re-introduction requires passing the validate_rebuild_matrix_evidence/2 gate added to validate/1 pipe.
-- [Phase 64-06]: Reverted finding_policy.ex :verification_required severity to :error (WR-04 gap closed); hermetic proof tests use rescue Mix.Error inside capture_io blocks (Phase 52 pattern) rather than severity relaxation. RLINE-04 SATISFIED.
-- [Phase ?]: Phase 65-01: DiagnosticExport behaviour-only seam — @callback export/1 only, no transport code, sanitize/1 fail-closed with 19-key forbidden set
-- [Phase ?]: Phase 65-02: @diagnostic_export_support_truth — delivery_supported false, proof_class merge_blocking, authority_source host_configured_endpoint, deferred 3 atoms
-- [Phase ?]: Phase 65-02: Doctor finding diagnostic_export.contract_shipped — :advisory severity, fires unconditionally, message excludes crash-reporting-service
-- [Phase ?]: Phase 65-03 proof lane decisions
+- [Milestone v4.1]: Treat CI/CD hermetic evidence as the gold standard for archetype proof, prioritizing fast, deterministic E2E lane validation over slow, brittle manual device testing.
+- [Milestone v4.1]: Explicitly reject universal sync engines in favor of honest degraded caching and localized offline-island mutations.
+- [Milestone v4.1]: Backend authority strictly controls entitlement projections, route unlocking (Step-up), and media reconciliation completion; client-side mocks and device evidence remain advisory.
 
 ### Pending Todos
 
-- Draft Nyquist VALIDATION.md ledgers for v3.9 Phases 59, 60, 62, and 63 remain bookkeeping gaps (routed to Phase 64 per v3.9 closeout).
-- Deferred from v3.3: Clean up ExDoc hidden-type warnings (HEX-03 zero-warnings clause). Low priority.
+- Ensure mock storefront adapters in Phase 70 don't bleed into production runtime code.
+- Prepare Phase 72 media/evidence workflow proof for deterministic Rindle reconciliation under degraded network simulation.
 
 ### Blockers/Concerns
 
-- Android JVM/emulator evidence continues to require CI (no local Java runtime) — Android stays `:verification_required` until v4.0 promotion criteria pass.
-- v4.0 #1 risk is support-truth dishonesty: never claim JVM-CI evidence as device-verified; lock `:jvm_hermetic` vs. `:device_verified` taxonomy in Phase 64 before populating any matrix.
-- Three-surface drift (manifest / shell native files / docs): the docs-contract parity test (Phase 69, PROOF-01) must lock manifest↔shell↔guide↔doctor; the canonical compatibility record is library-owned, not docs-owned.
-- Platform-policy hard gates: Apple Xcode 26 SDK mandate (since 2026-04-28), OTA Guideline 2.5.2, `PrivacyInfo.xcprivacy`, Google Play `targetSdkVersion ≥ 35`, SafetyNet dead (use Play Integrity with CI debug-provider escape hatch).
-- Diagnostics export is the likeliest PII/token leak vector: reuse the v3.9 Chimeway/Sigra redaction allowlist; define and test the allowlist (Phase 65) before any export code.
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260603-nzr | Fix recurring validation-ledger debt — closeout gate teeth + cleared backlog (v3.8/v3.9 ledgers signed, v3.6 accept-closed) + un-brittled requirements.state. closeout.verify green, 746 tests pass. | 2026-06-03 | f59b06d | [260603-nzr-tighten-validation-ledger-closeout-gate](./quick/260603-nzr-tighten-validation-ledger-closeout-gate/) |
-| Phase 64 P06 | 406 | 3 tasks | 6 files |
-| Phase 65-diagnostic-export-seam-elixir P01 | 307 | 2 tasks | 2 files |
-| Phase 65-diagnostic-export-seam-elixir P02 | 196 | 2 tasks | 4 files |
-| Phase 65-diagnostic-export-seam-elixir P03 | 25 | 2 tasks | 7 files |
+- Complexity of simulating network degradation deterministically in Phase 72 (Rindle reconciliation).
+- Maintaining fast CI execution times as E2E test density increases across 5 full archetype lanes.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Validation | Draft Nyquist VALIDATION.md ledgers for v3.9 Phases 59, 60, 62, 63 | Routed to Phase 64 per v3.9 closeout | 2026-06-03 |
-| Commerce | RevenueCat provider adapter | Deferred beyond first StoreKit/Play Billing adapter shape | 2026-06-01 |
-| Docs | ExDoc zero-warnings clause (HEX-03) | Deferred | 2026-05-29 |
-| CI | Retroactive SHA-pinning of pre-v3.3 proof workflows | Deferred | 2026-05-27 |
 | Device Proof | Promote emulator/device lane to merge-blocking (DPROOF-01) | v2 — deferred until promotion criteria repeatedly met | 2026-06-03 |
 | Device Proof | Firebase Test Lab device-matrix advisory lane (DPROOF-02) | v2 — deferred | 2026-06-03 |
 | Shell | Standalone publishable shell packages (SHELL-01) | v2 — arc non-goal until release choreography ready | 2026-06-03 |
 
 ## Session Continuity
 
-Last session: 2026-06-04T16:02:08.758Z
-Stopped at: Phase 67 context gathered
+Last session: 2026-06-04T22:09:01.366Z
+Stopped at: Completed 71-03-PLAN.md
 
 ## Operator Next Steps
 
-- Plan the first v4.0 phase with `/gsd:plan-phase 64`
+- Discuss or plan Phase 72 with `$gsd-discuss-phase 72` or `$gsd-plan-phase 72`
