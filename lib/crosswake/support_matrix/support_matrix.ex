@@ -268,6 +268,26 @@ defmodule Crosswake.SupportMatrix do
         "notification_token and notification_open readiness are fully supported/resolvable; Chimeway APNs/FCM push delivery execution remains deferred and unsupported."
     }
   ]
+  @diagnostic_export_support_truth [
+    %{
+      surface: "diagnostic export envelope contract",
+      proof_class: :merge_blocking,
+      action_class: "shell_native",
+      docs_anchor: "guides/capabilities.md#diagnostic-export",
+      delivery_supported: false,
+      telemetry: %{
+        status: :shipped,
+        event_names: [],
+        metadata_keys: Crosswake.Shell.DiagnosticExport.allowed_keys(),
+        forbidden_metadata_keys: Crosswake.Shell.DiagnosticExport.forbidden_keys(),
+        authority_source: :host_configured_endpoint,
+        proof_class: :merge_blocking
+      },
+      deferred: [:native_diagnostic_export, :metrickit_capture, :application_exit_info_capture],
+      posture:
+        "Diagnostics-export envelope and sanitize contract are shipped and merge-blocking allowlist proof is enforced; native MetricKit/ApplicationExitInfo transport is not shipped until Phase 67; the host owns the endpoint and the data — Crosswake is not a crash-reporting service."
+    }
+  ]
 
   # Rebuild & compatibility matrix rows — one row per major runtime-line band (D-14).
   # evidence_tier reuses the D-09 verification_method enum (D-15) — no separate enum.
@@ -403,6 +423,9 @@ defmodule Crosswake.SupportMatrix do
 
   @spec notification_support_truth() :: [map()]
   def notification_support_truth, do: @notification_support_truth
+
+  @spec diagnostic_export_support_truth() :: [map()]
+  def diagnostic_export_support_truth, do: @diagnostic_export_support_truth
 
   @spec fetch_status(SupportMatrix.t(), atom(), String.t()) ::
           {:ok, SupportEntry.status()} | :error
