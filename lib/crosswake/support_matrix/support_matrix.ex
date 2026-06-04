@@ -9,6 +9,7 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.ChangeClassEntry
   alias Crosswake.Manifest.Types.PackageSurfaceEntry
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
+  alias Crosswake.Manifest.Types.RuntimeLineRow
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
   alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
@@ -268,6 +269,51 @@ defmodule Crosswake.SupportMatrix do
     }
   ]
 
+  # Rebuild & compatibility matrix rows — one row per major runtime-line band (D-14).
+  # evidence_tier reuses the D-09 verification_method enum (D-15) — no separate enum.
+  # ota_safe/rebuild_required are derived from RebuildPolicy/action_classes() co-truth:
+  # rebuild-required bands are never OTA-safe.
+  @rebuild_matrix_rows [
+    Types.new_runtime_line_row(
+      runtime_line: "1.x",
+      capability_surface: [
+        "haptics",
+        "share",
+        "app_info",
+        "deep_link",
+        "permissions.status",
+        "notification_token",
+        "file_picker",
+        "media_capture",
+        "scanner",
+        "document_scan"
+      ],
+      change_class: "native or companion rebuild required",
+      ota_safe: false,
+      rebuild_required: true,
+      evidence_tier: :jvm_hermetic
+    ),
+    Types.new_runtime_line_row(
+      runtime_line: "2.x",
+      capability_surface: [
+        "haptics",
+        "share",
+        "app_info",
+        "deep_link",
+        "permissions.status",
+        "notification_token",
+        "file_picker",
+        "media_capture",
+        "scanner",
+        "document_scan"
+      ],
+      change_class: "native or companion rebuild required",
+      ota_safe: false,
+      rebuild_required: true,
+      evidence_tier: :device_verified
+    )
+  ]
+
   @spec canonical(keyword()) :: SupportMatrix.t()
   def canonical(opts \\ []) do
     capability_registry =
@@ -339,7 +385,8 @@ defmodule Crosswake.SupportMatrix do
       capability_families: capability_family_entries(capability_registry),
       package_surfaces: package_surface_entries(),
       release_boundaries: release_boundary_entries(),
-      change_classes: change_class_entries()
+      change_classes: change_class_entries(),
+      rebuild_matrix: @rebuild_matrix_rows
     )
   end
 
@@ -351,6 +398,7 @@ defmodule Crosswake.SupportMatrix do
     |> validate_narrow_baseline(support_matrix)
     |> validate_capability_families_present(support_matrix)
     |> validate_phase51_support_truth()
+    |> validate_verification_method_invariant(support_matrix)
   end
 
   @spec statuses() :: [atom()]
@@ -388,6 +436,10 @@ defmodule Crosswake.SupportMatrix do
   @spec capability_families(SupportMatrix.t()) :: [CapabilitySupportEntry.t()]
   def capability_families(%SupportMatrix{} = support_matrix),
     do: support_matrix.capability_families
+
+  @spec rebuild_matrix(SupportMatrix.t()) :: [RuntimeLineRow.t()]
+  def rebuild_matrix(%SupportMatrix{} = support_matrix),
+    do: support_matrix.rebuild_matrix
 
   @spec package_surfaces(SupportMatrix.t()) :: [PackageSurfaceEntry.t()]
   def package_surfaces(%SupportMatrix{} = support_matrix), do: support_matrix.package_surfaces
@@ -712,7 +764,8 @@ defmodule Crosswake.SupportMatrix do
         prerequisites: capability_prerequisites(capability),
         denial: capability.denial,
         fallback: capability_fallback(capability),
-        guide: capability.guide
+        guide: capability.guide,
+        verification_method: capability_verification_method(capability)
       )
     end)
   end
@@ -805,6 +858,32 @@ defmodule Crosswake.SupportMatrix do
               key: :promotion_rules,
               message: "promotion rule #{entry.claim_id} is missing a demotion trigger",
               hint: "promotion and demotion must both be explicit"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  # D-10a: A CapabilitySupportEntry with proof_class :advisory has a CI-only evidence
+  # corpus. Claiming :device_verified on a CI-only entry is evidence laundering.
+  # iOS native-screen entries (proof_class: :merge_blocking) are allowed :device_verified.
+  # Constructor default :none is always safe and never rejected.
+  defp validate_verification_method_invariant(errors, %SupportMatrix{} = support_matrix) do
+    support_matrix.capability_families
+    |> Enum.reduce(errors, fn entry, acc ->
+      cond do
+        entry.verification_method == :device_verified and entry.proof_class == :advisory ->
+          [
+            %{
+              key: :capability_families,
+              message:
+                "capability family #{inspect(entry.family)} claims :device_verified but has proof_class :advisory (CI-only corpus) — evidence laundering (D-10a)",
+              hint:
+                ":device_verified requires real-device proof evidence; CI-only entries must use :jvm_hermetic, :emulator_advisory, or :none"
             }
             | acc
           ]
@@ -1076,6 +1155,73 @@ defmodule Crosswake.SupportMatrix do
         ],
         demotion_trigger:
           "Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass."
+      ),
+      # D-18: Android JVM hermetic promotion criteria — CI-level evidence only.
+      # required_verification_method: :jvm_hermetic gates this promotion.
+      # jvm_hermetic promotion MUST NOT be read as device_verified (D-19).
+      promotion_rule(
+        claim_id: "shell.android.jvm_hermetic",
+        claim_scope: "Android shell JVM hermetic CI proof promotion",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "jvm_hermetic_ci",
+        required_evidence: [
+          "script/verify_generated_android_shell.sh",
+          "Java-enabled JVM BridgeChannel hermetic proof",
+          "support-matrix rebuild_matrix parity",
+          "docs-contract parity for Android runtime-line"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current release branch, within 30 CI runs",
+        failure_budget: "zero consecutive failures; single failure resets counter",
+        required_platforms: ["android"],
+        required_docs_anchors: [
+          "guides/support_matrix.md",
+          "guides/native_shell.md#android-verification"
+        ],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: [
+          "diag.shell.android.jvm_hermetic",
+          "diag.shell.verification_required"
+        ],
+        demotion_trigger:
+          "Demote to verification_required when Android JVM hermetic CI proof is stale, fails, or coverage drops below the freshness window. jvm_hermetic promotion MUST NOT be read as device_verified — CI-level evidence is not device/emulator evidence.",
+        required_verification_method: :jvm_hermetic
+      ),
+      # D-19: Android device-verified promotion criteria — GATED until Phases 67/68.
+      # Device/emulator proof is unavailable until Phase 67 (Android shell implementation)
+      # and Phase 68 (Android verification closure and device-UAT).
+      # jvm_hermetic promotion MUST NOT be read as device_verified.
+      promotion_rule(
+        claim_id: "shell.android.device_verified",
+        claim_scope: "Android shell device/emulator-verified proof promotion — GATED until Phases 67/68",
+        current_proof_class: :advisory,
+        promotes_to: :merge_blocking,
+        evidence_class: "device_verified",
+        required_evidence: [
+          "Android emulator advisory lane evidence (Phase 68)",
+          "device-UAT checklist completion (Phase 68)",
+          "capability-parity-locked device proof",
+          "docs-contract parity for Android device-verified runtime-line"
+        ],
+        minimum_consecutive_passes: 3,
+        freshness_window: "current release branch, within 10 device-UAT runs",
+        failure_budget: "zero consecutive failures; single failure resets counter",
+        required_platforms: ["android"],
+        required_docs_anchors: [
+          "guides/support_matrix.md",
+          "guides/native_shell.md#android-device-uat"
+        ],
+        change_class: "native or companion rebuild required",
+        action_class: "native_shell",
+        check_ids: [
+          "diag.shell.android.device_verified",
+          "diag.shell.verification_required"
+        ],
+        demotion_trigger:
+          "Device/emulator proof is unavailable until Phase 67 (Android shell implementation) and Phase 68 (Android verification closure and device-UAT checklist). jvm_hermetic promotion MUST NOT be read as device_verified — CI-level JVM hermetic evidence does not constitute real-device or emulator proof. Demote to verification_required if device-UAT evidence is stale or if the device lane drops below the freshness window.",
+        required_verification_method: :device_verified
       )
     ]
   end
@@ -1094,6 +1240,21 @@ defmodule Crosswake.SupportMatrix do
       boundary_link: Keyword.get(opts, :boundary_link)
     )
   end
+
+  # iOS-backed native-screen capabilities with merge_blocking proof require real-device proof.
+  # Deferred native_screen entries (proof_class: :advisory, package_class: :defer) are NOT
+  # device-verified — they are advisory/deferred and must not claim device evidence (D-10a).
+  # notification_token uses the Android JVM hermetic CI lane (advisory proof class).
+  # All other capabilities default to :none — no platform-specific evidence tier claimed.
+  defp capability_verification_method(%Capability{
+         owner: :native_screen,
+         proof_class: :merge_blocking
+       }),
+       do: :device_verified
+
+  defp capability_verification_method(%Capability{id: "notification_token"}), do: :jvm_hermetic
+
+  defp capability_verification_method(%Capability{}), do: :none
 
   defp capability_posture(%Capability{id: "deep_link"}), do: "activation_first"
   defp capability_posture(%Capability{id: "file_picker"}), do: "transfer_backed"

@@ -8,10 +8,12 @@ defmodule Crosswake.Doctor.JSONFormatter do
 
   @spec render(map()) :: String.t()
   def render(report) do
-    payload =
+    support = Map.get(report, :support, %{})
+
+    base_payload =
       %{
         status: Map.get(report, :status) |> Atom.to_string(),
-        support: format_support(Map.get(report, :support, %{})),
+        support: format_support(support),
         shells: format_shells(Map.get(report, :shells, %{})),
         bridge: format_bridge(Map.get(report, :bridge, %{})),
         offline: format_offline(Map.get(report, :offline, %{})),
@@ -19,6 +21,24 @@ defmodule Crosswake.Doctor.JSONFormatter do
         findings: Enum.map(Map.get(report, :findings, []), &check_to_map/1)
       }
       |> maybe_put_publish_readiness(Map.get(report, :publish_readiness))
+
+    # Phase 64: Expose rebuild_matrix at the top level for hermetic proof access.
+    # The rebuild_matrix is also nested in support.release_policy.rebuild_matrix for
+    # backward-compatible structured access; the top-level key allows test assertions
+    # without needing to traverse support.release_policy.
+    release_policy = get_in(support, [:release_policy])
+    rebuild_matrix = if release_policy, do: Map.get(release_policy, :rebuild_matrix), else: nil
+
+    payload =
+      if rebuild_matrix do
+        Map.put(
+          base_payload,
+          :rebuild_matrix,
+          Enum.map(rebuild_matrix, &format_runtime_line_row/1)
+        )
+      else
+        base_payload
+      end
 
     Jason.encode!(payload, pretty: true)
   end
@@ -103,7 +123,7 @@ defmodule Crosswake.Doctor.JSONFormatter do
   defp format_release_policy(nil), do: nil
 
   defp format_release_policy(release_policy) do
-    %{
+    base = %{
       crosswake_version: release_policy.crosswake_version,
       manifest_schema_version: release_policy.manifest_schema_version,
       bridge_protocol_version: release_policy.bridge_protocol_version,
@@ -112,6 +132,26 @@ defmodule Crosswake.Doctor.JSONFormatter do
       companion_requirement: release_policy.companion_requirement,
       package_surfaces: release_policy.package_surfaces,
       change_classes: release_policy.change_classes
+    }
+
+    # Add rebuild_matrix if present (Phase 64 support-truth addition)
+    case Map.get(release_policy, :rebuild_matrix) do
+      nil ->
+        base
+
+      rebuild_matrix ->
+        Map.put(base, :rebuild_matrix, Enum.map(rebuild_matrix, &format_runtime_line_row/1))
+    end
+  end
+
+  defp format_runtime_line_row(row) do
+    %{
+      runtime_line: row.runtime_line,
+      capability_surface: row.capability_surface,
+      change_class: row.change_class,
+      ota_safe: row.ota_safe,
+      rebuild_required: row.rebuild_required,
+      evidence_tier: Atom.to_string(row.evidence_tier)
     }
   end
 

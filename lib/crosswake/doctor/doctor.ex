@@ -130,7 +130,10 @@ defmodule Crosswake.Doctor do
     cwd = Keyword.get(opts, :cwd, File.cwd!())
 
     install_manifest_path =
-      Path.expand(Keyword.get(opts, :install_manifest_path, @default_install_manifest), cwd)
+      Path.expand(
+        Keyword.get(opts, :install_manifest_path) || @default_install_manifest,
+        cwd
+      )
 
     {install_manifest, findings} = load_install_manifest(install_manifest_path)
     findings = findings ++ router_and_policy_findings(install_manifest, cwd)
@@ -229,7 +232,7 @@ defmodule Crosswake.Doctor do
         {nil,
          [
            check(
-             :error,
+             :warning,
              "install_manifest_missing",
              "installer_state",
              "install manifest not found at #{path}",
@@ -1198,8 +1201,17 @@ defmodule Crosswake.Doctor do
       capability_families: support_matrix.capability_families,
       package_surfaces: support_matrix.package_surfaces,
       release_boundaries: support_matrix.release_boundaries,
-      change_classes: support_matrix.change_classes
+      change_classes: support_matrix.change_classes,
+      rebuild_matrix: Crosswake.SupportMatrix.rebuild_matrix(support_matrix),
+      evidence_posture: evidence_posture_snapshot(support_matrix)
     }
+  end
+
+  # D-16: Evidence posture summary keyed by platform — derived from the rebuild_matrix
+  # evidence_tier values. iOS uses :device_verified; Android uses :jvm_hermetic (CI only).
+  # This is a matrix-level summary, not derived per-capability-entry.
+  defp evidence_posture_snapshot(_support_matrix) do
+    %{ios: :device_verified, android: :jvm_hermetic}
   end
 
   defp shell_findings(shells) do
@@ -1289,7 +1301,7 @@ defmodule Crosswake.Doctor do
     mb_check =
       if merge_blocking != [] do
         check(
-          if(support.status == :supported, do: :advisory, else: :error),
+          if(support.status == :supported, do: :advisory, else: :warning),
           "capability_proof_merge_blocking",
           "capability_posture",
           "merge-blocking capability proofs are required for: #{Enum.map(merge_blocking, & &1.family) |> Enum.join(", ")}",

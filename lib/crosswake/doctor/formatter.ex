@@ -63,12 +63,21 @@ defmodule Crosswake.Doctor.Formatter do
          bridge_protocol_version: bridge_protocol_version,
          native_runtime_version: native_runtime_version,
          package_version_truth: package_version_truth,
-         companion_requirement: companion_requirement,
-         capability_families: capability_families,
-         package_surfaces: package_surfaces,
-         release_boundaries: release_boundaries,
-         change_classes: change_classes
-       }) do
+         companion_requirement: companion_requirement
+       } = release_policy) do
+    # Optional keys added in Phase 64 — structured blocks only rendered when present.
+    capability_families = Map.get(release_policy, :capability_families)
+    package_surfaces = Map.get(release_policy, :package_surfaces)
+    release_boundaries = Map.get(release_policy, :release_boundaries)
+    change_classes = Map.get(release_policy, :change_classes)
+    rebuild_matrix = Map.get(release_policy, :rebuild_matrix)
+    evidence_posture = Map.get(release_policy, :evidence_posture)
+
+    evidence_line =
+      if evidence_posture do
+        "  evidence posture: #{format_evidence_posture(evidence_posture)}"
+      end
+
     [
       "release policy:",
       "  crosswake_version=#{crosswake_version}",
@@ -77,32 +86,14 @@ defmodule Crosswake.Doctor.Formatter do
       "  native_runtime_version=#{native_runtime_version}",
       "  #{package_version_truth}",
       "  #{companion_requirement}",
-      format_capability_families(capability_families),
-      format_package_surfaces(package_surfaces),
-      format_release_boundaries(release_boundaries),
-      format_change_classes(change_classes)
+      evidence_line,
+      capability_families && format_capability_families(capability_families),
+      package_surfaces && format_package_surfaces(package_surfaces),
+      release_boundaries && format_release_boundaries(release_boundaries),
+      change_classes && format_change_classes(change_classes),
+      rebuild_matrix && format_rebuild_matrix(rebuild_matrix)
     ]
     |> Enum.reject(&(&1 in [nil, ""]))
-    |> Enum.join("\n")
-  end
-
-  defp format_release_policy(%{
-         crosswake_version: crosswake_version,
-         manifest_schema_version: manifest_schema_version,
-         bridge_protocol_version: bridge_protocol_version,
-         native_runtime_version: native_runtime_version,
-         package_version_truth: package_version_truth,
-         companion_requirement: companion_requirement
-       }) do
-    [
-      "release policy:",
-      "  crosswake_version=#{crosswake_version}",
-      "  manifest_schema_version=#{manifest_schema_version}",
-      "  bridge_protocol_version=#{bridge_protocol_version}",
-      "  native_runtime_version=#{native_runtime_version}",
-      "  #{package_version_truth}",
-      "  #{companion_requirement}"
-    ]
     |> Enum.join("\n")
   end
 
@@ -146,6 +137,30 @@ defmodule Crosswake.Doctor.Formatter do
 
     ["  change classes:" | lines] |> Enum.join("\n")
   end
+
+  defp format_rebuild_matrix(rows) do
+    lines =
+      Enum.map(rows, fn row ->
+        surface = Enum.join(row.capability_surface, ", ")
+
+        "    #{row.runtime_line}: ota_safe=#{row.ota_safe}, rebuild_required=#{row.rebuild_required}, evidence_tier=#{format_evidence_tier(row.evidence_tier)}, capability_surface=[#{surface}]"
+      end)
+
+    ["  rebuild & compatibility matrix:" | lines] |> Enum.join("\n")
+  end
+
+  defp format_evidence_tier(:jvm_hermetic), do: "jvm-hermetic (CI only)"
+  defp format_evidence_tier(:device_verified), do: "device-verified"
+  defp format_evidence_tier(:emulator_advisory), do: "emulator-advisory"
+  defp format_evidence_tier(:provider_advisory), do: "provider-advisory"
+  defp format_evidence_tier(:none), do: "none"
+  defp format_evidence_tier(tier), do: Atom.to_string(tier)
+
+  defp format_evidence_posture(%{ios: ios, android: android}) do
+    "ios=#{format_evidence_tier(ios)} android=#{format_evidence_tier(android)}"
+  end
+
+  defp format_evidence_posture(_posture), do: "unknown"
 
   defp format_shells(shells) when shells == %{}, do: nil
 
