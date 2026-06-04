@@ -176,7 +176,19 @@ Plans:
   3. `sanitize/1` applies an explicit, tested redaction allowlist (reusing the v3.9 Chimeway/Sigra posture) that forbids raw tokens, payloads, route params, and PII — verified by a merge-blocking allowlist test.
   4. `mix crosswake.doctor` and support truth report diagnostics-export readiness without implying a first-party crash-reporting service.
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 65-01-PLAN.md — DiagnosticExport contract module: behaviour + Envelope/NativeDiagnostic structs + fail-closed sanitize/1 + allowlist accessors (DIAG-01/02/03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 65-02-PLAN.md — SupportMatrix diagnostic-export truth + unconditional :advisory doctor finding, non-overclaiming (DIAG-04)
+
+**Wave 3** *(blocked on Waves 1+2 completion)*
+
+- [ ] 65-03-PLAN.md — Six generated fixtures + merge-blocking hermetic proof lane covering DIAG-01..04
 
 ### Phase 66: Generator Templates & Xcode 26 CI Fix
 
@@ -245,7 +257,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
-| 65. Diagnostic Export Seam (Elixir) | v4.0 | 0/TBD | Not started | - |
+| 65. Diagnostic Export Seam (Elixir) | v4.0 | 0/3 | Not started | - |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
 | 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
