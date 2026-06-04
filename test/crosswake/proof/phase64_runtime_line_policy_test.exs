@@ -141,16 +141,18 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
 
   @tag :rline_02
   test "canonical manifest compatibility.manifest_schema_version is 1.0.0" do
-    manifest = SupportMatrix.canonical()
-    compat = manifest.compatibility
+    # SupportMatrix.canonical/0 returns a %SupportMatrix{} (no :compatibility field).
+    # The canonical compatibility record is Types.new_compatibility/0 — the same
+    # source Manifest.Builder.build/3 uses when constructing the full manifest root.
+    compat = Types.new_compatibility()
 
     assert compat.manifest_schema_version == "1.0.0",
            ProofAssertions.stable_id_message(
              "proof.rline_02.manifest_schema_version",
              "manifest_schema_version",
-             "SupportMatrix.canonical/0 → compatibility.manifest_schema_version",
+             "Crosswake.Manifest.Types.new_compatibility/0 → manifest_schema_version",
              "manifest_schema_version value differs from locked \"1.0.0\"",
-             "lib/crosswake/support_matrix/support_matrix.ex",
+             "lib/crosswake/manifest/types.ex",
              "bump manifest_schema_version only through a phase — NOT by editing the field value",
              :merge_blocking
            )
