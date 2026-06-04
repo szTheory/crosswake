@@ -218,8 +218,11 @@ Plans:
   3. The iOS and Android shells in `examples/` read `native_runtime_version`, enforce the rebuild check via `ActivationCoordinator`, and emit sanitized diagnostic envelopes over the HTTP seam — mirroring the contracts without adding bridge vocabulary.
   4. Android support truth remains `:verification_required` after this phase (no premature promotion); only the JVM-hermetic evidence axis is satisfied.
 
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 4 plans
+- [ ] 67-01-PLAN.md — Bump Android Toolchain & Setup Robolectric JVM CI
+- [ ] 67-02-PLAN.md — ActivationCoordinator Rebuild Check for iOS & Android
+- [ ] 67-03-PLAN.md — Android ApplicationExitInfo Diagnostic Export
+- [ ] 67-04-PLAN.md — iOS MetricKit Diagnostic Export
 
 ### Phase 68: Android Verification Closure & Device-UAT
 
@@ -259,6 +262,6 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
 | 65. Diagnostic Export Seam (Elixir) | v4.0 | 3/3 | Complete    | 2026-06-04 |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
-| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
+| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 4/4 | Not started | - |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
 | 69. Docs-Contract Parity Gate, Android Promotion & Closeout | v4.0 | 0/TBD | Not started | - |
