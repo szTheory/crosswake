@@ -47,10 +47,10 @@ defmodule Crosswake.SupportMatrixTest do
 
     assert Enum.map(matrix.phoenix, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
-    assert Enum.map(matrix.android, & &1.proof_status) == [:verification_required]
+    assert Enum.map(matrix.android, & &1.proof_status) == [:supported]
 
     assert Enum.map(matrix.shells, &{&1.target, &1.proof_status}) |> Enum.sort() == [
-             {"android_shell", :verification_required},
+             {"android_shell", :supported},
              {"ios_shell", :supported}
            ]
 

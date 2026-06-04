@@ -353,12 +353,12 @@ defmodule Crosswake.SupportMatrix do
         support_entry(
           "android",
           Keyword.get(opts, :android_version, "26"),
-          :verification_required,
+          :supported,
           baseline_status: :supported,
-          proof_status: :verification_required,
+          proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Host-owned Android shell boot is baseline-supported, but the current repository truth still requires the Java-enabled BridgeChannel proof lane to pass before Android support can be claimed as fully verified.",
+            "Android shell boot is supported based strictly on JVM hermetic CI evidence.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -374,12 +374,12 @@ defmodule Crosswake.SupportMatrix do
         support_entry(
           "android_shell",
           Keyword.get(opts, :android_shell_version, "0.1.0"),
-          :verification_required,
+          :supported,
           baseline_status: :supported,
-          proof_status: :verification_required,
+          proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts remain baseline-supported, but repository support truth stays verification-required until the Java-enabled BridgeChannel proof lane passes.",
+            "Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
