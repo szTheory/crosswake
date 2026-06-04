@@ -1,9 +1,9 @@
 ---
 phase: 69
 slug: docs-contract-parity-gate-android-promotion-closeout
-status: draft
+status: passed
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-06-04
 ---
 
@@ -40,11 +40,11 @@ created: 2026-06-04
 
 | Req | Behavior | Test Type | Automated Command | File Exists | Status |
 |-----|----------|-----------|-------------------|-------------|--------|
-| PROOF-01 | `phase69_docs_contract_parity_test.exs` parses manifest, shell fixture, doctor JSON output, and guides (`native_shell.md`, `compatibility.md`, `support_matrix.md`) and asserts parity. | proof | `mix test …/phase69_docs_contract_parity_test.exs` | ❌ W0 | ⬜ pending |
-| PROOF-02 | Guides explicitly document runtime-line policy, rebuild/compatibility matrix, permission/entitlement templates, and diagnostics export. | integration | `mix test …/phase69_docs_contract_parity_test.exs` | ❌ W0 | ⬜ pending |
-| PROOF-02 | `SupportMatrix` Android status and proof_status update to `:supported`. | unit | `mix test test/crosswake/support_matrix/support_matrix_test.exs` | ✅ | ⬜ pending |
-| PROOF-03 | Milestone closeout command deterministically passes over the v4.0 milestone requirements and constraints. | integration | `mix closeout.verify --closeout-path .planning/milestones/v4.0-CLOSEOUT.md` | ❌ W0 | ⬜ pending |
-| PROOF-03 | CI executes `mix closeout.verify` and treats it as merge-blocking. | unit | `mix test test/crosswake/planning/closeout_ci_parity_test.exs` | ✅ | ⬜ pending |
+| PROOF-01 | `phase69_docs_contract_parity_test.exs` parses manifest, shell fixture, doctor JSON output, and guides (`native_shell.md`, `compatibility.md`, `support_matrix.md`) and asserts parity. | proof | `mix test …/phase69_docs_contract_parity_test.exs` | ✅ | ✅ green |
+| PROOF-02 | Guides explicitly document runtime-line policy, rebuild/compatibility matrix, permission/entitlement templates, and diagnostics export. | integration | `mix test …/phase69_docs_contract_parity_test.exs` | ✅ | ✅ green |
+| PROOF-02 | `SupportMatrix` Android status and proof_status update to `:supported`. | unit | `mix test test/crosswake/support_matrix/support_matrix_test.exs` | ✅ | ✅ green |
+| PROOF-03 | Milestone closeout command deterministically passes over the v4.0 milestone requirements and constraints. | integration | `mix closeout.verify --closeout-path .planning/milestones/v4.0-CLOSEOUT.md` | ✅ | ✅ green |
+| PROOF-03 | CI executes `mix closeout.verify` and treats it as merge-blocking. | unit | `mix test test/crosswake/planning/closeout_ci_parity_test.exs` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,8 +52,8 @@ created: 2026-06-04
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/proof/phase69_docs_contract_parity_test.exs` — hermetic proof lane covering all PROOF-01/02 assertions.
-- [ ] `.planning/milestones/v4.0-CLOSEOUT.md` — v4.0 milestone closeout ledger.
+- [x] `test/crosswake/proof/phase69_docs_contract_parity_test.exs` — hermetic proof lane covering all PROOF-01/02 assertions.
+- [x] `.planning/milestones/v4.0-CLOSEOUT.md` — v4.0 milestone closeout ledger.
 
 ---
 
@@ -85,4 +85,4 @@ created: 2026-06-04
 - [x] Feedback latency < 10s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** granted
