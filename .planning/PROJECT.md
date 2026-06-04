@@ -191,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-03 — started milestone v4.0 Production Shell Runtime Line. Added Current Milestone section (shell runtime-line policy, rebuild/compat matrix, permission/entitlement templates, diagnostics export, Android verification closure); Active requirements now point at v4.0 pending requirement definition.*
+*Last updated: 2026-06-04 — v4.0 Phase 65 (Diagnostic Export Seam, Elixir) complete: DIAG-01..04 shipped (behaviour-only `Crosswake.Shell.DiagnosticExport` HTTP seam — no bridge command, no HTTP dep; typed/versioned layer-attributed envelope; fail-closed `sanitize/1` redaction allowlist validated at any nesting depth; non-overclaiming support-truth + advisory doctor readiness). Verification passed 17/17; code review's redaction-bypass finding fixed in-phase. Phases 64–65 done; next is Phase 66 (generator templates + Xcode 26 CI fix).*
