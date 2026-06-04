@@ -127,7 +127,7 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 **Milestone Goal:** Harden Crosswake's checked-in iOS/Android shells into a documented, proof-backed production runtime line so adopters can ship and maintain real mobile apps without guessing at compatibility, rebuilds, permissions, or diagnostics.
 
 - [x] **Phase 64: Runtime-Line Policy Contract & Support-Truth Taxonomy** - Lock the OTA-safe vs. rebuild change classification, the `:jvm_hermetic` vs. `:device_verified` evidence taxonomy, the compatibility matrix, and Android promotion criteria — derived from the existing `native_runtime_version` axis, no native code. (completed 2026-06-04)
-- [ ] **Phase 65: Diagnostic Export Seam (Elixir)** - Define the redaction allowlist and typed envelope schema for a fire-and-forget HTTP diagnostics seam before any native export code exists.
+- [x] **Phase 65: Diagnostic Export Seam (Elixir)** - Define the redaction allowlist and typed envelope schema for a fire-and-forget HTTP diagnostics seam before any native export code exists. (completed 2026-06-04)
 - [ ] **Phase 66: Generator Templates & Xcode 26 CI Fix** - Emit host-owned iOS/Android permission/entitlement and runtime-line templates from the locked contracts, with placeholder/drift doctor checks, and move iOS CI onto the Xcode 26 SDK.
 - [ ] **Phase 67: Native Shell Implementation & Android JVM Hermetic Proof** - Mirror the contracts/templates in the iOS and Android shells, bump Android toolchain floors, and close the JVM-hermetic evidence gap with merge-blocking proof.
 - [ ] **Phase 68: Android Verification Closure & Device-UAT** - Add the advisory emulator lane and a capability-parity-locked device-UAT checklist with explicit promotion criteria.
@@ -188,7 +188,7 @@ Plans:
 
 **Wave 3** *(blocked on Waves 1+2 completion)*
 
-- [ ] 65-03-PLAN.md — Six generated fixtures + merge-blocking hermetic proof lane covering DIAG-01..04
+- [x] 65-03-PLAN.md — Six generated fixtures + merge-blocking hermetic proof lane covering DIAG-01..04
 
 ### Phase 66: Generator Templates & Xcode 26 CI Fix
 
@@ -257,7 +257,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
-| 65. Diagnostic Export Seam (Elixir) | v4.0 | 2/3 | In Progress|  |
+| 65. Diagnostic Export Seam (Elixir) | v4.0 | 3/3 | Complete   | 2026-06-04 |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
 | 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
