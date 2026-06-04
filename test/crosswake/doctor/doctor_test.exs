@@ -1129,4 +1129,112 @@ defmodule Crosswake.DoctorTest do
     File.mkdir_p!(Path.dirname(path))
     File.write!(path, contents)
   end
+
+  # Phase 65 — DIAG-04: unconditional :advisory doctor finding
+  describe "phase_65_diagnostic_export finding (DIAG-04)" do
+    test "run/1 includes exactly one finding with code diagnostic_export.contract_shipped",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+      assert length(matching) == 1
+    end
+
+    test "the diagnostic_export.contract_shipped finding has severity :advisory",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.severity == :advisory
+    end
+
+    test "the finding fires unconditionally even with empty opts (no manifest path)",
+         %{target: target} do
+      # Run with minimal opts — no manifest, no notifications; finding must still appear
+      report = Doctor.run(cwd: target)
+
+      matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+      assert length(matching) == 1
+    end
+
+    test "the finding message does NOT contain the phrase 'crash-reporting service'",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      refute String.contains?(finding.message, "crash-reporting service"),
+             "doctor finding message must not contain 'crash-reporting service' (seam language lives in SupportMatrix posture)"
+    end
+
+    test "the finding details carry delivery_supported: false",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.details.delivery_supported == false
+    end
+
+    test "the finding details carry the 3-atom deferred list",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert :native_diagnostic_export in finding.details.deferred
+      assert :metrickit_capture in finding.details.deferred
+      assert :application_exit_info_capture in finding.details.deferred
+    end
+
+    test "the finding details carry authority_source: :host_configured_endpoint",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.details.authority_source == :host_configured_endpoint
+    end
+  end
 end
