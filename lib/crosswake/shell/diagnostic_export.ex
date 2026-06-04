@@ -81,8 +81,11 @@ defmodule Crosswake.Shell.DiagnosticExport do
     :provider_response_body
   ]
 
-  # Allowed keys = all declared envelope fields + native_diagnostic sub-struct fields.
-  # This is the explicit allowlist that sanitize/1 validates against.
+  # Allowed keys = all declared envelope fields + native_diagnostic sub-struct
+  # fields. Exposed via allowed_keys/0 for proof/documentation as the full
+  # union allowlist. sanitize/1 validates the OUTER map's keys against
+  # @envelope_fields; the nested native_diagnostic map is validated against
+  # @native_diagnostic_fields when coerced through new_native_diagnostic/1.
   @envelope_fields [
     :schema_version,
     :layer,
@@ -240,8 +243,13 @@ defmodule Crosswake.Shell.DiagnosticExport do
   def forbidden_keys, do: @forbidden_keys
 
   @doc """
-  Returns the declared allowed key set (envelope fields + native_diagnostic fields).
-  Shares no key with `forbidden_keys/0`.
+  Returns the declared allowed key set (envelope fields + native_diagnostic
+  fields) as the documented union allowlist. Shares no key with
+  `forbidden_keys/0`.
+
+  Note: `sanitize/1` validates the outer input map's keys against the envelope
+  fields; the nested `native_diagnostic` map is validated against the
+  native-diagnostic fields when coerced into a typed `NativeDiagnostic`.
   """
   @spec allowed_keys() :: [atom()]
   def allowed_keys, do: @allowed_keys
@@ -361,9 +369,34 @@ defmodule Crosswake.Shell.DiagnosticExport do
 
   defp build_envelope(attrs) do
     with :ok <- reject_forbidden_attrs(attrs),
+         {:ok, attrs} <- coerce_native_diagnostic(attrs),
          {:ok, struct} <- struct_from_attrs(Envelope, attrs),
          :ok <- validate_envelope(struct) do
       {:ok, struct}
+    end
+  end
+
+  # A `native_diagnostic` supplied as a raw map is untrusted surface: routing it
+  # through the typed, fail-closed `NativeDiagnostic` constructor rejects nested
+  # forbidden keys, unexpected keys, and out-of-enum values instead of storing
+  # them verbatim. Without this, `reject_forbidden_attrs/1` and the top-level
+  # `sanitize/1` key checks only inspect the outer map, so a forbidden key
+  # nested under `:native_diagnostic` (e.g. `%{source: ..., token: "secret"}`)
+  # would bypass the allowlist and later serialize through `to_map/1`. An
+  # already-typed `%NativeDiagnostic{}` (allowlist-by-construction) or `nil`
+  # passes through unchanged.
+  defp coerce_native_diagnostic(attrs) do
+    case Map.get(attrs, :native_diagnostic) do
+      nil -> {:ok, attrs}
+      %NativeDiagnostic{} -> {:ok, attrs}
+      nested when is_map(nested) ->
+        case new_native_diagnostic(nested) do
+          {:ok, nd} -> {:ok, Map.put(attrs, :native_diagnostic, nd)}
+          {:error, _} = error -> error
+        end
+
+      _ ->
+        {:error, [native_diagnostic: :invalid]}
     end
   end
 

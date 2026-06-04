@@ -272,7 +272,7 @@ defmodule Crosswake.SupportMatrix do
     %{
       surface: "diagnostic export envelope contract",
       proof_class: :merge_blocking,
-      action_class: "shell_native",
+      action_class: "native_shell",
       docs_anchor: "guides/capabilities.md#diagnostic-export",
       delivery_supported: false,
       telemetry: %{

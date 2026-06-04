@@ -531,6 +531,128 @@ defmodule Crosswake.Proof.Phase65DiagnosticExportSeamTest do
     end
   end
 
+  @tag :diag_03
+  test "sanitize/1 returns {:error, :redaction_failed} for an unexpected top-level key" do
+    # Guards the @envelope_fields allowlist branch: a key that is neither
+    # forbidden nor a declared envelope field must still fail closed.
+    base_attrs = %{
+      schema_version: "1",
+      layer: :native,
+      platform: :ios,
+      kind: :crash,
+      native_runtime_version: "1.0.0",
+      correlation_id: "phase65-sanitize-unexpected",
+      observed_at: "2026-06-04T00:00:00Z"
+    }
+
+    attrs_with_unexpected = Map.put(base_attrs, :totally_unexpected_key, "value")
+
+    result = DiagnosticExport.sanitize(attrs_with_unexpected)
+
+    assert result == {:error, :redaction_failed},
+           ProofAssertions.stable_id_message(
+             "proof.diag_03.sanitize.rejects_unexpected_key",
+             "sanitize/1 must return {:error, :redaction_failed} for a key outside the allowlist",
+             "Crosswake.Shell.DiagnosticExport.sanitize/1",
+             "sanitize/1 returned #{inspect(result)} — should have rejected an unexpected key",
+             "lib/crosswake/shell/diagnostic_export.ex",
+             "fail-closed: any key outside @envelope_fields must be rejected (DIAG-03 D-14)",
+             :merge_blocking
+           )
+  end
+
+  @tag :diag_03
+  test "sanitize/1 rejects a forbidden key nested inside the native_diagnostic sub-map" do
+    # Regression guard (CR-01): a forbidden key hidden one level down, inside an
+    # untrusted native_diagnostic map, must not bypass the allowlist. The nested
+    # map is coerced through the typed NativeDiagnostic constructor, which rejects
+    # any key it does not declare — forbidden or merely unexpected.
+    for key <- @forbidden_keys_canonical do
+      base_attrs = %{
+        schema_version: "1",
+        layer: :native,
+        platform: :ios,
+        kind: :crash,
+        native_runtime_version: "1.0.0",
+        correlation_id: "phase65-sanitize-nested-forbidden",
+        observed_at: "2026-06-04T00:00:00Z",
+        native_diagnostic: Map.put(%{source: :metrickit, exit_reason: :crash}, key, "leaked")
+      }
+
+      result = DiagnosticExport.sanitize(base_attrs)
+
+      assert result == {:error, :redaction_failed},
+             ProofAssertions.stable_id_message(
+               "proof.diag_03.sanitize.rejects_nested_forbidden_key_#{key}",
+               "sanitize/1 must reject :#{key} nested inside native_diagnostic",
+               "Crosswake.Shell.DiagnosticExport.sanitize/1",
+               "sanitize/1 returned #{inspect(result)} — nested forbidden key :#{key} bypassed redaction",
+               "lib/crosswake/shell/diagnostic_export.ex",
+               "fail-closed: forbidden keys must be rejected at any depth, not just top level (DIAG-03 D-14)",
+               :merge_blocking
+             )
+    end
+  end
+
+  @tag :diag_03
+  test "sanitize/1 rejects an unexpected key nested inside the native_diagnostic sub-map" do
+    base_attrs = %{
+      schema_version: "1",
+      layer: :native,
+      platform: :ios,
+      kind: :crash,
+      native_runtime_version: "1.0.0",
+      correlation_id: "phase65-sanitize-nested-unexpected",
+      observed_at: "2026-06-04T00:00:00Z",
+      native_diagnostic: %{source: :metrickit, exit_reason: :crash, extra: "value"}
+    }
+
+    result = DiagnosticExport.sanitize(base_attrs)
+
+    assert result == {:error, :redaction_failed},
+           ProofAssertions.stable_id_message(
+             "proof.diag_03.sanitize.rejects_nested_unexpected_key",
+             "sanitize/1 must reject a key outside the native_diagnostic field set",
+             "Crosswake.Shell.DiagnosticExport.sanitize/1",
+             "sanitize/1 returned #{inspect(result)} — unexpected nested key bypassed the allowlist",
+             "lib/crosswake/shell/diagnostic_export.ex",
+             "fail-closed: native_diagnostic accepts only :source and :exit_reason (DIAG-03 D-14)",
+             :merge_blocking
+           )
+  end
+
+  @tag :diag_03
+  test "sanitize/1 round-trips a valid typed native_diagnostic sub-map into a struct" do
+    # Positive control: a clean nested native_diagnostic must still succeed and
+    # be coerced into a %NativeDiagnostic{} (not left as a raw map).
+    valid_attrs = %{
+      schema_version: "1",
+      layer: :native,
+      platform: :ios,
+      kind: :crash,
+      native_runtime_version: "1.0.0",
+      correlation_id: "phase65-sanitize-nested-valid",
+      observed_at: "2026-06-04T00:00:00Z",
+      native_diagnostic: %{source: :metrickit, exit_reason: :crash}
+    }
+
+    result = DiagnosticExport.sanitize(valid_attrs)
+
+    assert match?(
+             {:ok, %DiagnosticExport.Envelope{native_diagnostic: %DiagnosticExport.NativeDiagnostic{}}},
+             result
+           ),
+           ProofAssertions.stable_id_message(
+             "proof.diag_03.sanitize.coerces_valid_nested",
+             "sanitize/1 must accept a clean nested native_diagnostic and type it",
+             "Crosswake.Shell.DiagnosticExport.sanitize/1",
+             "sanitize/1 returned #{inspect(result)} for a valid nested native_diagnostic",
+             "lib/crosswake/shell/diagnostic_export.ex",
+             "fail-closed redaction must not reject well-formed typed inputs (DIAG-03 D-14)",
+             :merge_blocking
+           )
+  end
+
   # ---------------------------------------------------------------------------
   # DIAG-04 — Support-truth + advisory doctor readiness present + non-overclaiming
   #
