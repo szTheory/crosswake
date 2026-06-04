@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
         enableEdgeToEdge()
         activationCoordinator = ActivationCoordinator.bundled(this)
 
+        DiagnosticExportManager.start(this, "https://api.example.com/diagnostics/export", "0.1.0")
+
         if (savedInstanceState == null) {
             render(activationCoordinator.bootstrapIfNeeded(intent), preserveCurrentRoute = false)
         }
