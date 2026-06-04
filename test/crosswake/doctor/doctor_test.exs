@@ -78,7 +78,10 @@ defmodule Crosswake.DoctorTest do
         cwd: target
       )
 
-    assert report.status == :error
+    # Phase 64: shell proof verification_required is now :warning (not :error).
+    # The doctor status is :ok when only warnings are present; proof verification
+    # requirements are advisory until --native-checks explicitly runs them.
+    assert report.status == :ok
     assert report.manifest != nil
     assert report.support.status == :verification_required
     assert report.shells.ios.generated.ok?
