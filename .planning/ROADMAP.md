@@ -184,7 +184,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 65-02-PLAN.md — SupportMatrix diagnostic-export truth + unconditional :advisory doctor finding, non-overclaiming (DIAG-04)
+- [x] 65-02-PLAN.md — SupportMatrix diagnostic-export truth + unconditional :advisory doctor finding, non-overclaiming (DIAG-04)
 
 **Wave 3** *(blocked on Waves 1+2 completion)*
 
@@ -257,7 +257,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
-| 65. Diagnostic Export Seam (Elixir) | v4.0 | 1/3 | In Progress|  |
+| 65. Diagnostic Export Seam (Elixir) | v4.0 | 2/3 | In Progress|  |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
 | 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |

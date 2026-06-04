@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Production Shell Runtime Line
 status: executing
-last_updated: "2026-06-04T08:00:44.508Z"
+last_updated: "2026-06-04T08:07:01.346Z"
 last_activity: 2026-06-04
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 17
 ---
 
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-06-03)
 ## Current Position
 
 Phase: 65 (diagnostic-export-seam-elixir) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-04
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 89%
 
 ## v4.0 Roadmap (Phases 64-69)
 
@@ -79,6 +79,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Phase 64-06]: Removed @rebuild_matrix_rows "2.x" entry (evidence_tier: :device_verified) — the 2.x band does not exist; re-introduction requires passing the validate_rebuild_matrix_evidence/2 gate added to validate/1 pipe.
 - [Phase 64-06]: Reverted finding_policy.ex :verification_required severity to :error (WR-04 gap closed); hermetic proof tests use rescue Mix.Error inside capture_io blocks (Phase 52 pattern) rather than severity relaxation. RLINE-04 SATISFIED.
 - [Phase ?]: Phase 65-01: DiagnosticExport behaviour-only seam — @callback export/1 only, no transport code, sanitize/1 fail-closed with 19-key forbidden set
+- [Phase ?]: Phase 65-02: @diagnostic_export_support_truth — delivery_supported false, proof_class merge_blocking, authority_source host_configured_endpoint, deferred 3 atoms
+- [Phase ?]: Phase 65-02: Doctor finding diagnostic_export.contract_shipped — :advisory severity, fires unconditionally, message excludes crash-reporting-service
 
 ### Pending Todos
 
@@ -100,6 +102,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | 260603-nzr | Fix recurring validation-ledger debt — closeout gate teeth + cleared backlog (v3.8/v3.9 ledgers signed, v3.6 accept-closed) + un-brittled requirements.state. closeout.verify green, 746 tests pass. | 2026-06-03 | f59b06d | [260603-nzr-tighten-validation-ledger-closeout-gate](./quick/260603-nzr-tighten-validation-ledger-closeout-gate/) |
 | Phase 64 P06 | 406 | 3 tasks | 6 files |
 | Phase 65-diagnostic-export-seam-elixir P01 | 307 | 2 tasks | 2 files |
+| Phase 65-diagnostic-export-seam-elixir P02 | 196 | 2 tasks | 4 files |
 
 ## Deferred Items
 
@@ -115,8 +118,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-04T08:00:44.503Z
-Stopped at: Completed 65-01-PLAN.md
+Last session: 2026-06-04T08:07:01.339Z
+Stopped at: Completed 65-02-PLAN.md
 
 ## Operator Next Steps
 

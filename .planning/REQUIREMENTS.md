@@ -27,7 +27,7 @@ Requirements for milestone v4.0. Each maps to roadmap phases. ("User" = the adop
 - [x] **DIAG-01**: The shell can export crash/diagnostic evidence to a host-owned endpoint as a fire-and-forget HTTP POST (iOS MetricKit, Android `ApplicationExitInfo`), not through the bounded bridge.
 - [x] **DIAG-02**: Diagnostic export payloads carry layer attribution (native/web/bridge) and a stable, typed envelope schema.
 - [x] **DIAG-03**: Diagnostic export applies an explicit, tested redaction allowlist that forbids raw tokens, payloads, route params, and PII (reusing the v3.9 Chimeway/Sigra redaction posture).
-- [ ] **DIAG-04**: `mix crosswake.doctor` and support truth report diagnostics-export readiness without implying a first-party crash-reporting service.
+- [x] **DIAG-04**: `mix crosswake.doctor` and support truth report diagnostics-export readiness without implying a first-party crash-reporting service.
 
 ### Android Verification Closure (AVER)
 
@@ -88,7 +88,7 @@ Which phases cover which requirements. Filled during roadmap creation.
 | DIAG-01 | Phase 65 | Complete |
 | DIAG-02 | Phase 65 | Complete |
 | DIAG-03 | Phase 65 | Complete |
-| DIAG-04 | Phase 65 | Pending |
+| DIAG-04 | Phase 65 | Complete |
 | AVER-01 | Phase 67 | Pending |
 | AVER-02 | Phase 67 | Pending |
 | AVER-03 | Phase 68 | Pending |
