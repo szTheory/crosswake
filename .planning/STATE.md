@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Production Shell Runtime Line
 status: executing
-last_updated: "2026-06-04T06:28:26.561Z"
-last_activity: 2026-06-04 -- Phase 64 planning complete
+last_updated: "2026-06-04T06:39:38.093Z"
+last_activity: 2026-06-04
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
-  percent: 0
+  completed_plans: 6
+  percent: 17
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-06-03)
 ## Current Position
 
 Phase: 64 (runtime-line-policy-contract-support-truth-taxonomy) — EXECUTING
-Plan: 1 of 5
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-06-04 -- Phase 64 planning complete
+Last activity: 2026-06-04
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## v4.0 Roadmap (Phases 64-69)
 
@@ -76,6 +76,8 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Milestone v3.9]: Chimeway notification work is companion-first with a narrow core route-policy hook; token/open evidence stays non-authoritative, backend binding and RouteGate decide, and provider/device delivery proof remains advisory.
 - [Phase 58]: Full Sigra machinery is shipped as backend-owned auth/session contracts with sanitized telemetry, support/operator truth, security closeout, and hermetic proof; provider/device auth proof remains advisory.
 - [Phase 53]: Closeout verification uses `Crosswake.Planning.CloseoutVerifier` and `mix closeout.verify` as the deterministic REL-01 gate.
+- [Phase 64-06]: Removed @rebuild_matrix_rows "2.x" entry (evidence_tier: :device_verified) — the 2.x band does not exist; re-introduction requires passing the validate_rebuild_matrix_evidence/2 gate added to validate/1 pipe.
+- [Phase 64-06]: Reverted finding_policy.ex :verification_required severity to :error (WR-04 gap closed); hermetic proof tests use rescue Mix.Error inside capture_io blocks (Phase 52 pattern) rather than severity relaxation. RLINE-04 SATISFIED.
 
 ### Pending Todos
 
@@ -95,6 +97,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260603-nzr | Fix recurring validation-ledger debt — closeout gate teeth + cleared backlog (v3.8/v3.9 ledgers signed, v3.6 accept-closed) + un-brittled requirements.state. closeout.verify green, 746 tests pass. | 2026-06-03 | f59b06d | [260603-nzr-tighten-validation-ledger-closeout-gate](./quick/260603-nzr-tighten-validation-ledger-closeout-gate/) |
+| Phase 64 P06 | 406 | 3 tasks | 6 files |
 
 ## Deferred Items
 
@@ -110,7 +113,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 
 ## Session Continuity
 
-Last session: 2026-06-03T23:07:46.669Z
+Last session: 2026-06-04T06:39:38.088Z
 Stopped at: Phase 64 context gathered
 
 ## Operator Next Steps

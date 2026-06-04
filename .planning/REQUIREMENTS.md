@@ -12,7 +12,7 @@ Requirements for milestone v4.0. Each maps to roadmap phases. ("User" = the adop
 - [ ] **RLINE-01**: Adopters can determine, for any manifest/capability/shell change, whether it is OTA-safe or requires a native rebuild, classified per change class (bridge schema change, capability family add, permission add, entitlement add, SDK floor bump, privacy-manifest entry, push capability change, URL-scheme change).
 - [ ] **RLINE-02**: The rebuild/OTA policy is derived from the existing manifest `native_runtime_version` compatibility axis without introducing a new manifest schema field or breaking deployed shells.
 - [ ] **RLINE-03**: Operators can view a rebuild & compatibility matrix through `SupportMatrix` and `mix crosswake.doctor` showing which shell/runtime-line version supports which manifest/capability surface.
-- [ ] **RLINE-04**: Support truth distinguishes `:jvm_hermetic` from `:device_verified` evidence and never reports CI-only evidence as device-verified.
+- [x] **RLINE-04**: Support truth distinguishes `:jvm_hermetic` from `:device_verified` evidence and never reports CI-only evidence as device-verified.
 - [ ] **RLINE-05**: Android support state carries explicit, documented promotion criteria for moving from `:verification_required` to `:supported`.
 
 ### Permission/Entitlement Templates (TMPL)
@@ -79,7 +79,7 @@ Which phases cover which requirements. Filled during roadmap creation.
 | RLINE-01 | Phase 64 | Pending |
 | RLINE-02 | Phase 64 | Pending |
 | RLINE-03 | Phase 64 | Pending |
-| RLINE-04 | Phase 64 | Pending |
+| RLINE-04 | Phase 64 | Complete |
 | RLINE-05 | Phase 64 | Pending |
 | TMPL-01 | Phase 66 | Pending |
 | TMPL-02 | Phase 66 | Pending |
