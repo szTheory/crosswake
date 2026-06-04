@@ -129,7 +129,7 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 - [x] **Phase 64: Runtime-Line Policy Contract & Support-Truth Taxonomy** - Lock the OTA-safe vs. rebuild change classification, the `:jvm_hermetic` vs. `:device_verified` evidence taxonomy, the compatibility matrix, and Android promotion criteria — derived from the existing `native_runtime_version` axis, no native code. (completed 2026-06-04)
 - [x] **Phase 65: Diagnostic Export Seam (Elixir)** - Define the redaction allowlist and typed envelope schema for a fire-and-forget HTTP diagnostics seam before any native export code exists. (completed 2026-06-04)
 - [x] **Phase 66: Generator Templates & Xcode 26 CI Fix** - Emit host-owned iOS/Android permission/entitlement and runtime-line templates from the locked contracts, with placeholder/drift doctor checks, and move iOS CI onto the Xcode 26 SDK.
-- [ ] **Phase 67: Native Shell Implementation & Android JVM Hermetic Proof** - Mirror the contracts/templates in the iOS and Android shells, bump Android toolchain floors, and close the JVM-hermetic evidence gap with merge-blocking proof.
+- [x] **Phase 67: Native Shell Implementation & Android JVM Hermetic Proof** - Mirror the contracts/templates in the iOS and Android shells, bump Android toolchain floors, and close the JVM-hermetic evidence gap with merge-blocking proof. (completed 2026-06-04)
 - [ ] **Phase 68: Android Verification Closure & Device-UAT** - Add the advisory emulator lane and a capability-parity-locked device-UAT checklist with explicit promotion criteria.
 - [ ] **Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout** - Ship the merge-blocking manifest↔shell↔guide↔doctor parity gate, promote Android support truth only if criteria pass, and run milestone closeout.
 
@@ -222,7 +222,7 @@ Plans:
 - [x] 67-01-PLAN.md — Bump Android Toolchain & Setup Robolectric JVM CI
 - [x] 67-02-PLAN.md — ActivationCoordinator Rebuild Check for iOS & Android
 - [x] 67-03-PLAN.md — Android ApplicationExitInfo Diagnostic Export
-- [ ] 67-04-PLAN.md — iOS MetricKit Diagnostic Export
+- [x] 67-04-PLAN.md — iOS MetricKit Diagnostic Export
 
 ### Phase 68: Android Verification Closure & Device-UAT
 
@@ -261,7 +261,10 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 |-------|-----------|----------------|--------|-----------|
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
 | 65. Diagnostic Export Seam (Elixir) | v4.0 | 3/3 | Complete    | 2026-06-04 |
-| 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
-| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 3/4 | In Progress|  |
+| 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 3/3 | Complete    | 2026-06-04 |
+| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 4/4 | Complete   | 2026-06-04 |
+| 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
+| 69. Docs-Contract Parity Gate, Android Promotion & Closeout | v4.0 | 0/TBD | Not started | - |
+  | 2026-06-04 |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
 | 69. Docs-Contract Parity Gate, Android Promotion & Closeout | v4.0 | 0/TBD | Not started | - |
