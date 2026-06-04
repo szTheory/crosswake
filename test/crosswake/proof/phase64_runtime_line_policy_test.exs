@@ -117,11 +117,10 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       :url_scheme_change
     ]
 
-    for change_class <- capability_axis_classes do
+    Enum.each(capability_axis_classes, fn change_class ->
       assert_raise ArgumentError,
-                   fn -> RebuildPolicy.classify(change_class, nil) end,
-                   "Expected ArgumentError for #{change_class} with nil capability"
-    end
+                   fn -> RebuildPolicy.classify(change_class, nil) end
+    end)
   end
 
   @tag :rline_01
