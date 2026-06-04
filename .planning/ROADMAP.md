@@ -221,7 +221,7 @@ Plans:
 **Plans**: 4 plans
 - [x] 67-01-PLAN.md — Bump Android Toolchain & Setup Robolectric JVM CI
 - [x] 67-02-PLAN.md — ActivationCoordinator Rebuild Check for iOS & Android
-- [ ] 67-03-PLAN.md — Android ApplicationExitInfo Diagnostic Export
+- [x] 67-03-PLAN.md — Android ApplicationExitInfo Diagnostic Export
 - [ ] 67-04-PLAN.md — iOS MetricKit Diagnostic Export
 
 ### Phase 68: Android Verification Closure & Device-UAT
@@ -262,6 +262,6 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 | 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 6/6 | Complete    | 2026-06-04 |
 | 65. Diagnostic Export Seam (Elixir) | v4.0 | 3/3 | Complete    | 2026-06-04 |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
-| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 2/4 | In Progress|  |
+| 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 3/4 | In Progress|  |
 | 68. Android Verification Closure & Device-UAT | v4.0 | 0/TBD | Not started | - |
 | 69. Docs-Contract Parity Gate, Android Promotion & Closeout | v4.0 | 0/TBD | Not started | - |
