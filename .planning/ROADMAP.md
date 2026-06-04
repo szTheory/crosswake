@@ -78,7 +78,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
-| 71. Notification-Driven Workflow Proof | 3/3 | Complete   | 2026-06-04 |
+| 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
 | 72. Media/Evidence Workflow Proof | 0/0 | Not started | - |
 | 73. Auth-Sensitive Admin Workflow Proof | 0/0 | Not started | - |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
