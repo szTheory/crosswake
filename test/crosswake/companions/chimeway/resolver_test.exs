@@ -106,6 +106,55 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     assert denial.code == "notification.open.replayed"
   end
 
+  test "normalizes revoked binding and action mismatch states to canonical codes", %{
+    manifest: manifest
+  } do
+    for {state, code} <- [
+          {"revoked", "notification.open.binding_revoked"},
+          {"binding_revoked", "notification.open.binding_revoked"},
+          {"action_mismatch", "notification.open.action_mismatch"}
+        ] do
+      evidence = struct(NotificationOpenEvidence, open_ref: state, route_id: "dashboard")
+
+      assert {:deny, %Denial{} = denial} =
+               Resolver.resolve(manifest, evidence, MockIntentConsumer)
+
+      assert denial.reason == :notification_open_denied
+      assert denial.code == code
+    end
+  end
+
+  test "unknown intent state fails closed without raw-state public code", %{manifest: manifest} do
+    evidence = struct(NotificationOpenEvidence, open_ref: "internal_state", route_id: "dashboard")
+
+    assert {:deny, %Denial{} = denial} =
+             Resolver.resolve(manifest, evidence, MockIntentConsumer)
+
+    assert denial.reason == :notification_open_denied
+    assert denial.code == "notification.open.policy_denied"
+    refute denial.code == "notification.open.internal_state"
+    refute inspect(denial.details) =~ "internal_state"
+  end
+
+  test "sanitizes hostile details from intent-state denials", %{manifest: manifest} do
+    evidence =
+      struct(NotificationOpenEvidence,
+        open_ref: "expired",
+        route_id: "dashboard",
+        metadata: %{
+          raw_token: "raw-token-must-not-leak",
+          provider_payload: "provider-payload-must-not-leak",
+          email: "person@example.test"
+        }
+      )
+
+    assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
+
+    refute inspect(denial.details) =~ "raw-token-must-not-leak"
+    refute inspect(denial.details) =~ "provider-payload-must-not-leak"
+    refute inspect(denial.details) =~ "person@example.test"
+  end
+
   test "delegates to RouteGate when valid", %{manifest: manifest} do
     # RouteGate will return {:allow, %Decision{}} because it's a basic route unless we test auth
     evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "dashboard", auth_context: %{})
@@ -117,5 +166,6 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "auth_route", auth_context: %{})
     assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
     assert denial.reason == :step_up_required
+    assert denial.code =~ "auth.step_up."
   end
 end

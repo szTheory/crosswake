@@ -6,7 +6,7 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
 
   alias Crosswake.Companions.Chimeway.Contracts.NotificationOpenEvidence
   alias Crosswake.Companions.Chimeway.Contracts.OpenResolution
-  alias Crosswake.Companions.Sigra.DenialCodes
+  alias Crosswake.Companions.Chimeway.DenialCodes
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
@@ -53,10 +53,10 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
             end
 
           {:ok, %OpenResolution{state: state}} ->
-            deny(route, "notification.open.#{state}", %{intent_state: state})
+            deny(route, denial_code_for_intent_state(state), %{intent_state: state})
 
           {:error, state} ->
-            deny(route, "notification.open.#{state}", %{intent_state: state})
+            deny(route, denial_code_for_intent_state(state), %{intent_state: state})
         end
     end
   end
@@ -69,6 +69,23 @@ defmodule Crosswake.Companions.Chimeway.Resolver do
     action_ref in actions
   end
   defp action_allowed?(%RouteEntry{}, _action_ref), do: true
+
+  defp denial_code_for_intent_state(:expired), do: DenialCodes.notification_open_expired()
+  defp denial_code_for_intent_state(:replayed), do: DenialCodes.notification_open_replayed()
+
+  defp denial_code_for_intent_state(state) when state in [:revoked, :binding_revoked],
+    do: DenialCodes.notification_open_binding_revoked()
+
+  defp denial_code_for_intent_state(:binding_mismatch),
+    do: DenialCodes.notification_open_binding_mismatch()
+
+  defp denial_code_for_intent_state(:route_mismatch),
+    do: DenialCodes.notification_open_route_mismatch()
+
+  defp denial_code_for_intent_state(:action_mismatch),
+    do: DenialCodes.notification_open_action_mismatch()
+
+  defp denial_code_for_intent_state(_state), do: DenialCodes.notification_open_policy_denied()
 
   defp deny_no_route(route_id, code, details) do
     sanitized =

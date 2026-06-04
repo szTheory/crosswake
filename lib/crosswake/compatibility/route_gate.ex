@@ -66,11 +66,19 @@ defmodule Crosswake.Compatibility.RouteGate do
 
   defp transition_for(:allow, _route, _opts), do: :activate
 
-  defp transition_for(:deny, %RouteEntry{on_unavailable: {:fallback_phoenix, id}}, _opts) do
+  defp transition_for(:deny, route, opts) do
+    if Keyword.get(opts, :activation_source) == :notification do
+      :halt
+    else
+      transition_for_non_notification_denial(route, opts)
+    end
+  end
+
+  defp transition_for_non_notification_denial(%RouteEntry{on_unavailable: {:fallback_phoenix, id}}, _opts) do
     {:redirect, id}
   end
 
-  defp transition_for(:deny, _route, opts) do
+  defp transition_for_non_notification_denial(_route, opts) do
     if Keyword.get(opts, :activation_source) == :in_app_navigation do
       :stay_put
     else
