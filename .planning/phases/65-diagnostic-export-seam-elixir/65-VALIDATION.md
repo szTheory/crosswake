@@ -19,7 +19,7 @@ created: 2026-06-04
 |----------|-------|
 | **Framework** | ExUnit (Elixir / Mix) |
 | **Config file** | `test/test_helper.exs` |
-| **Quick run command** | `mix test test/crosswake/proof/phase65_diagnostic_export_test.exs` |
+| **Quick run command** | `mix test test/crosswake/proof/phase65_diagnostic_export_seam_test.exs` |
 | **Full suite command** | `mix test` |
 | **Estimated runtime** | ~{N} seconds |
 

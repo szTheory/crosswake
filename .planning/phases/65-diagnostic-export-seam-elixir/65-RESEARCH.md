@@ -772,7 +772,7 @@ No framework install needed — ExUnit already configured.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Optional `NativeDiagnostic.metadata` sub-map**
    - What we know: D-13 says "Default posture: typed codes only, no metadata map unless the planner finds a concrete need (user-confirmed: locked without one)."
