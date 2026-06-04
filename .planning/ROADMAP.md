@@ -128,7 +128,7 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 
 - [x] **Phase 64: Runtime-Line Policy Contract & Support-Truth Taxonomy** - Lock the OTA-safe vs. rebuild change classification, the `:jvm_hermetic` vs. `:device_verified` evidence taxonomy, the compatibility matrix, and Android promotion criteria — derived from the existing `native_runtime_version` axis, no native code. (completed 2026-06-04)
 - [x] **Phase 65: Diagnostic Export Seam (Elixir)** - Define the redaction allowlist and typed envelope schema for a fire-and-forget HTTP diagnostics seam before any native export code exists. (completed 2026-06-04)
-- [ ] **Phase 66: Generator Templates & Xcode 26 CI Fix** - Emit host-owned iOS/Android permission/entitlement and runtime-line templates from the locked contracts, with placeholder/drift doctor checks, and move iOS CI onto the Xcode 26 SDK.
+- [x] **Phase 66: Generator Templates & Xcode 26 CI Fix** - Emit host-owned iOS/Android permission/entitlement and runtime-line templates from the locked contracts, with placeholder/drift doctor checks, and move iOS CI onto the Xcode 26 SDK.
 - [ ] **Phase 67: Native Shell Implementation & Android JVM Hermetic Proof** - Mirror the contracts/templates in the iOS and Android shells, bump Android toolchain floors, and close the JVM-hermetic evidence gap with merge-blocking proof.
 - [ ] **Phase 68: Android Verification Closure & Device-UAT** - Add the advisory emulator lane and a capability-parity-locked device-UAT checklist with explicit promotion criteria.
 - [ ] **Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout** - Ship the merge-blocking manifest↔shell↔guide↔doctor parity gate, promote Android support truth only if criteria pass, and run milestone closeout.
