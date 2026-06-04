@@ -77,6 +77,7 @@ final class NotificationAppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         notificationTokenProvider.markConfigured()
+        DiagnosticExportManager.shared.start()
         return true
     }
 
