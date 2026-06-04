@@ -1,10 +1,37 @@
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex", __DIR__)
-Code.require_file("../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex", __DIR__)
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_backend_verifier.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/storefront_adapter.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/provider_adapter_storefront.ex",
+  __DIR__
+)
+
+Code.require_file(
+  "../../../examples/phoenix_host/lib/crosswake_example/commerce/mock_storefront.ex",
+  __DIR__
+)
 
 defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
   use ExUnit.Case, async: false
@@ -14,7 +41,7 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
   alias Crosswake.Companions.PlayBilling.Evidence, as: PlayBillingEvidence
   alias Crosswake.Companions.StoreKit.Evidence, as: StoreKitEvidence
   alias CrosswakeExample.Commerce.EntitlementProjection
-  alias CrosswakeExample.Commerce.MockBackend
+  alias CrosswakeExample.Commerce.MockBackendVerifier
   alias CrosswakeExample.Commerce.ProviderAdapterStorefront
   alias CrosswakeExample.Commerce.ReconciliationInbox
   alias CrosswakeExample.Commerce.ReconciliationKeys
@@ -46,7 +73,10 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
       assert evidence.provider == "storekit"
       assert evidence.event_kind == "purchase"
-      assert ReconciliationKeys.subject_key(evidence) == "subject::storekit::storekit_original_#{@group_id}"
+
+      assert ReconciliationKeys.subject_key(evidence) ==
+               "subject::storekit::storekit_original_#{@group_id}"
+
       assert ReconciliationKeys.event_key(evidence) ==
                "event::storekit::storekit_original_#{@group_id}::purchase::storekit_txn_001"
 
@@ -65,7 +95,10 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
       assert evidence.provider == "storekit"
       assert evidence.event_kind == "restore"
-      assert ReconciliationKeys.subject_key(evidence) == "subject::storekit::storekit_original_#{@group_id}"
+
+      assert ReconciliationKeys.subject_key(evidence) ==
+               "subject::storekit::storekit_original_#{@group_id}"
+
       assert ReconciliationKeys.event_key(evidence) ==
                "event::storekit::storekit_original_#{@group_id}::restore::storekit_note_restore_001"
 
@@ -84,7 +117,10 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
       assert evidence.provider == "play_billing"
       assert evidence.event_kind == "purchase"
-      assert ReconciliationKeys.subject_key(evidence) == "subject::play_billing::play_token_#{@group_id}"
+
+      assert ReconciliationKeys.subject_key(evidence) ==
+               "subject::play_billing::play_token_#{@group_id}"
+
       assert ReconciliationKeys.event_key(evidence) ==
                "event::play_billing::play_token_#{@group_id}::purchase::GPA.play.purchase.001"
 
@@ -103,7 +139,10 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
       assert evidence.provider == "play_billing"
       assert evidence.event_kind == "restore"
-      assert ReconciliationKeys.subject_key(evidence) == "subject::play_billing::play_token_#{@group_id}"
+
+      assert ReconciliationKeys.subject_key(evidence) ==
+               "subject::play_billing::play_token_#{@group_id}"
+
       assert ReconciliationKeys.event_key(evidence) ==
                "event::play_billing::play_token_#{@group_id}::restore::play_rtdn_restore_001"
 
@@ -124,6 +163,7 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
         pending_snapshot = pending_snapshot(attempt.event_key, event_kind: evidence.event_kind)
         assert EntitlementProjection.derived_state(pending_snapshot) == :pending
+
         assert {:error, :unverified_reconciliation_outcome} =
                  EntitlementProjection.project_snapshot(nil, pending_snapshot)
       end
@@ -145,7 +185,8 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
                  transaction_id: "storekit_txn_replay"
                )
 
-      assert {:ok, first} = ReconciliationInbox.ingest_evidence(evidence, correlation_id: "corr-first")
+      assert {:ok, first} =
+               ReconciliationInbox.ingest_evidence(evidence, correlation_id: "corr-first")
 
       assert {:ok, replay} =
                ReconciliationInbox.ingest_evidence(evidence,
@@ -161,8 +202,21 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
     end
 
     test "stale incoming authority fails closed instead of overwriting a fresher grant" do
-      current = verified_snapshot(authority: :active, access: :granted, reconciliation: :projection_refreshed, as_of: 300)
-      incoming = verified_snapshot(authority: :active, access: :granted, reconciliation: :projection_refreshed, as_of: 200)
+      current =
+        verified_snapshot(
+          authority: :active,
+          access: :granted,
+          reconciliation: :projection_refreshed,
+          as_of: 300
+        )
+
+      incoming =
+        verified_snapshot(
+          authority: :active,
+          access: :granted,
+          reconciliation: :projection_refreshed,
+          as_of: 200
+        )
 
       assert {:error, {:stale_authority, snapshot}} =
                EntitlementProjection.project_snapshot(current, incoming)
@@ -176,6 +230,7 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
         snapshot = pending_snapshot("phase70-pending-#{event_kind}", event_kind: event_kind)
 
         assert EntitlementProjection.derived_state(snapshot) == :pending
+
         assert {:error, :unverified_reconciliation_outcome} =
                  EntitlementProjection.project_snapshot(nil, snapshot)
       end
@@ -225,33 +280,40 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
     test "requires exactly the allowed pure commerce files" do
       source = File.read!(__ENV__.file) |> String.downcase()
 
-      require_call_lines =
-        source
-        |> String.split("\n")
-        |> Enum.filter(&Regex.match?(~r/^\s*code\.require_file\s*\(/, &1))
+      require_paths =
+        ~r/code\.require_file\(\s*"([^"]+)"/
+        |> Regex.scan(source, capture: :all_but_first)
+        |> List.flatten()
 
       allowed_modules = [
         "reconciliation_keys.ex",
         "reconciliation_inbox.ex",
         "entitlement_projection.ex",
-        "mock_backend.ex",
+        "mock_backend_verifier.ex",
         "storefront_adapter.ex",
         "provider_adapter_storefront.ex",
         "mock_storefront.ex"
       ]
 
-      assert length(require_call_lines) == 7
+      assert length(require_paths) == 7
 
-      for line <- require_call_lines do
-        assert Enum.any?(allowed_modules, &String.contains?(line, &1)),
-               "proof requires an unapproved file: #{inspect(line)}"
+      for path <- require_paths do
+        assert Enum.any?(allowed_modules, &String.contains?(path, &1)),
+               "proof requires an unapproved file: #{inspect(path)}"
       end
 
-      forbidden_runtime_substrings = ["_live", "endpoint", "application", "router", "repo", "_web"]
+      forbidden_runtime_substrings = [
+        "_live",
+        "endpoint",
+        "application",
+        "router",
+        "repo",
+        "_web"
+      ]
 
-      for line <- require_call_lines, forbidden <- forbidden_runtime_substrings do
-        refute String.contains?(line, forbidden),
-               "proof requires a runtime path containing #{inspect(forbidden)}: #{inspect(line)}"
+      for path <- require_paths, forbidden <- forbidden_runtime_substrings do
+        refute String.contains?(path, forbidden),
+               "proof requires a runtime path containing #{inspect(forbidden)}: #{inspect(path)}"
       end
     end
 
@@ -272,8 +334,13 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
     end
   end
 
-  defp assert_evidence_only_pending(%Contracts.ReconciliationEvidence{} = evidence, correlation_id) do
-    assert {:ok, attempt} = ReconciliationInbox.ingest_evidence(evidence, correlation_id: correlation_id)
+  defp assert_evidence_only_pending(
+         %Contracts.ReconciliationEvidence{} = evidence,
+         correlation_id
+       ) do
+    assert {:ok, attempt} =
+             ReconciliationInbox.ingest_evidence(evidence, correlation_id: correlation_id)
+
     assert attempt.status == :awaiting_verification
 
     pending_snapshot = pending_snapshot(attempt.event_key, event_kind: evidence.event_kind)
@@ -302,7 +369,8 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
     %Contracts.PurchaseIntent{entry_id: @group_id, correlation_id: correlation_id}
   end
 
-  defp restore_intent(correlation_id), do: %Contracts.RestoreIntent{correlation_id: correlation_id}
+  defp restore_intent(correlation_id),
+    do: %Contracts.RestoreIntent{correlation_id: correlation_id}
 
   defp mock_storefront_purchase do
     {:ok, %Contracts.ReconciliationEvidence{} = evidence} =
@@ -316,7 +384,9 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
 
   defp pending_snapshot(reference, opts) do
     event_kind = Keyword.fetch!(opts, :event_kind)
-    reconciliation_state = if event_kind == "restore", do: :pending_restore, else: :pending_purchase
+
+    reconciliation_state =
+      if event_kind == "restore", do: :pending_restore, else: :pending_purchase
 
     snapshot(
       authority: :none,
@@ -375,7 +445,9 @@ defmodule Crosswake.Proof.Phase70SubscriptionSaasCommerceProofTest do
   defp lifecycle_rank(:expired), do: 3
 
   defp verify_provider_evidence(evidence, opts) do
-    apply(MockBackend, :verify_provider_evidence, [evidence, opts])
+    {group_id, verifier_opts} = Keyword.pop(opts, :group_id, @group_id)
+
+    MockBackendVerifier.verify_evidence(evidence, group_id, verifier_opts)
   end
 
   defp restore_env(key, nil), do: Application.delete_env(:crosswake_example, key)
