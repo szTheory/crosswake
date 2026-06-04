@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- ADOPT: CROSSWAKE -->
+  <!-- Scaffolded privacy info based on declared capabilities. Update with host-owned truth. -->
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array>
+<%= if "notification_token" in @capabilities or "push.notifications" in @capabilities do %>
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeDeviceID</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+<% end %>
+  </array>
+  <key>NSPrivacyTracking</key>
+  <false/>
+</dict>
+</plist>

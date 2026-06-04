@@ -181,7 +181,7 @@ defmodule Crosswake.DoctorTest do
         android_proof_hook_path: android_proof
       )
 
-    assert report.status == :ok
+    IO.inspect(Enum.filter(report.findings, & &1.severity == :error)); assert report.status == :ok
     assert report.support.status == :supported
     assert Enum.all?(report.findings, &match?(%Check{}, &1))
 
@@ -1035,7 +1035,7 @@ defmodule Crosswake.DoctorTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\n")
+    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),
@@ -1081,7 +1081,7 @@ defmodule Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/AndroidManifest.xml"),
-      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\n"
+      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\nPOST_NOTIFICATIONS\nandroid.permission.CAMERA\nandroid.permission.VIBRATE\n"
     )
 
     write_file!(

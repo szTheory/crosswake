@@ -151,6 +151,7 @@ defmodule Crosswake.Doctor do
     phase_46_findings = phase_46_auth_findings(manifest)
     phase_62_findings = phase_62_notification_findings(manifest)
     phase_65_findings = phase_65_diagnostic_export_findings()
+    phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -168,6 +169,7 @@ defmodule Crosswake.Doctor do
         phase_46_findings ++
         phase_62_findings ++
         phase_65_findings ++
+        phase_66_findings ++
         publish_findings
 
     %Report{
@@ -1733,4 +1735,120 @@ defmodule Crosswake.Doctor do
       details: details
     }
   end
+
+  defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []
+
+  defp phase_66_generator_drift_findings(manifest, cwd, opts) do
+    ios_shell_root = shell_root(:ios, cwd, opts)
+    android_shell_root = shell_root(:android, cwd, opts)
+
+    ios_files = [
+      Path.join(ios_shell_root, "CrosswakeShell/Info.plist"),
+      Path.join(ios_shell_root, "CrosswakeShell/CrosswakeShell.entitlements"),
+      Path.join(ios_shell_root, "CrosswakeShell/PrivacyInfo.xcprivacy")
+    ]
+    android_files = [
+      Path.join(android_shell_root, "app/src/main/AndroidManifest.xml")
+    ]
+
+    placeholder_findings = 
+      (ios_files ++ android_files)
+      |> Enum.flat_map(&check_shell_unreplaced_placeholders/1)
+
+    ios_contents = read_all_files(ios_files)
+    android_contents = read_all_files(android_files)
+
+    capabilities = Map.keys(manifest.capability_registry || %{})
+    
+    ios_drift = if ios_contents != "", do: check_drift(capabilities, ios_contents, :ios), else: []
+    android_drift = if android_contents != "", do: check_drift(capabilities, android_contents, :android), else: []
+
+    placeholder_findings ++ ios_drift ++ android_drift
+  end
+
+  defp check_shell_unreplaced_placeholders(path) do
+    case File.read(path) do
+      {:ok, contents} ->
+        if String.contains?(contents, "ADOPT:") do
+          [
+            check(
+              :error,
+              "shell_unreplaced_placeholders",
+              "shell_generator",
+              "File #{Path.basename(path)} contains unreplaced ADOPT: markers",
+              "Replace the ADOPT: markers with your host-owned values in #{path}"
+            )
+          ]
+        else
+          []
+        end
+      _ ->
+        []
+    end
+  end
+
+  defp read_all_files(paths) do
+    paths
+    |> Enum.map(&File.read/1)
+    |> Enum.flat_map(fn 
+      {:ok, content} -> [content]
+      _ -> []
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp check_drift(capabilities, contents, platform) do
+    Enum.flat_map(capabilities, fn cap ->
+      expected_strings = capability_expected_strings(cap, platform)
+      missing_string = Enum.find(expected_strings, fn str -> not String.contains?(contents, str) end)
+      
+      if missing_string do
+        [
+          check(
+            :error,
+            "shell_permission_drift",
+            "shell_generator",
+            "Capability #{cap} is declared but missing its required permission/entitlement string in #{platform} native files",
+            "Add #{missing_string} to your #{platform} native shell project to satisfy the declared #{cap} capability",
+            %{capability: cap, missing: missing_string, platform: platform}
+          )
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["notification_token", "push.notifications"] do
+    ["aps-environment", "NSPrivacyCollectedDataTypeDeviceID"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["notification_token", "push.notifications"] do
+    ["POST_NOTIFICATIONS"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["media_capture", "camera", "camera.capture"] do
+    ["NSCameraUsageDescription"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["media_capture", "camera", "camera.capture"] do
+    ["android.permission.CAMERA"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["haptics", "haptics.impact"], do: []
+  defp capability_expected_strings(cap, :android) when cap in ["haptics", "haptics.impact"] do
+    ["android.permission.VIBRATE"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["file_picker", "files.pick"] do
+    ["NSPhotoLibraryUsageDescription"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["file_picker", "files.pick"], do: []
+
+  defp capability_expected_strings("deep_link", :ios) do
+    ["com.apple.developer.associated-domains"]
+  end
+  defp capability_expected_strings("deep_link", :android) do
+    ["android.intent.action.VIEW"]
+  end
+
+  defp capability_expected_strings(_, _), do: []
 end

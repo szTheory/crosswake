@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   behavior Crosswake has not proven yet.
   """
 
-  @switches [target: :string]
+  @switches [target: :string, router: :string]
   @platforms ~w(ios android)
 
   @android_templates [
@@ -66,6 +66,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     {"CrosswakeShell.xcodeproj/project.pbxproj", "ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"},
     {"CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme",
      "ios/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme.eex"},
+    {"CrosswakeShell/CrosswakeShell.entitlements", "ios/CrosswakeShell.entitlements.eex"},
+    {"CrosswakeShell/PrivacyInfo.xcprivacy", "ios/PrivacyInfo.xcprivacy.eex"},
     {"CrosswakeShellTests/ActivationCoordinatorTests.swift",
      "ios/CrosswakeShellTests/ActivationCoordinatorTests.swift.eex"}
   ]
@@ -85,11 +87,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       end
 
     target = Path.expand(opts[:target] || File.cwd!())
+    capabilities = fetch_capabilities(opts[:router])
 
     generated =
       case platform do
-        "ios" -> generate_ios_shell(target)
-        "android" -> generate_android_shell(target)
+        "ios" -> generate_ios_shell(target, capabilities)
+        "android" -> generate_android_shell(target, capabilities)
       end
 
     Mix.shell().info("""
@@ -104,7 +107,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     """)
   end
 
-  defp generate_ios_shell(target) do
+  defp generate_ios_shell(target, capabilities) do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
@@ -112,7 +115,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
     ensure_file(readme, shell_readme("ios"))
-    render_ios_templates(root)
+    render_ios_templates(root, capabilities)
     write_fixture_files(root, fixtures)
 
     %{
@@ -125,12 +128,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     }
   end
 
-  defp generate_android_shell(target) do
+  defp generate_android_shell(target, capabilities) do
     root = Path.join(target, "native/android/crosswake_shell")
     fixtures = Fixtures.export("android")
 
     ensure_file(Path.join(root, "README.md"), shell_readme("android"))
-    render_android_templates(root)
+    render_android_templates(root, capabilities)
 
     entrypoint = Path.join(root, "app/src/main/java/dev/crosswake/shell/MainActivity.kt")
     write_fixture_files(Path.join(root, "app/src/main"), fixtures)
@@ -147,23 +150,36 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     }
   end
 
-  defp render_android_templates(root) do
+  defp render_android_templates(root, capabilities) do
     Enum.each(@android_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path))
+      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities))
     end)
   end
 
-  defp render_ios_templates(root) do
+  defp render_ios_templates(root, capabilities) do
     Enum.each(@ios_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path))
+      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities))
     end)
   end
 
-  defp render_template(template_path) do
+  defp render_template(template_path, capabilities) do
     template =
       Application.app_dir(:crosswake, Path.join("priv/templates/crosswake/shell", template_path))
 
-    EEx.eval_file(template, assigns: [])
+    EEx.eval_file(template, assigns: [capabilities: capabilities])
+  end
+
+  defp fetch_capabilities(nil), do: Crosswake.Manifest.Builder.public_route_capability_ids()
+
+  defp fetch_capabilities(router) do
+    module = String.to_atom(router)
+
+    if Code.ensure_loaded?(module) do
+      {:ok, %{manifest: manifest}} = Crosswake.Manifest.compile(module)
+      Map.keys(manifest.capability_registry)
+    else
+      Mix.raise("router module #{router} is not available")
+    end
   end
 
   defp write_fixture_files(root, fixtures) do

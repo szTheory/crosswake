@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- ADOPT: CROSSWAKE -->
+    <!-- Scaffolded permissions based on declared capabilities. Replace or remove based on host-owned configuration. -->
+<%= if "notification_token" in @capabilities or "push.notifications" in @capabilities do %>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<% end %>
+<%= if "media_capture" in @capabilities or "camera" in @capabilities or "camera.capture" in @capabilities do %>
+    <uses-permission android:name="android.permission.CAMERA" />
+<% end %>
+<%= if "haptics" in @capabilities or "haptics.impact" in @capabilities do %>
+    <uses-permission android:name="android.permission.VIBRATE" />
+<% end %>
+
     <application
         android:allowBackup="false"
         android:label="Crosswake Shell"

@@ -22,6 +22,9 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
+
 jobs:
   merge-blocking-provider-adapter-proof:
     name: merge-blocking provider adapter proof (hermetic)

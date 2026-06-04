@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- ADOPT: CROSSWAKE -->
+  <!-- Scaffolded entitlements based on declared capabilities. Replace with host-owned configuration. -->
+<%= if "notification_token" in @capabilities or "push.notifications" in @capabilities do %>
+  <key>aps-environment</key>
+  <string>development</string>
+<% end %>
+<%= if "deep_link" in @capabilities do %>
+  <key>com.apple.developer.associated-domains</key>
+  <array>
+    <string>applinks:example.com</string>
+  </array>
+<% end %>
+</dict>
+</plist>

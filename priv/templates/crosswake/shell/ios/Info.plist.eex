@@ -31,5 +31,15 @@
     <array>
         <string>example.com</string>
     </array>
+    <!-- ADOPT: CROSSWAKE -->
+    <!-- Define usage descriptions for your capabilities -->
+<%= if "media_capture" in @capabilities or "camera" in @capabilities or "camera.capture" in @capabilities do %>
+    <key>NSCameraUsageDescription</key>
+    <string>Camera access is required for media capture.</string>
+<% end %>
+<%= if "file_picker" in @capabilities or "files.pick" in @capabilities do %>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Photo library access is required to pick files.</string>
+<% end %>
 </dict>
 </plist>

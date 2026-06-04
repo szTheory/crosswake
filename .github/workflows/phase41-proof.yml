@@ -19,6 +19,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
+
 jobs:
   merge-blocking-gating-proof:
     name: merge-blocking gating doctor and support matrix proof (hermetic)
