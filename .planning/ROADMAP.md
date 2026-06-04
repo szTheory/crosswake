@@ -152,9 +152,9 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 Plans:
 **Wave 1**
 
-- [ ] 64-01-PLAN.md — Wave-0 hermetic proof lane scaffold (RLINE-01..05)
-- [ ] 64-02-PLAN.md — types.ex foundation: RuntimeLineRow + verification_method/required_verification_method + SupportMatrix.rebuild_matrix field
-- [ ] 64-03-PLAN.md — RebuildPolicy module (classify/2, diff/2, rebuild_required?/1)
+- [x] 64-01-PLAN.md — Wave-0 hermetic proof lane scaffold (RLINE-01..05)
+- [x] 64-02-PLAN.md — types.ex foundation: RuntimeLineRow + verification_method/required_verification_method + SupportMatrix.rebuild_matrix field
+- [x] 64-03-PLAN.md — RebuildPolicy module (classify/2, diff/2, rebuild_required?/1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -244,7 +244,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 0/5 | Planned | - |
+| 64. Runtime-Line Policy Contract & Support-Truth Taxonomy | v4.0 | 3/5 | In Progress|  |
 | 65. Diagnostic Export Seam (Elixir) | v4.0 | 0/TBD | Not started | - |
 | 66. Generator Templates & Xcode 26 CI Fix | v4.0 | 0/TBD | Not started | - |
 | 67. Native Shell Implementation & Android JVM Hermetic Proof | v4.0 | 0/TBD | Not started | - |
