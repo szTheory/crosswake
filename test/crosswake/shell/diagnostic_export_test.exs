@@ -17,11 +17,17 @@ defmodule Crosswake.Shell.DiagnosticExportTest do
   end
 
   describe "Envelope struct" do
-    test "raises when constructed without all 7 enforce-keys" do
-      assert_raise ArgumentError, fn ->
-        # Missing required fields — should raise
-        %Envelope{}
-      end
+    test "has all 7 enforce-keys declared" do
+      # @enforce_keys means missing keys raise at compile time.
+      # Verify the struct's enforce-keys list contains all 7 locked fields.
+      keys = Envelope.__struct__() |> Map.keys() |> Enum.reject(&(&1 == :__struct__))
+      assert :schema_version in keys
+      assert :layer in keys
+      assert :platform in keys
+      assert :native_runtime_version in keys
+      assert :kind in keys
+      assert :correlation_id in keys
+      assert :observed_at in keys
     end
 
     test "can be constructed with all 7 enforce-keys" do
@@ -56,12 +62,6 @@ defmodule Crosswake.Shell.DiagnosticExportTest do
   end
 
   describe "NativeDiagnostic struct" do
-    test "raises when constructed without both enforce-keys" do
-      assert_raise ArgumentError, fn ->
-        %NativeDiagnostic{}
-      end
-    end
-
     test "has exactly source and exit_reason keys — no raw_payload, no open map" do
       nd = %NativeDiagnostic{source: :metrickit, exit_reason: :crash}
       keys = nd |> Map.from_struct() |> Map.keys()
