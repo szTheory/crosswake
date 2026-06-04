@@ -237,10 +237,14 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     assert output =~ "rebuild & compatibility matrix:",
@@ -261,12 +265,16 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
-          "--format",
-          "json"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+            "--format",
+            "json"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     decoded = Jason.decode!(output)
@@ -297,22 +305,30 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     json_output =
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
-          "--format",
-          "json"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter",
+            "--format",
+            "json"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     decoded = Jason.decode!(json_output)
@@ -371,14 +387,20 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
     # Direct formatter atom-to-string assertion: the formatter helper that converts
     # :device_verified must produce "device-verified".
     # We test via doctor human output — look for the evidence posture line.
+    # Phase 64 Gap 2 (WR-04): rescue Mix.Error — the doctor task raises when status: :error
+    # (unverified host); the captured output before the raise still contains the assertion target.
     human_output =
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     assert human_output =~ "device-verified",
@@ -410,10 +432,14 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     assert human_output =~ "jvm-hermetic (CI only)",
@@ -472,10 +498,14 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
       capture_io(fn ->
         Mix.Task.reenable(@doctor_task)
 
-        Mix.Task.run(@doctor_task, [
-          "--router",
-          "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
-        ])
+        try do
+          Mix.Task.run(@doctor_task, [
+            "--router",
+            "Elixir.Crosswake.TestSupport.RouterFixtures.ManagedRouter"
+          ])
+        rescue
+          Mix.Error -> :ok
+        end
       end)
 
     assert human_output =~ "evidence posture:",
@@ -508,6 +538,66 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
              "missing 'android=jvm-hermetic (CI only)' in doctor evidence posture line",
              "lib/crosswake/doctor/formatter.ex",
              "render Android evidence as android=jvm-hermetic (CI only) in the evidence posture: line",
+             :merge_blocking
+           )
+  end
+
+  # ---------------------------------------------------------------------------
+  # RLINE-04 (continued) — rebuild_matrix surface honesty
+  #
+  # The rebuild_matrix surface must not claim :device_verified for any band.
+  # Phase 64: native_runtime_version is "1.0.0" (1.x band only); device-verified
+  # proof is gated until Phases 67/68. validate/1 structurally rejects any
+  # :device_verified rebuild_matrix row via validate_rebuild_matrix_evidence/2.
+  # Closes the test blind spot where previous :rline_04 tests asserted only
+  # against capability_families, leaving rebuild_matrix unasserted.
+  # ---------------------------------------------------------------------------
+
+  @tag :rline_04
+  test "rebuild_matrix carries no row with evidence_tier :device_verified (blind spot closure)" do
+    rows = SupportMatrix.rebuild_matrix(SupportMatrix.canonical())
+
+    assert Enum.all?(rows, fn row ->
+             row.evidence_tier in [:none, :provider_advisory, :jvm_hermetic, :emulator_advisory]
+           end),
+           ProofAssertions.stable_id_message(
+             "proof.rline_04.rebuild_matrix.no_unbacked_device_verified",
+             "rebuild_matrix must never contain a :device_verified row in Phase 64",
+             "SupportMatrix.rebuild_matrix/1 on canonical",
+             "a rebuild_matrix row claims :device_verified — evidence laundering (D-10a); device-verified proof is gated until Phases 67/68",
+             "lib/crosswake/support_matrix/support_matrix.ex",
+             "remove any :device_verified row from @rebuild_matrix_rows until Phases 67/68 produce real device proof",
+             :merge_blocking
+           )
+  end
+
+  @tag :rline_04
+  test "validate/1 rejects injected :device_verified rebuild_matrix row (structural gate)" do
+    canonical = SupportMatrix.canonical()
+
+    # Inject a :device_verified row — mirroring the capability_families injection test
+    injected_row =
+      Types.new_runtime_line_row(
+        runtime_line: "2.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :device_verified
+      )
+
+    invalid_matrix = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [injected_row]}
+
+    errors = SupportMatrix.validate(invalid_matrix)
+
+    assert is_list(errors) and length(errors) > 0,
+           ProofAssertions.stable_id_message(
+             "proof.rline_04.validate.rebuild_matrix_rejects_device_verified",
+             "SupportMatrix.validate/1 must reject :device_verified in rebuild_matrix",
+             "SupportMatrix.validate/1",
+             "validate/1 returned [] for a rebuild_matrix row with :device_verified — laundering route not structurally gated",
+             "lib/crosswake/support_matrix/support_matrix.ex",
+             "add validate_rebuild_matrix_evidence/2 to the validate/1 pipeline",
              :merge_blocking
            )
   end
