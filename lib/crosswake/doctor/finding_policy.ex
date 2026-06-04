@@ -24,7 +24,7 @@ defmodule Crosswake.Doctor.FindingPolicy do
   end
 
   def shell_proof(:verification_required, label, script_path) do
-    {:warning, "proof_hook_verification_required",
+    {:error, "proof_hook_verification_required",
      "run #{script_path} through mix crosswake.doctor --native-checks before claiming #{label} shell support"}
   end
 
@@ -36,7 +36,7 @@ defmodule Crosswake.Doctor.FindingPolicy do
   end
 
   def support_claim(:verification_required) do
-    {:warning, "support_claim_verification_required",
+    {:error, "support_claim_verification_required",
      "support claims remain verification required until the tracked generated-project proof hooks pass",
      "run mix crosswake.doctor --native-checks after the host-owned shell projects and proof hooks are in place"}
   end

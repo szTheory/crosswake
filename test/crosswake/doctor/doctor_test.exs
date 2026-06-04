@@ -78,10 +78,11 @@ defmodule Crosswake.DoctorTest do
         cwd: target
       )
 
-    # Phase 64: shell proof verification_required is now :warning (not :error).
-    # The doctor status is :ok when only warnings are present; proof verification
-    # requirements are advisory until --native-checks explicitly runs them.
-    assert report.status == :ok
+    # Honest blocking posture: unverified shell proofs are :error (not :warning).
+    # status: :error means CI gates on doctor status will catch unverified hosts.
+    # The test MUST assert :error here — changing this to :ok would confirm
+    # the WR-04 posture regression rather than catch it.
+    assert report.status == :error
     assert report.manifest != nil
     assert report.support.status == :verification_required
     assert report.shells.ios.generated.ok?
@@ -135,6 +136,31 @@ defmodule Crosswake.DoctorTest do
              report.findings,
              &(&1.check == "support_posture" and &1.code == "support_claim_verification_required")
            )
+  end
+
+  test "doctor reports status :error when a shell proof hook exits non-zero (:failed posture)",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    # Compensating assertion: a :failed shell (exit_status 1) must produce status: :error.
+    # This locks the honest posture so a :failed shell can never silently pass doctor.
+    android_proof = write_proof_hook!(target, "android", 1, "android proof failed")
+
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        check_native_tools?: true,
+        android_proof_hook_path: android_proof
+      )
+
+    assert report.status == :error,
+           "doctor must report status: :error when a shell proof hook fails (exits non-zero) — got: #{inspect(report.status)}"
+
+    assert Enum.any?(
+             report.findings,
+             &(&1.check == "proof_posture" and &1.code == "proof_hook_failed")
+           ),
+           "doctor must include a proof_hook_failed finding for a failing shell proof hook"
   end
 
   test "doctor findings are structured and formatter output stays stable when proof hooks pass",
