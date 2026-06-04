@@ -130,7 +130,7 @@ Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
 - [x] **Phase 65: Diagnostic Export Seam (Elixir)** - Define the redaction allowlist and typed envelope schema for a fire-and-forget HTTP diagnostics seam before any native export code exists. (completed 2026-06-04)
 - [x] **Phase 66: Generator Templates & Xcode 26 CI Fix** - Emit host-owned iOS/Android permission/entitlement and runtime-line templates from the locked contracts, with placeholder/drift doctor checks, and move iOS CI onto the Xcode 26 SDK.
 - [x] **Phase 67: Native Shell Implementation & Android JVM Hermetic Proof** - Mirror the contracts/templates in the iOS and Android shells, bump Android toolchain floors, and close the JVM-hermetic evidence gap with merge-blocking proof. (completed 2026-06-04)
-- [ ] **Phase 68: Android Verification Closure & Device-UAT** - Add the advisory emulator lane and a capability-parity-locked device-UAT checklist with explicit promotion criteria.
+- [x] **Phase 68: Android Verification Closure & Device-UAT** - Add the advisory emulator lane and a capability-parity-locked device-UAT checklist with explicit promotion criteria.
 - [ ] **Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout** - Ship the merge-blocking manifest↔shell↔guide↔doctor parity gate, promote Android support truth only if criteria pass, and run milestone closeout.
 
 ## Phase Details
@@ -203,7 +203,11 @@ Plans:
   4. `mix crosswake.doctor` flags un-replaced template placeholders and manifest↔shell↔docs permission/entitlement drift.
   5. iOS CI builds against the Xcode 26 SDK so iOS shell proof remains App Store-submittable.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 68-01-PLAN.md — Android Emulator Advisory Lane and UAT Checklist Scaffold
+- [ ] 68-02-PLAN.md — Doctor & Docs-Contract Parity Lock for Android UAT
 **UI hint**: yes
 
 ### Phase 67: Native Shell Implementation & Android JVM Hermetic Proof
@@ -236,7 +240,11 @@ Plans:
   3. The device-UAT checklist stays parity-locked to the capability registry — every capability family has at least one checklist entry, enforced by a doctor or docs-contract parity check.
   4. The checklist carries an explicit "last verified against" field (Crosswake + OS versions) and doctor warns when it is stale.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 68-01-PLAN.md — Android Emulator Advisory Lane and UAT Checklist Scaffold
+- [ ] 68-02-PLAN.md — Doctor & Docs-Contract Parity Lock for Android UAT
 
 ### Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout
 
@@ -250,9 +258,14 @@ Plans:
   3. Android `SupportEntry` is promoted past `:verification_required` only if the explicit promotion criteria are met; otherwise it stays `:verification_required` with the gap documented.
   4. Milestone closeout (`mix closeout.verify`, REL-01 gate) verifies all v4.0 requirements are mapped and no surface claims first-party shell packages, device-verified Android without evidence, or first-party crash-reporting/push delivery.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 69-01-PLAN.md — Docs Contract Parity Test and Android Support Promotion
+- [ ] 69-02-PLAN.md — Guides Parity Lock and Milestone Closeout CI Integration
 
 ## Progress
+
 
 **Execution Order:**
 Phases execute in numeric order: 64 → 65 → 66 → 67 → 68 → 69

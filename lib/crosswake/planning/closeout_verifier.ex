@@ -218,8 +218,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
-        requirements =~ "REL-01" and
-        not Regex.match?(~r/\|\s*REL-01\s*\|\s*Phase 63\s*\|\s*Pending\s*\|/, requirements)
+        (requirements =~ "REL-01" or requirements =~ "PROOF-03") and
+        not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements)
 
     check(
       "closeout.requirements.state",
@@ -238,7 +238,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/roadmap_parity:\s*\n\s*status:\s*(complete|archived)/ and
-        not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align")
+        not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align") and
+        not (roadmap =~ "Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout — align")
 
     check(
       "closeout.roadmap.parity",

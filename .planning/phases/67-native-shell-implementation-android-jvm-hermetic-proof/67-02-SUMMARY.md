@@ -1,6 +1,7 @@
 ---
 phase: 67-native-shell-implementation-android-jvm-hermetic-proof
 plan: 02
+requirements-completed: []
 subsystem: "Shell Hosts"
 tags: [android, ios, compatibility, security, activation]
 dependency_graph:

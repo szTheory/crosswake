@@ -96,7 +96,7 @@ Which phases cover which requirements. Filled during roadmap creation.
 | AVER-05 | Phase 66 | Pending |
 | PROOF-01 | Phase 69 | Pending |
 | PROOF-02 | Phase 69 | Pending |
-| PROOF-03 | Phase 69 | Pending |
+| PROOF-03 | Phase 69 | Validated |
 
 **Coverage:**
 - v1 requirements: 21 total

@@ -1,6 +1,7 @@
 ---
 phase: 64-runtime-line-policy-contract-support-truth-taxonomy
 plan: "06"
+requirements-completed: []
 subsystem: support-matrix / doctor / evidence-taxonomy
 tags: [gap-closure, honesty, rline-04, wr-04, evidence-taxonomy, rebuild-matrix, finding-policy]
 dependency_graph:

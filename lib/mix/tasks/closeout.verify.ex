@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Closeout.Verify do
   Runs deterministic closeout checks over planning artifacts and release truth.
   """
 
-  @switches [cwd: :string, security_closeout: :string, security_only: :boolean]
+  @switches [cwd: :string, security_closeout: :string, security_only: :boolean, closeout_path: :string]
 
   @impl Mix.Task
   def run(args) do
@@ -26,6 +26,7 @@ defmodule Mix.Tasks.Closeout.Verify do
     report =
       CloseoutVerifier.run(
         cwd: opts[:cwd] || File.cwd!(),
+        closeout_path: opts[:closeout_path],
         security_closeout_path: opts[:security_closeout],
         security_only?: opts[:security_only] == true
       )

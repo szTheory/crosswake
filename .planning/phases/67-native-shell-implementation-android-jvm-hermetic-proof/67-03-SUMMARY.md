@@ -1,6 +1,7 @@
 ---
 phase: 67-native-shell-implementation-android-jvm-hermetic-proof
 plan: 03
+requirements-completed: []
 subsystem: android_shell
 tags:
   - native-capture

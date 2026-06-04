@@ -1,3 +1,6 @@
+---
+requirements-completed: []
+---
 # Plan 03 Summary
 
 - Updated `lib/crosswake/doctor/doctor.ex` with `phase_66_generator_drift_findings/3`.
