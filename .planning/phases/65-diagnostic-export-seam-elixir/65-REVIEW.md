@@ -16,7 +16,7 @@ findings:
   total: 4
 findings_resolved: 4
 status: resolved
-resolution_commit: pending
+resolution_commit: 11d0706
 ---
 
 # Phase 65: Code Review Report
