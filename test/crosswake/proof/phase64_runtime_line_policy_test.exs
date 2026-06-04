@@ -656,7 +656,7 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
     refute String.contains?(source, "Crosswake" <> "Example."),
            "phase64 proof lane must not reference example-host modules"
 
-    refute String.contains?(source, "MIX_INCLUDE_"),
-           "phase64 proof lane must not reference MIX_INCLUDE_* env flags"
+    refute String.contains?(source, "MIX_" <> "INCLUDE_"),
+           "phase64 proof lane must not reference " <> "MIX_" <> "INCLUDE_* env flags"
   end
 end
