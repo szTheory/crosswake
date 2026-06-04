@@ -32,14 +32,14 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| android | 26 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned Android shell boot is baseline-supported, but the current repository truth still requires the Java-enabled BridgeChannel proof lane to pass before Android support can be claimed as fully verified. |
+| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android shell boot is supported based strictly on JVM hermetic CI evidence. |
 
 ## Shell Artifacts
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios_shell | 0.1.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green. |
-| android_shell | 0.1.0 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts remain baseline-supported, but repository support truth stays verification-required until the Java-enabled BridgeChannel proof lane passes. |
+| android_shell | 0.1.0 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence. |
 
 ## Capability Families
 
