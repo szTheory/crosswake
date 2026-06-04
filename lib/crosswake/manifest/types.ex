@@ -381,7 +381,8 @@ defmodule Crosswake.Manifest.Types do
               capability_families: [],
               package_surfaces: [],
               release_boundaries: [],
-              change_classes: []
+              change_classes: [],
+              rebuild_matrix: []
 
     @type t :: %__MODULE__{
             phoenix: [Crosswake.Manifest.Types.SupportEntry.t()],
@@ -392,7 +393,8 @@ defmodule Crosswake.Manifest.Types do
             capability_families: [Crosswake.Manifest.Types.CapabilitySupportEntry.t()],
             package_surfaces: [Crosswake.Manifest.Types.PackageSurfaceEntry.t()],
             release_boundaries: [Crosswake.Manifest.Types.ReleaseBoundaryEntry.t()],
-            change_classes: [Crosswake.Manifest.Types.ChangeClassEntry.t()]
+            change_classes: [Crosswake.Manifest.Types.ChangeClassEntry.t()],
+            rebuild_matrix: [Crosswake.Manifest.Types.RuntimeLineRow.t()]
           }
   end
 
@@ -440,8 +442,11 @@ defmodule Crosswake.Manifest.Types do
       prerequisites: [],
       denial: nil,
       fallback: nil,
-      guide: nil
+      guide: nil,
+      verification_method: :none
     ]
+
+    @type verification_method :: :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
 
     @type t :: %__MODULE__{
             family: String.t(),
@@ -455,7 +460,8 @@ defmodule Crosswake.Manifest.Types do
             prerequisites: [String.t()],
             denial: String.t() | nil,
             fallback: String.t() | nil,
-            guide: String.t() | nil
+            guide: String.t() | nil,
+            verification_method: verification_method()
           }
   end
 
@@ -590,7 +596,8 @@ defmodule Crosswake.Manifest.Types do
       :change_class,
       :action_class,
       :check_ids,
-      :demotion_trigger
+      :demotion_trigger,
+      required_verification_method: :none
     ]
 
     @type proof_target :: :merge_blocking | :advisory | :not_applicable | :supported
@@ -610,7 +617,34 @@ defmodule Crosswake.Manifest.Types do
             change_class: String.t(),
             action_class: String.t(),
             check_ids: [String.t()],
-            demotion_trigger: String.t()
+            demotion_trigger: String.t(),
+            required_verification_method: Crosswake.Manifest.Types.CapabilitySupportEntry.verification_method()
+          }
+  end
+
+  defmodule RuntimeLineRow do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [:runtime_line, :capability_surface, :change_class, :ota_safe, :rebuild_required, :evidence_tier]
+    defstruct [
+      :runtime_line,
+      :capability_surface,
+      :change_class,
+      :ota_safe,
+      :rebuild_required,
+      :evidence_tier
+    ]
+
+    @type evidence_tier :: :none | :provider_advisory | :jvm_hermetic | :emulator_advisory | :device_verified
+
+    @type t :: %__MODULE__{
+            runtime_line: String.t(),
+            capability_surface: [String.t()],
+            change_class: String.t(),
+            ota_safe: boolean(),
+            rebuild_required: boolean(),
+            evidence_tier: evidence_tier()
           }
   end
 
@@ -800,7 +834,8 @@ defmodule Crosswake.Manifest.Types do
       capability_families: Keyword.get(attrs, :capability_families, []),
       package_surfaces: Keyword.get(attrs, :package_surfaces, []),
       release_boundaries: Keyword.get(attrs, :release_boundaries, []),
-      change_classes: Keyword.get(attrs, :change_classes, [])
+      change_classes: Keyword.get(attrs, :change_classes, []),
+      rebuild_matrix: Keyword.get(attrs, :rebuild_matrix, [])
     })
   end
 
@@ -834,7 +869,8 @@ defmodule Crosswake.Manifest.Types do
       prerequisites: Keyword.get(attrs, :prerequisites, []),
       denial: Keyword.get(attrs, :denial),
       fallback: Keyword.get(attrs, :fallback),
-      guide: Keyword.get(attrs, :guide)
+      guide: Keyword.get(attrs, :guide),
+      verification_method: Keyword.get(attrs, :verification_method, :none)
     })
   end
 
@@ -882,6 +918,18 @@ defmodule Crosswake.Manifest.Types do
     })
   end
 
+  @spec new_runtime_line_row(keyword()) :: RuntimeLineRow.t()
+  def new_runtime_line_row(attrs) when is_list(attrs) do
+    struct!(RuntimeLineRow, %{
+      runtime_line: Keyword.fetch!(attrs, :runtime_line),
+      capability_surface: Keyword.fetch!(attrs, :capability_surface),
+      change_class: Keyword.fetch!(attrs, :change_class),
+      ota_safe: Keyword.fetch!(attrs, :ota_safe),
+      rebuild_required: Keyword.fetch!(attrs, :rebuild_required),
+      evidence_tier: Keyword.fetch!(attrs, :evidence_tier)
+    })
+  end
+
   @spec new_promotion_rule_entry(keyword()) :: PromotionRuleEntry.t()
   def new_promotion_rule_entry(attrs) when is_list(attrs) do
     struct!(PromotionRuleEntry, %{
@@ -899,7 +947,8 @@ defmodule Crosswake.Manifest.Types do
       change_class: Keyword.fetch!(attrs, :change_class),
       action_class: Keyword.fetch!(attrs, :action_class),
       check_ids: Keyword.fetch!(attrs, :check_ids),
-      demotion_trigger: Keyword.fetch!(attrs, :demotion_trigger)
+      demotion_trigger: Keyword.fetch!(attrs, :demotion_trigger),
+      required_verification_method: Keyword.get(attrs, :required_verification_method, :none)
     })
   end
 
@@ -1070,7 +1119,8 @@ defmodule Crosswake.Manifest.Types do
       "capability_families" => Enum.map(support_matrix.capability_families, &to_map/1),
       "package_surfaces" => Enum.map(support_matrix.package_surfaces, &to_map/1),
       "release_boundaries" => Enum.map(support_matrix.release_boundaries, &to_map/1),
-      "change_classes" => Enum.map(support_matrix.change_classes, &to_map/1)
+      "change_classes" => Enum.map(support_matrix.change_classes, &to_map/1),
+      "rebuild_matrix" => Enum.map(support_matrix.rebuild_matrix, &to_map/1)
     }
   end
 
@@ -1104,7 +1154,8 @@ defmodule Crosswake.Manifest.Types do
       "prerequisites" => support_entry.prerequisites,
       "denial" => support_entry.denial,
       "fallback" => support_entry.fallback,
-      "guide" => support_entry.guide
+      "guide" => support_entry.guide,
+      "verification_method" => Atom.to_string(support_entry.verification_method)
     }
     |> Enum.reject(fn {_key, value} -> is_nil(value) end)
     |> Map.new()
@@ -1139,6 +1190,17 @@ defmodule Crosswake.Manifest.Types do
     }
   end
 
+  def to_map(%RuntimeLineRow{} = row) do
+    %{
+      "runtime_line" => row.runtime_line,
+      "capability_surface" => row.capability_surface,
+      "change_class" => row.change_class,
+      "ota_safe" => row.ota_safe,
+      "rebuild_required" => row.rebuild_required,
+      "evidence_tier" => Atom.to_string(row.evidence_tier)
+    }
+  end
+
   def to_map(%ActionClassEntry{} = entry) do
     %{
       "action_class" => entry.action_class,
@@ -1166,7 +1228,8 @@ defmodule Crosswake.Manifest.Types do
       "change_class" => entry.change_class,
       "action_class" => entry.action_class,
       "check_ids" => entry.check_ids,
-      "demotion_trigger" => entry.demotion_trigger
+      "demotion_trigger" => entry.demotion_trigger,
+      "required_verification_method" => atom_label(entry.required_verification_method)
     }
   end
 
