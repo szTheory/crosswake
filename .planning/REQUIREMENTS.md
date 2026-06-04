@@ -31,8 +31,8 @@ Requirements for milestone v4.0. Each maps to roadmap phases. ("User" = the adop
 
 ### Android Verification Closure (AVER)
 
-- [ ] **AVER-01**: Maintainers can run merge-blocking hermetic JVM proof for the Android runtime-line reader and diagnostics export.
-- [ ] **AVER-02**: The Android shell builds against updated toolchain floors (AGP/Kotlin/Gradle, `minSdk 30`, `compileSdk`/`targetSdk 35`) with hermetic proof.
+- [x] **AVER-01**: Maintainers can run merge-blocking hermetic JVM proof for the Android runtime-line reader and diagnostics export.
+- [x] **AVER-02**: The Android shell builds against updated toolchain floors (AGP/Kotlin/Gradle, `minSdk 30`, `compileSdk`/`targetSdk 35`) with hermetic proof.
 - [ ] **AVER-03**: Maintainers can run an advisory (non-blocking) Android emulator lane with documented promotion criteria.
 - [ ] **AVER-04**: A device-UAT checklist enumerates CI-provable / device-advisory / provider-advisory items and stays parity-locked to the capability registry.
 - [ ] **AVER-05**: iOS CI builds against the Xcode 26 SDK so iOS shell proof remains App Store-submittable.
@@ -89,8 +89,8 @@ Which phases cover which requirements. Filled during roadmap creation.
 | DIAG-02 | Phase 65 | Complete |
 | DIAG-03 | Phase 65 | Complete |
 | DIAG-04 | Phase 65 | Complete |
-| AVER-01 | Phase 67 | Pending |
-| AVER-02 | Phase 67 | Pending |
+| AVER-01 | Phase 67 | Complete |
+| AVER-02 | Phase 67 | Complete |
 | AVER-03 | Phase 68 | Pending |
 | AVER-04 | Phase 68 | Pending |
 | AVER-05 | Phase 66 | Pending |
