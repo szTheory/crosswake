@@ -250,11 +250,14 @@ defmodule Crosswake.SupportMatrix do
   ]
   @notification_support_truth [
     %{
-      surface: "notification_token provider snapshot",
+      surface: "notification-open route activation proof",
       proof_class: :advisory,
       action_class: "companion_native",
-      docs_anchor: "guides/capabilities.md#bounded-bridge",
+      docs_anchor: "guides/support_matrix.md#notification-surface-v39",
       delivery_supported: false,
+      route_activation_proof: :hermetic,
+      activation_authority: :route_gate_sigra,
+      evidence_authority: false,
       telemetry: %{
         status: :shipped,
         event_names: Crosswake.Companions.Chimeway.Telemetry.event_names(),
@@ -265,7 +268,7 @@ defmodule Crosswake.SupportMatrix do
       },
       deferred: [:chimeway_delivery, :push_delivery_guarantees],
       posture:
-        "notification_token and notification_open readiness are fully supported/resolvable; Chimeway APNs/FCM push delivery execution remains deferred and unsupported."
+        "notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory."
     }
   ]
   @diagnostic_export_support_truth [

@@ -136,12 +136,13 @@ Crosswake provides explicitly bounded support for notifications via the Chimeway
 
 **Supported:**
 - **Token binding:** The `notification_token` capability resolves local push tokens.
-- **notification-open routing:** Direct routing to Phoenix views upon notification interaction.
+- **notification-open routing:** Notification open resolved through RouteGate for manifest-known routes and route-local action allowlists.
+- **Route activation proof:** The notification-open workflow proof is hermetic route activation proof. RouteGate and Sigra decide activation; token/open evidence is not auth authority.
 - **Resolution limits:** Bounded bridge operations ensure requests complete predictably.
 - **Evidence redaction:** Diagnostic output actively redacts sensitive identifiers.
 
 **Deferred (Not Supported):**
-- **APNs/FCM delivery execution:** Crosswake does not act as a push delivery service.
+- **APNs/FCM delivery execution:** APNs/FCM delivery is not part of this proof, and Crosswake does not act as a push delivery service.
 - **Push metrics:** Delivery and read-receipt metrics are not tracked by the core framework.
 - **Deep UI native presentation:** Custom native notification UI presentation is left to the host shell.
 
@@ -152,5 +153,5 @@ The telemetry event structure `[:crosswake, :notification, :*]` exposes low-card
 
 - StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.
 - Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, and low-cardinality diagnostic metadata; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.
-- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry.
+- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.
 - Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts.

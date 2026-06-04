@@ -61,6 +61,20 @@ defmodule Crosswake.OperatorInspectionTest do
         ]
       )
 
+      get(
+        "/saas/approvals/:id",
+        Elixir.Crosswake.OperatorInspectionTest.PageController,
+        :approval,
+        crosswake: [
+          id: "saas_approval",
+          runtime: :live_view,
+          security: :sensitive,
+          notification_open: [actions: [:tap, :approve]],
+          auth_min_level: :mfa,
+          requires_recent_auth: 300
+        ]
+      )
+
       get("/gated", Elixir.Crosswake.OperatorInspectionTest.PageController, :gated,
         crosswake: [
           id: "gated",
@@ -104,6 +118,7 @@ defmodule Crosswake.OperatorInspectionTest do
              "dashboard",
              "gated",
              "notifications",
+             "saas_approval",
              "secure"
            ]
 
@@ -158,7 +173,19 @@ defmodule Crosswake.OperatorInspectionTest do
     assert notifications.notifications.provider_readiness == :verification_required
     assert notifications.notifications.delivery_supported == false
     assert notifications.notifications.open_routing_active == true
+    assert notifications.notifications.route_activation_proof == :hermetic
+    assert notifications.notifications.activation_authority == :route_gate_sigra
+    assert notifications.notifications.evidence_authority == false
     assert "notification_token.provider_snapshot" in notifications.support.promotion_rule_ids
+
+    approval = document.routes["saas_approval"]
+    assert approval.notifications.open_routing_active == true
+    assert approval.notifications.route_activation_proof == :hermetic
+    assert approval.notifications.activation_authority == :route_gate_sigra
+    assert approval.notifications.action_allowlist == [:tap, :approve]
+    assert approval.notifications.delivery_supported == false
+    assert approval.auth.auth_min_level == :mfa
+    assert approval.auth.requires_recent_auth == 300
 
     gated = document.routes["gated"]
     assert gated.companion.gated_by == :stub_companion
@@ -206,14 +233,19 @@ defmodule Crosswake.OperatorInspectionTest do
     assert document.indexes.by_runtime["live_view"] == [
              "checkout",
              "dashboard",
-             "gated",
-             "notifications",
-             "secure"
-           ]
+      "gated",
+      "notifications",
+      "saas_approval",
+      "secure"
+    ]
 
     assert document.indexes.by_capability["notification_token"] == ["notifications"]
     assert document.indexes.by_companion["stub_companion"] == ["gated"]
-    assert document.indexes.by_auth_predicate["step_up_required"] == ["checkout", "secure"]
+    assert document.indexes.by_auth_predicate["step_up_required"] == [
+             "checkout",
+             "saas_approval",
+             "secure"
+           ]
     assert "checkout" in document.indexes.by_rebuild_requirement["native_required"]
     assert "notifications" in document.indexes.by_rebuild_requirement["companion_required"]
   end

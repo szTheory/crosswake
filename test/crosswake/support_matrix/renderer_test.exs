@@ -167,7 +167,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "auth.sigra.session_authority"
     assert guide =~ "diag.auth.sigra_session_authority"
 
-    assert guide =~ "notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry"
+    assert guide =~ "notification-open workflow proof is hermetic route activation proof"
+    assert guide =~ "RouteGate and Sigra decide activation"
+    assert guide =~ "token/open evidence is not auth authority"
+    assert guide =~ "APNs/FCM delivery is not part of this proof"
 
     assert guide =~ "Standalone public shell packages are deferred"
   end

@@ -250,6 +250,24 @@ Typical examples:
 - read app info
 - inspect notification permission status before showing setup guidance
 
+### Notification Re-Entry For A Phoenix-Owned Route
+
+Use this when a notification interaction should attempt to open a Phoenix-owned route without letting the notification become authority.
+
+Typical example: a SaaS approval route with `notification_open: [actions: ["tap", "approve"]]`, `auth_min_level: :mfa`, and `requires_recent_auth: 300`.
+
+Flow:
+
+1. Backend token binding and one-time open intent records are created by the host.
+2. A simulated notification-open event becomes `NotificationOpenEvidence`.
+3. Chimeway resolves the open intent against the manifest-known route and action allowlist.
+4. Notification open resolved through RouteGate.
+5. Sigra checks backend-projected session authority and recent authentication.
+6. Recent authentication required before opening this route returns a step-up denial and no fallback route is activated.
+7. Fresh backend MFA allows the Phoenix-owned route to activate.
+
+Token evidence is bound by the backend; possession does not grant access. APNs/FCM delivery is not part of this proof.
+
 ### Use Cached Read-Only
 
 Use this when:

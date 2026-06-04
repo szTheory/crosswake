@@ -259,10 +259,17 @@ defmodule Crosswake.SupportMatrixTest do
            ]
 
     assert [notification_truth] = SupportMatrix.notification_support_truth()
-    assert notification_truth.surface == "notification_token provider snapshot"
+    assert notification_truth.surface == "notification-open route activation proof"
     assert notification_truth.proof_class == :advisory
     assert notification_truth.action_class == "companion_native"
     assert notification_truth.delivery_supported == false
+    assert notification_truth.route_activation_proof == :hermetic
+    assert notification_truth.activation_authority == :route_gate_sigra
+    assert notification_truth.evidence_authority == false
+    assert notification_truth.posture =~ "notification-open workflow proof is hermetic route activation proof"
+    assert notification_truth.posture =~ "RouteGate and Sigra decide activation"
+    assert notification_truth.posture =~ "token/open evidence is not auth authority"
+    assert notification_truth.posture =~ "APNs/FCM delivery is not part of this proof"
     assert :chimeway_delivery in notification_truth.deferred
   end
 
