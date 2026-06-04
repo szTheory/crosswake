@@ -1207,9 +1207,13 @@ defmodule Crosswake.Doctor do
     }
   end
 
-  # D-16: Evidence posture summary keyed by platform — derived from the rebuild_matrix
-  # evidence_tier values. iOS uses :device_verified; Android uses :jvm_hermetic (CI only).
-  # This is a matrix-level summary, not derived per-capability-entry.
+  # D-16: Evidence posture summary keyed by platform — a fixed Phase-64 posture map.
+  # iOS is :device_verified (host-owned iOS shell with device-backed proof artifacts).
+  # Android is :jvm_hermetic (CI-only JVM proof; no device proof lane until Phases 67/68).
+  # NOTE: This is a compile-time constant for Phase 64. It does NOT derive from the
+  # rebuild_matrix rows at runtime. When device-verified Android evidence arrives in
+  # Phase 67/68, this function should read support_matrix.rebuild_matrix evidence_tier
+  # values and derive ios/android from them.
   defp evidence_posture_snapshot(_support_matrix) do
     %{ios: :device_verified, android: :jvm_hermetic}
   end

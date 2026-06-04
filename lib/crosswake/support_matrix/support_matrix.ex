@@ -293,25 +293,6 @@ defmodule Crosswake.SupportMatrix do
       rebuild_required: true,
       evidence_tier: :jvm_hermetic
     ),
-    Types.new_runtime_line_row(
-      runtime_line: "2.x",
-      capability_surface: [
-        "haptics",
-        "share",
-        "app_info",
-        "deep_link",
-        "permissions.status",
-        "notification_token",
-        "file_picker",
-        "media_capture",
-        "scanner",
-        "document_scan"
-      ],
-      change_class: "native or companion rebuild required",
-      ota_safe: false,
-      rebuild_required: true,
-      evidence_tier: :device_verified
-    )
   ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
@@ -399,6 +380,7 @@ defmodule Crosswake.SupportMatrix do
     |> validate_capability_families_present(support_matrix)
     |> validate_phase51_support_truth()
     |> validate_verification_method_invariant(support_matrix)
+    |> validate_rebuild_matrix_evidence(support_matrix)
   end
 
   @spec statuses() :: [atom()]
@@ -884,6 +866,35 @@ defmodule Crosswake.SupportMatrix do
                 "capability family #{inspect(entry.family)} claims :device_verified but has proof_class :advisory (CI-only corpus) — evidence laundering (D-10a)",
               hint:
                 ":device_verified requires real-device proof evidence; CI-only entries must use :jvm_hermetic, :emulator_advisory, or :none"
+            }
+            | acc
+          ]
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  # D-10a (rebuild_matrix surface): The rebuild_matrix rows must not claim :device_verified
+  # for any runtime-line band without backing real-device promotion evidence. In Phase 64,
+  # the shell.android.device_verified promotion rule is explicitly GATED (Phases 67/68) and
+  # there is no passed device-verified promotion evidence, so :device_verified is unconditionally
+  # rejected on all rebuild_matrix rows. CI-only bands must use :jvm_hermetic. This structural
+  # gate makes evidence laundering via the rebuild_matrix surface impossible to re-introduce
+  # without being caught by validate/1.
+  defp validate_rebuild_matrix_evidence(errors, %SupportMatrix{} = support_matrix) do
+    support_matrix.rebuild_matrix
+    |> Enum.reduce(errors, fn row, acc ->
+      cond do
+        row.evidence_tier == :device_verified ->
+          [
+            %{
+              key: :rebuild_matrix,
+              message:
+                "rebuild_matrix row for runtime_line #{inspect(row.runtime_line)} claims evidence_tier :device_verified — evidence laundering (D-10a); no device-verified promotion evidence exists in Phase 64",
+              hint:
+                ":device_verified on a rebuild_matrix row requires real-device proof gated until Phases 67/68; CI-only bands must use :jvm_hermetic"
             }
             | acc
           ]

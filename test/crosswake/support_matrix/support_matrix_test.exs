@@ -634,4 +634,97 @@ defmodule Crosswake.SupportMatrixTest do
     refute :native_auth_return in row.deferred
     refute :handoff in row.deferred
   end
+
+  # ---------------------------------------------------------------------------
+  # Phase 64 Gap 1 (RLINE-04): rebuild_matrix honesty and evidence gate
+  #
+  # The rebuild_matrix surface must not claim :device_verified for any band
+  # without backing real-device proof. The 2.x band does not exist in Phase 64
+  # (native_runtime_version is "1.0.0"); device-verified proof is gated until
+  # Phases 67/68. validate/1 must structurally reject any :device_verified row.
+  # ---------------------------------------------------------------------------
+
+  test "canonical rebuild_matrix contains only the '1.x' row — no '2.x' unbacked band" do
+    matrix = SupportMatrix.canonical()
+    rows = SupportMatrix.rebuild_matrix(matrix)
+
+    runtime_lines = Enum.map(rows, & &1.runtime_line)
+
+    assert runtime_lines == ["1.x"],
+           "rebuild_matrix must contain only the '1.x' row in Phase 64 (the 2.x band does not exist; native_runtime_version is '1.0.0')"
+  end
+
+  test "canonical rebuild_matrix '1.x' row has evidence_tier :jvm_hermetic — never :device_verified" do
+    matrix = SupportMatrix.canonical()
+    rows = SupportMatrix.rebuild_matrix(matrix)
+
+    for row <- rows do
+      refute row.evidence_tier == :device_verified,
+             "rebuild_matrix row '#{row.runtime_line}' claims :device_verified — evidence laundering (D-10a); device-verified proof is gated until Phases 67/68"
+    end
+  end
+
+  test "validate/1 returns [] for canonical matrix (no false positives from rebuild_matrix gate)" do
+    errors = SupportMatrix.validate(SupportMatrix.canonical())
+    assert errors == [],
+           "canonical matrix must be clean — got unexpected errors: #{inspect(errors)}"
+  end
+
+  test "validate/1 rejects a rebuild_matrix row with evidence_tier :device_verified (evidence laundering gate)" do
+    canonical = SupportMatrix.canonical()
+
+    # Inject a :device_verified row into rebuild_matrix — must be rejected
+    injected_row =
+      Types.new_runtime_line_row(
+        runtime_line: "2.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :device_verified
+      )
+
+    invalid_matrix = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [injected_row]}
+
+    errors = SupportMatrix.validate(invalid_matrix)
+
+    assert is_list(errors) and length(errors) > 0,
+           "validate/1 must return errors for a rebuild_matrix row with :device_verified — evidence laundering (D-10a)"
+
+    assert Enum.any?(errors, &(&1.key == :rebuild_matrix)),
+           "error must reference :rebuild_matrix key; got: #{inspect(errors)}"
+  end
+
+  test "validate/1 accepts rebuild_matrix rows with :jvm_hermetic and :none evidence_tier (no false positive)" do
+    canonical = SupportMatrix.canonical()
+
+    jvm_row =
+      Types.new_runtime_line_row(
+        runtime_line: "3.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :jvm_hermetic
+      )
+
+    none_row =
+      Types.new_runtime_line_row(
+        runtime_line: "4.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :none
+      )
+
+    matrix_with_safe_rows = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [jvm_row, none_row]}
+
+    errors = SupportMatrix.validate(matrix_with_safe_rows)
+
+    rebuild_errors = Enum.filter(errors, &(&1.key == :rebuild_matrix))
+
+    assert rebuild_errors == [],
+           "validate/1 must not reject :jvm_hermetic or :none rows; got rebuild_matrix errors: #{inspect(rebuild_errors)}"
+  end
 end
