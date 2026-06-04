@@ -1161,13 +1161,20 @@ defmodule Crosswake.DoctorTest do
       assert finding.severity == :advisory
     end
 
-    test "the finding fires unconditionally even with empty opts (no manifest path)",
-         %{target: target} do
-      # Run with minimal opts — no manifest, no notifications; finding must still appear
-      report = Doctor.run(cwd: target)
+    test "the finding fires unconditionally — no notification routes in manifest",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # Run with a manifest that has no notification routes; finding must still appear
+      # (unconditional — not gated on notification/manifest state, unlike phase_62)
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
 
       matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
-      assert length(matching) == 1
+      assert length(matching) == 1,
+             "diagnostic_export.contract_shipped must fire unconditionally regardless of notification routes"
     end
 
     test "the finding message does NOT contain the phrase 'crash-reporting service'",

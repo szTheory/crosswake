@@ -150,6 +150,7 @@ defmodule Crosswake.Doctor do
     phase_41_findings = phase_41_gating_findings(manifest)
     phase_46_findings = phase_46_auth_findings(manifest)
     phase_62_findings = phase_62_notification_findings(manifest)
+    phase_65_findings = phase_65_diagnostic_export_findings()
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -166,6 +167,7 @@ defmodule Crosswake.Doctor do
         phase_41_findings ++
         phase_46_findings ++
         phase_62_findings ++
+        phase_65_findings ++
         publish_findings
 
     %Report{
@@ -841,6 +843,28 @@ defmodule Crosswake.Doctor do
     else
       []
     end
+  end
+
+  defp phase_65_diagnostic_export_findings do
+    truth = SupportMatrix.diagnostic_export_support_truth() |> List.first(%{})
+    telemetry = Map.get(truth, :telemetry, %{})
+
+    [
+      check(
+        :advisory,
+        "diagnostic_export.contract_shipped",
+        "diagnostic_export_posture",
+        "Diagnostics-export envelope and sanitize contract are shipped; the merge-blocking allowlist proof is enforced. Native MetricKit/ApplicationExitInfo transport is deferred to Phase 67.",
+        "The host owns the endpoint and the data. Configure your endpoint to receive POST payloads matching the DiagnosticExport.Envelope contract. No Elixir HTTP-sending code ships in the library.",
+        %{
+          delivery_supported: Map.get(truth, :delivery_supported, false),
+          deferred: Map.get(truth, :deferred, []),
+          authority_source: Map.get(telemetry, :authority_source, :host_configured_endpoint),
+          proof_class: Map.get(telemetry, :proof_class, :merge_blocking),
+          forbidden_metadata_keys: Map.get(telemetry, :forbidden_metadata_keys, [])
+        }
+      )
+    ]
   end
 
   defp phase_23_commerce_summary(nil, _opts) do
