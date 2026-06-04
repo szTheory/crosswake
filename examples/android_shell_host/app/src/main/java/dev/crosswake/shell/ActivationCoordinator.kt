@@ -88,7 +88,10 @@ data class ActivationRequest(
     }
 }
 
-data class ShellManifest(val routes: Map<String, Route>) {
+data class ShellManifest(
+    val routes: Map<String, Route>,
+    val nativeRuntimeVersion: String
+) {
     data class TransferSeam(
         val id: String,
         val intent: String,
@@ -286,6 +289,18 @@ class ActivationCoordinator(
     }
 
     private fun resolve(request: ActivationRequest, manifest: ShellManifest): ShellPresentation {
+        if (request.nativeRuntimeVersion != manifest.nativeRuntimeVersion) {
+            return ShellPresentation.Denied(
+                denial(
+                    manifest = manifest,
+                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                    routeId = request.routeId,
+                    message = "This route requires a newer shell binary to boot.",
+                    hint = "The server requested a different native runtime version than this shell provides."
+                )
+            )
+        }
+
         val route = routeForRequest(manifest, request)
             ?: return ShellPresentation.Denied(
                 denial(
@@ -520,6 +535,8 @@ class ActivationCoordinator(
 object ActivationFixtures {
     fun loadManifest(context: Context): ShellManifest {
         val root = JSONObject(readAsset(context, "crosswake_manifest.json"))
+        val compatibilityJson = root.optJSONObject("compatibility")
+        val nativeRuntimeVersion = compatibilityJson?.getString("native_runtime_version") ?: "1.0.0"
         val routesJson = root.getJSONObject("routes")
         val routes = mutableMapOf<String, ShellManifest.Route>()
 
@@ -537,7 +554,10 @@ object ActivationFixtures {
             )
         }
 
-        return ShellManifest(routes = routes)
+        return ShellManifest(
+            routes = routes,
+            nativeRuntimeVersion = nativeRuntimeVersion
+        )
     }
 
     fun loadActivationRequest(context: Context): ActivationRequest {

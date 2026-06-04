@@ -99,6 +99,19 @@ class ActivationCoordinatorTest {
         )
     }
 
+    @Test
+    fun mismatchedNativeRuntimeVersionDeniesBoot() {
+        val coordinator = coordinator(baselineRequest().copy(nativeRuntimeVersion = "1.1.0"))
+
+        val presentation = coordinator.activate(baselineRequest().copy(nativeRuntimeVersion = "1.1.0"))
+
+        assertTrue(presentation is ShellPresentation.Denied)
+        assertEquals(
+            RouteDenialReason.COMPATIBILITY_MISMATCH,
+            (presentation as ShellPresentation.Denied).denial.reason
+        )
+    }
+
     private fun coordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
         return ActivationCoordinator(
             manifestLoader = { manifest() },
