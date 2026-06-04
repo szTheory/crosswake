@@ -727,4 +727,73 @@ defmodule Crosswake.SupportMatrixTest do
     assert rebuild_errors == [],
            "validate/1 must not reject :jvm_hermetic or :none rows; got rebuild_matrix errors: #{inspect(rebuild_errors)}"
   end
+
+  # Phase 65 — DIAG-04: diagnostic_export_support_truth accessor
+  describe "diagnostic_export_support_truth/0 (DIAG-04)" do
+    test "returns a non-empty list" do
+      truth = SupportMatrix.diagnostic_export_support_truth()
+      assert is_list(truth)
+      assert length(truth) > 0
+    end
+
+    test "entry has delivery_supported: false" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.delivery_supported == false
+    end
+
+    test "entry deferred list contains all three expected atoms" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert :native_diagnostic_export in entry.deferred
+      assert :metrickit_capture in entry.deferred
+      assert :application_exit_info_capture in entry.deferred
+    end
+
+    test "entry deferred list is exactly the three expected atoms" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert Enum.sort(entry.deferred) ==
+               Enum.sort([:native_diagnostic_export, :metrickit_capture, :application_exit_info_capture])
+    end
+
+    test "entry telemetry.authority_source is :host_configured_endpoint" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.authority_source == :host_configured_endpoint
+    end
+
+    test "entry telemetry.proof_class is :merge_blocking" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.proof_class == :merge_blocking
+    end
+
+    test "entry proof_class is :merge_blocking" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.proof_class == :merge_blocking
+    end
+
+    test "entry posture contains non-overclaim phrase" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "not a crash-reporting service")
+    end
+
+    test "entry posture contains Phase 67 deferral reference" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "Phase 67")
+    end
+
+    test "entry posture contains host ownership reference" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "host")
+    end
+
+    test "entry telemetry.forbidden_metadata_keys equals DiagnosticExport.forbidden_keys()" do
+      alias Crosswake.Shell.DiagnosticExport
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.forbidden_metadata_keys == DiagnosticExport.forbidden_keys()
+    end
+
+    test "entry telemetry.metadata_keys equals DiagnosticExport.allowed_keys()" do
+      alias Crosswake.Shell.DiagnosticExport
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.metadata_keys == DiagnosticExport.allowed_keys()
+    end
+  end
 end
