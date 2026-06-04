@@ -25,7 +25,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     resolved_gaps
   )
   @exception_fields ~w(owner scope reason revisit_phase evidence status)
-  @v39_phases ~w(59 60 61 62 63)
+  @v40_phases ~w(64 65 66 67 68 69)
   @unreleased_sections [
     "Unpublished support claims",
     "Verification-required and advisory surfaces",
@@ -155,7 +155,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       rel(cwd, path),
       missing == [],
       "missing keys: #{Enum.join(missing, ", ")}",
-      "Preserve the v3.9-CLOSEOUT.md frontmatter contract before closeout.",
+      "Preserve the v4.0-CLOSEOUT.md frontmatter contract before closeout.",
       %{missing: missing}
     )
   end
@@ -246,8 +246,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       "roadmap closeout parity",
       ".planning/ROADMAP.md",
       passed,
-      "v3.9 roadmap parity or next-step routing is stale",
-      "Archive v3.9 roadmap evidence and complete Phase 63 alignment.",
+      "v4.0 roadmap parity or next-step routing is stale",
+      "Archive v4.0 roadmap evidence and complete Phase 69 alignment.",
       %{}
     )
   end
@@ -306,7 +306,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       ".planning/phases",
       passed,
       "malformed summaries: #{Enum.map_join(malformed, ", ", &rel(cwd, &1))}",
-      "Ensure every v3.9 SUMMARY.md has requirements-completed frontmatter.",
+      "Ensure every v4.0 SUMMARY.md has requirements-completed frontmatter.",
       %{malformed: Enum.map(malformed, &rel(cwd, &1))}
     )
   end
@@ -463,7 +463,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   end
 
   defp closeout_path(cwd, opts) do
-    Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"))
+    opts[:closeout_path] || Path.join(cwd, ".planning/milestones/v4.0-CLOSEOUT.md")
   end
 
   # The live REQUIREMENTS.md is intentionally removed at milestone close and
@@ -495,10 +495,10 @@ defmodule Crosswake.Planning.CloseoutVerifier do
           |> Regex.scan(list_str, capture: :all_but_first)
           |> Enum.map(fn [p] -> p end)
 
-        if phases == [], do: @v39_phases, else: phases
+        if phases == [], do: @v40_phases, else: phases
 
       nil ->
-        @v39_phases
+        @v40_phases
     end
   end
 
