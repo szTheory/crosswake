@@ -106,6 +106,37 @@ final class ActivationCoordinatorTests: XCTestCase {
         XCTAssertEqual(requiredPack.status.installedVersion, "1.1.0")
     }
 
+    func testMismatchedNativeRuntimeVersionDeniesBoot() {
+        let coordinator = ActivationCoordinator(
+            manifestLoader: { Self.manifest },
+            requestLoader: { Self.allowedRequest },
+            packStore: Self.packStore
+        )
+
+        let request = ActivationRequest(
+            routeID: "library",
+            url: URL(string: "https://example.crosswake.invalid/library"),
+            source: .coldStart,
+            origin: "https://example.crosswake.invalid",
+            manifestSource: .bundled,
+            bridgeProtocolVersion: "1.0.0",
+            nativeRuntimeVersion: "1.1.0",
+            correlationID: "ios-mismatch-1",
+            declaredPackRequirements: [:],
+            installedPacks: [:],
+            capabilities: [:]
+        )
+
+        coordinator.activate(request)
+
+        guard case let .denied(denial) = coordinator.presentation else {
+            return XCTFail("expected denial presentation")
+        }
+
+        XCTAssertEqual(denial.reason, .compatibilityMismatch)
+        XCTAssertEqual(denial.hint, "The server requested a different native runtime version than this shell provides.")
+    }
+
     func testInAppNavigationDeniesDisallowedOrigin() {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },

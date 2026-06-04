@@ -95,6 +95,14 @@ struct ActivationRequest: Codable, Equatable {
 }
 
 struct ShellManifest: Codable, Equatable {
+    struct Compatibility: Codable, Equatable {
+        let nativeRuntimeVersion: String
+
+        enum CodingKeys: String, CodingKey {
+            case nativeRuntimeVersion = "native_runtime_version"
+        }
+    }
+
     struct TransferSeam: Codable, Equatable {
         let id: String
         let intent: String
@@ -542,6 +550,23 @@ extension URL {
 
         if let port, port != defaultPortForScheme {
             return "\(scheme)://\(host):\(port)"
+        }
+
+        return "\(scheme)://\(host)"
+    }
+
+    var defaultPortForScheme: Int? {
+        switch scheme {
+        case "https":
+            return 443
+        case "http":
+            return 80
+        default:
+            return nil
+        }
+    }
+}
+eturn "\(scheme)://\(host):\(port)"
         }
 
         return "\(scheme)://\(host)"
