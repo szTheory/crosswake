@@ -79,7 +79,7 @@
 |-------|----------------|--------|-----------|
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
-| 72. Media/Evidence Workflow Proof | 3/3 | Complete   | 2026-06-05 |
+| 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
 | 73. Auth-Sensitive Admin Workflow Proof | 0/0 | Not started | - |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
