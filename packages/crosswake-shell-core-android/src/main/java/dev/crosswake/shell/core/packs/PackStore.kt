@@ -1,0 +1,261 @@
+package dev.crosswake.shell.core.packs
+
+import android.content.Context
+import kotlinx.coroutines.delay
+import org.json.JSONArray
+import org.json.JSONObject
+
+enum class PackState(val wireValue: String) {
+    CHECKING("checking"),
+    NOT_INSTALLED("not_installed"),
+    INSTALLING("installing"),
+    AVAILABLE("available"),
+    STALE("stale"),
+    INVALIDATING("invalidating"),
+    FAILED("failed")
+}
+
+enum class InstallStage(val label: String) {
+    PREPARING("Preparing"),
+    DOWNLOADING("Downloading"),
+    VERIFYING("Verifying"),
+    INSTALLING("Installing")
+}
+
+data class PackInventoryRecord(
+    val packId: String,
+    val requiredVersion: String,
+    val installedVersion: String,
+    val bytes: Long,
+    val integrityStatus: String,
+    val verifiedAt: String?,
+    val status: String
+)
+
+data class RequiredPackStatus(
+    val packId: String,
+    val requiredVersion: String,
+    val state: PackState,
+    val installedVersion: String?,
+    val bytes: Long?,
+    val verifiedAt: String?,
+    val integrityStatus: String?,
+    val installStage: InstallStage? = null,
+    val failureReason: String? = null,
+    val lastKnownVersion: String? = null
+)
+
+class PackStore private constructor(
+    private val context: Context?,
+    private val requiredVersions: Map<String, String>
+) {
+    companion object {
+        private const val PREFS = "crosswake_pack_store"
+
+        fun bundled(context: Context): PackStore {
+            val requiredVersions = loadRequiredVersions(context)
+            val store = PackStore(context.applicationContext, requiredVersions)
+            store.seedFromFixturesIfNeeded(loadInventory(context))
+            return store
+        }
+
+        private fun loadRequiredVersions(context: Context): Map<String, String> {
+            val json = JSONObject(readAsset(context, "declared_pack_requirements.json"))
+            return json.keys().asSequence().associateWith { json.getString(it) }
+        }
+
+        private fun loadInventory(context: Context): List<PackInventoryRecord> {
+            val values = JSONArray(readAsset(context, "pack_inventory.json"))
+            return List(values.length()) { index ->
+                val item = values.getJSONObject(index)
+                PackInventoryRecord(
+                    packId = item.getString("pack_id"),
+                    requiredVersion = item.getString("required_version"),
+                    installedVersion = item.getString("installed_version"),
+                    bytes = item.getLong("bytes"),
+                    integrityStatus = item.getString("integrity_status"),
+                    verifiedAt = item.optString("verified_at").takeIf { it.isNotBlank() },
+                    status = item.optString("status", "available")
+                )
+            }
+        }
+
+        private fun readAsset(context: Context, name: String): String {
+            return context.assets.open(name).bufferedReader().use { it.readText() }
+        }
+
+        fun inMemory(
+            requiredVersions: Map<String, String>,
+            inventory: List<PackInventoryRecord> = emptyList()
+        ): PackStore {
+            val store = PackStore(context = null, requiredVersions = requiredVersions)
+            inventory.forEach { record ->
+                store.memoryStatuses[record.packId] = store.buildStatus(record.packId, record.requiredVersion, record)
+            }
+            return store
+        }
+    }
+
+    private val memoryStatuses = mutableMapOf<String, RequiredPackStatus>()
+
+    fun blockingStatus(packReferences: List<String>): RequiredPackStatus? {
+        return packReferences.mapNotNull(::parseReference)
+            .map { (packId, requiredVersion) ->
+                persistedStatus(packId, requiredVersion) ?: RequiredPackStatus(
+                    packId = packId,
+                    requiredVersion = requiredVersion,
+                    state = PackState.NOT_INSTALLED,
+                    installedVersion = null,
+                    bytes = null,
+                    verifiedAt = null,
+                    integrityStatus = null
+                )
+            }
+            .firstOrNull { it.state != PackState.AVAILABLE }
+    }
+
+    suspend fun installRequiredPack(status: RequiredPackStatus): RequiredPackStatus {
+        var current = status.copy(state = PackState.INSTALLING, failureReason = null)
+
+        for (stage in listOf(InstallStage.PREPARING, InstallStage.DOWNLOADING, InstallStage.VERIFYING, InstallStage.INSTALLING)) {
+            current = current.copy(installStage = stage)
+            persistStatus(current)
+            delay(150)
+        }
+
+        val available = current.copy(
+            state = PackState.AVAILABLE,
+            installedVersion = status.requiredVersion,
+            bytes = status.bytes ?: 24576,
+            verifiedAt = "2026-05-17T09:00:00Z",
+            integrityStatus = "verified",
+            installStage = null,
+            lastKnownVersion = status.installedVersion ?: status.lastKnownVersion
+        )
+        persistStatus(available)
+        return available
+    }
+
+    suspend fun invalidatePack(status: RequiredPackStatus): RequiredPackStatus {
+        val invalidating = status.copy(state = PackState.INVALIDATING, installStage = null)
+        persistStatus(invalidating)
+        delay(150)
+
+        val reset = status.copy(
+            state = PackState.NOT_INSTALLED,
+            installedVersion = null,
+            verifiedAt = null,
+            integrityStatus = null,
+            installStage = null,
+            lastKnownVersion = status.installedVersion ?: status.lastKnownVersion
+        )
+        persistStatus(reset)
+        return reset
+    }
+
+    private fun seedFromFixturesIfNeeded(records: List<PackInventoryRecord>) {
+        val prefs = prefs()
+        if (prefs.getBoolean("seeded", false)) {
+            return
+        }
+
+        prefs.edit().apply {
+            records.forEach { persistRecord(this, buildStatus(it.packId, it.requiredVersion, it)) }
+            putBoolean("seeded", true)
+        }.apply()
+    }
+
+    private fun persistedStatus(packId: String, requiredVersion: String): RequiredPackStatus? {
+        memoryStatuses[packId]?.let { return it.copy(requiredVersion = requiredVersion) }
+        val encoded = prefs().getString(packId, null) ?: return null
+        return decodeStatus(JSONObject(encoded)).copy(requiredVersion = requiredVersion)
+    }
+
+    private fun persistStatus(status: RequiredPackStatus) {
+        if (context == null) {
+            memoryStatuses[status.packId] = status
+            return
+        }
+
+        prefs().edit().apply {
+            persistRecord(this, status)
+        }.apply()
+    }
+
+    private fun persistRecord(editor: android.content.SharedPreferences.Editor, status: RequiredPackStatus) {
+        editor.putString(status.packId, JSONObject().apply {
+            put("pack_id", status.packId)
+            put("required_version", status.requiredVersion)
+            put("state", status.state.wireValue)
+            put("installed_version", status.installedVersion)
+            put("bytes", status.bytes)
+            put("verified_at", status.verifiedAt)
+            put("integrity_status", status.integrityStatus)
+            put("install_stage", status.installStage?.label)
+            put("failure_reason", status.failureReason)
+            put("last_known_version", status.lastKnownVersion)
+        }.toString())
+    }
+
+    private fun buildStatus(packId: String, requiredVersion: String, record: PackInventoryRecord?): RequiredPackStatus {
+        if (record == null) {
+            return RequiredPackStatus(
+                packId = packId,
+                requiredVersion = requiredVersion,
+                state = PackState.NOT_INSTALLED,
+                installedVersion = null,
+                bytes = null,
+                verifiedAt = null,
+                integrityStatus = null
+            )
+        }
+
+        val state = when {
+            record.status == "invalidating" -> PackState.INVALIDATING
+            record.integrityStatus != "verified" || record.verifiedAt == null -> PackState.FAILED
+            record.installedVersion != requiredVersion -> PackState.STALE
+            else -> PackState.AVAILABLE
+        }
+
+        return RequiredPackStatus(
+            packId = packId,
+            requiredVersion = requiredVersion,
+            state = state,
+            installedVersion = record.installedVersion,
+            bytes = record.bytes,
+            verifiedAt = record.verifiedAt,
+            integrityStatus = record.integrityStatus,
+            failureReason = if (state == PackState.FAILED) "verification_missing" else null,
+            lastKnownVersion = record.installedVersion
+        )
+    }
+
+    private fun decodeStatus(json: JSONObject): RequiredPackStatus {
+        return RequiredPackStatus(
+            packId = json.getString("pack_id"),
+            requiredVersion = json.getString("required_version"),
+            state = PackState.entries.first { it.wireValue == json.getString("state") },
+            installedVersion = json.optString("installed_version").takeIf { it.isNotBlank() },
+            bytes = json.optLong("bytes").takeIf { it > 0 },
+            verifiedAt = json.optString("verified_at").takeIf { it.isNotBlank() },
+            integrityStatus = json.optString("integrity_status").takeIf { it.isNotBlank() },
+            installStage = json.optString("install_stage").takeIf { it.isNotBlank() }?.let { stage ->
+                InstallStage.entries.first { it.label == stage }
+            },
+            failureReason = json.optString("failure_reason").takeIf { it.isNotBlank() },
+            lastKnownVersion = json.optString("last_known_version").takeIf { it.isNotBlank() }
+        )
+    }
+
+    private fun parseReference(packReference: String): Pair<String, String>? {
+        val components = packReference.split("@", limit = 2)
+        return if (components.size == 2) components[0] to components[1] else null
+    }
+
+    private fun prefs(): android.content.SharedPreferences {
+        val availableContext = context
+            ?: error("PackStore requires an Android context for persisted storage")
+
+        return availableContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+    }
+}
