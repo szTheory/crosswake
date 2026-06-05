@@ -1,0 +1,49 @@
+name: Phase 74 Proof
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Proof lane to run"
+        required: true
+        default: merge-blocking
+        type: choice
+        options:
+          - merge-blocking
+          - advisory
+          - all
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  merge-blocking-offline-draft-recovery-proof:
+    name: merge-blocking offline draft recovery proof (hermetic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 74 offline draft recovery proof
+        run: mix test test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs
