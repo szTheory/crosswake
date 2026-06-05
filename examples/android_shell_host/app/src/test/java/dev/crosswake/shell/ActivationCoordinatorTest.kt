@@ -131,6 +131,7 @@ class ActivationCoordinatorTest {
 
     private fun staleCoordinator(request: ActivationRequest = baselineRequest()): ActivationCoordinator {
         return ActivationCoordinator(
+            config = CrosswakeShellConfig(),
             manifestLoader = { manifest() },
             requestLoader = { request },
             packStore = PackStore.inMemory(
