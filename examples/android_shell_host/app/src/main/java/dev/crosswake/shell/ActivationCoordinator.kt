@@ -5,6 +5,9 @@ import android.content.Intent
 import dev.crosswake.shell.packs.PackStore
 import dev.crosswake.shell.packs.RequiredPackStatus
 import dev.crosswake.shell.transfer.TransferCoordinator
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -164,6 +167,7 @@ sealed interface NavigationDecision {
 }
 
 class ActivationCoordinator(
+    private val config: CrosswakeShellConfig,
     private val manifestLoader: () -> ShellManifest,
     private val requestLoader: () -> ActivationRequest,
     private val packStore: PackStore
@@ -171,7 +175,15 @@ class ActivationCoordinator(
     private var hasBootstrapped = false
     private var cachedManifest: ShellManifest? = null
     private var lastRequest: ActivationRequest? = null
-    private var presentation: ShellPresentation = ShellPresentation.Booting
+
+    private val _presentation = MutableStateFlow<ShellPresentation>(ShellPresentation.Booting)
+    val stateFlow: StateFlow<ShellPresentation> = _presentation.asStateFlow()
+
+    private var presentation: ShellPresentation
+        get() = _presentation.value
+        set(value) {
+            _presentation.value = value
+        }
 
     var currentSession: LiveViewSession? = null
         private set
@@ -181,8 +193,9 @@ class ActivationCoordinator(
     companion object {
         private const val NATIVE_CAPTURE = "native_screen"
 
-        fun bundled(context: Context): ActivationCoordinator {
+        fun bundled(context: Context, config: CrosswakeShellConfig): ActivationCoordinator {
             return ActivationCoordinator(
+                config = config,
                 manifestLoader = { ActivationFixtures.loadManifest(context) },
                 requestLoader = { ActivationFixtures.loadActivationRequest(context) },
                 packStore = PackStore.bundled(context)
@@ -202,7 +215,9 @@ class ActivationCoordinator(
     fun handleIntent(intent: Intent?, fallbackSource: ActivationSource = ActivationSource.DEEP_LINK): ShellPresentation {
         presentation = try {
             val baseline = requestLoader()
-            val request = normalizeIntent(intent, baseline, fallbackSource)
+            val filteredCapabilities = filterCapabilities(baseline.capabilities)
+            val filteredBaseline = baseline.copy(capabilities = filteredCapabilities)
+            val request = normalizeIntent(intent, filteredBaseline, fallbackSource)
             activate(request)
         } catch (error: Exception) {
             deniedBoot(
@@ -212,6 +227,17 @@ class ActivationCoordinator(
         }
 
         return presentation
+    }
+
+    private fun filterCapabilities(capabilities: Map<String, String>): Map<String, String> {
+        val filtered = capabilities.toMutableMap()
+        if (config.appInfoDelegate == null) filtered.remove("app.info.get")
+        if (config.hapticsDelegate == null) filtered.remove("haptics.impact")
+        if (config.permissionStatusDelegate == null) filtered.remove("permissions.status")
+        if (config.notificationTokenDelegate == null) filtered.remove("notification_token")
+        if (config.shareDelegate == null) filtered.remove("share.invoke")
+        if (config.filesPickDelegate == null) filtered.remove("file_picker")
+        return filtered
     }
 
     fun retry(): ShellPresentation {

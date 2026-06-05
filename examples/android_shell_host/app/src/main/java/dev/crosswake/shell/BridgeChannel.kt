@@ -39,12 +39,7 @@ enum class BridgeCommand(val wireValue: String) {
 class BridgeChannel(
     private var session: LiveViewSession,
     private val transferCoordinator: TransferCoordinator?,
-    private val appInfoProvider: () -> Map<String, String>,
-    private val hapticsHandler: (String) -> Unit,
-    private val permissionStatusProvider: (String) -> Map<String, String>?,
-    private val notificationTokenProvider: NotificationTokenProvider,
-    private val shareHandler: (Map<String, String>) -> Unit,
-    private val filesPickHandler: (Map<String, String>, String) -> FilesPickResult
+    private val config: CrosswakeShellConfig
 ) {
     companion object {
         const val JS_OBJECT = "crosswakeBridge"
@@ -139,7 +134,12 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    ok(request, appInfoProvider())
+                    val delegate = config.appInfoDelegate
+                    if (delegate == null) {
+                        deny(request, "unavailable_capability", "The host has not configured the AppInfo capability.", "Configure AppInfoDelegate in CrosswakeShellConfig.")
+                    } else {
+                        ok(request, delegate.getAppInfo())
+                    }
                 }
             }
 
@@ -148,9 +148,14 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    val style = request.payload["style"] ?: "medium"
-                    hapticsHandler(style)
-                    ok(request, mapOf("style" to style))
+                    val delegate = config.hapticsDelegate
+                    if (delegate == null) {
+                        deny(request, "unavailable_capability", "The host has not configured the Haptics capability.", "Configure HapticsDelegate in CrosswakeShellConfig.")
+                    } else {
+                        val style = request.payload["style"] ?: "medium"
+                        delegate.impact(style)
+                        ok(request, mapOf("style" to style))
+                    }
                 }
             }
 
@@ -159,9 +164,13 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
+                    val delegate = config.permissionStatusDelegate
+                    if (delegate == null) {
+                        return deny(request, "unavailable_capability", "The host has not configured the PermissionStatus capability.", "Configure PermissionStatusDelegate in CrosswakeShellConfig.")
+                    }
                     val permissionAlias = request.payload["alias"]
                     val payload =
-                        permissionAlias?.let { permissionStatusProvider(it) }
+                        permissionAlias?.let { delegate.getStatus(it) }
                             ?: return deny(
                                 request,
                                 "unavailable_capability",
@@ -178,10 +187,15 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    when (val result = notificationTokenProvider.fetch()) {
-                        is NotificationTokenProvider.Result.Available -> ok(request, result.payload())
-                        is NotificationTokenProvider.Result.Denied ->
-                            deny(request, result.reason, result.message, result.hint)
+                    val delegate = config.notificationTokenDelegate
+                    if (delegate == null) {
+                        deny(request, "unavailable_capability", "The host has not configured the NotificationToken capability.", "Configure NotificationTokenDelegate in CrosswakeShellConfig.")
+                    } else {
+                        when (val result = delegate.fetch()) {
+                            is NotificationTokenDelegate.Result.Available -> ok(request, result.payload())
+                            is NotificationTokenDelegate.Result.Denied ->
+                                deny(request, result.reason, result.message, result.hint)
+                        }
                     }
                 }
             }
@@ -191,8 +205,13 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    shareHandler(request.payload)
-                    ok(request, emptyMap())
+                    val delegate = config.shareDelegate
+                    if (delegate == null) {
+                        deny(request, "unavailable_capability", "The host has not configured the Share capability.", "Configure ShareDelegate in CrosswakeShellConfig.")
+                    } else {
+                        delegate.invoke(request.payload)
+                        ok(request, emptyMap())
+                    }
                 }
             }
 
@@ -201,26 +220,31 @@ class BridgeChannel(
                 if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
-                    when (val result = filesPickHandler(request.payload, request.correlationId)) {
-                        is FilesPickResult.Immediate -> ok(request, result.payload)
-                        is FilesPickResult.Denied -> deny(request, result.reason, result.message, result.hint)
-                        is FilesPickResult.Deferred -> {
-                            val sink =
-                                deferredReply
-                                    ?: return deny(
-                                        request,
-                                        "unavailable_capability",
-                                        "The Android shell cannot complete files.pick without an activity-backed result channel.",
-                                        "Retry from the mounted shell activity so the picker can return a staged handle reply."
-                                    )
+                    val delegate = config.filesPickDelegate
+                    if (delegate == null) {
+                        deny(request, "unavailable_capability", "The host has not configured the FilesPick capability.", "Configure FilesPickDelegate in CrosswakeShellConfig.")
+                    } else {
+                        when (val result = delegate.pick(request.payload, request.correlationId)) {
+                            is FilesPickResult.Immediate -> ok(request, result.payload)
+                            is FilesPickResult.Denied -> deny(request, result.reason, result.message, result.hint)
+                            is FilesPickResult.Deferred -> {
+                                val sink =
+                                    deferredReply
+                                        ?: return deny(
+                                            request,
+                                            "unavailable_capability",
+                                            "The Android shell cannot complete files.pick without an activity-backed result channel.",
+                                            "Retry from the mounted shell activity so the picker can return a staged handle reply."
+                                        )
 
-                            result.dispatch(
-                                onSuccess = { payload -> sink(ok(request, payload)) },
-                                onDenied = { denial ->
-                                    sink(deny(request, denial.reason, denial.message, denial.hint))
-                                }
-                            )
-                            null
+                                result.dispatch(
+                                    onSuccess = { payload -> sink(ok(request, payload)) },
+                                    onDenied = { denial ->
+                                        sink(deny(request, denial.reason, denial.message, denial.hint))
+                                    }
+                                )
+                                null
+                            }
                         }
                     }
                 }
