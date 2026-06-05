@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.1
-milestone_name: Multi-SaaS Archetype Proof Lanes
-status: completed
-last_updated: "2026-06-05T17:20:51.632Z"
+milestone: v5.0
+milestone_name: Standalone Publishable Shell Packages
+status: planning
+last_updated: "2026-06-05T20:57:06.336Z"
 last_activity: 2026-06-05
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_phases: 4
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 25
 ---
 
 # Project State
@@ -19,28 +19,24 @@ progress:
 
 See: .planning/PROJECT.md
 
-**Core value:** Prove the shipped capabilities (commerce, auth, notifications, offline, media) work coherently together in production-shaped E2E archetype lanes without introducing generic sync abstractions.
-**Current focus:** Phase 73 — auth sensitive admin workflow proof
+**Core value:** Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
+**Current focus:** Phase 76 — Core Shell Extraction & Packaging
 
 ## Current Position
 
-Phase: N/A
+Phase: 76
 Plan: N/A
-Status: awaiting milestone kickoff
+Status: planning
 Last activity: 2026-06-05
 
-Progress: [██████████] 100%
+Progress: [--------------------] 0%
 
-## v4.1 Roadmap (Phases 70-75)
+## v5.0 Roadmap (Phases 76-79)
 
-(Completed)
-
-1. **Phase 70** — Subscription SaaS Commerce Proof
-2. **Phase 71** — Notification-Driven Workflow Proof
-3. **Phase 72** — Media/Evidence Workflow Proof
-4. **Phase 73** — Auth-Sensitive Admin Workflow Proof
-5. **Phase 74** — Offline/Draft Recovery Proof
-6. **Phase 75** — Multi-SaaS Archetype Closeout Gate
+1. **Phase 76** — Core Shell Extraction & Packaging
+2. **Phase 77** — Reactive State & API Standardization
+3. **Phase 78** — Automated Host Scaffold Generation
+4. **Phase 79** — v5.0 Closeout & Hermetic Verification
 
 ## Performance Metrics
 
@@ -51,33 +47,30 @@ Progress: [██████████] 100%
 - v4.0: 6 phases, 18 plans — shipped 2026-06-04
 - v3.9: 5 phases, 17 plans — shipped 2026-06-03
 
-**Recent Trend:** Positive — Transitioned from multi-SaaS archetype E2E proof lanes (v4.1) to operational/audit maturity.
+**Recent Trend:** Transitioned from multi-SaaS archetype E2E proof lanes (v4.1) to architectural extraction and standard artifact packaging (v5.0).
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
-- v4.1 successfully closed out on 2026-06-05.
-- The next strategic arc is the **Threadline Audit Capstone**, focusing on observability across the distributed Elixir-to-Native boundaries.
+- The previous milestone (v4.1) successfully closed out on 2026-06-05.
+- Milestone v5.0 begins a major architectural shift to modern binary Core + hosted glue strategy, extracting generated logic into standalone SPM and Maven Central dependencies.
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-ARC.md`.
-
-- [2026-06-05]: Rejected Third-Party SDK adapters (like RevenueCat) as first-class integrations to prevent "split-brain" authority conflicts. Adopting a "Companion Recipes" documentation approach instead.
-- [Milestone v4.1]: Treat CI/CD hermetic evidence as the gold standard for archetype proof, prioritizing fast, deterministic E2E lane validation over slow, brittle manual device testing.
-- [Milestone v4.1]: Explicitly reject universal sync engines in favor of honest degraded caching and localized offline-island mutations.
-- [Milestone v4.1]: Backend authority strictly controls entitlement projections, route unlocking (Step-up), and media reconciliation completion; client-side mocks and device evidence remain advisory.
-- [Phase ?]: Confirmed that the exact state pattern `issued -> challenged -> consumed` perfectly aligns with the target workflow, satisfying explicit failures.
+- [Milestone v5.0]: Favor a Binary Core + Hosted Glue pattern to prevent the "eject trap" inherent in generating full source code files for complex logic.
+- [Milestone v5.0]: Adopt strictly-typed narrow delegate protocols or functional lambdas instead of massive Java-style callback interfaces to limit boilerplate and improve ergonomics.
+- [Milestone v5.0]: Mandate modern reactive patterns (`@Published` in iOS, `StateFlow` in Android) for exposing SDK state.
 
 ### Pending Todos
 
-- Ensure mock storefront adapters in Phase 70 don't bleed into production runtime code.
-- Prepare Phase 73 auth-sensitive admin workflow proof around Sigra step-up and audit posture.
+- Initialize development of `crosswake-shell-core` as an independent dependency structure.
+- Refactor existing `ActivationCoordinator` and `BridgeChannel` logic to work opaquely inside the SPM/AAR artifacts.
 
 ### Blockers/Concerns
 
-- Maintaining fast CI execution times as E2E test density increases across 5 full archetype lanes.
+- Permission Management: ensuring `Info.plist` and `AndroidManifest.xml` still reflect proper entitlements when standard tools hide the source implementation.
+- Breaking existing E2E and archetype proof lanes during the extraction. Need to lean heavily on the hermetic CI gates to catch regressions.
 
 ## Deferred Items
 
@@ -85,13 +78,12 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 |----------|------|--------|-------------|
 | Device Proof | Promote emulator/device lane to merge-blocking (DPROOF-01) | v2 — deferred until promotion criteria repeatedly met | 2026-06-03 |
 | Device Proof | Firebase Test Lab device-matrix advisory lane (DPROOF-02) | v2 — deferred | 2026-06-03 |
-| Shell | Standalone publishable shell packages (SHELL-01) | v2 — arc non-goal until release choreography ready | 2026-06-03 |
 
 ## Session Continuity
 
-Last session: 2026-06-05
-Stopped at: Milestone v4.1 complete and closed out
+Last session: 2026-06-05T20:57:06.330Z
+Stopped at: Phase 77 context gathered
 
 ## Operator Next Steps
 
-- Prepare the next milestone with `$gsd-new-milestone`
+- Execute `/gsd:plan-phase 76`
