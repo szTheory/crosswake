@@ -39,6 +39,7 @@ defmodule CrosswakeExample.Media.MediaProjection do
   def derived_state(%Contracts.MediaObject{state: state}), do: state
 
   defp evidence_state(%Reconciliation.EvidenceResult{status: :verification_in_progress}), do: :scanning
+  defp evidence_state(%Reconciliation.EvidenceResult{status: status}) when status in [:verification_failed, :rejected, :conflict, :stale_authority], do: :rejected
   defp evidence_state(%Reconciliation.EvidenceResult{}), do: :uploaded
 
   defp evidence_attrs(result, subject_key \\ nil, trace_metadata \\ nil) do
@@ -47,9 +48,16 @@ defmodule CrosswakeExample.Media.MediaProjection do
       subject_key: subject_key || "subject::media::unknown",
       storage_key: result.attempt.storage_key,
       as_of: System.system_time(:microsecond),
-      trace_metadata: trace_metadata || %{grant_id: result.attempt.grant_id}
+      trace_metadata: trace_metadata || %{grant_id: result.attempt.grant_id},
+      rejection_reason: rejection_reason(result)
     }
   end
+
+  defp rejection_reason(%Reconciliation.EvidenceResult{status: :verification_failed}), do: :verification_failed
+  defp rejection_reason(%Reconciliation.EvidenceResult{status: :rejected}), do: :backend_rejected
+  defp rejection_reason(%Reconciliation.EvidenceResult{status: :conflict}), do: :identity_conflict
+  defp rejection_reason(%Reconciliation.EvidenceResult{status: :stale_authority}), do: :stale_authority
+  defp rejection_reason(_result), do: nil
 
   defp media_object_from_attrs(attrs, state) do
     struct!(Contracts.MediaObject, %{
