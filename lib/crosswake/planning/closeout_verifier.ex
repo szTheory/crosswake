@@ -218,16 +218,17 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
-        (requirements =~ "REL-01" or requirements =~ "PROOF-03") and
-        not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements)
+        (requirements =~ "REL-01" or requirements =~ "PROOF-03" or requirements =~ "PROOF-01") and
+        not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements) and
+        not Regex.match?(~r/\|\s*(PROOF-01)\s*\|\s*Phase (75)\s*\|\s*Pending\s*\|/, requirements)
 
     check(
       "closeout.requirements.state",
       "requirements closeout state",
       ".planning/REQUIREMENTS.md",
       passed,
-      "REL-01 or closeout requirements_state is still pending",
-      "Mark REL-01 validated or archive/reset requirements with explicit closeout evidence.",
+      "REL-01/PROOF-03/PROOF-01 or closeout requirements_state is still pending",
+      "Mark closeout requirement validated or archive/reset requirements with explicit closeout evidence.",
       %{}
     )
   end
@@ -463,7 +464,23 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   end
 
   defp closeout_path(cwd, opts) do
-    opts[:closeout_path] || Path.join(cwd, ".planning/milestones/v4.0-CLOSEOUT.md")
+    state_path = Path.join(cwd, ".planning/STATE.md")
+
+    milestone =
+      case File.read(state_path) do
+        {:ok, content} ->
+          frontmatter = parse_frontmatter(content)
+          milestone(frontmatter)
+
+        _ ->
+          nil
+      end
+
+    cond do
+      opts[:closeout_path] -> opts[:closeout_path]
+      milestone -> Path.join(cwd, ".planning/milestones/#{milestone}-CLOSEOUT.md")
+      true -> raise "Could not determine milestone from .planning/STATE.md and no :closeout_path provided"
+    end
   end
 
   # The live REQUIREMENTS.md is intentionally removed at milestone close and
