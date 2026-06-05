@@ -7,7 +7,7 @@
 - [x] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads (completed 2026-06-05)
 - [x] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing (completed 2026-06-05)
 - [x] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits (completed 2026-06-05)
-- [ ] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met
+- [x] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met (completed 2026-06-05)
 
 ## Phase Details
 
@@ -85,4 +85,4 @@
 | 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
 | 73. Auth-Sensitive Admin Workflow Proof | 2/2 | Complete   | 2026-06-05 |
 | 74. Offline/Draft Recovery Proof | 1/1 | Complete   | 2026-06-05 |
-| 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
+| 75. Multi-SaaS Archetype Closeout Gate | 1/1 | Complete   | 2026-06-05 |
