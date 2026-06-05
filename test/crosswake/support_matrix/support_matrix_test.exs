@@ -273,6 +273,25 @@ defmodule Crosswake.SupportMatrixTest do
     assert :chimeway_delivery in notification_truth.deferred
   end
 
+  test "phase 72 media recovery support truth preserves backend authority and proof-only scope" do
+    assert [media_truth] = SupportMatrix.media_recovery_proof_truth()
+
+    assert media_truth.surface == "Rindle media/evidence recovery proof"
+    assert media_truth.proof_class == :merge_blocking
+    assert media_truth.recovery_proof == :hermetic
+    assert media_truth.simulated_network_degradation == :proof_only
+    assert media_truth.local_capture_authority == false
+    assert media_truth.backend_verification_required == true
+    assert media_truth.real_storage_supported == false
+    assert media_truth.native_capture_supported == false
+    assert media_truth.background_transfer_supported == false
+    assert media_truth.posture =~ "Rindle media/evidence recovery proof is hermetic"
+    assert media_truth.posture =~ "local capture evidence is not availability authority"
+    assert media_truth.posture =~ "backend verification is required before media becomes available"
+    assert :real_storage_provider in media_truth.deferred
+    assert :local_first_sync in media_truth.deferred
+  end
+
   test "entitlement and evidence support entries encode freshness and non-authoritative posture" do
     capability_families = SupportMatrix.canonical().capability_families
     entitlement_snapshot = Enum.find(capability_families, &(&1.family == "entitlement_snapshot"))

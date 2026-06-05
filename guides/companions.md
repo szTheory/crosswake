@@ -87,6 +87,24 @@ Critical posture:
 
 This mirrors Crosswake’s reconciliation stance: evidence can move workflow, but authority stays backend-owned.
 
+### Rindle Surface: Media Evidence Recovery
+
+Phase 72 proves a narrow media/evidence recovery lane over Rindle contracts and the example host. The proof sequence is deliberately product-shaped but hermetic:
+
+1. `Capture recorded locally; media is not available yet`.
+2. `Upload failed during simulated network degradation`.
+3. `Evidence is queued for reconciliation`.
+4. `Network recovered. Reconciliation can retry`.
+5. `Device evidence recorded; backend verification still required`.
+6. `Backend verification in progress`.
+7. `Backend verified media is available` or `Backend rejected this media object`.
+
+`This proof does not use a real storage provider`. `Local capture evidence does not grant media availability`. Host applications still own persistence, storage targets, capture UX, and retry infrastructure. Crosswake’s shipped claim is the typed Rindle recovery and backend-verification boundary, not storage-provider integration, native media picker behavior, background transfer, device network toggling, or app-wide sync.
+
+Support truth accessor:
+
+- `Crosswake.SupportMatrix.media_recovery_proof_truth/0`
+
 ## Sigra Surface (AUTH, Session Authority)
 
 Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry plus security closeout. It defines typed auth contract surfaces, explicit route-local auth posture, route-local `auth_return` seams, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, host-owned auth-return attempt records, low-cardinality telemetry metadata, and fail-closed route checks without shipping provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, or native auth UI.

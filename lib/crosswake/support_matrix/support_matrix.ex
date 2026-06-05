@@ -291,6 +291,31 @@ defmodule Crosswake.SupportMatrix do
         "Diagnostics-export envelope and sanitize contract are shipped and merge-blocking allowlist proof is enforced; native MetricKit/ApplicationExitInfo transport is not shipped until Phase 67; the host owns the endpoint and the data — Crosswake is not a crash-reporting service."
     }
   ]
+  @media_recovery_proof_truth [
+    %{
+      surface: "Rindle media/evidence recovery proof",
+      proof_class: :merge_blocking,
+      action_class: "companion_native",
+      docs_anchor: "guides/companions.md#rindle-surface-media-evidence-recovery",
+      recovery_proof: :hermetic,
+      simulated_network_degradation: :proof_only,
+      local_capture_authority: false,
+      backend_verification_required: true,
+      real_storage_supported: false,
+      native_capture_supported: false,
+      background_transfer_supported: false,
+      device_proof: :advisory,
+      deferred: [
+        :real_storage_provider,
+        :native_camera_or_media_picker,
+        :background_transfer,
+        :device_network_toggle,
+        :local_first_sync
+      ],
+      posture:
+        "Rindle media/evidence recovery proof is hermetic: simulated network degradation is proof-only, local capture evidence is not availability authority, and backend verification is required before media becomes available. Real storage providers, native camera/media picker capture, background transfer, device network toggling, and generic sync remain advisory/deferred host-owned work."
+    }
+  ]
 
   # Rebuild & compatibility matrix rows — one row per major runtime-line band (D-14).
   # evidence_tier reuses the D-09 verification_method enum (D-15) — no separate enum.
@@ -429,6 +454,9 @@ defmodule Crosswake.SupportMatrix do
 
   @spec diagnostic_export_support_truth() :: [map()]
   def diagnostic_export_support_truth, do: @diagnostic_export_support_truth
+
+  @spec media_recovery_proof_truth() :: [map()]
+  def media_recovery_proof_truth, do: @media_recovery_proof_truth
 
   @spec fetch_status(SupportMatrix.t(), atom(), String.t()) ::
           {:ok, SupportEntry.status()} | :error

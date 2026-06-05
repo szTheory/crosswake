@@ -153,6 +153,21 @@ Imagine a claims app.
 Only the capture corridor goes native. The rest of the product keeps the simpler,
 safer ownership model.
 
+**Media evidence recovery proof**
+
+Crosswake also ships a hermetic Rindle proof lane for the recovery side of this job. The proof language is intentionally narrow:
+
+- `Capture recorded locally; media is not available yet`
+- `Upload failed during simulated network degradation`
+- `Evidence is queued for reconciliation`
+- `Network recovered. Reconciliation can retry`
+- `Device evidence recorded; backend verification still required`
+- `Backend verification in progress`
+- `Backend verified media is available`
+- `Backend rejected this media object`
+
+`This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`. The proof models queued evidence, Rindle reconciliation, projection, and backend verification. Host apps still choose their own persistence and storage architecture.
+
 **Degraded path**
 
 - If the required pack is missing or incompatible, activation fails with

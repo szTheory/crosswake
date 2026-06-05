@@ -55,6 +55,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       notification_surface_section(),
       "",
+      media_recovery_surface_section(),
+      "",
       public_non_claims_section(),
       ""
     ]
@@ -198,6 +200,27 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       "**Strict Telemetry Contract:**",
       "The telemetry event structure `[:crosswake, :notification, :*]` exposes low-cardinality delivery status and routing outcomes. **Raw payload data, device tokens, and PII are strictly forbidden and explicitly stripped from all diagnostic output.**"
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp media_recovery_surface_section do
+    [
+      "## Media Evidence Recovery Surface (v4.1)",
+      "",
+      "Crosswake provides a hermetic Rindle proof for simulated media recovery.",
+      "",
+      "**Supported:**",
+      "- **Recovery proof:** Rindle media/evidence recovery proof is hermetic and merge-blocking.",
+      "- **Simulated degradation:** Simulated network degradation is proof-only and deterministic.",
+      "- **Backend authority:** Local capture evidence is not availability authority; backend verification is required before media becomes available.",
+      "- **Proof copy:** `Capture recorded locally; media is not available yet`, `Device evidence recorded; backend verification still required`, `This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`.",
+      "",
+      "**Deferred (Not Supported):**",
+      "- **Real storage providers:** Host applications own storage target choice and persistence.",
+      "- **Native camera/media picker capture:** Capture UX remains host-owned.",
+      "- **Background transfer and device network toggling:** These remain advisory/deferred and never gate merge.",
+      "- **Generic sync:** Phase 72 does not ship a broad sync engine."
     ]
     |> Enum.join("\n")
   end

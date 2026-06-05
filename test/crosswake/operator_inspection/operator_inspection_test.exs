@@ -287,4 +287,17 @@ defmodule Crosswake.OperatorInspectionTest do
 
     assert gated.rebuild.action_classes == ["companion_native"]
   end
+
+  test "operator media recovery proof truth preserves proof-only and backend-authority posture" do
+    assert [media_truth] = OperatorInspection.media_recovery_proof_truth()
+
+    assert media_truth.recovery_proof == :hermetic
+    assert media_truth.simulated_network_degradation == :proof_only
+    assert media_truth.local_capture_authority == false
+    assert media_truth.backend_verification_required == true
+    assert media_truth.real_storage_supported == false
+    assert media_truth.native_capture_supported == false
+    assert media_truth.background_transfer_supported == false
+    assert media_truth.posture =~ "local capture evidence is not availability authority"
+  end
 end

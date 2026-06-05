@@ -48,6 +48,9 @@ defmodule Crosswake.OperatorInspection do
     )
   end
 
+  @spec media_recovery_proof_truth() :: [map()]
+  def media_recovery_proof_truth, do: SupportMatrix.media_recovery_proof_truth()
+
   defp inspect_route(route, manifest) do
     capabilities = Enum.map(route.capabilities, &capability_entry(&1, manifest))
     commerce = commerce_entry(route, manifest)
