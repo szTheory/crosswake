@@ -5,15 +5,17 @@ import WebKit
 
 struct LiveViewContainerView: UIViewControllerRepresentable {
     let session: LiveViewSession
-    let transferCoordinator: TransferCoordinator?
+    let shell: CrosswakeShell
     let notificationTokenProvider: NotificationTokenProvider
+    let uiActionDelegates: UIActionDelegates
     let onDenied: (RouteDenialPresentation) -> Void
 
     func makeUIViewController(context: Context) -> LiveViewContainerViewController {
         LiveViewContainerViewController(
             session: session,
-            transferCoordinator: transferCoordinator,
+            shell: shell,
             notificationTokenProvider: notificationTokenProvider,
+            uiActionDelegates: uiActionDelegates,
             onDenied: onDenied
         )
     }
@@ -21,8 +23,9 @@ struct LiveViewContainerView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: LiveViewContainerViewController, context: Context) {
         uiViewController.update(
             session: session,
-            transferCoordinator: transferCoordinator,
-            notificationTokenProvider: notificationTokenProvider
+            shell: shell,
+            notificationTokenProvider: notificationTokenProvider,
+            uiActionDelegates: uiActionDelegates
         )
     }
 }
@@ -231,86 +234,17 @@ final class FilePickerCoordinator: NSObject, UIDocumentPickerDelegate {
 final class LiveViewContainerViewController: UIViewController, WKNavigationDelegate {
     private let onDenied: (RouteDenialPresentation) -> Void
     private var session: LiveViewSession
-    private var transferCoordinator: TransferCoordinator?
+    private let shell: CrosswakeShell
     private var notificationTokenProvider: NotificationTokenProvider
-    private let permissionStatusProvider = PermissionStatusProvider()
+    private var uiActionDelegates: UIActionDelegates
     private lazy var filePickerCoordinator = FilePickerCoordinator(
         presenterProvider: { [weak self] in self },
-        transferCoordinatorProvider: { [weak self] in self?.transferCoordinator }
+        transferCoordinatorProvider: { [weak self] in self?.shell.coordinator.transferCoordinator }
     )
-    private lazy var bridgeChannel = BridgeChannel(
+    private lazy var bridgeChannel = shell.createBridgeChannel(
         session: session,
-        transferCoordinator: transferCoordinator,
-        replySink: { _ in },
-        appInfoProvider: {
-            let info = Bundle.main.infoDictionary
-            return [
-                "version": info?["CFBundleShortVersionString"] as? String ?? "",
-                "build": info?["CFBundleVersion"] as? String ?? "",
-                "bundle_id": info?["CFBundleIdentifier"] as? String ?? ""
-            ]
-        },
-        hapticsHandler: { styleString in
-            let style: UIImpactFeedbackGenerator.FeedbackStyle
-            switch styleString {
-            case "light": style = .light
-            case "heavy": style = .heavy
-            case "medium": fallthrough
-            default: style = .medium
-            }
-            UIImpactFeedbackGenerator(style: style).impactOccurred()
-        },
-        permissionStatusProvider: permissionStatusProvider.statusPayload(for:),
-        notificationTokenProvider: { [weak self] in
-            guard let snapshot = self?.notificationTokenProvider.snapshot() else {
-                return .unavailable(
-                    reason: "notification_setup_missing",
-                    detail: ["detail.registration_state": "unconfigured"]
-                )
-            }
-
-            switch snapshot {
-            case let .available(provider, token, detail):
-                return .available(provider: provider, token: token, detail: detail)
-            case let .unavailable(reason, detail):
-                return .unavailable(reason: reason, detail: detail)
-            }
-        },
-        shareHandler: { [weak self] payload in
-            var items: [Any] = []
-            if let text = payload["text"] { items.append(text) }
-            if let urlString = payload["url"], let url = URL(string: urlString) { items.append(url) }
-            if items.isEmpty { return }
-
-            let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
-            if let title = payload["title"] {
-                activityVC.setValue(title, forKey: "subject")
-            }
-            if let popover = activityVC.popoverPresentationController, let view = self?.view {
-                popover.sourceView = view
-                popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-                popover.permittedArrowDirections = []
-            }
-            self?.present(activityVC, animated: true)
-        },
-        filesPickHandler: { [weak self] payload, correlationID, completion in
-            guard let self else {
-                completion(
-                    .deny(
-                        reason: "picker_unavailable",
-                        message: "The shell could not present a document picker for this route.",
-                        hint: "Retry after the LiveView container is visible."
-                    )
-                )
-                return
-            }
-
-            self.filePickerCoordinator.presentPicker(
-                payload: payload,
-                correlationID: correlationID,
-                completion: completion
-            )
-        }
+        transferCoordinator: shell.coordinator.transferCoordinator,
+        replySink: { _ in }
     )
     private lazy var webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
@@ -332,13 +266,15 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
 
     init(
         session: LiveViewSession,
-        transferCoordinator: TransferCoordinator?,
+        shell: CrosswakeShell,
         notificationTokenProvider: NotificationTokenProvider,
+        uiActionDelegates: UIActionDelegates,
         onDenied: @escaping (RouteDenialPresentation) -> Void
     ) {
         self.session = session
-        self.transferCoordinator = transferCoordinator
+        self.shell = shell
         self.notificationTokenProvider = notificationTokenProvider
+        self.uiActionDelegates = uiActionDelegates
         self.onDenied = onDenied
         super.init(nibName: nil, bundle: nil)
     }
@@ -355,23 +291,30 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
     override func viewDidLoad() {
         super.viewDidLoad()
         filePickerCoordinator.updatePresenter(self)
+        uiActionDelegates.presenter = self
+        uiActionDelegates.filePickerCoordinator = filePickerCoordinator
         loadRouteIfNeeded()
     }
 
     func update(
         session: LiveViewSession,
-        transferCoordinator: TransferCoordinator?,
-        notificationTokenProvider: NotificationTokenProvider
+        shell: CrosswakeShell,
+        notificationTokenProvider: NotificationTokenProvider,
+        uiActionDelegates: UIActionDelegates
     ) {
         guard self.session != session
-            || self.transferCoordinator !== transferCoordinator
-            || self.notificationTokenProvider !== notificationTokenProvider else { return }
+            || self.notificationTokenProvider !== notificationTokenProvider
+            || self.uiActionDelegates !== uiActionDelegates else { return }
 
         self.session = session
-        self.transferCoordinator = transferCoordinator
         self.notificationTokenProvider = notificationTokenProvider
+        self.uiActionDelegates = uiActionDelegates
+        
         filePickerCoordinator.updatePresenter(self)
-        bridgeChannel.update(session: session, transferCoordinator: transferCoordinator)
+        uiActionDelegates.presenter = self
+        uiActionDelegates.filePickerCoordinator = filePickerCoordinator
+        
+        bridgeChannel.update(session: session, transferCoordinator: shell.coordinator.transferCoordinator)
         loadRouteIfNeeded()
     }
 
