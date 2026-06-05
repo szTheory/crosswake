@@ -40,7 +40,7 @@
   1. A media pack capture event is recorded locally during simulated network degradation.
   2. The upload fails, is stored locally, and Rindle reconciles upon simulated network recovery.
   3. Backend authority correctly denies completion until the full payload is reconciled.
-**Plans**: TBD
+**Plans**: 3 plans — Wave 0 media recovery proof contract, Wave 1 Rindle/example-host closure, Wave 2 CI/support truth
 
 ### Phase 73: Auth-Sensitive Admin Workflow Proof
 **Goal**: Stress-test Sigra step-up ceremonies and strict auth posturing.
@@ -79,7 +79,7 @@
 |-------|----------------|--------|-----------|
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
-| 72. Media/Evidence Workflow Proof | 0/0 | Not started | - |
+| 72. Media/Evidence Workflow Proof | 0/3 | Planned | - |
 | 73. Auth-Sensitive Admin Workflow Proof | 0/0 | Not started | - |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
