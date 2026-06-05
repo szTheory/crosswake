@@ -27,8 +27,8 @@
 
 ### Offline/Draft Recovery Archetype (OFF)
 
-- [ ] **OFF-01**: The system must prove an offline/draft recovery workflow, enforcing explicit `:cached_read_only` and `:local_first` offline policies.
-- [ ] **OFF-02**: The workflow must stay honest about local-first limits, rejecting generic universal sync engine claims and verifying degraded caching behavior.
+- [x] **OFF-01**: The system must prove an offline/draft recovery workflow, enforcing explicit `:cached_read_only` and `:local_first` offline policies.
+- [x] **OFF-02**: The workflow must stay honest about local-first limits, rejecting generic universal sync engine claims and verifying degraded caching behavior.
 
 ### Proof & Closeout (PROOF)
 
@@ -46,8 +46,8 @@
 | MED-02 | Phase 72 | Complete |
 | ADM-01 | Phase 73 | Complete |
 | ADM-02 | Phase 73 | Complete |
-| OFF-01 | Phase 74 | Pending |
-| OFF-02 | Phase 74 | Pending |
+| OFF-01 | Phase 74 | Complete |
+| OFF-02 | Phase 74 | Complete |
 | PROOF-01 | Phase 75 | Pending |
 
 **Coverage:**

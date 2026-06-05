@@ -6,7 +6,7 @@
 - [x] **Phase 71: Notification-Driven Workflow Proof** - Prove secure, route-policy aware deep-linking and notification re-entry (completed 2026-06-04)
 - [x] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads (completed 2026-06-05)
 - [x] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing (completed 2026-06-05)
-- [ ] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits
+- [x] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits (completed 2026-06-05)
 - [ ] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met
 
 ## Phase Details
@@ -63,7 +63,8 @@
   1. An offline-island mutation is performed locally.
   2. The application enforces its `:local_first` bounds, showing cached read-only data for other routes.
   3. The system does not attempt universal sync, strictly respecting the declared offline policy.
-**Plans**: TBD
+**Plans**: 1 plan
+- [x] 74-01-PLAN.md — Build hermetic proof for offline draft recovery and compiler enforcement
 
 ### Phase 75: Multi-SaaS Archetype Closeout Gate
 **Goal**: Verify all archetype proofs are CI-hermetic and requirements are met.
@@ -83,5 +84,5 @@
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
 | 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
 | 73. Auth-Sensitive Admin Workflow Proof | 2/2 | Complete   | 2026-06-05 |
-| 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
+| 74. Offline/Draft Recovery Proof | 1/1 | Complete   | 2026-06-05 |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
