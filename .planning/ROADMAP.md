@@ -50,7 +50,9 @@
   1. A user with a persistent native session attempts to access an admin route and is blocked.
   2. The system triggers a step-up ceremony, producing an audit-trailed handoff ticket.
   3. Only upon successful step-up is the admin route unlocked.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 73-01-PLAN.md — Finalize the StepUpIntent Ecto schema and the shared route gating logic.
+- [ ] 73-02-PLAN.md — Build the visual step-up challenge UI per 73-UI-SPEC.md, finalize the targeted CI proof test, and ensure the workflow runs green in CI.
 **UI hint**: yes
 
 ### Phase 74: Offline/Draft Recovery Proof
@@ -80,6 +82,6 @@
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
 | 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
-| 73. Auth-Sensitive Admin Workflow Proof | 0/0 | Not started | - |
+| 73. Auth-Sensitive Admin Workflow Proof | 1/2 | In Progress|  |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |

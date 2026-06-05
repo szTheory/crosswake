@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Multi-SaaS Archetype Proof Lanes
-status: ready_to_plan
-last_updated: 2026-06-05T01:10:13.343Z
+status: planning
+last_updated: "2026-06-05T15:20:05.838Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 50
-stopped_at: Phase 72 complete (3/3) — ready to discuss Phase 73
 ---
 
 # Project State
@@ -30,7 +29,7 @@ Plan: Not started
 Status: Ready to plan
 Last activity: 2026-06-05
 
-Progress: [█████.....] 50%
+Progress: [█████████░] 91%
 
 ## v4.1 Roadmap (Phases 70-75)
 
@@ -66,6 +65,7 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 - [Milestone v4.1]: Treat CI/CD hermetic evidence as the gold standard for archetype proof, prioritizing fast, deterministic E2E lane validation over slow, brittle manual device testing.
 - [Milestone v4.1]: Explicitly reject universal sync engines in favor of honest degraded caching and localized offline-island mutations.
 - [Milestone v4.1]: Backend authority strictly controls entitlement projections, route unlocking (Step-up), and media reconciliation completion; client-side mocks and device evidence remain advisory.
+- [Phase ?]: Confirmed that the exact state pattern `issued -> challenged -> consumed` perfectly aligns with the target workflow, satisfying explicit failures.
 
 ### Pending Todos
 
@@ -83,10 +83,11 @@ Decisions are logged in PROJECT.md Key Decisions table and `.planning/MILESTONE-
 | Device Proof | Promote emulator/device lane to merge-blocking (DPROOF-01) | v2 — deferred until promotion criteria repeatedly met | 2026-06-03 |
 | Device Proof | Firebase Test Lab device-matrix advisory lane (DPROOF-02) | v2 — deferred | 2026-06-03 |
 | Shell | Standalone publishable shell packages (SHELL-01) | v2 — arc non-goal until release choreography ready | 2026-06-03 |
+| Phase 73 P01 | 15min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-05T01:10:13.343Z
+Last session: 2026-06-05T15:20:05.834Z
 Stopped at: Phase 72 complete and verified
 
 ## Operator Next Steps

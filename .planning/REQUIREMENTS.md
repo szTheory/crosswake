@@ -22,8 +22,8 @@
 
 ### Auth-Sensitive Admin Workflow Archetype (ADM)
 
-- [ ] **ADM-01**: The system must prove an auth-sensitive admin workflow, successfully triggering and verifying Sigra step-up ceremonies (e.g. strict auth posturing).
-- [ ] **ADM-02**: The workflow must enforce that native shell session persistence does not implicitly grant administrative route access, requiring handoff tickets and audit trails.
+- [x] **ADM-01**: The system must prove an auth-sensitive admin workflow, successfully triggering and verifying Sigra step-up ceremonies (e.g. strict auth posturing).
+- [x] **ADM-02**: The workflow must enforce that native shell session persistence does not implicitly grant administrative route access, requiring handoff tickets and audit trails.
 
 ### Offline/Draft Recovery Archetype (OFF)
 
@@ -44,8 +44,8 @@
 | NOTF-02 | Phase 71 | Complete |
 | MED-01 | Phase 72 | Complete |
 | MED-02 | Phase 72 | Complete |
-| ADM-01 | Phase 73 | Pending |
-| ADM-02 | Phase 73 | Pending |
+| ADM-01 | Phase 73 | Complete |
+| ADM-02 | Phase 73 | Complete |
 | OFF-01 | Phase 74 | Pending |
 | OFF-02 | Phase 74 | Pending |
 | PROOF-01 | Phase 75 | Pending |
