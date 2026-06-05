@@ -5,7 +5,7 @@ import WebKit
 import UIKit
 #endif
 
-enum BridgeCommand: String, CaseIterable {
+public enum BridgeCommand: String, CaseIterable {
     case appInfoGet = "app.info.get"
     case hapticsImpact = "haptics.impact"
     case permissionsStatus = "permissions.status"
@@ -17,7 +17,7 @@ enum BridgeCommand: String, CaseIterable {
     case transferDownload = "transfer.download"
     case transferUploadPrepare = "transfer.upload.prepare"
 
-    var capability: String {
+    public var capability: String {
         switch self {
         case .notificationsTokenGet:
             return "notification_token"
@@ -28,7 +28,7 @@ enum BridgeCommand: String, CaseIterable {
         }
     }
 
-    var isTransferCommand: Bool {
+    public var isTransferCommand: Bool {
         switch self {
         case .transferImport, .transferExport, .transferDownload, .transferUploadPrepare:
             return true
@@ -38,19 +38,19 @@ enum BridgeCommand: String, CaseIterable {
     }
 }
 
-struct BridgeRequestEnvelope: Codable, Equatable {
-    let protocolName: String
-    let version: String
-    let command: String
-    let capability: String
-    let routeID: String
-    let activeRouteID: String
-    let origin: String
-    let nativeRuntimeVersion: String
-    let correlationID: String
-    let capabilities: [String: String]
-    let installedPacks: [String: String]
-    let payload: [String: String]
+public struct BridgeRequestEnvelope: Codable, Equatable {
+    public let protocolName: String
+    public let version: String
+    public let command: String
+    public let capability: String
+    public let routeID: String
+    public let activeRouteID: String
+    public let origin: String
+    public let nativeRuntimeVersion: String
+    public let correlationID: String
+    public let capabilities: [String: String]
+    public let installedPacks: [String: String]
+    public let payload: [String: String]
 
     enum CodingKeys: String, CodingKey {
         case protocolName = "protocol"
@@ -68,15 +68,15 @@ struct BridgeRequestEnvelope: Codable, Equatable {
     }
 }
 
-struct BridgeReplyEnvelope: Codable, Equatable {
-    let protocolName: String
-    let version: String
-    let command: String
-    let routeID: String
-    let correlationID: String
-    let status: String
-    let payload: [String: String]
-    let denial: BridgeDenialEnvelope?
+public struct BridgeReplyEnvelope: Codable, Equatable {
+    public let protocolName: String
+    public let version: String
+    public let command: String
+    public let routeID: String
+    public let correlationID: String
+    public let status: String
+    public let payload: [String: String]
+    public let denial: BridgeDenialEnvelope?
 
     enum CodingKeys: String, CodingKey {
         case protocolName = "protocol"
@@ -90,11 +90,11 @@ struct BridgeReplyEnvelope: Codable, Equatable {
     }
 }
 
-struct BridgeDenialEnvelope: Codable, Equatable {
-    let command: String
-    let routeID: String
-    let correlationID: String
-    let denial: RouteDenialPayload
+public struct BridgeDenialEnvelope: Codable, Equatable {
+    public let command: String
+    public let routeID: String
+    public let correlationID: String
+    public let denial: RouteDenialPayload
 
     enum CodingKeys: String, CodingKey {
         case command
@@ -104,12 +104,12 @@ struct BridgeDenialEnvelope: Codable, Equatable {
     }
 }
 
-struct RouteDenialPayload: Codable, Equatable {
-    let reason: String
-    let code: String
-    let message: String
-    let routeID: String?
-    let hint: String?
+public struct RouteDenialPayload: Codable, Equatable {
+    public let reason: String
+    public let code: String
+    public let message: String
+    public let routeID: String?
+    public let hint: String?
 
     enum CodingKeys: String, CodingKey {
         case reason
@@ -120,61 +120,46 @@ struct RouteDenialPayload: Codable, Equatable {
     }
 }
 
-final class BridgeChannel: NSObject, WKScriptMessageHandler {
-    enum NotificationTokenCommandSnapshot: Equatable {
+public final class BridgeChannel: NSObject, WKScriptMessageHandler {
+    public enum NotificationTokenCommandSnapshot: Equatable {
         case available(provider: String, token: String, detail: [String: String])
         case unavailable(reason: String, detail: [String: String])
     }
 
-    enum CommandResult: Equatable {
+    public enum CommandResult: Equatable {
         case success([String: String])
         case deny(reason: String, message: String, hint: String)
     }
 
-    typealias FilesPickHandler = ([String: String], String, @escaping (CommandResult) -> Void) -> Void
+    public typealias FilesPickHandler = ([String: String], String, @escaping (CommandResult) -> Void) -> Void
 
-    static let handlerName = "crosswakeBridge"
-    static let protocolName = "crosswake.bridge"
+    public static let handlerName = "crosswakeBridge"
+    public static let protocolName = "crosswake.bridge"
 
     private var session: LiveViewSession
     private var transferCoordinator: TransferCoordinator?
     private let replySink: (BridgeReplyEnvelope) -> Void
-    private let appInfoProvider: () -> [String: String]
-    private let hapticsHandler: (String) -> Void
-    private let permissionStatusProvider: (String) -> [String: String]?
-    private let notificationTokenProvider: () -> NotificationTokenCommandSnapshot
-    private let shareHandler: ([String: String]) -> Void
-    private let filesPickHandler: FilesPickHandler
+    private let config: CrosswakeShellConfig
 
-    init(
+    public init(
         session: LiveViewSession,
         transferCoordinator: TransferCoordinator?,
         replySink: @escaping (BridgeReplyEnvelope) -> Void,
-        appInfoProvider: @escaping () -> [String: String],
-        hapticsHandler: @escaping (String) -> Void,
-        permissionStatusProvider: @escaping (String) -> [String: String]?,
-        notificationTokenProvider: @escaping () -> NotificationTokenCommandSnapshot,
-        shareHandler: @escaping ([String: String]) -> Void,
-        filesPickHandler: @escaping FilesPickHandler
+        config: CrosswakeShellConfig
     ) {
         self.session = session
         self.transferCoordinator = transferCoordinator
         self.replySink = replySink
-        self.appInfoProvider = appInfoProvider
-        self.hapticsHandler = hapticsHandler
-        self.permissionStatusProvider = permissionStatusProvider
-        self.notificationTokenProvider = notificationTokenProvider
-        self.shareHandler = shareHandler
-        self.filesPickHandler = filesPickHandler
+        self.config = config
         super.init()
     }
 
-    func update(session: LiveViewSession, transferCoordinator: TransferCoordinator?) {
+    public func update(session: LiveViewSession, transferCoordinator: TransferCoordinator?) {
         self.session = session
         self.transferCoordinator = transferCoordinator
     }
 
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? String,
               let data = body.data(using: .utf8),
               let request = try? JSONDecoder().decode(BridgeRequestEnvelope.self, from: data) else {
@@ -184,7 +169,7 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
         evaluate(request, completion: replySink)
     }
 
-    func evaluate(_ request: BridgeRequestEnvelope, completion: @escaping (BridgeReplyEnvelope) -> Void) {
+    public func evaluate(_ request: BridgeRequestEnvelope, completion: @escaping (BridgeReplyEnvelope) -> Void) {
         guard request.protocolName == Self.protocolName,
               request.version == session.bridgeProtocolVersion,
               request.nativeRuntimeVersion == session.nativeRuntimeVersion else {
@@ -232,7 +217,12 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            completion(ok(request, payload: appInfoProvider()))
+            guard let appInfoDelegate = config.appInfoDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "App info delegate is not configured.", hint: "Implement AppInfoDelegate."))
+                return
+            }
+
+            completion(ok(request, payload: appInfoDelegate.getAppInfo()))
 
         case .hapticsImpact:
             guard capabilityAvailable(for: command, request: request) else {
@@ -240,8 +230,13 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
+            guard let hapticsDelegate = config.hapticsDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Haptics delegate is not configured.", hint: "Implement HapticsDelegate."))
+                return
+            }
+
             let style = request.payload["style"] ?? "medium"
-            hapticsHandler(style)
+            hapticsDelegate.impact(style: style)
             completion(ok(request, payload: ["style": style]))
 
         case .permissionsStatus:
@@ -250,8 +245,13 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
+            guard let permissionStatusDelegate = config.permissionStatusDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Permission status delegate is not configured.", hint: "Implement PermissionStatusDelegate."))
+                return
+            }
+
             guard let permissionAlias = request.payload["alias"],
-                  let payload = permissionStatusProvider(permissionAlias) else {
+                  let payload = permissionStatusDelegate.status(for: permissionAlias) else {
                 completion(deny(request, reason: "unavailable_capability", message: "The requested permission alias is outside the shipped read-only permissions.status scope.", hint: "Use the notifications alias only."))
                 return
             }
@@ -264,7 +264,17 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            guard let permissionPayload = permissionStatusProvider("notifications") else {
+            guard let permissionStatusDelegate = config.permissionStatusDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Permission status delegate is not configured.", hint: "Implement PermissionStatusDelegate."))
+                return
+            }
+
+            guard let notificationTokenDelegate = config.notificationTokenDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Notification token delegate is not configured.", hint: "Implement NotificationTokenDelegate."))
+                return
+            }
+
+            guard let permissionPayload = permissionStatusDelegate.status(for: "notifications") else {
                 completion(deny(request, reason: "notification_status_unavailable", message: "The shell could not resolve notification authorization status without prompting.", hint: "Ship notifications status support before retrying notification_token."))
                 return
             }
@@ -275,7 +285,7 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            switch notificationTokenProvider() {
+            switch notificationTokenDelegate.currentToken() {
             case let .available(provider, token, detail):
                 var payload = permissionPayload
                 payload["provider"] = provider
@@ -308,7 +318,12 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            shareHandler(request.payload)
+            guard let shareDelegate = config.shareDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Share delegate is not configured.", hint: "Implement ShareDelegate."))
+                return
+            }
+
+            shareDelegate.invoke(payload: request.payload)
             completion(ok(request, payload: [:]))
 
         case .filesPick:
@@ -317,7 +332,12 @@ final class BridgeChannel: NSObject, WKScriptMessageHandler {
                 return
             }
 
-            filesPickHandler(request.payload, request.correlationID) { [weak self] result in
+            guard let filesPickDelegate = config.filesPickDelegate else {
+                completion(deny(request, reason: "undeclared_capability", message: "Files pick delegate is not configured.", hint: "Implement FilesPickDelegate."))
+                return
+            }
+
+            filesPickDelegate.pickFiles(payload: request.payload, correlationID: request.correlationID) { [weak self] result in
                 guard let self else { return }
 
                 switch result {

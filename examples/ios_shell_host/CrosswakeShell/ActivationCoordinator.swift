@@ -1,20 +1,20 @@
 import Foundation
 import SwiftUI
 
-enum ActivationSource: String, Codable, Equatable {
+public enum ActivationSource: String, Codable, Equatable {
     case coldStart = "cold_start"
     case deepLink = "deep_link"
     case notification
     case inAppNavigation = "in_app_navigation"
 }
 
-enum ManifestSource: String, Codable, Equatable {
+public enum ManifestSource: String, Codable, Equatable {
     case bundled
     case cached
     case remote
 }
 
-enum RouteDenialReason: String, Codable, Equatable {
+public enum RouteDenialReason: String, Codable, Equatable {
     case compatibilityMismatch = "compatibility_mismatch"
     case undeclaredCapability = "undeclared_capability"
     case unavailableCapability = "unavailable_capability"
@@ -24,18 +24,18 @@ enum RouteDenialReason: String, Codable, Equatable {
     case packIncompatible = "pack_incompatible"
 }
 
-struct ActivationRequest: Codable, Equatable {
-    let routeID: String?
-    let url: URL?
-    let source: ActivationSource
-    let origin: String
-    let manifestSource: ManifestSource
-    let bridgeProtocolVersion: String
-    let nativeRuntimeVersion: String
-    let correlationID: String
-    let declaredPackRequirements: [String: String]
-    let installedPacks: [String: String]
-    let capabilities: [String: String]
+public struct ActivationRequest: Codable, Equatable {
+    public let routeID: String?
+    public let url: URL?
+    public let source: ActivationSource
+    public let origin: String
+    public let manifestSource: ManifestSource
+    public let bridgeProtocolVersion: String
+    public let nativeRuntimeVersion: String
+    public let correlationID: String
+    public let declaredPackRequirements: [String: String]
+    public let installedPacks: [String: String]
+    public let capabilities: [String: String]
 
     enum CodingKeys: String, CodingKey {
         case routeID = "route_id"
@@ -51,7 +51,7 @@ struct ActivationRequest: Codable, Equatable {
         case capabilities
     }
 
-    init(
+    public init(
         routeID: String?,
         url: URL?,
         source: ActivationSource,
@@ -77,7 +77,7 @@ struct ActivationRequest: Codable, Equatable {
         self.capabilities = capabilities
     }
 
-    static func forIncomingURL(_ url: URL, source: ActivationSource, seededBy baseline: ActivationRequest) -> ActivationRequest {
+    public static func forIncomingURL(_ url: URL, source: ActivationSource, seededBy baseline: ActivationRequest) -> ActivationRequest {
         ActivationRequest(
             routeID: nil,
             url: url,
@@ -94,8 +94,8 @@ struct ActivationRequest: Codable, Equatable {
     }
 }
 
-struct ShellManifest: Codable, Equatable {
-    struct Compatibility: Codable, Equatable {
+public struct ShellManifest: Codable, Equatable {
+    public struct Compatibility: Codable, Equatable {
         let nativeRuntimeVersion: String
 
         enum CodingKeys: String, CodingKey {
@@ -103,7 +103,7 @@ struct ShellManifest: Codable, Equatable {
         }
     }
 
-    struct TransferSeam: Codable, Equatable {
+    public struct TransferSeam: Codable, Equatable {
         let id: String
         let intent: String
         let direction: String
@@ -125,7 +125,7 @@ struct ShellManifest: Codable, Equatable {
         }
     }
 
-    struct Route: Codable, Equatable {
+    public struct Route: Codable, Equatable {
         let id: String
         let path: String
         let runtime: String
@@ -147,50 +147,50 @@ struct ShellManifest: Codable, Equatable {
         }
     }
 
-    let routes: [String: Route]
+    public let routes: [String: Route]
 }
 
-enum RouteUnavailableAction: Equatable {
+public enum RouteUnavailableAction: Equatable {
     case retry
     case updateApp
     case safeFallback(URL)
 }
 
-struct RouteDenialPresentation: Equatable {
-    let reason: RouteDenialReason
-    let title: String
-    let message: String
-    let hint: String?
-    let routeID: String?
-    let actions: [RouteUnavailableAction]
+public struct RouteDenialPresentation: Equatable {
+    public let reason: RouteDenialReason
+    public let title: String
+    public let message: String
+    public let hint: String?
+    public let routeID: String?
+    public let actions: [RouteUnavailableAction]
 }
 
-struct LiveViewSession: Equatable {
-    let routeID: String
-    let url: URL
-    let allowedOrigin: URL
-    let bridgeProtocolVersion: String
-    let nativeRuntimeVersion: String
-    let installedPacks: [String: String]
-    let routeRequiredPacks: [String]
-    let capabilities: [String: String]
-    let declaredTransfers: [ShellManifest.TransferSeam]
+public struct LiveViewSession: Equatable {
+    public let routeID: String
+    public let url: URL
+    public let allowedOrigin: URL
+    public let bridgeProtocolVersion: String
+    public let nativeRuntimeVersion: String
+    public let installedPacks: [String: String]
+    public let routeRequiredPacks: [String]
+    public let capabilities: [String: String]
+    public let declaredTransfers: [ShellManifest.TransferSeam]
 }
 
-struct RequiredPackPresentation: Equatable {
-    let routeID: String
-    let runtimeLabel: String
-    let status: RequiredPackStatus
+public struct RequiredPackPresentation: Equatable {
+    public let routeID: String
+    public let runtimeLabel: String
+    public let status: RequiredPackStatus
 }
 
-struct NativeCapturePresentation: Equatable {
-    let routeID: String
-    let routeTitle: String
-    let runtimeLabel: String
-    let transferID: String
+public struct NativeCapturePresentation: Equatable {
+    public let routeID: String
+    public let routeTitle: String
+    public let runtimeLabel: String
+    public let transferID: String
 }
 
-enum ShellPresentation: Equatable {
+public enum ShellPresentation: Equatable {
     case booting
     case requiredPack(RequiredPackPresentation)
     case nativeCapture(NativeCapturePresentation)
@@ -199,43 +199,47 @@ enum ShellPresentation: Equatable {
 }
 
 @MainActor
-final class ActivationCoordinator: ObservableObject {
-    @Published private(set) var presentation: ShellPresentation = .booting
-    @Published private(set) var transferCoordinator: TransferCoordinator?
+public final class ActivationCoordinator: ObservableObject {
+    @Published public private(set) var presentation: ShellPresentation = .booting
+    @Published public private(set) var transferCoordinator: TransferCoordinator?
 
     private let manifestLoader: () throws -> ShellManifest
     private let requestLoader: () throws -> ActivationRequest
     private let packStore: PackStore
+    private let config: CrosswakeShellConfig
     private var hasBootstrapped = false
     private var lastRequest: ActivationRequest?
     private var cachedManifest: ShellManifest?
 
-    init(
+    public init(
         manifestLoader: @escaping () throws -> ShellManifest,
         requestLoader: @escaping () throws -> ActivationRequest,
-        packStore: PackStore
+        packStore: PackStore,
+        config: CrosswakeShellConfig
     ) {
         self.manifestLoader = manifestLoader
         self.requestLoader = requestLoader
         self.packStore = packStore
+        self.config = config
     }
 
-    static func bundled(bundle: Bundle = .main) -> ActivationCoordinator {
+    public static func bundled(bundle: Bundle = .main, config: CrosswakeShellConfig) -> ActivationCoordinator {
         let store = (try? PackStore.bundled(bundle: bundle)) ?? PackStore(requiredVersions: [:], inventory: [])
 
         return ActivationCoordinator(
             manifestLoader: { try Self.decode("crosswake_manifest", bundle: bundle) },
             requestLoader: { try Self.decode("route_activation", bundle: bundle) },
-            packStore: store
+            packStore: store,
+            config: config
         )
     }
 
-    func bootstrapIfNeeded() {
+    public func bootstrapIfNeeded() {
         guard hasBootstrapped == false else { return }
         hasBootstrapped = true
 
         do {
-            let request = try requestLoader()
+            let request = try loadAndFilterRequest()
             activate(request)
         } catch {
             presentation = .denied(
@@ -251,16 +255,16 @@ final class ActivationCoordinator: ObservableObject {
         }
     }
 
-    func openURL(_ url: URL) {
+    public func openURL(_ url: URL) {
         handleIncomingURL(url, source: .deepLink)
     }
 
-    func continueUserActivity(_ userActivity: NSUserActivity) {
+    public func continueUserActivity(_ userActivity: NSUserActivity) {
         guard let url = userActivity.webpageURL else { return }
         handleIncomingURL(url, source: .deepLink)
     }
 
-    func perform(_ action: RouteUnavailableAction) {
+    public func perform(_ action: RouteUnavailableAction) {
         switch action {
         case .retry:
             if let lastRequest {
@@ -275,26 +279,26 @@ final class ActivationCoordinator: ObservableObject {
         }
     }
 
-    func presentNavigationDenial(_ denial: RouteDenialPresentation) {
+    public func presentNavigationDenial(_ denial: RouteDenialPresentation) {
         presentation = .denied(denial)
     }
 
-    func installRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+    public func installRequiredPack(_ requiredPack: RequiredPackPresentation) async {
         await packStore.installRequiredPack(requiredPack.status)
         reactivateLastRequest()
     }
 
-    func retryRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+    public func retryRequiredPack(_ requiredPack: RequiredPackPresentation) async {
         await packStore.retry(requiredPack.status)
         reactivateLastRequest()
     }
 
-    func invalidateRequiredPack(_ requiredPack: RequiredPackPresentation) async {
+    public func invalidateRequiredPack(_ requiredPack: RequiredPackPresentation) async {
         await packStore.invalidatePack(requiredPack.status)
         reactivateLastRequest()
     }
 
-    func activate(_ request: ActivationRequest) {
+    public func activate(_ request: ActivationRequest) {
         do {
             let manifest = try loadManifest()
             lastRequest = request
@@ -313,7 +317,7 @@ final class ActivationCoordinator: ObservableObject {
         }
     }
 
-    func resolve(request: ActivationRequest, manifest: ShellManifest) -> ShellPresentation {
+    public func resolve(request: ActivationRequest, manifest: ShellManifest) -> ShellPresentation {
         guard let route = route(for: request, manifest: manifest) else {
             return .denied(
                 denial(
@@ -425,7 +429,7 @@ final class ActivationCoordinator: ObservableObject {
 
     private func handleIncomingURL(_ url: URL, source: ActivationSource) {
         do {
-            let seededRequest = try requestLoader()
+            let seededRequest = try loadAndFilterRequest()
             activate(.forIncomingURL(url, source: source, seededBy: seededRequest))
         } catch {
             presentation = .denied(
@@ -449,6 +453,44 @@ final class ActivationCoordinator: ObservableObject {
         let manifest = try manifestLoader()
         cachedManifest = manifest
         return manifest
+    }
+
+    private func loadAndFilterRequest() throws -> ActivationRequest {
+        let request = try requestLoader()
+        var filteredCapabilities = request.capabilities
+
+        if config.appInfoDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "app.info.get")
+        }
+        if config.hapticsDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "haptics.impact")
+        }
+        if config.permissionStatusDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "permissions.status")
+        }
+        if config.notificationTokenDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "notification_token")
+        }
+        if config.shareDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "share.invoke")
+        }
+        if config.filesPickDelegate == nil {
+            filteredCapabilities.removeValue(forKey: "file_picker")
+        }
+
+        return ActivationRequest(
+            routeID: request.routeID,
+            url: request.url,
+            source: request.source,
+            origin: request.origin,
+            manifestSource: request.manifestSource,
+            bridgeProtocolVersion: request.bridgeProtocolVersion,
+            nativeRuntimeVersion: request.nativeRuntimeVersion,
+            correlationID: request.correlationID,
+            declaredPackRequirements: request.declaredPackRequirements,
+            installedPacks: request.installedPacks,
+            capabilities: filteredCapabilities
+        )
     }
 
     private func route(for request: ActivationRequest, manifest: ShellManifest) -> ShellManifest.Route? {
@@ -545,7 +587,7 @@ final class ActivationCoordinator: ObservableObject {
 }
 
 extension URL {
-    var crosswakeOrigin: String? {
+    public var crosswakeOrigin: String? {
         guard let scheme, let host else { return nil }
 
         if let port, port != defaultPortForScheme {
@@ -555,7 +597,7 @@ extension URL {
         return "\(scheme)://\(host)"
     }
 
-    var defaultPortForScheme: Int? {
+    public var defaultPortForScheme: Int? {
         switch scheme {
         case "https":
             return 443
@@ -566,20 +608,4 @@ extension URL {
         }
     }
 }
-eturn "\(scheme)://\(host):\(port)"
-        }
 
-        return "\(scheme)://\(host)"
-    }
-
-    var defaultPortForScheme: Int? {
-        switch scheme {
-        case "https":
-            return 443
-        case "http":
-            return 80
-        default:
-            return nil
-        }
-    }
-}
