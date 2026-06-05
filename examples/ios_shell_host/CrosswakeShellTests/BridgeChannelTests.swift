@@ -329,6 +329,15 @@ final class BridgeChannelTests: XCTestCase {
             }
         }
 
+        let config = CrosswakeShellConfig(
+            appInfoDelegate: StubAppInfoDelegate(),
+            hapticsDelegate: StubHapticsDelegate(),
+            permissionStatusDelegate: permissionsStatusProvider,
+            notificationTokenDelegate: MockNotificationTokenDelegate(snapshotProvider: bridgeSnapshotProvider),
+            shareDelegate: StubShareDelegate(),
+            filesPickDelegate: MockFilesPickDelegate(handler: filesPickHandler)
+        )
+
         return BridgeChannel(
             session: LiveViewSession(
                 routeID: "dashboard",
@@ -347,12 +356,7 @@ final class BridgeChannelTests: XCTestCase {
             ),
             transferCoordinator: transferCoordinator,
             replySink: { _ in },
-            appInfoProvider: { [:] },
-            hapticsHandler: { _ in },
-            permissionStatusProvider: permissionsStatusProvider.statusPayload(for:),
-            notificationTokenProvider: bridgeSnapshotProvider,
-            shareHandler: { _ in },
-            filesPickHandler: filesPickHandler
+            config: config
         )
     }
 
@@ -409,5 +413,21 @@ final class BridgeChannelTests: XCTestCase {
         }
 
         return String(data: data, encoding: .utf8)
+    }
+
+    private struct StubAppInfoDelegate: AppInfoDelegate { func getAppInfo() -> [String: String] { [:] } }
+    private struct StubHapticsDelegate: HapticsDelegate { func impact(style: String) {} }
+    private struct StubShareDelegate: ShareDelegate { func invoke(payload: [String: String]) {} }
+
+    private struct MockNotificationTokenDelegate: NotificationTokenDelegate {
+        let snapshotProvider: () -> BridgeChannel.NotificationTokenCommandSnapshot
+        func currentToken() -> BridgeChannel.NotificationTokenCommandSnapshot { snapshotProvider() }
+    }
+    
+    private struct MockFilesPickDelegate: FilesPickDelegate {
+        let handler: BridgeChannel.FilesPickHandler
+        func pickFiles(payload: [String: String], correlationID: String, completion: @escaping (BridgeChannel.CommandResult) -> Void) {
+            handler(payload, correlationID, completion)
+        }
     }
 }

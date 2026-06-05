@@ -8,7 +8,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.bootstrapIfNeeded()
@@ -25,7 +26,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.openURL(URL(string: "https://example.crosswake.invalid/study/history")!)
@@ -42,7 +44,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.openURL(URL(string: "https://example.com/native/claims/claim-9/capture")!)
@@ -58,7 +61,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.openURL(URL(string: "https://example.com/missing")!)
@@ -75,7 +79,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.openURL(URL(string: "https://example.crosswake.invalid/study/session")!)
@@ -92,7 +97,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.libraryPackRequest },
-            packStore: Self.stalePackStore
+            packStore: Self.stalePackStore,
+            config: Self.config
         )
 
         coordinator.bootstrapIfNeeded()
@@ -110,7 +116,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         let request = ActivationRequest(
@@ -141,7 +148,8 @@ final class ActivationCoordinatorTests: XCTestCase {
         let coordinator = ActivationCoordinator(
             manifestLoader: { Self.manifest },
             requestLoader: { Self.allowedRequest },
-            packStore: Self.packStore
+            packStore: Self.packStore,
+            config: Self.config
         )
 
         coordinator.activate(
@@ -342,5 +350,21 @@ final class ActivationCoordinatorTests: XCTestCase {
                 status: "available"
             )
         ]
+    )
+
+    private struct StubAppInfoDelegate: AppInfoDelegate { func getAppInfo() -> [String: String] { [:] } }
+    private struct StubHapticsDelegate: HapticsDelegate { func impact(style: String) {} }
+    private struct StubPermissionStatusDelegate: PermissionStatusDelegate { func status(for permissionAlias: String) -> [String: String]? { nil } }
+    private struct StubNotificationTokenDelegate: NotificationTokenDelegate { func currentToken() -> BridgeChannel.NotificationTokenCommandSnapshot { .unavailable(reason: "none", detail: [:]) } }
+    private struct StubShareDelegate: ShareDelegate { func invoke(payload: [String: String]) {} }
+    private struct StubFilesPickDelegate: FilesPickDelegate { func pickFiles(payload: [String: String], correlationID: String, completion: @escaping (BridgeChannel.CommandResult) -> Void) {} }
+
+    private static let config = CrosswakeShellConfig(
+        appInfoDelegate: StubAppInfoDelegate(),
+        hapticsDelegate: StubHapticsDelegate(),
+        permissionStatusDelegate: StubPermissionStatusDelegate(),
+        notificationTokenDelegate: StubNotificationTokenDelegate(),
+        shareDelegate: StubShareDelegate(),
+        filesPickDelegate: StubFilesPickDelegate()
     )
 }
