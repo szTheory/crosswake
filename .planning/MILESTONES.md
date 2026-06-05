@@ -1,5 +1,50 @@
 # Project Milestones: Crosswake
 
+## v4.1 Multi-SaaS Archetype Proof Lanes (Shipped: 2026-06-05)
+
+**Phases completed:** 6 phases, 13 plans
+
+**Key accomplishments:**
+
+- Proved an end-to-end subscription SaaS commerce corridor using mock storefront adapters, ensuring entitlement projections are strictly backend-promoted.
+- Validated a notification-driven workflow, verifying Chimeway push-token binding connects cleanly with Sigra session state and RouteGate enforces auth checks on deep-links without silent fallbacks.
+- Verified a media/evidence capture workflow using Rindle reconciliation to recover from degraded network failures, keeping local capture signals non-authoritative.
+- Proved an auth-sensitive admin workflow by triggering Sigra step-up ceremonies, ensuring native shell session persistence requires handoff tickets for administrative routes.
+- Proved an offline/draft recovery workflow that enforces explicit `:cached_read_only` and `:local_first` policies, rejecting generic universal sync abstractions.
+- Ensured all E2E archetype proofs run hermetically in CI without requiring manual device verification.
+
+**Verification:** Milestone closeout (`.planning/milestones/v4.1-CLOSEOUT.md`) passed all checks, enforced by `mix closeout.verify`.
+
+**Archive:**
+
+- `.planning/milestones/v4.1-ROADMAP.md`
+- `.planning/milestones/v4.1-REQUIREMENTS.md`
+- `.planning/milestones/v4.1-CLOSEOUT.md`
+
+---
+
+## v4.0 Production Shell Runtime Line (Shipped: 2026-06-04)
+
+**Phases completed:** 6 phases, 18 plans
+
+**Key accomplishments:**
+
+- Established the Runtime-Line Policy Contract and Support-Truth Taxonomy.
+- Shipped the Diagnostic Export Seam in Elixir.
+- Fixed Xcode 26 CI and updated Generator Templates.
+- Implemented Native Shells with Android JVM Hermetic Proof.
+- Reached Android Verification Closure and Device-UAT.
+- Executed the Docs-Contract Parity Gate, Android Promotion, and Closeout.
+
+**Verification:** Milestone closeout (`.planning/milestones/v4.0-CLOSEOUT.md`) completed.
+
+**Archive:**
+
+- `.planning/milestones/v4.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v4.0-CLOSEOUT.md`
+
+---
+
 ## v3.9 Chimeway Notification Seam (Shipped: 2026-06-03)
 
 **Phases completed:** 5 phases, 17 plans, 12 tasks
