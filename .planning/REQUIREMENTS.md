@@ -32,7 +32,7 @@
 
 ### Proof & Closeout (PROOF)
 
-- [ ] **PROOF-01**: All v4.1 archetype proofs must run hermetically in CI without requiring manual device verification.
+- [x] **PROOF-01**: All v4.1 archetype proofs must run hermetically in CI without requiring manual device verification.
 
 ## Traceability
 
@@ -48,7 +48,7 @@
 | ADM-02 | Phase 73 | Complete |
 | OFF-01 | Phase 74 | Complete |
 | OFF-02 | Phase 74 | Complete |
-| PROOF-01 | Phase 75 | Pending |
+| PROOF-01 | Phase 75 | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total

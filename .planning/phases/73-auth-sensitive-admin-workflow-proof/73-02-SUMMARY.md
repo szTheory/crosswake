@@ -3,6 +3,7 @@ phase: "73"
 plan: "02"
 subsystem: "saas_portal"
 tags: ["auth", "security", "step-up", "liveview"]
+requirements-completed: ["ADM-01", "ADM-02"]
 dependency_graph:
   requires: ["73-01"]
   provides: ["Challenge UI component"]
