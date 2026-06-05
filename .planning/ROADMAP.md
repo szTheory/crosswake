@@ -39,7 +39,11 @@
   1. `mix crosswake.gen.shell` generates a host project that pulls in the new SPM/Maven libraries rather than copying source files.
   2. The generated host app wires the initialization and state observation into its native UI lifecycle.
   3. The generation tooling outputs required `Info.plist` and `AndroidManifest.xml` permission templates.
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 78-01-PLAN.md — Update CLI task and cleanup legacy fat templates
+- [ ] 78-02-PLAN.md — Overhaul iOS EEx templates for SPM
+- [ ] 78-03-PLAN.md — Overhaul Android EEx templates for Maven
+- [ ] 78-04-PLAN.md — Refactor generator test suite
 **UI hint**: yes
 
 ### Phase 79: v5.0 Closeout & Hermetic Verification
@@ -58,5 +62,5 @@
 |-------|----------------|--------|-----------|
 | 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
 | 77. Reactive State & API Standardization | 4/4 | Complete   | 2026-06-05 |
-| 78. Automated Host Scaffold Generation | 0/0 | Not started | - |
+| 78. Automated Host Scaffold Generation | 0/4 | Not started | - |
 | 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |
