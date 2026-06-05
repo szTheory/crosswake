@@ -57,6 +57,6 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
-| 77. Reactive State & API Standardization | 1/4 | In Progress|  |
+| 77. Reactive State & API Standardization | 2/4 | In Progress|  |
 | 78. Automated Host Scaffold Generation | 0/0 | Not started | - |
 | 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |
