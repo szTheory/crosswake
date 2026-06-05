@@ -5,7 +5,7 @@
 - [x] **Phase 70: Subscription SaaS Commerce Proof** - Validate commerce corridors and backend entitlement projections (completed 2026-06-04)
 - [x] **Phase 71: Notification-Driven Workflow Proof** - Prove secure, route-policy aware deep-linking and notification re-entry (completed 2026-06-04)
 - [x] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads (completed 2026-06-05)
-- [ ] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing
+- [x] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing (completed 2026-06-05)
 - [ ] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits
 - [ ] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met
 
@@ -52,7 +52,7 @@
   3. Only upon successful step-up is the admin route unlocked.
 **Plans**: 2 plans
 - [x] 73-01-PLAN.md — Finalize the StepUpIntent Ecto schema and the shared route gating logic.
-- [ ] 73-02-PLAN.md — Build the visual step-up challenge UI per 73-UI-SPEC.md, finalize the targeted CI proof test, and ensure the workflow runs green in CI.
+- [x] 73-02-PLAN.md — Build the visual step-up challenge UI per 73-UI-SPEC.md, finalize the targeted CI proof test, and ensure the workflow runs green in CI.
 **UI hint**: yes
 
 ### Phase 74: Offline/Draft Recovery Proof
@@ -82,6 +82,6 @@
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
 | 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
-| 73. Auth-Sensitive Admin Workflow Proof | 1/2 | In Progress|  |
+| 73. Auth-Sensitive Admin Workflow Proof | 2/2 | Complete   | 2026-06-05 |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
