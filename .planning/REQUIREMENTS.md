@@ -17,8 +17,8 @@
 
 ### Media/Evidence Workflow Archetype (MED)
 
-- [ ] **MED-01**: The system must prove an end-to-end media/evidence capture workflow, integrating Rindle reconciliation to recover from degraded network failures.
-- [ ] **MED-02**: Local capture signals (pack-heavy media uploads) must remain non-authoritative until backend verification completes.
+- [x] **MED-01**: The system must prove an end-to-end media/evidence capture workflow, integrating Rindle reconciliation to recover from degraded network failures.
+- [x] **MED-02**: Local capture signals (pack-heavy media uploads) must remain non-authoritative until backend verification completes.
 
 ### Auth-Sensitive Admin Workflow Archetype (ADM)
 
@@ -42,8 +42,8 @@
 | SAAS-02 | Phase 70 | Complete |
 | NOTF-01 | Phase 71 | Complete |
 | NOTF-02 | Phase 71 | Complete |
-| MED-01 | Phase 72 | Pending |
-| MED-02 | Phase 72 | Pending |
+| MED-01 | Phase 72 | Complete |
+| MED-02 | Phase 72 | Complete |
 | ADM-01 | Phase 73 | Pending |
 | ADM-02 | Phase 73 | Pending |
 | OFF-01 | Phase 74 | Pending |

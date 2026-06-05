@@ -4,7 +4,7 @@
 
 - [x] **Phase 70: Subscription SaaS Commerce Proof** - Validate commerce corridors and backend entitlement projections (completed 2026-06-04)
 - [x] **Phase 71: Notification-Driven Workflow Proof** - Prove secure, route-policy aware deep-linking and notification re-entry (completed 2026-06-04)
-- [ ] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads
+- [x] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads (completed 2026-06-05)
 - [ ] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing
 - [ ] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits
 - [ ] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met
@@ -79,7 +79,7 @@
 |-------|----------------|--------|-----------|
 | 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
 | 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
-| 72. Media/Evidence Workflow Proof | 2/3 | In Progress|  |
+| 72. Media/Evidence Workflow Proof | 3/3 | Complete   | 2026-06-05 |
 | 73. Auth-Sensitive Admin Workflow Proof | 0/0 | Not started | - |
 | 74. Offline/Draft Recovery Proof | 0/0 | Not started | - |
 | 75. Multi-SaaS Archetype Closeout Gate | 0/0 | Not started | - |
