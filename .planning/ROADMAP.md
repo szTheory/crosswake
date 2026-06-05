@@ -1,88 +1,62 @@
-# Roadmap: Crosswake — v4.1 Multi-SaaS Archetype Proof Lanes
+# Roadmap: Crosswake — v5.0 Standalone Publishable Shell Packages
 
 ## Phases
 
-- [x] **Phase 70: Subscription SaaS Commerce Proof** - Validate commerce corridors and backend entitlement projections (completed 2026-06-04)
-- [x] **Phase 71: Notification-Driven Workflow Proof** - Prove secure, route-policy aware deep-linking and notification re-entry (completed 2026-06-04)
-- [x] **Phase 72: Media/Evidence Workflow Proof** - Validate Rindle reconciliation and failure recovery for media uploads (completed 2026-06-05)
-- [x] **Phase 73: Auth-Sensitive Admin Workflow Proof** - Stress-test Sigra step-up ceremonies and strict auth posturing (completed 2026-06-05)
-- [x] **Phase 74: Offline/Draft Recovery Proof** - Prove degraded read-only caching and offline-island limits (completed 2026-06-05)
-- [x] **Phase 75: Multi-SaaS Archetype Closeout Gate** - Verify all archetype proofs are CI-hermetic and requirements are met (completed 2026-06-05)
+- [ ] **Phase 76: Core Shell Extraction & Packaging** - Isolate Crosswake core logic into SPM and Maven libraries
+- [ ] **Phase 77: Reactive State & API Standardization** - Replace raw object generation with a unified builder and reactive state APIs
+- [ ] **Phase 78: Automated Host Scaffold Generation** - Update generator tooling to output thin dependency-driven host projects
+- [ ] **Phase 79: v5.0 Closeout & Hermetic Verification** - Verify all new libraries and generators are hermetic and break no existing archetype lanes
 
 ## Phase Details
 
-### Phase 70: Subscription SaaS Commerce Proof
-**Goal**: Validate E2E commerce corridors and backend entitlement projections.
+### Phase 76: Core Shell Extraction & Packaging
+**Goal**: Isolate Crosswake core logic into SPM and Maven libraries without changing internal behavior.
 **Depends on**: Nothing
-**Requirements**: SAAS-01, SAAS-02
+**Requirements**: CORE-01, CORE-02, CORE-03
 **Success Criteria** (what must be TRUE):
-  1. Developer can run a CI test that simulates a purchase using mock storefront adapters.
-  2. The entitlement projection changes only after backend verification, ignoring client-side mocks of success.
-  3. Restore flow correctly pulls state from the provider facade without trusting client evidence.
-**Plans**: 3 plans — Wave 0 commerce proof, Wave 1 verifier/provider closure, Wave 2 CI/paywall polish
-**UI hint**: yes
-
-### Phase 71: Notification-Driven Workflow Proof
-**Goal**: Prove secure, route-policy aware deep-linking and notification re-entry.
-**Depends on**: Phase 70
-**Requirements**: NOTF-01, NOTF-02
-**Success Criteria** (what must be TRUE):
-  1. A notification tap simulates a push-token opening a specific deep-linked route.
-  2. RouteGate intercepts the intent, enforcing a `requires_recent_auth` Sigra check.
-  3. The system correctly rejects unauthenticated attempts, proving no silent route bypasses.
-**Plans**: 3 plans — Wave 0 red proof, Wave 1 resolver/auth closure, Wave 2 CI/support truth
-
-### Phase 72: Media/Evidence Workflow Proof
-**Goal**: Validate Rindle reconciliation and failure recovery for media uploads.
-**Depends on**: Phase 71
-**Requirements**: MED-01, MED-02
-**Success Criteria** (what must be TRUE):
-  1. A media pack capture event is recorded locally during simulated network degradation.
-  2. The upload fails, is stored locally, and Rindle reconciles upon simulated network recovery.
-  3. Backend authority correctly denies completion until the full payload is reconciled.
-**Plans**: 3 plans — Wave 0 media recovery proof contract, Wave 1 Rindle/example-host closure, Wave 2 CI/support truth
-
-### Phase 73: Auth-Sensitive Admin Workflow Proof
-**Goal**: Stress-test Sigra step-up ceremonies and strict auth posturing.
-**Depends on**: Phase 72
-**Requirements**: ADM-01, ADM-02
-**Success Criteria** (what must be TRUE):
-  1. A user with a persistent native session attempts to access an admin route and is blocked.
-  2. The system triggers a step-up ceremony, producing an audit-trailed handoff ticket.
-  3. Only upon successful step-up is the admin route unlocked.
+  1. `crosswake-shell-core` exists as a standalone Swift Package containing iOS `ActivationCoordinator` and `BridgeChannel`.
+  2. `crosswake-shell-core` exists as a standalone Maven AAR project containing Android `ActivationCoordinator` and `BridgeChannel`.
+  3. The extracted libraries compile independently of any specific host app.
 **Plans**: 2 plans
-- [x] 73-01-PLAN.md — Finalize the StepUpIntent Ecto schema and the shared route gating logic.
-- [x] 73-02-PLAN.md — Build the visual step-up challenge UI per 73-UI-SPEC.md, finalize the targeted CI proof test, and ensure the workflow runs green in CI.
+- [ ] 76-01-PLAN.md — Extract iOS SPM Core Library
+- [ ] 76-02-PLAN.md — Extract Android Maven Core Library
+
+### Phase 77: Reactive State & API Standardization
+**Goal**: Replace raw object generation with a unified builder and reactive state APIs.
+**Depends on**: Phase 76
+**Requirements**: API-01, API-02, API-03
+**Success Criteria** (what must be TRUE):
+  1. Developer can initialize the shell via a single `CrosswakeShell.initialize()` entry point.
+  2. Host UI can observe shell state (`booting`, `denied`, `live_view`) via `ObservableObject`/`@Published` (iOS) or `StateFlow` (Android).
+  3. Host app can inject narrow delegates (e.g., `HapticsDelegate`) instead of implementing a monolithic callback interface.
+**Plans**: TBD
+
+### Phase 78: Automated Host Scaffold Generation
+**Goal**: Update generator tooling to output thin dependency-driven host projects.
+**Depends on**: Phase 77
+**Requirements**: GEN-01, GEN-02, GEN-03
+**Success Criteria** (what must be TRUE):
+  1. `mix crosswake.gen.shell` generates a host project that pulls in the new SPM/Maven libraries rather than copying source files.
+  2. The generated host app wires the initialization and state observation into its native UI lifecycle.
+  3. The generation tooling outputs required `Info.plist` and `AndroidManifest.xml` permission templates.
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 74: Offline/Draft Recovery Proof
-**Goal**: Prove degraded read-only caching and offline-island limits.
-**Depends on**: Phase 73
-**Requirements**: OFF-01, OFF-02
-**Success Criteria** (what must be TRUE):
-  1. An offline-island mutation is performed locally.
-  2. The application enforces its `:local_first` bounds, showing cached read-only data for other routes.
-  3. The system does not attempt universal sync, strictly respecting the declared offline policy.
-**Plans**: 1 plan
-- [x] 74-01-PLAN.md — Build hermetic proof for offline draft recovery and compiler enforcement
-
-### Phase 75: Multi-SaaS Archetype Closeout Gate
-**Goal**: Verify all archetype proofs are CI-hermetic and requirements are met.
-**Depends on**: Phase 74
+### Phase 79: v5.0 Closeout & Hermetic Verification
+**Goal**: Verify all new libraries and generators are hermetic and break no existing archetype lanes.
+**Depends on**: Phase 78
 **Requirements**: PROOF-01
 **Success Criteria** (what must be TRUE):
-  1. `mix closeout.verify` passes for v4.1.
-  2. All archetype proofs execute deterministically in CI (iOS simulator / Android JVM).
-  3. All v4.1 requirements are correctly mapped and closed.
+  1. `mix closeout.verify` passes for v5.0.
+  2. All existing E2E and archetype proofs continue to execute deterministically in CI against the new standalone dependencies.
+  3. The hermetic CI pipelines correctly build the new SPM/Maven dependencies and integrate them.
 **Plans**: TBD
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 70. Subscription SaaS Commerce Proof | 3/3 | Complete    | 2026-06-04 |
-| 71. Notification-Driven Workflow Proof | 3/3 | Complete    | 2026-06-04 |
-| 72. Media/Evidence Workflow Proof | 3/3 | Complete    | 2026-06-05 |
-| 73. Auth-Sensitive Admin Workflow Proof | 2/2 | Complete   | 2026-06-05 |
-| 74. Offline/Draft Recovery Proof | 1/1 | Complete   | 2026-06-05 |
-| 75. Multi-SaaS Archetype Closeout Gate | 1/1 | Complete   | 2026-06-05 |
+| 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
+| 77. Reactive State & API Standardization | 0/0 | Not started | - |
+| 78. Automated Host Scaffold Generation | 0/0 | Not started | - |
+| 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |
