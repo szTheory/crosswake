@@ -185,7 +185,35 @@ defmodule CrosswakeExample.Router do
             security: :standard
           ]
         )
+
+        live("/admin/member-access", AdminAccessLive,
+          crosswake: [
+            id: "saas-admin-member-access",
+            runtime: :live_view,
+            entry: :internal_only,
+            auth_min_level: :mfa,
+            requires_recent_auth: 300,
+            auth_posture: :strict_recent,
+            offline: :unavailable,
+            security: :sensitive
+          ]
+        )
       end
+    end
+  end
+
+  scope "/sigra", CrosswakeExample.SaaSPortal do
+    pipe_through([:browser, :saas_portal])
+
+    crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+      live("/step-up", StepUpChallengeLive,
+        crosswake: [
+          id: "sigra-step-up",
+          runtime: :live_view,
+          offline: :unavailable,
+          security: :sensitive
+        ]
+      )
     end
   end
 
