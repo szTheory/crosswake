@@ -56,6 +56,15 @@ defmodule Crosswake.Proof.Phase45RindleLiveTest do
     assert render_state(:available) =~ "Backend verified media is available"
   end
 
+  test "rendered proof lane exposes recovery copy and polite status region" do
+    assert {:ok, socket} = media_live().mount(%{}, %{}, %Phoenix.LiveView.Socket{})
+    rendered = render_assigns(socket.assigns)
+
+    assert rendered =~ ~s(role="status")
+    assert rendered =~ "Local capture evidence does not grant media availability"
+    assert rendered =~ "This proof does not use a real storage provider"
+  end
+
   test "callbacks only reach available after explicit backend verification" do
     live = media_live()
     assert {:ok, socket} = live.mount(%{}, %{}, %Phoenix.LiveView.Socket{})
@@ -73,6 +82,32 @@ defmodule Crosswake.Proof.Phase45RindleLiveTest do
     assert render_assigns(available.assigns) =~ "Backend verified media is available"
   end
 
+  test "callbacks cover degraded upload failure recovery scanning available and rejected states" do
+    live = media_live()
+    assert {:ok, socket} = live.mount(%{}, %{}, %Phoenix.LiveView.Socket{})
+
+    assert {:noreply, local_capture} = live.handle_event("record_local_capture", %{}, socket)
+    assert render_assigns(local_capture.assigns) =~ "Capture recorded locally; media is not available yet."
+
+    assert {:noreply, failed} = live.handle_event("fail_upload", %{}, local_capture)
+    assert render_assigns(failed.assigns) =~ "Upload failed during simulated network degradation."
+
+    assert {:noreply, recovered} = live.handle_event("recover_network", %{}, failed)
+    assert render_assigns(recovered.assigns) =~ "Network recovered. Reconciliation can retry."
+
+    assert {:noreply, uploaded} = live.handle_event("record_upload", %{}, recovered)
+    assert render_assigns(uploaded.assigns) =~ "Device evidence recorded; backend verification still required."
+
+    assert {:noreply, scanning} = live.handle_event("start_scan", %{}, uploaded)
+    assert render_assigns(scanning.assigns) =~ "Backend verification in progress."
+
+    assert {:noreply, available} = live.handle_event("verify_backend", %{}, scanning)
+    assert render_assigns(available.assigns) =~ "Backend verified media is available."
+
+    assert {:noreply, rejected} = live.handle_event("reject_backend", %{}, scanning)
+    assert render_assigns(rejected.assigns) =~ "Backend rejected this media object."
+  end
+
   test "event handlers return fail-closed flashes instead of crashing on missing state" do
     live = media_live()
     assert {:ok, socket} = live.mount(%{}, %{}, %Phoenix.LiveView.Socket{})
@@ -86,6 +121,9 @@ defmodule Crosswake.Proof.Phase45RindleLiveTest do
 
     assert {:noreply, verify_failed} = live.handle_event("verify_backend", %{}, broken)
     assert verify_failed.assigns.error_message =~ "Media lane unavailable"
+
+    assert {:noreply, reject_failed} = live.handle_event("reject_backend", %{}, broken)
+    assert reject_failed.assigns.error_message =~ "Media lane unavailable"
   end
 
   defp media_live, do: Module.concat(["CrosswakeExample", "Media", "MediaLaneLive"])
