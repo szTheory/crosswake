@@ -3,7 +3,7 @@
 ## Phases
 
 - [ ] **Phase 76: Core Shell Extraction & Packaging** - Isolate Crosswake core logic into SPM and Maven libraries
-- [ ] **Phase 77: Reactive State & API Standardization** - Replace raw object generation with a unified builder and reactive state APIs
+- [x] **Phase 77: Reactive State & API Standardization** - Replace raw object generation with a unified builder and reactive state APIs (completed 2026-06-05)
 - [ ] **Phase 78: Automated Host Scaffold Generation** - Update generator tooling to output thin dependency-driven host projects
 - [ ] **Phase 79: v5.0 Closeout & Hermetic Verification** - Verify all new libraries and generators are hermetic and break no existing archetype lanes
 
@@ -57,6 +57,6 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
-| 77. Reactive State & API Standardization | 2/4 | In Progress|  |
+| 77. Reactive State & API Standardization | 4/4 | Complete   | 2026-06-05 |
 | 78. Automated Host Scaffold Generation | 0/0 | Not started | - |
 | 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |
