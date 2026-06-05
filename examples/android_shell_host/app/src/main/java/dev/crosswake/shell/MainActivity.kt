@@ -14,27 +14,25 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import dev.crosswake.shell.NativeCaptureActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dev.crosswake.shell.packs.RequiredPackActivity
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
-    private lateinit var activationCoordinator: ActivationCoordinator
+    lateinit var shell: CrosswakeShell
     private var filePickerCoordinator: FilePickerCoordinator? = null
     private var unavailableDialog: AlertDialog? = null
+
     private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        activationCoordinator = ActivationCoordinator.bundled(this)
-        render(
-            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
-            preserveCurrentRoute = false
-        )
+        shell.handleIntent(intent)
     }
+
     private val nativeCaptureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        activationCoordinator = ActivationCoordinator.bundled(this)
-        render(
-            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
-            preserveCurrentRoute = false
-        )
+        shell.handleIntent(intent)
     }
+
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         filePickerCoordinator?.consumeResult(result.resultCode, result.data)
     }
@@ -42,23 +40,97 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        activationCoordinator = ActivationCoordinator.bundled(this)
+
+        val config = CrosswakeShellConfig(
+            appInfoDelegate = object : AppInfoDelegate {
+                override fun getAppInfo(): Map<String, String> {
+                    val packageManager = packageManager
+                    val packageInfo = packageManager.getPackageInfo(packageName, 0)
+                    return mapOf(
+                        "version" to (packageInfo.versionName ?: ""),
+                        "build" to if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                            packageInfo.longVersionCode.toString()
+                        } else {
+                            packageInfo.versionCode.toString()
+                        },
+                        "bundle_id" to packageName
+                    )
+                }
+            },
+            hapticsDelegate = object : HapticsDelegate {
+                override fun impact(style: String) {
+                    val feedbackConstant = when (style) {
+                        "heavy" -> android.view.HapticFeedbackConstants.LONG_PRESS
+                        "light" -> android.view.HapticFeedbackConstants.KEYBOARD_TAP
+                        else -> android.view.HapticFeedbackConstants.VIRTUAL_KEY
+                    }
+                    window.decorView.performHapticFeedback(feedbackConstant)
+                }
+            },
+            permissionStatusDelegate = object : PermissionStatusDelegate {
+                override fun getStatus(alias: String): Map<String, String>? {
+                    return PermissionStatusProvider(this@MainActivity).statusPayload(alias)
+                }
+            },
+            notificationTokenDelegate = object : NotificationTokenDelegate {
+                override fun fetch(): NotificationTokenDelegate.Result {
+                    return NotificationTokenProvider(this@MainActivity).fetch()
+                }
+            },
+            shareDelegate = object : ShareDelegate {
+                override fun invoke(payload: Map<String, String>) {
+                    val title = payload["title"] ?: ""
+                    val text = payload["text"]
+                    val url = payload["url"]
+                    val combinedText = listOfNotNull(text, url).joinToString("\n")
+
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TITLE, title)
+                        putExtra(Intent.EXTRA_TEXT, combinedText)
+                    }
+                    startActivity(Intent.createChooser(sendIntent, title))
+                }
+            },
+            filesPickDelegate = object : FilesPickDelegate {
+                override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+                    val coordinator = filePickerCoordinator
+                        ?: return FilesPickResult.Denied(
+                            reason = "undeclared_capability",
+                            message = "This route does not declare the requested transfer seam.",
+                            hint = "Retry only after mounting a LiveView session with a manifest-declared native_picker transfer."
+                        )
+
+                    return coordinator.pick(payload, correlationId)
+                }
+            }
+        )
+
+        shell = CrosswakeShell(this, config)
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                shell.state.collect { presentation ->
+                    render(presentation)
+                }
+            }
+        }
 
         DiagnosticExportManager.start(this, "https://api.example.com/diagnostics/export", "0.1.0")
 
         if (savedInstanceState == null) {
-            render(activationCoordinator.bootstrapIfNeeded(intent), preserveCurrentRoute = false)
+            shell.bootstrap(intent)
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        render(activationCoordinator.handleIntent(intent), preserveCurrentRoute = false)
+        shell.handleIntent(intent)
     }
 
     override fun allowNavigation(url: String): Boolean {
-        return when (val decision = activationCoordinator.resolveNavigation(url)) {
+        return when (val decision = shell.resolveNavigation(url)) {
             NavigationDecision.Allow -> true
             is NavigationDecision.Deny -> {
                 render(ShellPresentation.Denied(decision.denial), preserveCurrentRoute = true)
@@ -68,17 +140,10 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     }
 
     override fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult {
-        val coordinator = filePickerCoordinator
-            ?: return FilesPickResult.Denied(
-                reason = "undeclared_capability",
-                message = "This route does not declare the requested transfer seam.",
-                hint = "Retry only after mounting a LiveView session with a manifest-declared native_picker transfer."
-            )
-
-        return coordinator.pick(payload, correlationId)
+        return shell.config.filesPickDelegate?.pick(payload, correlationId) ?: FilesPickResult.Denied("unavailable", "unavailable", "unavailable")
     }
 
-    private fun render(presentation: ShellPresentation, preserveCurrentRoute: Boolean) {
+    private fun render(presentation: ShellPresentation, preserveCurrentRoute: Boolean = false) {
         when (presentation) {
             ShellPresentation.Booting -> showUnavailableSurface(
                 RouteDenialPresentation(
@@ -133,7 +198,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
         unavailableDialog?.dismiss()
         unavailableDialog = null
         filePickerCoordinator =
-            activationCoordinator.currentTransferCoordinator?.let { transferCoordinator ->
+            shell.currentTransferCoordinator?.let { transferCoordinator ->
                 FilePickerCoordinator(
                     context = this,
                     transferCoordinator = transferCoordinator,
@@ -141,17 +206,15 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
                 )
             }
 
-        val container = FrameLayout(this).apply {
+        val container = findViewById<FrameLayout>(CONTAINER_ID) ?: FrameLayout(this).apply {
             id = CONTAINER_ID
+            ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+                insets
+            }
+            setContentView(this)
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
-
-        setContentView(container)
 
         val existing = supportFragmentManager.findFragmentByTag(LiveViewFragment.TAG) as? LiveViewFragment
         if (existing?.represents(session) == true) {
@@ -210,7 +273,7 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
         val safeFallback = root.findViewById<Button>(R.id.route_unavailable_safe_fallback)
 
         bindActionButton(retry, RouteUnavailableAction.RETRY in denial.actions) {
-            render(activationCoordinator.retry(), preserveCurrentRoute = false)
+            shell.retry()
         }
 
         bindActionButton(update, RouteUnavailableAction.UPDATE_APP in denial.actions) {
@@ -222,12 +285,8 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
             RouteUnavailableAction.SAFE_FALLBACK in denial.actions && denial.safeFallbackUrl != null
         ) {
             val safeUrl = denial.safeFallbackUrl ?: return@bindActionButton
-            render(
-                activationCoordinator.handleIntent(
-                    Intent(Intent.ACTION_VIEW, Uri.parse(safeUrl)),
-                    fallbackSource = ActivationSource.IN_APP_NAVIGATION
-                ),
-                preserveCurrentRoute = false
+            shell.handleIntent(
+                Intent(Intent.ACTION_VIEW, Uri.parse(safeUrl))
             )
         }
     }

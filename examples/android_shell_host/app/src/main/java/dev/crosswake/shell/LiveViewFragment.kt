@@ -15,6 +15,7 @@ import org.json.JSONObject
 
 class LiveViewFragment : Fragment() {
     interface Host {
+        val shell: CrosswakeShell
         fun allowNavigation(url: String): Boolean
         fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult
     }
@@ -66,54 +67,13 @@ class LiveViewFragment : Fragment() {
         webView.settings.setSupportZoom(false)
         WebView.setWebContentsDebuggingEnabled(false)
 
-        BridgeChannel(
+        val host = activity as? Host
+        val bridgeChannel = host?.shell?.createBridgeChannel(
             session = session,
-            transferCoordinator = transferCoordinator,
-            appInfoProvider = {
-                val packageManager = requireContext().packageManager
-                val packageInfo = packageManager.getPackageInfo(requireContext().packageName, 0)
-                mapOf(
-                    "version" to (packageInfo.versionName ?: ""),
-                    "build" to if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                        packageInfo.longVersionCode.toString()
-                    } else {
-                        packageInfo.versionCode.toString()
-                    },
-                    "bundle_id" to requireContext().packageName
-                )
-            },
-            hapticsHandler = { style ->
-                val feedbackConstant = when (style) {
-                    "heavy" -> android.view.HapticFeedbackConstants.LONG_PRESS
-                    "light" -> android.view.HapticFeedbackConstants.KEYBOARD_TAP
-                    else -> android.view.HapticFeedbackConstants.VIRTUAL_KEY
-                }
-                webView.performHapticFeedback(feedbackConstant)
-            },
-            permissionStatusProvider = PermissionStatusProvider(requireContext())::statusPayload,
-            notificationTokenProvider = NotificationTokenProvider(requireContext()),
-            shareHandler = { payload ->
-                val title = payload["title"] ?: ""
-                val text = payload["text"]
-                val url = payload["url"]
-                val combinedText = listOfNotNull(text, url).joinToString("\n")
+            transferCoordinator = transferCoordinator
+        ) ?: throw IllegalStateException("LiveViewFragment must be attached to a Host that provides a CrosswakeShell instance")
 
-                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(android.content.Intent.EXTRA_TITLE, title)
-                    putExtra(android.content.Intent.EXTRA_TEXT, combinedText)
-                }
-                startActivity(android.content.Intent.createChooser(intent, title))
-            },
-            filesPickHandler = { payload, correlationId ->
-                (activity as? Host)?.filesPick(payload, correlationId)
-                    ?: FilesPickResult.Denied(
-                        reason = "undeclared_capability",
-                        message = "This route does not declare the requested transfer seam.",
-                        hint = "Retry only from the mounted shell activity with a manifest-declared native_picker transfer."
-                    )
-            }
-        ).attach(webView, setOf(session.allowedOrigin))
+        bridgeChannel.attach(webView, setOf(session.allowedOrigin))
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
