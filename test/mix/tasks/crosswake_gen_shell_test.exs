@@ -188,8 +188,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest) =~ "usesCleartextTraffic"
     assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
     assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
-    assert File.read!(android_manifest) =~ "RequiredPackActivity"
-    assert File.read!(android_manifest) =~ "NativeCaptureActivity"
+    assert File.read!(android_manifest) =~ "https://docs.crosswake.dev/capabilities"
+    refute File.read!(android_manifest) =~ "CAMERA"
     assert File.exists?(android_crosswake_view_model)
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
@@ -204,6 +204,13 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
       Mix.Task.run(@task, ["ios", "--target", local_target, "--local"])
     end)
     assert File.exists?(Path.join(local_target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift"))
+
+    android_local_target = tmp_dir!("crosswake-shell-android-local")
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["android", "--target", android_local_target, "--local"])
+    end)
+    assert File.exists?(Path.join(android_local_target, "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt"))
 
     verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
     assert File.read!(verify_script) =~ "xcodebuild"

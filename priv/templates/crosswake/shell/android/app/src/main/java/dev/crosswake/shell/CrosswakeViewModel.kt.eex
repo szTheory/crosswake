@@ -1,1 +1,43 @@
-// Placeholder for Android glue layer
+package dev.crosswake.shell
+
+import android.app.Application
+import android.content.Intent
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import dev.crosswake.shell.core.CrosswakeShell
+import dev.crosswake.shell.core.CrosswakeShellConfig
+import dev.crosswake.shell.core.ShellPresentation
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+
+class CrosswakeViewModel(application: Application) : AndroidViewModel(application) {
+
+    // CrosswakeShell.initialize (scaffold hook)
+    val shell = CrosswakeShell(
+        context = application,
+        config = CrosswakeShellConfig(
+            appInfoDelegate = null,
+            hapticsDelegate = null,
+            permissionStatusDelegate = null,
+            notificationTokenDelegate = null,
+            shareDelegate = null,
+            filesPickDelegate = null
+        )
+    )
+
+    val state: StateFlow<ShellPresentation> = shell.state
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ShellPresentation.Booting
+        )
+
+    fun bootstrap(intent: Intent? = null) {
+        shell.bootstrap(intent)
+    }
+
+    fun handleIntent(intent: Intent?) {
+        shell.handleIntent(intent)
+    }
+}
