@@ -191,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-06 — v4.0 Phase 78 (Automated Host Scaffold Generation) complete: GEN-01..03 shipped (generator creates thin dependency-driven scaffold for iOS and Android instead of legacy fat templates; --local flag support; automated tests updated). Verification passed 11/11.*
+*Last updated: 2026-06-06 — v5.0 Phase 79 (v5-0-closeout-hermetic-verification) complete: PROOF-01 shipped (updated closeout verification and added hermetic CI proof lane for v5.0).*
