@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Standalone Publishable Shell Packages
-status: milestone_complete
-last_updated: 2026-06-06T04:49:45.195Z
-last_activity: 2026-06-06 -- Phase 79 planning complete
+milestone: v5.1
+milestone_name: Adoption Evidence Demo App
+status: planning
+last_updated: "2026-06-06T05:55:33.756Z"
+last_activity: 2026-06-06
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 44
-  percent: 75
-stopped_at: Milestone complete (Phase 79 was final phase)
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-Phase: Assessment
+Phase: Not started (defining requirements)
 Plan: —
-Status: Planning next milestone (Adoption Evidence Demo App)
-Last activity: 2026-06-06 — Completed comprehensive adopter-facing assessment, prioritizing realistic demo app over Threadline.
-
-Progress: [██████████] 100%
+Status: Defining requirements
+Last activity: 2026-06-06 — Milestone v5.1 started
 
 ## v5.0 Roadmap (Phases 76-79)
 
