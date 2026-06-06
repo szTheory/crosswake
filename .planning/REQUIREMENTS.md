@@ -30,19 +30,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | | Pending |
-| SETUP-02 | | Pending |
-| STATE-01 | | Pending |
-| STATE-02 | | Pending |
-| NAV-01   | | Pending |
-| NAV-02   | | Pending |
-| BRIDGE-01| | Pending |
+| SETUP-01 | Phase 80 | Pending |
+| SETUP-02 | Phase 80 | Pending |
+| STATE-01 | Phase 81 | Pending |
+| STATE-02 | Phase 81 | Pending |
+| NAV-01   | Phase 82 | Pending |
+| NAV-02   | Phase 82 | Pending |
+| BRIDGE-01| Phase 83 | Pending |
 
 **Coverage:**
 - v1 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-06*
-*Last updated: 2026-06-06 after initial definition*
+*Last updated: 2026-06-06 after roadmap creation*
