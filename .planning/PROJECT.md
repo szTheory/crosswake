@@ -8,18 +8,18 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Make runtime boundaries explicit so Phoenix teams can ship credible mobile apps without hiding the tradeoffs between LiveView, offline, and native ownership.
 
-## Current Milestone: v4.0 Production Shell Runtime Line
+## Current Milestone: v4.1 Multi-SaaS Archetype Proof Lanes
 
-**Goal:** Harden Crosswake's checked-in iOS/Android shells into a documented, proof-backed production runtime line so adopters can ship and maintain real mobile apps without guessing at compatibility, rebuilds, permissions, or diagnostics.
+**Goal:** Re-run adopter pressure across production-shaped SaaS workflows using the now-wider surfaces. Provide product-shaped proof that the shipped capabilities (diagnostics, provider adapters, auth/session, notifications, shell runtime posture) work together for real app classes.
 
 **Target features:**
-- Native runtime-line policy — compatibility windows and a rebuild policy contract (what forces a native rebuild vs. stays OTA-safe)
-- Rebuild and compatibility matrix surfaced through support truth and doctor
-- iOS/Android permission and entitlement templates as honest, host-owned, generated artifacts
-- Crash/diagnostic export seam plus guidance from the shell
-- Android verification closure — CI-hermetic merge-blocking proof, an advisory emulator/device lane with explicit promotion criteria, and a device-UAT checklist
+- Subscription SaaS with provider-backed purchase/restore and backend entitlement projection.
+- Notification-driven workflow with route-policy and auth checks.
+- Media/evidence workflow with Rindle reconciliation and failure recovery.
+- Auth-sensitive admin workflow with step-up and audit posture.
+- Offline/draft recovery lane that stays honest about local-first limits.
 
-**Scope posture:** Shells stay checked-in proof artifacts in `examples/`, not standalone publishable packages (arc non-goal until release choreography is ready). Hermetic proof is merge-blocking; device/emulator/provider proof stays advisory with explicit promotion criteria. Android JVM evidence is CI-only (no local Java runtime). Backend/host-owned authority and per-route runtime ownership remain authoritative.
+**Scope posture:** Starter apps as product templates are non-goals. The focus is hermetic end-to-end archetype proof for each target lane over the real Crosswake contracts, using advisory provider/device lanes only where they prove distinct runtime claims.
 
 ## Current State
 
@@ -191,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-04 — v4.0 Phase 65 (Diagnostic Export Seam, Elixir) complete: DIAG-01..04 shipped (behaviour-only `Crosswake.Shell.DiagnosticExport` HTTP seam — no bridge command, no HTTP dep; typed/versioned layer-attributed envelope; fail-closed `sanitize/1` redaction allowlist validated at any nesting depth; non-overclaiming support-truth + advisory doctor readiness). Verification passed 17/17; code review's redaction-bypass finding fixed in-phase. Phases 64–65 done; next is Phase 66 (generator templates + Xcode 26 CI fix).*
+*Last updated: 2026-06-06 — v4.0 Phase 78 (Automated Host Scaffold Generation) complete: GEN-01..03 shipped (generator creates thin dependency-driven scaffold for iOS and Android instead of legacy fat templates; --local flag support; automated tests updated). Verification passed 11/11.*
