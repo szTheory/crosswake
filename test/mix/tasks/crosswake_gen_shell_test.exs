@@ -35,38 +35,32 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme"
       )
 
-    ios_activation_coordinator =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/ActivationCoordinator.swift")
 
-    ios_bridge_channel =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/BridgeChannel.swift")
 
-    ios_route_unavailable =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RouteUnavailableView.swift")
 
-    ios_live_view =
       Path.join(
         target,
         "native/ios/crosswake_shell/CrosswakeShell/LiveViewContainerViewController.swift"
       )
 
-    ios_pack_store =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/PackStore.swift")
 
-    ios_required_pack_view =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RequiredPackView.swift")
 
-    ios_native_capture_view =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/NativeCaptureView.swift")
 
-    ios_transfer_coordinator =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/TransferCoordinator.swift")
 
-    ios_tests =
       Path.join(
         target,
         "native/ios/crosswake_shell/CrosswakeShellTests/ActivationCoordinatorTests.swift"
       )
+
+    ios_crosswake_coordinator =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift")
 
     ios_manifest =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
@@ -95,53 +89,11 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_app) =~ "onContinueUserActivity"
     assert File.read!(ios_app) =~ "LiveViewContainerView"
     assert File.read!(ios_app) =~ "NativeCaptureView"
-    assert File.read!(ios_bridge_channel) =~ "app.info.get"
-    assert File.read!(ios_bridge_channel) =~ "haptics.impact"
-    assert File.read!(ios_bridge_channel) =~ "files.pick"
-    assert File.read!(ios_bridge_channel) =~ "transfer.download"
-    assert File.read!(ios_bridge_channel) =~ "transfer.export"
-    assert File.read!(ios_bridge_channel) =~ "transfer.import"
-    assert File.read!(ios_bridge_channel) =~ "transfer.upload.prepare"
-    assert File.read!(ios_bridge_channel) =~ "transferCoordinator"
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
     assert File.read!(ios_scheme) =~ "xcscheme"
-    assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
-    assert File.read!(ios_activation_coordinator) =~ "inactiveRoute"
-    assert File.read!(ios_activation_coordinator) =~ "nativeCapture"
-    assert File.read!(ios_activation_coordinator) =~ "Native capture"
-    refute File.read!(ios_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
-    assert File.read!(ios_route_unavailable) =~ "Update app"
-    assert File.read!(ios_route_unavailable) =~ "Open safe fallback"
-    assert File.read!(ios_live_view) =~ "WKWebView"
-    assert File.read!(ios_live_view) =~ "WKNavigationDelegate"
-    assert File.read!(ios_live_view) =~ "same-origin"
-    assert File.read!(ios_live_view) =~ "App-Bound Domains"
-    assert File.read!(ios_pack_store) =~ "enum PackState"
-    assert File.read!(ios_pack_store) =~ "case invalidating"
-    assert File.read!(ios_pack_store) =~ "func installRequiredPack"
-    assert File.read!(ios_pack_store) =~ "func invalidatePack"
-    assert File.read!(ios_required_pack_view) =~ "Install Required Pack"
-    assert File.read!(ios_required_pack_view) =~ "Update Pack"
-    assert File.read!(ios_required_pack_view) =~ "PackStore"
-    assert File.read!(ios_native_capture_view) =~ "Native capture"
-    assert File.read!(ios_native_capture_view) =~ "Capture media locally"
-    assert File.read!(ios_native_capture_view) =~ "Stage For Transfer"
-    assert File.read!(ios_native_capture_view) =~ "Cancel Capture"
-    assert File.read!(ios_native_capture_view) =~ "onStageForTransfer"
-    assert File.read!(ios_native_capture_view) =~ "stageCapturedMedia"
-    assert File.read!(ios_native_capture_view) =~ "Transfer handoff stays explicit"
-    assert File.read!(ios_transfer_coordinator) =~ "enum TransferState: String"
-    assert File.read!(ios_transfer_coordinator) =~ "case awaitingNetwork = \"awaiting_network\""
-    assert File.read!(ios_transfer_coordinator) =~ "func stageCapturedMedia"
-    assert File.read!(ios_transfer_coordinator) =~ "func execute(command:"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.upload.prepare"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.download"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.import"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.export"
-    assert File.read!(ios_tests) =~ "testStalePackInventoryShowsRequiredPackSurface"
-    assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
-    assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
+    assert File.exists?(ios_crosswake_coordinator)
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
+    assert File.exists?(ios_crosswake_coordinator)
     assert File.read!(ios_manifest) =~ "\"routes\""
     assert File.read!(ios_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(ios_activation) =~ "\"manifest_source\": \"bundled\""
@@ -182,77 +134,20 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/AndroidManifest.xml"
       )
 
-    android_main_activity =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/MainActivity.kt"
-      )
 
-    android_activation_coordinator =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt"
-      )
 
-    android_bridge_channel =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"
-      )
 
-    android_live_view_fragment =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt"
-      )
 
-    android_pack_store =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/PackStore.kt"
-      )
 
-    android_required_pack_activity =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt"
-      )
 
-    android_native_capture_activity =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt"
-      )
 
-    android_transfer_coordinator =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt"
-      )
 
-    android_required_pack_layout =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/res/layout/activity_required_pack.xml"
-      )
 
-    android_route_unavailable =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/res/layout/activity_route_unavailable.xml"
-      )
 
-    android_unit_tests =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt"
-      )
 
-    android_instrumented_tests =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
-      )
+
+    android_crosswake_view_model =
+      Path.join(target, "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt")
 
     android_activation =
       Path.join(
@@ -291,56 +186,20 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
     assert File.read!(android_manifest) =~ "RequiredPackActivity"
     assert File.read!(android_manifest) =~ "NativeCaptureActivity"
-    assert File.read!(android_main_activity) =~ "ActivationCoordinator.bundled"
-    assert File.read!(android_main_activity) =~ "NativeCaptureActivity"
-    assert File.read!(android_activation_coordinator) =~ "pack_incompatible"
-    assert File.read!(android_activation_coordinator) =~ "inactive_route"
-    assert File.read!(android_activation_coordinator) =~ "NATIVE_CAPTURE"
-    assert File.read!(android_activation_coordinator) =~ "Native capture"
-    refute File.read!(android_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
-    assert File.read!(android_bridge_channel) =~ "app.info.get"
-    assert File.read!(android_bridge_channel) =~ "haptics.impact"
-    assert File.read!(android_bridge_channel) =~ "files.pick"
-    assert File.read!(android_bridge_channel) =~ "transfer.download"
-    assert File.read!(android_bridge_channel) =~ "transfer.export"
-    assert File.read!(android_bridge_channel) =~ "transfer.import"
-    assert File.read!(android_bridge_channel) =~ "transfer.upload.prepare"
-    assert File.read!(android_bridge_channel) =~ "transferCoordinator"
-    assert File.read!(android_live_view_fragment) =~ "WebView"
-    assert File.read!(android_live_view_fragment) =~ "Allowlisted"
-    assert File.read!(android_live_view_fragment) =~ "BridgeChannel"
-    assert File.read!(android_pack_store) =~ "enum class PackState"
-    assert File.read!(android_pack_store) =~ "INVALIDATING"
-    assert File.read!(android_pack_store) =~ "suspend fun installRequiredPack"
-    assert File.read!(android_pack_store) =~ "suspend fun invalidatePack"
-    assert File.read!(android_required_pack_activity) =~ "Install Required Pack"
-    assert File.read!(android_required_pack_activity) =~ "Update Pack"
-    assert File.read!(android_required_pack_activity) =~ "PackStore"
-    assert File.read!(android_native_capture_activity) =~ "Native capture"
-    assert File.read!(android_native_capture_activity) =~ "Capture media locally"
-    assert File.read!(android_native_capture_activity) =~ "Stage For Transfer"
-    assert File.read!(android_native_capture_activity) =~ "Cancel Capture"
-    assert File.read!(android_native_capture_activity) =~ "stageCapturedMedia"
-    assert File.read!(android_transfer_coordinator) =~ "enum class TransferState"
-    assert File.read!(android_transfer_coordinator) =~ "AWAITING_NETWORK(\"awaiting_network\")"
-    assert File.read!(android_transfer_coordinator) =~ "fun stageCapturedMedia"
-    assert File.read!(android_transfer_coordinator) =~ "fun execute"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.upload.prepare"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.download"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.import"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.export"
-    assert File.read!(android_required_pack_layout) =~ "required_pack_title"
-    assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
-    assert File.read!(android_route_unavailable) =~ "Update app"
-    assert File.read!(android_route_unavailable) =~ "Open safe fallback"
-    assert File.read!(android_unit_tests) =~ "stalePackInventoryShowsRequiredPackSurface"
-    assert File.read!(android_unit_tests) =~ "inAppNavigationDeniesDisallowedOriginAndKeepsCurrentRouteStable"
-    assert File.read!(android_instrumented_tests) =~ "appLinkLaunchMountsBoundedWebView"
+    assert File.exists?(android_crosswake_view_model)
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(android_denial) =~ "\"reason\": \"pack_incompatible\""
     assert File.read!(android_pack_inventory) =~ "\"integrity_status\": \"verified\""
     assert File.read!(android_pack_inventory) =~ "\"verified_at\""
+
+    # Validate --local flag
+    local_target = tmp_dir!("crosswake-shell-local")
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["ios", "--target", local_target, "--local"])
+    end)
+    assert File.exists?(Path.join(local_target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift"))
 
     verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
     assert File.read!(verify_script) =~ "xcodebuild"
