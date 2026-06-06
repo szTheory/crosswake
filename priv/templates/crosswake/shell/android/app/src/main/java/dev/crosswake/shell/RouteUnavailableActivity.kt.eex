@@ -1,4 +1,0 @@
-package dev.crosswake.shell
-
-// Route denials render inside MainActivity so in-app navigation denial can keep the
-// prior route stable underneath the Crosswake-owned interruption surface.
