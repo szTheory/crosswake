@@ -4,7 +4,7 @@
 
 - [ ] **Phase 76: Core Shell Extraction & Packaging** - Isolate Crosswake core logic into SPM and Maven libraries
 - [x] **Phase 77: Reactive State & API Standardization** - Replace raw object generation with a unified builder and reactive state APIs (completed 2026-06-05)
-- [ ] **Phase 78: Automated Host Scaffold Generation** - Update generator tooling to output thin dependency-driven host projects
+- [x] **Phase 78: Automated Host Scaffold Generation** - Update generator tooling to output thin dependency-driven host projects (completed 2026-06-06)
 - [ ] **Phase 79: v5.0 Closeout & Hermetic Verification** - Verify all new libraries and generators are hermetic and break no existing archetype lanes
 
 ## Phase Details
@@ -40,10 +40,10 @@
   2. The generated host app wires the initialization and state observation into its native UI lifecycle.
   3. The generation tooling outputs required `Info.plist` and `AndroidManifest.xml` permission templates.
 **Plans**: 4 plans
-- [ ] 78-01-PLAN.md — Update CLI task and cleanup legacy fat templates
-- [ ] 78-02-PLAN.md — Overhaul iOS EEx templates for SPM
-- [ ] 78-03-PLAN.md — Overhaul Android EEx templates for Maven
-- [ ] 78-04-PLAN.md — Refactor generator test suite
+- [x] 78-01-PLAN.md — Update CLI task and cleanup legacy fat templates
+- [x] 78-02-PLAN.md — Overhaul iOS EEx templates for SPM
+- [x] 78-03-PLAN.md — Overhaul Android EEx templates for Maven
+- [x] 78-04-PLAN.md — Refactor generator test suite
 **UI hint**: yes
 
 ### Phase 79: v5.0 Closeout & Hermetic Verification
@@ -62,5 +62,5 @@
 |-------|----------------|--------|-----------|
 | 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
 | 77. Reactive State & API Standardization | 4/4 | Complete   | 2026-06-05 |
-| 78. Automated Host Scaffold Generation | 0/4 | Not started | - |
+| 78. Automated Host Scaffold Generation | 4/4 | Complete    | 2026-06-06 |
 | 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |

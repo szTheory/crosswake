@@ -19,9 +19,9 @@
 
 ### Scaffold Generation & Integration (GEN)
 
-- [ ] **GEN-01**: `mix crosswake.gen.shell` must be updated to output a thin, dependency-driven host project that consumes the new SPM/Maven artifacts instead of full source copies.
-- [ ] **GEN-02**: The generated host app must contain a "Glue" layer that wires the library into the host app lifecycle and observes its state for UI rendering.
-- [ ] **GEN-03**: The generation tooling must configure or template the necessary host permission requests (`Info.plist` / `AndroidManifest.xml`) required by the core SDK.
+- [x] **GEN-01**: `mix crosswake.gen.shell` must be updated to output a thin, dependency-driven host project that consumes the new SPM/Maven artifacts instead of full source copies.
+- [x] **GEN-02**: The generated host app must contain a "Glue" layer that wires the library into the host app lifecycle and observes its state for UI rendering.
+- [x] **GEN-03**: The generation tooling must configure or template the necessary host permission requests (`Info.plist` / `AndroidManifest.xml`) required by the core SDK.
 
 ### Proof & Closeout (PROOF)
 
@@ -37,9 +37,9 @@
 | API-01 | Phase 77 | Complete |
 | API-02 | Phase 77 | Complete |
 | API-03 | Phase 77 | Complete |
-| GEN-01 | Phase 78 | Pending |
-| GEN-02 | Phase 78 | Pending |
-| GEN-03 | Phase 78 | Pending |
+| GEN-01 | Phase 78 | Complete |
+| GEN-02 | Phase 78 | Complete |
+| GEN-03 | Phase 78 | Complete |
 | PROOF-01 | Phase 79 | Pending |
 
 **Coverage:**
