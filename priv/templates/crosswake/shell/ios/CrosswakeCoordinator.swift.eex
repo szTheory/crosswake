@@ -1,1 +1,25 @@
-// Placeholder for iOS glue layer
+import Foundation
+import Combine
+import SwiftUI
+import CrosswakeShellCore
+
+@MainActor
+public final class CrosswakeCoordinator: ObservableObject {
+    @Published public var state: ShellPresentation = .booting
+    public let shell: CrosswakeShell
+    private var cancellables = Set<AnyCancellable>()
+
+    public init() {
+        let config = CrosswakeShellConfig()
+        self.shell = CrosswakeShell(config: config)
+        
+        self.shell.$presentation
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] newPresentation in
+                self?.state = newPresentation
+            }
+            .store(in: &cancellables)
+            
+        self.shell.bootstrap()
+    }
+}

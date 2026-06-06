@@ -84,12 +84,16 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     refute File.read!(ios_readme) =~ "Phase 1"
     assert File.read!(ios_project) =~ "PBXNativeTarget"
     assert File.read!(ios_project) =~ "CrosswakeShellTests"
-    assert File.read!(ios_app) =~ "ActivationCoordinator.bundled"
+    assert File.read!(ios_project) =~ "XCRemoteSwiftPackageReference"
+    refute File.read!(ios_project) =~ "XCLocalSwiftPackageReference"
+    assert File.read!(ios_app) =~ "CrosswakeCoordinator"
     assert File.read!(ios_app) =~ "onOpenURL"
-    assert File.read!(ios_app) =~ "onContinueUserActivity"
-    assert File.read!(ios_app) =~ "LiveViewContainerView"
-    assert File.read!(ios_app) =~ "NativeCaptureView"
+    assert File.read!(ios_app) =~ "bootstrap"
+
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
+    refute File.read!(ios_info) =~ "NSCameraUsageDescription"
+    assert File.read!(ios_info) =~ "https://docs.crosswake.dev/capabilities"
+
     assert File.read!(ios_scheme) =~ "xcscheme"
     assert File.exists?(ios_crosswake_coordinator)
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
