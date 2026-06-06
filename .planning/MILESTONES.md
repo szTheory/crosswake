@@ -1,5 +1,25 @@
 # Project Milestones: Crosswake
 
+## v5.0 Standalone Publishable Shell Packages (Shipped: 2026-06-06)
+
+**Phases completed:** 76-79 (4 phases, 11 plans)
+**Stats:** 96 files modified (+4452, -3497 LOC)
+
+**Key accomplishments:**
+
+- Extracted iOS core logic into standalone Swift Package Manager dependency.
+- Extracted Android core logic into standalone Maven Central artifact.
+- Replaced raw object generation with unified builder and reactive state APIs.
+- Updated generator tooling to output thin dependency-driven host projects.
+- Verified all new libraries and generators are hermetic via closeout lane.
+
+**Known deferred items at close:** 3 (see STATE.md Deferred Items)
+
+**Archive:**
+
+- `.planning/milestones/v5.0-ROADMAP.md`
+- `.planning/milestones/v5.0-REQUIREMENTS.md`
+
 ## v4.1 Multi-SaaS Archetype Proof Lanes (Shipped: 2026-06-05)
 
 **Phases completed:** 6 phases, 13 plans

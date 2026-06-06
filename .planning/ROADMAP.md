@@ -1,66 +1,26 @@
-# Roadmap: Crosswake — v5.0 Standalone Publishable Shell Packages
+# Roadmap: Crosswake
+
+## Milestones
+
+- ✅ **v5.0 Standalone Publishable Shell Packages** — Phases 76-79 (shipped 2026-06-06)
 
 ## Phases
 
-- [ ] **Phase 76: Core Shell Extraction & Packaging** - Isolate Crosswake core logic into SPM and Maven libraries
-- [x] **Phase 77: Reactive State & API Standardization** - Replace raw object generation with a unified builder and reactive state APIs (completed 2026-06-05)
-- [x] **Phase 78: Automated Host Scaffold Generation** - Update generator tooling to output thin dependency-driven host projects (completed 2026-06-06)
-- [ ] **Phase 79: v5.0 Closeout & Hermetic Verification** - Verify all new libraries and generators are hermetic and break no existing archetype lanes
+<details>
+<summary>✅ v5.0 Standalone Publishable Shell Packages (Phases 76-79) — SHIPPED 2026-06-06</summary>
 
-## Phase Details
+- [x] Phase 76: Core Shell Extraction & Packaging (2/2 plans) — completed 2026-06-06
+- [x] Phase 77: Reactive State & API Standardization (4/4 plans) — completed 2026-06-05
+- [x] Phase 78: Automated Host Scaffold Generation (4/4 plans) — completed 2026-06-06
+- [x] Phase 79: v5.0 Closeout & Hermetic Verification (1/1 plan) — completed 2026-06-06
 
-### Phase 76: Core Shell Extraction & Packaging
-**Goal**: Isolate Crosswake core logic into SPM and Maven libraries without changing internal behavior.
-**Depends on**: Nothing
-**Requirements**: CORE-01, CORE-02, CORE-03
-**Success Criteria** (what must be TRUE):
-  1. `crosswake-shell-core` exists as a standalone Swift Package containing iOS `ActivationCoordinator` and `BridgeChannel`.
-  2. `crosswake-shell-core` exists as a standalone Maven AAR project containing Android `ActivationCoordinator` and `BridgeChannel`.
-  3. The extracted libraries compile independently of any specific host app.
-**Plans**: 2 plans
-- [ ] 76-01-PLAN.md — Extract iOS SPM Core Library
-- [ ] 76-02-PLAN.md — Extract Android Maven Core Library
-
-### Phase 77: Reactive State & API Standardization
-**Goal**: Replace raw object generation with a unified builder and reactive state APIs.
-**Depends on**: Phase 76
-**Requirements**: API-01, API-02, API-03
-**Success Criteria** (what must be TRUE):
-  1. Developer can initialize the shell via a single `CrosswakeShell.initialize()` entry point.
-  2. Host UI can observe shell state (`booting`, `denied`, `live_view`) via `ObservableObject`/`@Published` (iOS) or `StateFlow` (Android).
-  3. Host app can inject narrow delegates (e.g., `HapticsDelegate`) instead of implementing a monolithic callback interface.
-**Plans**: TBD
-
-### Phase 78: Automated Host Scaffold Generation
-**Goal**: Update generator tooling to output thin dependency-driven host projects.
-**Depends on**: Phase 77
-**Requirements**: GEN-01, GEN-02, GEN-03
-**Success Criteria** (what must be TRUE):
-  1. `mix crosswake.gen.shell` generates a host project that pulls in the new SPM/Maven libraries rather than copying source files.
-  2. The generated host app wires the initialization and state observation into its native UI lifecycle.
-  3. The generation tooling outputs required `Info.plist` and `AndroidManifest.xml` permission templates.
-**Plans**: 4 plans
-- [x] 78-01-PLAN.md — Update CLI task and cleanup legacy fat templates
-- [x] 78-02-PLAN.md — Overhaul iOS EEx templates for SPM
-- [x] 78-03-PLAN.md — Overhaul Android EEx templates for Maven
-- [x] 78-04-PLAN.md — Refactor generator test suite
-**UI hint**: yes
-
-### Phase 79: v5.0 Closeout & Hermetic Verification
-**Goal**: Verify all new libraries and generators are hermetic and break no existing archetype lanes.
-**Depends on**: Phase 78
-**Requirements**: PROOF-01
-**Success Criteria** (what must be TRUE):
-  1. `mix closeout.verify` passes for v5.0.
-  2. All existing E2E and archetype proofs continue to execute deterministically in CI against the new standalone dependencies.
-  3. The hermetic CI pipelines correctly build the new SPM/Maven dependencies and integrate them.
-**Plans**: TBD
+</details>
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 76. Core Shell Extraction & Packaging | 0/2 | Not started | - |
-| 77. Reactive State & API Standardization | 4/4 | Complete   | 2026-06-05 |
-| 78. Automated Host Scaffold Generation | 4/4 | Complete    | 2026-06-06 |
-| 79. v5.0 Closeout & Hermetic Verification | 0/0 | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 76. Core Shell Extraction & Packaging | v5.0 | 2/2 | Complete | 2026-06-06 |
+| 77. Reactive State & API Standardization | v5.0 | 4/4 | Complete | 2026-06-05 |
+| 78. Automated Host Scaffold Generation | v5.0 | 4/4 | Complete | 2026-06-06 |
+| 79. v5.0 Closeout & Hermetic Verification | v5.0 | 1/1 | Complete | 2026-06-06 |

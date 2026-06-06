@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Standalone Publishable Shell Packages
-status: executing
-last_updated: "2026-06-06T01:57:05.366Z"
+status: milestone_complete
+last_updated: 2026-06-06T04:49:45.195Z
 last_activity: 2026-06-06 -- Phase 79 planning complete
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 44
   percent: 75
+stopped_at: Milestone complete (Phase 79 was final phase)
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 79 — v5.0 closeout & hermetic verification
+**Current focus:** Milestone complete
 
 ## Current Position
 
-Phase: 79
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-06 -- Phase 79 planning complete
+Phase: Assessment
+Plan: —
+Status: Planning next milestone (Adoption Evidence Demo App)
+Last activity: 2026-06-06 — Completed comprehensive adopter-facing assessment, prioritizing realistic demo app over Threadline.
 
 Progress: [██████████] 100%
 
@@ -42,7 +43,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 199 (v1.0–v4.1)
+- Total plans completed: 200 (v1.0–v4.1)
 - v4.1: 6 phases, 13 plans — shipped 2026-06-05
 - v4.0: 6 phases, 18 plans — shipped 2026-06-04
 - v3.9: 5 phases, 17 plans — shipped 2026-06-03
