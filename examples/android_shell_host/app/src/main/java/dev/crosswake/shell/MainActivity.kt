@@ -109,7 +109,38 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
         setContent {
             MaterialTheme {
                 val state by shell.state.collectAsState()
-                RenderPresentation(state)
+                val connectionState by shell.connectionState.collectAsState()
+                val snackbarHostState = remember { SnackbarHostState() }
+
+                LaunchedEffect(shell.serverEvents) {
+                    shell.serverEvents.collect { event ->
+                        val message = event.payload["message"] ?: "Event: ${event.name}"
+                        snackbarHostState.showSnackbar(message)
+                    }
+                }
+
+                Scaffold(
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
+                ) { innerPadding ->
+                    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                        if (connectionState != ConnectionState.Connected) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Status: ${connectionState.name}",
+                                    modifier = Modifier.padding(8.dp),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            RenderPresentation(state)
+                        }
+                    }
+                }
             }
         }
 
