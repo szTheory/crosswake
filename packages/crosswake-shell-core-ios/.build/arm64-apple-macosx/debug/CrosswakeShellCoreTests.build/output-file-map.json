@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/primary.swiftdeps"
+  },
+  "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/CrosswakeShellCoreTests.swift": {
+    "dependencies": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/CrosswakeShellCoreTests.d",
+    "object": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/CrosswakeShellCoreTests.swift.o",
+    "swiftmodule": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/CrosswakeShellCoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/CrosswakeShellCoreTests.swiftdeps",
+    "diagnostics": "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCoreTests.build/CrosswakeShellCoreTests.dia"
+  }
+}

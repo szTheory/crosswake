@@ -158,12 +158,13 @@ defmodule Crosswake.SupportMatrix.RendererTest do
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
 
     assert guide =~
-             "Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped"
+             "Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped"
 
     assert guide =~ "auth.handoff.*"
     assert guide =~ "auth.step_up_intent.*"
     assert guide =~ "auth.return.*"
     assert guide =~ "[:crosswake, :auth, ...]"
+    assert guide =~ "persistent shell session state does not grant admin access"
     assert guide =~ "auth.sigra.session_authority"
     assert guide =~ "diag.auth.sigra_session_authority"
 

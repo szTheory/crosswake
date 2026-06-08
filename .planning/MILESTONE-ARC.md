@@ -74,149 +74,57 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v3.6 Operator Truth and Production Diagnostics** — shipped 2026-06-01. Added route/capability/companion/provider/auth/notification readiness inspection, publish-readiness diagnostics, native rebuild/support truth, docs-contract proof, closeout verification, and release/changelog parity without promoting deferred provider/native claims.
 - **v3.7 Commerce Provider Adapters** — shipped 2026-06-01. Added first-party StoreKit and Play Billing evidence adapter seams, example-host provider facade swap targets, backend-owned reconciliation proof, and advisory provider-proof promotion criteria.
 - **v3.8 Full Sigra Auth and Session Machinery** — shipped 2026-06-02. Added backend-owned session authority, one-time handoff tickets, server-owned step-up ceremony, OAuth/passkey/native auth-return boundaries, sanitized auth telemetry, support/operator truth, and security closeout while keeping provider/device auth proof advisory.
+- **v3.9 Chimeway Notification Seam** — shipped 2026-06-03. Added notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.
+- **v4.0 Production Shell Runtime Line** — shipped 2026-06-04. Hardened generated iOS and Android shells into a documented production runtime line.
+- **v4.1 Multi-SaaS Archetype Proof Lanes** — shipped 2026-06-05. Proved subscription commerce, notification re-entry, media/evidence, auth-sensitive admin, and offline/draft workflows via end-to-end hermetic lanes.
 
 ## Strategic Queue
 
-### Active: v3.9 Chimeway Notification Seam
+### Active: Adoption Evidence Demo App (v5.1)
 
 **Objective**
-- Add a notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.
+- Build a realistic demo app in a representative cohort domain (e.g., field service, health/fitness, or study) with rich seeds, fixtures, and a click-around UI. 
+- Automate E2E shift-left CI/CD testing across install, onboarding, and happy-path JTBDs to prove the DX/UX and integration of the v1-v5 substrate.
 
 **Why now**
-- Crosswake already has notification-token bridge evidence and auth route truth. Production SaaS workflows need notification registration and open-action routing without claiming first-party delivery guarantees prematurely.
+- The library has a massive amount of core functionality (up to v5.0 standalone shells) but lacks a cohesive, product-shaped proof point. `examples/phoenix_host` is a test harness, not a showcase. We need adoption evidence before seeking real adopters.
 
 **Depends on**
-- v3.1 notification-token bridge evidence.
-- v3.6 notification readiness diagnostics.
-- v3.8 Sigra session/auth machinery before auth-sensitive notification-open claims.
+- v5.0 Standalone Publishable Shell Packages
 
 **Risk tags**
-- `notification`
-- `authority`
-- `provider`
-- `advisory-proof`
+- `adoption`
+- `dx-ux`
+- `e2e-testing`
 
-**Key outputs**
-- Push-token registration lifecycle contract.
-- Backend binding/revocation semantics.
-- Deep-link-to-route resolver with auth and route-policy checks.
-- Provider readiness diagnostics.
-- Hermetic/advisory proof split for token/open-action behavior.
-
-**Non-goals**
-- First-party delivery platform unless explicitly proven.
-- Silent fallback to home route on deep-link mismatch.
-- Notification opens that bypass auth or route policy.
-
-**Proof required**
-- Hermetic token lifecycle, backend binding/revocation, and notification-open route-resolution tests.
-- Advisory provider/device lanes for delivery behavior only when scoped.
-- Docs-contract and doctor/support tests that keep delivery support separate from token/open-action readiness.
-
-### Next: v4.0 Production Shell Runtime Line
+### Next: Threadline Audit Capstone
 
 **Objective**
-- Harden generated iOS and Android shells into a documented production runtime line.
+- Add auditability and distributed state tracking around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
 
 **Why now**
-- The shell examples already enforce route, origin, capability, pack, and bridge checks, but production users need compatibility windows, rebuild policy, permission/entitlement templates, diagnostics export, Android verification closure, and device-UAT guidance.
+- Following v4.1's delivery of multi-SaaS E2E archetype proof lanes, Crosswake now manages distributed state across Elixir and mobile boundaries (e.g., commerce, auth, notifications). A unified Threadline is the foundational day-2 requirement to make this split-brain architecture operationally supportable in production without database bloat.
 
 **Depends on**
-- v3.6 operator truth and native rebuild/support-matrix surface.
-- Existing checked-in iOS and Android shell proof lanes from v1 through v3.1.
-- Advisory device/provider proof promotion criteria from v3.6+.
-
-**Risk tags**
-- `shell-runtime`
-- `native-rebuild`
-- `platform-policy`
-- `device-uat`
-
-**Key outputs**
-- Native runtime-line policy.
-- Rebuild and compatibility matrix.
-- iOS/Android permission and entitlement templates.
-- Crash/diagnostic export guidance.
-- Android verification closure plan and device-lane checklist.
-
-**Non-goals**
-- Standalone public shell packages unless release choreography is ready.
-- Hiding host-owned native responsibilities.
-
-**Proof required**
-- Hermetic compatibility/rebuild-policy tests plus checked-in shell fixture proof.
-- Android verification closure evidence and explicit device-UAT checklist.
-- Docs-contract tests for permission/entitlement templates, diagnostics export, and native rebuild truth.
-
-### Next: v4.1 Multi-SaaS Archetype Proof Lanes
-
-**Objective**
-- Re-run adopter pressure across production-shaped SaaS workflows using the now-wider surfaces.
-
-**Why now**
-- After diagnostics, provider adapters, auth/session, notifications, and shell runtime posture mature, Crosswake needs product-shaped proof that the surfaces work together for real app classes.
-
-**Depends on**
-- v3.6 operator/support truth.
-- v3.7 provider adapters.
-- v3.8 Sigra full auth/session machinery.
-- v3.9 notification seam.
-- v4.0 production shell runtime line.
-
-**Risk tags**
-- `archetype-proof`
-- `authority`
-- `provider`
-- `notification`
-- `shell-runtime`
-
-**Key outputs**
-- Subscription SaaS with provider-backed purchase/restore and backend entitlement projection.
-- Notification-driven workflow with route-policy and auth checks.
-- Media/evidence workflow with Rindle reconciliation and failure recovery.
-- Auth-sensitive admin workflow with step-up and audit posture.
-- Offline/draft recovery lane that stays honest about local-first limits.
-
-**Non-goals**
-- Starter apps as product templates.
-- New abstractions not demanded by these lanes.
-
-**Proof required**
-- Hermetic end-to-end archetype proof for each target lane over the real Crosswake contracts.
-- Advisory provider/device lanes only where they prove distinct runtime claims.
-- Milestone audit that verifies cross-surface integration, support truth, and no new unproven abstraction.
-
-### Later: Threadline Audit Capstone
-
-**Objective**
-- Add auditability around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
-
-**Why now**
-- Threadline should consume stable sensitive surfaces rather than define them. It becomes more valuable after provider adapters, Sigra machinery, Chimeway, and archetype pressure exist.
-
-**Depends on**
-- Stable commerce, auth, notification, media, shell, and sensitive route-decision surfaces.
-- v4.1 archetype proof identifying the event surfaces worth auditing.
+- Stable commerce, auth, notification, media, shell, and sensitive route-decision surfaces (provided by v3.x and v4.1).
 
 **Risk tags**
 - `auditability`
-- `authority`
-- `privacy`
-- `evidence`
+- `observability`
+- `distributed-state`
 
 **Key outputs**
-- Provenance lane for route/runtime decisions and backend authority promotion.
-- PII-masked audit vocabulary for commerce, auth, media, notification, offline replay, and sensitive device actions.
-- Append-only evidence posture and tamper-evident guidance if scoped in the milestone.
+- Telemetry-backed `X-Crosswake-Thread-Id` correlation across Plug, Bridge, and Shell.
+- Opt-in `mix crosswake.gen.audit` Ecto ledger for terminal critical events (e.g., receipt validations, auth handoffs).
+- Unified logger metadata for Phoenix console tracing.
 
-**Non-goals**
-- Defining the commerce, auth, notification, media, or shell contracts it should consume.
-- Logging raw PII, tokens, provider payloads, or unredacted sensitive route context.
-- Shipping before upstream sensitive surfaces are stable enough to audit.
+### Next: Standalone Publishable Shell Packages (v4.2 / v5.0)
 
-**Proof required**
-- Hermetic proof for audit vocabulary, masking rules, and authority/evidence attribution.
-- Docs-contract tests that keep audit claims synchronized with live support and denial truth.
+**Objective**
+- Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization.
+
+**Why now**
+- The native seams established in v4.1 are now hard enough to be packaged. To prevent ecosystem fragmentation and the "eject trap", adopters must consume core shell logic as a versioned dependency.
 
 ## Dependency Graph
 
@@ -236,6 +144,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-06-01:** v3.6 closeout archived the roadmap and requirements snapshots in `.planning/milestones/`, promoted `mix closeout.verify` to deterministic closeout truth, and made v3.7 Commerce Provider Adapters the active strategic milestone.
 - **2026-06-01:** v3.7 closeout archived provider-adapter roadmap, requirements, audit, and phase evidence; v3.8 Full Sigra Auth and Session Machinery is now the active strategic candidate.
 - **2026-06-02:** Milestone-next-step assessment after v3.8 selected v3.9 Chimeway as the highest-leverage next wedge. The shipped reality already has notification-token and permission snapshots, support/operator truth, and Sigra route auth; the missing adopter job is backend token binding, revocation, and notification-open route resolution that still respects route policy and auth. Production shell runtime hardening stays next after Chimeway because it is important support truth but unlocks less new adopter value than notification re-entry.
+- **2026-06-05:** Following the completion of v4.1, the strategic priority shifted to v5.0 "Standalone Publishable Shell Packages" to address the "eject trap" and lock down the native shell runtime interfaces via SPM and Maven before expanding broader day-2 operational features.
 
 ## Support Truth Requirements
 
@@ -274,3 +183,4 @@ Every milestone close must update or verify:
 
 ---
 *Last updated: 2026-06-02 — v3.8 closed and v3.9 Chimeway Notification Seam selected as the recommended next milestone.*
+eway Notification Seam selected as the recommended next milestone.*

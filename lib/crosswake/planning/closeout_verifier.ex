@@ -220,7 +220,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
         (requirements =~ "REL-01" or requirements =~ "PROOF-03" or requirements =~ "PROOF-01") and
         not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements) and
-        not Regex.match?(~r/\|\s*(PROOF-01)\s*\|\s*Phase (75)\s*\|\s*Pending\s*\|/, requirements)
+        not Regex.match?(~r/\|\s*(PROOF-01)\s*\|\s*Phase (75|79)\s*\|\s*Pending\s*\|/, requirements)
 
     check(
       "closeout.requirements.state",

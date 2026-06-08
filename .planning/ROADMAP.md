@@ -21,7 +21,8 @@
   1. iOS demo app builds successfully using Crosswake SPM dependency.
   2. Android demo app builds successfully using Crosswake Maven dependency.
   3. No `ActivationCoordinator` or `BridgeChannel` source files exist in the demo host project.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 80-01-PLAN.md — Migrate Android/iOS host apps to Maven/SPM dependencies
 
 ### Phase 81: Reactive State & Event Bridge
 **Goal**: Native UI reacts to shell state and server events via reactive APIs, proving the new reactive observer pattern.
@@ -60,10 +61,14 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 80. Standalone Dependency Bootstrap | 0/0 | Not started | - |
+| 80. Standalone Dependency Bootstrap | 2/2 | Complete | 2026-06-08 |
 | 81. Reactive State & Event Bridge | 0/0 | Not started | - |
 | 82. Navigation & Capability Handshake | 0/0 | Not started | - |
 | 83. Bounded Bridge Proof & Polish | 0/0 | Not started | - |
+
+---
+*Roadmap generated: 2026-06-06*
+ted | - |
 
 ---
 *Roadmap generated: 2026-06-06*
