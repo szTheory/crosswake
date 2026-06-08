@@ -237,6 +237,13 @@ class ActivationCoordinator(
         if (config.notificationTokenDelegate == null) filtered.remove("notification_token")
         if (config.shareDelegate == null) filtered.remove("share.invoke")
         if (config.filesPickDelegate == null) filtered.remove("file_picker")
+        
+        val registeredRoutes = config.routeDelegate?.registeredRoutes ?: emptyList()
+        val keysToRemove = filtered.keys.filter { key ->
+            key.startsWith("route.") && !registeredRoutes.contains(key.removePrefix("route."))
+        }
+        keysToRemove.forEach { filtered.remove(it) }
+
         return filtered
     }
 
@@ -377,6 +384,19 @@ class ActivationCoordinator(
                         hint = "Ship the route with a manifest-declared native capture upload seam before opening it."
                     )
                 )
+
+            val isRegistered = config.routeDelegate?.isRouteRegistered(route.id) ?: false
+            if (!isRegistered) {
+                return ShellPresentation.Denied(
+                    denial(
+                        manifest = manifest,
+                        reason = RouteDenialReason.UNAVAILABLE_CAPABILITY,
+                        routeId = route.id,
+                        message = "The requested native route is not registered by the host app.",
+                        hint = "Register the route using RouteDelegate in CrosswakeShellConfig."
+                    )
+                )
+            }
 
             return ShellPresentation.NativeCapture(
                 NativeCapturePresentation(

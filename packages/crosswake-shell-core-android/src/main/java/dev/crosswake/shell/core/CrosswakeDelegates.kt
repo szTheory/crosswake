@@ -52,3 +52,8 @@ interface ShareDelegate {
 interface FilesPickDelegate {
     fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult
 }
+
+interface RouteDelegate {
+    fun isRouteRegistered(routeId: String): Boolean
+    val registeredRoutes: List<String>
+}
