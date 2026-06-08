@@ -8,7 +8,7 @@
 
 - [ ] **Phase 80: Standalone Dependency Bootstrap** - Transition demo apps to published SPM/Maven dependencies.
 - [ ] **Phase 81: Reactive State & Event Bridge** - Implement reactive UI observers for shell state and server events.
-- [ ] **Phase 82: Navigation & Capability Handshake** - Prove manifest-driven routing and local-truth capability reporting.
+- [x] **Phase 82: Navigation & Capability Handshake** - Prove manifest-driven routing and local-truth capability reporting. (completed 2026-06-08)
 - [ ] **Phase 83: Bounded Bridge Proof & Polish** - Verify end-to-end bridge command and finalize demo experience.
 
 ## Phase Details
@@ -32,7 +32,9 @@
   1. Native UI updates connection status (e.g., "Connected") automatically when socket connects.
   2. Server-pushed toast event is displayed in native UI without manual polling.
   3. Native observers are correctly disposed of on view lifecycle changes.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 82-01-PLAN.md — Implement RouteDelegate and capability registry in shell cores
+- [x] 82-02-PLAN.md — Wire capability handshake and escape hatch in host apps
 **UI hint**: yes
 
 ### Phase 82: Navigation & Capability Handshake
@@ -63,7 +65,7 @@
 |-------|----------------|--------|-----------|
 | 80. Standalone Dependency Bootstrap | 2/2 | Complete | 2026-06-08 |
 | 81. Reactive State & Event Bridge | 1/2 | In Progress|  |
-| 82. Navigation & Capability Handshake | 0/0 | Not started | - |
+| 82. Navigation & Capability Handshake | 2/2 | Complete   | 2026-06-08 |
 | 83. Bounded Bridge Proof & Polish | 0/0 | Not started | - |
 
 ---
