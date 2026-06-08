@@ -369,6 +369,19 @@ public final class ActivationCoordinator: ObservableObject {
                 )
             }
 
+            let isRegistered = config.routeDelegate?.isRouteRegistered(routeID: route.id) ?? false
+            guard isRegistered else {
+                return .denied(
+                    denial(
+                        reason: .unavailableCapability,
+                        routeID: route.id,
+                        manifest: manifest,
+                        message: "The requested native route is not registered by the host app.",
+                        hint: "Register the route using RouteDelegate in CrosswakeShellConfig."
+                    )
+                )
+            }
+
             return .nativeCapture(
                 NativeCapturePresentation(
                     routeID: route.id,
@@ -476,6 +489,16 @@ public final class ActivationCoordinator: ObservableObject {
         }
         if config.filesPickDelegate == nil {
             filteredCapabilities.removeValue(forKey: "file_picker")
+        }
+
+        let registeredRoutes = config.routeDelegate?.registeredRoutes ?? []
+        for key in filteredCapabilities.keys {
+            if key.hasPrefix("route.") {
+                let routeID = String(key.dropFirst("route.".count))
+                if !registeredRoutes.contains(routeID) {
+                    filteredCapabilities.removeValue(forKey: key)
+                }
+            }
         }
 
         return ActivationRequest(

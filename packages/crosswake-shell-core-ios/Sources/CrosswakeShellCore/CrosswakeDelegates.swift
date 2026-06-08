@@ -23,3 +23,8 @@ public protocol ShareDelegate: AnyObject {
 public protocol FilesPickDelegate: AnyObject {
     func pickFiles(payload: [String: String], correlationID: String, completion: @escaping (BridgeChannel.CommandResult) -> Void)
 }
+
+public protocol RouteDelegate: AnyObject {
+    func isRouteRegistered(routeID: String) -> Bool
+    var registeredRoutes: [String] { get }
+}
