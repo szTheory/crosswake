@@ -9,7 +9,7 @@
 - [ ] **Phase 80: Standalone Dependency Bootstrap** - Transition demo apps to published SPM/Maven dependencies.
 - [ ] **Phase 81: Reactive State & Event Bridge** - Implement reactive UI observers for shell state and server events.
 - [x] **Phase 82: Navigation & Capability Handshake** - Prove manifest-driven routing and local-truth capability reporting. (completed 2026-06-08)
-- [ ] **Phase 83: Bounded Bridge Proof & Polish** - Verify end-to-end bridge command and finalize demo experience.
+- [x] **Phase 83: Bounded Bridge Proof & Polish** - Verify end-to-end bridge command and finalize demo experience. (completed 2026-06-08)
 
 ## Phase Details
 
@@ -56,7 +56,9 @@
   1. Native Share dialog is triggered from a LiveView route button.
   2. Demo app includes a "Quick Start" guide or README for adopters.
   3. All demo features work on both iOS and Android physical devices/simulators.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 83-01-PLAN.md — Implement Bridge Proof LiveView and add to router
+- [x] 83-02-PLAN.md — Create Quick Start guide and verify end-to-end functionality
 **UI hint**: yes
 
 ## Progress Table
@@ -66,11 +68,7 @@
 | 80. Standalone Dependency Bootstrap | 2/2 | Complete | 2026-06-08 |
 | 81. Reactive State & Event Bridge | 1/2 | In Progress|  |
 | 82. Navigation & Capability Handshake | 2/2 | Complete   | 2026-06-08 |
-| 83. Bounded Bridge Proof & Polish | 0/0 | Not started | - |
-
----
-*Roadmap generated: 2026-06-06*
-ted | - |
+| 83. Bounded Bridge Proof & Polish | 2/2 | Complete    | 2026-06-08 |
 
 ---
 *Roadmap generated: 2026-06-06*
