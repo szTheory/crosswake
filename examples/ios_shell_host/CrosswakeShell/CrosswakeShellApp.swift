@@ -1,4 +1,6 @@
 import SwiftUI
+import CrosswakeShellCore
+
 #if canImport(UIKit)
 import UIKit
 #endif

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B10000050000000000000001 /* CrosswakeShellCore in Frameworks */ = {isa = PBXBuildFile; productRef = B10000020000000000000001 /* CrosswakeShellCore */; };
 		A10000010000000000000001 /* CrosswakeShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* CrosswakeShellApp.swift */; };
 		A10000020500000000000001 /* NativeCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000120500000000000001 /* NativeCaptureView.swift */; };
 		A10000022000000000000001 /* RequiredPackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000122000000000000001 /* RequiredPackView.swift */; };
@@ -51,12 +52,8 @@
 
 /* Begin XCRemoteSwiftPackageReference section */
 		B10000010000000000000001 /* XCRemoteSwiftPackageReference "crosswake-shell-core-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/crosswake/crosswake-shell-core-ios.git";
-			requirement = {
-				kind = exactVersion;
-				version = "0.1.0";
-			};
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../packages/crosswake-shell-core-ios";
 		};
 /* End XCRemoteSwiftPackageReference section */
 
@@ -157,6 +154,9 @@
 				B10000040000000000000001 /* PBXTargetDependency */,
 			);
 			name = CrosswakeShell;
+			packageProductDependencies = (
+				B10000020000000000000001 /* CrosswakeShellCore */,
+			);
 			productName = CrosswakeShell;
 			productReference = A100001C0000000000000001 /* CrosswakeShell.app */;
 			productType = "com.apple.product-type.application";
