@@ -96,6 +96,16 @@ defmodule CrosswakeExample.Router do
     crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
       get("/", CrosswakeExample.PageController, :index, crosswake: [id: "home"])
 
+      live("/bridge-proof", CrosswakeExample.BridgeProofLive,
+        crosswake: [
+          id: "bridge-proof",
+          runtime: :live_view,
+          capabilities: ["share"],
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
       live("/library", CrosswakeExample.LibraryLive,
         crosswake: [
           id: "library",
