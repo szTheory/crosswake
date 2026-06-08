@@ -16,6 +16,8 @@ public enum BridgeCommand: String, CaseIterable {
     case transferExport = "transfer.export"
     case transferDownload = "transfer.download"
     case transferUploadPrepare = "transfer.upload.prepare"
+    case connectionStateUpdate = "connection.state.update"
+    case serverEventPush = "server.event.push"
 
     public var capability: String {
         switch self {
@@ -140,17 +142,23 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
     private var transferCoordinator: TransferCoordinator?
     private let replySink: (BridgeReplyEnvelope) -> Void
     private let config: CrosswakeShellConfig
+    private let connectionStateSink: ((ConnectionState) -> Void)?
+    private let eventSink: ((ServerEvent) -> Void)?
 
     public init(
         session: LiveViewSession,
         transferCoordinator: TransferCoordinator?,
         replySink: @escaping (BridgeReplyEnvelope) -> Void,
-        config: CrosswakeShellConfig
+        config: CrosswakeShellConfig,
+        connectionStateSink: ((ConnectionState) -> Void)? = nil,
+        eventSink: ((ServerEvent) -> Void)? = nil
     ) {
         self.session = session
         self.transferCoordinator = transferCoordinator
         self.replySink = replySink
         self.config = config
+        self.connectionStateSink = connectionStateSink
+        self.eventSink = eventSink
         super.init()
     }
 
@@ -360,6 +368,28 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             }
 
             completion(ok(request, payload: payload))
+
+        case .connectionStateUpdate:
+            if let stateString = request.payload["state"] {
+                let state: ConnectionState
+                switch stateString {
+                case "connecting": state = .connecting
+                case "connected": state = .connected
+                case "disconnected": state = .disconnected
+                case "retrying": state = .retrying
+                default: state = .disconnected
+                }
+                connectionStateSink?(state)
+            }
+            completion(ok(request, payload: [:]))
+
+        case .serverEventPush:
+            if let eventName = request.payload["name"] {
+                var eventPayload = request.payload
+                eventPayload.removeValue(forKey: "name")
+                eventSink?(ServerEvent(name: eventName, payload: eventPayload))
+            }
+            completion(ok(request, payload: [:]))
         }
     }
 

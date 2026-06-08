@@ -5,6 +5,9 @@ import SwiftUI
 @MainActor
 public final class CrosswakeShell: ObservableObject {
     @Published public var presentation: ShellPresentation = .booting
+    @Published public var connectionState: ConnectionState = .disconnected
+    public let serverEvents = PassthroughSubject<ServerEvent, Never>()
+    
     public let coordinator: ActivationCoordinator
     private let config: CrosswakeShellConfig
     private var cancellables = Set<AnyCancellable>()
@@ -30,7 +33,17 @@ public final class CrosswakeShell: ObservableObject {
             session: session,
             transferCoordinator: transferCoordinator,
             replySink: replySink,
-            config: config
+            config: config,
+            connectionStateSink: { [weak self] state in
+                Task { @MainActor in
+                    self?.connectionState = state
+                }
+            },
+            eventSink: { [weak self] event in
+                Task { @MainActor in
+                    self?.serverEvents.send(event)
+                }
+            }
         )
     }
 
