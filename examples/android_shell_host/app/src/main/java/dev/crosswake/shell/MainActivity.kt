@@ -18,9 +18,18 @@ import androidx.core.view.WindowInsetsCompat
 import dev.crosswake.shell.core.*
 import dev.crosswake.shell.packs.RequiredPackActivity
 
+class NavigationRouteDelegate : RouteDelegate {
+    override val registeredRoutes: List<String> = listOf("selective-native-claim-capture")
+
+    override fun isRouteRegistered(routeID: String): Boolean {
+        return registeredRoutes.contains(routeID)
+    }
+}
+
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
     lateinit var shell: CrosswakeShell
     private var filePickerCoordinator: FilePickerCoordinator? = null
+    private val routeDelegate = NavigationRouteDelegate()
 
     private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         shell.handleIntent(intent)
@@ -99,7 +108,8 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
 
                     return coordinator.pick(payload, correlationId)
                 }
-            }
+            },
+            routeDelegate = routeDelegate
         )
 
         shell = CrosswakeShell(this, config)

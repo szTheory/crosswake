@@ -154,6 +154,14 @@ final class NotificationAppDelegate: NSObject, UIApplicationDelegate {
     }
 }
 
+final class NavigationRouteDelegate: RouteDelegate {
+    let registeredRoutes = ["selective-native-claim-capture"]
+
+    func isRouteRegistered(routeID: String) -> Bool {
+        return registeredRoutes.contains(routeID)
+    }
+}
+
 @main
 struct CrosswakeShellApp: App {
     @UIApplicationDelegateAdaptor(NotificationAppDelegate.self) private var appDelegate
@@ -162,6 +170,7 @@ struct CrosswakeShellApp: App {
     private let permissionProvider = PermissionStatusProvider()
     private let appInfoProvider = AppInfoProvider()
     private let hapticsProvider = HapticsProvider()
+    private let routeDelegate = NavigationRouteDelegate()
 
     var body: some Scene {
         WindowGroup {
@@ -170,7 +179,8 @@ struct CrosswakeShellApp: App {
                 uiActionDelegates: uiActionDelegates,
                 permissionProvider: permissionProvider,
                 appInfoProvider: appInfoProvider,
-                hapticsProvider: hapticsProvider
+                hapticsProvider: hapticsProvider,
+                routeDelegate: routeDelegate
             )
         }
     }
@@ -186,7 +196,8 @@ private struct RootSceneWrapper: View {
         uiActionDelegates: UIActionDelegates,
         permissionProvider: PermissionStatusProvider,
         appInfoProvider: AppInfoProvider,
-        hapticsProvider: HapticsProvider
+        hapticsProvider: HapticsProvider,
+        routeDelegate: RouteDelegate
     ) {
         self.notificationTokenProvider = notificationTokenProvider
         self.uiActionDelegates = uiActionDelegates
@@ -197,7 +208,8 @@ private struct RootSceneWrapper: View {
             permissionStatusDelegate: permissionProvider,
             notificationTokenDelegate: notificationTokenProvider,
             shareDelegate: uiActionDelegates,
-            filesPickDelegate: uiActionDelegates
+            filesPickDelegate: uiActionDelegates,
+            routeDelegate: routeDelegate
         )
 
         _shell = StateObject(wrappedValue: CrosswakeShell(config: config))

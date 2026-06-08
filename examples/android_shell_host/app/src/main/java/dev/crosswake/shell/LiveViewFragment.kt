@@ -86,6 +86,21 @@ class LiveViewFragment : Fragment() {
                     true
                 }
             }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                
+                val capabilities = (activity as? Host)?.shell?.config?.registeredCapabilities ?: emptyList()
+                val capabilitiesJson = org.json.JSONArray(capabilities).toString()
+                
+                view?.evaluateJavascript(
+                    """
+                    window.crosswakeBridge = window.crosswakeBridge || {};
+                    window.crosswakeBridge.capabilities = $capabilitiesJson;
+                    """.trimIndent(),
+                    null
+                )
+            }
         }
     }
 

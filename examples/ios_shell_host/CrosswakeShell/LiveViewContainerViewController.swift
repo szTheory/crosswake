@@ -251,6 +251,19 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         let userContentController = WKUserContentController()
 
         userContentController.add(bridgeChannel, name: BridgeChannel.handlerName)
+        
+        // Inject capabilities into the window.crosswakeBridge object
+        let capabilities = shell.registeredCapabilities
+        if let capabilitiesData = try? JSONSerialization.data(withJSONObject: capabilities, options: []),
+           let capabilitiesString = String(data: capabilitiesData, encoding: .utf8) {
+            let scriptSource = """
+            window.crosswakeBridge = window.crosswakeBridge || {};
+            window.crosswakeBridge.capabilities = \(capabilitiesString);
+            """
+            let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+            userContentController.addUserScript(userScript)
+        }
+
         configuration.userContentController = userContentController
 
         // App-Bound Domains keep the generated shell inside declared WebKit authority.
