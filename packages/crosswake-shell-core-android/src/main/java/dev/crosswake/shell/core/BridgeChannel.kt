@@ -16,12 +16,16 @@ enum class BridgeCommand(val wireValue: String) {
     TRANSFER_IMPORT("transfer.import"),
     TRANSFER_EXPORT("transfer.export"),
     TRANSFER_DOWNLOAD("transfer.download"),
-    TRANSFER_UPLOAD_PREPARE("transfer.upload.prepare");
+    TRANSFER_UPLOAD_PREPARE("transfer.upload.prepare"),
+    SERVER_EVENT_PUSH("server.event.push"),
+    SERVER_STATE_UPDATE("server.state.update");
 
     val capability: String
         get() = when (this) {
             NOTIFICATIONS_TOKEN_GET -> "notification_token"
             FILES_PICK -> "file_picker"
+            SERVER_EVENT_PUSH -> "server_event_push"
+            SERVER_STATE_UPDATE -> "server_state_update"
             else -> wireValue
         }
 
@@ -39,7 +43,9 @@ enum class BridgeCommand(val wireValue: String) {
 class BridgeChannel(
     private var session: LiveViewSession,
     private val transferCoordinator: TransferCoordinator?,
-    private val config: CrosswakeShellConfig
+    private val config: CrosswakeShellConfig,
+    private val connectionState: kotlinx.coroutines.flow.MutableStateFlow<ConnectionState>? = null,
+    private val serverEvents: kotlinx.coroutines.flow.MutableSharedFlow<ServerEvent>? = null
 ) {
     companion object {
         const val JS_OBJECT = "crosswakeBridge"
@@ -263,6 +269,37 @@ class BridgeChannel(
                     )
 
                 ok(request, payload)
+            }
+
+            BridgeCommand.SERVER_EVENT_PUSH -> {
+                val name = request.payload["name"] ?: return deny(
+                    request,
+                    "invalid_payload",
+                    "Missing 'name' in payload.",
+                    "Provide an event name."
+                )
+                serverEvents?.tryEmit(ServerEvent(name, request.payload))
+                ok(request, emptyMap())
+            }
+
+            BridgeCommand.SERVER_STATE_UPDATE -> {
+                val state = request.payload["state"] ?: return deny(
+                    request,
+                    "invalid_payload",
+                    "Missing 'state' in payload.",
+                    "Provide a state value."
+                )
+                val connectionStateValue = when (state) {
+                    "connecting" -> ConnectionState.Connecting
+                    "connected" -> ConnectionState.Connected
+                    "disconnected" -> ConnectionState.Disconnected
+                    "retrying" -> ConnectionState.Retrying
+                    else -> null
+                }
+                if (connectionStateValue != null) {
+                    connectionState?.value = connectionStateValue
+                }
+                ok(request, emptyMap())
             }
         }
     }
