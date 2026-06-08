@@ -217,57 +217,102 @@ private struct RootSceneView: View {
     @ObservedObject var notificationTokenProvider: NotificationTokenProvider
     @ObservedObject var uiActionDelegates: UIActionDelegates
 
+    @State private var toastMessage: String? = nil
+
     var body: some View {
-        switch shell.presentation {
-        case .booting:
-            ProgressView("Resolving route from bundled manifest truth…")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .task {
-                    shell.bootstrap()
-                }
-                .onOpenURL { url in
-                    shell.bootstrap(intent: url)
-                }
-                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-                    if let url = userActivity.webpageURL {
+        ZStack(alignment: .top) {
+            switch shell.presentation {
+            case .booting:
+                ProgressView("Resolving route from bundled manifest truth…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .task {
+                        shell.bootstrap()
+                    }
+                    .onOpenURL { url in
                         shell.bootstrap(intent: url)
                     }
+                    .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                        if let url = userActivity.webpageURL {
+                            shell.bootstrap(intent: url)
+                        }
+                    }
+            case let .requiredPack(requiredPack):
+                RequiredPackView(
+                    routeID: requiredPack.routeID,
+                    runtimeLabel: requiredPack.runtimeLabel,
+                    status: requiredPack.status,
+                    onInstall: {
+                        Task { await shell.coordinator.installRequiredPack(requiredPack) }
+                    },
+                    onRetry: {
+                        Task { await shell.coordinator.retryRequiredPack(requiredPack) }
+                    },
+                    onInvalidate: {
+                        Task { await shell.coordinator.invalidateRequiredPack(requiredPack) }
+                    }
+                )
+            case let .nativeCapture(nativeCapture):
+                NativeCaptureView(
+                    routeID: nativeCapture.routeID,
+                    routeTitle: nativeCapture.routeTitle,
+                    runtimeLabel: nativeCapture.runtimeLabel,
+                    transferID: nativeCapture.transferID,
+                    transferCoordinator: shell.coordinator.transferCoordinator
+                )
+            case let .liveView(session):
+                LiveViewContainerView(
+                    session: session,
+                    shell: shell,
+                    notificationTokenProvider: notificationTokenProvider,
+                    uiActionDelegates: uiActionDelegates
+                ) { denial in
+                    shell.coordinator.presentNavigationDenial(denial)
                 }
-        case let .requiredPack(requiredPack):
-            RequiredPackView(
-                routeID: requiredPack.routeID,
-                runtimeLabel: requiredPack.runtimeLabel,
-                status: requiredPack.status,
-                onInstall: {
-                    Task { await shell.coordinator.installRequiredPack(requiredPack) }
-                },
-                onRetry: {
-                    Task { await shell.coordinator.retryRequiredPack(requiredPack) }
-                },
-                onInvalidate: {
-                    Task { await shell.coordinator.invalidateRequiredPack(requiredPack) }
+            case let .denied(denial):
+                RouteUnavailableView(denial: denial) { action in
+                    shell.coordinator.perform(action)
                 }
-            )
-        case let .nativeCapture(nativeCapture):
-            NativeCaptureView(
-                routeID: nativeCapture.routeID,
-                routeTitle: nativeCapture.routeTitle,
-                runtimeLabel: nativeCapture.runtimeLabel,
-                transferID: nativeCapture.transferID,
-                transferCoordinator: shell.coordinator.transferCoordinator
-            )
-        case let .liveView(session):
-            LiveViewContainerView(
-                session: session,
-                shell: shell,
-                notificationTokenProvider: notificationTokenProvider,
-                uiActionDelegates: uiActionDelegates
-            ) { denial in
-                shell.coordinator.presentNavigationDenial(denial)
             }
-        case let .denied(denial):
-            RouteUnavailableView(denial: denial) { action in
-                shell.coordinator.perform(action)
+
+            VStack {
+                if shell.connectionState != .connected && shell.connectionState != .disconnected {
+                    Text(shell.connectionState == .connecting ? "Connecting..." : "Retrying...")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.yellow.opacity(0.9))
+                        .cornerRadius(8)
+                        .padding(.top, 40)
+                }
+
+                if let toastMessage {
+                    Text(toastMessage)
+                        .padding()
+                        .background(Color.black.opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .zIndex(1)
+                }
+            }
+            .animation(.easeInOut, value: shell.connectionState)
+            .animation(.easeInOut, value: toastMessage)
+        }
+        .onReceive(shell.serverEvents) { event in
+            if event.name == "toast" {
+                let message = event.payload["message"] ?? "Notification"
+                showToast(message: message)
+            }
+        }
+    }
+
+    private func showToast(message: String) {
+        toastMessage = message
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if toastMessage == message {
+                toastMessage = nil
             }
         }
     }
