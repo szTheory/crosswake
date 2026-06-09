@@ -1,64 +1,97 @@
-# Architecture Patterns: Adoption Evidence Demo App
+# Architecture Patterns: v7.0 Threadline Audit Capstone
 
-**Domain:** Phoenix-native Mobile Shells (v5.1 Standalone Dependency Proof)
-**Researched:** 2026-06-06
+**Domain:** Cross-boundary correlation + terminal-event audit
+**Researched:** 2026-06-09 · **Confidence:** HIGH (codebase-grounded)
 
-## Recommended Architecture
+## Three tiers, ephemeral-first
 
-The "Adoption Evidence" architecture demonstrates the **Standalone Binary + Hosted Glue** strategy. The native app is a "Thin Host" that consumes a published binary core and provides only a small amount of delegate-based customization.
-
-### Component Boundaries
-
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| Host Phoenix App | Authority, Route Policy, Manifest. | Native Shell (HTTP/WS) |
-| Crosswake Core (Binary) | WebView management, Bridge routing, Manifest parsing. | Host Native UI (Reactive State) |
-| Host Native UI (SwiftUI/Compose) | Renders the "Outer Shell" (tabs, nav bar). | Crosswake Core (Observers) |
-| Bridge Components | Handle native capabilities (Share, Haptics). | Host Phoenix App (JS/WS) |
-
-### Data Flow (Reactive State)
-
-1. **Native Event:** User toggles "Airplane Mode" on device.
-2. **Core Observation:** Crosswake Core detects connectivity change.
-3. **Reactive Stream:** Core emits update on `shellState` stream (Combine/Flow).
-4. **Host UI Update:** Host SwiftUI/Compose view observing the stream updates its "Offline" banner automatically.
-
-## Patterns to Follow
-
-### Pattern 1: Reactive State Observation
-**What:** Native UI observes shell state via persistent streams rather than one-off callbacks.
-**When:** Displaying connection status, auth status, or active route metadata.
-**Example (Swift):**
-```swift
-shell.statePublisher
-    .map { $0.isOnline }
-    .removeDuplicates()
-    .receive(on: DispatchQueue.main)
-    .assign(to: &$isOnline)
+```
+ NATIVE SHELL                BRIDGE                 PHOENIX                      DB (opt-in)
+ ───────────                 ──────                 ───────                      ──────────
+ mint thread_id     ─hdr─▶   correlation_id  ─▶     Plug.Threadline             gen.audit ledger
+ (cold_start)                per command            • read/mint thread_id        • host-owned schema
+ carry across       ─JS──▶   (already exists)       • Logger.metadata            • record/1 +
+ activations        connect                         • :telemetry span             record_in_multi/2
+ inject on load     param                           Live.Threadline on_mount     • ProvenanceLane
+                                                    Threadline.Telemetry         • PII-free, append-only
+   TIER 1: telemetry spans (ephemeral, always)
+   TIER 2: Logger metadata (host logs, always)
+   TIER 3: durable ledger (terminal critical events only, opt-in)
 ```
 
-### Pattern 2: Component Registration (Not Code Generation)
-**What:** Adopters register native components in a builder instead of modifying generated shell code.
-**When:** Adding custom native capabilities.
-**Example (Kotlin):**
-```kotlin
-val shell = CrosswakeShell.Builder(context)
-    .registerComponent(ShareComponent())
-    .build()
-```
+**Principle:** most observability is ephemeral (telemetry + log metadata). The database is touched only for
+**terminal critical events** — this is the "avoids database bloat" constraint made architectural.
 
-## Anti-Patterns to Avoid
+## Identity model (trace/span semantics)
 
-### Anti-Pattern 1: The "Eject Trap"
-**What:** Modifying the internal code of the Crosswake shell library.
-**Why bad:** Makes future updates impossible and increases maintenance burden.
-**Instead:** Use the provided delegate/builder pattern to customize behavior from the host project.
+- `thread_id` = journey/session scope (parent). Minted by the native shell at `cold_start`; the Plug mints
+  only as a fallback (like `Plug.RequestId`). Carried across deep_link/notification/in_app_navigation — the
+  iOS `ActivationCoordinator.forIncomingURL(seededBy:)` continuation already models this for `correlation_id`.
+- `correlation_id` = per-command/per-activation scope (child). **Unchanged** — already first-class on the
+  bridge `Request`/`Reply`/`Denial`, `ActivationRequest`, and iOS/Android envelopes.
+- Both UUIDv4 from platform stdlib (`Ecto.UUID.generate/0` server-side). No renames, no breaking changes.
 
-### Anti-Pattern 2: Global State Fragmentation
-**What:** Storing business state in the native shell that isn't reflected on the server.
-**Why bad:** Breaks the "Backend Authority" principle.
-**Instead:** Use the reactive state API for *shell-specific* metadata (connection, bridge status) and keep business data in Phoenix/LiveView.
+## Propagation channels (honest about platform limits)
 
-## Sources
-- `PROJECT.md` v5.0 Architectural Shift
-- [SwiftUI State and Data Flow](https://developer.apple.com/documentation/swiftui/state-and-data-flow)
+| Path | Mechanism | Works? |
+|---|---|---|
+| Initial HTTP page load | shell sets `X-Crosswake-Thread-Id` on `URLRequest`/`loadUrl`; `Plug.Threadline` reads | Yes |
+| LiveView WebSocket upgrade | `window.crosswakeBridge.threadId` → LiveSocket `_crosswake_thread_id` param → `Live.Threadline` on_mount | Yes (header injection on WS upgrade is impossible in WKWebView/Android WebView) |
+| JS fetch/XHR sub-navigation | — | No — documented limitation |
+| Bridge command | `correlation_id` already in envelope; server reads `thread_id` from conn/process | Yes (no wire change) |
+
+## Logging posture (idiomatic library)
+
+The Plug does exactly three things: set `Logger.metadata(crosswake_thread_id: …)`, emit `:telemetry.span/3`,
+echo the response header. **The library never calls `Logger.info/warning/error`.** Hosts attach telemetry
+handlers if they want log lines. `Crosswake.Threadline.Telemetry` copies `Sigra.Telemetry` verbatim:
+`@metadata_keys` allowlist, `@forbidden_metadata_keys`, `safe_value?/1`, `execute/3`.
+
+Telemetry taxonomy: `[:crosswake, :threadline, :request|:live_mount|:bridge_command, :start|:stop|:exception]`,
+low-cardinality metadata only (`thread_id, correlation_id, route_id, source, activation_source, thread_origin`).
+
+## Audit ledger (host-owned, PII-free, append-only)
+
+- Generated by `mix crosswake.gen.audit` into the host app (gen.sync pattern). Crosswake ships the
+  `Crosswake.Audit.Ledger` contract struct (core) so producers know the shape; the host owns the Ecto schema.
+- Write path: `record/1` (standalone, immediate) and `record_in_multi/2` (compose into the host's business
+  `Ecto.Multi` so the audit row commits iff the business change commits). Durable writes are **never** driven
+  from a telemetry handler (telemetry can drop).
+- ProvenanceLane: `provenance ∈ {:device_claimed, :backend_accepted}` is a first-class column. Mirrors the
+  Rindle `reject_trace_authority_lane/2` discipline — device evidence never masquerades as backend authority.
+- PII-free: only an opaque `actor_ref` (HMAC pseudonym, `Chimeway.Redaction.fingerprint_token/2` pattern);
+  `reject_pii_in_metadata/1` changeset guard fails closed.
+- Integrity (v1): append-only by convention; nullable `row_hash`/`prev_hash` for offline detection; verify-task deferred.
+
+### Schema `crosswake_audit_events` (host-owned, generated)
+
+`id :binary_id` · `thread_id` · `correlation_id` · `route_id` · `actor_ref` (opaque) ·
+`actor_kind` (:system/:user/:service/:device) ·
+`event_class` (:auth_handoff/:auth_step_up/:commerce_receipt/:notification_open/:media_acceptance) ·
+`event_type` :string · `outcome` (:allowed/:denied/:conflict/:deferred) ·
+`provenance` (:device_claimed/:backend_accepted) · `occurred_at`/`recorded_at` :utc_datetime_usec ·
+`idempotency_key` :string unique · `metadata` :map (allowlist-filtered) · `row_hash`/`prev_hash` nullable.
+
+## Integration points (all additive — verified extension seams)
+
+| Surface | File | Extension |
+|---|---|---|
+| Plug pipeline | `lib/crosswake/install/patcher.ex` | new plug-injection mode / documented `plug Crosswake.Plug.Threadline` |
+| Bridge/activation contracts | `lib/crosswake/bridge/contract.ex`, `lib/crosswake/shell/activation.ex` | add `thread_id` field alongside `correlation_id` |
+| Telemetry | `lib/crosswake/companions/sigra/telemetry.ex` | copy pattern → `lib/crosswake/threadline/telemetry.ex` |
+| Generator | `lib/mix/tasks/crosswake.gen.sync.ex` + `priv/templates/crosswake/sync/*.eex` | copy → `gen.audit` + `priv/templates/crosswake/audit/*.eex` |
+| Doctor | `lib/crosswake/doctor/doctor.ex` | `phase_N_threadline_findings/1` |
+| SupportMatrix | `lib/crosswake/support_matrix/support_matrix.ex` | `@audit_ledger_support_truth` + accessor |
+| OperatorInspection | `lib/crosswake/operator_inspection.ex` | `audit_entry/1` + `:audit` route key |
+| Native | iOS `ActivationCoordinator.swift` / host `LiveViewContainerViewController.swift`; Android equivalents | header + WKUserScript injection |
+
+## Build order
+
+contracts/telemetry → server Plug+Live → native propagation → ledger contract+generator →
+operator surface (task/doctor/support) → docs+proof lanes.
+
+## Packaging split
+
+- **Core (zero new deps):** `Crosswake.Plug.Threadline`, `Crosswake.Live.Threadline`,
+  `Crosswake.Threadline.Telemetry`, `Crosswake.Audit.Ledger` contract struct.
+- **Companion (in-tree, opt-in, needs host Ecto):** `mix crosswake.gen.audit` + templates + the host-side scaffold.

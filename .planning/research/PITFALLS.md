@@ -1,70 +1,88 @@
-# Domain Pitfalls: Adoption Evidence Demo App
+# Domain Pitfalls: v7.0 Threadline Audit Capstone
 
-**Domain:** Phoenix-native Mobile Shells (iOS/Android)
-**Researched:** 2026-06-06
-**Confidence:** HIGH
+**Domain:** Cross-boundary correlation + tamper-evident-ish audit (Phoenix↔mobile)
+**Researched:** 2026-06-09 · **Confidence:** HIGH (codebase + cross-ecosystem)
 
-## Critical Pitfalls
+Ordered by blast radius. Each: the trap, the cross-ecosystem evidence, the prevention, and which phase owns it.
 
-Mistakes that cause rewrites, integration abandonment, or major production "eject trap" issues.
+## 1. PII in an append-only ledger (GDPR right-to-erasure conflict) — CRITICAL
 
-### Pitfall 1: The "Local Project" Mirage
-**What goes wrong:** The Demo App works perfectly because it references the library as a local project sibling (`implementation project(':lib')` or local folder reference in SPM).
-**Why it happens:** Developers prioritize speed of iteration during library development.
-**Consequences:** Transitive dependencies, public/private header visibility, and ProGuard/R8 rules that work locally fail immediately when the adopter tries to use the published SPM/Maven dependency.
-**Prevention:** The Demo App **must** consume the library as a standalone dependency (e.g., via `mavenLocal()` or a specific git tag/branch in SPM) rather than a project reference.
-**Detection:** CI should fail if the Demo App includes a direct project reference to the library core.
+- **Trap:** Storing `actor_id`/`email`/`session_ref` in immutable audit rows makes GDPR erasure a migration.
+  `paper_trail` (Ruby) stores `whodunnit` as a raw id — a well-known GDPR trap.
+- **Prevention:** PII-free by construction. Only an opaque `actor_ref` (HMAC pseudonym; reuse
+  `Chimeway.Redaction.fingerprint_token/2`). `reject_pii_in_metadata/1` changeset guard **fails closed** on a
+  forbidden-key list (mirror `reject_trace_authority_lane/2`). A doctor check scans the generated schema for
+  forbidden field names and emits `threadline.pii_forbidden_field_present` (`:error`). Erasure = delete the
+  host-owned actor mapping; ledger rows stay intact.
+- **Owner:** ledger schema/generator + doctor phases.
 
-### Pitfall 2: Reactive State "Zombies" & Leaks
-**What goes wrong:** Reactive streams (Combine `AnyCancellable`, Kotlin `Flow` collectors) are created during bridge initialization but never disposed of when the WebView reloads or the View Controller is dismissed.
-**Why it happens:** WebView-centric UIs often have a different lifecycle than the native container. A "Reactive State API" that exposes shell state to the host UI is particularly prone to this.
-**Consequences:** Memory leaks, duplicate event processing, and crashes when an observer tries to update a dismissed UI element.
-**Prevention:**
-- **iOS:** Use `[weak self]` in all `sink` closures. Bind the lifecycle of observers to the `ActivationCoordinator` or a specific `BridgeComponent` lifecycle.
-- **Android:** Use `collectAsStateWithLifecycle()` or `repeatOnLifecycle` to ensure collection stops when the app is backgrounded.
-**Detection:** Run the demo app through Xcode Memory Graph or Android Studio Profiler; reload the WebView 10 times and check for increasing instance counts of bridge-related classes.
+## 2. Overclaimed durability via async telemetry writes — HIGH
 
-### Pitfall 3: Manifest-Capability Desync
-**What goes wrong:** The Phoenix server publishes a manifest claiming the app supports `share` and `haptics`, but the native binary used in the demo wasn't compiled with those components registered.
-**Why it happens:** Rapid iteration on the server side without a corresponding native rebuild.
-**Consequences:** Silent failures. The web UI shows a "Share" button (because the manifest said it's allowed), but tapping it does nothing because the native bridge has no registered handler.
-**Prevention:** Implement a "Capability Handshake" on launch. Native should announce its *actual* registered capabilities to the bridge; the web layer should use this "Local Truth" to hide/show UI, even if the "Manifest Truth" (server) says otherwise.
-**Detection:** Use `mix keelway.doctor` or a native debug overlay to highlight mismatches between "Manifest Claims" and "Active Capabilities".
+- **Trap:** Driving the durable ledger write from a `:telemetry` handler looks elegant but telemetry events
+  drop on process/VM crash and give no transactional guarantee — silent audit gaps. (Observability systems use
+  async; *audit* systems must not.)
+- **Prevention:** The library does **not** write the ledger from telemetry. The scaffold provides explicit
+  `record/1` and `record_in_multi/2`; docstrings steer true terminal events (commerce receipt, auth handoff
+  redeem) into the host's business `Ecto.Multi` so the audit row commits iff the business change commits.
+  Docs state plainly that `record/1` is not atomic with the caller's transaction.
+- **Owner:** ledger generator + guide.
 
----
+## 3. "Tamper-proof" overclaim — HIGH (honesty)
 
-## Moderate Pitfalls
+- **Trap:** Claiming the ledger is tamper-proof. No OSS Elixir lib can prevent a DB admin from rewriting rows;
+  hash-chaining **detects, does not prevent** (recorded footgun). AWS QLDB only achieves more via independently-
+  stored digests; mainstream audit libs (carbonite/ex_audit/paper_trail) ship no hash chain at all.
+- **Prevention:** v1 = append-only by convention (no update/delete helpers) + nullable `row_hash`/`prev_hash`
+  for offline detection. Exact docs wording: "hash chaining detects tampering; it does not prevent it … treat
+  this as a detective control, not a preventive one." Defer a `mix crosswake.audit.verify` chain-checker.
+- **Owner:** guide + ledger schema.
 
-### Pitfall 1: Redundant UI "Double Vision"
-**What goes wrong:** A screen shows both a native navigation bar button and a web-rendered button for the same action (e.g., "Save").
-**Prevention:** The demo app should demonstrate idiomatic use of CSS classes (like `.native-only` / `.web-only`) and the `Keelway-Platform` header to conditionally render or hide elements based on the active runtime.
+## 4. WebView header-injection limits — HIGH (architecture honesty)
 
-### Pitfall 2: Threading Assumption Crashes
-**What goes wrong:** The Bridge receives a message on a background thread (common in networking/Kotlin flows) and tries to update a native UI element or the WebView without switching to the Main thread.
-**Prevention:** Ensure the `BridgeChannel` or `ActivationCoordinator` explicitly dispatches bridge callbacks to the Main thread before handing them to host UI observers.
+- **Trap:** Assuming a native-set `X-Crosswake-Thread-Id` flows transparently to all server requests.
+  WKWebView and Android WebView **cannot** inject headers on the LiveView WebSocket upgrade, and JS
+  `fetch`/`XHR` sub-navigations don't carry the header.
+- **Prevention:** Two-channel design — header on the initial load; `window.crosswakeBridge.threadId` →
+  LiveSocket connect param → `Crosswake.Live.Threadline` on_mount for the WS. Document the `fetch`/`XHR` gap.
+- **Owner:** native propagation phase + guide.
 
----
+## 5. Library logging instead of telemetry — MEDIUM (idiom)
 
-## Minor Pitfalls
+- **Trap:** Having the lib call `Logger.info` (it currently has zero Logger usage). Log level/format/destination
+  are host decisions; library log lines are noise the host can't control.
+- **Prevention:** Plug sets `Logger.metadata` (like `Plug.RequestId`) and emits `:telemetry`; the lib never
+  emits log lines. Hosts attach handlers.
+- **Owner:** Plug + telemetry phases.
 
-### Pitfall 1: "Kitchen Sink" Obscurity
-**What goes wrong:** The demo app is one massive file that shows every feature at once.
-**Prevention:** Break the "Adoption Evidence" into clear, copy-pasteable feature slices (e.g., `BasicNavigation`, `ReactiveStateSync`, `NativeCapabilityBridge`).
+## 6. Telemetry cardinality / PII leakage — MEDIUM
 
----
+- **Trap:** Putting raw ids, tokens, payloads, IP, or user-agent into telemetry metadata — high cardinality and
+  a PII leak. Already an established forbidden pattern in Sigra/Chimeway.
+- **Prevention:** `Crosswake.Threadline.Telemetry` copies the existing allowlist + `safe_value?` + forbidden-key
+  guard verbatim. Only low-cardinality keys (`thread_id, correlation_id, route_id, source, …`).
+- **Owner:** telemetry phase + hermetic proof.
 
-## Phase-Specific Warnings
+## 7. Ecto.Multi atomicity edge cases — MEDIUM
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| **SPM/Maven Integration** | Transitive Dependency Conflict | Use `compileOnly` for optional dependencies; test with a "clean" host project. |
-| **Reactive State API** | Main-Thread Violation | Wrap bridge-to-UI updates in `DispatchQueue.main.async` or `withContext(Dispatchers.Main)`. |
-| **Demo App Bootstrap** | Hardcoded Base URLs | Use environment-based configuration for the Phoenix endpoint to allow easy local testing. |
-| **Capability Demo** | Silent Bridge Failure | Implement a "Bridge Logger" in the demo app that visually shows messages flowing between Web and Native. |
+- **Trap:** `record_in_multi/2` composed wrong (e.g. the audit step references a value not yet in the Multi, or
+  the host forgets to wrap in a transaction) → audit row commits without the business change or vice versa.
+- **Prevention:** Scaffold `record_in_multi/2` as a proper `Ecto.Multi.run`/`insert` step with a docstring example;
+  advisory example-host proof exercises the real transaction path.
+- **Owner:** ledger generator + advisory proof.
 
-## Sources
+## 8. Scope creep into APM / OTel / plugin bus — MEDIUM (strategic)
 
-- [Hotwire Native Bridge Components Pitfalls](https://jessewaites.com/hotwire-native-bridge-components)
-- [Android Maven Central Publishing (2025)](https://central.sonatype.org/publish/publish-portal/)
-- [Swift Package Manager Binary Targets Guide](https://developer.apple.com/documentation/swift_packages/distributing_binary_frameworks_as_swift_packages)
-- [Reactive State Leaks (Combine/Flows)](https://medium.com/android-news/collecting-flows-safely-in-jetpack-compose-7a102061f102)
+- **Trap:** Threadline drifting into "Crosswake observability platform" — distributed tracing, sampling, a UI
+  that implies full-journey capture, generic event subscriptions.
+- **Prevention:** Hard anti-scope, mechanically checked: a "What Threadline is NOT" guide section asserted by
+  `ProofAssertions`. Bespoke header (no OTel dep, documented coexistence). Text-only operator surface in v1;
+  LiveDashboard deferred to a separate package. No generic subscription API beyond the typed audit writer.
+- **Owner:** guide/docs-contract + scope guardrails in REQUIREMENTS.md Out-of-Scope.
+
+## 9. Phase-archival/closeout brittleness (process) — LOW
+
+- **Trap:** v6.0 closeout left phase dirs unarchived and used a mocked E2E that hid a compile break (recorded).
+  Don't repeat: don't fake the proof lane, and archive phases honestly at closeout.
+- **Prevention:** advisory example-host ledger proof must run for real before closeout; verifier should derive
+  the milestone from frontmatter, not hardcode it.
+- **Owner:** proof phase + milestone closeout.

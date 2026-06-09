@@ -1,50 +1,45 @@
-# Technology Stack: Adoption Evidence Demo App
+# Technology Stack: v7.0 Threadline Audit Capstone
 
-**Project:** Crosswake (v5.1 Standalone Dependency Proof)
-**Researched:** 2026-06-06
+**Project:** Crosswake (v7.0 Threadline Audit Capstone)
+**Researched:** 2026-06-09 · **Confidence:** HIGH (codebase-grounded)
 
-## Recommended Stack
+## Headline: this milestone adds NO new runtime dependencies
 
-### Core Framework
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| Elixir / Phoenix | ~> 1.17 | Backend Host & Authority | Current stable Phoenix version for modern LiveView features. |
-| Phoenix LiveView | ~> 1.0 | Server-Rendered UI | Utilizing the latest stable LiveView features for the demo. |
-| Crosswake Core | v5.0.x | Mobile Shell Integration | The target version to be proven via standalone dependencies. |
+Threadline is a capability built from primitives already present in the stack. The honest, house-style
+move is to add a feature, not a dependency graph.
 
-### Standalone Dependencies
-| Technology | Distribution | Purpose | Why |
-|------------|--------------|---------|-----|
-| Crosswake iOS | SPM | Native iOS Shell | Standalone dependency (Git-based) to prove "no eject trap". |
-| Crosswake Android | Maven | Native Android Shell | Published Maven Central artifact (or local Maven simulated) for integration. |
+| Need | Use | Already present? | New dep? |
+|---|---|---|---|
+| Server thread-id generation | `Ecto.UUID.generate/0` | Yes (Phoenix/Ecto) | No |
+| iOS thread-id generation | `UUID().uuidString` | Swift stdlib | No |
+| Android thread-id generation | `UUID.randomUUID().toString()` | Kotlin/Java stdlib | No |
+| Boundary instrumentation | `:telemetry.span/3` + `:telemetry.execute/3` | Yes (already used in route_gate, Sigra, Chimeway) | No |
+| Console correlation | `Logger.metadata/1` | Yes (stdlib; lib currently unused — first metadata touchpoint) | No |
+| Plug interception | `Plug.Conn` | Yes (Phoenix) | No |
+| LiveView WS context | `Phoenix.LiveView.get_connect_params/1` + `on_mount` | Yes | No |
+| Ledger persistence | host-side `Ecto` + generated schema/migration | Host app owns Ecto (Crosswake does not declare it) | No (host dep) |
+| Ledger PK | `:binary_id` | Yes (matches v6.0 demo decision) | No |
+| Opaque actor ref | `:crypto.mac(:hmac, :sha256, …)` | OTP stdlib (pattern already in `Chimeway.Redaction`) | No |
+| Row hash (advisory) | `:crypto.hash(:sha256, …)` | OTP stdlib | No |
 
-### Reactive State Libraries
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Combine (Swift) | Native | iOS Reactive State | Standard Apple framework for shell state observation. |
-| Kotlin Flows | Native | Android Reactive State | Standard Kotlin Coroutines API for reactive streams. |
+## Explicitly NOT added (and why)
 
-## Alternatives Considered
+- **`opentelemetry` / `opentelemetry_phoenix`** — Threadline is a thin correlation layer, not a tracer.
+  Taking an OTel dep would force an observability lifecycle on every adopter and overclaim scope. Instead:
+  document **coexistence** — a host already running OTel sees `thread_id` in Logger/telemetry metadata and
+  can map it to a span attribute with a one-line `telemetry.attach/4`. Zero coupling.
+- **`phoenix_live_dashboard` (in core)** — the operator timeline UI is deferred to a future, separately-
+  packaged `crosswake_dashboard`. Prior art (Oban → `oban_web`) confirms interactive operator UIs belong in
+  their own package, not the core lib, so the dep is never forced on CI-only adopters.
+- **`uniq` / any ULID or UUIDv7 library** — propagation IDs only need uniqueness, not time-sortability.
+  `:binary_id` covers the ledger PK; UUIDv4 covers propagation. No new dep earns its keep here.
+- **`paper_trail` / `ex_audit` / `carbonite`** — these audit *row mutations*, not cross-boundary *business
+  events*, and they couple to the host Repo. Threadline scaffolds a host-owned event ledger instead.
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| Dependency | Standalone SPM/Maven | Project Reference | Project references mask integration friction; Standalone is the core v5.0 value. |
-| UI State | Reactive Streams | Callback Delegates | Massive callbacks create boilerplate; reactive APIs improve developer ergonomics and host UI decoupling. |
+## Stack interaction notes
 
-## Installation
-
-```bash
-# Core Elixir
-mix deps.add crosswake
-
-# iOS (Package.swift)
-.package(url: "https://github.com/crosswake/crosswake-shell-core-ios", from: "5.0.0")
-
-# Android (build.gradle)
-implementation "io.crosswake:shell-core-android:5.0.0"
-```
-
-## Sources
-- `PROJECT.md` v5.0 Key Decisions
-- [Kotlin Flows Documentation](https://kotlinlang.org/docs/flow.html)
-- [Apple Combine Documentation](https://developer.apple.com/documentation/combine)
+- The Plug is the library's **first** entry into the host Plug pipeline. Today the installer only patches
+  `import Crosswake.Router` (`lib/crosswake/install/patcher.ex`); a new marker-driven plug-injection mode is
+  needed (or documented manual `plug Crosswake.Plug.Threadline`). Keep it additive and idempotent.
+- Telemetry namespace continues the existing convention: `[:crosswake, :threadline, …]`.
+- The ledger is opt-in: no Ecto means Threadline still works in ephemeral (telemetry/log) mode.
