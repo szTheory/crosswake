@@ -7,7 +7,7 @@ defmodule Crosswake.Bridge.Contract do
   alias Crosswake.Manifest.Types
 
   @protocol "crosswake.bridge"
-  @version "1.0.0"
+  @version "1.1.0"
   @commands ~w(
     app.info.get
     haptics.impact
@@ -45,6 +45,7 @@ defmodule Crosswake.Bridge.Contract do
       :origin,
       :native_runtime_version,
       :correlation_id,
+      thread_id: nil,
       capabilities: %{},
       installed_packs: %{},
       payload: %{}
@@ -60,6 +61,7 @@ defmodule Crosswake.Bridge.Contract do
             origin: String.t(),
             native_runtime_version: String.t(),
             correlation_id: String.t(),
+            thread_id: String.t() | nil,
             capabilities: %{optional(String.t()) => String.t()},
             installed_packs: %{optional(String.t()) => String.t()},
             payload: map()
@@ -77,6 +79,7 @@ defmodule Crosswake.Bridge.Contract do
       :route_id,
       :correlation_id,
       :status,
+      thread_id: nil,
       payload: %{},
       denial: nil
     ]
@@ -90,6 +93,7 @@ defmodule Crosswake.Bridge.Contract do
             route_id: String.t(),
             correlation_id: String.t(),
             status: status(),
+            thread_id: String.t() | nil,
             payload: map(),
             denial: Denial.t() | nil
           }
@@ -119,6 +123,7 @@ defmodule Crosswake.Bridge.Contract do
       origin: Keyword.fetch!(attrs, :origin),
       native_runtime_version: Keyword.fetch!(attrs, :native_runtime_version),
       correlation_id: Keyword.fetch!(attrs, :correlation_id),
+      thread_id: Keyword.get(attrs, :thread_id),
       capabilities: Keyword.get(attrs, :capabilities, %{}),
       installed_packs: Keyword.get(attrs, :installed_packs, %{}),
       payload: Keyword.get(attrs, :payload, %{})
@@ -134,6 +139,7 @@ defmodule Crosswake.Bridge.Contract do
       route_id: Keyword.fetch!(attrs, :route_id),
       correlation_id: Keyword.fetch!(attrs, :correlation_id),
       status: Keyword.fetch!(attrs, :status),
+      thread_id: Keyword.get(attrs, :thread_id),
       payload: Keyword.get(attrs, :payload, %{}),
       denial: Keyword.get(attrs, :denial)
     })
@@ -145,6 +151,7 @@ defmodule Crosswake.Bridge.Contract do
       command: request.command,
       route_id: request.route_id,
       correlation_id: request.correlation_id,
+      thread_id: request.thread_id,
       status: :ok,
       payload: payload
     )
@@ -156,6 +163,7 @@ defmodule Crosswake.Bridge.Contract do
       command: request.command,
       route_id: request.route_id,
       correlation_id: request.correlation_id,
+      thread_id: request.thread_id,
       status: :deny,
       denial: denial
     )
@@ -173,10 +181,13 @@ defmodule Crosswake.Bridge.Contract do
       "origin" => request.origin,
       "native_runtime_version" => request.native_runtime_version,
       "correlation_id" => request.correlation_id,
+      "thread_id" => request.thread_id,
       "capabilities" => Types.to_map(request.capabilities),
       "installed_packs" => Types.to_map(request.installed_packs),
       "payload" => Types.to_map(request.payload)
     }
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
   end
 
   def to_map(%Reply{} = reply) do
@@ -187,6 +198,7 @@ defmodule Crosswake.Bridge.Contract do
       "route_id" => reply.route_id,
       "correlation_id" => reply.correlation_id,
       "status" => Atom.to_string(reply.status),
+      "thread_id" => reply.thread_id,
       "payload" => Types.to_map(reply.payload),
       "denial" => reply.denial && Denial.to_map(reply.denial)
     }
