@@ -7,7 +7,7 @@ defmodule Crosswake.Bridge.Contract do
   alias Crosswake.Manifest.Types
 
   @protocol "crosswake.bridge"
-  @version "1.0.0"
+  @version "1.1.0"
   @commands ~w(
     app.info.get
     haptics.impact
