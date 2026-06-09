@@ -36,16 +36,16 @@ Plans:
 - [ ] Generate Phoenix core context for Flashcards.
 - [ ] Create robust seeds for demo cohort.
 
-**Plans:** 2 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 86-01-PLAN.md — Generate Ecto schemas, migrations, and Phoenix context for Flashcards
+- [x] 86-01-PLAN.md — Generate Ecto schemas, migrations, and Phoenix context for Flashcards
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 86-02-PLAN.md — Implement context tests and database demo seeds
+- [x] 86-02-PLAN.md — Implement context tests and database demo seeds
 
 ## Phase 87: Online LiveView & Architecture
 
