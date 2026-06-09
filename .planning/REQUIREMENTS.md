@@ -16,12 +16,12 @@
 
 ### Audit Ledger (LEDG)
 
-- [ ] **LEDG-01**: A team can run `mix crosswake.gen.audit` to scaffold a host-owned Ecto audit schema and thin writer — idempotent, never overwriting host edits, with `[crosswake] created/reused` output matching `gen.sync`.
-- [ ] **LEDG-02**: The generated ledger records terminal critical events with the canonical columns (`thread_id`, `correlation_id`, `route_id`, `actor_ref`, `actor_kind`, `event_class`, `event_type`, `outcome`, `provenance`, `occurred_at`, `recorded_at`, `idempotency_key` (unique), `metadata`, `row_hash`, `prev_hash`).
-- [ ] **LEDG-03**: The ledger is PII-free by construction — the only identity field is an opaque `actor_ref` (HMAC helper provided, mirroring `Chimeway.Redaction`), and a `reject_pii_in_metadata/1` changeset guard fails closed on forbidden keys.
-- [ ] **LEDG-04**: The ledger distinguishes device-claimed evidence from backend-accepted authority via a first-class `provenance ∈ {:device_claimed, :backend_accepted}` column (ProvenanceLane).
-- [ ] **LEDG-05**: A team can record events standalone via `record/1` or atomically inside their business transaction via `record_in_multi/2`, with docstrings steering true terminal events to the Multi path and stating `record/1` is not transactionally atomic with the caller.
-- [ ] **LEDG-06**: The generated ledger is append-only — no update/delete helpers are generated — with advisory `row_hash`/`prev_hash` computed at insert for offline tamper detection.
+- [x] **LEDG-01**: A team can run `mix crosswake.gen.audit` to scaffold a host-owned Ecto audit schema and thin writer — idempotent, never overwriting host edits, with `[crosswake] created/reused` output matching `gen.sync`.
+- [x] **LEDG-02**: The generated ledger records terminal critical events with the canonical columns (`thread_id`, `correlation_id`, `route_id`, `actor_ref`, `actor_kind`, `event_class`, `event_type`, `outcome`, `provenance`, `occurred_at`, `recorded_at`, `idempotency_key` (unique), `metadata`, `row_hash`, `prev_hash`).
+- [x] **LEDG-03**: The ledger is PII-free by construction — the only identity field is an opaque `actor_ref` (HMAC helper provided, mirroring `Chimeway.Redaction`), and a `reject_pii_in_metadata/1` changeset guard fails closed on forbidden keys.
+- [x] **LEDG-04**: The ledger distinguishes device-claimed evidence from backend-accepted authority via a first-class `provenance ∈ {:device_claimed, :backend_accepted}` column (ProvenanceLane).
+- [x] **LEDG-05**: A team can record events standalone via `record/1` or atomically inside their business transaction via `record_in_multi/2`, with docstrings steering true terminal events to the Multi path and stating `record/1` is not transactionally atomic with the caller.
+- [x] **LEDG-06**: The generated ledger is append-only — no update/delete helpers are generated — with advisory `row_hash`/`prev_hash` computed at insert for offline tamper detection.
 
 ### Operator Surface (OPER)
 
@@ -77,12 +77,12 @@
 | PROP-03 | Phase 92 | Complete |
 | PROP-04 | Phase 91 | Complete |
 | PROP-05 | Phase 93 | Complete |
-| LEDG-01 | Phase 94 | Pending |
-| LEDG-02 | Phase 94 | Pending |
-| LEDG-03 | Phase 94 | Pending |
-| LEDG-04 | Phase 94 | Pending |
-| LEDG-05 | Phase 94 | Pending |
-| LEDG-06 | Phase 94 | Pending |
+| LEDG-01 | Phase 94 | Complete |
+| LEDG-02 | Phase 94 | Complete |
+| LEDG-03 | Phase 94 | Complete |
+| LEDG-04 | Phase 94 | Complete |
+| LEDG-05 | Phase 94 | Complete |
+| LEDG-06 | Phase 94 | Complete |
 | OPER-01 | Phase 95 | Pending |
 | OPER-02 | Phase 95 | Pending |
 | OPER-03 | Phase 95 | Pending |

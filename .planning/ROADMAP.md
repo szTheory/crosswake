@@ -33,7 +33,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 91: Identity + Telemetry Contract** - Add `thread_id` to bridge/activation contracts and ship the `Crosswake.Threadline.Telemetry` allowlist module (completed 2026-06-09)
 - [x] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount (completed 2026-06-09)
 - [x] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId` (completed 2026-06-09)
-- [ ] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema
+- [x] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema (completed 2026-06-09)
 - [ ] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row
 - [ ] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof
 
@@ -93,9 +93,9 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   5. The generated writer exposes `record/1` (standalone immediate insert) and `record_in_multi/2` (compose into host `Ecto.Multi`) with docstrings clearly stating `record/1` is not transactionally atomic with the caller
   6. No `update` or `delete` helpers are generated; `row_hash`/`prev_hash` are computed at insert for offline tamper detection
 **Plans**: 3 plans
-- [ ] 94-01-PLAN.md — Core Audit Ledger Contract and HMAC Helper
-- [ ] 94-02-PLAN.md — Audit Ledger Schema and Migration Templates
-- [ ] 94-03-PLAN.md — Mix Generator for Audit Ledger
+- [x] 94-01-PLAN.md — Core Audit Ledger Contract and HMAC Helper
+- [x] 94-02-PLAN.md — Audit Ledger Schema and Migration Templates
+- [x] 94-03-PLAN.md — Mix Generator for Audit Ledger
 
 ### Phase 95: Operator Surface
 **Goal**: An operator can query the event sequence for a thread or actor in text form and the doctor + support matrix give honest, actionable Threadline posture — including a fail-closed PII error
@@ -106,10 +106,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   2. `mix crosswake.doctor` reports Threadline posture and emits `threadline.plug_missing` (advisory), `threadline.ledger_not_configured` (advisory), `threadline.ledger_schema_drift` (warning), and `threadline.pii_forbidden_field_present` (error, fail-closed)
   3. The support matrix exposes a `@audit_ledger_support_truth` module attribute row with explicit denial/fallback posture — `ephemeral-only` when no ledger is configured is non-blocking, not an error
   4. All three operator surfaces use only text output; no LiveDashboard dependency is introduced
-**Plans**: 3 plans
-- [ ] 94-01-PLAN.md — Core Audit Ledger Contract and HMAC Helper
-- [ ] 94-02-PLAN.md — Audit Ledger Schema and Migration Templates
-- [ ] 94-03-PLAN.md — Mix Generator for Audit Ledger
+**Plans**: TBD
 
 ### Phase 96: Docs-Contract + Proof
 **Goal**: `guides/threadline.md` is the honest public contract for the Threadline feature, mechanically verified against the shipped code, with a hermetic merge-blocking proof lane and an advisory example-host ledger proof
@@ -121,10 +118,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   3. The guide documents the honest limitations: WebView WebSocket/`fetch`/`XHR` header gap, "hash-chaining detects but does not prevent tampering," and OTel coexistence with zero OTel dependency
   4. A hermetic merge-blocking proof lane passes: Plug metadata and telemetry emission, telemetry forbidden-key rejection, `gen.audit` idempotency, doctor findings, and `guides/threadline.md` parity — no Ecto/network/device required
   5. An advisory example-host proof lane verifies real Ecto-backed `record_in_multi/2` persistence and `mix crosswake.threadline` reconstruction with `durable` posture against a seeded ledger
-**Plans**: 3 plans
-- [ ] 94-01-PLAN.md — Core Audit Ledger Contract and HMAC Helper
-- [ ] 94-02-PLAN.md — Audit Ledger Schema and Migration Templates
-- [ ] 94-03-PLAN.md — Mix Generator for Audit Ledger
+**Plans**: TBD
 
 ## Progress
 
@@ -133,6 +127,6 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
-| 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
+| 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
