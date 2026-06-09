@@ -30,7 +30,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 **Milestone Goal:** Give Crosswake day-2 operational viability — correlate the Native → Bridge → Phoenix → DB event sequence for a single user journey and durably record terminal critical events, narrowly and honestly, PII-free, without becoming an APM, an OTel replacement, or a database-bloat machine.
 
-- [ ] **Phase 91: Identity + Telemetry Contract** - Add `thread_id` to bridge/activation contracts and ship the `Crosswake.Threadline.Telemetry` allowlist module
+- [x] **Phase 91: Identity + Telemetry Contract** - Add `thread_id` to bridge/activation contracts and ship the `Crosswake.Threadline.Telemetry` allowlist module (completed 2026-06-09)
 - [ ] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount
 - [ ] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId`
 - [ ] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema
@@ -50,7 +50,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   4. No OTel dependency is introduced; the module uses only the existing `:telemetry` application
 **Plans**: 2 plans
 - [x] 91-01-PLAN.md — `Crosswake.Threadline.Telemetry` allowlist module + hermetic unit tests (PROP-02)
-- [ ] 91-02-PLAN.md — `thread_id` on bridge/activation envelopes, `@version`/Hex bumps, published-contract closeout proof (PROP-04, PROP-02)
+- [x] 91-02-PLAN.md — `thread_id` on bridge/activation envelopes, `@version`/Hex bumps, published-contract closeout proof (PROP-04, PROP-02)
 
 ### Phase 92: Server Propagation — Plug + LiveView
 **Goal**: A Phoenix team can add `Crosswake.Plug.Threadline` to a pipeline and opt a LiveView in via `on_mount` so that every HTTP request and every LiveView WebSocket mount carries a `thread_id` in `Logger.metadata` and emits telemetry spans
@@ -116,7 +116,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 91. Identity + Telemetry Contract | v7.0 | 1/2 | In Progress|  |
+| 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete   | 2026-06-09 |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 0/TBD | Not started | - |
 | 93. Native Shell Propagation | v7.0 | 0/TBD | Not started | - |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
