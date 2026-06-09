@@ -5,18 +5,21 @@ This milestone (v6.0) spans from Phase 84 through Phase 90.
 
 ## Phase 84: Offline Substrate Foundation
 **Goal:** Define `Crosswake.Offline.ContentPack`, manifest generation, and offline route policy.
-- [ ] Requirements: OFF-01
+- [x] Requirements: OFF-01
 
 **Plans:** 1 plan
 
 Plans:
-- [ ] 84-01-PLAN.md — Define ContentPack and test offline pack manifest compilation
+- [x] 84-01-PLAN.md — Define ContentPack and test offline pack manifest compilation
 
 ## Phase 85: Sync & Event Log Foundation
 **Goal:** Define `Crosswake.Sync.EventLog`, idempotency keys, and server-side reconciliation endpoints.
 - [ ] Requirements: SYNC-01, SYNC-02
-- [ ] Implement `Crosswake.Sync.EventLog`.
-- [ ] Create Ecto-backed reconciliation endpoint template.
+
+**Plans:** 1 plans
+
+Plans:
+- [ ] 85-01-PLAN.md — Define Sync EventLog structs and mix task to generate host Ecto schema and Phoenix controller.
 
 ## Phase 86: Flashcard Domain Setup (Demo App)
 **Goal:** Scaffold the demo app, Phoenix context, Ecto schemas (Cards, Decks, Progress), and seeds.
