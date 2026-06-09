@@ -10,6 +10,8 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 ## Current State
 
+**Shipped `Phase 93 Native Shell Propagation` on `2026-06-09`** (2 plans). Phase 93 updated the iOS and Android native shells to propagate `thread_id` across activation via header and JS injection, ensuring deterministic Native → Bridge → Phoenix correlation.
+
 **Shipped `v6.0 Adoption Evidence Demo App (Flashcard Cohort)` on `2026-06-09`** (Phases 84-90, 9 plans). v6.0 delivered a flashcard language-learning demo app that exercises the full `Crosswake.Offline` island philosophy end-to-end. It shipped `Crosswake.Offline.ContentPack` (strongly-typed packs enforced at the route-policy boundary and compiled into the manifest) and `Crosswake.Sync.EventLog` (durable event log + `mix crosswake.gen.sync` scaffolding for host-owned Ecto schema and reconciliation controller with idempotency keys). The demo app pairs an online LiveView dashboard with a vanilla-JS offline study island over IndexedDB, connected to the native shell and aligned to the Brand Book, with network-toggling Playwright E2E tests proving the offline study loop and asserting Ecto sync state on reconnect.
 
 **Shipped `v5.1 Adoption Evidence Demo App` on `2026-06-09`** (Phases 80-83, 7 plans). v5.1 transitioned the iOS and Android demo host projects to use the standalone SPM and Maven dependencies published in v5.0. It introduced reactive flow/publisher architectures (`StateFlow`, `SharedFlow`, `Combine`) for the bridge, implemented the `RouteDelegate` and capability handshake to support native escape hatches cleanly without coupling, and provided an automated `verify_bounded_bridge_proof.sh` and `QUICK_START.md` guide to prove the architecture end-to-end.
