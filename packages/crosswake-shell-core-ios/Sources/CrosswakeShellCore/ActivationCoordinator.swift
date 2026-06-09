@@ -33,6 +33,7 @@ public struct ActivationRequest: Codable, Equatable {
     public let bridgeProtocolVersion: String
     public let nativeRuntimeVersion: String
     public let correlationID: String
+    public let threadID: String?
     public let declaredPackRequirements: [String: String]
     public let installedPacks: [String: String]
     public let capabilities: [String: String]
@@ -46,6 +47,7 @@ public struct ActivationRequest: Codable, Equatable {
         case bridgeProtocolVersion = "bridge_protocol_version"
         case nativeRuntimeVersion = "native_runtime_version"
         case correlationID = "correlation_id"
+        case threadID = "thread_id"
         case declaredPackRequirements = "declared_pack_requirements"
         case installedPacks = "installed_packs"
         case capabilities
@@ -60,6 +62,7 @@ public struct ActivationRequest: Codable, Equatable {
         bridgeProtocolVersion: String,
         nativeRuntimeVersion: String,
         correlationID: String,
+        threadID: String? = nil,
         declaredPackRequirements: [String: String] = [:],
         installedPacks: [String: String] = [:],
         capabilities: [String: String] = [:]
@@ -72,13 +75,16 @@ public struct ActivationRequest: Codable, Equatable {
         self.bridgeProtocolVersion = bridgeProtocolVersion
         self.nativeRuntimeVersion = nativeRuntimeVersion
         self.correlationID = correlationID
+        self.threadID = threadID
         self.declaredPackRequirements = declaredPackRequirements
         self.installedPacks = installedPacks
         self.capabilities = capabilities
     }
 
     public static func forIncomingURL(_ url: URL, source: ActivationSource, seededBy baseline: ActivationRequest) -> ActivationRequest {
-        ActivationRequest(
+        let incomingThreadID = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "thread_id" })?.value
+
+        return ActivationRequest(
             routeID: nil,
             url: url,
             source: source,
@@ -87,6 +93,7 @@ public struct ActivationRequest: Codable, Equatable {
             bridgeProtocolVersion: baseline.bridgeProtocolVersion,
             nativeRuntimeVersion: baseline.nativeRuntimeVersion,
             correlationID: baseline.correlationID,
+            threadID: incomingThreadID ?? baseline.threadID,
             declaredPackRequirements: baseline.declaredPackRequirements,
             installedPacks: baseline.installedPacks,
             capabilities: baseline.capabilities
@@ -171,6 +178,7 @@ public struct LiveViewSession: Equatable {
     public let allowedOrigin: URL
     public let bridgeProtocolVersion: String
     public let nativeRuntimeVersion: String
+    public let threadID: String
     public let installedPacks: [String: String]
     public let routeRequiredPacks: [String]
     public let capabilities: [String: String]
@@ -202,6 +210,7 @@ public enum ShellPresentation: Equatable {
 public final class ActivationCoordinator: ObservableObject {
     @Published public private(set) var presentation: ShellPresentation = .booting
     @Published public private(set) var transferCoordinator: TransferCoordinator?
+    public private(set) var currentThreadID: String = Foundation.UUID().uuidString
 
     private let manifestLoader: () throws -> ShellManifest
     private let requestLoader: () throws -> ActivationRequest
@@ -299,6 +308,10 @@ public final class ActivationCoordinator: ObservableObject {
     }
 
     public func activate(_ request: ActivationRequest) {
+        if let incomingThreadID = request.threadID {
+            self.currentThreadID = incomingThreadID
+        }
+
         do {
             let manifest = try loadManifest()
             lastRequest = request
@@ -432,6 +445,7 @@ public final class ActivationCoordinator: ObservableObject {
                 allowedOrigin: allowedOrigin,
                 bridgeProtocolVersion: request.bridgeProtocolVersion,
                 nativeRuntimeVersion: request.nativeRuntimeVersion,
+                threadID: currentThreadID,
                 installedPacks: request.installedPacks,
                 routeRequiredPacks: route.packs,
                 capabilities: request.capabilities,
@@ -510,6 +524,7 @@ public final class ActivationCoordinator: ObservableObject {
             bridgeProtocolVersion: request.bridgeProtocolVersion,
             nativeRuntimeVersion: request.nativeRuntimeVersion,
             correlationID: request.correlationID,
+            threadID: request.threadID,
             declaredPackRequirements: request.declaredPackRequirements,
             installedPacks: request.installedPacks,
             capabilities: filteredCapabilities
