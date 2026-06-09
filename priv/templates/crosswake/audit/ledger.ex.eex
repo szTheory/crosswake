@@ -1,0 +1,129 @@
+defmodule <%= app_module %>.Audit.Ledger do
+  @moduledoc """
+  Standard host-owned audit ledger for Crosswake events.
+  """
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @forbidden_keys [
+    "email", "phone", "ip_address", "ssn", "name", "first_name", "last_name", "address",
+    :email, :phone, :ip_address, :ssn, :name, :first_name, :last_name, :address
+  ]
+
+  schema "crosswake_audit_events" do
+    field :thread_id, :string
+    field :correlation_id, :string
+    field :route_id, :string
+    field :actor_ref, :string
+    field :actor_kind, :string
+    field :event_class, :string
+    field :event_type, :string
+    field :outcome, :string
+    field :provenance, Ecto.Enum, values: [:device_claimed, :backend_accepted]
+    field :occurred_at, :utc_datetime_usec
+    field :recorded_at, :utc_datetime_usec
+    field :idempotency_key, :string
+    field :metadata, :map
+    field :row_hash, :string
+    field :prev_hash, :string
+  end
+
+  @doc false
+  def changeset(ledger, attrs) do
+    ledger
+    |> cast(attrs, [
+      :thread_id,
+      :correlation_id,
+      :route_id,
+      :actor_ref,
+      :actor_kind,
+      :event_class,
+      :event_type,
+      :outcome,
+      :provenance,
+      :occurred_at,
+      :recorded_at,
+      :idempotency_key,
+      :metadata,
+      :row_hash,
+      :prev_hash
+    ])
+    |> validate_required([
+      :thread_id,
+      :correlation_id,
+      :route_id,
+      :actor_ref,
+      :actor_kind,
+      :event_class,
+      :event_type,
+      :outcome,
+      :provenance,
+      :occurred_at,
+      :recorded_at,
+      :idempotency_key
+    ])
+    |> reject_pii_in_metadata()
+    |> compute_hashes()
+  end
+
+  @doc """
+  Rejects the changeset if forbidden PII keys are found in metadata.
+  """
+  def reject_pii_in_metadata(changeset) do
+    case get_change(changeset, :metadata) do
+      nil ->
+        changeset
+      metadata when is_map(metadata) ->
+        found_keys =
+          Enum.filter(@forbidden_keys, fn key -> Map.has_key?(metadata, key) end)
+
+        if found_keys == [] do
+          changeset
+        else
+          add_error(changeset, :metadata, "contains forbidden PII keys")
+        end
+    end
+  end
+
+  @doc """
+  Computes advisory row_hash and prev_hash.
+  """
+  def compute_hashes(changeset) do
+    if changeset.valid? do
+      thread_id = get_field(changeset, :thread_id, "")
+      actor_ref = get_field(changeset, :actor_ref, "")
+      event_class = get_field(changeset, :event_class, "")
+      
+      payload = "#{thread_id}|#{actor_ref}|#{event_class}"
+      hash = :crypto.hash(:sha256, payload) |> Base.encode16(case: :lower)
+      
+      prev = get_field(changeset, :prev_hash) || "genesis"
+
+      changeset
+      |> put_change(:row_hash, hash)
+      |> put_change(:prev_hash, prev)
+    else
+      changeset
+    end
+  end
+
+  @doc """
+  Records an audit event standalone.
+
+  WARNING: Audit events should ideally be inserted in the same transaction as the action they describe.
+  Consider using `record_in_multi/3` instead.
+  """
+  def record(attrs) do
+    %__MODULE__{}
+    |> changeset(attrs)
+  end
+
+  @doc """
+  Adds an audit event to an existing Ecto.Multi.
+
+  WARNING: It is up to the caller to execute the multi with the host's Repo.
+  """
+  def record_in_multi(multi, name, attrs) do
+    Ecto.Multi.insert(multi, name, changeset(%__MODULE__{}, attrs))
+  end
+end
