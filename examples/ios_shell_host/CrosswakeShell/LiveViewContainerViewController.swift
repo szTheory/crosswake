@@ -259,6 +259,7 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
             let scriptSource = """
             window.crosswakeBridge = window.crosswakeBridge || {};
             window.crosswakeBridge.capabilities = \(capabilitiesString);
+            window.crosswakeBridge.threadId = "\(session.threadID)";
             """
             let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             userContentController.addUserScript(userScript)
@@ -323,6 +324,19 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         self.notificationTokenProvider = notificationTokenProvider
         self.uiActionDelegates = uiActionDelegates
         
+        webView.configuration.userContentController.removeAllUserScripts()
+        let capabilities = shell.registeredCapabilities
+        if let capabilitiesData = try? JSONSerialization.data(withJSONObject: capabilities, options: []),
+           let capabilitiesString = String(data: capabilitiesData, encoding: .utf8) {
+            let scriptSource = """
+            window.crosswakeBridge = window.crosswakeBridge || {};
+            window.crosswakeBridge.capabilities = \(capabilitiesString);
+            window.crosswakeBridge.threadId = "\(session.threadID)";
+            """
+            let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+            webView.configuration.userContentController.addUserScript(userScript)
+        }
+        
         filePickerCoordinator.updatePresenter(self)
         uiActionDelegates.presenter = self
         uiActionDelegates.filePickerCoordinator = filePickerCoordinator
@@ -385,7 +399,9 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
             return
         }
 
-        webView.load(URLRequest(url: session.url))
+        var request = URLRequest(url: session.url)
+        request.setValue(session.threadID, forHTTPHeaderField: "X-Crosswake-Thread-Id")
+        webView.load(request)
     }
 
     private static func fallbackURL(for session: LiveViewSession) -> URL {
