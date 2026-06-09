@@ -1,81 +1,30 @@
-# v6.0 Roadmap: Adoption Evidence Demo App (Flashcard Cohort)
+# Roadmap: Crosswake
 
-## Arc Structure
+## Milestones
 
-This milestone (v6.0) spans from Phase 84 through Phase 90.
+- ✅ **v6.0 Adoption Evidence Demo App (Flashcard Cohort)** — Phases 84-90 (shipped 2026-06-09)
+- ✅ **v5.1 Adoption Evidence Demo App** — Phases 80-83 (shipped 2026-06-09)
+- ✅ **v5.0 Standalone Publishable Shell Packages** — Phases 76-79 (shipped 2026-06-06)
 
-## Phase 84: Offline Substrate Foundation
+_Full shipped history: see `.planning/MILESTONES.md`. Archived roadmaps: `.planning/milestones/`._
 
-**Goal:** Define `Crosswake.Offline.ContentPack`, manifest generation, and offline route policy.
+## Phases
 
-- [x] Requirements: OFF-01
+<details>
+<summary>✅ v6.0 Adoption Evidence Demo App (Flashcard Cohort) (Phases 84-90) — SHIPPED 2026-06-09</summary>
 
-**Plans:** 1 plan
+- [x] Phase 84: Offline Substrate Foundation (1/1 plans)
+- [x] Phase 85: Sync & Event Log Foundation (1/1 plans)
+- [x] Phase 86: Flashcard Domain Setup (Demo App) (2/2 executed; 86-00 TDD plan superseded)
+- [x] Phase 87: Online LiveView & Architecture (1/1 plans)
+- [x] Phase 88: Offline Island & Local Engine (1/1 plans)
+- [x] Phase 89: E2E Integration & UI Polish (1/1 plans)
+- [x] Phase 90: Shift-Left CI/CD & Closeout (1/1 plans)
 
-Plans:
+Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
-- [x] 84-01-PLAN.md — Define ContentPack and test offline pack manifest compilation
+</details>
 
-## Phase 85: Sync & Event Log Foundation
+## Next Milestone
 
-**Goal:** Define `Crosswake.Sync.EventLog`, idempotency keys, and server-side reconciliation endpoints.
-
-- [ ] Requirements: SYNC-01, SYNC-02
-
-**Plans:** 1/1 plans complete
-
-Plans:
-
-- [x] 85-01-PLAN.md — Define Sync EventLog structs and mix task to generate host Ecto schema and Phoenix controller.
-
-## Phase 86: Flashcard Domain Setup (Demo App)
-
-**Goal:** Scaffold the demo app, Phoenix context, Ecto schemas (Cards, Decks, Progress), and seeds.
-
-- [ ] Requirements: DEMO-01
-- [ ] Generate Phoenix core context for Flashcards.
-- [ ] Create robust seeds for demo cohort.
-
-**Plans:** 2/3 plans executed
-
-Plans:
-**Wave 1**
-
-- [x] 86-01-PLAN.md — Generate Ecto schemas, migrations, and Phoenix context for Flashcards
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 86-02-PLAN.md — Implement context tests and database demo seeds
-
-## Phase 87: Online LiveView & Architecture
-
-**Goal:** Build the online dashboard, course selection, and "Download Pack" UI.
-
-- [ ] Requirements: DEMO-01, DEMO-03
-- [ ] Create LiveView dashboard for deck management.
-- [ ] Implement Brand Book styling for online routes.
-
-## Phase 88: Offline Island & Local Engine
-
-**Goal:** Implement the JS-based offline study island, IndexedDB storage, local scheduler, and event queuing.
-
-- [ ] Requirements: DEMO-02, OFF-02
-- [ ] Build offline study loop in vanilla JS / lightweight client code.
-- [ ] Wire up IndexedDB caching and mutation queue.
-
-## Phase 89: E2E Integration & UI Polish
-
-**Goal:** Connect the offline island to the native shell, apply Brand Book CSS/UI guidelines, and polish animations/microcopy.
-
-- [ ] Requirements: DEMO-03
-- [ ] Polish UI transitions.
-- [ ] Integrate closely with v5.0 standalone shell configurations.
-
-## Phase 90: Shift-Left CI/CD & Closeout
-
-**Goal:** Implement network-toggling E2E tests proving the offline study loop, write adoption guides, and close out the milestone.
-
-- [ ] Requirements: PROOF-01, PROOF-02
-- [ ] Write Playwright tests with network toggling.
-- [ ] Assert Ecto sync state post-reconnect.
-- [ ] Complete v6.0 Closeout gate.
+📋 Not yet planned — run `/gsd:new-milestone` to start the next milestone cycle.

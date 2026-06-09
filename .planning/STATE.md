@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Adoption Evidence Demo App (Flashcard Cohort)
-status: executing
-last_updated: "2026-06-09T13:12:23.190Z"
-last_activity: 2026-06-09 -- Phase 90 planning complete
+status: Awaiting next milestone
+last_updated: "2026-06-09T13:33:01.596Z"
+last_activity: 2026-06-09 — Milestone v6.0 completed and archived
 progress:
   total_phases: 7
   completed_phases: 6
@@ -18,14 +18,14 @@ progress:
 ## Project Reference
 
 **Core Value**: Replace host-owned generated shell code with standalone SPM/Maven dependencies to eliminate the "eject trap".
-**Current Focus**: Milestone v6.0 Adoption Evidence Demo App (Flashcard Cohort)
+**Current Focus**: Planning next milestone (v6.0 shipped 2026-06-09)
 
 ## Current Position
 
-Phase: 90
-Plan: None
-Status: Completed plan 90-01
-Last activity: 2026-06-09 -- Phase 90 planning complete
+Phase: Milestone v6.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-09 — Milestone v6.0 completed and archived
 
 ## Deferred Items
 
@@ -64,4 +64,4 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ## Operator Next Steps
 
-- Determine next steps (e.g., plan next phase or closeout milestone).
+- Start the next milestone with /gsd-new-milestone

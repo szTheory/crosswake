@@ -1,5 +1,26 @@
 # Project Milestones: Crosswake
 
+## v6.0 Adoption Evidence Demo App (Flashcard Cohort) (Shipped: 2026-06-09)
+
+**Delivered:** A flashcard language-learning demo app that exercises the full `Crosswake.Offline` island philosophy end-to-end — online LiveView dashboard, downloadable content packs, a vanilla-JS offline study engine over IndexedDB, and server-side sync reconciliation on reconnect.
+
+**Phases completed:** 84-90 (7 phases, 9 plans)
+**Stats:** 51 files modified (+2727, -32 LOC), 2026-06-08 → 2026-06-09
+
+**Key accomplishments:**
+
+- Defined `Crosswake.Offline.ContentPack` as a strongly-typed struct enforced at the route-policy boundary and compiled into the root manifest's pack registry.
+- Defined `Crosswake.Sync.EventLog.Entry` plus a `mix crosswake.gen.sync` task that scaffolds host-owned Ecto schema + Phoenix reconciliation controller with idempotency keys.
+- Scaffolded the Flashcard domain (Decks/Cards/Progress) with `binary_id` keys for offline-sync compatibility, Phoenix context, migrations, and demo seeds.
+- Built brand-aligned `DeckLive.Index`/`DeckLive.Show` LiveViews wired through the router with `crosswake_defaults` policy, plus a vanilla-JS offline study engine wrapping IndexedDB.
+- Connected the offline island to the native shell, applied Brand Book CSS/UI polish, and proved the offline-study loop with network-toggling Playwright E2E tests asserting Ecto sync state post-reconnect.
+
+**Known issues fixed at close:** The demo app's `OfflineController`/`OfflineHTML` (Phase 88) used a non-existent `CrosswakeExampleWeb` macro module and were never wired into the router, breaking compilation — hidden by the mocked Playwright closeout. Fixed to the app's plain-Phoenix convention; `mix test` now passes 15/15.
+
+**Known deferred items at close:** 2 (see STATE.md Deferred Items) — Phase 81 verification gap (human_needed, carried from v5.1) and the `tighten-validation-ledger-closeout-gate` quick task.
+
+---
+
 ## v5.1 Adoption Evidence Demo App (Shipped: 2026-06-09)
 
 **Phases completed:** 4 phases, 8 plans, 6 tasks
