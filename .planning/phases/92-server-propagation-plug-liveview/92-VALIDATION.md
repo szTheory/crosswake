@@ -2,7 +2,7 @@
 phase: 92
 slug: server-propagation-plug-liveview
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-09
 ---
@@ -38,8 +38,11 @@ created: 2026-06-09
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| (filled by planner) | — | — | PROP-01 | — | Plug never overwrites inbound thread id; rejects forbidden/PII keys via Phase 91 allowlist guard | unit | `mix test test/crosswake/plug/threadline_test.exs` | ❌ W0 | ⬜ pending |
-| (filled by planner) | — | — | PROP-03 | — | on_mount never crashes static render; reads connect params only when connected | unit | `mix test test/crosswake/live/threadline_test.exs` | ❌ W0 | ⬜ pending |
+| 92-01-T1 | 92-01 | 1 | PROP-01 | T-92-04 | `Id.generate/0` mints CSPRNG-backed RFC-4122 v4 UUIDs | unit | `mix test test/crosswake/threadline/id_test.exs` | ❌ W0 | ⬜ pending |
+| 92-01-T2 | 92-01 | 1 | PROP-01 | T-92-01,T-92-03 | Plug never overwrites inbound thread id; rejects forbidden/PII keys via Phase 91 allowlist guard | unit | `mix test test/crosswake/plug/threadline_test.exs` | ❌ W0 | ⬜ pending |
+| 92-02-T1 | 92-02 | 1 | PROP-03 | T-92L-02,T-92L-03 | on_mount never crashes static render; reads connect params only when connected; never mints | unit | `mix test test/crosswake/live/threadline_test.exs` | ❌ W0 | ⬜ pending |
+| 92-03-T1 | 92-03 | 2 | PROP-01,PROP-03 | T-92P-01,T-92P-02 | Hermetic merge-blocking proof asserts full Plug + on_mount contracts | proof | `mix test test/crosswake/proof/phase92_server_propagation_closeout_test.exs` | ❌ W0 | ⬜ pending |
+| 92-03-T2 | 92-03 | 2 | PROP-01,PROP-03 | T-92P-SC | Hex `@version` bump 0.1.1→0.1.2 | unit | `grep -c '@version "0.1.2"' mix.exs` | ✅ exists | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
