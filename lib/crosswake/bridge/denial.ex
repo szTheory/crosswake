@@ -8,13 +8,14 @@ defmodule Crosswake.Bridge.Denial do
   alias Crosswake.Shell.Denial, as: ShellDenial
 
   @enforce_keys [:command, :route_id, :correlation_id, :denial]
-  defstruct [:command, :route_id, :correlation_id, :denial]
+  defstruct [:command, :route_id, :correlation_id, :denial, thread_id: nil]
 
   @type t :: %__MODULE__{
           command: String.t(),
           route_id: String.t(),
           correlation_id: String.t(),
-          denial: ShellDenial.t()
+          denial: ShellDenial.t(),
+          thread_id: String.t() | nil
         }
 
   @spec new(keyword()) :: t()
@@ -23,7 +24,8 @@ defmodule Crosswake.Bridge.Denial do
       command: Keyword.fetch!(attrs, :command),
       route_id: Keyword.fetch!(attrs, :route_id),
       correlation_id: Keyword.fetch!(attrs, :correlation_id),
-      denial: Keyword.fetch!(attrs, :denial)
+      denial: Keyword.fetch!(attrs, :denial),
+      thread_id: Keyword.get(attrs, :thread_id)
     })
   end
 
@@ -33,6 +35,7 @@ defmodule Crosswake.Bridge.Denial do
       command: request.command,
       route_id: request.route_id,
       correlation_id: request.correlation_id,
+      thread_id: request.thread_id,
       denial: denial
     )
   end
@@ -43,8 +46,11 @@ defmodule Crosswake.Bridge.Denial do
       "command" => denial.command,
       "route_id" => denial.route_id,
       "correlation_id" => denial.correlation_id,
+      "thread_id" => denial.thread_id,
       "denial" => ShellDenial.to_map(denial.denial)
     }
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
     |> Types.to_map()
   end
 end

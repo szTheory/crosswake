@@ -76,7 +76,7 @@ defmodule Crosswake.Bridge.ContractTest do
 
     assert Contract.to_map(request) == %{
              "protocol" => "crosswake.bridge",
-             "version" => "1.0.0",
+             "version" => "1.1.0",
              "command" => "transfer.upload.prepare",
              "capability" => "transfer.upload.prepare",
              "route_id" => "camera",
@@ -120,7 +120,7 @@ defmodule Crosswake.Bridge.ContractTest do
 
     assert Contract.to_map(reply) == %{
              "protocol" => "crosswake.bridge",
-             "version" => "1.0.0",
+             "version" => "1.1.0",
              "command" => "files.pick",
              "route_id" => "dashboard",
              "correlation_id" => "req-456",

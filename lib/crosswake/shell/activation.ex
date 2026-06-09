@@ -30,6 +30,7 @@ defmodule Crosswake.Shell.Activation do
       :bridge_protocol_version,
       :native_runtime_version,
       :correlation_id,
+      thread_id: nil,
       declared_pack_requirements: %{},
       installed_packs: %{},
       capabilities: %{}
@@ -46,6 +47,7 @@ defmodule Crosswake.Shell.Activation do
             bridge_protocol_version: String.t(),
             native_runtime_version: String.t(),
             correlation_id: String.t(),
+            thread_id: String.t() | nil,
             declared_pack_requirements: %{optional(String.t()) => String.t()},
             installed_packs: %{optional(String.t()) => String.t()},
             capabilities: %{optional(String.t()) => String.t()}
@@ -82,6 +84,7 @@ defmodule Crosswake.Shell.Activation do
       bridge_protocol_version: Keyword.fetch!(attrs, :bridge_protocol_version),
       native_runtime_version: Keyword.fetch!(attrs, :native_runtime_version),
       correlation_id: Keyword.fetch!(attrs, :correlation_id),
+      thread_id: Keyword.get(attrs, :thread_id),
       declared_pack_requirements: Keyword.get(attrs, :declared_pack_requirements, %{}),
       installed_packs: Keyword.get(attrs, :installed_packs, %{}),
       capabilities: Keyword.get(attrs, :capabilities, %{})
@@ -155,6 +158,7 @@ defmodule Crosswake.Shell.Activation do
       "bridge_protocol_version" => request.bridge_protocol_version,
       "native_runtime_version" => request.native_runtime_version,
       "correlation_id" => request.correlation_id,
+      "thread_id" => request.thread_id,
       "declared_pack_requirements" => Types.to_map(request.declared_pack_requirements),
       "installed_packs" => Types.to_map(request.installed_packs),
       "capabilities" => Types.to_map(request.capabilities)
