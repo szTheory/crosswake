@@ -106,7 +106,9 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   2. `mix crosswake.doctor` reports Threadline posture and emits `threadline.plug_missing` (advisory), `threadline.ledger_not_configured` (advisory), `threadline.ledger_schema_drift` (warning), and `threadline.pii_forbidden_field_present` (error, fail-closed)
   3. The support matrix exposes a `@audit_ledger_support_truth` module attribute row with explicit denial/fallback posture — `ephemeral-only` when no ledger is configured is non-blocking, not an error
   4. All three operator surfaces use only text output; no LiveDashboard dependency is introduced
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 95-01-PLAN.md — Support Matrix Truth & Doctor Findings
+- [ ] 95-02-PLAN.md — CLI Task for Threadline Posture
 
 ### Phase 96: Docs-Contract + Proof
 **Goal**: `guides/threadline.md` is the honest public contract for the Threadline feature, mechanically verified against the shipped code, with a hermetic merge-blocking proof lane and an advisory example-host ledger proof
@@ -128,5 +130,5 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
+| 95. Operator Surface | v7.0 | 0/2 | Not started | - |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
