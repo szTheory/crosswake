@@ -6,5 +6,8 @@
     "dx_ux_first": true,
     "adopter_first_done_lens": true,
     "lessons_retention": true
+  },
+  "workflow": {
+    "_auto_chain_active": false
   }
 }
