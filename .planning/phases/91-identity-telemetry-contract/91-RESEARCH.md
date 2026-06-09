@@ -677,17 +677,11 @@ Step 2.6: Verified standard Elixir/Mix toolchain is sufficient. No external serv
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`Denial.to_map/1` nil-handling via `Types.to_map/1`**
-   - What we know: `to_map/1` delegates to `Types.to_map(denial)` at the end (line 48 of `denial.ex`), which calls `ShellDenial.to_map` on the nested denial struct.
-   - What's unclear: The body of `Denial.to_map/1` builds a literal map and then pipes to `Types.to_map()` — it's not obvious whether `Types.to_map/1` nil-filters. Need to verify before writing the `thread_id => denial.thread_id` addition.
-   - Recommendation: Planner should read `lib/crosswake/manifest/types.ex` for `Types.to_map/1` behavior before writing the Denial task. If it does not nil-filter, apply `Enum.reject` before the `Types.to_map()` delegation.
+1. **`Denial.to_map/1` nil-handling via `Types.to_map/1`** — **RESOLVED 2026-06-09 (orchestrator).** `Crosswake.Manifest.Types.to_map/1` does **NOT** nil-filter — its `map` clause (`lib/crosswake/manifest/types.ex:1236`) only stringifies keys and recurses. So a nil `thread_id` would serialize as `"thread_id" => nil`. Plan 91-02 Task 1 adds a **local** `Enum.reject(fn {_k, v} -> is_nil(v) end) |> Map.new()` in `denial.ex` BEFORE the `Types.to_map()` pipe; the shared `Manifest.Types.to_map/1` is left untouched.
 
-2. **Whether `compatibility_test.exs` uses default `@version`**
-   - What we know: The compatibility test file was identified as touching `to_map` — but we confirmed it exercises `bridge_protocol_version` from the request, not from `Contract.@version` directly.
-   - What's unclear: Whether any test calls `Contract.new_request/1` without an explicit `version:` kwarg and then asserts on the version string.
-   - Recommendation: Planner should run `grep -n "version.*1.0.0\|1\.0\.0.*version" test/crosswake/compatibility/compatibility_test.exs` before writing that wave.
+2. **Whether `compatibility_test.exs` uses default `@version`** — **RESOLVED 2026-06-09 (orchestrator + planner).** The compatibility gate constructs Target/Request via explicit `bridge_protocol_version` and asserts on findings, not the default version string; the `@version` bump is safe under semver `>=`. `contract_test.exs` line 79 asserts `"version" => "1.0.0"` in a `to_map` equality and is flipped to `"1.1.0"` in 91-02 Task 2. A confirming grep is baked into 91-02 Task 2 before finalizing.
 
 ---
 
