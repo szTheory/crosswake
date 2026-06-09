@@ -31,7 +31,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 **Milestone Goal:** Give Crosswake day-2 operational viability — correlate the Native → Bridge → Phoenix → DB event sequence for a single user journey and durably record terminal critical events, narrowly and honestly, PII-free, without becoming an APM, an OTel replacement, or a database-bloat machine.
 
 - [x] **Phase 91: Identity + Telemetry Contract** - Add `thread_id` to bridge/activation contracts and ship the `Crosswake.Threadline.Telemetry` allowlist module (completed 2026-06-09)
-- [ ] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount
+- [x] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount (completed 2026-06-09)
 - [ ] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId`
 - [ ] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema
 - [ ] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row
@@ -64,7 +64,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 **Plans**: 3 plans
 - [x] 92-01-PLAN.md — `Crosswake.Threadline.Id` UUID minting + `Crosswake.Plug.Threadline` (read/mint header, Logger.metadata, response echo, telemetry triplet) (PROP-01)
 - [x] 92-02-PLAN.md — `Crosswake.Live.Threadline` `on_mount/4` connect-param metadata bridge (PROP-03)
-- [ ] 92-03-PLAN.md — hermetic merge-blocking closeout proof lane + `mix.exs` 0.1.1→0.1.2 (PROP-01, PROP-03)
+- [x] 92-03-PLAN.md — hermetic merge-blocking closeout proof lane + `mix.exs` 0.1.1→0.1.2 (PROP-01, PROP-03)
 **UI hint**: no (backend-only: Plug + LiveView on_mount; no visual surface. The visual UI is UI-01's `crosswake_dashboard`, a separate opt-in package not in this milestone)
 
 ### Phase 93: Native Shell Propagation
@@ -120,7 +120,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
-| 92. Server Propagation — Plug + LiveView | v7.0 | 2/3 | In Progress|  |
+| 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete   | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 0/TBD | Not started | - |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
 | 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
