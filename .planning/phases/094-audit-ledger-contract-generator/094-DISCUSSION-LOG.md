@@ -1,25 +1,31 @@
 # Phase 94: Audit Ledger Contract + Generator - Discussion Log
 
 **Date:** 2026-06-09
-**Status:** Completed via Auto/Autonomous Mode
 
-## Areas Discussed
+## Discussion Areas
 
-### Schema and Ecto Types
-**Selected Option:** Use `Ecto.Enum` for the provenance field to ensure robust application-level validation.
-**Notes:** Decided against native database enums to simplify host migrations and support varied database backends (PostgreSQL, SQLite, etc.).
+### Migration Idempotency
+- **Options Presented:** Generate with timestamp vs check for existing migration by name.
+- **Selection:** Check for existing by name suffix.
+- **Notes:** User requested deep research. The recommendation to scan `priv/repo/migrations/*_create_crosswake_audit_ledger.exs` and skip if found was accepted to prevent duplicate migration footguns, aligning with `gen.sync`'s superior DX.
 
-### Security and PII Guard
-**Selected Option:** Ecto Changeset Fail-Closed Guard.
-**Notes:** `reject_pii_in_metadata/1` will act as a standard Ecto validation, returning a changeset error if forbidden keys are present.
+### HMAC Secret Source
+- **Options Presented:** Application config vs runtime argument.
+- **Selection:** Dual-mode fallback (Opts -> Config).
+- **Notes:** Accepted recommendation to use a fallback model: checking explicit `opts` keyword list first, then falling back to `Application.get_env(:crosswake, :audit_hmac_secret)`. This provides "it just works" ergonomics with necessary flexibility.
 
-### Immutability and Hashing
-**Selected Option:** Advisory hash chaining inside `record_in_multi/2`.
-**Notes:** Acknowledged the concurrent insert race condition for `prev_hash`. The requirement states hashes are advisory; docstrings will clarify that cryptographic serialization is out of scope.
+### Customizable Schema Name
+- **Options Presented:** Hardcoded vs CLI Arguments.
+- **Selection:** Convention over Configuration.
+- **Notes:** Accepted recommendation to statically target `MyApp.Audit.Ledger` and table `crosswake_audit_ledger` (derived from host app's base namespace). This eliminates wiring boilerplate for day-2 ops tools.
 
-### Generator UX
-**Selected Option:** Idempotent generation.
-**Notes:** Will match the `[crosswake] reused` behavior of `gen.sync` to prevent accidental overwrites of host modifications.
+### Metadata Serialization
+- **Options Presented:** Simple `:map` vs JSONB equivalent column.
+- **Selection:** Native Ecto `:map` (JSONB).
+- **Notes:** Accepted recommendation to use native Ecto `:map` because it seamlessly translates to JSONB in Postgres, allowing the `reject_pii_in_metadata/1` guard to trivially iterate over keys without extra serialization dependencies.
 
----
-*Note: This log is for human retrospective use. Downstream agents consume CONTEXT.md.*
+## Deferred Ideas
+- None — discussion stayed within phase scope.
+
+## Notes
+- User requested one-shot cohesive architectural recommendations across all four areas, emphasizing developer ergonomics, idiomatic Elixir patterns, and principle of least surprise. Recommendations were provided and accepted in full.

@@ -24,16 +24,19 @@ A host team can run `mix crosswake.gen.audit` to scaffold a fully-formed, PII-fr
 ### Schema and Ecto Types
 - **D-01: Provenance Field as Ecto.Enum:** Use `Ecto.Enum` for the `provenance` field `{:device_claimed, :backend_accepted}` to enforce at the application layer while generating a standard string or integer column in the database, avoiding native DB enums for simpler migrations.
 - **D-02: Opaque Actor Ref and HMAC Helper:** The `actor_ref` is stored as an opaque string. Provide a helper (e.g., `Crosswake.Audit.actor_ref/2`) that uses `:crypto.mac` to anonymize internal user IDs, mirroring the pattern in `Chimeway.Redaction.fingerprint_token/2`.
+- **D-08: Customizable Schema Name:** Convention over Configuration. The generator automatically derives the host app's base namespace and enforces `MyApp.Audit.Ledger` and table `crosswake_audit_ledger` instead of taking it as a CLI argument. This eliminates wiring boilerplate for day-2 ops tools.
+- **D-09: Metadata Serialization:** Native Ecto `:map` (JSONB). Use Ecto `:map` for metadata, seamlessly translating to JSONB in Postgres, allowing the `reject_pii_in_metadata/1` guard to iterate over native Elixir map keys. No extra serialization dependencies required.
 
 ### Security and PII Guard
 - **D-03: Changeset Fail-Closed Guard:** The `reject_pii_in_metadata/1` is implemented as an Ecto Changeset function. It iterates over the keys in the `metadata` map and adds an error if any key matches a generated `@forbidden_keys` list (e.g., email, ip, name). This ensures records cannot be inserted if PII slips in.
+- **D-07: HMAC Secret Source:** Dual-mode fallback. The `actor_ref` helper defaults to checking the app config (`Application.get_env(:crosswake, :audit_hmac_secret)`) but accepts overrides via keyword list (`opts`).
 
 ### Immutability and Hashing
 - **D-04: Append-Only by Omission:** Do not generate any `update` or `delete` functions or changeset wrappers for them. The Ecto schema should be treated as insert-only.
-- **D-05: Advisory Hash Computation:** The `row_hash` and `prev_hash` are computed prior to insert. To avoid race conditions blocking concurrent inserts, `prev_hash` is "best effort" or "advisory" at insert time (e.g. fetching the max ID's hash via a quick query in `record_in_multi`, or just accepting gaps if concurrent). The docstrings must explicitly state this is advisory for offline tamper detection, not cryptographic transaction serialization. Use `:crypto.hash(:sha256, ...)` for the `row_hash`.
+- **D-05: Advisory Hash Computation:** The `row_hash` and `prev_hash` are computed prior to insert. To avoid race conditions blocking concurrent inserts, `prev_hash` is "best effort" or "advisory" at insert time. The docstrings must explicitly state this is advisory for offline tamper detection. Use `:crypto.hash(:sha256, ...)` for the `row_hash`.
 
 ### Generator UX
-- **D-06: Idempotent File Generation:** If the target migration or schema file already exists, `mix crosswake.gen.audit` prints `[crosswake] reused` and skips overwriting, matching `gen.sync` behavior.
+- **D-06: Idempotent File Generation:** If the target migration or schema file already exists, `mix crosswake.gen.audit` prints `[crosswake] reused` and skips overwriting. Specifically for the migration: check for existing by name suffix (e.g., `*create_crosswake_audit_ledger.exs`). Scan for the suffix. If found, print `[crosswake] reused`. If absent, generate with a fresh timestamp. This prevents duplicate migration footguns.
 
 </decisions>
 
@@ -53,8 +56,8 @@ A host team can run `mix crosswake.gen.audit` to scaffold a fully-formed, PII-fr
 ## Existing Code Insights
 
 ### Established Patterns
-- **`gen.sync`:** The `mix crosswake.gen.sync` task provides the template for idempotent generation and file checking.
-- **HMAC:** `Chimeway.Redaction.fingerprint_token/2` (`lib/crosswake/companions/chimeway/redaction.ex`) provides the blueprint for the `actor_ref` HMAC function.
+- **`gen.sync`:** The `mix crosswake.gen.sync` task provides the template for idempotent generation and file checking. The suffix-check logic can be modeled on Ecto's own checks or custom implemented by scanning `priv/repo/migrations/`.
+- **HMAC:** `Chimeway.Redaction.fingerprint_token/2` (`lib/crosswake/companions/chimeway/redaction.ex`) provides the blueprint for the `actor_ref` HMAC function, specifically the opts vs config fallback.
 - **Telemetry:** `Crosswake.Threadline.Telemetry` provides the existing metadata allowlist logic, complementing the PII guard on the DB side.
 
 </code_context>
@@ -64,11 +67,12 @@ A host team can run `mix crosswake.gen.audit` to scaffold a fully-formed, PII-fr
 
 - The `record_in_multi/2` helper should append to an `Ecto.Multi` struct, making it easy for the host app to insert an audit log transactionally alongside their domain mutations.
 - The default `@forbidden_keys` list for metadata should be heavily populated with standard PII terms (`email`, `phone`, `ip_address`, `ssn`, `name`, `first_name`, `last_name`, `address`).
+- Developer Ergonomics is paramount: providing dual-mode config fallback and standardizing the schema namespace pays dividends in setup speed and eliminates repetitive friction.
 
 </specifics>
 
 <deferred>
 ## Deferred Ideas
 
-None.
+None — discussion stayed within phase scope.
 </deferred>
