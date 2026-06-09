@@ -9,6 +9,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import dev.crosswake.shell.transfer.TransferCoordinator
 import org.json.JSONArray
 import org.json.JSONObject
@@ -27,6 +29,7 @@ class LiveViewFragment : Fragment() {
             allowedOrigin = requireArguments().getString(ARG_ALLOWED_ORIGIN).orEmpty(),
             bridgeProtocolVersion = requireArguments().getString(ARG_BRIDGE_PROTOCOL_VERSION).orEmpty(),
             nativeRuntimeVersion = requireArguments().getString(ARG_NATIVE_RUNTIME_VERSION).orEmpty(),
+            threadId = requireArguments().getString(ARG_THREAD_ID).orEmpty(),
             installedPacks = requireArguments().getSerializable(ARG_INSTALLED_PACKS) as? Map<String, String> ?: emptyMap(),
             routeRequiredPacks = requireArguments().getStringArrayList(ARG_ROUTE_REQUIRED_PACKS)?.toList() ?: emptyList(),
             capabilities = requireArguments().getSerializable(ARG_CAPABILITIES) as? Map<String, String> ?: emptyMap(),
@@ -114,7 +117,7 @@ class LiveViewFragment : Fragment() {
             return
         }
 
-        webView.loadUrl(session.url)
+        webView.loadUrl(session.url, mapOf("X-Crosswake-Thread-Id" to session.threadId))
     }
 
     companion object {
@@ -126,6 +129,7 @@ class LiveViewFragment : Fragment() {
         private const val ARG_ALLOWED_ORIGIN = "allowed_origin"
         private const val ARG_BRIDGE_PROTOCOL_VERSION = "bridge_protocol_version"
         private const val ARG_NATIVE_RUNTIME_VERSION = "native_runtime_version"
+        private const val ARG_THREAD_ID = "thread_id"
         private const val ARG_INSTALLED_PACKS = "installed_packs"
         private const val ARG_ROUTE_REQUIRED_PACKS = "route_required_packs"
         private const val ARG_CAPABILITIES = "capabilities"
@@ -139,6 +143,7 @@ class LiveViewFragment : Fragment() {
                     putString(ARG_ALLOWED_ORIGIN, session.allowedOrigin)
                     putString(ARG_BRIDGE_PROTOCOL_VERSION, session.bridgeProtocolVersion)
                     putString(ARG_NATIVE_RUNTIME_VERSION, session.nativeRuntimeVersion)
+                    putString(ARG_THREAD_ID, session.threadId)
                     putSerializable(ARG_INSTALLED_PACKS, HashMap(session.installedPacks))
                     putStringArrayList(ARG_ROUTE_REQUIRED_PACKS, ArrayList(session.routeRequiredPacks))
                     putSerializable(ARG_CAPABILITIES, HashMap(session.capabilities))

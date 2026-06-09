@@ -50,6 +50,7 @@ data class ActivationRequest(
     val bridgeProtocolVersion: String,
     val nativeRuntimeVersion: String,
     val correlationId: String,
+    val threadId: String? = null,
     val declaredPackRequirements: Map<String, String> = emptyMap(),
     val installedPacks: Map<String, String> = emptyMap(),
     val capabilities: Map<String, String> = emptyMap()
@@ -65,6 +66,7 @@ data class ActivationRequest(
                 bridgeProtocolVersion = baseline.bridgeProtocolVersion,
                 nativeRuntimeVersion = baseline.nativeRuntimeVersion,
                 correlationId = baseline.correlationId,
+                threadId = android.net.Uri.parse(url).getQueryParameter("thread_id") ?: baseline.threadId,
                 declaredPackRequirements = baseline.declaredPackRequirements,
                 installedPacks = baseline.installedPacks,
                 capabilities = baseline.capabilities
@@ -134,6 +136,7 @@ data class LiveViewSession(
     val allowedOrigin: String,
     val bridgeProtocolVersion: String,
     val nativeRuntimeVersion: String,
+    val threadId: String,
     val installedPacks: Map<String, String>,
     val routeRequiredPacks: List<String>,
     val capabilities: Map<String, String>,
@@ -172,6 +175,8 @@ class ActivationCoordinator(
     private val requestLoader: () -> ActivationRequest,
     private val packStore: PackStore
 ) {
+    var currentThreadId: String = java.util.UUID.randomUUID().toString()
+        private set
     private var hasBootstrapped = false
     private var cachedManifest: ShellManifest? = null
     private var lastRequest: ActivationRequest? = null
@@ -443,6 +448,7 @@ class ActivationCoordinator(
             allowedOrigin = request.origin,
             bridgeProtocolVersion = request.bridgeProtocolVersion,
             nativeRuntimeVersion = request.nativeRuntimeVersion,
+            threadId = currentThreadId,
             installedPacks = request.installedPacks,
             routeRequiredPacks = route.packs,
             capabilities = request.capabilities,
@@ -621,6 +627,7 @@ object ActivationFixtures {
             bridgeProtocolVersion = json.getString("bridge_protocol_version"),
             nativeRuntimeVersion = json.getString("native_runtime_version"),
             correlationId = json.getString("correlation_id"),
+            threadId = json.optString("thread_id").takeIf { it.isNotBlank() },
             declaredPackRequirements = json.optJSONObject("declared_pack_requirements").toStringMap(),
             installedPacks = json.optJSONObject("installed_packs").toStringMap(),
             capabilities = json.optJSONObject("capabilities").toStringMap()
@@ -666,11 +673,6 @@ object ActivationFixtures {
                 verification = transferJson.getString("verification"),
                 mediaTypes = transferJson.optJSONArray("media_types").toStringList(),
                 states = transferJson.optJSONArray("states").toStringList()
-            )
-        }
-    }
-}
- transferJson.optJSONArray("states").toStringList()
             )
         }
     }
