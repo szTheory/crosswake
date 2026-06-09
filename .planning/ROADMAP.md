@@ -116,7 +116,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete   | 2026-06-09 |
+| 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 0/TBD | Not started | - |
 | 93. Native Shell Propagation | v7.0 | 0/TBD | Not started | - |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
