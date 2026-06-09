@@ -382,6 +382,66 @@ defmodule Crosswake.Shell.ActivationTest do
     assert Enum.any?(denial.recovery[:actions], &(&1 == :declare_corridor_or_disable_commerce_route))
   end
 
+  # thread_id tests (Task 1 - 91-02)
+
+  test "Activation.Request accepts optional thread_id defaulting to nil" do
+    request =
+      Activation.new_request(
+        source: :cold_start,
+        origin: Types.default_origin(),
+        manifest_source: :bundled,
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        correlation_id: "corr-act-1"
+      )
+
+    assert is_nil(request.thread_id)
+  end
+
+  test "thread_id round-trips through Activation.new_request when provided" do
+    request =
+      Activation.new_request(
+        source: :cold_start,
+        origin: Types.default_origin(),
+        manifest_source: :bundled,
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        correlation_id: "corr-act-2",
+        thread_id: "thread-act-abc"
+      )
+
+    assert request.thread_id == "thread-act-abc"
+  end
+
+  test "Activation.Request.to_map omits thread_id when nil and includes it when present" do
+    request_nil =
+      Activation.new_request(
+        source: :cold_start,
+        origin: Types.default_origin(),
+        manifest_source: :bundled,
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        correlation_id: "corr-act-3"
+      )
+
+    map_nil = Activation.to_map(request_nil)
+    refute Map.has_key?(map_nil, "thread_id")
+
+    request_with =
+      Activation.new_request(
+        source: :cold_start,
+        origin: Types.default_origin(),
+        manifest_source: :bundled,
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        correlation_id: "corr-act-4",
+        thread_id: "t-act"
+      )
+
+    map_with = Activation.to_map(request_with)
+    assert map_with["thread_id"] == "t-act"
+  end
+
   defp activation_gate_result(%Decision{status: :allow} = decision), do: {:ok, decision}
   defp activation_gate_result(%Decision{} = decision), do: {:error, decision}
 
