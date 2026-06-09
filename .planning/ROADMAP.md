@@ -62,7 +62,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   3. `Crosswake.Live.Threadline` `on_mount/4` reads `_crosswake_thread_id` from LiveView connect params and sets `thread_id` on the LiveView process metadata
   4. The Plug correctly rejects forbidden/PII keys via the shared allowlist guard from Phase 91
 **Plans**: TBD
-**UI hint**: yes
+**UI hint**: no (backend-only: Plug + LiveView on_mount; no visual surface. The visual UI is UI-01's `crosswake_dashboard`, a separate opt-in package not in this milestone)
 
 ### Phase 93: Native Shell Propagation
 **Goal**: The iOS and Android native shells carry `thread_id` across the full activation sequence so that Native → Bridge → Phoenix correlation is complete end-to-end
