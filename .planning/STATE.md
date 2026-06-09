@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Adoption Evidence Demo App (Flashcard Cohort)
-status: Planning complete. Ready to begin Phase 84.
-last_updated: "2026-06-09T00:03:56.588Z"
-last_activity: 2026-06-09 — Milestone v6.0 initialized
+status: executing
+last_updated: "2026-06-09T01:57:35.138Z"
+last_activity: 2026-06-09 -- Phase 86 planning complete
 progress:
   total_phases: 7
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 2
+  percent: 29
 ---
 
 # Project State: Crosswake
@@ -22,10 +22,10 @@ progress:
 
 ## Current Position
 
-Phase: 84
+Phase: 85
 Plan: —
-Status: Planning complete. Ready to begin Phase 84.
-Last activity: 2026-06-09 — Milestone v6.0 initialized
+Status: Ready to execute
+Last activity: 2026-06-09 -- Phase 86 planning complete
 
 ## Deferred Items
 
@@ -58,9 +58,9 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ## Session Continuity
 
-- **Next Step**: `/gsd:plan-phase 84`
-- **Context**: v6.0 planning complete. Ready for execution.
+- **Next Step**: Milestone completion or next phase planning.
+- **Context**: Phase 85 execution and verification complete. All currently visible phases appear finished.
 
 ## Operator Next Steps
 
-- Start the next phase with `/gsd:plan-phase 84`
+- Determine next steps (e.g., plan next phase or closeout milestone).
