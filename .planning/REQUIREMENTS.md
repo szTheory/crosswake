@@ -8,7 +8,7 @@
 
 ### Correlation Propagation (PROP)
 
-- [ ] **PROP-01**: A Phoenix team can add `Crosswake.Plug.Threadline` to a pipeline so every request carries a `thread_id` in `Logger.metadata` — read from the `X-Crosswake-Thread-Id` header, minted as a fallback when absent (never overwriting an inbound id), and echoed on the response.
+- [x] **PROP-01**: A Phoenix team can add `Crosswake.Plug.Threadline` to a pipeline so every request carries a `thread_id` in `Logger.metadata` — read from the `X-Crosswake-Thread-Id` header, minted as a fallback when absent (never overwriting an inbound id), and echoed on the response.
 - [x] **PROP-02**: The Plug emits `[:crosswake, :threadline, :request, :start|:stop|:exception]` telemetry carrying only low-cardinality metadata (`thread_id`, `correlation_id`, `route_id`, `source`), and rejects forbidden/PII keys via the shared allowlist guard.
 - [ ] **PROP-03**: A team can opt a LiveView into thread correlation via `Crosswake.Live.Threadline` `on_mount`, which reads the `_crosswake_thread_id` connect param and sets `thread_id` on the LiveView process metadata.
 - [x] **PROP-04**: `thread_id` is a first-class field layered above the unchanged per-command `correlation_id` on the bridge and activation contracts, carried across `cold_start → deep_link → notification → in_app_navigation` activations.
@@ -72,7 +72,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROP-01 | Phase 92 | Pending |
+| PROP-01 | Phase 92 | Complete |
 | PROP-02 | Phase 91 | Complete |
 | PROP-03 | Phase 92 | Pending |
 | PROP-04 | Phase 91 | Complete |
