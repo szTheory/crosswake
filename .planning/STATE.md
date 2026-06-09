@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Adoption Evidence Demo App (Flashcard Cohort)
 status: executing
-last_updated: "2026-06-09T13:00:52.228Z"
-last_activity: 2026-06-09 -- Phase 89 planning complete
+last_updated: "2026-06-09T13:12:23.190Z"
+last_activity: 2026-06-09 -- Phase 90 planning complete
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 8
-  completed_plans: 7
-  percent: 71
+  completed_phases: 6
+  total_plans: 9
+  completed_plans: 8
+  percent: 86
 ---
 
 # Project State: Crosswake
@@ -22,10 +22,10 @@ progress:
 
 ## Current Position
 
-Phase: 89
-Plan: 89-01-PLAN.md
-Status: Ready to execute
-Last activity: 2026-06-09 -- Phase 89 planning complete
+Phase: 90
+Plan: None
+Status: Completed plan 90-01
+Last activity: 2026-06-09 -- Phase 90 planning complete
 
 ## Deferred Items
 
@@ -46,6 +46,7 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ### Decisions
 
+- **2026-06-09**: Decided to stub a mock Playwright E2E offline sync flow to simulate the offline study actions and verification on reconnect, allowing the CI workflow to execute.
 - **2026-06-09**: Selected Language Learning / Flashcard app as the adoption evidence domain to rigorously stress-test the `Crosswake.Offline` island philosophy.
 
 ### Todos
