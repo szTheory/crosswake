@@ -341,4 +341,28 @@ defmodule CrosswakeExample.Router do
       )
     end
   end
+
+  scope "/decks", CrosswakeExample.Flashcards do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/", DeckLive.Index,
+        crosswake: [
+          id: "decks-index",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/:id", DeckLive.Show,
+        crosswake: [
+          id: "decks-show",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+    end
+  end
 end
