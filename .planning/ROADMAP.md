@@ -48,7 +48,9 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   2. `Crosswake.Threadline.Telemetry` exists with `@metadata_keys` allowlist, `@forbidden_metadata_keys`, and `safe_value?/1` mirroring the Sigra telemetry pattern
   3. Telemetry emission via `execute/3` rejects any metadata key on the forbidden list without raising — tested hermetically
   4. No OTel dependency is introduced; the module uses only the existing `:telemetry` application
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 91-01-PLAN.md — `Crosswake.Threadline.Telemetry` allowlist module + hermetic unit tests (PROP-02)
+- [ ] 91-02-PLAN.md — `thread_id` on bridge/activation envelopes, `@version`/Hex bumps, published-contract closeout proof (PROP-04, PROP-02)
 
 ### Phase 92: Server Propagation — Plug + LiveView
 **Goal**: A Phoenix team can add `Crosswake.Plug.Threadline` to a pipeline and opt a LiveView in via `on_mount` so that every HTTP request and every LiveView WebSocket mount carries a `thread_id` in `Logger.metadata` and emits telemetry spans
@@ -114,7 +116,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 91. Identity + Telemetry Contract | v7.0 | 0/TBD | Not started | - |
+| 91. Identity + Telemetry Contract | v7.0 | 0/2 | Planned | - |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 0/TBD | Not started | - |
 | 93. Native Shell Propagation | v7.0 | 0/TBD | Not started | - |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
