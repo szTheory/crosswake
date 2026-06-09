@@ -32,7 +32,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 - [x] **Phase 91: Identity + Telemetry Contract** - Add `thread_id` to bridge/activation contracts and ship the `Crosswake.Threadline.Telemetry` allowlist module (completed 2026-06-09)
 - [x] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount (completed 2026-06-09)
-- [ ] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId`
+- [x] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId` (completed 2026-06-09)
 - [ ] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema
 - [ ] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row
 - [ ] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof
@@ -78,7 +78,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   4. `thread_id` is carried across `cold_start → deep_link → notification → in_app_navigation` activation continuations without being overwritten
   5. The two-channel design (HTTP header on initial load; connect param for WebSocket) and the documented JS `fetch`/`XHR` sub-navigation gap are reflected in native code and comments
 **Plans**: 2 plans
-- [ ] 93-01-PLAN.md — iOS Native Shell Thread Propagation
+- [x] 93-01-PLAN.md — iOS Native Shell Thread Propagation
 - [x] 93-02-PLAN.md — Android Native Shell Thread Propagation
 
 ### Phase 94: Audit Ledger Contract + Generator
@@ -123,7 +123,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 |-------|-----------|----------------|--------|-----------|
 | 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 93. Native Shell Propagation | v7.0 | 1/2 | In Progress|  |
+| 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
 | 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
