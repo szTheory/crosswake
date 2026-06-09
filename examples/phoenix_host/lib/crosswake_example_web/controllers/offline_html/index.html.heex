@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline Study</title>
+    <!-- Add basic styles for the study island -->
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background-color: #f3f4f6;
+        color: #1f2937;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #flashcard-container {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        max-width: 24rem;
+        text-align: center;
+        min-height: 12rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+      .card-front, .card-back {
+        width: 100%;
+      }
+      .card-back {
+        display: none;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+        color: #4b5563;
+        font-size: 1.25rem;
+      }
+      #controls {
+        display: flex;
+        gap: 1rem;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.25rem;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .btn-primary { background: #3b82f6; color: white; }
+      .btn-success { background: #10b981; color: white; }
+      .btn-danger { background: #ef4444; color: white; }
+      #status {
+        margin-top: 2rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Offline Study Island</h1>
+    
+    <div id="flashcard-container">
+      Loading flashcards...
+    </div>
+
+    <div id="controls">
+      <button id="btn-flip" class="btn-primary">Flip Card</button>
+      <button id="btn-pass" class="btn-success" style="display: none;">Pass</button>
+      <button id="btn-fail" class="btn-danger" style="display: none;">Fail</button>
+    </div>
+
+    <div id="status"></div>
+
+    <script src="/offline_study.js"></script>
+  </body>
+</html>
