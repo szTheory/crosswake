@@ -70,35 +70,33 @@
 
 ## Traceability
 
-Filled by the roadmapper. All v1 requirements must map to exactly one phase.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROP-01 | TBD | Pending |
-| PROP-02 | TBD | Pending |
-| PROP-03 | TBD | Pending |
-| PROP-04 | TBD | Pending |
-| PROP-05 | TBD | Pending |
-| LEDG-01 | TBD | Pending |
-| LEDG-02 | TBD | Pending |
-| LEDG-03 | TBD | Pending |
-| LEDG-04 | TBD | Pending |
-| LEDG-05 | TBD | Pending |
-| LEDG-06 | TBD | Pending |
-| OPER-01 | TBD | Pending |
-| OPER-02 | TBD | Pending |
-| OPER-03 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
-| DOCS-02 | TBD | Pending |
-| DOCS-03 | TBD | Pending |
-| PROOF-01 | TBD | Pending |
-| PROOF-02 | TBD | Pending |
+| PROP-01 | Phase 92 | Pending |
+| PROP-02 | Phase 91 | Pending |
+| PROP-03 | Phase 92 | Pending |
+| PROP-04 | Phase 91 | Pending |
+| PROP-05 | Phase 93 | Pending |
+| LEDG-01 | Phase 94 | Pending |
+| LEDG-02 | Phase 94 | Pending |
+| LEDG-03 | Phase 94 | Pending |
+| LEDG-04 | Phase 94 | Pending |
+| LEDG-05 | Phase 94 | Pending |
+| LEDG-06 | Phase 94 | Pending |
+| OPER-01 | Phase 95 | Pending |
+| OPER-02 | Phase 95 | Pending |
+| OPER-03 | Phase 95 | Pending |
+| DOCS-01 | Phase 96 | Pending |
+| DOCS-02 | Phase 96 | Pending |
+| DOCS-03 | Phase 96 | Pending |
+| PROOF-01 | Phase 96 | Pending |
+| PROOF-02 | Phase 96 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 19 ⚠️ (resolved at roadmap creation)
+- Mapped to phases: 19 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-09 — v7.0 Threadline Audit Capstone milestone start*
+*Last updated: 2026-06-09 — v7.0 Roadmap created (Phases 91-96)*

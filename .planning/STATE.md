@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Threadline Audit Capstone
-status: planning
-last_updated: "2026-06-09T15:10:21.259Z"
+status: roadmap_ready
+last_updated: "2026-06-09"
 last_activity: 2026-06-09
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,14 +18,19 @@ progress:
 ## Project Reference
 
 **Core Value**: Replace host-owned generated shell code with standalone SPM/Maven dependencies to eliminate the "eject trap".
-**Current Focus**: Planning next milestone (v6.0 shipped 2026-06-09)
+**Current Focus**: v7.0 Threadline Audit Capstone — roadmap defined, ready for phase planning
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 91 (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-09 — Milestone v7.0 started
+Status: Roadmap complete — awaiting `/gsd:plan-phase 91`
+Last activity: 2026-06-09 — v7.0 roadmap created (Phases 91-96)
+
+```
+v7.0 Progress: [          ] 0%  (0/6 phases)
+Phase 91 [  ] Phase 92 [  ] Phase 93 [  ] Phase 94 [  ] Phase 95 [  ] Phase 96 [  ]
+```
 
 ## Deferred Items
 
@@ -38,16 +43,19 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ## Performance Metrics
 
-- **Velocity**: TBD
-- **Requirement Coverage**: 9 mapped (OFF-01 to PROOF-02)
-- **Tech Debt**: 2 known deferred issues
+- **Velocity**: TBD (v7.0 not started)
+- **Requirement Coverage**: 19 mapped (PROP-01..05, LEDG-01..06, OPER-01..03, DOCS-01..03, PROOF-01..02)
+- **Tech Debt**: 2 known deferred issues (carried from v6.0)
 
 ## Accumulated Context
 
 ### Decisions
 
-- **2026-06-09**: Decided to stub a mock Playwright E2E offline sync flow to simulate the offline study actions and verification on reconnect, allowing the CI workflow to execute.
-- **2026-06-09**: Selected Language Learning / Flashcard app as the adoption evidence domain to rigorously stress-test the `Crosswake.Offline` island philosophy.
+- **2026-06-09**: Confirmed v7.0 decisions: bespoke `X-Crosswake-Thread-Id` header, zero OTel dependency, text-only operator UI, append-only + advisory hash columns, ledger deferred to `crosswake_dashboard` for LiveDashboard UI.
+- **2026-06-09**: Phase 91 owns the telemetry allowlist contract and `thread_id` bridge/activation field additions before any Plug code is written — establishes the shared module that Phases 92 and 94 both depend on.
+- **2026-06-09**: Phase 94 (ledger) depends on Phase 91 (telemetry contract) but is independent of Phase 92 (Plug) and Phase 93 (native) — native propagation and ledger can be sequenced but do not cross-depend.
+- **2026-06-09**: Decided to stub a mock Playwright E2E offline sync flow to simulate the offline study actions and verification on reconnect, allowing the CI workflow to execute (v6.0 carryover).
+- **2026-06-09**: Selected Language Learning / Flashcard app as the adoption evidence domain to rigorously stress-test the `Crosswake.Offline` island philosophy (v6.0 carryover).
 
 ### Todos
 
@@ -59,9 +67,9 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ## Session Continuity
 
-- **Next Step**: Milestone completion or next phase planning.
-- **Context**: Phase 85 execution and verification complete. All currently visible phases appear finished.
+- **Next Step**: Run `/gsd:plan-phase 91` to begin the Identity + Telemetry Contract phase.
+- **Context**: v7.0 roadmap created. Phases 91-96 span: identity/telemetry contract → server Plug+Live → native iOS/Android propagation → audit ledger contract+generator → operator surface → docs-contract+proof.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start Phase 91 with `/gsd:plan-phase 91`
