@@ -258,6 +258,9 @@ class ActivationCoordinator(
 
     fun activate(request: ActivationRequest): ShellPresentation {
         presentation = try {
+            if (request.threadId != null) {
+                currentThreadId = request.threadId
+            }
             val manifest = loadManifest()
             lastRequest = request
             resolve(request, manifest)
@@ -663,6 +666,11 @@ object ActivationFixtures {
                 verification = transferJson.getString("verification"),
                 mediaTypes = transferJson.optJSONArray("media_types").toStringList(),
                 states = transferJson.optJSONArray("states").toStringList()
+            )
+        }
+    }
+}
+ transferJson.optJSONArray("states").toStringList()
             )
         }
     }
