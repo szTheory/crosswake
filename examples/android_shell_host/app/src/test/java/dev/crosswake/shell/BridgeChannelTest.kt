@@ -287,6 +287,7 @@ class BridgeChannelTest {
     private fun session(declaredTransfers: List<ShellManifest.TransferSeam>): LiveViewSession {
         return LiveViewSession(
             routeId = "dashboard",
+            threadId = "test-thread-id",
             url = "https://example.crosswake.invalid/dashboard",
             allowedOrigin = "https://example.crosswake.invalid",
             bridgeProtocolVersion = "1.0.0",

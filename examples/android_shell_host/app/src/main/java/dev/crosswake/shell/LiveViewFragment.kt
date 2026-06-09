@@ -74,6 +74,21 @@ class LiveViewFragment : Fragment() {
         ) ?: throw IllegalStateException("LiveViewFragment must be attached to a Host that provides a CrosswakeShell instance")
 
         bridgeChannel.attach(webView, setOf(session.allowedOrigin))
+        
+        val capabilities = host?.shell?.config?.registeredCapabilities ?: emptyList()
+        val capabilitiesJson = org.json.JSONArray(capabilities).toString()
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                webView,
+                """
+                window.crosswakeBridge = window.crosswakeBridge || {};
+                window.crosswakeBridge.capabilities = $capabilitiesJson;
+                window.crosswakeBridge.threadId = "${session.threadId}";
+                """.trimIndent(),
+                setOf("*")
+            )
+        }
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -89,17 +104,6 @@ class LiveViewFragment : Fragment() {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                
-                val capabilities = (activity as? Host)?.shell?.config?.registeredCapabilities ?: emptyList()
-                val capabilitiesJson = org.json.JSONArray(capabilities).toString()
-                
-                view?.evaluateJavascript(
-                    """
-                    window.crosswakeBridge = window.crosswakeBridge || {};
-                    window.crosswakeBridge.capabilities = $capabilitiesJson;
-                    """.trimIndent(),
-                    null
-                )
             }
         }
     }
