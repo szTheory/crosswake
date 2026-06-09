@@ -1,0 +1,25 @@
+defmodule <%= app_module %>.Sync.EventLog do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "crosswake_sync_event_logs" do
+    field :idempotency_key, :string
+    field :route_id, :string
+    field :sync_seam, :string
+    field :operation, Ecto.Enum, values: [:create, :update, :delete, :custom]
+    field :payload, :map
+    field :status, Ecto.Enum, values: [:queued, :processing, :completed, :failed, :conflict], default: :queued
+    field :authoritative_state, :map
+    field :reason, :string
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(event_log, attrs) do
+    event_log
+    |> cast(attrs, [:idempotency_key, :route_id, :sync_seam, :operation, :payload, :status, :authoritative_state, :reason])
+    |> validate_required([:idempotency_key, :route_id, :sync_seam, :operation, :status])
+    |> unique_constraint(:idempotency_key)
+  end
+end

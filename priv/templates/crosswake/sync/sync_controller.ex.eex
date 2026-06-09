@@ -1,0 +1,86 @@
+defmodule <%= app_module %>Web.SyncController do
+  use <%= app_module %>Web, :controller
+
+  alias <%= app_module %>.Repo
+  alias <%= app_module %>.Sync.EventLog
+
+  @doc """
+  Reconciliation endpoint for Crosswake offline event replays.
+  """
+  def replay(conn, %{"events" => events}) do
+    # 1. Transform request payloads into Ecto schema attributes
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    entries =
+      Enum.map(events, fn event ->
+        %{
+          idempotency_key: event["idempotency_key"],
+          route_id: event["route_id"],
+          sync_seam: event["sync_seam"],
+          operation: String.to_atom(event["operation"]),
+          payload: event["payload"],
+          status: :queued,
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    # 2. Durably and idempotently log events
+    # Duplicates (by idempotency_key) will be ignored by on_conflict: :nothing
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert_all(:insert_events, EventLog, entries,
+        on_conflict: :nothing,
+        conflict_target: :idempotency_key,
+        returning: true
+      )
+
+    case Repo.transaction(multi) do
+      {:ok, %{insert_events: {_count, inserted_records}}} ->
+        # 3. Here you would normally dispatch `inserted_records` to a 
+        #    background worker, Oban job, or process synchronously.
+        #
+        # For duplicates (omitted from inserted_records), we can lookup 
+        # their current outcome to return back to the client.
+        
+        inserted_keys = MapSet.new(inserted_records, & &1.idempotency_key)
+        all_keys = Enum.map(entries, & &1.idempotency_key)
+        
+        duplicate_keys = 
+          all_keys
+          |> MapSet.new()
+          |> MapSet.difference(inserted_keys)
+          |> Enum.to_list()
+
+        duplicates = 
+          if duplicate_keys != [] do
+            Repo.all(
+              import Ecto.Query
+              from e in EventLog, where: e.idempotency_key in ^duplicate_keys
+            )
+          else
+            []
+          end
+        
+        # 4. Construct response mapping idempotency_key -> outcome
+        results = 
+          (inserted_records ++ duplicates)
+          |> Enum.map(fn log -> 
+            %{
+              idempotency_key: log.idempotency_key,
+              status: log.status,
+              authoritative_state: log.authoritative_state,
+              reason: log.reason
+            }
+          end)
+
+        conn
+        |> put_status(:ok)
+        |> json(%{data: results})
+
+      {:error, _failed_operation, _failed_value, _changes_so_far} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: "Failed to persist events"})
+    end
+  end
+end
