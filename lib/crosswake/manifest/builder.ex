@@ -5,6 +5,7 @@ defmodule Crosswake.Manifest.Builder do
 
   alias Crosswake.Manifest.Types
   alias Crosswake.Offline.Contracts
+  alias Crosswake.Offline.ContentPack
   alias Crosswake.Policy.CorridorProfiles
   alias Crosswake.Policy.Route
 
@@ -152,7 +153,7 @@ defmodule Crosswake.Manifest.Builder do
     routes
     |> Enum.flat_map(& &1.packs)
     |> Enum.sort_by(&pack_reference/1)
-    |> Map.new(fn pack ->
+    |> Map.new(fn %ContentPack{} = pack ->
       {pack_reference(pack),
        Types.new_pack_entry(
          id: pack.id,
@@ -210,7 +211,7 @@ defmodule Crosswake.Manifest.Builder do
     end)
   end
 
-  defp pack_reference(%{id: id, version: version}), do: "#{id}@#{version}"
+  defp pack_reference(%ContentPack{id: id, version: version}), do: "#{id}@#{version}"
 
   defp route_commerce(%Route{commerce: nil}), do: nil
 
