@@ -63,7 +63,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   4. The Plug correctly rejects forbidden/PII keys via the shared allowlist guard from Phase 91
 **Plans**: 3 plans
 - [x] 92-01-PLAN.md — `Crosswake.Threadline.Id` UUID minting + `Crosswake.Plug.Threadline` (read/mint header, Logger.metadata, response echo, telemetry triplet) (PROP-01)
-- [ ] 92-02-PLAN.md — `Crosswake.Live.Threadline` `on_mount/4` connect-param metadata bridge (PROP-03)
+- [x] 92-02-PLAN.md — `Crosswake.Live.Threadline` `on_mount/4` connect-param metadata bridge (PROP-03)
 - [ ] 92-03-PLAN.md — hermetic merge-blocking closeout proof lane + `mix.exs` 0.1.1→0.1.2 (PROP-01, PROP-03)
 **UI hint**: no (backend-only: Plug + LiveView on_mount; no visual surface. The visual UI is UI-01's `crosswake_dashboard`, a separate opt-in package not in this milestone)
 
@@ -120,7 +120,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
-| 92. Server Propagation — Plug + LiveView | v7.0 | 1/3 | In Progress|  |
+| 92. Server Propagation — Plug + LiveView | v7.0 | 2/3 | In Progress|  |
 | 93. Native Shell Propagation | v7.0 | 0/TBD | Not started | - |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
 | 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
