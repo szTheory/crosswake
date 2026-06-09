@@ -79,7 +79,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   5. The two-channel design (HTTP header on initial load; connect param for WebSocket) and the documented JS `fetch`/`XHR` sub-navigation gap are reflected in native code and comments
 **Plans**: 2 plans
 - [ ] 93-01-PLAN.md — iOS Native Shell Thread Propagation
-- [ ] 93-02-PLAN.md — Android Native Shell Thread Propagation
+- [x] 93-02-PLAN.md — Android Native Shell Thread Propagation
 
 ### Phase 94: Audit Ledger Contract + Generator
 **Goal**: A host team can run `mix crosswake.gen.audit` to scaffold a fully-formed, PII-free, append-only Ecto audit ledger with ProvenanceLane and advisory hash columns — and the `Crosswake.Audit.Ledger` contract struct is available in core so producers know the canonical event shape
@@ -123,7 +123,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 |-------|-----------|----------------|--------|-----------|
 | 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 93. Native Shell Propagation | v7.0 | 0/2 | Planned     | - |
+| 93. Native Shell Propagation | v7.0 | 1/2 | In Progress|  |
 | 94. Audit Ledger Contract + Generator | v7.0 | 0/TBD | Not started | - |
 | 95. Operator Surface | v7.0 | 0/TBD | Not started | - |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |

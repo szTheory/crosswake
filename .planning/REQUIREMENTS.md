@@ -12,7 +12,7 @@
 - [x] **PROP-02**: The Plug emits `[:crosswake, :threadline, :request, :start|:stop|:exception]` telemetry carrying only low-cardinality metadata (`thread_id`, `correlation_id`, `route_id`, `source`), and rejects forbidden/PII keys via the shared allowlist guard.
 - [x] **PROP-03**: A team can opt a LiveView into thread correlation via `Crosswake.Live.Threadline` `on_mount`, which reads the `_crosswake_thread_id` connect param and sets `thread_id` on the LiveView process metadata.
 - [x] **PROP-04**: `thread_id` is a first-class field layered above the unchanged per-command `correlation_id` on the bridge and activation contracts, carried across `cold_start → deep_link → notification → in_app_navigation` activations.
-- [ ] **PROP-05**: The iOS and Android native shells inject `X-Crosswake-Thread-Id` on the initial WebView load and expose `window.crosswakeBridge.threadId` for the LiveView WebSocket path.
+- [x] **PROP-05**: The iOS and Android native shells inject `X-Crosswake-Thread-Id` on the initial WebView load and expose `window.crosswakeBridge.threadId` for the LiveView WebSocket path.
 
 ### Audit Ledger (LEDG)
 
@@ -76,7 +76,7 @@
 | PROP-02 | Phase 91 | Complete |
 | PROP-03 | Phase 92 | Complete |
 | PROP-04 | Phase 91 | Complete |
-| PROP-05 | Phase 93 | Pending |
+| PROP-05 | Phase 93 | Complete |
 | LEDG-01 | Phase 94 | Pending |
 | LEDG-02 | Phase 94 | Pending |
 | LEDG-03 | Phase 94 | Pending |
