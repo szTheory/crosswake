@@ -77,10 +77,15 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v3.9 Chimeway Notification Seam** — shipped 2026-06-03. Added notification seam for token lifecycle, backend token binding, notification-open routing, revocation, and provider diagnostics.
 - **v4.0 Production Shell Runtime Line** — shipped 2026-06-04. Hardened generated iOS and Android shells into a documented production runtime line.
 - **v4.1 Multi-SaaS Archetype Proof Lanes** — shipped 2026-06-05. Proved subscription commerce, notification re-entry, media/evidence, auth-sensitive admin, and offline/draft workflows via end-to-end hermetic lanes.
+- **v5.0 Standalone Publishable Shell Packages** — shipped 2026-06-06. Extracted `ActivationCoordinator`/`BridgeChannel` into standalone SPM/Maven dependencies with a binary Core + hosted-glue strategy and reactive state APIs, solving the "eject trap".
+- **v5.1 Adoption Evidence Demo App** — shipped 2026-06-09. Transitioned iOS/Android demo hosts onto the standalone deps with reactive flow/publisher architectures, `RouteDelegate` + capability handshake, and a bounded-bridge proof.
+- **v6.0 Adoption Evidence Demo App (Flashcard Cohort)** — shipped 2026-06-09. Flashcard language-learning demo exercising `Crosswake.Offline` end-to-end: `Crosswake.Offline.ContentPack`, `Crosswake.Sync.EventLog` + `mix crosswake.gen.sync`, online LiveView + vanilla-JS offline island over IndexedDB, network-toggling Playwright E2E.
 
 ## Strategic Queue
 
-### Active: Adoption Evidence Demo App (v5.1)
+### Shipped: Adoption Evidence Demo App (v5.1 → v6.0)
+
+**Status:** SHIPPED — v5.1 (2026-06-09) transitioned demo hosts onto standalone deps; v6.0 (2026-06-09) shipped the Flashcard offline cohort. The demo-app wedge is closed.
 
 **Objective**
 - Build a realistic demo app in a representative cohort domain (e.g., field service, health/fitness, or study) with rich seeds, fixtures, and a click-around UI. 
@@ -97,7 +102,9 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - `dx-ux`
 - `e2e-testing`
 
-### Next: Threadline Audit Capstone
+### Active: Threadline Audit Capstone (v7.0)
+
+**Status:** ACTIVE — started 2026-06-09. North star in `.planning/research/SUMMARY.md`; canonical definition in `.planning/threads/threadline-audit.md`. Scope: cross-boundary `thread_id` propagation (core Plug/telemetry, zero new deps), an opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface. LiveDashboard timeline deferred to a future `crosswake_dashboard` package.
 
 **Objective**
 - Add auditability and distributed state tracking around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
@@ -118,7 +125,9 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - Opt-in `mix crosswake.gen.audit` Ecto ledger for terminal critical events (e.g., receipt validations, auth handoffs).
 - Unified logger metadata for Phoenix console tracing.
 
-### Next: Standalone Publishable Shell Packages (v4.2 / v5.0)
+### Shipped: Standalone Publishable Shell Packages (v5.0)
+
+**Status:** SHIPPED — v5.0 (2026-06-06) extracted the shell into standalone SPM/Maven dependencies and solved the "eject trap".
 
 **Objective**
 - Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization.
@@ -145,6 +154,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-06-01:** v3.7 closeout archived provider-adapter roadmap, requirements, audit, and phase evidence; v3.8 Full Sigra Auth and Session Machinery is now the active strategic candidate.
 - **2026-06-02:** Milestone-next-step assessment after v3.8 selected v3.9 Chimeway as the highest-leverage next wedge. The shipped reality already has notification-token and permission snapshots, support/operator truth, and Sigra route auth; the missing adopter job is backend token binding, revocation, and notification-open route resolution that still respects route policy and auth. Production shell runtime hardening stays next after Chimeway because it is important support truth but unlocks less new adopter value than notification re-entry.
 - **2026-06-05:** Following the completion of v4.1, the strategic priority shifted to v5.0 "Standalone Publishable Shell Packages" to address the "eject trap" and lock down the native shell runtime interfaces via SPM and Maven before expanding broader day-2 operational features.
+- **2026-06-09:** v5.0 (standalone packages), v5.1 + v6.0 (adoption-evidence demo apps) all shipped. With those wedges closed, the Threadline Audit Capstone (v7.0) becomes the active strategic milestone — the day-2 operational viability layer the arc always positioned last because it consumes the now-stable commerce, auth, notification, media, and offline surfaces. Scope locked narrow and honest: bespoke `thread_id` correlation (no OTel dep), opt-in PII-free append-only ledger with ProvenanceLane, text-only operator surface; LiveDashboard UI deferred to a separate `crosswake_dashboard` package.
 
 ## Support Truth Requirements
 
@@ -180,7 +190,7 @@ Every milestone close must update or verify:
 - Whether Chimeway should stay token/open-action seam-only for one milestone or include a first provider delivery lane; default to seam-only unless provider/device delivery proof can be kept advisory and clearly separated from backend binding/open-action readiness.
 - Which scanning/capture flows belong in Rindle/native-screen lanes versus bounded bridge families.
 - What minimum Android evidence is required to move shell support from "verification required" to fully verified.
+- Whether the deferred Threadline operator timeline should live in a separate `crosswake_dashboard` package (LiveDashboard plugin) and when the opt-in audit ledger has enough adoption to justify the visual surface.
 
 ---
-*Last updated: 2026-06-02 — v3.8 closed and v3.9 Chimeway Notification Seam selected as the recommended next milestone.*
-eway Notification Seam selected as the recommended next milestone.*
+*Last updated: 2026-06-09 — v5.0/v5.1/v6.0 marked shipped; Threadline Audit Capstone (v7.0) promoted to the active strategic milestone.*

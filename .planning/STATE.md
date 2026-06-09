@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: Adoption Evidence Demo App (Flashcard Cohort)
-status: Awaiting next milestone
-last_updated: "2026-06-09T13:33:01.596Z"
-last_activity: 2026-06-09 — Milestone v6.0 completed and archived
+milestone: v7.0
+milestone_name: Threadline Audit Capstone
+status: planning
+last_updated: "2026-06-09T15:10:21.259Z"
+last_activity: 2026-06-09
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 9
-  completed_plans: 8
-  percent: 86
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -22,10 +22,10 @@ progress:
 
 ## Current Position
 
-Phase: Milestone v6.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-09 — Milestone v6.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-09 — Milestone v7.0 started
 
 ## Deferred Items
 

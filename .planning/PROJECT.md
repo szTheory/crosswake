@@ -40,14 +40,18 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Next Milestone Goals
+## Current Milestone: v7.0 Threadline Audit Capstone
 
-The strategic source of truth remains `.planning/MILESTONE-ARC.md`. With v6.0 shipped, the next milestone is **not yet planned** — run `/gsd:new-milestone` to define it (questioning → research → requirements → roadmap).
+**Goal:** Give Crosswake day-2 operational viability — correlate the Native → Bridge → Phoenix → DB event sequence for a single user journey and durably record terminal critical events — narrowly, honestly, and PII-free, without becoming an APM, an OTel replacement, or a database-bloat machine.
 
-Open follow-on threads surfaced during v6.0 that may inform the next milestone:
-- Replace the mocked Playwright offline-sync flow with a real network-toggling E2E run against the compiled demo app (the mock hid a compile break this milestone).
-- Wire the static offline-study page (`OfflineController`) into the demo router, or consolidate it with the `StudySessionLive` offline island.
-- Define `Crosswake.Offline` storage budgets/cleanup policy enforcement beyond the v6.0 contract (OFF-02 shipped as contract; runtime enforcement is thin).
+**Target features:**
+- **Correlation propagation (core, zero new deps):** a session-spanning `thread_id` layered above the existing per-command `correlation_id`; a `Crosswake.Plug.Threadline` (read/mint `X-Crosswake-Thread-Id`, set `Logger.metadata`, emit `:telemetry` spans), a `Crosswake.Live.Threadline` on_mount for the LiveView WebSocket, and native iOS/Android header injection.
+- **Durable audit ledger (companion, opt-in):** `mix crosswake.gen.audit` scaffolds a host-owned, PII-free, append-only Ecto ledger for terminal critical events, with a first-class ProvenanceLane (`device_claimed` vs `backend_accepted`) and `record/1` + `record_in_multi/2` write paths.
+- **Operator surface (text-only in v1):** `mix crosswake.threadline`, doctor findings, and a support-matrix row that report honest `ephemeral` vs `durable` posture. The LiveDashboard timeline is deferred to a future `crosswake_dashboard` package.
+
+**Key context:** The library emits telemetry and sets Logger metadata but never logs itself (idiomatic Elixir). The ledger is PII-free by construction (opaque `actor_ref`, fail-closed metadata guard) and append-only with advisory `row_hash`/`prev_hash` — docs state plainly that hash-chaining detects but does not prevent tampering. Bespoke header, zero OTel dependency, documented coexistence. The canonical definition is `.planning/threads/threadline-audit.md`; full north star in `.planning/research/SUMMARY.md`. Decisions confirmed 2026-06-09: version v7.0, text-only operator UI, append-only + advisory hash columns.
+
+Deferred v6.0 follow-on threads (not in v7.0 scope, retained for a later milestone): replace the mocked Playwright offline-sync flow with a real network-toggling run; wire/consolidate the static `OfflineController` page; enforce `Crosswake.Offline` storage budgets at runtime.
 
 ## Requirements
 
@@ -97,7 +101,11 @@ Open follow-on threads surfaced during v6.0 that may inform the next milestone:
 
 ### Active
 
-(None — next milestone not yet planned. Run `/gsd:new-milestone` to define fresh requirements.)
+**v7.0 Threadline Audit Capstone** (requirements defined in `.planning/REQUIREMENTS.md`, REQ-ID prefixes PROP-/LEDG-/OPER-/DOCS-/PROOF-):
+- **PROP** — Cross-boundary `thread_id` propagation: Plug + LiveView on_mount + telemetry contract + native iOS/Android header injection, layered above the unchanged `correlation_id`.
+- **LEDG** — Opt-in host-owned audit ledger via `mix crosswake.gen.audit`: PII-free, append-only, ProvenanceLane (evidence vs authority), `record/1` + `record_in_multi/2`.
+- **OPER** — Text-only operator surface: `mix crosswake.threadline`, doctor findings (incl. fail-closed PII error), `@audit_ledger_support_truth`.
+- **DOCS/PROOF** — `guides/threadline.md` with merge-blocking docs-contract parity and a checked "What Threadline is NOT" anti-scope section; hermetic Plug proof + advisory example-host ledger proof.
 
 ### Out of Scope
 
@@ -111,6 +119,8 @@ Open follow-on threads surfaced during v6.0 that may inform the next milestone:
 - Magical offline guarantees — offline behavior must stay explicit about cacheability, local ownership, and reconciliation.
 - First-party push delivery guarantees in v3.9 — this milestone ships token binding and open-routing readiness.
 - Notification action registries that bypass route policy — notification actions may carry typed refs, but route activation still flows through manifest-known routes, RouteGate, and backend auth.
+- **(v7.0 Threadline anti-scope)** Threadline as an APM/observability platform, an OpenTelemetry replacement or generic distributed tracer, a logging framework, or a generic plugin/event bus — it emits `:telemetry`, sets Logger metadata, and coexists with OTel; it does not replace them.
+- **(v7.0 Threadline anti-scope)** PII in the audit ledger, library-owned audit tables, async-telemetry-driven durable writes, full-session replay, cross-service thread propagation, actor-identity reverse lookup, and a LiveDashboard UI in v1 (deferred to a separate `crosswake_dashboard` package).
 
 ## Context
 
@@ -168,4 +178,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-09 after v6.0 milestone*
+*Last updated: 2026-06-09 — v7.0 Threadline Audit Capstone milestone started*
