@@ -1,0 +1,164 @@
+/* Crosswake Brand Book CSS */
+
+:root {
+  --cw-current-950: #09141A;
+  --cw-current-900: #0F1E26;
+  --cw-current-800: #162B35;
+  --cw-harbor-700: #254855;
+  --cw-wake-700: #2B756A;
+  --cw-wake-500: #4E9A8E;
+  --cw-kelp-800: #123B36;
+  --cw-brass-500: #C98A2E;
+  --cw-brass-700: #946017;
+  --cw-foam-50: #F7F1E6;
+  --cw-foam-100: #EFE6D6;
+  --cw-mist-200: #C9D4CF;
+  --cw-stone-500: #7C746A;
+  --cw-rust-600: #9A4D35;
+  --cw-plum-700: #372D4C;
+  --cw-white: #FFFFFF;
+
+  --cw-font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+body {
+  font-family: var(--cw-font-body);
+  background-color: var(--cw-foam-50);
+  color: var(--cw-current-950);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--cw-font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-weight: 600;
+}
+
+/* Flashcard Container (Offline Island) */
+#flashcard-container {
+  background: var(--cw-white);
+  border-radius: 14px; /* radius-lg */
+  border: 1px solid var(--cw-mist-200);
+  box-shadow: 0 1px 2px rgba(9, 20, 26, 0.06);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 24rem;
+  text-align: center;
+  min-height: 12rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-front, .card-back {
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.card-back {
+  display: none;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cw-mist-200);
+  color: var(--cw-stone-500);
+  font-size: 1.25rem;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#controls {
+  display: flex;
+  gap: 1rem;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px; /* radius-md */
+  border: none;
+  font-family: var(--cw-font-body);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.btn-primary { 
+  background: var(--cw-wake-700); 
+  color: var(--cw-white); 
+}
+.btn-primary:hover {
+  background: var(--cw-current-950);
+}
+.btn-primary:focus {
+  outline: 2px solid var(--cw-brass-500);
+  outline-offset: 2px;
+}
+
+.btn-success { 
+  background: var(--cw-kelp-800); 
+  color: var(--cw-white); 
+}
+
+.btn-danger { 
+  background: var(--cw-rust-600); 
+  color: var(--cw-white); 
+}
+
+#status {
+  margin-top: 2rem;
+  font-size: 12px; /* text-xs */
+  color: var(--cw-stone-500);
+  transition: color 0.3s ease;
+}
+
+/* Offline sync states */
+.sync-status-pending {
+  color: var(--cw-brass-700);
+}
+.sync-status-complete {
+  color: var(--cw-wake-700);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--cw-foam-100);
+  color: var(--cw-current-900);
+  margin-bottom: 1rem;
+}
+
+.badge-offline {
+  background-color: var(--cw-kelp-800);
+  color: var(--cw-white);
+}
+
+.badge-native {
+  background-color: var(--cw-brass-500);
+  color: var(--cw-current-950);
+}
