@@ -27,7 +27,7 @@ Phase: 94
 Plan: Not started
 Status: Ready to plan
 Last activity: 2026-06-09
-Resume: .planning/phases/92-server-propagation-plug-liveview/92-03-PLAN.md
+Resume: .planning/phases/094-audit-ledger-contract-generator/094-CONTEXT.md
 
 ```
 v7.0 Progress: [██        ] 17%  (1/6 phases)
