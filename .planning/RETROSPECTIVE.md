@@ -370,6 +370,38 @@
 ### Cost Observations
 - Fast and focused milestone resolving to end-to-end evidence.
 
+## Milestone: v6.0 — Adoption Evidence Demo App (Flashcard Cohort)
+
+**Shipped:** 2026-06-09
+**Phases:** 7 (84-90) | **Plans:** 9
+
+### What Was Built
+- `Crosswake.Offline.ContentPack` — strongly-typed pack struct cast at the route-policy boundary and compiled into the root manifest.
+- `Crosswake.Sync.EventLog.Entry` + `mix crosswake.gen.sync` — host-owned Ecto schema and Phoenix reconciliation controller with idempotency keys.
+- Flashcard demo domain (Decks/Cards/Progress, `binary_id` keys), Phoenix context, migrations, and seeds.
+- Online `DeckLive.Index`/`DeckLive.Show` LiveViews under `crosswake_defaults`, plus a vanilla-JS offline study island over IndexedDB, native-shell integration, and Brand Book polish.
+- Network-toggling Playwright E2E (mocked) asserting Ecto sync state post-reconnect.
+
+### What Worked
+- The offline-island/online-LiveView split mapped cleanly onto the existing route-policy DSL — packs, offline policy, and runtime mode were already expressible per route.
+- TDD-first wave-0 plan (86-00) framed the domain before implementation.
+
+### What Was Inefficient
+- **The closeout gate was dishonest.** A mocked Playwright flow stood in for the real E2E, so the milestone was marked complete while the demo app did not compile — `OfflineController`/`OfflineHTML` used a non-existent `CrosswakeExampleWeb` macro module and were never wired into the router. Caught and fixed only during this archival's independent verification (`mix test` 15/15).
+- Phase summaries/plans for 81-90 were left untracked in git until close — execution didn't commit its own artifacts.
+- The 86-00 TDD plan's `flashcards_fixtures.ex` deliverable was never created (the context test was self-contained), leaving a dangling unexecuted plan.
+
+### Patterns Established
+- `ContentPack` casting at the policy boundary as the standard for typed offline assets.
+- `binary_id` keys for any demo domain destined for offline sync.
+
+### Key Lessons
+- A mocked E2E that never builds the real app is worse than no E2E — it manufactures false confidence. Closeout gates must compile and exercise the actual artifact, or be labeled advisory.
+- Run `mix compile`/`mix test` against the example host as a hard gate before marking an adoption-evidence milestone complete.
+
+### Cost Observations
+- Archival surfaced more real work (a compile break, untracked artifacts) than the closeout itself recorded.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
