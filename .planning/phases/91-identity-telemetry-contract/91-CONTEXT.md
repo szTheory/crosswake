@@ -33,6 +33,7 @@ Establish `thread_id` as a first-class, **optional** field on the existing bridg
 - **D-08:** Rule: **one declared event = one emitter, introduced together.** Bridge-dispatch / activation-boundary event names are added in the later phase whose code actually emits them (additive, zero cost). Do NOT pre-declare unemitted events — that is documentation debt, and an attached handler that never fires burns adopter trust. This is consistent with how Phoenix/Ecto/Oban/Finch/Broadway ship telemetry and with the project's narrow-scope honesty thesis. (The thread doc's "rich spans at every boundary" line is aspirational, not v7.0 scope.)
 
 ### `source` metadata semantics
+> **Phase 91 scope note.** D-09/D-10 define the value-domain semantics and inclusion rationale for the `source` metadata key. Phase 91 *publishes* `source` as one of the four `@metadata_keys` (PROP-02, declared in plan 91-01 and asserted by the 91-02 closeout proof) but ships **zero `source` emission** — the `:inbound | :minted` value is *set* by the Phase 92 Plug (single pattern-match on the `X-Crosswake-Thread-Id` header; see `<specifics>`). The allowlist membership is real Phase 91 surface; the emission is Phase 92.
 - **D-09:** `source` means **thread provenance at the boundary**, value domain `:inbound | :minted`:
   - `:inbound` — `thread_id` arrived on the `X-Crosswake-Thread-Id` request header (journey continuing from upstream).
   - `:minted` — the Plug generated a fresh UUID because no header was present (journey boundary starts here).
