@@ -572,14 +572,14 @@ end
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`route_id` and `correlation_id` in Plug telemetry metadata**
+1. **`route_id` and `correlation_id` in Plug telemetry metadata** — RESOLVED: leave `route_id`/`correlation_id` out of the Plug's telemetry metadata; the guard drops nils (planner discretion call recorded in 92-01/T2 action).
    - What we know: `Threadline.Telemetry`'s four `@metadata_keys` are `[:thread_id, :correlation_id, :route_id, :source]`. The Plug has access to `conn` but not to Crosswake's `route_id` (a Crosswake policy concept, not a HTTP path).
    - What's unclear: Should the Plug populate `route_id` from `Phoenix.Router.route_info/4` (available after routing) or leave it nil? `correlation_id` is also not available in the Plug without explicit conn assigns set by the host.
    - Recommendation: Leave `route_id: nil` and `correlation_id: nil` in the Plug's telemetry metadata — the metadata guard silently drops nil values (`safe_value?(nil) == false`). The host app can set `conn.assigns[:crosswake_route_id]` and the Plug can read it as a convenience; this is a `Claude's Discretion` decision for the planner.
 
-2. **Version bump entry in CHANGELOG.md**
+2. **Version bump entry in CHANGELOG.md** — RESOLVED: add only `[0.1.2]` in Phase 92, no retroactive `[0.1.1]` entry (recorded in 92-03/T2 action).
    - What we know: `0.1.1` is in `mix.exs` (Phase 91 bump). The CHANGELOG only has `[0.1.0]` as a versioned entry — `[Unreleased]` section exists but `0.1.1` is not documented.
    - What's unclear: Should Phase 92 add `[0.1.1]` (retroactively for Phase 91) and `[0.1.2]` (for Phase 92), or only `[0.1.2]`?
    - Recommendation: Add only `[0.1.2]` in Phase 92. Phase 91's `0.1.1` was an internal development bump during an unreleased period; retroactive CHANGELOG entries for unpublished bumps are noise. The CHANGELOG preamble already documents the separation between planning milestones and Hex releases.
