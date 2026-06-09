@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.1
-milestone_name: milestone
-status: milestone_complete
-last_updated: 2026-06-08T22:12:32.866Z
+milestone: none
+milestone_name: TBD
+status: Awaiting next milestone
+last_updated: "2026-06-09T00:03:56.588Z"
+last_activity: 2026-06-09 — Milestone v5.1 completed and archived
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 8
-  percent: 100
-stopped_at: Milestone complete (Phase 83 was final phase)
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -18,32 +18,39 @@ stopped_at: Milestone complete (Phase 83 was final phase)
 ## Project Reference
 
 **Core Value**: Replace host-owned generated shell code with standalone SPM/Maven dependencies to eliminate the "eject trap".
-**Current Focus**: v5.1 Adoption Evidence Demo App
+**Current Focus**: Planning next milestone
 
 ## Current Position
 
-**Phase**: 83. Bounded Bridge Proof Polish
-**Plan**: 0 of 0
-**Status**: Ready to plan
-**Progress**: [████████████████████] 100%
+Phase: Milestone v5.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-09 — Milestone v5.1 completed and archived
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-06-09:
+
+| Category | Item | Status |
+|----------|------|--------|
+| verification_gaps | Phase 81: 81-VERIFICATION.md | human_needed |
+| quick_tasks | 260603-nzr-tighten-validation-ledger-closeout-gate | missing |
 
 ## Performance Metrics
 
-- **Velocity**: 2 plans/week
-- **Requirement Coverage**: 7/7 mapped (100%)
-- **Tech Debt**: 0 known issues in v5.1
+- **Velocity**: TBD
+- **Requirement Coverage**: 0/0 mapped
+- **Tech Debt**: 2 known deferred issues
 
 ## Accumulated Context
 
 ### Decisions
 
-- (v5.1-D1) Derive phases from v5.1 requirements focusing on "Adoption Evidence" as suggested by research.
-- (v5.1-D2) Start phase numbering at 80, continuing from v5.0's end at 79.
+- None.
 
 ### Todos
 
-- [x] Initialize Phase 80 plan.
-- [x] Set up iOS/Android demo projects using v5.0 artifacts.
+- None.
 
 ### Blockers
 
@@ -51,5 +58,9 @@ stopped_at: Milestone complete (Phase 83 was final phase)
 
 ## Session Continuity
 
-- **Next Step**: `/gsd:plan-phase 83`
-- **Context**: Phase 82 completed. Ready to plan phase 83.
+- **Next Step**: `/gsd:new-milestone`
+- **Context**: v5.1 complete. Awaiting next milestone definitions.
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd:new-milestone

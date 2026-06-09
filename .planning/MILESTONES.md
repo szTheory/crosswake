@@ -1,5 +1,18 @@
 # Project Milestones: Crosswake
 
+## v5.1 Adoption Evidence Demo App (Shipped: 2026-06-09)
+
+**Phases completed:** 4 phases, 8 plans, 6 tasks
+
+**Key accomplishments:**
+
+- Task 1
+- Implemented native Android Flow publishers for connection state and server events, wired cleanly to Compose overlay and toast elements.
+- Implemented native iOS Combine publishers for connection state and server events, wired cleanly to SwiftUI overlay and toast elements.
+- Implemented RouteDelegate and capability reporting in iOS and Android shell cores with fail-closed native routing
+
+---
+
 ## v5.0 Standalone Publishable Shell Packages (Shipped: 2026-06-06)
 
 **Phases completed:** 76-79 (4 phases, 11 plans)

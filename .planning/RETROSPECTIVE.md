@@ -342,6 +342,34 @@
 - Session shape: 25-day milestone spanning from 2026-05-12 to 2026-06-06.
 - 96 files modified (+4452, -3497 LOC), heavily focused on generator refactoring and template removal.
 
+## Milestone: v5.1 — Adoption Evidence Demo App
+
+**Shipped:** 2026-06-09
+**Phases:** 4 | **Plans:** 8
+
+### What Was Built
+- Task 1
+- Implemented native Android Flow publishers for connection state and server events, wired cleanly to Compose overlay and toast elements.
+- Implemented native iOS Combine publishers for connection state and server events, wired cleanly to SwiftUI overlay and toast elements.
+- Implemented RouteDelegate and capability reporting in iOS and Android shell cores with fail-closed native routing
+
+### What Worked
+- React streams in Kotlin (`StateFlow`/`SharedFlow`) and Swift (`Combine`) provided excellent ways to bridge the native UI with the shell events without tight coupling.
+- Separating the `RouteDelegate` logic into the host app while maintaining a generic core implementation allowed clean testability of routing policies.
+
+### What Was Inefficient
+- N/A
+
+### Patterns Established
+- Reactive bridge observer pattern for Android/iOS, standardizing how shell state and capabilities reach native UI layers cleanly.
+- `RouteDelegate` standard for custom intent mapping.
+
+### Key Lessons
+- Moving to dependencies rather than generation makes the host application structure significantly simpler, leaving only native configuration and route delegate mapping.
+
+### Cost Observations
+- Fast and focused milestone resolving to end-to-end evidence.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
