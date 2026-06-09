@@ -6,8 +6,11 @@ This milestone (v6.0) spans from Phase 84 through Phase 90.
 ## Phase 84: Offline Substrate Foundation
 **Goal:** Define `Crosswake.Offline.ContentPack`, manifest generation, and offline route policy.
 - [ ] Requirements: OFF-01
-- [ ] Create `Crosswake.Offline.ContentPack` struct and behaviors.
-- [ ] Update route policy definitions for offline support.
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 84-01-PLAN.md — Define ContentPack and test offline pack manifest compilation
 
 ## Phase 85: Sync & Event Log Foundation
 **Goal:** Define `Crosswake.Sync.EventLog`, idempotency keys, and server-side reconciliation endpoints.
