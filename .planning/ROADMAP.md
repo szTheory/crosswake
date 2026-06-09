@@ -16,10 +16,10 @@ Plans:
 **Goal:** Define `Crosswake.Sync.EventLog`, idempotency keys, and server-side reconciliation endpoints.
 - [ ] Requirements: SYNC-01, SYNC-02
 
-**Plans:** 1 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 85-01-PLAN.md — Define Sync EventLog structs and mix task to generate host Ecto schema and Phoenix controller.
+- [x] 85-01-PLAN.md — Define Sync EventLog structs and mix task to generate host Ecto schema and Phoenix controller.
 
 ## Phase 86: Flashcard Domain Setup (Demo App)
 **Goal:** Scaffold the demo app, Phoenix context, Ecto schemas (Cards, Decks, Progress), and seeds.
