@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: none
-milestone_name: TBD
-status: Awaiting next milestone
+milestone: v6.0
+milestone_name: Adoption Evidence Demo App (Flashcard Cohort)
+status: Planning complete. Ready to begin Phase 84.
 last_updated: "2026-06-09T00:03:56.588Z"
-last_activity: 2026-06-09 — Milestone v5.1 completed and archived
+last_activity: 2026-06-09 — Milestone v6.0 initialized
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,14 +18,14 @@ progress:
 ## Project Reference
 
 **Core Value**: Replace host-owned generated shell code with standalone SPM/Maven dependencies to eliminate the "eject trap".
-**Current Focus**: Planning next milestone
+**Current Focus**: Milestone v6.0 Adoption Evidence Demo App (Flashcard Cohort)
 
 ## Current Position
 
-Phase: Milestone v5.1 complete
+Phase: 84
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-09 — Milestone v5.1 completed and archived
+Status: Planning complete. Ready to begin Phase 84.
+Last activity: 2026-06-09 — Milestone v6.0 initialized
 
 ## Deferred Items
 
@@ -39,14 +39,14 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 ## Performance Metrics
 
 - **Velocity**: TBD
-- **Requirement Coverage**: 0/0 mapped
+- **Requirement Coverage**: 9 mapped (OFF-01 to PROOF-02)
 - **Tech Debt**: 2 known deferred issues
 
 ## Accumulated Context
 
 ### Decisions
 
-- None.
+- **2026-06-09**: Selected Language Learning / Flashcard app as the adoption evidence domain to rigorously stress-test the `Crosswake.Offline` island philosophy.
 
 ### Todos
 
@@ -58,9 +58,9 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 
 ## Session Continuity
 
-- **Next Step**: `/gsd:new-milestone`
-- **Context**: v5.1 complete. Awaiting next milestone definitions.
+- **Next Step**: `/gsd:plan-phase 84`
+- **Context**: v6.0 planning complete. Ready for execution.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd:new-milestone
+- Start the next phase with `/gsd:plan-phase 84`

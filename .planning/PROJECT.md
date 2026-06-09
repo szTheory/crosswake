@@ -40,8 +40,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone Goals
 
-The strategic source of truth remains `.planning/MILESTONE-ARC.md`. Next up:
-- Adoption Evidence Demo App
+The strategic source of truth remains `.planning/MILESTONE-ARC.md`. Next up is **Milestone v6.0: Adoption Evidence Demo App (Flashcard Cohort)**. 
+
+**v6.0 Goals:**
+- **Ship Crosswake.Offline:** Implement Content Packs, Manifest Generation, and Storage Budgets.
+- **Ship Crosswake.Sync:** Implement durable Event Logs, Mutation Queues, and Ecto-backed Reconciliation.
+- **Build the Flashcard Cohort App:** Create a polished, brand-aligned demo app utilizing LiveView (online) and an Offline Island (study loop) to stress-test the library making it "bombproof".
+- **Shift-Left CI/CD Verification:** Implement automated E2E tests (Playwright/Maestro) that physically disconnect the network, complete a study session, reconnect, and verify Ecto state.
 
 ## Requirements
 
@@ -90,7 +95,15 @@ The strategic source of truth remains `.planning/MILESTONE-ARC.md`. Next up:
 
 ### Active
 
-*(None — planning next milestone)*
+- **OFF-01** `Crosswake.Offline` provides a documented `ContentPack` standard for bundling assets and data required by an Offline Island.
+- **OFF-02** `Crosswake.Offline` defines storage budgets and cleanup policies for offline data.
+- **SYNC-01** `Crosswake.Sync` provides an `EventLog` and durable mutation queues for recording offline actions.
+- **SYNC-02** `Crosswake.Sync` supports Ecto-backed reconciliation upon network reconnection.
+- **DEMO-01** A Language Learning / Flashcard app is implemented as the exemplar for the "Offline Island" philosophy.
+- **DEMO-02** The demo app correctly transitions from online LiveView to offline Javascript-based study session.
+- **DEMO-03** The demo app aligns with the Crosswake Brand Book for aesthetics, microcopy, and accessible UI.
+- **PROOF-01** Network-toggled E2E tests (e.g., Playwright/Maestro) confirm study session completion without network connectivity.
+- **PROOF-02** Reconnection state synchronization is verified at the database level by E2E tests.
 
 ### Out of Scope
 
