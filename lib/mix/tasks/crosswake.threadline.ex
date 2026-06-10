@@ -36,6 +36,9 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   @tier_order ["native", "bridge", "phoenix"]
   @tier_labels %{"native" => "Native", "bridge" => "Bridge", "phoenix" => "Phoenix"}
 
+  # Sort sentinel for events that carry no recognizable timestamp.
+  @epoch_sentinel ~N[1970-01-01 00:00:00]
+
   @impl Mix.Task
   def run(args) do
     {opts, _argv, _invalid} =
@@ -104,7 +107,7 @@ defmodule Mix.Tasks.Crosswake.Threadline do
       Map.get(event, :inserted_at) ||
       Map.get(event, "occurred_at") ||
       Map.get(event, "inserted_at") ||
-      ~N[1970-01-01 00:00:00]
+      @epoch_sentinel
   end
 
   # Chronological comparator that handles both NaiveDateTime (from host schemas
@@ -163,17 +166,18 @@ defmodule Mix.Tasks.Crosswake.Threadline do
 
         event_type = Map.get(event, :event_type) || Map.get(event, "event_type") || "unknown"
 
-        timestamp =
-          Map.get(event, :occurred_at) ||
-            Map.get(event, :inserted_at) ||
-            Map.get(event, "occurred_at") ||
-            Map.get(event, "inserted_at")
+        # Reuse the canonical fallback chain from timestamp_of/1 so the sort key
+        # and the displayed timestamp can never disagree. String interpolation
+        # (not NaiveDateTime.to_string/1) formats NaiveDateTime, DateTime
+        # (canonical :utc_datetime_usec columns), and ISO-8601 string
+        # timestamps alike without raising FunctionClauseError.
+        timestamp = timestamp_of(event)
 
         timestamp_str =
-          if timestamp do
-            " (#{NaiveDateTime.to_string(timestamp)})"
-          else
+          if timestamp == @epoch_sentinel do
             ""
+          else
+            " (#{timestamp})"
           end
 
         Mix.shell().info("#{branch_prefix}#{event_connector} #{event_type}#{timestamp_str}")
