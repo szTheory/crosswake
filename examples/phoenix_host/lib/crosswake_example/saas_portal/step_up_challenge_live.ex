@@ -4,13 +4,12 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
 
   alias CrosswakeExample.Repo
   alias CrosswakeExample.SaaSPortal.StepUpIntent
-  alias CrosswakeExample.SaaSPortal.StepUpAuditEvent
   alias Crosswake.Companions.Sigra.StepUp, as: SigraStepUp
   alias Crosswake.Companions.Sigra.Contracts
   alias CrosswakeExample.Router
   alias Crosswake.Manifest
 
-  def mount(params, session, socket) do
+  def mount(params, _session, socket) do
     challenge_ref = params["challenge_ref"]
 
     intent = 
@@ -73,7 +72,7 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
       {:ok, %{manifest: manifest}} = Manifest.compile(Router)
       route = manifest.routes[intent.return_route_id]
       
-      {:ok, renewal} =
+      {:ok, _renewal} =
         SigraStepUp.new_session_renewal_instructions(%{
           renew_session?: true,
           rotate_csrf?: true,
