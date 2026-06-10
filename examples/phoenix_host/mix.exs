@@ -7,7 +7,8 @@ defmodule CrosswakeExample.MixProject do
       version: "0.1.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -15,6 +16,14 @@ defmodule CrosswakeExample.MixProject do
     [
       mod: {CrosswakeExample.Application, []},
       extra_applications: [:logger]
+    ]
+  end
+
+  defp aliases do
+    [
+      # Provisions the SQLite DB and applies all migrations before running tests.
+      # Required in CI where the committed .db file is absent or stale.
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 
