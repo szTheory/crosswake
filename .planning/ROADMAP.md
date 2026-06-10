@@ -35,7 +35,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId` (completed 2026-06-09)
 - [x] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema (completed 2026-06-09)
 - [x] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row (gaps_found 2026-06-10 — gap-closure plans 95-03/95-04 created) (completed 2026-06-10)
-- [ ] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof
+- [x] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof (completed 2026-06-10)
 
 ## Phase Details
 
@@ -125,7 +125,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   5. An advisory example-host proof lane verifies real Ecto-backed `record_in_multi/3` persistence and `mix crosswake.threadline` reconstruction with `durable` posture against a seeded ledger
 **Plans**: 3 plans
 - [x] 96-01-PLAN.md — Restructure `guides/threadline.md` to the contract-first 10-section outline with verbatim contract content, anti-scope, and locked microcopy (DOCS-01/02/03)
-- [ ] 96-02-PLAN.md — Hermetic docs-contract parity test + merge-blocking proof workflow (DOCS-01/02/03, PROOF-01)
+- [x] 96-02-PLAN.md — Hermetic docs-contract parity test + merge-blocking proof workflow (DOCS-01/02/03, PROOF-01)
 - [x] 96-03-PLAN.md — Example-host gen.audit output + Ecto-backed durable-posture proof + advisory workflow (PROOF-02)
 
 ## Progress
@@ -137,4 +137,4 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 95. Operator Surface | v7.0 | 5/5 | Complete    | 2026-06-10 |
-| 96. Docs-Contract + Proof | v7.0 | 2/3 | In Progress|  |
+| 96. Docs-Contract + Proof | v7.0 | 3/3 | Complete   | 2026-06-10 |
