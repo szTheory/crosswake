@@ -133,7 +133,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 **Goal:** `guides/threadline.md` accurately documents the two surfaces the v7.0 milestone audit flagged — adopters read the thread id via `Logger.metadata()[:crosswake_thread_id]` (not the non-existent `conn.assigns[:thread_id]`, WR-03) and call `record_in_multi/3` (not `/2`, WR-02) — with two hermetic parity assertions that fail CI if either bug reappears.
 **Requirements**: WR-03, WR-02 (milestone-audit items); D-03 (regression-guard decision)
 **Depends on:** Phase 96
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 97-01-PLAN.md — Fix WR-03 (Logger.metadata read-path) + WR-02 (record_in_multi/3) guide lines and add two regression-prevention parity assertions, in one atomic commit
+- [x] 97-01-PLAN.md — Fix WR-03 (Logger.metadata read-path) + WR-02 (record_in_multi/3) guide lines and add two regression-prevention parity assertions, in one atomic commit
