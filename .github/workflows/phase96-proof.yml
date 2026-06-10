@@ -1,0 +1,59 @@
+name: Phase 96 Proof - Threadline Docs Contract
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  merge-blocking-threadline-docs-contract-proof:
+    name: merge-blocking Threadline docs-contract proof (hermetic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      # File-to-contract mapping:
+      #   phase91_threadline_contract_closeout_test.exs  — telemetry contract (event names, metadata allowlist, forbidden-key denylist)
+      #   phase92_server_propagation_closeout_test.exs   — server propagation closeout (Plug + LiveView contract)
+      #   phase96_threadline_docs_contract_test.exs      — DOCS-01/02/03 parity: every contract string in guides/threadline.md
+      #   threadline_test.exs (plug)                     — X-Crosswake-Thread-Id header read/mint/telemetry-emit contract
+      #   threadline_test.exs (live)                     — on_mount thread-id propagation from connect params
+      #   telemetry_test.exs                             — metadata allowlist guard and PII stripping
+      #   id_test.exs                                    — opaque thread id generation and format
+      #   doctor_threadline_test.exs                     — threadline posture findings (plug_missing, pii_forbidden_field_present, etc.)
+      #   crosswake.gen.audit_test.exs                   — scaffolded ledger schema and migration output contract
+      #   support_matrix_test.exs:246                    — audit_ledger_support_truth/0 docs_anchor points to guides/threadline.md
+      #                                                    (scoped to describe block at :246; full file has ~28 pre-existing failures
+      #                                                     unrelated to Threadline — scoped run confirmed clean in Task 3 verification)
+      - name: Run hermetic Threadline docs contract proof
+        run: >-
+          mix test
+          test/crosswake/proof/phase91_threadline_contract_closeout_test.exs
+          test/crosswake/proof/phase92_server_propagation_closeout_test.exs
+          test/crosswake/proof/phase96_threadline_docs_contract_test.exs
+          test/crosswake/plug/threadline_test.exs
+          test/crosswake/live/threadline_test.exs
+          test/crosswake/threadline/telemetry_test.exs
+          test/crosswake/threadline/id_test.exs
+          test/crosswake/doctor/doctor_threadline_test.exs
+          test/mix/tasks/crosswake.gen.audit_test.exs
+          "test/crosswake/support_matrix/support_matrix_test.exs:246"
