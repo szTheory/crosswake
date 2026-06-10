@@ -1368,5 +1368,55 @@ defmodule Crosswake.DoctorTest do
       assert :row_hash in finding.details.missing_columns
       assert :prev_hash in finding.details.missing_columns
     end
+
+    # Canonical schema fixture — exactly the 15 LEDG-02 columns, including :actor_ref
+    defmodule CanonicalLedgerSchema do
+      def __schema__(:fields) do
+        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
+         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :idempotency_key,
+         :metadata, :row_hash, :prev_hash]
+      end
+    end
+
+    # CR-02 + CR-01: bare-atom config must enter schema checks and canonical schema must pass
+    test "runs threadline schema checks with bare-atom audit_ledger config and canonical schema passes",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # Bare-atom config — the documented canonical shape (audit_ledger: MyApp.Audit.Ledger)
+      Application.put_env(:crosswake, :audit_ledger, CanonicalLedgerSchema)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      # Checks ran AND passed — no false PII error, no false drift warning
+      refute Enum.any?(report.findings, &(&1.code == "threadline.pii_forbidden_field_present")),
+             "Canonical schema must not produce a PII false-positive (CR-01)"
+
+      refute Enum.any?(report.findings, &(&1.code == "threadline.ledger_schema_drift")),
+             "Canonical schema must not produce a drift warning (schema checks must have run via bare-atom config — CR-02)"
+    end
+
+    # CR-04: keyword config without :schema key must not crash the doctor
+    test "does not crash on keyword audit_ledger config missing :schema key",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      Application.put_env(:crosswake, :audit_ledger, foo: :bar)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      # Must return a report without raising ArgumentError
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert report != nil
+    end
   end
 end
