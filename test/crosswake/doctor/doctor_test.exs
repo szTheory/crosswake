@@ -1291,6 +1291,17 @@ defmodule Crosswake.DoctorTest do
 
     test "emits threadline.ledger_not_configured :advisory when audit_ledger is not configured",
          %{target: target, install_manifest_path: install_manifest_path} do
+      # Save prior value and restore it in on_exit to avoid cross-test races
+      prev = Application.get_env(:crosswake, :audit_ledger)
+
+      on_exit(fn ->
+        if prev != nil do
+          Application.put_env(:crosswake, :audit_ledger, prev)
+        else
+          Application.delete_env(:crosswake, :audit_ledger)
+        end
+      end)
+
       # Ensure :audit_ledger is not set
       Application.delete_env(:crosswake, :audit_ledger)
 
@@ -1337,6 +1348,8 @@ defmodule Crosswake.DoctorTest do
       assert finding.severity == :error
       assert finding.check == "threadline_posture"
       assert :email in finding.details.offending_keys
+      # :actor_ref is a canonical column — must NOT be falsely flagged as PII (CR-01)
+      refute :actor_ref in finding.details.offending_keys
     end
 
     defmodule DriftLedgerSchema do
