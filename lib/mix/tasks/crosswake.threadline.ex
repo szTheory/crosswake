@@ -65,14 +65,44 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   @doc false
   def ledger_posture do
     repo = Application.get_env(:crosswake, :audit_repo)
-    schema = Application.get_env(:crosswake, :audit_ledger)
+    schema = ledger_schema(Application.get_env(:crosswake, :audit_ledger))
 
-    if repo && schema do
+    # repo.all/1 requires a queryable — only a module atom qualifies here.
+    # Non-atom values (e.g. a string :schema from runtime.exs) fail closed
+    # to :ephemeral rather than crashing at query time.
+    if repo && is_atom(schema) && not is_nil(schema) && not is_boolean(schema) do
       {:durable, repo, schema}
     else
       :ephemeral
     end
   end
+
+  # Normalizes the four documented :audit_ledger config shapes to a schema
+  # module or nil, mirroring Crosswake.Doctor.ledger_schema/1:
+  #   nil                     → nil
+  #   keyword list            → Keyword.get(list, :schema)
+  #   map                     → Map.get(config, :schema) || Map.get(config, "schema")
+  #   bare atom (module ref)  → config itself
+  #   anything else           → nil
+  defp ledger_schema(nil), do: nil
+
+  defp ledger_schema(config) when is_list(config) do
+    if Keyword.keyword?(config) do
+      Keyword.get(config, :schema)
+    else
+      nil
+    end
+  end
+
+  defp ledger_schema(config) when is_map(config) do
+    Map.get(config, :schema) || Map.get(config, "schema")
+  end
+
+  defp ledger_schema(config) when is_atom(config) and not is_nil(config) and not is_boolean(config) do
+    config
+  end
+
+  defp ledger_schema(_config), do: nil
 
   # Fetches events from the host repo at runtime.
   # Ecto is not a compile-time dependency of this library — it lives in the host
