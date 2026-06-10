@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Threadline Audit Capstone
 status: completed
-last_updated: "2026-06-10T20:21:37.987Z"
+last_updated: "2026-06-10T21:38:02.864Z"
 last_activity: 2026-06-10 -- Phase 97 marked complete
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 7
   total_plans: 19
   completed_plans: 19
-  percent: 100
+  percent: 78
 ---
 
 # Project State: Crosswake
@@ -53,6 +53,7 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 ### Roadmap Evolution
 
 - Phase 97 added: Fix guide accuracy: conn.assigns claim + record_in_multi arity
+- Phase 98 added: Fix hermetic lane guard namespace (WR-01)
 
 ### Decisions
 
