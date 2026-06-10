@@ -41,6 +41,9 @@ jobs:
       #   id_test.exs                                    — opaque thread id generation and format
       #   doctor_threadline_test.exs                     — threadline posture findings (plug_missing, pii_forbidden_field_present, etc.)
       #   crosswake.gen.audit_test.exs                   — scaffolded ledger schema and migration output contract
+      #   support_matrix_test.exs:246                    — audit_ledger_support_truth/0 docs_anchor points to guides/threadline.md
+      #                                                    (scoped to describe block at :246; full file has ~28 pre-existing failures
+      #                                                     unrelated to Threadline — scoped run confirmed clean in Task 3 verification)
       - name: Run hermetic Threadline docs contract proof
         run: >-
           mix test
@@ -53,3 +56,4 @@ jobs:
           test/crosswake/threadline/id_test.exs
           test/crosswake/doctor/doctor_threadline_test.exs
           test/mix/tasks/crosswake.gen.audit_test.exs
+          "test/crosswake/support_matrix/support_matrix_test.exs:246"
