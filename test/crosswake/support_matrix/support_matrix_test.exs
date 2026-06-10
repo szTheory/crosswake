@@ -243,6 +243,68 @@ defmodule Crosswake.SupportMatrixTest do
            end)
   end
 
+  describe "audit_ledger_support_truth/0 (OPER-02)" do
+    test "returns a non-empty list with the canonical threadline audit ledger truth" do
+      truth = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert is_list(truth)
+      assert length(truth) == 1
+    end
+
+    test "entry has the correct surface, proof_class, and action_class" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.surface == "threadline audit ledger"
+      assert entry.proof_class == :advisory
+      assert entry.action_class == "operator_surface"
+    end
+
+    test "entry docs_anchor points to threadline guide" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.docs_anchor == "guides/threadline.md"
+    end
+
+    test "entry ephemeral_posture and durable_posture are both :supported" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.ephemeral_posture == :supported
+      assert entry.durable_posture == :supported
+    end
+
+    test "entry telemetry.status is :shipped" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.status == :shipped
+    end
+
+    test "entry telemetry.forbidden_metadata_keys matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.forbidden_metadata_keys == ThreadlineTelemetry.forbidden_metadata_keys()
+    end
+
+    test "entry telemetry.event_names matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.event_names == ThreadlineTelemetry.event_names()
+    end
+
+    test "entry telemetry.metadata_keys matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.metadata_keys == ThreadlineTelemetry.metadata_keys()
+    end
+
+    test "entry deferred list contains expected deferred items" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert :crosswake_dashboard in entry.deferred
+      assert :hash_chain_verify_task in entry.deferred
+    end
+
+    test "entry posture contains honest non-overclaim phrases" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.posture =~ "PII-free"
+      assert entry.posture =~ "append-only"
+      assert entry.posture =~ "not an APM"
+    end
+  end
+
   test "phase 51 companion and notification support truth preserve deferred non-claims" do
     assert [companion_truth] = SupportMatrix.companion_support_truth()
 

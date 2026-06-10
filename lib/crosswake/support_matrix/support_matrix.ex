@@ -13,6 +13,7 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
   alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
+  alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
 
   @statuses [:supported, :verification_required, :unsupported]
   @proof_classes [:merge_blocking, :advisory, :not_applicable]
@@ -271,6 +272,25 @@ defmodule Crosswake.SupportMatrix do
         "notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory."
     }
   ]
+  @audit_ledger_support_truth [
+    %{
+      surface: "threadline audit ledger",
+      proof_class: :advisory,
+      action_class: "operator_surface",
+      docs_anchor: "guides/threadline.md",
+      ephemeral_posture: :supported,
+      durable_posture: :supported,
+      telemetry: %{
+        status: :shipped,
+        event_names: ThreadlineTelemetry.event_names(),
+        metadata_keys: ThreadlineTelemetry.metadata_keys(),
+        forbidden_metadata_keys: ThreadlineTelemetry.forbidden_metadata_keys()
+      },
+      deferred: [:crosswake_dashboard, :hash_chain_verify_task],
+      posture:
+        "Threadline provides an honest, PII-free correlation across Native -> Bridge -> Phoenix via X-Crosswake-Thread-Id. It is an append-only sequence reconstruction tool, not an APM or full replay system."
+    }
+  ]
   @diagnostic_export_support_truth [
     %{
       surface: "diagnostic export envelope contract",
@@ -451,6 +471,9 @@ defmodule Crosswake.SupportMatrix do
 
   @spec notification_support_truth() :: [map()]
   def notification_support_truth, do: @notification_support_truth
+
+  @spec audit_ledger_support_truth() :: [map()]
+  def audit_ledger_support_truth, do: @audit_ledger_support_truth
 
   @spec diagnostic_export_support_truth() :: [map()]
   def diagnostic_export_support_truth, do: @diagnostic_export_support_truth
