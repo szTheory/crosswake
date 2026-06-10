@@ -224,6 +224,32 @@ defmodule Crosswake.Doctor.ThreadlineTest do
              "Canonical schema must not produce a drift warning (schema checks must have run via bare-atom config — CR-02)"
     end
 
+    # IN-07: the PII safety check depends only on Application env, not on the
+    # install manifest — a misconfigured host that has not yet run
+    # `mix crosswake.install` must still receive the :error-class PII finding
+    test "emits threadline.pii_forbidden_field_present even when install manifest is missing",
+         %{target: target} do
+      Application.put_env(:crosswake, :audit_ledger, schema: PiiLedgerSchema)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: Path.join(target, "priv/crosswake/does_not_exist.json"),
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.pii_forbidden_field_present"))
+      assert finding != nil, "PII check must run even without an install manifest (IN-07)"
+      assert finding.severity == :error
+      assert :email in finding.details.offending_keys
+
+      # The router plug check still requires the manifest — it must be skipped,
+      # not crash, when the manifest is absent
+      refute Enum.any?(report.findings, &(&1.code == "threadline.plug_missing"))
+    end
+
     # IN-06: a loadable module that is not an Ecto schema must yield a distinct
     # invalid-schema advisory, not a misleading "missing all 15 columns" drift warning
     defmodule NotAnEctoSchema do

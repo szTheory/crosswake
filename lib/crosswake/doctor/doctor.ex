@@ -881,11 +881,22 @@ defmodule Crosswake.Doctor do
   #
   # Uses Application.get_env (not compile_env) so proof tests can register fixtures via put_env.
   # Reads the router file from install_manifest router_path to check for plug presence.
-  defp phase_95_threadline_findings(nil, _cwd), do: []
-
+  #
+  # Only the router plug check depends on the install manifest. The ledger
+  # checks — including the :error-class PII safety check — depend solely on
+  # Application env, so they run even when the manifest is missing; a host
+  # with a PII-bearing ledger schema that has not yet run `mix
+  # crosswake.install` must still receive the PII finding (IN-07).
   defp phase_95_threadline_findings(install_manifest, cwd) do
-    router_path = Path.expand(Map.get(install_manifest, "router_path", ""), cwd)
-    plug_findings = check_threadline_plug(router_path)
+    plug_findings =
+      case install_manifest do
+        nil ->
+          []
+
+        manifest ->
+          router_path = Path.expand(Map.get(manifest, "router_path", ""), cwd)
+          check_threadline_plug(router_path)
+      end
 
     audit_ledger_config = Application.get_env(:crosswake, :audit_ledger)
     ledger_findings = check_audit_ledger_configured(audit_ledger_config)
