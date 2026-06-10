@@ -15,7 +15,7 @@ findings:
   warning: 0
   info: 7
   total: 7
-  fixed: 4
+  fixed: 11
 status: issues_found
 ---
 
@@ -201,6 +201,8 @@ defp normalize_ledger_schema(_), do: nil
 
 ### IN-01: `ledger_posture/0` reads Application env before `app.start` — runtime.exs hosts report false "Ephemeral"
 
+**Resolution:** Fixed in bc85706 — `run/1` now calls `Mix.Task.run("app.config")` before reading posture, so runtime.exs-configured hosts see their durable ledger.
+
 **File:** `lib/mix/tasks/crosswake.threadline.ex:51-59,63-72`
 
 **Issue:** `run/1` calls `ledger_posture()` — which reads `:audit_repo` and `:audit_ledger`
@@ -215,6 +217,8 @@ though a durable ledger exists. This produces a false negative during incident t
 ---
 
 ### IN-02: `render_durable/1` silently drops events with unrecognized or nil `tier`
+
+**Resolution:** Fixed in 5c4e5a8 — unrecognized/nil tiers render under an `Other (unrecognized tier)` bucket (chronological order preserved); dead `String.capitalize(tier)` fallback removed; regression test added.
 
 **File:** `lib/mix/tasks/crosswake.threadline.ex:139-142`
 
@@ -231,6 +235,8 @@ a summary line: `"N event(s) with unrecognized tier omitted"`.
 
 ### IN-03: `guides/threadline.md` is referenced in operator-facing hints but does not exist
 
+**Resolution:** Fixed in 7eff6de — created `guides/threadline.md` (posture, mix task, doctor findings table), registered it in `mix.exs` docs extras, and added a docs-integrity test asserting the `docs_anchor` file exists.
+
 **File:** `lib/crosswake/support_matrix/support_matrix.ex:280`; `lib/crosswake/doctor/doctor.ex:944,962,1026`
 
 **Issue:** Three Phase-95 doctor findings hint at `"guides/threadline.md"` and the
@@ -243,6 +249,8 @@ docs-integrity assertion that the file exists.
 ---
 
 ### IN-04: `compare_ts/2` `DateTime`/`NaiveDateTime` mixed-pair clauses are untested
+
+**Resolution:** Fixed in 23499ea — added a regression test mixing `%DateTime{}`, `%NaiveDateTime{}`, and ISO-8601 string timestamps through both the sort comparator (`to_naive/1` path, which replaced the mixed-pair clauses in CR-02) and the render path.
 
 **File:** `test/mix/tasks/crosswake.threadline_test.exs:115-129`
 
@@ -259,6 +267,8 @@ the `NaiveDateTime.to_string`/`DateTime` render path simultaneously.
 ---
 
 ### IN-05: Timestamp fallback chain is duplicated between `timestamp_of/1` and `render_durable/1`
+
+**Resolution:** Already resolved by the CR-01/CR-02 fixes (2102664, 1023949) — `render_durable/1` now calls `timestamp_of/1` with epoch-sentinel suppression; no further change needed.
 
 **File:** `lib/mix/tasks/crosswake.threadline.ex:102-108,166-170`
 
@@ -277,6 +287,8 @@ timestamp_str = if timestamp == ~N[1970-01-01 00:00:00], do: "", else: " (#{time
 
 ### IN-06: Non-Ecto module yields a misleading "missing all 15 columns" drift warning
 
+**Resolution:** Fixed in 0e5cdfa — `check_ledger_schema/1` emits a distinct `threadline.ledger_schema_invalid` advisory when the module does not export `__schema__/1`, instead of an all-columns drift warning; test added.
+
 **File:** `lib/crosswake/doctor/doctor.ex:989-995`
 
 **Issue:** If the configured schema module loads but does not implement `__schema__/1`,
@@ -291,6 +303,8 @@ empty field list.
 ---
 
 ### IN-07: Ledger PII check skipped entirely when install manifest is missing
+
+**Resolution:** Fixed in 4fa06aa — nil-manifest guard split: only `check_threadline_plug/1` is skipped without an install manifest; the ledger-configured, PII, and drift checks always run. Test proves the `:error`-class PII finding fires with no manifest.
 
 **File:** `lib/crosswake/doctor/doctor.ex:884`
 
