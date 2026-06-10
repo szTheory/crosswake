@@ -111,7 +111,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] 95-02-PLAN.md — CLI Task for Threadline Posture
 - [x] 95-03-PLAN.md — Gap closure: doctor fail-closed PII correctness (CR-01/CR-02/CR-04, OPER-02)
 - [x] 95-04-PLAN.md — Gap closure: threadline chronological sort across month boundaries (CR-03, OPER-01)
-- [ ] 95-05-PLAN.md — Gap closure: guard Code.ensure_loaded? against non-atom :schema config (fail-closed, OPER-02)
+- [x] 95-05-PLAN.md — Gap closure: guard Code.ensure_loaded? against non-atom :schema config (fail-closed, OPER-02)
 
 ### Phase 96: Docs-Contract + Proof
 **Goal**: `guides/threadline.md` is the honest public contract for the Threadline feature, mechanically verified against the shipped code, with a hermetic merge-blocking proof lane and an advisory example-host ledger proof
@@ -133,5 +133,5 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 4/4 | Complete   | 2026-06-10 |
+| 95. Operator Surface | v7.0 | 5/5 | Complete   | 2026-06-10 |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
