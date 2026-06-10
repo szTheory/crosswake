@@ -93,13 +93,39 @@ defmodule Mix.Tasks.Crosswake.Threadline do
           false
       end
     end)
-    |> Enum.sort_by(fn event ->
-      Map.get(event, :occurred_at) ||
-        Map.get(event, :inserted_at) ||
-        Map.get(event, "occurred_at") ||
-        Map.get(event, "inserted_at") ||
-        ~N[1970-01-01 00:00:00]
-    end)
+    |> Enum.sort_by(&timestamp_of/1, fn a, b -> compare_ts(a, b) != :gt end)
+  end
+
+  # Extracts the best available timestamp from an event map using the canonical
+  # fallback chain: occurred_at (atom) → inserted_at (atom) → occurred_at (string)
+  # → inserted_at (string) → epoch sentinel. Returns a NaiveDateTime or DateTime.
+  defp timestamp_of(event) do
+    Map.get(event, :occurred_at) ||
+      Map.get(event, :inserted_at) ||
+      Map.get(event, "occurred_at") ||
+      Map.get(event, "inserted_at") ||
+      ~N[1970-01-01 00:00:00]
+  end
+
+  # Chronological comparator that handles both NaiveDateTime (from host schemas
+  # using :inserted_at) and DateTime (from the canonical ledger template using
+  # :occurred_at / :recorded_at typed :utc_datetime_usec). Using a single module
+  # (e.g. NaiveDateTime) as the Enum.sort_by comparator would crash on DateTime
+  # values, so we dispatch on the struct type.
+  defp compare_ts(%NaiveDateTime{} = a, %NaiveDateTime{} = b),
+    do: NaiveDateTime.compare(a, b)
+
+  defp compare_ts(%DateTime{} = a, %DateTime{} = b),
+    do: DateTime.compare(a, b)
+
+  defp compare_ts(%NaiveDateTime{} = a, %DateTime{} = b) do
+    a_dt = DateTime.from_naive!(a, "Etc/UTC")
+    DateTime.compare(a_dt, b)
+  end
+
+  defp compare_ts(%DateTime{} = a, %NaiveDateTime{} = b) do
+    b_dt = DateTime.from_naive!(b, "Etc/UTC")
+    DateTime.compare(a, b_dt)
   end
 
   defp render_durable(events) do
