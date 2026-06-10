@@ -890,25 +890,44 @@ defmodule Crosswake.Doctor do
     audit_ledger_config = Application.get_env(:crosswake, :audit_ledger)
     ledger_findings = check_audit_ledger_configured(audit_ledger_config)
 
+    schema = ledger_schema(audit_ledger_config)
+
     schema_findings =
-      case audit_ledger_config do
-        nil ->
-          []
-
-        config when is_map(config) or is_list(config) ->
-          schema = config[:schema] || config["schema"]
-          if schema && Code.ensure_loaded?(schema) do
-            check_ledger_schema(schema)
-          else
-            []
-          end
-
-        _ ->
-          []
+      if schema && Code.ensure_loaded?(schema) do
+        check_ledger_schema(schema)
+      else
+        []
       end
 
     plug_findings ++ ledger_findings ++ schema_findings
   end
+
+  # Normalizes the four documented :audit_ledger config shapes to a schema module or nil.
+  # Resolution order:
+  #   nil                     → nil
+  #   keyword list            → Keyword.get(list, :schema)  (CR-04: never string-key access on keyword)
+  #   map                     → Map.get(config, :schema) || Map.get(config, "schema")
+  #   bare atom (module ref)  → config itself
+  #   anything else           → nil
+  defp ledger_schema(nil), do: nil
+
+  defp ledger_schema(config) when is_list(config) do
+    if Keyword.keyword?(config) do
+      Keyword.get(config, :schema)
+    else
+      nil
+    end
+  end
+
+  defp ledger_schema(config) when is_map(config) do
+    Map.get(config, :schema) || Map.get(config, "schema")
+  end
+
+  defp ledger_schema(config) when is_atom(config) and not is_nil(config) and not is_boolean(config) do
+    config
+  end
+
+  defp ledger_schema(_config), do: nil
 
   defp check_threadline_plug(router_path) do
     case File.read(router_path) do
@@ -987,7 +1006,13 @@ defmodule Crosswake.Doctor do
   end
 
   defp check_pii_fields(schema, schema_fields, forbidden_keys) do
-    offending = MapSet.intersection(MapSet.new(schema_fields), MapSet.new(forbidden_keys))
+    # Exclude canonical ledger columns from the forbidden set so that :actor_ref
+    # (which is both a required canonical column and a forbidden metadata key)
+    # does not falsely trigger a PII error on a compliant schema. (CR-01)
+    ledger_forbidden =
+      MapSet.difference(MapSet.new(forbidden_keys), MapSet.new(@canonical_ledger_columns))
+
+    offending = MapSet.intersection(MapSet.new(schema_fields), ledger_forbidden)
 
     if MapSet.size(offending) > 0 do
       offending_list = MapSet.to_list(offending) |> Enum.sort()
