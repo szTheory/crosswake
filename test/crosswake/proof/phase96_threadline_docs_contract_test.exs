@@ -238,4 +238,29 @@ defmodule Crosswake.Proof.Phase96ThreadlineDocsContractTest do
     assert guide =~ "terminal critical events",
            "guides/threadline.md must state 'terminal critical events' as the reserved scope for the audit ledger — this is the key DX boundary (DOCS-01)"
   end
+
+  # -------------------------------------------------------------------------
+  # Regression guards: WR-03 (conn.assigns) and WR-02 (record_in_multi arity)
+  # See .planning/v7.0-MILESTONE-AUDIT.md for the original bug reports.
+  # -------------------------------------------------------------------------
+
+  # WR-03 regression guard: The plug stores the id in Logger.metadata, never in conn.assigns.
+  # The bare "Logger.metadata" string already appears at lines 7 and 15 in unrelated prose,
+  # so that substring CANNOT detect the regression. This assertion checks the full read-path
+  # string Logger.metadata()[:crosswake_thread_id] which is absent before the fix.
+  test "guides/threadline.md documents the Logger.metadata read-path for thread id (WR-03)" do
+    guide = File.read!("guides/threadline.md")
+
+    assert guide =~ "Logger.metadata()[:crosswake_thread_id]",
+           "guides/threadline.md must document the read-path 'Logger.metadata()[:crosswake_thread_id]' in the Propagation Contract section — Crosswake.Plug.Threadline never calls Conn.assign/3; the id is stored in Logger.metadata under :crosswake_thread_id (WR-03)"
+  end
+
+  # WR-02 regression guard: The generated template ships record_in_multi(multi, name, attrs) — arity 3.
+  # The guide previously said record_in_multi/2, which would cause a FunctionClauseError for adopters.
+  test "guides/threadline.md documents record_in_multi/3 (not /2) (WR-02)" do
+    guide = File.read!("guides/threadline.md")
+
+    assert guide =~ "record_in_multi/3",
+           "guides/threadline.md must document 'record_in_multi/3' in the Operations > Scaffolding the ledger section — the generated template ships record_in_multi(multi, name, attrs) with arity 3, not arity 2 (WR-02)"
+  end
 end
