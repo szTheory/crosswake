@@ -893,7 +893,7 @@ defmodule Crosswake.Doctor do
     schema = ledger_schema(audit_ledger_config)
 
     schema_findings =
-      if schema && Code.ensure_loaded?(schema) do
+      if is_atom(schema) and not is_nil(schema) and Code.ensure_loaded?(schema) do
         check_ledger_schema(schema)
       else
         []

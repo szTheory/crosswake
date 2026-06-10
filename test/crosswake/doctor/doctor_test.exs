@@ -181,7 +181,7 @@ defmodule Crosswake.DoctorTest do
         android_proof_hook_path: android_proof
       )
 
-    IO.inspect(Enum.filter(report.findings, & &1.severity == :error)); assert report.status == :ok
+    assert report.status == :ok
     assert report.support.status == :supported
     assert Enum.all?(report.findings, &match?(%Check{}, &1))
 
