@@ -34,7 +34,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount (completed 2026-06-09)
 - [x] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId` (completed 2026-06-09)
 - [x] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema (completed 2026-06-09)
-- [x] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row (completed 2026-06-10)
+- [ ] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row (gaps_found 2026-06-10 — gap-closure plans 95-03/95-04 created)
 - [ ] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof
 
 ## Phase Details
@@ -106,9 +106,11 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   2. `mix crosswake.doctor` reports Threadline posture and emits `threadline.plug_missing` (advisory), `threadline.ledger_not_configured` (advisory), `threadline.ledger_schema_drift` (warning), and `threadline.pii_forbidden_field_present` (error, fail-closed)
   3. The support matrix exposes a `@audit_ledger_support_truth` module attribute row with explicit denial/fallback posture — `ephemeral-only` when no ledger is configured is non-blocking, not an error
   4. All three operator surfaces use only text output; no LiveDashboard dependency is introduced
-**Plans**: 2 plans
+**Plans**: 4 plans (2 executed + 2 gap-closure)
 - [x] 95-01-PLAN.md — Support Matrix Truth & Doctor Findings
 - [x] 95-02-PLAN.md — CLI Task for Threadline Posture
+- [ ] 95-03-PLAN.md — Gap closure: doctor fail-closed PII correctness (CR-01/CR-02/CR-04, OPER-02)
+- [ ] 95-04-PLAN.md — Gap closure: threadline chronological sort across month boundaries (CR-03, OPER-01)
 
 ### Phase 96: Docs-Contract + Proof
 **Goal**: `guides/threadline.md` is the honest public contract for the Threadline feature, mechanically verified against the shipped code, with a hermetic merge-blocking proof lane and an advisory example-host ledger proof
@@ -130,5 +132,5 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 2/2 | Complete   | 2026-06-10 |
+| 95. Operator Surface | v7.0 | 2/4 | Gap closure | - |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
