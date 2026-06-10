@@ -181,7 +181,7 @@ defmodule Crosswake.DoctorTest do
         android_proof_hook_path: android_proof
       )
 
-    IO.inspect(Enum.filter(report.findings, & &1.severity == :error)); assert report.status == :ok
+    assert report.status == :ok
     assert report.support.status == :supported
     assert Enum.all?(report.findings, &match?(%Check{}, &1))
 
@@ -1422,6 +1422,25 @@ defmodule Crosswake.DoctorTest do
       on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
 
       # Must return a report without raising ArgumentError
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert report != nil
+    end
+
+    # CR-05: map config with string :schema value must not crash the doctor (fail-closed guard)
+    test "does not crash on string :schema value in map config",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # String module name — classic config/runtime.exs + System.get_env pattern
+      Application.put_env(:crosswake, :audit_ledger, %{schema: "MyApp.Audit.Ledger"})
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      # Must return a report without raising FunctionClauseError from Code.ensure_loaded?/1
       report =
         Doctor.run(
           route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
