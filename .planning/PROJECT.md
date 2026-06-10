@@ -10,6 +10,8 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 ## Current State
 
+**Shipped `Phase 95 Operator Surface` on `2026-06-10`** (5 plans, verified 4/4). Phase 95 shipped the text-only operator surface for Threadline: the `mix crosswake.threadline` task (ordered Native → Bridge → Phoenix event table with explicit ephemeral/durable posture), doctor Threadline findings including the fail-closed `threadline.pii_forbidden_field_present` error, and the `@audit_ledger_support_truth` support-matrix row. OPER-01/02/03 satisfied.
+
 **Shipped `Phase 094 audit-ledger-contract-generator` on `2026-06-09`** (3 plans). Phase 094 implemented the Crosswake.Audit.Ledger struct and HMAC helper, and the `mix crosswake.gen.audit` task to scaffold the schema and migration templates.
 
 **Shipped `Phase 93 Native Shell Propagation` on `2026-06-09`** (2 plans). Phase 93 updated the iOS and Android native shells to propagate `thread_id` across activation via header and JS injection, ensuring deterministic Native → Bridge → Phoenix correlation.
@@ -182,7 +184,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-09*te Context with current state
-
----
-*Last updated: 2026-06-09 — v7.0 Threadline Audit Capstone milestone started*
+*Last updated: 2026-06-10 — Phase 95 Operator Surface complete*
