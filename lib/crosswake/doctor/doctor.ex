@@ -987,22 +987,39 @@ defmodule Crosswake.Doctor do
   ]
 
   defp check_ledger_schema(schema) do
-    schema_fields =
-      try do
-        schema.__schema__(:fields)
-      rescue
-        _ -> []
-      end
+    # A loadable module that does not implement __schema__/1 is not an Ecto
+    # schema. Falling through to the field checks would report every canonical
+    # column as missing — a misleading diagnosis — while the PII check silently
+    # passes. Emit a distinct invalid-schema finding instead (IN-06).
+    if function_exported?(schema, :__schema__, 1) do
+      schema_fields =
+        try do
+          schema.__schema__(:fields)
+        rescue
+          _ -> []
+        end
 
-    forbidden_keys =
-      SupportMatrix.audit_ledger_support_truth()
-      |> hd()
-      |> get_in([:telemetry, :forbidden_metadata_keys])
+      forbidden_keys =
+        SupportMatrix.audit_ledger_support_truth()
+        |> hd()
+        |> get_in([:telemetry, :forbidden_metadata_keys])
 
-    pii_findings = check_pii_fields(schema, schema_fields, forbidden_keys)
-    drift_findings = check_schema_drift(schema, schema_fields)
+      pii_findings = check_pii_fields(schema, schema_fields, forbidden_keys)
+      drift_findings = check_schema_drift(schema, schema_fields)
 
-    pii_findings ++ drift_findings
+      pii_findings ++ drift_findings
+    else
+      [
+        check(
+          :advisory,
+          "threadline.ledger_schema_invalid",
+          "threadline_posture",
+          "Configured audit ledger module #{inspect(schema)} is not an Ecto schema (no __schema__/1)",
+          "Point `:audit_ledger` at an Ecto schema module, or run `mix crosswake.gen.audit` to scaffold one. PII and schema-drift checks were skipped because the module exposes no fields. See guides/threadline.md.",
+          %{schema: inspect(schema)}
+        )
+      ]
+    end
   end
 
   defp check_pii_fields(schema, schema_fields, forbidden_keys) do

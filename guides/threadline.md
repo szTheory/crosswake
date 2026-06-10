@@ -58,6 +58,7 @@ unrecognized tier value are rendered under a trailing
 | `threadline.ledger_not_configured` | advisory | No `:audit_ledger` configured — posture is ephemeral only. |
 | `threadline.pii_forbidden_field_present` | error | The configured ledger schema declares PII-forbidden fields. The ledger must be PII-free by construction (D-03). |
 | `threadline.ledger_schema_drift` | warning | The configured ledger schema is missing canonical LEDG-02 columns. |
+| `threadline.ledger_schema_invalid` | advisory | The configured `:audit_ledger` module is not an Ecto schema (no `__schema__/1`); PII and drift checks were skipped. |
 
 Advisory findings describe an opt-in you have not taken; the PII finding is an
 error because a PII-bearing ledger violates the threadline contract.

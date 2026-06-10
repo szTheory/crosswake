@@ -224,6 +224,39 @@ defmodule Crosswake.Doctor.ThreadlineTest do
              "Canonical schema must not produce a drift warning (schema checks must have run via bare-atom config — CR-02)"
     end
 
+    # IN-06: a loadable module that is not an Ecto schema must yield a distinct
+    # invalid-schema advisory, not a misleading "missing all 15 columns" drift warning
+    defmodule NotAnEctoSchema do
+      @moduledoc false
+      def some_function, do: :ok
+    end
+
+    test "emits threadline.ledger_schema_invalid :advisory when configured module is not an Ecto schema",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      Application.put_env(:crosswake, :audit_ledger, NotAnEctoSchema)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.ledger_schema_invalid"))
+      assert finding != nil
+      assert finding.severity == :advisory
+      assert finding.check == "threadline_posture"
+
+      # The misleading "missing all 15 columns" drift warning must NOT fire,
+      # and the PII check must not silently pass alongside it (IN-06)
+      refute Enum.any?(report.findings, &(&1.code == "threadline.ledger_schema_drift")),
+             "Non-Ecto module must produce ledger_schema_invalid, not a drift warning for all columns"
+
+      refute Enum.any?(report.findings, &(&1.code == "threadline.pii_forbidden_field_present"))
+    end
+
     # CR-04: keyword config without :schema key must not crash the doctor
     test "does not crash on keyword audit_ledger config missing :schema key",
          %{target: target, install_manifest_path: install_manifest_path} do
