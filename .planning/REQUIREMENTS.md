@@ -25,9 +25,9 @@
 
 ### Operator Surface (OPER)
 
-- [ ] **OPER-01**: An operator can run `mix crosswake.threadline --thread-id <id>` (or `--actor-ref <ref>`) to see an ordered Native→Bridge→Phoenix event table with explicit `posture: ephemeral` (no ledger) or `posture: durable` (ledger configured).
-- [ ] **OPER-02**: `mix crosswake.doctor` reports Threadline posture and emits `threadline.plug_missing` (advisory), `threadline.ledger_not_configured` (advisory), `threadline.ledger_schema_drift` (warning), and `threadline.pii_forbidden_field_present` (error, fail-closed).
-- [ ] **OPER-03**: The support matrix exposes a Threadline `@audit_ledger_support_truth` row with explicit denial/fallback posture (no ledger configured = ephemeral-only, non-blocking).
+- [x] **OPER-01**: An operator can run `mix crosswake.threadline --thread-id <id>` (or `--actor-ref <ref>`) to see an ordered Native→Bridge→Phoenix event table with explicit `posture: ephemeral` (no ledger) or `posture: durable` (ledger configured).
+- [x] **OPER-02**: `mix crosswake.doctor` reports Threadline posture and emits `threadline.plug_missing` (advisory), `threadline.ledger_not_configured` (advisory), `threadline.ledger_schema_drift` (warning), and `threadline.pii_forbidden_field_present` (error, fail-closed).
+- [x] **OPER-03**: The support matrix exposes a Threadline `@audit_ledger_support_truth` row with explicit denial/fallback posture (no ledger configured = ephemeral-only, non-blocking).
 
 ### Documentation Contract (DOCS)
 
@@ -83,9 +83,9 @@
 | LEDG-04 | Phase 94 | Complete |
 | LEDG-05 | Phase 94 | Complete |
 | LEDG-06 | Phase 94 | Complete |
-| OPER-01 | Phase 95 | Pending |
-| OPER-02 | Phase 95 | Pending |
-| OPER-03 | Phase 95 | Pending |
+| OPER-01 | Phase 95 | Complete |
+| OPER-02 | Phase 95 | Complete |
+| OPER-03 | Phase 95 | Complete |
 | DOCS-01 | Phase 96 | Pending |
 | DOCS-02 | Phase 96 | Pending |
 | DOCS-03 | Phase 96 | Pending |

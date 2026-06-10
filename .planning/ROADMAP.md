@@ -133,5 +133,5 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 5/5 | Complete   | 2026-06-10 |
+| 95. Operator Surface | v7.0 | 5/5 | Complete    | 2026-06-10 |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
