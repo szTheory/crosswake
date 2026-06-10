@@ -19,7 +19,7 @@ These are non-goals by design, not deferred features.
 
 ## The Propagation Contract
 
-The header name is `X-Crosswake-Thread-Id`. The plug reads an inbound header (posture: `:inbound`) or mints a new id (posture: `:minted`) and places it in `conn.assigns[:thread_id]`.
+The header name is `X-Crosswake-Thread-Id`. The plug reads an inbound header (posture: `:inbound`) or mints a new id (posture: `:minted`). It stores the id in `Logger.metadata` under the `:crosswake_thread_id` key — read it in downstream plugs or controllers via `Logger.metadata()[:crosswake_thread_id]`.
 
 Server-side plug: `Crosswake.Plug.Threadline`. Add it to the Phoenix router pipeline:
 
@@ -125,7 +125,7 @@ In ephemeral posture the task prints `Posture: Ephemeral. No ledger configured.`
 
 `mix crosswake.gen.audit` generates the host-owned Ecto schema and timestamped migration for `crosswake_audit_events`. The generated schema implements the 15 LEDG-02 columns, the `reject_pii_in_metadata/1` changeset guard, and the `compute_hashes/1` helper. The host owns the table, the repo, and the migration.
 
-Use `record_in_multi/2` to insert audit events inside an existing `Ecto.Multi` in the same transaction as the action they describe. Reserve the ledger for terminal critical events — auth handoffs, commerce receipts, step-up resolutions, route denials — not high-frequency request logging.
+Use `record_in_multi/3` to insert audit events inside an existing `Ecto.Multi` in the same transaction as the action they describe. Reserve the ledger for terminal critical events — auth handoffs, commerce receipts, step-up resolutions, route denials — not high-frequency request logging.
 
 ## Doctor Findings
 
