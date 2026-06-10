@@ -110,26 +110,30 @@ defmodule Mix.Tasks.Crosswake.Threadline do
       @epoch_sentinel
   end
 
-  # Chronological comparator that handles both NaiveDateTime (from host schemas
-  # using :inserted_at) and DateTime (from the canonical ledger template using
-  # :occurred_at / :recorded_at typed :utc_datetime_usec). Using a single module
-  # (e.g. NaiveDateTime) as the Enum.sort_by comparator would crash on DateTime
-  # values, so we dispatch on the struct type.
-  defp compare_ts(%NaiveDateTime{} = a, %NaiveDateTime{} = b),
-    do: NaiveDateTime.compare(a, b)
-
-  defp compare_ts(%DateTime{} = a, %DateTime{} = b),
-    do: DateTime.compare(a, b)
-
-  defp compare_ts(%NaiveDateTime{} = a, %DateTime{} = b) do
-    a_dt = DateTime.from_naive!(a, "Etc/UTC")
-    DateTime.compare(a_dt, b)
+  # Chronological comparator that tolerates every timestamp shape an event can
+  # carry: NaiveDateTime (host schemas using :inserted_at), DateTime (the
+  # canonical ledger template typing :occurred_at / :recorded_at as
+  # :utc_datetime_usec), ISO-8601 strings (JSON-decoded or string-keyed event
+  # maps), and anything else. Coercing through to_naive/1 means the sort can
+  # never crash mid-Enum.sort_by with a FunctionClauseError.
+  defp compare_ts(a, b) do
+    NaiveDateTime.compare(to_naive(a), to_naive(b))
   end
 
-  defp compare_ts(%DateTime{} = a, %NaiveDateTime{} = b) do
-    b_dt = DateTime.from_naive!(b, "Etc/UTC")
-    DateTime.compare(a, b_dt)
+  # Coerces any timestamp shape to a NaiveDateTime for comparison. DateTime
+  # values from the canonical ledger are UTC, so dropping the zone preserves
+  # ordering. Unparseable or unknown shapes fall back to the epoch sentinel.
+  defp to_naive(%NaiveDateTime{} = ts), do: ts
+  defp to_naive(%DateTime{} = ts), do: DateTime.to_naive(ts)
+
+  defp to_naive(ts) when is_binary(ts) do
+    case NaiveDateTime.from_iso8601(ts) do
+      {:ok, parsed} -> parsed
+      _ -> @epoch_sentinel
+    end
   end
+
+  defp to_naive(_), do: @epoch_sentinel
 
   defp render_durable(events) do
     Mix.shell().info("Posture: Durable")
