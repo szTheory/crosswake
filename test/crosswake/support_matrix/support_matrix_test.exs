@@ -262,6 +262,17 @@ defmodule Crosswake.SupportMatrixTest do
       assert entry.docs_anchor == "guides/threadline.md"
     end
 
+    # Docs integrity (IN-03): the anchor is surfaced in operator-facing doctor
+    # hints — the file it points at must actually exist in the repository.
+    test "entry docs_anchor file exists in the repository" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      # Anchors may carry a #fragment; only the file part must exist on disk.
+      [path | _fragment] = String.split(entry.docs_anchor, "#", parts: 2)
+
+      assert File.exists?(path),
+             "docs_anchor #{entry.docs_anchor} is referenced by doctor hints but #{path} does not exist"
+    end
+
     test "entry ephemeral_posture and durable_posture are both :supported" do
       [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
       assert entry.ephemeral_posture == :supported

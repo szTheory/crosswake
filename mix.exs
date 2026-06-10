@@ -100,7 +100,8 @@ defmodule Crosswake.MixProject do
         "guides/companions.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
-        "guides/packs.md"
+        "guides/packs.md",
+        "guides/threadline.md"
       ],
       groups_for_modules: [
         Policy: [Crosswake.Policy, Crosswake.Router],
