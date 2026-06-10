@@ -34,7 +34,7 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 92: Server Propagation — Plug + LiveView** - Ship `Crosswake.Plug.Threadline` (read/mint header, Logger metadata, telemetry spans) and `Crosswake.Live.Threadline` on_mount (completed 2026-06-09)
 - [x] **Phase 93: Native Shell Propagation** - iOS and Android inject `X-Crosswake-Thread-Id` on initial load and expose `window.crosswakeBridge.threadId` (completed 2026-06-09)
 - [x] **Phase 94: Audit Ledger Contract + Generator** - Ship `Crosswake.Audit.Ledger` contract struct and `mix crosswake.gen.audit` scaffold with full PII-free, append-only schema (completed 2026-06-09)
-- [ ] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row
+- [x] **Phase 95: Operator Surface** - Ship `mix crosswake.threadline` task, Threadline doctor findings, and `@audit_ledger_support_truth` support-matrix row (completed 2026-06-10)
 - [ ] **Phase 96: Docs-Contract + Proof** - Ship `guides/threadline.md` with mechanically-checked parity, hermetic merge-blocking proof lane, and advisory example-host ledger proof
 
 ## Phase Details
@@ -107,8 +107,8 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   3. The support matrix exposes a `@audit_ledger_support_truth` module attribute row with explicit denial/fallback posture — `ephemeral-only` when no ledger is configured is non-blocking, not an error
   4. All three operator surfaces use only text output; no LiveDashboard dependency is introduced
 **Plans**: 2 plans
-- [ ] 95-01-PLAN.md — Support Matrix Truth & Doctor Findings
-- [ ] 95-02-PLAN.md — CLI Task for Threadline Posture
+- [x] 95-01-PLAN.md — Support Matrix Truth & Doctor Findings
+- [x] 95-02-PLAN.md — CLI Task for Threadline Posture
 
 ### Phase 96: Docs-Contract + Proof
 **Goal**: `guides/threadline.md` is the honest public contract for the Threadline feature, mechanically verified against the shipped code, with a hermetic merge-blocking proof lane and an advisory example-host ledger proof
@@ -130,5 +130,5 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 0/2 | Not started | - |
+| 95. Operator Surface | v7.0 | 2/2 | Complete   | 2026-06-10 |
 | 96. Docs-Contract + Proof | v7.0 | 0/TBD | Not started | - |
