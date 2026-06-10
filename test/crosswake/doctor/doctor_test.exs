@@ -1244,4 +1244,129 @@ defmodule Crosswake.DoctorTest do
       assert finding.details.authority_source == :host_configured_endpoint
     end
   end
+
+  # Phase 95: Threadline posture doctor checks (OPER-03)
+  describe "phase_95_threadline_findings (OPER-03)" do
+    test "emits threadline.plug_missing :advisory when plug is absent from router",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # Default setup router does NOT have plug Crosswake.Plug.Threadline
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.plug_missing"))
+      assert finding != nil
+      assert finding.severity == :advisory
+      assert finding.check == "threadline_posture"
+    end
+
+    test "does NOT emit threadline.plug_missing when plug is present in router",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      router_path = Path.join(target, "lib/demo_web/router.ex")
+
+      File.write!(
+        router_path,
+        """
+        defmodule DemoWeb.Router do
+          # crosswake:install:start
+          import Crosswake.Router
+          plug Crosswake.Plug.Threadline
+          # crosswake:install:end
+        end
+        """
+      )
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      refute Enum.any?(report.findings, &(&1.code == "threadline.plug_missing"))
+    end
+
+    test "emits threadline.ledger_not_configured :advisory when audit_ledger is not configured",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # Ensure :audit_ledger is not set
+      Application.delete_env(:crosswake, :audit_ledger)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.ledger_not_configured"))
+      assert finding != nil
+      assert finding.severity == :advisory
+      assert finding.check == "threadline_posture"
+    end
+
+    # PII field detection test using a test schema
+    defmodule PiiLedgerSchema do
+      def __schema__(:fields) do
+        # actor_ref is in the forbidden_metadata_keys list
+        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
+         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :idempotency_key,
+         :metadata, :row_hash, :prev_hash,
+         # PII-forbidden field
+         :email]
+      end
+    end
+
+    test "emits threadline.pii_forbidden_field_present :error when schema has PII forbidden fields",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      Application.put_env(:crosswake, :audit_ledger, schema: PiiLedgerSchema)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.pii_forbidden_field_present"))
+      assert finding != nil
+      assert finding.severity == :error
+      assert finding.check == "threadline_posture"
+      assert :email in finding.details.offending_keys
+    end
+
+    defmodule DriftLedgerSchema do
+      def __schema__(:fields) do
+        # Missing :idempotency_key, :row_hash, :prev_hash
+        [:thread_id, :correlation_id, :route_id, :actor_ref, :actor_kind, :event_class,
+         :event_type, :outcome, :provenance, :occurred_at, :recorded_at, :metadata]
+      end
+    end
+
+    test "emits threadline.ledger_schema_drift :warning when schema is missing canonical columns",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      Application.put_env(:crosswake, :audit_ledger, schema: DriftLedgerSchema)
+
+      on_exit(fn -> Application.delete_env(:crosswake, :audit_ledger) end)
+
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding = Enum.find(report.findings, &(&1.code == "threadline.ledger_schema_drift"))
+      assert finding != nil
+      assert finding.severity == :warning
+      assert finding.check == "threadline_posture"
+      assert :idempotency_key in finding.details.missing_columns
+      assert :row_hash in finding.details.missing_columns
+      assert :prev_hash in finding.details.missing_columns
+    end
+  end
 end

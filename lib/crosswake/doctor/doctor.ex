@@ -150,6 +150,7 @@ defmodule Crosswake.Doctor do
     phase_41_findings = phase_41_gating_findings(manifest)
     phase_46_findings = phase_46_auth_findings(manifest)
     phase_62_findings = phase_62_notification_findings(manifest)
+    phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
     publish_readiness = publish_readiness(manifest, opts, cwd)
@@ -168,6 +169,7 @@ defmodule Crosswake.Doctor do
         phase_41_findings ++
         phase_46_findings ++
         phase_62_findings ++
+        phase_95_findings ++
         phase_65_findings ++
         phase_66_findings ++
         publish_findings
@@ -867,6 +869,163 @@ defmodule Crosswake.Doctor do
         }
       )
     ]
+  end
+
+  # Phase 95: Threadline posture doctor checks (OPER-03)
+  #
+  # Emits findings for:
+  #   - threadline.plug_missing (:advisory) — Crosswake.Plug.Threadline absent from router
+  #   - threadline.ledger_not_configured (:advisory) — no :audit_ledger config
+  #   - threadline.pii_forbidden_field_present (:error) — Ecto schema fields intersect forbidden keys (D-03)
+  #   - threadline.ledger_schema_drift (:warning) — Ecto schema missing canonical ledger columns (LEDG-02)
+  #
+  # Uses Application.get_env (not compile_env) so proof tests can register fixtures via put_env.
+  # Reads the router file from install_manifest router_path to check for plug presence.
+  defp phase_95_threadline_findings(nil, _cwd), do: []
+
+  defp phase_95_threadline_findings(install_manifest, cwd) do
+    router_path = Path.expand(Map.get(install_manifest, "router_path", ""), cwd)
+    plug_findings = check_threadline_plug(router_path)
+
+    audit_ledger_config = Application.get_env(:crosswake, :audit_ledger)
+    ledger_findings = check_audit_ledger_configured(audit_ledger_config)
+
+    schema_findings =
+      case audit_ledger_config do
+        nil ->
+          []
+
+        config when is_map(config) or is_list(config) ->
+          schema = config[:schema] || config["schema"]
+          if schema && Code.ensure_loaded?(schema) do
+            check_ledger_schema(schema)
+          else
+            []
+          end
+
+        _ ->
+          []
+      end
+
+    plug_findings ++ ledger_findings ++ schema_findings
+  end
+
+  defp check_threadline_plug(router_path) do
+    case File.read(router_path) do
+      {:ok, contents} ->
+        if String.contains?(contents, "plug Crosswake.Plug.Threadline") do
+          []
+        else
+          [
+            check(
+              :advisory,
+              "threadline.plug_missing",
+              "threadline_posture",
+              "Crosswake.Plug.Threadline is not present in the router at #{router_path}",
+              "Add `plug Crosswake.Plug.Threadline` to your Phoenix router pipeline to enable X-Crosswake-Thread-Id propagation and telemetry spans. See guides/threadline.md.",
+              %{router_path: router_path}
+            )
+          ]
+        end
+
+      {:error, _reason} ->
+        []
+    end
+  end
+
+  defp check_audit_ledger_configured(nil) do
+    [
+      check(
+        :advisory,
+        "threadline.ledger_not_configured",
+        "threadline_posture",
+        "Crosswake audit ledger is not configured — threadline posture is ephemeral only",
+        "Configure `:audit_ledger` under `:crosswake` in your host config and run `mix crosswake.gen.audit` to scaffold the host-owned ledger schema and migration. See guides/threadline.md.",
+        %{}
+      )
+    ]
+  end
+
+  defp check_audit_ledger_configured(_config), do: []
+
+  # LEDG-02 canonical 15-column set
+  @canonical_ledger_columns [
+    :thread_id,
+    :correlation_id,
+    :route_id,
+    :actor_ref,
+    :actor_kind,
+    :event_class,
+    :event_type,
+    :outcome,
+    :provenance,
+    :occurred_at,
+    :recorded_at,
+    :idempotency_key,
+    :metadata,
+    :row_hash,
+    :prev_hash
+  ]
+
+  defp check_ledger_schema(schema) do
+    schema_fields =
+      try do
+        schema.__schema__(:fields)
+      rescue
+        _ -> []
+      end
+
+    forbidden_keys =
+      SupportMatrix.audit_ledger_support_truth()
+      |> hd()
+      |> get_in([:telemetry, :forbidden_metadata_keys])
+
+    pii_findings = check_pii_fields(schema, schema_fields, forbidden_keys)
+    drift_findings = check_schema_drift(schema, schema_fields)
+
+    pii_findings ++ drift_findings
+  end
+
+  defp check_pii_fields(schema, schema_fields, forbidden_keys) do
+    offending = MapSet.intersection(MapSet.new(schema_fields), MapSet.new(forbidden_keys))
+
+    if MapSet.size(offending) > 0 do
+      offending_list = MapSet.to_list(offending) |> Enum.sort()
+
+      [
+        check(
+          :error,
+          "threadline.pii_forbidden_field_present",
+          "threadline_posture",
+          "Ecto schema #{inspect(schema)} contains PII-forbidden field(s): #{Enum.join(offending_list, ", ")}",
+          "Remove PII-forbidden fields #{inspect(offending_list)} from the audit ledger schema #{inspect(schema)}. The Crosswake audit ledger must be PII-free by construction. See D-03 and guides/threadline.md.",
+          %{schema: inspect(schema), offending_keys: offending_list}
+        )
+      ]
+    else
+      []
+    end
+  end
+
+  defp check_schema_drift(schema, schema_fields) do
+    schema_field_set = MapSet.new(schema_fields)
+    canonical_set = MapSet.new(@canonical_ledger_columns)
+    missing = MapSet.difference(canonical_set, schema_field_set) |> MapSet.to_list() |> Enum.sort()
+
+    if missing == [] do
+      []
+    else
+      [
+        check(
+          :warning,
+          "threadline.ledger_schema_drift",
+          "threadline_posture",
+          "Ecto schema #{inspect(schema)} is missing canonical ledger columns: #{Enum.join(missing, ", ")}",
+          "Add the missing columns #{inspect(missing)} to the audit ledger schema #{inspect(schema)}. All 15 canonical columns defined in LEDG-02 must be present. Run `mix crosswake.gen.audit` to regenerate the migration template.",
+          %{schema: inspect(schema), missing_columns: missing}
+        )
+      ]
+    end
   end
 
   defp phase_23_commerce_summary(nil, _opts) do
