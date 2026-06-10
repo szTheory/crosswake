@@ -124,9 +124,9 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
   4. A hermetic merge-blocking proof lane passes: Plug metadata and telemetry emission, telemetry forbidden-key rejection, `gen.audit` idempotency, doctor findings, and `guides/threadline.md` parity — no Ecto/network/device required
   5. An advisory example-host proof lane verifies real Ecto-backed `record_in_multi/3` persistence and `mix crosswake.threadline` reconstruction with `durable` posture against a seeded ledger
 **Plans**: 3 plans
-- [ ] 96-01-PLAN.md — Restructure `guides/threadline.md` to the contract-first 10-section outline with verbatim contract content, anti-scope, and locked microcopy (DOCS-01/02/03)
+- [x] 96-01-PLAN.md — Restructure `guides/threadline.md` to the contract-first 10-section outline with verbatim contract content, anti-scope, and locked microcopy (DOCS-01/02/03)
 - [ ] 96-02-PLAN.md — Hermetic docs-contract parity test + merge-blocking proof workflow (DOCS-01/02/03, PROOF-01)
-- [ ] 96-03-PLAN.md — Example-host gen.audit output + Ecto-backed durable-posture proof + advisory workflow (PROOF-02)
+- [x] 96-03-PLAN.md — Example-host gen.audit output + Ecto-backed durable-posture proof + advisory workflow (PROOF-02)
 
 ## Progress
 
@@ -137,4 +137,4 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 | 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
 | 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
 | 95. Operator Surface | v7.0 | 5/5 | Complete    | 2026-06-10 |
-| 96. Docs-Contract + Proof | v7.0 | 0/3 | Not started | - |
+| 96. Docs-Contract + Proof | v7.0 | 2/3 | In Progress|  |
