@@ -250,4 +250,95 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
              "Expected jan.event (Jan 2026) to appear before feb.event (Feb 2026) in output"
     end
   end
+
+  describe "unrecognized tier rendering (IN-02)" do
+    defmodule MockLedgerSchemaOtherTier do
+      @moduledoc false
+
+      defstruct [:thread_id, :actor_ref, :tier, :event_type, :inserted_at]
+
+      def __schema__(:fields), do: [:thread_id, :actor_ref, :tier, :event_type, :inserted_at]
+    end
+
+    defmodule MockRepoOtherTier do
+      @moduledoc false
+
+      def all(_query), do: mock_events()
+      def all(_query, _opts), do: mock_events()
+
+      defp mock_events do
+        [
+          %{
+            thread_id: "other-tier-thread",
+            actor_ref: "user:7",
+            tier: "native",
+            event_type: "activation.start",
+            inserted_at: ~N[2026-06-10 12:00:00]
+          },
+          # Misspelled / future tier value — must NOT be silently dropped
+          %{
+            thread_id: "other-tier-thread",
+            actor_ref: "user:7",
+            tier: "satellite",
+            event_type: "satellite.uplink",
+            inserted_at: ~N[2026-06-10 12:00:01]
+          },
+          # nil tier — must NOT be silently dropped either
+          %{
+            thread_id: "other-tier-thread",
+            actor_ref: "user:7",
+            tier: nil,
+            event_type: "tierless.event",
+            inserted_at: ~N[2026-06-10 12:00:02]
+          }
+        ]
+      end
+    end
+
+    setup do
+      prev_repo = Application.get_env(:crosswake, :audit_repo)
+      prev_ledger = Application.get_env(:crosswake, :audit_ledger)
+
+      Application.put_env(:crosswake, :audit_repo, MockRepoOtherTier)
+      Application.put_env(:crosswake, :audit_ledger, MockLedgerSchemaOtherTier)
+
+      on_exit(fn ->
+        if prev_repo do
+          Application.put_env(:crosswake, :audit_repo, prev_repo)
+        else
+          Application.delete_env(:crosswake, :audit_repo)
+        end
+
+        if prev_ledger do
+          Application.put_env(:crosswake, :audit_ledger, prev_ledger)
+        else
+          Application.delete_env(:crosswake, :audit_ledger)
+        end
+      end)
+
+      :ok
+    end
+
+    test "renders nil and unrecognized tiers under an Other bucket instead of dropping them" do
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--thread-id", "other-tier-thread"])
+        end)
+
+      # Recognized tier renders under its canonical label
+      assert output =~ "Native"
+      assert output =~ "activation.start"
+
+      # Unrecognized + nil tier events appear under the Other bucket
+      assert output =~ "Other (unrecognized tier)"
+      assert output =~ "satellite.uplink"
+      assert output =~ "tierless.event"
+
+      # Other bucket renders after the canonical tiers
+      native_pos = :binary.match(output, "Native") |> elem(0)
+      other_pos = :binary.match(output, "Other (unrecognized tier)") |> elem(0)
+      assert native_pos < other_pos
+    end
+  end
 end

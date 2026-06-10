@@ -135,6 +135,12 @@ defmodule Mix.Tasks.Crosswake.Threadline do
     |> Enum.sort_by(&timestamp_of/1, fn a, b -> compare_ts(a, b) != :gt end)
   end
 
+  # Extracts the tier from an event map (atom key first, then string key).
+  # Returns nil when the event carries no tier at all.
+  defp tier_of(event) do
+    Map.get(event, :tier) || Map.get(event, "tier")
+  end
+
   # Extracts the best available timestamp from an event map using the canonical
   # fallback chain: occurred_at (atom) → inserted_at (atom) → occurred_at (string)
   # → inserted_at (string) → epoch sentinel. Returns a NaiveDateTime or DateTime.
@@ -174,23 +180,33 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   defp render_durable(events) do
     Mix.shell().info("Posture: Durable")
 
-    grouped =
-      Enum.group_by(events, fn event ->
-        Map.get(event, :tier) || Map.get(event, "tier")
-      end)
+    grouped = Enum.group_by(events, &tier_of/1)
 
     tiers_with_events =
       @tier_order
       |> Enum.filter(&Map.has_key?(grouped, &1))
-      |> Enum.map(fn tier -> {tier, Map.fetch!(grouped, tier)} end)
+      |> Enum.map(fn tier -> {Map.fetch!(@tier_labels, tier), Map.fetch!(grouped, tier)} end)
+
+    # Honest append-only reconstruction must never silently drop events: any
+    # event whose tier is nil, misspelled, or from a future tier vocabulary is
+    # rendered in a trailing "Other" bucket instead of being omitted (IN-02).
+    # Rejecting from the sorted `events` list (not the grouped map) preserves
+    # chronological order across unrecognized tier values.
+    other_events = Enum.reject(events, fn event -> tier_of(event) in @tier_order end)
+
+    tiers_with_events =
+      if other_events == [] do
+        tiers_with_events
+      else
+        tiers_with_events ++ [{"Other (unrecognized tier)", other_events}]
+      end
 
     tier_count = length(tiers_with_events)
 
     tiers_with_events
     |> Enum.with_index()
-    |> Enum.each(fn {{tier, tier_events}, tier_idx} ->
+    |> Enum.each(fn {{label, tier_events}, tier_idx} ->
       tier_connector = if tier_idx == tier_count - 1, do: "└──", else: "├──"
-      label = Map.get(@tier_labels, tier, String.capitalize(tier))
       Mix.shell().info("#{tier_connector} #{label}")
 
       event_count = length(tier_events)
