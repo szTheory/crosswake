@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Threadline Audit Capstone
-status: milestone_complete
-last_updated: 2026-06-10T18:58:30.493Z
-last_activity: 2026-06-10 -- Phase 96 execution started
+status: completed
+last_updated: "2026-06-10T19:43:34.852Z"
+last_activity: 2026-06-10
 progress:
-  total_phases: 7
-  completed_phases: 5
+  total_phases: 8
+  completed_phases: 6
   total_plans: 18
-  completed_plans: 34
-  percent: 71
-stopped_at: Milestone complete (Phase 96 was final phase)
+  completed_plans: 18
+  percent: 75
 ---
 
 # Project State: Crosswake
@@ -50,6 +49,10 @@ Items acknowledged and deferred at milestone close on 2026-06-09:
 - **Tech Debt**: 2 known deferred issues (carried from v6.0)
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 97 added: Fix guide accuracy: conn.assigns claim + record_in_multi arity
 
 ### Decisions
 
