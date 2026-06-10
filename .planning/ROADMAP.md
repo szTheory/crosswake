@@ -128,13 +128,12 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] 96-02-PLAN.md — Hermetic docs-contract parity test + merge-blocking proof workflow (DOCS-01/02/03, PROOF-01)
 - [x] 96-03-PLAN.md — Example-host gen.audit output + Ecto-backed durable-posture proof + advisory workflow (PROOF-02)
 
-## Progress
+### Phase 97: Fix guide accuracy: conn.assigns claim + record_in_multi arity
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 91. Identity + Telemetry Contract | v7.0 | 2/2 | Complete    | 2026-06-09 |
-| 92. Server Propagation — Plug + LiveView | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 93. Native Shell Propagation | v7.0 | 2/2 | Complete    | 2026-06-09 |
-| 94. Audit Ledger Contract + Generator | v7.0 | 3/3 | Complete    | 2026-06-09 |
-| 95. Operator Surface | v7.0 | 5/5 | Complete    | 2026-06-10 |
-| 96. Docs-Contract + Proof | v7.0 | 3/3 | Complete    | 2026-06-10 |
+**Goal:** `guides/threadline.md` accurately documents the two surfaces the v7.0 milestone audit flagged — adopters read the thread id via `Logger.metadata()[:crosswake_thread_id]` (not the non-existent `conn.assigns[:thread_id]`, WR-03) and call `record_in_multi/3` (not `/2`, WR-02) — with two hermetic parity assertions that fail CI if either bug reappears.
+**Requirements**: WR-03, WR-02 (milestone-audit items); D-03 (regression-guard decision)
+**Depends on:** Phase 96
+**Plans:** 1 plan
+
+Plans:
+- [ ] 97-01-PLAN.md — Fix WR-03 (Logger.metadata read-path) + WR-02 (record_in_multi/3) guide lines and add two regression-prevention parity assertions, in one atomic commit
