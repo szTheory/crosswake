@@ -51,6 +51,12 @@ defmodule Mix.Tasks.Crosswake.Threadline do
       Mix.raise("Expected either --thread-id <id> or --actor-ref <ref>")
     end
 
+    # Load host config — including config/runtime.exs, the conventional
+    # production home of :audit_repo / :audit_ledger — BEFORE reading posture.
+    # Reading Application env first would report a false "Ephemeral" posture
+    # for runtime.exs-configured hosts during incident triage (IN-01).
+    Mix.Task.run("app.config")
+
     case ledger_posture() do
       :ephemeral ->
         Mix.shell().info("Posture: Ephemeral. No ledger configured.")
