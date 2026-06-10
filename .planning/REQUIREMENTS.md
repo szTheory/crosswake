@@ -31,14 +31,14 @@
 
 ### Documentation Contract (DOCS)
 
-- [ ] **DOCS-01**: A `guides/threadline.md` guide documents the header name, the AuditEvent field list, the forbidden-field list, the ephemeral-vs-durable posture, the module/task names, and the "terminal critical events only" scope — each mechanically asserted `contains-exact` against the code (merge-blocking).
-- [ ] **DOCS-02**: The guide includes a mechanically-checked "What Threadline is NOT" anti-scope section (not APM, not OTel, not a logging framework, not a plugin bus, no PII, no session replay).
-- [ ] **DOCS-03**: The guide documents the honest limitations: WebView WebSocket/`fetch`/`XHR` header gaps, "hash-chaining detects but does not prevent tampering," and OTel coexistence with zero dependency.
+- [x] **DOCS-01**: A `guides/threadline.md` guide documents the header name, the AuditEvent field list, the forbidden-field list, the ephemeral-vs-durable posture, the module/task names, and the "terminal critical events only" scope — each mechanically asserted `contains-exact` against the code (merge-blocking).
+- [x] **DOCS-02**: The guide includes a mechanically-checked "What Threadline is NOT" anti-scope section (not APM, not OTel, not a logging framework, not a plugin bus, no PII, no session replay).
+- [x] **DOCS-03**: The guide documents the honest limitations: WebView WebSocket/`fetch`/`XHR` header gaps, "hash-chaining detects but does not prevent tampering," and OTel coexistence with zero dependency.
 
 ### Proof Lanes (PROOF)
 
-- [ ] **PROOF-01**: A hermetic, merge-blocking proof lane verifies Plug metadata + telemetry emission, telemetry forbidden-key rejection, `gen.audit` idempotency, doctor findings, and `guides/threadline.md` parity — no Ecto/network/device required.
-- [ ] **PROOF-02**: An advisory / example-host proof lane verifies real Ecto-backed `record_in_multi/2` persistence and `mix crosswake.threadline` reconstruction with `durable` posture against a seeded ledger.
+- [x] **PROOF-01**: A hermetic, merge-blocking proof lane verifies Plug metadata + telemetry emission, telemetry forbidden-key rejection, `gen.audit` idempotency, doctor findings, and `guides/threadline.md` parity — no Ecto/network/device required.
+- [x] **PROOF-02**: An advisory / example-host proof lane verifies real Ecto-backed `record_in_multi/2` persistence and `mix crosswake.threadline` reconstruction with `durable` posture against a seeded ledger.
 
 ## v2 / Future Requirements (deferred, tracked)
 
@@ -86,11 +86,11 @@
 | OPER-01 | Phase 95 | Complete |
 | OPER-02 | Phase 95 | Complete |
 | OPER-03 | Phase 95 | Complete |
-| DOCS-01 | Phase 96 | Pending |
-| DOCS-02 | Phase 96 | Pending |
-| DOCS-03 | Phase 96 | Pending |
-| PROOF-01 | Phase 96 | Pending |
-| PROOF-02 | Phase 96 | Pending |
+| DOCS-01 | Phase 96 | Complete |
+| DOCS-02 | Phase 96 | Complete |
+| DOCS-03 | Phase 96 | Complete |
+| PROOF-01 | Phase 96 | Complete |
+| PROOF-02 | Phase 96 | Complete |
 
 **Coverage:**
 - v1 requirements: 19 total
