@@ -137,3 +137,13 @@ Full detail: `.planning/milestones/v6.0-ROADMAP.md`
 
 Plans:
 - [x] 97-01-PLAN.md — Fix WR-03 (Logger.metadata read-path) + WR-02 (record_in_multi/3) guide lines and add two regression-prevention parity assertions, in one atomic commit
+
+### Phase 98: Fix hermetic lane guard namespace (WR-01)
+
+**Goal:** Fix the missing dot in the hermetic lane guard string concatenation in `test/crosswake/proof/phase96_threadline_docs_contract_test.exs:44` so it properly evaluates to `"Crosswake.Example."` without triggering the guard itself (WR-01).
+**Requirements**: WR-01
+**Depends on:** Phase 97
+**Plans:** 1 plans
+
+Plans:
+- [ ] 98-01-PLAN.md — Fix the broken string concatenation in the hermetic lane self-guard using Regex.match?
