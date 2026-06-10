@@ -11,10 +11,11 @@ files_reviewed_list:
   - test/crosswake/support_matrix/support_matrix_test.exs
   - test/mix/tasks/crosswake.threadline_test.exs
 findings:
-  critical: 2
-  warning: 2
+  critical: 0
+  warning: 0
   info: 7
-  total: 11
+  total: 7
+  fixed: 4
 status: issues_found
 ---
 
@@ -49,6 +50,8 @@ Seven INFO-level quality and defensive-programming gaps round out the report.
 
 ### CR-01: `NaiveDateTime.to_string/1` crashes on `%DateTime{}` timestamps in `render_durable/1`
 
+**Resolution:** Fixed in 2102664 — `render_durable/1` now reuses `timestamp_of/1` and formats via string interpolation (handles NaiveDateTime, DateTime, and ISO-8601 strings; epoch sentinel suppressed).
+
 **File:** `lib/mix/tasks/crosswake.threadline.ex:174`
 
 **Issue:** `render_durable/1` formats event timestamps with
@@ -76,6 +79,8 @@ timestamp_str =
 ---
 
 ### CR-02: `compare_ts/2` has no catch-all — crashes on non-struct timestamps
+
+**Resolution:** Fixed in 1023949 — replaced the four typed clauses with a single comparator coercing both sides through a new `to_naive/1` helper (NaiveDateTime / DateTime / ISO-8601 binary / epoch-sentinel fallback); also collapses the IN-05 duplication on the render path.
 
 **File:** `lib/mix/tasks/crosswake.threadline.ex:96,115-129`
 
@@ -121,6 +126,8 @@ defp to_naive(_), do: ~N[1970-01-01 00:00:00]
 
 ### WR-01: `doctor_test.exs` uses `async: true` while six tests mutate global `Application` env
 
+**Resolution:** Fixed in c0cf0b4 — moved the `phase_95_threadline_findings` describe block to `test/crosswake/doctor/doctor_threadline_test.exs` with `async: false`, copying the setup fixture and private helpers it needs.
+
 **File:** `test/crosswake/doctor/doctor_test.exs:2,1335,1365,1398,1420,1439`
 
 **Issue:** The module declares `async: true` but the `phase_95_threadline_findings` describe
@@ -148,6 +155,8 @@ end
 ---
 
 ### WR-02: `ledger_posture/0` in the Mix task passes raw `:audit_ledger` config to `repo.all/1`
+
+**Resolution:** Fixed in 8e1bd91 — added `ledger_schema/1` normalization mirroring doctor.ex (nil / keyword / map / bare atom) and a fail-closed `is_atom` guard in `ledger_posture/0` so non-module schema values yield `:ephemeral` instead of crashing `repo.all/1`.
 
 **File:** `lib/mix/tasks/crosswake.threadline.ex:63-79`
 
