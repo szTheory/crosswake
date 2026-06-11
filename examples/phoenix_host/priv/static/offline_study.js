@@ -1,4 +1,4 @@
-// offline_study.js
+import { canSatisfyJournalReserve } from './storage_logic.js';
 
 const DB_NAME = 'crosswake_offline_study';
 const DB_VERSION = 1;
@@ -11,6 +11,20 @@ let cards = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    const reserveForJournalStr = document.body.dataset.reserveForJournal;
+    const reserveForJournal = parseInt(reserveForJournalStr, 10);
+    
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const quota = estimate.quota || 0;
+      const usage = estimate.usage || 0;
+      
+      if (!isNaN(reserveForJournal) && !canSatisfyJournalReserve(quota, usage, reserveForJournal)) {
+        displayHardBlock();
+        return; // Prevent initialization
+      }
+    }
+
     await initDB();
     
     // For demo purposes, if no cards exist, we insert some dummy ones
@@ -27,6 +41,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error(error);
   }
 });
+
+function displayHardBlock() {
+  const body = document.body;
+  body.innerHTML = `
+    <div style="padding: 2rem; text-align: center; color: #9A4D35; font-weight: bold; background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; max-width: 600px; margin: 2rem auto;">
+      <h1>Storage is critically full.</h1>
+      <p>Please free space before starting this session to ensure your progress is saved.</p>
+    </div>
+  `;
+}
 
 function initDB() {
   return new Promise((resolve, reject) => {
@@ -87,7 +111,12 @@ function queueMutation(mutation) {
     const request = store.add(mutation);
     
     request.onsuccess = () => resolve();
-    request.onerror = (event) => reject(event.target.error);
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+    tx.onabort = (event) => {
+      reject(tx.error);
+    };
   });
 }
 
@@ -153,7 +182,18 @@ async function handleReview(result) {
     currentCardIndex++;
     renderCurrentCard();
   } catch (error) {
-    updateStatus('Error saving review: ' + error.message);
+    if (error && error.name === 'QuotaExceededError') {
+      const container = document.getElementById('flashcard-container');
+      const errorMsg = document.createElement('div');
+      errorMsg.style.color = '#9A4D35';
+      errorMsg.style.fontWeight = 'bold';
+      errorMsg.style.marginTop = '1rem';
+      errorMsg.textContent = 'Device storage limit reached! Cannot save more progress. Please free up space on your device.';
+      container.prepend(errorMsg);
+      updateStatus('QuotaExceededError handled gracefully.');
+    } else {
+      updateStatus('Error saving review: ' + (error ? error.message : 'Unknown error'));
+    }
   }
 }
 
