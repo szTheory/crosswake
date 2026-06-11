@@ -9,7 +9,12 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- Phase 100 complete — Storage Budget Enforcement
+- Milestone v8.0 complete — Offline Sync Hardening and UI Polish
+
+**Shipped `v8.0 Offline Sync Hardening and UI Polish` on `2026-06-11`** (Phases 99-101, 6 plans). v8.0 hardened the offline sync capabilities by enforcing real network-toggling E2E tests, implementing advisory runtime storage budgets using standard Web APIs, and delivering a consolidated, brand-aligned `OfflineController` UI.
+
+<details>
+<summary>Earlier milestone history (v3.9 to v7.0)</summary>
 
 **Shipped `Phase 96 docs-contract-proof` on `2026-06-10`** (3 plans, verified 5/5). Phase 96 completed the v7.0 Threadline Audit Capstone by shipping the docs-as-contract artifact and hermetic parity proof: restructured `guides/threadline.md` into a 10-section D-07 contract-first guide with all verbatim contract strings (15 LEDG-02 columns, both forbidden-key lists, anti-scope section, honest limitations); a merge-blocking CI lane (`merge-blocking-threadline-docs-contract-proof`) with a 21-assertion hermetic parity test; and an advisory example-host PROOF-02 lane proving end-to-end Ecto-backed `record_in_multi/3` persistence yields durable posture. DOCS-01/02/03 and PROOF-01/02 satisfied.
 
@@ -24,6 +29,8 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 **Shipped `v5.1 Adoption Evidence Demo App` on `2026-06-09`** (Phases 80-83, 7 plans). v5.1 transitioned the iOS and Android demo host projects to use the standalone SPM and Maven dependencies published in v5.0. It introduced reactive flow/publisher architectures (`StateFlow`, `SharedFlow`, `Combine`) for the bridge, implemented the `RouteDelegate` and capability handshake to support native escape hatches cleanly without coupling, and provided an automated `verify_bounded_bridge_proof.sh` and `QUICK_START.md` guide to prove the architecture end-to-end.
 
 **Shipped `v5.0 Standalone Publishable Shell Packages` on `2026-06-06`** (Phases 76-79, 11 plans). v5.0 completed a major architectural shift to a binary Core + hosted glue strategy. It extracted generated logic into standalone SPM (iOS) and Maven Central (Android) dependencies, replaced raw object generation with a unified builder and reactive state APIs, and updated generator tooling to output thin dependency-driven host projects. Hermetic CI pipelines were updated to verify these standalone dependencies, ensuring existing E2E and archetype proof lanes continue to pass.
+
+</details>
 
 <details>
 <summary>Earlier milestone history (v3.9, v3.8, v3.7, v3.6, v3.5, v3.4, v3.3, v3.2, v3.1, v5.0)</summary>
@@ -49,19 +56,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Current Milestone: v8.0 Offline Sync Hardening and UI Polish
+## Next Milestone Goals
 
-**Goal:** Harden the v6.0 offline-sync capabilities by enforcing real network-toggling E2E tests, implementing advisory runtime storage budgets without heavy dependencies, and delivering a consolidated, brand-aligned `OfflineController` UI.
-
-**Target features:**
-- **Real Network-Toggling E2E:** Use Playwright's native context toggling (`setOffline(true)`) to assert complete reconciliation loop instead of faking `localStorage`.
-- **Offline Controller Consolidation:** Generator for host-owned `OfflineController` and `.html.heex` disconnected from LiveView.
-- **Storage Budgets:** Enforce `storage_budget` via `navigator.storage.estimate()` handling `QuotaExceededError`.
-- **Brand Book UI Polish:** Apply Crosswake Brand Book UI (e.g. Wake Green, explicit honest microcopy).
-
-**Key context:** Keep the architecture lightweight, relying on standard Web APIs and avoiding heavy external JS frameworks or CI proxies. Zero new external dependencies.
-
-Deferred v7.0 follow-on threads: LiveDashboard timeline deferred to a future `crosswake_dashboard` package, and `crosswake.audit.verify` task.
+- Planning next milestone
 
 ## Requirements
 
@@ -111,13 +108,21 @@ Deferred v7.0 follow-on threads: LiveDashboard timeline deferred to a future `cr
 
 - ✓ **v7.0 Threadline Audit Capstone** (all 19 requirements: PROP-*, LEDG-*, OPER-*, DOCS-*, PROOF-*) — cross-boundary thread correlation, PII-free append-only Ecto audit ledger, text-only operator UI, and docs-contract parity. Validated across Phases 91-98; full detail in `.planning/milestones/v7.0-ROADMAP.md`.
 
+- ✓ **SYNC-01**: Playwright E2E tests for the offline study island use actual network toggling — v8.0
+- ✓ **SYNC-02**: The E2E tests assert the complete reconciliation loop — v8.0
+- ✓ **SYNC-03**: The E2E Playwright configuration handles `localhost` explicitly — v8.0
+- ✓ **OFFC-01**: A `mix crosswake.gen.offline_ui` generator scaffolds a host-owned `OfflineController` — v8.0
+- ✓ **OFFC-02**: The generated Offline UI explicitly disconnects from the LiveView websocket lifecycle — v8.0
+- ✓ **BDGT-01**: `Crosswake.Offline.Contracts.StudySessionIsland` exposes an explicit `:storage_budget` attribute — v8.0
+- ✓ **BDGT-02**: Runtime JavaScript checks `navigator.storage.estimate()` — v8.0
+- ✓ **BDGT-03**: JS IndexedDB `put()` operations are wrapped in `try/catch` — v8.0
+- ✓ **BRND-01**: The generated offline UI applies the Crosswake Brand Book design tokens — v8.0
+- ✓ **BRND-02**: The offline UI implements explicit, honest microcopy — v8.0
+
 ### Active
 
-**v8.0 Offline Sync Hardening and UI Polish** (requirements defined in `.planning/REQUIREMENTS.md`, REQ-ID prefixes SYNC-/OFFC-/BDGT-/BRND-):
-- **SYNC** — Real Network-Toggling E2E tests using `setOffline(true)`.
-- **OFFC** — Offline Controller Consolidation generator (`mix crosswake.gen.offline_ui`).
-- **BDGT** — Storage Budget Enforcement using `navigator.storage.estimate()`.
-- **BRND** — Brand Book UI Polish applying design tokens and explicit microcopy.
+- [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
+- [ ] NTV-01: Extend storage budgets to utilize native iOS/Android bridge commands to calculate available physical disk space.
 
 ### Out of Scope
 
@@ -190,4 +195,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-10 — Phase 96 docs-contract-proof complete (v7.0 Threadline Audit Capstone DONE)*
+*Last updated: 2026-06-11 — v8.0 Offline Sync Hardening and UI Polish complete*
