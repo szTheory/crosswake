@@ -491,13 +491,25 @@ defmodule Crosswake.Manifest.Builder do
          sync: [sync_seam | _rest]
        }) do
     contract_id
-    |> Contracts.new_study_session_island(route_id: route_id, sync_seam: sync_seam)
+    |> Contracts.new_study_session_island(
+      route_id: route_id,
+      sync_seam: sync_seam,
+      storage_budget: {:mb, 50},
+      reserve_for_journal: {:mb, 5},
+      eviction: :manual
+    )
     |> Contracts.island_contract()
   end
 
   defp island_contract(%Route{id: route_id, island_contract: contract_id}) do
     contract_id
-    |> Contracts.new_study_session_island(route_id: route_id, sync_seam: contract_id)
+    |> Contracts.new_study_session_island(
+      route_id: route_id,
+      sync_seam: contract_id,
+      storage_budget: {:mb, 50},
+      reserve_for_journal: {:mb, 5},
+      eviction: :manual
+    )
     |> Contracts.island_contract()
   end
 end
