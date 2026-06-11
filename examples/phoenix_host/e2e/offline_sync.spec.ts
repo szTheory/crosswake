@@ -1,36 +1,70 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 
 test.describe('Offline Sync (T-90-01 Mitigation)', () => {
   test('simulates offline study actions and verifies Ecto sync on reconnect', async ({ page, context }) => {
     // Navigate to the app
-    await page.goto('/');
+    await page.goto('/study/session');
 
-    // Go offline
+    // Wait for the page to load
+    await expect(page.locator('h1')).toHaveText('Study Session (Offline Island)');
+
+    // Go offline using Playwright's native context.setOffline
     await context.setOffline(true);
     
-    // Perform offline study actions (e.g., answer flashcard)
-    // Assume there is a mock offline UI we interact with
-    await page.evaluate(() => {
-      window.localStorage.setItem('crosswake_offline_mutations', JSON.stringify([
-        { type: 'study_card', id: '123', result: 'correct' }
-      ]));
-    });
+    // Generate a unique mutation ID to track this specific event
+    const mutationId = randomUUID();
+
+    // Perform offline study actions
+    // Since the actual UI might not have full offline JS capabilities yet, 
+    // we evaluate a JS script to write to the mock offline store to ensure it behaves as if a user did it.
+    await page.evaluate((id) => {
+      window['crosswake_offline_mutations'] = window['crosswake_offline_mutations'] || [];
+      window['crosswake_offline_mutations'].push({
+        client_mutation_id: id,
+        card_id: 1,
+        rating: 'good'
+      });
+    }, mutationId);
+
+    // Prepare to intercept the sync POST when coming back online
+    const syncRequestPromise = page.waitForRequest(req => 
+      req.url().includes('/study/sync') && req.method() === 'POST'
+    );
 
     // Go online
     await context.setOffline(false);
     
-    // Await sync - e.g., wait for an element that indicates sync completion
-    // For this proof test, we just wait a bit or wait for network idle
-    await page.waitForTimeout(1000); // Simulate wait for sync
-    
-    // Verify sync state validation post-reconnection
-    // In a real app we'd assert Ecto states via an API or page data
-    const syncStatus = await page.evaluate(() => {
-      // Stub validation check
-      return { synced: true, valid_ecto_state: true };
+    // Simulate background sync processor coming online and flushing the outbox
+    await page.evaluate(() => {
+      const outbox = window['crosswake_offline_mutations'] || [];
+      if (outbox.length > 0) {
+        fetch('/study/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: outbox })
+        }).then(() => {
+          window['crosswake_offline_mutations'] = [];
+        });
+      }
     });
+
+    // Await sync request
+    const req = await syncRequestPromise;
+    const postData = req.postDataJSON();
+    const extractedId = postData.events[0].client_mutation_id;
     
-    expect(syncStatus.synced).toBe(true);
-    expect(syncStatus.valid_ecto_state).toBe(true);
+    // Verify the sync payload matches what we did offline
+    expect(extractedId).toBe(mutationId);
+    
+    // Assert the Ecto state using Playwright's expect.poll hitting the backend verification API
+    await expect.poll(async () => {
+      const res = await page.request.get(`/_e2e/sync-state/${mutationId}`);
+      if (!res.ok()) return { synced: false };
+      return await res.json();
+    }, {
+      message: 'Wait for backend sync state to reflect the offline mutation',
+      timeout: 5000,
+    }).toEqual(expect.objectContaining({ synced: true }));
   });
 });
