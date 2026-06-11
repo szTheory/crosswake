@@ -9,8 +9,8 @@
 ### Real Network-Toggling E2E (SYNC)
 
 - [ ] **SYNC-01**: Playwright E2E tests for the offline study island use actual network toggling (`page.context().setOffline(true)`) rather than faking `localStorage` behavior.
-- [ ] **SYNC-02**: The E2E tests assert the complete reconciliation loop: storing records offline in IndexedDB, coming back online, and verifying Ecto state accurately reflects the sync payload.
-- [ ] **SYNC-03**: The E2E Playwright configuration handles `localhost` explicitly, ensuring service workers do not leak requests masking test results.
+- [x] **SYNC-02**: The E2E tests assert the complete reconciliation loop: storing records offline in IndexedDB, coming back online, and verifying Ecto state accurately reflects the sync payload.
+- [x] **SYNC-03**: The E2E Playwright configuration handles `localhost` explicitly, ensuring service workers do not leak requests masking test results.
 
 ### Offline Controller Consolidation (OFFC)
 
@@ -49,8 +49,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SYNC-01 | Phase 99 | Pending |
-| SYNC-02 | Phase 99 | Pending |
-| SYNC-03 | Phase 99 | Pending |
+| SYNC-02 | Phase 99 | Complete |
+| SYNC-03 | Phase 99 | Complete |
 | OFFC-01 | Phase 101 | Pending |
 | OFFC-02 | Phase 101 | Pending |
 | BDGT-01 | Phase 100 | Pending |

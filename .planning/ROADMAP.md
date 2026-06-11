@@ -17,7 +17,7 @@
   2. The E2E test suite asserts that records created while offline successfully sync to Ecto when the network reconnects.
   3. The test suite correctly bypasses or handles localhost service worker caching to ensure deterministic test runs.
 **Plans**: 2 plans
-- [ ] 99-01-PLAN.md — Setup E2E harness and backend verification API for network-toggling tests.
+- [x] 99-01-PLAN.md — Setup E2E harness and backend verification API for network-toggling tests.
 - [ ] 99-02-PLAN.md — Implement real network-toggling E2E tests using Playwright.
 
 ### Phase 100: Storage Budget Enforcement
@@ -46,6 +46,6 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 99. Real Network-Toggling E2E Tests | 0/TBD | Not started | - |
+| 99. Real Network-Toggling E2E Tests | 1/2 | In Progress|  |
 | 100. Storage Budget Enforcement | 0/TBD | Not started | - |
 | 101. Offline UI Consolidation & Polish | 0/TBD | Not started | - |
