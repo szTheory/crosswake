@@ -28,7 +28,9 @@
   1. The `StudySessionIsland` contract enforces an explicit `:storage_budget` parameter.
   2. The offline UI visually or programmatically warns the user before browser storage quotas are exceeded using `navigator.storage.estimate()`.
   3. The offline UI elegantly catches OS-level `QuotaExceededError` during IndexedDB writes without crashing.
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 100-01-PLAN.md — Implement Elixir Contract `:storage_budget` validation and dataset injection
+- [ ] 100-02-PLAN.md — Implement JS Proactive Quota Check and Graceful IndexedDB Error Handling
 
 ### Phase 101: Offline UI Consolidation & Polish
 **Goal**: A brand-aligned, host-owned offline UI is generated without dragging in heavy JS frameworks or LiveView websocket logic.
