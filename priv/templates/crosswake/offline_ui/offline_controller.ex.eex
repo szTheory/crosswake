@@ -1,0 +1,10 @@
+defmodule <%= inspect(web_module) %>.OfflineController do
+  use <%= inspect(web_module) %>, :controller
+
+  # Use the specialized offline layout to avoid LiveView socket reconnections
+  plug :put_layout, html: {<%= inspect(web_module) %>.Layouts, :offline_root}
+
+  def index(conn, _params) do
+    render(conn, :index, page_title: "Offline Island")
+  end
+end
