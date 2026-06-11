@@ -71,13 +71,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | Pending roadmap |
+| AUDT-01 | Phase 102 | Pending |
+| AUDT-02 | Phase 102 | Pending |
+| AUDT-03 | Phase 102 | Pending |
+| AUDT-04 | Phase 102 | Pending |
+| TOKN-01 | Phase 102 | Pending |
+| TOKN-02 | Phase 102 | Pending |
+| TOKN-03 | Phase 102 | Pending |
+| LOGO-01 | Phase 103 | Pending |
+| LOGO-02 | Phase 103 | Pending |
+| LOGO-03 | Phase 103 | Pending |
+| LOGO-04 | Phase 103 | Pending |
+| LOGO-05 | Phase 104 | Pending |
+| LOGO-06 | Phase 104 | Pending |
+| LOGO-07 | Phase 104 | Pending |
+| BOOK-01 | Phase 105 | Pending |
+| BOOK-02 | Phase 105 | Pending |
+| BOOK-03 | Phase 105 | Pending |
+| COLL-01 | Phase 106 | Pending |
+| COLL-02 | Phase 106 | Pending |
+| COLL-03 | Phase 106 | Pending |
+| COLL-04 | Phase 106 | Pending |
 
 **Coverage:**
 - v1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 ⚠️ (roadmap pending)
+- Mapped to phases: 20
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-11*
-*Last updated: 2026-06-11 after initial definition*
+*Last updated: 2026-06-11 — traceability written after roadmap creation*
