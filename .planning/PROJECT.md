@@ -48,18 +48,19 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Current Milestone: v7.0 Threadline Audit Capstone
+## Current Milestone: v8.0 Offline Sync Hardening and UI Polish
 
-**Goal:** Give Crosswake day-2 operational viability — correlate the Native → Bridge → Phoenix → DB event sequence for a single user journey and durably record terminal critical events — narrowly, honestly, and PII-free, without becoming an APM, an OTel replacement, or a database-bloat machine.
+**Goal:** Harden the v6.0 offline-sync capabilities by enforcing real network-toggling E2E tests, implementing advisory runtime storage budgets without heavy dependencies, and delivering a consolidated, brand-aligned `OfflineController` UI.
 
 **Target features:**
-- **Correlation propagation (core, zero new deps):** a session-spanning `thread_id` layered above the existing per-command `correlation_id`; a `Crosswake.Plug.Threadline` (read/mint `X-Crosswake-Thread-Id`, set `Logger.metadata`, emit `:telemetry` spans), a `Crosswake.Live.Threadline` on_mount for the LiveView WebSocket, and native iOS/Android header injection.
-- **Durable audit ledger (companion, opt-in):** `mix crosswake.gen.audit` scaffolds a host-owned, PII-free, append-only Ecto ledger for terminal critical events, with a first-class ProvenanceLane (`device_claimed` vs `backend_accepted`) and `record/1` + `record_in_multi/2` write paths.
-- **Operator surface (text-only in v1):** `mix crosswake.threadline`, doctor findings, and a support-matrix row that report honest `ephemeral` vs `durable` posture. The LiveDashboard timeline is deferred to a future `crosswake_dashboard` package.
+- **Real Network-Toggling E2E:** Use Playwright's native context toggling (`setOffline(true)`) to assert complete reconciliation loop instead of faking `localStorage`.
+- **Offline Controller Consolidation:** Generator for host-owned `OfflineController` and `.html.heex` disconnected from LiveView.
+- **Storage Budgets:** Enforce `storage_budget` via `navigator.storage.estimate()` handling `QuotaExceededError`.
+- **Brand Book UI Polish:** Apply Crosswake Brand Book UI (e.g. Wake Green, explicit honest microcopy).
 
-**Key context:** The library emits telemetry and sets Logger metadata but never logs itself (idiomatic Elixir). The ledger is PII-free by construction (opaque `actor_ref`, fail-closed metadata guard) and append-only with advisory `row_hash`/`prev_hash` — docs state plainly that hash-chaining detects but does not prevent tampering. Bespoke header, zero OTel dependency, documented coexistence. The canonical definition is `.planning/threads/threadline-audit.md`; full north star in `.planning/research/SUMMARY.md`. Decisions confirmed 2026-06-09: version v7.0, text-only operator UI, append-only + advisory hash columns.
+**Key context:** Keep the architecture lightweight, relying on standard Web APIs and avoiding heavy external JS frameworks or CI proxies. Zero new external dependencies.
 
-Deferred v6.0 follow-on threads (not in v7.0 scope, retained for a later milestone): replace the mocked Playwright offline-sync flow with a real network-toggling run; wire/consolidate the static `OfflineController` page; enforce `Crosswake.Offline` storage budgets at runtime.
+Deferred v7.0 follow-on threads: LiveDashboard timeline deferred to a future `crosswake_dashboard` package, and `crosswake.audit.verify` task.
 
 ## Requirements
 
@@ -107,13 +108,15 @@ Deferred v6.0 follow-on threads (not in v7.0 scope, retained for a later milesto
 - ✓ **v5.0 Standalone Publishable Shell Packages** (all 10 requirements: CORE-*, API-*, GEN-*, PROOF-01) — extracted iOS/Android core logic into standalone dependencies, standardized reactive APIs, generated thin dependency-driven host projects, and verified hermetic closeout lanes. Verification gaps accepted as tech debt. Validated across Phases 76–79; full detail in `.planning/milestones/v5.0-REQUIREMENTS.md`.
 - ✓ **v6.0 Adoption Evidence Demo App (Flashcard Cohort)** (all 9 requirements: OFF-01/02, SYNC-01/02, DEMO-01/02/03, PROOF-01/02) — shipped `Crosswake.Offline.ContentPack` and `Crosswake.Sync.EventLog`, a flashcard demo app pairing online LiveView with a vanilla-JS offline study island over IndexedDB, native-shell integration + Brand Book alignment, and network-toggling Playwright E2E proof of the offline loop with DB-level sync verification. PROOF-01/02 validated via a mocked E2E flow (real network-toggling run deferred); OFF-02 shipped as contract with thin runtime enforcement. Validated across Phases 84-90; full detail in `.planning/milestones/v6.0-REQUIREMENTS.md`.
 
+- ✓ **v7.0 Threadline Audit Capstone** (all 19 requirements: PROP-*, LEDG-*, OPER-*, DOCS-*, PROOF-*) — cross-boundary thread correlation, PII-free append-only Ecto audit ledger, text-only operator UI, and docs-contract parity. Validated across Phases 91-98; full detail in `.planning/milestones/v7.0-ROADMAP.md`.
+
 ### Active
 
-**v7.0 Threadline Audit Capstone** (requirements defined in `.planning/REQUIREMENTS.md`, REQ-ID prefixes PROP-/LEDG-/OPER-/DOCS-/PROOF-):
-- **PROP** — Cross-boundary `thread_id` propagation: Plug + LiveView on_mount + telemetry contract + native iOS/Android header injection, layered above the unchanged `correlation_id`.
-- **LEDG** — Opt-in host-owned audit ledger via `mix crosswake.gen.audit`: PII-free, append-only, ProvenanceLane (evidence vs authority), `record/1` + `record_in_multi/2`.
-- **OPER** — Text-only operator surface: `mix crosswake.threadline`, doctor findings (incl. fail-closed PII error), `@audit_ledger_support_truth`.
-- **DOCS/PROOF** — `guides/threadline.md` with merge-blocking docs-contract parity and a checked "What Threadline is NOT" anti-scope section; hermetic Plug proof + advisory example-host ledger proof.
+**v8.0 Offline Sync Hardening and UI Polish** (requirements defined in `.planning/REQUIREMENTS.md`, REQ-ID prefixes SYNC-/OFFC-/BDGT-/BRND-):
+- **SYNC** — Real Network-Toggling E2E tests using `setOffline(true)`.
+- **OFFC** — Offline Controller Consolidation generator (`mix crosswake.gen.offline_ui`).
+- **BDGT** — Storage Budget Enforcement using `navigator.storage.estimate()`.
+- **BRND** — Brand Book UI Polish applying design tokens and explicit microcopy.
 
 ### Out of Scope
 
