@@ -16,7 +16,9 @@
   1. E2E test suite toggles network offline using `page.context().setOffline(true)`.
   2. The E2E test suite asserts that records created while offline successfully sync to Ecto when the network reconnects.
   3. The test suite correctly bypasses or handles localhost service worker caching to ensure deterministic test runs.
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 99-01-PLAN.md — Setup E2E harness and backend verification API for network-toggling tests.
+- [ ] 99-02-PLAN.md — Implement real network-toggling E2E tests using Playwright.
 
 ### Phase 100: Storage Budget Enforcement
 **Goal**: Offline storage limits are explicitly tracked and gracefully handled at runtime to avoid silent browser eviction.
