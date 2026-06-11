@@ -56,9 +56,18 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Next Milestone Goals
+## Current Milestone: v9.0 Brand System & Visual Identity
 
-- Planning next milestone
+**Goal:** Pressure-test the existing brand book and ship the fully implemented brand system — audit, design tokens, user-selected logo, standalone HTML brand book, and collateral — self-contained in `brandbook/` (<1 MB committed, SVG/text-first).
+
+**Target features:**
+- 14-section brand audit (`brandbook/AUDIT.md`) with KEEP/TIGHTEN/REWORK/ADD/REMOVE verdicts and a scripted WCAG contrast matrix of every palette pairing
+- Design tokens: W3C DTCG `crosswake.tokens.json` + `tokens.css` with semantic roles and full state tokens
+- 7-candidate logo tournament (4 logomark concepts + 3 integrated typemarks) presented in an HTML gallery with a mandatory user-selection checkpoint, then a refined production logo suite (path-only SVG; no rectangular backgrounds; close-set lockups; no subtitle on the main lockup)
+- Standalone professional HTML brand book (`brandbook/index.html`, no build step) + `BRAND-SPEC.md` v1.0 successor to the prompts/ draft
+- Collateral (README header, social card, favicons), README wiring, Hex package exclusion, size-budget verification
+
+**Key constraints:** Everything self-contained in `brandbook/`; wordmarks generated via opentype.js then hand-curated (no `<text>` in committed SVGs, no font binaries committed); latitude granted to adjust fonts/colors only where the audit justifies it with stated cost.
 
 ## Requirements
 
@@ -195,4 +204,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-11 — v8.0 Offline Sync Hardening and UI Polish complete*
+*Last updated: 2026-06-11 — v9.0 Brand System & Visual Identity started*
