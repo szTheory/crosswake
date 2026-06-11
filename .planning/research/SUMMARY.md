@@ -1,100 +1,203 @@
-# v7.0 Threadline Audit Capstone — Research Synthesis
+# Project Research Summary
 
-> Milestone-scoped north star. Produced from 3 parallel codebase-grounded research tracks
-> (propagation/OTel, durable ledger, operator UX/packaging) plus a deep map of the live code.
-> Consumed by `gsd-roadmapper`. Canonical milestone definition: `.planning/threads/threadline-audit.md`.
+**Project:** Crosswake v9.0 Brand System & Visual Identity
+**Domain:** OSS devtools brand system — design tokens, logo suite, HTML brand book, collateral
+**Researched:** 2026-06-11
+**Confidence:** HIGH
 
-## One-line goal
+## Executive Summary
 
-Give Crosswake **day-2 operational viability**: correlate the sequence of Native → Bridge → Phoenix → DB
-events for a single user journey, and durably record terminal critical events — narrowly, honestly, and
-PII-free, without becoming an APM, an OTel replacement, or a database-bloat machine.
+Crosswake v9.0 converts the existing text-only brand book draft (`prompts/crosswake-brand-book.md`) into a fully implemented, audited, and self-contained `brandbook/` directory. The work pattern is well-established: production-grade OSS brand systems (Tailwind, Astro, Vercel/Geist, Bun) all follow the same structure — path-only SVG logo suite with light/dark/mono variants, W3C DTCG design token file with a three-tier primitive→semantic→state hierarchy, and a standalone HTML brand book that requires no build step. The tooling surface is deliberately minimal: one npm package (`opentype.js` 2.0.0 for glyph-to-path wordmark generation), one Homebrew tool (`rsvg-convert` for PNG rasterisation), and zero new Elixir/mix.exs dependencies. All brand tooling lives under `brandbook/tools/` and is isolated entirely from the Elixir library.
 
-## The shape: three-tier, ephemeral-first
+The recommended phase order is dictated by a hard dependency chain: the brand audit must lock palette verdicts before tokens can be finalized, tokens must be settled before logos can reference correct palette values, the selected logo must exist before the HTML brand book can display it, and the brand book must be complete before collateral and wiring can reference canonical assets. Skipping this order — for example, generating tokens before the audit flags contrast failures — produces rework. The audit is not a formality; the existing v8.0 palette surfaces contain a Tailwind color mismatch (blue/amber scale in generator templates vs. the teal/warm nautical palette in `app.css`) that must be diagnosed and locked before anything downstream proceeds.
 
-1. **Correlation propagation (core, zero new deps).** A new session-spanning `thread_id` sits *above* the
-   existing per-command `correlation_id` (trace_id/span_id semantics). A `Crosswake.Plug.Threadline` reads
-   `X-Crosswake-Thread-Id` (mints as fallback like `Plug.RequestId`), sets `Logger.metadata`, emits
-   `:telemetry` spans at boundary crossings. A `Crosswake.Live.Threadline` `on_mount` picks the id up from a
-   LiveView connect param for the WebSocket path. The library **never calls Logger itself** — it emits
-   telemetry and sets metadata; the host logs.
-2. **Durable audit ledger (companion, opt-in).** `mix crosswake.gen.audit` scaffolds a **host-owned** Ecto
-   schema + thin writer (copying the `gen.sync` pattern) recording **only terminal critical events**
-   (commerce receipt, auth handoff/step-up, notification-open, media-acceptance). PII-free by construction
-   (opaque `actor_ref`), append-only, with a first-class **ProvenanceLane** column
-   (`device_claimed` vs `backend_accepted`) that encodes the backend-authority thesis.
-3. **Operator surface (text-only in v1).** `mix crosswake.threadline` prints an ordered event table with
-   `ephemeral`/`durable` posture; Doctor + SupportMatrix + OperatorInspection get additive Threadline truth.
-   The LiveDashboard Native→Bridge→Server timeline is **deferred** to a future `crosswake_dashboard` package.
+The critical risks are concentrated in two areas. First, logo generation: programmatic marks without explicit concept constraints produce generic devtools-cliché output (hexagons, node graphs, rectangular containers). The tournament gallery must enforce written anti-requirements and require monochrome and small-size tests for every candidate before user selection. Second, token architecture: primitive-only token files without a semantic layer make theming and dark mode maintenance intractable. Every component in `tokens.css` must reference the semantic tier only — never raw palette primitives. Both risks are preventable if the phase sequencing and per-phase checklists from the pitfalls research are followed.
 
-## Locked decisions (user-confirmed 2026-06-09)
+---
 
-| Decision | Choice | Why |
-|---|---|---|
-| Version | **v7.0** | Major capstone — a new cross-cutting correlation/audit plane |
-| Identity | New `thread_id` **above** unchanged `correlation_id` | trace/span semantics; no breaking renames |
-| Standard | Bespoke `X-Crosswake-Thread-Id`, **zero OTel dep**, documented coexistence | honest scope; no forced observability stack |
-| Logging | Plug sets `Logger.metadata` + emits telemetry; **lib never logs** | idiomatic Elixir library posture |
-| Ledger ownership | Host-owned generated (gen.sync pattern), opt-in | house style; no lib-owned PII tables |
-| Write path | scaffold `record/1` + `record_in_multi/2` | honest durability; no overclaimed transactional guarantee |
-| Provenance | first-class `provenance` enum column | backend-authority thesis; offline-replay attribution |
-| PII/GDPR | PII-free by construction; opaque `actor_ref`; fail-closed metadata guard | erasure = delete host mapping, ledger intact |
-| Integrity | append-only by convention + nullable `row_hash`/`prev_hash` (advisory) | detects, does not prevent tamper — stated plainly; verify-task deferred |
-| Operator UI | text-only mix task + doctor in v1; LiveDashboard deferred | no overclaiming; rich timeline needs the opt-in ledger anyway |
-| Packaging | **split** — propagation Plug/telemetry core; ledger scaffold companion (in-tree) | Ecto is host-side; Plug is zero-dep cross-cutting |
+## Key Findings
 
-## Stack additions: essentially none (this is a feature, not a dependency)
+### Recommended Stack
 
-- **No new runtime deps.** `:telemetry` and `Logger` are already present; `Ecto.UUID.generate/0` is available
-  via Phoenix/Ecto; native UUIDs come from platform stdlib (`UUID().uuidString` / `UUID.randomUUID()`).
-- **Explicitly NOT added:** `opentelemetry*` (coexist, don't depend), `phoenix_live_dashboard` in core
-  (UI deferred to a separate package), any ULID/UUIDv7 library (binary_id PK + UUIDv4 propagation suffice).
+The tooling stack is minimal by design. `opentype.js` 2.0.0 (May 2026) is the single npm dependency: it converts Space Grotesk glyphs to SVG path data without a headless browser, runs in pure Node.js ESM, and its `getPath()` / `toPathData()` API handles GPOS kerning natively. `rsvg-convert` (via `brew install librsvg`) handles all SVG-to-PNG rasterisation — it is significantly more accurate than macOS `sips` and far lighter than Puppeteer or Inkscape. The W3C DTCG `2025.10` stable spec governs the token file format; all three major tools (Style Dictionary, Tokens Studio, Figma) have adopted it.
 
-## Feature map (table stakes vs differentiators)
+All three specified typefaces are confirmed available with the required weights. `Atkinson Hyperlegible Next` (the 2024 "Next" variant with 7 weights) is confirmed on Google Fonts at the correct specimen URL — distinct from the classic 2-weight version. The OFL FAQ explicitly permits using font outlines in logos; committed path-data SVGs are not subject to OFL redistribution requirements.
 
-**Propagation (PROP-)** — *table stakes:* thread_id mint/accept/echo, Logger metadata, telemetry spans,
-LiveView on_mount, native header injection (iOS+Android). *Differentiator:* honest two-channel design that
-states the WebView WebSocket-header limitation rather than faking full coverage.
+**Core technologies:**
+- `opentype.js` 2.0.0: Glyph-to-SVG-path conversion for path-only wordmarks — actively maintained, zero native deps, ships ESM+CJS
+- `rsvg-convert` (librsvg via Homebrew): SVG-to-PNG rasterisation — correct renderer, scriptable, deterministic; avoids `sips` distortion and Puppeteer overhead
+- W3C DTCG 2025.10: Design token JSON format — stable spec, tooling-compatible, `$value`/`$type`/`$description` per token
+- Google Fonts CDN: Brand book font loading — no binary commits, no build step; Fontsource is the self-hosted fallback for offline use
+- WCAG luminance formula: Implemented as a dependency-free Node.js script consuming `crosswake.tokens.json` directly
 
-**Audit ledger (LEDG-)** — *table stakes:* opt-in generator, host-owned schema, idempotency, append-only.
-*Differentiators:* **ProvenanceLane** (evidence vs authority), **PII-free-by-construction + fail-closed guard**,
-`record_in_multi/2` for atomic terminal events — none of the mainstream audit libs (paper_trail/ex_audit/
-carbonite) ship the evidence-vs-authority distinction.
+**Critical version requirements:**
+- `opentype.js` must be `^2.0.0` (not 1.3.4) — the 2.0.0 release closes a 5-year gap and ships the correct ESM surface
+- OG social card: 1200x630px (universal) or 1280x640px (GitHub-recommended); safe zone 1080x600px inner area
 
-**Operator (OPER-)** — *table stakes:* `mix crosswake.threadline`, doctor findings, support-matrix row.
-*Differentiator:* honest `ephemeral` vs `durable` posture reporting; fail-closed PII doctor error.
+### Expected Features
 
-**Docs/Proof (DOCS-/PROOF-)** — *table stakes:* `guides/threadline.md`, merge-blocking contains-exact docs
-parity, hermetic Plug proof, advisory example-host ledger proof. *Differentiator:* a mechanically-checked
-"What Threadline is NOT" anti-scope section in the guide.
+Five deliverables are in scope for v9.0. All are required; none can be deferred.
 
-## Build order (dependency-aware)
+**Must have (table stakes):**
+- `brandbook/AUDIT.md` — verdict (KEEP/TIGHTEN/REWORK/ADD/REMOVE) for every section of the brand book draft; WCAG contrast matrix for all 16 palette token pairs; competitor conflict check against the four named projects (React Native, Hotwire, Phoenix/LiveView Native, Capacitor)
+- `brandbook/tokens/crosswake.tokens.json` — W3C DTCG format; three-tier hierarchy (primitives → semantic roles → state variants); all 16 palette tokens plus semantic roles and light/dark variants
+- `brandbook/tokens/tokens.css` — CSS custom properties derived from the token JSON; tier-separated with comment headers; `@media (prefers-color-scheme)` dark mode; forbidden-pairing comments embedded
+- `brandbook/logo/tournament/index.html` — 7-candidate gallery (4 logomark + 3 typemark); each shown on light/dark/monochrome backgrounds and at 16–32px scale; mandatory user-selection checkpoint; no external dependencies
+- `brandbook/logo/` production suite — horizontal lockup (light + dark), stacked lockup (light + dark), mark-only (light + dark + monochrome + signal colorway), path-only SVGs, no rectangular containers, no subtitle on main lockup
+- `brandbook/index.html` — standalone HTML brand book (no build step): live swatches with clipboard copy, inline WCAG contrast badges, type specimens, voice do/don't table, logo display with download links, asset index, component specimens (route card, badge, button, code block)
+- `brandbook/collateral/readme-header.svg` — path-only SVG, light + dark variants, wired into README with absolute `raw.githubusercontent.com` URL
+- `brandbook/collateral/social-card.png` — 1280x640px PNG; dark Current-950 background
+- `brandbook/collateral/favicons/` — `favicon.ico` + `favicon.svg` (prefers-color-scheme embedded) + `apple-touch-icon.png` (180x180) + `icon-192.png` + `icon-512.png`
+- Size budget: entire `brandbook/` committed content under 1 MB
+- Hex exclusion: `brandbook/` absent from published hex tarball (verified via `mix hex.build` tarball inspection)
 
-1. Identity + telemetry contract: `thread_id` field on bridge/activation contracts + `Crosswake.Threadline.Telemetry`.
-2. `Crosswake.Plug.Threadline` + `Crosswake.Live.Threadline` (server propagation, Logger metadata, spans).
-3. Native shell propagation (iOS+Android initial-load header + `window.crosswakeBridge.threadId`).
-4. `Crosswake.Audit.Ledger` contract struct (core) + `mix crosswake.gen.audit` scaffold + templates (companion).
-5. Operator surface: `mix crosswake.threadline`, doctor findings, `@audit_ledger_support_truth`, optional `audit_entry/1`.
-6. `guides/threadline.md` + docs-contract assertions + hermetic & advisory proof lanes + CI workflow.
+**Should have (v9.0 scope extensions, include if within complexity budget):**
+- Runtime-semantic token group (`runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive`) in the token file — unique differentiator, low implementation cost
+- In-situ context mocks (browser tab, GitHub repo card) in the tournament gallery per candidate
+- Competitor diff panel in tournament gallery
+- Inline WCAG contrast checker (two-swatch picker) in the HTML brand book
 
-## Watch out for (top pitfalls — see PITFALLS.md)
+**Defer to post-v9.0:**
+- Animated logo variants
+- Figma source files
+- Print-ready CMYK PDF brand book
+- Dark/light mode toggle in HTML brand book (auto via `prefers-color-scheme` is sufficient)
+- Token wiring: migrating `examples/phoenix_host/assets/css/app.css` and `priv/templates/` to import from `brandbook/tokens/tokens.css` — this is a v10.0 concern once audit has locked palette verdicts
 
-- **PII in append-only logs (GDPR).** Right-to-erasure vs immutable ledger. Mitigation: store opaque
-  `actor_ref` only; never raw identity; fail-closed `reject_pii_in_metadata/1` guard; doctor PII scan.
-- **Overclaimed durability.** Telemetry can drop; don't drive the durable write from a telemetry handler.
-  Scaffold an explicit `record_in_multi/2` so terminal events commit atomically with the business change.
-- **hash-chaining detects ≠ prevents tamper.** State it plainly in docs; ship detection only in v1.
-- **WebView header limits.** WKWebView/Android WebView cannot inject headers on the LiveView WS upgrade —
-  use the connect-param channel and document the `fetch`/`XHR` sub-navigation gap honestly.
-- **Library-logging anti-pattern.** The lib must emit telemetry + set Logger metadata, never `Logger.info`.
-- **Scope creep into APM.** Hard anti-scope: not OTel, not a tracer, not session replay, not a plugin bus.
+### Architecture Approach
 
-## Reuse, don't reinvent (verified code anchors)
+The `brandbook/` directory is a self-contained artifact that sits alongside the Elixir library without touching it. The hex `package/0` `:files` key in `mix.exs` is an allowlist (`~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides)`) — `brandbook/` is excluded automatically with no additional configuration required. The only `mix.exs` change this milestone is adding `logo: "brandbook/logo/crosswake-mark.svg"` to `docs/0` in phase 106. `.gitignore` needs two additions: `brandbook/tools/node_modules/` and `brandbook/tools/fonts/`. Everything else in `brandbook/` is committed SVG, HTML, JSON, CSS, and shell scripts — no binaries.
 
-- Telemetry allowlist + `safe_value?` guard: `lib/crosswake/companions/sigra/telemetry.ex` (copy verbatim).
-- Fail-closed authority guard: `reject_trace_authority_lane/2` in `lib/crosswake/companions/rindle/contracts.ex`.
-- Generator pattern: `lib/mix/tasks/crosswake.gen.sync.ex` + `priv/templates/crosswake/sync/*.eex` (`ensure_file/2`).
-- Opaque pseudonym helper: `Chimeway.Redaction.fingerprint_token/2`.
-- Additive extension points: Doctor `phase_N_*_findings/1`, SupportMatrix `@*_support_truth`,
-  OperatorInspection `*_entry/1`; docs parity via `test/support/proof_assertions.ex`.
-- `correlation_id` already first-class on bridge/activation/native envelopes — `thread_id` layers above it.
+Token consumers (`examples/phoenix_host/assets/css/app.css`, `priv/templates/`) remain decoupled this milestone by design. The audit may change color values; wiring dependents before verdicts are locked produces rework. `tokens.css` becomes the canonical written source in v9.0; wiring is a v10.0 concern.
+
+**Major components:**
+1. `brandbook/tools/` — Node scripts (token compilation, WCAG contrast matrix, SVG validation) + PNG export shell script; isolated `package.json`; `node_modules/` and `fonts/` gitignored
+2. `brandbook/tokens/` — `crosswake.tokens.json` (W3C DTCG source of truth) + `tokens.css` (compiled CSS custom properties); three-tier hierarchy; light/dark via `prefers-color-scheme`
+3. `brandbook/logo/` — path-only SVG production suite (mark, lockup variants, monochrome); `tournament/` subdirectory with 7-candidate gallery HTML
+4. `brandbook/index.html` — standalone HTML brand book; no build step; vanilla JS only; fonts from Google Fonts CDN
+5. `brandbook/collateral/` — readme-header SVG, social card PNG, favicon set
+6. `.github/workflows/brandbook-verify.yml` — advisory CI lane (size budget, SVG validity, token JSON validity); triggered only on `brandbook/**` changes
+
+### Critical Pitfalls
+
+1. **Generic marks / rectangular containers** — Lock the concept brief (shape vocabulary, explicit anti-requirements: no hexagons, no node-graph metaphors, no enclosing rectangle) before any SVG is drawn. The tournament gallery enforces this at the mandatory user-selection checkpoint. Recovery after a generic mark wins the tournament is expensive (re-run tournament).
+
+2. **Stroke collapse at 16px favicon** — Design the mark at a native 24x32 canvas, not at 512px. Evaluate every candidate at three sizes in the tournament gallery: 200px, 32px, 16px. Production SVGs must have strokes outlined to filled paths; live-stroke source files live in `brandbook/src/` only.
+
+3. **Broken kerning and Y-axis flip after opentype.js path conversion** — Pass the correct baseline `y = font.ascender * (fontSize / font.unitsPerEm)` to `font.getPath()`. Set `fill-rule="evenodd"` on the wordmark path group (TTF outline winding requires evenodd for letter counters). After path generation, review every adjacent glyph pair at 400% zoom and hand-adjust optically bad pairs (`rk`, `os`, `aw`, `ke`). The path-converted wordmark is the start of hand-curation, not the finished artifact.
+
+4. **Raw-color-only tokens without semantic layer** — The DTCG three-tier structure is mandatory. Component rules in `tokens.css` must reference only semantic tier tokens (`--cw-color-accent-primary`), never raw primitives (`--cw-color-blue-500`). Document and freeze the naming convention in phase 102 before generating a single CSS variable. Cap v1.0 at ~50 total tokens.
+
+5. **GitHub SVG sanitization and relative image paths** — Production SVGs must be path-only (no `<text>`, no `dominant-baseline`, no `<script>`, no external `href`). README header dark mode must use GitHub's `<picture><source media="(prefers-color-scheme: dark)" srcset="...">` pattern. README image URL must be an absolute `https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/...` path; relative paths 404 on hexdocs.pm.
+
+---
+
+## Implications for Roadmap
+
+The phase order is fully determined by hard artifact dependencies. Each phase has exactly one critical output that the next phase consumes. There is no parallelism available in the core chain; shortcuts produce rework.
+
+### Phase 102: Brand Audit
+
+**Rationale:** The audit must come first because it determines which palette values survive and which get REWORK verdicts. Tokens built before the audit may need rebuilding if any color values change. The audit also surfaces the existing generator template / app.css palette mismatch (generator emits blue/amber Tailwind classes; app.css uses the teal/nautical palette) — this inconsistency must be diagnosed and logged before any token is written.
+**Delivers:** `brandbook/AUDIT.md` with verdicts for all 14 brand book sections; scripted WCAG contrast matrix for all 16 palette pairs; competitor conflict check; `.gitignore` additions (2 lines)
+**Addresses:** WCAG contrast failures in muted palettes (pitfall 10); token naming convention decision and freeze (pitfall 9)
+**Avoids:** Rebuilding tokens after post-audit palette changes
+
+### Phase 103: Design Tokens
+
+**Rationale:** Palette verdicts from phase 102 are now locked. This is the earliest the token file can be built without risk of rework.
+**Delivers:** `brandbook/tokens/crosswake.tokens.json` (W3C DTCG, three-tier hierarchy, 16 primitives + semantic roles + state + light/dark); `brandbook/tokens/tokens.css` (CSS custom properties with tier-separation comments and forbidden-pairing notes); `brandbook/tools/package.json` (opentype.js 2.0.0 as the sole dependency)
+**Addresses:** Raw-color-only token pitfall (pitfall 5); token naming churn (pitfall 9)
+**Avoids:** Any component referencing primitive tokens directly; token explosion beyond ~50 entries
+
+### Phase 104: Logo Tournament and Production Logo Suite
+
+**Rationale:** Token palette values are settled. The tournament requires the opentype.js pipeline (established in phase 103 tooling) for typemark candidates. The mandatory user-selection checkpoint is a hard gate — no production suite work begins until selection is confirmed.
+**Delivers:** `brandbook/logo/tournament/index.html` (7 candidates, 3-background x 3-scale presentation, in-situ mocks, selection checkpoint); user-selected candidate refined to `brandbook/logo/` production suite (5+ SVG files: horizontal lockup light/dark, stacked light/dark, mark-only light/dark/mono, signal colorway)
+**Addresses:** Generic marks (pitfall 1); stroke collapse (pitfall 2); monochrome failure (pitfall 3); broken kerning / Y-axis (pitfall 4); optical centering (pitfall 8); x-height mismatch (pitfall 11)
+**Avoids:** Proceeding to brand book without a locked, hand-curated mark
+
+### Phase 105: Standalone HTML Brand Book
+
+**Rationale:** Tokens are settled and the production logo exists. The brand book references both. This is the first phase that assembles all brand elements into a single deliverable.
+**Delivers:** `brandbook/index.html` (no build step; live swatches with clipboard copy; inline WCAG contrast badges; type specimens; voice do/don't table; logo display with download links; asset index; component specimens for route card, badge, button, code block)
+**Addresses:** Over-specification pitfall (scope to color, type, logo, spacing, voice-with-examples only); devtools brand cliches in component specimens
+**Avoids:** External JS frameworks (vanilla JS only); Figma embeds; animation-heavy hero
+
+### Phase 106: Collateral, README Wiring, and ExDoc Logo
+
+**Rationale:** All assets are finalized. Collateral requires the settled mark and settled token palette. README wiring and ExDoc `:logo` key reference the production mark. Size budget CI and hex exclusion verification run here when the complete committed asset set is known.
+**Delivers:** `brandbook/collateral/readme-header.svg` (light + dark, path-only); `brandbook/collateral/social-card.png` (1280x640px); `brandbook/collateral/favicons/` (5 files); `BRAND-SPEC.md`; `mix.exs` `:logo` key; `README.md` header image with absolute raw.githubusercontent.com URL; `.github/workflows/brandbook-verify.yml` (advisory CI: size budget, SVG validity, token JSON)
+**Addresses:** Hex package brand asset leak (pitfall 7); GitHub SVG sanitization for README (pitfall 6); relative image paths on hexdocs (architecture finding)
+**Avoids:** Relative image paths in README.md; `@media prefers-color-scheme` inside `<img>`-referenced SVG; missing `:exclude_patterns` in mix.exs
+
+### Phase Ordering Rationale
+
+- Audit → Tokens → Logos → Book → Collateral is a strict dependency chain enforced by artifact outputs. Any reordering introduces rework: tokens before audit risks palette rebuilding; logos before tokens reference unsettled color values; brand book before logo has a placeholder; collateral before book assembly misses the asset index.
+- The tournament user-selection checkpoint is a hard gate. No refinement work begins without an explicit selection.
+- Token naming convention must be decided and frozen in phase 102 before any CSS is generated in phase 103. Renaming tokens mid-implementation triggers cascading updates across JSON, CSS, brand book, and component specimens.
+
+### Research Flags
+
+Phases likely needing deeper research during planning:
+- **Phase 104 (Logo Tournament):** High creative uncertainty — the concept brief needs explicit shape anti-requirements, and the opentype.js Y-axis/fill-rule gotchas require validated generation code before candidate SVGs are authored
+- **Phase 105 (HTML Brand Book):** Inline WCAG contrast checker and component specimens (route card, badge) are medium complexity; both require finalized token CSS first; test the contrast badge computation in isolation before wiring into the full page
+
+Phases with standard patterns (research phase likely skippable):
+- **Phase 102 (Brand Audit):** Audit structure is well-specified; WCAG formula is implemented in STACK.md; competitor check list is bounded (4 named projects)
+- **Phase 103 (Design Tokens):** DTCG 2025.10 spec is stable and thoroughly documented; three-tier hierarchy is established industry pattern
+- **Phase 106 (Collateral):** Favicon set requirements, OG card dimensions, and README image URL convention are fully resolved in research
+
+---
+
+## Confidence Assessment
+
+| Area | Confidence | Notes |
+|------|------------|-------|
+| Stack | HIGH | opentype.js 2.0.0 release confirmed May 2026; font availability confirmed on Google Fonts and Fontsource; DTCG 2025.10 stable spec verified at W3C; OFL logo-use FAQ confirmed; rsvg-convert recommendation corroborated by multiple sources |
+| Features | HIGH | Grounded in public brand pages from Tailwind, Astro, Vercel/Geist, GitHub, Bun; all 5 deliverables and all MVP acceptance criteria are concrete and enumerable |
+| Architecture | HIGH | Based on direct inspection of actual `mix.exs`, `.gitignore`, `app.css`, and template files in the repo (2026-06-11); all integration mechanisms confirmed from source |
+| Pitfalls | HIGH (technical) / MEDIUM (design) | GitHub SVG sanitization, WCAG thresholds, hex exclusion, and opentype.js coordinate bugs are all confirmed from primary sources; optical correction and logo design pitfalls are MEDIUM confidence (community pattern evidence) |
+
+**Overall confidence:** HIGH
+
+### Gaps to Address
+
+- **Generator template palette mismatch:** The Tailwind color mismatch in `priv/templates/crosswake/offline_ui/` (blue/amber) vs. `app.css` (teal/nautical) needs an explicit audit verdict in phase 102. The fix path (update generator templates) belongs in v10.0 token-wiring work, not v9.0.
+- **Logo concept brief specifics:** The shape vocabulary for the 4 logomark concepts and 3 typemark concepts is a creative decision for the phase 104 planning step, not a research output. The research constraint is: the brief must include explicit anti-requirements (shapes to avoid) before any SVG generation begins.
+- **Optical correction thresholds:** Nudge amounts for optical centering (2-4% upward for type-heavy lockups) are empirical guidance. Validate visually during phase 104 refinement; no script can verify this.
+- **Advisory CI scope for brandbook-verify.yml:** Three checks recommended (size budget, SVG validity via xmllint, token JSON validity via Node one-liner). Deferred checks (WCAG assertions, HTML validation) wait until their respective phases complete.
+
+---
+
+## Sources
+
+### Primary (HIGH confidence)
+- `github.com/opentypejs/opentype.js/releases` — v2.0.0 release confirmation (May 2026)
+- `fonts.google.com/specimen/Atkinson+Hyperlegible+Next` — weight availability confirmed
+- `openfontlicense.org/ofl-faq/` — logo artwork OFL exemption
+- `www.designtokens.org/TR/drafts/format/` — DTCG 2025.10 `$value`/`$type`/`$description` syntax
+- `www.w3.org/TR/WCAG21/relative-luminance.html` — luminance formula with 0.04045 threshold
+- `caniuse.com/link-icon-svg` — SVG favicon browser support matrix
+- `docs.github.com/en/repositories/.../customizing-your-repositorys-social-media-preview` — 1280x640 recommended social card size
+- `evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs` — minimal favicon set
+- `opentypejs/opentype.js#187`, `#724`, `#347` — Y-axis flip, kerning, fill-rule confirmed issues
+- `github.com/github/markup#1160` — GitHub SVG `dominant-baseline` sanitization confirmed
+- `mix.exs` (actual repo, inspected 2026-06-11) — `:files` allowlist, ExDoc deps, `docs/0` structure
+- `examples/phoenix_host/assets/css/app.css` — 16 CSS custom properties confirmed
+- `priv/templates/crosswake/offline_ui/` — Tailwind class mismatch confirmed
+
+### Secondary (MEDIUM confidence)
+- `tasteprofile.io/blog/w3c-dtcg-design-tokens-practical-guide` — three-tier hierarchy, naming pitfalls
+- `medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0` — tournament presentation guidelines
+- `goodpractices.design/articles/design-tokens` — component-token anti-pattern
+- `driesvints.com/blog/investigating-dark-mode-for-svgs-in-github-readmes` — GitHub SVG dark mode limitation
+- `webaim.org/articles/contrast/` — mid-tone contrast failure patterns
+- `alexadam.medium.com` + `mausic.me/blog/...` — rsvg-convert recommendation
+
+### Tertiary (LOW confidence, validate during implementation)
+- Optical correction nudge amounts (2-4% for type-heavy lockups) — empirical design community guidance, no single authoritative source; validate visually during phase 104 refinement
+
+---
+*Research completed: 2026-06-11*
+*Ready for roadmap: yes*
