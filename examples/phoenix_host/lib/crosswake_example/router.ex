@@ -365,4 +365,11 @@ defmodule CrosswakeExample.Router do
       )
     end
   end
+
+  if Mix.env() in [:test, :e2e] do
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:api])
+      get("/sync-state/:client_mutation_id", SyncStateController, :show)
+    end
+  end
 end
