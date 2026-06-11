@@ -11,6 +11,6 @@
     <script defer phx-track-static type="module" src={~p"/assets/offline.js"}></script>
   </head>
   <body class="bg-cw-foam-50 text-cw-current-950 antialiased">
-    <%= @inner_content %>
+    <%%= @inner_content %>
   </body>
 </html>

@@ -31,11 +31,11 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
 
     # also let's verify page content
     page_content = File.read!(page_path)
-    assert page_content =~ "You are currently offline."
+    assert page_content =~ "Offline Workspace"
 
     # js content
     js_content = File.read!(js_path)
-    assert js_content =~ "window.addEventListener(\"online\""
+    assert js_content =~ "checkStorageBudget"
   end
 
   test "outputs standard instructions to Mix.shell().info" do
