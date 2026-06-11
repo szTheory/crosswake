@@ -64,7 +64,11 @@
       }
     </style>
   </head>
-  <body>
+  <body
+    data-storage-budget={@island.storage_budget}
+    data-reserve-for-journal={@island.reserve_for_journal}
+    data-eviction-policy={@island.eviction}
+  >
     <h1>Offline Study Island</h1>
     
     <div id="flashcard-container">
