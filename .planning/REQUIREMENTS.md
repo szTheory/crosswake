@@ -19,9 +19,9 @@
 
 ### Storage Budget Enforcement (BDGT)
 
-- [ ] **BDGT-01**: `Crosswake.Offline.Contracts.StudySessionIsland` exposes an explicit `:storage_budget` attribute for offline cache boundaries.
-- [ ] **BDGT-02**: Runtime JavaScript checks `navigator.storage.estimate()` before downloading or unpacking new `ContentPack`s, advising the user of impending eviction before browser quotas are exceeded.
-- [ ] **BDGT-03**: JS IndexedDB `put()` operations are wrapped in `try/catch` to elegantly handle OS-level `QuotaExceededError` occurrences, surfacing standard UI warnings.
+- [x] **BDGT-01**: `Crosswake.Offline.Contracts.StudySessionIsland` exposes an explicit `:storage_budget` attribute for offline cache boundaries.
+- [x] **BDGT-02**: Runtime JavaScript checks `navigator.storage.estimate()` before downloading or unpacking new `ContentPack`s, advising the user of impending eviction before browser quotas are exceeded.
+- [x] **BDGT-03**: JS IndexedDB `put()` operations are wrapped in `try/catch` to elegantly handle OS-level `QuotaExceededError` occurrences, surfacing standard UI warnings.
 
 ### Brand Book UI Polish (BRND)
 
@@ -53,9 +53,9 @@
 | SYNC-03 | Phase 99 | Complete |
 | OFFC-01 | Phase 101 | Pending |
 | OFFC-02 | Phase 101 | Pending |
-| BDGT-01 | Phase 100 | Pending |
-| BDGT-02 | Phase 100 | Pending |
-| BDGT-03 | Phase 100 | Pending |
+| BDGT-01 | Phase 100 | Complete |
+| BDGT-02 | Phase 100 | Complete |
+| BDGT-03 | Phase 100 | Complete |
 | BRND-01 | Phase 101 | Pending |
 | BRND-02 | Phase 101 | Pending |
 
