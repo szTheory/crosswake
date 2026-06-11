@@ -13,17 +13,20 @@ Offline storage limits are explicitly tracked and gracefully handled at runtime 
 <decisions>
 ## Implementation Decisions
 
+### Eviction Trigger
+- **D-01:** Hybrid, Policy-Driven (Auto-evict optional, Manual for core). Do not use a silent, global "auto-evict oldest" strategy. Use a declarative policy model where developers explicitly define what is volatile (optional media) and what requires manual user clearance (required pack data).
+
+### Quota Check Timing
+- **D-02:** Block Upfront on Download. Validate byte budgets *before* downloading a content pack. Always reserve a dedicated quota slice specifically for the `Sync Journal` (the append-only mutation queue) to ensure offline progress can always be saved.
+
+### UI Blocking Level
+- **D-03:** Hard Block (Unless explicitly configured as Read-Only). If the sync journal's reserved storage budget is exhausted, treat it as a hard boundary preventing entry into the offline island. Do not offer a dismissible "volatile study" warning. Show an explicit, calm boundary card using `Rust 600` (e.g., "Storage is critically full. Please free space before starting this session to ensure your progress is saved.").
+
 ### Budget Format (Elixir)
-- **D-01:** The `StudySessionIsland` struct should store `:storage_budget` as a raw integer (bytes) — e.g. `50_000_000`. This maps 1:1 to browser APIs like `navigator.storage` without runtime parsing. However, generator and developer-facing APIs should accept ergonomic tuples (e.g. `{:mb, 50}`) or human strings and parse them ahead-of-time before setting the struct field. This provides great Elixir DX while preserving the lowest-level contract as unambiguous "operational truth."
-
-### Pre-eviction Warning (UI)
-- **D-02:** Use a calm, specific, actionable persistent banner (not a blocking modal). When `navigator.storage.estimate()` is near limits, show a non-intrusive banner in the island header (e.g., "Storage near limit. Clear old sessions to download more."). This aligns with the brand constraint of "short, status-oriented, no drama" and avoids breaking the flow. 
-
-### Write Failure Fallback (JS)
-- **D-03:** Implement graceful degradation to a "Read-only mode" when IndexedDB `put()` throws a `QuotaExceededError`. Catch the error, preserve the local UI state but disable further modifications, and display a status badge/toast ("Storage full. Progress won't be saved."). This honors "local when useful" by letting them finish their current read session instead of force-crashing the view.
+- **D-04:** `StudySessionIsland` stores `:storage_budget` as a raw integer (bytes), matching browser APIs without runtime parsing. Generators and macros accept ergonomic tuples (e.g., `{:mb, 50}`). (Carried forward from previous discussion).
 
 ### Claude's Discretion
-The exact math/threshold for "near limits" (e.g., 90% full or 5MB remaining) for the D-02 warning banner is left to the planner, optimizing for typical offline-sync payload sizes.
+- The exact API shape for the Elixir manifest constraints (e.g., `reserve_for_journal` and `eviction` blocks) is left to the planner, optimizing for typical offline-sync payload sizes and Phoenix/Ecto idiomatic design.
 
 </decisions>
 
@@ -33,7 +36,7 @@ The exact math/threshold for "near limits" (e.g., 90% full or 5MB remaining) for
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Brand & OSS Identity
-- `prompts/crosswake-brand-book.md` — Brand constraints: "operational truth over hype," "calm, specific, actionable" microcopy.
+- `prompts/crosswake-brand-book.md` — Brand constraints: "operational truth over hype," calm, specific, actionable microcopy.
 - `prompts/crosswake-elixir-oss-dna.md` — OSS constraints: explicit distinction between host-owned code and library-owned code; ergonomic public contracts.
 
 ### Deep Research
@@ -42,7 +45,7 @@ The exact math/threshold for "near limits" (e.g., 90% full or 5MB remaining) for
 
 ### Relevant Code Surfaces
 - `lib/crosswake/offline/contracts.ex` — Where `StudySessionIsland` and `:storage_budget` are defined.
-- `examples/phoenix_host/priv/static/offline_study.js` — The target file where JS IndexedDB `.put()` calls and `navigator.storage.estimate()` handling will live.
+- `examples/phoenix_host/priv/static/offline_study.js` — Target JS integration point.
 
 </canonical_refs>
 
@@ -50,22 +53,23 @@ The exact math/threshold for "near limits" (e.g., 90% full or 5MB remaining) for
 ## Existing Code Insights
 
 ### Reusable Assets
-- None specifically for quota management; this builds net-new constraints on the existing `StudySessionIsland`.
+- None specifically for quota management; builds net-new constraints on the existing `StudySessionIsland`.
 
 ### Established Patterns
-- `examples/phoenix_host/priv/static/offline_study.js` handles IndexedDB explicitly but currently lacks `try/catch` wrappers around `.put()` operations.
-- `StudySessionIsland` in `contracts.ex` requires an explicit `:storage_budget` field matching the other strictly-defined behaviors (e.g., `:journal_mode`, `:draft_surface`).
+- `examples/phoenix_host/priv/static/offline_study.js` handles IndexedDB explicitly but currently lacks `try/catch` wrappers and storage estimate upfront checks.
+- `StudySessionIsland` uses strict behavior fields (`:journal_mode`, `:draft_surface`).
 
 ### Integration Points
-- `navigator.storage.estimate()` must be integrated into the JS bootstrapping phase before fetching new `ContentPack`s.
-- `QuotaExceededError` must be caught on all `store.put()` and `store.add()` calls inside IndexedDB transaction handlers in `offline_study.js`.
+- `navigator.storage.estimate()` must be integrated into JS bootstrap before downloading `ContentPack`s.
+- Manifest API `use Crosswake.Offline.ContentPack` needs explicit quota reservation configurations.
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- The `QuotaExceededError` handling should immediately update the UI state (e.g., replacing "Syncing..." with "Storage Full (Read-only)") via the JS DOM manipulation.
+- Error states should be shown *before* the user goes offline. For example: *"Cannot download Daily Study Pack. Requires 150 MB, but only 40 MB is available."*
+- The JS should enforce a reserved space for the sync queue. If space isn't available for the mutation queue, the interactive session must not be allowed to start.
 
 </specifics>
 

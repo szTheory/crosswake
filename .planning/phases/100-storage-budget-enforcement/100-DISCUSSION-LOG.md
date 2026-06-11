@@ -1,55 +1,17 @@
 # Phase 100: Storage Budget Enforcement - Discussion Log
 
-> **Audit trail only.** Do not use as input to planning, research, or execution agents.
-> Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
-
 **Date:** 2026-06-11
-**Phase:** 100-Storage Budget Enforcement
-**Areas discussed:** Budget Format (Elixir), Pre-eviction Warning (UI), Write Failure Fallback (JS)
 
----
+## User Intent
+- Update existing phase context with deep research into offline constraints and idiomatic handling of browser quota limitations.
 
-## Budget Format (Elixir)
+## Discussion Notes
+- **Eviction Trigger:** The user directed an investigation to determine whether to auto-evict oldest sessions or require manual clearing. Research concluded that silent eviction violates trust. A hybrid, policy-driven approach was selected: optional media is evicted, but required data must be cleared manually.
+- **Quota Check Timing:** Decided to block upfront on download. Delaying checks until mutation save is a UX footgun leading to data loss.
+- **UI Blocking Level:** Established a hard block if the reserved storage budget for the sync journal is exhausted. No dismissible warnings for volatile study.
 
-| Option | Description | Selected |
-|--------|-------------|----------|
-| Integer bytes | e.g. 50_000_000 | ✓ |
-| Human-readable string | e.g. "50MB" | |
-| Tuple | e.g. {:mb, 50} | |
-
-**User's choice:** Synthesized by agent per user request for an optimal, cohesive recommendation based on ecosystem idioms.
-**Notes:** Decided on integer bytes for the internal contract struct to match JS APIs exactly (no parsing overhead), while recommending the developer-facing generator/API accept tuples/strings for DX, parsing them before storing.
-
----
-
-## Pre-eviction Warning (UI)
-
-| Option | Description | Selected |
-|--------|-------------|----------|
-| Persistent banner | Show non-intrusive warning when near limits | ✓ |
-| Blocking modal | Force user to acknowledge limits | |
-
-**User's choice:** Synthesized by agent.
-**Notes:** Matches the Crosswake Brand Book's emphasis on "calm, specific, actionable" and "no drama" microcopy. A banner alerts the user to `navigator.storage.estimate()` limits without breaking their flow.
-
----
-
-## Write Failure Fallback (JS)
-
-| Option | Description | Selected |
-|--------|-------------|----------|
-| Graceful Read-only mode | Catch QuotaExceededError and disable saves | ✓ |
-| Force-abort session | Crash/abort offline session entirely | |
-
-**User's choice:** Synthesized by agent.
-**Notes:** Provides the best UX by honoring "local when useful." Users can finish reading the cached content instead of being thrown back to a blank/online-only state just because a `.put()` failed.
-
----
-
-## Claude's Discretion
-
-The exact math/threshold for "near limits" (e.g. 90% full or 5MB remaining) for the pre-eviction warning banner.
+## Claude's Discretion Items
+- API shape for the Elixir manifest constraints (`reserve_for_journal` and `eviction` blocks).
 
 ## Deferred Ideas
-
-None
+None.
