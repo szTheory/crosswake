@@ -27,8 +27,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **LOGO-03**: No rectangular container backgrounds on any mark; main lockup carries no subtitle; logotype gap ≈ one stroke-width
 - [x] **LOGO-04**: User selects the logo direction at the tournament checkpoint (franken-picks supported)
 - [ ] **LOGO-05**: Winner goes through a 3-micro-variant refinement round with user sign-off
-- [ ] **LOGO-06**: Production suite ships: mark, mono, horizontal lockup (light/dark), stacked, subtitle variant, typemark, and a dedicated 16-grid `favicon.svg` — all path-only, no `<text>`, correct fill rules
-- [ ] **LOGO-07**: Wordmark generated from Space Grotesk outlines via opentype.js (correct Y-baseline, evenodd counters) with the provenance script committed in `brandbook/tools/`; fonts + node_modules gitignored
+- [x] **LOGO-06**: Production suite ships: mark, mono, horizontal lockup (light/dark), stacked, subtitle variant, typemark, and a dedicated 16-grid `favicon.svg` — all path-only, no `<text>`, correct fill rules
+- [x] **LOGO-07**: Wordmark generated from Space Grotesk outlines via opentype.js (correct Y-baseline, evenodd counters) with the provenance script committed in `brandbook/tools/`; fonts + node_modules gitignored
 
 ### HTML Brand Book (BOOK)
 
@@ -83,8 +83,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOGO-03 | Phase 103 | Complete |
 | LOGO-04 | Phase 103 | Complete |
 | LOGO-05 | Phase 104 | Pending |
-| LOGO-06 | Phase 104 | Pending |
-| LOGO-07 | Phase 104 | Pending |
+| LOGO-06 | Phase 104 | Complete |
+| LOGO-07 | Phase 104 | Complete |
 | BOOK-01 | Phase 105 | Pending |
 | BOOK-02 | Phase 105 | Pending |
 | BOOK-03 | Phase 105 | Pending |
