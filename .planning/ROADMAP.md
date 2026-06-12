@@ -23,7 +23,7 @@
 - [x] **Phase 102: Brand Audit & Token Foundation** - Audit the brand book, run WCAG contrast matrix, freeze design tokens with user ratification (completed 2026-06-12)
 - [x] **Phase 103: Logo Tournament** - Seven-candidate HTML gallery with mandatory user direction-pick checkpoint (completed 2026-06-12)
 - [x] **Phase 104: Logo Refinement & Production Suite** - Three micro-variants, user sign-off, full path-only production SVG suite (completed 2026-06-12)
-- [ ] **Phase 105: HTML Brand Book** - Standalone long-scroll index.html + BRAND-SPEC.md v1.0
+- [x] **Phase 105: HTML Brand Book** - Standalone long-scroll index.html + BRAND-SPEC.md v1.0 (completed 2026-06-12)
 - [ ] **Phase 106: Collateral, Integration & Closeout** - Collateral assets, README/ExDoc wiring, hex exclusion, advisory CI lane
 
 ## Phase Details
@@ -86,7 +86,7 @@
 Plans:
 - [x] 105-01-PLAN.md — Budget trim + page scaffold (brandbook.css/js + index.html shell + dark hero)
 - [x] 105-02-PLAN.md — Fill sections 2-10 (logo/misuse, live color badges, typography, tokens, motifs, voice, UI specimens, asset index)
-- [ ] 105-03-PLAN.md — BRAND-SPEC.md v1.0 (audited successor, all AUDIT verdicts applied) + phase self-check
+- [x] 105-03-PLAN.md — BRAND-SPEC.md v1.0 (audited successor, all AUDIT verdicts applied) + phase self-check
 **UI hint**: yes
 
 ### Phase 106: Collateral, Integration & Closeout
@@ -110,5 +110,5 @@ Plans:
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
-| 105. HTML Brand Book | v9.0 | 2/3 | In Progress|  |
+| 105. HTML Brand Book | v9.0 | 3/3 | Complete   | 2026-06-12 |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
