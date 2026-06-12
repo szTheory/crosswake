@@ -40,8 +40,8 @@
   5. `brandbook/tokens/tokens.css` custom properties align with the JSON, contrast-annotated per pairing, and state tokens cover all 12 required states (default/hover/active/focus/disabled/selected/success/warning/error/info/subtle/muted)
 **Plans**: 4 plans
 - [x] 102-01-PLAN.md — Scaffold brandbook/ + .gitignore + AUDIT.md 14-section structure + WCAG contrast.mjs (AUDT-02 ground truth)
-- [ ] 102-02-PLAN.md — Token foundation: crosswake.tokens.json (DTCG) + compile-tokens.js + generated tokens.css (TOKN-01/02/03)
-- [ ] 102-03-PLAN.md — AUDIT.md §1-§7 + Appendix A contrast matrix + §5 AUDT-03 drift flag (AUDT-01/02/03)
+- [x] 102-02-PLAN.md — Token foundation: crosswake.tokens.json (DTCG) + compile-tokens.js + generated tokens.css (TOKN-01/02/03)
+- [x] 102-03-PLAN.md — AUDIT.md §1-§7 + Appendix A contrast matrix + §5 AUDT-03 drift flag (AUDT-01/02/03)
 - [ ] 102-04-PLAN.md — AUDIT.md §8-§14 + AUDT-04 ratification checkpoint (AUDT-01/04)
 
 ### Phase 103: Logo Tournament
@@ -96,7 +96,7 @@
 | 99. Real Network-Toggling E2E Tests | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 100. Storage Budget Enforcement | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 101. Offline UI Consolidation & Polish | v8.0 | 2/2 | Complete | 2026-06-11 |
-| 102. Brand Audit & Token Foundation | v9.0 | 1/4 | In Progress|  |
+| 102. Brand Audit & Token Foundation | v9.0 | 3/4 | In Progress|  |
 | 103. Logo Tournament | v9.0 | 0/? | Not started | - |
 | 104. Logo Refinement & Production Suite | v9.0 | 0/? | Not started | - |
 | 105. HTML Brand Book | v9.0 | 0/? | Not started | - |
