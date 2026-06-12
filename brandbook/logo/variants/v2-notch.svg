@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- V2 Notch: wider crossing notch axis variant (D-01/D-06) -->
+<!-- Axis: NOTCH WIDTH — gap widens from 1.5x stroke (10u) to ~1.75x stroke (11.67u) -->
+<!-- All other geometry byte-identical to v1-baseline: same route slope, same wake lines, same stroke-width -->
+<!-- Notch center: (32,32) — invariant. Direction unit vector: (0.9397,-0.3420) -->
+<!-- Gap = 11.67u, half = 5.835u each side of center along route direction -->
+<!-- seg1-end:   (32 - 5.835*0.9397, 32 + 5.835*0.3420) = (26.52, 34.00) -->
+<!-- seg2-start: (32 + 5.835*0.9397, 32 - 5.835*0.3420) = (37.48, 30.00) -->
+<!-- Provenance: endpoints recomputed along route direction — no blind node surgery (D-04) -->
+<!-- D-04: path/line-only, no text, no rect -->
+<!-- D-06: one axis only — notch gap wider; stroke-width and all wake-line coords unchanged -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g id="mark-a" fill="none" stroke="currentColor"
+     stroke-width="6.667" stroke-linecap="round">
+    <!-- Route segment 1: (0,43.65) → notch break start (26.52,34.00) [wider notch] -->
+    <line x1="0" y1="43.65" x2="26.52" y2="34.00" />
+    <!-- Route segment 2: notch break end (37.48,30.00) → (64,20.35) [wider notch] -->
+    <line x1="37.48" y1="30.00" x2="64" y2="20.35" />
+    <!-- Wake line 1: center (36.56,44.53), 32u span at 20-deg — unchanged -->
+    <line x1="20.59" y1="50.34" x2="52.53" y2="38.71" />
+    <!-- Wake line 2: center (41.12,57.06), 32u span at 20-deg — unchanged -->
+    <line x1="25.15" y1="62.87" x2="57.10" y2="51.24" />
+  </g>
+</svg>
