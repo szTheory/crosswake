@@ -153,11 +153,197 @@ Nice-to-have: sidebar active/hover treatment, swag format.
 
 ## §5 Gaps and Risks
 
-_(pending)_
+### Critical (blocks execution or creates active user harm)
+
+**1. Generator palette drift (AUDT-03)**
+
+`lib/mix/tasks/crosswake.gen.offline_ui.ex` (lines 67–90) emits a Tailwind config snippet that defines `cw-wake` as a 9-stop **blue** family (500: `#699cc9`, 700: `#3c6d99`) and `cw-brass` as a 9-stop **amber** family (500: `#e1b982`, 700: `#c59a5e`). The brand book and `examples/phoenix_host/assets/css/app.css` define `cw-wake` as a **teal** family (`--cw-wake-700: #2B756A`) and `cw-brass` as a **warm gold** family (`--cw-brass-500: #C98A2E`). These are entirely different color families using the same naming prefix.
+
+**Impact:** Any host app that runs `mix crosswake.gen.offline_ui` and uses the emitted Tailwind config snippet will render the offline UI in blue/amber instead of the canonical teal/brass palette. The generator templates in `priv/templates/crosswake/offline_ui/` reference classes like `border-cw-wake-700` and `border-cw-brass-500` — with the correct names but the wrong colors if the emitted snippet is used.
+
+**Verdict: TIGHTEN** — The naming convention (`cw-wake`, `cw-brass`) is correct; the color values in the emitted snippet are wrong. This is a configuration drift issue, not an architectural one.
+
+**Cost:** This is not fixed in Phase 102. The fix is **NORM-01** in a future milestone: normalize generator templates and `app.css` onto `brandbook/tokens/tokens.css` as the single source of truth for `--cw-*` variables, replacing the Tailwind scale emission with token-based guidance.
+
+**2. Social preview card specification is absent**
+
+There is no OG image format (1200×630px), layout template, logo placement rule, or text treatment for social preview cards. Every link share from GitHub, Hex.pm, or social media will use a blank or auto-generated preview. This blocks GitHub-to-social discoverability before Phase 106 delivers collateral.
+
+**Impact:** GitHub README links, Hex.pm, and any social post share will show a blank or auto-generated preview.
+
+**Verdict: ADD** — Specify the OG card format (1200×630px, Current 950 or Foam 50 background, Wake Mark centered or offset, one-liner, hex/version info). Phase 106 delivers the committed file; Phase 102/103 delivers the spec.
+
+---
+
+### Important (quality degradation later; does not immediately block shipping)
+
+**3. Stone 500 referenced as valid muted text in brand book §8**
+
+The seed brand book §8 still maps `--cw-stone-500` to "Neutral/muted text on light." After D-02, Stone 500 is narrowed to large text ≥24px, disabled states, and decorative use. The brand book needs updating.
+
+**Impact:** Brand book users who implement before the token system is in place will use Stone 500 for normal-size muted text, failing AA (4.09:1).
+
+**Verdict: TIGHTEN** — Update brand book §8 semantic mapping to reflect the Stone 600/Stone 500 role split.
+
+**4. Dark-mode surface hierarchy is underspecified**
+
+The brand book describes the dark hero and code block treatments well, but does not specify how non-hero surfaces (cards, nav, sidebars, secondary panels) should render in dark mode. The semantic mapping from §8 is suggestive but not authoritative for every surface type.
+
+**Impact:** Dark-mode implementations will fracture without an explicit surface hierarchy — some teams will use Current 900 where Current 800 is appropriate, or vice versa.
+
+**Verdict: ADD** — Dark-mode surface hierarchy table (default/raised/inset/inverse mappings with example use cases) is needed in the brand book upgrade (§6).
+
+**5. README badges specification is absent**
+
+The brand book mentions badge style but does not specify which badges belong in the README header, what color treatment they should use, or how hex.pm/CI badges should render alongside brand-styled route/capability badges.
+
+**Impact:** README badge treatment will be improvised at publish time.
+
+**Verdict: ADD** — Specify the README badge set (Hex version, license, CI status) with formatting guidance.
+
+**6. Release announcement / changelog voice is unspecified**
+
+Brand book §6 specifies tone by surface for landing page, docs, API references, error messages, community posts, and UI microcopy. It does not include release notes or changelog announcements — a high-frequency surface for any OSS library.
+
+**Impact:** Release notes risk being inconsistent with the brand voice.
+
+**Verdict: ADD** — Add release-note and changelog voice guidance to brand book §6.
+
+**7. Conference slide treatment is absent**
+
+No slide template, palette subset for projected backgrounds, or guidance on font sizes at slide scale exists. Conference talks are a primary adoption channel for OSS libraries targeting the Elixir community (ElixirConf, Code BEAM).
+
+**Impact:** Slide decks will look inconsistent with the brand.
+
+**Verdict: ADD** — Add conference slide guidance to brand book §9/§13 upgrade.
+
+---
+
+### Nice-to-Have (low risk, low urgency)
+
+**8. Docs sidebar active/hover state is unspecified**
+
+The ExDoc theme sidebar has active and hover states. Exact token mapping (Wake 700 background? Brass 500 accent?) is not specified.
+
+**Verdict: ADD** — Can be resolved during Phase 105 HTML brand book construction.
+
+**9. Swag/sticker format is deferred**
+
+No sticker or swag spec is possible before the logo SVG is committed. This is correctly deferred to post-Phase 103.
+
+**10. Mobile breakpoints for landing page**
+
+Brand book §13 specifies desktop content widths (760–860px docs, 1120–1200px landing). Mobile breakpoints are not specified.
+
+**Verdict: ADD** — Specify mobile-first breakpoints in the brand book §13 upgrade.
 
 ## §6 Recommended Brand Book Upgrades
 
-_(pending)_
+Only sections receiving TIGHTEN / ADD verdicts are listed. KEEP verdicts require no upgrade. No REWORK verdicts were issued — the brand book core is sound and no section warrants a full rewrite at this stage. **Cost (hypothetical REWORK threshold):** a full palette REWORK that shifts emotional character rather than fixing math would cascade color changes across all specimens, Phase 103 logo candidates, and generated CSS — reserved for AUDT-04 ratification if the user disagrees with any unilateral audit decision.
+
+---
+
+### §8 Color System — TIGHTEN (Stone 600 addition + semantic role correction)
+
+**What to add:**
+- Add Stone 600 `#756D63` to the core palette table with role "text.muted on light surfaces — 4.53:1 on Foam 50 PASS."
+- Correct the semantic mapping: `--cw-stone-500` → "Narrow use: large text ≥24px, disabled, decorative only. Fails AA normal text (4.09:1). Never as body or UI muted text."
+- Add the dark-mode surface hierarchy table:
+
+| Surface level | Dark value | Use |
+|---------------|------------|-----|
+| `surface.default` | `--cw-primitive-current-950` | Page background |
+| `surface.raised` | `--cw-primitive-current-900` | Cards, code blocks |
+| `surface.inset` | `--cw-primitive-current-800` | Inset panels, nested cards |
+| `surface.inverse` | `--cw-primitive-foam-50` | CTA sections, callouts |
+
+- Add to CSS variables block: `--cw-stone-600: #756D63;`
+
+**Why:** Stone 500 is currently listed as valid muted text; this is a WCAG failure that will produce inaccessible UI. The dark-mode hierarchy is needed before any dark-mode surface can be built consistently.
+
+---
+
+### §6 Voice and Tone — ADD (release announcement surface)
+
+**What to add:**
+
+| Surface | Tone |
+|---------|------|
+| Release notes / changelog | Specific, task-first, no drama. Lead with what changed. State what broke. Separate "what's new" from "what's fixed" from "what's deprecated." Use present tense: "Adds Stone 600 primitive. Fixes text.muted AA contrast." |
+
+**Example release note opening:**
+
+> `crosswake 0.2.0` — Token foundation and brand audit.
+>
+> Adds `brandbook/` with the design token system, WCAG contrast matrix, and 14-section brand audit. Pins Stone 600 as the corrected text.muted primitive. Flags generator palette drift (fix tracked as NORM-01). No breaking changes to route policy or bridge contracts.
+
+**Why:** Release notes are the primary trust signal for OSS adopters considering version upgrades. The existing voice guidance does not cover this surface.
+
+---
+
+### §9 Typography / §13 Layout — ADD (conference slide guidance)
+
+**What to add:**
+
+Conference slide guidance:
+- Use display.lg (56px) for slide titles. Space Grotesk SemiBold.
+- Use display.sm (28px) for slide body bullets. Atkinson Hyperlegible Next Regular.
+- Use a Current 950 dark background for technical/architecture slides; Foam 50 light background for code-heavy slides.
+- Palette subset for slides: Current 950, Foam 50, Wake 700, Brass 500. Avoid all others on slides.
+- Wake Mark or a route-seam diagram as the slide header graphic. Never use it as a watermark behind text.
+- Slides must pass WCAG AA at projector brightness levels — prefer Current 950 + Foam 50 or white text for maximum contrast.
+
+**Why:** Conference talks are the highest-leverage OSS adoption channel in the Elixir community. Without slide guidance, every presenter will improvise and produce inconsistent visual output.
+
+---
+
+### §13 Layout and UI System — ADD (mobile breakpoints)
+
+**What to add:**
+
+| Breakpoint | Value | Use |
+|------------|-------|-----|
+| `sm` | 640px | Single-column docs layout |
+| `md` | 768px | Two-column doc start |
+| `lg` | 1024px | Full sidebar visible |
+| `xl` | 1200px | Landing page full width |
+
+Mobile-first: design for 375px+ single-column as the base. Tap targets 44px minimum (§21 guidance applies). Navigation collapses below `md`.
+
+**Why:** §13 only specifies desktop content widths. Without mobile breakpoints, the landing page and docs will be hand-waved during implementation.
+
+---
+
+### Social Preview (§11 / §12 / new) — ADD
+
+**What to add:**
+
+OG card specification:
+- Size: 1200×630px
+- Background: Current 950 (`#09141A`)
+- Logo: Wake Mark (path SVG, centered or upper-left) in Foam 50
+- Wordmark: "Crosswake" in Space Grotesk SemiBold, Foam 50, 48px
+- One-liner: "Route policy for Phoenix apps that go mobile." Atkinson Hyperlegible Next Regular, Mist 200, 24px
+- Optional: Hex/version indicator in JetBrains Mono, Stone 500, 16px, lower-right corner
+- Path: `brandbook/social/og-card.svg` (Phase 106 deliverable)
+
+**Why:** This is a hard gap — every link share from day one will show no preview. The spec must exist before Phase 106 executes.
+
+---
+
+### §10 Logo Direction — TIGHTEN (wake mark geometry spec)
+
+**What to add:**
+
+Extend the Wake Mark geometry specification:
+- Define exact angle: 16–24 degrees from horizontal (use 20° as the canonical angle for the letterform cut brief).
+- Stroke weight: 2.5px at 24px icon size; scale proportionally.
+- Wake line count: exactly 3 — the crossing line plus two trailing wake lines.
+- Notch/break at crossing point: 1.5× stroke width gap.
+- Corner cap style: round (not butt or square).
+- Minimum pixel rendering: test at 16px before committing; simplify to 2 strokes at ≤16px.
+
+**Why:** The current direction is buildable but a logo tournament (Phase 103) needs geometry parameters tight enough to evaluate candidates consistently. The current spec has directional language but no measurements.
 
 ## §7 Design Token Specification
 
