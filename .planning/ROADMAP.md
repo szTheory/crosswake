@@ -53,7 +53,11 @@
   2. Each candidate is shown on foam/dark/white backgrounds, in monochrome, at 256px + 24px + 16px, with a browser-tab favicon mock, close-set horizontal and stacked lockups, per-candidate rationale + stated risk, and an equal-size lineup grid
   3. No candidate has a rectangular container background; no main lockup carries a subtitle; logotype gap is approximately one stroke-width on all typemark candidates
   4. User has made an explicit direction selection at the tournament checkpoint before Phase 104 begins (BLOCKING CHECKPOINT — Phase 104 does not start without selection confirmation)
-**Plans**: TBD
+**Plans**: 4 plans
+  - [ ] 103-01-PLAN.md — Wordmark toolchain (opentype.js, fetch-fonts, gen-wordmark) + hand-cut wordmark + check-candidates validator
+  - [ ] 103-02-PLAN.md — Logomark candidates A–D + horizontal & stacked lockups
+  - [ ] 103-03-PLAN.md — Integrated typemark candidates E–G
+  - [ ] 103-04-PLAN.md — Tournament gallery (index.html) + LOGO-04 blocking selection checkpoint
 **UI hint**: yes
 
 ### Phase 104: Logo Refinement & Production Suite
