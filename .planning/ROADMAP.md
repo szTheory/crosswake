@@ -85,7 +85,7 @@
 **Plans**: 3 plans
 Plans:
 - [x] 105-01-PLAN.md — Budget trim + page scaffold (brandbook.css/js + index.html shell + dark hero)
-- [ ] 105-02-PLAN.md — Fill sections 2-10 (logo/misuse, live color badges, typography, tokens, motifs, voice, UI specimens, asset index)
+- [x] 105-02-PLAN.md — Fill sections 2-10 (logo/misuse, live color badges, typography, tokens, motifs, voice, UI specimens, asset index)
 - [ ] 105-03-PLAN.md — BRAND-SPEC.md v1.0 (audited successor, all AUDIT verdicts applied) + phase self-check
 **UI hint**: yes
 
@@ -110,5 +110,5 @@ Plans:
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
-| 105. HTML Brand Book | v9.0 | 1/3 | In Progress|  |
+| 105. HTML Brand Book | v9.0 | 2/3 | In Progress|  |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
