@@ -527,31 +527,629 @@ Stone 600 is light-mode-only for text. On dark surfaces, `text.muted` uses `mist
 
 ## §8 Logo and Mark System
 
-_(pending)_
+**Verdict: TIGHTEN the direction; run Phase 103 tournament to produce the committed artifacts.**
+
+The Wake Mark concept is geometrically sound and conceptually honest. A diagonal route line crossing a seam and trailing clean wake lines is both specific to the product's meaning and distinctive from every adjacent brand (atom/React, flame/Phoenix, wire/Hotwire, electric bolt/Ionic). The direction does not require a REWORK; it requires execution. Phase 103 runs the tournament that produces the committed SVG files.
+
+### Logo direction verdict
+
+**TIGHTEN** — The brand book's Wake Mark specification (§10) is buildable. The geometry is described with enough precision to brief a tournament. The missing element is measured constraints and a mandatory letter-cut rider that converts generic starting material into a proprietary endpoint.
+
+### Phase 103 tournament brief
+
+The tournament must produce the following variants. No committed SVGs exist until Phase 103 completes and ratification occurs:
+
+| Variant | Spec |
+|---------|------|
+| **Horizontal lockup** | Wake Mark + "Crosswake" wordmark on one line. Minimum 128px wide. |
+| **Stacked lockup** | Wake Mark above wordmark. For social/README hero use. |
+| **Icon mark** | Wake Mark alone. 24px minimum for UI use. |
+| **Tiny/favicon mark** | Simplified 2-stroke wake, no small details. Legible at 16px. |
+
+Four logomark concepts and three integrated typemarks are the expected tournament field. Selection is a blocking user checkpoint in Phase 103.
+
+### Wake Mark geometry (mandatory tournament constraints)
+
+- **Crossing angle:** 20° from horizontal (canonical). Acceptable range: 16–24°.
+- **Wake line count:** Exactly 3 — the crossing line plus two trailing wake lines.
+- **Stroke weight:** 2.5px at 24px icon size. Scale proportionally.
+- **Notch/break at crossing point:** 1.5× stroke width gap where the seam boundary is crossed.
+- **Corner cap style:** Round (not butt or square).
+- **Minimum pixel rendering:** Test at 16px. Simplify to 2 strokes at ≤16px.
+- **SVG format:** Path-only. No `<text>` elements in committed SVGs. No rectangular clip-path backgrounds. No embedded fonts.
+
+### Wordmark specification
+
+Starting font: Space Grotesk SemiBold (600). The starting font is FROZEN (D-12 — never changes even if Space Grotesk market saturation worsens).
+
+**D-11 MANDATORY RIDER (non-optional, cascades to Phase 103):**
+
+> The committed wordmark must NOT be typesettable in unmodified Space Grotesk. Custom wake-angle cuts on the `w` and `k` letterforms are required. The `w` cut should echo the wake crossing angle (20°); the `k` arm/leg intersection should carry an angular notch at the same slope. Candidates that do not include these cuts are disqualified from the tournament.
+
+This rider is the single mechanism that converts a generic starting point into an irreducible Crosswake artifact. Phase 103 must execute it.
+
+### Logo colorways
+
+| Context | Mark | Wordmark | Background |
+|---------|------|----------|------------|
+| **Light primary** | Current 950 | Current 950 | Foam 50 or white |
+| **Dark primary** | Foam 50 | Foam 50 | Current 950 |
+| **Signal** | Brass 500 | Foam 50 | Current 950 |
+| **OSS badge** | Wake 700 | Current 950 | Foam 50 |
+| **One-color** | Current 950 or Foam 50 | Same | Any solid |
+
+Only the one-color lockup must be committed in Phase 103; full colorway assets follow in Phase 106.
+
+### Clearspace
+
+- Horizontal lockup: minimum clearspace = x-height of the wordmark on all four sides.
+- Icon mark: clearspace = one stroke width + one wake-gap on all sides.
+- Never place the mark inside a bounding shape (circle, square, blob, gradient card).
+
+### Minimum sizes
+
+| Variant | Minimum |
+|---------|---------|
+| Horizontal lockup | 128px wide |
+| Stacked lockup | 64px wide |
+| Icon mark | 24px (UI), 32px (README) |
+| Favicon | 16px (simplified 2-stroke) |
+
+### Logo do/don't
+
+**Do:** geometric strokes, one-color readability, diagonal crossing preserved, warm dark/light contrast, rounded stroke caps.
+
+**Do not:** add literal boats, anchors, ropes, waves, water splashes, neon glow, flame shape, generic app-gradient blob, or an X mark with no wake semantics. Do not place the wordmark over a photograph.
+
+### Misuse examples (Phase 105 to document in brand book HTML)
+
+1. Colorway swap to cyan — rejected; contradicts React Native avoidance.
+2. Mark at <12px without simplification — rejected; illegible.
+3. Wordmark set in unmodified Space Grotesk — rejected; D-11 violation.
+4. Mark inside a drop-shadow card or rounded blob — rejected; adds visual noise.
+5. Mark stretched or rotated off 20° — rejected; the crossing angle is the brand geometry.
 
 ## §9 Visual Examples and Screenshot Guidance
 
-_(pending)_
+**No decorative screenshots. Every specimen produced must answer a specific implementation or communication need.**
+
+### Specimens worth producing — ranked by value
+
+| Priority | Specimen | Purpose | Layout/Format | Target path | When to produce |
+|----------|----------|---------|----------------|-------------|-----------------|
+| P1 | **Route policy code + route card** | Primary product explanation; appears in README hero, landing, docs home | Light: code block left, route card right, 960×480px, Foam 50 bg | `brandbook/specimens/route-card-light.svg` | Phase 103 (before logo; logo not needed for this) |
+| P1 | **Runtime ladder diagram** | Shows the 7-tier capability ladder; the single most useful architecture diagram | Dark: vertical lanes labeled, wake lines as dividers, 480×640px, Current 950 bg | `brandbook/specimens/runtime-ladder-dark.svg` | Phase 103 |
+| P1 | **Wake Mark — icon mark** | Required for README, Hex.pm, social card, docs masthead | Single-color SVG, exported in Foam 50 and Current 950 variants | `brandbook/logo/wake-mark.svg` | Phase 103 (tournament output) |
+| P2 | **Dark hero mockup** | Full landing hero section showing headline + wake mark + CTA | 1200×630px, Current 950 bg, Space Grotesk headline | `brandbook/specimens/hero-dark.svg` | Phase 105 |
+| P2 | **OG/social preview card** | Every link share from day one | 1200×630px, Current 950 bg — see §6 spec | `brandbook/social/og-card.svg` | Phase 106 |
+| P2 | **Token color swatches** | Token system documentation for HTML brand book | Grid, 3 columns, light/dark variants side by side | `brandbook/specimens/token-swatches.svg` | Phase 105 |
+| P3 | **Capability matrix** | Docs component showing iOS/Android/permission/fallback/telemetry | Table component, Foam 50 bg, Wake 700 headers | `brandbook/specimens/capability-matrix.svg` | Phase 105 |
+| P3 | **Error/empty/success states** | Microcopy and UI pattern documentation | 3-panel strip, 320×200px each | `brandbook/specimens/ui-states.svg` | Phase 105 |
+| P3 | **Conference slide example** | Demonstrates type scale and palette at slide scale | 1920×1080px, Current 950 bg | `brandbook/specimens/slide-dark.svg` | Phase 105 (optional; defer if time-constrained) |
+
+### What not to produce
+
+- Generic device mockup lifestyle shots — the product is the architecture, not the phone.
+- Gradient or abstract marketing backgrounds without diagrams.
+- Screenshots of competitor UI (for contrast/comparison purposes) — describe in prose instead.
+- Any specimen that decorates without demonstrating a specific brand decision.
+
+### Screenshot format rules
+
+- SVG path-only or PNG ≤ 200KB per specimen.
+- Diagrams must use the committed palette primitives — no off-palette hex values.
+- All text in diagram SVGs must be converted to paths or replaced with foreign-object accessible text before commit (no embedded font binaries).
+- Specimens use the committed token CSS variable names in their documentation annotations, not raw hex.
 
 ## §10 Brand Voice and Microcopy
 
-_(pending)_
+**Verdict: TIGHTEN — the voice guidance is directionally strong but does not include ready-to-use copy blocks for every launch surface. This section supplies them.**
+
+### Voice verdict
+
+The seed brand book's voice principles (§6) are sound: write like a careful maintainer, prefer operational truth over hype, explain the boundary, use metaphor sparingly. The microcopy library (§15) is specific and correct in tone. Two gaps: release-note voice was unspecified (addressed in §6 upgrade); and no surface had final copy ready to paste. This section closes both.
+
+### Ready-to-use copy blocks
+
+---
+
+**One-liner (primary):**
+
+> Route policy for Phoenix apps that go mobile.
+
+**One-liner (expanded):**
+
+> Crosswake is a Phoenix-native mobile substrate for declaring which runtime owns each route: LiveView, offline island, native screen, or adapter.
+
+---
+
+**140-character description (GitHub repo description field):**
+
+> Phoenix route policy for mobile apps: LiveView, offline islands, native screens, and bridge contracts without hiding the runtime boundary.
+
+*(138 chars — within the 160-char Hex.pm field; trim to "Route policy for Phoenix apps that go mobile — LiveView, offline islands, native screens." for tighter contexts)*
+
+---
+
+**GitHub repo description (exact text, ≤ 300 chars):**
+
+> Phoenix-native mobile substrate. Declare which runtime owns each route — LiveView, offline island, native screen, or adapter — and keep the boundary explicit. Route policy, capability registry, bridge contracts, and offline islands for Phoenix teams.
+
+---
+
+**Hex.pm description (≤ 160 chars):**
+
+> Route policy for Phoenix apps that go mobile. Declare LiveView, offline, native, and adapter-backed routes explicitly. No write-once magic.
+
+*(140 chars)*
+
+---
+
+**README opening paragraph:**
+
+> Crosswake is a Phoenix-native mobile substrate for route-level runtime policy. It helps a Phoenix app decide which screens stay LiveView, which screens become offline islands, and which screens hand off to host-owned native views.
+>
+> Each route declares its runtime, capabilities, offline policy, and security posture. Crosswake turns those declarations into a runtime manifest, a native-shell contract, and a set of compatibility gates — so the system tells you exactly what runs where, what can fail, and what you own versus what Crosswake owns.
+>
+> ```elixir
+> route "/study/session",
+>   runtime: {:offline_island, "study.session"},
+>   content_pack: :daily_study,
+>   capabilities: [:audio, :haptics]
+> ```
+
+---
+
+**Landing hero headline (Option A — recommended):**
+
+> Phoenix routes, native where it matters.
+
+**Landing hero subheadline:**
+
+> Crosswake gives Phoenix apps a mobile route policy: LiveView for server-centric flows, offline islands for local work, and native screens for device-heavy moments. Every boundary is explicit.
+
+---
+
+**Landing hero headline (Option B — for A/B testing):**
+
+> Declare the crossing.
+
+**Option B subheadline:**
+
+> Crosswake lets Phoenix teams choose the right runtime per route — LiveView, offline island, native screen, or adapter — without blurring the boundary.
+
+---
+
+**Primary CTA:**
+
+> Read the guide
+
+**Secondary CTA:**
+
+> View examples
+
+**Install CTA:**
+
+> Install Crosswake
+
+**Docs entry CTA:**
+
+> Generate a route policy
+
+---
+
+**Three feature blurbs:**
+
+**1. Route-owned runtime policy**
+> Declare whether each screen is LiveView, offline, native, or adapter-backed — directly in the route definition. No runtime decision happens implicitly.
+
+**2. Typed native boundaries**
+> Version your bridge messages, capability requirements, native screens, and app-binary compatibility. The manifest tells the shell exactly what it needs before activation.
+
+**3. Local-first where it belongs**
+> Offline islands, content packs, and event journals give local-first loops explicit contracts. Drafts are drafts. Cached reads are cached reads. Nothing pretends to be a server action.
+
+---
+
+**Three "why this exists" bullets:**
+
+- Phoenix teams ship mobile apps, but not every screen belongs in the same runtime. Crosswake makes that decision explicit, per route, with contracts that fail visibly instead of silently.
+- The alternatives — React Native wrappers, LiveView-everywhere optimism, or raw WebView bridges — all hide the boundary. Crosswake declares it.
+- Mobile development still requires mobile work. Crosswake does not abstract that away; it structures it so you own what you built and can explain what can fail.
+
+---
+
+**Example error states (ready to paste into UI):**
+
+| State | Copy |
+|-------|------|
+| Runtime mismatch | "This route requires native runtime `0.3.0` or newer. Update the app or choose another route." |
+| Capability unavailable | "Camera capture is not available in this app runtime. The route policy requires `:camera`." |
+| Offline commit blocked | "This action needs the server before it can be committed. The draft was saved locally." |
+| Sensitive cache blocked | "This route is marked sensitive and will not be cached." |
+| Bridge payload rejected | "Crosswake rejected this bridge message because it does not match the registered contract." |
+
+**Example empty states:**
+
+| State | Copy |
+|-------|------|
+| No offline content | "Nothing has been packed for offline use yet. Sync this route before going offline." |
+| No native screen registered | "The route policy points to a native screen, but the host app has not registered it." |
+| No capabilities declared | "This route does not request native capabilities." |
+
+**Example success states:**
+
+| State | Copy |
+|-------|------|
+| Sync confirmed | "Server confirmed. The local draft was committed successfully." |
+| Route activated | "Route activated. Native runtime `0.3.1` detected and verified." |
+| Pack ready | "Content pack `daily_study` is ready for offline use." |
+
+---
+
+**Example release announcement:**
+
+> **crosswake 0.2.0** — Token foundation and brand audit.
+>
+> Adds `brandbook/` with the design token system (`crosswake.tokens.json`, `tokens.css`), WCAG contrast matrix, and 14-section brand audit. Introduces Stone 600 (`#756D63`) as the corrected `text.muted` primitive — Stone 500 failed AA normal text at 4.09:1 on Foam 50; Stone 600 passes at 4.53:1. Flags generator palette drift between `mix crosswake.gen.offline_ui` and the canonical brand palette (tracked as NORM-01, future milestone). No breaking changes to route policy, bridge contracts, or offline island APIs.
+
+---
+
+### Voice rules summary
+
+| Surface | Tone | Hard rule |
+|---------|------|-----------|
+| Landing hero | Confident, architectural | No unbacked "powerful/seamless/next-generation" |
+| README | Direct, example-first | Show code before making claims |
+| Docs | Precise, caveat-near-code | Failure modes before advanced usage |
+| Error messages | Calm, specific, actionable | Name what happened, what to do next |
+| Empty states | Honest, non-apologetic | No "coming soon" or "nothing here yet" |
+| Success states | Brief, specific | Confirm the concrete action, not the vibe |
+| Release notes | Task-first, changelog-first | Lead with what changed; state what broke |
+| CTAs | Verb-first | "Read the guide" not "Get started instantly" |
+| Package metadata | Factual, ≤ 160 chars | No hype words; every claim is verifiable |
+
+### Suite brand note
+
+The szTheory suite (Sigra, Parapet, Chimeway, Threadline, Rindle, Rulestead) is Crosswake's natural companion ecosystem. Voice guidance: reference companion integrations as specific, opt-in seams — not as "works with everything." When mentioning companions, name the specific value: "Threadline adds audit trails for mobile-originated actions" is the right frame. Do not bundle them into a "powerful ecosystem" claim.
 
 ## §11 Landing Page and Docs Blueprint
 
-_(pending)_
+**Verdict: The brand book's §14 and §16 provide the right IA. This section tightens it into an actionable page architecture with explicit copy targets per section.**
+
+### Landing page architecture
+
+**Page 1: Landing (`/`)**
+
+| Section | Content | Visual treatment | CTA |
+|---------|---------|-----------------|-----|
+| **Hero** | Headline: "Phoenix routes, native where it matters." Subheadline: route policy in one sentence. | Dark Current 950 bg, Wake Mark, sounding lines at <12% opacity, Space Grotesk 56px headline | "Read the guide" (Wake 700) + "View examples" (secondary) |
+| **The problem** | "Mobile screens do not all want the same runtime." 4 examples: dashboard stays LiveView, study loop goes offline island, camera capture goes native, billing goes adapter. | Light Foam 50, horizontal runtime lane strip diagram | No CTA — inform only |
+| **The solution** | Route policy code block + visual route card beside it. Copy from §10 feature blurbs. | Light surface, Current 900 code block | "Generate a route policy" |
+| **Runtime ladder** | 7-tier ladder: LiveView → LiveView+shell → bridge → cached → offline island → native screen → adapter. | Dark Current 950 strip, runtime-color ladder diagram | No CTA |
+| **Capabilities and safety** | Capability registry, permission stories, cache-never, sensitive routes. Capability matrix specimen. | Light Foam 100, capability badge row | No CTA |
+| **Examples** | 4 example apps: SaaS portal, offline study loop, field inspection, native audio. | Light surface, route card per example | "View examples" |
+| **OSS trust** | GitHub link, Hex.pm link, security policy link, maintainer note. Non-commercial tone. | Foam 50, small, quiet typography | "View on GitHub" |
+| **Install block** | `mix deps.get crosswake` + first route policy snippet | Current 900 code block, Foam 50 bg | "Read the full guide" |
+
+**Critical anti-pattern:** No hero device mockup showing a generic mobile app screen. The hero visual is the Wake Mark and/or a route-seam diagram. The product is the architecture; the diagram is the product.
+
+---
+
+### Docs architecture
+
+**Top-level IA (matches brand book §14):**
+
+```
+docs/
+├── Start
+│   ├── What Crosswake is          ← one-sentence definition; what it is NOT; first route policy
+│   ├── Install                    ← mix.exs + setup
+│   ├── First route policy         ← 5-minute walkthrough
+│   └── First native shell         ← iOS/Android bootstrap entry point
+├── Concepts
+│   ├── Runtime ownership          ← the capability ladder explained
+│   ├── Route policy               ← DSL reference
+│   ├── Capabilities               ← registry, allowlists, permission stories
+│   ├── Bridge contracts           ← semantic messages, versioning, fail-closed behavior
+│   ├── Offline islands            ← when to use, what you own, what reconciliation means
+│   ├── Content packs
+│   ├── Sync journals
+│   └── Runtime compatibility      ← manifest, gates, version negotiation
+├── Guides
+│   ├── SaaS mobile shell
+│   ├── Offline study loop
+│   ├── Field inspection flow
+│   ├── Native audio player
+│   └── Billing/paywall adapter
+├── Reference
+│   ├── RoutePolicy DSL
+│   ├── Capabilities API
+│   ├── NativeScreens
+│   ├── Manifest schema
+│   └── Mix tasks
+├── Adapters
+│   ├── iOS
+│   ├── Android
+│   ├── Billing
+│   └── Media
+└── Security
+    ├── Origin policy
+    ├── Route allowlists
+    ├── Capability allowlists
+    ├── Sensitive routes
+    └── Cache policy
+```
+
+---
+
+### Docs page template (every concept page)
+
+1. **One-sentence definition** — what is this, in plain language.
+2. **When to use it** — concrete trigger condition.
+3. **When not to use it** — hard rule, not a hedge.
+4. **Minimal code example** — paste-able, under 20 lines.
+5. **Failure modes** — what breaks, how it breaks, what the error says.
+6. **Security/caching notes** — if relevant.
+7. **Testing fixtures** — how to test this in CI.
+8. **Related concepts** — links to 2–4 related pages.
+
+Failure modes appear before advanced customization on every page. This is a brand rule, not just a docs preference — it reflects the maintainer's OSS DNA.
+
+---
+
+### Dark/light split
+
+Landing page: dark hero (Current 950) → alternating light/dark section strips. Docs pages: always light (Foam 50 base), dark code blocks. No pure-white (#FFFFFF) backgrounds — use Foam 50 (`#F7F1E6`) throughout for warmth and brand cohesion.
+
+### Typography on docs pages
+
+- Page title: `display.sm` (28px), Space Grotesk SemiBold.
+- Section heading: `text.xl` (20px), Space Grotesk Medium.
+- Body: `text.md` (16px), Atkinson Hyperlegible Next Regular.
+- Code: `text.sm` (14px), JetBrains Mono Regular.
+- Warning boxes: Atkinson Hyperlegible Next, Brass 700 on Foam 100 border-left strip.
+
+### Docs warning box copy rule
+
+Warning boxes are for boundary mistakes, not tips. The brand book's example is the model:
+
+> **Boundary warning:** `offline: :read_write` does not mean the server accepted the action. Use a sync journal and show pending state until the server reconciles the event.
+
+"Tip" and "Note" callout boxes that contain non-critical information should be plain inline paragraphs — not styled callout boxes. Callout boxes are reserved for boundary warnings and security notes.
 
 ## §12 Repo-Ready Artifact Plan
 
-_(pending)_
+**Verdict: The brandbook/ directory structure is established in Phase 102. This section defines committed vs generated vs not-committed status for every planned artifact so future phases do not guess.**
+
+### Directory structure
+
+```
+brandbook/
+├── AUDIT.md                        ← committed; source of truth for verdicts
+├── tokens/
+│   ├── crosswake.tokens.json       ← committed; W3C DTCG source of truth
+│   └── tokens.css                  ← committed (GENERATED — do not edit directly)
+├── tools/
+│   ├── contrast.mjs                ← committed; zero-dep Node script
+│   ├── compile-tokens.js           ← committed; zero-dep Node script (<80 LOC)
+│   └── node_modules/               ← NOT committed (.gitignore)
+├── logo/                           ← Phase 103 output
+│   ├── wake-mark.svg               ← committed; path-only, tournament-selected
+│   ├── lockup-horizontal.svg       ← committed; path-only
+│   ├── lockup-stacked.svg          ← committed; path-only
+│   └── favicon.svg                 ← committed; 2-stroke simplified version
+├── specimens/                      ← Phase 103/105 output
+│   ├── route-card-light.svg        ← committed; P1 specimen
+│   ├── runtime-ladder-dark.svg     ← committed; P1 specimen
+│   └── ...                         ← further specimens per §9 priority table
+├── social/
+│   └── og-card.svg                 ← Phase 106; committed path-only SVG
+├── index.html                      ← Phase 105; standalone brand book (no build step)
+└── BRAND-SPEC.md                   ← Phase 105; v1.0 successor to prompts/ draft
+```
+
+### Committed vs generated vs not-committed
+
+| Artifact | Status | Rule |
+|----------|--------|------|
+| `brandbook/AUDIT.md` | **Committed** | Source of truth; never auto-generated |
+| `brandbook/tokens/crosswake.tokens.json` | **Committed** | Source of truth; edit this, never tokens.css |
+| `brandbook/tokens/tokens.css` | **Committed (generated)** | Header: `/* GENERATED from crosswake.tokens.json — do not edit */`. Regenerate by running `node brandbook/tools/compile-tokens.js`. |
+| `brandbook/tools/contrast.mjs` | **Committed** | Reproducibility dependency; zero deps |
+| `brandbook/tools/compile-tokens.js` | **Committed** | Build tooling; zero npm deps |
+| `brandbook/tools/node_modules/` | **NOT committed** | `.gitignore` entry: `/brandbook/tools/node_modules/` |
+| `brandbook/tools/fonts/` | **NOT committed** | `.gitignore` entry: `/brandbook/tools/fonts/` |
+| `brandbook/logo/*.svg` | **Committed** | Phase 103 output; path-only, no `<text>` |
+| `brandbook/specimens/*.svg` | **Committed** | Phase 103/105 output; path-only |
+| `brandbook/social/og-card.svg` | **Committed** | Phase 106 output |
+| `brandbook/index.html` | **Committed** | Phase 105 output; single-file, no build step |
+| `brandbook/BRAND-SPEC.md` | **Committed** | Phase 105 output |
+
+### Naming conventions
+
+- All files: lowercase with hyphens. No spaces. No camelCase.
+- SVG files: descriptive noun-phrase names (`route-card-light.svg`, not `spec1.svg`).
+- Token JSON keys: lowercase dot-separated (`primitive.current.950`, `text.muted`).
+- CSS variables: `--cw-{tier}-{role}-{variant}` pattern.
+
+### README links (when Phase 103/105 artifacts exist)
+
+- `brandbook/AUDIT.md` — link from the repo's top-level `README.md` under a "Brand & Design" section (Phase 106).
+- `brandbook/tokens/tokens.css` — link as the token reference for adopters building Phoenix UI that aligns with Crosswake's visual system.
+- `brandbook/logo/` — link to the logo lockup variants with usage guidance.
+
+### CI checks
+
+- **Advisory:** `node brandbook/tools/contrast.mjs` — reproduces the WCAG matrix in Appendix A. Output is advisory (print, do not fail); failure would indicate a palette change that must go through AUDT-04 ratification before merging.
+- **No automated brandbook CI lane required this milestone.** The token compile step is a pre-commit developer responsibility: `node brandbook/tools/compile-tokens.js` then commit both JSON and CSS.
+
+### Package exclusion
+
+`mix.exs` `:files` allowlist is strict. `brandbook/` is auto-excluded: none of its contents are in the allowlist. No action needed — this was verified in Phase 102 research. The `<1 MB committed` budget for `brandbook/` is the size constraint; enforce by checking before each Phase 103/105/106 commit: `du -sh brandbook/`.
+
+### Suite brand note
+
+`brandbook/AUDIT.md` and `brandbook/tokens/crosswake.tokens.json` are Crosswake-specific artifacts. The szTheory suite's shared design language (typography, spacing, icon geometry, badge styles) will be derived from Crosswake's token system when per-library audits run for Sigra, Parapet, Chimeway, etc. The shared layer does not exist as a committed artifact yet. Crosswake's token naming (`--cw-` prefix) is library-scoped to prevent collision when companion libraries publish their own tokens.
 
 ## §13 Prioritized Action Plan
 
-_(pending)_
+Synthesized from §3–§6 verdicts. Every action is value-tied. No churn for churn's sake.
+
+---
+
+### Do now (blocking; Phase 103 cannot start without these)
+
+**1. Ship tokens.json + tokens.css + Stone 600** *(Phase 102 Plans 02–03 — complete)*
+Stone 500 on Foam 50 fails AA normal text (4.09:1). Stone 600 (`#756D63`) is the math-forced remediation (4.53:1 PASS). The token compile step is a developer pre-commit responsibility. Both files are committed as a unit; `tokens.css` carries the `/* GENERATED */` header.
+
+**2. Deliver the completed AUDIT.md** *(This plan — Phase 102 Plan 04)*
+The full 14-section audit is the specification document that everything downstream builds against. §7 is the token spec. §8 is the tournament brief. §10 is the copy library. No Phase 103 work begins without a complete audit.
+
+**3. Ratify audit-driven font/color changes** *(AUDT-04 checkpoint — this plan)*
+D-12 requires explicit user ratification before Phase 103 consumes the verdicts. Typography is frozen (Space Grotesk + Atkinson Hyperlegible Next + JetBrains Mono — no changes). Stone 600 addition is math-forced (unilateral — listed for transparency). The D-11 mandatory wake-cut rider on the wordmark and the §8 logo direction freeze require the AUDT-04 blocking gate. Phase 103 is blocked until this checkpoint resolves.
+
+---
+
+### Do next (Phase 103 — after AUDT-04 ratification)
+
+**4. Run the Phase 103 logo tournament**
+Four logomark concepts + three integrated typemarks. Tournament must produce: wake-mark.svg, lockup-horizontal.svg, lockup-stacked.svg, favicon.svg — all path-only, no `<text>`. D-11 wake-cut rider is mandatory: candidates without custom `w`/`k` letterform cuts are disqualified. Tournament ends with a blocking user-selection checkpoint in Phase 103.
+
+**5. Produce P1 specimens**
+Route card light (`brandbook/specimens/route-card-light.svg`) and runtime ladder dark (`brandbook/specimens/runtime-ladder-dark.svg`) are the two highest-value explanatory artifacts. Both can be produced before logo ratification. Do not defer these to Phase 105 — they are needed for the README and landing page.
+
+**6. Specify the social preview card (§6 upgrade)**
+The OG card spec exists in §6. The committed file is a Phase 106 deliverable — but the spec must be agreed before Phase 105 executes the HTML brand book. Confirm the spec is approved at AUDT-04 ratification.
+
+---
+
+### Defer (value-positive; not blocking in this milestone)
+
+**7. NORM-01: Normalize generator templates onto tokens.css**
+`mix crosswake.gen.offline_ui` emits a Tailwind config snippet with wrong color values (blue/amber instead of the canonical teal/brass palette). This is an AUDT-03 flag, not a Phase 102 fix. Fix tracked as NORM-01 in a future milestone. The generator still works; adopters using the emitted snippet will get wrong colors until this is resolved.
+
+**8. ExDoc sidebar active/hover state tokens**
+The ExDoc theme sidebar has active/hover states that are not yet mapped to specific semantic tokens. This is a Phase 105 concern when the HTML brand book and ExDoc theme are being built. The token system has the right primitives; mapping to ExDoc CSS classes is straightforward but not needed before Phase 105.
+
+**9. Conference slide template**
+High-leverage for ElixirConf/Code BEAM adoption but not blocking Phase 103 or Phase 105. Phase 105 HTML brand book should include a slide section if the milestone permits; otherwise defer to v10.0.
+
+**10. Mobile landing page breakpoints**
+§6 upgrade specifies the breakpoints (`sm`=640px, `md`=768px, `lg`=1024px, `xl`=1200px). These do not require a committed artifact until the actual landing page is built in a future milestone.
+
+---
+
+### Do not do
+
+**11. Full palette REWORK to shift emotional character**
+The coastal-muted palette (Current/Foam/Wake/Brass/Rust families) is frozen. A color-family replacement would cascade into all specimens, Phase 103 logo candidates, and generated CSS — substantial cost with no material brand gain. The palette avoids every adjacent competitor pitfall already. If AUDT-04 ratification produces an amendment request, the audit author will evaluate it against this cost ceiling.
+
+**12. Font swap from Space Grotesk**
+The display font is frozen (D-12). Market saturation concerns are acknowledged and mitigated by the mandatory D-11 letter cuts. Swapping fonts would invalidate the letterform-cut brief, all Phase 103 tournament work, and every specimen that uses the wordmark. The only exit from Space Grotesk is if the custom letter cuts prove impossible in Phase 103 — in which case the Phase 103 executor surfaces a checkpoint, not a unilateral swap.
+
+**13. Component-level design tokens**
+The token system deliberately stops at the semantic tier (27 tokens, hard cap 30). Adding component-level tokens (button.bg, card.border, etc.) creates naming churn and fragments the public contract without measurable benefit at the library boundary. This is an explicit anti-feature per the D-06 decision.
+
+**14. Animated hero or motion design this milestone**
+Motion guidance exists in the brand book (§18). Motion assets are not a Phase 102–106 deliverable. Do not invest in animated hero sequences or wave-line animations until the static identity is complete and verified.
+
+**15. Mascot or character**
+The brand book's §17 explicitly warns against "overly cute mascots." Crosswake's visual identity is architectural, not character-driven. There is no brief for a mascot. Do not introduce one.
 
 ## §14 Final Quality Gate
 
-_(pending)_
+This checklist answers the brief's gate questions. Every item must be satisfied before this phase closes and Phase 103 begins.
+
+### Designer can build from this?
+
+- [x] Palette is specified to hex precision with WCAG contrast ratios printed next to pairings.
+- [x] Typography stack is named with exact weights, fallback stacks, and type scale values.
+- [x] Token system (§7) provides a structured, two-tier DTCG JSON source plus generated CSS — no guessing the variable names.
+- [x] Logo geometry is specified with measured constraints (angle, stroke weight, line count, notch, cap style, minimum sizes).
+- [x] Dark-mode surface hierarchy is defined (§6 color upgrade table).
+- [x] Component and specimen types are enumerated (§9) with paths and formats.
+
+### Engineer can implement from this?
+
+- [x] `brandbook/tokens/tokens.css` is a committed file with `--cw-*` variables ready to import.
+- [x] Dark-mode theming model is explicit: `:root` light, `@media` system dark, `[data-theme="dark"]` explicit toggle.
+- [x] State handling (hover/focus/active/disabled/selected/status) is fully covered without requiring new tokens (§7 12-state mapping).
+- [x] Token JSON is W3C DTCG 2025.10 — engineers can run the compile script to regenerate CSS from source.
+- [x] Copy blocks (§10) are ready to paste — no engineer should have to write marketing copy at implementation time.
+
+### Maintainer can keep consistent?
+
+- [x] Single source of truth: edit JSON → run script → commit both. The `/* GENERATED */` header guards against direct CSS edits.
+- [x] Size budget constraint: `<1 MB committed` for all of `brandbook/` — checkable with `du -sh brandbook/`.
+- [x] WCAG matrix is reproducible: `node brandbook/tools/contrast.mjs` — any future palette change can be checked immediately.
+- [x] D-12 frozen items are documented: display font, palette character, wake-seam concept, diagonal crossing-mark direction. Maintainers know what cannot change without ratification.
+- [x] Deferred items (NORM-01, AUDT-03 generator drift) are tracked in the planning state and not hidden.
+
+### Contributor can understand?
+
+- [x] AUDIT.md §1 executive judgment is decisive: a contributor can read the first two paragraphs and understand what is strong, what must not change, and what is in progress.
+- [x] Every REWORK verdict (none issued in §6 — only TIGHTEN/ADD) carries a stated cost. Hypothetical REWORK cost is explicitly documented in §6.
+- [x] The D-11 mandatory rider is stated plainly and repeated in §7, §8, and the ratification checkpoint. A contributor cannot miss it.
+- [x] The AUDT-03 generator drift flag is in §5 with a severity label and a cost statement. It is not hidden.
+
+### Marketing without cheese?
+
+- [x] One-liner uses "route policy" and "Phoenix apps that go mobile" — accurate, specific, no hype words.
+- [x] CTA copy is verb-first and action-specific ("Read the guide," "Generate a route policy").
+- [x] Feature blurbs (§10) are all grounded in a concrete mechanism: "directly in the route definition," "the manifest tells the shell," "explicit contracts."
+- [x] "Why this exists" bullets name what the alternatives hide and why that matters — not a generic better/faster/easier claim.
+- [x] No occurrence of: powerful, seamless, next-generation, magical, game-changing, one codebase, write once.
+
+### Survives dark mode?
+
+- [x] Semantic tier flips in dark mode; primitives never change.
+- [x] `text.muted` on dark → Mist 200 (12.25:1 on Current 950 PASS). Stone 600 is excluded from dark-surface text use.
+- [x] Dark-mode surface hierarchy is defined: surface.default → Current 950, surface.raised → Current 900, surface.inset → Current 800, surface.inverse → Foam 50.
+- [x] Code block dark treatment is complete and specific (background, text, comments, keywords, strings, errors).
+- [x] Focus ring is 2px, visible in both modes (`--cw-action-focus-ring`).
+
+### Survives small sizes?
+
+- [x] Logo has a dedicated 2-stroke favicon variant for ≤16px.
+- [x] Icon mark minimum size is 24px; full lockup minimum is 128px wide.
+- [x] D-11 letter-cut rider is stated: simplified marks must still read as Crosswake.
+- [x] Token scale bottoms out at `text.xs` (12px/16px) for badges/metadata — nothing goes below 12px.
+- [x] Wake Mark geometry at 16px: simplify to 2 strokes (constraint documented in §8).
+
+### Survives docs surfaces?
+
+- [x] Docs page template is defined (§11): definition → when to use → when not to → code → failure modes → security → testing → related.
+- [x] Warning box style is specified and restricted to boundary mistakes only (not tips).
+- [x] Typography on docs pages is specified: page title, section heading, body, code, warning box.
+- [x] Docs IA (§11) covers Start → Concepts → Guides → Reference → Adapters → Security.
+- [x] Hex.pm description is ready to paste (§10, 140 chars, no hype words).
+
+### Survives social/sharing?
+
+- [x] OG card spec is defined in §6: 1200×630px, Current 950 background, Wake Mark in Foam 50, wordmark, one-liner, version badge.
+- [x] GitHub repo description is ready (§10, ≤ 300 chars, accurate and specific).
+- [x] Social-safe colorways: Current 950 dark bg with Foam 50 text passes 16.58:1 — every link share will use a legible preview.
+
+### Specific to this library (not generic devtools)?
+
+- [x] `runtime.*` semantic tokens are a Crosswake-unique tier — no other devtools design system has a runtime-ownership semantic layer.
+- [x] Wake-seam motif encodes the product's core concept (route crossing a runtime boundary) into the visual system.
+- [x] "Declare the crossing. Keep the boundary honest." is a product-specific promise, not a general devtools tagline.
+- [x] Copy blocks reference concrete product mechanisms: route policy, offline island, native screen, capability registry, bridge contract. None are generic.
+
+### Avoids thrash?
+
+- [x] No full-palette REWORK issued (stated explicitly in §6 and §13).
+- [x] Display font frozen (D-12).
+- [x] Stone 600 addition is math-forced and additive — no existing token changes, only a new primitive.
+- [x] Semantic role corrections (Stone 500 narrowed, text.muted corrected) are token-level changes only; no visual regression for correctly-used tokens.
+- [x] Component tokens explicitly excluded (anti-feature per D-06 decision) — future contributors cannot accidentally introduce them without a plan-level decision.
+- [x] Phase 103 is strictly scoped to logo tournament + P1 specimens; it cannot consume the token system or copy blocks until AUDT-04 ratification completes.
+
+---
+
+**Gate result: PASS.** The brand system is complete enough to brief Phase 103. Every non-logo surface has a buildable specification. Every verdict is decisive. Every deferred item is tracked and bounded. AUDT-04 ratification is the final gate before Phase 103 begins.
 
 ---
 
