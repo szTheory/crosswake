@@ -1,6 +1,5 @@
 {
   "name": "crosswake-brandbook-tools",
-  "type": "module",
   "private": true,
   "description": "Build-time tools for the Crosswake brand system (audit tokens, wordmark generation)",
   "dependencies": {
