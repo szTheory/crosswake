@@ -11,14 +11,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **AUDT-01**: Maintainer can read a full 14-section pressure-test audit of `prompts/crosswake-brand-book.md` in `brandbook/AUDIT.md`, with KEEP/TIGHTEN/REWORK/ADD/REMOVE verdicts and a stated cost on every REWORK
 - [x] **AUDT-02**: A scripted WCAG contrast matrix classifies every brand color pairing against AA text (4.5:1) and non-text UI (3:1) thresholds; palette values adjusted only where the math demands
-- [ ] **AUDT-03**: Audit explicitly flags the v8.0 surface drift (generator-template blue/amber Tailwind scale vs app.css teal/brass palette) with a verdict — code normalization deferred to a future milestone
+- [x] **AUDT-03**: Audit explicitly flags the v8.0 surface drift (generator-template blue/amber Tailwind scale vs app.css teal/brass palette) with a verdict — code normalization deferred to a future milestone
 - [x] **AUDT-04**: User ratifies any audit-driven font/color changes before downstream phases consume them
 
 ### Design Tokens (TOKN)
 
-- [ ] **TOKN-01**: `brandbook/tokens/crosswake.tokens.json` exists in W3C DTCG 2025.10 format with three tiers (primitive → semantic → state), including Crosswake runtime-semantic tokens (liveview / offline island / native / sensitive / bridge)
-- [ ] **TOKN-02**: `brandbook/tokens/tokens.css` custom properties align with the JSON, contrast-annotated per pairing
-- [ ] **TOKN-03**: State tokens cover default/hover/active/focus/disabled/selected/success/warning/error/info/subtle/muted
+- [x] **TOKN-01**: `brandbook/tokens/crosswake.tokens.json` exists in W3C DTCG 2025.10 format with three tiers (primitive → semantic → state), including Crosswake runtime-semantic tokens (liveview / offline island / native / sensitive / bridge)
+- [x] **TOKN-02**: `brandbook/tokens/tokens.css` custom properties align with the JSON, contrast-annotated per pairing
+- [x] **TOKN-03**: State tokens cover default/hover/active/focus/disabled/selected/success/warning/error/info/subtle/muted
 
 ### Logo System (LOGO)
 
@@ -73,11 +73,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | AUDT-01 | Phase 102 | Complete |
 | AUDT-02 | Phase 102 | Complete |
-| AUDT-03 | Phase 102 | Pending |
+| AUDT-03 | Phase 102 | Complete |
 | AUDT-04 | Phase 102 | Complete |
-| TOKN-01 | Phase 102 | Pending |
-| TOKN-02 | Phase 102 | Pending |
-| TOKN-03 | Phase 102 | Pending |
+| TOKN-01 | Phase 102 | Complete |
+| TOKN-02 | Phase 102 | Complete |
+| TOKN-03 | Phase 102 | Complete |
 | LOGO-01 | Phase 103 | Pending |
 | LOGO-02 | Phase 103 | Pending |
 | LOGO-03 | Phase 103 | Pending |
