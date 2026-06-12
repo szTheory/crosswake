@@ -10,7 +10,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Brand Audit (AUDT)
 
 - [ ] **AUDT-01**: Maintainer can read a full 14-section pressure-test audit of `prompts/crosswake-brand-book.md` in `brandbook/AUDIT.md`, with KEEP/TIGHTEN/REWORK/ADD/REMOVE verdicts and a stated cost on every REWORK
-- [ ] **AUDT-02**: A scripted WCAG contrast matrix classifies every brand color pairing against AA text (4.5:1) and non-text UI (3:1) thresholds; palette values adjusted only where the math demands
+- [x] **AUDT-02**: A scripted WCAG contrast matrix classifies every brand color pairing against AA text (4.5:1) and non-text UI (3:1) thresholds; palette values adjusted only where the math demands
 - [ ] **AUDT-03**: Audit explicitly flags the v8.0 surface drift (generator-template blue/amber Tailwind scale vs app.css teal/brass palette) with a verdict — code normalization deferred to a future milestone
 - [ ] **AUDT-04**: User ratifies any audit-driven font/color changes before downstream phases consume them
 
@@ -72,7 +72,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | AUDT-01 | Phase 102 | Pending |
-| AUDT-02 | Phase 102 | Pending |
+| AUDT-02 | Phase 102 | Complete |
 | AUDT-03 | Phase 102 | Pending |
 | AUDT-04 | Phase 102 | Pending |
 | TOKN-01 | Phase 102 | Pending |
