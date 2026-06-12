@@ -75,12 +75,14 @@ defmodule Crosswake.MixProject do
         "Documentation" => "https://hexdocs.pm/crosswake",
         "GitHub" => @source_url
       },
-      files: ~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides)
+      files: ~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides),
+      exclude_patterns: ["brandbook"]
     ]
   end
 
   defp docs do
     [
+      logo: "brandbook/logo/crosswake-mark.svg",
       main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
