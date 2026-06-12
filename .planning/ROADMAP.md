@@ -100,7 +100,7 @@ Plans:
   4. `brandbook/` total committed size is verified < 1 MB; `.gitignore` additions cover `brandbook/tools/node_modules/` and `brandbook/tools/fonts/`; advisory CI lane (`brandbook-verify.yml`) passes checks for size budget, SVG validity, and token JSON validity
 **Plans**: 2 plans
 Plans:
-- [ ] 106-01-PLAN.md — Collateral assets: README hero SVGs (light/dark), social card SVG+PNG, favicon rasters (COLL-01)
+- [x] 106-01-PLAN.md — Collateral assets: README hero SVGs (light/dark), social card SVG+PNG, favicon rasters (COLL-01)
 - [ ] 106-02-PLAN.md — Integration + CI + closeout: README picture header, ExDoc logo + hex exclude, advisory brandbook-verify lane, size gate (COLL-02/03/04)
 
 ## Progress
@@ -114,4 +114,4 @@ Plans:
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete   | 2026-06-12 |
-| 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
+| 106. Collateral, Integration & Closeout | v9.0 | 1/2 | In Progress|  |
