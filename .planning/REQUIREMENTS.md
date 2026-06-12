@@ -39,9 +39,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Collateral & Integration (COLL)
 
 - [x] **COLL-01**: Collateral ships: `readme-header.svg`, `social-card.svg` + `social-card.png` (1200×630, <300 KB), `favicon-32.png`, `apple-touch-icon.png` (180px)
-- [ ] **COLL-02**: README header wired via absolute raw.githubusercontent URL with GitHub `<picture>` dark-mode handling (works on both GitHub and hexdocs)
-- [ ] **COLL-03**: ExDoc `logo:` configured in `mix.exs`; hex tarball verified to exclude `brandbook/` (+ `:exclude_patterns` belt-and-suspenders)
-- [ ] **COLL-04**: `brandbook/` committed size verified < 1 MB; `.gitignore` additions in place; advisory CI lane checks size budget, SVG validity, and token JSON validity
+- [x] **COLL-02**: README header wired via absolute raw.githubusercontent URL with GitHub `<picture>` dark-mode handling (works on both GitHub and hexdocs)
+- [x] **COLL-03**: ExDoc `logo:` configured in `mix.exs`; hex tarball verified to exclude `brandbook/` (+ `:exclude_patterns` belt-and-suspenders)
+- [x] **COLL-04**: `brandbook/` committed size verified < 1 MB; `.gitignore` additions in place; advisory CI lane checks size budget, SVG validity, and token JSON validity
 
 ## v2 Requirements
 
@@ -89,9 +89,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BOOK-02 | Phase 105 | Complete |
 | BOOK-03 | Phase 105 | Complete |
 | COLL-01 | Phase 106 | Complete |
-| COLL-02 | Phase 106 | Pending |
-| COLL-03 | Phase 106 | Pending |
-| COLL-04 | Phase 106 | Pending |
+| COLL-02 | Phase 106 | Complete |
+| COLL-03 | Phase 106 | Complete |
+| COLL-04 | Phase 106 | Complete |
 
 **Coverage:**
 - v1 requirements: 20 total

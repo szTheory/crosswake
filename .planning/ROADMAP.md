@@ -24,7 +24,7 @@
 - [x] **Phase 103: Logo Tournament** - Seven-candidate HTML gallery with mandatory user direction-pick checkpoint (completed 2026-06-12)
 - [x] **Phase 104: Logo Refinement & Production Suite** - Three micro-variants, user sign-off, full path-only production SVG suite (completed 2026-06-12)
 - [x] **Phase 105: HTML Brand Book** - Standalone long-scroll index.html + BRAND-SPEC.md v1.0 (completed 2026-06-12)
-- [ ] **Phase 106: Collateral, Integration & Closeout** - Collateral assets, README/ExDoc wiring, hex exclusion, advisory CI lane
+- [x] **Phase 106: Collateral, Integration & Closeout** - Collateral assets, README/ExDoc wiring, hex exclusion, advisory CI lane (completed 2026-06-12)
 
 ## Phase Details
 
@@ -101,7 +101,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 106-01-PLAN.md — Collateral assets: README hero SVGs (light/dark), social card SVG+PNG, favicon rasters (COLL-01)
-- [ ] 106-02-PLAN.md — Integration + CI + closeout: README picture header, ExDoc logo + hex exclude, advisory brandbook-verify lane, size gate (COLL-02/03/04)
+- [x] 106-02-PLAN.md — Integration + CI + closeout: README picture header, ExDoc logo + hex exclude, advisory brandbook-verify lane, size gate (COLL-02/03/04)
 
 ## Progress
 
@@ -114,4 +114,4 @@ Plans:
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete   | 2026-06-12 |
-| 106. Collateral, Integration & Closeout | v9.0 | 1/2 | In Progress|  |
+| 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete   | 2026-06-12 |
