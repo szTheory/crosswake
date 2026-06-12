@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Candidate C: Crossing Lanes -->
+<!-- Provenance: hand-authored on 64-unit grid, 20-deg canonical angle -->
+<!-- Concept: two runtime lanes (parallel strokes) with route line crossing between them -->
+<!--   through a 1.5x-stroke gate notch in each lane at the crossing point -->
+<!-- Geometry: stroke-width=6.667, lane-spacing=20u perpendicular, gate-notch=10u -->
+<!-- Lanes at 20deg; route line at same 20deg crosses continuously through gate gap -->
+<!-- D-03: 20deg angle, round caps, same stroke weight as A/B -->
+<!-- D-04: path-only, no text elements, no rect, no bounding shape -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g id="mark-c" fill="none" stroke="currentColor"
+     stroke-width="6.667" stroke-linecap="round">
+    <!-- Lane 1 (upper runtime tier) — split at gate notch for route passage -->
+    <!-- Lane 1 segment 1: (0.39,32.86) to gate start (27.30,24.31) -->
+    <line x1="0.39" y1="32.86" x2="27.30" y2="24.31" />
+    <!-- Lane 1 segment 2: gate end (36.70,20.89) to (56.77,12.34) -->
+    <line x1="36.70" y1="20.89" x2="56.77" y2="12.34" />
+    <!-- Lane 2 (lower runtime tier) — split at gate notch for route passage -->
+    <!-- Lane 2 segment 1: (7.23,51.66) to gate start (27.30,43.11) -->
+    <line x1="7.23" y1="51.66" x2="27.30" y2="43.11" />
+    <!-- Lane 2 segment 2: gate end (36.70,39.69) to (63.61,31.14) -->
+    <line x1="36.70" y1="39.69" x2="63.61" y2="31.14" />
+    <!-- Route line: crosses between lanes through the gate, continuous (0,43.65)→(64,20.35) -->
+    <line x1="0" y1="43.65" x2="64" y2="20.35" />
+  </g>
+</svg>
