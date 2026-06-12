@@ -1,0 +1,406 @@
+{
+  "primitive": {
+    "$type": "color",
+    "current": {
+      "950": {
+        "$value": "#09141A",
+        "$description": "Primary dark — logo ink, hero background"
+      },
+      "900": {
+        "$value": "#0F1E26",
+        "$description": "Dark panels, raised dark surfaces"
+      },
+      "800": {
+        "$value": "#162B35",
+        "$description": "Raised dark surfaces, inset on dark"
+      }
+    },
+    "harbor": {
+      "700": {
+        "$value": "#254855",
+        "$description": "Secondary dark accent; LiveView runtime badge"
+      }
+    },
+    "wake": {
+      "700": {
+        "$value": "#2B756A",
+        "$description": "Primary action color on light surfaces. 4.85:1 on Foam 50 — passes AA."
+      },
+      "500": {
+        "$value": "#4E9A8E",
+        "$description": "light-surface text forbidden: 2.95:1 on Foam 50. Dark-surface accent only (5.62:1 on Current 950)."
+      }
+    },
+    "kelp": {
+      "800": {
+        "$value": "#123B36",
+        "$description": "Offline island and success deep green"
+      }
+    },
+    "brass": {
+      "500": {
+        "$value": "#C98A2E",
+        "$description": "Signal accent — CTA on dark, native runtime badge. 6.35:1 on Current 950."
+      },
+      "700": {
+        "$value": "#946017",
+        "$description": "Warning text on light surfaces. 4.74:1 on Foam 50 — passes AA."
+      }
+    },
+    "foam": {
+      "50": {
+        "$value": "#F7F1E6",
+        "$description": "Main light background — primary canvas"
+      },
+      "100": {
+        "$value": "#EFE6D6",
+        "$description": "Warm panel surface, code block background"
+      }
+    },
+    "mist": {
+      "200": {
+        "$value": "#C9D4CF",
+        "$description": "border and dark-surface text only: 1.35:1 on Foam 50. Dark-surface text 12.25:1 on Current 950 — passes AA."
+      }
+    },
+    "stone": {
+      "500": {
+        "$value": "#7C746A",
+        "$description": "Narrow use only: large text >=24px, disabled, decorative. Fails AA normal text on Foam 50 (4.09:1)."
+      },
+      "600": {
+        "$value": "#756D63",
+        "$description": "text.muted mapping. Passes AA on Foam 50 (4.53:1) and white (5.09:1)."
+      }
+    },
+    "rust": {
+      "600": {
+        "$value": "#9A4D35",
+        "$description": "Danger and sensitive-route accent. 6.02:1 on white."
+      }
+    },
+    "plum": {
+      "700": {
+        "$value": "#372D4C",
+        "$description": "Bridge and contract accent. 11.38:1 on Foam 50."
+      }
+    },
+    "white": {
+      "$value": "#FFFFFF",
+      "$description": "Text on dark surfaces and action backgrounds"
+    }
+  },
+
+  "surface": {
+    "$type": "color",
+    "default": {
+      "$value": "{primitive.foam.50}",
+      "$dark": "{primitive.current.950}",
+      "$description": "Main page background"
+    },
+    "raised": {
+      "$value": "{primitive.foam.100}",
+      "$dark": "{primitive.current.900}",
+      "$description": "Warm panel, card surface"
+    },
+    "inset": {
+      "$value": "{primitive.white}",
+      "$dark": "{primitive.current.800}",
+      "$description": "Card inset, code block background"
+    },
+    "inverse": {
+      "$value": "{primitive.current.950}",
+      "$dark": "{primitive.foam.50}",
+      "$description": "Hero dark band, dark callout panels"
+    }
+  },
+
+  "text": {
+    "$type": "color",
+    "default": {
+      "$value": "{primitive.current.950}",
+      "$dark": "{primitive.foam.50}",
+      "$description": "Body text, headings"
+    },
+    "muted": {
+      "$value": "{primitive.stone.600}",
+      "$dark": "{primitive.mist.200}",
+      "$description": "Secondary body text. Light: stone-600 on foam-50 = 4.53:1 (AA PASS). Dark: mist-200 on current-950 = 12.25:1 (AA PASS). Do NOT use stone-600 on dark (3.66:1, fails AA normal text)."
+    },
+    "subtle": {
+      "$value": "{primitive.stone.500}",
+      "$dark": "{primitive.mist.200}",
+      "$description": "Narrow use: large text >=24px, disabled states, decorative only. stone-500 on foam-50 = 4.09:1 (fails AA normal text)."
+    },
+    "inverse": {
+      "$value": "{primitive.foam.50}",
+      "$dark": "{primitive.current.950}",
+      "$description": "Text on dark/inverse surfaces"
+    },
+    "code": {
+      "$value": "{primitive.foam.50}",
+      "$dark": "{primitive.foam.50}",
+      "$description": "Code block text — always on Current 900 surface"
+    }
+  },
+
+  "action": {
+    "$type": "color",
+    "bg": {
+      "$value": "{primitive.wake.700}",
+      "$dark": "{primitive.brass.500}",
+      "$description": "Primary button background"
+    },
+    "fg": {
+      "$value": "{primitive.white}",
+      "$dark": "{primitive.current.950}",
+      "$description": "Primary button text/icon"
+    },
+    "bg-dark": {
+      "$value": "{primitive.brass.500}",
+      "$dark": "{primitive.wake.700}",
+      "$description": "Dark-surface CTA background"
+    },
+    "fg-dark": {
+      "$value": "{primitive.current.950}",
+      "$dark": "{primitive.white}",
+      "$description": "Dark-surface CTA text/icon"
+    },
+    "hover": {
+      "$value": "{primitive.current.950}",
+      "$dark": "{primitive.foam.100}",
+      "$description": "Hover state overlay — apply as background on interactive elements"
+    },
+    "focus-ring": {
+      "$value": "{primitive.brass.500}",
+      "$dark": "{primitive.wake.500}",
+      "$description": "2px focus outline ring (WCAG 2.4.11 focus appearance)"
+    }
+  },
+
+  "border": {
+    "$type": "color",
+    "default": {
+      "$value": "{primitive.mist.200}",
+      "$dark": "{primitive.harbor.700}",
+      "$description": "Card and component borders"
+    },
+    "subtle": {
+      "$value": "{primitive.foam.100}",
+      "$dark": "{primitive.current.800}",
+      "$description": "Inset and low-contrast borders"
+    },
+    "strong": {
+      "$value": "{primitive.wake.700}",
+      "$dark": "{primitive.mist.200}",
+      "$description": "Selected state border, emphasis outline"
+    }
+  },
+
+  "status": {
+    "$type": "color",
+    "success": {
+      "$value": "{primitive.kelp.800}",
+      "$dark": "{primitive.wake.500}",
+      "$description": "Success indicators, offline/synced state"
+    },
+    "warning": {
+      "$value": "{primitive.brass.700}",
+      "$dark": "{primitive.brass.500}",
+      "$description": "Warning indicators"
+    },
+    "error": {
+      "$value": "{primitive.rust.600}",
+      "$dark": "{primitive.rust.600}",
+      "$description": "Error state, danger indicators"
+    },
+    "info": {
+      "$value": "{primitive.harbor.700}",
+      "$dark": "{primitive.mist.200}",
+      "$description": "Informational indicators"
+    }
+  },
+
+  "runtime": {
+    "$type": "color",
+    "liveview": {
+      "$value": "{primitive.harbor.700}",
+      "$dark": "{primitive.mist.200}",
+      "$description": "LiveView runtime badge and indicators"
+    },
+    "offline": {
+      "$value": "{primitive.kelp.800}",
+      "$dark": "{primitive.wake.500}",
+      "$description": "Offline island badge and indicators"
+    },
+    "native": {
+      "$value": "{primitive.brass.500}",
+      "$dark": "{primitive.brass.500}",
+      "$description": "Native screen badge and indicators"
+    },
+    "sensitive": {
+      "$value": "{primitive.rust.600}",
+      "$dark": "{primitive.rust.600}",
+      "$description": "Sensitive/cache-never route indicators"
+    },
+    "bridge": {
+      "$value": "{primitive.plum.700}",
+      "$dark": "{primitive.foam.50}",
+      "$description": "Bridge contract badge and indicators"
+    }
+  },
+
+  "font": {
+    "display": {
+      "$type": "fontFamily",
+      "$value": ["Space Grotesk", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+      "$description": "Display and heading font — Space Grotesk with wake-angle custom cuts in Phase 103"
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": ["Atkinson Hyperlegible Next", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+      "$description": "Body text font — optimized for readability"
+    },
+    "mono": {
+      "$type": "fontFamily",
+      "$value": ["JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", "monospace"],
+      "$description": "Monospace font for code blocks"
+    }
+  },
+
+  "text-scale": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "12px",
+      "$description": "Extra small — badges, metadata"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "14px",
+      "$description": "Small — nav items, labels"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "16px",
+      "$description": "Medium — body text (base size)"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "18px",
+      "$description": "Large — lead body text"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$description": "Extra large — card headings"
+    }
+  },
+
+  "display-scale": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "28px",
+      "$description": "Display small — docs page title"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "40px",
+      "$description": "Display medium — landing section title"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "56px",
+      "$description": "Display large — hero headline"
+    }
+  },
+
+  "line-height": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "16px",
+      "$description": "Line height for text.xs"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$description": "Line height for text.sm"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "24px",
+      "$description": "Line height for text.md"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "28px",
+      "$description": "Line height for text.lg"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "30px",
+      "$description": "Line height for text.xl"
+    },
+    "display-sm": {
+      "$type": "dimension",
+      "$value": "36px",
+      "$description": "Line height for display.sm"
+    },
+    "display-md": {
+      "$type": "dimension",
+      "$value": "48px",
+      "$description": "Line height for display.md"
+    },
+    "display-lg": {
+      "$type": "dimension",
+      "$value": "64px",
+      "$description": "Line height for display.lg"
+    }
+  },
+
+  "spacing": {
+    "base": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "Base spacing unit — 4px grid system"
+    }
+  },
+
+  "radius": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "6px",
+      "$description": "Small radius — inline code, tiny badges"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "10px",
+      "$description": "Medium radius — buttons, inputs"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "14px",
+      "$description": "Large radius — cards"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$description": "Extra large radius — hero panels, major diagrams"
+    }
+  },
+
+  "focus": {
+    "ring-width": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Focus outline ring width (WCAG 2.4.11 focus appearance)"
+    }
+  },
+
+  "tracking": {
+    "tight": {
+      "$type": "dimension",
+      "$value": "-0.02em",
+      "$description": "Tight letter-spacing for display headings — brand book §9"
+    }
+  }
+}
