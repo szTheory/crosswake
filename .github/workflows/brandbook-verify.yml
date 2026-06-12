@@ -1,0 +1,73 @@
+name: "Brandbook Verify (Advisory)"
+
+# Advisory CI lane for brandbook asset quality gates (D-08, COLL-04).
+#
+# This workflow triggers on brandbook/** changes (PR and push) to provide fast
+# feedback on asset size, SVG structure, and token round-trip validity.
+#
+# ADVISORY ONLY — this lane is NOT a required merge gate and must NOT be added
+# to branch-protection required-status-checks. Failures here surface as advisory
+# notifications only.
+#
+# Advisory-to-merge-blocking promotion requires:
+#   1. An explicit requirement/roadmap scope change in .planning/REQUIREMENTS.md
+#   2. Sustained stability evidence from this advisory lane
+#   3. A planned milestone that explicitly promotes this proof
+#   4. A workflow edit moving the relevant step to the merge-blocking lane
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "brandbook/**"
+  push:
+    paths:
+      - "brandbook/**"
+
+jobs:
+  advisory-brandbook-verify:
+    name: advisory brandbook verify (COLL-04)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.x"
+
+      - name: Install brandbook tool dependencies
+        working-directory: brandbook/tools
+        run: npm ci
+
+      - name: Size budget (committed brandbook <= 1MB)
+        run: |
+          TOTAL=$(git ls-files brandbook | xargs -I{} stat -c%s {} | awk '{s+=$1} END{print s+0}')
+          echo "Committed brandbook bytes: $TOTAL"
+          if [ "$TOTAL" -gt 1048576 ]; then
+            echo "ERROR: brandbook exceeds 1MB budget ($TOTAL bytes > 1048576)"
+            exit 1
+          fi
+          echo "Size budget OK ($TOTAL / 1048576 bytes)"
+
+      - name: SVG structural validation - production marks
+        working-directory: brandbook/tools
+        run: node check-production.mjs
+
+      - name: SVG structural validation - candidate marks
+        working-directory: brandbook/tools
+        run: node check-candidates.mjs
+
+      - name: Token JSON round-trip
+        working-directory: brandbook/tools
+        run: node --test compile-tokens.test.mjs
+
+      - name: Advisory lane notice
+        if: always()
+        run: |
+          echo "::notice title=Advisory lane::Brandbook verify is advisory only — failures here do NOT gate merge."
