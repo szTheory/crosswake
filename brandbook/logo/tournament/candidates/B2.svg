@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Candidate B2: Seam Shift — Recalibrated -->
+<!-- Provenance: B.svg recalibrated per round-2 research spec -->
+<!-- Change: seam step reduced from 5.64u to 3.76u perpendicular displacement -->
+<!--   Old connector: (32,32) to (34.05,37.64); New: (32,32) to (33.37,35.76) -->
+<!--   Perpendicular unit vector: (sin20=0.3420, cos20=0.9397) -->
+<!--   New step = 4u * perp = 4*(0.3420,0.9397) = (1.368,3.759) → (33.37,35.76) checked -->
+<!--   Route seg 2 start updated: (34.05,37.64) -> (33.37,35.76) -->
+<!--   Route seg 2 end: x=64, y=35.76 + (64-33.37)*(-tan20) = 35.76-11.15 = 24.61 -->
+<!-- Wake lines: 24u length (unchanged from B.svg — already at target length) -->
+<!-- Rationale: smaller step reads as precise instrument correction, not dramatic shift -->
+<!-- D-03: 20deg crossing, 3 lines, round caps, strokes-as-strokes -->
+<!-- D-04: path-only, no text elements, no rect, no bounding shape -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g id="mark-b2" fill="none" stroke="currentColor"
+     stroke-width="6.667" stroke-linecap="round">
+    <!-- Route segment 1 (pre-seam): (0,43.65) to seam entry (32,32) — 20deg slope -->
+    <line x1="0" y1="43.65" x2="32" y2="32" />
+    <!-- Seam connector: perpendicular step 3.76u from (32,32) to (33.37,35.76) -->
+    <!-- Reduced from 5.64u (round-1 B) for calmer, more precise read -->
+    <line x1="32" y1="32" x2="33.37" y2="35.76" />
+    <!-- Route segment 2 (post-seam): (33.37,35.76) to (64,24.61) — same 20deg slope -->
+    <line x1="33.37" y1="35.76" x2="64" y2="24.61" />
+    <!-- Wake line 1: 24u, same slope, trailing from post-seam route area -->
+    <line x1="25.28" y1="48.63" x2="47.84" y2="40.42" />
+    <!-- Wake line 2: 24u, same slope, outer trailing -->
+    <line x1="27.56" y1="54.90" x2="50.12" y2="46.69" />
+  </g>
+</svg>
