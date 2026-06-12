@@ -547,3 +547,342 @@ Recommended weights: 400 Regular (code blocks), 500 Medium (inline code or empha
 - Slides must pass WCAG AA at projector brightness — prefer Current 950 + Foam 50 or white text for maximum contrast.
 
 ---
+
+## 10. Logo direction {#logo-direction}
+
+### Logo concept
+
+The Crosswake mark should suggest **a route crossing a runtime seam and leaving a clean wake**.
+
+It should not look like an atom, a React logo, a Phoenix flame, a Hotwire wire/plug, a boat logo, a compass rose, a wave/surf company, or a generic X app icon.
+
+### Wake Mark geometry — TIGHTEN (audit §8, §10)
+
+| Parameter | Specification |
+|-----------|---------------|
+| Crossing angle | 20° from horizontal (canonical). Acceptable range: 16–24°. |
+| Wake line count | Exactly 3 — the crossing line plus two trailing wake lines. |
+| Stroke weight | 2.5px at 24px icon size. Scale proportionally. |
+| Notch/break | 1.5× stroke width gap at the crossing point (explicit boundary seam). |
+| Corner cap style | Round (not butt or square). |
+| Minimum pixel rendering | Test at 16px. Simplify to 2 strokes at ≤16px. |
+| SVG format | Path-only. No `<text>` elements. No rectangular clip-path backgrounds. No embedded fonts. |
+
+### Wordmark specification
+
+Starting font: Space Grotesk SemiBold (600). **Frozen (D-12).** The `w`/`k` wake-angle letter cuts echo the 20° crossing angle — this is a mandatory D-11 requirement. Candidates without cuts are disqualified.
+
+### Lockups
+
+1. **Horizontal lockup:** Wake Mark + Crosswake wordmark. Minimum 128px wide.
+2. **Stacked lockup:** Wake Mark above wordmark. For social/README hero. Minimum 64px wide.
+3. **Icon mark:** Wake Mark only. 24px minimum for UI; 32px minimum for README.
+4. **Tiny/favicon mark:** Simplified 2-stroke wake, no small details. Legible at 16px.
+
+### Logo colorways (ratified)
+
+| Context | Mark | Wordmark | Background |
+|---------|------|----------|------------|
+| Light primary | Current 950 | Current 950 | Foam 50 or white |
+| Dark primary | Foam 50 | Foam 50 | Current 950 |
+| Signal | Brass 500 | Foam 50 | Current 950 |
+| OSS badge | Wake 700 | Current 950 | Foam 50 |
+| One-color | Current 950 or Foam 50 | Same | Any solid |
+
+### Clearspace
+
+- Horizontal lockup: minimum clearspace = x-height of the wordmark on all four sides.
+- Icon mark: clearspace = one stroke width + one wake-gap on all sides.
+- Never place the mark inside a bounding shape (circle, square, blob, gradient card).
+
+### Minimum sizes (audit §8)
+
+| Variant | Minimum |
+|---------|---------|
+| Horizontal lockup | 128px wide |
+| Stacked lockup | 64px wide |
+| Icon mark | 24px (UI), 32px (README) |
+| Favicon | 16px (simplified 2-stroke) |
+
+### Logo do/don't
+
+**Do:**
+- Use simple geometric strokes.
+- Keep the mark readable in one color.
+- Preserve the diagonal crossing at 20°.
+- Use warm dark/light contrast.
+- Use rounded stroke caps.
+
+**Do not:**
+- Add literal boats, anchors, ropes, waves, or water splashes.
+- Add neon cyan glow.
+- Use a flame shape.
+- Put the mark inside a generic app-gradient blob.
+- Make the mark an X without wake semantics.
+- Use the wordmark set in unmodified Space Grotesk (D-11 violation).
+- Place the wordmark over a photograph.
+
+### Misuse examples (audit §8)
+
+1. **Colorway swap to cyan** — rejected; contradicts React Native avoidance.
+2. **Mark at <12px without simplification** — rejected; illegible.
+3. **Wordmark set in unmodified Space Grotesk** — rejected; D-11 violation.
+4. **Mark inside a drop-shadow card or rounded blob** — rejected; adds visual noise.
+5. **Mark stretched or rotated off 20°** — rejected; the crossing angle is the brand geometry.
+
+---
+
+## 11. Graphic design elements {#graphic-elements}
+
+### Primary motif: wake seams
+
+Wake seams are diagonal or gently curved line groups that imply movement through a boundary.
+
+Rules:
+- Use 2–4 parallel lines.
+- Stroke: 1.5px to 3px.
+- Rounded caps.
+- Use Wake 500/700, Mist 200, or Brass 500 depending on surface.
+- Keep them sparse.
+
+### Secondary motif: runtime lanes
+
+Use horizontal or vertical lanes to show which runtime owns each route.
+
+Lane labels: `LiveView` / `Offline Island` / `Native Screen` / `Adapter` / `Server Commit`
+
+These diagrams should feel like technical maps, not marketing infographics.
+
+### Tertiary motif: sounding lines
+
+Thin contour-like lines in backgrounds. Rules:
+- Opacity below 12%.
+- Never behind dense text.
+- Use in hero backgrounds, empty states, and open-source README graphics.
+
+### Shape language
+
+- Cards: rounded rectangles, 12–16px radius.
+- Badges: pill or soft rectangle, 999px or 6px radius depending density.
+- Diagrams: straight lines with rounded joins.
+- App screenshots: placed in stable frames, not tilted wildly.
+
+### Social preview card spec — ADD (audit §6)
+
+| Property | Value |
+|----------|-------|
+| Size | 1200×630px |
+| Background | Current 950 (`#09141A`) |
+| Logo | Wake Mark in Foam 50 (centered or upper-left) |
+| Wordmark | "Crosswake" in Space Grotesk SemiBold, Foam 50, 48px |
+| One-liner | "Route policy for Phoenix apps that go mobile." Atkinson Hyperlegible Next Regular, Mist 200, 24px |
+| Version badge | JetBrains Mono, Stone 500, 16px, lower-right corner (optional) |
+| Path | `brandbook/social/og-card.svg` (Phase 106 deliverable) |
+
+---
+
+## 12. Iconography {#iconography}
+
+### Icon style
+
+- Stroke-based. 1.75px stroke at 24px icon size. Rounded caps and joins. No filled emoji-like icons. No multi-color icons by default.
+
+### Core icons to design
+
+| Concept | Icon direction |
+|---------|----------------|
+| Route Policy | Split route line with a labeled checkpoint |
+| Runtime | Layered frame or lane |
+| LiveView | Server dot connected to screen frame |
+| Offline Island | Small island/rounded node detached from server line |
+| Native Screen | Device frame with solid corner notch |
+| Capability | Shield/checkpoint badge |
+| Bridge Contract | Two brackets connected by one semantic arrow |
+| Content Pack | Box/card stack |
+| Media Pack | File stack with play/wave marker |
+| Sync Journal | Ordered event ticks |
+| Sensitive | Shield with slash or lock, never just red |
+| Runtime Gate | Gate/checkpoint line |
+
+### Icon rules
+
+- Icons must still make sense without nautical context.
+- Do not use anchors, ship wheels, or compass roses for core technical concepts.
+- Do not use platform logos unless discussing platform-specific adapters.
+
+---
+
+## 13. Layout and UI system {#layout-ui-system}
+
+### Layout principles
+
+- Documentation quieter than marketing. Pages structured and navigable. Dense technical pages need breathing room. Every concept page shows a concrete route-policy snippet early.
+
+### Grid
+
+- 4px base grid. Docs content: 760–860px. Landing max: 1120–1200px. Code examples can break wider.
+
+### Mobile breakpoints — ADD (audit §6, §13)
+
+Mobile-first: design for 375px+ single-column as the base. Tap targets 44px minimum. Navigation collapses below `md`.
+
+| Breakpoint | Value | Use |
+|------------|-------|-----|
+| `sm` | 640px | Single-column docs layout |
+| `md` | 768px | Two-column doc start |
+| `lg` | 1024px | Full sidebar visible |
+| `xl` | 1200px | Landing page full width |
+
+### Radius
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `radius-sm` | 6px | inline code, tiny badges |
+| `radius-md` | 10px | buttons, inputs |
+| `radius-lg` | 14px | cards |
+| `radius-xl` | 20px | hero panels, major diagrams |
+
+### Shadows
+
+Prefer borders and layered surfaces over heavy shadows. Light card: `0 1px 2px rgba(9,20,26,0.06)` plus border. Dark card: border with `rgba(201,212,207,0.12)`, minimal shadow.
+
+### Buttons
+
+**Primary on light:** Wake 700 bg, White text, Hover: Current 950, Focus: Brass 500 outline 2px.  
+**Primary on dark:** Brass 500 bg, Current 950 text, Hover: Foam 100, Focus: Wake 500 outline 2px.  
+**Secondary:** Transparent or Foam 50, Border: Mist 200 or Harbor 700.
+
+Button copy: "Read the guide" / "Install Crosswake" / "Generate a route policy" / "View examples" / "Open runtime manifest"
+
+### Badges
+
+Badge style: text labels, not just colors; monospace only for exact code values; muted backgrounds.
+
+Examples: `runtime: live_view` / `offline: cached_read_only` / `capability: camera` / `cache: never` / `sensitive` / `requires_runtime >= 0.3.0`
+
+### Code blocks
+
+- Background: Current 900. Border: Current 800. Text: Foam 50. Comments: Mist 200. Keywords: Wake 500. Strings: Brass 500. Errors: Rust 600 with label.
+- Include copy buttons with accessible labels.
+
+---
+
+## 14. Documentation brand system {#documentation-brand-system}
+
+### Docs structure
+
+1. **Start** — What Crosswake is, Install, First route policy, First native shell.
+2. **Concepts** — Runtime ownership, Route policy, Capabilities, Bridge contracts, Offline islands, Content packs, Media packs, Sync journals, Runtime compatibility.
+3. **Guides** — SaaS mobile shell, Offline study loop, Field inspection flow, Native audio player, Billing/paywall adapter.
+4. **Reference** — `Crosswake.RoutePolicy`, `Crosswake.Capabilities`, `Crosswake.NativeScreens`, Manifest schema, Bridge payload schema, Mix tasks.
+5. **Adapters** — iOS, Android, Billing, Media, Uploads, Maps.
+6. **Security** — Origin policy, Route allowlists, Capability allowlists, Manifest signing, Sensitive routes, Cache policy.
+
+### Documentation page template
+
+Each concept page (in order): One-sentence definition → When to use → When not to use → Minimal code example → Failure modes → Security/caching notes → Testing fixtures → Related concepts.
+
+Failure modes appear **before** advanced customization on every page.
+
+### Warning box style
+
+Warning boxes for boundary mistakes only, not tips.
+
+> **Boundary warning**  
+> `offline: :read_write` does not mean the server accepted the action. Use a sync journal and show pending state until the server reconciles the event.
+
+### Docs typography
+
+- Page title: `display-sm` (28px), Space Grotesk SemiBold.
+- Section heading: `text-xl` (20px), Space Grotesk Medium.
+- Body: `text-md` (16px), Atkinson Hyperlegible Next Regular.
+- Code: `text-sm` (14px), JetBrains Mono Regular.
+- Warning boxes: Atkinson Hyperlegible Next, Brass 700 on Foam 100 border-left strip.
+
+### README badge specification — ADD (audit §5)
+
+README header badge set: Hex version badge / Apache-2.0 license / GitHub Actions CI status / Brand-styled route/capability badges (muted background, text labels, monospace for code values).
+
+---
+
+## 15. Microcopy library {#microcopy-library}
+
+### Runtime labels
+
+LiveView route / Cached route / Offline island / Native screen / Adapter-backed screen / External browser route / Online-only route
+
+### Status labels
+
+Available offline / Cached read-only / Draft only / Requires connection / Requires native runtime / Waiting for sync / Pending server confirmation / Server confirmed / Capability unavailable / Permission needed / Runtime mismatch / Cache disabled / Sensitive route
+
+### Error messages
+
+| State | Copy |
+|-------|------|
+| Runtime mismatch | "This route requires native runtime `0.3.0` or newer. Update the app or choose another route." |
+| Capability unavailable | "Camera capture is not available in this app runtime. The route policy requires `:camera`." |
+| Offline commit blocked | "This action needs the server before it can be committed. The draft was saved locally." |
+| Sensitive cache blocked | "This route is marked sensitive and will not be cached." |
+| Bridge payload rejected | "Crosswake rejected this bridge message because it does not match the registered contract." |
+
+### Empty states
+
+| State | Copy |
+|-------|------|
+| No offline content | "Nothing has been packed for offline use yet. Sync this route before going offline." |
+| No native screen registered | "The route policy points to a native screen, but the host app has not registered it." |
+| No capabilities declared | "This route does not request native capabilities." |
+
+### Success states
+
+| State | Copy |
+|-------|------|
+| Sync confirmed | "Server confirmed. The local draft was committed successfully." |
+| Route activated | "Route activated. Native runtime `0.3.1` detected and verified." |
+| Pack ready | "Content pack `daily_study` is ready for offline use." |
+
+### CTA copy
+
+Install Crosswake / Read the route policy guide / Generate native screen stubs / Define a capability / Add an offline island / View the manifest / Run compatibility checks
+
+---
+
+## 16. Landing page direction {#landing-page-direction}
+
+### Page architecture
+
+1. **Hero** — Dark Current background, Wake Mark, headline "Phoenix routes, native where it matters," CTAs "Read the guide" + "View examples."
+2. **The problem** — "Mobile screens do not all want the same runtime." Dashboard stays LiveView, study loop goes offline island, camera capture goes native, billing goes adapter.
+3. **The solution** — Route policy code block + visual route card.
+4. **Runtime ladder** — 7-tier: LiveView → LiveView+shell → bridge → cached → offline island → native screen → adapter.
+5. **Capabilities and safety** — Capability registry, permission stories, cache-never, sensitive routes.
+6. **Examples** — SaaS portal, field inspection, flashcard/audio study app, native audio player, billing/paywall.
+7. **OSS trust** — GitHub link, Hex.pm link, security policy link, maintainer note. Non-commercial tone.
+8. **Install block** — Short command + first route policy snippet.
+
+### Landing page visual style
+
+- Dark hero, light docs sections.
+- Route cards as product screenshots.
+- Diagrams over device mockups.
+- Brass accent for "native screen" moments.
+- Kelp/wake accent for "offline island" moments.
+- No hero device mockup showing a generic mobile app screen.
+
+---
+
+## 17. Acceptable imagery {#acceptable-imagery}
+
+### Use
+
+- Abstract route maps, bathymetric/topographic line patterns, technical diagrams, clean mobile UI screenshots in realistic frames, code and route-policy snippets, system diagrams with lanes and gates.
+
+### Avoid
+
+- Stock photos of people smiling at phones, literal boats, tropical beaches/waves/surfers, neon cyberpunk water, React atom/orbit imagery, Hotwire red heat/wire graphics, Phoenix flame motifs, generic blue-purple SaaS gradients, overly cute mascots.
+
+### Illustration style
+
+- Sparse, geometric, diagrammatic. 1–3 colors per illustration. Use labels. Prefer route/channel metaphors to literal sea objects.
+
+---
