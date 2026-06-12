@@ -70,7 +70,7 @@
   3. A dedicated 16-grid `favicon.svg` exists with strokes outlined to filled paths, verified to render legibly at 16px
   4. Wordmark path data was generated via opentype.js 2.0.0 with the correct Y-baseline and `fill-rule="evenodd"` applied; the provenance script is committed in `brandbook/tools/`; font binaries and `node_modules/` are gitignored
 **Plans**: 3 plans
-  - [ ] 104-01-PLAN.md — Micro-variant refinement: 3 single-axis variants + file:// color-reveal page (4 colorways) + render-verify + production validator
+  - [x] 104-01-PLAN.md — Micro-variant refinement: 3 single-axis variants + file:// color-reveal page (4 colorways) + render-verify + production validator
   - [ ] 104-02-PLAN.md — LOGO-05 blocking sign-off checkpoint (user picks V1/V2/V3)
   - [ ] 104-03-PLAN.md — Production suite: 8 path-only SVGs (mark/mono/typemark/lockups/subtitle/favicon) + LOGO-07 regen + size budget
 
@@ -105,6 +105,6 @@
 | 101. Offline UI Consolidation & Polish | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
-| 104. Logo Refinement & Production Suite | v9.0 | 0/? | Not started | - |
+| 104. Logo Refinement & Production Suite | v9.0 | 1/3 | In Progress|  |
 | 105. HTML Brand Book | v9.0 | 0/? | Not started | - |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
