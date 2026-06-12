@@ -32,7 +32,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### HTML Brand Book (BOOK)
 
-- [ ] **BOOK-01**: Standalone `brandbook/index.html` — long-scroll, zero build step, works from `file://`, Google Fonts CDN with full system fallbacks
+- [x] **BOOK-01**: Standalone `brandbook/index.html` — long-scroll, zero build step, works from `file://`, Google Fonts CDN with full system fallbacks
 - [ ] **BOOK-02**: Sections include: cover hero, brand essence, logo system with misuse examples, color with live contrast badges + copy-hex, typography specimens + scale, tokens, motifs rendered live, voice/microcopy do-don't tables, UI specimens built from `tokens.css`, asset index
 - [ ] **BOOK-03**: `brandbook/BRAND-SPEC.md` v1.0 — the audited successor to the prompts/ draft (which stays as the historical seed)
 
@@ -85,7 +85,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOGO-05 | Phase 104 | Complete |
 | LOGO-06 | Phase 104 | Complete |
 | LOGO-07 | Phase 104 | Complete |
-| BOOK-01 | Phase 105 | Pending |
+| BOOK-01 | Phase 105 | Complete |
 | BOOK-02 | Phase 105 | Pending |
 | BOOK-03 | Phase 105 | Pending |
 | COLL-01 | Phase 106 | Pending |
