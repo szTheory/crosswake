@@ -82,7 +82,11 @@
   1. Opening `brandbook/index.html` from `file://` renders the full brand book without errors, loads fonts via Google Fonts CDN (with full system fallbacks), and requires zero build steps
   2. The brand book contains all required sections: cover hero, brand essence, logo system with misuse examples, color with live contrast badges + copy-hex, typography specimens + scale, tokens, motifs rendered live, voice/microcopy do-don't tables, UI specimens built from `tokens.css`, and an asset index
   3. `brandbook/BRAND-SPEC.md` v1.0 exists as the audited successor to the `prompts/` draft, documenting the ratified palette, type scale, token naming convention, and logo usage rules
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 105-01-PLAN.md — Budget trim + page scaffold (brandbook.css/js + index.html shell + dark hero)
+- [ ] 105-02-PLAN.md — Fill sections 2-10 (logo/misuse, live color badges, typography, tokens, motifs, voice, UI specimens, asset index)
+- [ ] 105-03-PLAN.md — BRAND-SPEC.md v1.0 (audited successor, all AUDIT verdicts applied) + phase self-check
 **UI hint**: yes
 
 ### Phase 106: Collateral, Integration & Closeout
@@ -106,5 +110,5 @@
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
-| 105. HTML Brand Book | v9.0 | 0/? | Not started | - |
+| 105. HTML Brand Book | v9.0 | 0/3 | Planned | - |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
