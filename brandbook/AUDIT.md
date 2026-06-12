@@ -8,19 +8,148 @@
 
 ## §1 Executive Judgment
 
-_(pending)_
+**Verdict: Strong enough to build from. Distinctive enough to defend. Not yet implementation-ready — but close.**
+
+The Crosswake brand book has a genuine conceptual center: explicit runtime boundaries expressed through a coastal, technical, muted palette and an architectural visual language. This is not a commodity devtools brand. The wake-seam metaphor is coherent, the palette avoids every adjacent competitor pitfall (React Native cyan, Phoenix purple/orange, Hotwire red, Capacitor blue-purple), and the voice is honest and maintainer-shaped. These are not small achievements.
+
+**Is it strong enough to build from?** Yes. The palette is specified to hex precision, the typography stack is named with weights and fallbacks, the logo direction is concrete, and the voice guidance is specific enough to produce real copy. The gaps (missing iconography detail, under-specified dark mode for non-hero surfaces, absent motion-reduced alternatives beyond a single note) are real but bounded — they do not undermine the foundation.
+
+**Is it distinct enough?** Yes, with one important caveat: Space Grotesk has become a "LLM-default design" choice in 2026, which risks making Crosswake visually generic in the wider devtools space. The brand book is aware of this and the mitigation is already specified: custom `w`/`k` wake-angle letterform cuts are the mandatory conversion from generic starting material to proprietary endpoint. Without those cuts, distinctiveness is at risk. With them, the wordmark becomes irreducibly Crosswake. This is the single highest-leverage improvement.
+
+**Is it implementation-ready?** Partially. Colors and typography are ready. Tokens are not yet structured (addressed in §7). Logo exists only as direction, not as committed SVG (Phase 103). Several surface treatments are under-specified (see §4, §5). The audit and token work this phase completes the foundation for Phase 103 to execute against.
+
+**What must NOT change (D-12 frozen items):**
+- Display font family (Space Grotesk — frozen even if Space Grotesk's market saturation worsens; the letter cuts are the differentiator, not a font swap)
+- Coastal-muted palette character (Current/Foam/Wake/Brass/Rust families — color math may add Stone 600, but the emotional register stays)
+- Wake-seam visual concept (diagonal crossing lines implying runtime boundary traversal)
+- Diagonal crossing-mark direction (the Wake Mark geometry is non-negotiable)
+
+**Overall posture:** Preserve what is already strong. The brand has a soul; the work is finishing the implementation infrastructure around it.
 
 ## §2 Brand DNA Extraction
 
-_(pending)_
+### Essence
+
+**Boundary-aware mobility.** Crosswake is the clean trail left by a Phoenix app crossing into mobile runtimes without pretending the boundary disappeared. Every element of the brand should communicate: explicit, honest, durable, technically controlled.
+
+### Audience
+
+Primary: Phoenix/LiveView engineers who need mobile delivery and refuse to pretend all screens are the same runtime. They know Elixir. They care about correctness. They distrust hype. They will read the source.
+
+Secondary: OSS maintainers and technical teams evaluating whether to stake production mobile strategy on a single framework or keep boundaries explicit.
+
+Not: beginners expecting magic, teams seeking a React Native replacement, or anyone whose pitch is "write once, run anywhere."
+
+### Emotional Tone
+
+Calm confidence. Like a well-designed nautical chart: everything in its place, no drama, but the information is precise and the stakes are real. Not cold — warm (the foam palette earns this). Not playful — technical but not terse.
+
+### Technical Promise
+
+Per-route runtime ownership with honest failure modes. The system tells you exactly what runs where, what can fail, and what you own vs. what Crosswake owns.
+
+### Visual Metaphor
+
+**The wake.** The clean trail behind a vessel that has crossed a boundary. Not the crossing itself — the traceable evidence of it. Route lines, wake seams, runtime lanes. The diagram is the product.
+
+### Personality Traits
+
+- Explicit — everything is named: routes, runtimes, capabilities, policies
+- Calm — no hype, no "magic," no surprise
+- Technical — designed for engineers who read the source code
+- Honest — failure modes are documented before features
+- OSS-generous — the maintainer shares judgment, not just syntax
+- Precise — measurements, contracts, verdicts
+
+### Anti-Traits
+
+- Salesy — no "powerful," "seamless," "next-generation"
+- Evasive — no hiding that native development still requires native work
+- Trend-chasing — no chasing visual fashions that won't survive two OSS cycles
+- Omniscient — no claiming "offline just works" or "all screens are one runtime"
+
+### Design Principles
+
+1. The diagram is the product. Runtime boundaries made visible are the core value.
+2. Contrast as contract. Accessible color is not a feature; it is the brand.
+3. Technical quiet. Docs should be quieter than marketing; marketing should be honest enough to belong next to docs.
+4. One color family per runtime. The palette gives each runtime a distinct signal without competing.
+
+### Voice Principles
+
+Write like a careful maintainer: precise, short, helpful, candid. Prefer "this action needs the server before it can be committed" over "seamlessly syncs in the background." Name failure modes before features.
+
+### Should Feel Like
+
+> Browsing a well-maintained, mature OSS library that respects your intelligence and your time. Like reading a Stripe or Tailwind doc: you trust it, you find what you need, it does not oversell. [inferred from brand book tone + OSS DNA]
+
+### Should Never Feel Like
+
+> A startup pitch, a beach brand, a React clone, or a system that makes mobile "easy" by hiding the complexity you will definitely encounter later. [stated in brand book §3, §4, §22; reinforced throughout]
+
+### Crosswalk Name Adjacency
+
+**Flag for human review.** "Crosswake" is visually close to the discontinued Crosswalk WebView project (Intel, 2013–2017). The brand book acknowledges this. This audit does not resolve potential trademark or confusion risk — a human should verify the Crosswake name is clear from Crosswalk and other "cross-" prefixed mobile tooling before investing in broad collateral. The visual identity and voice work described in this audit are fully safe to execute in parallel with that review. [constraint per audit brief behavior — flag, do not resolve]
 
 ## §3 Pressure-Test Scorecard
 
-_(pending)_
+Scored 1–10 (10 = fully production-ready, no action needed). Score reflects the seed brand book state before Phase 102 execution.
+
+| Criterion | Score | Why | Risk if unaddressed | Fix |
+|-----------|-------|-----|---------------------|-----|
+| **Distinctiveness** | 7/10 | Palette avoids all adjacent competitor pitfalls. Wake-seam concept has genuine conceptual weight. Space Grotesk with planned letter cuts will be distinctive. Without those cuts, the display font risks generic devtools sameness. | If custom letterform cuts are skipped, wordmark looks generic. | Execute D-11: custom `w`/`k` cuts mandatory in Phase 103. |
+| **Developer credibility** | 8/10 | Voice guidance is precise, honest, and maintainer-shaped. The brand book explicitly lists what Crosswake is not. OSS DNA prompt (§24) is strong. Copy blocks are specific, not salesy. | None at high severity. Minor risk: the "coastal" visual metaphor reads as "beach" to some — keep visual treatment technical, not decorative. | TIGHTEN iconography to feel more map/chart than maritime. |
+| **Elixir ecosystem fit** | 8/10 | Muted, technical, understated palette. Route-policy API naming is idiomatic Elixir. Microcopy library (§15) has good Elixir-appropriate tone. Atkinson Hyperlegible Next is a strong doc-readability choice. | Space Grotesk is not Elixir-specific — but no font is, and the letter cuts will differentiate. | Keep current stack. Monitor Phoenix/Elixir tooling design trends for ecosystem drift. |
+| **Visual coherence** | 7/10 | Palette, motifs, and layout rules are mutually reinforcing. Dark-mode posture is present but under-detailed for non-hero surfaces. Shadow system is appropriately minimal. Grain texture rule (marketing only, never docs/UI) is smart. | Dark mode surface hierarchy may fracture without more explicit guidance. | ADD explicit dark-mode surface mapping in §8 brand book upgrade (§6 here). |
+| **Logo readiness** | 5/10 | Direction is clear and buildable. The Wake Mark concept is concrete and geometrically specified. Lockup variants are enumerated. But no committed SVG exists; tournament has not run; ratification pending. | Phase 103 cannot start without AUDT-04 ratification. Downstream phases (105, 106) cannot proceed without a logo. | Execute Phase 103 logo tournament immediately after ratification. |
+| **Color-system readiness** | 8/10 | 17 primitives with hex precision. Semantic mapping table exists. CSS variables are specified. D-02 remediation (Stone 600) is math-forced and executable. The seed brand book has no Stone 600 yet — this audit adds it. | Stone 500 failure (4.09:1) is the only true hex defect; it will manifest in UI if not remediated. | Add Stone 600, execute token compilation (Plan 02). |
+| **Typography readiness** | 9/10 | Three named fonts, all on Google Fonts, OFL-licensed, weights specified, fallback stacks written. Type scale with token names enumerated. Tracking value specified. | Space Grotesk market saturation without custom cuts — mitigated by D-11. | Maintain. Phase 103 must execute the letter cut brief. |
+| **Design-token readiness** | 6/10 | Brand book specifies the raw material (§8, §9, §13) but does not produce DTCG JSON or tokens.css. Token structure is not in the brand book — it is in this audit's §7. | Consumers (app.css, generator templates) cannot reliably consume tokens without the compiled output. | Execute Plan 02 (token compilation) — depends on §7 spec in this plan. |
+| **UI component readiness** | 6/10 | Route card, capability matrix, runtime ladder, manifest viewer, badge system are all described. Button states are specified. Code block treatment is precise. But no committed component examples exist yet. | Brand book users will implement inconsistently without more concrete patterns. | ADD component specimen examples in Phase 105 brand book HTML. |
+| **Docs/README usefulness** | 7/10 | §14 docs structure is detailed. §22 README guidance is concrete. §6 voice is surface-specific. Install-path and copy-snippet guidance exists. §15 microcopy library is genuinely useful. | README copy does not have a fully ready-to-use opening paragraph (§22 provides direction, not final copy). | ADD final README opening copy in §10 of this audit (brand voice section). |
+| **Marketing usefulness** | 7/10 | Taglines, hero options, and three-bullet value proposition (§5) are strong and specific. Landing page architecture (§16) is detailed. But social card format, GitHub repo description, and Hex.pm description are not final copy. | Missing copy blocks create friction at launch-time. | TIGHTEN §10 of this audit with final, ready-to-use copy blocks for all launch surfaces. |
+| **Voice/microcopy usefulness** | 8/10 | §15 microcopy library is specific, status-oriented, and correct in tone. Error messages are precise. Empty states are honest. CTA copy is good. Voice principles (§6) are actionable. | Slight gap: no explicit guidance on release note tone or changelog voice. | ADD release-note/changelog tone guidance in brand book §6 upgrade. |
+| **Accessibility** | 7/10 | Stone 500 text-pair failure is the only true hex defect (4.09:1 on Foam 50). Stone 600 remediation closes it. All dark-surface pairs pass (5.6–16.6:1). Typography font choices (Atkinson Hyperlegible Next) demonstrate accessibility intent. Focus ring is specified (2px). Reduced-motion note exists. | Stone 500 is still referenced in the brand book as "neutral/muted text on light" — this is wrong after D-02. | Fix semantic mapping in brand book §8 upgrade; enforce via token `$description` restrictions. |
+| **Repo/source-control readiness** | 6/10 | Brand book lives in prompts/ as a markdown file — not yet a committed repo artifact with proper directory structure. `.gitignore` needs brandbook tooling entries. `brandbook/` structure is being established in Phase 102. | brandbook/ artifacts may bloat the repo package if not excluded from mix.exs :files properly. | Execute Phase 102 setup tasks; confirm mix.exs :files excludes brandbook/. |
+| **Long-term maintainability** | 8/10 | Token JSON → generated CSS pattern ensures consistency. Text-based artifacts (SVG path data, JSON, CSS, markdown) are source-controllable. Size budget (<1 MB for all of brandbook/) is realistic. OSS DNA prompt (§24) is a useful maintenance artifact. | If tokens.css is edited directly rather than regenerated, the committed header is the only guard. | TIGHTEN compile-tokens.js to throw a clear error if someone tries to modify tokens.css directly (advisory; enforcement relies on contributor discipline). |
 
 ## §4 Stress Tests
 
-_(pending)_
+Per surface: is brand-book guidance sufficient, what is missing, what should be added. Untreated surfaces feed §5.
+
+| Surface | Guidance sufficient? | What is present | What is missing |
+|---------|---------------------|-----------------|-----------------|
+| **GitHub repo header** | Partial | One-liner variants, brand promise, positioning sentence (§1, §5). Color palette specified. | Final committed text for the repo description field. Social preview image spec. |
+| **README hero** | Partial | README opening direction (§22). One-liner and positioning sentence (§1, §5). Code snippet guidance (§13). | A fully ready-to-use README opening paragraph. Screenshot/diagram placement rules. |
+| **README badges** | Insufficient | Badge style exists (§13 — pill/soft rect, text labels not just colors). Runtime badge examples. | Which specific badges belong in the README header (Hex version, license, CI status format)? Badge color palette for hex.pm badge is unspecified. |
+| **Hex.pm page** | Partial | Short one-liner and description copy exists (§5). Voice guidance is applicable. | No explicit Hex.pm-specific copy. The Hex description field (≤ 160 chars) is not committed. |
+| **HexDocs page** | Partial | Docs structure (§14) is detailed. Warning box style (§14) is specified. Page template (§14). | No guidance on the docs navigation color treatment in the ExDoc theme. HexDocs has limited theming surface — is that enough? |
+| **Docs sidebar** | Insufficient | §14 provides IA structure. | No visual treatment for sidebar typography, active/hover states, or sidebar badge colors. These matter for the ExDoc theme (Phase 105 concern). |
+| **Code block styling** | Sufficient | Current 900 background, Foam 50 text, Mist 200 comments, Wake 500 keywords, Brass 500 strings, Rust 600 errors (§13). Copy button guidance exists. | Nothing critical missing. |
+| **Terminal snippet** | Sufficient | §13 code block treatment applies. JetBrains Mono specified. | No explicit terminal-prompt style ($, %, ►) — minor gap. |
+| **API reference** | Partial | §20 API naming tone is detailed. Voice guidance is precise. §14 page template exists. | No guidance on how Crosswake module/function names appear in prose citations. |
+| **Landing hero** | Sufficient | Dark Current background, Wake Mark graphic, headline options A/B/C (§5, §16), CTAs specified, subhead options exist. | No SVG/image spec for hero diagram yet (Phase 103/105 concern — not this phase). |
+| **Feature section** | Sufficient | Runtime ladder component described. Three-bullet value prop (§5). Runtime badge colors mapped to runtime tier. | Illustration style guidance exists; no committed illustration template. |
+| **Comparison section** | Partial | §3 of brand book explicitly positions against React Native, Hotwire Native, LiveView Native, Capacitor. | No comparison table template. Comparison content is scattered across §3 and §5 — consolidation would help. |
+| **Blog post header** | Insufficient | Voice is specified for community posts (§6). | No blog header visual treatment. Font weight/size for post titles is derivable from type scale but not explicitly stated for this surface. |
+| **Release announcement** | Insufficient | §6 tone guidance ("transparent, changelog-first") is present. | No release announcement template. This is a high-frequency surface for an OSS library. Brand book §6 upgrade should add one. |
+| **Social preview card** | Insufficient | Palette and typography are specified. | No OG/social card format (1200×630px), layout template, or example. This is a hard gap — every link share will use a missing spec. |
+| **Favicon** | Partial | Simplified mark at 16px mentioned (§10). Minimum sizes: favicon at 16px (§10). | No ICO/SVG favicon spec. No guidance on which colorway works at 16px. Phase 106 delivers this; gap flagged. |
+| **App icon** | Partial | §10 mentions icon mark (Wake Mark only). Minimum 24px for UI. | No rounded-rectangle app icon spec (iOS: 1024×1024 no-mask, Android: adaptive foreground/background layers). Phase 106 concern. |
+| **Small monochrome logo** | Sufficient | One-color lockup described. "Keep the mark readable in one color" is explicit (§10). | Only directional, not a committed SVG. Phase 103 delivers. |
+| **Dark-mode page** | Partial | Dark-mode semantic mapping is derivable from §8 color system. Code block dark treatment is explicit. | No explicit dark-mode surface hierarchy for non-hero UI (cards, nav, sidebars). Text on dark is underdefined beyond body + code. |
+| **Light-mode page** | Sufficient | Foam 50 background, Current 950 body text, full semantic mapping in §8. Layout (§13). | Solid foundation. |
+| **Conference slide** | Insufficient | Typography and palette provide a starting point. | No slide template, slide palette subset, slide title/body type size, or guidance on diagram placement on slides. |
+| **Architecture diagram** | Sufficient | Runtime lane diagrams described (§11). Wake seam motif. Shape language (§11). Thin map/sounding lines. | No committed diagram template. Illustration style is detailed enough to produce one. |
+| **Error/empty/success states** | Sufficient | Microcopy library (§15) covers error, empty, success states. Status color mapping in §8. Warning box style (§14). | Strong foundation. |
+| **Example UI components** | Partial | Route card, capability matrix, runtime ladder, manifest viewer (§19). Badge style. Button states (§13). | No committed component HTML or screenshot. Phase 105 delivers. |
+| **Mobile landing** | Partial | Landing page direction (§16). Responsive content width is not explicitly addressed (brand book §13 specifies desktop content widths only). | Mobile breakpoints, tap-target guidance (§21 mentions 44px but no breakpoint spec). |
+| **Sticker/swag** | Not appropriate yet | Brand book notes are minimal. | No logo as committed SVG = no sticker spec possible. Deferred to post-Phase 103. |
+
+**Summary of gaps feeding §5:**
+Critical: social preview card spec missing; dark-mode surface hierarchy is thin.
+Important: README badges (which ones, exact format), Hex.pm copy committed, conference slide template, blog/release announcement template, mobile breakpoints.
+Nice-to-have: sidebar active/hover treatment, swag format.
 
 ## §5 Gaps and Risks
 
