@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- crosswake-mark-mono.svg — Canonical Wake Mark, literal Current 950 #09141A -->
+<!-- Provenance: D-01 (Mark A, v1-baseline), D-09/D-10 (literal-hex for contexts that strip currentColor) -->
+<!-- Source: brandbook/logo/variants/v1-baseline.svg = LOGO-05 signed-off winner -->
+<!-- Geometry: identical to crosswake-mark.svg, stroke replaced with literal #09141A -->
+<!-- Usage: distribution / embed fallback when currentColor is unavailable -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Crosswake mark">
+  <g id="mark-mono" fill="none" stroke="#09141A" stroke-width="6.667" stroke-linecap="round">
+    <!-- Route segment 1: (0,43.65) to notch break start (27.30,33.71) -->
+    <line x1="0" y1="43.65" x2="27.30" y2="33.71"/>
+    <!-- Route segment 2: notch break end (36.70,30.29) to (64,20.35) -->
+    <line x1="36.70" y1="30.29" x2="64" y2="20.35"/>
+    <!-- Wake line 1: 32u span at 20-deg -->
+    <line x1="20.59" y1="50.34" x2="52.53" y2="38.71"/>
+    <!-- Wake line 2: 32u span at 20-deg -->
+    <line x1="25.15" y1="62.87" x2="57.10" y2="51.24"/>
+  </g>
+</svg>
