@@ -38,7 +38,11 @@
   3. User has ratified any audit-driven font or color changes (lightweight checkpoint) before Phase 103 begins
   4. `brandbook/tokens/crosswake.tokens.json` exists in W3C DTCG 2025.10 format with three tiers (primitive → semantic → state), including Crosswake runtime-semantic tokens (`runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive`, `runtime.bridge`)
   5. `brandbook/tokens/tokens.css` custom properties align with the JSON, contrast-annotated per pairing, and state tokens cover all 12 required states (default/hover/active/focus/disabled/selected/success/warning/error/info/subtle/muted)
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 102-01-PLAN.md — Scaffold brandbook/ + .gitignore + AUDIT.md 14-section structure + WCAG contrast.mjs (AUDT-02 ground truth)
+- [ ] 102-02-PLAN.md — Token foundation: crosswake.tokens.json (DTCG) + compile-tokens.js + generated tokens.css (TOKN-01/02/03)
+- [ ] 102-03-PLAN.md — AUDIT.md §1-§7 + Appendix A contrast matrix + §5 AUDT-03 drift flag (AUDT-01/02/03)
+- [ ] 102-04-PLAN.md — AUDIT.md §8-§14 + AUDT-04 ratification checkpoint (AUDT-01/04)
 
 ### Phase 103: Logo Tournament
 **Goal**: Seven logo candidates are presented at equal production fidelity in an HTML gallery; the phase ends only when the user has made an explicit direction selection (franken-picks allowed) — no refinement begins without this checkpoint
