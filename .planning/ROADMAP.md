@@ -98,7 +98,10 @@ Plans:
   2. README header image uses an absolute `raw.githubusercontent.com` URL with GitHub `<picture>` dark-mode handling; ExDoc `logo:` key in `mix.exs` points to the committed production mark
   3. Running `mix hex.build` produces a tarball that does not contain any `brandbook/` files; `:exclude_patterns` belt-and-suspenders is in place in `mix.exs`
   4. `brandbook/` total committed size is verified < 1 MB; `.gitignore` additions cover `brandbook/tools/node_modules/` and `brandbook/tools/fonts/`; advisory CI lane (`brandbook-verify.yml`) passes checks for size budget, SVG validity, and token JSON validity
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 106-01-PLAN.md — Collateral assets: README hero SVGs (light/dark), social card SVG+PNG, favicon rasters (COLL-01)
+- [ ] 106-02-PLAN.md — Integration + CI + closeout: README picture header, ExDoc logo + hex exclude, advisory brandbook-verify lane, size gate (COLL-02/03/04)
 
 ## Progress
 
