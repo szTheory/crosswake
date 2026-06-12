@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Candidate A: Canonical Wake Mark -->
+<!-- Provenance: hand-authored on 64-unit grid, 20-deg canonical angle (AUDIT §8) -->
+<!-- Geometry: stroke-width=6.667, notch=10u (1.5x stroke), wake-spacing=13.333u -->
+<!-- Route angle: 20-deg from horizontal (slope=-tan(20deg)=-0.364) -->
+<!-- Route: (0,43.65)→(64,20.35), center (32,32), slope verified at 20.00deg -->
+<!-- Three logical lines: route (2 segments around notch gap) + 2 trailing wake lines -->
+<!-- Direction unit vector: (cos20=0.9397, -sin20=0.3420) -->
+<!-- Perpendicular unit vector: (sin20=0.3420, cos20=0.9397) -->
+<!-- D-04: path-only, no text elements, no rect, no bounding shape -->
+<!-- D-03: 20deg crossing, 3 lines, 1.5x-stroke notch, round caps -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g id="mark-a" fill="none" stroke="currentColor"
+     stroke-width="6.667" stroke-linecap="round">
+    <!-- Route line segment 1: (0,43.65) to notch break start (27.30,33.71) -->
+    <line x1="0" y1="43.65" x2="27.30" y2="33.71" />
+    <!-- Route line segment 2: notch break end (36.70,30.29) to (64,20.35) -->
+    <line x1="36.70" y1="30.29" x2="64" y2="20.35" />
+    <!-- Wake line 1: center (36.56,44.53), length 32u, same slope as route -->
+    <line x1="20.59" y1="50.34" x2="52.53" y2="38.71" />
+    <!-- Wake line 2: center (41.12,57.06), length 32u, same slope as route -->
+    <line x1="25.15" y1="62.87" x2="57.10" y2="51.24" />
+  </g>
+</svg>
