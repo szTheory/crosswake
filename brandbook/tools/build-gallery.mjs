@@ -13,7 +13,13 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { candidates, recommendation, frankenInvitation } from './gallery-content.mjs';
+import {
+  candidates,
+  round2Candidates,
+  recommendation,
+  round2Recommendation,
+  frankenInvitation,
+} from './gallery-content.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../..');
@@ -66,14 +72,10 @@ function svgLockupBox(svgStr) {
  * Build the favicon tab mock HTML for a candidate.
  * The favicon area is a CSS-drawn browser-tab simulation at 16px icon scale.
  * @param {string} markSvgStr - The mark SVG (for A–D) or wordmark SVG (for E–G)
- * @param {string} candidateId - Letter A–G
+ * @param {string} candidateId - Candidate ID
  * @param {string} label - Tab label text
  */
 function faviconMock(markSvgStr, candidateId, label) {
-  // Determine which SVG to use in the favicon:
-  // For E, F, G (typemarks) we show the full wordmark scaled down — impractical as a real favicon,
-  // which makes the visual comparison instructive.
-  // For A–D (marks) we show the mark at 16px.
   const iconSized = markSvgStr.replace(
     /<svg\b/,
     `<svg style="width:16px;height:16px;display:inline-block;vertical-align:middle;"`
@@ -107,18 +109,34 @@ function getSvg(filename) {
   return svgCache[filename];
 }
 
-// Preload all candidate SVGs
+// Preload all Round 1 candidate SVGs
 const candidateIds = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 for (const id of candidateIds) {
   getSvg(`${id}.svg`);
 }
-// Preload lockups for A–D
+// Preload lockups for R1 marks A–D
 for (const id of ['A', 'B', 'C', 'D']) {
   getSvg(`${id}-lockup-horizontal.svg`);
   getSvg(`${id}-lockup-stacked.svg`);
 }
 
-// ─── Card builder ────────────────────────────────────────────────────────────────
+// Preload Round 2 SVGs
+const r2SvgFiles = [
+  'wordmark-t1.svg',
+  'B2.svg',
+  'wordmark-seamstep.svg',
+  'R2D-oport.svg',
+  'R2-A-lockup-horizontal.svg',
+  'R2-A-lockup-stacked.svg',
+  'R2-B-lockup-horizontal.svg',
+  'R2-B-lockup-stacked.svg',
+  'R2-C-lockup-horizontal.svg',
+];
+for (const f of r2SvgFiles) {
+  getSvg(f);
+}
+
+// ─── Round 1 Card builder ────────────────────────────────────────────────────────
 
 function buildCard(candidate, isRecommended = false) {
   const { id, name, concept, rationale, risk } = candidate;
@@ -178,7 +196,7 @@ function buildCard(candidate, isRecommended = false) {
       </div>`;
   }
 
-  // Favicon mock — for typemarks, use the SVG as-is (instructive: shows it won't work well)
+  // Favicon mock
   const faviconSvg = svgStr;
   const faviconHtml = faviconMock(faviconSvg, id, name);
 
@@ -252,6 +270,157 @@ function buildCard(candidate, isRecommended = false) {
 </section>`;
 }
 
+// ─── Round 2 Card builder ────────────────────────────────────────────────────────
+
+function buildR2Card(candidate, isRecommended = false) {
+  const {
+    id, name, concept, rationale, risk, feedbackResponse,
+    hasLockups, markFile, lockupHorizFile, lockupStackedFile, typemarkFile, isExploratory,
+  } = candidate;
+
+  // Determine primary render SVG and render type
+  const isTypemark = !markFile && !!typemarkFile;
+  const primarySvgFile = isTypemark ? typemarkFile : markFile;
+  const primarySvg = getSvg(primarySvgFile);
+
+  function swatchRender(swatchClass, label) {
+    if (isTypemark) {
+      const sized = primarySvg.replace(
+        /<svg\b/,
+        `<svg style="height:64px;width:auto;display:block;max-width:100%;"`
+      );
+      return `
+        <div class="swatch ${swatchClass}">
+          <div class="swatch-label">${label}</div>
+          <div class="swatch-inner typemark-render">${sized}</div>
+        </div>`;
+    }
+    return `
+      <div class="swatch ${swatchClass}">
+        <div class="swatch-label">${label}</div>
+        <div class="swatch-inner">${svgBox(primarySvg, 256)}</div>
+      </div>`;
+  }
+
+  function monoRender() {
+    if (isTypemark) {
+      const sized = primarySvg.replace(
+        /<svg\b/,
+        `<svg style="height:48px;width:auto;display:block;max-width:100%;"`
+      );
+      return `<div class="mono-render typemark-render">${sized}</div>`;
+    }
+    return `<div class="mono-render">${svgBox(primarySvg, 128)}</div>`;
+  }
+
+  function smallRenders() {
+    if (isTypemark) {
+      const s24 = primarySvg.replace(/<svg\b/, `<svg style="height:24px;width:auto;display:inline-block;vertical-align:middle;"`);
+      const s16 = primarySvg.replace(/<svg\b/, `<svg style="height:16px;width:auto;display:inline-block;vertical-align:middle;"`);
+      return `
+        <div class="small-renders">
+          <div class="small-render-item"><span class="render-size-label">24px</span>${s24}</div>
+          <div class="small-render-item"><span class="render-size-label">16px</span>${s16}</div>
+        </div>`;
+    }
+    return `
+      <div class="small-renders">
+        <div class="small-render-item"><span class="render-size-label">24px</span>${svgBox(primarySvg, 24)}</div>
+        <div class="small-render-item"><span class="render-size-label">16px</span>${svgBox(primarySvg, 16)}</div>
+      </div>`;
+  }
+
+  const faviconHtml = faviconMock(primarySvg, id, name);
+
+  // Lockups section
+  let lockupsHtml = '';
+  if (hasLockups) {
+    const horizSvg = getSvg(lockupHorizFile);
+    lockupsHtml = `
+      <div class="lockups-section">
+        <h4 class="section-subtitle">Lockups</h4>
+        <div class="lockup-row">
+          <div class="lockup-item">
+            <span class="lockup-label">Horizontal</span>
+            ${svgLockupBox(horizSvg)}
+          </div>`;
+    if (lockupStackedFile) {
+      const stackedSvg = getSvg(lockupStackedFile);
+      lockupsHtml += `
+          <div class="lockup-item">
+            <span class="lockup-label">Stacked</span>
+            <div class="stacked-lockup-wrap">${svgLockupBox(stackedSvg)}</div>
+          </div>`;
+    } else {
+      lockupsHtml += `
+          <div class="lockup-item">
+            <span class="lockup-label">Stacked</span>
+            <p class="lockup-note">No stacked lockup — seam-step line requires horizontal layout to read the step.</p>
+          </div>`;
+    }
+    lockupsHtml += `
+        </div>
+      </div>`;
+  } else if (isTypemark) {
+    lockupsHtml = `<div class="lockups-section"><p class="lockup-note"><strong>Standalone typemark only</strong> — pairing this with a mark creates visual overload (two route signals). Use as wordmark-only, minimum 24px rendered.</p></div>`;
+  }
+
+  const recommendedBadge = isRecommended
+    ? `<span class="recommended-badge">Maintainer pick</span>`
+    : '';
+  const exploratoryBadge = isExploratory
+    ? `<span class="exploratory-badge">Exploratory</span>`
+    : '';
+
+  return `
+<section class="candidate-card r2-card" id="candidate-${id}">
+  <div class="card-header">
+    <h2 class="candidate-id r2-id">${id}</h2>
+    <div class="candidate-meta">
+      <h3 class="candidate-name">${name}${recommendedBadge}${exploratoryBadge}</h3>
+      <p class="candidate-concept">${concept}</p>
+    </div>
+  </div>
+
+  <div class="render-matrix">
+    <h4 class="section-subtitle">Color contexts${isTypemark ? ' (typemark)' : ' (mark only — see lockups for full treatment)'}</h4>
+    <div class="swatch-row">
+      ${swatchRender('swatch-foam', 'Foam #F7F1E6')}
+      ${swatchRender('swatch-dark', 'Current #09141A')}
+      ${swatchRender('swatch-white', 'White')}
+    </div>
+
+    <h4 class="section-subtitle">Monochrome</h4>
+    <div class="mono-row">
+      ${monoRender()}
+    </div>
+
+    <h4 class="section-subtitle">Small renders</h4>
+    ${smallRenders()}
+
+    <h4 class="section-subtitle">Browser tab (favicon mock, 16px)</h4>
+    ${faviconHtml}
+  </div>
+
+  ${lockupsHtml}
+
+  <div class="card-copy">
+    <div class="rationale-block">
+      <h4 class="copy-label">Rationale</h4>
+      <p>${rationale}</p>
+    </div>
+    <div class="risk-block">
+      <h4 class="copy-label risk-label">Risk</h4>
+      <p>${risk}</p>
+    </div>
+  </div>
+  <div class="feedback-response-block">
+    <h4 class="copy-label feedback-label">Round-1 feedback response</h4>
+    <p class="feedback-response-text">${feedbackResponse}</p>
+  </div>
+</section>`;
+}
+
 // ─── Lineup grid ────────────────────────────────────────────────────────────────
 
 function buildLineupGrid() {
@@ -277,27 +446,26 @@ function buildLineupGrid() {
 
   return `
 <section class="lineup-section">
-  <h2 class="section-title">Equal-size lineup — all seven candidates</h2>
-  <p class="section-intro">Marks at 80px, typemarks scaled to 48px height. Evaluate for distinctiveness and family coherence.</p>
+  <h2 class="section-title">Round 1 — equal-size lineup (A–G)</h2>
+  <p class="section-intro">Marks at 80px, typemarks scaled to 48px height. All seven round-1 candidates for reference.</p>
   <div class="lineup-grid">
     ${cells}
   </div>
 </section>`;
 }
 
-// ─── Recommendation section ──────────────────────────────────────────────────────
+// ─── Round 2 Recommendation section ────────────────────────────────────────────
 
-function buildRecommendationSection() {
-  const rec = recommendation;
+function buildR2RecommendationSection() {
+  const rec = round2Recommendation;
   const { candidateId, headline, reasoning } = rec;
 
-  // Find the recommended candidate data
-  const cand = candidates.find((c) => c.id === candidateId);
-  const cardHtml = buildCard(cand, true);
+  const cand = round2Candidates.find((c) => c.id === candidateId);
+  const cardHtml = buildR2Card(cand, true);
 
   return `
 <section class="recommendation-section" id="recommendation">
-  <h2 class="section-title">Maintainer recommendation</h2>
+  <h2 class="section-title">Round 2 — Maintainer recommendation</h2>
   <p class="durability-frame">Judged on: <strong>works at 16px, in one color, in five years.</strong> Not on taste.</p>
   <blockquote class="rec-reasoning">${reasoning}</blockquote>
   <div class="rec-candidate">
@@ -306,6 +474,25 @@ function buildRecommendationSection() {
   <div class="franken-section">
     <h3 class="franken-title">Franken-picks welcome</h3>
     ${frankenInvitation}
+  </div>
+</section>`;
+}
+
+// ─── Round 1 Recommendation section (preserved) ────────────────────────────────
+
+function buildR1RecommendationSection() {
+  const rec = recommendation;
+  const { candidateId, reasoning } = rec;
+  const cand = candidates.find((c) => c.id === candidateId);
+  const cardHtml = buildCard(cand, true);
+
+  return `
+<section class="recommendation-section r1-recommendation" id="r1-recommendation">
+  <h2 class="section-title">Round 1 — Maintainer recommendation (reference only)</h2>
+  <p class="durability-frame">Round 1 was superseded by round-2 feedback. Preserved for provenance.</p>
+  <blockquote class="rec-reasoning">${reasoning}</blockquote>
+  <div class="rec-candidate">
+    ${cardHtml}
   </div>
 </section>`;
 }
@@ -343,6 +530,46 @@ body {
   padding-left: 0.75rem;
 }
 
+/* ── Round dividers ──────────────────────────────────────────────── */
+.round-divider {
+  max-width: 900px;
+  margin: 3rem auto 2rem;
+  border-bottom: 2px solid var(--cw-border-strong, #2B756A);
+  padding-bottom: 0.75rem;
+}
+.round-divider h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cw-text-default, #09141A);
+  margin-bottom: 0.25rem;
+}
+.round-divider p {
+  font-size: 0.9rem;
+  color: var(--cw-text-muted, #756D63);
+}
+
+/* ── Round 1 section (reference/collapsed) ─────────────────────── */
+.r1-section {
+  border-top: 2px dashed var(--cw-border-default, #C9D4CF);
+  margin-top: 4rem;
+  padding-top: 2rem;
+}
+.r1-section-header {
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+}
+.r1-section-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cw-text-muted, #756D63);
+  margin-bottom: 0.5rem;
+}
+.r1-section-note {
+  font-size: 0.9rem;
+  color: var(--cw-text-muted, #756D63);
+  font-style: italic;
+}
+
 .candidate-card, .recommendation-section, .lineup-section {
   max-width: 900px;
   margin: 0 auto 4rem;
@@ -350,6 +577,15 @@ body {
   border-radius: 8px;
   padding: 2rem;
   border: 1px solid var(--cw-border-default, #C9D4CF);
+}
+
+/* ── Round 2 card accent ──────────────────────────────────────────── */
+.r2-card {
+  border-color: var(--cw-border-strong, #2B756A);
+  border-width: 1.5px;
+}
+.r2-id {
+  color: var(--cw-border-strong, #2B756A);
 }
 
 /* ── Card header ─────────────────────────────────────────────────── */
@@ -380,6 +616,19 @@ body {
   display: inline-block;
   margin-left: 0.75rem;
   background: var(--cw-border-strong, #2B756A);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.exploratory-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  background: #9A4D35;
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -498,7 +747,6 @@ body {
 }
 
 /* ── Favicon mock ────────────────────────────────────────────────── */
-/* Pattern 6: CSS-drawn browser-tab simulator */
 .favicon-mock-wrap {
   display: inline-block;
   border: 1px solid #C0C0C0;
@@ -602,6 +850,12 @@ body {
   padding: 1rem;
   color: #09141A;
 }
+.lockup-note {
+  font-size: 0.85rem;
+  color: var(--cw-text-muted, #756D63);
+  font-style: italic;
+  padding: 0.5rem 0;
+}
 .stacked-lockup-wrap {
   max-width: 120px;
 }
@@ -627,10 +881,22 @@ body {
   margin-bottom: 0.35rem;
 }
 .risk-label { color: #9A4D35; }
+.feedback-label { color: var(--cw-border-strong, #2B756A); }
 .rationale-block p, .risk-block p {
   font-size: 0.9rem;
   color: var(--cw-text-default, #09141A);
   line-height: 1.6;
+}
+.feedback-response-block {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cw-border-default, #C9D4CF);
+}
+.feedback-response-text {
+  font-size: 0.9rem;
+  color: var(--cw-text-default, #09141A);
+  line-height: 1.6;
+  font-style: italic;
 }
 
 /* ── Lineup grid ─────────────────────────────────────────────────── */
@@ -660,6 +926,10 @@ body {
 .recommendation-section {
   background: var(--cw-surface-inset, #FFFFFF);
   border: 2px solid var(--cw-border-strong, #2B756A);
+}
+.r1-recommendation {
+  border-color: var(--cw-border-default, #C9D4CF);
+  border-width: 1px;
 }
 .durability-frame {
   font-size: 1rem;
@@ -717,14 +987,17 @@ body {
 // ─── Assemble the page ───────────────────────────────────────────────────────────
 
 function buildPage() {
-  // Build all candidate cards
-  const cardSections = candidates.map((c) => buildCard(c)).join('\n');
+  // Round 2 section — leads the page
+  const r2Cards = round2Candidates.map((c) => buildR2Card(c)).join('\n');
+  const r2RecSection = buildR2RecommendationSection();
 
-  // Build lineup
-  const lineup = buildLineupGrid();
+  // Round 1 section — for reference only, after Round 2
+  const r1Cards = candidates.map((c) => buildCard(c)).join('\n');
+  const r1LineupSection = buildLineupGrid();
+  const r1RecSection = buildR1RecommendationSection();
 
-  // Build recommendation
-  const recSection = buildRecommendationSection();
+  // R2 IDs for sanity check
+  const r2Ids = round2Candidates.map(c => c.id);
 
   return `<!DOCTYPE html>
 <!-- GENERATED by build-gallery.mjs — edit gallery-content.mjs and re-run -->
@@ -732,23 +1005,36 @@ function buildPage() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crosswake Logo Tournament — All Candidates</title>
+  <title>Crosswake Logo Tournament — Round 2</title>
   <link rel="stylesheet" href="../../tokens/tokens.css">
   <style>${PAGE_CSS}</style>
 </head>
 <body>
 
 <header class="page-header">
-  <h1 class="page-title">Crosswake Logo Tournament</h1>
-  <p class="page-subtitle">Candidates A–G at equal production fidelity</p>
+  <h1 class="page-title">Crosswake Logo Tournament — Round 2</h1>
+  <p class="page-subtitle">Four candidates responding to round-1 feedback. Round 1 preserved below for reference.</p>
   <p class="durability-headline">Evaluation criterion: which still works at 16px, in one color, in five years.</p>
 </header>
 
-${cardSections}
+<div class="round-divider">
+  <h2>Round 2 Candidates</h2>
+  <p>All four round-2 candidates below. Round-1 section follows at the bottom of this page.</p>
+</div>
 
-${lineup}
+${r2Cards}
 
-${recSection}
+${r2RecSection}
+
+<div class="r1-section">
+  <div class="r1-section-header">
+    <p class="r1-section-label">Round 1 — for reference</p>
+    <p class="r1-section-note">Round-1 candidates A–G. Kept for provenance. Marks A and B survived to round 2 (as A and B2). Typemarks E/F/G were rejected as a class — see round-2 feedback for diagnosis.</p>
+  </div>
+  ${r1Cards}
+  ${r1LineupSection}
+  ${r1RecSection}
+</div>
 
 </body>
 </html>`;
@@ -762,6 +1048,7 @@ console.log(`Generated: ${OUT_FILE}`);
 console.log(`Size: ${(html.length / 1024).toFixed(1)} KB`);
 
 // Quick sanity checks
+const r2Ids = round2Candidates.map(c => c.id);
 const checks = {
   'tokens.css link present': html.includes('tokens.css'),
   'swatch-foam class defined': html.includes('swatch-foam'),
@@ -771,8 +1058,11 @@ const checks = {
   'No <img for candidate renders': !html.match(/<img[^>]+src[^>]*>/),
   'currentColor present': html.includes('currentColor'),
   'franken text present': html.toLowerCase().includes('franken'),
-  'All 7 candidate ids': candidateIds.every((id) => html.includes(`id="candidate-${id}"`)),
+  'All 7 R1 candidate ids': candidateIds.every((id) => html.includes(`id="candidate-${id}"`)),
+  'All 4 R2 candidate ids': r2Ids.every((id) => html.includes(`id="candidate-${id}"`)),
   'Recommendation section': html.includes('id="recommendation"'),
+  'Round 2 section present': html.includes('Round 2'),
+  'Round 1 reference section': html.includes('Round 1'),
   'No <text elements in SVG': !html.match(/<text[\s>]/),
 };
 
