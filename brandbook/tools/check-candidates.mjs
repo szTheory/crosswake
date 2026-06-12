@@ -43,14 +43,26 @@ export function checkSvg(svgContent, filename) {
     return violations; // Cannot do further checks without svg root
   }
 
-  // Count open/close tags for critical elements (simplified balance check)
-  const openTags = (svgContent.match(/<[a-z][^/!>]*(?:[^/]|^)>/gi) || []).length;
-  const closeTags = (svgContent.match(/<\/[a-z]/gi) || []).length;
-  const selfClose = (svgContent.match(/<[a-z][^>]*\/>/gi) || []).length;
-  // Simple heuristic: open tags should roughly equal close + self-close tags
-  // Allow ±5 tolerance for edge cases in complex SVG comment parsing
-  if (Math.abs(openTags - closeTags - selfClose) > 10) {
-    violations.push(`possible malformed XML: ${openTags} open, ${closeTags} close, ${selfClose} self-closing tags`);
+  // Stack-based tag balance check (comments/prolog/doctype stripped first).
+  // Attribute values may contain '/', '<'-free URLs, etc. — tokenize whole tags.
+  const stripped = svgContent.replace(/<!--[\s\S]*?-->/g, '').replace(/<\?[\s\S]*?\?>/g, '').replace(/<![\s\S]*?>/g, '');
+  const stack = [];
+  let balanceError = null;
+  const tagRe = /<(\/?)([a-zA-Z][\w:-]*)((?:"[^"]*"|'[^']*'|[^"'>])*?)(\/?)>/g;
+  let t;
+  while ((t = tagRe.exec(stripped)) !== null) {
+    const [, isClose, name, , isSelf] = t;
+    if (isSelf) continue;
+    if (isClose) {
+      const top = stack.pop();
+      if (top !== name) { balanceError = `</${name}> closes <${top ?? 'nothing'}>`; break; }
+    } else {
+      stack.push(name);
+    }
+  }
+  if (!balanceError && stack.length > 0) balanceError = `unclosed <${stack[stack.length - 1]}>`;
+  if (balanceError) {
+    violations.push(`malformed XML: ${balanceError}`);
   }
 
   // (b) No <text elements (D-04: path-only SVG)
