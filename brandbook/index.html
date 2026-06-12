@@ -527,19 +527,264 @@
 <!-- ── Section 5: Typography ── -->
 <section id="typography" class="book-section">
   <h2>Typography</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+
+  <!-- Display face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">Space Grotesk</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">display</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Hero headings, section headings, short callouts. Weights 500/600/700. Letter-cut `w`/`k` at 20° wake angle in the production wordmark (D-11 mandatory).</p>
+    <div style="background-color:var(--cw-surface-raised);border-radius:0.5rem;padding:2rem;margin-bottom:0.75rem;">
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:var(--cw-text-default);">Declare the crossing.</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:600;color:var(--cw-text-default);margin-top:0.75rem;">Phoenix routes, native where it matters.</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:500;color:var(--cw-text-muted);margin-top:0.5rem;">Route policy for Phoenix apps that go mobile.</p>
+    </div>
+    <div class="code-block"><span style="color:var(--cw-primitive-mist-200);">/* Fallback stack */</span>
+--cw-font-display: <span style="color:var(--cw-primitive-brass-500);">"Space Grotesk"</span>, ui-sans-serif, system-ui, -apple-system, <span style="color:var(--cw-primitive-brass-500);">"Segoe UI"</span>, sans-serif;</div>
+  </div>
+
+  <!-- Body face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">Atkinson Hyperlegible Next</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">body</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Documentation body, UI labels, component copy, long-form guides. Weights 400/500/600. Designed for legibility — accessibility as a visible brand feature.</p>
+    <div style="background-color:var(--cw-surface-raised);border-radius:0.5rem;padding:2rem;margin-bottom:0.75rem;">
+      <p style="font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',sans-serif;font-size:1rem;line-height:1.6;color:var(--cw-text-default);">Crosswake helps Phoenix teams ship mobile apps by making runtime boundaries explicit: server-centric screens stay LiveView, device-heavy flows go native, and local-first work lives in offline islands.</p>
+      <p style="font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',sans-serif;font-size:0.875rem;line-height:1.55;color:var(--cw-text-muted);margin-top:0.75rem;">Each route declares its runtime, capabilities, offline policy, and security posture. The system tells you exactly what runs where, what can fail, and what you own versus what Crosswake owns.</p>
+    </div>
+    <div class="code-block">--cw-font-body: <span style="color:var(--cw-primitive-brass-500);">"Atkinson Hyperlegible Next"</span>, ui-sans-serif, system-ui, -apple-system, <span style="color:var(--cw-primitive-brass-500);">"Segoe UI"</span>, sans-serif;</div>
+  </div>
+
+  <!-- Code face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">JetBrains Mono</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">mono</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Code blocks, inline code, CLI examples, version and manifest values. Weights 400/500.</p>
+    <div class="code-block">route <span style="color:var(--cw-primitive-brass-500);">"/study/session"</span>,
+  runtime: {<span style="color:var(--cw-primitive-wake-500);">:offline_island</span>, <span style="color:var(--cw-primitive-brass-500);">"study.session"</span>},
+  content_pack: <span style="color:var(--cw-primitive-wake-500);">:daily_study</span>,
+  capabilities: [<span style="color:var(--cw-primitive-wake-500);">:audio</span>, <span style="color:var(--cw-primitive-wake-500);">:haptics</span>]</div>
+    <div class="code-block" style="margin-top:0.5rem;">--cw-font-mono: <span style="color:var(--cw-primitive-brass-500);">"JetBrains Mono"</span>, <span style="color:var(--cw-primitive-brass-500);">"SFMono-Regular"</span>, Consolas, <span style="color:var(--cw-primitive-brass-500);">"Liberation Mono"</span>, monospace;</div>
+  </div>
+
+  <!-- Type scale -->
+  <h3>Type Scale</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:1rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Token</th>
+        <th style="text-align:right;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Size</th>
+        <th style="text-align:right;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Line height</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.xs</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">12px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">16px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Badges, metadata</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.sm</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">14px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">20px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Nav, labels</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.md</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">16px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">24px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Body</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.lg</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">18px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">28px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Lead body</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.xl</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">20px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">30px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Card headings</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.sm</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">28px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">36px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Docs page title</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.md</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">40px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">48px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Landing section title (–0.02em tracking)</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.lg</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">56px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">64px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Hero headline (–0.02em tracking)</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <!-- ── Section 6: Design Tokens ── -->
 <section id="tokens" class="book-section">
   <h2>Design Tokens</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">The Crosswake token system uses two tiers. No component tier — deliberate to prevent naming churn and keep the public contract stable.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:1rem;margin-bottom:2.5rem;">
+    <div class="route-card">
+      <div class="route-card__label">Tier 1</div>
+      <div class="route-card__title">Primitive tokens</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Internal only. Raw hex values. Never reference in component CSS. Named <code>--cw-primitive-{family}-{weight}</code>.</p>
+      <p style="font-size:0.8rem;font-family:'JetBrains Mono',monospace;color:var(--cw-text-subtle);margin-top:0.5rem;">17 total (16 palette + Stone 600)</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Tier 2</div>
+      <div class="route-card__title">Semantic tokens</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Public contract. Named <code>--cw-{role}-{variant}</code>. These are the only tokens component CSS should reference.</p>
+      <p style="font-size:0.8rem;font-family:'JetBrains Mono',monospace;color:var(--cw-text-subtle);margin-top:0.5rem;">27 total (surface/text/action/border/status/runtime)</p>
+    </div>
+  </div>
+
+  <h3>Source Files</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:2rem;">
+    <a href="tokens/crosswake.tokens.json" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.875rem;border:1px solid var(--cw-border-default);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);text-decoration:none;background-color:var(--cw-surface-raised);">
+      <span>tokens/crosswake.tokens.json</span>
+    </a>
+    <a href="tokens/tokens.css" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.875rem;border:1px solid var(--cw-border-default);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);text-decoration:none;background-color:var(--cw-surface-raised);">
+      <span>tokens/tokens.css</span>
+    </a>
+  </div>
+  <div class="callout" style="margin-bottom:2rem;">
+    <strong>Edit policy:</strong> Always edit <code>crosswake.tokens.json</code> and run <code>node brandbook/tools/compile-tokens.js</code>. The <code>tokens.css</code> file is generated — its header reads "GENERATED — do not edit."
+  </div>
+
+  <h3>Worked Examples</h3>
+  <div class="code-block" style="margin-bottom:1rem;"><span style="color:var(--cw-primitive-mist-200);">/* 1. Body text on light background */</span>
+color: <span style="color:var(--cw-primitive-wake-500);">var(--cw-text-default)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → --cw-primitive-current-950 (#09141A) */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-surface-default)</span>;    <span style="color:var(--cw-primitive-mist-200);">/* resolves → --cw-primitive-foam-50 (#F7F1E6) */</span></div>
+  <div class="code-block" style="margin-bottom:1rem;"><span style="color:var(--cw-primitive-mist-200);">/* 2. Primary button (light mode) */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-bg)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → wake-700 (#2B756A) */</span>
+color:      <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-fg)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → white (#FFFFFF) */</span>
+outline:    2px solid <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-focus-ring)</span>; <span style="color:var(--cw-primitive-mist-200);">/* focus: brass-500 */</span></div>
+  <div class="code-block"><span style="color:var(--cw-primitive-mist-200);">/* 3. Runtime badge — offline island */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-runtime-offline)</span>;    <span style="color:var(--cw-primitive-mist-200);">/* resolves → kelp-800 (#123B36) */</span>
+color:      <span style="color:var(--cw-primitive-wake-500);">var(--cw-text-inverse)</span>;      <span style="color:var(--cw-primitive-mist-200);">/* resolves → foam-50 (#F7F1E6) */</span></div>
+
+  <h3 style="margin-top:2rem;">Dark Mode</h3>
+  <p style="color:var(--cw-text-muted);margin-bottom:1rem;">Only semantic tokens flip in dark mode; primitives never change. System dark mode uses <code>@media (prefers-color-scheme: dark)</code>; explicit toggle uses <code>[data-theme="dark"]</code>.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Surface level</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Dark value</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.default</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-950</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Page background</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.raised</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-900</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Cards, code blocks</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.inset</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-800</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Inset panels, nested cards</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.inverse</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">foam-50</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">CTA sections, callouts</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 <!-- ── Section 7: Motifs ── -->
 <section id="motifs" class="book-section">
   <h2>Motifs</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">The Crosswake visual language uses three motifs. Restraint is the point — these appear sparse, never decorative for decoration's sake.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:2rem;margin-bottom:2rem;">
+
+    <!-- Wake seams -->
+    <div>
+      <h3 style="margin-bottom:0.75rem;">Wake Seams</h3>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-bottom:1rem;">Diagonal or gently curved line groups implying movement through a runtime boundary. 2–4 parallel lines, rounded caps, 1.5–3px stroke. Used in hero backgrounds, diagram dividers, and section accents.</p>
+      <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:2rem;display:flex;align-items:center;justify-content:center;">
+        <!-- Wake seam motif: 3 parallel diagonal lines at 20deg, sparse -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Wake seam motif — three parallel diagonal lines" width="200" height="80">
+          <g fill="none" stroke="#2B756A" stroke-width="2" stroke-linecap="round">
+            <!-- Wake seam 1 -->
+            <line x1="30" y1="68" x2="110" y2="38"/>
+            <!-- Wake seam 2 (trailing) -->
+            <line x1="50" y1="74" x2="130" y2="44"/>
+            <!-- Wake seam 3 (trailing farther) -->
+            <line x1="70" y1="80" x2="150" y2="50"/>
+          </g>
+          <!-- Crossing route line -->
+          <g fill="none" stroke="#4E9A8E" stroke-width="2" stroke-linecap="round">
+            <line x1="20" y1="58" x2="76" y2="38"/>
+            <line x1="84" y1="35.4" x2="180" y2="8"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:0.8rem;color:var(--cw-text-subtle);margin-top:0.5rem;">Used in hero backgrounds, section dividers, empty states. Never behind dense text.</p>
+    </div>
+
+    <!-- Runtime lanes -->
+    <div>
+      <h3 style="margin-bottom:0.75rem;">Runtime Lanes</h3>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-bottom:1rem;">Horizontal or vertical lanes showing which runtime owns each route. These diagrams should feel like technical maps, not marketing infographics.</p>
+      <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:1.25rem;">
+        <!-- Runtime lanes motif: vertical lane strip with labels -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100" role="img" aria-label="Runtime lanes motif — four labeled lanes" width="100%" height="100" style="display:block;">
+          <defs>
+            <style>
+              .lane-label { font-size: 9px; font-family: 'JetBrains Mono', monospace; fill: #F7F1E6; }
+            </style>
+          </defs>
+          <!-- Lane backgrounds -->
+          <rect x="2"   y="10" width="60" height="80" rx="4" fill="#254855" opacity="0.8"/>
+          <rect x="72"  y="10" width="60" height="80" rx="4" fill="#123B36" opacity="0.8"/>
+          <rect x="142" y="10" width="60" height="80" rx="4" fill="#946017" opacity="0.6"/>
+          <rect x="212" y="10" width="60" height="80" rx="4" fill="#9A4D35" opacity="0.7"/>
+          <!-- Lane labels (accessible text; no font binaries — system stack) -->
+          <text x="32"  y="50" text-anchor="middle" class="lane-label" dy="0.35em">LiveView</text>
+          <text x="102" y="44" text-anchor="middle" class="lane-label" dy="0.35em">Offline</text>
+          <text x="102" y="58" text-anchor="middle" class="lane-label" dy="0.35em">Island</text>
+          <text x="172" y="50" text-anchor="middle" class="lane-label" dy="0.35em">Native</text>
+          <text x="242" y="44" text-anchor="middle" class="lane-label" dy="0.35em">Sensitive</text>
+          <!-- Route path across lanes -->
+          <g fill="none" stroke="#C98A2E" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 3" opacity="0.8">
+            <polyline points="2,55 62,55 72,55 132,55 142,55 202,55 212,55 272,55"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:0.8rem;color:var(--cw-text-subtle);margin-top:0.5rem;">Used in architecture diagrams, runtime ladder, docs. Route lines cross lane boundaries explicitly.</p>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <strong>Usage rule:</strong> Motifs appear sparse. A wake seam in a hero does not need to be accompanied by runtime lanes. Sounding lines (thin contour-like background lines, opacity &lt;12%) may complement but never compete with content. Never use motifs as watermarks behind dense text.
+  </div>
 </section>
 
 <!-- ── Section 8: Voice & Microcopy ── -->
