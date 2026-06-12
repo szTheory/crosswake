@@ -69,7 +69,10 @@
   2. Production suite contains path-only SVGs for: mark (light/dark/mono/signal colorway), horizontal lockup (light/dark), stacked lockup (light/dark), subtitle variant, and typemark — no `<text>` elements, no rectangular container backgrounds, correct fill rules
   3. A dedicated 16-grid `favicon.svg` exists with strokes outlined to filled paths, verified to render legibly at 16px
   4. Wordmark path data was generated via opentype.js 2.0.0 with the correct Y-baseline and `fill-rule="evenodd"` applied; the provenance script is committed in `brandbook/tools/`; font binaries and `node_modules/` are gitignored
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 104-01-PLAN.md — Micro-variant refinement: 3 single-axis variants + file:// color-reveal page (4 colorways) + render-verify + production validator
+  - [ ] 104-02-PLAN.md — LOGO-05 blocking sign-off checkpoint (user picks V1/V2/V3)
+  - [ ] 104-03-PLAN.md — Production suite: 8 path-only SVGs (mark/mono/typemark/lockups/subtitle/favicon) + LOGO-07 regen + size budget
 
 ### Phase 105: HTML Brand Book
 **Goal**: A standalone long-scroll HTML brand book and the authoritative BRAND-SPEC.md v1.0 ship with all brand elements assembled and no build step required
