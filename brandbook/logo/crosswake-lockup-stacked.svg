@@ -6,7 +6,7 @@
 <!-- Mark is centered horizontally over the wordmark (wordmark width ~362.67, center ~183.34) -->
 <!-- Mark 64px centered at x=(183.34-64/2)=151.34, y=0 -->
 <!-- Wordmark: original viewBox 3.74 19.44 362.67 52.42 — place at y=76 (gap 12u) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 370.41 140" role="img" aria-labelledby="t-ls">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 370.41 150" role="img" aria-labelledby="t-ls">
 <title id="t-ls">Crosswake</title>
 <defs>
   <clipPath id="wake-cuts-ls" clipPathUnits="userSpaceOnUse">
