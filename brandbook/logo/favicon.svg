@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- favicon.svg — dedicated 16-grid redraw, NOT a scaled-down mark -->
+<!-- Provenance: D-09 (16-grid, max 2 strokes, pixel-snapped, round caps, prefers-color-scheme) -->
+<!-- 20-deg crossing preserved: slope -tan(20deg)=-0.364 on 16-unit grid -->
+<!-- Route: (1,10.5)→(15,5.4), Wake: (1,14)→(12,10) — pixel-snapped integer/half coords -->
+<!-- stroke-width=1.5 (proportional to 6.667/64 scaled to 16px ≈ 1.67, snapped to 1.5) -->
+<!-- Internal prefers-color-scheme: light default #09141A, dark swap #F7F1E6 -->
+<!-- D-09: path/line-only, no text, no fill rect; self-contained (no external refs) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="Crosswake">
+  <style>
+    .wake { stroke: #09141A }
+    @media (prefers-color-scheme: dark) { .wake { stroke: #F7F1E6 } }
+  </style>
+  <g fill="none" stroke-width="1.5" stroke-linecap="round">
+    <!-- Route line: (1,10.5)→(15,5.4), slope=(5.4-10.5)/(15-1)=-0.364=-tan(20deg) -->
+    <line class="wake" x1="1" y1="10.5" x2="15" y2="5.4"/>
+    <!-- Wake line: (1,14)→(12,10), slope=(10-14)/(12-1)=-0.364=-tan(20deg) -->
+    <line class="wake" x1="1" y1="14" x2="12" y2="10"/>
+  </g>
+</svg>
