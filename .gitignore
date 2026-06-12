@@ -30,3 +30,7 @@ erl_crash.dump
 /.claude/
 /.gsd/
 /.bg-shell/
+
+# brandbook tooling (Node processing — not committed)
+/brandbook/tools/node_modules/
+/brandbook/tools/fonts/
