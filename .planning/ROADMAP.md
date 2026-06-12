@@ -55,8 +55,8 @@
   4. User has made an explicit direction selection at the tournament checkpoint before Phase 104 begins (BLOCKING CHECKPOINT — Phase 104 does not start without selection confirmation)
 **Plans**: 4 plans
   - [x] 103-01-PLAN.md — Wordmark toolchain (opentype.js, fetch-fonts, gen-wordmark) + hand-cut wordmark + check-candidates validator
-  - [ ] 103-02-PLAN.md — Logomark candidates A–D + horizontal & stacked lockups
-  - [ ] 103-03-PLAN.md — Integrated typemark candidates E–G
+  - [x] 103-02-PLAN.md — Logomark candidates A–D + horizontal & stacked lockups
+  - [x] 103-03-PLAN.md — Integrated typemark candidates E–G
   - [ ] 103-04-PLAN.md — Tournament gallery (index.html) + LOGO-04 blocking selection checkpoint
 **UI hint**: yes
 
@@ -101,7 +101,7 @@
 | 100. Storage Budget Enforcement | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 101. Offline UI Consolidation & Polish | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
-| 103. Logo Tournament | v9.0 | 1/4 | In Progress|  |
+| 103. Logo Tournament | v9.0 | 3/4 | In Progress|  |
 | 104. Logo Refinement & Production Suite | v9.0 | 0/? | Not started | - |
 | 105. HTML Brand Book | v9.0 | 0/? | Not started | - |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |
