@@ -886,3 +886,274 @@ Install Crosswake / Read the route policy guide / Generate native screen stubs /
 - Sparse, geometric, diagrammatic. 1–3 colors per illustration. Use labels. Prefer route/channel metaphors to literal sea objects.
 
 ---
+
+## 18. Motion and interaction {#motion-interaction}
+
+### Motion principle
+
+Motion should feel like a clean crossing: directional, controlled, and useful.
+
+### Approved motion
+
+- Panels crossing a seam horizontally or diagonally.
+- Route line drawing from server to native/offline lane.
+- Badges resolving from "pending" to "server confirmed."
+- Subtle wake-line reveal in hero.
+
+### Motion timing
+
+- Microinteractions: 120–160ms.
+- Panel transitions: 180–240ms.
+- Hero/diagram animation: 600–900ms, once, non-essential.
+
+### Reduced motion
+
+- Always provide reduced-motion behavior (`prefers-reduced-motion`).
+- Replace line-draw animations with simple fades or static diagrams.
+- Do not use looping wave motion behind documentation text.
+
+---
+
+## 19. UI component examples {#ui-component-examples}
+
+### Route card
+
+```txt
+/study/session
+runtime: offline_island
+content_pack: daily_study
+media_pack: card_media
+capabilities: audio, haptics
+sync: study_reviews
+```
+
+Design: top-left route path in JetBrains Mono; runtime badge under route; capability chips in muted row; "Boundary warning" line if sensitive/offline/server-authoritative.
+
+### Runtime ladder component
+
+Seven horizontal rows: LiveView / LiveView + native shell / Bridge component / Cached route / Offline island / Native screen / Native SDK adapter. Use muted rows with one active highlight. Avoid rainbow gradients.
+
+### Capability matrix
+
+Columns: Capability / iOS / Android / Permission story / Web fallback / Failure mode / Telemetry. Use check labels, not just check icons.
+
+### Manifest viewer
+
+A docs component showing: App runtime version / Supported native screens / Supported bridge protocol / Route policy hash / Manifest signature status.
+
+### API naming tone
+
+```elixir
+use Crosswake.RoutePolicy
+use Crosswake.Capabilities
+use Crosswake.NativeScreens
+
+route "/study/session",
+  runtime: {:offline_island, "study.session"},
+  content_pack: :daily_study,
+  media_pack: :card_media,
+  sync: :study_reviews,
+  capabilities: [:audio, :haptics]
+```
+
+Avoid names that sound magical: `mobile_magic "/study/session"` / `auto_native "/audio/player"` / `offline_everything true`
+
+---
+
+## 20. API naming tone {#api-naming-tone}
+
+The API should sound declarative and policy-oriented.
+
+**Preferred:** use `Crosswake.RoutePolicy`, `Crosswake.Capabilities`, `Crosswake.NativeScreens`. Route declarations are explicit, typed, manifest-driven.
+
+**Avoid:** `mobile_magic`, `auto_native`, `offline_everything`, or any name that implies the system makes a decision you cannot inspect.
+
+---
+
+## 21. Accessibility standards {#accessibility-standards}
+
+Crosswake's brand should be accessible by default because the product is about explicit control and responsible mobile UX.
+
+### Required
+
+- Normal text must meet at least WCAG AA contrast.
+- **Stone 600 `#756D63`** is the corrected `text.muted` primitive for light surfaces (4.53:1 on Foam 50 PASS). Stone 500 fails AA and must not be used for normal-size text.
+- Important UI boundaries must not rely on color alone.
+- Touch targets: at least 24px × 24px; 44px preferred for mobile.
+- Focus rings: visible in both light and dark modes (2px, `--cw-action-focus-ring`).
+- Reduced-motion mode must preserve meaning.
+- Code snippets must be readable without syntax colors.
+
+### Recommended
+
+- Prefer 16px body text minimum.
+- Prefer 44px high mobile buttons for app UI.
+- Do not place thin wake lines behind text.
+- Include labels in runtime diagrams.
+
+### Stone 600 remediation summary
+
+Stone 500 (`#7C746A`) on Foam 50 fails AA at 4.09:1. Stone 600 (`#756D63`) is the math-forced remediation (4.53:1 PASS). The `text.muted` semantic token resolves to Stone 600 on light surfaces and Mist 200 on dark surfaces (12.25:1 PASS). This correction is reflected in `brandbook/tokens/tokens.css` and carries forward into all UI implementations.
+
+---
+
+## 22. Community and OSS identity {#community-oss-identity}
+
+Crosswake is non-commercial OSS. The identity should feel credible and durable, not venture-backed or salesy.
+
+### OSS voice
+
+- Credit inspirations without imitating them.
+- Acknowledge tradeoffs.
+- Write migration notes and failure cases.
+- Prefer public roadmap language over feature hype.
+- Keep docs useful even before the library is mature.
+
+### README tone
+
+Start with a concrete explanation and a code snippet, not a big claim.
+
+**Suggested README opening (audit §10, ready to use):**
+
+> Crosswake is a Phoenix-native mobile substrate for route-level runtime policy. It helps a Phoenix app decide which screens stay LiveView, which screens become offline islands, and which screens hand off to host-owned native views.
+>
+> Each route declares its runtime, capabilities, offline policy, and security posture. Crosswake turns those declarations into a runtime manifest, a native-shell contract, and a set of compatibility gates — so the system tells you exactly what runs where, what can fail, and what you own versus what Crosswake owns.
+>
+> ```elixir
+> route "/study/session",
+>   runtime: {:offline_island, "study.session"},
+>   content_pack: :daily_study,
+>   capabilities: [:audio, :haptics]
+> ```
+
+### Suite brand note
+
+The szTheory suite (Sigra, Parapet, Chimeway, Threadline, Rindle, Rulestead) is Crosswake's natural companion ecosystem. Reference companion integrations as specific, opt-in seams. When mentioning companions, name the specific value: "Threadline adds audit trails for mobile-originated actions." Do not bundle them into a "powerful ecosystem" claim.
+
+---
+
+## 23. Brand do/don't summary {#brand-do-dont-summary}
+
+### Do
+
+- Use "route policy" as the mental model.
+- Show runtime choices side by side.
+- Make security, cache, and native capability boundaries visible.
+- Use dark current, warm foam, kelp, and brass.
+- Use Space Grotesk, Atkinson Hyperlegible Next, and JetBrains Mono.
+- Use Stone 600 (not Stone 500) for muted text on light surfaces.
+- Use diagrams, cards, and code as primary visuals.
+- Keep copy candid and maintainable.
+
+### Don't
+
+- Claim Crosswake replaces native development.
+- Claim all apps can be one runtime.
+- Use bright cyan atom visuals.
+- Use red/orange hot-wire visuals.
+- Use Phoenix flame-style marks.
+- Hide platform caveats.
+- Treat offline state as server confirmation.
+- Turn every bridge message into high-frequency UI state.
+- Use Stone 500 for normal-size body or muted text (WCAG failure).
+
+---
+
+## 24. LLM context block {#llm-context-block}
+
+Use this block when asking an LLM to generate Crosswake docs, landing pages, UI copy, component designs, or brand assets.
+
+```md
+You are creating material for Crosswake, an open-source Elixir/Phoenix library.
+
+Crosswake is a Phoenix-native mobile substrate for declaring which runtime owns each mobile route: LiveView, offline island, native screen, or adapter. The brand is calm, explicit, technical, OSS-first, and boundary-aware. Crosswake must not be framed as React Native, Flutter, Capacitor, Hotwire Native, LiveView Native, or a generic WebView wrapper. It is not "write once, run anywhere" and not "native with no native code."
+
+Core promise: Declare the crossing. Keep the boundary honest.
+
+Visual identity:
+- Deep Current #09141A
+- Current #0F1E26
+- Wake Green #2B756A
+- Wake Teal #4E9A8E
+- Kelp #123B36
+- Brass #C98A2E
+- Brass Dark #946017
+- Foam #F7F1E6
+- Foam Deep #EFE6D6
+- Mist #C9D4CF
+- Stone 600 #756D63 (text.muted on light — corrected from Stone 500)
+- Rust #9A4D35
+- Plum #372D4C
+
+Typography:
+- Space Grotesk for display/headings/logo (with mandatory wake-angle w/k letter cuts).
+- Atkinson Hyperlegible Next for body/UI/docs.
+- JetBrains Mono for code.
+
+Visual motifs:
+- Wake seams, route lines, runtime lanes, manifest cards, capability badges.
+- Avoid atom/orbit logos, flames, hot red/orange wire motifs, neon cyan, generic blue-purple SaaS gradients, literal boat imagery, beach/surf imagery.
+
+Voice:
+- Write like a careful maintainer.
+- Be precise and candid.
+- Explain what runs where.
+- Prefer operational truth over hype.
+- Mention failure modes, compatibility, cache policy, permissions, and server authority.
+
+Preferred phrases:
+- Route policy for Phoenix apps that go mobile.
+- Phoenix routes, native where it matters.
+- Server where it sings. Native where it must. Offline where it matters.
+- This route is cached read-only.
+- This action needs the server before it can be committed.
+- The host app owns this native screen.
+
+Avoid phrases:
+- Magic bridge. / Just works offline. / Write once, run anywhere.
+- Never write native code again. / Native mobile with no native work.
+- One runtime for every screen.
+```
+
+---
+
+## 25. First implementation checklist {#first-implementation-checklist}
+
+For a designer/developer starting from this guide. Logo and token artifacts **SHIP** as of this version.
+
+1. **[SHIPS]** Design token system: `brandbook/tokens/crosswake.tokens.json` + `tokens.css` with Stone 600 primitive and full semantic tier.
+2. **[SHIPS]** Wake Mark in one color: logo files in `brandbook/logo/`.
+3. **[SHIPS]** Light and dark logo lockups: `crosswake-lockup-horizontal-{light,dark}.svg`.
+4. Create a small palette sheet with Current/Foam/Wake/Brass/Rust — Stone 600 as the corrected text.muted.
+5. Build a docs homepage using the dark hero + route-policy code block.
+6. Create route cards, runtime badges, and capability chips.
+7. Create one flagship diagram: route policy chooses LiveView, offline island, native screen.
+8. Write README opening with the one-liner and API snippet (audit §10 copy is ready to paste).
+9. Check color contrast and focus rings before polishing visuals (Stone 600 for muted text, never Stone 500 for normal text).
+10. Avoid competitor-adjacent colors and metaphors during every review.
+11. Keep the first release visually quiet, technical, and trustworthy.
+
+---
+
+## Ratification record {#ratification}
+
+**AUDT-04 — Audit-driven font/color changes ratified 2026-06-11.**
+
+This document is the v1.0 successor to `prompts/crosswake-brand-book.md` (0.1 draft, historical seed). Every verdict from `brandbook/AUDIT.md` has been applied:
+
+| Verdict | Section | Applied |
+|---------|---------|---------|
+| TIGHTEN | §8 Color — Stone 600 addition + role split | Section 8 of this spec |
+| TIGHTEN | §10 Logo — Wake Mark geometry numbers | Section 10 of this spec |
+| ADD | §6 Voice — release-announcement surface | Section 6 of this spec |
+| ADD | §9/§13 — conference slide guidance | Section 9 and 13 of this spec |
+| ADD | §13 Layout — mobile breakpoints | Section 13 of this spec |
+| ADD | Social preview card spec | Section 11 of this spec |
+| KEEP | All other sections | Carried verbatim in substance |
+
+Frozen items (D-12): display font family (Space Grotesk), coastal-muted palette character, wake-seam visual concept, diagonal crossing-mark direction.
+
+No REWORK verdicts were issued. The brand core is sound.
+
+**Gate result: PASS.** This specification is complete and authoritative as of 2026-06-11.
+
