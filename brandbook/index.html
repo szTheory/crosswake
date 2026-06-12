@@ -790,19 +790,315 @@ color:      <span style="color:var(--cw-primitive-wake-500);">var(--cw-text-inve
 <!-- ── Section 8: Voice & Microcopy ── -->
 <section id="voice" class="book-section">
   <h2>Voice &amp; Microcopy</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">Write like a careful maintainer: precise, short, helpful, candid. Prefer operational truth over hype. Explain the boundary. Use metaphor sparingly.</p>
+
+  <h3>Write This / Not This</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2.5rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.6rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-status-success);">Write this</th>
+        <th style="text-align:left;padding:0.6rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-status-error);">Do not write this</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"This route requires a native screen in app runtime &gt;= 0.3.0."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Native mobile with no native work."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"Cached read-only means the user can view stale data, not submit changes."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Everything works offline."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"Use an offline island when the interaction loop must continue without the server."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Just add Crosswake."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"The camera capability is requested at point of use."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Magic bridge."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"The bridge message is semantic; progress events stay native."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"One codebase for every app."</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"This action needs the server before it can be committed. The draft was saved locally."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Never write Swift or Kotlin again."</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Tone by Surface</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2.5rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Surface</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Tone</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Landing page</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Confident, concise, architectural</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Docs</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Precise, direct, example-heavy</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">API references</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Boring on purpose; exact names and failure modes</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Error messages</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Calm, specific, actionable</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Release notes</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Specific, task-first, no drama. Lead with what changed. State what broke.</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Community posts</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">OSS-friendly, curious, pragmatic</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">UI microcopy</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Short, status-oriented, no drama</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Runtime &amp; Status Label Glossary</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:0.5rem;margin-bottom:2rem;">
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-liveview);">LiveView route</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-offline);">Offline island</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-native);">Native screen</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-sensitive);">Sensitive route</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-bridge);">Adapter-backed screen</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Available offline</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Cached read-only</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Draft only</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Requires connection</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Requires native runtime</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Waiting for sync</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Pending server confirmation</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Server confirmed</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Capability unavailable</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Permission needed</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Runtime mismatch</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Cache disabled</div>
+  </div>
+
+  <h3>Error Message Examples</h3>
+  <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem;">
+    <div class="callout" style="border-left-color:var(--cw-status-error);">
+      <strong>Runtime mismatch</strong><br>
+      <span style="color:var(--cw-text-muted);">This route requires native runtime <code>0.3.0</code> or newer. Update the app or choose another route.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-status-error);">
+      <strong>Capability unavailable</strong><br>
+      <span style="color:var(--cw-text-muted);">Camera capture is not available in this app runtime. The route policy requires <code>:camera</code>.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-status-warning);">
+      <strong>Offline commit blocked</strong><br>
+      <span style="color:var(--cw-text-muted);">This action needs the server before it can be committed. The draft was saved locally.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-runtime-sensitive);">
+      <strong>Sensitive cache blocked</strong><br>
+      <span style="color:var(--cw-text-muted);">This route is marked sensitive and will not be cached.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-runtime-bridge);">
+      <strong>Bridge payload rejected</strong><br>
+      <span style="color:var(--cw-text-muted);">Crosswake rejected this bridge message because it does not match the registered contract.</span>
+    </div>
+  </div>
 </section>
 
 <!-- ── Section 9: UI Specimens ── -->
 <section id="ui-specimens" class="book-section">
   <h2>UI Specimens</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">All specimens built from <code>var(--cw-*)</code> custom properties only — no hardcoded brand hex. Each demonstrates a real Crosswake UI pattern.</p>
+
+  <!-- Route card -->
+  <h3>Route Card</h3>
+  <div style="margin-bottom:2rem;max-width:32rem;">
+    <div class="route-card">
+      <div class="route-card__label">Route Policy</div>
+      <div class="route-card__title">/study/session</div>
+      <div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:0.4rem;">
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-runtime-offline);color:var(--cw-text-inverse);">offline_island</span>
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-surface-inverse);color:var(--cw-text-inverse);">:audio</span>
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-surface-inverse);color:var(--cw-text-inverse);">:haptics</span>
+      </div>
+      <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--cw-text-muted);">content_pack: <code>:daily_study</code> &middot; cache: cached_read_only</div>
+    </div>
+  </div>
+
+  <!-- Runtime badges -->
+  <h3>Runtime Badges</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem;">
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-liveview);color:var(--cw-text-inverse);">LiveView</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-offline);color:var(--cw-text-inverse);">Offline Island</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-native);color:var(--cw-surface-default);">Native Screen</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-sensitive);color:var(--cw-text-inverse);">Sensitive</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-bridge);color:var(--cw-text-inverse);">Bridge Contract</span>
+  </div>
+
+  <!-- Buttons -->
+  <h3>Buttons</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:2rem;align-items:center;">
+    <!-- Primary light -->
+    <button style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg);color:var(--cw-action-fg);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">Read the guide</button>
+    <!-- Secondary -->
+    <button style="padding:0.55rem 1.25rem;background-color:transparent;color:var(--cw-text-default);border:1px solid var(--cw-border-strong);border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">View examples</button>
+    <!-- Disabled -->
+    <button disabled style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg);color:var(--cw-action-fg);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:not-allowed;line-height:1.4;opacity:0.45;" aria-disabled="true">Install Crosswake</button>
+  </div>
+  <!-- Dark button demo -->
+  <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:1.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:2rem;">
+    <button style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg-dark);color:var(--cw-action-fg-dark);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">Generate a route policy</button>
+    <button style="padding:0.55rem 1.25rem;background-color:transparent;color:var(--cw-text-inverse);border:1px solid var(--cw-border-strong);border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">View the manifest</button>
+  </div>
+
+  <!-- Callout -->
+  <h3>Callout</h3>
+  <div class="callout" style="margin-bottom:2rem;">
+    <strong>Boundary warning</strong><br>
+    <span style="color:var(--cw-text-muted);font-size:0.875rem;"><code>offline: :read_write</code> does not mean the server accepted the action. Use a sync journal and show pending state until the server reconciles the event.</span>
+  </div>
+
+  <!-- Code block -->
+  <h3>Code Block</h3>
+  <div class="code-block">
+<span style="color:var(--cw-primitive-mist-200);"># config/crosswake.exs</span>
+config <span style="color:var(--cw-primitive-brass-500);">:crosswake</span>, <span style="color:var(--cw-primitive-wake-500);">Crosswake.RoutePolicy</span>,
+  routes: [
+    {<span style="color:var(--cw-primitive-brass-500);">"/study/session"</span>,
+      runtime: {<span style="color:var(--cw-primitive-wake-500);">:offline_island</span>, <span style="color:var(--cw-primitive-brass-500);">"study.session"</span>},
+      content_pack: <span style="color:var(--cw-primitive-wake-500);">:daily_study</span>,
+      capabilities: [<span style="color:var(--cw-primitive-wake-500);">:audio</span>, <span style="color:var(--cw-primitive-wake-500);">:haptics</span>]},
+    {<span style="color:var(--cw-primitive-brass-500);">"/billing"</span>,
+      runtime: <span style="color:var(--cw-primitive-wake-500);">:native_screen</span>,
+      sensitive: <span style="color:var(--cw-primitive-rust-600);">true</span>,
+      cache: <span style="color:var(--cw-primitive-rust-600);">:never</span>}
+  ]</div>
 </section>
 
 <!-- ── Section 10: Asset Index ── -->
 <section id="asset-index" class="book-section">
   <h2>Asset Index</h2>
-  <div class="section-placeholder">Content ships in plan 105-02</div>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">All committed brand assets. Production SVGs are path-only, no embedded fonts, self-contained.</p>
+
+  <h3>Logo Assets — <code>logo/</code></h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">File</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Purpose</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Color</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-mark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Wake mark icon, currentColor embeddable</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">currentColor</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-mark-mono.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Wake mark, literal #09141A — contexts that strip currentColor</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-typemark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">W1 wordmark standalone, currentColor embeddable</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">currentColor</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-horizontal.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark + wordmark, horizontal, light backgrounds</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-horizontal-dark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark + wordmark, horizontal, dark backgrounds</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#F7F1E6</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-stacked.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark above wordmark, square/compact contexts</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-subtitle.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Horizontal lockup + "Declare the crossing." tagline</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">favicon.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">16-grid redraw, 2 wake strokes, dark-mode swap via internal &lt;style&gt;</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A / #F7F1E6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Token Assets — <code>tokens/</code></h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">File</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"><a href="tokens/crosswake.tokens.json" style="color:var(--cw-text-default);">tokens/crosswake.tokens.json</a></td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Source of truth — W3C DTCG 2025.10 format. Edit this, not the CSS.</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"><a href="tokens/tokens.css" style="color:var(--cw-text-default);">tokens/tokens.css</a></td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Generated CSS custom properties (17 primitives + 27 semantics + dark-mode block).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Collateral &amp; Integrations — ships in phase 106</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Asset</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Target path</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">README header wiring</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">README.md</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">ExDoc theme logo</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">priv/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">Favicon PNGs</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">brandbook/social/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">OG / social card</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">brandbook/social/og-card.svg</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;">CI brand-check lane</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted)">.github/workflows/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 </main>
