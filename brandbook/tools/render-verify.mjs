@@ -40,9 +40,10 @@ try {
 
 const inputArg = process.argv[2];
 const outputArg = process.argv[3] || '/tmp/render-verify.png';
+const widthArg = parseInt(process.argv[4], 10) || 1200; // viewport width (e.g. 390 for mobile pass)
 
 if (!inputArg) {
-  console.error('Usage: node brandbook/tools/render-verify.mjs <input-file> [output-png]');
+  console.error('Usage: node brandbook/tools/render-verify.mjs <input-file> [output-png] [viewport-width]');
   process.exit(1);
 }
 
@@ -89,8 +90,7 @@ if (ext === 'svg') {
 let browser;
 try {
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.setViewportSize({ width: 1200, height: 900 });
+  const page = await browser.newPage({ viewport: { width: widthArg, height: 900 } });
   await page.goto(fileUrl, { waitUntil: 'load' });
   await page.screenshot({ path: outputArg, fullPage: true });
   console.log(`Screenshot saved: ${outputArg}`);
