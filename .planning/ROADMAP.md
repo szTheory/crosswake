@@ -21,7 +21,7 @@
 **Milestone Goal:** Pressure-test the existing brand book and ship the fully implemented brand system — audit, design tokens, user-selected logo, standalone HTML brand book, and collateral — self-contained in `brandbook/` (<1 MB committed, SVG/text-first).
 
 - [x] **Phase 102: Brand Audit & Token Foundation** - Audit the brand book, run WCAG contrast matrix, freeze design tokens with user ratification (completed 2026-06-12)
-- [ ] **Phase 103: Logo Tournament** - Seven-candidate HTML gallery with mandatory user direction-pick checkpoint
+- [x] **Phase 103: Logo Tournament** - Seven-candidate HTML gallery with mandatory user direction-pick checkpoint (completed 2026-06-12)
 - [ ] **Phase 104: Logo Refinement & Production Suite** - Three micro-variants, user sign-off, full path-only production SVG suite
 - [ ] **Phase 105: HTML Brand Book** - Standalone long-scroll index.html + BRAND-SPEC.md v1.0
 - [ ] **Phase 106: Collateral, Integration & Closeout** - Collateral assets, README/ExDoc wiring, hex exclusion, advisory CI lane
@@ -57,7 +57,7 @@
   - [x] 103-01-PLAN.md — Wordmark toolchain (opentype.js, fetch-fonts, gen-wordmark) + hand-cut wordmark + check-candidates validator
   - [x] 103-02-PLAN.md — Logomark candidates A–D + horizontal & stacked lockups
   - [x] 103-03-PLAN.md — Integrated typemark candidates E–G
-  - [ ] 103-04-PLAN.md — Tournament gallery (index.html) + LOGO-04 blocking selection checkpoint
+  - [x] 103-04-PLAN.md — Tournament gallery (index.html) + LOGO-04 blocking selection checkpoint
 **UI hint**: yes
 
 ### Phase 104: Logo Refinement & Production Suite
@@ -101,7 +101,7 @@
 | 100. Storage Budget Enforcement | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 101. Offline UI Consolidation & Polish | v8.0 | 2/2 | Complete | 2026-06-11 |
 | 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
-| 103. Logo Tournament | v9.0 | 3/4 | In Progress|  |
+| 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
 | 104. Logo Refinement & Production Suite | v9.0 | 0/? | Not started | - |
 | 105. HTML Brand Book | v9.0 | 0/? | Not started | - |
 | 106. Collateral, Integration & Closeout | v9.0 | 0/? | Not started | - |

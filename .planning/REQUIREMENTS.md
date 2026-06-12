@@ -23,9 +23,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Logo System (LOGO)
 
 - [x] **LOGO-01**: 7 tournament candidates (4 logomark concepts + 3 integrated typemarks) exist as path-only SVGs at equal production fidelity
-- [ ] **LOGO-02**: Tournament gallery (`brandbook/logo/tournament/index.html`) shows each candidate at 256px on foam/dark/white, monochrome, 24px + 16px, a browser-tab favicon mock, close-set horizontal + stacked lockups, per-candidate rationale + stated risk, and an equal-size lineup grid
+- [x] **LOGO-02**: Tournament gallery (`brandbook/logo/tournament/index.html`) shows each candidate at 256px on foam/dark/white, monochrome, 24px + 16px, a browser-tab favicon mock, close-set horizontal + stacked lockups, per-candidate rationale + stated risk, and an equal-size lineup grid
 - [x] **LOGO-03**: No rectangular container backgrounds on any mark; main lockup carries no subtitle; logotype gap ≈ one stroke-width
-- [ ] **LOGO-04**: User selects the logo direction at the tournament checkpoint (franken-picks supported)
+- [x] **LOGO-04**: User selects the logo direction at the tournament checkpoint (franken-picks supported)
 - [ ] **LOGO-05**: Winner goes through a 3-micro-variant refinement round with user sign-off
 - [ ] **LOGO-06**: Production suite ships: mark, mono, horizontal lockup (light/dark), stacked, subtitle variant, typemark, and a dedicated 16-grid `favicon.svg` — all path-only, no `<text>`, correct fill rules
 - [ ] **LOGO-07**: Wordmark generated from Space Grotesk outlines via opentype.js (correct Y-baseline, evenodd counters) with the provenance script committed in `brandbook/tools/`; fonts + node_modules gitignored
@@ -79,9 +79,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-02 | Phase 102 | Complete |
 | TOKN-03 | Phase 102 | Complete |
 | LOGO-01 | Phase 103 | Complete |
-| LOGO-02 | Phase 103 | Pending |
+| LOGO-02 | Phase 103 | Complete |
 | LOGO-03 | Phase 103 | Complete |
-| LOGO-04 | Phase 103 | Pending |
+| LOGO-04 | Phase 103 | Complete |
 | LOGO-05 | Phase 104 | Pending |
 | LOGO-06 | Phase 104 | Pending |
 | LOGO-07 | Phase 104 | Pending |
