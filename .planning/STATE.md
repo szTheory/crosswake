@@ -63,7 +63,7 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- Phase 108 (NORM-02) must fix THREE drifted consumers, not two: the worst is `lib/mix/tasks/crosswake.gen.offline_ui.ex` (~lines 68-90), which emits a hardcoded Tailwind theme on a fully stale legacy palette (blue `#699cc9` / amber `#e1b982`) — not canonical teal `#2B756A` / brass `#C98A2E`. This `.ex`-emitted theme is the real color source backing the `.eex` templates' utility classes, so retiring the templates' Tailwind classes without also retiring this emitted theme would leave dead drift behind.
 
 ## Deferred Items
 
