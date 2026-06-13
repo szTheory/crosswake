@@ -1,19 +1,17 @@
-name: "Brandbook Verify (Advisory)"
+name: "Brandbook Verify"
 
-# Advisory CI lane for brandbook asset quality gates (D-08, COLL-04).
+# Brand-asset quality gates (D-08, COLL-04). Triggers on brandbook/** changes.
 #
-# This workflow triggers on brandbook/** changes (PR and push) to provide fast
-# feedback on asset size, SVG structure, and token round-trip validity.
+# HYBRID GATE (promoted from advisory at v9.0 — see .planning/REQUIREMENTS.md):
+#   • brand-structural — REQUIRED merge gate. Deterministic file / DOM / dimension /
+#     token assertions with negligible flake risk. Add this job's check context to
+#     branch-protection required-status-checks.
+#   • brand-visual — ADVISORY (continue-on-error). Headless render + pixel-sample
+#     checks; non-deterministic enough (fonts, network) to stay informational only.
+#     Must NOT be added to required-status-checks.
 #
-# ADVISORY ONLY — this lane is NOT a required merge gate and must NOT be added
-# to branch-protection required-status-checks. Failures here surface as advisory
-# notifications only.
-#
-# Advisory-to-merge-blocking promotion requires:
-#   1. An explicit requirement/roadmap scope change in .planning/REQUIREMENTS.md
-#   2. Sustained stability evidence from this advisory lane
-#   3. A planned milestone that explicitly promotes this proof
-#   4. A workflow edit moving the relevant step to the merge-blocking lane
+# This replaces the manual brand UAT: every brandbook change is verified here
+# instead of by human checkpoint.
 
 permissions:
   contents: read
@@ -27,10 +25,10 @@ on:
       - "brandbook/**"
 
 jobs:
-  advisory-brandbook-verify:
-    name: advisory brandbook verify (COLL-04)
+  brand-structural:
+    name: brand-structural
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
 
     steps:
       - name: Checkout
@@ -67,7 +65,55 @@ jobs:
         working-directory: brandbook/tools
         run: node --test compile-tokens.test.mjs
 
+      - name: WCAG contrast matrix
+        working-directory: brandbook/tools
+        run: node --test contrast.test.mjs
+
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Structural brand checks (DOM, dimensions, source assertions)
+        working-directory: brandbook/e2e
+        run: npm run test:structural
+
+  brand-visual:
+    name: brand-visual
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    # ADVISORY: failures here never gate a merge.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.x"
+
+      - name: Install brand e2e dependencies
+        working-directory: brandbook/e2e
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: brandbook/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Visual render + pixel-sample checks
+        working-directory: brandbook/e2e
+        run: npm run test:visual
+
+      - name: README header raw-URL verification (main only — needs merged assets)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node brandbook/tools/check-readme-urls.mjs
+
       - name: Advisory lane notice
         if: always()
         run: |
-          echo "::notice title=Advisory lane::Brandbook verify is advisory only — failures here do NOT gate merge."
+          echo "::notice title=Advisory lane::brand-visual is advisory only — failures here do NOT gate merge."

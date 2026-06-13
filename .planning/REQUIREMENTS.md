@@ -42,6 +42,16 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **COLL-02**: README header wired via absolute raw.githubusercontent URL with GitHub `<picture>` dark-mode handling (works on both GitHub and hexdocs)
 - [x] **COLL-03**: ExDoc `logo:` configured in `mix.exs`; hex tarball verified to exclude `brandbook/` (+ `:exclude_patterns` belt-and-suspenders)
 - [x] **COLL-04**: `brandbook/` committed size verified < 1 MB; `.gitignore` additions in place; advisory CI lane checks size budget, SVG validity, and token JSON validity
+- [x] **COLL-05**: Brand UAT is shifted left into an automated, re-runnable verification suite (`brandbook/e2e/`, self-contained Playwright over a dependency-free static server) that replaces the manual brand checkpoints — DOM/structure/dimension/source/contrast assertions plus headless render + pixel-sample of every collateral asset. No human verification is required for brand regressions.
+
+#### CI gate promotion (advisory → hybrid, v9.0)
+
+Per the documented promotion process, the brandbook CI lane is promoted from advisory to a **hybrid gate**:
+
+- **`brand-structural` → REQUIRED merge gate.** Deterministic file / DOM / dimension / token / contrast assertions; negligible flake risk. Added to branch-protection `required_status_checks`.
+- **`brand-visual` → remains ADVISORY** (`continue-on-error`). Headless render + pixel-sample checks plus the network-dependent README raw-URL verification; non-deterministic enough (fonts, network) to stay informational only. Never added to required checks.
+
+**Deviation note:** the standard gate asks for "sustained advisory stability" before promotion. The **structural** half is promoted immediately (v9.0 decision) because it is fully deterministic; the non-deterministic **visual** half stays advisory, which is exactly the risk-segmentation the stability rule exists to enforce. Rollback if `brand-structural` proves flaky is a one-command branch-protection revert — no code change.
 
 ## v2 Requirements
 
