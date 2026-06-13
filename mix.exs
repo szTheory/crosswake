@@ -99,6 +99,7 @@ defmodule Crosswake.MixProject do
         "guides/capabilities.md",
         "guides/bridge.md",
         "guides/offline.md",
+        "guides/tokens.md",
         "guides/commerce.md",
         "guides/companions.md",
         "guides/compatibility.md",
