@@ -48,9 +48,9 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
   3. There is exactly one documented distribution mechanism describing how `tokens.css` reaches the example host and the generated offline UI templates — no other copy or re-declaration of brand values is required.
   4. A developer can verify the token source is current by running one command with no build toolchain beyond Node; the output file is the sole source that downstream consumers wire against.
 **Plans**: 3 plans
-  - [ ] 107-01-PLAN.md — Generator emits font + dimension tokens and writes the packaged priv/static/crosswake/tokens.css mirror
+  - [x] 107-01-PLAN.md — Generator emits font + dimension tokens and writes the packaged priv/static/crosswake/tokens.css mirror
   - [ ] 107-02-PLAN.md — Vendor-by-copy + link distribution into the offline_ui generator and the example host
-  - [ ] 107-03-PLAN.md — Write the single distribution guide (guides/tokens.md) and register it in mix.exs extras
+  - [x] 107-03-PLAN.md — Write the single distribution guide (guides/tokens.md) and register it in mix.exs extras
 
 ### Phase 108: Consumer Normalization
 **Goal**: Both drifted consumers — the example host CSS and the offline UI generator templates — reference semantic token custom properties exclusively, with no duplicated flat palette, no inline font stacks, and no Tailwind utility classes; the generator test reflects the new contract.
@@ -87,6 +87,6 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
-| 107. Token Source & Distribution | v10.0 | 0/3 | Planned | — |
+| 107. Token Source & Distribution | v10.0 | 2/3 | In Progress|  |
 | 108. Consumer Normalization | v10.0 | 0/? | Not started | — |
 | 109. Drift-Prevention Gate | v10.0 | 0/? | Not started | — |
