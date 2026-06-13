@@ -168,7 +168,12 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     File.write!(Path.join(cwd, "CHANGELOG.md"), changelog())
     File.write!(Path.join(cwd, ".planning/REQUIREMENTS.md"), "| PROOF-03 | Phase 69 | Validated |")
     File.write!(Path.join(cwd, ".planning/ROADMAP.md"), "$gsd-discuss-phase 70")
-    File.write!(Path.join(cwd, ".planning/STATE.md"), "Status: Ready to discuss\n")
+    # The verifier derives the active milestone from STATE.md frontmatter to
+    # locate `<milestone>-CLOSEOUT.md`; this fixture writes a v4.0 closeout.
+    File.write!(
+      Path.join(cwd, ".planning/STATE.md"),
+      "---\nmilestone: v4.0\n---\nStatus: Ready to discuss\n"
+    )
 
     File.write!(
       Path.join(cwd, ".planning/milestones/v4.0-CLOSEOUT.md"),

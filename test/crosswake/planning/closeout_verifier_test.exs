@@ -323,6 +323,10 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     File.mkdir_p!(Path.join(tmp, ".planning"))
     File.write!(Path.join(tmp, ".planning/REQUIREMENTS.md"), "| REL-01 | Phase 63 | Validated |")
     File.write!(Path.join(tmp, ".planning/ROADMAP.md"), "$gsd-discuss-phase 48")
+    # The verifier derives the active milestone from STATE.md frontmatter to
+    # locate `<milestone>-CLOSEOUT.md`. These fixtures all write a v3.9 closeout,
+    # so STATE.md must declare milestone: v3.9.
+    File.write!(Path.join(tmp, ".planning/STATE.md"), "---\nmilestone: v3.9\n---\n")
     File.write!(Path.join(tmp, "CHANGELOG.md"), File.read!("CHANGELOG.md"))
   end
 
