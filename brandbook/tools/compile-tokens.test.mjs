@@ -173,3 +173,55 @@ test('compile-tokens.js has no require() calls for npm packages', () => {
   assert.strictEqual(forbidden.length, 0,
     `compile-tokens.js must use only fs/path; found: ${forbidden.join(', ')}`);
 });
+
+// ─── Font & dimension token tests ────────────────────────────────────────────
+
+const PRIV_TOKENS_CSS = resolve(ROOT, 'priv/static/crosswake/tokens.css');
+
+test('tokens.css contains --cw-font-display with quoted font stack', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-font-display: "Space Grotesk"'),
+    '--cw-font-display must start with quoted "Space Grotesk"');
+});
+
+test('tokens.css contains --cw-font-body with quoted font stack', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-font-body: "Atkinson Hyperlegible Next"'),
+    '--cw-font-body must start with quoted "Atkinson Hyperlegible Next"');
+});
+
+test('tokens.css contains --cw-font-mono with quoted font stack', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-font-mono: "JetBrains Mono"'),
+    '--cw-font-mono must start with quoted "JetBrains Mono"');
+});
+
+test('tokens.css contains --cw-text-scale-md: 16px', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-text-scale-md: 16px'),
+    '--cw-text-scale-md must be 16px');
+});
+
+test('tokens.css contains --cw-radius-lg: 14px', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-radius-lg: 14px'),
+    '--cw-radius-lg must be 14px');
+});
+
+test('tokens.css contains --cw-display-scale-sm: 28px', () => {
+  const content = readFileSync(TOKENS_CSS, 'utf8');
+  assert.ok(content.includes('--cw-display-scale-sm: 28px'),
+    '--cw-display-scale-sm must be 28px');
+});
+
+test('priv/static/crosswake/tokens.css exists after script execution', () => {
+  execSync(`node ${COMPILE_SCRIPT}`, { cwd: ROOT });
+  assert.ok(existsSync(PRIV_TOKENS_CSS), 'priv/static/crosswake/tokens.css must exist');
+});
+
+test('priv/static/crosswake/tokens.css is byte-identical to brandbook/tokens/tokens.css', () => {
+  execSync(`node ${COMPILE_SCRIPT}`, { cwd: ROOT });
+  const brand = readFileSync(TOKENS_CSS, 'utf8');
+  const priv  = readFileSync(PRIV_TOKENS_CSS, 'utf8');
+  assert.strictEqual(brand, priv, 'both outputs must be byte-identical');
+});
