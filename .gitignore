@@ -34,3 +34,8 @@ erl_crash.dump
 # brandbook tooling (Node processing — not committed)
 /brandbook/tools/node_modules/
 /brandbook/tools/fonts/
+
+# brandbook e2e (Playwright brand-verification suite — deps/artifacts not committed)
+/brandbook/e2e/node_modules/
+/brandbook/e2e/playwright-report/
+/brandbook/e2e/test-results/
