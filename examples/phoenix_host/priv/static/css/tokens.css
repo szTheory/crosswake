@@ -1,0 +1,152 @@
+/* GENERATED from crosswake.tokens.json — do not edit */
+/* Edit crosswake.tokens.json, then run: node brandbook/tools/compile-tokens.js */
+
+/* ─── Primitive tier (internal — do not reference directly in component CSS) ─── */
+:root {
+  --cw-primitive-brass-500: #C98A2E;
+  --cw-primitive-brass-700: #946017;
+  --cw-primitive-current-800: #162B35;
+  --cw-primitive-current-900: #0F1E26;
+  --cw-primitive-current-950: #09141A;
+  --cw-primitive-foam-100: #EFE6D6;
+  --cw-primitive-foam-50: #F7F1E6;
+  --cw-primitive-harbor-700: #254855;
+  --cw-primitive-kelp-800: #123B36;
+  --cw-primitive-mist-200: #C9D4CF;
+  --cw-primitive-plum-700: #372D4C;
+  --cw-primitive-rust-600: #9A4D35;
+  --cw-primitive-stone-500: #7C746A;
+  --cw-primitive-stone-600: #756D63;
+  --cw-primitive-wake-500: #4E9A8E;
+  --cw-primitive-wake-700: #2B756A;
+  --cw-primitive-white: #FFFFFF;
+}
+
+/* ─── Semantic tier (public contract) ─── */
+:root {
+  --cw-action-bg: var(--cw-primitive-wake-700);
+  --cw-action-bg-dark: var(--cw-primitive-brass-500);
+  --cw-action-fg: var(--cw-primitive-white);
+  --cw-action-fg-dark: var(--cw-primitive-current-950);
+  --cw-action-focus-ring: var(--cw-primitive-brass-500);
+  --cw-action-hover: var(--cw-primitive-current-950);
+  --cw-border-default: var(--cw-primitive-mist-200);
+  --cw-border-strong: var(--cw-primitive-wake-700);
+  --cw-border-subtle: var(--cw-primitive-foam-100);
+  --cw-runtime-bridge: var(--cw-primitive-plum-700);
+  --cw-runtime-liveview: var(--cw-primitive-harbor-700);
+  --cw-runtime-native: var(--cw-primitive-brass-500);
+  --cw-runtime-offline: var(--cw-primitive-kelp-800);
+  --cw-runtime-sensitive: var(--cw-primitive-rust-600);
+  --cw-status-error: var(--cw-primitive-rust-600);
+  --cw-status-info: var(--cw-primitive-harbor-700);
+  --cw-status-success: var(--cw-primitive-kelp-800);
+  --cw-status-warning: var(--cw-primitive-brass-700);
+  --cw-surface-default: var(--cw-primitive-foam-50);
+  --cw-surface-inset: var(--cw-primitive-white);
+  --cw-surface-inverse: var(--cw-primitive-current-950);
+  --cw-surface-raised: var(--cw-primitive-foam-100);
+  --cw-text-code: var(--cw-primitive-foam-50);
+  --cw-text-default: var(--cw-primitive-current-950);
+  --cw-text-inverse: var(--cw-primitive-foam-50);
+  --cw-text-muted: var(--cw-primitive-stone-600);
+  --cw-text-subtle: var(--cw-primitive-stone-500);
+}
+
+/* ─── Dark mode ─── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --cw-action-bg: var(--cw-primitive-brass-500);
+    --cw-action-bg-dark: var(--cw-primitive-wake-700);
+    --cw-action-fg: var(--cw-primitive-current-950);
+    --cw-action-fg-dark: var(--cw-primitive-white);
+    --cw-action-focus-ring: var(--cw-primitive-wake-500);
+    --cw-action-hover: var(--cw-primitive-foam-100);
+    --cw-border-default: var(--cw-primitive-harbor-700);
+    --cw-border-strong: var(--cw-primitive-mist-200);
+    --cw-border-subtle: var(--cw-primitive-current-800);
+    --cw-runtime-bridge: var(--cw-primitive-foam-50);
+    --cw-runtime-liveview: var(--cw-primitive-mist-200);
+    --cw-runtime-native: var(--cw-primitive-brass-500);
+    --cw-runtime-offline: var(--cw-primitive-wake-500);
+    --cw-runtime-sensitive: var(--cw-primitive-rust-600);
+    --cw-status-error: var(--cw-primitive-rust-600);
+    --cw-status-info: var(--cw-primitive-mist-200);
+    --cw-status-success: var(--cw-primitive-wake-500);
+    --cw-status-warning: var(--cw-primitive-brass-500);
+    --cw-surface-default: var(--cw-primitive-current-950);
+    --cw-surface-inset: var(--cw-primitive-current-800);
+    --cw-surface-inverse: var(--cw-primitive-foam-50);
+    --cw-surface-raised: var(--cw-primitive-current-900);
+    --cw-text-code: var(--cw-primitive-foam-50);
+    --cw-text-default: var(--cw-primitive-foam-50);
+    --cw-text-inverse: var(--cw-primitive-current-950);
+    --cw-text-muted: var(--cw-primitive-mist-200);
+    --cw-text-subtle: var(--cw-primitive-mist-200);
+  }
+}
+
+[data-theme="dark"] {
+  --cw-action-bg: var(--cw-primitive-brass-500);
+  --cw-action-bg-dark: var(--cw-primitive-wake-700);
+  --cw-action-fg: var(--cw-primitive-current-950);
+  --cw-action-fg-dark: var(--cw-primitive-white);
+  --cw-action-focus-ring: var(--cw-primitive-wake-500);
+  --cw-action-hover: var(--cw-primitive-foam-100);
+  --cw-border-default: var(--cw-primitive-harbor-700);
+  --cw-border-strong: var(--cw-primitive-mist-200);
+  --cw-border-subtle: var(--cw-primitive-current-800);
+  --cw-runtime-bridge: var(--cw-primitive-foam-50);
+  --cw-runtime-liveview: var(--cw-primitive-mist-200);
+  --cw-runtime-native: var(--cw-primitive-brass-500);
+  --cw-runtime-offline: var(--cw-primitive-wake-500);
+  --cw-runtime-sensitive: var(--cw-primitive-rust-600);
+  --cw-status-error: var(--cw-primitive-rust-600);
+  --cw-status-info: var(--cw-primitive-mist-200);
+  --cw-status-success: var(--cw-primitive-wake-500);
+  --cw-status-warning: var(--cw-primitive-brass-500);
+  --cw-surface-default: var(--cw-primitive-current-950);
+  --cw-surface-inset: var(--cw-primitive-current-800);
+  --cw-surface-inverse: var(--cw-primitive-foam-50);
+  --cw-surface-raised: var(--cw-primitive-current-900);
+  --cw-text-code: var(--cw-primitive-foam-50);
+  --cw-text-default: var(--cw-primitive-foam-50);
+  --cw-text-inverse: var(--cw-primitive-current-950);
+  --cw-text-muted: var(--cw-primitive-mist-200);
+  --cw-text-subtle: var(--cw-primitive-mist-200);
+}
+
+/* ─── Forbidden pairings (DO NOT USE) ─────────────────────────────────────────── */
+/* stone-500 on foam-50:  4.09:1 — fails AA normal text                           */
+/* wake-500  on foam-50:  2.95:1 — role issue; dark-surface only                  */
+/* mist-200  on foam-50:  1.35:1 — border/dark-surface only                       */
+
+/* ─── Fonts & dimensions ─── */
+:root {
+  --cw-display-scale-lg: 56px;
+  --cw-display-scale-md: 40px;
+  --cw-display-scale-sm: 28px;
+  --cw-focus-ring-width: 2px;
+  --cw-font-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-mono: "JetBrains Mono", SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --cw-line-height-display-lg: 64px;
+  --cw-line-height-display-md: 48px;
+  --cw-line-height-display-sm: 36px;
+  --cw-line-height-lg: 28px;
+  --cw-line-height-md: 24px;
+  --cw-line-height-sm: 20px;
+  --cw-line-height-xl: 30px;
+  --cw-line-height-xs: 16px;
+  --cw-radius-lg: 14px;
+  --cw-radius-md: 10px;
+  --cw-radius-sm: 6px;
+  --cw-radius-xl: 20px;
+  --cw-spacing-base: 4px;
+  --cw-text-scale-lg: 18px;
+  --cw-text-scale-md: 16px;
+  --cw-text-scale-sm: 14px;
+  --cw-text-scale-xl: 20px;
+  --cw-text-scale-xs: 12px;
+  --cw-tracking-tight: -0.02em;
+}
