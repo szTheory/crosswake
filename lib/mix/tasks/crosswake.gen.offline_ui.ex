@@ -47,10 +47,13 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     page_content = EEx.eval_file(page_template, web_module: web_module)
     js_content = EEx.eval_file(js_template, web_module: web_module)
 
+    tokens_css_dest = Path.join([dir, "priv", "static", "assets", "tokens.css"])
+
     ensure_file(controller_dest, controller_content)
     ensure_file(root_layout_dest, root_layout_content)
     ensure_file(page_dest, page_content)
     ensure_file(js_dest, js_content)
+    ensure_file(tokens_css_dest, File.read!(get_tokens_css_path()))
 
     Mix.shell().info("""
     Offline UI components generated successfully!
@@ -104,6 +107,15 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
       path
     else
       Path.join(File.cwd!(), "priv/templates/crosswake/offline_ui/#{filename}")
+    end
+  end
+
+  defp get_tokens_css_path do
+    path = Application.app_dir(:crosswake, "priv/static/crosswake/tokens.css")
+    if File.exists?(path) do
+      path
+    else
+      Path.join(File.cwd!(), "priv/static/crosswake/tokens.css")
     end
   end
 
