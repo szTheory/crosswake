@@ -32,7 +32,7 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 
 **v10.0 Brand Normalization (Phases 107-109)**
 
-- [ ] **Phase 107: Token Source & Distribution** — Extend compile-tokens.js to emit font and dimension tokens; document the one distribution mechanism
+- [x] **Phase 107: Token Source & Distribution** — Extend compile-tokens.js to emit font and dimension tokens; document the one distribution mechanism (completed 2026-06-13)
 - [ ] **Phase 108: Consumer Normalization** — Rewire app.css and offline_ui templates off duplicated values onto semantic tokens; update generator test contract
 - [ ] **Phase 109: Drift-Prevention Gate** — Extend brand-structural CI to block on hardcoded hex and missing token references in normalized consumers
 
@@ -49,7 +49,7 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
   4. A developer can verify the token source is current by running one command with no build toolchain beyond Node; the output file is the sole source that downstream consumers wire against.
 **Plans**: 3 plans
   - [x] 107-01-PLAN.md — Generator emits font + dimension tokens and writes the packaged priv/static/crosswake/tokens.css mirror
-  - [ ] 107-02-PLAN.md — Vendor-by-copy + link distribution into the offline_ui generator and the example host
+  - [x] 107-02-PLAN.md — Vendor-by-copy + link distribution into the offline_ui generator and the example host
   - [x] 107-03-PLAN.md — Write the single distribution guide (guides/tokens.md) and register it in mix.exs extras
 
 ### Phase 108: Consumer Normalization
@@ -87,6 +87,6 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
-| 107. Token Source & Distribution | v10.0 | 2/3 | In Progress|  |
+| 107. Token Source & Distribution | v10.0 | 3/3 | Complete   | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 0/? | Not started | — |
 | 109. Drift-Prevention Gate | v10.0 | 0/? | Not started | — |
