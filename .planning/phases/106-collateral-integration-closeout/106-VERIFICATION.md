@@ -1,13 +1,14 @@
 ---
 phase: 106-collateral-integration-closeout
-verified: 2026-06-12T22:30:00Z
-status: human_needed
+verified: 2026-06-13T06:34:00Z
+status: verified
 score: 4/4
 overrides_applied: 0
-human_verification:
+human_verification_resolved:
   - test: "View README.md header on GitHub in both light and dark themes (browser)"
     expected: "Light theme: dark-ink lockup visible against white; Dark theme: foam-white lockup visible against dark background"
     why_human: "GitHub renders the <picture> + raw.githubusercontent.com URLs remotely; local grep can verify URLs are correct but cannot confirm actual browser rendering"
+    resolution: "Shifted left into automation (COLL-05). 106-UAT.md tests 1-2 pass; brand-visual renders both readme-header SVGs headless (dark-ink-on-transparent + light-ink-on-transparent verified via pixel-sample); check-readme-urls.mjs confirms both raw GitHub URLs serve byte-identical committed bytes (200). User also visually confirmed the dark header renders on GitHub."
 ---
 
 # Phase 106: Collateral, Integration & Closeout — Verification Report

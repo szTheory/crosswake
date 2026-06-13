@@ -102,12 +102,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COLL-02 | Phase 106 | Complete |
 | COLL-03 | Phase 106 | Complete |
 | COLL-04 | Phase 106 | Complete |
+| COLL-05 | Phase 106 | Complete |
+| NORM-01 | v2 (deferred) | Not started |
 
 **Coverage:**
-- v1 requirements: 20 total
-- Mapped to phases: 20
+- v1 requirements: 21 total
+- Mapped to phases: 21
 - Unmapped: 0 ✓
+- v2 (deferred): NORM-01
 
 ---
 *Requirements defined: 2026-06-11*
-*Last updated: 2026-06-11 — traceability written after roadmap creation*
+*Last updated: 2026-06-13 — COLL-05 (shift-left brand UAT) added after Phase 106 close*
