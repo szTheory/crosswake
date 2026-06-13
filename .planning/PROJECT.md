@@ -9,7 +9,7 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- Milestone v9.0 complete — Brand System & Visual Identity
+- Milestone v10.0 active — Brand Normalization (NORM-01); v9.0 Brand System & Visual Identity shipped + archived
 
 **Shipped `v9.0 Brand System & Visual Identity` on `2026-06-13`** (Phases 102-106, 16 plans). v9.0 pressure-tested and shipped the full brand system self-contained in `brandbook/`: a 14-section audit + WCAG contrast matrix, a W3C DTCG design-token system, a user-selected path-only logo suite, a zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0, and launch collateral wired into README/ExDoc with the brandbook excluded from the Hex package (committed size < 1 MB). It also shifted brand UAT left into a self-contained Playwright suite gated in CI (`brand-structural` required / `brand-visual` advisory) — which caught and fixed a real mobile-overflow defect — and added the pending CHANGELOG `[0.1.2]` entry, flipping `doctor --check-publish` to `ready`.
 
@@ -58,9 +58,17 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Next Milestone
+## Current Milestone: v10.0 Brand Normalization
 
-No active milestone. Run `/gsd:new-milestone` to scope the next one. The leading candidate is **v10.0 Brand Normalization (NORM-01)** — wire the generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth.
+**Goal:** Make `brandbook/tokens/tokens.css` the genuine single source of truth for the brand system — consumed by the generator templates and the example host via semantic CSS custom properties — and mechanically forbid drift.
+
+**Target features:**
+- Extend the token compiler (`brandbook/tools/compile-tokens.js`) to emit `font.*` and needed `dimension.*` tokens, not just colors, so typography stops being a second source of truth.
+- Rewire `examples/phoenix_host` CSS off its duplicated flat palette + inline font stacks onto the semantic token tier (`var(--cw-action-bg)`, `var(--cw-text-default)`…), inheriting dark mode for free.
+- Rewire the `priv/templates/crosswake/offline_ui/*.eex` generator templates off Tailwind utility classes (the host carries no Tailwind dependency) onto token-backed CSS referencing the semantic tier; update the generator test contract.
+- Add a deterministic drift-prevention structural check (extending the v9.0 `brand-structural` gate) asserting consumers reference tokens and carry no stray hardcoded brand hex.
+
+**Out of milestone:** DASH-01 (dashboard metrics) and NTV-01 (native disk-space budgets) remain deferred siblings, not v10.0 scope.
 
 ## Requirements
 
@@ -203,4 +211,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-13 — after v9.0 Brand System & Visual Identity milestone*
+*Last updated: 2026-06-13 — v10.0 Brand Normalization (NORM-01) milestone started*
