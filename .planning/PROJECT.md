@@ -9,12 +9,14 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- Milestone v8.0 complete — Offline Sync Hardening and UI Polish
+- Milestone v9.0 complete — Brand System & Visual Identity
 
-**Shipped `v8.0 Offline Sync Hardening and UI Polish` on `2026-06-11`** (Phases 99-101, 6 plans). v8.0 hardened the offline sync capabilities by enforcing real network-toggling E2E tests, implementing advisory runtime storage budgets using standard Web APIs, and delivering a consolidated, brand-aligned `OfflineController` UI.
+**Shipped `v9.0 Brand System & Visual Identity` on `2026-06-13`** (Phases 102-106, 16 plans). v9.0 pressure-tested and shipped the full brand system self-contained in `brandbook/`: a 14-section audit + WCAG contrast matrix, a W3C DTCG design-token system, a user-selected path-only logo suite, a zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0, and launch collateral wired into README/ExDoc with the brandbook excluded from the Hex package (committed size < 1 MB). It also shifted brand UAT left into a self-contained Playwright suite gated in CI (`brand-structural` required / `brand-visual` advisory) — which caught and fixed a real mobile-overflow defect — and added the pending CHANGELOG `[0.1.2]` entry, flipping `doctor --check-publish` to `ready`.
 
 <details>
-<summary>Earlier milestone history (v3.9 to v7.0)</summary>
+<summary>Earlier milestone history (v3.9 to v8.0)</summary>
+
+**Shipped `v8.0 Offline Sync Hardening and UI Polish` on `2026-06-11`** (Phases 99-101, 6 plans). v8.0 hardened the offline sync capabilities by enforcing real network-toggling E2E tests, implementing advisory runtime storage budgets using standard Web APIs, and delivering a consolidated, brand-aligned `OfflineController` UI.
 
 **Shipped `Phase 96 docs-contract-proof` on `2026-06-10`** (3 plans, verified 5/5). Phase 96 completed the v7.0 Threadline Audit Capstone by shipping the docs-as-contract artifact and hermetic parity proof: restructured `guides/threadline.md` into a 10-section D-07 contract-first guide with all verbatim contract strings (15 LEDG-02 columns, both forbidden-key lists, anti-scope section, honest limitations); a merge-blocking CI lane (`merge-blocking-threadline-docs-contract-proof`) with a 21-assertion hermetic parity test; and an advisory example-host PROOF-02 lane proving end-to-end Ecto-backed `record_in_multi/3` persistence yields durable posture. DOCS-01/02/03 and PROOF-01/02 satisfied.
 
@@ -56,18 +58,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Current Milestone: v9.0 Brand System & Visual Identity
+## Next Milestone
 
-**Goal:** Pressure-test the existing brand book and ship the fully implemented brand system — audit, design tokens, user-selected logo, standalone HTML brand book, and collateral — self-contained in `brandbook/` (<1 MB committed, SVG/text-first).
-
-**Target features:**
-- 14-section brand audit (`brandbook/AUDIT.md`) with KEEP/TIGHTEN/REWORK/ADD/REMOVE verdicts and a scripted WCAG contrast matrix of every palette pairing
-- Design tokens: W3C DTCG `crosswake.tokens.json` + `tokens.css` with semantic roles and full state tokens
-- 7-candidate logo tournament (4 logomark concepts + 3 integrated typemarks) presented in an HTML gallery with a mandatory user-selection checkpoint, then a refined production logo suite (path-only SVG; no rectangular backgrounds; close-set lockups; no subtitle on the main lockup)
-- Standalone professional HTML brand book (`brandbook/index.html`, no build step) + `BRAND-SPEC.md` v1.0 successor to the prompts/ draft
-- Collateral (README header, social card, favicons), README wiring, Hex package exclusion, size-budget verification
-
-**Key constraints:** Everything self-contained in `brandbook/`; wordmarks generated via opentype.js then hand-curated (no `<text>` in committed SVGs, no font binaries committed); latitude granted to adjust fonts/colors only where the audit justifies it with stated cost.
+No active milestone. Run `/gsd:new-milestone` to scope the next one. The leading candidate is **v10.0 Brand Normalization (NORM-01)** — wire the generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth.
 
 ## Requirements
 
@@ -127,11 +120,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - ✓ **BDGT-03**: JS IndexedDB `put()` operations are wrapped in `try/catch` — v8.0
 - ✓ **BRND-01**: The generated offline UI applies the Crosswake Brand Book design tokens — v8.0
 - ✓ **BRND-02**: The offline UI implements explicit, honest microcopy — v8.0
+- ✓ **v9.0 Brand System & Visual Identity** (all 21 v1 requirements: AUDT-*, TOKN-*, LOGO-*, BOOK-*, COLL-01..05) — shipped the brand audit + WCAG matrix + frozen DTCG tokens, the path-only logo suite, the standalone HTML brand book + `BRAND-SPEC.md` v1.0, launch collateral wired into README/ExDoc (brandbook hex-excluded), and (COLL-05) an automated Playwright brand-verification suite gated in CI that replaces manual brand UAT. Validated across Phases 102-106; full detail in `.planning/milestones/v9.0-REQUIREMENTS.md`.
 
 ### Active
 
 - [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
 - [ ] NTV-01: Extend storage budgets to utilize native iOS/Android bridge commands to calculate available physical disk space.
+- [ ] NORM-01: Wire generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth (deferred from v9.0 → v10.0 candidate).
 
 ### Out of Scope
 
@@ -185,6 +180,10 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Enforce `ContentPack` casting at the route-policy boundary | Guarantees manifest builders always interact with struct shapes, not loose maps | Validated in v6.0 (Phase 84) |
 | Use `binary_id` primary keys for the demo Flashcard domain | Keeps the schema offline-sync-friendly for reconciliation | Validated in v6.0 (Phase 86) |
 | Stub a mocked Playwright E2E offline-sync flow for the v6.0 closeout gate | Allowed the CI workflow to execute without a full network-toggling harness | ⚠️ Revisit — mock hid a demo-app compile break; replace with a real run |
+| Keep the brand system self-contained in `brandbook/` and excluded from the Hex package | Brand assets are repo/docs concerns, not installable library code; exclusion keeps the published package lean | Validated in v9.0 (Phase 106) |
+| Shift brand UAT left into an automated suite instead of manual checkpoints | Manual brand verification doesn't scale and tolerated a real overflow defect; automation catches regressions deterministically | Validated in v9.0 (COLL-05) — caught + fixed a mobile-overflow bug |
+| Split brand CI into a required deterministic gate + an advisory render tier | Pixel/font-level checks differ across Linux-CI vs macOS; only deterministic checks should block merges | Validated in v9.0 — `brand-structural` required, `brand-visual` advisory |
+| Treat planning-milestone version tags (vN.0) as distinct from the Hex 0.x release axis | The repo ships on Hex at 0.x; planning milestones track work tranches, not installable versions | ✓ Good — CHANGELOG + MILESTONE-ARC.md document the distinction |
 
 ## Evolution
 
@@ -204,4 +203,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-11 — v9.0 Brand System & Visual Identity started*
+*Last updated: 2026-06-13 — after v9.0 Brand System & Visual Identity milestone*

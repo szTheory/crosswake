@@ -402,6 +402,38 @@
 ### Cost Observations
 - Archival surfaced more real work (a compile break, untracked artifacts) than the closeout itself recorded.
 
+## Milestone: v9.0 — Brand System & Visual Identity
+
+**Shipped:** 2026-06-13
+**Phases:** 5 (102-106) | **Plans:** 16
+
+### What Was Built
+- Brand audit + WCAG matrix + frozen W3C DTCG design tokens; path-only logo suite (wordmark from Space Grotesk outlines via opentype.js); zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0; launch collateral wired into README/ExDoc with `brandbook/` hex-excluded.
+- COLL-05: a self-contained Playwright brand-verification suite (`brandbook/e2e/`) that replaces manual brand UAT, promoted to a hybrid CI gate (`brand-structural` required / `brand-visual` advisory).
+- CHANGELOG `[0.1.2]` pending section → `doctor --check-publish` flipped `not_ready` → `ready`.
+
+### What Worked
+- Shift-left paid off immediately: the automated mobile-overflow check caught a real 10px table defect that manual render-verify in P105 had tolerated.
+- Re-verifying the security register against *current* code (not the plan) caught two premises COLL-05 changed (required-gate promotion, new `@playwright/test` devDep) and re-dispositioned them honestly instead of rubber-stamping.
+- Grounding the CHANGELOG fix in the actual `publish_readiness` predicates (not guesswork) made it pass first try and refreshed the proof fixture deterministically.
+
+### What Was Inefficient
+- A pixel-level mobile-overflow assertion was first placed in the required tier and failed only in CI (Linux freetype vs macOS font metrics), forcing a retier to advisory — the render-sensitivity should have been anticipated up front.
+- The security auditor wrote SECURITY.md to repo root instead of the phase dir, needing relocation.
+
+### Patterns Established
+- **Hybrid CI gate for asset/visual work:** deterministic checks (counts, ids, dimensions, attributes) are required; render/font-dependent checks are advisory. Tag-based tiering in one Playwright harness.
+- **Self-contained e2e harness:** a dependency-free static server over `file`-like localhost decouples brand tests from Phoenix/Elixir entirely (also the fix-pattern the red `e2e-offline-sync` lane lacks).
+
+### Key Lessons
+- Pixel/font assertions are environment-sensitive — never gate merges on them; sample art/background regions, not glyphs.
+- When a follow-on increment changes a prior phase's threat-model premise, re-audit against live code rather than trusting the archived register.
+- Planning-milestone version tags (vN.0) must stay clearly distinct from the Hex 0.x release axis.
+
+### Cost Observations
+- Most of the session was deterministic engineering + verification; subagents (Explore ×3, security auditor) ran on sonnet to reserve Opus for the main loop.
+- Carried-forward debt: the v4.0 closeout-verifier ledger brittleness (`tighten-validation-ledger-closeout-gate`) remains deferred — its proof lanes are red on main but non-required.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
