@@ -49,6 +49,6 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
     assert output =~ "cw-wake-700"
     assert output =~ "cw-brass-500"
     assert output =~ "tailwind.config.js"
-    assert output =~ "import \"./offline\""
+    assert output =~ "Configure esbuild to bundle offline.js"
   end
 end

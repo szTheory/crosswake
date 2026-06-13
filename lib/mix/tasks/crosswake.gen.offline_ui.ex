@@ -92,8 +92,9 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
          }
        }
 
-    3. Ensure the offline.js is imported in your assets/js/app.js:
-       import "./offline"
+    3. Configure esbuild to bundle offline.js as a separate entry point in your config/config.exs:
+       Update the :esbuild args to include js/offline.js alongside js/app.js:
+       args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
     """)
   end
 

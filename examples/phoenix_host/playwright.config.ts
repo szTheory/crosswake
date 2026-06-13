@@ -19,7 +19,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'MIX_ENV=test mix do ecto.drop, ecto.setup, phx.server',
+    command: 'MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server',
     port: 4002,
     reuseExistingServer: !process.env.CI,
   },

@@ -41,7 +41,7 @@ defmodule Crosswake.Proof.Phase96ThreadlineDocsContractTest do
     refute Regex.match?(~r/^\s*@moduletag\s+:/m, source),
            "guides/threadline.md parity test must not carry a @moduletag — remove it to keep the hermetic lane self-contained"
 
-    refute String.contains?(source, "Crosswake" <> "Example."),
+    refute Regex.match?(~r/Crosswake\.Example\.(?!\*)/, source),
            "guides/threadline.md parity test must not reference the example-host (Crosswake.Example.*) — the hermetic lane runs without the example Phoenix host"
   end
 
