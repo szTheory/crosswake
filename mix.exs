@@ -94,6 +94,7 @@ defmodule Crosswake.MixProject do
         "guides/install.md",
         "guides/support_matrix.md",
         "guides/adopter_profiles.md",
+        "guides/adoption.md",
         "guides/user_flows.md",
         "guides/capabilities.md",
         "guides/bridge.md",
@@ -102,6 +103,7 @@ defmodule Crosswake.MixProject do
         "guides/companions.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
+        "guides/android_uat.md",
         "guides/packs.md",
         "guides/threadline.md"
       ],

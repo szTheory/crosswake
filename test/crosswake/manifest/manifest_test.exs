@@ -53,7 +53,7 @@ defmodule Crosswake.ManifestTest do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(ManagedRouter)
 
     assert manifest.manifest_schema_version == "1.0.0"
-    assert manifest.crosswake_version == "0.1.0"
+    assert manifest.crosswake_version == Mix.Project.config()[:version]
     assert manifest.host.manifest_sources == [:bundled, :cached, :remote]
     assert manifest.compatibility.bridge_protocol_version == "1.0.0"
     assert Map.has_key?(manifest.capability_registry, "camera")

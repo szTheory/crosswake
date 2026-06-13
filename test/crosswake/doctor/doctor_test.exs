@@ -91,7 +91,7 @@ defmodule Crosswake.DoctorTest do
     assert report.shells.android.proof.status == :verification_required
     assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
-    assert report.support.release_policy.crosswake_version == "0.1.0"
+    assert report.support.release_policy.crosswake_version == Mix.Project.config()[:version]
     assert report.support.release_policy.manifest_schema_version == "1.0.0"
     assert report.support.release_policy.bridge_protocol_version == "1.0.0"
     assert report.support.release_policy.native_runtime_version == "1.0.0"
@@ -196,7 +196,7 @@ defmodule Crosswake.DoctorTest do
     assert human =~ "native_runtime_version=1.0.0"
     assert human =~ "Package versions alone do not determine support truth"
     assert human =~ "route unavailable=yes"
-    assert human =~ "bridge posture: crosswake.bridge@1.0.0"
+    assert human =~ "bridge posture: crosswake.bridge@1.1.0"
     assert human =~ "offline posture: supported"
     assert human =~ "queued_for_replay"
     assert human =~ "proof=supported"
