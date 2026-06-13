@@ -52,10 +52,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKN-04 | — | Pending |
-| TOKN-05 | — | Pending |
-| NORM-01 | — | Pending |
-| NORM-02 | — | Pending |
-| NORM-03 | — | Pending |
-| NORM-04 | — | Pending |
-| PROOF-01 | — | Pending |
+| TOKN-04 | Phase 107 | Pending |
+| TOKN-05 | Phase 107 | Pending |
+| NORM-03 | Phase 107 | Pending |
+| NORM-01 | Phase 108 | Pending |
+| NORM-02 | Phase 108 | Pending |
+| NORM-04 | Phase 108 | Pending |
+| PROOF-01 | Phase 109 | Pending |

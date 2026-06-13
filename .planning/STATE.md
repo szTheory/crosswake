@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v10.0
 milestone_name: Brand Normalization
-status: planning
-last_updated: "2026-06-13T15:17:57.814Z"
+status: roadmapped
+last_updated: "2026-06-13"
 last_activity: 2026-06-13
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,23 +17,28 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-11)
+See: .planning/PROJECT.md (updated 2026-06-13)
 
-**Core value:** Pressure-test the existing brand book and ship the fully implemented brand system — audit, design tokens, user-selected logo, standalone HTML brand book, and collateral — self-contained in `brandbook/` (<1 MB committed, SVG/text-first).
-**Current focus:** Milestone complete
+**Core value:** Make `brandbook/tokens/tokens.css` the genuine single source of truth for the brand system — consumed by the generator templates and the example host via semantic CSS custom properties — and mechanically forbid drift.
+**Current focus:** Phase 107 — Token Source & Distribution
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 107 — Token Source & Distribution
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-13 — Milestone v10.0 started
+Status: Roadmap defined; Phase 107 ready to plan
+Last activity: 2026-06-13 — v10.0 roadmap created (3 phases, 7 requirements)
+
+```
+v10.0 Progress [░░░░░░░░░░░░░░░░░░░░] 0% (0/3 phases)
+Phase 107 ░░░  Phase 108 ░░░  Phase 109 ░░░
+```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
+- Total plans completed: 0
 - Average duration: —
 - Total execution time: —
 
@@ -43,18 +48,18 @@ Last activity: 2026-06-13 — Milestone v10.0 started
 
 ### Decisions
 
-- Audit → Tokens → Logos → Book → Collateral is a strict dependency chain; any reordering introduces rework
-- Token naming convention must be decided and frozen in Phase 102 before any CSS is generated in Phase 103
-- Phase 103 and Phase 104 each contain a hard blocking user checkpoint; no downstream work begins without explicit confirmation
-- All brand tooling lives under `brandbook/tools/` and is isolated entirely from the Elixir library
-- Token consumers (`app.css`, `priv/templates/`) remain decoupled this milestone; wiring is a v10.0 concern (NORM-01)
-- [Phase ?]: AUDT-04 ratification approved by maintainer 2026-06-11: all audit-driven font/color changes frozen, Phase 103 unblocked
-- [Phase ?]: opentype.js 2.0.0 API change
-- [Phase ?]: separate provenance commits
+- v9.0 brand contract is frozen; v10.0 is wiring-only, not a redesign
+- compile-tokens.js currently emits only color groups; font.* and dimension.* tokens exist in the JSON but are silently dropped — TOKN-04/05 fix this
+- app.css duplicates the entire primitive palette as flat aliases without the `primitive.` namespace prefix (e.g., `--cw-foam-50` not `--cw-primitive-foam-50`) and hand-declares font stacks — these must be removed, not just augmented
+- offline_ui templates use Tailwind utility classes and Tailwind color references (`text-cw-current-950`, `bg-cw-foam-50`) — no Tailwind dependency exists in the generated host; NORM-02 converts these to token-backed markup
+- Distribution mechanism (NORM-03) is documented as part of Phase 107, not a separate phase — it is the contract the consumer phases wire against
+- PROOF-01 is purely textual/structural (grep-style); it stays in the required `brand-structural` gate, not the advisory `brand-visual` tier — consistent with v9.0 hermetic-vs-advisory split
+- brandbook/ remains excluded from the Hex package (v9.0 decision, unchanged)
+- Zero new build toolchain: Node for compile-tokens.js only; no Tailwind, no bundler introduced in the host
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
@@ -68,17 +73,13 @@ None.
 | v8.0 gap | `tighten-validation-ledger-closeout-gate` quick task | Acknowledged | v8.0 close |
 | v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred | v8.0 close |
 | v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred | v8.0 close |
-| v9.0 v2 | NORM-01: Wire generator templates + app.css onto tokens.css | Deferred to v10.0 | v9.0 REQUIREMENTS.md |
-| Phase 102 P04 | 15min | 3 tasks | 1 files |
-| Phase 103 P01 | 9 | 3 tasks | 9 files |
-| Phase 104 P03 | 45 | 3 tasks | 9 files |
 
 ## Session Continuity
 
-Last session: 2026-06-12T22:00:18.319Z
-Stopped at: Phase 103 LOGO-04 pick: Mark A + terminal-cut wordmark
+Last session: 2026-06-13
+Stopped at: v10.0 roadmap created — ready to plan Phase 107
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd:plan-phase 107` to plan Phase 107: Token Source & Distribution
