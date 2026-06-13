@@ -120,3 +120,33 @@
 /* stone-500 on foam-50:  4.09:1 — fails AA normal text                           */
 /* wake-500  on foam-50:  2.95:1 — role issue; dark-surface only                  */
 /* mist-200  on foam-50:  1.35:1 — border/dark-surface only                       */
+
+/* ─── Fonts & dimensions ─── */
+:root {
+  --cw-display-scale-lg: 56px;
+  --cw-display-scale-md: 40px;
+  --cw-display-scale-sm: 28px;
+  --cw-focus-ring-width: 2px;
+  --cw-font-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cw-font-mono: "JetBrains Mono", SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --cw-line-height-display-lg: 64px;
+  --cw-line-height-display-md: 48px;
+  --cw-line-height-display-sm: 36px;
+  --cw-line-height-lg: 28px;
+  --cw-line-height-md: 24px;
+  --cw-line-height-sm: 20px;
+  --cw-line-height-xl: 30px;
+  --cw-line-height-xs: 16px;
+  --cw-radius-lg: 14px;
+  --cw-radius-md: 10px;
+  --cw-radius-sm: 6px;
+  --cw-radius-xl: 20px;
+  --cw-spacing-base: 4px;
+  --cw-text-scale-lg: 18px;
+  --cw-text-scale-md: 16px;
+  --cw-text-scale-sm: 14px;
+  --cw-text-scale-xl: 20px;
+  --cw-text-scale-xs: 12px;
+  --cw-tracking-tight: -0.02em;
+}
