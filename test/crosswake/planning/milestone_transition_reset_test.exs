@@ -1,20 +1,29 @@
 defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   use ExUnit.Case, async: true
 
-  # This suite protects the milestone-transition reset invariant: when a
-  # milestone ships, the live operational planning surfaces (STATE/REQUIREMENTS/
-  # ROADMAP/PROJECT) must all name the *new* active milestone, and the closing
-  # milestone's snapshot must be archived under .planning/milestones/.
+  # This suite protects the milestone-transition reset invariant: the live
+  # operational planning surfaces (STATE/REQUIREMENTS/ROADMAP/PROJECT) and the
+  # .planning/milestones/ archive must stay consistent with the milestone named
+  # in STATE.md frontmatter.
   #
-  # The active milestone is derived from STATE.md frontmatter — the operational
-  # source of truth GSD rewrites on every transition — instead of being
-  # hardcoded to whichever milestone happened to be active when the test was
-  # written. Earlier revisions pinned the assertions to a specific milestone
-  # name ("v3.9 Chimeway Notification Seam") and to MILESTONE-ARC.md's manually
-  # maintained "### Active:" marker; both broke the moment the project advanced
-  # to the next milestone even though the reset itself was correct. Deriving
-  # from frontmatter keeps the invariant meaningful across rollovers
-  # (v3.8 → v3.9 → v4.0 → …) without per-milestone edits.
+  # The milestone is derived from STATE.md frontmatter — the operational source
+  # of truth GSD rewrites on every transition — instead of being hardcoded to
+  # whichever milestone happened to be active when the test was written.
+  #
+  # The project has two legitimate committed states, distinguished by whether a
+  # live .planning/REQUIREMENTS.md exists (see between_milestones?/0):
+  #
+  #   • ACTIVE (mid-flight): a live REQUIREMENTS.md exists and names the active
+  #     milestone, ROADMAP/PROJECT name it as the current milestone, and its
+  #     snapshot is NOT yet archived.
+  #   • SHIPPED (between /gsd:complete-milestone and /gsd:new-milestone):
+  #     complete-milestone archives the snapshot and `git rm`s REQUIREMENTS.md,
+  #     leaving STATE still naming the just-shipped milestone with status set to
+  #     complete. Here the snapshot MUST be archived and REQUIREMENTS.md MUST be
+  #     absent — the inverse of the active state.
+  #
+  # Asserting the right invariant per state keeps this meaningful across
+  # rollovers without breaking on the legitimate between-milestones checkpoint.
 
   @root File.cwd!()
   @roadmap Path.join(@root, ".planning/ROADMAP.md")
@@ -23,31 +32,56 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
   @state Path.join(@root, ".planning/STATE.md")
   @milestones_dir Path.join(@root, ".planning/milestones")
 
-  test "live operational surfaces all name the active milestone from STATE frontmatter" do
+  test "live operational surfaces all name the milestone from STATE frontmatter" do
     {version, name} = active_milestone()
     label = "#{version} #{name}"
 
-    assert File.read!(@requirements) =~ label,
-           "REQUIREMENTS.md header does not name the active milestone #{inspect(label)}"
-
     assert File.read!(@roadmap) =~ label,
-           "ROADMAP.md does not name the active milestone #{inspect(label)}"
+           "ROADMAP.md does not name the milestone #{inspect(label)}"
 
-    assert File.read!(@project) =~ "## Current Milestone: #{label}",
-           "PROJECT.md `## Current Milestone` is not #{inspect(label)}"
+    assert File.read!(@project) =~ label,
+           "PROJECT.md does not name the milestone #{inspect(label)}"
 
     assert File.read!(@state) =~ name,
-           "STATE.md body does not reference the active milestone name #{inspect(name)}"
+           "STATE.md body does not reference the milestone name #{inspect(name)}"
+
+    if between_milestones?() do
+      # SHIPPED state: complete-milestone removed the live REQUIREMENTS.md.
+      # PROJECT.md must no longer advertise it as the current (in-progress)
+      # milestone — it is shipped, not active.
+      refute File.read!(@project) =~ "## Current Milestone: #{label}",
+             "PROJECT.md still names shipped milestone #{inspect(label)} as the current milestone"
+    else
+      # ACTIVE state: the live REQUIREMENTS.md and PROJECT current-milestone
+      # header must name the active milestone.
+      assert File.read!(@requirements) =~ label,
+             "REQUIREMENTS.md header does not name the active milestone #{inspect(label)}"
+
+      assert File.read!(@project) =~ "## Current Milestone: #{label}",
+             "PROJECT.md `## Current Milestone` is not #{inspect(label)}"
+    end
   end
 
-  test "the active milestone is not archived while it is still active" do
+  test "milestone archive presence matches active/shipped state" do
     {version, _name} = active_milestone()
+    archived_requirements = Path.join(@milestones_dir, "#{version}-REQUIREMENTS.md")
+    archived_roadmap = Path.join(@milestones_dir, "#{version}-ROADMAP.md")
 
-    refute File.exists?(Path.join(@milestones_dir, "#{version}-REQUIREMENTS.md")),
-           "active milestone #{version} should not have an archived REQUIREMENTS snapshot yet"
+    if between_milestones?() do
+      # SHIPPED: the just-shipped milestone's snapshot must be archived.
+      assert File.exists?(archived_requirements),
+             "shipped milestone #{version} is missing its archived REQUIREMENTS snapshot"
 
-    refute File.exists?(Path.join(@milestones_dir, "#{version}-ROADMAP.md")),
-           "active milestone #{version} should not have an archived ROADMAP snapshot yet"
+      assert File.exists?(archived_roadmap),
+             "shipped milestone #{version} is missing its archived ROADMAP snapshot"
+    else
+      # ACTIVE: the in-progress milestone must not be archived yet.
+      refute File.exists?(archived_requirements),
+             "active milestone #{version} should not have an archived REQUIREMENTS snapshot yet"
+
+      refute File.exists?(archived_roadmap),
+             "active milestone #{version} should not have an archived ROADMAP snapshot yet"
+    end
   end
 
   test "the most recently shipped milestone was archived during transition" do
@@ -83,6 +117,13 @@ defmodule Crosswake.Planning.MilestoneTransitionResetTest do
     assert audit =~ "milestone: v3.8"
     assert audit =~ "requirements: 16/16"
   end
+
+  # True when the project sits between milestones: /gsd:complete-milestone has
+  # archived the snapshot and removed the live REQUIREMENTS.md, and the next
+  # milestone has not been started yet. REQUIREMENTS.md presence is the direct
+  # operational signal — complete-milestone `git rm`s it, new-milestone recreates
+  # it — so it distinguishes the two legitimate committed states.
+  defp between_milestones?, do: not File.exists?(@requirements)
 
   # The operational active milestone, read from STATE.md frontmatter
   # (`milestone:` version + `milestone_name:`), e.g. {"v4.0", "Production Shell
