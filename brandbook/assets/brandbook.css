@@ -230,6 +230,15 @@ body {
   margin-block: 1rem;
 }
 
+/* ── Tables — contain to viewport; scroll internally when content is wider
+   (otherwise wide spec tables push the page ~10px on narrow mobile). ── */
+.book-section table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 /* ── Callout ── */
 .callout {
   border-left: 4px solid var(--cw-border-strong);
