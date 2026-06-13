@@ -708,7 +708,7 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
   end
 
   @tag :rline_05
-  test "canonical Android SupportEntry.status remains :verification_required (D-20 guardrail)" do
+  test "canonical Android SupportEntry.status is :supported (promoted at Phase 69)" do
     canonical = SupportMatrix.canonical()
 
     android_entries =
@@ -719,14 +719,14 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
            "canonical android list must be non-empty and contain entries with :status"
 
     for entry <- android_entries do
-      assert entry.status == :verification_required,
+      assert entry.status == :supported,
              ProofAssertions.stable_id_message(
-               "proof.rline_05.android.verification_required",
-               "Android SupportEntry.status must be :verification_required in Phase 64",
+               "proof.rline_05.android.supported",
+               "Android SupportEntry.status must be :supported after the Phase 69 promotion gate",
                "SupportMatrix.canonical/0 android entries",
-               "Android entry has status #{inspect(entry.status)} — expected :verification_required (D-20: Android not promoted until Phase 69)",
+               "Android entry has status #{inspect(entry.status)} — expected :supported (D-20: promoted at Phase 69 on JVM hermetic CI evidence)",
                "lib/crosswake/support_matrix/support_matrix.ex",
-               "do NOT flip Android status in Phase 64; the promotion gate is Phase 69",
+               "Android is promoted to :supported as of Phase 69; do not demote without removing the JVM hermetic evidence",
                :merge_blocking
              )
     end

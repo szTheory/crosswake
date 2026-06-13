@@ -1,16 +1,18 @@
 {
   "checks": [
     {
-      "blocking": false,
+      "blocking": true,
       "category": "publish_parity",
       "claim_scope": "Hex metadata and release/changelog truth",
-      "code": "diag.publish.local_truth",
+      "code": "diag.publish.local_truth_failed",
       "details": {
         "changelog_sections": [
           "Unreleased",
           "0.1.0"
         ],
-        "errors": [],
+        "errors": [
+          "CHANGELOG.md must include the current [0.1.2] release"
+        ],
         "package_name": "crosswake",
         "source_url": "https://github.com/szTheory/crosswake",
         "unreleased_subsections": [
@@ -19,20 +21,20 @@
           "Deferred non-shipped claims",
           "Published Hex truth"
         ],
-        "version": "0.1.0"
+        "version": "0.1.2"
       },
       "docs_reference": "CHANGELOG.md",
-      "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
+      "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.2] aligned before publishing.",
       "id": "publish.parity",
-      "message": "local Hex metadata and CHANGELOG.md preserve published-versus-unreleased truth",
+      "message": "local publish parity failed: CHANGELOG.md must include the current [0.1.2] release",
       "proof_class": "merge_blocking",
       "rebuild_requirement": {
         "companion_required": false,
         "native_required": false,
         "reasons": []
       },
-      "result": "pass",
-      "severity": "advisory"
+      "result": "fail",
+      "severity": "error"
     },
     {
       "blocking": false,
@@ -509,7 +511,7 @@
           "shell.ios.generated_project",
           "shell.android.generated_project"
         ],
-        "proof_status": "verification_required",
+        "proof_status": "supported",
         "required_docs_anchors": [
           "guides/support_matrix.md",
           "guides/native_shell.md"
@@ -519,7 +521,7 @@
           "dashboard",
           "library"
         ],
-        "support_status": "verification_required"
+        "support_status": "supported"
       },
       "docs_reference": "guides/native_shell.md",
       "hint": "Run generated-shell proof and document rebuild requirements before claiming fully verified native support.",
@@ -564,7 +566,8 @@
           "guides/companions.md",
           "guides/compatibility.md",
           "guides/native_shell.md",
-          "guides/packs.md"
+          "guides/packs.md",
+          "guides/threadline.md"
         ],
         "missing_docs_extras": [],
         "missing_files": []
@@ -618,13 +621,13 @@
     }
   ],
   "schema_version": "1.0.0",
-  "status": "ready",
+  "status": "not_ready",
   "summary": {
-    "advisory_count": 3,
+    "advisory_count": 2,
     "advisory_result_count": 1,
-    "blocking_count": 0,
-    "error_count": 0,
-    "pass_count": 3,
+    "blocking_count": 1,
+    "error_count": 1,
+    "pass_count": 2,
     "total_count": 8,
     "verification_required_count": 4,
     "warning_count": 5
