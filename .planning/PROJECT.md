@@ -10,6 +10,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 ## Current State
 - Milestone v10.0 active — Brand Normalization (NORM-01); v9.0 Brand System & Visual Identity shipped + archived
+- Phase 107 Token Source & Distribution complete (2026-06-13): `compile-tokens.js` now emits the full token set (font + dimension + color) into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`; one documented distribution mechanism (verbatim copy + `<link>`, `guides/tokens.md`) wired into the `crosswake.gen.offline_ui` generator and the example host. TOKN-04/TOKN-05/NORM-03 satisfied (verified 13/13). Next: Phase 108 Consumer Normalization.
 
 **Shipped `v9.0 Brand System & Visual Identity` on `2026-06-13`** (Phases 102-106, 16 plans). v9.0 pressure-tested and shipped the full brand system self-contained in `brandbook/`: a 14-section audit + WCAG contrast matrix, a W3C DTCG design-token system, a user-selected path-only logo suite, a zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0, and launch collateral wired into README/ExDoc with the brandbook excluded from the Hex package (committed size < 1 MB). It also shifted brand UAT left into a self-contained Playwright suite gated in CI (`brand-structural` required / `brand-visual` advisory) — which caught and fixed a real mobile-overflow defect — and added the pending CHANGELOG `[0.1.2]` entry, flipping `doctor --check-publish` to `ready`.
 
@@ -211,4 +212,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-13 — v10.0 Brand Normalization (NORM-01) milestone started*
+*Last updated: 2026-06-13 — v10.0 Brand Normalization: Phase 107 Token Source & Distribution complete*
