@@ -96,6 +96,16 @@ defmodule CrosswakeExample.Router do
     crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
       get("/", CrosswakeExample.PageController, :index, crosswake: [id: "home"])
 
+      live("/bridge-proof", CrosswakeExample.BridgeProofLive,
+        crosswake: [
+          id: "bridge-proof",
+          runtime: :live_view,
+          capabilities: ["share"],
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
       live("/library", CrosswakeExample.LibraryLive,
         crosswake: [
           id: "library",
@@ -185,7 +195,35 @@ defmodule CrosswakeExample.Router do
             security: :standard
           ]
         )
+
+        live("/admin/member-access", AdminAccessLive,
+          crosswake: [
+            id: "saas-admin-member-access",
+            runtime: :live_view,
+            entry: :internal_only,
+            auth_min_level: :mfa,
+            requires_recent_auth: 300,
+            auth_posture: :strict_recent,
+            offline: :unavailable,
+            security: :sensitive
+          ]
+        )
       end
+    end
+  end
+
+  scope "/sigra", CrosswakeExample.SaaSPortal do
+    pipe_through([:browser, :saas_portal])
+
+    crosswake_defaults runtime: :live_view, offline: :unavailable, security: :sensitive do
+      live("/step-up", StepUpChallengeLive,
+        crosswake: [
+          id: "sigra-step-up",
+          runtime: :live_view,
+          offline: :unavailable,
+          security: :sensitive
+        ]
+      )
     end
   end
 
@@ -301,6 +339,37 @@ defmodule CrosswakeExample.Router do
           security: :standard
         ]
       )
+    end
+  end
+
+  scope "/decks", CrosswakeExample.Flashcards do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/", DeckLive.Index,
+        crosswake: [
+          id: "decks-index",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/:id", DeckLive.Show,
+        crosswake: [
+          id: "decks-show",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+    end
+  end
+
+  if Mix.env() in [:test, :e2e] do
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:api])
+      get("/sync-state/:client_mutation_id", SyncStateController, :show)
     end
   end
 end

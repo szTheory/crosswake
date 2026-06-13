@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/readme-header-dark.svg">
+    <img src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/readme-header.svg" alt="Crosswake">
+  </picture>
+</p>
+
 # Crosswake
 
 > **Declare the crossing.**

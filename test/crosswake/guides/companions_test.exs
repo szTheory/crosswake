@@ -96,12 +96,14 @@ defmodule Crosswake.Guides.CompanionsTest do
     assert content =~ "token_ref"
     assert content =~ "token_fingerprint"
 
+    # Notification-open routing and RouteGate activation are now shipped Chimeway
+    # surfaces (resolved through RouteGate + Sigra), so they are no longer
+    # non-claims. The remaining provider/delivery facts stay outside the proof.
     for non_claim <- [
           "APNs/FCM delivery",
           "provider credentials",
-          "notification-open routing",
-          "RouteGate activation via notification",
-          "topic APIs",
+          "push metrics",
+          "read receipts",
           "tray behavior"
         ] do
       assert content =~ non_claim

@@ -1,0 +1,97 @@
+name: Phase 70 Proof
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Proof lane to run"
+        required: true
+        default: merge-blocking
+        type: choice
+        options:
+          - merge-blocking
+          - advisory
+          - all
+  schedule:
+    - cron: "0 6 * * 1"
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
+
+jobs:
+  merge-blocking-subscription-saas-proof:
+    name: merge-blocking subscription SaaS proof (hermetic)
+    runs-on: macos-15
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run hermetic Phase 70 subscription SaaS proof
+        run: mix test test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs
+
+  advisory-provider-sandbox-device-proof:
+    name: advisory provider sandbox/device proof (storekit + play billing)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'advisory' || inputs.lane == 'all')) }}
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Advisory StoreKit sandbox/device checks
+        env:
+          CROSSWAKE_STOREKIT_SANDBOX_READY: ${{ secrets.CROSSWAKE_STOREKIT_SANDBOX_READY }}
+        run: |
+          if [ -z "${CROSSWAKE_STOREKIT_SANDBOX_READY}" ]; then
+            echo "::notice title=Advisory StoreKit::credentials missing; skipping non-blocking StoreKit sandbox/device checks."
+            exit 0
+          fi
+          echo "::notice title=Advisory StoreKit::credentials present; run host-specific StoreKit sandbox/device script here."
+
+      - name: Advisory Play Billing sandbox/device checks
+        env:
+          CROSSWAKE_PLAY_BILLING_SANDBOX_READY: ${{ secrets.CROSSWAKE_PLAY_BILLING_SANDBOX_READY }}
+        run: |
+          if [ -z "${CROSSWAKE_PLAY_BILLING_SANDBOX_READY}" ]; then
+            echo "::notice title=Advisory Play Billing::credentials missing; skipping non-blocking Play Billing sandbox/device checks."
+            exit 0
+          fi
+          echo "::notice title=Advisory Play Billing::credentials present; run host-specific Play Billing sandbox/device script here."
+
+      - name: Advisory lane status summary
+        run: |
+          echo "::notice title=Advisory lane::Provider sandbox/device checks are advisory only."
+          echo "::notice::This job never gates merge and passing runs do not auto-promote support posture."

@@ -1,0 +1,13 @@
+{
+  "correlation_id": "phase65-fixture-native-ios-metrickit-hang",
+  "kind": "hang",
+  "layer": "native",
+  "native_diagnostic": {
+    "exit_reason": "hang",
+    "source": "metrickit"
+  },
+  "native_runtime_version": "1.0.0",
+  "observed_at": "2026-06-04T00:00:00Z",
+  "platform": "ios",
+  "schema_version": "1"
+}

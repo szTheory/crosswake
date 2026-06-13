@@ -53,6 +53,9 @@ on:
     # results is visible in the CI dashboard even when no PR has triggered it.
     - cron: "0 6 * * 1"
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
+
 jobs:
   merge-blocking-rulestead-proof:
     # Required branch check. Runs on every PR and push to main. This job MUST

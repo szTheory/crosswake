@@ -135,7 +135,8 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
     assert companions =~ "Phase 58 stable auth telemetry plus STRIDE-style security closeout"
     refute companions =~ "Phase 58 telemetry/security closeout, direct shell"
 
-    assert support =~ "Phase 58 auth telemetry/security closeout are shipped"
+    assert support =~ "Phase 58 auth telemetry/security closeout"
+    assert support =~ "Phase 73 auth-sensitive admin workflow proof"
     assert support =~ "provider/device proof"
     assert support =~ "direct shell/WebView token authority"
 

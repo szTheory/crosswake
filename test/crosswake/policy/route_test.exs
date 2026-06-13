@@ -2,8 +2,30 @@ defmodule Crosswake.Policy.RouteTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Policy.Route
+  alias Crosswake.Offline.ContentPack
 
   describe "new/1" do
+    test "accepts pack bindings for local_first routes" do
+      assert {:ok, route} =
+               Route.new(
+                 id: "flashcards",
+                 runtime: :offline_island,
+                 offline: :local_first,
+                 island_contract: "flashcards_v1",
+                 packs: [
+                   %{id: "deck_data", version: "1.0.0", kind: :content}
+                 ],
+                 sync: ["progress"],
+                 security: :standard
+               )
+
+      assert route.runtime == :offline_island
+      assert route.offline == :local_first
+      assert route.packs == [
+               %ContentPack{id: "deck_data", version: "1.0.0", kind: :content, integrity: nil}
+             ]
+    end
+
     test "normalizes omitted defaults" do
       assert {:ok, route} = Route.new(id: "inbox", runtime: :live_view)
 
@@ -37,7 +59,7 @@ defmodule Crosswake.Policy.RouteTest do
       assert route.id == "capture"
       assert route.capabilities == ["camera", "photos"]
       assert route.packs == [
-               %{id: "media_core", version: "1.0.0", kind: :content, integrity: nil}
+               %ContentPack{id: "media_core", version: "1.0.0", kind: :content, integrity: nil}
              ]
       assert route.sync == ["uploads"]
       assert route.security == :sensitive
@@ -63,13 +85,13 @@ defmodule Crosswake.Policy.RouteTest do
                )
 
       assert route.packs == [
-               %{
+               %ContentPack{
                  id: "lesson_library",
                  version: "1.2.0",
                  kind: :content,
                  integrity: %{algorithm: "sha256", digest: "sha256-abc123"}
                },
-               %{id: "pronunciation_audio", version: "2.0.0", kind: :media, integrity: nil}
+               %ContentPack{id: "pronunciation_audio", version: "2.0.0", kind: :media, integrity: nil}
              ]
     end
 

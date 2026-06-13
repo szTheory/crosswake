@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-final class PermissionStatusProvider {
+final class PermissionStatusProvider: PermissionStatusDelegate {
     private let resolver: (String) -> [String: String]?
 
     init(resolver: @escaping (String) -> [String: String]?) {
@@ -47,7 +47,7 @@ final class PermissionStatusProvider {
         }
     }
 
-    func statusPayload(for permissionAlias: String) -> [String: String]? {
+    func status(for permissionAlias: String) -> [String: String]? {
         resolver(permissionAlias)
     }
 

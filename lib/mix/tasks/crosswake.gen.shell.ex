@@ -11,10 +11,10 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   behavior Crosswake has not proven yet.
   """
 
-  @switches [target: :string]
+  @switches [target: :string, router: :string, local: :boolean]
   @platforms ~w(ios android)
 
-  @android_templates [
+    @android_templates [
     {"settings.gradle", "android/settings.gradle.eex"},
     {"build.gradle", "android/build.gradle.eex"},
     {"gradle.properties", "android/gradle.properties.eex"},
@@ -26,48 +26,20 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     {"app/src/main/AndroidManifest.xml", "android/app/src/main/AndroidManifest.xml.eex"},
     {"app/src/main/java/dev/crosswake/shell/MainActivity.kt",
      "android/app/src/main/java/dev/crosswake/shell/MainActivity.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt",
-     "android/app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt",
-     "android/app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/packs/PackStore.kt",
-     "android/app/src/main/java/dev/crosswake/shell/packs/PackStore.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt",
-     "android/app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/BridgeChannel.kt",
-     "android/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt",
-     "android/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt.eex"},
-    {"app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt",
-     "android/app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt.eex"},
+    {"app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt",
+     "android/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt.eex"},
     {"app/src/main/res/values/themes.xml",
-     "android/app/src/main/res/values/themes.xml.eex"},
-    {"app/src/main/res/layout/activity_required_pack.xml",
-     "android/app/src/main/res/layout/activity_required_pack.xml.eex"},
-    {"app/src/main/res/layout/activity_route_unavailable.xml",
-     "android/app/src/main/res/layout/activity_route_unavailable.xml.eex"},
-    {"app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt",
-     "android/app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt.eex"},
-    {"app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt",
-     "android/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt.eex"}
+     "android/app/src/main/res/values/themes.xml.eex"}
   ]
-  @ios_templates [
+    @ios_templates [
     {"CrosswakeShell/CrosswakeShellApp.swift", "ios/CrosswakeShellApp.swift.eex"},
     {"CrosswakeShell/Info.plist", "ios/Info.plist.eex"},
-    {"CrosswakeShell/ActivationCoordinator.swift", "ios/ActivationCoordinator.swift.eex"},
-    {"CrosswakeShell/NativeCaptureView.swift", "ios/NativeCaptureView.swift.eex"},
-    {"CrosswakeShell/TransferCoordinator.swift", "ios/TransferCoordinator.swift.eex"},
-    {"CrosswakeShell/PackStore.swift", "ios/PackStore.swift.eex"},
-    {"CrosswakeShell/RequiredPackView.swift", "ios/RequiredPackView.swift.eex"},
-    {"CrosswakeShell/BridgeChannel.swift", "ios/BridgeChannel.swift.eex"},
-    {"CrosswakeShell/LiveViewContainerViewController.swift",
-     "ios/LiveViewContainerViewController.swift.eex"},
-    {"CrosswakeShell/RouteUnavailableView.swift", "ios/RouteUnavailableView.swift.eex"},
+    {"CrosswakeShell/CrosswakeCoordinator.swift", "ios/CrosswakeCoordinator.swift.eex"},
     {"CrosswakeShell.xcodeproj/project.pbxproj", "ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"},
     {"CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme",
      "ios/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme.eex"},
-    {"CrosswakeShellTests/ActivationCoordinatorTests.swift",
-     "ios/CrosswakeShellTests/ActivationCoordinatorTests.swift.eex"}
+    {"CrosswakeShell/CrosswakeShell.entitlements", "ios/CrosswakeShell.entitlements.eex"},
+    {"CrosswakeShell/PrivacyInfo.xcprivacy", "ios/PrivacyInfo.xcprivacy.eex"}
   ]
 
   @impl Mix.Task
@@ -85,11 +57,13 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       end
 
     target = Path.expand(opts[:target] || File.cwd!())
+    capabilities = fetch_capabilities(opts[:router])
+    local = Keyword.get(opts, :local, false)
 
     generated =
       case platform do
-        "ios" -> generate_ios_shell(target)
-        "android" -> generate_android_shell(target)
+        "ios" -> generate_ios_shell(target, capabilities, local)
+        "android" -> generate_android_shell(target, capabilities, local)
       end
 
     Mix.shell().info("""
@@ -104,7 +78,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     """)
   end
 
-  defp generate_ios_shell(target) do
+  defp generate_ios_shell(target, capabilities, local) do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
@@ -112,7 +86,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     entrypoint = Path.join(root, "CrosswakeShell/CrosswakeShellApp.swift")
 
     ensure_file(readme, shell_readme("ios"))
-    render_ios_templates(root)
+    render_ios_templates(root, capabilities, local)
     write_fixture_files(root, fixtures)
 
     %{
@@ -125,12 +99,12 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     }
   end
 
-  defp generate_android_shell(target) do
+  defp generate_android_shell(target, capabilities, local) do
     root = Path.join(target, "native/android/crosswake_shell")
     fixtures = Fixtures.export("android")
 
     ensure_file(Path.join(root, "README.md"), shell_readme("android"))
-    render_android_templates(root)
+    render_android_templates(root, capabilities, local)
 
     entrypoint = Path.join(root, "app/src/main/java/dev/crosswake/shell/MainActivity.kt")
     write_fixture_files(Path.join(root, "app/src/main"), fixtures)
@@ -147,23 +121,36 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     }
   end
 
-  defp render_android_templates(root) do
+  defp render_android_templates(root, capabilities, local) do
     Enum.each(@android_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path))
+      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities, local))
     end)
   end
 
-  defp render_ios_templates(root) do
+  defp render_ios_templates(root, capabilities, local) do
     Enum.each(@ios_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path))
+      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities, local))
     end)
   end
 
-  defp render_template(template_path) do
+  defp render_template(template_path, capabilities, local) do
     template =
       Application.app_dir(:crosswake, Path.join("priv/templates/crosswake/shell", template_path))
 
-    EEx.eval_file(template, assigns: [])
+    EEx.eval_file(template, assigns: [capabilities: capabilities, local: local])
+  end
+
+  defp fetch_capabilities(nil), do: Crosswake.Manifest.Builder.public_route_capability_ids()
+
+  defp fetch_capabilities(router) do
+    module = String.to_atom(router)
+
+    if Code.ensure_loaded?(module) do
+      {:ok, %{manifest: manifest}} = Crosswake.Manifest.compile(module)
+      Map.keys(manifest.capability_registry)
+    else
+      Mix.raise("router module #{router} is not available")
+    end
   end
 
   defp write_fixture_files(root, fixtures) do

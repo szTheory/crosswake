@@ -1,0 +1,9 @@
+{
+  "correlation_id": "phase65-fixture-bridge-command-fault",
+  "kind": "bridge_fault",
+  "layer": "bridge",
+  "native_runtime_version": "1.0.0",
+  "observed_at": "2026-06-04T00:00:00Z",
+  "platform": "ios",
+  "schema_version": "1"
+}

@@ -36,7 +36,10 @@ defmodule Crosswake.Offline.Contracts do
       :journal_mode,
       :reconciliation,
       :checkpoint_requirement,
-      :authoritative_source
+      :authoritative_source,
+      :storage_budget,
+      :reserve_for_journal,
+      :eviction
     ]
     defstruct [
       :id,
@@ -47,8 +50,13 @@ defmodule Crosswake.Offline.Contracts do
       :journal_mode,
       :reconciliation,
       :checkpoint_requirement,
-      :authoritative_source
+      :authoritative_source,
+      :storage_budget,
+      :reserve_for_journal,
+      :eviction
     ]
+
+    @type eviction_policy :: :volatile | :manual
 
     @type t :: %__MODULE__{
             id: String.t(),
@@ -59,9 +67,14 @@ defmodule Crosswake.Offline.Contracts do
             journal_mode: :append_only,
             reconciliation: :explicit,
             checkpoint_requirement: :required,
-            authoritative_source: :phoenix
+            authoritative_source: :phoenix,
+            storage_budget: integer(),
+            reserve_for_journal: integer(),
+            eviction: eviction_policy()
           }
   end
+
+  defp parse_bytes({:mb, megabytes}), do: megabytes * 1_000_000
 
   @spec new_cache_route(String.t(), keyword()) :: CacheRoute.t()
   def new_cache_route(id, attrs \\ []) when is_binary(id) and is_list(attrs) do
@@ -77,6 +90,12 @@ defmodule Crosswake.Offline.Contracts do
 
   @spec new_study_session_island(String.t(), keyword()) :: StudySessionIsland.t()
   def new_study_session_island(id, attrs \\ []) when is_binary(id) and is_list(attrs) do
+    eviction = Keyword.fetch!(attrs, :eviction)
+
+    if eviction not in [:volatile, :manual] do
+      raise ArgumentError, "invalid eviction policy: #{inspect(eviction)}. Allowed: :volatile or :manual"
+    end
+
     struct!(StudySessionIsland, %{
       id: id,
       route_id: Keyword.fetch!(attrs, :route_id),
@@ -86,7 +105,10 @@ defmodule Crosswake.Offline.Contracts do
       journal_mode: Keyword.get(attrs, :journal_mode, :append_only),
       reconciliation: Keyword.get(attrs, :reconciliation, :explicit),
       checkpoint_requirement: Keyword.get(attrs, :checkpoint_requirement, :required),
-      authoritative_source: Keyword.get(attrs, :authoritative_source, :phoenix)
+      authoritative_source: Keyword.get(attrs, :authoritative_source, :phoenix),
+      storage_budget: parse_bytes(Keyword.fetch!(attrs, :storage_budget)),
+      reserve_for_journal: parse_bytes(Keyword.fetch!(attrs, :reserve_for_journal)),
+      eviction: eviction
     })
   end
 

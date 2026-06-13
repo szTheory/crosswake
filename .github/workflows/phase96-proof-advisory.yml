@@ -1,0 +1,66 @@
+name: "Phase 96 Proof - Threadline Docs Contract (Advisory)"
+
+# Advisory example-host lane for PROOF-02: Ecto-backed durable-posture proof.
+#
+# This workflow runs ONLY on schedule and workflow_dispatch — never on PR or push.
+# It is intentionally NOT a merge gate. The example host carries pre-existing
+# test failures and ecto_sqlite3 has no async sandbox, making it unsuitable for
+# the hermetic merge-blocking lane.
+#
+# Advisory-to-merge-blocking promotion requires:
+#   1. An explicit requirement/roadmap scope change in .planning/REQUIREMENTS.md
+#   2. Sustained stability evidence from this advisory lane
+#   3. A planned milestone that explicitly promotes this proof
+#   4. A workflow edit moving the relevant step to the merge-blocking lane
+#
+# The companion merge-blocking lane is .github/workflows/phase96-proof.yml
+# (job id: merge-blocking-threadline-docs-contract-proof).
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run weekly (Monday 06:00 UTC) so the lane can't rot invisibly in the CI dashboard.
+    - cron: "0 6 * * 1"
+
+jobs:
+  advisory-threadline-example-host-ledger-proof:
+    name: advisory example-host Ecto ledger proof (PROOF-02)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # This job runs only on schedule or workflow_dispatch.
+    # The workflow-level trigger scope is the primary gate (no push/pull_request triggers);
+    # this if: guard is redundant insurance ensuring the job never runs even if a future
+    # workflow edit inadvertently adds a push or pull_request trigger.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    # Not using the "soft-fail" pattern (D-06): that pattern renders failed jobs green in the
+    # PR UI and would weaken trust in the merge-blocking lane. The if: guard above prevents
+    # PR/push runs entirely — failures here are surfaced as real failures on the advisory lane.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        working-directory: examples/phoenix_host
+        run: mix deps.get
+
+      - name: Run example-host ledger proof (PROOF-02)
+        # The mix test alias in examples/phoenix_host/mix.exs provisions the SQLite DB:
+        #   test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+        # This ensures the crosswake_audit_events table exists before the proof test runs.
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/threadline/phase96_example_host_ledger_proof_test.exs
+
+      - name: Advisory lane notice
+        if: always()
+        run: |
+          echo "::notice title=Advisory lane::Example-host Ecto-backed ledger proof is advisory only — failures here do NOT gate merge."

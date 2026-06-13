@@ -32,14 +32,14 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| android | 26 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned Android shell boot is baseline-supported, but the current repository truth still requires the Java-enabled BridgeChannel proof lane to pass before Android support can be claimed as fully verified. |
+| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android shell boot is supported based strictly on JVM hermetic CI evidence. |
 
 ## Shell Artifacts
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
 | ios_shell | 0.1.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green. |
-| android_shell | 0.1.0 | supported | verification required | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts remain baseline-supported, but repository support truth stays verification-required until the Java-enabled BridgeChannel proof lane passes. |
+| android_shell | 0.1.0 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence. |
 
 ## Capability Families
 
@@ -127,6 +127,8 @@ Promotion rules keep advisory proof visible until evidence, docs, platform, and 
 | restore_intent.provider.storekit | advisory | merge-blocking | provider_adapter | deterministic adapter contract proof; backend reconciliation authority proof; docs-contract parity proof; advisory storefront/provider lane evidence | 3 | current adapter release | zero entitlement-authority failures | ios | guides/support_matrix.md; guides/commerce.md | native or companion rebuild required | provider_adapter | diag.provider.storekit.advisory_proof; diag.provider.adapter_shipped_seams | Remain advisory until StoreKit restore evidence stays backend-owned and proof/docs parity pass. |
 | purchase_intent.provider.play_billing | advisory | merge-blocking | provider_adapter | deterministic adapter contract proof; backend reconciliation authority proof; docs-contract parity proof; advisory storefront/provider lane evidence | 3 | current adapter release | zero entitlement-authority failures | android | guides/support_matrix.md; guides/commerce.md | native or companion rebuild required | provider_adapter | diag.provider.play_billing.advisory_proof; diag.provider.adapter_shipped_seams | Remain advisory until Play Billing adapter, provider setup, docs parity, and backend reconciliation proof all pass. |
 | restore_intent.provider.play_billing | advisory | merge-blocking | provider_adapter | deterministic adapter contract proof; backend reconciliation authority proof; docs-contract parity proof; advisory storefront/provider lane evidence | 3 | current adapter release | zero entitlement-authority failures | android | guides/support_matrix.md; guides/commerce.md | native or companion rebuild required | provider_adapter | diag.provider.play_billing.advisory_proof; diag.provider.adapter_shipped_seams | Remain advisory until Play Billing restore evidence stays backend-owned and proof/docs parity pass. |
+| shell.android.jvm_hermetic | advisory | merge-blocking | jvm_hermetic_ci | script/verify_generated_android_shell.sh; Java-enabled JVM BridgeChannel hermetic proof; support-matrix rebuild_matrix parity; docs-contract parity for Android runtime-line | 3 | current release branch, within 30 CI runs | zero consecutive failures; single failure resets counter | android | guides/support_matrix.md; guides/native_shell.md#android-verification | native or companion rebuild required | native_shell | diag.shell.android.jvm_hermetic; diag.shell.verification_required | Demote to verification_required when Android JVM hermetic CI proof is stale, fails, or coverage drops below the freshness window. jvm_hermetic promotion MUST NOT be read as device_verified — CI-level evidence is not device/emulator evidence. |
+| shell.android.device_verified | advisory | merge-blocking | device_verified | Android emulator advisory lane evidence (Phase 68); device-UAT checklist completion (Phase 68); capability-parity-locked device proof; docs-contract parity for Android device-verified runtime-line | 3 | current release branch, within 10 device-UAT runs | zero consecutive failures; single failure resets counter | android | guides/support_matrix.md; guides/native_shell.md#android-device-uat | native or companion rebuild required | native_shell | diag.shell.android.device_verified; diag.shell.verification_required | Device/emulator proof is unavailable until Phase 67 (Android shell implementation) and Phase 68 (Android verification closure and device-UAT checklist). jvm_hermetic promotion MUST NOT be read as device_verified — CI-level JVM hermetic evidence does not constitute real-device or emulator proof. Demote to verification_required if device-UAT evidence is stale or if the device lane drops below the freshness window. |
 
 ## Notification Surface (v3.9)
 
@@ -134,21 +136,38 @@ Crosswake provides explicitly bounded support for notifications via the Chimeway
 
 **Supported:**
 - **Token binding:** The `notification_token` capability resolves local push tokens.
-- **notification-open routing:** Direct routing to Phoenix views upon notification interaction.
+- **notification-open routing:** Notification open resolved through RouteGate for manifest-known routes and route-local action allowlists.
+- **Route activation proof:** The notification-open workflow proof is hermetic route activation proof. RouteGate and Sigra decide activation; token/open evidence is not auth authority.
 - **Resolution limits:** Bounded bridge operations ensure requests complete predictably.
 - **Evidence redaction:** Diagnostic output actively redacts sensitive identifiers.
 
 **Deferred (Not Supported):**
-- **APNs/FCM delivery execution:** Crosswake does not act as a push delivery service.
+- **APNs/FCM delivery execution:** APNs/FCM delivery is not part of this proof, and Crosswake does not act as a push delivery service.
 - **Push metrics:** Delivery and read-receipt metrics are not tracked by the core framework.
 - **Deep UI native presentation:** Custom native notification UI presentation is left to the host shell.
 
 **Strict Telemetry Contract:**
 The telemetry event structure `[:crosswake, :notification, :*]` exposes low-cardinality delivery status and routing outcomes. **Raw payload data, device tokens, and PII are strictly forbidden and explicitly stripped from all diagnostic output.**
 
+## Media Evidence Recovery Surface (v4.1)
+
+Crosswake provides a hermetic Rindle proof for simulated media recovery.
+
+**Supported:**
+- **Recovery proof:** Rindle media/evidence recovery proof is hermetic and merge-blocking.
+- **Simulated degradation:** Simulated network degradation is proof-only and deterministic.
+- **Backend authority:** Local capture evidence is not availability authority; backend verification is required before media becomes available.
+- **Proof copy:** `Capture recorded locally; media is not available yet`, `Device evidence recorded; backend verification still required`, `This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`.
+
+**Deferred (Not Supported):**
+- **Real storage providers:** Host applications own storage target choice and persistence.
+- **Native camera/media picker capture:** Capture UX remains host-owned.
+- **Background transfer and device network toggling:** These remain advisory/deferred and never gate merge.
+- **Generic sync:** Phase 72 does not ship a broad sync engine.
+
 ## Public Non-Claims And Rough Edges
 
 - StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.
-- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, and low-cardinality diagnostic metadata; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.
-- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry.
+- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred.
+- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.
 - Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts.

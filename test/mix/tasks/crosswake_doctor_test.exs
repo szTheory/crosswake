@@ -330,7 +330,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\n")
+    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),
@@ -376,7 +376,7 @@ defmodule Mix.Tasks.Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/AndroidManifest.xml"),
-      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\n"
+      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\nPOST_NOTIFICATIONS\nandroid.permission.CAMERA\nandroid.permission.VIBRATE\n"
     )
 
     write_file!(

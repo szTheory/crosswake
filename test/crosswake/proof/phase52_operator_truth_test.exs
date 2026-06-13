@@ -168,7 +168,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.non_claims.sigra_session_authority",
       "guides/companions.md",
-      "Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry plus security closeout.",
+      "Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry plus security closeout, and Phase 73 auth-sensitive admin workflow proof.",
       source: "guides/companions.md and auth contract support truth",
       hint:
         "distinguish shipped Sigra contract machinery from provider/device and native auth non-claims",

@@ -1,0 +1,13 @@
+{
+  "correlation_id": "phase65-fixture-native-android-anr",
+  "kind": "hang",
+  "layer": "native",
+  "native_diagnostic": {
+    "exit_reason": "anr",
+    "source": "app_exit_info"
+  },
+  "native_runtime_version": "1.0.0",
+  "observed_at": "2026-06-04T00:00:00Z",
+  "platform": "android",
+  "schema_version": "1"
+}

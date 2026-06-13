@@ -1,7 +1,7 @@
 defmodule Crosswake.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.2"
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
@@ -75,12 +75,14 @@ defmodule Crosswake.MixProject do
         "Documentation" => "https://hexdocs.pm/crosswake",
         "GitHub" => @source_url
       },
-      files: ~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides)
+      files: ~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides),
+      exclude_patterns: ["brandbook"]
     ]
   end
 
   defp docs do
     [
+      logo: "brandbook/logo/crosswake-mark.svg",
       main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
@@ -92,6 +94,7 @@ defmodule Crosswake.MixProject do
         "guides/install.md",
         "guides/support_matrix.md",
         "guides/adopter_profiles.md",
+        "guides/adoption.md",
         "guides/user_flows.md",
         "guides/capabilities.md",
         "guides/bridge.md",
@@ -100,7 +103,9 @@ defmodule Crosswake.MixProject do
         "guides/companions.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
-        "guides/packs.md"
+        "guides/android_uat.md",
+        "guides/packs.md",
+        "guides/threadline.md"
       ],
       groups_for_modules: [
         Policy: [Crosswake.Policy, Crosswake.Router],

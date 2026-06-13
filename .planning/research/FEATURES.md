@@ -1,230 +1,363 @@
-# Feature Research: v3.4 Commerce Archetype Proof (Mocked Storefront Paywall Corridor)
+# Feature Landscape: v9.0 Brand System & Visual Identity
 
-**Milestone:** v3.4 Commerce Archetype Proof
-**Domain:** Mocked-storefront paywall corridor example for a Phoenix-native OSS library
-**Researched:** 2026-05-29
-**Confidence:** HIGH — sourced from checked-in contracts, reconciliation module, example-host commerce modules, guides/commerce.md, phase23 proof test, and commerce-archetype-proof thread. All contract surfaces are real code, not aspirational design.
-
----
-
-## Grounding Facts
-
-What already exists in the repo that v3.4 builds on (do NOT re-research or re-implement):
-
-- `Crosswake.Commerce.Contracts` defines all five typed vocabulary surfaces: `PaywallEntry`, `PurchaseIntent`, `RestoreIntent`, `EntitlementSnapshot` (6 lanes), `ReconciliationEvidence`, `CommerceEvent`.
-- `Crosswake.Commerce.Reconciliation` defines `ingest_evidence/2`, `EvidenceResult`, `Attempt`, `IdempotencyKey`, and the full outcome vocabulary. `authority_mutation_allowed_from_evidence?/1` returns `false` unconditionally — authority mutation is backend-owned by contract.
-- `CrosswakeExample.Commerce.EntitlementProjection` implements `project_snapshot/2` (monotonic `as_of` guard, verified reconciliation check) and `derived_state/1` (4-output projection: `:stale`, `:pending`, `:denied`, `:granted`).
-- `CrosswakeExample.Commerce.ReconciliationInbox` implements `ingest_evidence/2` with `event_key`, `subject_key`, replay detection, and `trace_metadata`.
-- `CrosswakeExample.Commerce.ReconciliationKeys` defines provider-aware key construction (`event_key`, `subject_key`, `trace_metadata`).
-- No `paywall_entry` route exists in `examples/phoenix_host/lib/crosswake_example/router.ex` — the corridor is declared in test fixtures only.
-- No `MockStorefront` module exists anywhere in the repo.
-- No `PaywallLive` or equivalent LiveView exists in the example host.
-- The phase23 proof test uses inline `PaywallCorridorRouter` / `PurchaseCorridorRouter` fixtures, not the example host router.
-
-What v3.4 must add: a runnable adopter lane wiring all of the above into a copy-able `examples/phoenix_host` paywall corridor, proved end-to-end by a merge-blocking hermetic test.
+**Domain:** OSS/devtools brand system — design tokens, logo suite, HTML brand book, collateral
+**Researched:** 2026-06-11
+**Confidence:** HIGH (grounded in public brand pages from Tailwind, Astro, Vercel/Geist, GitHub, Bun; DTCG spec; WCAG tooling; Evil Martians favicon guide; logo presentation research)
 
 ---
 
-## Feature Landscape
+## Context: What Already Exists
 
-### Table Stakes — Adopter Expects These (Missing = Example Is Not Copy-able)
+The brand book draft at `prompts/crosswake-brand-book.md` is a 25-section text document covering: palette (16 named tokens with hex values), typography (Space Grotesk / Atkinson Hyperlegible Next / JetBrains Mono), "Wake Mark" logo direction, voice/tone, motifs, component specs, and a do/don't summary. NO visual assets exist yet.
 
-Features a Phoenix dev trying to ship subscriptions requires to trust the corridor as a real pattern. Missing any of these means the example does not teach what it is supposed to teach.
+v9.0 deliverables must convert that text specification into audited, implemented, shipped artifacts: an `AUDIT.md` verdict pass, a W3C DTCG token file + CSS, a user-selected logo suite (path-only SVGs), a standalone HTML brand book, and collateral (README header, social card, favicons).
 
-| Feature | Why Expected | User-Centric Statement | Complexity | v3.2 Contract Dependency |
-|---------|--------------|------------------------|------------|--------------------------|
-| TS-01: `paywall_entry` route in example host router | Without a real declared route the pattern is only a test fixture, not copy-able | Adopter can copy a `live "/paywall"` route with `commerce: [corridor: :subscription_default, role: :paywall_entry]` policy from `examples/phoenix_host/router.ex` and see a working route declaration | LOW | `Crosswake.Router` `crosswake:` option with commerce key (v3.2) |
-| TS-02: `PaywallLive` LiveView showing pricing and a mock purchase action | Adopter needs to see the UI ownership — Phoenix owns the paywall display, not native | Adopter can see a LiveView that renders a pricing plan and a "Subscribe" action without any provider SDK code | LOW | `PaywallEntry` struct (`:id`, `:price_display`, `:group_id`, `:features`) from `Contracts` |
-| TS-03: `MockStorefront` adapter that consumes `PurchaseIntent` and returns `ReconciliationEvidence` | The whole point of the mock lane is to stand in for a real StoreKit/Play Billing adapter | Adopter can see how a real storefront adapter would ingest a `PurchaseIntent`, produce a `ReconciliationEvidence` struct, and return it to the backend — all in pure Elixir with no native code | MEDIUM | `PurchaseIntent` (`:entry_id`, `:correlation_id`), `ReconciliationEvidence` (`:source`, `:provider`, `:provider_reference`, `:event_kind`, `:evidence_ref`, `:captured_at`) from `Contracts` |
-| TS-04: `MockStorefront` handling `RestoreIntent` | Restore is the second required corridor; omitting it leaves a gap in the copy-able pattern | Adopter can see how a restore trigger produces `ReconciliationEvidence` with `event_kind: "restore"` | LOW | `RestoreIntent` (`:correlation_id`) from `Contracts` |
-| TS-05: Backend route or handler that submits `ReconciliationEvidence` to `ReconciliationInbox.ingest_evidence/2` | Adopter must see the evidence handoff from the mock storefront call back to the Phoenix backend | Adopter can see a Phoenix controller or LiveView handle event that calls `ReconciliationInbox.ingest_evidence/2` with mock evidence and receives an `EvidenceResult` | LOW | `ReconciliationInbox.ingest_evidence/2` and `ReconciliationEvidence` (already in example host) |
-| TS-06: `EntitlementProjection.project_snapshot/2` called to refresh the authoritative snapshot | This is the authority update step — missing it means the projection half of the pattern is invisible | Adopter can see `EntitlementProjection.project_snapshot/2` called after successful evidence ingestion and the resulting snapshot stored as the new authority source | LOW | `EntitlementProjection.project_snapshot/2` and `EntitlementSnapshot` (already in example host) |
-| TS-07: LiveView reflecting `:granted` state after mock purchase completes reconciliation | Without a real UI state change, the "end-to-end" claim is hollow | Adopter can observe their `PaywallLive` (or a sibling `EntitledLive`) display a "granted" access state after a mock purchase flows through reconciliation | MEDIUM | `EntitlementProjection.derived_state/1` returning `:granted` |
-| TS-08: LiveView reflecting `:pending` state during reconciliation in-progress | Reconciliation takes time; the pending state is a first-class corridor moment the adopter must be able to handle | Adopter can see how to render a "pending" UI state while `reconciliation.state` is `:pending_purchase` or `:awaiting_verification` | LOW | `derived_state/1` returning `:pending`, reconciliation vocabulary in `Reconciliation` |
-| TS-09: LiveView reflecting `:denied` state (no active entitlement) | Denied is the default cold-start state — showing how the paywall gates access is the primary teaching goal | Adopter can see how a LiveView gates access with `:denied` returned by `derived_state/1` and redirects or renders a paywall prompt | LOW | `derived_state/1` returning `:denied` |
-| TS-10: LiveView reflecting `:stale` state (freshness degraded) | Stale is the fail-closed state — it must be shown as distinct from denied so adopters do not conflate "stale snapshot" with "no entitlement" | Adopter can see how a stale snapshot (freshness `:stale` or `:unknown`) surfaces as a distinct "checking..." or "refresh needed" state, not a silent access denial | LOW | `derived_state/1` returning `:stale`, `FreshnessLane` states |
-| TS-11: Merge-blocking hermetic proof test driving the full mock lane | Without a CI-gated proof the example is aspirational, not proven | Adopter can see a passing ExUnit test that drives mock purchase → ingestion → projection → derived state transitions without hitting a network or native SDK | MEDIUM | All v3.2 contract surfaces; existing hermetic proof pattern from phase23-proof.yml |
-| TS-12: `guides/commerce.md` updated with end-to-end mock walkthrough section | Adopters use the guide to understand the corridor before copying the example | Adopter can read a step-by-step walkthrough in `guides/commerce.md` that anchors each step to a named module and function in the example host | LOW | Existing three-layer guide structure (docs-contract tests must not break) |
+---
 
-### Differentiators — What Makes the Example Genuinely Useful
+## Deliverable 1: Brand Audit (`brandbook/AUDIT.md`)
 
-Not strictly required to make the example "work," but these are what separate a copy-able pattern from a toy stub.
+### Table Stakes
 
-| Feature | Value Proposition | User-Centric Statement | Complexity | Dependency |
-|---------|-------------------|------------------------|------------|------------|
-| DIF-01: `MockStorefront` designed as a drop-in swap target | Shows adopters exactly what a real StoreKit or Play Billing adapter must implement at the seam | Adopter can see a clear `@behaviour` or well-commented module shape for `MockStorefront` that documents which functions a real provider adapter would replace | MEDIUM | `PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence` from `Contracts` |
-| DIF-02: All four `derived_state/1` outputs exercised by the proof test with explicit assertions | Proves that every UI state the LiveView must handle is covered by contract, not just the happy path | Adopter can read the proof test and see `:granted`, `:pending`, `:denied`, and `:stale` all explicitly asserted — not just `:granted` | MEDIUM | `EntitlementProjection.derived_state/1` |
-| DIF-03: Idempotency key construction demonstrated via `ReconciliationKeys` | One of the trickiest real-world pitfalls (duplicate webhook retries) is invisible without a working example | Adopter can see `ReconciliationKeys.event_key/1` and `subject_key/1` called with mock evidence and understand why `correlation_id` is trace-only | LOW | `ReconciliationKeys` (already in example host) |
-| DIF-04: Replay detection shown explicitly in the mock purchase path | Duplicate evidence submission is a real-world concern; the mock lane is the place to make it visible | Adopter can submit the same mock `ReconciliationEvidence` twice and see `replay?: true` in the second `EvidenceResult` | LOW | `ReconciliationInbox.ingest_evidence/2` with `seen_event_keys:` opt |
-| DIF-05: Docs-contract test locking the commerce.md walkthrough against the example modules | Keeps the guide honest — if the example modules change, the test breaks | Adopter can trust that the `guides/commerce.md` walkthrough references real module and function names that exist in the example host | LOW | Existing docs-contract test pattern from phase23 proof |
-| DIF-06: `MockStorefront` uses `source: :storefront` not `source: :device` | Shows adopters the semantic distinction between a simulated native storefront callback (`:storefront`) and a hypothetical device-side assertion (`:device`) | Adopter can see why the mock uses `source: :storefront` and what that means for `EvidenceLane.source` in the resulting snapshot | LOW | `ReconciliationEvidence.source` vocabulary: `:device`, `:storefront`, `:webhook`, `:support` |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Verdict per section (KEEP / TIGHTEN / REWORK / ADD / REMOVE) | Any audit without actionable verdicts is just a description | LOW | Every brand book section from `prompts/crosswake-brand-book.md` must get a verdict |
+| WCAG contrast matrix for every palette pairing | Non-negotiable for a tool claiming accessibility standards; brand-book draft cites WCAG AA as required | MEDIUM | 16 named tokens = up to 240 pairs; script-generated; flag AA/AAA pass/fail; [palettd.com contrast grid approach](https://palettd.com/tools/contrast-grid) |
+| Identified conflicts with competitor visuals | Brand book already names React Native, Hotwire, Phoenix, Capacitor as confusion vectors; audit must verify each | LOW | Cross-check palette, marks, and metaphors against the named competitors |
+| Color usage verdict | Checks whether approved pairings actually meet contrast thresholds | LOW | Dependencies: contrast matrix results |
+| Typography verdict | Confirms Space Grotesk / Atkinson / JetBrains Mono are still the right choices | LOW | Verify licenses; confirm web-font availability; check fallback stacks |
+| Logo direction verdict | Confirms "Wake Mark" concept before investing in 7-candidate tournament | LOW | Flag if concept is too close to existing marks |
 
-### Anti-Features — Do Not Include
+### Differentiators
 
-Features that seem helpful for a paywall example but undermine the v3.4 teaching goal or the mock-vs-real boundary.
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Rationale-per-verdict prose | Each KEEP/REWORK verdict explains the reasoning, not just the outcome — makes the audit usable as a decision record | LOW | Two–three sentences per verdict; enables future maintainers to understand why |
+| Contrast failures with suggested fixes | Rather than just listing failures, audit proposes a corrected token value that passes | MEDIUM | Especially useful for the `--cw-stone-500 / --cw-foam-50` pair which is likely to fail |
+| Competitor color distance quantification | Delta-E or simple HSL distance from the four named competitors provides objective guardrails | MEDIUM | Flags where a palette color is dangerously close to React Native cyan or Phoenix flame |
 
-| Anti-Feature | Why Requested | Why It's Wrong for v3.4 | What to Do Instead |
-|--------------|---------------|--------------------------|-------------------|
-| AF-01: Any StoreKit or Play Billing adapter code in MockStorefront | "Make it realistic by using the real SDK shape" | Shipping provider SDK imports or callbacks would imply provider adapters have shipped (they have not; v3.6 is the provider adapter milestone). Breaks the mock-vs-real boundary and the non-claims documented in guides/commerce.md | Keep MockStorefront pure Elixir, no native SDK references. Document the swap point clearly in comments. |
-| AF-02: Persistent storage (Ecto, ETS) in the mock purchase flow | "A real adopter would use a database" | A persistence layer adds setup complexity (migrations, repos, test DB) that obscures the corridor shape being taught. The example must be hermetically runnable. | Use in-memory `Agent` or process state for the mock lane. A real adopter adds persistence to their own host; the example shows the contract shape, not the persistence layer. |
-| AF-03: Live WebSocket push of entitlement state changes | "Make it feel real with PubSub/Presence" | Real-time push is a valid adopter concern but adds PubSub setup and channel complexity that obscures the reconciliation flow. The example's job is to teach the flow boundary, not Phoenix Channels. | Show a synchronous handle_event → assign → re-render loop. Document that real adopters can add PubSub push on top of the same `derived_state/1` result. |
-| AF-04: Multi-product paywall (consumable, non-consumable, subscription) | "Show all purchase types" | Product-type complexity is not what v3.4 teaches. Multiple `PaywallEntry` rows would multiply the fixture surface without adding corridor insight. | Use a single subscription-style `PaywallEntry` with a single `group_id`. Adopters can extend to multiple entries; the corridor shape is the same. |
-| AF-05: Auth/session gating on the paywall route | "A real paywall needs authentication" | Auth setup (Pow, phx_gen_auth, etc.) would require the example host to ship session fixtures, adding setup that obscures the commerce lane. v3.4 is about the corridor, not auth. | Leave the paywall route unauthenticated in the example. Document that real adopters add their own auth pipeline. The `commerce: [corridor: :subscription_default, role: :paywall_entry]` declaration is the teaching artifact. |
-| AF-06: Graceful degradation / offline paywall fallback | "Show what happens if the native corridor is unavailable" | The mock lane deliberately bypasses native availability checks — simulating availability failures would require mocking the capability/native shell layer, which is a separate proof surface. | The mock lane proves the happy path. Document `commerce.corridor.prerequisite_missing` as the canonical fallback code (already in guides/commerce.md). Offline fallback stays in the non-claims layer. |
-| AF-07: Revenue Cat or third-party billing SDK references in mock or example code | "RevenueCat simplifies the provider layer" | Importing RevenueCat normalizes a third-party billing SDK dependency in the Crosswake example, contradicting the provider-neutral posture. The canonical v3.2 proof tests already assert that forbidden provider tokens do not appear in merge-blocking surfaces. | Keep `provider: "mock"` in all `ReconciliationEvidence` structs. Provider-specific adapters are v3.6 work. |
-| AF-08: Displaying raw `EntitlementSnapshot` fields in the LiveView | "Show the full snapshot for transparency" | Exposing `authority.state`, `reconciliation.state`, `freshness.state` directly in the UI couples the LiveView to internal lane vocabulary. The teaching point is `derived_state/1` as the single UI decision function. | LiveView renders only the four `derived_state/1` outputs: `:granted`, `:pending`, `:denied`, `:stale`. Internal snapshot lanes are a projection implementation detail. |
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Full rebranding recommendations | Audit scope is the existing brand book, not a strategic rebrand; full rebrand creates scope explosion | Only flag where the existing choices are technically broken (contrast failure, trademark proximity) |
+| Subjective design taste verdicts without grounding | "This color feels wrong" is noise | Ground every verdict in a contrast ratio, trademark conflict, or explicit brand-book inconsistency |
+| Competitor teardown beyond the named four | Scope creep; Crosswake already has clear guardrails | Stay within the four named competitors: React Native, Hotwire, Phoenix/LiveView Native, Capacitor |
+
+---
+
+## Deliverable 2: Design Tokens (`brandbook/crosswake.tokens.json` + `brandbook/tokens.css`)
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| W3C DTCG JSON format with `$value`, `$type`, `$description` | The DTCG spec reached v1 stable in 2025-10; tools expect this format; [DTCG spec](https://www.designtokens.org/); [Style Dictionary DTCG docs](https://styledictionary.com/info/dtcg/) | LOW | Each token needs `$type: "color"` or `"dimension"` etc.; alias tokens use `{token.path}` syntax |
+| Three-tier hierarchy: primitives → semantic → state | Industry standard since Tailwind, Material, Atlassian, GitLab Pajamas all use this pattern; [goodpractices.design](https://goodpractices.design/articles/design-tokens); [penpot guide](https://penpot.app/blog/the-developers-guide-to-design-tokens-and-css-variables/) | LOW | Primitives = raw palette; semantic = roles (`background.primary`, `text.accent`); state = interactive variants |
+| CSS custom properties output (`tokens.css`) | Developers consuming the brand book need `var(--cw-*)` immediately usable; the brand book draft already uses `--cw-*` naming | LOW | Flat `var()` output; semantic tokens reference primitive tokens; light/dark via `@media (prefers-color-scheme)` or class |
+| All 16 palette primitives from the brand book draft | Exact hex values from §8 of the brand book; audit may adjust some based on contrast results | LOW | Current-950 through White; any audit-driven adjustments get logged in AUDIT.md |
+| Semantic color roles matching brand-book §8 table | `interactive.primary`, `surface.default`, `text.primary`, `feedback.danger`, `runtime.liveview`, etc. | LOW | Maps "Primary CTA on light → Wake 700 with white text" into tokens |
+| Full state tokens for interactive elements | Hover, active, focus, disabled — not just default | MEDIUM | Focus must use Brass 500 ring per brand book §13 button specs; disabled must avoid color-only reliance per §21 |
+| Dimension/spacing tokens | Radius (`radius-sm` through `radius-xl`) and spacing scale from §13 layout section | LOW | Already specified in brand book; transcribe into DTCG format |
+| Typography tokens | Font family stacks, weight scale, size scale from §9 | LOW | `$type: "fontFamily"`, `$type: "fontWeight"`, `$type: "dimension"` for sizes |
+| Light and dark theme variants | Brand book defines both Current 950 dark and Foam 50 light contexts | MEDIUM | Semantic tokens that swap via `prefers-color-scheme` or `.cw-dark` class |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| `$description` on every semantic token | Self-documenting token file; AI/LLM consumers can use token purpose without reading the brand book | LOW | One sentence per token: "Primary action color on light backgrounds; requires white foreground text for AA" |
+| Runtime-semantic tokens | Crosswake's unique vocabulary: `runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive` — these map to the capability ladder | LOW | Differentiates Crosswake's token file from generic design system tokens; directly feeds the demo app and offline UI |
+| Explicit forbidden pairings as comment block | `/* DO NOT USE: --cw-stone-500 on --cw-foam-50 — fails AA */` embedded in tokens.css | LOW | Actionable at development time |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Component-level tokens (button.primary.hover.background) | For a library with no UI framework dependency, component tokens add maintenance overhead with zero adoption benefit; [goodpractices.design](https://goodpractices.design/articles/design-tokens) warns against over-creating component-specific tokens | Stop at semantic tokens; component tokens can be derived by adopters |
+| Motion/animation tokens | The brand book mentions timing values but they are non-essential for a code library; adds token file complexity | Document timing values as prose in the brand book spec; don't tokenize them in the JSON |
+| Figma variable format | Crosswake has no Figma design source; generating Figma-specific tokens without a Figma file creates dead weight | Output DTCG JSON only; tools like Style Dictionary can transform to Figma format if ever needed |
+| Token file split into multiple files | For this scale (16 palette + ~30 semantic tokens), a single `crosswake.tokens.json` is simpler to maintain | One file unless the audit phase reveals a compelling split reason |
+
+---
+
+## Deliverable 3: Logo Tournament + Final Logo Suite
+
+### 3a: Tournament Gallery (`brandbook/tournament/index.html`)
+
+#### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| 7 candidates displayed (4 logomark concepts + 3 typemarks) | Milestone spec; enough variety to make a real selection | HIGH | Each is a path-only SVG created via opentype.js for wordmarks; [opentype.js README](https://github.com/opentypejs/opentype.js/blob/master/README.md) |
+| Each candidate shown on light background, dark background, and monochrome | Industry standard for logo presentation; [Astro press page](https://astro.build/press/) provides this for all 6 logo types; Studio Function guide recommends light/dark/mono contexts | MEDIUM | 3 backgrounds × 7 candidates = 21 renderings minimum |
+| Each candidate shown at small scale (24–32px) alongside full size | Tests legibility at favicon scale — this is where many marks break | LOW | Inline in the gallery HTML; no separate files needed |
+| Annotation with concept name and design rationale | Stakeholders cannot evaluate without understanding intent; [Studio Function guide](https://medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0) recommends annotated multi-page PDFs with written rationales | LOW | One paragraph per candidate |
+| Mandatory user-selection checkpoint (radio buttons + confirmation) | Milestone requirement; prevents proceeding to production suite without sign-off | LOW | Simple HTML form; no server; stores selection in `localStorage` or produces a visible SELECTED badge |
+
+#### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| In-situ context mocks (browser tab, GitHub repo card, hex.pm listing) | Shows how each candidate actually appears in the real contexts where Crosswake will live; [logo design mockup research](https://digicorns.com/present-logo-designs-mockups/) confirms in-situ mocks are the most persuasive presentation format | MEDIUM | Inline SVG browser-tab mock + GitHub card template per candidate; static HTML, no external assets |
+| Side-by-side competitor diff panel | Shows the 4 named competitors (React Native, Hotwire, Phoenix, Capacitor) alongside each candidate to verify no confusion | LOW | High value for OSS where you can't afford to look like a competitor |
+
+#### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Animated logo presentations | Adds no selection value; breaks focus | Static presentation only |
+| More than 7 candidates | Choice overload paralyzes selection; [Studio Function guide](https://medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0) recommends 3 concepts minimum, not unlimited options | Cap at 7; 4 logomark + 3 typemark covers the conceptual space |
+| External image hosting or CDN dependencies | Tournament gallery must be self-contained | Inline SVGs only; no `<img src="https://...">` |
+
+### 3b: Final Logo Suite (`brandbook/logo/`)
+
+#### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Primary horizontal lockup (mark + wordmark) | Standard for README, docs header, press mentions; [Astro's press page](https://astro.build/press/) provides this as the first variant; [Tailwind brand page](https://tailwindcss.com/brand) shows logotype as primary | LOW | Light variant + dark variant; path-only SVG |
+| Stacked lockup (mark above wordmark) | Social/README hero usage; brand book §10 specifies this | LOW | Light + dark |
+| Mark-only (icon without wordmark) | Required for favicon source, app icon, small-space usage; Astro provides "logomark" separately from "logo" | LOW | Works in one color at 16px per brand book spec |
+| Monochrome variants (single-color black, single-color white) | Required for print, embossing, contexts with color restrictions; [Astro](https://astro.build/press/) provides explicit "logo on dark" mono variant | LOW | 2 files: black ink, white ink |
+| Path-only SVG (no `<text>` element, no font reference) | Milestone requirement; ensures the file renders identically everywhere without font loading; [opentype.js](https://github.com/opentypejs/opentype.js/blob/master/README.md) converts text to `<path>` | HIGH | opentype.js script converts Space Grotesk wordmark to paths; then hand-curate |
+| Clear space specification embedded as comment | Consumers need the clear space rule in the SVG file itself; brand book §10 specifies "x-height of wordmark on all sides" | LOW | SVG viewBox with visible clear-space guidelines as removable layer |
+| Minimum size specification in file comments | Brand book §10 specifies 128px horizontal, 24px icon, 16px favicon | LOW | Comment in each SVG |
+
+#### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Signal colorway variant (Brass 500 mark on Current 950) | Brand book §10 defines this specific colorway; used for native-screen emphasis; gives collateral and READMEs a distinct visual mode | LOW | One additional SVG file |
+| Misuse sheet (6 don't examples) | Prevents corruption in community use; [logo usage guidelines research](https://brandyhq.com/blog/logo-usage-guidelines/) recommends minimum 6 misuse examples | LOW | Can live as a section in the HTML brand book, not a separate file |
+
+#### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| PNG raster exports in the committed suite | Adds binary weight to the repo; SVGs are infinitely scalable | Export PNGs only for collateral targets (favicon.ico, apple-touch-icon.png, social card); keep SVG as source |
+| Logo on colored/gradient rectangular background | Milestone explicitly forbids "rectangular backgrounds"; backgrounds belong to the usage context | Path-only SVGs on transparent backgrounds only |
+| Subtitle/tagline on the main lockup | Milestone explicitly forbids "subtitle on the main lockup"; clutters the mark at small sizes | Keep lockup to mark + wordmark only; tagline is a separate typographic element |
+| Animated SVG logo files | Complicates downstream use; not needed for a code library | Static only |
+
+---
+
+## Deliverable 4: Standalone HTML Brand Book (`brandbook/index.html`)
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| No build step; single HTML file | Milestone requirement; ensures anyone can open it without Node/npm/Webpack; mirrors [devbridge Styleguide](https://devbridge.github.io/Styleguide/) client-side-only approach | MEDIUM | Inline `<style>` and `<script>`; fonts loaded via `@font-face` or Google Fonts CDN link only |
+| Live color swatches with copy-to-clipboard hex | Industry standard for brand books used by developers; cited in every "living styleguide" pattern | LOW | One `<button>` per swatch that calls `navigator.clipboard.writeText(hex)` |
+| Contrast badges on each swatch pair | WCAG result (AA pass / AA fail / AAA pass) displayed inline; directly addresses the audit matrix requirement | MEDIUM | Badge computed from luminance formula in inline `<script>`; no external library needed |
+| Token name displayed with each swatch | Developers copy `--cw-wake-700` not `#2B756A` | LOW | Show both CSS variable name and hex value |
+| Type specimens (all three typefaces, all scale steps) | Standard in every brand book; missing this = incomplete identity reference | MEDIUM | Display each weight, size, and use case from brand book §9 |
+| Voice do/don't table | Brand book §6 and §23 provide extensive source material; this is table stakes for any copywriter or contributor using the brand book | LOW | Simple two-column table; source is `prompts/crosswake-brand-book.md` §6 and §23 |
+| Logo suite display with download links | All logo variants visible inline with `<a href="logo/...svg" download>` | LOW | No ZIP required; individual SVG file links |
+| Downloadable asset index | Developers expect to find `brandbook/` paths clearly listed | LOW | A `<table>` or `<dl>` listing every file, its purpose, and its variant |
+| Approved color pairings section | Brand book §8 defines 8 explicit approved pairings; these must be visible as rendered examples, not just listed | LOW | Render each pairing as a sample card with foreground text on background color |
+| Component specimens (route card, badge, button, code block) | Brand book §13/§19 defines these; the brand book is incomplete if the components are only described in prose | HIGH | The route card and runtime badge are Crosswake's signature visual components; showing them in the brand book is a strong differentiator |
+| Sections for all brand pillars (color, type, logo, voice, motif, accessibility, component) | Standard structure seen across GitHub brand toolkit, Astro press page, GitLab Pajamas | MEDIUM | Nav-linked sections in a single-page document |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Runtime-semantic color section | Unique to Crosswake; shows `runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive` tokens as badge specimens | LOW | No other devtools brand book has a "runtime ownership" color section |
+| Inline WCAG contrast checker (two-swatch picker) | Let brand book visitors verify arbitrary pairs interactively | MEDIUM | Two `<select>` elements populated from token list; JS computes ratio; shows AA/AAA result |
+| Microcopy library section | Brand book §15 has 30+ ready-to-use strings; expose them as copyable examples | LOW | Expands the brand book from style guide to actual content resource |
+| Code block specimen with syntax theme | Shows the exact `Current 900` background, `Foam 50` text, `Wake 500` keywords, `Brass 500` strings syntax theme | LOW | Crosswake's code theme is distinctive; displaying it in the brand book demonstrates the full language |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| External JavaScript framework (React, Vue, Alpine) | Contradicts "no build step, standalone" requirement; adds loading dependency | Vanilla JS only; the swatch copier and contrast checker are < 50 LOC each |
+| Figma embed or external design tool iframe | Breaks offline viewing; creates external dependency; not useful for code library consumers | Static HTML specimens only |
+| Animation-heavy hero | Brand book §18 specifically limits hero animation to 600–900ms once; a brand book is a reference document, not a landing page | Subtle fade-in at most; content-first |
+| Full component library with interactive states | This is a brand book, not a UI kit; interactive forms and full component demos go in a separate package | Show static component specimens; link to example host for interactive demos |
+| Hosting on an external CDN without a local copy | Single-file deliverable must work offline | All styles, scripts, and font fallbacks must work without network |
+
+---
+
+## Deliverable 5: Collateral
+
+### 5a: README Header (`brandbook/collateral/readme-header.svg`)
+
+#### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Horizontal lockup variant appropriate for GitHub README `<img>` | Standard for OSS projects; GitHub renders SVGs in READMEs | LOW | 760px–1200px wide; path-only SVG; light and dark variants |
+| One-liner tagline below or beside wordmark | "Route policy for Phoenix apps that go mobile" — identifies the library immediately | LOW | Tagline as path from opentype.js; same constraint as logo |
+
+#### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Animated GIF header | Common on GitHub but adds visual noise; inconsistent with "calm, technical" brand voice | Static SVG |
+| Badge-heavy header (CI, coverage, version) | Badges belong in the README body, not the header art | Wire README badges separately from the header SVG |
+
+### 5b: Social Card (`brandbook/collateral/social-card.png`)
+
+#### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| 1280×640px PNG (GitHub's recommended size) | [GitHub docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview): minimum 640×320, recommended 1280×640; safe zone 1080×540 | LOW | Static PNG; brand mark + tagline + package name |
+| Dark Current 950 background with Foam 50 text | Uses primary dark colorway per brand book §7; maximizes contrast | LOW | |
+| Wake Mark visible at meaningful size | The mark must be recognizable at social card scale | LOW | |
+| Package name `crosswake` in JetBrains Mono | Identifies the hex.pm package | LOW | |
+
+#### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Tagline + platform context (Elixir / Phoenix) | "Route policy for Phoenix apps that go mobile" tells the audience immediately what the library is | LOW | |
+
+### 5c: Favicon Suite (`brandbook/collateral/favicons/`)
+
+#### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| `favicon.ico` (16/32/48px) | Legacy browser support; required | LOW | Derived from mark-only SVG |
+| `favicon.svg` | Modern browsers; supports `prefers-color-scheme` dark mode switching; [Evil Martians guide](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs) recommends this as the primary modern favicon | LOW | SVG with embedded `@media (prefers-color-scheme: dark)` |
+| `apple-touch-icon.png` (180×180) | iOS home screen; required for any project that might be bookmarked | LOW | |
+| `icon-192.png` and `icon-512.png` | Android home screen + PWA splash; [Evil Martians 2026 guide](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs) | LOW | |
+
+#### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| PNG at every intermediate size (48, 64, 96, 128, 256) | favicon.ico packs 16/32/48; SVG covers the rest; additional PNGs add weight without benefit | Minimal set: ico + svg + apple-touch-icon + 192 + 512 |
+| Favicon generated from full horizontal lockup | The wordmark is unreadable at 16px; favicon must use the simplified mark-only | Use the "tiny mark" variant specified in brand book §10 |
 
 ---
 
 ## Feature Dependencies
 
 ```
-TS-01 (paywall_entry route)
-    └──required by──> TS-02 (PaywallLive LiveView)
-    └──required by──> TS-11 (proof test exercises real route declaration)
+Brand Audit (AUDIT.md)
+    └──may adjust──> Palette primitives in tokens.json
+                         └──feeds──> tokens.css (CSS custom properties)
+                         └──feeds──> Logo colorways
+                         └──feeds──> Social card color choices
 
-TS-03 (MockStorefront / PurchaseIntent → ReconciliationEvidence)
-    └──required by──> TS-04 (MockStorefront / RestoreIntent)
-    └──required by──> TS-05 (evidence submission to ReconciliationInbox)
-    └──enables──> DIF-01 (MockStorefront as swap target)
-    └──enables──> DIF-06 (source: :storefront semantic)
+Logo Tournament (7 candidates)
+    └──requires──> Brand Audit verdict on logo direction
+    └──requires──> opentype.js wordmark path generation for typemark candidates
+    └──produces (user selection)──> Final Logo Suite
 
-TS-05 (ReconciliationInbox.ingest_evidence/2 called)
-    └──required by──> TS-06 (EntitlementProjection.project_snapshot/2 called)
-    └──enables──> DIF-03 (idempotency key construction visible)
-    └──enables──> DIF-04 (replay detection)
+Final Logo Suite
+    └──feeds──> README header (horizontal lockup)
+    └──feeds──> Social card (mark visible at card scale)
+    └──feeds──> Favicon suite (mark-only → favicon.ico, favicon.svg)
+    └──feeds──> HTML brand book logo section (display + download links)
 
-TS-06 (project_snapshot/2 called)
-    └──required by──> TS-07 (granted state in LiveView)
-    └──required by──> TS-08 (pending state in LiveView)
-    └──required by──> TS-09 (denied state in LiveView)
-    └──required by──> TS-10 (stale state in LiveView)
-    └──enables──> DIF-02 (all four derived_state outputs asserted in proof)
+tokens.css
+    └──feeds──> HTML brand book (live swatches, contrast badges, type specimens)
+    └──feeds──> Offline UI in examples/ (existing BRND-01/02 requirement)
 
-TS-11 (merge-blocking proof test)
-    └──requires──> TS-01, TS-03, TS-04, TS-05, TS-06, TS-07, TS-08, TS-09, TS-10
-    └──enables──> DIF-02 (all four states proved)
-    └──enables──> DIF-04 (replay path proved)
-    └──enables──> DIF-05 (docs-contract lock) [separate test]
-
-TS-12 (guides/commerce.md walkthrough)
-    └──requires──> TS-03, TS-05, TS-06 (must reference real module names)
-    └──requires──> DIF-05 (docs-contract test locks walkthrough against example)
-    └──must not break──> existing phase23 guide structure tests (three H2 layers, non-claims section)
+HTML brand book (index.html)
+    └──includes──> Logo suite (display + downloads)
+    └──includes──> Token-driven live swatches
+    └──includes──> Type specimens
+    └──includes──> Component specimens (route card, badge, button, code block)
+    └──includes──> Voice do/don't table
+    └──includes──> Downloadable asset index
 ```
-
-### Dependency Notes
-
-- **TS-03 before TS-05**: `ReconciliationEvidence` must be constructible from mock data before `ReconciliationInbox.ingest_evidence/2` can be called. `MockStorefront` is the factory.
-- **TS-06 before UI states (TS-07–TS-10)**: `project_snapshot/2` must be called before any `derived_state/1` output can be tested. The projection is the single path from evidence to UI state.
-- **TS-11 hermetic constraint**: The proof test must not import `CrosswakeExample.Router` directly (following the phase23 pattern). It must use isolated module fixtures or call example-host modules directly in a unit-test style. The example host router itself is not on the library's `mix test` compile path.
-- **DIF-05 docs-contract test**: Must only check that walkthrough section headings and module/function names in `guides/commerce.md` match what exists in the example host — it must not weaken or replace the existing phase23 guide structure assertions.
 
 ---
 
 ## MVP Definition
 
-### What v3.4 Must Deliver (Milestone Scope)
+### Launch With (v9.0)
 
-All table-stakes features are required to close the "adopter can copy this" gap.
+These are the deliverables specified in the milestone. All are required; none can be deferred.
 
-- [x] TS-01: `paywall_entry` route in `examples/phoenix_host/router.ex`
-- [x] TS-02: `PaywallLive` LiveView with pricing display and mock purchase action
-- [x] TS-03: `MockStorefront` consuming `PurchaseIntent` → `ReconciliationEvidence`
-- [x] TS-04: `MockStorefront` consuming `RestoreIntent` → `ReconciliationEvidence`
-- [x] TS-05: Backend evidence submission path (`ReconciliationInbox.ingest_evidence/2`)
-- [x] TS-06: Backend projection path (`EntitlementProjection.project_snapshot/2`)
-- [x] TS-07: LiveView rendering `:granted`
-- [x] TS-08: LiveView rendering `:pending`
-- [x] TS-09: LiveView rendering `:denied`
-- [x] TS-10: LiveView rendering `:stale`
-- [x] TS-11: Merge-blocking hermetic proof test
-- [x] TS-12: `guides/commerce.md` walkthrough section updated
+- [ ] `brandbook/AUDIT.md` — 14-section verdict pass with WCAG contrast matrix
+- [ ] `brandbook/crosswake.tokens.json` — W3C DTCG format, three-tier hierarchy, all 16 palette primitives + semantic roles + state tokens + light/dark
+- [ ] `brandbook/tokens.css` — CSS custom properties derived from token file
+- [ ] `brandbook/tournament/index.html` — 7-candidate gallery, 3-background presentation per candidate, in-situ mocks (browser tab, GitHub card), mandatory user-selection checkpoint
+- [ ] `brandbook/logo/` — User-selected candidate refined into production suite: horizontal lockup (light + dark), stacked (light + dark), mark-only (light + dark + monochrome), path-only SVGs, no rectangular backgrounds, no subtitle on main lockup
+- [ ] `brandbook/index.html` — Standalone HTML brand book: live swatches, contrast badges, type specimens, voice do/don't table, logo display + download links, asset index, component specimens
+- [ ] `brandbook/collateral/readme-header.svg` — Static, path-only, light + dark variants; wired into README
+- [ ] `brandbook/collateral/social-card.png` — 1280×640px; wired into GitHub repo settings
+- [ ] `brandbook/collateral/favicons/` — favicon.ico + favicon.svg + apple-touch-icon.png + icon-192.png + icon-512.png
+- [ ] Size budget verification — entire `brandbook/` directory < 1 MB committed
+- [ ] Hex package exclusion — `brandbook/` excluded from `.hex` package to avoid bloating the library download
 
-Differentiators DIF-01, DIF-02, DIF-05, DIF-06 should be included in v3.4 — they are low-complexity and directly reinforce what makes the example credible. DIF-03 and DIF-04 are medium-confidence additions: include if the proof test naturally exercises them; do not add separate example-host UI for them.
+### Defer to Post-v9.0
 
-### Defer to Later Milestones
-
-- Real StoreKit / Play Billing adapter code → v3.6 (provider adapters milestone)
-- PubSub / real-time entitlement push → adopter responsibility; documented as extension pattern
-- Multi-product paywall → adopter responsibility; single `PaywallEntry` is sufficient to teach the corridor
+- [ ] Animated logo variants — no current use case for a code library
+- [ ] Figma source files — no Figma-based workflow exists
+- [ ] Print-ready CMYK PDF brand book — no print use case
+- [ ] Dark/light mode toggle in HTML brand book — nice to have; `prefers-color-scheme` CSS handles auto-switching without a toggle
 
 ---
 
 ## Feature Prioritization Matrix
 
-| Feature | Adopter Value | Implementation Cost | Priority | Phase Cluster |
-|---------|--------------|---------------------|----------|---------------|
-| TS-01: paywall_entry route | HIGH | LOW | P1 | Route declaration |
-| TS-02: PaywallLive w/ pricing + action | HIGH | LOW | P1 | Route declaration |
-| TS-03: MockStorefront / PurchaseIntent | HIGH | MEDIUM | P1 | MockStorefront |
-| TS-04: MockStorefront / RestoreIntent | HIGH | LOW | P1 | MockStorefront |
-| TS-05: Evidence submission to inbox | HIGH | LOW | P1 | Reconciliation wiring |
-| TS-06: project_snapshot/2 call | HIGH | LOW | P1 | Reconciliation wiring |
-| TS-07: granted state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-08: pending state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-09: denied state in LiveView | HIGH | LOW | P1 | LiveView states |
-| TS-10: stale state in LiveView | MEDIUM | LOW | P1 | LiveView states |
-| TS-11: hermetic proof test | HIGH | MEDIUM | P1 | Proof lane |
-| TS-12: commerce.md walkthrough | HIGH | LOW | P1 | Docs |
-| DIF-01: MockStorefront as swap target | HIGH | LOW | P1 | MockStorefront |
-| DIF-02: all four states asserted in proof | HIGH | LOW | P1 | Proof lane |
-| DIF-05: docs-contract test | MEDIUM | LOW | P2 | Proof lane |
-| DIF-06: source: :storefront semantic | MEDIUM | LOW | P2 | MockStorefront |
-| DIF-03: idempotency key demonstration | LOW | LOW | P3 | Reconciliation wiring |
-| DIF-04: replay detection demonstrated | LOW | LOW | P3 | Reconciliation wiring |
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Brand audit with WCAG matrix | HIGH | MEDIUM | P1 |
+| DTCG token file + CSS | HIGH | LOW | P1 |
+| Logo tournament gallery | HIGH | HIGH | P1 |
+| Final logo suite (path-only SVGs) | HIGH | HIGH | P1 |
+| HTML brand book (live swatches, contrast badges) | HIGH | MEDIUM | P1 |
+| HTML brand book (type specimens, voice table) | HIGH | LOW | P1 |
+| HTML brand book (component specimens) | HIGH | MEDIUM | P1 |
+| README header SVG | MEDIUM | LOW | P1 |
+| Social card PNG (1280×640) | MEDIUM | LOW | P1 |
+| Favicon suite (5 files) | MEDIUM | LOW | P1 |
+| Size budget check + hex exclusion | MEDIUM | LOW | P1 |
+| Runtime-semantic tokens in token file | HIGH | LOW | P2 |
+| In-situ mock (browser tab + GitHub card) in tournament | HIGH | MEDIUM | P2 |
+| Competitor diff panel in tournament | MEDIUM | LOW | P2 |
+| Inline contrast checker in brand book | MEDIUM | MEDIUM | P2 |
+| Misuse sheet in brand book | MEDIUM | LOW | P2 |
+| Microcopy library section in brand book | MEDIUM | LOW | P2 |
+
+**Priority key:**
+- P1: Required for v9.0 milestone gate
+- P2: High-value additions within milestone scope; include if within complexity budget
+- P3: Defer to post-v9.0
 
 ---
 
-## Mock-vs-Real Boundary Reference
+## Reference Examples
 
-This table is the canonical authority for what v3.4 ships vs. what stays deferred. Any phase or PR that blurs this line is out of scope.
-
-| Surface | v3.4 Status | Deferred To |
-|---------|-------------|-------------|
-| `MockStorefront` (pure Elixir, `source: :storefront`) | SHIP | — |
-| `PaywallEntry`, `PurchaseIntent`, `RestoreIntent`, `ReconciliationEvidence` | ALREADY EXIST (v3.2 contracts) | — |
-| `ReconciliationInbox`, `EntitlementProjection`, `ReconciliationKeys` | ALREADY EXIST (example host) | — |
-| StoreKit adapter code | DO NOT SHIP | v3.6 |
-| Play Billing adapter code | DO NOT SHIP | v3.6 |
-| Real provider SDK imports in any example or library module | DO NOT SHIP | v3.6 |
-| Advisory → merge-blocking promotion for purchase_intent / restore_intent | DO NOT SHIP | v3.6 (4-condition promotion_path from phase23-proof.yml) |
-| Persistent entitlement storage (Ecto/ETS) in mock lane | DO NOT SHIP | Adopter responsibility |
-| PubSub / real-time entitlement push in example | DO NOT SHIP | Adopter responsibility |
-
----
-
-## Category Reference Summary
-
-| Category | Label | Count | Phase Cluster |
-|----------|-------|-------|---------------|
-| Route declaration (`paywall_entry` route + `PaywallLive`) | Table Stakes | TS-01, TS-02 | Route |
-| MockStorefront adapter (`PurchaseIntent`, `RestoreIntent`) | Table Stakes + Differentiator | TS-03, TS-04, DIF-01, DIF-06 | MockStorefront |
-| Reconciliation wiring (inbox ingestion + projection) | Table Stakes + Differentiator | TS-05, TS-06, DIF-03, DIF-04 | Reconciliation |
-| LiveView state reflection (granted/pending/denied/stale) | Table Stakes | TS-07, TS-08, TS-09, TS-10 | LiveView states |
-| Hermetic proof lane | Table Stakes + Differentiator | TS-11, DIF-02, DIF-05 | Proof |
-| Docs walkthrough | Table Stakes | TS-12 | Docs |
-| Provider adapter code (StoreKit, Play Billing) | Anti-Feature | AF-01, AF-07 | Out of scope |
-| Persistence, PubSub, auth, multi-product | Anti-Feature | AF-02, AF-03, AF-04, AF-05 | Out of scope |
-| Raw snapshot field exposure in UI | Anti-Feature | AF-08 | Architecture concern |
+| Project | Brand Asset URL | Key Takeaway |
+|---------|----------------|--------------|
+| Tailwind CSS | https://tailwindcss.com/brand | Mark + logotype (light/dark) only; trademark rules prominently; minimal set |
+| Astro | https://astro.build/press/ | 6 logo types × PNG/SVG; minimum 24px; "Download all" ZIP; permitted/prohibited rules |
+| Vercel/Geist | https://examples.vercel.com/geist/brands | Symbol for icon-only contexts; per-product (Next.js, Turbo, v0) variants |
+| GitHub | https://brand.github.com/ | Full foundation coverage: logo, type, color, iconography, mascot, motion, in-action |
+| Bun | https://bun.com/press-kit | Logo + wordmark + icon in SVG; press kit ZIP; minimal |
+| DTCG Spec | https://www.designtokens.org/ | `$value`/`$type`/`$description`; primitives → semantic → alias hierarchy |
+| Evil Martians Favicon Guide | https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs | Minimal set: favicon.ico + favicon.svg + apple-touch-icon + 192 + 512 |
+| Studio Function Logo Presentation | https://medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0 | At least 3 concepts; annotated rationale; in-context mockups; size reductions |
 
 ---
 
 ## Sources
 
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/contracts.ex` — typed contract vocabulary (HIGH confidence)
-- `/Users/jon/projects/crosswake/lib/crosswake/commerce/reconciliation.ex` — `ingest_evidence/2`, `authority_mutation_allowed_from_evidence?/1` (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — `project_snapshot/2`, `derived_state/1` (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — `ingest_evidence/2` with event_key/subject_key (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_keys.ex` — provider-aware key construction (HIGH confidence)
-- `/Users/jon/projects/crosswake/examples/phoenix_host/lib/crosswake_example/router.ex` — confirmed no paywall_entry route exists (HIGH confidence)
-- `/Users/jon/projects/crosswake/guides/commerce.md` — three-layer guide structure, reviewer playbooks, non-claims (HIGH confidence)
-- `/Users/jon/projects/crosswake/test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermetic proof pattern and hermeticity constraints (HIGH confidence)
-- `/Users/jon/projects/crosswake/.planning/threads/commerce-archetype-proof.md` — v3.4 design intent and next-step list (HIGH confidence)
-- `/Users/jon/projects/crosswake/.planning/PROJECT.md` — validated requirements COMM-04–COMM-06, ENTL-01–03, RECN-01–03, non-claims, key decisions (HIGH confidence)
-- SEED-002 — Masilotti Bridge Components and PurchaseKit noted as category comparison only, not implementation targets (HIGH confidence)
+- [Tailwind CSS Brand Page](https://tailwindcss.com/brand) — HIGH confidence; official page; trademark rules + logo variants
+- [Astro Press Page](https://astro.build/press/) — HIGH confidence; official page; 6 logo type system, min size, download ZIP
+- [Vercel/Geist Brand Guidelines](https://examples.vercel.com/geist/brands) — HIGH confidence; official page; symbol vs wordmark guidance
+- [GitHub Brand Toolkit](https://brand.github.com/) — HIGH confidence; official page; foundation sections + in-action categories
+- [Bun Press Kit](https://bun.com/press-kit) — HIGH confidence; official page; logo + wordmark + icon SVG set
+- [DTCG Design Tokens Spec](https://www.designtokens.org/) — HIGH confidence; W3C community group; v1 stable 2025-10
+- [DTCG Practical Guide](https://tasteprofile.io/blog/w3c-dtcg-design-tokens-practical-guide) — MEDIUM confidence; verified against spec; three-tier hierarchy, `$value`/`$type`/`$description`
+- [Evil Martians Favicon Guide](https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs) — HIGH confidence; widely cited; favicon.ico + SVG + apple-touch-icon + 192 + 512 minimal set
+- [GitHub Social Preview Docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview) — HIGH confidence; official GitHub docs; 1280×640 recommended, 640×320 minimum
+- [Studio Function Logo Presentation Guide](https://medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0) — MEDIUM confidence; professional studio guide; ≥3 concepts, annotated rationale, in-context mocks
+- [Design Tokens Good Practices](https://goodpractices.design/articles/design-tokens) — MEDIUM confidence; verified against DTCG; three-tier structure, avoid over-creating component tokens
+- [Palettd Contrast Grid](https://palettd.com/tools/contrast-grid) — MEDIUM confidence; reference for scripted WCAG matrix approach
+- [opentype.js README](https://github.com/opentypejs/opentype.js/blob/master/README.md) — HIGH confidence; official repo; text → SVG path generation for wordmarks
 
 ---
 
-*Feature research for: v3.4 Commerce Archetype Proof — mocked-storefront paywall corridor example*
-*Researched: 2026-05-29*
+*Feature landscape for: v9.0 Brand System & Visual Identity*
+*Researched: 2026-06-11*

@@ -130,7 +130,10 @@ defmodule Crosswake.Doctor do
     cwd = Keyword.get(opts, :cwd, File.cwd!())
 
     install_manifest_path =
-      Path.expand(Keyword.get(opts, :install_manifest_path, @default_install_manifest), cwd)
+      Path.expand(
+        Keyword.get(opts, :install_manifest_path) || @default_install_manifest,
+        cwd
+      )
 
     {install_manifest, findings} = load_install_manifest(install_manifest_path)
     findings = findings ++ router_and_policy_findings(install_manifest, cwd)
@@ -147,6 +150,9 @@ defmodule Crosswake.Doctor do
     phase_41_findings = phase_41_gating_findings(manifest)
     phase_46_findings = phase_46_auth_findings(manifest)
     phase_62_findings = phase_62_notification_findings(manifest)
+    phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
+    phase_65_findings = phase_65_diagnostic_export_findings()
+    phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -163,6 +169,9 @@ defmodule Crosswake.Doctor do
         phase_41_findings ++
         phase_46_findings ++
         phase_62_findings ++
+        phase_95_findings ++
+        phase_65_findings ++
+        phase_66_findings ++
         publish_findings
 
     %Report{
@@ -229,7 +238,7 @@ defmodule Crosswake.Doctor do
         {nil,
          [
            check(
-             :error,
+             :warning,
              "install_manifest_missing",
              "installer_state",
              "install manifest not found at #{path}",
@@ -840,6 +849,238 @@ defmodule Crosswake.Doctor do
     end
   end
 
+  defp phase_65_diagnostic_export_findings do
+    truth = SupportMatrix.diagnostic_export_support_truth() |> List.first(%{})
+    telemetry = Map.get(truth, :telemetry, %{})
+
+    [
+      check(
+        :advisory,
+        "diagnostic_export.contract_shipped",
+        "diagnostic_export_posture",
+        "Diagnostics-export envelope and sanitize contract are shipped; the merge-blocking allowlist proof is enforced. Native MetricKit/ApplicationExitInfo transport is deferred to Phase 67.",
+        "The host owns the endpoint and the data. Configure your endpoint to receive POST payloads matching the DiagnosticExport.Envelope contract. No Elixir HTTP-sending code ships in the library.",
+        %{
+          delivery_supported: Map.get(truth, :delivery_supported, false),
+          deferred: Map.get(truth, :deferred, []),
+          authority_source: Map.get(telemetry, :authority_source, :host_configured_endpoint),
+          proof_class: Map.get(telemetry, :proof_class, :merge_blocking),
+          forbidden_metadata_keys: Map.get(telemetry, :forbidden_metadata_keys, [])
+        }
+      )
+    ]
+  end
+
+  # Phase 95: Threadline posture doctor checks (OPER-03)
+  #
+  # Emits findings for:
+  #   - threadline.plug_missing (:advisory) — Crosswake.Plug.Threadline absent from router
+  #   - threadline.ledger_not_configured (:advisory) — no :audit_ledger config
+  #   - threadline.pii_forbidden_field_present (:error) — Ecto schema fields intersect forbidden keys (D-03)
+  #   - threadline.ledger_schema_drift (:warning) — Ecto schema missing canonical ledger columns (LEDG-02)
+  #
+  # Uses Application.get_env (not compile_env) so proof tests can register fixtures via put_env.
+  # Reads the router file from install_manifest router_path to check for plug presence.
+  #
+  # Only the router plug check depends on the install manifest. The ledger
+  # checks — including the :error-class PII safety check — depend solely on
+  # Application env, so they run even when the manifest is missing; a host
+  # with a PII-bearing ledger schema that has not yet run `mix
+  # crosswake.install` must still receive the PII finding (IN-07).
+  defp phase_95_threadline_findings(install_manifest, cwd) do
+    plug_findings =
+      case install_manifest do
+        nil ->
+          []
+
+        manifest ->
+          router_path = Path.expand(Map.get(manifest, "router_path", ""), cwd)
+          check_threadline_plug(router_path)
+      end
+
+    audit_ledger_config = Application.get_env(:crosswake, :audit_ledger)
+    ledger_findings = check_audit_ledger_configured(audit_ledger_config)
+
+    schema = ledger_schema(audit_ledger_config)
+
+    schema_findings =
+      if is_atom(schema) and not is_nil(schema) and Code.ensure_loaded?(schema) do
+        check_ledger_schema(schema)
+      else
+        []
+      end
+
+    plug_findings ++ ledger_findings ++ schema_findings
+  end
+
+  # Normalizes the four documented :audit_ledger config shapes to a schema module or nil.
+  # Resolution order:
+  #   nil                     → nil
+  #   keyword list            → Keyword.get(list, :schema)  (CR-04: never string-key access on keyword)
+  #   map                     → Map.get(config, :schema) || Map.get(config, "schema")
+  #   bare atom (module ref)  → config itself
+  #   anything else           → nil
+  defp ledger_schema(nil), do: nil
+
+  defp ledger_schema(config) when is_list(config) do
+    if Keyword.keyword?(config) do
+      Keyword.get(config, :schema)
+    else
+      nil
+    end
+  end
+
+  defp ledger_schema(config) when is_map(config) do
+    Map.get(config, :schema) || Map.get(config, "schema")
+  end
+
+  defp ledger_schema(config) when is_atom(config) and not is_nil(config) and not is_boolean(config) do
+    config
+  end
+
+  defp ledger_schema(_config), do: nil
+
+  defp check_threadline_plug(router_path) do
+    case File.read(router_path) do
+      {:ok, contents} ->
+        if String.contains?(contents, "plug Crosswake.Plug.Threadline") do
+          []
+        else
+          [
+            check(
+              :advisory,
+              "threadline.plug_missing",
+              "threadline_posture",
+              "Crosswake.Plug.Threadline is not present in the router at #{router_path}",
+              "Add `plug Crosswake.Plug.Threadline` to your Phoenix router pipeline to enable X-Crosswake-Thread-Id propagation and telemetry spans. See guides/threadline.md.",
+              %{router_path: router_path}
+            )
+          ]
+        end
+
+      {:error, _reason} ->
+        []
+    end
+  end
+
+  defp check_audit_ledger_configured(nil) do
+    [
+      check(
+        :advisory,
+        "threadline.ledger_not_configured",
+        "threadline_posture",
+        "Crosswake audit ledger is not configured — threadline posture is ephemeral only",
+        "Configure `:audit_ledger` under `:crosswake` in your host config and run `mix crosswake.gen.audit` to scaffold the host-owned ledger schema and migration. See guides/threadline.md.",
+        %{}
+      )
+    ]
+  end
+
+  defp check_audit_ledger_configured(_config), do: []
+
+  # LEDG-02 canonical 15-column set
+  @canonical_ledger_columns [
+    :thread_id,
+    :correlation_id,
+    :route_id,
+    :actor_ref,
+    :actor_kind,
+    :event_class,
+    :event_type,
+    :outcome,
+    :provenance,
+    :occurred_at,
+    :recorded_at,
+    :idempotency_key,
+    :metadata,
+    :row_hash,
+    :prev_hash
+  ]
+
+  defp check_ledger_schema(schema) do
+    # A loadable module that does not implement __schema__/1 is not an Ecto
+    # schema. Falling through to the field checks would report every canonical
+    # column as missing — a misleading diagnosis — while the PII check silently
+    # passes. Emit a distinct invalid-schema finding instead (IN-06).
+    if function_exported?(schema, :__schema__, 1) do
+      schema_fields =
+        try do
+          schema.__schema__(:fields)
+        rescue
+          _ -> []
+        end
+
+      forbidden_keys =
+        SupportMatrix.audit_ledger_support_truth()
+        |> hd()
+        |> get_in([:telemetry, :forbidden_metadata_keys])
+
+      pii_findings = check_pii_fields(schema, schema_fields, forbidden_keys)
+      drift_findings = check_schema_drift(schema, schema_fields)
+
+      pii_findings ++ drift_findings
+    else
+      [
+        check(
+          :advisory,
+          "threadline.ledger_schema_invalid",
+          "threadline_posture",
+          "Configured audit ledger module #{inspect(schema)} is not an Ecto schema (no __schema__/1)",
+          "Point `:audit_ledger` at an Ecto schema module, or run `mix crosswake.gen.audit` to scaffold one. PII and schema-drift checks were skipped because the module exposes no fields. See guides/threadline.md.",
+          %{schema: inspect(schema)}
+        )
+      ]
+    end
+  end
+
+  defp check_pii_fields(schema, schema_fields, forbidden_keys) do
+    # Exclude canonical ledger columns from the forbidden set so that :actor_ref
+    # (which is both a required canonical column and a forbidden metadata key)
+    # does not falsely trigger a PII error on a compliant schema. (CR-01)
+    ledger_forbidden =
+      MapSet.difference(MapSet.new(forbidden_keys), MapSet.new(@canonical_ledger_columns))
+
+    offending = MapSet.intersection(MapSet.new(schema_fields), ledger_forbidden)
+
+    if MapSet.size(offending) > 0 do
+      offending_list = MapSet.to_list(offending) |> Enum.sort()
+
+      [
+        check(
+          :error,
+          "threadline.pii_forbidden_field_present",
+          "threadline_posture",
+          "Ecto schema #{inspect(schema)} contains PII-forbidden field(s): #{Enum.join(offending_list, ", ")}",
+          "Remove PII-forbidden fields #{inspect(offending_list)} from the audit ledger schema #{inspect(schema)}. The Crosswake audit ledger must be PII-free by construction. See D-03 and guides/threadline.md.",
+          %{schema: inspect(schema), offending_keys: offending_list}
+        )
+      ]
+    else
+      []
+    end
+  end
+
+  defp check_schema_drift(schema, schema_fields) do
+    schema_field_set = MapSet.new(schema_fields)
+    canonical_set = MapSet.new(@canonical_ledger_columns)
+    missing = MapSet.difference(canonical_set, schema_field_set) |> MapSet.to_list() |> Enum.sort()
+
+    if missing == [] do
+      []
+    else
+      [
+        check(
+          :warning,
+          "threadline.ledger_schema_drift",
+          "threadline_posture",
+          "Ecto schema #{inspect(schema)} is missing canonical ledger columns: #{Enum.join(missing, ", ")}",
+          "Add the missing columns #{inspect(missing)} to the audit ledger schema #{inspect(schema)}. All 15 canonical columns defined in LEDG-02 must be present. Run `mix crosswake.gen.audit` to regenerate the migration template.",
+          %{schema: inspect(schema), missing_columns: missing}
+        )
+      ]
+    end
+  end
+
   defp phase_23_commerce_summary(nil, _opts) do
     {%{
        corridors: [],
@@ -1198,8 +1439,21 @@ defmodule Crosswake.Doctor do
       capability_families: support_matrix.capability_families,
       package_surfaces: support_matrix.package_surfaces,
       release_boundaries: support_matrix.release_boundaries,
-      change_classes: support_matrix.change_classes
+      change_classes: support_matrix.change_classes,
+      rebuild_matrix: Crosswake.SupportMatrix.rebuild_matrix(support_matrix),
+      evidence_posture: evidence_posture_snapshot(support_matrix)
     }
+  end
+
+  # D-16: Evidence posture summary keyed by platform — a fixed Phase-64 posture map.
+  # iOS is :device_verified (host-owned iOS shell with device-backed proof artifacts).
+  # Android is :jvm_hermetic (CI-only JVM proof; no device proof lane until Phases 67/68).
+  # NOTE: This is a compile-time constant for Phase 64. It does NOT derive from the
+  # rebuild_matrix rows at runtime. When device-verified Android evidence arrives in
+  # Phase 67/68, this function should read support_matrix.rebuild_matrix evidence_tier
+  # values and derive ios/android from them.
+  defp evidence_posture_snapshot(_support_matrix) do
+    %{ios: :device_verified, android: :jvm_hermetic}
   end
 
   defp shell_findings(shells) do
@@ -1289,7 +1543,7 @@ defmodule Crosswake.Doctor do
     mb_check =
       if merge_blocking != [] do
         check(
-          if(support.status == :supported, do: :advisory, else: :error),
+          if(support.status == :supported, do: :advisory, else: :warning),
           "capability_proof_merge_blocking",
           "capability_posture",
           "merge-blocking capability proofs are required for: #{Enum.map(merge_blocking, & &1.family) |> Enum.join(", ")}",
@@ -1693,4 +1947,120 @@ defmodule Crosswake.Doctor do
       details: details
     }
   end
+
+  defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []
+
+  defp phase_66_generator_drift_findings(manifest, cwd, opts) do
+    ios_shell_root = shell_root(:ios, cwd, opts)
+    android_shell_root = shell_root(:android, cwd, opts)
+
+    ios_files = [
+      Path.join(ios_shell_root, "CrosswakeShell/Info.plist"),
+      Path.join(ios_shell_root, "CrosswakeShell/CrosswakeShell.entitlements"),
+      Path.join(ios_shell_root, "CrosswakeShell/PrivacyInfo.xcprivacy")
+    ]
+    android_files = [
+      Path.join(android_shell_root, "app/src/main/AndroidManifest.xml")
+    ]
+
+    placeholder_findings = 
+      (ios_files ++ android_files)
+      |> Enum.flat_map(&check_shell_unreplaced_placeholders/1)
+
+    ios_contents = read_all_files(ios_files)
+    android_contents = read_all_files(android_files)
+
+    capabilities = Map.keys(manifest.capability_registry || %{})
+    
+    ios_drift = if ios_contents != "", do: check_drift(capabilities, ios_contents, :ios), else: []
+    android_drift = if android_contents != "", do: check_drift(capabilities, android_contents, :android), else: []
+
+    placeholder_findings ++ ios_drift ++ android_drift
+  end
+
+  defp check_shell_unreplaced_placeholders(path) do
+    case File.read(path) do
+      {:ok, contents} ->
+        if String.contains?(contents, "ADOPT:") do
+          [
+            check(
+              :error,
+              "shell_unreplaced_placeholders",
+              "shell_generator",
+              "File #{Path.basename(path)} contains unreplaced ADOPT: markers",
+              "Replace the ADOPT: markers with your host-owned values in #{path}"
+            )
+          ]
+        else
+          []
+        end
+      _ ->
+        []
+    end
+  end
+
+  defp read_all_files(paths) do
+    paths
+    |> Enum.map(&File.read/1)
+    |> Enum.flat_map(fn 
+      {:ok, content} -> [content]
+      _ -> []
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp check_drift(capabilities, contents, platform) do
+    Enum.flat_map(capabilities, fn cap ->
+      expected_strings = capability_expected_strings(cap, platform)
+      missing_string = Enum.find(expected_strings, fn str -> not String.contains?(contents, str) end)
+      
+      if missing_string do
+        [
+          check(
+            :error,
+            "shell_permission_drift",
+            "shell_generator",
+            "Capability #{cap} is declared but missing its required permission/entitlement string in #{platform} native files",
+            "Add #{missing_string} to your #{platform} native shell project to satisfy the declared #{cap} capability",
+            %{capability: cap, missing: missing_string, platform: platform}
+          )
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["notification_token", "push.notifications"] do
+    ["aps-environment", "NSPrivacyCollectedDataTypeDeviceID"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["notification_token", "push.notifications"] do
+    ["POST_NOTIFICATIONS"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["media_capture", "camera", "camera.capture"] do
+    ["NSCameraUsageDescription"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["media_capture", "camera", "camera.capture"] do
+    ["android.permission.CAMERA"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["haptics", "haptics.impact"], do: []
+  defp capability_expected_strings(cap, :android) when cap in ["haptics", "haptics.impact"] do
+    ["android.permission.VIBRATE"]
+  end
+
+  defp capability_expected_strings(cap, :ios) when cap in ["file_picker", "files.pick"] do
+    ["NSPhotoLibraryUsageDescription"]
+  end
+  defp capability_expected_strings(cap, :android) when cap in ["file_picker", "files.pick"], do: []
+
+  defp capability_expected_strings("deep_link", :ios) do
+    ["com.apple.developer.associated-domains"]
+  end
+  defp capability_expected_strings("deep_link", :android) do
+    ["android.intent.action.VIEW"]
+  end
+
+  defp capability_expected_strings(_, _), do: []
 end

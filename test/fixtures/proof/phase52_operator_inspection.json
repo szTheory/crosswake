@@ -1,5 +1,5 @@
 {
-  "crosswake_version": "0.1.0",
+  "crosswake_version": "0.1.2",
   "findings": [
     {
       "check": "operator_inspection",
@@ -352,10 +352,15 @@
       "check": "operator_inspection",
       "code": "operator.notification_token.provider_snapshot",
       "details": {
+        "action_allowlist": [],
+        "activation_authority": "not_applicable",
+        "delivery_proof": "advisory",
         "delivery_supported": false,
+        "evidence_authority": false,
         "open_routing_active": false,
         "posture": "provider_snapshot",
         "provider_readiness": "verification_required",
+        "route_activation_proof": "not_applicable",
         "route_id": "dashboard",
         "supported_providers": [
           "apns",
@@ -461,7 +466,7 @@
       "severity": "warning"
     }
   ],
-  "generated_at": "2026-06-03T17:10:12Z",
+  "generated_at": "2026-06-13T01:53:11Z",
   "indexes": {
     "by_auth_predicate": {
       "step_up_required": [
@@ -1286,10 +1291,15 @@
       "entry": "internal_only",
       "id": "camera",
       "notifications": {
+        "action_allowlist": [],
+        "activation_authority": "not_applicable",
+        "delivery_proof": "advisory",
         "delivery_supported": false,
+        "evidence_authority": false,
         "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
+        "route_activation_proof": "not_applicable",
         "supported_providers": [
           "apns",
           "fcm"
@@ -1481,10 +1491,15 @@
         },
         {
           "details": {
+            "action_allowlist": [],
+            "activation_authority": "not_applicable",
+            "delivery_proof": "advisory",
             "delivery_supported": false,
+            "evidence_authority": false,
             "open_routing_active": false,
             "posture": "provider_snapshot",
             "provider_readiness": "verification_required",
+            "route_activation_proof": "not_applicable",
             "supported_providers": [
               "apns",
               "fcm"
@@ -1506,10 +1521,15 @@
       "entry": "internal_only",
       "id": "dashboard",
       "notifications": {
+        "action_allowlist": [],
+        "activation_authority": "not_applicable",
+        "delivery_proof": "advisory",
         "delivery_supported": false,
+        "evidence_authority": false,
         "open_routing_active": false,
         "posture": "provider_snapshot",
         "provider_readiness": "verification_required",
+        "route_activation_proof": "not_applicable",
         "supported_providers": [
           "apns",
           "fcm"
@@ -1642,10 +1662,15 @@
       "entry": "internal_only",
       "id": "library",
       "notifications": {
+        "action_allowlist": [],
+        "activation_authority": "not_applicable",
+        "delivery_proof": "advisory",
         "delivery_supported": false,
+        "evidence_authority": false,
         "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
+        "route_activation_proof": "not_applicable",
         "supported_providers": [
           "apns",
           "fcm"
@@ -1753,10 +1778,15 @@
       "entry": "internal_only",
       "id": "study-session",
       "notifications": {
+        "action_allowlist": [],
+        "activation_authority": "not_applicable",
+        "delivery_proof": "advisory",
         "delivery_supported": false,
+        "evidence_authority": false,
         "open_routing_active": false,
         "posture": "not_applicable",
         "provider_readiness": "not_applicable",
+        "route_activation_proof": "not_applicable",
         "supported_providers": [
           "apns",
           "fcm"

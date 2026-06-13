@@ -1,0 +1,3 @@
+module CrosswakeShellCore {
+    header "/Users/jon/projects/crosswake/packages/crosswake-shell-core-ios/.build/arm64-apple-macosx/debug/CrosswakeShellCore.build/include/CrosswakeShellCore-Swift.h"
+}

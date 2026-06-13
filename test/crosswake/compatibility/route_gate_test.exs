@@ -160,6 +160,55 @@ defmodule Crosswake.Compatibility.RouteGateTest do
     assert decision.denial.code == "auth.step_up.insufficient_assurance"
   end
 
+  test "notification-source auth denial halts before fallback redirect" do
+    route =
+      route_entry(
+        id: "secure_notification_with_fallback",
+        path: "/secure-notification",
+        entry: :external,
+        auth_min_level: :mfa,
+        requires_recent_auth: 300,
+        on_unavailable: {:fallback_phoenix, :dashboard}
+      )
+
+    manifest = manifest_for(route)
+    target = %Target{origin: "https://example.test"}
+    stale_context = auth_context(lane: [authenticated_at: "2026-05-31T23:54:00Z"])
+
+    decision =
+      RouteGate.evaluate(manifest, route.id, target,
+        activation_source: :notification,
+        auth_context: stale_context
+      )
+
+    assert decision.status == :deny
+    assert decision.denial.reason == :step_up_required
+    assert decision.denial.code == "auth.step_up.stale_auth"
+    assert decision.transition == :halt
+  end
+
+  test "non-notification auth denial still uses configured fallback redirect" do
+    route =
+      route_entry(
+        id: "secure_with_fallback",
+        path: "/secure-fallback",
+        entry: :external,
+        auth_min_level: :mfa,
+        requires_recent_auth: 300,
+        on_unavailable: {:fallback_phoenix, :dashboard}
+      )
+
+    manifest = manifest_for(route)
+    target = %Target{origin: "https://example.test"}
+    stale_context = auth_context(lane: [authenticated_at: "2026-05-31T23:54:00Z"])
+
+    decision = RouteGate.evaluate(manifest, route.id, target, auth_context: stale_context)
+
+    assert decision.status == :deny
+    assert decision.denial.reason == :step_up_required
+    assert decision.transition == {:redirect, :dashboard}
+  end
+
   test "RouteGate keeps kill-switch precedence over Sigra auth checks" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(GatedRouter)
     target = %Target{origin: manifest.host.origin}
@@ -185,6 +234,42 @@ defmodule Crosswake.Compatibility.RouteGateTest do
       )
 
     RouteEntry |> struct!(attrs)
+  end
+
+  defp manifest_for(%RouteEntry{} = route) do
+    %Crosswake.Manifest.Types.Root{
+      manifest_schema_version: "2.0.0",
+      crosswake_version: "0.1.0",
+      generated_at: "2026-06-04T12:00:00Z",
+      host: %Crosswake.Manifest.Types.Host{
+        phoenix_version: "1.7.0",
+        live_view_version: "0.20.0",
+        origin: "https://example.test",
+        manifest_sources: [:bundled]
+      },
+      compatibility: %Crosswake.Manifest.Types.Compatibility{
+        manifest_schema_version: "2.0.0",
+        bridge_protocol_version: "1.0.0",
+        native_runtime_version: "1.0.0",
+        supported_manifest_sources: [:bundled],
+        remote_updates: []
+      },
+      support_matrix: %Crosswake.Manifest.Types.SupportMatrix{
+        phoenix: [],
+        live_view: [],
+        ios: [],
+        android: [],
+        shells: [],
+        capability_families: [],
+        package_surfaces: [],
+        release_boundaries: [],
+        change_classes: []
+      },
+      capability_registry: %{},
+      pack_registry: %{},
+      commerce_corridors: %{},
+      routes: %{route.id => route}
+    }
   end
 
   defp auth_context(opts) do

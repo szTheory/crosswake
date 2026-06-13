@@ -5,8 +5,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
   @task "crosswake.gen.shell"
 
-  test "generates host-owned ios and android shell baselines with canonical fixtures" do
-    target = tmp_dir!("crosswake-shell")
+  test "generates iOS scaffold" do
+    target = tmp_dir!("crosswake-shell-ios")
 
     ios_output =
       capture_io(fn ->
@@ -20,127 +20,54 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert ios_output =~ "not safely regeneratable"
 
     ios_readme = Path.join(target, "native/ios/crosswake_shell/README.md")
-
     ios_project =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj")
-
     ios_app =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShellApp.swift")
-
     ios_info = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
-
     ios_scheme =
       Path.join(
         target,
         "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme"
       )
 
-    ios_activation_coordinator =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/ActivationCoordinator.swift")
-
-    ios_bridge_channel =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/BridgeChannel.swift")
-
-    ios_route_unavailable =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RouteUnavailableView.swift")
-
-    ios_live_view =
-      Path.join(
-        target,
-        "native/ios/crosswake_shell/CrosswakeShell/LiveViewContainerViewController.swift"
-      )
-
-    ios_pack_store =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/PackStore.swift")
-
-    ios_required_pack_view =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/RequiredPackView.swift")
-
-    ios_native_capture_view =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/NativeCaptureView.swift")
-
-    ios_transfer_coordinator =
-      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/TransferCoordinator.swift")
-
-    ios_tests =
-      Path.join(
-        target,
-        "native/ios/crosswake_shell/CrosswakeShellTests/ActivationCoordinatorTests.swift"
-      )
+    ios_crosswake_coordinator =
+      Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift")
 
     ios_manifest =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
-
     ios_activation =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/route_activation.json")
-
     ios_denial = Path.join(target, "native/ios/crosswake_shell/Fixtures/route_denial.json")
-
     ios_declared_packs =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json")
-
     ios_installed_packs =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/installed_packs.json")
-
     ios_pack_inventory =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/pack_inventory.json")
 
     assert File.read!(ios_readme) =~ "host-owned"
     assert File.read!(ios_readme) =~ "scaffold once"
     refute File.read!(ios_readme) =~ "Phase 1"
+
     assert File.read!(ios_project) =~ "PBXNativeTarget"
     assert File.read!(ios_project) =~ "CrosswakeShellTests"
-    assert File.read!(ios_app) =~ "ActivationCoordinator.bundled"
+    assert File.read!(ios_project) =~ "XCRemoteSwiftPackageReference"
+    refute File.read!(ios_project) =~ "XCLocalSwiftPackageReference"
+
+    assert File.read!(ios_app) =~ "CrosswakeCoordinator"
     assert File.read!(ios_app) =~ "onOpenURL"
-    assert File.read!(ios_app) =~ "onContinueUserActivity"
-    assert File.read!(ios_app) =~ "LiveViewContainerView"
-    assert File.read!(ios_app) =~ "NativeCaptureView"
-    assert File.read!(ios_bridge_channel) =~ "app.info.get"
-    assert File.read!(ios_bridge_channel) =~ "haptics.impact"
-    assert File.read!(ios_bridge_channel) =~ "files.pick"
-    assert File.read!(ios_bridge_channel) =~ "transfer.download"
-    assert File.read!(ios_bridge_channel) =~ "transfer.export"
-    assert File.read!(ios_bridge_channel) =~ "transfer.import"
-    assert File.read!(ios_bridge_channel) =~ "transfer.upload.prepare"
-    assert File.read!(ios_bridge_channel) =~ "transferCoordinator"
+    assert File.read!(ios_app) =~ "bootstrap"
+
     assert File.read!(ios_info) =~ "WKAppBoundDomains"
+    refute File.read!(ios_info) =~ "NSCameraUsageDescription"
+    assert File.read!(ios_info) =~ "https://docs.crosswake.dev/capabilities"
+
     assert File.read!(ios_scheme) =~ "xcscheme"
-    assert File.read!(ios_activation_coordinator) =~ "packIncompatible"
-    assert File.read!(ios_activation_coordinator) =~ "inactiveRoute"
-    assert File.read!(ios_activation_coordinator) =~ "nativeCapture"
-    assert File.read!(ios_activation_coordinator) =~ "Native capture"
-    refute File.read!(ios_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
-    assert File.read!(ios_route_unavailable) =~ "Update app"
-    assert File.read!(ios_route_unavailable) =~ "Open safe fallback"
-    assert File.read!(ios_live_view) =~ "WKWebView"
-    assert File.read!(ios_live_view) =~ "WKNavigationDelegate"
-    assert File.read!(ios_live_view) =~ "same-origin"
-    assert File.read!(ios_live_view) =~ "App-Bound Domains"
-    assert File.read!(ios_pack_store) =~ "enum PackState"
-    assert File.read!(ios_pack_store) =~ "case invalidating"
-    assert File.read!(ios_pack_store) =~ "func installRequiredPack"
-    assert File.read!(ios_pack_store) =~ "func invalidatePack"
-    assert File.read!(ios_required_pack_view) =~ "Install Required Pack"
-    assert File.read!(ios_required_pack_view) =~ "Update Pack"
-    assert File.read!(ios_required_pack_view) =~ "PackStore"
-    assert File.read!(ios_native_capture_view) =~ "Native capture"
-    assert File.read!(ios_native_capture_view) =~ "Capture media locally"
-    assert File.read!(ios_native_capture_view) =~ "Stage For Transfer"
-    assert File.read!(ios_native_capture_view) =~ "Cancel Capture"
-    assert File.read!(ios_native_capture_view) =~ "onStageForTransfer"
-    assert File.read!(ios_native_capture_view) =~ "stageCapturedMedia"
-    assert File.read!(ios_native_capture_view) =~ "Transfer handoff stays explicit"
-    assert File.read!(ios_transfer_coordinator) =~ "enum TransferState: String"
-    assert File.read!(ios_transfer_coordinator) =~ "case awaitingNetwork = \"awaiting_network\""
-    assert File.read!(ios_transfer_coordinator) =~ "func stageCapturedMedia"
-    assert File.read!(ios_transfer_coordinator) =~ "func execute(command:"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.upload.prepare"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.download"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.import"
-    assert File.read!(ios_transfer_coordinator) =~ "transfer.export"
-    assert File.read!(ios_tests) =~ "testStalePackInventoryShowsRequiredPackSurface"
-    assert File.read!(ios_tests) =~ "testInAppNavigationDeniesDisallowedOrigin"
-    assert File.read!(ios_tests) =~ "testLiveViewContainerDeniesDisallowedOriginNavigation"
+
+    assert File.exists?(ios_crosswake_coordinator)
+    assert File.read!(ios_crosswake_coordinator) =~ "CrosswakeCoordinator"
+
     assert File.read!(ios_manifest) =~ "\"manifest_schema_version\""
     assert File.read!(ios_manifest) =~ "\"routes\""
     assert File.read!(ios_activation) =~ "\"declared_pack_requirements\""
@@ -150,6 +77,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_installed_packs) =~ "\"shell.chrome\": \"1.0.0\""
     assert File.read!(ios_pack_inventory) =~ "\"integrity_status\": \"verified\""
     assert File.read!(ios_pack_inventory) =~ "\"verified_at\""
+
+    verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
+    assert File.read!(verify_script) =~ "xcodebuild"
+    assert File.read!(verify_script) =~ "-showdestinations"
+    assert File.read!(verify_script) =~ "SCHEME=\"${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}\""
+  end
+
+  test "generates Android scaffold" do
+    target = tmp_dir!("crosswake-shell-android")
 
     android_output =
       capture_io(fn ->
@@ -175,7 +111,6 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
       )
 
     android_app_build = Path.join(target, "native/android/crosswake_shell/app/build.gradle")
-
     android_manifest =
       Path.join(
         target,
@@ -188,70 +123,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/MainActivity.kt"
       )
 
-    android_activation_coordinator =
+    android_crosswake_view_model =
       Path.join(
         target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/ActivationCoordinator.kt"
-      )
-
-    android_bridge_channel =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/BridgeChannel.kt"
-      )
-
-    android_live_view_fragment =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/LiveViewFragment.kt"
-      )
-
-    android_pack_store =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/PackStore.kt"
-      )
-
-    android_required_pack_activity =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/packs/RequiredPackActivity.kt"
-      )
-
-    android_native_capture_activity =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/NativeCaptureActivity.kt"
-      )
-
-    android_transfer_coordinator =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/transfer/TransferCoordinator.kt"
-      )
-
-    android_required_pack_layout =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/res/layout/activity_required_pack.xml"
-      )
-
-    android_route_unavailable =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/main/res/layout/activity_route_unavailable.xml"
-      )
-
-    android_unit_tests =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/test/java/dev/crosswake/shell/ActivationCoordinatorTest.kt"
-      )
-
-    android_instrumented_tests =
-      Path.join(
-        target,
-        "native/android/crosswake_shell/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+        "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt"
       )
 
     android_activation =
@@ -278,79 +153,71 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_readme) =~ "host-owned"
     assert File.read!(android_readme) =~ "scaffold once"
     refute File.read!(android_readme) =~ "Phase 1"
+
     assert File.read!(android_settings) =~ "include ':app'"
     assert File.read!(android_build) =~ "com.android.application"
     assert File.read!(android_props) =~ "org.gradle.jvmargs"
     assert File.read!(android_wrapper) =~ "Gradle start up script"
     assert File.read!(android_wrapper_props) =~ "gradle-8.7-bin.zip"
+
     assert File.read!(android_app_build) =~ "applicationId \"dev.crosswake.shell\""
     assert File.read!(android_app_build) =~ "ManagedVirtualDevice"
     assert File.read!(android_app_build) =~ "androidx.webkit:webkit:1.15.0"
+
     assert File.read!(android_manifest) =~ "usesCleartextTraffic"
     assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
     assert File.read!(android_manifest) =~ "android.intent.action.VIEW"
-    assert File.read!(android_manifest) =~ "RequiredPackActivity"
-    assert File.read!(android_manifest) =~ "NativeCaptureActivity"
-    assert File.read!(android_main_activity) =~ "ActivationCoordinator.bundled"
-    assert File.read!(android_main_activity) =~ "NativeCaptureActivity"
-    assert File.read!(android_activation_coordinator) =~ "pack_incompatible"
-    assert File.read!(android_activation_coordinator) =~ "inactive_route"
-    assert File.read!(android_activation_coordinator) =~ "NATIVE_CAPTURE"
-    assert File.read!(android_activation_coordinator) =~ "Native capture"
-    refute File.read!(android_activation_coordinator) =~ "Ship a native screen or offline island in a later phase."
-    assert File.read!(android_bridge_channel) =~ "app.info.get"
-    assert File.read!(android_bridge_channel) =~ "haptics.impact"
-    assert File.read!(android_bridge_channel) =~ "files.pick"
-    assert File.read!(android_bridge_channel) =~ "transfer.download"
-    assert File.read!(android_bridge_channel) =~ "transfer.export"
-    assert File.read!(android_bridge_channel) =~ "transfer.import"
-    assert File.read!(android_bridge_channel) =~ "transfer.upload.prepare"
-    assert File.read!(android_bridge_channel) =~ "transferCoordinator"
-    assert File.read!(android_live_view_fragment) =~ "WebView"
-    assert File.read!(android_live_view_fragment) =~ "Allowlisted"
-    assert File.read!(android_live_view_fragment) =~ "BridgeChannel"
-    assert File.read!(android_pack_store) =~ "enum class PackState"
-    assert File.read!(android_pack_store) =~ "INVALIDATING"
-    assert File.read!(android_pack_store) =~ "suspend fun installRequiredPack"
-    assert File.read!(android_pack_store) =~ "suspend fun invalidatePack"
-    assert File.read!(android_required_pack_activity) =~ "Install Required Pack"
-    assert File.read!(android_required_pack_activity) =~ "Update Pack"
-    assert File.read!(android_required_pack_activity) =~ "PackStore"
-    assert File.read!(android_native_capture_activity) =~ "Native capture"
-    assert File.read!(android_native_capture_activity) =~ "Capture media locally"
-    assert File.read!(android_native_capture_activity) =~ "Stage For Transfer"
-    assert File.read!(android_native_capture_activity) =~ "Cancel Capture"
-    assert File.read!(android_native_capture_activity) =~ "stageCapturedMedia"
-    assert File.read!(android_transfer_coordinator) =~ "enum class TransferState"
-    assert File.read!(android_transfer_coordinator) =~ "AWAITING_NETWORK(\"awaiting_network\")"
-    assert File.read!(android_transfer_coordinator) =~ "fun stageCapturedMedia"
-    assert File.read!(android_transfer_coordinator) =~ "fun execute"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.upload.prepare"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.download"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.import"
-    assert File.read!(android_transfer_coordinator) =~ "transfer.export"
-    assert File.read!(android_required_pack_layout) =~ "required_pack_title"
-    assert File.read!(android_required_pack_layout) =~ "required_pack_primary"
-    assert File.read!(android_route_unavailable) =~ "Update app"
-    assert File.read!(android_route_unavailable) =~ "Open safe fallback"
-    assert File.read!(android_unit_tests) =~ "stalePackInventoryShowsRequiredPackSurface"
-    assert File.read!(android_unit_tests) =~ "inAppNavigationDeniesDisallowedOriginAndKeepsCurrentRouteStable"
-    assert File.read!(android_instrumented_tests) =~ "appLinkLaunchMountsBoundedWebView"
+    assert File.read!(android_manifest) =~ "https://docs.crosswake.dev/capabilities"
+    refute File.read!(android_manifest) =~ "CAMERA"
+
+    assert File.exists?(android_main_activity)
+    assert File.read!(android_main_activity) =~ "MainActivity"
+
+    assert File.exists?(android_crosswake_view_model)
+    assert File.read!(android_crosswake_view_model) =~ "CrosswakeViewModel"
+
     assert File.read!(android_manifest_fixture) =~ "\"manifest_schema_version\""
     assert File.read!(android_activation) =~ "\"declared_pack_requirements\""
     assert File.read!(android_denial) =~ "\"reason\": \"pack_incompatible\""
     assert File.read!(android_pack_inventory) =~ "\"integrity_status\": \"verified\""
     assert File.read!(android_pack_inventory) =~ "\"verified_at\""
 
-    verify_script = Path.join(File.cwd!(), "script/verify_generated_ios_shell.sh")
-    assert File.read!(verify_script) =~ "xcodebuild"
-    assert File.read!(verify_script) =~ "-showdestinations"
-    assert File.read!(verify_script) =~ "SCHEME=\"${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}\""
-
     android_verify_script = Path.join(File.cwd!(), "script/verify_generated_android_shell.sh")
     assert File.read!(android_verify_script) =~ "sdkmanager"
     assert File.read!(android_verify_script) =~ "connectedDebugAndroidTest"
     assert File.read!(android_verify_script) =~ "commandlinetools-mac-14742923_latest.zip"
+  end
+
+  test "supports --local flag for SPM and Maven dependencies" do
+    ios_local_target = tmp_dir!("crosswake-shell-local-ios")
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["ios", "--target", ios_local_target, "--local"])
+    end)
+
+    ios_project =
+      Path.join(
+        ios_local_target,
+        "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj"
+      )
+
+    assert File.exists?(Path.join(ios_local_target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift"))
+    assert File.read!(ios_project) =~ "XCLocalSwiftPackageReference"
+    refute File.read!(ios_project) =~ "XCRemoteSwiftPackageReference"
+
+    android_local_target = tmp_dir!("crosswake-shell-local-android")
+    capture_io(fn ->
+      Mix.Task.reenable(@task)
+      Mix.Task.run(@task, ["android", "--target", android_local_target, "--local"])
+    end)
+
+    android_app_build = Path.join(android_local_target, "native/android/crosswake_shell/app/build.gradle")
+    android_settings = Path.join(android_local_target, "native/android/crosswake_shell/settings.gradle")
+
+    assert File.exists?(Path.join(android_local_target, "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt"))
+    assert File.read!(android_settings) =~ "include ':crosswake-shell-core-android'"
+    assert File.read!(android_settings) =~ "packages/crosswake-shell-core-android"
+    assert File.read!(android_app_build) =~ "implementation project(':crosswake-shell-core-android')"
   end
 
   defp tmp_dir!(prefix) do

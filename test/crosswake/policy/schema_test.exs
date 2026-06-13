@@ -99,17 +99,21 @@ defmodule Crosswake.Policy.SchemaTest do
         )
 
       assert validated[:packs] == [
-               %{
+               %Crosswake.Offline.ContentPack{
                  id: "lesson_library",
                  version: "1.2.0",
                  kind: :content,
-                 integrity: %{algorithm: "sha256", digest: "sha256-abc123"}
+                 integrity: %{algorithm: "sha256", digest: "sha256-abc123"},
+                 assets: [],
+                 data_payloads: []
                },
-               %{
+               %Crosswake.Offline.ContentPack{
                  id: "pronunciation_audio",
                  version: "2.0.0",
                  kind: :media,
-                 integrity: nil
+                 integrity: nil,
+                 assets: [],
+                 data_payloads: []
                }
              ]
     end

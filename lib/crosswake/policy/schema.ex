@@ -5,6 +5,7 @@ defmodule Crosswake.Policy.Schema do
 
   alias Crosswake.Transfer.Contracts
   alias Crosswake.Companions.Sigra.Contracts, as: SigraContracts
+  alias Crosswake.Offline.ContentPack
 
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
@@ -169,12 +170,7 @@ defmodule Crosswake.Policy.Schema do
           role: commerce_role() | nil
         }
   @type pack_integrity :: %{algorithm: String.t(), digest: String.t()}
-  @type pack_requirement :: %{
-          id: String.t(),
-          version: String.t(),
-          kind: pack_kind(),
-          integrity: pack_integrity() | nil
-        }
+  @type pack_requirement :: ContentPack.t()
   @type validated_options :: [
           id: String.t(),
           runtime: runtime(),
@@ -400,6 +396,8 @@ defmodule Crosswake.Policy.Schema do
   def validate_auth_return_declaration(_value),
     do: {:error, "expected auth_return declaration as a map or keyword list"}
 
+  defp validate_pack_requirement(%ContentPack{} = requirement), do: {:ok, requirement}
+
   defp validate_pack_requirement(requirement) when is_list(requirement) do
     requirement
     |> Enum.into(%{})
@@ -416,7 +414,7 @@ defmodule Crosswake.Policy.Schema do
            validate_pack_integrity(
              Map.get(requirement, :integrity, Map.get(requirement, "integrity"))
            ) do
-      {:ok, %{id: id, version: version, kind: kind, integrity: integrity}}
+      {:ok, %ContentPack{id: id, version: version, kind: kind, integrity: integrity}}
     end
   end
 

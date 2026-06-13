@@ -10,6 +10,7 @@ defmodule Crosswake.Companions.Chimeway.DenialCodesTest do
       assert DenialCodes.notification_open_binding_revoked() == "notification.open.binding_revoked"
       assert DenialCodes.notification_open_route_mismatch() == "notification.open.route_mismatch"
       assert DenialCodes.notification_open_binding_mismatch() == "notification.open.binding_mismatch"
+      assert DenialCodes.notification_open_action_mismatch() == "notification.open.action_mismatch"
       assert DenialCodes.notification_open_unsupported_action() == "notification.open.unsupported_action"
       assert DenialCodes.notification_open_policy_denied() == "notification.open.policy_denied"
     end

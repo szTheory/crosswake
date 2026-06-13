@@ -1,297 +1,428 @@
 # Pitfalls Research
 
-**Domain:** Mocked paywall/subscription example added to a contract-first, backend-owned entitlement system (Crosswake v3.4 Commerce Archetype Proof)
-**Researched:** 2026-05-29
-**Confidence:** HIGH — grounded in repo source (contracts.ex, reconciliation.ex, phase23-proof.yml, existing test isolation patterns, STATE.md Phase 30 post-mortem, MILESTONE-ARC.md locked guardrails)
+**Domain:** Programmatic Brand System & Visual Identity — OSS Library (v9.0)
+**Researched:** 2026-06-11
+**Confidence:** HIGH (GitHub SVG sanitization, WCAG thresholds, Hex exclusion), MEDIUM (optical design, typemark), LOW where only community pattern evidence
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Mock Storefront Accidentally Granting Entitlement Authority (Non-Authoritative-Evidence Violation)
+### Pitfall 1: Generic Programmatic Marks — The Statistical-Average Logo
 
 **What goes wrong:**
-`MockStorefront` returns a value that the example host code promotes directly to `authority.state = :active` and `access.decision = :granted` without going through `EntitlementProjection.project_snapshot/2`. The mock short-circuits the reconciliation inbox and publishes a `:granted` snapshot bypassing the verification step. This violates ENTL-03 ("Device, storefront, webhook, and support evidence can feed reconciliation but cannot directly grant entitlement authority in core contracts").
+A programmatically-assisted mark (AI-generated or script-driven) looks like the visual centroid of every devtools brand that went before it. The result is unintentionally recognizable as a type — "a tech startup logo" — rather than as Crosswake. Rectangular container backgrounds are a strong symptom: the generator fills empty space with a box because the mark has no inherent optical gravity.
 
 **Why it happens:**
-The convenience pressure of "make the demo work end-to-end" is highest when wiring the LiveView. The shortest path is: mock purchase → set snapshot to granted → LiveView shows paywall lifted. The reconciliation inbox feels like ceremony. Developers paste code from the guide's "canonical flow" narrative but skip the `awaiting_verification` → `projection_refreshed` hop because the mock has no real backend verifier.
-
-The existing `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?/1` already returns `false` for every reconciliation outcome, and `authority_mutation_allowed_from_evidence?/1` always returns `false` — but these guards only activate if `ingest_evidence/2` is on the call path. If `MockStorefront` is wired to call `EntitlementProjection.project_snapshot/2` directly with a hand-built snapshot that already has `:active` authority, the guards are bypassed entirely.
+Generative tools fill under-specified briefs with statistical averages. Without strong shape constraints and a concept locked before generation, the output gravitates toward the most common form in training data.
 
 **How to avoid:**
-1. The proof test must assert `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?(attempt.status) == false` for every status the mock produces.
-2. The example `EntitlementProjection` must enforce `ensure_verified_reconciliation/1` before accepting any snapshot — it already does; the proof test must drive through it, not around it.
-3. `MockStorefront` must produce a `ReconciliationEvidence` struct (source: `:storefront`, event_kind: `"purchase"`) and pass it through `ReconciliationInbox.ingest_evidence/2`, not return a pre-baked entitlement snapshot.
-4. Add an explicit test: `assert {:error, :unverified_reconciliation_outcome} = EntitlementProjection.project_snapshot(nil, snapshot_with_pending_reconciliation)` — proving a `:pending_purchase` reconciliation state cannot produce a `:granted` snapshot.
+Define the shape vocabulary before running any generator: stroke-based mark, closed contour vs. open path, aspect ratio budget, what the mark must NOT resemble (hexagon, nodes-and-edges graph, circuit trace). The v9.0 plan correctly constrains this to "4 logomark concepts" — lock a concept per candidate before any SVG is drawn, not after. Explicit anti-requirements ("no enclosing rectangle") must be written down and checked at the tournament gate.
 
 **Warning signs:**
-- `MockStorefront` module has a return type of `EntitlementSnapshot.t()` rather than `ReconciliationEvidence.t()`.
-- Example code assigns `authority: %AuthorityLane{state: :active}` inside the mock module itself.
-- The proof test passes without ever touching `ReconciliationInbox.ingest_evidence/2`.
-- `reconciliation.state` in the "granted" snapshot is `:pending_purchase` or `:awaiting_verification` rather than `:projection_refreshed`.
+- Draft mark fits neatly into a square or rounded-rectangle bounding box with no awkward negative space
+- More than two paths have pure 90° or perfect circle geometry
+- Removing the background makes the mark look unanchored
 
 **Phase to address:**
-Phase implementing `MockStorefront` and `EntitlementProjection` wiring (the reconciliation → entitlement snapshot phase). A dedicated test asserting `authority_mutation_allowed_from_evidence? == false` for mock-produced evidence must be in the merge-blocking proof lane, not deferred.
+Phase 103 (Tournament Gallery) — enforce no-rectangular-background rule at candidate submission. The mandatory user-selection checkpoint is the natural gate.
 
 ---
 
-### Pitfall 2: Example Drifts Into a De-Facto Billing Engine or Implies Provider Adapters Shipped
+### Pitfall 2: Stroke-Based SVG That Collapses at Small Sizes
 
 **What goes wrong:**
-`MockStorefront` accumulates provider-shaped logic: product catalog lookups, receipt validation stubs, sandbox receipt URLs, retry/refund state machines. The module grows into a thin StoreKit simulator wrapper. Guides start describing the mock as "how StoreKit integration works." Adopters copy the mock and fill in real StoreKit/Play Billing calls, treating the example as the provider adapter scaffolding. The non-claims section of `guides/commerce.md` (currently asserting "StoreKit adapter is not shipped" and "Play Billing adapter is not shipped") becomes implicitly false.
-
-The same drift can happen from the other direction: the guide walkthrough for the mock paywall corridor is written so generically that it reads as universal billing guidance, and an adopter opening a support issue about their RevenueCat integration cites the guide as justification for expecting Crosswake to handle it.
+Logomarks authored as stroke paths look refined at 200px but become muddy blobs or invisible hairlines at 16px (favicon) and 32px (GitHub avatar). Stroke weights do not scale with the viewport unless `vector-effect: non-scaling-stroke` is set, and even then the chosen weight may be wrong for the small-size context.
 
 **Why it happens:**
-The mock needs enough realism to prove the corridor end-to-end. Each "what if the mock simulated X" improvement seems harmless. The line between "minimum viable mock" and "aspirational billing example" blurs during execution.
+Stroke widths are specified in local coordinate space. When a 200×200 SVG viewport is scaled to 16px display, a 2px stroke in local coords renders as a ~0.16px stroke — sub-pixel and invisible. Conversely, if the artboard is small and scaled up, strokes become disproportionately fat.
 
 **How to avoid:**
-1. `MockStorefront` must implement only the v3.2 contract surface: accept `PurchaseIntent` / `RestoreIntent`, emit `ReconciliationEvidence` with `source: :storefront`, `provider: "mock"`, `event_kind: "purchase"` or `"restore"`. No receipt fields, no sandbox URLs, no catalog map.
-2. The guide walkthrough must open with an explicit callout: "This example uses `MockStorefront` (provider: `\"mock\"`). It proves the corridor contract without StoreKit or Play Billing. See Rough Edges And Non-Claims for what is not shipped."
-3. The existing `@forbidden_provider_tokens` fence in `phase23_commerce_support_proof_test.exs` covers the support matrix and doctor findings. Extend it (or add a parallel test) to scan the example-host `MockStorefront` source for `storekit`, `play_billing`, `play billing`, `revenuecat` tokens.
-4. The docs-contract test must assert the guide still carries all four non-claims (`StoreKit adapter is not shipped`, `Play Billing adapter is not shipped`, `Device-local entitlement authority is not shipped`, `Offline purchase replay is not shipped`) after the walkthrough is updated.
+- Design the mark at a native small canvas (32×32 or 24×24 local units) and derive large sizes by uniform scale — not the reverse.
+- Evaluate every candidate at three sizes: 200px (lockup), 32px (README badge), 16px (favicon). If stroke weight collapses, either outline the stroke paths for production files or create a separate simplified favicon variant.
+- For the committed production SVG: outline all strokes to filled paths before finalizing (`Object → Expand` in Inkscape; `Path → Stroke to Path`). Outlined paths render predictably in all environments including GitHub's camo proxy. Keep the live-stroke source in `brandbook/src/` for editability.
 
 **Warning signs:**
-- `MockStorefront` has a `@products` module attribute that looks like a real product catalog.
-- The mock accepts or returns receipt-like binary data.
-- Guide text says "replace `mock` with your StoreKit adapter" rather than "a real provider adapter is out of scope."
-- `provider` field in mock-produced `ReconciliationEvidence` is `"storekit"` or `"com.apple"` instead of `"mock"`.
+- Favicon renders as an indistinct smudge in a browser tab
+- Mark was designed at 512px and "scaled down" to test
+- `stroke-width` is greater than 1.5 local units on a 24-unit canvas
 
 **Phase to address:**
-Phase writing `MockStorefront` and updating `guides/commerce.md`. The non-claims docs-contract test (already in `commerce_test.exs`) must be re-run against the updated guide as a merge-blocking gate.
+Phase 104 (Refinement) — 16px and 32px render tests are a required checklist item before finalizing the production suite. Phase 103 should include small-size preview in the tournament gallery HTML.
 
 ---
 
-### Pitfall 3: Docs-Contract Drift — Guide Walkthrough Diverges From Working Example Code
+### Pitfall 3: Mark Does Not Survive Monochrome
 
 **What goes wrong:**
-`guides/commerce.md` is updated to describe the new paywall corridor walkthrough, but the code shown in the guide (module names, function signatures, struct field names, idempotency key construction) drifts from the actual `examples/phoenix_host/lib/crosswake_example/commerce/` files. An adopter copies the guide snippet and gets a compile error or a runtime crash because `ReconciliationKeys.event_key/1` has a different arity than what the guide shows.
-
-This is a concrete version of the v3.2 risk: `guides/commerce.md` already has a `Minimal Reconciliation Inbox Example` section (locked by `commerce_test.exs`) describing `event_key`, `subject_key`, `correlation_id`, `stale`, `pending`, `denied`, `granted`, `as_of`, and "Ingestion outcomes are non-authoritative." The v3.4 guide update adds a paywall entry + MockStorefront walkthrough on top of this. If the new walkthrough is written before the example code is final, or edited by hand after the fact, it drifts.
+The logomark relies on color contrast (e.g., a two-tone mark where one shape reads only because it is a different hue) to convey its structure. On embossed goods, single-ink print, or GitHub's rendered-PNG version, it becomes illegible or looks like a different mark entirely.
 
 **Why it happens:**
-Docs are written during phase planning (before code is final) or copy-pasted from earlier drafts and not re-verified after the code settles. The existing `commerce_test.exs` locks structural headings and keyword presence — it does not verify that named function arities, module references, or inline code snippets are accurate.
+Designers evaluate marks on-screen in full color and neglect to flatten to grayscale. Stroke-on-dark-background concepts are especially vulnerable — the fill disappears and only strokes survive.
 
 **How to avoid:**
-1. Write example code first, then write the guide walkthrough from the running code — not from the planning spec.
-2. Add a docs-contract test that asserts the exact module names referenced in the new guide section exist as compiled modules (using `Code.ensure_loaded?/1` or a `@moduledoc` scan).
-3. Assert the guide mentions `MockStorefront` by its exact module name (`CrosswakeExample.Commerce.MockStorefront` or the chosen canonical name).
-4. Assert the guide uses the canonical `ReconciliationEvidence` field names (`provider`, `provider_reference`, `event_kind`, `evidence_ref`, `captured_at`) rather than invented aliases.
-5. The Phase 23 pattern of locking guide section headings with regex assertions in `commerce_test.exs` should be extended: add assertions that lock the new "Paywall Corridor Walkthrough" or equivalent heading as soon as it is written.
+Require a monochrome version as a mandatory tournament deliverable: positive (black on white), reversed (white on black), and single-color at each of the brand primary hues. If any version fails legibility, the concept fails the tournament. State this explicitly in the gallery brief.
 
 **Warning signs:**
-- Guide uses `receipt_token:` as a field name; contracts use `evidence_ref:`.
-- Guide calls `ReconciliationInbox.record_purchase/1`; the actual module exports `ingest_evidence/2`.
-- Guide shows `MockStorefront.buy/1`; implementation uses `MockStorefront.submit_purchase_intent/1`.
-- The docs-contract test suite passes but the adopter example at the top of the guide still references a function that was renamed during implementation.
+- Logomark uses two shapes that are only distinguishable by fill hue (e.g., two greens)
+- Mark lacks readable silhouette when filled solid black
+- Reversed version shows only a filled blob with no interior shape distinction
 
 **Phase to address:**
-Phase updating `guides/commerce.md` — the docs-contract test extension must be in the same phase, not deferred to a separate tech-debt phase. Write the code, then write (and lock) the guide in the same phase boundary.
+Phase 103 (Tournament Gallery) — monochrome tests must appear alongside full-color renders in the candidate HTML. Phase 106 (Collateral) — commit the monochrome SVGs as part of the production suite.
 
 ---
 
-### Pitfall 4: Proof-Honesty Failures — Hermetic Lane That Secretly Depends on Environment, or Advisory/Merge-Blocking Confusion
+### Pitfall 4: Broken Kerning and Letterform Cuts After Path Conversion
 
 **What goes wrong:**
-Two failure modes in the same category:
-
-**4a. Hidden environment dependency.** The new v3.4 proof test is added to the merge-blocking CI job, but the test silently calls `Code.require_file` on an example-host file that is not compiled in the hermetic `mix test` run. Under normal `mix test`, the example host is excluded. The test passes locally (where the example host is compiled) and fails in CI. The existing `phase23_commerce_support_proof_test.exs` has an explicit hermeticity guard that scans its own source for `crosswake_example.router` and `Code.require_file` calls — but the v3.4 proof test is a new file, and that guard does not automatically extend to it.
-
-The Phase 30 post-mortem already documented two latent races: (1) parallel-compile `require_file` collision (two async tests both `Code.require_file`-ing the same file and racing on first-load), and (2) global-cwd `File.cd` race (a test using `File.cd!/2` interfering with async tests that use relative paths like `File.read!("guides/...")` at compile time via `@guide_path`).
-
-**4b. Advisory/merge-blocking confusion.** A future maintainer adds a MockStorefront-level test that uses a simulated clock or a mock provider response and marks it `@tag :requires_example_host`, assuming it will be excluded from the hermetic lane. But it is added to the wrong CI step, so it now blocks merges on a non-deterministic timer or a test-double response that depends on module load order.
+After converting the Space Grotesk wordmark to outlines via opentype.js, default font kerning tables no longer apply. The letter spacing that looked correct as a live text element becomes subtly wrong — pairs like `ro`, `wa`, `ke` have gaps that look correct at body-copy size but are obviously wrong at logo scale (100×+ larger than paragraph text).
 
 **Why it happens:**
-The hermetic/advisory split is enforced at the workflow level (`if: github.event_name == 'pull_request'` on the merge-blocking job, `continue-on-error: true` on the advisory job), but it is NOT enforced at the test tag level by default. Tags like `:requires_example_host` are excluded via `--exclude` flags that must be manually kept in sync with each CI step's `mix test` invocation. A new test file added without the tag will be picked up by every step.
+Font kerning tables are designed for paragraph-scale reading. At logo scale, the visual gaps between letters are magnified and the optical illusion of even spacing breaks. opentype.js does support GPOS and kern-table kerning at render time, but once paths are exported as static SVG, no dynamic kerning adjustments apply. Additionally, the Y-axis coordinate system in fonts (cartesian, bottom-up) must be explicitly inverted for SVG (top-down); opentype.js's `getPath()` requires calculating the correct Y-flip from `font.ascender` — missing this produces a vertically mirrored glyph.
 
 **How to avoid:**
-1. Create a dedicated `phase34-proof.yml` (mirroring `phase23-proof.yml` two-job split) for the v3.4 proof lane. The merge-blocking job must include the hermeticity guard — either as a self-scan test (like the one in phase23) or as an explicit `--exclude requires_example_host` flag.
-2. Any test that drives the full paywall corridor using `Code.require_file` on example-host modules must carry `@moduletag :requires_example_host` and run in the `phase5-proof.yml` lane (which builds the example host first), NOT in the hermetic lane.
-3. Tests that prove the contracts in isolation (MockStorefront produces valid `ReconciliationEvidence`, `EntitlementProjection.project_snapshot/2` enforces verification gate, freshness fail-closed) can use in-memory fixtures and are safe for the hermetic lane.
-4. Use `async: false` for any test that uses `File.cd!/2`. Use `@guide_path Path.join([File.cwd!(), ...])` computed at module compile time (not inside a test body) to avoid the global-cwd race.
-5. `Code.require_file` calls on example-host modules must appear only in tests tagged `:requires_example_host` and must be at the top of the file (module scope), not inside test callbacks — parallel `require_file` calls inside async tests race on first-load.
+- When calling `font.getPath(text, x, y, size)`, pass `y = font.ascender * (size / font.unitsPerEm)` to set the correct baseline.
+- After path generation, load the SVG at 400%+ zoom and manually inspect every adjacent glyph pair. Hand-adjust path positions for optically bad pairs (`rk`, `os`, `aw`, `ke`). The path-converted wordmark is the starting point for hand-curation, not the finished artifact.
+- Never attempt cutout subpath fills (e.g., letters like `e`, `o`, `a` with counters) without verifying fill-rule: opentype.js TTF outlines rely on path direction for cutouts, while SVG uses `fill-rule="evenodd"` or `nonzero`. Set `fill-rule="evenodd"` on the wordmark path group to match font rendering conventions.
 
 **Warning signs:**
-- A new proof test file does not have `@moduletag :requires_example_host` but contains `Code.require_file` on a path under `examples/`.
-- The `phase34-proof.yml` merge-blocking job runs `mix test` without `--exclude requires_example_host`.
-- A test in the hermetic lane calls `File.cd!/2` while another async test reads `guides/commerce.md` via a compile-time `@guide_path`.
-- The advisory-to-merge-blocking promotion commentary is missing from the new workflow file (copying the 4-condition `promotion_path` from `phase23-proof.yml` is required).
+- The exported wordmark SVG has vertically flipped letterforms
+- The `e` and `o` counters appear filled (solid black) instead of hollow
+- Spacing looks correct at thumbnail size but reveals gaps at 4× zoom
 
 **Phase to address:**
-Phase writing the merge-blocking proof lane. The CI workflow and the hermeticity guard must be in the same phase as the proof test itself — not a later "CI cleanup" phase.
+Phase 102 (Audit/Tokens) — establish the opentype.js generation pipeline and validate output. Phase 104 (Refinement) — hand-curation checkpoint explicitly required before production sign-off.
 
 ---
 
-### Pitfall 5: LiveView State Reflecting Stale, Pending, or Denied Entitlement Incorrectly
+### Pitfall 5: Raw-Color-Only Tokens Without a Semantic Layer
 
 **What goes wrong:**
-The PaywallEntryLive (or equivalent) render function has a single `:granted` / not-`:granted` branch. It treats any non-`:granted` snapshot as "show paywall" without distinguishing `:pending` (purchase in flight, show spinner), `:stale` (freshness expired, show refresh prompt), and `:denied` (access genuinely denied, show paywall with clear denial reason). This means:
-
-- A user who just purchased sees the paywall again because the snapshot is still `:pending_purchase` during the reconciliation window.
-- A user whose snapshot has gone `:stale` (freshness lane) sees the same paywall as a rejected user, with no way to distinguish a stale read from a genuine denial.
-- The LiveView does not subscribe to snapshot refresh events, so once mounted with `:stale` state it never re-renders even after the backend publishes a fresh `:granted` snapshot.
-
-This maps directly to the `EntitlementProjection.derived_state/1` function in the example host, which already returns `:stale | :pending | :denied | :granted`. The LiveView must use all four derived states.
+The token file contains only primitives — `color.blue.500: #2563eb`, `color.gray.200: #e5e7eb` — with no semantic aliases. Components then reference raw primitives directly (`background: var(--color-blue-500)`) making theming, dark-mode adaptation, and any future palette shift require hunting every component individually.
 
 **Why it happens:**
-The simplest LiveView template is `if @snapshot.access.decision == :granted, do: render_content, else: render_paywall`. This compiles and "works" for the happy path. The `:stale` and `:pending` states only appear under timing or environment conditions that are easy to ignore during example development.
+Primitive tokens are fast to generate and feel "done." The semantic layer requires design intent that isn't obvious until something needs to change.
 
 **How to avoid:**
-1. The PaywallEntryLive must pattern-match on `EntitlementProjection.derived_state/1` — all four branches: `:granted`, `:pending`, `:stale`, `:denied`.
-2. The proof test must assert each derived state produces a distinct LiveView render outcome. Use `Phoenix.LiveViewTest` to mount the LiveView with injected snapshots covering all four `derived_state/1` values.
-3. `:stale` must render a "refreshing" or "checking your subscription" UI, not the same paywall as `:denied`. The difference is load-bearing: `:stale` means the backend might grant access once the snapshot is refreshed; `:denied` means access is explicitly withheld.
-4. The LiveView must subscribe to a PubSub topic (or equivalent) that the `EntitlementProjection` publishes to on snapshot refresh, so `:pending` → `:granted` transitions re-render without a full page reload.
-5. The mock scenario must exercise the `:pending` → `:granted` transition in the proof test (mock purchase emits evidence → reconciliation inbox ingests → projection publishes `:granted` snapshot → LiveView receives message and re-renders).
+The DTCG three-tier architecture is mandatory for v9.0:
+- **Tier 1 (primitive):** `color.brand.teal.500`, `color.neutral.800`
+- **Tier 2 (semantic):** `color.surface.default`, `color.text.muted`, `color.accent.primary`, `color.feedback.error`
+- **Tier 3 (component, optional):** `badge.background`, `button.primary.hover`
+
+Components must reference only Tier 2 tokens. Tier 1 tokens are for the token file internals only. Document this rule in `tokens.css` with a comment header. The DTCG `$value` references between tiers make this explicit in `crosswake.tokens.json`.
 
 **Warning signs:**
-- LiveView has `if snapshot.access.decision == :granted` rather than `case EntitlementProjection.derived_state(snapshot)`.
-- Proof test only verifies the `:granted` case.
-- No PubSub subscription or `handle_info/2` clause in the LiveView for snapshot refresh events.
-- `:stale` and `:denied` render the same template in the test output.
+- The CSS file contains `var(--color-blue-500)` in component rules rather than `var(--color-accent-primary)`
+- Dark mode theme requires touching more than 5-10 token overrides
+- Adding a new brand color requires grep-replacing raw hex values across component CSS
 
 **Phase to address:**
-Phase implementing PaywallEntryLive and the end-to-end proof test. The four-state render test and the `:pending` → `:granted` transition test must both be in the merge-blocking proof lane.
+Phase 102 (Audit/Tokens) — the semantic layer design is the critical deliverable, more important than the primitive palette. Structure tokens.css with explicit tier-separation comments.
 
 ---
 
-### Pitfall 6: Idempotency / Replay Pitfalls in Reconciliation Evidence
+### Pitfall 6: GitHub SVG Sanitization Stripping Layout-Critical Attributes
 
 **What goes wrong:**
-The mock purchase flow calls `ReconciliationInbox.ingest_evidence/2` but uses `PurchaseIntent.correlation_id` as the idempotency key instead of `ReconciliationEvidence.provider_reference` + `event_kind`. When a retry or a reconnect re-submits the same `PurchaseIntent`, a new `correlation_id` is generated (because the device generates it fresh), creating a second non-replay evidence record for the same underlying provider transaction. The backend double-counts the purchase.
+The SVG committed to `brandbook/` or referenced in `README.md` renders correctly locally and in Figma but looks wrong on GitHub's rendered preview because GitHub's sanitizer strips certain SVG attributes.
 
-The existing `Crosswake.Commerce.Reconciliation.IdempotencyKey` struct already encodes the correct key: `{provider, provider_reference, event_kind}` — explicitly excluding transient device correlation IDs (RECN-02: "Host apps can follow idempotency guidance that uses provider-aware identity rather than transient device correlation IDs"). `ReconciliationKeys.event_key/1` in the example host mirrors this. But `MockStorefront` must generate a stable `provider_reference` (e.g. a UUID derived from the `entry_id`, not from the `correlation_id`), or the idempotency key will be `correlation_id`-shaped by accident.
-
-A second sub-pitfall: the proof test for replay (already present in `phase21_reconciliation_example_test.exs`) passes `seen_event_keys:` as an explicit list. In production code the "seen keys" come from a database query. The example must make clear that `seen_event_keys` is the host's responsibility to populate from persistent storage, not an in-memory set held in the MockStorefront process.
+**Confirmed stripped by GitHub (via Camo proxy):**
+- `dominant-baseline` on `<text>` elements — causes text misalignment
+- `<foreignObject>` — entirely removed (no HTML in SVG on GitHub)
+- `<script>` — removed (XSS vector)
+- Event handlers (`onload`, `onclick`, `onerror`, etc.) — removed
+- External `href` and `xlink:href` pointing to remote URLs — blocked
+- `<animate>`, `<animateTransform>`, `<set>`, `<animateMotion>` — historically unreliable; treated as blocked
 
 **Why it happens:**
-`PurchaseIntent.correlation_id` is the only device-side identifier available at the point where the mock generates `ReconciliationEvidence`. Using it as `provider_reference` is the path of least resistance. The distinction between "transient device correlation ID" and "stable provider transaction reference" is only meaningful when a real provider (Apple, Google) assigns a canonical transaction ID. The mock has to simulate this distinction explicitly, or the idempotency contract is accidentally tested with correlation IDs.
+GitHub routes all SVG assets through the Camo anonymizing proxy which applies an allowlist-based sanitizer. The list is conservative and security-focused, not rendering-quality-focused.
 
 **How to avoid:**
-1. `MockStorefront` must generate a stable `provider_reference` that does NOT derive from `correlation_id`. Use a deterministic UUID seeded from `entry_id` + a monotonic counter, or a fixed UUID per test scenario. Document in the mock's `@moduledoc` that real providers assign `provider_reference` (e.g. Apple's `originalTransactionIdentifier`).
-2. The proof test must demonstrate idempotency by replaying the same evidence (same `provider_reference` + `event_kind`) with a different `correlation_id` and asserting `replay?: true` and no double-count.
-3. The guide walkthrough must include a callout: "Real provider adapters must use the provider's canonical transaction ID as `provider_reference`, not the device-generated `correlation_id`."
-4. `seen_event_keys` must be documented as a value the host populates from its database, not an in-memory accumulation inside the mock. Show a commented-out `Repo.all(from e in ReconciliationAttempt, select: e.event_key)` pattern in the example.
+- **Never use `<text>` elements in committed production SVGs.** The v9.0 plan already mandates this (wordmarks as path-only). This is the correct call.
+- Avoid any positioning technique that relies on `dominant-baseline`, `text-anchor`, or `alignment-baseline`.
+- Use only inline CSS or presentation attributes for styling (no `<style>` blocks referencing external sheets; GitHub strips external refs).
+- Dark mode in GitHub README: use GitHub's native picture element approach for `prefers-color-scheme` in Markdown:
+  ```markdown
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brandbook/logo-dark.svg">
+    <img src="brandbook/logo-light.svg" alt="Crosswake">
+  </picture>
+  ```
+  Do NOT rely on `@media (prefers-color-scheme: dark)` inside the SVG — it works in Chrome/Firefox but fails in Safari and does not respect GitHub's user-configured theme setting.
+- `currentColor` in SVGs referenced via `<img>` tags does not inherit from the parent DOM. Only works for inline SVGs, which GitHub does not render.
 
 **Warning signs:**
-- `MockStorefront` sets `provider_reference: evidence.correlation_id` or `provider_reference: intent.correlation_id`.
-- Proof test for replay uses the same `correlation_id` as the distinguishing variable instead of `provider_reference`.
-- `IdempotencyKey` in the proof output has `provider_reference` equal to a UUID that changes on every test run.
-- `seen_event_keys` in the example host is held in a module attribute or process-level ETS table rather than persisted to a database.
+- SVG has `<text>` elements with `dominant-baseline` or `alignment-baseline`
+- SVG uses `@media (prefers-color-scheme: dark)` for theming and is referenced via `<img>`
+- SVG uses `xlink:href` pointing to external URLs
 
 **Phase to address:**
-Phase implementing `MockStorefront` and the idempotency proof test. This must be in the same phase as the mock — not deferred. The existing phase21 replay test already covers the contract; the v3.4 mock must pass the same invariant.
+Phase 105 (HTML Brand Book) — the brand book itself is not GitHub-rendered, so more SVG features are available there. Phase 106 (Collateral/README) — apply strict sanitization-safe rules for README header SVGs.
 
 ---
 
-### Pitfall 7: Test Isolation Failures in the Example Host Proof Lane
+### Pitfall 7: Brand Assets Leaking Into Published Hex Package
 
 **What goes wrong:**
-Three concrete races documented in the Phase 30 post-mortem reappear when new example-host proof tests are added without the same isolation discipline:
-
-**7a. Parallel `Code.require_file` race.** Two `async: true` tests both call `Code.require_file` on the same example-host file at the top of their test module. The first call compiles and loads the file; the second call races on the first-load state and either raises a `CompileError` or silently succeeds with stale bytecode.
-
-**7b. Global-cwd `File.cd` race.** A new proof test uses `File.cd!(target, fn -> ... end)` to test the mock in an isolated temp directory (the same pattern used in `crosswake_doctor_test.exs`). If this test uses `async: true`, any other async test that reads `guides/commerce.md` via a compile-time `@guide_path = Path.join([File.cwd!(), "guides", "commerce.md"])` will resolve to the wrong path while the `File.cd!` call is active, causing `File.read!` failures.
-
-**7c. Module name collision.** New proof tests define inline `defmodule PaywallCorridorRouter` fixtures. If the module name matches an existing fixture module in another test file (the phase23 test already defines `PaywallCorridorRouter` and `PurchaseCorridorRouter` as inline modules), and both tests run in the same `mix test` invocation, Elixir raises a module-redefinition warning that becomes an error under `--warnings-as-errors`.
+`brandbook/` ships inside the published Hex package, bloating every downstream `deps/crosswake` installation with SVGs, the HTML brand book, and token artifacts that adopters have zero use for.
 
 **Why it happens:**
-Example-host tests reuse the `Code.require_file` pattern established in `phase21_reconciliation_example_test.exs`, but add it to new files that also define async tests. The isolation rules from Phase 30 are not written down as a policy; they live in test-file comments (`async: false — this test changes the global process working directory via File.cd!/2`). New contributors (or the planner) copy the pattern without the comment and without reading the prior post-mortem.
+The Hex `:files` default is path-based allowlisting, not denylisting. If `brandbook/` is added to the repo without explicitly excluding it, and the default `:files` list includes wildcards or the directory happens to fall under an included path, it gets packaged.
+
+**Concrete Hex mechanism:**
+The default `:files` list is `["lib", "priv", ".formatter.exs", "mix.exs", "README*", ...]`. A `brandbook/` directory at repo root is NOT in the default list, so it would be excluded by default — BUT only if `:files` is left as the default. If the project's `mix.exs` has customized `:files` to include `"*"` or a broad wildcard, `brandbook/` would be swept in.
 
 **How to avoid:**
-1. Any test file that calls `Code.require_file` on an example-host path must use `async: false`. Put the `Code.require_file` calls at module scope (top of file), not inside `setup` or test bodies.
-2. Any test file that uses `File.cd!/2` must use `async: false`. The `crosswake_doctor_test.exs` comment is the canonical rationale; copy it verbatim.
-3. Inline router fixture modules defined inside proof test files must use unique, test-file-scoped names. Convention: prefix with the phase number (`Phase34PaywallCorridorRouter`) to avoid collision with Phase 23's `PaywallCorridorRouter`.
-4. The new `phase34-proof.yml` merge-blocking step must include `--warnings-as-errors` (matching the existing pattern) so module-redefinition warnings surface as CI failures immediately.
-5. Compile-time `@guide_path` assignments (using `File.cwd!()` at module load time) are safe only if no concurrent test changes the cwd. Verify that any test defining `@guide_path` is either `async: false` or that it runs in a suite that does not include `File.cd!`-using tests.
+Add an explicit `:exclude_patterns` entry in `mix.exs` as a belt-and-suspenders guard regardless of `:files` configuration:
+
+```elixir
+defp package do
+  [
+    files: ["lib", "priv", ".formatter.exs", "mix.exs", "README.md", "LICENSE*", "CHANGELOG*"],
+    exclude_patterns: ["brandbook", "brandbook/*", ".planning", ".planning/**/*"]
+  ]
+end
+```
+
+Verify with `mix hex.build` and inspect the generated `.tar` to confirm `brandbook/` is absent before any release.
 
 **Warning signs:**
-- A new proof test file contains `Code.require_file` and `use ExUnit.Case, async: true` in the same file.
-- A new proof test defines a module named `PaywallCorridorRouter` without a phase-scoped prefix.
-- CI log shows `warning: redefining module PaywallCorridorRouter` followed by a test failure under `--warnings-as-errors`.
-- A `File.read!("guides/commerce.md")` fails with `no such file` in CI but passes locally (cwd contamination from a concurrent `File.cd!` test).
+- `mix hex.build` tarball size increases by more than ~50KB after brand assets are committed
+- `tar -tf crosswake-X.Y.Z.tar` output lists any `brandbook/` paths
 
 **Phase to address:**
-Phase writing the merge-blocking proof lane for the full paywall corridor. The isolation rules must be applied when the test file is first written — retrofit is painful. The `phase34-proof.yml` step must replicate the `--exclude requires_example_host` and `--warnings-as-errors` flags from existing proof workflows.
+Phase 106 (Collateral/Integration) — verify exclusion as part of the pre-release size-budget verification step. This is a one-time `mix.exs` configuration fix.
+
+---
+
+## Moderate Pitfalls
+
+### Pitfall 8: Optical Centering vs. Geometric Centering in Lockups
+
+**What goes wrong:**
+The logomark or typemark is mathematically centered in its bounding box but visually reads as sitting too low or too high. This is especially acute for marks with heavy visual weight at the top (uppercase-heavy wordmarks) or marks with prominent descenders.
+
+**Why it happens:**
+The human eye perceives the optical center of a shape as slightly above the geometric midpoint. Round and pointed shapes (like `o`, `c`, triangular marks) appear to sit above the baseline unless given a small overshoot downward. This is the same principle behind font overshoots.
+
+**How to avoid:**
+After geometric positioning, step back and evaluate whether the mark "feels" centered. For type-heavy lockups: nudge the wordmark 2-4% upward from geometric center. For logomark-plus-wordmark: the mark's visual weight should feel equal, not its bounding boxes equal. Reference how Google's Product Sans uses 2% over-sized circles for optical correctness.
+
+**Warning signs:**
+- Lockup looks correct in the vector editor at 100% zoom but slightly top-heavy when viewed as a thumbnail
+- The wordmark was placed using "align center to artboard" without visual review afterward
+
+**Phase to address:**
+Phase 104 (Refinement) — optical correction review is part of the post-selection polish pass.
+
+---
+
+### Pitfall 9: Token Naming Convention Churn and Premature Explosion
+
+**What goes wrong:**
+Token names are not settled before implementation begins. Mid-implementation someone renames `--cw-color-accent` to `--cw-accent-primary` to `--cw-color-primary-action`. Components reference stale token names, CSS variables produce silent failures (returns `initial`), and the token file has orphaned entries.
+
+**Why it happens:**
+Naming tokens is the most contentious part of a token system. Without documented conventions and a committed tier structure, names evolve organically and diverge across files. The DTCG spec's `$value` referencing between tiers means a rename ripples through the entire file.
+
+**How to avoid:**
+Decide and document the naming convention in Phase 102 before writing a single token:
+- Namespace: `crosswake.*` or `cw.*` (choose one, never mix)
+- Case: kebab-case throughout (the spec is case-sensitive and does not normalize)
+- Pattern: `[namespace].[tier].[category].[variant].[property]` — only include levels that add clarity
+- Semantic tier is the public contract; primitive tier is internal; no component token references a primitive directly
+
+Cap token count at v1.0: aim for ~30 semantic tokens and ~20 state tokens (hover, active, disabled, focus). Resist adding component-level tokens until a concrete reuse case exists.
+
+**Warning signs:**
+- Token file has more than 100 entries before any component has shipped
+- CSS file mixes `--color-blue-500` and `--color-accent-primary` for the same property
+- Token names include color values in the name (e.g., `--cw-warm-taupe-bg`)
+
+**Phase to address:**
+Phase 102 (Audit/Tokens) — naming decisions are the primary Phase 102 deliverable. Lock names before generating `tokens.css`.
+
+---
+
+### Pitfall 10: WCAG Contrast Failures With Muted Palettes
+
+**What goes wrong:**
+Muted, warm, or desaturated brand palettes concentrate tokens in the mid-tone range (relative luminance 0.15–0.55) where contrast failures cluster. A `#9e9e9e` neutral on white (#ffffff) produces a 2.85:1 ratio — failing the 4.5:1 AA requirement for normal text. Badge backgrounds using a pastel brand color with dark text frequently fail 3:1 non-text contrast.
+
+**Specific WCAG thresholds to build into the audit matrix (WCAG 2.1 AA):**
+- Normal text (< 18pt / < 14pt bold): **4.5:1 minimum**
+- Large text (≥ 18pt or ≥ 14pt bold): **3:1 minimum**
+- Non-text UI (icons, borders, badges conveying state, chart elements): **3:1 minimum**
+- Logotype/brand marks: **exempt from 1.4.3** but UI badges/status marks are NOT exempt
+- AAA text enhancement: 7:1 normal, 4.5:1 large
+
+**Why it happens:**
+Designers evaluate palette aesthetics on calibrated displays that may not surface the failure. Warm neutrals "feel" accessible because they read as visible, but the luminance math reveals failures. Mid-tone text (muted gray) on off-white backgrounds is the most common failure point.
+
+**How to avoid:**
+The Phase 102 audit requires a scripted WCAG contrast matrix of every palette pairing — this is the correct prevention. Build the script to use the WCAG 2.1 relative luminance formula (not approximate contrast tools). Flag every pairing below 4.5:1 for normal text use and below 3:1 for UI components. Establish approved token pairs (`text.muted on surface.default` passes at X:1) and document them in `BRAND-SPEC.md`.
+
+Specific guidance for muted palettes: secondary/muted text tokens must resolve to luminance values that produce at least 4.5:1 against the primary surface token. If the muted tone fails, darken it until it passes — preserve the hue, shift lightness.
+
+**Warning signs:**
+- Brand palette has several mid-range neutral tones without explicit approved-use pairings
+- The audit matrix script has not been run (don't defer this to Phase 105)
+- Badge colors use the same pastel hue for both background and border
+
+**Phase to address:**
+Phase 102 (Audit/Tokens) — scripted contrast matrix is a required deliverable. Phase 105 (HTML Brand Book) — the brand book must render each color swatch with its contrast ratio against default surface.
+
+---
+
+### Pitfall 11: x-Height / Cap-Height Mismatch in Lockups
+
+**What goes wrong:**
+The logomark height is sized to match the wordmark's cap-height but is optically oversized or undersized because the two shapes have different visual weight distributions. A square logomark aligned to cap-height will read as taller than the text because its visual mass extends to both extremes of the bounding box; a round mark aligned the same way reads as smaller.
+
+**Why it happens:**
+Different shape classes have different optical size relationships to cap-height. Text typographers solve this with overshoots; logo designers must apply the same logic manually.
+
+**How to avoid:**
+Size the logomark so that its visual midline matches the wordmark's visual midline, not their bounding boxes. For a round mark, this typically means sizing it to cap-height minus 8-12%. For a compact geometric mark, it may mean sizing to x-height plus optical padding. Test by squinting at the lockup — the mark and wordmark should feel the same visual weight.
+
+**Warning signs:**
+- Lockup was composed by aligning top edges of mark and wordmark bounding boxes
+- Different lockup sizes produce different apparent mark-to-wordmark weight relationships
+
+**Phase to address:**
+Phase 104 (Refinement) — lockup assembly is the Phase 104 deliverable. Check multiple scale sizes.
 
 ---
 
 ## Technical Debt Patterns
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| MockStorefront returns `EntitlementSnapshot` directly | Less wiring to implement | Bypasses non-authoritative-evidence guardrail; proof test validates wrong boundary | Never — the mock must return `ReconciliationEvidence` |
-| Single `:granted`/not-`:granted` LiveView branch | Simpler template | `:stale` and `:pending` render as paywall; adopters copy the wrong pattern | Never — all four `derived_state/1` branches are part of the proof contract |
-| Use `correlation_id` as `provider_reference` in mock | No UUID generation needed | Idempotency test proves wrong key; adopters copy correlation-id-based dedup | Never — `provider_reference` must be stable and provider-assigned |
-| Add new proof test to existing `phase23-proof.yml` step | One fewer workflow file | Phase 23 scope expands; hermeticity guard scans only its own file | Acceptable only if the new test is 100% hermetic (no `Code.require_file`, no example-host dependency) |
-| Write guide walkthrough before example code is final | Earlier docs review | Structural drift between guide and implementation; docs-contract test fails silently if locked assertions are too coarse | Never for code-referencing sections; acceptable for conceptual overview |
-| `async: true` with `Code.require_file` at test scope | Faster test suite | Parallel-compile race; intermittent CI failures | Never |
+|----------|------------------|----------------|-----------------|
+| Keep `<text>` elements in SVG (skip path conversion) | Faster authoring, easy edits | Breaks when font missing; GitHub sanitizer strips alignment attributes; text re-flows at unexpected sizes | Never for committed production SVGs |
+| Reference raw primitive tokens in components | Faster CSS authoring | Dark mode requires touching every component; palette shift causes global grep-replace | Never — always route through semantic tier |
+| Single lockup SVG without light/dark variants | One file to maintain | Looks wrong on GitHub dark-mode; invisible reversed on dark README | Never for README header |
+| Use stroke paths without outlining for production SVGs | Preserves editability | Inconsistent rendering across environments; weight collapses at small sizes | Acceptable for source files in `brandbook/src/` only; outlined versions are the production commits |
+| Skip monochrome versions at tournament stage | Faster tournament iteration | Winning concept may not survive monochrome; expensive to discover at Phase 104 | Never — require monochrome in Phase 103 |
+| Omit `:exclude_patterns` from mix.exs (relying on default `:files`) | Less mix.exs ceremony | One future `:files` edit could silently include `brandbook/`; no explicit audit trail | Never — be explicit |
 
 ---
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| `ReconciliationInbox.ingest_evidence/2` | Pass `authority_state:` as an opt to force a grant | `reject_direct_authority_override/1` already rejects `:authority_state` opts with `{:error, :authority_lane_mutation_forbidden}`; the mock must not attempt this | Return `ReconciliationEvidence` and let `ingest_evidence/2` produce `EvidenceResult` with `status: :awaiting_verification` |
-| `EntitlementProjection.project_snapshot/2` | Call with a snapshot whose `reconciliation.state` is `:pending_purchase` or `:awaiting_verification` expecting `:ok` | Returns `{:error, :unverified_reconciliation_outcome}` — only `:projection_refreshed`, `:verification_failed`, `:conflict`, `:stale_authority` are "verified" states | Mock must produce a snapshot with `reconciliation.state: :projection_refreshed` to pass the projection gate; the proof test must assert the gate fires correctly for unverified states |
-| `phase23-proof.yml` advisory lane | Add mock purchase test to `advisory-commerce-proof` job assuming it can block merge | `continue-on-error: true` means advisory failures never block merge; a test that must gate the PR belongs in the hermetic job | Route merge-blocking tests to the hermetic job; advisory job is for environment-sensitive placeholders only |
-| `guides/commerce.md` non-claims section | Add "MockStorefront ships a paywall UI" language | The non-claims test asserts `Storefront purchase UI is not shipped` — adding UI language breaks the lock | Mock proves the corridor contract, not the UI; guide must state explicitly that the paywall UI template is example-only |
-| `ReconciliationKeys.event_key/1` | Use `correlation_id` as a key component | `ReconciliationKeys` derives the key from `provider + provider_reference + event_kind` (stable, provider-assigned) | Mock must assign a stable `provider_reference` UUID and document that `correlation_id` is intentionally excluded |
+|-------------|----------------|-----------------|
+| opentype.js Y-axis | Passing `y=0` to `font.getPath()` — produces glyphs below the origin, renders invisible or at wrong baseline | Compute `y = font.ascender * (fontSize / font.unitsPerEm)` — matches the SVG coordinate origin |
+| opentype.js fill-rule | Exporting letterform paths and expecting CSS default `fill-rule="nonzero"` to render counters (e, o, a) correctly — produces solid filled letters | Set `fill-rule="evenodd"` on the path group; TTF outline winding direction expects evenodd semantics in SVG |
+| GitHub picture/source dark mode | Using `@media (prefers-color-scheme: dark)` inside an `<img>`-referenced SVG | Use GitHub's `<picture><source media="(prefers-color-scheme: dark)" srcset="...">` Markdown extension |
+| SVGO id removal | Running SVGO with `cleanupIds: true` on shared SVGs that use `<defs>` with referenced IDs | Set `cleanupIds: false` or use prefixed IDs; removing IDs breaks `url(#clip)` references |
+| Hex `:files` wildcard | Adding `"*"` or a broad directory pattern to `:files` in mix.exs to catch README, LICENSE etc. | List files explicitly; add `:exclude_patterns: ["brandbook", ".planning"]` as a guard |
+
+---
+
+## Performance Traps
+
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| Unoptimized SVG coordinate bloat | Brand book HTML loads slowly; SVG files are 50–300KB when they should be 2–10KB | Run SVGO with `floatPrecision: 2`, `multipass: true`, `removeViewBox: false`; verify output still renders correctly | Day 1 if generation pipeline has no SVGO step |
+| High-precision generative paths | opentype.js `getPath()` outputs 6-decimal coordinates; 1000-glyph wordmark produces 100KB+ path data | Round path coordinates to 2 decimal places post-generation; verify no visual regression at 4× zoom | Brand book HTML page feels sluggish |
+| Binary asset churn in git history | Repo clone time grows; contributors notice slow checkout | Keep `brandbook/src/` source files text-only (SVG); never commit rasterized PNGs >100KB; generate PNGs from SVG in CI if needed | After 3-4 rounds of tournament candidate replacement |
+
+---
+
+## Security Mistakes
+
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Committing font binary to repo | Possible OFL license edge-case for embedded binaries; repo size bloat | Space Grotesk is SIL OFL 1.1 — embedding is permitted; but prefer referencing opentype.js at build time and NOT committing the `.ttf`/`.woff2` binary to the repo; add to `.gitignore` |
+| SVG with inline `<script>` or event handlers | XSS vector if SVG ever rendered inline in a web context; GitHub strips them anyway | Path-only SVGs have no scripts — this pitfall is avoided by the design constraint |
+| External URL references in SVG `href` | GitHub Camo blocks them; also a privacy leak (third-party can track viewers) | All assets must be self-contained; no external font loads, no remote image refs |
+
+---
+
+## UX Pitfalls
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| Brand book over-specification | Nobody reads or maintains it; guidelines become stale and contradicted by actual product | Scope the HTML brand book to: color system, type scale, logo usage, spacing tokens, one-page voice guide with examples — not exhaustive rule catalogues |
+| Voice guide that lists adjectives without examples | "Be direct, be human, be curious" means nothing actionable to a contributor writing docs or error messages | Provide 3-4 before/after copy examples for each voice principle; skip adjectives that have no example |
+| Devtools brand clichés: hexagons, abstract nodes, circuit traces, gradient meshes | Brand reads as generic "tech startup from 2015"; loses memorability; undermines Crosswake's route-boundary differentiation story | The visual language should reflect what Crosswake actually does: explicit boundaries, clean separation, route ownership — think edges, gates, thresholds, not connectivity metaphors |
+| Subtitle text in the main lockup | Taglines in lockups become outdated, reduce mark versatility, and look amateur on small surfaces | No subtitle in the primary lockup; tagline lives in brand copy, not in the SVG mark |
+| README header too wide / too tall | On mobile GitHub views, an oversized header forces scroll before any project description | Cap SVG viewport to 400px wide, 80-100px tall for the primary README lockup |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **MockStorefront boundary:** Verify `MockStorefront` returns `ReconciliationEvidence`, not `EntitlementSnapshot`. Check that no `authority:` or `access:` field is set inside the mock module.
-- [ ] **Non-authoritative-evidence test:** Verify the proof lane includes a test asserting `Crosswake.Commerce.Reconciliation.outcome_implies_authority_grant?(attempt.status) == false` for mock-produced evidence.
-- [ ] **Four-state LiveView render:** Verify PaywallEntryLive has explicit branches for `:granted`, `:pending`, `:stale`, `:denied` — not just `:granted` vs everything else.
-- [ ] **Pending-to-granted transition:** Verify the proof test drives the `:pending_purchase` → `:awaiting_verification` → `:projection_refreshed` → LiveView re-render transition, not just the steady-state `:granted` case.
-- [ ] **Idempotency key source:** Verify `MockStorefront` uses a stable `provider_reference` UUID unrelated to `correlation_id`. Check the proof replay test uses `provider_reference` as the stable key.
-- [ ] **Guide walkthrough accuracy:** Verify module names, function arities, and struct field names in the guide walkthrough match the actual example-host implementation (run the docs-contract test against the final code, not the planning draft).
-- [ ] **Non-claims still intact:** Verify `guides/commerce.md` still carries all five non-claims (`StoreKit`, `Play Billing`, `Device-local authority`, `Offline purchase replay`, `Storefront purchase UI`) after the walkthrough is added.
-- [ ] **Hermetic proof lane:** Verify the new proof test file does not contain `Code.require_file` on example-host paths. Verify it runs clean under `mix test --exclude requires_example_host`.
-- [ ] **CI workflow:** Verify `phase34-proof.yml` (or equivalent) has the two-job split (hermetic merge-blocking + advisory placeholder) with `continue-on-error: true` on the advisory job and the 4-condition `promotion_path` comment.
-- [ ] **async: false:** Verify any test using `File.cd!/2` or `Code.require_file` on example-host files uses `async: false`.
-- [ ] **Module name uniqueness:** Verify inline fixture modules in the new proof test use phase-scoped names (e.g. `Phase34PaywallCorridorRouter`) to avoid collision with phase23 fixtures.
-- [ ] **Provider-vocabulary fence:** Verify the new proof test or an extended existing test scans `MockStorefront` source for provider token leakage (`storekit`, `play_billing`, `revenuecat`).
+- [ ] **Wordmark path conversion:** Rendered at 400% zoom and kerning pairs hand-reviewed — not just exported from opentype.js
+- [ ] **Token semantic layer:** `tokens.css` uses only semantic tier (`--cw-color-accent-primary`) in component rules — not `--cw-color-blue-500`
+- [ ] **Monochrome versions:** All production mark variants have positive, reversed, and single-color versions tested
+- [ ] **16px favicon:** Tested in an actual browser tab, not just in a vector editor at small zoom
+- [ ] **GitHub rendering:** README SVG renders correctly on `github.com` (not just local preview) — both light and dark themes
+- [ ] **WCAG matrix:** All text-on-surface token pairs confirmed passing; matrix script run, not eyeballed
+- [ ] **Hex exclusion:** `mix hex.build` tarball inspected — no `brandbook/` paths present
+- [ ] **SVG no-text check:** `grep -r '<text' brandbook/*.svg` returns empty
+- [ ] **No rectangular background:** All committed logomarks have no enclosing rectangle or square container element
+- [ ] **Stroke outlines:** Production SVGs have strokes converted to filled paths; source files with live strokes are in `brandbook/src/` only
+- [ ] **Size budget:** `du -sh brandbook/` is under 1MB as specified in v9.0 constraints
+
+---
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Generic marks discovered post-tournament | HIGH — requires re-running tournament | Return to Phase 103 concept brief; add explicit anti-requirements for the replacement candidates |
+| `<text>` elements found in committed SVGs | LOW | Run opentype.js conversion pass; re-export paths; re-commit; no release impact |
+| Token naming churn mid-implementation | MEDIUM | Enumerate all usages with `grep -r`; bulk rename in one commit; add comment header enforcing the naming contract |
+| `brandbook/` found in published package | LOW | Add `:exclude_patterns` to mix.exs; publish patch release; no user-facing behavior change |
+| WCAG failures discovered post-brand-book ship | MEDIUM | Update semantic token values only (primitives may not need to change); regenerate `tokens.css`; update brand book swatches |
+| Stroke-weight collapse at 16px found post-selection | MEDIUM | Outline strokes for production files; optionally create a simplified favicon-specific mark variant; no tournament re-run needed |
+| opentype.js Y-axis flip in path data | LOW | Fix `y` argument in generation script; regenerate paths; hand-review kerning again |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Mock grants entitlement authority directly | Phase implementing MockStorefront + EntitlementProjection wiring | Proof test: `outcome_implies_authority_grant? == false`; `project_snapshot` rejects `:pending_purchase` state |
-| Example drifts into billing engine | Phase writing MockStorefront | Provider-vocabulary fence test scans mock source; non-claims section still intact after guide update |
-| Docs-contract drift (guide vs. example code) | Phase updating `guides/commerce.md` (same phase as code, not after) | Extended `commerce_test.exs` assertions on walkthrough heading and module references |
-| Hermetic lane with hidden env dependency | Phase writing the proof lane CI workflow | Phase34-proof.yml hermetic job runs clean without example-host build; hermeticity guard test in merge-blocking lane |
-| Advisory/merge-blocking job confusion | Phase writing `phase34-proof.yml` | Advisory job has `continue-on-error: true`; promotion_path 4-condition comment present |
-| LiveView reflects only :granted/:not-granted | Phase implementing PaywallEntryLive | Proof test exercises all four `derived_state/1` values and asserts distinct render outcomes |
-| Pending-to-granted transition not proved | Same phase as LiveView | Proof test drives full `:pending_purchase` → `:projection_refreshed` → re-render sequence |
-| Idempotency key derived from correlation_id | Phase implementing MockStorefront | Replay proof test: same `provider_reference` + different `correlation_id` → `replay?: true` |
-| Seen-event-keys held in memory not DB | Phase implementing MockStorefront | `@moduledoc` and guide callout explicitly document persistence responsibility; proof test comment explains `seen_event_keys` source |
-| Parallel `Code.require_file` race | Phase writing example-host proof test | Test file uses `async: false`; `Code.require_file` at module scope |
-| Global `File.cd` race | Same phase | Test file uses `async: false`; comment mirrors `crosswake_doctor_test.exs` rationale |
-| Module name collision in test fixtures | Same phase | Fixture modules use `Phase34` prefix; `--warnings-as-errors` in CI catches redefinition |
+|---------|-----------------|--------------|
+| Generic marks / rectangular containers | Phase 103 | Anti-requirements checklist reviewed at candidate submission |
+| Stroke collapse at 16px | Phase 103 (gallery preview) + Phase 104 | Render test at 16px and 32px before finalizing |
+| Mark fails monochrome | Phase 103 | Monochrome render required alongside color in gallery |
+| Broken kerning / Y-axis flip after path conversion | Phase 102 (pipeline) + Phase 104 | 400% zoom review; fill-rule check; counters visually hollow |
+| Raw-color tokens without semantic layer | Phase 102 | `tokens.css` tier-separation audit; no primitive refs in component rules |
+| GitHub SVG sanitization (`<text>`, `dominant-baseline`) | Phase 105/106 | `grep '<text'` on committed SVGs; README render check on github.com |
+| Hex package brand asset leak | Phase 106 | `mix hex.build` tarball inspection before release |
+| WCAG contrast failures | Phase 102 | Scripted contrast matrix; all text pairs confirmed ≥ 4.5:1 |
+| Token naming churn | Phase 102 | Convention documented and frozen before `tokens.css` generated |
+| Optical centering errors | Phase 104 | Lockup review at multiple scales (thumbnail to large) |
+| x-height mismatch in lockup | Phase 104 | Squint test + multiple scale check |
+| Over-specified brand book | Phase 105 | Scope gate: brand book is limited to color, type, logo, spacing, voice-with-examples only |
+| Devtools clichés in mark design | Phase 103 | Concept brief must name explicitly forbidden shape families before generation |
 
 ---
 
 ## Sources
 
-- `lib/crosswake/commerce/contracts.ex` — `ReconciliationEvidence`, `EntitlementSnapshot` lane types, `authority_mutation_allowed_from_evidence?/1`, `outcome_implies_authority_grant?/1` (direct inspection)
-- `lib/crosswake/commerce/reconciliation.ex` — `IdempotencyKey` struct, `reject_direct_authority_override/1`, `ingest_evidence/2` authority guardrails (direct inspection)
-- `examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex` — `derived_state/1` four-state function, `ensure_verified_reconciliation/1` gate (direct inspection)
-- `examples/phoenix_host/lib/crosswake_example/commerce/reconciliation_inbox.ex` — `ingest_evidence/2`, `seen_event_key?/2`, idempotency pattern (direct inspection)
-- `test/crosswake/proof/phase23_commerce_support_proof_test.exs` — hermeticity guard pattern, `@forbidden_provider_tokens` fence, inline fixture module naming (direct inspection)
-- `test/crosswake/guides/commerce_test.exs` — non-claims lock, corridor role parity test, docs-contract patterns (direct inspection)
-- `test/mix/tasks/crosswake_doctor_test.exs` — `async: false` + `File.cd!/2` isolation pattern and rationale comment (direct inspection)
-- `test/crosswake/proof/phase21_reconciliation_example_test.exs` — `Code.require_file` at module scope, `async: false`, `:requires_example_host` tag, replay test shape (direct inspection)
-- `.github/workflows/phase23-proof.yml` — two-job split, `continue-on-error: true`, 4-condition `promotion_path`, hermetic job `if:` guard (direct inspection)
-- `.planning/STATE.md` — Phase 30 post-mortem: parallel-compile `require_file` race, global-cwd `File.cd` race (direct inspection)
-- `.planning/MILESTONE-ARC.md` — Locked guardrails: "Entitlement truth remains backend- and Phoenix-owned; device purchase events are not sufficient by themselves" (direct inspection)
-- `.planning/PROJECT.md` — ENTL-03, RECN-02, Key Decisions on hermetic/advisory split, docs-contract as merge-blocking (direct inspection)
-- `.planning/threads/commerce-archetype-proof.md` — v3.4 goal, MockStorefront design constraints, advisory→hermetic promotion criteria (direct inspection)
+- GitHub SVG sanitization — `dominant-baseline` removal confirmed: [SVG sanitizer is affecting SVG layout · github/markup#1160](https://github.com/github/markup/issues/1160)
+- GitHub dark mode SVG for READMEs: [Investigating dark mode for SVGs in GitHub READMEs — Dries Vints](https://driesvints.com/blog/investigating-dark-mode-for-svgs-in-github-readmes)
+- GitHub native dark-mode picture element approach: [HOWTO: Dark Mode README Logo on GitHub](https://paul.af/github-readme-dark-mode)
+- SVG `currentColor` limitations in `<img>`-referenced files: [SVGs in dark mode — Jeremy Keith](https://adactio.medium.com/svgs-in-dark-mode-565ec64004db)
+- WCAG 2.1 contrast thresholds (4.5:1 normal, 3:1 large text, 3:1 non-text): [Understanding SC 1.4.3: Contrast (Minimum) — W3C](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html)
+- WCAG 1.4.11 non-text contrast (3:1 UI components, graphical objects): [1.4.11 Non-Text Contrast — Deque University](https://dequeuniversity.com/resources/wcag2.1/1.4.11-non-text-contrast)
+- DTCG three-tier token architecture and naming pitfalls: [W3C DTCG design tokens: a practical guide — Taste Profile](https://tasteprofile.io/blog/w3c-dtcg-design-tokens-practical-guide)
+- Token naming conventions: [Design Token Naming Conventions — Always Twisted](https://www.alwaystwisted.com/articles/design-token-naming-conventions)
+- opentype.js Y-axis / kerning issues: [getPath kerning support · opentypejs/opentype.js#187](https://github.com/opentypejs/opentype.js/issues/187); [SVG y-Axis conversion · opentypejs/opentype.js#724](https://github.com/opentypejs/opentype.js/issues/724)
+- opentype.js cutout fill-rule: [Cutout subpaths · opentypejs/opentype.js#347](https://github.com/opentypejs/opentype.js/issues/347)
+- Hex package `:files` and `:exclude_patterns`: [mix hex.build — Hex docs](https://hex.hexdocs.pm/Mix.Tasks.Hex.Build.html)
+- SVG stroke vs outlined paths scaling: [Fills and strokes — MDN](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Fills_and_Strokes)
+- SVGO precision and viewBox pitfalls: [SVG Optimization for Web Performance — Vectosolve](https://vectosolve.com/blog/svg-optimization-web-performance-2025)
+- Optical corrections in logo design: [The Designer's Secret: Optical Adjustments in Logo Design — Logodesign.net](https://www.logodesign.net/blog/optical-adjustments-in-logo-design/)
+- Monochrome logo testing: [Logo Lab — data-driven logo testing](https://logolab.app/)
+- Devtools brand clichés (hexagons, gradients, nodes): [AI Branding: Sparkles, Gradients, Hexagons — Jason Pryslak / Medium](https://medium.com/@jpriceless/ai-branding-sparkles-gradients-hexagons-and-other-emerging-ai-logo-mark-patterns-12b4fd252709)
+- Space Grotesk license (SIL OFL 1.1, commercial embedding permitted): [Space Grotesk — Font Squirrel](https://www.fontsquirrel.com/license/spacegrotesk); [GitHub — floriankarsten/space-grotesk](https://github.com/floriankarsten/space-grotesk)
+- Mid-tone contrast failure patterns: [WebAIM Contrast and Color Accessibility](https://webaim.org/articles/contrast/)
 
 ---
-*Pitfalls research for: Crosswake v3.4 Commerce Archetype Proof — mocked paywall/subscription example in a contract-first backend-owned entitlement system*
-*Researched: 2026-05-29*
+*Pitfalls research for: v9.0 Brand System & Visual Identity — programmatic SVG logo generation, design tokens, WCAG, repo hygiene, brand book*
+*Researched: 2026-06-11*

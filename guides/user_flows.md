@@ -153,6 +153,21 @@ Imagine a claims app.
 Only the capture corridor goes native. The rest of the product keeps the simpler,
 safer ownership model.
 
+**Media evidence recovery proof**
+
+Crosswake also ships a hermetic Rindle proof lane for the recovery side of this job. The proof language is intentionally narrow:
+
+- `Capture recorded locally; media is not available yet`
+- `Upload failed during simulated network degradation`
+- `Evidence is queued for reconciliation`
+- `Network recovered. Reconciliation can retry`
+- `Device evidence recorded; backend verification still required`
+- `Backend verification in progress`
+- `Backend verified media is available`
+- `Backend rejected this media object`
+
+`This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`. The proof models queued evidence, Rindle reconciliation, projection, and backend verification. Host apps still choose their own persistence and storage architecture.
+
 **Degraded path**
 
 - If the required pack is missing or incompatible, activation fails with
@@ -249,6 +264,24 @@ Typical examples:
 - share a generated link or export
 - read app info
 - inspect notification permission status before showing setup guidance
+
+### Notification Re-Entry For A Phoenix-Owned Route
+
+Use this when a notification interaction should attempt to open a Phoenix-owned route without letting the notification become authority.
+
+Typical example: a SaaS approval route with `notification_open: [actions: ["tap", "approve"]]`, `auth_min_level: :mfa`, and `requires_recent_auth: 300`.
+
+Flow:
+
+1. Backend token binding and one-time open intent records are created by the host.
+2. A simulated notification-open event becomes `NotificationOpenEvidence`.
+3. Chimeway resolves the open intent against the manifest-known route and action allowlist.
+4. Notification open resolved through RouteGate.
+5. Sigra checks backend-projected session authority and recent authentication.
+6. Recent authentication required before opening this route returns a step-up denial and no fallback route is activated.
+7. Fresh backend MFA allows the Phoenix-owned route to activate.
+
+Token evidence is bound by the backend; possession does not grant access. APNs/FCM delivery is not part of this proof.
 
 ### Use Cached Read-Only
 

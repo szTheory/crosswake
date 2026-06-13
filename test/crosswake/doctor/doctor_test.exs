@@ -78,6 +78,10 @@ defmodule Crosswake.DoctorTest do
         cwd: target
       )
 
+    # Honest blocking posture: unverified shell proofs are :error (not :warning).
+    # status: :error means CI gates on doctor status will catch unverified hosts.
+    # The test MUST assert :error here — changing this to :ok would confirm
+    # the WR-04 posture regression rather than catch it.
     assert report.status == :error
     assert report.manifest != nil
     assert report.support.status == :verification_required
@@ -87,7 +91,7 @@ defmodule Crosswake.DoctorTest do
     assert report.shells.android.proof.status == :verification_required
     assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
-    assert report.support.release_policy.crosswake_version == "0.1.0"
+    assert report.support.release_policy.crosswake_version == Mix.Project.config()[:version]
     assert report.support.release_policy.manifest_schema_version == "1.0.0"
     assert report.support.release_policy.bridge_protocol_version == "1.0.0"
     assert report.support.release_policy.native_runtime_version == "1.0.0"
@@ -134,6 +138,31 @@ defmodule Crosswake.DoctorTest do
            )
   end
 
+  test "doctor reports status :error when a shell proof hook exits non-zero (:failed posture)",
+       %{target: target, install_manifest_path: install_manifest_path} do
+    # Compensating assertion: a :failed shell (exit_status 1) must produce status: :error.
+    # This locks the honest posture so a :failed shell can never silently pass doctor.
+    android_proof = write_proof_hook!(target, "android", 1, "android proof failed")
+
+    report =
+      Doctor.run(
+        route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+        install_manifest_path: install_manifest_path,
+        cwd: target,
+        check_native_tools?: true,
+        android_proof_hook_path: android_proof
+      )
+
+    assert report.status == :error,
+           "doctor must report status: :error when a shell proof hook fails (exits non-zero) — got: #{inspect(report.status)}"
+
+    assert Enum.any?(
+             report.findings,
+             &(&1.check == "proof_posture" and &1.code == "proof_hook_failed")
+           ),
+           "doctor must include a proof_hook_failed finding for a failing shell proof hook"
+  end
+
   test "doctor findings are structured and formatter output stays stable when proof hooks pass",
        %{
          target: target,
@@ -167,7 +196,7 @@ defmodule Crosswake.DoctorTest do
     assert human =~ "native_runtime_version=1.0.0"
     assert human =~ "Package versions alone do not determine support truth"
     assert human =~ "route unavailable=yes"
-    assert human =~ "bridge posture: crosswake.bridge@1.0.0"
+    assert human =~ "bridge posture: crosswake.bridge@1.1.0"
     assert human =~ "offline posture: supported"
     assert human =~ "queued_for_replay"
     assert human =~ "proof=supported"
@@ -1006,7 +1035,7 @@ defmodule Crosswake.DoctorTest do
       "WKWebView\nWKNavigationDelegate\nsame-origin\n"
     )
 
-    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\n")
+    write_file!(Path.join(ios_root, "CrosswakeShell/Info.plist"), "WKAppBoundDomains\nNSCameraUsageDescription\nNSPhotoLibraryUsageDescription\naps-environment\nNSPrivacyCollectedDataTypeDeviceID\ncom.apple.developer.associated-domains\n")
 
     write_file!(
       Path.join(ios_root, "CrosswakeShell/RouteUnavailableView.swift"),
@@ -1052,7 +1081,7 @@ defmodule Crosswake.DoctorTest do
 
     write_file!(
       Path.join(android_root, "app/src/main/AndroidManifest.xml"),
-      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\n"
+      "android.intent.category.BROWSABLE\nandroid.intent.action.VIEW\nPOST_NOTIFICATIONS\nandroid.permission.CAMERA\nandroid.permission.VIBRATE\n"
     )
 
     write_file!(
@@ -1099,5 +1128,120 @@ defmodule Crosswake.DoctorTest do
   defp write_file!(path, contents) do
     File.mkdir_p!(Path.dirname(path))
     File.write!(path, contents)
+  end
+
+  # Phase 65 — DIAG-04: unconditional :advisory doctor finding
+  describe "phase_65_diagnostic_export finding (DIAG-04)" do
+    test "run/1 includes exactly one finding with code diagnostic_export.contract_shipped",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+      assert length(matching) == 1
+    end
+
+    test "the diagnostic_export.contract_shipped finding has severity :advisory",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.severity == :advisory
+    end
+
+    test "the finding fires unconditionally — no notification routes in manifest",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      # Run with a manifest that has no notification routes; finding must still appear
+      # (unconditional — not gated on notification/manifest state, unlike phase_62)
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching = Enum.filter(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+      assert length(matching) == 1,
+             "diagnostic_export.contract_shipped must fire unconditionally regardless of notification routes"
+    end
+
+    test "the finding message does NOT contain the phrase 'crash-reporting service'",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      refute String.contains?(finding.message, "crash-reporting service"),
+             "doctor finding message must not contain 'crash-reporting service' (seam language lives in SupportMatrix posture)"
+    end
+
+    test "the finding details carry delivery_supported: false",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.details.delivery_supported == false
+    end
+
+    test "the finding details carry the 3-atom deferred list",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert :native_diagnostic_export in finding.details.deferred
+      assert :metrickit_capture in finding.details.deferred
+      assert :application_exit_info_capture in finding.details.deferred
+    end
+
+    test "the finding details carry authority_source: :host_configured_endpoint",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: Crosswake.TestSupport.RouterFixtures.ManagedRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      finding =
+        Enum.find(report.findings, &(&1.code == "diagnostic_export.contract_shipped"))
+
+      assert finding != nil
+      assert finding.details.authority_source == :host_configured_endpoint
+    end
   end
 end

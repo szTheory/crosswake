@@ -1,0 +1,47 @@
+# Crosswake Adoption Guide: Flashcard Demo App Architecture
+
+This guide details the architecture of the Flashcard Demo App and provides step-by-step instructions for adopting the Crosswake offline-sync architecture in your own projects.
+
+## Architecture Overview
+
+The demo app demonstrates the `Crosswake.Offline` island philosophy. It is built as a Language Learning / Flashcard app, intentionally chosen to rigorously stress-test offline scenarios and eventual consistency.
+
+### Key Components:
+
+1.  **Phoenix Host (Backend)**: Uses Ecto to manage the truth state of the application.
+2.  **Crosswake Native Shell (Frontend)**: standalone SPM/Maven dependencies injected into the iOS/Android apps.
+3.  **Sync Engine (Bridge)**: Intercepts mutations while offline and buffers them. Once the device reconnects, the Bridge replays the log (eventual consistency) and synchronizes with the Phoenix Host.
+
+## Adopting the Offline-Sync Architecture
+
+To implement this architecture in your own app, follow these steps:
+
+### 1. Integrate the Crosswake Shell
+
+Avoid generating host-owned shell code. Instead, rely on standalone dependencies to eliminate the "eject trap". Add the Crosswake dependencies to your native projects (SPM for iOS, Maven/Gradle for Android).
+
+### 2. Configure Offline Mutations
+
+Define which user interactions (e.g., answering a flashcard) can be performed offline. Route these actions through the Crosswake bridge:
+
+```javascript
+// Example: Recording an offline study session
+Crosswake.mutate({
+  type: 'study_card',
+  payload: { cardId: '123', result: 'correct' },
+  offlineCapable: true
+});
+```
+
+### 3. Handle Sync Reconnection
+
+Ensure your Phoenix host's endpoints can receive and validate batched offline payloads. The backend must enforce sync state validation post-reconnection to reject invalid operations (tampering mitigation).
+
+When the client reconnects:
+1.  The client transmits the offline mutation log.
+2.  The Ecto sync endpoint processes the log.
+3.  The client receives confirmation and updates its local state.
+
+### 4. End-to-End Verification
+
+Implement network-toggling E2E tests (like Playwright) in your CI/CD pipeline to simulate offline states and explicitly assert that your truth state is synchronized post-reconnect.

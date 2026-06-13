@@ -1261,6 +1261,9 @@ defmodule CrosswakeExample.Chimeway.Registry do
           intent.route_id != evidence.route_id ->
             {:error, :route_mismatch}
 
+          is_binary(intent.action_ref) and intent.action_ref != evidence.action_ref ->
+            {:error, :action_mismatch}
+
           true ->
             {:ok, :valid}
         end
@@ -1311,7 +1314,7 @@ defmodule CrosswakeExample.Chimeway.Registry do
       {:error, :binding, :revoked, _changes} ->
         {:ok, Contracts.new_open_resolution!(%{
           open_ref: evidence.open_ref,
-          state: :revoked,
+          state: :binding_revoked,
           resolved_at: now
         })}
 

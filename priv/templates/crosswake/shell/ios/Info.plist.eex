@@ -31,5 +31,6 @@
     <array>
         <string>example.com</string>
     </array>
+    <!-- For adding capabilities, see: https://docs.crosswake.dev/capabilities -->
 </dict>
 </plist>

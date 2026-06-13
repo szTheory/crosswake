@@ -2,123 +2,116 @@
 
 ## Milestones
 
-- ✅ **v1.0 Route-Policy Substrate** — Phases 1-5 shipped on 2026-05-17.
-- ✅ **v2.0 Adopter Stress Profiles** — Phases 6-10 shipped on 2026-05-19. Full archive: [v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
-- ✅ **v3.0 Capability Contract And Packaging** — Phases 11-14 shipped on 2026-05-20. Full archive: [v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md)
-- ✅ **v3.1 Native Capabilities and Bridge Expansion** — Phases 15-18 shipped on 2026-05-27. Full archive: [v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md)
-- ✅ **v3.2 Commerce And Entitlement Seams** — Phases 19-25 shipped on 2026-05-27. Full archive: [v3.2-ROADMAP.md](milestones/v3.2-ROADMAP.md)
-- ✅ **v3.3 Release Readiness** — Phases 26-32 shipped on 2026-05-29 (`crosswake 0.1.0` live on hex.pm). Full archive: [v3.3-ROADMAP.md](milestones/v3.3-ROADMAP.md)
-- ✅ **v3.4 Commerce Archetype Proof** — Phases 33-37 shipped on 2026-05-29. Full archive: [v3.4-ROADMAP.md](milestones/v3.4-ROADMAP.md)
-- ✅ **v3.5 First-Party Companions** — Phases 38-47 shipped on 2026-05-31. Full archive: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
-- ✅ **v3.6 Operator Truth and Production Diagnostics** — Phases 48-53 shipped on 2026-06-01. Full archive: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
-- ✅ **v3.7 Commerce Provider Adapters** — Phases 48 and 48.1 shipped on 2026-06-01. Full archive: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
-- ✅ **v3.8 Full Sigra Auth and Session Machinery** — Phases 54-58 shipped on 2026-06-02. Full archive: [v3.8-ROADMAP.md](milestones/v3.8-ROADMAP.md)
-- ✅ **v3.9 Chimeway Notification Seam** — Phases 59-63 shipped on 2026-06-03.
+- ✅ **v8.0 Offline Sync Hardening and UI Polish** — Phases 99-101 (shipped 2026-06-11)
+- 🚧 **v9.0 Brand System & Visual Identity** — Phases 102-106 (in progress)
 
 ## Phases
 
 <details>
-<summary>✅ v3.3 Release Readiness (Phases 26-32) — SHIPPED 2026-05-29</summary>
+<summary>✅ v8.0 Offline Sync Hardening and UI Polish (Phases 99-101) — SHIPPED 2026-06-11</summary>
 
-- [x] Phase 26: Package Metadata Audit (4/4 plans) — completed 2026-05-28
-- [x] Phase 27: Versioning Decision And CHANGELOG Synthesis (2/2 plans) — completed 2026-05-28
-- [x] Phase 28: release-please Configuration Files (1/1 plan) — completed 2026-05-28
-- [x] Phase 29: Release Workflows And Supply-Chain Hardening (1/1 plan) — completed 2026-05-28
-- [x] Phase 30: Hex Page Polish And Tarball Dry-Run (2/2 plans) — completed 2026-05-29
-- [x] Phase 31: First Hex Publish (Human-Gated) — completed 2026-05-29 (`crosswake 0.1.0` live)
-- [x] Phase 32: Post-Publish Cleanup — completed 2026-05-29
-
-Full phase details: [v3.3-ROADMAP.md](milestones/v3.3-ROADMAP.md)
+- [x] Phase 99: Real Network-Toggling E2E Tests (2/2 plans) — completed 2026-06-11
+- [x] Phase 100: Storage Budget Enforcement (2/2 plans) — completed 2026-06-11
+- [x] Phase 101: Offline UI Consolidation & Polish (2/2 plans) — completed 2026-06-11
 
 </details>
 
-<details>
-<summary>✅ v3.4 Commerce Archetype Proof (Phases 33-37) — SHIPPED 2026-05-29</summary>
+### 🚧 v9.0 Brand System & Visual Identity (In Progress)
 
-- [x] Phase 33: Corridor Routes And CI Infrastructure (2/2 plans) — completed 2026-05-29
-- [x] Phase 34: MockStorefront And Idempotency Invariants (2/2 plans) — completed 2026-05-29
-- [x] Phase 35: Reconciliation Wiring And Four-State LiveView (2/2 plans) — completed 2026-05-29
-- [x] Phase 36: Hermetic Proof Lane (1/1 plan) — completed 2026-05-29
-- [x] Phase 37: Guides Walkthrough And Docs-Contract Lock (1/1 plan) — completed 2026-05-29
+**Milestone Goal:** Pressure-test the existing brand book and ship the fully implemented brand system — audit, design tokens, user-selected logo, standalone HTML brand book, and collateral — self-contained in `brandbook/` (<1 MB committed, SVG/text-first).
 
-Full phase details: [v3.4-ROADMAP.md](milestones/v3.4-ROADMAP.md)
+- [x] **Phase 102: Brand Audit & Token Foundation** - Audit the brand book, run WCAG contrast matrix, freeze design tokens with user ratification (completed 2026-06-12)
+- [x] **Phase 103: Logo Tournament** - Seven-candidate HTML gallery with mandatory user direction-pick checkpoint (completed 2026-06-12)
+- [x] **Phase 104: Logo Refinement & Production Suite** - Three micro-variants, user sign-off, full path-only production SVG suite (completed 2026-06-12)
+- [x] **Phase 105: HTML Brand Book** - Standalone long-scroll index.html + BRAND-SPEC.md v1.0 (completed 2026-06-12)
+- [x] **Phase 106: Collateral, Integration & Closeout** - Collateral assets, README/ExDoc wiring, hex exclusion, advisory CI lane (completed 2026-06-12)
 
-</details>
+## Phase Details
 
-<details>
-<summary>✅ v3.5 First-Party Companions (Phases 38-47) — SHIPPED 2026-05-31</summary>
+### Phase 102: Brand Audit & Token Foundation
+**Goal**: Audit deliverable locks palette and typography verdicts before any token or logo work begins; design tokens are the audit's enforceable output; user ratifies font/color changes before downstream phases proceed
+**Depends on**: Nothing (first phase of v9.0)
+**Requirements**: AUDT-01, AUDT-02, AUDT-03, AUDT-04, TOKN-01, TOKN-02, TOKN-03
+**Success Criteria** (what must be TRUE):
+  1. `brandbook/AUDIT.md` exists with KEEP/TIGHTEN/REWORK/ADD/REMOVE verdicts for all 14 brand book sections, a stated cost on every REWORK, and a scripted WCAG contrast matrix classifying all color pairings against AA text (4.5:1) and non-text UI (3:1) thresholds
+  2. The audit explicitly flags the v8.0 generator-template blue/amber Tailwind vs. app.css teal/brass palette drift with an explicit verdict
+  3. User has ratified any audit-driven font or color changes (lightweight checkpoint) before Phase 103 begins
+  4. `brandbook/tokens/crosswake.tokens.json` exists in W3C DTCG 2025.10 format with three tiers (primitive → semantic → state), including Crosswake runtime-semantic tokens (`runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive`, `runtime.bridge`)
+  5. `brandbook/tokens/tokens.css` custom properties align with the JSON, contrast-annotated per pairing, and state tokens cover all 12 required states (default/hover/active/focus/disabled/selected/success/warning/error/info/subtle/muted)
+**Plans**: 4 plans
+- [x] 102-01-PLAN.md — Scaffold brandbook/ + .gitignore + AUDIT.md 14-section structure + WCAG contrast.mjs (AUDT-02 ground truth)
+- [x] 102-02-PLAN.md — Token foundation: crosswake.tokens.json (DTCG) + compile-tokens.js + generated tokens.css (TOKN-01/02/03)
+- [x] 102-03-PLAN.md — AUDIT.md §1-§7 + Appendix A contrast matrix + §5 AUDT-03 drift flag (AUDT-01/02/03)
+- [x] 102-04-PLAN.md — AUDIT.md §8-§14 + AUDT-04 ratification checkpoint (AUDT-01/04)
 
-- [x] Phase 38: Companion Seam Contract (2/2 plans) — completed 2026-05-30
-- [x] Phase 39: Route-Policy Gating DSL And Manifest Binding (2/2 plans) — completed 2026-05-30
-- [x] Phase 40: Runtime Gate Evaluation And Fail-Closed Denial (1/1 plan) — completed 2026-05-30
-- [x] Phase 41: Gating Doctor And Support-Matrix Truth (2/2 plans) — completed 2026-05-30
-- [x] Phase 42: Rulestead In-Tree Companion And Mock Example (2/2 plans) — completed 2026-05-30
-- [x] Phase 43: Rulestead Hermetic+Advisory Proof And Guide (2/2 plans) — completed 2026-05-30
-- [x] Phase 44: Rindle Media Seam Contracts And Reconciliation Vocabulary (2/2 plans) — completed 2026-05-31
-- [x] Phase 45: Rindle In-Tree Companion, Mock Example, And Proof (3/3 plans) — completed 2026-05-31
-- [x] Phase 46: Sigra Auth Contract-Only Slice (4/4 plans) — completed 2026-05-31
-- [x] Phase 47: Companion Arc Guide And Milestone Proof (2/2 plans) — completed 2026-05-31
+### Phase 103: Logo Tournament
+**Goal**: Seven logo candidates are presented at equal production fidelity in an HTML gallery; the phase ends only when the user has made an explicit direction selection (franken-picks allowed) — no refinement begins without this checkpoint
+**Depends on**: Phase 102
+**Requirements**: LOGO-01, LOGO-02, LOGO-03, LOGO-04
+**Success Criteria** (what must be TRUE):
+  1. Opening `brandbook/logo/tournament/index.html` from `file://` shows all 7 candidates (4 logomark concepts + 3 integrated typemarks) rendered as path-only SVGs at equal production fidelity
+  2. Each candidate is shown on foam/dark/white backgrounds, in monochrome, at 256px + 24px + 16px, with a browser-tab favicon mock, close-set horizontal and stacked lockups, per-candidate rationale + stated risk, and an equal-size lineup grid
+  3. No candidate has a rectangular container background; no main lockup carries a subtitle; logotype gap is approximately one stroke-width on all typemark candidates
+  4. User has made an explicit direction selection at the tournament checkpoint before Phase 104 begins (BLOCKING CHECKPOINT — Phase 104 does not start without selection confirmation)
+**Plans**: 4 plans
+  - [x] 103-01-PLAN.md — Wordmark toolchain (opentype.js, fetch-fonts, gen-wordmark) + hand-cut wordmark + check-candidates validator
+  - [x] 103-02-PLAN.md — Logomark candidates A–D + horizontal & stacked lockups
+  - [x] 103-03-PLAN.md — Integrated typemark candidates E–G
+  - [x] 103-04-PLAN.md — Tournament gallery (index.html) + LOGO-04 blocking selection checkpoint
+**UI hint**: yes
 
-Full phase details: [v3.5-ROADMAP.md](milestones/v3.5-ROADMAP.md)
+### Phase 104: Logo Refinement & Production Suite
+**Goal**: The tournament winner goes through three micro-variants with user sign-off, then the full path-only production SVG suite ships including all lockup variants and a 16-grid favicon
+**Depends on**: Phase 103 (requires user tournament selection)
+**Requirements**: LOGO-05, LOGO-06, LOGO-07
+**Success Criteria** (what must be TRUE):
+  1. Three micro-variants of the selected tournament direction exist and user has given explicit sign-off before the production suite is built (BLOCKING CHECKPOINT — production suite does not begin without sign-off)
+  2. Production suite contains path-only SVGs for: mark (light/dark/mono/signal colorway), horizontal lockup (light/dark), stacked lockup (light/dark), subtitle variant, and typemark — no `<text>` elements, no rectangular container backgrounds, correct fill rules
+  3. A dedicated 16-grid `favicon.svg` exists with strokes outlined to filled paths, verified to render legibly at 16px
+  4. Wordmark path data was generated via opentype.js 2.0.0 with the correct Y-baseline and `fill-rule="evenodd"` applied; the provenance script is committed in `brandbook/tools/`; font binaries and `node_modules/` are gitignored
+**Plans**: 3 plans
+  - [x] 104-01-PLAN.md — Micro-variant refinement: 3 single-axis variants + file:// color-reveal page (4 colorways) + render-verify + production validator
+  - [x] 104-02-PLAN.md — LOGO-05 blocking sign-off checkpoint (user picks V1/V2/V3)
+  - [x] 104-03-PLAN.md — Production suite: 8 path-only SVGs (mark/mono/typemark/lockups/subtitle/favicon) + LOGO-07 regen + size budget
 
-</details>
+### Phase 105: HTML Brand Book
+**Goal**: A standalone long-scroll HTML brand book and the authoritative BRAND-SPEC.md v1.0 ship with all brand elements assembled and no build step required
+**Depends on**: Phase 104
+**Requirements**: BOOK-01, BOOK-02, BOOK-03
+**Success Criteria** (what must be TRUE):
+  1. Opening `brandbook/index.html` from `file://` renders the full brand book without errors, loads fonts via Google Fonts CDN (with full system fallbacks), and requires zero build steps
+  2. The brand book contains all required sections: cover hero, brand essence, logo system with misuse examples, color with live contrast badges + copy-hex, typography specimens + scale, tokens, motifs rendered live, voice/microcopy do-don't tables, UI specimens built from `tokens.css`, and an asset index
+  3. `brandbook/BRAND-SPEC.md` v1.0 exists as the audited successor to the `prompts/` draft, documenting the ratified palette, type scale, token naming convention, and logo usage rules
+**Plans**: 3 plans
+Plans:
+- [x] 105-01-PLAN.md — Budget trim + page scaffold (brandbook.css/js + index.html shell + dark hero)
+- [x] 105-02-PLAN.md — Fill sections 2-10 (logo/misuse, live color badges, typography, tokens, motifs, voice, UI specimens, asset index)
+- [x] 105-03-PLAN.md — BRAND-SPEC.md v1.0 (audited successor, all AUDIT verdicts applied) + phase self-check
+**UI hint**: yes
 
-<details>
-<summary>✅ v3.6 Operator Truth and Production Diagnostics (Phases 48-53) — SHIPPED 2026-06-01</summary>
+### Phase 106: Collateral, Integration & Closeout
+**Goal**: All collateral assets ship, README and ExDoc are wired to the production mark, hex tarball exclusion is verified, and an advisory CI lane enforces size budget and asset validity
+**Depends on**: Phase 105
+**Requirements**: COLL-01, COLL-02, COLL-03, COLL-04
+**Success Criteria** (what must be TRUE):
+  1. Collateral set is complete: `readme-header.svg` (light + dark, path-only), `social-card.svg` + `social-card.png` (1200×630, <300 KB), `favicon-32.png`, and `apple-touch-icon.png` (180px) all exist in `brandbook/collateral/`
+  2. README header image uses an absolute `raw.githubusercontent.com` URL with GitHub `<picture>` dark-mode handling; ExDoc `logo:` key in `mix.exs` points to the committed production mark
+  3. Running `mix hex.build` produces a tarball that does not contain any `brandbook/` files; `:exclude_patterns` belt-and-suspenders is in place in `mix.exs`
+  4. `brandbook/` total committed size is verified < 1 MB; `.gitignore` additions cover `brandbook/tools/node_modules/` and `brandbook/tools/fonts/`; advisory CI lane (`brandbook-verify.yml`) passes checks for size budget, SVG validity, and token JSON validity
+**Plans**: 2 plans
+Plans:
+- [x] 106-01-PLAN.md — Collateral assets: README hero SVGs (light/dark), social card SVG+PNG, favicon rasters (COLL-01)
+- [x] 106-02-PLAN.md — Integration + CI + closeout: README picture header, ExDoc logo + hex exclude, advisory brandbook-verify lane, size gate (COLL-02/03/04)
 
-- [x] Phase 48: Strategic Signal and Milestone Memory (3/3 plans) — completed 2026-05-31
-- [x] Phase 49: Operator Inspection Contract (2/2 plans) — completed 2026-05-31
-- [x] Phase 50: Doctor Publish and Readiness Checks (2/2 plans) — completed 2026-06-01
-- [x] Phase 51: Support Matrix and Native Rebuild Truth (3/3 plans) — completed 2026-06-01
-- [x] Phase 52: Operator Proof and Docs-Contract Locks (2/2 plans) — completed 2026-06-01
-- [x] Phase 53: Release Continuity and Closeout Hardening (3/3 plans) — completed 2026-06-01
+## Progress
 
-Full phase details: [v3.6-ROADMAP.md](milestones/v3.6-ROADMAP.md)
-
-</details>
-
-<details>
-<summary>✅ v3.7 Commerce Provider Adapters (Phases 48 and 48.1) — SHIPPED 2026-06-01</summary>
-
-- [x] Phase 48: Commerce Provider Adapter Context (6/6 plans) — completed 2026-06-01
-- [x] Phase 48.1: Close gap: ADPT-01/ADPT-02 provider facade paywall swap-target contract (1/1 plan) — completed 2026-06-01
-
-Full phase details: [v3.7-ROADMAP.md](milestones/v3.7-ROADMAP.md)
-Phase archive: [v3.7-phases/](milestones/v3.7-phases/)
-
-</details>
-
-<details>
-<summary>✅ v3.8 Full Sigra Auth and Session Machinery (Phases 54-58) — SHIPPED 2026-06-02</summary>
-
-- [x] Phase 54: Sigra Session Authority Contract And Route-Gate Semantics (5/5 plans) — completed 2026-06-02
-- [x] Phase 55: Session Handoff Tickets And Authority Projection (3/3 plans) — completed 2026-06-02
-- [x] Phase 56: Step-Up Intent And Plug/LiveView Ceremony (4/4 plans) — completed 2026-06-02
-- [x] Phase 57: OAuth, Passkey, And Native Return Boundaries (4/4 plans) — completed 2026-06-02
-- [x] Phase 58: Auth Diagnostics, Proof, And Security Closeout (3/3 plans) — completed 2026-06-02
-
-Full phase details: [v3.8-ROADMAP.md](milestones/v3.8-ROADMAP.md)
-Requirement archive: [v3.8-REQUIREMENTS.md](milestones/v3.8-REQUIREMENTS.md)
-Milestone audit: [v3.8-MILESTONE-AUDIT.md](milestones/v3.8-MILESTONE-AUDIT.md)
-Phase archive: [v3.8-phases/](milestones/v3.8-phases/)
-
-</details>
-
-<details>
-<summary>✅ v3.9 Chimeway Notification Seam (Phases 59-63) — SHIPPED 2026-06-03</summary>
-
-- [x] Phase 59: Chimeway Contract And Token Binding Semantics (3/3 plans) — completed 2026-06-02
-- [x] Phase 60: Example Host Registry And Phoenix Wiring (3/3 plans) — completed 2026-06-02
-- [x] Phase 61: Notification-Open Resolver And Route Policy (4/4 plans) — completed 2026-06-03
-- [x] Phase 62: Diagnostics, Support Truth, And Docs (4/4 plans) — completed 2026-06-03
-- [x] Phase 63: Hermetic Proof And Advisory Promotion Criteria (3/3 plans) — completed 2026-06-03
-
-Full phase details: [v3.9-ROADMAP.md](milestones/v3.9-ROADMAP.md)
-Requirement archive: [v3.9-REQUIREMENTS.md](milestones/v3.9-REQUIREMENTS.md)
-Closeout contract: [v3.9-CLOSEOUT.md](milestones/v3.9-CLOSEOUT.md)
-Phase archive: [v3.9-phases/](milestones/v3.9-phases/)
-</details>
-
-## Next
-
-v3.9 Chimeway Notification Seam is complete. Future work will be initialized in the next milestone.
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 99. Real Network-Toggling E2E Tests | v8.0 | 2/2 | Complete | 2026-06-11 |
+| 100. Storage Budget Enforcement | v8.0 | 2/2 | Complete | 2026-06-11 |
+| 101. Offline UI Consolidation & Polish | v8.0 | 2/2 | Complete | 2026-06-11 |
+| 102. Brand Audit & Token Foundation | v9.0 | 4/4 | Complete   | 2026-06-12 |
+| 103. Logo Tournament | v9.0 | 4/4 | Complete   | 2026-06-12 |
+| 104. Logo Refinement & Production Suite | v9.0 | 3/3 | Complete   | 2026-06-12 |
+| 105. HTML Brand Book | v9.0 | 3/3 | Complete   | 2026-06-12 |
+| 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete   | 2026-06-12 |

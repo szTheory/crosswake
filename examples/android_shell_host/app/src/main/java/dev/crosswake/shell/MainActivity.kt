@@ -3,105 +3,301 @@ package dev.crosswake.shell
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import dev.crosswake.shell.NativeCaptureActivity
+import dev.crosswake.shell.core.*
 import dev.crosswake.shell.packs.RequiredPackActivity
 
+class NavigationRouteDelegate : RouteDelegate {
+    override val registeredRoutes: List<String> = listOf("selective-native-claim-capture")
+
+    override fun isRouteRegistered(routeID: String): Boolean {
+        return registeredRoutes.contains(routeID)
+    }
+}
+
 class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
-    private lateinit var activationCoordinator: ActivationCoordinator
+    lateinit var shell: CrosswakeShell
     private var filePickerCoordinator: FilePickerCoordinator? = null
-    private var unavailableDialog: AlertDialog? = null
+    private val routeDelegate = NavigationRouteDelegate()
+
     private val requiredPackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        activationCoordinator = ActivationCoordinator.bundled(this)
-        render(
-            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
-            preserveCurrentRoute = false
-        )
+        shell.handleIntent(intent)
     }
+
     private val nativeCaptureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        activationCoordinator = ActivationCoordinator.bundled(this)
-        render(
-            activationCoordinator.handleIntent(intent, fallbackSource = ActivationSource.COLD_START),
-            preserveCurrentRoute = false
-        )
+        shell.handleIntent(intent)
     }
+
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         filePickerCoordinator?.consumeResult(result.resultCode, result.data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        activationCoordinator = ActivationCoordinator.bundled(this)
+        
+        val config = CrosswakeShellConfig(
+            appInfoDelegate = object : AppInfoDelegate {
+                override fun getAppInfo(): Map<String, String> {
+                    val packageManager = packageManager
+                    val packageInfo = packageManager.getPackageInfo(packageName, 0)
+                    return mapOf(
+                        "version" to (packageInfo.versionName ?: ""),
+                        "build" to if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                            packageInfo.longVersionCode.toString()
+                        } else {
+                            packageInfo.versionCode.toString()
+                        },
+                        "bundle_id" to packageName
+                    )
+                }
+            },
+            hapticsDelegate = object : HapticsDelegate {
+                override fun impact(style: String) {
+                    val feedbackConstant = when (style) {
+                        "heavy" -> android.view.HapticFeedbackConstants.LONG_PRESS
+                        "light" -> android.view.HapticFeedbackConstants.KEYBOARD_TAP
+                        else -> android.view.HapticFeedbackConstants.VIRTUAL_KEY
+                    }
+                    window.decorView.performHapticFeedback(feedbackConstant)
+                }
+            },
+            permissionStatusDelegate = object : PermissionStatusDelegate {
+                override fun getStatus(alias: String): Map<String, String>? {
+                    return PermissionStatusProvider(this@MainActivity).statusPayload(alias)
+                }
+            },
+            notificationTokenDelegate = object : NotificationTokenDelegate {
+                override fun fetch(): NotificationTokenDelegate.Result {
+                    return NotificationTokenProvider(this@MainActivity).fetch()
+                }
+            },
+            shareDelegate = object : ShareDelegate {
+                override fun invoke(payload: Map<String, String>) {
+                    val title = payload["title"] ?: ""
+                    val text = payload["text"]
+                    val url = payload["url"]
+                    val combinedText = listOfNotNull(text, url).joinToString("\n")
+
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TITLE, title)
+                        putExtra(Intent.EXTRA_TEXT, combinedText)
+                    }
+                    startActivity(Intent.createChooser(sendIntent, title))
+                }
+            },
+            filesPickDelegate = object : FilesPickDelegate {
+                override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+                    val coordinator = filePickerCoordinator
+                        ?: return FilesPickResult.Denied(
+                            reason = "undeclared_capability",
+                            message = "This route does not declare the requested transfer seam.",
+                            hint = "Retry only after mounting a LiveView session with a manifest-declared native_picker transfer."
+                        )
+
+                    return coordinator.pick(payload, correlationId)
+                }
+            },
+            routeDelegate = routeDelegate
+        )
+
+        shell = CrosswakeShell(this, config)
+
+        DiagnosticExportManager.start(this, "https://api.example.com/diagnostics/export", "0.1.0")
+
+        setContent {
+            MaterialTheme {
+                val state by shell.state.collectAsState()
+                val connectionState by shell.connectionState.collectAsState()
+                val snackbarHostState = remember { SnackbarHostState() }
+
+                LaunchedEffect(shell.serverEvents) {
+                    shell.serverEvents.collect { event ->
+                        val message = event.payload["message"] ?: "Event: ${event.name}"
+                        snackbarHostState.showSnackbar(message)
+                    }
+                }
+
+                Scaffold(
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
+                ) { innerPadding ->
+                    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                        if (connectionState != ConnectionState.Connected) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Status: ${connectionState.name}",
+                                    modifier = Modifier.padding(8.dp),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            RenderPresentation(state)
+                        }
+                    }
+                }
+            }
+        }
 
         if (savedInstanceState == null) {
-            render(activationCoordinator.bootstrapIfNeeded(intent), preserveCurrentRoute = false)
+            shell.bootstrap(intent)
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        render(activationCoordinator.handleIntent(intent), preserveCurrentRoute = false)
+        shell.handleIntent(intent)
     }
 
     override fun allowNavigation(url: String): Boolean {
-        return when (val decision = activationCoordinator.resolveNavigation(url)) {
+        return when (val decision = shell.resolveNavigation(url)) {
             NavigationDecision.Allow -> true
             is NavigationDecision.Deny -> {
-                render(ShellPresentation.Denied(decision.denial), preserveCurrentRoute = true)
                 false
             }
         }
     }
 
     override fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult {
-        val coordinator = filePickerCoordinator
-            ?: return FilesPickResult.Denied(
-                reason = "undeclared_capability",
-                message = "This route does not declare the requested transfer seam.",
-                hint = "Retry only after mounting a LiveView session with a manifest-declared native_picker transfer."
-            )
-
-        return coordinator.pick(payload, correlationId)
+        return shell.config.filesPickDelegate?.pick(payload, correlationId) ?: FilesPickResult.Denied("unavailable", "unavailable", "unavailable")
     }
 
-    private fun render(presentation: ShellPresentation, preserveCurrentRoute: Boolean) {
+    @Composable
+    private fun RenderPresentation(presentation: ShellPresentation) {
         when (presentation) {
-            ShellPresentation.Booting -> showUnavailableSurface(
-                RouteDenialPresentation(
-                    reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
-                    title = "Shell boot blocked",
-                    message = "Crosswake could not resolve a manifest-first activation request.",
-                    hint = "Retry after confirming bundled fixtures are present.",
-                    routeId = null,
-                    actions = listOf(RouteUnavailableAction.RETRY),
-                    safeFallbackUrl = null
-                ),
-                preserveCurrentRoute = false
-            )
+            is ShellPresentation.Booting -> {
+                RouteUnavailableScreen(
+                    RouteDenialPresentation(
+                        reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
+                        title = "Shell boot blocked",
+                        message = "Crosswake could not resolve a manifest-first activation request.",
+                        hint = "Retry after confirming bundled fixtures are present.",
+                        routeId = null,
+                        actions = listOf(RouteUnavailableAction.RETRY),
+                        safeFallbackUrl = null
+                    )
+                )
+            }
+            is ShellPresentation.RequiredPack -> {
+                LaunchedEffect(presentation) {
+                    showRequiredPack(presentation.requiredPack)
+                }
+            }
+            is ShellPresentation.NativeCapture -> {
+                LaunchedEffect(presentation) {
+                    showNativeCapture(presentation.nativeCapture)
+                }
+            }
+            is ShellPresentation.Denied -> {
+                RouteUnavailableScreen(presentation.denial)
+            }
+            is ShellPresentation.LiveView -> {
+                LiveViewScreen(presentation.session)
+            }
+        }
+    }
 
-            is ShellPresentation.RequiredPack -> showRequiredPack(presentation.requiredPack)
-            is ShellPresentation.NativeCapture -> showNativeCapture(presentation.nativeCapture)
-            is ShellPresentation.Denied -> showUnavailableSurface(presentation.denial, preserveCurrentRoute)
-            is ShellPresentation.LiveView -> showLiveView(presentation.session)
+    @Composable
+    private fun RouteUnavailableScreen(denial: RouteDenialPresentation) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = denial.title, style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = denial.message, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Reason: ${denial.reason.wireValue}", style = MaterialTheme.typography.bodyMedium)
+            
+            denial.hint?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = it, style = MaterialTheme.typography.bodySmall)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            if (RouteUnavailableAction.RETRY in denial.actions) {
+                Button(onClick = { shell.retry() }) {
+                    Text("Retry")
+                }
+            }
+            if (RouteUnavailableAction.UPDATE_APP in denial.actions) {
+                Button(onClick = { openUpdateApp() }) {
+                    Text("Update App")
+                }
+            }
+            if (RouteUnavailableAction.SAFE_FALLBACK in denial.actions && denial.safeFallbackUrl != null) {
+                Button(onClick = {
+                    shell.handleIntent(Intent(Intent.ACTION_VIEW, Uri.parse(denial.safeFallbackUrl)))
+                }) {
+                    Text("Open Fallback")
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun LiveViewScreen(session: LiveViewSession) {
+        AndroidView(
+            factory = { context ->
+                val frame = FrameLayout(context).apply {
+                    id = CONTAINER_ID
+                    ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+                        val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                        view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+                        insets
+                    }
+                }
+                
+                val fragmentManager = (context as AppCompatActivity).supportFragmentManager
+                val existing = fragmentManager.findFragmentByTag(LiveViewFragment.TAG) as? LiveViewFragment
+                if (existing?.represents(session) != true) {
+                    fragmentManager.beginTransaction()
+                        .replace(CONTAINER_ID, LiveViewFragment.newInstance(session), LiveViewFragment.TAG)
+                        .commitAllowingStateLoss()
+                }
+                
+                frame
+            },
+            update = { frame ->
+                val fragmentManager = (frame.context as AppCompatActivity).supportFragmentManager
+                val existing = fragmentManager.findFragmentByTag(LiveViewFragment.TAG) as? LiveViewFragment
+                if (existing?.represents(session) != true) {
+                    fragmentManager.beginTransaction()
+                        .replace(CONTAINER_ID, LiveViewFragment.newInstance(session), LiveViewFragment.TAG)
+                        .commitAllowingStateLoss()
+                }
+            }
+        )
+
+        DisposableEffect(session) {
+            filePickerCoordinator = shell.currentTransferCoordinator?.let { transferCoordinator ->
+                FilePickerCoordinator(
+                    context = this@MainActivity,
+                    transferCoordinator = transferCoordinator,
+                    launchPicker = filePickerLauncher::launch
+                )
+            }
+            onDispose {
+                filePickerCoordinator = null
+            }
         }
     }
 
     private fun showRequiredPack(requiredPack: RequiredPackPresentation) {
         filePickerCoordinator = null
-        unavailableDialog?.dismiss()
-        unavailableDialog = null
         requiredPackLauncher.launch(
             RequiredPackActivity.intent(
                 context = this,
@@ -114,8 +310,6 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
 
     private fun showNativeCapture(nativeCapture: NativeCapturePresentation) {
         filePickerCoordinator = null
-        unavailableDialog?.dismiss()
-        unavailableDialog = null
         nativeCaptureLauncher.launch(
             NativeCaptureActivity.intent(
                 context = this,
@@ -125,115 +319,6 @@ class MainActivity : AppCompatActivity(), LiveViewFragment.Host {
                 transferId = nativeCapture.transferId
             )
         )
-    }
-
-    private fun showLiveView(session: LiveViewSession) {
-        unavailableDialog?.dismiss()
-        unavailableDialog = null
-        filePickerCoordinator =
-            activationCoordinator.currentTransferCoordinator?.let { transferCoordinator ->
-                FilePickerCoordinator(
-                    context = this,
-                    transferCoordinator = transferCoordinator,
-                    launchPicker = filePickerLauncher::launch
-                )
-            }
-
-        val container = FrameLayout(this).apply {
-            id = CONTAINER_ID
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
-
-        setContentView(container)
-
-        val existing = supportFragmentManager.findFragmentByTag(LiveViewFragment.TAG) as? LiveViewFragment
-        if (existing?.represents(session) == true) {
-            return
-        }
-
-        supportFragmentManager
-            .beginTransaction()
-            .replace(CONTAINER_ID, LiveViewFragment.newInstance(session), LiveViewFragment.TAG)
-            .commitNowAllowingStateLoss()
-    }
-
-    private fun showUnavailableSurface(denial: RouteDenialPresentation, preserveCurrentRoute: Boolean) {
-        filePickerCoordinator = null
-        if (preserveCurrentRoute && supportFragmentManager.findFragmentByTag(LiveViewFragment.TAG) != null) {
-            showUnavailableDialog(denial)
-            return
-        }
-
-        unavailableDialog?.dismiss()
-        unavailableDialog = null
-
-        val root = layoutInflater.inflate(R.layout.activity_route_unavailable, null)
-        bindUnavailableView(root, denial)
-        setContentView(root)
-    }
-
-    private fun showUnavailableDialog(denial: RouteDenialPresentation) {
-        unavailableDialog?.dismiss()
-
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.activity_route_unavailable, null)
-        bindUnavailableView(dialogView, denial)
-
-        unavailableDialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
-            .also { it.show() }
-    }
-
-    private fun bindUnavailableView(root: View, denial: RouteDenialPresentation) {
-        root.findViewById<TextView>(R.id.route_unavailable_title).text = denial.title
-        root.findViewById<TextView>(R.id.route_unavailable_message).text = denial.message
-        root.findViewById<TextView>(R.id.route_unavailable_reason).text = denial.reason.wireValue
-
-        val hint = root.findViewById<TextView>(R.id.route_unavailable_hint)
-        hint.text = denial.hint
-        hint.visibility = if (denial.hint.isNullOrBlank()) View.GONE else View.VISIBLE
-
-        val routeId = root.findViewById<TextView>(R.id.route_unavailable_route_id)
-        routeId.text = denial.routeId?.let { "Route: $it" }
-        routeId.visibility = if (denial.routeId.isNullOrBlank()) View.GONE else View.VISIBLE
-
-        val retry = root.findViewById<Button>(R.id.route_unavailable_retry)
-        val update = root.findViewById<Button>(R.id.route_unavailable_update)
-        val safeFallback = root.findViewById<Button>(R.id.route_unavailable_safe_fallback)
-
-        bindActionButton(retry, RouteUnavailableAction.RETRY in denial.actions) {
-            render(activationCoordinator.retry(), preserveCurrentRoute = false)
-        }
-
-        bindActionButton(update, RouteUnavailableAction.UPDATE_APP in denial.actions) {
-            openUpdateApp()
-        }
-
-        bindActionButton(
-            safeFallback,
-            RouteUnavailableAction.SAFE_FALLBACK in denial.actions && denial.safeFallbackUrl != null
-        ) {
-            val safeUrl = denial.safeFallbackUrl ?: return@bindActionButton
-            render(
-                activationCoordinator.handleIntent(
-                    Intent(Intent.ACTION_VIEW, Uri.parse(safeUrl)),
-                    fallbackSource = ActivationSource.IN_APP_NAVIGATION
-                ),
-                preserveCurrentRoute = false
-            )
-        }
-    }
-
-    private fun bindActionButton(button: Button, enabled: Boolean, onClick: () -> Unit) {
-        button.visibility = if (enabled) View.VISIBLE else View.GONE
-        button.isEnabled = enabled
-        button.setOnClickListener { onClick() }
     }
 
     private fun openUpdateApp() {

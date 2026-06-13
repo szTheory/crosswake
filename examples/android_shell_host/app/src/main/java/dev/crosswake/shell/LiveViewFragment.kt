@@ -9,12 +9,15 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import dev.crosswake.shell.transfer.TransferCoordinator
 import org.json.JSONArray
 import org.json.JSONObject
 
 class LiveViewFragment : Fragment() {
     interface Host {
+        val shell: CrosswakeShell
         fun allowNavigation(url: String): Boolean
         fun filesPick(payload: Map<String, String>, correlationId: String): FilesPickResult
     }
@@ -26,6 +29,7 @@ class LiveViewFragment : Fragment() {
             allowedOrigin = requireArguments().getString(ARG_ALLOWED_ORIGIN).orEmpty(),
             bridgeProtocolVersion = requireArguments().getString(ARG_BRIDGE_PROTOCOL_VERSION).orEmpty(),
             nativeRuntimeVersion = requireArguments().getString(ARG_NATIVE_RUNTIME_VERSION).orEmpty(),
+            threadId = requireArguments().getString(ARG_THREAD_ID).orEmpty(),
             installedPacks = requireArguments().getSerializable(ARG_INSTALLED_PACKS) as? Map<String, String> ?: emptyMap(),
             routeRequiredPacks = requireArguments().getStringArrayList(ARG_ROUTE_REQUIRED_PACKS)?.toList() ?: emptyList(),
             capabilities = requireArguments().getSerializable(ARG_CAPABILITIES) as? Map<String, String> ?: emptyMap(),
@@ -66,54 +70,28 @@ class LiveViewFragment : Fragment() {
         webView.settings.setSupportZoom(false)
         WebView.setWebContentsDebuggingEnabled(false)
 
-        BridgeChannel(
+        val host = activity as? Host
+        val bridgeChannel = host?.shell?.createBridgeChannel(
             session = session,
-            transferCoordinator = transferCoordinator,
-            appInfoProvider = {
-                val packageManager = requireContext().packageManager
-                val packageInfo = packageManager.getPackageInfo(requireContext().packageName, 0)
-                mapOf(
-                    "version" to (packageInfo.versionName ?: ""),
-                    "build" to if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                        packageInfo.longVersionCode.toString()
-                    } else {
-                        packageInfo.versionCode.toString()
-                    },
-                    "bundle_id" to requireContext().packageName
-                )
-            },
-            hapticsHandler = { style ->
-                val feedbackConstant = when (style) {
-                    "heavy" -> android.view.HapticFeedbackConstants.LONG_PRESS
-                    "light" -> android.view.HapticFeedbackConstants.KEYBOARD_TAP
-                    else -> android.view.HapticFeedbackConstants.VIRTUAL_KEY
-                }
-                webView.performHapticFeedback(feedbackConstant)
-            },
-            permissionStatusProvider = PermissionStatusProvider(requireContext())::statusPayload,
-            notificationTokenProvider = NotificationTokenProvider(requireContext()),
-            shareHandler = { payload ->
-                val title = payload["title"] ?: ""
-                val text = payload["text"]
-                val url = payload["url"]
-                val combinedText = listOfNotNull(text, url).joinToString("\n")
+            transferCoordinator = transferCoordinator
+        ) ?: throw IllegalStateException("LiveViewFragment must be attached to a Host that provides a CrosswakeShell instance")
 
-                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(android.content.Intent.EXTRA_TITLE, title)
-                    putExtra(android.content.Intent.EXTRA_TEXT, combinedText)
-                }
-                startActivity(android.content.Intent.createChooser(intent, title))
-            },
-            filesPickHandler = { payload, correlationId ->
-                (activity as? Host)?.filesPick(payload, correlationId)
-                    ?: FilesPickResult.Denied(
-                        reason = "undeclared_capability",
-                        message = "This route does not declare the requested transfer seam.",
-                        hint = "Retry only from the mounted shell activity with a manifest-declared native_picker transfer."
-                    )
-            }
-        ).attach(webView, setOf(session.allowedOrigin))
+        bridgeChannel.attach(webView, setOf(session.allowedOrigin))
+        
+        val capabilities = host?.shell?.config?.registeredCapabilities ?: emptyList()
+        val capabilitiesJson = org.json.JSONArray(capabilities).toString()
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                webView,
+                """
+                window.crosswakeBridge = window.crosswakeBridge || {};
+                window.crosswakeBridge.capabilities = $capabilitiesJson;
+                window.crosswakeBridge.threadId = "${session.threadId}";
+                """.trimIndent(),
+                setOf("*")
+            )
+        }
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -126,6 +104,10 @@ class LiveViewFragment : Fragment() {
                     true
                 }
             }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+            }
         }
     }
 
@@ -135,7 +117,7 @@ class LiveViewFragment : Fragment() {
             return
         }
 
-        webView.loadUrl(session.url)
+        webView.loadUrl(session.url, mapOf("X-Crosswake-Thread-Id" to session.threadId))
     }
 
     companion object {
@@ -147,6 +129,7 @@ class LiveViewFragment : Fragment() {
         private const val ARG_ALLOWED_ORIGIN = "allowed_origin"
         private const val ARG_BRIDGE_PROTOCOL_VERSION = "bridge_protocol_version"
         private const val ARG_NATIVE_RUNTIME_VERSION = "native_runtime_version"
+        private const val ARG_THREAD_ID = "thread_id"
         private const val ARG_INSTALLED_PACKS = "installed_packs"
         private const val ARG_ROUTE_REQUIRED_PACKS = "route_required_packs"
         private const val ARG_CAPABILITIES = "capabilities"
@@ -160,6 +143,7 @@ class LiveViewFragment : Fragment() {
                     putString(ARG_ALLOWED_ORIGIN, session.allowedOrigin)
                     putString(ARG_BRIDGE_PROTOCOL_VERSION, session.bridgeProtocolVersion)
                     putString(ARG_NATIVE_RUNTIME_VERSION, session.nativeRuntimeVersion)
+                    putString(ARG_THREAD_ID, session.threadId)
                     putSerializable(ARG_INSTALLED_PACKS, HashMap(session.installedPacks))
                     putStringArrayList(ARG_ROUTE_REQUIRED_PACKS, ArrayList(session.routeRequiredPacks))
                     putSerializable(ARG_CAPABILITIES, HashMap(session.capabilities))

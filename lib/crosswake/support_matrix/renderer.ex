@@ -55,6 +55,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       notification_surface_section(),
       "",
+      media_recovery_surface_section(),
+      "",
       public_non_claims_section(),
       ""
     ]
@@ -186,12 +188,13 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       "**Supported:**",
       "- **Token binding:** The `notification_token` capability resolves local push tokens.",
-      "- **notification-open routing:** Direct routing to Phoenix views upon notification interaction.",
+      "- **notification-open routing:** Notification open resolved through RouteGate for manifest-known routes and route-local action allowlists.",
+      "- **Route activation proof:** The notification-open workflow proof is hermetic route activation proof. RouteGate and Sigra decide activation; token/open evidence is not auth authority.",
       "- **Resolution limits:** Bounded bridge operations ensure requests complete predictably.",
       "- **Evidence redaction:** Diagnostic output actively redacts sensitive identifiers.",
       "",
       "**Deferred (Not Supported):**",
-      "- **APNs/FCM delivery execution:** Crosswake does not act as a push delivery service.",
+      "- **APNs/FCM delivery execution:** APNs/FCM delivery is not part of this proof, and Crosswake does not act as a push delivery service.",
       "- **Push metrics:** Delivery and read-receipt metrics are not tracked by the core framework.",
       "- **Deep UI native presentation:** Custom native notification UI presentation is left to the host shell.",
       "",
@@ -201,13 +204,34 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp media_recovery_surface_section do
+    [
+      "## Media Evidence Recovery Surface (v4.1)",
+      "",
+      "Crosswake provides a hermetic Rindle proof for simulated media recovery.",
+      "",
+      "**Supported:**",
+      "- **Recovery proof:** Rindle media/evidence recovery proof is hermetic and merge-blocking.",
+      "- **Simulated degradation:** Simulated network degradation is proof-only and deterministic.",
+      "- **Backend authority:** Local capture evidence is not availability authority; backend verification is required before media becomes available.",
+      "- **Proof copy:** `Capture recorded locally; media is not available yet`, `Device evidence recorded; backend verification still required`, `This proof does not use a real storage provider`, and `Local capture evidence does not grant media availability`.",
+      "",
+      "**Deferred (Not Supported):**",
+      "- **Real storage providers:** Host applications own storage target choice and persistence.",
+      "- **Native camera/media picker capture:** Capture UX remains host-owned.",
+      "- **Background transfer and device network toggling:** These remain advisory/deferred and never gate merge.",
+      "- **Generic sync:** Phase 72 does not ship a broad sync engine."
+    ]
+    |> Enum.join("\n")
+  end
+
   defp public_non_claims_section do
     [
       "## Public Non-Claims And Rough Edges",
       "",
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
-      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry/security closeout are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, and low-cardinality diagnostic metadata; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI remain deferred.",
-      "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support in v3.9 focuses strictly on token binding, notification-open routing, and diagnostic telemetry.",
+      "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred.",
+      "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.",
       "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
     ]
     |> Enum.join("\n")

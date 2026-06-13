@@ -1,0 +1,8 @@
+{
+  "name": "crosswake-brandbook-tools",
+  "private": true,
+  "description": "Build-time tools for the Crosswake brand system (audit tokens, wordmark generation)",
+  "dependencies": {
+    "opentype.js": "2.0.0"
+  }
+}

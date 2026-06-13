@@ -124,3 +124,19 @@ Everything else is denied.
 - No silent fallbacks
 - Host ownership responsibility after generation
 - Explicit rebuild expectations whenever native or companion code changes
+
+## Permission and Entitlement Templates
+
+When a native runtime or capability requires explicit permissions or platform entitlements, the generated shell projects include permission/entitlement templates. You must manually manage these as part of your host-owned shell. A rebuild is required when these change.
+
+## Diagnostics Export
+
+The diagnostics export seam allows telemetry and diagnostic state to be securely transmitted. See the privacy and diagnostics guidelines.
+
+## Android Verification
+
+Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence.
+
+## Android Device-UAT
+
+For Android, device-UAT and emulator verification lanes are currently advisory. The verified proof is purely `:jvm_hermetic`.

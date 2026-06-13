@@ -2,17 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- For adding capabilities, see: https://docs.crosswake.dev/capabilities -->
+
     <application
         android:allowBackup="false"
         android:label="Crosswake Shell"
         android:theme="@style/Theme.CrosswakeShell"
         android:usesCleartextTraffic="false">
-        <activity
-            android:name=".packs.RequiredPackActivity"
-            android:exported="false" />
-        <activity
-            android:name=".NativeCaptureActivity"
-            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

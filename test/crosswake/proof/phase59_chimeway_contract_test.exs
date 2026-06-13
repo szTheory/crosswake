@@ -90,13 +90,13 @@ defmodule Crosswake.Proof.Phase59ChimewayContractTest do
            } = Chimeway.report_state().details
 
     assert [notification_truth] = SupportMatrix.notification_support_truth()
-    assert notification_truth.surface == "notification_token provider snapshot"
+    assert notification_truth.surface == "notification-open route activation proof"
     assert notification_truth.proof_class == :advisory
     assert notification_truth.delivery_supported == false
     assert :chimeway_delivery in notification_truth.deferred
     refute :notification_open_routing in notification_truth.deferred
 
-    assert notification_truth.posture =~ "Chimeway APNs/FCM push delivery execution remains deferred and unsupported"
+    assert notification_truth.posture =~ "APNs/FCM delivery is not part of this proof and remains unsupported/advisory"
   end
 
   test "public Chimeway structs never define raw token aliases" do

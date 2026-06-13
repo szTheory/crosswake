@@ -1,15 +1,13 @@
 {
-  "mode": "yolo",
-  "granularity": "coarse",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "adaptive",
+  "gsd_profile": "balanced",
+  "auto_apply_prefs": {
+    "research_with_subagents": true,
+    "idiomatic_elixir_lens": true,
+    "dx_ux_first": true,
+    "adopter_first_done_lens": true,
+    "lessons_retention": true
+  },
   "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true,
-    "auto_advance": true,
     "_auto_chain_active": false
   }
 }

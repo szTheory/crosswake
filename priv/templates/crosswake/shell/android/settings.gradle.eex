@@ -16,3 +16,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "crosswake_shell"
 include ':app'
+
+<%= if @local do %>
+include ':crosswake-shell-core-android'
+project(':crosswake-shell-core-android').projectDir = new File('../../../packages/crosswake-shell-core-android')
+<% end %>

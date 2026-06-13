@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Candidate D: Minimal Wake Monogram — C chosen over cw per 16px legibility -->
+<!-- Provenance: hand-authored on 64-unit grid, favicon-first design -->
+<!-- Concept: letter C constructed from wake geometry, counter broken by 20-deg route line -->
+<!-- Decision: used C (not cw) — at 16px the C reads clearly; cw merges into visual noise -->
+<!-- Dominant strokes: 2 (C-arc + diagonal cut) — satisfies D-03 2-stroke simplification -->
+<!-- Geometry: stroke-width=6.667, C-radius=25u, center(32,32), arc 50-310deg -->
+<!-- C arc opens right with slight vertical symmetry; wake diagonal at 20deg through center -->
+<!-- D-04: path-only, no text elements, no rect, no bounding shape -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g id="mark-d" fill="none" stroke="currentColor"
+     stroke-width="6.667" stroke-linecap="round">
+    <!-- C arc: radius 25u, center (32,32), opening to right -->
+    <!-- Arc from upper-right (48.07,12.85) to lower-right (48.07,51.15) going CCW -->
+    <!-- large-arc=1 to take the long way around (the C body) -->
+    <path d="M48.07,12.85 A25,25,0,1,0,48.07,51.15" />
+    <!-- Wake diagonal cut: 20-deg route line through center (13.21,38.84)→(50.79,25.16) -->
+    <!-- This breaks the counter, making the C a Crosswake artifact not plain Space Grotesk -->
+    <line x1="13.21" y1="38.84" x2="50.79" y2="25.16" />
+  </g>
+</svg>

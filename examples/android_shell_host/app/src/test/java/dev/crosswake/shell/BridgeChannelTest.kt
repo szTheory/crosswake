@@ -9,11 +9,9 @@ class BridgeChannelTest {
     @Test
     fun permissionsStatusReturnsNormalizedNotificationsPayload() {
         val channel = bridgeChannel(
-            permissionStatusProvider = PermissionStatusProvider { permissionAlias ->
-                if (permissionAlias != "notifications") {
-                    null
-                } else {
-                    mapOf(
+            permissionStatusDelegate = object : PermissionStatusDelegate {
+                override fun getStatus(alias: String): Map<String, String>? {
+                    return if (alias != "notifications") null else mapOf(
                         "alias" to "notifications",
                         "status" to "granted",
                         "detail.notifications_enabled" to "true"
@@ -40,11 +38,12 @@ class BridgeChannelTest {
     @Test
     fun permissionsStatusRejectsUnsupportedAliases() {
         val channel = bridgeChannel(
-            permissionStatusProvider = PermissionStatusProvider { permissionAlias ->
-                if (permissionAlias == "notifications") {
-                    mapOf("alias" to "notifications", "status" to "denied")
-                } else {
-                    null
+            permissionStatusDelegate = object : PermissionStatusDelegate {
+                override fun getStatus(alias: String): Map<String, String>? {
+                    return if (alias == "notifications") mapOf(
+                        "alias" to "notifications",
+                        "status" to "denied"
+                    ) else null
                 }
             }
         )
@@ -66,13 +65,15 @@ class BridgeChannelTest {
     @Test
     fun notificationTokenReturnsProviderTaggedEvidenceOnlyPayload() {
         val channel = bridgeChannel(
-            notificationTokenProvider = NotificationTokenProvider {
-                NotificationTokenProvider.Result.Available(
-                    provider = "fcm",
-                    token = "fcm-token-123",
-                    notificationStatus = "granted",
-                    detail = mapOf("snapshot" to "cached")
-                )
+            notificationTokenDelegate = object : NotificationTokenDelegate {
+                override fun fetch(): NotificationTokenDelegate.Result {
+                    return NotificationTokenDelegate.Result.Available(
+                        provider = "fcm",
+                        token = "fcm-token-123",
+                        notificationStatus = "granted",
+                        detail = mapOf("snapshot" to "cached")
+                    )
+                }
             }
         )
 
@@ -96,12 +97,14 @@ class BridgeChannelTest {
     fun notificationTokenDeniesWhenProviderOrAuthorizationPrerequisitesAreMissing() {
         val providerMissingReply = evaluate(
             bridgeChannel(
-                notificationTokenProvider = NotificationTokenProvider {
-                    NotificationTokenProvider.Result.Denied(
-                        reason = "unavailable_capability",
-                        message = "The Android shell has no configured push-token provider for notification_token.",
-                        hint = "Install and configure a provider-backed token seam before retrying."
-                    )
+                notificationTokenDelegate = object : NotificationTokenDelegate {
+                    override fun fetch(): NotificationTokenDelegate.Result {
+                        return NotificationTokenDelegate.Result.Denied(
+                            reason = "unavailable_capability",
+                            message = "The Android shell has no configured push-token provider for notification_token.",
+                            hint = "Install and configure a provider-backed token seam before retrying."
+                        )
+                    }
                 }
             ),
             request(
@@ -117,12 +120,14 @@ class BridgeChannelTest {
 
         val authorizationMissingReply = evaluate(
             bridgeChannel(
-                notificationTokenProvider = NotificationTokenProvider {
-                    NotificationTokenProvider.Result.Denied(
-                        reason = "unavailable_capability",
-                        message = "Notification authorization is not granted for the configured token provider snapshot.",
-                        hint = "Check permissions.status for notifications before retrying notification_token."
-                    )
+                notificationTokenDelegate = object : NotificationTokenDelegate {
+                    override fun fetch(): NotificationTokenDelegate.Result {
+                        return NotificationTokenDelegate.Result.Denied(
+                            reason = "unavailable_capability",
+                            message = "Notification authorization is not granted for the configured token provider snapshot.",
+                            hint = "Check permissions.status for notifications before retrying notification_token."
+                        )
+                    }
                 }
             ),
             request(
@@ -140,17 +145,19 @@ class BridgeChannelTest {
     @Test
     fun filesPickReturnsTransferBoundItems() {
         val channel = bridgeChannel(
-            filesPickHandler = { payload, _ ->
-                FilesPickResult.Immediate(
-                    mapOf(
-                        "status" to "ok",
-                        "transfer_id" to (payload["transfer_id"] ?: ""),
-                        "items.0.handle" to "staged://lesson_import/asset-1",
-                        "items.0.name" to "lesson.pdf",
-                        "items.0.mime_type" to "application/pdf",
-                        "items.0.size_bytes" to "2048"
+            filesPickDelegate = object : FilesPickDelegate {
+                override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+                    return FilesPickResult.Immediate(
+                        mapOf(
+                            "status" to "ok",
+                            "transfer_id" to (payload["transfer_id"] ?: ""),
+                            "items.0.handle" to "staged://lesson_import/asset-1",
+                            "items.0.name" to "lesson.pdf",
+                            "items.0.mime_type" to "application/pdf",
+                            "items.0.size_bytes" to "2048"
+                        )
                     )
-                )
+                }
             }
         )
 
@@ -174,14 +181,16 @@ class BridgeChannelTest {
     @Test
     fun filesPickPreservesTypedCancellationOutcome() {
         val channel = bridgeChannel(
-            filesPickHandler = { payload, _ ->
-                FilesPickResult.Immediate(
-                    mapOf(
-                        "status" to "canceled",
-                        "transfer_id" to (payload["transfer_id"] ?: ""),
-                        "detail.reason" to "user_canceled"
+            filesPickDelegate = object : FilesPickDelegate {
+                override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+                    return FilesPickResult.Immediate(
+                        mapOf(
+                            "status" to "canceled",
+                            "transfer_id" to (payload["transfer_id"] ?: ""),
+                            "detail.reason" to "user_canceled"
+                        )
                     )
-                )
+                }
             }
         )
 
@@ -203,16 +212,22 @@ class BridgeChannelTest {
     }
 
     private fun bridgeChannel(
-        permissionStatusProvider: PermissionStatusProvider = PermissionStatusProvider { _ -> null },
-        notificationTokenProvider: NotificationTokenProvider = NotificationTokenProvider {
-            NotificationTokenProvider.Result.Denied(
-                reason = "unavailable_capability",
-                message = "The Android shell has no configured push-token provider for notification_token.",
-                hint = "Install and configure a provider-backed token seam before retrying."
-            )
+        permissionStatusDelegate: PermissionStatusDelegate = object : PermissionStatusDelegate {
+            override fun getStatus(alias: String) = null
         },
-        filesPickHandler: (Map<String, String>, String) -> FilesPickResult = { payload, _ ->
-            FilesPickResult.Immediate(payload)
+        notificationTokenDelegate: NotificationTokenDelegate = object : NotificationTokenDelegate {
+            override fun fetch(): NotificationTokenDelegate.Result {
+                return NotificationTokenDelegate.Result.Denied(
+                    reason = "unavailable_capability",
+                    message = "The Android shell has no configured push-token provider for notification_token.",
+                    hint = "Install and configure a provider-backed token seam before retrying."
+                )
+            }
+        },
+        filesPickDelegate: FilesPickDelegate = object : FilesPickDelegate {
+            override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult {
+                return FilesPickResult.Immediate(payload)
+            }
         },
         declaredTransfers: List<ShellManifest.TransferSeam> = listOf(
             ShellManifest.TransferSeam(
@@ -227,18 +242,22 @@ class BridgeChannelTest {
             )
         )
     ): BridgeChannel {
+        val config = CrosswakeShellConfig(
+            appInfoDelegate = object : AppInfoDelegate { override fun getAppInfo() = emptyMap<String, String>() },
+            hapticsDelegate = object : HapticsDelegate { override fun impact(style: String) {} },
+            shareDelegate = object : ShareDelegate { override fun invoke(payload: Map<String, String>) {} },
+            permissionStatusDelegate = permissionStatusDelegate,
+            notificationTokenDelegate = notificationTokenDelegate,
+            filesPickDelegate = filesPickDelegate
+        )
+
         return BridgeChannel(
             session = session(declaredTransfers = declaredTransfers),
             transferCoordinator = TransferCoordinator(
                 routeId = "dashboard",
                 declaredTransfers = declaredTransfers
             ),
-            appInfoProvider = { emptyMap() },
-            hapticsHandler = { _ -> },
-            permissionStatusProvider = permissionStatusProvider::statusPayload,
-            notificationTokenProvider = notificationTokenProvider,
-            shareHandler = { _ -> },
-            filesPickHandler = filesPickHandler
+            config = config
         )
     }
 
@@ -268,6 +287,7 @@ class BridgeChannelTest {
     private fun session(declaredTransfers: List<ShellManifest.TransferSeam>): LiveViewSession {
         return LiveViewSession(
             routeId = "dashboard",
+            threadId = "test-thread-id",
             url = "https://example.crosswake.invalid/dashboard",
             allowedOrigin = "https://example.crosswake.invalid",
             bridgeProtocolVersion = "1.0.0",

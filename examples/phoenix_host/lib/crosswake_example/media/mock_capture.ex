@@ -37,6 +37,15 @@ defmodule CrosswakeExample.Media.MockCapture do
   def emit_capture_evidence(%Contracts.UploadGrant{} = grant, opts \\ []) do
     with :ok <-
            validate_idempotency(grant, Keyword.get(opts, :idempotency_key, grant.idempotency_key)) do
+      trace_metadata =
+        %{
+          queue_ref: Keyword.get(opts, :queue_ref, "local_queue_1"),
+          integrity_algorithm: Keyword.get(opts, :integrity_algorithm)
+        }
+        |> Map.merge(Keyword.get(opts, :trace_metadata, %{}))
+        |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+        |> Map.new()
+
       Contracts.new_capture_evidence(%{
         grant_id: grant.grant_id,
         idempotency_key: Keyword.get(opts, :idempotency_key, grant.idempotency_key),
@@ -46,9 +55,10 @@ defmodule CrosswakeExample.Media.MockCapture do
         captured_at: Keyword.get_lazy(opts, :captured_at, &now_iso/0),
         client_upload_ref: Keyword.get(opts, :client_upload_ref, "local_upload_123"),
         content_hash: Keyword.get(opts, :content_hash, "sha256:abc123"),
+        multipart: Keyword.get(opts, :multipart),
         correlation_id: Keyword.get(opts, :correlation_id, "corr_1"),
-        trace_metadata: %{queue_ref: Keyword.get(opts, :queue_ref, "local_queue_1")},
-        source: :device
+        trace_metadata: trace_metadata,
+        source: Keyword.get(opts, :source, :device)
       })
     end
   end

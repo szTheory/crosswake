@@ -1,0 +1,43 @@
+// Vanilla JS offline logic
+// Handles IndexedDB storage budgeting
+
+async function checkStorageBudget() {
+  if (navigator.storage && navigator.storage.estimate) {
+    try {
+      const estimate = await navigator.storage.estimate();
+      const usagePercent = (estimate.usage / estimate.quota) * 100;
+      console.log(`Storage usage: ${usagePercent.toFixed(2)}%`);
+      
+      if (usagePercent > 90) {
+        console.warn("Storage budget nearly exceeded.");
+      }
+    } catch (e) {
+      console.error("Failed to estimate storage budget", e);
+    }
+  }
+}
+
+async function insertRecord(record) {
+  try {
+    // Example: saving to IndexedDB or local cache
+    // This is where a QuotaExceededError might be thrown
+    await checkStorageBudget();
+    // Simulate IDB insertion here...
+    console.log("Record inserted locally", record);
+  } catch (error) {
+    if (error.name === 'QuotaExceededError') {
+      console.error("Storage budget exceeded! Cannot save data offline.", error);
+      // Gracefully handle the UI warning here
+    } else {
+      console.error("An error occurred during local insert", error);
+    }
+  }
+}
+
+// Initialization
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Offline JS initialized. Running independently of LiveView.");
+  checkStorageBudget();
+});
+
+export { insertRecord, checkStorageBudget };

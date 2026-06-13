@@ -132,6 +132,33 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert event != nil
   end
 
+  test "consume_intent/1 validates stored action_ref mismatch", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
+    attrs = %{
+      open_ref: open_ref,
+      binding_ref: binding_ref,
+      route_id: "dashboard",
+      action_ref: "approve",
+      expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+    }
+
+    Registry.issue_notification_open_intent(attrs)
+
+    evidence = %NotificationOpenEvidence{
+      route_id: "dashboard",
+      open_ref: open_ref,
+      binding_ref: binding_ref,
+      provider: :apns,
+      action_ref: "tap",
+      auth_context: %{}
+    }
+
+    assert {:ok, resolution} = Registry.consume_intent(evidence)
+    assert resolution.state == :action_mismatch
+  end
+
   test "consume_intent/1 rejects a revoked binding", %{open_ref: open_ref, binding: binding} do
     # Revoke the binding
     binding |> Ecto.Changeset.change(%{state: :revoked}) |> Repo.update!()
@@ -154,6 +181,6 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     }
 
     assert {:ok, resolution} = Registry.consume_intent(evidence)
-    assert resolution.state == :revoked
+    assert resolution.state == :binding_revoked
   end
 end

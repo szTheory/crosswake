@@ -2,7 +2,13 @@ defmodule CrosswakeExample.PaywallEntryLive do
   use Phoenix.LiveView
 
   alias Crosswake.Commerce.Contracts
-  alias CrosswakeExample.Commerce.{MockStorefront, ReconciliationInbox, MockBackend, EntitlementProjection}
+
+  alias CrosswakeExample.Commerce.{
+    MockStorefront,
+    ReconciliationInbox,
+    MockBackend,
+    EntitlementProjection
+  }
 
   @group_id "sub_pro_monthly"
   @dev_mode Mix.env() == :dev
@@ -301,42 +307,102 @@ defmodule CrosswakeExample.PaywallEntryLive do
 
   defp granted(assigns) do
     ~H"""
-    <div class="paywall-state paywall-state--granted">
-      <h2>Access granted</h2>
-      <p>Your subscription is active. You have full access.</p>
-      <a href="#">Manage subscription</a>
+    <div class="paywall-state paywall-state--granted" role="status" aria-live="polite">
+      <h2>Access active from backend projection</h2>
+      <p>Your Pro Monthly access is active after backend entitlement projection.</p>
+      <.projection_status derived_state={:granted} />
     </div>
     """
   end
 
   defp pending(assigns) do
     ~H"""
-    <div class="paywall-state paywall-state--pending">
-      <h2>Processing your purchase</h2>
-      <p>Verifying with our backend — this usually takes a few seconds.</p>
+    <div class="paywall-state paywall-state--pending" role="status" aria-live="polite">
+      <h2>Verifying backend entitlement</h2>
+      <p>Purchase or restore evidence was submitted. Access stays closed until backend projection updates.</p>
+      <.projection_status derived_state={:pending} />
     </div>
     """
   end
 
   defp denied(assigns) do
     ~H"""
-    <div class="paywall-state paywall-state--denied">
-      <h2>Subscribe to continue</h2>
+    <div class="paywall-state paywall-state--denied" role="status" aria-live="polite">
+      <h2>Subscribe to Pro Monthly</h2>
       <p>Pro Monthly</p>
       <p>{@paywall_entry.price_display}</p>
-      <button phx-click="subscribe" class="button primary">Subscribe</button>
-      <button phx-click="restore" class="button">Already subscribed? Restore purchase</button>
+      <button phx-click="subscribe" class="button primary">Subscribe to Pro Monthly</button>
+      <button phx-click="restore" class="button">Restore purchase</button>
+      <.projection_status derived_state={:denied} />
     </div>
     """
   end
 
   defp stale(assigns) do
     ~H"""
-    <div class="paywall-state paywall-state--stale">
-      <h2>Access unavailable</h2>
-      <p>We can't verify your access right now. Access is closed until verification succeeds.</p>
+    <div class="paywall-state paywall-state--stale" role="status" aria-live="polite">
+      <h2>Unable to verify access</h2>
+      <p>Access is closed until backend entitlement projection refreshes.</p>
+      <.projection_status derived_state={:stale} />
     </div>
     """
+  end
+
+  defp projection_status(assigns) do
+    assigns = assign(assigns, :status, projection_status_details(assigns.derived_state))
+
+    ~H"""
+    <dl class="paywall-status">
+      <div>
+        <dt>Projection state</dt>
+        <dd>{@status.projection_state}</dd>
+      </div>
+      <div>
+        <dt>Freshness</dt>
+        <dd>{@status.freshness}</dd>
+      </div>
+      <div>
+        <dt>Reconciliation posture</dt>
+        <dd>{@status.reconciliation}</dd>
+      </div>
+      <div>
+        <dt>Authority source</dt>
+        <dd>Backend entitlement projection</dd>
+      </div>
+    </dl>
+    """
+  end
+
+  defp projection_status_details(:granted) do
+    %{
+      projection_state: "Granted",
+      freshness: "Fresh",
+      reconciliation: "Projection refreshed"
+    }
+  end
+
+  defp projection_status_details(:pending) do
+    %{
+      projection_state: "Pending",
+      freshness: "Fresh evidence",
+      reconciliation: "Awaiting backend verification"
+    }
+  end
+
+  defp projection_status_details(:denied) do
+    %{
+      projection_state: "Denied",
+      freshness: "Fresh",
+      reconciliation: "Projection refreshed"
+    }
+  end
+
+  defp projection_status_details(:stale) do
+    %{
+      projection_state: "Stale",
+      freshness: "Stale",
+      reconciliation: "Refresh required"
+    }
   end
 
   defp dev_scenarios(assigns) do
@@ -367,6 +433,10 @@ defmodule CrosswakeExample.PaywallEntryLive do
   # Default remains the pure mock storefront corridor; swap via:
   # config :crosswake_example, :paywall_storefront_adapter, YourAdapterModule
   defp storefront_adapter do
-    Application.get_env(:crosswake_example, :paywall_storefront_adapter, @default_storefront_adapter)
+    Application.get_env(
+      :crosswake_example,
+      :paywall_storefront_adapter,
+      @default_storefront_adapter
+    )
   end
 end

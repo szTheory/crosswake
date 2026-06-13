@@ -87,9 +87,27 @@ Critical posture:
 
 This mirrors Crosswake’s reconciliation stance: evidence can move workflow, but authority stays backend-owned.
 
+### Rindle Surface: Media Evidence Recovery
+
+Phase 72 proves a narrow media/evidence recovery lane over Rindle contracts and the example host. The proof sequence is deliberately product-shaped but hermetic:
+
+1. `Capture recorded locally; media is not available yet`.
+2. `Upload failed during simulated network degradation`.
+3. `Evidence is queued for reconciliation`.
+4. `Network recovered. Reconciliation can retry`.
+5. `Device evidence recorded; backend verification still required`.
+6. `Backend verification in progress`.
+7. `Backend verified media is available` or `Backend rejected this media object`.
+
+`This proof does not use a real storage provider`. `Local capture evidence does not grant media availability`. Host applications still own persistence, storage targets, capture UX, and retry infrastructure. Crosswake’s shipped claim is the typed Rindle recovery and backend-verification boundary, not storage-provider integration, native media picker behavior, background transfer, device network toggling, or app-wide sync.
+
+Support truth accessor:
+
+- `Crosswake.SupportMatrix.media_recovery_proof_truth/0`
+
 ## Sigra Surface (AUTH, Session Authority)
 
-Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 auth telemetry plus security closeout. It defines typed auth contract surfaces, explicit route-local auth posture, route-local `auth_return` seams, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, host-owned auth-return attempt records, low-cardinality telemetry metadata, and fail-closed route checks without shipping provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, or native auth UI.
+Sigra now ships the backend-owned session-authority route evaluator, Phase 55 handoff ticket contract machinery, Phase 56 server-owned step-up intent plus shared Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry plus security closeout, and Phase 73 auth-sensitive admin workflow proof. It defines typed auth contract surfaces, explicit route-local auth posture, route-local `auth_return` seams, short-lived handoff envelopes, authoritative server-side ticket records, server-owned step-up intent records, host-owned auth-return attempt records, low-cardinality telemetry metadata, and fail-closed route checks without shipping provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, direct shell/WebView token authority, native auth UI, or generic audit machinery.
 It intentionally has no runtime `Companion id:` marker yet because it is not a `Crosswake.Companion` optional dependency surface.
 
 - `AuthContext`
@@ -126,15 +144,19 @@ Support truth accessor:
 
 - `Crosswake.SupportMatrix.auth_contract_truth/0`
 
-Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, and Phase 58 stable auth telemetry plus STRIDE-style security closeout. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, or native auth UI.
+Session-authority support now includes Phase 55 handoff ticket contracts and server-record redemption proof, Phase 56 step-up intent and Plug/LiveView ceremony proof, Phase 57 OAuth/passkey/native auth-return boundary contracts with host-owned replay source posture, Phase 58 stable auth telemetry plus STRIDE-style security closeout, and Phase 73 auth-sensitive admin workflow proof. It intentionally does not claim provider-specific OAuth templates, passkey SDK wrappers, refresh-token orchestration, provider/device proof, direct shell/WebView token authority, native auth UI, or generic audit machinery.
 
-## Chimeway Surface (NOTIFICATIONS, Token Binding Contract)
+## Chimeway Surface (NOTIFICATIONS, Token Binding And Open Contract)
 
-Chimeway ships as `Crosswake.Companions.Chimeway` with a narrow contract surface for notification token evidence and backend-owned binding records. The contract modules are `TokenEvidence`, `TokenBinding`, `ProviderFeedback`, `BindingEvent`, and `BindingResult` under `Crosswake.Companions.Chimeway.Contracts`.
+Chimeway ships as `Crosswake.Companions.Chimeway` with a narrow contract surface for notification token evidence, backend-owned binding records, and one-time notification-open intents. The contract modules are `TokenEvidence`, `TokenBinding`, `ProviderFeedback`, `BindingEvent`, `BindingResult`, `NotificationOpenEvidence`, and `OpenResolution` under `Crosswake.Companions.Chimeway.Contracts`.
 
 `notifications.token.get` and provider feedback are evidence only. Host code owns raw APNs/FCM token handling at the boundary, then Chimeway public contracts carry `token_ref` and `token_fingerprint` for support-safe correlation and lifecycle decisions. Backend-owned binding records remain authoritative for subject/session/app/installation scope, lifecycle state, revocation, stale pruning, and audit truth.
 
-Phase 59 does not ship APNs/FCM delivery, provider credentials, notification-open routing, RouteGate activation via notification, topic APIs, or tray behavior. Provider handoff events such as `:delivery_accepted` mean provider acceptance evidence only; they do not prove delivery, display, open behavior, route activation, auth, or session authority.
+Notification open resolved through RouteGate. Backend-owned token binding and one-time open intent records feed `Crosswake.Companions.Chimeway.Resolver.resolve/3`; the resolver checks a manifest-known route and route-local action allowlist, then delegates activation to `RouteGate` and Sigra recent-auth checks. Token evidence is bound by the backend; possession does not grant access.
+
+Recent authentication required before opening this route is a normal Phase 71 outcome for auth-predicated notification routes. Missing, stale, weak, remembered, cached, or revoked backend auth returns `:step_up_required` and halts notification activation rather than silently opening a fallback route.
+
+Open intent expired. No route was activated. Binding revoked. Notification open denied. These Chimeway outcomes are support-safe public denials, not provider delivery facts. APNs/FCM delivery is not part of this proof; provider credentials, tray behavior, Focus/Doze/background behavior, push metrics, read receipts, and real-device opens remain outside the merge-blocking proof lane.
 
 ## Support Truth Surfaces
 

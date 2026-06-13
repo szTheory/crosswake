@@ -1,0 +1,45 @@
+name: Phase 79 Proof
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-v5-proof:
+    name: Hermetic v5.0 Shell Verification
+    runs-on: macos-15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.19.5'
+          otp-version: '27.3'
+
+      - name: Get dependencies
+        run: mix deps.get
+
+      - name: Generate iOS Shell (Local)
+        run: mix crosswake.gen.shell ios --target tmp/ios_shell --local
+
+      - name: Verify iOS Shell
+        run: ./script/verify_generated_ios_shell.sh
+        env:
+          CROSSWAKE_IOS_PROJECT_ROOT: tmp/ios_shell/native/ios/crosswake_shell
+          CROSSWAKE_IOS_LAUNCH_SIMULATOR: 0
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: 1
+
+      - name: Generate Android Shell (Local)
+        run: mix crosswake.gen.shell android --target tmp/android_shell --local
+
+      - name: Verify Android Shell
+        run: ./script/verify_generated_android_shell.sh
+        env:
+          CROSSWAKE_ANDROID_PROJECT_ROOT: tmp/android_shell/native/android/crosswake_shell
+          CROSSWAKE_ANDROID_CONNECTED_TESTS: 0

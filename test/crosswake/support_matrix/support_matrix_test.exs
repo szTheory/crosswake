@@ -47,10 +47,10 @@ defmodule Crosswake.SupportMatrixTest do
 
     assert Enum.map(matrix.phoenix, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
-    assert Enum.map(matrix.android, & &1.proof_status) == [:verification_required]
+    assert Enum.map(matrix.android, & &1.proof_status) == [:supported]
 
     assert Enum.map(matrix.shells, &{&1.target, &1.proof_status}) |> Enum.sort() == [
-             {"android_shell", :verification_required},
+             {"android_shell", :supported},
              {"ios_shell", :supported}
            ]
 
@@ -203,7 +203,10 @@ defmodule Crosswake.SupportMatrixTest do
              "purchase_intent.provider.storekit",
              "restore_intent.provider.storekit",
              "purchase_intent.provider.play_billing",
-             "restore_intent.provider.play_billing"
+             "restore_intent.provider.play_billing",
+             # Phase 64: Android JVM hermetic and device-verified gated promotion rows
+             "shell.android.jvm_hermetic",
+             "shell.android.device_verified"
            ]
 
     for entry <- entries do
@@ -240,6 +243,79 @@ defmodule Crosswake.SupportMatrixTest do
            end)
   end
 
+  describe "audit_ledger_support_truth/0 (OPER-02)" do
+    test "returns a non-empty list with the canonical threadline audit ledger truth" do
+      truth = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert is_list(truth)
+      assert length(truth) == 1
+    end
+
+    test "entry has the correct surface, proof_class, and action_class" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.surface == "threadline audit ledger"
+      assert entry.proof_class == :advisory
+      assert entry.action_class == "operator_surface"
+    end
+
+    test "entry docs_anchor points to threadline guide" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.docs_anchor == "guides/threadline.md"
+    end
+
+    # Docs integrity (IN-03): the anchor is surfaced in operator-facing doctor
+    # hints — the file it points at must actually exist in the repository.
+    test "entry docs_anchor file exists in the repository" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      # Anchors may carry a #fragment; only the file part must exist on disk.
+      [path | _fragment] = String.split(entry.docs_anchor, "#", parts: 2)
+
+      assert File.exists?(path),
+             "docs_anchor #{entry.docs_anchor} is referenced by doctor hints but #{path} does not exist"
+    end
+
+    test "entry ephemeral_posture and durable_posture are both :supported" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.ephemeral_posture == :supported
+      assert entry.durable_posture == :supported
+    end
+
+    test "entry telemetry.status is :shipped" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.status == :shipped
+    end
+
+    test "entry telemetry.forbidden_metadata_keys matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.forbidden_metadata_keys == ThreadlineTelemetry.forbidden_metadata_keys()
+    end
+
+    test "entry telemetry.event_names matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.event_names == ThreadlineTelemetry.event_names()
+    end
+
+    test "entry telemetry.metadata_keys matches Crosswake.Threadline.Telemetry" do
+      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.telemetry.metadata_keys == ThreadlineTelemetry.metadata_keys()
+    end
+
+    test "entry deferred list contains expected deferred items" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert :crosswake_dashboard in entry.deferred
+      assert :hash_chain_verify_task in entry.deferred
+    end
+
+    test "entry posture contains honest non-overclaim phrases" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      assert entry.posture =~ "PII-free"
+      assert entry.posture =~ "append-only"
+      assert entry.posture =~ "not an APM"
+    end
+  end
+
   test "phase 51 companion and notification support truth preserve deferred non-claims" do
     assert [companion_truth] = SupportMatrix.companion_support_truth()
 
@@ -256,11 +332,37 @@ defmodule Crosswake.SupportMatrixTest do
            ]
 
     assert [notification_truth] = SupportMatrix.notification_support_truth()
-    assert notification_truth.surface == "notification_token provider snapshot"
+    assert notification_truth.surface == "notification-open route activation proof"
     assert notification_truth.proof_class == :advisory
     assert notification_truth.action_class == "companion_native"
     assert notification_truth.delivery_supported == false
+    assert notification_truth.route_activation_proof == :hermetic
+    assert notification_truth.activation_authority == :route_gate_sigra
+    assert notification_truth.evidence_authority == false
+    assert notification_truth.posture =~ "notification-open workflow proof is hermetic route activation proof"
+    assert notification_truth.posture =~ "RouteGate and Sigra decide activation"
+    assert notification_truth.posture =~ "token/open evidence is not auth authority"
+    assert notification_truth.posture =~ "APNs/FCM delivery is not part of this proof"
     assert :chimeway_delivery in notification_truth.deferred
+  end
+
+  test "phase 72 media recovery support truth preserves backend authority and proof-only scope" do
+    assert [media_truth] = SupportMatrix.media_recovery_proof_truth()
+
+    assert media_truth.surface == "Rindle media/evidence recovery proof"
+    assert media_truth.proof_class == :merge_blocking
+    assert media_truth.recovery_proof == :hermetic
+    assert media_truth.simulated_network_degradation == :proof_only
+    assert media_truth.local_capture_authority == false
+    assert media_truth.backend_verification_required == true
+    assert media_truth.real_storage_supported == false
+    assert media_truth.native_capture_supported == false
+    assert media_truth.background_transfer_supported == false
+    assert media_truth.posture =~ "Rindle media/evidence recovery proof is hermetic"
+    assert media_truth.posture =~ "local capture evidence is not availability authority"
+    assert media_truth.posture =~ "backend verification is required before media becomes available"
+    assert :real_storage_provider in media_truth.deferred
+    assert :local_first_sync in media_truth.deferred
   end
 
   test "entitlement and evidence support entries encode freshness and non-authoritative posture" do
@@ -630,5 +732,167 @@ defmodule Crosswake.SupportMatrixTest do
     refute :auth_return_boundaries in row.deferred
     refute :native_auth_return in row.deferred
     refute :handoff in row.deferred
+  end
+
+  # ---------------------------------------------------------------------------
+  # Phase 64 Gap 1 (RLINE-04): rebuild_matrix honesty and evidence gate
+  #
+  # The rebuild_matrix surface must not claim :device_verified for any band
+  # without backing real-device proof. The 2.x band does not exist in Phase 64
+  # (native_runtime_version is "1.0.0"); device-verified proof is gated until
+  # Phases 67/68. validate/1 must structurally reject any :device_verified row.
+  # ---------------------------------------------------------------------------
+
+  test "canonical rebuild_matrix contains only the '1.x' row — no '2.x' unbacked band" do
+    matrix = SupportMatrix.canonical()
+    rows = SupportMatrix.rebuild_matrix(matrix)
+
+    runtime_lines = Enum.map(rows, & &1.runtime_line)
+
+    assert runtime_lines == ["1.x"],
+           "rebuild_matrix must contain only the '1.x' row in Phase 64 (the 2.x band does not exist; native_runtime_version is '1.0.0')"
+  end
+
+  test "canonical rebuild_matrix '1.x' row has evidence_tier :jvm_hermetic — never :device_verified" do
+    matrix = SupportMatrix.canonical()
+    rows = SupportMatrix.rebuild_matrix(matrix)
+
+    for row <- rows do
+      refute row.evidence_tier == :device_verified,
+             "rebuild_matrix row '#{row.runtime_line}' claims :device_verified — evidence laundering (D-10a); device-verified proof is gated until Phases 67/68"
+    end
+  end
+
+  test "validate/1 returns [] for canonical matrix (no false positives from rebuild_matrix gate)" do
+    errors = SupportMatrix.validate(SupportMatrix.canonical())
+    assert errors == [],
+           "canonical matrix must be clean — got unexpected errors: #{inspect(errors)}"
+  end
+
+  test "validate/1 rejects a rebuild_matrix row with evidence_tier :device_verified (evidence laundering gate)" do
+    canonical = SupportMatrix.canonical()
+
+    # Inject a :device_verified row into rebuild_matrix — must be rejected
+    injected_row =
+      Types.new_runtime_line_row(
+        runtime_line: "2.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :device_verified
+      )
+
+    invalid_matrix = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [injected_row]}
+
+    errors = SupportMatrix.validate(invalid_matrix)
+
+    assert is_list(errors) and length(errors) > 0,
+           "validate/1 must return errors for a rebuild_matrix row with :device_verified — evidence laundering (D-10a)"
+
+    assert Enum.any?(errors, &(&1.key == :rebuild_matrix)),
+           "error must reference :rebuild_matrix key; got: #{inspect(errors)}"
+  end
+
+  test "validate/1 accepts rebuild_matrix rows with :jvm_hermetic and :none evidence_tier (no false positive)" do
+    canonical = SupportMatrix.canonical()
+
+    jvm_row =
+      Types.new_runtime_line_row(
+        runtime_line: "3.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :jvm_hermetic
+      )
+
+    none_row =
+      Types.new_runtime_line_row(
+        runtime_line: "4.x",
+        capability_surface: ["haptics"],
+        change_class: "native or companion rebuild required",
+        ota_safe: false,
+        rebuild_required: true,
+        evidence_tier: :none
+      )
+
+    matrix_with_safe_rows = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [jvm_row, none_row]}
+
+    errors = SupportMatrix.validate(matrix_with_safe_rows)
+
+    rebuild_errors = Enum.filter(errors, &(&1.key == :rebuild_matrix))
+
+    assert rebuild_errors == [],
+           "validate/1 must not reject :jvm_hermetic or :none rows; got rebuild_matrix errors: #{inspect(rebuild_errors)}"
+  end
+
+  # Phase 65 — DIAG-04: diagnostic_export_support_truth accessor
+  describe "diagnostic_export_support_truth/0 (DIAG-04)" do
+    test "returns a non-empty list" do
+      truth = SupportMatrix.diagnostic_export_support_truth()
+      assert is_list(truth)
+      assert length(truth) > 0
+    end
+
+    test "entry has delivery_supported: false" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.delivery_supported == false
+    end
+
+    test "entry deferred list contains all three expected atoms" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert :native_diagnostic_export in entry.deferred
+      assert :metrickit_capture in entry.deferred
+      assert :application_exit_info_capture in entry.deferred
+    end
+
+    test "entry deferred list is exactly the three expected atoms" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert Enum.sort(entry.deferred) ==
+               Enum.sort([:native_diagnostic_export, :metrickit_capture, :application_exit_info_capture])
+    end
+
+    test "entry telemetry.authority_source is :host_configured_endpoint" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.authority_source == :host_configured_endpoint
+    end
+
+    test "entry telemetry.proof_class is :merge_blocking" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.proof_class == :merge_blocking
+    end
+
+    test "entry proof_class is :merge_blocking" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.proof_class == :merge_blocking
+    end
+
+    test "entry posture contains non-overclaim phrase" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "not a crash-reporting service")
+    end
+
+    test "entry posture contains Phase 67 deferral reference" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "Phase 67")
+    end
+
+    test "entry posture contains host ownership reference" do
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert String.contains?(entry.posture, "host")
+    end
+
+    test "entry telemetry.forbidden_metadata_keys equals DiagnosticExport.forbidden_keys()" do
+      alias Crosswake.Shell.DiagnosticExport
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.forbidden_metadata_keys == DiagnosticExport.forbidden_keys()
+    end
+
+    test "entry telemetry.metadata_keys equals DiagnosticExport.allowed_keys()" do
+      alias Crosswake.Shell.DiagnosticExport
+      entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+      assert entry.telemetry.metadata_keys == DiagnosticExport.allowed_keys()
+    end
   end
 end

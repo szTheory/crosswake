@@ -25,7 +25,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     resolved_gaps
   )
   @exception_fields ~w(owner scope reason revisit_phase evidence status)
-  @v39_phases ~w(59 60 61 62 63)
+  @v40_phases ~w(64 65 66 67 68 69)
   @unreleased_sections [
     "Unpublished support claims",
     "Verification-required and advisory surfaces",
@@ -155,7 +155,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       rel(cwd, path),
       missing == [],
       "missing keys: #{Enum.join(missing, ", ")}",
-      "Preserve the v3.9-CLOSEOUT.md frontmatter contract before closeout.",
+      "Preserve the v4.0-CLOSEOUT.md frontmatter contract before closeout.",
       %{missing: missing}
     )
   end
@@ -218,16 +218,17 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
-        requirements =~ "REL-01" and
-        not Regex.match?(~r/\|\s*REL-01\s*\|\s*Phase 63\s*\|\s*Pending\s*\|/, requirements)
+        (requirements =~ "REL-01" or requirements =~ "PROOF-03" or requirements =~ "PROOF-01") and
+        not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements) and
+        not Regex.match?(~r/\|\s*(PROOF-01)\s*\|\s*Phase (75|79)\s*\|\s*Pending\s*\|/, requirements)
 
     check(
       "closeout.requirements.state",
       "requirements closeout state",
       ".planning/REQUIREMENTS.md",
       passed,
-      "REL-01 or closeout requirements_state is still pending",
-      "Mark REL-01 validated or archive/reset requirements with explicit closeout evidence.",
+      "REL-01/PROOF-03/PROOF-01 or closeout requirements_state is still pending",
+      "Mark closeout requirement validated or archive/reset requirements with explicit closeout evidence.",
       %{}
     )
   end
@@ -238,15 +239,16 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
     passed =
       closeout =~ ~r/roadmap_parity:\s*\n\s*status:\s*(complete|archived)/ and
-        not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align")
+        not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align") and
+        not (roadmap =~ "Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout — align")
 
     check(
       "closeout.roadmap.parity",
       "roadmap closeout parity",
       ".planning/ROADMAP.md",
       passed,
-      "v3.9 roadmap parity or next-step routing is stale",
-      "Archive v3.9 roadmap evidence and complete Phase 63 alignment.",
+      "v4.0 roadmap parity or next-step routing is stale",
+      "Archive v4.0 roadmap evidence and complete Phase 69 alignment.",
       %{}
     )
   end
@@ -305,7 +307,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       ".planning/phases",
       passed,
       "malformed summaries: #{Enum.map_join(malformed, ", ", &rel(cwd, &1))}",
-      "Ensure every v3.9 SUMMARY.md has requirements-completed frontmatter.",
+      "Ensure every v4.0 SUMMARY.md has requirements-completed frontmatter.",
       %{malformed: Enum.map(malformed, &rel(cwd, &1))}
     )
   end
@@ -462,7 +464,23 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   end
 
   defp closeout_path(cwd, opts) do
-    Keyword.get(opts, :closeout_path, Path.join(cwd, ".planning/milestones/v3.9-CLOSEOUT.md"))
+    state_path = Path.join(cwd, ".planning/STATE.md")
+
+    milestone =
+      case File.read(state_path) do
+        {:ok, content} ->
+          frontmatter = parse_frontmatter(content)
+          milestone(frontmatter)
+
+        _ ->
+          nil
+      end
+
+    cond do
+      opts[:closeout_path] -> opts[:closeout_path]
+      milestone -> Path.join(cwd, ".planning/milestones/#{milestone}-CLOSEOUT.md")
+      true -> raise "Could not determine milestone from .planning/STATE.md and no :closeout_path provided"
+    end
   end
 
   # The live REQUIREMENTS.md is intentionally removed at milestone close and
@@ -494,10 +512,10 @@ defmodule Crosswake.Planning.CloseoutVerifier do
           |> Regex.scan(list_str, capture: :all_but_first)
           |> Enum.map(fn [p] -> p end)
 
-        if phases == [], do: @v39_phases, else: phases
+        if phases == [], do: @v40_phases, else: phases
 
       nil ->
-        @v39_phases
+        @v40_phases
     end
   end
 

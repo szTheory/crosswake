@@ -1,5 +1,104 @@
 # Project Milestones: Crosswake
 
+## v6.0 Adoption Evidence Demo App (Flashcard Cohort) (Shipped: 2026-06-09)
+
+**Delivered:** A flashcard language-learning demo app that exercises the full `Crosswake.Offline` island philosophy end-to-end — online LiveView dashboard, downloadable content packs, a vanilla-JS offline study engine over IndexedDB, and server-side sync reconciliation on reconnect.
+
+**Phases completed:** 84-90 (7 phases, 9 plans)
+**Stats:** 51 files modified (+2727, -32 LOC), 2026-06-08 → 2026-06-09
+
+**Key accomplishments:**
+
+- Defined `Crosswake.Offline.ContentPack` as a strongly-typed struct enforced at the route-policy boundary and compiled into the root manifest's pack registry.
+- Defined `Crosswake.Sync.EventLog.Entry` plus a `mix crosswake.gen.sync` task that scaffolds host-owned Ecto schema + Phoenix reconciliation controller with idempotency keys.
+- Scaffolded the Flashcard domain (Decks/Cards/Progress) with `binary_id` keys for offline-sync compatibility, Phoenix context, migrations, and demo seeds.
+- Built brand-aligned `DeckLive.Index`/`DeckLive.Show` LiveViews wired through the router with `crosswake_defaults` policy, plus a vanilla-JS offline study engine wrapping IndexedDB.
+- Connected the offline island to the native shell, applied Brand Book CSS/UI polish, and proved the offline-study loop with network-toggling Playwright E2E tests asserting Ecto sync state post-reconnect.
+
+**Known issues fixed at close:** The demo app's `OfflineController`/`OfflineHTML` (Phase 88) used a non-existent `CrosswakeExampleWeb` macro module and were never wired into the router, breaking compilation — hidden by the mocked Playwright closeout. Fixed to the app's plain-Phoenix convention; `mix test` now passes 15/15.
+
+**Known deferred items at close:** 2 (see STATE.md Deferred Items) — Phase 81 verification gap (human_needed, carried from v5.1) and the `tighten-validation-ledger-closeout-gate` quick task.
+
+---
+
+## v5.1 Adoption Evidence Demo App (Shipped: 2026-06-09)
+
+**Phases completed:** 4 phases, 8 plans, 6 tasks
+
+**Key accomplishments:**
+
+- Task 1
+- Implemented native Android Flow publishers for connection state and server events, wired cleanly to Compose overlay and toast elements.
+- Implemented native iOS Combine publishers for connection state and server events, wired cleanly to SwiftUI overlay and toast elements.
+- Implemented RouteDelegate and capability reporting in iOS and Android shell cores with fail-closed native routing
+
+---
+
+## v5.0 Standalone Publishable Shell Packages (Shipped: 2026-06-06)
+
+**Phases completed:** 76-79 (4 phases, 11 plans)
+**Stats:** 96 files modified (+4452, -3497 LOC)
+
+**Key accomplishments:**
+
+- Extracted iOS core logic into standalone Swift Package Manager dependency.
+- Extracted Android core logic into standalone Maven Central artifact.
+- Replaced raw object generation with unified builder and reactive state APIs.
+- Updated generator tooling to output thin dependency-driven host projects.
+- Verified all new libraries and generators are hermetic via closeout lane.
+
+**Known deferred items at close:** 3 (see STATE.md Deferred Items)
+
+**Archive:**
+
+- `.planning/milestones/v5.0-ROADMAP.md`
+- `.planning/milestones/v5.0-REQUIREMENTS.md`
+
+## v4.1 Multi-SaaS Archetype Proof Lanes (Shipped: 2026-06-05)
+
+**Phases completed:** 6 phases, 13 plans
+
+**Key accomplishments:**
+
+- Proved an end-to-end subscription SaaS commerce corridor using mock storefront adapters, ensuring entitlement projections are strictly backend-promoted.
+- Validated a notification-driven workflow, verifying Chimeway push-token binding connects cleanly with Sigra session state and RouteGate enforces auth checks on deep-links without silent fallbacks.
+- Verified a media/evidence capture workflow using Rindle reconciliation to recover from degraded network failures, keeping local capture signals non-authoritative.
+- Proved an auth-sensitive admin workflow by triggering Sigra step-up ceremonies, ensuring native shell session persistence requires handoff tickets for administrative routes.
+- Proved an offline/draft recovery workflow that enforces explicit `:cached_read_only` and `:local_first` policies, rejecting generic universal sync abstractions.
+- Ensured all E2E archetype proofs run hermetically in CI without requiring manual device verification.
+
+**Verification:** Milestone closeout (`.planning/milestones/v4.1-CLOSEOUT.md`) passed all checks, enforced by `mix closeout.verify`.
+
+**Archive:**
+
+- `.planning/milestones/v4.1-ROADMAP.md`
+- `.planning/milestones/v4.1-REQUIREMENTS.md`
+- `.planning/milestones/v4.1-CLOSEOUT.md`
+
+---
+
+## v4.0 Production Shell Runtime Line (Shipped: 2026-06-04)
+
+**Phases completed:** 6 phases, 18 plans
+
+**Key accomplishments:**
+
+- Established the Runtime-Line Policy Contract and Support-Truth Taxonomy.
+- Shipped the Diagnostic Export Seam in Elixir.
+- Fixed Xcode 26 CI and updated Generator Templates.
+- Implemented Native Shells with Android JVM Hermetic Proof.
+- Reached Android Verification Closure and Device-UAT.
+- Executed the Docs-Contract Parity Gate, Android Promotion, and Closeout.
+
+**Verification:** Milestone closeout (`.planning/milestones/v4.0-CLOSEOUT.md`) completed.
+
+**Archive:**
+
+- `.planning/milestones/v4.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v4.0-CLOSEOUT.md`
+
+---
+
 ## v3.9 Chimeway Notification Seam (Shipped: 2026-06-03)
 
 **Phases completed:** 5 phases, 17 plans, 12 tasks

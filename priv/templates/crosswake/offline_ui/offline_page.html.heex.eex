@@ -1,0 +1,22 @@
+<div class="min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="max-w-md w-full bg-white rounded-lg shadow-md p-6 border-t-4 border-cw-wake-700">
+    <h1 class="text-2xl font-bold mb-4 text-cw-current-950">Offline Workspace</h1>
+    
+    <div class="mb-6 p-4 bg-cw-foam-50 rounded border border-cw-brass-500">
+      <p class="text-sm font-medium text-cw-brass-500 mb-1">Status</p>
+      <p class="text-lg">Available offline</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="p-3 border rounded border-gray-200">
+        <p class="text-cw-current-950 font-semibold">Study Session A</p>
+        <p class="text-sm text-gray-500">Pending server confirmation</p>
+      </div>
+      
+      <div class="p-3 border rounded border-gray-200">
+        <p class="text-cw-current-950 font-semibold">Study Session B</p>
+        <p class="text-sm text-gray-500">Draft only</p>
+      </div>
+    </div>
+  </div>
+</div>

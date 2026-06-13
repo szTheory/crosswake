@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crosswake Brand Book</title>
+
+  <!-- D-02: Google Fonts — Space Grotesk, Atkinson Hyperlegible Next, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Atkinson+Hyperlegible+Next:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <!-- D-03: Design token variables -->
+  <link rel="stylesheet" href="tokens/tokens.css">
+  <!-- Layout + typography layer -->
+  <link rel="stylesheet" href="assets/brandbook.css">
+
+  <!-- Deferred behaviour: scroll-spy, copy-hex, live contrast badges -->
+  <script src="assets/brandbook.js" defer></script>
+</head>
+<body>
+
+<!-- ── Sticky Nav ── -->
+<nav class="book-nav" aria-label="Brand book sections">
+  <a href="#hero">Cover</a>
+  <a href="#essence">Essence</a>
+  <a href="#logo-system">Logo</a>
+  <a href="#color">Color</a>
+  <a href="#typography">Type</a>
+  <a href="#tokens">Tokens</a>
+  <a href="#motifs">Motifs</a>
+  <a href="#voice">Voice</a>
+  <a href="#ui-specimens">UI</a>
+  <a href="#asset-index">Assets</a>
+</nav>
+
+<main>
+
+<!-- ── Section 1: Cover Hero ── -->
+<section id="hero" class="dark-section">
+  <div class="hero-inner">
+    <img
+      class="hero-lockup"
+      src="logo/crosswake-lockup-horizontal-dark.svg"
+      alt="Crosswake"
+      width="420"
+      height="80"
+    >
+    <p class="hero-promise">Declare the crossing. Keep the boundary honest.</p>
+  </div>
+</section>
+
+<!-- ── Section 2: Brand Essence ── -->
+<section id="essence" class="book-section">
+  <h2>Brand Essence</h2>
+
+  <div class="callout" style="margin-bottom:2.5rem;">
+    <p style="font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:600;color:var(--cw-text-default);margin-bottom:0.5rem;">Boundary-aware mobility.</p>
+    <p>Crosswake is the clean trail left by a Phoenix app crossing into mobile runtimes without pretending the boundary disappeared. Every element of the brand communicates: explicit, honest, durable, technically controlled.</p>
+  </div>
+
+  <h3>Personality Traits</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:1rem;margin-bottom:2rem;">
+    <div class="route-card">
+      <div class="route-card__label">Explicit</div>
+      <div class="route-card__title">Everything is named</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Routes, runtimes, capabilities, policies — nothing is implicit.</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Calm</div>
+      <div class="route-card__title">No hype, no magic</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">No "seamless," no "magic bridge," no "write once." Calm confidence.</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Technical</div>
+      <div class="route-card__title">Designed for maintainers</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">For Phoenix engineers who read source code and care about correctness.</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Honest</div>
+      <div class="route-card__title">Failure modes first</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Failure modes are documented before features. Native work still requires native work.</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">OSS-generous</div>
+      <div class="route-card__title">Maintainer judgment</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">The maintainer shares judgment, not just syntax.</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Precise</div>
+      <div class="route-card__title">Measurements, contracts</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Verdicts, not approximations. Contracts, not suggestions.</p>
+    </div>
+  </div>
+
+  <h3>Anti-Traits</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Trait to avoid</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;color:var(--cw-status-error);">Salesy</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">No "powerful," "seamless," "next-generation."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;color:var(--cw-status-error);">Evasive</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Never hide that native development still requires native work.</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;color:var(--cw-status-error);">Trend-chasing</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">No chasing visual fashions that won't survive two OSS cycles.</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.75rem;font-weight:600;color:var(--cw-status-error);">Omniscient</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Never claim "offline just works" or "all screens are one runtime."</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Design Principles</h3>
+  <ol style="padding-left:1.25rem;display:flex;flex-direction:column;gap:0.75rem;color:var(--cw-text-default);">
+    <li><strong>The diagram is the product.</strong> Runtime boundaries made visible are the core value.</li>
+    <li><strong>Contrast as contract.</strong> Accessible color is not a feature; it is the brand.</li>
+    <li><strong>Technical quiet.</strong> Docs should be quieter than marketing; marketing should be honest enough to belong next to docs.</li>
+    <li><strong>One color family per runtime.</strong> The palette gives each runtime a distinct signal without competing.</li>
+  </ol>
+</section>
+
+<!-- ── Section 3: Logo System ── -->
+<section id="logo-system" class="book-section">
+  <h2>Logo System</h2>
+
+  <h3>Production Assets</h3>
+  <p style="color:var(--cw-text-muted);margin-bottom:1.5rem;">Eight production SVGs — all path-only, no embedded fonts, self-contained from the LOGO-05 signed-off V1 baseline geometry.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1rem;margin-bottom:2.5rem;">
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-lockup-horizontal.svg" alt="Crosswake horizontal lockup (light)" width="220" height="42" style="height:2.625rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-lockup-horizontal.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">Mark + wordmark, light backgrounds</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;background-color:var(--cw-surface-inverse);border-color:var(--cw-border-strong);">
+      <img src="logo/crosswake-lockup-horizontal-dark.svg" alt="Crosswake horizontal lockup (dark)" width="220" height="42" style="height:2.625rem;width:auto;">
+      <div>
+        <div class="route-card__label" style="color:var(--cw-text-inverse);opacity:0.7;">crosswake-lockup-horizontal-dark.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-inverse);opacity:0.6;">Mark + wordmark, dark backgrounds</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-lockup-stacked.svg" alt="Crosswake stacked lockup" width="80" height="72" style="height:4.5rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-lockup-stacked.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">Mark above wordmark, square contexts</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-lockup-subtitle.svg" alt="Crosswake lockup with subtitle tagline" width="220" height="52" style="height:3.25rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-lockup-subtitle.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">Lockup + "Declare the crossing." tagline</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-mark.svg" alt="Crosswake wake mark icon" width="48" height="48" style="height:3rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-mark.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">Wake mark, currentColor embeddable</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-mark-mono.svg" alt="Crosswake wake mark mono" width="48" height="48" style="height:3rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-mark-mono.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">Wake mark, literal #09141A — strip-safe</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/crosswake-typemark.svg" alt="Crosswake typemark wordmark" width="180" height="32" style="height:2rem;width:auto;">
+      <div>
+        <div class="route-card__label">crosswake-typemark.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">W1 wordmark, currentColor embeddable</div>
+      </div>
+    </div>
+    <div class="route-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.75rem;">
+      <img src="logo/favicon.svg" alt="Crosswake favicon mark" width="32" height="32" style="height:2rem;width:auto;">
+      <div>
+        <div class="route-card__label">favicon.svg</div>
+        <div style="font-size:0.8rem;color:var(--cw-text-muted);">16-grid redraw, 2 wake strokes, dark-mode swap</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Clearspace &amp; Minimum Sizes</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2.5rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Variant</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Minimum</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Clearspace</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;">Horizontal lockup</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;">128px wide</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">x-height of wordmark on all four sides</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;">Stacked lockup</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;">64px wide</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">x-height of wordmark on all four sides</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;">Icon mark (UI)</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;">24px</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">One stroke width + one wake-gap on all sides</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-weight:600;">Icon mark (README)</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;">32px</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">One stroke width + one wake-gap on all sides</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.75rem;font-weight:600;">Favicon</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;">16px</td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Simplified 2-stroke wake; no small details</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Misuse Examples</h3>
+  <p style="color:var(--cw-text-muted);margin-bottom:1.5rem;">Each of these uses is rejected. Crossing one out signals it must never appear in production.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:1.25rem;margin-bottom:1rem;">
+
+    <!-- Misuse 1: cyan recolor — inline mark SVG overriding stroke to cyan -->
+    <div class="route-card" style="position:relative;overflow:hidden;">
+      <div style="position:relative;display:inline-block;padding:0.75rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Misuse: cyan recolor of wake mark" width="48" height="48" style="color:#00BFFF;display:block;">
+          <g fill="none" stroke="currentColor" stroke-width="6.667" stroke-linecap="round">
+            <line x1="0" y1="43.65" x2="27.30" y2="33.71"/>
+            <line x1="36.70" y1="30.29" x2="64" y2="20.35"/>
+            <line x1="20.59" y1="50.34" x2="52.53" y2="38.71"/>
+            <line x1="25.15" y1="62.87" x2="57.10" y2="51.24"/>
+          </g>
+        </svg>
+        <!-- Strikethrough overlay -->
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+          <line x1="5" y1="5" x2="95" y2="95" stroke="#9A4D35" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="route-card__label" style="color:var(--cw-status-error);">REJECTED</div>
+      <div class="route-card__title" style="font-size:0.9rem;">Cyan recolor</div>
+      <p style="font-size:0.8rem;color:var(--cw-text-muted);margin-top:0.35rem;">Contradicts React Native avoidance. Crosswake never uses bright cyan as a hero accent.</p>
+    </div>
+
+    <!-- Misuse 2: mark inside a boxed card/blob -->
+    <div class="route-card" style="position:relative;overflow:hidden;">
+      <div style="position:relative;display:inline-block;padding:0.75rem;">
+        <div style="background:linear-gradient(135deg,#2B756A,#254855);border-radius:0.75rem;padding:0.75rem;display:inline-block;">
+          <img src="logo/crosswake-mark.svg" alt="Wake mark inside a gradient blob (misuse)" width="36" height="36" style="filter:invert(1);display:block;">
+        </div>
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+          <line x1="5" y1="5" x2="95" y2="95" stroke="#9A4D35" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="route-card__label" style="color:var(--cw-status-error);">REJECTED</div>
+      <div class="route-card__title" style="font-size:0.9rem;">Mark inside a blob</div>
+      <p style="font-size:0.8rem;color:var(--cw-text-muted);margin-top:0.35rem;">Never place the mark inside a bounding shape, drop-shadow card, or gradient blob.</p>
+    </div>
+
+    <!-- Misuse 3: stretched/rotated mark -->
+    <div class="route-card" style="position:relative;overflow:hidden;">
+      <div style="position:relative;display:inline-block;padding:0.75rem;">
+        <img src="logo/crosswake-mark.svg" alt="Wake mark stretched and rotated off 20 degrees (misuse)" width="64" height="36" style="transform:scaleY(0.55) rotate(45deg);transform-origin:center;display:block;">
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+          <line x1="5" y1="5" x2="95" y2="95" stroke="#9A4D35" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="route-card__label" style="color:var(--cw-status-error);">REJECTED</div>
+      <div class="route-card__title" style="font-size:0.9rem;">Stretched / rotated</div>
+      <p style="font-size:0.8rem;color:var(--cw-text-muted);margin-top:0.35rem;">The crossing angle is the brand geometry. Never stretch or rotate off the 20° wake angle.</p>
+    </div>
+
+    <!-- Misuse 4: subtitle lockup used as main lockup -->
+    <div class="route-card" style="position:relative;overflow:hidden;">
+      <div style="position:relative;display:inline-block;padding:0.75rem;">
+        <img src="logo/crosswake-lockup-subtitle.svg" alt="Subtitle lockup misused as main lockup (misuse)" width="180" height="52" style="height:3.25rem;width:auto;display:block;">
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+          <line x1="5" y1="5" x2="95" y2="95" stroke="#9A4D35" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="route-card__label" style="color:var(--cw-status-error);">REJECTED</div>
+      <div class="route-card__title" style="font-size:0.9rem;">Subtitle as main lockup</div>
+      <p style="font-size:0.8rem;color:var(--cw-text-muted);margin-top:0.35rem;">The subtitle variant carries the tagline — use only in brand introduction contexts. Not as the primary mark.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Section 4: Color ── -->
+<section id="color" class="book-section">
+  <h2>Color</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">The Crosswake palette is coastal, muted, and technical. It avoids React Native cyan, Hotwire red/orange, Phoenix purple/orange, and Capacitor electric blue. All swatches carry live WCAG contrast badges computed by brandbook.js.</p>
+
+  <h3>Primitive Palette</h3>
+  <div class="swatch-grid" style="margin-bottom:2.5rem;">
+
+    <!-- Current family -->
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#09141A">
+      <div class="swatch-preview" style="background-color:#09141A;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Current 950</span>
+        <span class="swatch-hex">#09141A</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#09141A" aria-label="Copy #09141A">#09141A</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#0F1E26">
+      <div class="swatch-preview" style="background-color:#0F1E26;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Current 900</span>
+        <span class="swatch-hex">#0F1E26</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#0F1E26" aria-label="Copy #0F1E26">#0F1E26</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#162B35">
+      <div class="swatch-preview" style="background-color:#162B35;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Current 800</span>
+        <span class="swatch-hex">#162B35</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#162B35" aria-label="Copy #162B35">#162B35</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#254855">
+      <div class="swatch-preview" style="background-color:#254855;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Harbor 700</span>
+        <span class="swatch-hex">#254855</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#254855" aria-label="Copy #254855">#254855</button></div>
+      </div>
+    </div>
+
+    <!-- Wake family -->
+    <div class="swatch-card" data-fg="#FFFFFF" data-bg="#2B756A">
+      <div class="swatch-preview" style="background-color:#2B756A;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Wake 700</span>
+        <span class="swatch-hex">#2B756A</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#2B756A" aria-label="Copy #2B756A">#2B756A</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#09141A" data-bg="#4E9A8E">
+      <div class="swatch-preview" style="background-color:#4E9A8E;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Wake 500</span>
+        <span class="swatch-hex">#4E9A8E</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#4E9A8E" aria-label="Copy #4E9A8E">#4E9A8E</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#123B36">
+      <div class="swatch-preview" style="background-color:#123B36;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Kelp 800</span>
+        <span class="swatch-hex">#123B36</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#123B36" aria-label="Copy #123B36">#123B36</button></div>
+      </div>
+    </div>
+
+    <!-- Brass family -->
+    <div class="swatch-card" data-fg="#09141A" data-bg="#C98A2E">
+      <div class="swatch-preview" style="background-color:#C98A2E;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Brass 500</span>
+        <span class="swatch-hex">#C98A2E</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#C98A2E" aria-label="Copy #C98A2E">#C98A2E</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#FFFFFF" data-bg="#946017">
+      <div class="swatch-preview" style="background-color:#946017;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Brass 700</span>
+        <span class="swatch-hex">#946017</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#946017" aria-label="Copy #946017">#946017</button></div>
+      </div>
+    </div>
+
+    <!-- Foam family -->
+    <div class="swatch-card" data-fg="#09141A" data-bg="#F7F1E6">
+      <div class="swatch-preview" style="background-color:#F7F1E6;border-top:1px solid #C9D4CF;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Foam 50</span>
+        <span class="swatch-hex">#F7F1E6</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#F7F1E6" aria-label="Copy #F7F1E6">#F7F1E6</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#09141A" data-bg="#EFE6D6">
+      <div class="swatch-preview" style="background-color:#EFE6D6;border-top:1px solid #C9D4CF;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Foam 100</span>
+        <span class="swatch-hex">#EFE6D6</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#EFE6D6" aria-label="Copy #EFE6D6">#EFE6D6</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#09141A" data-bg="#C9D4CF">
+      <div class="swatch-preview" style="background-color:#C9D4CF;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Mist 200</span>
+        <span class="swatch-hex">#C9D4CF</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#C9D4CF" aria-label="Copy #C9D4CF">#C9D4CF</button></div>
+      </div>
+    </div>
+
+    <!-- Stone family — note remediation -->
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#756D63">
+      <div class="swatch-preview" style="background-color:#756D63;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Stone 600 <span style="color:var(--cw-status-success);font-size:0.7rem;">(D-02)</span></span>
+        <span class="swatch-hex">#756D63</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#756D63" aria-label="Copy #756D63">#756D63</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#7C746A">
+      <div class="swatch-preview" style="background-color:#7C746A;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Stone 500</span>
+        <span class="swatch-hex">#7C746A</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#7C746A" aria-label="Copy #7C746A">#7C746A</button></div>
+      </div>
+    </div>
+
+    <!-- Rust + Plum -->
+    <div class="swatch-card" data-fg="#FFFFFF" data-bg="#9A4D35">
+      <div class="swatch-preview" style="background-color:#9A4D35;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Rust 600</span>
+        <span class="swatch-hex">#9A4D35</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#9A4D35" aria-label="Copy #9A4D35">#9A4D35</button></div>
+      </div>
+    </div>
+    <div class="swatch-card" data-fg="#F7F1E6" data-bg="#372D4C">
+      <div class="swatch-preview" style="background-color:#372D4C;"></div>
+      <div class="swatch-meta">
+        <span class="swatch-name">Plum 700</span>
+        <span class="swatch-hex">#372D4C</span>
+        <div style="margin-top:0.3rem;"><span class="badge"></span> <button class="copy-btn" data-copy-hex="#372D4C" aria-label="Copy #372D4C">#372D4C</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout" style="margin-bottom:2.5rem;">
+    <strong>Stone 600 remediation (D-02):</strong> Stone 500 (#7C746A) on Foam 50 fails WCAG AA normal text at 4.09:1. Stone 600 (#756D63) was added: 4.53:1 on Foam 50 — PASS. Use Stone 600 as <code>text.muted</code> for normal-size secondary text on light surfaces. Stone 500 is narrow use: large text ≥24px, disabled states, decorative only.
+  </div>
+
+  <h3>Runtime Semantic Roles</h3>
+  <p style="color:var(--cw-text-muted);margin-bottom:1rem;">The <code>runtime.*</code> tier is Crosswake's single most important differentiator. These tokens encode runtime ownership directly into the CSS layer.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Token</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Swatch</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Semantic role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">runtime-liveview</td>
+        <td style="padding:0.6rem 0.75rem;"><span style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background-color:var(--cw-runtime-liveview);vertical-align:middle;"></span></td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">LiveView server-centric runtime</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">runtime-offline</td>
+        <td style="padding:0.6rem 0.75rem;"><span style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background-color:var(--cw-runtime-offline);vertical-align:middle;"></span></td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Offline island runtime</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">runtime-native</td>
+        <td style="padding:0.6rem 0.75rem;"><span style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background-color:var(--cw-runtime-native);vertical-align:middle;"></span></td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Native screen ownership</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">runtime-sensitive</td>
+        <td style="padding:0.6rem 0.75rem;"><span style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background-color:var(--cw-runtime-sensitive);vertical-align:middle;"></span></td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Sensitive / cache-never routes</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">runtime-bridge</td>
+        <td style="padding:0.6rem 0.75rem;"><span style="display:inline-block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background-color:var(--cw-runtime-bridge);vertical-align:middle;"></span></td>
+        <td style="padding:0.6rem 0.75rem;color:var(--cw-text-muted);">Bridge contract surface</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Approved Pairings</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:0.75rem;margin-bottom:1rem;">
+    <div data-fg="#F7F1E6" data-bg="#09141A" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#09141A;color:#F7F1E6;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">Hero text</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">Foam 50 on Current 950 <span class="badge"></span></div>
+    </div>
+    <div data-fg="#09141A" data-bg="#F7F1E6" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#F7F1E6;color:#09141A;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">Body text</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">Current 950 on Foam 50 <span class="badge"></span></div>
+    </div>
+    <div data-fg="#FFFFFF" data-bg="#2B756A" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#2B756A;color:#FFFFFF;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">Primary button</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">White on Wake 700 <span class="badge"></span></div>
+    </div>
+    <div data-fg="#09141A" data-bg="#C98A2E" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#C98A2E;color:#09141A;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">CTA on dark</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">Current 950 on Brass 500 <span class="badge"></span></div>
+    </div>
+    <div data-fg="#FFFFFF" data-bg="#9A4D35" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#9A4D35;color:#FFFFFF;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">Sensitive badge</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">White on Rust 600 <span class="badge"></span></div>
+    </div>
+    <div data-fg="#F7F1E6" data-bg="#756D63" style="border-radius:0.375rem;overflow:hidden;border:1px solid var(--cw-border-default);">
+      <div style="background:#756D63;color:#F7F1E6;padding:0.75rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;">Muted text</div>
+      <div style="padding:0.5rem 0.75rem;background:var(--cw-surface-raised);font-size:0.75rem;color:var(--cw-text-muted);">Foam 50 on Stone 600 <span class="badge"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 5: Typography ── -->
+<section id="typography" class="book-section">
+  <h2>Typography</h2>
+
+  <!-- Display face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">Space Grotesk</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">display</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Hero headings, section headings, short callouts. Weights 500/600/700. Letter-cut `w`/`k` at 20° wake angle in the production wordmark (D-11 mandatory).</p>
+    <div style="background-color:var(--cw-surface-raised);border-radius:0.5rem;padding:2rem;margin-bottom:0.75rem;">
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:var(--cw-text-default);">Declare the crossing.</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:600;color:var(--cw-text-default);margin-top:0.75rem;">Phoenix routes, native where it matters.</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:500;color:var(--cw-text-muted);margin-top:0.5rem;">Route policy for Phoenix apps that go mobile.</p>
+    </div>
+    <div class="code-block"><span style="color:var(--cw-primitive-mist-200);">/* Fallback stack */</span>
+--cw-font-display: <span style="color:var(--cw-primitive-brass-500);">"Space Grotesk"</span>, ui-sans-serif, system-ui, -apple-system, <span style="color:var(--cw-primitive-brass-500);">"Segoe UI"</span>, sans-serif;</div>
+  </div>
+
+  <!-- Body face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">Atkinson Hyperlegible Next</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">body</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Documentation body, UI labels, component copy, long-form guides. Weights 400/500/600. Designed for legibility — accessibility as a visible brand feature.</p>
+    <div style="background-color:var(--cw-surface-raised);border-radius:0.5rem;padding:2rem;margin-bottom:0.75rem;">
+      <p style="font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',sans-serif;font-size:1rem;line-height:1.6;color:var(--cw-text-default);">Crosswake helps Phoenix teams ship mobile apps by making runtime boundaries explicit: server-centric screens stay LiveView, device-heavy flows go native, and local-first work lives in offline islands.</p>
+      <p style="font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',sans-serif;font-size:0.875rem;line-height:1.55;color:var(--cw-text-muted);margin-top:0.75rem;">Each route declares its runtime, capabilities, offline policy, and security posture. The system tells you exactly what runs where, what can fail, and what you own versus what Crosswake owns.</p>
+    </div>
+    <div class="code-block">--cw-font-body: <span style="color:var(--cw-primitive-brass-500);">"Atkinson Hyperlegible Next"</span>, ui-sans-serif, system-ui, -apple-system, <span style="color:var(--cw-primitive-brass-500);">"Segoe UI"</span>, sans-serif;</div>
+  </div>
+
+  <!-- Code face -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.5rem;">
+      <h3 style="margin-bottom:0;">JetBrains Mono</h3>
+      <span style="font-size:0.8rem;color:var(--cw-text-muted);font-family:'JetBrains Mono',monospace;">mono</span>
+    </div>
+    <p style="color:var(--cw-text-muted);font-size:0.875rem;margin-bottom:1rem;">Code blocks, inline code, CLI examples, version and manifest values. Weights 400/500.</p>
+    <div class="code-block">route <span style="color:var(--cw-primitive-brass-500);">"/study/session"</span>,
+  runtime: {<span style="color:var(--cw-primitive-wake-500);">:offline_island</span>, <span style="color:var(--cw-primitive-brass-500);">"study.session"</span>},
+  content_pack: <span style="color:var(--cw-primitive-wake-500);">:daily_study</span>,
+  capabilities: [<span style="color:var(--cw-primitive-wake-500);">:audio</span>, <span style="color:var(--cw-primitive-wake-500);">:haptics</span>]</div>
+    <div class="code-block" style="margin-top:0.5rem;">--cw-font-mono: <span style="color:var(--cw-primitive-brass-500);">"JetBrains Mono"</span>, <span style="color:var(--cw-primitive-brass-500);">"SFMono-Regular"</span>, Consolas, <span style="color:var(--cw-primitive-brass-500);">"Liberation Mono"</span>, monospace;</div>
+  </div>
+
+  <!-- Type scale -->
+  <h3>Type Scale</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:1rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Token</th>
+        <th style="text-align:right;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Size</th>
+        <th style="text-align:right;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Line height</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.xs</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">12px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">16px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Badges, metadata</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.sm</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">14px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">20px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Nav, labels</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.md</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">16px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">24px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Body</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.lg</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">18px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">28px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Lead body</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">text.xl</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">20px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">30px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Card headings</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.sm</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">28px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">36px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Docs page title</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.md</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">40px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">48px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Landing section title (–0.02em tracking)</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">display.lg</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;">56px</td>
+        <td style="padding:0.5rem 0.75rem;text-align:right;color:var(--cw-text-muted);">64px</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Hero headline (–0.02em tracking)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Section 6: Design Tokens ── -->
+<section id="tokens" class="book-section">
+  <h2>Design Tokens</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">The Crosswake token system uses two tiers. No component tier — deliberate to prevent naming churn and keep the public contract stable.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:1rem;margin-bottom:2.5rem;">
+    <div class="route-card">
+      <div class="route-card__label">Tier 1</div>
+      <div class="route-card__title">Primitive tokens</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Internal only. Raw hex values. Never reference in component CSS. Named <code>--cw-primitive-{family}-{weight}</code>.</p>
+      <p style="font-size:0.8rem;font-family:'JetBrains Mono',monospace;color:var(--cw-text-subtle);margin-top:0.5rem;">17 total (16 palette + Stone 600)</p>
+    </div>
+    <div class="route-card">
+      <div class="route-card__label">Tier 2</div>
+      <div class="route-card__title">Semantic tokens</div>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-top:0.5rem;">Public contract. Named <code>--cw-{role}-{variant}</code>. These are the only tokens component CSS should reference.</p>
+      <p style="font-size:0.8rem;font-family:'JetBrains Mono',monospace;color:var(--cw-text-subtle);margin-top:0.5rem;">27 total (surface/text/action/border/status/runtime)</p>
+    </div>
+  </div>
+
+  <h3>Source Files</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:2rem;">
+    <a href="tokens/crosswake.tokens.json" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.875rem;border:1px solid var(--cw-border-default);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);text-decoration:none;background-color:var(--cw-surface-raised);">
+      <span>tokens/crosswake.tokens.json</span>
+    </a>
+    <a href="tokens/tokens.css" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.875rem;border:1px solid var(--cw-border-default);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);text-decoration:none;background-color:var(--cw-surface-raised);">
+      <span>tokens/tokens.css</span>
+    </a>
+  </div>
+  <div class="callout" style="margin-bottom:2rem;">
+    <strong>Edit policy:</strong> Always edit <code>crosswake.tokens.json</code> and run <code>node brandbook/tools/compile-tokens.js</code>. The <code>tokens.css</code> file is generated — its header reads "GENERATED — do not edit."
+  </div>
+
+  <h3>Worked Examples</h3>
+  <div class="code-block" style="margin-bottom:1rem;"><span style="color:var(--cw-primitive-mist-200);">/* 1. Body text on light background */</span>
+color: <span style="color:var(--cw-primitive-wake-500);">var(--cw-text-default)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → --cw-primitive-current-950 (#09141A) */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-surface-default)</span>;    <span style="color:var(--cw-primitive-mist-200);">/* resolves → --cw-primitive-foam-50 (#F7F1E6) */</span></div>
+  <div class="code-block" style="margin-bottom:1rem;"><span style="color:var(--cw-primitive-mist-200);">/* 2. Primary button (light mode) */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-bg)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → wake-700 (#2B756A) */</span>
+color:      <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-fg)</span>;         <span style="color:var(--cw-primitive-mist-200);">/* resolves → white (#FFFFFF) */</span>
+outline:    2px solid <span style="color:var(--cw-primitive-wake-500);">var(--cw-action-focus-ring)</span>; <span style="color:var(--cw-primitive-mist-200);">/* focus: brass-500 */</span></div>
+  <div class="code-block"><span style="color:var(--cw-primitive-mist-200);">/* 3. Runtime badge — offline island */</span>
+background: <span style="color:var(--cw-primitive-wake-500);">var(--cw-runtime-offline)</span>;    <span style="color:var(--cw-primitive-mist-200);">/* resolves → kelp-800 (#123B36) */</span>
+color:      <span style="color:var(--cw-primitive-wake-500);">var(--cw-text-inverse)</span>;      <span style="color:var(--cw-primitive-mist-200);">/* resolves → foam-50 (#F7F1E6) */</span></div>
+
+  <h3 style="margin-top:2rem;">Dark Mode</h3>
+  <p style="color:var(--cw-text-muted);margin-bottom:1rem;">Only semantic tokens flip in dark mode; primitives never change. System dark mode uses <code>@media (prefers-color-scheme: dark)</code>; explicit toggle uses <code>[data-theme="dark"]</code>.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Surface level</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Dark value</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.default</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-950</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Page background</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.raised</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-900</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Cards, code blocks</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.inset</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">current-800</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Inset panels, nested cards</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">surface.inverse</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">foam-50</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">CTA sections, callouts</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Section 7: Motifs ── -->
+<section id="motifs" class="book-section">
+  <h2>Motifs</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">The Crosswake visual language uses three motifs. Restraint is the point — these appear sparse, never decorative for decoration's sake.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:2rem;margin-bottom:2rem;">
+
+    <!-- Wake seams -->
+    <div>
+      <h3 style="margin-bottom:0.75rem;">Wake Seams</h3>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-bottom:1rem;">Diagonal or gently curved line groups implying movement through a runtime boundary. 2–4 parallel lines, rounded caps, 1.5–3px stroke. Used in hero backgrounds, diagram dividers, and section accents.</p>
+      <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:2rem;display:flex;align-items:center;justify-content:center;">
+        <!-- Wake seam motif: 3 parallel diagonal lines at 20deg, sparse -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Wake seam motif — three parallel diagonal lines" width="200" height="80">
+          <g fill="none" stroke="#2B756A" stroke-width="2" stroke-linecap="round">
+            <!-- Wake seam 1 -->
+            <line x1="30" y1="68" x2="110" y2="38"/>
+            <!-- Wake seam 2 (trailing) -->
+            <line x1="50" y1="74" x2="130" y2="44"/>
+            <!-- Wake seam 3 (trailing farther) -->
+            <line x1="70" y1="80" x2="150" y2="50"/>
+          </g>
+          <!-- Crossing route line -->
+          <g fill="none" stroke="#4E9A8E" stroke-width="2" stroke-linecap="round">
+            <line x1="20" y1="58" x2="76" y2="38"/>
+            <line x1="84" y1="35.4" x2="180" y2="8"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:0.8rem;color:var(--cw-text-subtle);margin-top:0.5rem;">Used in hero backgrounds, section dividers, empty states. Never behind dense text.</p>
+    </div>
+
+    <!-- Runtime lanes -->
+    <div>
+      <h3 style="margin-bottom:0.75rem;">Runtime Lanes</h3>
+      <p style="font-size:0.875rem;color:var(--cw-text-muted);margin-bottom:1rem;">Horizontal or vertical lanes showing which runtime owns each route. These diagrams should feel like technical maps, not marketing infographics.</p>
+      <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:1.25rem;">
+        <!-- Runtime lanes motif: vertical lane strip with labels -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100" role="img" aria-label="Runtime lanes motif — four labeled lanes" width="100%" height="100" style="display:block;">
+          <defs>
+            <style>
+              .lane-label { font-size: 9px; font-family: 'JetBrains Mono', monospace; fill: #F7F1E6; }
+            </style>
+          </defs>
+          <!-- Lane backgrounds -->
+          <rect x="2"   y="10" width="60" height="80" rx="4" fill="#254855" opacity="0.8"/>
+          <rect x="72"  y="10" width="60" height="80" rx="4" fill="#123B36" opacity="0.8"/>
+          <rect x="142" y="10" width="60" height="80" rx="4" fill="#946017" opacity="0.6"/>
+          <rect x="212" y="10" width="60" height="80" rx="4" fill="#9A4D35" opacity="0.7"/>
+          <!-- Lane labels (accessible text; no font binaries — system stack) -->
+          <text x="32"  y="50" text-anchor="middle" class="lane-label" dy="0.35em">LiveView</text>
+          <text x="102" y="44" text-anchor="middle" class="lane-label" dy="0.35em">Offline</text>
+          <text x="102" y="58" text-anchor="middle" class="lane-label" dy="0.35em">Island</text>
+          <text x="172" y="50" text-anchor="middle" class="lane-label" dy="0.35em">Native</text>
+          <text x="242" y="44" text-anchor="middle" class="lane-label" dy="0.35em">Sensitive</text>
+          <!-- Route path across lanes -->
+          <g fill="none" stroke="#C98A2E" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 3" opacity="0.8">
+            <polyline points="2,55 62,55 72,55 132,55 142,55 202,55 212,55 272,55"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:0.8rem;color:var(--cw-text-subtle);margin-top:0.5rem;">Used in architecture diagrams, runtime ladder, docs. Route lines cross lane boundaries explicitly.</p>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <strong>Usage rule:</strong> Motifs appear sparse. A wake seam in a hero does not need to be accompanied by runtime lanes. Sounding lines (thin contour-like background lines, opacity &lt;12%) may complement but never compete with content. Never use motifs as watermarks behind dense text.
+  </div>
+</section>
+
+<!-- ── Section 8: Voice & Microcopy ── -->
+<section id="voice" class="book-section">
+  <h2>Voice &amp; Microcopy</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">Write like a careful maintainer: precise, short, helpful, candid. Prefer operational truth over hype. Explain the boundary. Use metaphor sparingly.</p>
+
+  <h3>Write This / Not This</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2.5rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.6rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-status-success);">Write this</th>
+        <th style="text-align:left;padding:0.6rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-status-error);">Do not write this</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"This route requires a native screen in app runtime &gt;= 0.3.0."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Native mobile with no native work."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"Cached read-only means the user can view stale data, not submit changes."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Everything works offline."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"Use an offline island when the interaction loop must continue without the server."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Just add Crosswake."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"The camera capability is requested at point of use."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Magic bridge."</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"The bridge message is semantic; progress events stay native."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"One codebase for every app."</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-default);">"This action needs the server before it can be committed. The draft was saved locally."</td>
+        <td style="padding:0.6rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">"Never write Swift or Kotlin again."</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Tone by Surface</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2.5rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Surface</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Tone</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Landing page</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Confident, concise, architectural</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Docs</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Precise, direct, example-heavy</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">API references</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Boring on purpose; exact names and failure modes</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Error messages</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Calm, specific, actionable</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Release notes</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Specific, task-first, no drama. Lead with what changed. State what broke.</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">Community posts</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">OSS-friendly, curious, pragmatic</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-weight:600;">UI microcopy</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Short, status-oriented, no drama</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Runtime &amp; Status Label Glossary</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:0.5rem;margin-bottom:2rem;">
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-liveview);">LiveView route</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-offline);">Offline island</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-native);">Native screen</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-sensitive);">Sensitive route</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;border-left:3px solid var(--cw-runtime-bridge);">Adapter-backed screen</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Available offline</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Cached read-only</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Draft only</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Requires connection</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Requires native runtime</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Waiting for sync</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Pending server confirmation</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Server confirmed</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Capability unavailable</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Permission needed</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Runtime mismatch</div>
+    <div style="padding:0.4rem 0.75rem;background-color:var(--cw-surface-raised);border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cw-text-muted);">Cache disabled</div>
+  </div>
+
+  <h3>Error Message Examples</h3>
+  <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem;">
+    <div class="callout" style="border-left-color:var(--cw-status-error);">
+      <strong>Runtime mismatch</strong><br>
+      <span style="color:var(--cw-text-muted);">This route requires native runtime <code>0.3.0</code> or newer. Update the app or choose another route.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-status-error);">
+      <strong>Capability unavailable</strong><br>
+      <span style="color:var(--cw-text-muted);">Camera capture is not available in this app runtime. The route policy requires <code>:camera</code>.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-status-warning);">
+      <strong>Offline commit blocked</strong><br>
+      <span style="color:var(--cw-text-muted);">This action needs the server before it can be committed. The draft was saved locally.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-runtime-sensitive);">
+      <strong>Sensitive cache blocked</strong><br>
+      <span style="color:var(--cw-text-muted);">This route is marked sensitive and will not be cached.</span>
+    </div>
+    <div class="callout" style="border-left-color:var(--cw-runtime-bridge);">
+      <strong>Bridge payload rejected</strong><br>
+      <span style="color:var(--cw-text-muted);">Crosswake rejected this bridge message because it does not match the registered contract.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 9: UI Specimens ── -->
+<section id="ui-specimens" class="book-section">
+  <h2>UI Specimens</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">All specimens built from <code>var(--cw-*)</code> custom properties only — no hardcoded brand hex. Each demonstrates a real Crosswake UI pattern.</p>
+
+  <!-- Route card -->
+  <h3>Route Card</h3>
+  <div style="margin-bottom:2rem;max-width:32rem;">
+    <div class="route-card">
+      <div class="route-card__label">Route Policy</div>
+      <div class="route-card__title">/study/session</div>
+      <div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:0.4rem;">
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-runtime-offline);color:var(--cw-text-inverse);">offline_island</span>
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-surface-inverse);color:var(--cw-text-inverse);">:audio</span>
+        <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;background-color:var(--cw-surface-inverse);color:var(--cw-text-inverse);">:haptics</span>
+      </div>
+      <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--cw-text-muted);">content_pack: <code>:daily_study</code> &middot; cache: cached_read_only</div>
+    </div>
+  </div>
+
+  <!-- Runtime badges -->
+  <h3>Runtime Badges</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem;">
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-liveview);color:var(--cw-text-inverse);">LiveView</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-offline);color:var(--cw-text-inverse);">Offline Island</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-native);color:var(--cw-surface-default);">Native Screen</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-sensitive);color:var(--cw-text-inverse);">Sensitive</span>
+    <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:0.375rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;background-color:var(--cw-runtime-bridge);color:var(--cw-text-inverse);">Bridge Contract</span>
+  </div>
+
+  <!-- Buttons -->
+  <h3>Buttons</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:2rem;align-items:center;">
+    <!-- Primary light -->
+    <button style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg);color:var(--cw-action-fg);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">Read the guide</button>
+    <!-- Secondary -->
+    <button style="padding:0.55rem 1.25rem;background-color:transparent;color:var(--cw-text-default);border:1px solid var(--cw-border-strong);border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">View examples</button>
+    <!-- Disabled -->
+    <button disabled style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg);color:var(--cw-action-fg);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:not-allowed;line-height:1.4;opacity:0.45;" aria-disabled="true">Install Crosswake</button>
+  </div>
+  <!-- Dark button demo -->
+  <div style="background-color:var(--cw-surface-inverse);border-radius:0.5rem;padding:1.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:2rem;">
+    <button style="padding:0.55rem 1.25rem;background-color:var(--cw-action-bg-dark);color:var(--cw-action-fg-dark);border:none;border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">Generate a route policy</button>
+    <button style="padding:0.55rem 1.25rem;background-color:transparent;color:var(--cw-text-inverse);border:1px solid var(--cw-border-strong);border-radius:0.5rem;font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;line-height:1.4;">View the manifest</button>
+  </div>
+
+  <!-- Callout -->
+  <h3>Callout</h3>
+  <div class="callout" style="margin-bottom:2rem;">
+    <strong>Boundary warning</strong><br>
+    <span style="color:var(--cw-text-muted);font-size:0.875rem;"><code>offline: :read_write</code> does not mean the server accepted the action. Use a sync journal and show pending state until the server reconciles the event.</span>
+  </div>
+
+  <!-- Code block -->
+  <h3>Code Block</h3>
+  <div class="code-block">
+<span style="color:var(--cw-primitive-mist-200);"># config/crosswake.exs</span>
+config <span style="color:var(--cw-primitive-brass-500);">:crosswake</span>, <span style="color:var(--cw-primitive-wake-500);">Crosswake.RoutePolicy</span>,
+  routes: [
+    {<span style="color:var(--cw-primitive-brass-500);">"/study/session"</span>,
+      runtime: {<span style="color:var(--cw-primitive-wake-500);">:offline_island</span>, <span style="color:var(--cw-primitive-brass-500);">"study.session"</span>},
+      content_pack: <span style="color:var(--cw-primitive-wake-500);">:daily_study</span>,
+      capabilities: [<span style="color:var(--cw-primitive-wake-500);">:audio</span>, <span style="color:var(--cw-primitive-wake-500);">:haptics</span>]},
+    {<span style="color:var(--cw-primitive-brass-500);">"/billing"</span>,
+      runtime: <span style="color:var(--cw-primitive-wake-500);">:native_screen</span>,
+      sensitive: <span style="color:var(--cw-primitive-rust-600);">true</span>,
+      cache: <span style="color:var(--cw-primitive-rust-600);">:never</span>}
+  ]</div>
+</section>
+
+<!-- ── Section 10: Asset Index ── -->
+<section id="asset-index" class="book-section">
+  <h2>Asset Index</h2>
+  <p style="color:var(--cw-text-muted);margin-bottom:2rem;">All committed brand assets. Production SVGs are path-only, no embedded fonts, self-contained.</p>
+
+  <h3>Logo Assets — <code>logo/</code></h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">File</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Purpose</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Color</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-mark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Wake mark icon, currentColor embeddable</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">currentColor</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-mark-mono.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Wake mark, literal #09141A — contexts that strip currentColor</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-typemark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">W1 wordmark standalone, currentColor embeddable</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">currentColor</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-horizontal.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark + wordmark, horizontal, light backgrounds</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-horizontal-dark.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark + wordmark, horizontal, dark backgrounds</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#F7F1E6</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-stacked.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Mark above wordmark, square/compact contexts</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">crosswake-lockup-subtitle.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Horizontal lockup + "Declare the crossing." tagline</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;">favicon.svg</td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">16-grid redraw, 2 wake strokes, dark-mode swap via internal &lt;style&gt;</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-subtle);">#09141A / #F7F1E6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Token Assets — <code>tokens/</code></h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-bottom:2rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">File</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"><a href="tokens/crosswake.tokens.json" style="color:var(--cw-text-default);">tokens/crosswake.tokens.json</a></td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Source of truth — W3C DTCG 2025.10 format. Edit this, not the CSS.</td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"><a href="tokens/tokens.css" style="color:var(--cw-text-default);">tokens/tokens.css</a></td>
+        <td style="padding:0.5rem 0.75rem;color:var(--cw-text-muted);">Generated CSS custom properties (17 primitives + 27 semantics + dark-mode block).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Collateral &amp; Integrations — ships in phase 106</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--cw-border-default);">
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Asset</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Target path</th>
+        <th style="text-align:left;padding:0.5rem 0.75rem;font-family:'Space Grotesk',sans-serif;color:var(--cw-text-muted);">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">README header wiring</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">README.md</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">ExDoc theme logo</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">priv/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">Favicon PNGs</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">brandbook/social/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--cw-border-subtle);">
+        <td style="padding:0.5rem 0.75rem;">OG / social card</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted);">brandbook/social/og-card.svg</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+      <tr>
+        <td style="padding:0.5rem 0.75rem;">CI brand-check lane</td>
+        <td style="padding:0.5rem 0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--cw-text-muted)">.github/workflows/</td>
+        <td style="padding:0.5rem 0.75rem;"><span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:0.25rem;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background-color:var(--cw-surface-raised);color:var(--cw-text-subtle);">ships in phase 106</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+</body>
+</html>

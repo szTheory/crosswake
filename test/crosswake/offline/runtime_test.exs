@@ -12,7 +12,10 @@ defmodule Crosswake.Offline.RuntimeTest do
       Contracts.new_study_session_island(
         "study_session_v1",
         route_id: "study-session",
-        sync_seam: "study_reviews"
+        sync_seam: "study_reviews",
+        storage_budget: {:mb, 50},
+        reserve_for_journal: {:mb, 5},
+        eviction: :manual
       )
 
     hydration = Runtime.cached_hydration(cache_contract)
@@ -36,7 +39,10 @@ defmodule Crosswake.Offline.RuntimeTest do
       Contracts.new_study_session_island(
         "study_session_v1",
         route_id: "study-session",
-        sync_seam: "study_reviews"
+        sync_seam: "study_reviews",
+        storage_budget: {:mb, 50},
+        reserve_for_journal: {:mb, 5},
+        eviction: :manual
       )
 
     session = Runtime.study_session(island_contract)

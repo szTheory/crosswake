@@ -27,6 +27,9 @@ defmodule Crosswake.Companions.Chimeway.DenialCodes do
   @spec notification_open_binding_mismatch() :: String.t()
   def notification_open_binding_mismatch, do: "notification.open.binding_mismatch"
 
+  @spec notification_open_action_mismatch() :: String.t()
+  def notification_open_action_mismatch, do: "notification.open.action_mismatch"
+
   @spec notification_open_unsupported_action() :: String.t()
   def notification_open_unsupported_action, do: "notification.open.unsupported_action"
 

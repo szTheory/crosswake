@@ -43,30 +43,58 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
   end
 
   describe "four-state rendering" do
-    test ":denied renders the single subscription PaywallEntry with pricing and both actions" do
+    test ":denied renders provider-neutral subscribe and restore actions" do
       html = render_state(:denied)
 
-      assert html =~ "Subscribe to continue"
+      assert html =~ "Subscribe to Pro Monthly"
       assert html =~ "$9.99 / month"
       assert html =~ ~s(phx-click="subscribe")
-      assert html =~ "Already subscribed? Restore purchase"
+      assert html =~ "Restore purchase"
+      assert html =~ "Backend entitlement projection"
     end
 
-    test ":pending shows a processing state" do
-      assert render_state(:pending) =~ "Processing your purchase"
+    test ":pending shows a backend verification state" do
+      html = render_state(:pending)
+
+      assert html =~ "Verifying backend entitlement"
+      assert html =~ "Awaiting backend verification"
     end
 
-    test ":granted shows an access-granted state" do
-      assert render_state(:granted) =~ "Access granted"
+    test ":granted shows a backend-projected access state" do
+      html = render_state(:granted)
+
+      assert html =~ "Access active from backend projection"
+      assert html =~ "Projection refreshed"
     end
 
     test ":stale is structurally distinct from :denied — no pricing, no purchase action" do
       stale = render_state(:stale)
 
-      assert stale =~ "Access unavailable"
-      assert stale =~ "We can't verify your access right now"
+      assert stale =~ "Unable to verify access"
+      assert stale =~ "Access is closed until backend entitlement projection refreshes"
       refute stale =~ "$9.99 / month"
       refute stale =~ ~s(phx-click="subscribe")
+    end
+
+    test "changing entitlement state is announced through an accessible status region" do
+      for state <- [:granted, :pending, :denied, :stale] do
+        html = render_state(state)
+
+        assert html =~ ~s(role="status")
+        assert html =~ ~s(aria-live="polite")
+      end
+    end
+
+    test "read-only backend status block appears in every state" do
+      for state <- [:granted, :pending, :denied, :stale] do
+        html = render_state(state)
+
+        assert html =~ "Projection state"
+        assert html =~ "Freshness"
+        assert html =~ "Reconciliation posture"
+        assert html =~ "Authority source"
+        assert html =~ "Backend entitlement projection"
+      end
     end
   end
 
@@ -85,11 +113,11 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
       # The message path is what re-renders the LiveView.
       assert {:noreply, pending} = live.handle_info({:entitlement_update, :pending}, socket)
       assert pending.assigns.derived_state == :pending
-      assert render_assigns(pending.assigns) =~ "Processing your purchase"
+      assert render_assigns(pending.assigns) =~ "Verifying backend entitlement"
 
       assert {:noreply, granted} = live.handle_info({:entitlement_update, :granted}, socket)
       assert granted.assigns.derived_state == :granted
-      assert render_assigns(granted.assigns) =~ "Access granted"
+      assert render_assigns(granted.assigns) =~ "Access active from backend projection"
     end
 
     test "restore drives the same :pending -> :granted transition" do
@@ -115,7 +143,33 @@ defmodule Crosswake.Proof.Phase35PaywallLiveTest do
 
   describe "provider-vocabulary fence" do
     test "no provider-SDK vocabulary leaks into any rendered state" do
-      forbidden = ["store" <> "kit", "play" <> "_billing", "revenue" <> "cat"]
+      forbidden = [
+        "store" <> "kit",
+        "play" <> "_billing",
+        "play" <> " billing",
+        "revenue" <> "cat"
+      ]
+
+      for state <- [:granted, :pending, :denied, :stale] do
+        html = String.downcase(render_state(state))
+
+        for token <- forbidden do
+          refute html =~ token, "rendered #{state} state leaked forbidden token #{inspect(token)}"
+        end
+      end
+    end
+
+    test "no subscription-management copy leaks into any rendered state" do
+      forbidden = [
+        "manage subscription",
+        "cancel subscription",
+        "invoice",
+        "payment method",
+        "plan change",
+        "seats",
+        "tax",
+        "por" <> "tal"
+      ]
 
       for state <- [:granted, :pending, :denied, :stale] do
         html = String.downcase(render_state(state))
