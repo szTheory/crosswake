@@ -1,0 +1,13 @@
+{
+  "name": "crosswake-brandbook-e2e",
+  "private": true,
+  "description": "Automated brand-asset verification (shift-left replacement for manual brand UAT). Self-contained: no Phoenix/Elixir dependency.",
+  "scripts": {
+    "test": "playwright test",
+    "test:structural": "playwright test --grep @structural",
+    "test:visual": "playwright test --grep @visual"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

@@ -1,18 +1,17 @@
 {
   "checks": [
     {
-      "blocking": true,
+      "blocking": false,
       "category": "publish_parity",
       "claim_scope": "Hex metadata and release/changelog truth",
-      "code": "diag.publish.local_truth_failed",
+      "code": "diag.publish.local_truth",
       "details": {
         "changelog_sections": [
           "Unreleased",
+          "0.1.2",
           "0.1.0"
         ],
-        "errors": [
-          "CHANGELOG.md must include the current [0.1.2] release"
-        ],
+        "errors": [],
         "package_name": "crosswake",
         "source_url": "https://github.com/szTheory/crosswake",
         "unreleased_subsections": [
@@ -26,15 +25,15 @@
       "docs_reference": "CHANGELOG.md",
       "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.2] aligned before publishing.",
       "id": "publish.parity",
-      "message": "local publish parity failed: CHANGELOG.md must include the current [0.1.2] release",
+      "message": "local Hex metadata and CHANGELOG.md preserve published-versus-unreleased truth",
       "proof_class": "merge_blocking",
       "rebuild_requirement": {
         "companion_required": false,
         "native_required": false,
         "reasons": []
       },
-      "result": "fail",
-      "severity": "error"
+      "result": "pass",
+      "severity": "advisory"
     },
     {
       "blocking": false,
@@ -623,13 +622,13 @@
     }
   ],
   "schema_version": "1.0.0",
-  "status": "not_ready",
+  "status": "ready",
   "summary": {
-    "advisory_count": 2,
+    "advisory_count": 3,
     "advisory_result_count": 1,
-    "blocking_count": 1,
-    "error_count": 1,
-    "pass_count": 2,
+    "blocking_count": 0,
+    "error_count": 0,
+    "pass_count": 3,
     "total_count": 8,
     "verification_required_count": 4,
     "warning_count": 5
