@@ -1,5 +1,22 @@
 # Project Milestones: Crosswake
 
+## v9.0 Brand System & Visual Identity (Shipped: 2026-06-13)
+
+**Phases completed:** 5 phases (102-106), 16 plans
+
+**Key accomplishments:**
+
+- **Brand audit + frozen design tokens** (P102): 14-section AUDIT.md with pinned Wake Mark geometry, a WCAG 2.2 contrast matrix, and a DTCG token system (`crosswake.tokens.json` → `tokens.css`, primitive→semantic→state tiers incl. runtime-semantic tokens) ratified by the maintainer.
+- **Logo system** (P103-104): seven-candidate tournament → user-selected mark → full path-only production SVG suite (8 marks/lockups) with the wordmark generated from Space Grotesk outlines via opentype.js.
+- **Standalone HTML brand book + spec** (P105): zero-build `brandbook/index.html` (10 sections, live WCAG contrast badges, copy-hex, scroll-spy) and the audited `BRAND-SPEC.md` v1.0.
+- **Collateral + repo integration** (P106): light/dark README headers, social card, favicons; README `<picture>` + ExDoc logo wired; `brandbook/` excluded from the Hex package; committed size held < 1 MB.
+- **Shift-left brand UAT into CI** (COLL-05): self-contained Playwright suite (`brandbook/e2e/`, 19 checks) replacing manual brand UAT, promoted to a hybrid gate (`brand-structural` required, `brand-visual` advisory). It caught and fixed a real mobile table-overflow defect that manual render-verify had tolerated.
+- **Release hygiene**: added the pending CHANGELOG `[0.1.2]` section, flipping `doctor --check-publish` from `not_ready` → `ready`.
+
+**Known deferred items at close:** 1 — quick task `260603-nzr-tighten-validation-ledger-closeout-gate` (pre-existing v4.0 closeout-verifier ledger debt; see STATE.md Deferred Items).
+
+---
+
 ## v6.0 Adoption Evidence Demo App (Flashcard Cohort) (Shipped: 2026-06-09)
 
 **Delivered:** A flashcard language-learning demo app that exercises the full `Crosswake.Offline` island philosophy end-to-end — online LiveView dashboard, downloadable content packs, a vanilla-JS offline study engine over IndexedDB, and server-side sync reconciliation on reconnect.
