@@ -29,6 +29,23 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 * The latest published Hex release remains `0.1.0`. Public readers should treat this `[Unreleased]` section as development and planning continuity, not an installable release.
 
+## [0.1.2] — Unreleased (pending next Hex publish)
+
+> Staged next release. Bundles the installable changes since `0.1.0`, including work briefly carried as an internal `0.1.1` version bump that was never published. Not yet cut on Hex — `0.1.0` remains the only published release; see the `[Unreleased]` section above for the authoritative deferral/support-claim truth.
+
+### Added
+
+* **Threadline** request-correlation observability: a stable correlation id propagated across the Plug pipeline (`Crosswake.Plug.Threadline`), the LiveView lifecycle (`Crosswake.Live.Threadline`), and bridge command envelopes, with structured telemetry (`Crosswake.Threadline.Telemetry`, `Crosswake.Threadline.Id`) and a `mix crosswake.threadline` docs-contract task. Surfaced through `mix crosswake.doctor` and the support matrix.
+* Compatibility-contract and support-matrix refinements, including bridge-protocol-version and commerce-corridor-version gating in route compatibility checks.
+* Provider adapter **seam contracts** only (StoreKit / Play Billing adapters remain out of scope — the seam vocabulary and entitlement-lane semantics are operationalized, not the providers).
+* Expanded ExDoc guide set shipped in the package (`guides/`): adoption, install, compatibility, support matrix, native shell, commerce, companions, threadline, Android UAT, and user-flow guides.
+* `mix crosswake.doctor` publish-readiness checks (`--check-publish`) covering Hex metadata parity and CHANGELOG/release truth.
+
+### Notes
+
+* The v9.0 brand system (`brandbook/` — brand book, design tokens, logo suite, collateral, and the COLL-05 automated brand-verification suite) was developed in this window but is **excluded from the Hex package** (`:exclude_patterns: ["brandbook"]`), so it is not part of this installable release.
+* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, and standalone generated shell packages.
+
 ## [0.1.0] — 2026-05-29
 
 ### Added
@@ -44,4 +61,5 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 Internal planning milestones v1.0 (Route Policy Foundation), v2.0 (Adopter Stress Profiles), v3.0 (Capability Contract And Packaging), v3.1 (Native Capabilities and Bridge Expansion), and v3.2 (Commerce And Entitlement Seams) are archived in `.planning/MILESTONES.md`. These are not separate Hex releases. See `.planning/PROJECT.md` for overarching goals.
 
 [Unreleased]: https://github.com/szTheory/crosswake/compare/v0.1.0...HEAD
+[0.1.2]: https://github.com/szTheory/crosswake/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/szTheory/crosswake/releases/tag/v0.1.0
