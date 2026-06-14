@@ -168,6 +168,11 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUiTest do
     root_path = Path.join([@tmp_dir, "lib", "test_app_web", "components", "layouts", "offline_root.html.heex"])
     content = File.read!(root_path)
 
+    # Guard against :nomatch so a missing link fails with a clear assertion, not a MatchError
+    assert content =~ "tokens.css", "offline_root must link tokens.css"
+    assert content =~ "app.css", "offline_root must link app.css"
+    assert content =~ "offline.css", "offline_root must link offline.css"
+
     {tokens_pos, _} = :binary.match(content, "tokens.css")
     {app_pos, _}    = :binary.match(content, "app.css")
     {offline_pos, _} = :binary.match(content, "offline.css")
