@@ -13,16 +13,16 @@ Requirements for milestone v11.0. Each maps to exactly one roadmap phase.
 
 Publish the already-built native cores so they are consumable from their native package managers. iOS and Android have opposite constraints (SwiftPM forbids monorepo-subdir consumption per SE-0292; Maven Central is layout-agnostic).
 
-- [ ] **PUB-01**: The iOS shell core (`packages/crosswake-shell-core-ios/`) is published to a dedicated `github.com/szTheory/crosswake-shell-core-ios` repository, auto-mirrored from the monorepo subtree (splitsh-lite, `fetch-depth: 0`) and carrying annotated semver git tags, so it is consumable by SwiftPM from a versioned tag.
-- [ ] **PUB-02**: The Android shell core (`packages/crosswake-shell-core-android/`) is published to Maven Central under the verified `io.github.sztheory` group (Vanniktech `com.vanniktech.maven.publish` 0.31.0 → Central Portal), with a complete signed POM, so it is consumable via `mavenCentral()`.
-- [ ] **PUB-03**: Publishing prerequisites are established and recorded so the first publish cannot silently fail or burn an immutable version: GPG signing key on a public keyserver, verified Central Portal namespace, complete POM metadata (name/description/url/license/developers/scm), and a dry-run gate that must pass before any real publish.
+- [x] **PUB-01**: The iOS shell core (`packages/crosswake-shell-core-ios/`) is published to a dedicated `github.com/szTheory/crosswake-shell-core-ios` repository, auto-mirrored from the monorepo subtree (splitsh-lite, `fetch-depth: 0`) and carrying annotated semver git tags, so it is consumable by SwiftPM from a versioned tag.
+- [x] **PUB-02**: The Android shell core (`packages/crosswake-shell-core-android/`) is published to Maven Central under the verified `io.github.sztheory` group (Vanniktech `com.vanniktech.maven.publish` 0.31.0 → Central Portal), with a complete signed POM, so it is consumable via `mavenCentral()`.
+- [x] **PUB-03**: Publishing prerequisites are established and recorded so the first publish cannot silently fail or burn an immutable version: GPG signing key on a public keyserver, verified Central Portal namespace, complete POM metadata (name/description/url/license/developers/scm), and a dry-run gate that must pass before any real publish.
 
 ### Lockstep Versioning
 
 One bump advances all three registries to the same version, so generated code can always reference a resolvable, version-matched dep.
 
-- [ ] **LOCK-01**: The Hex package, iOS mirror tag, and Maven artifact share one version via release-please manifest mode + `linked-versions` (release-please-action v4.4.1), so a single release bumps all three to identical coordinates.
-- [ ] **LOCK-02**: The native publish CI jobs are triggered by the release-please release within the same workflow (`needs: release-please` + `if: releases_created`), not a separate `release: published` listener that the default `GITHUB_TOKEN` would never fire.
+- [x] **LOCK-01**: The Hex package, iOS mirror tag, and Maven artifact share one version via release-please manifest mode + `linked-versions` (release-please-action v4.4.1), so a single release bumps all three to identical coordinates.
+- [x] **LOCK-02**: The native publish CI jobs are triggered by the release-please release within the same workflow (`needs: release-please` + `if: releases_created`), not a separate `release: published` listener that the default `GITHUB_TOKEN` would never fire.
 
 ### Generator Truth
 
@@ -83,11 +83,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PUB-01 | 110 | Pending |
-| PUB-02 | 110 | Pending |
-| PUB-03 | 110 | Pending |
-| LOCK-01 | 110 | Pending |
-| LOCK-02 | 110 | Pending |
+| PUB-01 | 110 | Complete |
+| PUB-02 | 110 | Complete |
+| PUB-03 | 110 | Complete |
+| LOCK-01 | 110 | Complete |
+| LOCK-02 | 110 | Complete |
 | GEN-01 | 111 | Pending |
 | GEN-02 | 111 | Pending |
 | PROOF-01 | 111 | Pending |

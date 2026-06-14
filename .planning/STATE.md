@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v11.0
 milestone_name: Release & Distribution Truth
-status: executing
-last_updated: "2026-06-14T18:53:31.178Z"
+status: ready_to_plan
+last_updated: 2026-06-14T21:08:00.569Z
 last_activity: 2026-06-14 -- Phase 110 executed (3/3 plans); verification gaps_found (2 blockers)
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 3
   percent: 0
+stopped_at: Phase 110 complete (3/3) — ready to discuss Phase 111
 ---
 
 # Project State: Crosswake
@@ -20,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 110 — native-publish-lockstep-infrastructure
+**Current focus:** Phase 111 — generator rewire, clean room proof & release
 
 ## Current Position
 
-Phase: 110 (native-publish-lockstep-infrastructure) — GAPS FOUND (verification)
-Plan: 3 of 3 executed
-Status: All 3 plans complete; phase verification returned gaps_found (2 blockers) — pending gap closure
-Last activity: 2026-06-14 -- Phase 110 executed (3/3 plans); verification gaps_found (2 blockers)
-Resume: /gsd:plan-phase 110 --gaps  (see .planning/phases/110-native-publish-lockstep-infrastructure/110-VERIFICATION.md)
+Phase: 111
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-14
+Resume: /gsd:discuss-phase 111 (or /gsd:plan-phase 111). Phase 110 complete; 4 human-UAT items in 110-HUMAN-UAT.md to exercise during Phase 111 (real publish + credential provisioning per SETUP.md).
 
 [░░░░░░░░░░░░░░░░░░░░] 0% (0/2 phases)
 
@@ -36,7 +37,7 @@ Resume: /gsd:plan-phase 110 --gaps  (see .planning/phases/110-native-publish-loc
 
 **Velocity:**
 
-- Total plans completed: 10 (v10.0)
+- Total plans completed: 13 (v10.0)
 - Average duration: —
 - Total execution time: —
 
@@ -78,7 +79,8 @@ Resume file: .planning/phases/110-native-publish-lockstep-infrastructure/110-CON
 
 ## Operator Next Steps
 
-- Run `/gsd:plan-phase 110` to plan Phase 110: Native Publish & Lockstep Infrastructure
-- Phase 110 covers PUB-01, PUB-02, PUB-03, LOCK-01, LOCK-02
-- Phase 111 (Generator Rewire, Clean-Room Proof & Release) is blocked on Phase 110 completing
-- PROOF-02 in Phase 111 is a graduation candidate — a permanent doctor/closeout "published-dep parity" check, structural sibling to the v10.0 brand-structural drift gate
+- Phase 110 COMPLETE (3/3 plans, 8/8 must-haves; 2 verification blockers found & fixed inline).
+- Run `/gsd:discuss-phase 111` (or `/gsd:plan-phase 111`) to start Phase 111: Generator Rewire, Clean-Room Proof & Release (GEN-01, GEN-02, PROOF-01, PROOF-02, DOCS-01, REL-01).
+- Before/within Phase 111: provision credentials out-of-band per `SETUP.md`, then exercise the 4 `110-HUMAN-UAT.md` items (android-publish-fire-drill + lockstep-truth dispatch lanes, GPG keyserver upload, Sonatype namespace verify).
+- Phase 111 cuts the real coordinated Hex 0.1.2 (REL-01, last) — the first real release that exercises the publish path fixed in 110.
+- PROOF-02 in Phase 111 is a graduation candidate — a permanent doctor/closeout "published-dep parity" check, structural sibling to the v10.0 brand-structural drift gate.

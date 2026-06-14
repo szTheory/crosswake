@@ -44,7 +44,7 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 
 ### v11.0 Release & Distribution Truth (Phases 110-111)
 
-- [ ] **Phase 110: Native Publish & Lockstep Infrastructure** - Publish iOS core to subtree-mirror repo with semver tags, publish Android core to Maven Central, wire release-please linked-versions so all three registries advance together (verification: gaps_found 2026-06-14 — 2 blockers, see 110-VERIFICATION.md)
+- [x] **Phase 110: Native Publish & Lockstep Infrastructure** - Publish iOS core to subtree-mirror repo with semver tags, publish Android core to Maven Central, wire release-please linked-versions so all three registries advance together (completed 2026-06-14 — 8/8 must-haves; 2 verification blockers found & fixed; 4 human-UAT items deferred to Phase 111, see 110-HUMAN-UAT.md)
 - [ ] **Phase 111: Generator Rewire, Clean-Room Proof & Release** - Rewire gen.shell templates to published coordinates with version derived from Application.spec, prove the thesis outside the monorepo via clean-room CI, add permanent published-dep parity check, reconcile docs, cut Hex 0.1.2
 
 ## Phase Details
@@ -92,5 +92,5 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete | 2026-06-14 |
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
-| 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Gaps Found | - |
+| 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete    | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 0/TBD | Not started | - |

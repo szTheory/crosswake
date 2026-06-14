@@ -9,7 +9,9 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- **v11.0 Release & Distribution Truth — in planning (started 2026-06-14)**
+- **v11.0 Release & Distribution Truth — in progress (started 2026-06-14)**
+  - Phase 110 (Native Publish & Lockstep Infrastructure) complete 2026-06-14 — release-please linked-versions lockstep config, signed Android Maven Central publish config, iOS subtree-mirror + Android publish CI jobs + validated-upload→drop fire-drill, SETUP.md provisioning runbook. No real publish yet (D-01); 4 human-UAT items deferred to Phase 111.
+  - Phase 111 (Generator Rewire, Clean-Room Proof & Release) next.
 - v10.0 Brand Normalization shipped + archived (2026-06-14)
 
 ## Current Milestone: v11.0 Release & Distribution Truth
@@ -229,4 +231,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-14 — started milestone v11.0 Release & Distribution Truth*
+*Last updated: 2026-06-14 — Phase 110 (Native Publish & Lockstep Infrastructure) complete*
