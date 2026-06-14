@@ -2,16 +2,15 @@
 phase: 109-drift-prevention-gate
 reviewed: 2026-06-14T00:00:00Z
 depth: standard
-files_reviewed: 4
+files_reviewed: 3
 files_reviewed_list:
+  - .github/workflows/brandbook-verify.yml
   - brandbook/tools/check-consumer-drift.mjs
   - brandbook/tools/check-consumer-drift.test.mjs
-  - brandbook/tools/contrast.mjs
-  - .github/workflows/brandbook-verify.yml
 findings:
-  critical: 0
-  warning: 6
-  info: 4
+  critical: 2
+  warning: 5
+  info: 3
   total: 10
 status: issues_found
 ---
@@ -20,200 +19,237 @@ status: issues_found
 
 **Reviewed:** 2026-06-14
 **Depth:** standard
-**Files Reviewed:** 4
+**Files Reviewed:** 3
 **Status:** issues_found
 
 ## Summary
 
-This phase adds a deterministic consumer drift gate (`check-consumer-drift.mjs`),
-a node:test contract suite, a main-module guard on the pre-existing `contrast.mjs`,
-and CI wiring in `brandbook-verify.yml`.
+Reviewed the consumer-drift prevention gate: a CI workflow job, the Node drift
+scanner, and its contract test. The code is clean stylistically and the test
+suite is thoughtfully structured (positive fixtures + false-positive guards +
+green-baseline integration). However, the core value proposition — "exit
+non-zero when any file reintroduces brand-color drift" (file header, lines 6-7)
+— has multiple proven holes. This is a *regression gate*, so it must catch
+drift in forms the files do not currently contain; several common
+reintroduction vectors silently pass.
 
-The mechanism is sound and the green baseline + contract tests pass (verified:
-`node check-consumer-drift.mjs` exits 0; all 14 drift tests and the contrast tests
-pass). The main-module guard is correct and `PALETTE` is properly exported.
+Two classes of correctness defect dominate:
 
-However, this is a *drift gate* — its entire value is in its detection coverage, and
-the adversarial finding here is that several realistic drift forms slip through the
-detectors silently. Because the gate is a REQUIRED merge check, every false-negative
-is a hole that lets brand drift land while presenting a green check. None are
-exploitable security issues, but several would defeat the gate's stated purpose, so
-they are classified WARNING. The matching strategy (`String.includes`) and the
-quote/value-context assumptions baked into the regexes are the core weaknesses.
+1. **Hex-detection false negatives** — the value-context lookbehind misses real
+   drift vectors (`=#fff` custom-property assignment, attribute syntax like
+   `stop-color="#fff"`, `;#fff` value separators). A developer reintroducing a
+   hardcoded brand color in any of these positions ships undetected.
+2. **Retired-Tailwind substring matching** — `classes.includes(retired)`
+   produces both false positives (`inline-flex`, `flex-col`, `reflex` all match
+   `flex`) and is brittle against quoting/wrapping that HEEX commonly uses
+   (single quotes, newline-wrapped class lists, `class={...}` dynamic bindings
+   all evade detection).
 
-No Critical issues found. No source files were modified.
+Additionally, the contract test file is **not wired into CI** — it never runs
+in `brandbook-verify.yml`, so the manifest-completeness pins and false-positive
+guards it encodes cannot fail a build. All findings include concrete fixes and
+were reproduced against the shipped module.
 
-## Warnings
+## Critical Issues
 
-### WR-01: Hex literals inside double-quoted attribute values are not detected
-
-**File:** `brandbook/tools/check-consumer-drift.mjs:77`
-**Issue:** The hex lookbehind `(?<=[:,(\s])` only fires when `#` is preceded by `:`,
-`,`, `(`, or whitespace. A `"` is not in that class, so hex inside a quoted attribute
-value is missed. Verified:
-
-- `<rect fill="#2B756A" />` -> 0 violations
-- `<stop stop-color="#9A4D35" />` -> would also be missed
-
-This is a live drift form for these exact files: three of the five manifest entries
-are HEEX/template files, and the deferred-offender comment at lines 28-33 explicitly
-notes hardcoded hex appearing in template/JS string contexts (`offline_study.js`
-`innerHTML` hex). A normalizer regression that reintroduces `fill="#..."` or inline
-`style="...:#..."` at an attribute boundary passes the gate green.
-**Fix:** Add `"` and `'` to the lookbehind class so quoted-attribute hex is caught:
-```js
-const hexRe = /(?<=[:,("'\s])#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
-```
-(Note: reorder the alternation longest-first — see WR-03.)
-
-### WR-02: `class="..."` regex misses multi-line and dynamic `class={...}` attributes
-
-**File:** `brandbook/tools/check-consumer-drift.mjs:142`
-**Issue:** `findRetiredTailwindInClassAttrs` matches only `/class="([^"]*)"/g`. Two
-common HEEX forms evade it:
-
-1. **Dynamic bindings** — `class={"flex " <> @x}` -> 0 violations (verified). HEEX/
-   Phoenix templates routinely use `class={...}` interpolation; a retired utility
-   reintroduced there is invisible to the gate.
-2. **Single-quoted attrs** — `class='flex'` -> 0 violations (verified).
-
-Multi-line `class="..."` *does* work (the `[^"]*` spans newlines), so that case is
-fine. The dynamic-binding gap is the material one: the manifest's HEEX files are
-Phoenix templates where `class={...}` is idiomatic, so a future edit can drift past
-the gate.
-**Fix:** Also scan `class={...}` and single-quoted forms, e.g. add a second pass:
-```js
-const classRe = /class=(?:"([^"]*)"|'([^']*)'|\{([^}]*)\})/g;
-// then test (m[1] ?? m[2] ?? m[3]) against the blocklist
-```
-At minimum, add a contract test pinning the `class={...}` case so the gap is explicit.
-
-### WR-03: Hex alternation order can drop a malformed long hex run
+### CR-01: Hex-color gate misses common reintroduction vectors (false negatives)
 
 **File:** `brandbook/tools/check-consumer-drift.mjs:77`
-**Issue:** The alternation is `{6}|{8}|{3}` (6 before 8). For a 7-hex-digit run like
-`color: #2B756A1;`, the 6-branch matches `2B756A` but the trailing `\b` fails because
-`1` (a word char) follows; the 8-branch needs 8 chars; the 3-branch fails the same
-`\b` way. Net result: `#2B756A1` -> **0 violations** (verified). A typo'd or
-concatenated hex that still clearly encodes a color intent slips through.
-**Fix:** Order alternatives longest-first so the engine prefers the 8-digit match
-and the `\b` anchoring behaves predictably; also consider that any 7+ run is itself
-suspicious:
-```js
-const hexRe = /(?<=[:,("'\s])#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+**Issue:** The lookbehind `(?<=[:,(\s])` requires `#` to be immediately preceded
+by `:`, `,`, `(`, or whitespace. This was chosen to exclude `#id` selectors, but
+it also silently passes legitimate drift. Reproduced against the shipped module:
+
 ```
-This won't fully catch the 7-digit case (still no clean length), but combined with
-WR-04 it removes the ambiguity. Worth a test fixture either way.
-
-### WR-04: 4-digit `#RGBA` shorthand hex is not detected
-
-**File:** `brandbook/tools/check-consumer-drift.mjs:77`
-**Issue:** Comment at line 76 claims "Valid CSS hex lengths: 3, 6, or 8 digits only."
-That is incorrect — CSS Color 4 defines **4-digit `#RGBA`** shorthand (and it is
-widely supported in browsers). `color: #abcd;` -> 0 violations (verified). A
-reintroduced color using 4-digit shorthand bypasses the hex rule entirely.
-**Fix:** Add the 4-digit length to the alternation and update the comment:
-```js
-const hexRe = /(?<=[:,("'\s])#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b/g;
+findHexColors("--x=#ffffff")           => []   // CSS custom property assignment
+findHexColors('stop-color="#ffffff"')  => []   // SVG/HTML attribute (no colon before #)
+findHexColors("a:1;#ffffff")           => []   // semicolon-separated value
 ```
-(4-digit won't have a 6-digit PALETTE name, so the existing length===6 name lookup
-already handles it correctly by emitting the bare literal.)
 
-### WR-05: Blocklist uses substring `includes`, producing false positives and brittle matches
+The gate's stated job (header lines 6-9) is to fail when *any* file reintroduces
+a hex literal. A contributor adding `--cw-brand: #2B756A` via `=`, or inline SVG
+`fill="#2B756A"` in the offline HEEX templates, drifts past the gate while
+reasonably believing it is covered. This is a correctness control with a bypass,
+not a style nit.
 
-**File:** `brandbook/tools/check-consumer-drift.mjs:149`
-**Issue:** `classes.includes(retired)` is an unanchored substring test. `flex` (the
-shortest, most generic blocklist entry) matches any class containing the substring:
+**Fix:** Drop the fragile lookbehind; match hex broadly and exclude only the
+documented `#id`-selector case explicitly:
 
-- `<div class="reflex underflexed">` -> flagged `flex` (verified false positive)
-- `inline-flex`, `flex-col` -> flagged, even if those are not the retired bare `flex`
-
-Conversely the bare prefixes (`bg-cw-`) match mid-token garbage like
-`my-bg-cw-thing` (verified). The result is both false positives (legitimate utility
-class names containing `flex`) and imprecise matching that future maintainers can't
-reason about. Because `flex` is a real, common Tailwind family root, this is the
-most likely entry to misfire on real templates.
-**Fix:** Tokenize the class string on whitespace and match per-class with anchoring —
-exact match for bare utilities (`flex`, `bg-white`, `min-h-screen`, `max-w-md`) and
-prefix match for the trailing-dash families (`bg-cw-`, `text-cw-`, etc.):
 ```js
-const classList = classes.split(/\s+/).filter(Boolean);
-for (const cls of classList) {
-  for (const retired of RETIRED_TAILWIND) {
-    const hit = retired.endsWith('-') ? cls.startsWith(retired) : cls === retired;
-    if (hit) violations.push({ line: lineNum, text: cls, rule: 'retired-tailwind-class-forbidden' });
+// Match hex in any position, then skip when the line is a CSS selector rule.
+const hexRe = /#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b/g;
+// For each match, skip if the surrounding text is selector context:
+//   /^\s*[.#:a-zA-Z\[][^{}]*\{/.test(line)  // e.g. "#status { ... }"
+```
+
+Add fixtures for `=#fff`, `;#fff`, and `attr="#fff"` to lock the behavior.
+(4-digit `#RGBA` is also valid CSS and currently uncovered — see WR-02.)
+
+### CR-02: Retired-Tailwind detection produces false positives that fail valid builds
+
+**File:** `brandbook/tools/check-consumer-drift.mjs:148-152`
+**Issue:** `classes.includes(retired)` is an unbounded substring test.
+Reproduced against the shipped module:
+
+```
+findRetiredTailwindInClassAttrs('<div class="inline-flex gap-2">') => ["flex"]
+findRetiredTailwindInClassAttrs('<div class="flex-col">')          => ["flex"]
+findRetiredTailwindInClassAttrs('<div class="reflex">')            => ["flex"]
+```
+
+`inline-flex`, `flex-col`, `flex-1`, `reflex`, etc. are all flagged as the
+retired `flex` utility. Because this is a **required merge gate** (workflow lines
+7-8, 36, and not `continue-on-error`), a future HEEX edit legitimately using
+`inline-flex` or any `flex-*` utility will hard-block the PR with a false
+violation. The blocklist mixes exact tokens (`flex`, `bg-white`,
+`min-h-screen`, `max-w-md`) with prefixes (`bg-cw-`, `text-cw-`, `border-cw-`,
+`border-gray-`, `space-y-`), but the matcher treats all of them as substrings,
+so exact entries over-match and prefix entries can also collide.
+
+**Fix:** Tokenize the class attribute on whitespace and match per-class —
+`startsWith` for prefix entries (those ending in `-`), strict equality otherwise:
+
+```js
+const tokens = classes.split(/\s+/).filter(Boolean);
+for (const retired of RETIRED_TAILWIND) {
+  const isPrefix = retired.endsWith('-');
+  for (const cls of tokens) {
+    if (isPrefix ? cls.startsWith(retired) : cls === retired) {
+      violations.push({ line: lineNum, text: retired, rule: 'retired-tailwind-class-forbidden' });
+    }
   }
 }
 ```
-This also fixes the duplicate-report behavior where one class string can emit
-multiple violations for the same root.
 
-### WR-06: CI step ordering wastes the merge-gate's fail-fast value
+Add negative fixtures for `inline-flex`, `flex-col`, and `reflex`. The existing
+blocklist-pin test (test lines 126-144) only proves positives; it does not catch
+this over-match.
 
-**File:** `.github/workflows/brandbook-verify.yml:80-94`
-**Issue:** The drift gate (a cheap, dependency-free Node script, ~tens of ms) is placed
-*after* the WCAG step but *before* the expensive Playwright install + structural e2e
-(lines 84-94: `npm ci` in `brandbook/e2e` plus `npx playwright install --with-deps
-chromium`). The drift gate itself is fine where it is, but the e2e Chromium install
-is the long pole. That ordering is acceptable. The real scoping concern: the gate runs
-with `working-directory: brandbook/tools` and invokes the script by relative name; the
-script resolves `ROOT` via `../..` from its own file URL, so manifest paths still
-resolve from repo root regardless of `working-directory`. That is correct — but it is
-load-bearing and undocumented in the workflow. If anyone "tidies" the step to
-`run: node brandbook/tools/check-consumer-drift.mjs` without `working-directory`, the
-`npm ci`-installed deps still resolve (script has none) so it keeps working; but if the
-script later gains a tools-local dependency, the path assumption silently matters.
-**Fix:** Leave behavior as-is but add a one-line comment on the step noting that
-`ROOT` is derived from the script's own location (so `working-directory` does not
-affect which files are scanned), preventing a future regression. Optionally move the
-drift gate above the WCAG/contrast `node --test` steps so the cheapest deterministic
-gate fails first.
+## Warnings
+
+### WR-01: Class-attribute scan misses single quotes, wrapped lists, and dynamic bindings (false negatives)
+
+**File:** `brandbook/tools/check-consumer-drift.mjs:142`
+**Issue:** `classRe = /class="([^"]*)"/g` matches only double-quoted, single-line,
+static `class` attributes. HEEX/EEx templates commonly use other forms — all of
+which evade detection (reproduced):
+
+```
+findRetiredTailwindInClassAttrs("<div class='flex'>")          => []   // single quotes
+findRetiredTailwindInClassAttrs("<div\n class=\"foo\n bar\">")  => []   // newline-wrapped
+findRetiredTailwindInClassAttrs("<div class={@foo}>")          => []   // HEEX dynamic binding
+```
+
+The gate claims to guard HEEX files (rule 4, lines 184-187) but covers only the
+narrowest syntax. Single-quoted and multi-line class lists are idiomatic in
+`.heex`.
+
+**Fix:** Broaden the attribute regex to accept either quote style:
+
+```js
+const classRe = /class=(?:"([^"]*)"|'([^']*)')/g;
+// classes = m[1] ?? m[2];
+```
+
+For `class={...}` dynamic bindings, decide explicitly whether to scan the
+expression text or document the gap in the file header — today it is an
+undocumented silent miss.
+
+### WR-02: 4-digit (#RGBA) hex literals are not detected, and the comment is factually wrong
+
+**File:** `brandbook/tools/check-consumer-drift.mjs:76-77`
+**Issue:** The alternation is `{6}|{8}|{3}` — 4-digit `#RGBA` (valid CSS Color 4,
+widely supported) is omitted: `findHexColors("color: #1a2b;") => []`. The comment
+on line 76 ("Valid CSS hex lengths: 3, 6, or 8 digits only") is incorrect —
+4-digit hex is valid. A `#fff8` drift passes the gate.
+
+**Fix:** Add the 4-digit alternative and correct the comment:
+`[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3}`.
+
+### WR-03: Contract test file is never executed in CI
+
+**File:** `.github/workflows/brandbook-verify.yml:80-82`
+**Issue:** The workflow runs `node check-consumer-drift.mjs` (the gate) but has no
+step running `node --test check-consumer-drift.test.mjs`. Contrast lines 72-78,
+which explicitly invoke `node --test compile-tokens.test.mjs` and
+`node --test contrast.test.mjs`. The new contract test — which pins manifest
+completeness (exactly 5 entries), the 9-token blocklist, and every
+false-positive guard — therefore cannot fail a build. The regex regressions in
+CR-01/CR-02/WR-01/WR-02 would slip through because the guards meant to catch them
+never run in CI. The test exists but gives zero CI protection.
+
+**Fix:** Add a step after line 82:
+
+```yaml
+      - name: Consumer drift gate contract tests
+        working-directory: brandbook/tools
+        run: node --test check-consumer-drift.test.mjs
+```
+
+### WR-04: Green-baseline test swallows diagnostics on failure
+
+**File:** `brandbook/tools/check-consumer-drift.test.mjs:148-154`
+**Issue:** The integration test uses `assert.doesNotThrow(() => execSync(..., {
+stdio: 'pipe' }))`. On failure it reports only "gate must exit 0" — the captured
+stdout/stderr (the actual `::error file=...` violation lines) is discarded, so a
+red baseline yields a near-useless message and forces a manual re-run to diagnose.
+It also couples the unit test to a `node`-on-PATH subprocess when the functions
+are already exported for in-process use.
+
+**Fix:** Capture and surface the subprocess output:
+
+```js
+try {
+  execSync(`node ${scriptPath}`, { cwd: ROOT, stdio: 'pipe' });
+} catch (err) {
+  assert.fail(`gate exited non-zero:\n${err.stdout?.toString()}\n${err.stderr?.toString()}`);
+}
+```
+
+Or assert against `checkFile()` over the real manifest in-process.
+
+### WR-05: Hex alternation order is shorter-first, risking order-dependent matches
+
+**File:** `brandbook/tools/check-consumer-drift.mjs:77`
+**Issue:** Alternation lists `{6}` before `{8}`. With the trailing `\b`, a valid
+8-digit `#RRGGBBAA` value can be attempted as a 6-digit match first; the engine
+recovers here, but ordering shorter-before-longer in a hex matcher is a latent
+foot-gun and makes 8-digit coverage implicit rather than asserted. There is no
+fixture pinning 8-digit detection.
+
+**Fix:** Order alternatives longest-first (`{8}|{6}|{4}|{3}`) so the full-length
+token is preferred, and add an explicit fixture for an 8-digit `#RRGGBBAA` value.
 
 ## Info
 
-### IN-01: `on.paths` and the MANIFEST can drift apart silently
+### IN-01: Deferred-offender exclusions have no enforcement backstop
 
-**File:** `.github/workflows/brandbook-verify.yml:20-33` / `check-consumer-drift.mjs:35-41`
-**Issue:** The workflow trigger paths (app.css, `priv/static/crosswake/**`,
-`priv/templates/crosswake/offline_ui/**`, the offline_html controller) are maintained
-by hand in two places — `on.pull_request.paths`, `on.push.paths`, and the MANIFEST
-array. A new normalized consumer added to MANIFEST but not to both `paths` blocks
-won't trigger the workflow when only that file changes. There is no test pinning the
-correspondence.
-**Fix:** Add a comment cross-referencing the MANIFEST, or a small test asserting each
-MANIFEST path is covered by a workflow trigger glob.
+**File:** `brandbook/tools/check-consumer-drift.mjs:28-34`
+**Issue:** The comment defers `offline_study.js` (`#9A4D35` etc.) and
+`step_up_challenge_live.ex` (`bg-[#F8FAFC]`) as excluded "deferred offenders."
+Both contain exactly the drift this gate exists to prevent, and nothing tracks
+that the exclusion is temporary — a future reader has no machine-checkable signal
+they must eventually be normalized and added. Consider a known-debt allowlist
+with an issue reference so the debt cannot silently become permanent.
 
-### IN-02: `checkCssSemanticCoverage` accepts any `var(--cw-` including primitives
+### IN-02: `findHexColors` recompiles its regex inside the per-line loop; inconsistent with `findPrimitiveRefs`
 
-**File:** `brandbook/tools/check-consumer-drift.mjs:129`
-**Issue:** Coverage passes if any `var(--cw-` exists. A CSS file containing *only*
-`var(--cw-primitive-*)` references would satisfy coverage (rule 3) while
-simultaneously failing the primitive rule (rule 2) — so the net gate still fails,
-which is fine. But the coverage check's intent ("semantic token coverage") is not
-what it measures ("any cw var"). Minor semantic mismatch; behavior is safe due to
-rule 2.
-**Fix:** Optionally tighten to `var(--cw-(?!primitive-)` for coverage, or document
-that rule 2 backstops it.
+**File:** `brandbook/tools/check-consumer-drift.mjs:77` vs `:106`
+**Issue:** `findHexColors` declares `const hexRe = /.../g` inside the `for` loop
+over lines (re-created each iteration), while `findPrimitiveRefs` hoists its
+regex above the loop and relies on `exec` resetting `lastIndex` per line. Both do
+the same per-line scan but use different patterns; align them.
 
-### IN-03: Per-line regex re-compiled inside the loop
+**Fix:** Hoist `hexRe` above the loop for parity, or add a one-line comment noting
+the in-loop declaration is intentional for `lastIndex` hygiene.
 
-**File:** `brandbook/tools/check-consumer-drift.mjs:77`
-**Issue:** `hexRe` is declared inside the `for` loop, recompiling the regex every
-line. Not a performance concern at this file size (out of scope for v1 anyway) and
-not a correctness bug since it's not shared `lastIndex` state — but it reads as
-accidental. `findPrimitiveRefs` correctly hoists its regex (line 106); the
-inconsistency suggests the placement was unintentional.
-**Fix:** Hoist `hexRe` above the loop for consistency with `findPrimitiveRefs`.
+### IN-03: Unknown CLI flags are silently ignored
 
-### IN-04: `file-read-error` violations bypass the structured test path
+**File:** `brandbook/tools/check-consumer-drift.mjs:196-197`
+**Issue:** Only `--verbose`/`-v` is recognized; any other argument (a typo like
+`--verbsoe`, or `--help`) is silently ignored and the scan runs anyway, giving no
+feedback.
 
-**File:** `brandbook/tools/check-consumer-drift.mjs:209`
-**Issue:** A missing manifest file is reported only in the IS_MAIN runner block, not
-via an exported function, so the contract suite cannot unit-test the read-error path.
-The `all manifest files exist on disk` test (test file line 34) covers the happy
-case but the failure branch is untested.
-**Fix:** Optional — extract the per-entry run into an exported `runEntry(entry)` that
-returns violations (including read errors) so the error path is testable.
+**Fix:** Reject unknown flags or print a brief usage line.
 
 ---
 
