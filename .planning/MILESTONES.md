@@ -1,5 +1,25 @@
 # Project Milestones: Crosswake
 
+## v10.0 Brand Normalization (Shipped: 2026-06-14)
+
+**Phases completed:** 3 phases (107-109), 10 plans, 10 tasks
+**Git range:** `feat(107-01)` → `fix(109)` · 74 files changed (+9,509 / −368) · 2026-06-13 → 2026-06-14
+
+**Delivered:** `tokens.css` became the genuine single source of truth for the brand system — generated for font/dimension as well as color, distributed through one documented path, consumed by both drifted consumers via semantic custom properties, and protected from regression by a deterministic CI drift gate.
+
+**Key accomplishments:**
+
+- Extended `compile-tokens.js` to emit `font.*` and `dimension.*` tokens (type/display scale, radius) from `crosswake.tokens.json`, plus a byte-identical `priv/static/crosswake/tokens.css` package mirror from one generator run (TOKN-04, TOKN-05).
+- Established one documented distribution mechanism (vendor-by-copy + link, `guides/tokens.md` in ExDoc extras) with no hand-maintained duplicate palettes (NORM-03).
+- Normalized the example host: removed the flat primitive palette and inline font stacks, remapped all values to semantic `--cw-*` tokens; dark mode works with zero extra `app.css` (NORM-01).
+- Rewrote the `offline_ui` generator off Tailwind onto a vendored `offline.css` with semantic `.cw-offline-*` classes and retired the stale hardcoded legacy theme in `crosswake.gen.offline_ui.ex` — no Tailwind dependency in the host (NORM-02).
+- Rewrote the generator test to pin the semantic-token contract (asserts `var(--cw-*)`, forbids retired Tailwind class names) (NORM-04).
+- Shipped a browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + contract tests + CI wiring) that fails the build on any reintroduced brand hex or dropped token reference; plus a D-13 Playwright/Chromium render-verify gate with WCAG measurement and human sign-off (PROOF-01).
+
+**Known deferred items at close:** 1 — `tighten-validation-ledger-closeout-gate` quick task (pre-existing, acknowledged at v8.0 close; see STATE.md Deferred Items).
+
+---
+
 ## v9.0 Brand System & Visual Identity (Shipped: 2026-06-13)
 
 **Phases completed:** 5 phases (102-106), 16 plans

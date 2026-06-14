@@ -434,6 +434,42 @@
 - Most of the session was deterministic engineering + verification; subagents (Explore ×3, security auditor) ran on sonnet to reserve Opus for the main loop.
 - Carried-forward debt: the v4.0 closeout-verifier ledger brittleness (`tighten-validation-ledger-closeout-gate`) remains deferred — its proof lanes are red on main but non-required.
 
+## Milestone: v10.0 — Brand Normalization
+
+**Shipped:** 2026-06-14
+**Phases:** 3 (107-109) | **Plans:** 10
+
+### What Was Built
+- `compile-tokens.js` extended to emit `font.*` and `dimension.*` tokens (type/display scale, radius) alongside color, into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css` from one generator run.
+- One documented distribution path (verbatim copy + `<link>`, `guides/tokens.md` in ExDoc extras) wiring `tokens.css` into both the `offline_ui` generator and the example host — no duplicate palettes.
+- Example host normalized: flat primitive palette, inline font stacks, and the duplicate unserved `assets/css/app.css` (D-12) all removed; everything remapped to semantic `--cw-*` tokens with free dark mode.
+- `offline_ui` generator rewritten off Tailwind onto a vendored `offline.css` with `.cw-offline-*` semantic classes; the stale hardcoded legacy theme (blue/amber) retired from `crosswake.gen.offline_ui.ex`. Generator test rewritten to pin the token-backed contract.
+- Browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + node:test contract suite + CI wiring) that fails the build on reintroduced brand hex or dropped token references; plus a D-13 Playwright render-verify gate (light/dark WCAG measurement, human sign-off).
+
+### What Worked
+- **Three-consumer discovery before planning paid off** — the discuss-phase CONTEXT caught that the real color source was the `.ex`-emitted Tailwind theme, not just the `.eex` templates; normalizing only the templates would have left dead drift behind.
+- **Served-vs-source `app.css` landmine identified up front** — knowing which `app.css` was actually served (and that a duplicate existed) let Phase 108 delete the right file under a D-12 safety gate instead of normalizing a file nobody loads.
+- **Render-verify gate caught real AA failures** — Playwright + WCAG measurement found two genuine contrast failures (danger button 3.10:1, status-label 4.11:1) that a grep-only check would have missed.
+- **Drift gate reused the v9.0 required-vs-advisory split** — the new structural check slotted into `brand-structural` (required, deterministic) rather than the advisory render tier, consistent with the established pattern.
+
+### What Was Inefficient
+- **Phase 109 needed a hardening round (WR/CR fixes)** — the initial drift script had hex-detection and class-attribute-scanning gaps (substring false positives, 4/8-digit hex, single-quoted/wrapped attrs) that took five follow-up `fix(109)` commits to close after first implementation.
+- **Milestone-complete CLI emitted placeholder `One-liner:` bullets again** — the recurring SUMMARY-extraction issue (v3.4/v3.9 pattern) struck once more; MILESTONES.md accomplishments had to be authored by hand at close.
+
+### Patterns Established
+- **Generate the whole token surface, not just color** — typography and dimension belong in the same generated source as color so they can't drift independently.
+- **Distribute design tokens by copy + `<link>`, not a build import** — honors zero-build/no-Tailwind host posture with one documented path.
+- **Browser-free structural drift gate for normalized consumers** — a deterministic per-consumer manifest + hex/lost-var/retired-class checks makes normalization regression-proof without a render engine.
+
+### Key Lessons
+- **Find the real source of truth before normalizing** — the drifted color values lived in an `.ex`-emitted theme, not the templates that referenced them; chasing the symptom would have left the cause.
+- **A structural gate needs adversarial hardening** — naive hex/class detection has false-positive and false-negative gaps (substring matches, quote styles, digit counts) that only surface under contract tests; budget a hardening pass.
+- **Recurring CLI placeholder-bullet issue is now a known tax** — author clean SUMMARY one-liners or expect to hand-write MILESTONES.md accomplishments at every close.
+
+### Cost Observations
+- **Session shape:** Two-day milestone (2026-06-13 → 2026-06-14), 3 phases / 10 plans, 74 files changed (+9,509 / −368).
+- **Carried-forward debt:** the `tighten-validation-ledger-closeout-gate` quick task remains deferred (pre-existing since v8.0); no new deferred work introduced.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -454,3 +490,7 @@
 | Backend authority compounds across entry paths | v3.9's notification-open resolver reused `RouteGate.evaluate/4` with `activation_source: :notification`, getting Sigra step-up reuse (OPEN-02) for free | New activation sources (notifications, deep links, future seams) should delegate to the existing route gate via a typed `activation_source` rather than re-implementing auth/step-up |
 | Validation-ledger debt is now systemic | v3.8 and v3.9 both closed with deferred Nyquist VALIDATION.md ledgers despite green proof and requirements | Close validation bookkeeping during phase execution, or add a closeout gate that blocks on draft ledgers, before v4.0 |
 | Closeout-as-contract beats prose review | v3.9 used a `CLOSEOUT.md` frontmatter checklist verified by `mix closeout.verify` as the closing gate | Support-truth-sensitive milestones should ship a machine-readable closeout contract alongside the proof lane |
+| Single generated source must cover the whole surface | v10.0 found typography/dimension were a second hand-maintained source even after v9.0 froze color tokens; normalization required generating font + dimension too | When establishing a generated source of truth, generate every consumed dimension of it up front — a partial source invites silent drift in the ungenerated parts |
+| Normalize the cause, not the referencing symptom | v10.0's drifted colors lived in an `.ex`-emitted Tailwind theme, not the `.eex` templates referencing it; CONTEXT-phase discovery caught the real third consumer | Before normalizing consumers, trace values to their actual emission source — referencing code is a symptom, not the source |
+| Structural gates need adversarial hardening | v10.0's drift script took five `fix(109)` rounds to close hex/class-attr detection gaps (substring false positives, 4/8-digit hex, quote styles) | Ship structural CI checks with a contract/fixture test suite from the start and budget a hardening pass; naive grep-style detection has predictable false-positive/negative gaps |
+| CLI placeholder-bullet tax is chronic | v3.4, v3.9, and now v10.0 all emitted `One-liner:` placeholders into MILESTONES.md at close | Either fix SUMMARY one-liner authoring at phase close or fix the extraction CLI; it has recurred across four milestones |

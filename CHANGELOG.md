@@ -23,7 +23,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Deferred non-shipped claims
 
-* RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, and standalone generated shell packages are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
 
 ### Published Hex truth
 
@@ -35,6 +35,9 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+* Published native shell core distribution path: generated iOS scaffolds resolve `github.com/szTheory/crosswake-shell-core-ios` through SwiftPM, generated Android scaffolds resolve `io.github.sztheory:crosswake-shell-core-android` through Maven Central, and both coordinates derive from the Crosswake package version.
+* Release-time clean-room proof jobs for iOS and Android that scaffold outside the monorepo and run `swift build` / `gradle build` against the just-published artifacts.
+* A merge-blocking published-dependency parity guard in `mix crosswake.doctor --check-publish` so generator templates cannot drift back to monorepo paths, placeholder orgs, or mismatched versions.
 * **Threadline** request-correlation observability: a stable correlation id propagated across the Plug pipeline (`Crosswake.Plug.Threadline`), the LiveView lifecycle (`Crosswake.Live.Threadline`), and bridge command envelopes, with structured telemetry (`Crosswake.Threadline.Telemetry`, `Crosswake.Threadline.Id`) and a `mix crosswake.threadline` docs-contract task. Surfaced through `mix crosswake.doctor` and the support matrix.
 * Compatibility-contract and support-matrix refinements, including bridge-protocol-version and commerce-corridor-version gating in route compatibility checks.
 * Provider adapter **seam contracts** only (StoreKit / Play Billing adapters remain out of scope — the seam vocabulary and entitlement-lane semantics are operationalized, not the providers).
@@ -44,7 +47,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Notes
 
 * The v9.0 brand system (`brandbook/` — brand book, design tokens, logo suite, collateral, and the COLL-05 automated brand-verification suite) was developed in this window but is **excluded from the Hex package** (`:exclude_patterns: ["brandbook"]`), so it is not part of this installable release.
-* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, and standalone generated shell packages.
+* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.0] — 2026-05-29
 

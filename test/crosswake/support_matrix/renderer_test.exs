@@ -108,7 +108,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "## Packaging Ledger"
     assert guide =~ "| Surface | Class | Why | Release Burden | Public Guide |"
     assert guide =~ "| Checked-in example hosts and install walkthroughs | example/docs-only |"
-    assert guide =~ "| Standalone public shell packages | defer |"
+    assert guide =~ "| Standalone native shell core packages | core |"
     assert guide =~ "## Release And Versioning Policy"
     assert guide =~ "package versions alone do not define support truth"
     assert guide =~ "manifest_schema_version"
@@ -173,7 +173,8 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "token/open evidence is not auth authority"
     assert guide =~ "APNs/FCM delivery is not part of this proof"
 
-    assert guide =~ "Standalone public shell packages are deferred"
+    assert guide =~
+             "Standalone native shell core packages are consumed by generated host-owned wrappers"
   end
 
   test "generated guide renders commerce corridor support truth with canonical denial codes" do

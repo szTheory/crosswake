@@ -1,0 +1,105 @@
+# Requirements: Crosswake — v11.0 Release & Distribution Truth
+
+**Defined:** 2026-06-14
+**Core Value:** Make the v5.0 standalone-package thesis actually consumable — an adopter outside this monorepo can add the Hex dep, run `mix crosswake.gen.shell` (default), and get iOS + Android projects that resolve published, version-matched deps and build.
+
+## v1 Requirements
+
+Requirements for milestone v11.0. Each maps to exactly one roadmap phase.
+
+> Research backing every requirement: `.planning/research/SUMMARY.md` (+ STACK/FEATURES/ARCHITECTURE/PITFALLS) and `.planning/threads/release-distribution-truth.md`. Hard ordering: every `PUB`/`LOCK` requirement must ship before the `GEN`/`PROOF` requirements that depend on it — you cannot clean-room-prove an unpublished dep, and Hex must not be cut while `gen.shell` still emits broken coordinates.
+
+### Native Publish
+
+Publish the already-built native cores so they are consumable from their native package managers. iOS and Android have opposite constraints (SwiftPM forbids monorepo-subdir consumption per SE-0292; Maven Central is layout-agnostic).
+
+- [x] **PUB-01**: The iOS shell core (`packages/crosswake-shell-core-ios/`) is published to a dedicated `github.com/szTheory/crosswake-shell-core-ios` repository, auto-mirrored from the monorepo subtree (splitsh-lite, `fetch-depth: 0`) and carrying annotated semver git tags, so it is consumable by SwiftPM from a versioned tag.
+- [x] **PUB-02**: The Android shell core (`packages/crosswake-shell-core-android/`) is published to Maven Central under the verified `io.github.sztheory` group (Vanniktech `com.vanniktech.maven.publish` 0.31.0 → Central Portal), with a complete signed POM, so it is consumable via `mavenCentral()`.
+- [x] **PUB-03**: Publishing prerequisites are established and recorded so the first publish cannot silently fail or burn an immutable version: GPG signing key on a public keyserver, verified Central Portal namespace, complete POM metadata (name/description/url/license/developers/scm), and a dry-run gate that must pass before any real publish.
+
+### Lockstep Versioning
+
+One bump advances all three registries to the same version, so generated code can always reference a resolvable, version-matched dep.
+
+- [x] **LOCK-01**: The Hex package, iOS mirror tag, and Maven artifact share one version via release-please manifest mode + `linked-versions` (release-please-action v4.4.1), so a single release bumps all three to identical coordinates.
+- [x] **LOCK-02**: The native publish CI jobs are triggered by the release-please release within the same workflow (`needs: release-please` + `if: releases_created`), not a separate `release: published` listener that the default `GITHUB_TOKEN` would never fire.
+
+### Generator Truth
+
+Rewire `mix crosswake.gen.shell` so its default (non-`--local`) output references the published deps, with the version derived from one source of truth.
+
+- [x] **GEN-01**: `mix crosswake.gen.shell` injects the live `crosswake` version (`Application.spec(:crosswake)[:vsn]`) into the generated native dep coordinates at generate-time — no hardcoded version literal in any template, and every native dep version derives from that single source (no hardcoded satellite version).
+- [x] **GEN-02**: The default (non-`--local`) generated iOS and Android projects reference the correct published coordinates — iOS `github.com/szTheory/...` with `upToNextMajorVersion`/`from:` pinning (not `exactVersion`, not a branch), Android `io.github.sztheory:crosswake-shell-core-android` — with the placeholder `crosswake/` remote and the relative-path/monorepo default removed.
+
+### Proof
+
+Prove the thesis holds outside the monorepo, and make that guarantee permanent.
+
+- [x] **PROOF-01**: A clean-room CI lane scaffolds a host **outside the monorepo** (default `gen.shell`, no `--local`, no `packages/` access) and confirms `swift build` and `gradle build` resolve the *published* deps and compile.
+- [x] **PROOF-02**: A permanent `doctor` / closeout "published-dep parity" check asserts the generated native dep coordinates are version-matched to `crosswake` and point at published, resolvable artifacts rather than monorepo paths — the structural guard that keeps the eject-trap thesis honest (sibling to the v10.0 `brand-structural` gate). *(Graduation candidate — permanent doctor/closeout fixture)*
+
+### Release Truth
+
+Reconcile the public install story to reality and cut the release.
+
+- [x] **DOCS-01**: `guides/adoption.md`, `guides/support_matrix.md`, and `CHANGELOG.md` are reconciled to the published install truth — no 404 install path, no claim of an install route that does not resolve.
+- [ ] **REL-01**: Hex `0.1.2` is cut (last, after `gen.shell` emits correct coordinates) so the published Hex package and the generated shell deps are mutually consistent for an external adopter.
+
+## Future Requirements
+
+Deferred to a later milestone. Tracked but not in this roadmap.
+
+### CI Honesty / Real-E2E (next wedge after v11.0)
+
+- **E2E-01**: Replace the v6.0 mocked Playwright E2E with a real network-toggling run (RETROSPECTIVE: the mock hid a compile break).
+- **LEDG-01**: Resolve the carried `tighten-validation-ledger-closeout-gate` Nyquist debt.
+
+### Onboarding / Docs Consolidation (subordinate to a real install path)
+
+- **GUIDE-01**: `guides/route_policy.md` route-policy-101; troubleshooting / rough-edges guide; web→mobile migration story; ExDoc↔guide cross-linking.
+
+### Dashboard & Native (carried)
+
+- **DASH-01**: Surface offline adoption and eviction metrics to the deferred `crosswake_dashboard` package.
+- **NTV-01**: Extend storage budgets to use native iOS/Android bridge commands to calculate available physical disk space.
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Binary distribution (`.binaryTarget` / GitHub-Releases AAR) | Source distribution is correct; `.binaryTarget` can't declare deps and adds checksum ceremony for no payoff; a GitHub-Releases AAR isn't indexed by `mavenCentral()`. |
+| Independent per-platform versioning (Hotwire Native style) | Breaks the codegen version source-of-truth; lockstep is required precisely because generated code ties versions together. |
+| Native device/simulator proof (iOS simulator, Android emulator) lanes | This milestone proves *dependency resolution + compilation* clean-room (`swift build` / `gradle build`); device/emulator proof is a downstream wedge (ranked adopter-gap #1/#2). |
+| Real-E2E / validation-ledger sweep, onboarding/docs consolidation | Explicitly the *next* wedges; teaching/proving more on an install path is subordinate to making the install path real first. |
+| Cutting a Hex release as the milestone goal | `doctor --check-publish` is already `ready`; the cut is a near button-press and only happens *after* `gen.shell` is correct — the milestone is the distribution machinery, not the button. |
+| Companion package extraction, new capability/commerce breadth, `crosswake_dashboard`, NTV-01/DASH-01 | Overbuilding on an undistributed base; deferred until the install path is real. |
+| Re-tagging / re-publishing a burned version | Maven Central releases are immutable and SwiftPM tags must not be force-moved (adopter `Package.resolved` reproducibility); guarded by PUB-03 dry-run, not worked around. |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PUB-01 | 110 | Complete |
+| PUB-02 | 110 | Complete |
+| PUB-03 | 110 | Complete |
+| LOCK-01 | 110 | Complete |
+| LOCK-02 | 110 | Complete |
+| GEN-01 | 111 | Complete |
+| GEN-02 | 111 | Complete |
+| PROOF-01 | 111 | Complete |
+| PROOF-02 | 111 | Complete |
+| DOCS-01 | 111 | Complete |
+| REL-01 | 111 | Pending |
+
+**Coverage:**
+- v1 requirements: 11 total
+- Mapped to phases: 11 (Phase 110: 5, Phase 111: 6)
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-06-14*
+*Last updated: 2026-06-14 — PROOF-01/PROOF-02 completed during Phase 111*

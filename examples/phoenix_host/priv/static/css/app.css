@@ -1,32 +1,7 @@
-:root {
-  /* Core palette */
-  --cw-current-950: #09141A;
-  --cw-current-900: #0F1E26;
-  --cw-current-800: #162B35;
-  --cw-harbor-700: #254855;
-  --cw-wake-700: #2B756A;
-  --cw-wake-500: #4E9A8E;
-  --cw-kelp-800: #123B36;
-  --cw-brass-500: #C98A2E;
-  --cw-brass-700: #946017;
-  --cw-foam-50: #F7F1E6;
-  --cw-foam-100: #EFE6D6;
-  --cw-mist-200: #C9D4CF;
-  --cw-stone-500: #7C746A;
-  --cw-rust-600: #9A4D35;
-  --cw-plum-700: #372D4C;
-  --cw-white: #FFFFFF;
-
-  /* Fonts */
-  --cw-font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --cw-font-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --cw-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-}
-
 body {
   font-family: var(--cw-font-body);
-  background-color: var(--cw-foam-50);
-  color: var(--cw-current-950);
+  background-color: var(--cw-surface-default);
+  color: var(--cw-text-default);
   margin: 0;
   padding: 0;
   line-height: 1.5;
@@ -39,48 +14,50 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Base structural classes */
 .page-container {
+  /* max-width is a structural content-column width, not a brand scale value — no token exists */
   max-width: 860px;
   margin: 0 auto;
-  padding: 24px;
+  padding: calc(var(--cw-spacing-base) * 6);
 }
 
 .page-title {
-  font-size: 28px;
-  margin-bottom: 24px;
-  color: var(--cw-current-950);
+  font-size: var(--cw-display-scale-sm);
+  margin-bottom: calc(var(--cw-spacing-base) * 6);
+  color: var(--cw-text-default);
 }
 
 /* Cards */
 .card {
-  background-color: var(--cw-white);
-  border: 1px solid var(--cw-mist-200);
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 1px 2px rgba(9, 20, 26, 0.06);
-  margin-bottom: 24px;
+  background-color: var(--cw-surface-inset);
+  border: 1px solid var(--cw-border-default);
+  border-radius: var(--cw-radius-lg);
+  padding: calc(var(--cw-spacing-base) * 6);
+  /* theme-adaptive elevation: tints with --cw-text-default so it lightens on dark surfaces */
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--cw-text-default) 6%, transparent);
+  margin-bottom: calc(var(--cw-spacing-base) * 6);
 }
 
 .card-header {
-  margin-bottom: 16px;
+  margin-bottom: calc(var(--cw-spacing-base) * 4);
 }
 
 .card-title {
-  font-size: 20px;
-  margin-bottom: 8px;
-  color: var(--cw-current-950);
+  font-size: var(--cw-text-scale-xl);
+  margin-bottom: calc(var(--cw-spacing-base) * 2);
+  color: var(--cw-text-default);
 }
 
 .card-actions {
-  margin-top: 16px;
+  margin-top: calc(var(--cw-spacing-base) * 4);
 }
 
 /* Buttons */
 .btn-primary {
-  background-color: var(--cw-wake-700);
-  color: var(--cw-white);
+  background-color: var(--cw-action-bg);
+  color: var(--cw-action-fg);
   border: none;
-  border-radius: 10px;
-  padding: 8px 16px;
+  border-radius: var(--cw-radius-md);
+  padding: calc(var(--cw-spacing-base) * 2) calc(var(--cw-spacing-base) * 4);
   font-family: var(--cw-font-body);
   font-weight: 500;
   cursor: pointer;
@@ -91,20 +68,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary:hover {
-  background-color: var(--cw-current-950);
+  background-color: var(--cw-action-hover);
 }
 
-.btn-primary:focus {
-  outline: 2px solid var(--cw-brass-500);
+.btn-primary:focus-visible {
+  outline: var(--cw-focus-ring-width) solid var(--cw-action-focus-ring);
   outline-offset: 2px;
 }
 
 .btn-secondary {
   background-color: transparent;
-  color: var(--cw-current-950);
-  border: 1px solid var(--cw-mist-200);
-  border-radius: 10px;
-  padding: 8px 16px;
+  color: var(--cw-text-default);
+  border: 1px solid var(--cw-border-default);
+  border-radius: var(--cw-radius-md);
+  padding: calc(var(--cw-spacing-base) * 2) calc(var(--cw-spacing-base) * 4);
   font-family: var(--cw-font-body);
   font-weight: 500;
   cursor: pointer;
@@ -115,25 +92,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary:hover {
-  background-color: var(--cw-foam-100);
+  background-color: var(--cw-surface-raised);
 }
 
 /* Badges */
 .badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: calc(var(--cw-spacing-base) * 1) calc(var(--cw-spacing-base) * 2);
+  border-radius: var(--cw-radius-sm);
+  font-size: var(--cw-text-scale-xs);
   font-weight: 500;
-  background-color: var(--cw-mist-200);
-  color: var(--cw-current-950);
-  margin-right: 8px;
-  margin-bottom: 8px;
+  background-color: var(--cw-surface-raised);
+  color: var(--cw-text-default);
+  margin-right: calc(var(--cw-spacing-base) * 2);
+  margin-bottom: calc(var(--cw-spacing-base) * 2);
 }
 
 .text-sm {
-  font-size: 14px;
-  color: var(--cw-stone-500);
+  font-size: var(--cw-text-scale-sm);
+  color: var(--cw-text-muted);
   margin: 0;
 }
 
@@ -143,7 +120,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .grid {
   display: grid;
-  gap: 24px;
+  gap: calc(var(--cw-spacing-base) * 6);
 }
 
 .grid-cols-2 {

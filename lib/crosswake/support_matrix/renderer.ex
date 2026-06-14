@@ -22,6 +22,10 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "This guide stays narrow and proof-oriented. The published iOS and Android shell claims",
       "below are backed by the checked-in example hosts plus the generated-shell verification",
       "hooks that now pass on the same host-owned artifact classes adopters ship.",
+      "The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`",
+      "and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake",
+      "Hex package version; the release-time clean-room proof promotes that path after the",
+      "coordinated cut.",
       "",
       "## Status Legend",
       "",
@@ -232,7 +236,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "- StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.",
       "- Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred.",
       "- APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.",
-      "- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts."
+      "- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven."
     ]
     |> Enum.join("\n")
   end

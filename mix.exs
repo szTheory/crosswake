@@ -1,7 +1,7 @@
 defmodule Crosswake.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.0" # x-release-please-version
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
@@ -99,6 +99,7 @@ defmodule Crosswake.MixProject do
         "guides/capabilities.md",
         "guides/bridge.md",
         "guides/offline.md",
+        "guides/tokens.md",
         "guides/commerce.md",
         "guides/companions.md",
         "guides/compatibility.md",

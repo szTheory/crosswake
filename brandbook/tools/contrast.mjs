@@ -5,6 +5,8 @@
 // Output: markdown table to stdout — Foreground | Background | Ratio | AA | AAA
 // Zero npm dependencies.
 
+import { fileURLToPath } from 'node:url';
+
 // WCAG 2.2 linearization threshold: 0.04045 (corrected May 2021; not 0.03928)
 function linearize(c) {
   const s = c / 255;
@@ -86,33 +88,41 @@ const PAIRS = [
   ['stone-600',  'current-950'],  // 3.66 non-text only
 ];
 
-// Main: compute ratios and print markdown table
-const AA_TEXT_THRESHOLD = 4.5;
-const AAA_TEXT_THRESHOLD = 7.0;
+// Main-module guard: only print the matrix when run directly
+// (`node contrast.mjs`, the AUDIT.md reproducibility command). When imported
+// (contrast.test.mjs, check-consumer-drift.mjs) the matrix MUST stay silent so
+// it does not pollute importers' stdout (#drift-gate output hygiene).
+const IS_MAIN = process.argv[1] === fileURLToPath(import.meta.url);
 
-const rows = PAIRS.map(([fg, bg]) => {
-  const ratio = contrast(PALETTE[fg], PALETTE[bg]);
-  const aa = ratio >= AA_TEXT_THRESHOLD ? 'PASS' : 'FAIL';
-  const aaa = ratio >= AAA_TEXT_THRESHOLD ? 'PASS' : 'FAIL';
-  return { fg, bg, ratio, aa, aaa };
-});
+if (IS_MAIN) {
+  // Main: compute ratios and print markdown table
+  const AA_TEXT_THRESHOLD = 4.5;
+  const AAA_TEXT_THRESHOLD = 7.0;
 
-console.log('| Foreground | Background | Ratio | AA | AAA |');
-console.log('|------------|------------|-------|-----|-----|');
-rows.forEach(({ fg, bg, ratio, aa, aaa }) => {
-  console.log(`| ${fg} | ${bg} | ${ratio.toFixed(2)}:1 | ${aa} | ${aaa} |`);
-});
+  const rows = PAIRS.map(([fg, bg]) => {
+    const ratio = contrast(PALETTE[fg], PALETTE[bg]);
+    const aa = ratio >= AA_TEXT_THRESHOLD ? 'PASS' : 'FAIL';
+    const aaa = ratio >= AAA_TEXT_THRESHOLD ? 'PASS' : 'FAIL';
+    return { fg, bg, ratio, aa, aaa };
+  });
 
-const totalPairs = rows.length;
-const failAA = rows.filter(r => r.aa === 'FAIL').length;
-const failAAA = rows.filter(r => r.aaa === 'FAIL').length;
+  console.log('| Foreground | Background | Ratio | AA | AAA |');
+  console.log('|------------|------------|-------|-----|-----|');
+  rows.forEach(({ fg, bg, ratio, aa, aaa }) => {
+    console.log(`| ${fg} | ${bg} | ${ratio.toFixed(2)}:1 | ${aa} | ${aaa} |`);
+  });
 
-console.log('');
-console.log(`**${totalPairs} pairings tested. ${failAA} fail AA normal text (< ${AA_TEXT_THRESHOLD}:1). ${failAAA} fail AAA normal text (< ${AAA_TEXT_THRESHOLD}:1).**`);
-console.log('');
-console.log('_Note: Pairs where FAIL reflects a role issue (not a hex defect):_');
-console.log('_wake-500/foam-50 (2.95:1) — dark-surface accent only_');
-console.log('_mist-200/foam-50 (1.35:1) — border and dark-surface text only_');
-console.log('_stone-600/current-950 (3.66:1) — non-text UI elements only (passes 3:1 AA non-text)_');
+  const totalPairs = rows.length;
+  const failAA = rows.filter(r => r.aa === 'FAIL').length;
+  const failAAA = rows.filter(r => r.aaa === 'FAIL').length;
+
+  console.log('');
+  console.log(`**${totalPairs} pairings tested. ${failAA} fail AA normal text (< ${AA_TEXT_THRESHOLD}:1). ${failAAA} fail AAA normal text (< ${AAA_TEXT_THRESHOLD}:1).**`);
+  console.log('');
+  console.log('_Note: Pairs where FAIL reflects a role issue (not a hex defect):_');
+  console.log('_wake-500/foam-50 (2.95:1) — dark-surface accent only_');
+  console.log('_mist-200/foam-50 (1.35:1) — border and dark-surface text only_');
+  console.log('_stone-600/current-950 (3.66:1) — non-text UI elements only (passes 3:1 AA non-text)_');
+}
 
 export { linearize, luminance, parseHex, contrast, PALETTE };

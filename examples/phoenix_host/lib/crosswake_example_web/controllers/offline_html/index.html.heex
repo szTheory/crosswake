@@ -4,12 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Offline Study</title>
-    <!-- Add basic styles for the study island -->
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <!-- Inline styles for the study island — consumes semantic tokens from tokens.css -->
     <style>
       body {
-        font-family: system-ui, sans-serif;
-        background-color: #f3f4f6;
-        color: #1f2937;
+        font-family: var(--cw-font-body);
+        background-color: var(--cw-surface-default);
+        color: var(--cw-text-default);
         margin: 0;
         padding: 2rem;
         display: flex;
@@ -17,9 +18,10 @@
         align-items: center;
       }
       #flashcard-container {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background: var(--cw-surface-inset);
+        border-radius: var(--cw-radius-md);
+        /* theme-adaptive elevation: tints with --cw-text-default so it lightens on dark surfaces */
+        box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--cw-text-default) 10%, transparent);
         padding: 2rem;
         margin-bottom: 2rem;
         width: 100%;
@@ -39,8 +41,8 @@
         display: none;
         margin-top: 1rem;
         padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-        color: #4b5563;
+        border-top: 1px solid var(--cw-border-default);
+        color: var(--cw-text-muted);
         font-size: 1.25rem;
       }
       #controls {
@@ -49,18 +51,25 @@
       }
       button {
         padding: 0.75rem 1.5rem;
-        border-radius: 0.25rem;
-        border: none;
+        border-radius: var(--cw-radius-sm);
+        border: 2px solid transparent;
         font-weight: bold;
         cursor: pointer;
       }
-      .btn-primary { background: #3b82f6; color: white; }
-      .btn-success { background: #10b981; color: white; }
-      .btn-danger { background: #ef4444; color: white; }
+      .btn-primary { background: var(--cw-action-bg); color: var(--cw-action-fg); }
+      /*
+        D-06 outlined treatment: --cw-status-error (rust-600) does NOT flip in dark mode
+        and sits at ~3.1:1 against the near-black surface in either role, so it cannot
+        carry AA text on/under the dark surface. Status is conveyed by a >=3:1 colored
+        border plus the button label; text uses --cw-text-default for full AA in both modes.
+        Render-verified light + dark (108-RENDER-VERIFY.md).
+      */
+      .btn-success { background: transparent; color: var(--cw-text-default); border-color: var(--cw-status-success); }
+      .btn-danger { background: transparent; color: var(--cw-text-default); border-color: var(--cw-status-error); }
       #status {
         margin-top: 2rem;
-        font-size: 0.875rem;
-        color: #6b7280;
+        font-size: var(--cw-text-scale-sm);
+        color: var(--cw-text-muted);
       }
     </style>
   </head>
@@ -70,7 +79,7 @@
     data-eviction-policy={@island.eviction}
   >
     <h1>Offline Study Island</h1>
-    
+
     <div id="flashcard-container">
       Loading flashcards...
     </div>

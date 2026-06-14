@@ -7,10 +7,12 @@
     <.live_title default="Offline Island">
       {assigns[:page_title]}
     </.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/tokens.css"} />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/offline.css"} />
     <script defer phx-track-static type="module" src={~p"/assets/offline.js"}></script>
   </head>
-  <body class="bg-cw-foam-50 text-cw-current-950 antialiased">
+  <body>
     <%%= @inner_content %>
   </body>
 </html>

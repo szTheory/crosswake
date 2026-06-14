@@ -4,6 +4,8 @@ Crosswake keeps one primary package surface: `crosswake`. Companion-ready and
 docs-only surfaces stay explicit, but there is still one primary install path for the
 Phoenix host and one scaffold-once path for host-owned native shells.
 
+> See [guides/adoption.md](adoption.md) for offline-sync architecture context and the rationale for the generated shell pattern.
+
 1. `mix crosswake.install`
 2. `mix crosswake.gen.shell ios|android`
 3. `mix crosswake.doctor --router Elixir.YourAppWeb.Router`

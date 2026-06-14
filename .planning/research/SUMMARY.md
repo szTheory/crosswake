@@ -1,203 +1,233 @@
 # Project Research Summary
 
-**Project:** Crosswake v9.0 Brand System & Visual Identity
-**Domain:** OSS devtools brand system — design tokens, logo suite, HTML brand book, collateral
-**Researched:** 2026-06-11
+**Project:** Crosswake v11.0 — Release & Distribution Truth
+**Domain:** Multi-language OSS library distribution — Hex + SwiftPM subtree mirror + Maven Central, generate-time version injection, lockstep release, clean-room build proof
+**Researched:** 2026-06-14
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Crosswake v9.0 converts the existing text-only brand book draft (`prompts/crosswake-brand-book.md`) into a fully implemented, audited, and self-contained `brandbook/` directory. The work pattern is well-established: production-grade OSS brand systems (Tailwind, Astro, Vercel/Geist, Bun) all follow the same structure — path-only SVG logo suite with light/dark/mono variants, W3C DTCG design token file with a three-tier primitive→semantic→state hierarchy, and a standalone HTML brand book that requires no build step. The tooling surface is deliberately minimal: one npm package (`opentype.js` 2.0.0 for glyph-to-path wordmark generation), one Homebrew tool (`rsvg-convert` for PNG rasterisation), and zero new Elixir/mix.exs dependencies. All brand tooling lives under `brandbook/tools/` and is isolated entirely from the Elixir library.
+Crosswake is a mature codebase (~88% feature-complete) but a partial installable product (~70%). The v5.0 "no eject trap" thesis — replace generated shell logic with standalone SPM/Maven dependencies — is fully implemented in the monorepo but has never been distributed. The flagship failure is concrete: an adopter running `mix crosswake.gen.shell ios` today receives an Xcode project whose SPM reference points at `https://github.com/crosswake/crosswake-shell-core-ios.git` (wrong org, repo absent), and `mix crosswake.gen.shell android` emits `implementation 'dev.crosswake:shell-core-android:0.1.0'` (wrong group ID, artifact never published). The adoption guide documents this 404 install path as working — which makes it actively harmful, not merely incomplete.
 
-The recommended phase order is dictated by a hard dependency chain: the brand audit must lock palette verdicts before tokens can be finalized, tokens must be settled before logos can reference correct palette values, the selected logo must exist before the HTML brand book can display it, and the brand book must be complete before collateral and wiring can reference canonical assets. Skipping this order — for example, generating tokens before the audit flags contrast failures — produces rework. The audit is not a formality; the existing v8.0 palette surfaces contain a Tailwind color mismatch (blue/amber scale in generator templates vs. the teal/warm nautical palette in `app.css`) that must be diagnosed and locked before anything downstream proceeds.
+The recommended approach, grounded in Apollo iOS, LiveView Native, and Capacitor precedent, is a strict two-phase sequence: Phase A publishes the native cores and wires lockstep versioning before any template is touched, then Phase B rewires templates, proves the published path via a clean-room CI lane, reconciles docs, and cuts Hex 0.1.2. The ordering is non-negotiable: you cannot clean-room-prove an unpublished dep, and you must not cut the Hex release while `gen.shell` still emits broken coordinates. The milestone is complete when a CI job scaffolds a host project in `$RUNNER_TEMP` — outside the monorepo, no `--local`, against published artifacts — and `swift build` plus `./gradlew assembleDebug` both exit 0.
 
-The critical risks are concentrated in two areas. First, logo generation: programmatic marks without explicit concept constraints produce generic devtools-cliché output (hexagons, node graphs, rectangular containers). The tournament gallery must enforce written anti-requirements and require monochrome and small-size tests for every candidate before user selection. Second, token architecture: primitive-only token files without a semantic layer make theming and dark mode maintenance intractable. Every component in `tokens.css` must reference the semantic tier only — never raw palette primitives. Both risks are preventable if the phase sequencing and per-phase checklists from the pitfalls research are followed.
-
----
+The top risks are irreversibility and silent breakage. Maven Central releases are immutable: a botched `io.github.sztheory:crosswake-shell-core-android:0.1.2` publish (wrong POM, missing GPG signature, unverified namespace) burns that version coordinate permanently. SwiftPM version tags on the mirror repo cannot be force-replaced once any adopter has resolved them. GPG key missing from a public keyserver causes upload rejection with a non-obvious error. The `GITHUB_TOKEN` loop-prevention rule means native publish jobs wired on `on: release: types: [published]` silently never fire. Every one of these has a concrete prevention protocol in the research.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The tooling stack is minimal by design. `opentype.js` 2.0.0 (May 2026) is the single npm dependency: it converts Space Grotesk glyphs to SVG path data without a headless browser, runs in pure Node.js ESM, and its `getPath()` / `toPathData()` API handles GPOS kerning natively. `rsvg-convert` (via `brew install librsvg`) handles all SVG-to-PNG rasterisation — it is significantly more accurate than macOS `sips` and far lighter than Puppeteer or Inkscape. The W3C DTCG `2025.10` stable spec governs the token file format; all three major tools (Style Dictionary, Tokens Studio, Figma) have adopted it.
-
-All three specified typefaces are confirmed available with the required weights. `Atkinson Hyperlegible Next` (the 2024 "Next" variant with 7 weights) is confirmed on Google Fonts at the correct specimen URL — distinct from the classic 2-weight version. The OFL FAQ explicitly permits using font outlines in logos; committed path-data SVGs are not subject to OFL redistribution requirements.
+All tool choices are constrained by what the repository currently runs, not what the latest versions support. The project is on `gradle-8.7` and `compileSdk 34`, which makes Vanniktech maven-publish 0.36.0 (requires Gradle 9.0+) incompatible. The Hex release pipeline uses `googleapis/release-please-action` at `v4.4.1` (SHA `5c625bf`) already pinned in `release-please.yml`. The SwiftPM package is already at `swift-tools 5.9` and already structured correctly for source distribution — nothing about the iOS package itself needs to change; only the mirror repo and CI job are missing.
 
 **Core technologies:**
-- `opentype.js` 2.0.0: Glyph-to-SVG-path conversion for path-only wordmarks — actively maintained, zero native deps, ships ESM+CJS
-- `rsvg-convert` (librsvg via Homebrew): SVG-to-PNG rasterisation — correct renderer, scriptable, deterministic; avoids `sips` distortion and Puppeteer overhead
-- W3C DTCG 2025.10: Design token JSON format — stable spec, tooling-compatible, `$value`/`$type`/`$description` per token
-- Google Fonts CDN: Brand book font loading — no binary commits, no build step; Fontsource is the self-hosted fallback for offline use
-- WCAG luminance formula: Implemented as a dependency-free Node.js script consuming `crosswake.tokens.json` directly
+- `splitsh/lite` v2.0.0: subtree-split `packages/crosswake-shell-core-ios/` to a dedicated mirror repo on every release. The only production-proven approach because SwiftPM's SE-0292 root-manifest constraint makes a monorepo subdir unconsuable over a git URL. Apollo iOS uses this exact pattern.
+- `com.vanniktech.maven.publish` 0.31.0 (NOT 0.36.0): publishes Android AAR + auto-generated sources/javadoc jars to Maven Central via Central Portal with GPG signing. 0.31.0 is the newest version compatible with Gradle 8.5+/AGP 8.0+; 0.36.0 requires Gradle 9.0.0+, which exceeds the project's current `gradle-8.7`.
+- `googleapis/release-please-action` v4.4.1 with `linked-versions` plugin: one Release PR advances Hex, iOS mirror tag, and Android Maven version atomically. Required because `gen.shell` derives native dep coordinates from `Application.spec(:crosswake)[:vsn]` — if the three registries carry different version numbers, the generated code references a coordinate that may not exist in the registry the adopter hits first.
+- EEx + `Application.spec(:crosswake, :vsn)` (Elixir stdlib, zero new deps): generate-time version injection into iOS `.pbxproj.eex` and Android `build.gradle.eex`. This is the LiveView Native `lvn.swiftui.gen` pattern exactly.
+- Maven Central namespace `io.github.sztheory`: auto-provisioned on GitHub OAuth login to `central.sonatype.com` with the `szTheory` account. Must be verified before any publish config is written.
 
-**Critical version requirements:**
-- `opentype.js` must be `^2.0.0` (not 1.3.4) — the 2.0.0 release closes a 5-year gap and ships the correct ESM surface
-- OG social card: 1200x630px (universal) or 1280x640px (GitHub-recommended); safe zone 1080x600px inner area
+**Supporting constraints:**
+- `actions/checkout@v4` with `fetch-depth: 0` is mandatory in the splitsh job — shallow clones break splitsh-lite's commit-tree construction.
+- `MIRROR_PUSH_TOKEN` (fine-grained PAT, `Contents: write` on the mirror repo) is distinct from `RELEASE_PLEASE_TOKEN`. Both must be distinct from `GITHUB_TOKEN`, which cannot trigger downstream workflow runs by design (release-please-action issue #1000).
+- SwiftPM `upToNextMajorVersion` (not `exactVersion`, not `branch:`): lets adopters receive patches and minors without regenerating. `exactVersion` (the current broken template behavior) forces manual regeneration on every patch. `branch:` discards version-sync entirely (the Capacitor issue #7735 anti-pattern).
 
 ### Expected Features
 
-Five deliverables are in scope for v9.0. All are required; none can be deferred.
+**Must have (table stakes) — all P1, none skippable for milestone closeout:**
+- iOS SPM core published at a semver git tag on `github.com/szTheory/crosswake-shell-core-ios`. Without this, any iOS dep URL fails SPM resolution.
+- Android core published to Maven Central as `io.github.sztheory:crosswake-shell-core-android:0.1.2`. Without this, the generated Gradle dep is a 404 that looks like a typo to the adopter.
+- `gen.shell` injects `Application.spec(:crosswake, :vsn)` at generate-time — never a literal version string in the non-local branch.
+- Default mode (`--local false`) emits resolvable coordinates only. The `--local true` monorepo-dev path remains unchanged.
+- `guides/adoption.md` updated to published truth. A guide documenting a 404 install path is net-harmful.
+- Clean-room CI acceptance lane: scaffold host in `$RUNNER_TEMP` outside monorepo, run `gen.shell` without `--local`, `swift build` + `./gradlew assembleDebug`, assert exit 0. Single observable definition of milestone completion.
+- Hex 0.1.2 cut — the final step, after native publish verified and clean-room proof passes.
+- release-please manifest mode + `linked-versions` group: wire in Phase A before the first publish, or lockstep is broken from the start.
 
-**Must have (table stakes):**
-- `brandbook/AUDIT.md` — verdict (KEEP/TIGHTEN/REWORK/ADD/REMOVE) for every section of the brand book draft; WCAG contrast matrix for all 16 palette token pairs; competitor conflict check against the four named projects (React Native, Hotwire, Phoenix/LiveView Native, Capacitor)
-- `brandbook/tokens/crosswake.tokens.json` — W3C DTCG format; three-tier hierarchy (primitives → semantic roles → state variants); all 16 palette tokens plus semantic roles and light/dark variants
-- `brandbook/tokens/tokens.css` — CSS custom properties derived from the token JSON; tier-separated with comment headers; `@media (prefers-color-scheme)` dark mode; forbidden-pairing comments embedded
-- `brandbook/logo/tournament/index.html` — 7-candidate gallery (4 logomark + 3 typemark); each shown on light/dark/monochrome backgrounds and at 16–32px scale; mandatory user-selection checkpoint; no external dependencies
-- `brandbook/logo/` production suite — horizontal lockup (light + dark), stacked lockup (light + dark), mark-only (light + dark + monochrome + signal colorway), path-only SVGs, no rectangular containers, no subtitle on main lockup
-- `brandbook/index.html` — standalone HTML brand book (no build step): live swatches with clipboard copy, inline WCAG contrast badges, type specimens, voice do/don't table, logo display with download links, asset index, component specimens (route card, badge, button, code block)
-- `brandbook/collateral/readme-header.svg` — path-only SVG, light + dark variants, wired into README with absolute `raw.githubusercontent.com` URL
-- `brandbook/collateral/social-card.png` — 1280x640px PNG; dark Current-950 background
-- `brandbook/collateral/favicons/` — `favicon.ico` + `favicon.svg` (prefers-color-scheme embedded) + `apple-touch-icon.png` (180x180) + `icon-192.png` + `icon-512.png`
-- Size budget: entire `brandbook/` committed content under 1 MB
-- Hex exclusion: `brandbook/` absent from published hex tarball (verified via `mix hex.build` tarball inspection)
+**Should have (differentiators) — P2, do within this milestone but not gating closeout:**
+- `mix doctor --check-publish` "published-dep parity" check: asserts generated shell dep coordinates point at published, resolvable, version-matched artifacts. Graduation candidate from `release-distribution-truth.md`. The structural analog to v10.0's `brand-structural` drift gate. Wire into CI as merge-blocking after publish.
+- SwiftPM `from:` constraint (`upToNextMajorVersion`) instead of `exactVersion`: template change required in Phase B.
+- Source distribution for iOS (not `.binaryTarget`): already correct; document the decision to prevent future XCFramework proposals.
 
-**Should have (v9.0 scope extensions, include if within complexity budget):**
-- Runtime-semantic token group (`runtime.liveview`, `runtime.offline`, `runtime.native`, `runtime.sensitive`) in the token file — unique differentiator, low implementation cost
-- In-situ context mocks (browser tab, GitHub repo card) in the tournament gallery per candidate
-- Competitor diff panel in tournament gallery
-- Inline WCAG contrast checker (two-swatch picker) in the HTML brand book
-
-**Defer to post-v9.0:**
-- Animated logo variants
-- Figma source files
-- Print-ready CMYK PDF brand book
-- Dark/light mode toggle in HTML brand book (auto via `prefers-color-scheme` is sufficient)
-- Token wiring: migrating `examples/phoenix_host/assets/css/app.css` and `priv/templates/` to import from `brandbook/tokens/tokens.css` — this is a v10.0 concern once audit has locked palette verdicts
+**Defer to post-v11.0:**
+- Real device/emulator proof (iOS simulator CI, Android emulator CI): follows once the distribution path is honest.
+- Route-policy-101 guide, troubleshooting guide, web-to-mobile migration: teaching a broken install path is net-harmful; these follow v11.0.
+- Companion package extraction, new capability breadth: overbuilding on an undistributed base.
 
 ### Architecture Approach
 
-The `brandbook/` directory is a self-contained artifact that sits alongside the Elixir library without touching it. The hex `package/0` `:files` key in `mix.exs` is an allowlist (`~w(lib priv mix.exs README.md LICENSE CHANGELOG.md guides)`) — `brandbook/` is excluded automatically with no additional configuration required. The only `mix.exs` change this milestone is adding `logo: "brandbook/logo/crosswake-mark.svg"` to `docs/0` in phase 106. `.gitignore` needs two additions: `brandbook/tools/node_modules/` and `brandbook/tools/fonts/`. Everything else in `brandbook/` is committed SVG, HTML, JSON, CSS, and shell scripts — no binaries.
-
-Token consumers (`examples/phoenix_host/assets/css/app.css`, `priv/templates/`) remain decoupled this milestone by design. The audit may change color values; wiring dependents before verdicts are locked produces rework. `tokens.css` becomes the canonical written source in v9.0; wiring is a v10.0 concern.
+The distribution architecture adds a mirror repo and two CI jobs to the existing monorepo without altering monorepo co-development. The monorepo remains authoritative. The iOS mirror (`github.com/szTheory/crosswake-shell-core-ios`) is a read-only CI output: splitsh-lite re-materializes it from full git history on every release. The Android library publishes from the monorepo subproject directly — unlike SwiftPM, Gradle has no root-manifest constraint. The `--local true` proof lane (`phase79-proof.yml`) is preserved unchanged as the PR merge-blocker. The clean-room lane is a post-release acceptance gate, not a PR gate — wiring it as a PR gate creates a chicken-and-egg deadlock against unpublished deps.
 
 **Major components:**
-1. `brandbook/tools/` — Node scripts (token compilation, WCAG contrast matrix, SVG validation) + PNG export shell script; isolated `package.json`; `node_modules/` and `fonts/` gitignored
-2. `brandbook/tokens/` — `crosswake.tokens.json` (W3C DTCG source of truth) + `tokens.css` (compiled CSS custom properties); three-tier hierarchy; light/dark via `prefers-color-scheme`
-3. `brandbook/logo/` — path-only SVG production suite (mark, lockup variants, monochrome); `tournament/` subdirectory with 7-candidate gallery HTML
-4. `brandbook/index.html` — standalone HTML brand book; no build step; vanilla JS only; fonts from Google Fonts CDN
-5. `brandbook/collateral/` — readme-header SVG, social card PNG, favicon set
-6. `.github/workflows/brandbook-verify.yml` — advisory CI lane (size budget, SVG validity, token JSON validity); triggered only on `brandbook/**` changes
+1. `mix.exs @version` — single source of truth; all downstream systems derive from it via `Application.spec/2` or release-please `extra-files` updater.
+2. `crosswake.gen.shell` task (modified) — adds `version: Application.spec(:crosswake, :vsn) |> to_string()` assign in `render_template/3`.
+3. `project.pbxproj.eex` (modified) — fixes org to `szTheory`, replaces `exactVersion` with `upToNextMajorVersion`, injects `<%= @version %>`.
+4. `app/build.gradle.eex` (modified) — replaces hardcoded GAV with `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
+5. `packages/crosswake-shell-core-android/build.gradle.kts` (modified) — adds Vanniktech 0.31.0, `version = "0.1.0" // x-release-please-version`, full POM with `io.github.sztheory` coordinates.
+6. `release-please.yml` ios-mirror job (new) — splitsh-lite with `fetch-depth: 0`; pushes to mirror; creates annotated tag from `outputs.tag_name`.
+7. `release-please.yml` android-publish job (new) — `./gradlew publishToMavenCentral --no-daemon` with five `ORG_GRADLE_PROJECT_*` secrets.
+8. `clean-room-proof.yml` job (new) — scaffolds host in `$RUNNER_TEMP`, `gen.shell` without `--local`, `swift build` + `gradle build`. Runs as `needs: [ios-mirror, android-publish]`.
+9. `release-please-config.json` (modified) — `linked-versions` plugin; iOS + Android package entries; `extra-files` annotations.
+
+**Version propagation flow (summary):**
+```
+mix.exs @version "0.1.2"  (single source of truth)
+  -> Application.spec(:crosswake)[:vsn] -> render_template/3 -> @version assign
+      -> project.pbxproj.eex: minimumVersion = 0.1.2 (upToNextMajorVersion)
+      -> app/build.gradle.eex: io.github.sztheory:...-android:0.1.2
+  -> release-please extra-files: bumps mix.exs @version + build.gradle.kts version on release PR
+  -> release-please outputs.version: ios-mirror tag + android-publish GAV
+```
+
+**Release trigger flow:**
+```
+Release PR merged -> release_created == true
+  -> publish-hex (existing)
+  -> ios-mirror: splitsh + annotated tag on szTheory/crosswake-shell-core-ios (new)
+  -> android-publish: Vanniktech to Central Portal (new)
+      -> clean-room-proof: scaffold outside monorepo, swift + gradle build (new)
+```
 
 ### Critical Pitfalls
 
-1. **Generic marks / rectangular containers** — Lock the concept brief (shape vocabulary, explicit anti-requirements: no hexagons, no node-graph metaphors, no enclosing rectangle) before any SVG is drawn. The tournament gallery enforces this at the mandatory user-selection checkpoint. Recovery after a generic mark wins the tournament is expensive (re-run tournament).
+**IRREVERSIBLE — must get right before any publish:**
 
-2. **Stroke collapse at 16px favicon** — Design the mark at a native 24x32 canvas, not at 512px. Evaluate every candidate at three sizes in the tournament gallery: 200px, 32px, 16px. Production SVGs must have strokes outlined to filled paths; live-stroke source files live in `brandbook/src/` only.
+1. **Burning a Maven Central version** — wrong POM, missing GPG signature, or unverified namespace at publish time permanently occupies that version coordinate. Prevention: `./gradlew publishToMavenLocal` + inspect `~/.m2` layout before any Central Portal attempt; CI dry-run gate required; never publish from a developer machine without CI dry-run passing. Phase A must include an explicit dry-run verification step.
 
-3. **Broken kerning and Y-axis flip after opentype.js path conversion** — Pass the correct baseline `y = font.ascender * (fontSize / font.unitsPerEm)` to `font.getPath()`. Set `fill-rule="evenodd"` on the wordmark path group (TTF outline winding requires evenodd for letter counters). After path generation, review every adjacent glyph pair at 400% zoom and hand-adjust optically bad pairs (`rk`, `os`, `aw`, `ke`). The path-converted wordmark is the start of hand-curation, not the finished artifact.
+2. **GPG key not on a public keyserver** — Central Portal rejects uploads if the public key is not on `keyserver.ubuntu.com` or `keys.openpgp.org`. The error is non-obvious. Prevention: push to two keyservers immediately after key generation; verify from a clean environment before writing any publish CI config.
 
-4. **Raw-color-only tokens without semantic layer** — The DTCG three-tier structure is mandatory. Component rules in `tokens.css` must reference only semantic tier tokens (`--cw-color-accent-primary`), never raw primitives (`--cw-color-blue-500`). Document and freeze the naming convention in phase 102 before generating a single CSS variable. Cap v1.0 at ~50 total tokens.
+3. **Re-tagging an existing iOS mirror version tag** — `Package.resolved` locks the commit hash; a re-tag producing a different hash causes `checksum mismatch` for all adopters who resolved the original. Prevention: CI push job has no `--force`; mirror repo has tag protection; job runs only on `release_created`.
 
-5. **GitHub SVG sanitization and relative image paths** — Production SVGs must be path-only (no `<text>`, no `dominant-baseline`, no `<script>`, no external `href`). README header dark mode must use GitHub's `<picture><source media="(prefers-color-scheme: dark)" srcset="...">` pattern. README image URL must be an absolute `https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/...` path; relative paths 404 on hexdocs.pm.
+**SILENT BREAKAGE — non-obvious adopter failures:**
 
----
+4. **GITHUB_TOKEN does not trigger downstream `release: published` workflows** — GitHub's loop-prevention rule silently drops these events. Native publish jobs wired this way never run. Prevention: all native publish jobs run as `needs:` steps in the same `release-please.yml` with `if: needs.release-please.outputs.release_created == 'true'`. The existing `publish-hex` job already uses this pattern.
+
+5. **Hardcoded satellite version in generated templates** — literal version strings in EEX non-local branches drift silently as Crosswake advances (LiveView Native's documented `LiveViewNativeLiveForm` bug). An adopter on Hex 0.1.5 generates shell code pinned to 0.1.0 native deps. Prevention: every native dep coordinate in the non-local branch uses `<%= @version %>` only; never a literal.
+
+6. **SwiftPM root-manifest constraint makes monorepo subdir unconsuable** — SE-0292 makes package identity equal to the repo root; there is no `subdirectory:` parameter. Architectural, not configurable. Prevention: subtree mirror is the only correct path.
+
+7. **splitsh-lite requires `fetch-depth: 0`** — shallow clones produce broken commit trees. Prevention: ios-mirror job must include `fetch-depth: 0` in `actions/checkout@v4`; no exception.
 
 ## Implications for Roadmap
 
-The phase order is fully determined by hard artifact dependencies. Each phase has exactly one critical output that the next phase consumes. There is no parallelism available in the core chain; shortcuts produce rework.
+The research imposes a hard A-before-B phase constraint with four dependency chains that make reordering impossible:
 
-### Phase 102: Brand Audit
+- Cannot clean-room-prove a dep that does not exist yet (clean-room lane requires published artifacts from Phase A).
+- Must not cut Hex 0.1.2 while `gen.shell` emits broken coordinates (even a brief window exposes adopters to a broken scaffold).
+- Template rewire requires knowing final published coordinates (org `szTheory`, group `io.github.sztheory`, version from Hex) — only final after Phase A is wired.
+- `doctor --check-publish` parity check requires published artifacts; must be post-publish-only.
 
-**Rationale:** The audit must come first because it determines which palette values survive and which get REWORK verdicts. Tokens built before the audit may need rebuilding if any color values change. The audit also surfaces the existing generator template / app.css palette mismatch (generator emits blue/amber Tailwind classes; app.css uses the teal/nautical palette) — this inconsistency must be diagnosed and logged before any token is written.
-**Delivers:** `brandbook/AUDIT.md` with verdicts for all 14 brand book sections; scripted WCAG contrast matrix for all 16 palette pairs; competitor conflict check; `.gitignore` additions (2 lines)
-**Addresses:** WCAG contrast failures in muted palettes (pitfall 10); token naming convention decision and freeze (pitfall 9)
-**Avoids:** Rebuilding tokens after post-audit palette changes
+### Phase A: Native Publish Infrastructure
 
-### Phase 103: Design Tokens
+**Rationale:** Everything in Phase B depends on real published artifacts at correct coordinates. This phase creates them and wires lockstep. It has no dependency on template changes and can proceed immediately.
 
-**Rationale:** Palette verdicts from phase 102 are now locked. This is the earliest the token file can be built without risk of rework.
-**Delivers:** `brandbook/tokens/crosswake.tokens.json` (W3C DTCG, three-tier hierarchy, 16 primitives + semantic roles + state + light/dark); `brandbook/tokens/tokens.css` (CSS custom properties with tier-separation comments and forbidden-pairing notes); `brandbook/tools/package.json` (opentype.js 2.0.0 as the sole dependency)
-**Addresses:** Raw-color-only token pitfall (pitfall 5); token naming churn (pitfall 9)
-**Avoids:** Any component referencing primitive tokens directly; token explosion beyond ~50 entries
+**Delivers:**
+- `github.com/szTheory/crosswake-shell-core-ios` mirror repo with `v0.1.2` annotated tag, resolvable via `swift package resolve`.
+- `io.github.sztheory:crosswake-shell-core-android:0.1.2` on Maven Central, visible in `search.maven.org`.
+- `release-please-config.json` updated with `linked-versions` plugin + iOS + Android package entries + `extra-files` annotations.
+- CI pipeline: `ios-mirror` + `android-publish` jobs in `release-please.yml` under `needs: release-please` + `if: release_created`.
+- GPG key infrastructure: public key on two keyservers, five `ORG_GRADLE_PROJECT_*` secrets, `MIRROR_PUSH_TOKEN` PAT.
 
-### Phase 104: Logo Tournament and Production Logo Suite
+**Must-avoid pitfalls:** 1 (burned Maven version — dry-run gate), 2 (GPG keyserver — verify before first publish), 3 (re-tagging — no force, branch protection), 7 (GITHUB_TOKEN — same-workflow needs:), 8 (manifest not multi-package — wire linked-versions now), 11 (re-tagging mirror — no --force), 12 (wrong namespace — verify io.github.sztheory in Central Portal first).
 
-**Rationale:** Token palette values are settled. The tournament requires the opentype.js pipeline (established in phase 103 tooling) for typemark candidates. The mandatory user-selection checkpoint is a hard gate — no production suite work begins until selection is confirmed.
-**Delivers:** `brandbook/logo/tournament/index.html` (7 candidates, 3-background x 3-scale presentation, in-situ mocks, selection checkpoint); user-selected candidate refined to `brandbook/logo/` production suite (5+ SVG files: horizontal lockup light/dark, stacked light/dark, mark-only light/dark/mono, signal colorway)
-**Addresses:** Generic marks (pitfall 1); stroke collapse (pitfall 2); monochrome failure (pitfall 3); broken kerning / Y-axis (pitfall 4); optical centering (pitfall 8); x-height mismatch (pitfall 11)
-**Avoids:** Proceeding to brand book without a locked, hand-curated mark
+**Suggested internal step order:**
+1. Central Portal namespace verification (`io.github.sztheory`) — blocking prerequisite; most likely human-time bottleneck.
+2. GPG key generation + keyserver upload (two servers) + CI secrets provisioning.
+3. `release-please-config.json` / `.release-please-manifest.json` multi-package wiring + `build.gradle.kts` Vanniktech plugin + POM.
+4. Local dry-run: `./gradlew publishToMavenLocal`, inspect `~/.m2` layout for all required jars + `.asc` files.
+5. Create `github.com/szTheory/crosswake-shell-core-ios` empty public repo + `MIRROR_PUSH_TOKEN` secret.
+6. CI job wiring: ios-mirror + android-publish jobs in `release-please.yml`.
+7. First real publish via CI (triggered by Release PR merge).
+8. Verify: iOS tag resolves from clean `swift package resolve`; Android artifact appears in Maven search.
 
-### Phase 105: Standalone HTML Brand Book
+**Research flag:** No additional research phase needed. All tools and config shapes are fully specified. Main execution risk is the one-time GPG + Sonatype namespace setup.
 
-**Rationale:** Tokens are settled and the production logo exists. The brand book references both. This is the first phase that assembles all brand elements into a single deliverable.
-**Delivers:** `brandbook/index.html` (no build step; live swatches with clipboard copy; inline WCAG contrast badges; type specimens; voice do/don't table; logo display with download links; asset index; component specimens for route card, badge, button, code block)
-**Addresses:** Over-specification pitfall (scope to color, type, logo, spacing, voice-with-examples only); devtools brand cliches in component specimens
-**Avoids:** External JS frameworks (vanilla JS only); Figma embeds; animation-heavy hero
+---
 
-### Phase 106: Collateral, README Wiring, and ExDoc Logo
+### Phase B: Template Rewire + Clean-Room Proof + Doc Reconciliation
 
-**Rationale:** All assets are finalized. Collateral requires the settled mark and settled token palette. README wiring and ExDoc `:logo` key reference the production mark. Size budget CI and hex exclusion verification run here when the complete committed asset set is known.
-**Delivers:** `brandbook/collateral/readme-header.svg` (light + dark, path-only); `brandbook/collateral/social-card.png` (1280x640px); `brandbook/collateral/favicons/` (5 files); `BRAND-SPEC.md`; `mix.exs` `:logo` key; `README.md` header image with absolute raw.githubusercontent.com URL; `.github/workflows/brandbook-verify.yml` (advisory CI: size budget, SVG validity, token JSON)
-**Addresses:** Hex package brand asset leak (pitfall 7); GitHub SVG sanitization for README (pitfall 6); relative image paths on hexdocs (architecture finding)
-**Avoids:** Relative image paths in README.md; `@media prefers-color-scheme` inside `<img>`-referenced SVG; missing `:exclude_patterns` in mix.exs
+**Rationale:** Gated on Phase A because the clean-room lane cannot pass until published artifacts exist, and the template rewire introduces the correct org/group/coordinates that only become final when Phase A is complete. Doing Phase B before Phase A would mean rewriting templates twice or shipping a gap between Hex cut and correct templates.
+
+**Delivers:**
+- `gen.shell` task: `version: Application.spec(:crosswake, :vsn) |> to_string()` added to `render_template/3`.
+- `project.pbxproj.eex`: org fixed to `szTheory`, `exactVersion` replaced with `upToNextMajorVersion; minimumVersion = <%= @version %>`.
+- `app/build.gradle.eex`: hardcoded GAV replaced with `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
+- `clean-room-proof.yml`: scaffolds in `$RUNNER_TEMP`, runs `gen.shell` (no `--local`), `swift build` + `./gradlew assembleDebug`, asserts exit 0. Runs as `needs: [ios-mirror, android-publish]`.
+- `guides/adoption.md` reconciled to real published install path; `guides/support_matrix.md` updated.
+- `mix doctor --check-publish` "published-dep parity" check wired as merge-blocking CI lane.
+- Hex 0.1.2 cut — the final step, triggered after clean-room proof passes.
+
+**Must-avoid pitfalls:** 3 (broken URL — do not change templates until Phase A artifacts exist), 4 (hardcoded version drift — inject `@version` only), 9 (branch/exact pinning — use `upToNextMajorVersion`), 10 (clean-room proof inside monorepo — must scaffold outside in `$RUNNER_TEMP` with no `packages/` access).
+
+**Suggested internal step order:**
+1. Template rewire: `gen.shell` version assign + both EEX template fixes (URL, GAV, version expression).
+2. Verify locally: `mix crosswake.gen.shell ios` and `mix crosswake.gen.shell android` emit correct dep strings.
+3. `clean-room-proof.yml` job wiring.
+4. Verify clean-room lane passes against Phase A published artifacts (milestone acceptance gate).
+5. `doctor --check-publish` parity check wiring.
+6. `guides/adoption.md` + `guides/support_matrix.md` reconciliation.
+7. Merge -> release-please opens PR -> merge -> Hex 0.1.2 published -> clean-room proof runs post-release as final acceptance.
+
+**Research flag:** No additional research phase needed. EEX template editing is stdlib Elixir. Clean-room CI job shape is fully specified in ARCHITECTURE.md. Doctor check design is specified in FEATURES.md.
+
+---
 
 ### Phase Ordering Rationale
 
-- Audit → Tokens → Logos → Book → Collateral is a strict dependency chain enforced by artifact outputs. Any reordering introduces rework: tokens before audit risks palette rebuilding; logos before tokens reference unsettled color values; brand book before logo has a placeholder; collateral before book assembly misses the asset index.
-- The tournament user-selection checkpoint is a hard gate. No refinement work begins without an explicit selection.
-- Token naming convention must be decided and frozen in phase 102 before any CSS is generated in phase 103. Renaming tokens mid-implementation triggers cascading updates across JSON, CSS, brand book, and component specimens.
+- **Cannot clean-room-prove an unpublished dep.** The clean-room lane is the milestone acceptance gate. It cannot run until both mirror tag and Maven artifact exist. Those come from Phase A.
+- **Do not cut Hex while gen.shell emits broken coordinates.** The current default `gen.shell` path produces a broken scaffold. Cutting Hex 0.1.2 before Phase B template rewire exposes adopters to it during the gap.
+- **Template rewire should happen once, to final coordinates.** Final published coordinates (correct org, correct group ID) are known only after Phase A is wired.
+- **Lockstep config must precede the first publish.** If `release-please-config.json` is updated after the first native publish, the manifest is out of sync and the first linked bump will fail.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 104 (Logo Tournament):** High creative uncertainty — the concept brief needs explicit shape anti-requirements, and the opentype.js Y-axis/fill-rule gotchas require validated generation code before candidate SVGs are authored
-- **Phase 105 (HTML Brand Book):** Inline WCAG contrast checker and component specimens (route card, badge) are medium complexity; both require finalized token CSS first; test the contrast badge computation in isolation before wiring into the full page
+**No research phase needed for either phase.** All tools, config shapes, CI job patterns, and template changes are fully specified in the research files with HIGH-confidence sources. The Vanniktech plugin config block, splitsh CI job, release-please manifest shape, and EEX template changes are reproduced verbatim in STACK.md and ARCHITECTURE.md.
 
-Phases with standard patterns (research phase likely skippable):
-- **Phase 102 (Brand Audit):** Audit structure is well-specified; WCAG formula is implemented in STACK.md; competitor check list is bounded (4 named projects)
-- **Phase 103 (Design Tokens):** DTCG 2025.10 spec is stable and thoroughly documented; three-tier hierarchy is established industry pattern
-- **Phase 106 (Collateral):** Favicon set requirements, OG card dimensions, and README image URL convention are fully resolved in research
-
----
+**Validate during execution (not research-phase items):**
+- Central Portal namespace auto-provisioning: in most cases GitHub OAuth login auto-provisions `io.github.sztheory`; if not, the manual verification flow requires a temporary public repo (allocate 30 minutes).
+- splitsh-lite `--scratch` flag in v2.0.0: PITFALLS.md cites it to prevent history bleed between runs; verify flag existence in `splitsh-lite --help` before committing to the CI job template.
+- `Package.swift` product name coupling: template references `CrosswakeShellCore` as product name; `Package.swift` declares `.library(name: "CrosswakeShellCore", ...)` — these must stay coupled; document the invariant.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | opentype.js 2.0.0 release confirmed May 2026; font availability confirmed on Google Fonts and Fontsource; DTCG 2025.10 stable spec verified at W3C; OFL logo-use FAQ confirmed; rsvg-convert recommendation corroborated by multiple sources |
-| Features | HIGH | Grounded in public brand pages from Tailwind, Astro, Vercel/Geist, GitHub, Bun; all 5 deliverables and all MVP acceptance criteria are concrete and enumerable |
-| Architecture | HIGH | Based on direct inspection of actual `mix.exs`, `.gitignore`, `app.css`, and template files in the repo (2026-06-11); all integration mechanisms confirmed from source |
-| Pitfalls | HIGH (technical) / MEDIUM (design) | GitHub SVG sanitization, WCAG thresholds, hex exclusion, and opentype.js coordinate bugs are all confirmed from primary sources; optical correction and logo design pitfalls are MEDIUM confidence (community pattern evidence) |
+| Stack | HIGH | All versions verified against official releases and changelogs. Vanniktech 0.31.0 vs 0.36.0 constraint verified against Gradle version requirement in plugin changelog. splitsh v2.0.0 confirmed latest stable. release-please v4.4.1 SHA confirmed. |
+| Features | HIGH | Grounded in repo-local file inspection — actual template bugs confirmed at exact line numbers, not inferred. Table stakes vs deferral boundary is firm based on dependency graph. |
+| Architecture | HIGH | Built from actual file inspection of all 9 modified + 3 new components. Data flow diagrams match actual file structure. Build order is dependency-derived. |
+| Pitfalls | HIGH (critical), MEDIUM (Pitfall 6 / product name) | Critical pitfalls confirmed with official docs and named issues. Pitfall 6 (product name / repo name mismatch) is community-pattern-based. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Generator template palette mismatch:** The Tailwind color mismatch in `priv/templates/crosswake/offline_ui/` (blue/amber) vs. `app.css` (teal/nautical) needs an explicit audit verdict in phase 102. The fix path (update generator templates) belongs in v10.0 token-wiring work, not v9.0.
-- **Logo concept brief specifics:** The shape vocabulary for the 4 logomark concepts and 3 typemark concepts is a creative decision for the phase 104 planning step, not a research output. The research constraint is: the brief must include explicit anti-requirements (shapes to avoid) before any SVG generation begins.
-- **Optical correction thresholds:** Nudge amounts for optical centering (2-4% upward for type-heavy lockups) are empirical guidance. Validate visually during phase 104 refinement; no script can verify this.
-- **Advisory CI scope for brandbook-verify.yml:** Three checks recommended (size budget, SVG validity via xmllint, token JSON validity via Node one-liner). Deferred checks (WCAG assertions, HTML validation) wait until their respective phases complete.
-
----
+- **splitsh-lite `--scratch` flag in v2.0.0**: PITFALLS.md cites it as preventing history bleed between runs; verify it exists in v2.0.0 before committing to the CI job template. If absent, re-evaluate the split-and-push sequence. Resolution: check `splitsh-lite --help` output in Phase A CI wiring step.
+- **Central Portal staging dry-run API**: research recommends a staging dry-run; `publishToMavenLocal` is the available dry-run path but does not exercise the Central Portal upload path. Resolution: accept local Maven inspection as the dry-run; wire a CI `--dry-run` flag if the Vanniktech task supports it.
+- **`doctor --check-publish` HTTP HEAD endpoint**: design calls for asserting reachability against a Maven Central API endpoint for artifact status. The 2025+ Central Portal API endpoint for artifact lookup was not independently verified. Resolution: scope the Phase B parity check to URL format correctness + registry reachability; full artifact download proof is delegated to the clean-room lane.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `github.com/opentypejs/opentype.js/releases` — v2.0.0 release confirmation (May 2026)
-- `fonts.google.com/specimen/Atkinson+Hyperlegible+Next` — weight availability confirmed
-- `openfontlicense.org/ofl-faq/` — logo artwork OFL exemption
-- `www.designtokens.org/TR/drafts/format/` — DTCG 2025.10 `$value`/`$type`/`$description` syntax
-- `www.w3.org/TR/WCAG21/relative-luminance.html` — luminance formula with 0.04045 threshold
-- `caniuse.com/link-icon-svg` — SVG favicon browser support matrix
-- `docs.github.com/en/repositories/.../customizing-your-repositorys-social-media-preview` — 1280x640 recommended social card size
-- `evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs` — minimal favicon set
-- `opentypejs/opentype.js#187`, `#724`, `#347` — Y-axis flip, kerning, fill-rule confirmed issues
-- `github.com/github/markup#1160` — GitHub SVG `dominant-baseline` sanitization confirmed
-- `mix.exs` (actual repo, inspected 2026-06-11) — `:files` allowlist, ExDoc deps, `docs/0` structure
-- `examples/phoenix_host/assets/css/app.css` — 16 CSS custom properties confirmed
-- `priv/templates/crosswake/offline_ui/` — Tailwind class mismatch confirmed
+- Vanniktech gradle-maven-publish-plugin changelog + docs: https://vanniktech.github.io/gradle-maven-publish-plugin/ — version compatibility matrix, POM requirements, Central Portal config
+- `googleapis/release-please-action` releases + issue #1000: https://github.com/googleapis/release-please-action — v4.4.1 SHA `5c625bf`, GITHUB_TOKEN downstream trigger limitation, same-workflow job chaining pattern
+- release-please manifest docs: https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md — linked-versions plugin, extra-files, x-release-please-version annotation syntax
+- Central Portal namespace docs: https://central.sonatype.org/register/namespace/ — io.github.USERNAME auto-provisioning, GPG keyserver requirements
+- Maven Central immutability policy: https://central.sonatype.org/publish/requirements/immutability/
+- splitsh/lite releases: https://github.com/splitsh/lite/releases — v2.0.0 confirmed latest stable (released 2025-10-26)
+- SwiftPM SE-0292 root-manifest constraint: https://github.com/swiftlang/swift-evolution/blob/main/proposals/0292-package-registry-service.md
+- Apollo iOS subtree mirror pattern: https://www.apollographql.com/blog/how-apollo-manages-swift-packages-in-a-monorepo-with-git-subtrees
+- Repo-local file inspection: `lib/mix/tasks/crosswake.gen.shell.ex`, `priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex`, `priv/templates/crosswake/shell/android/app/build.gradle.eex`, `settings.gradle.eex`, `packages/crosswake-shell-core-android/build.gradle.kts`, `packages/crosswake-shell-core-ios/Package.swift`, `.github/workflows/release-please.yml`, `release-please-config.json`, `.release-please-manifest.json`
+- OSSRH sunset confirmation: https://so.nwalsh.com/2025/06/01-maven (shutdown 2025-06-30; Central Portal is the only current path)
 
 ### Secondary (MEDIUM confidence)
-- `tasteprofile.io/blog/w3c-dtcg-design-tokens-practical-guide` — three-tier hierarchy, naming pitfalls
-- `medium.com/studio-function/logo-design-guide-4-of-5-notes-on-presenting-e1c130974dd0` — tournament presentation guidelines
-- `goodpractices.design/articles/design-tokens` — component-token anti-pattern
-- `driesvints.com/blog/investigating-dark-mode-for-svgs-in-github-readmes` — GitHub SVG dark mode limitation
-- `webaim.org/articles/contrast/` — mid-tone contrast failure patterns
-- `alexadam.medium.com` + `mausic.me/blog/...` — rsvg-convert recommendation
+- LiveView Native generate-time version injection pattern: referenced in `.planning/threads/release-distribution-truth.md` — `Application.spec(:live_view_native_swiftui)[:vsn]` pattern; GitHub source not independently fetched
+- Capacitor branch-pinning issue #7735 and relative-path issue #6040: referenced in pre-gathered research; not independently re-verified
+- splitsh-lite `--scratch` flag: referenced in PITFALLS.md integration gotchas; not independently verified against v2.0.0 release notes
+- SwiftPackageIndex/PackageList PR submission process: https://github.com/SwiftPackageIndex/PackageList — stable process, not re-verified for 2026
 
-### Tertiary (LOW confidence, validate during implementation)
-- Optical correction nudge amounts (2-4% for type-heavy lockups) — empirical design community guidance, no single authoritative source; validate visually during phase 104 refinement
+### Tertiary (LOW confidence)
+- Central Portal staging dry-run API availability: inferred from general Sonatype documentation; 2025+ Central Portal staging UI not independently verified
+- Maven Central API endpoint for artifact status lookup (doctor check design): exact endpoint not independently verified for Central Portal 2025+ API
 
 ---
-*Research completed: 2026-06-11*
+*Research completed: 2026-06-14*
 *Ready for roadmap: yes*

@@ -9,7 +9,26 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- Milestone v9.0 complete — Brand System & Visual Identity
+- **v11.0 Release & Distribution Truth — in progress (started 2026-06-14)**
+  - Phase 110 (Native Publish & Lockstep Infrastructure) complete 2026-06-14 — release-please linked-versions lockstep config, signed Android Maven Central publish config, iOS subtree-mirror + Android publish CI jobs + validated-upload→drop fire-drill, SETUP.md provisioning runbook. No real publish yet (D-01); 4 human-UAT items deferred to Phase 111.
+  - Phase 111 (Generator Rewire, Clean-Room Proof & Release) next.
+- v10.0 Brand Normalization shipped + archived (2026-06-14)
+
+## Current Milestone: v11.0 Release & Distribution Truth
+
+**Goal:** Make the v5.0 standalone-package thesis actually consumable — publish the native cores, lockstep-version them with the Hex package, rewire `mix crosswake.gen.shell` to published coordinates, and prove an outsider can build, before adding any feature breadth.
+
+**Target features:**
+- Publish the iOS SPM core via subtree-mirror to `github.com/szTheory/crosswake-shell-core-ios` with semver tags (SwiftPM root-manifest constraint forbids monorepo-subdir consumption; Apollo iOS / `splitsh-lite` pattern).
+- Publish the Android core to Maven Central under verified `io.github.sztheory` (Vanniktech `maven-publish` + Central Portal; GPG signing, mandatory POM, immutable releases).
+- Rewire `gen.shell` templates to inject `Application.spec(:crosswake)[:vsn]` at generate-time into versioned dep coordinates; delete the placeholder remote and relative-path default; derive every native dep version from the one source of truth.
+- Lockstep versioning via release-please manifest mode + `linked-versions` (Hex + iOS tag + Maven carry one version); native publish jobs gated on `needs: release-please` + `if: releases_created`.
+- A clean-room CI acceptance lane that scaffolds a host **outside the monorepo** (default, not `--local`) and proves `swift build` / `gradle build` resolve the published deps and compile.
+- Reconcile `guides/adoption.md`, support matrix, and CHANGELOG to published truth; cut Hex `0.1.2`.
+
+**Key context:** Research is pre-gathered in `.planning/threads/release-distribution-truth.md` (ecosystem footguns, per-platform distribution how-to, lockstep mechanics). Suggested phase split: A = native publish-config + publish + Hex cut; B = template rewire + clean-room build proof + doc reconciliation. Graduation candidate: a permanent `doctor`/closeout "published-dep parity" check. Adopter-facing gaps (real-E2E, native device proof, docs consolidation) are explicitly downstream and out of scope for this milestone.
+
+**Shipped `v10.0 Brand Normalization` on `2026-06-14`** (Phases 107-109, 10 plans). v10.0 made `tokens.css` the genuine single source of truth for the brand system. The compiler (`compile-tokens.js`) now emits the full token set — `font.*` and `dimension.*` (type/display scale, radius) alongside color — into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`, distributed through one documented path (verbatim copy + `<link>`, `guides/tokens.md`). Both drifted consumers were rewired onto the semantic `--cw-*` tier: the example host's served `app.css` + standalone offline page (flat palettes, primitives, inline font stacks, and the duplicate `assets/css/app.css` all removed; D-12) and the `offline_ui` generator (Tailwind-free templates + vendored `offline.css`, with the stale legacy theme retired from `crosswake.gen.offline_ui.ex`). The generator test now pins the token-backed contract, and a D-13 Playwright render-verify gate measured all surfaces in light + dark (every text element ≥4.5:1, status affordances ≥3:1; two real AA failures caught and fixed; human sign-off approved). A browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + contract tests + CI wiring) now fails the build on any reintroduced brand hex or dropped token reference. TOKN-04/05, NORM-01/02/03/04, PROOF-01 all satisfied.
 
 **Shipped `v9.0 Brand System & Visual Identity` on `2026-06-13`** (Phases 102-106, 16 plans). v9.0 pressure-tested and shipped the full brand system self-contained in `brandbook/`: a 14-section audit + WCAG contrast matrix, a W3C DTCG design-token system, a user-selected path-only logo suite, a zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0, and launch collateral wired into README/ExDoc with the brandbook excluded from the Hex package (committed size < 1 MB). It also shifted brand UAT left into a self-contained Playwright suite gated in CI (`brand-structural` required / `brand-visual` advisory) — which caught and fixed a real mobile-overflow defect — and added the pending CHANGELOG `[0.1.2]` entry, flipping `doctor --check-publish` to `ready`.
 
@@ -60,7 +79,11 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone
 
-No active milestone. Run `/gsd:new-milestone` to scope the next one. The leading candidate is **v10.0 Brand Normalization (NORM-01)** — wire the generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth.
+v11.0 Release & Distribution Truth is now the **active** milestone (started 2026-06-14; scope above). Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
+
+**Suggested ordering after v11.0:** (2) CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate); (3) onboarding/docs consolidation once the install path is real.
+
+**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth deferred as overbuilding on an undistributed base.
 
 ## Requirements
 
@@ -122,11 +145,12 @@ No active milestone. Run `/gsd:new-milestone` to scope the next one. The leading
 - ✓ **BRND-02**: The offline UI implements explicit, honest microcopy — v8.0
 - ✓ **v9.0 Brand System & Visual Identity** (all 21 v1 requirements: AUDT-*, TOKN-*, LOGO-*, BOOK-*, COLL-01..05) — shipped the brand audit + WCAG matrix + frozen DTCG tokens, the path-only logo suite, the standalone HTML brand book + `BRAND-SPEC.md` v1.0, launch collateral wired into README/ExDoc (brandbook hex-excluded), and (COLL-05) an automated Playwright brand-verification suite gated in CI that replaces manual brand UAT. Validated across Phases 102-106; full detail in `.planning/milestones/v9.0-REQUIREMENTS.md`.
 
+- ✓ **v10.0 Brand Normalization** (all 7 v1 requirements: TOKN-04/05, NORM-01/02/03/04, PROOF-01) — made `tokens.css` the genuine single source of truth: compiler emits font + dimension tokens (not just color) with a packaged mirror and one documented distribution path; the example host CSS and the `offline_ui` generator (templates + vendored `offline.css`, stale legacy theme retired) rewired onto the semantic `--cw-*` tier with no duplicated palettes, inline font stacks, or Tailwind; generator test pins the token contract; and a browser-free `brand-structural` drift gate fails the build on reintroduced brand hex or dropped token references. Validated across Phases 107-109; full detail in `.planning/milestones/v10.0-REQUIREMENTS.md`.
+
 ### Active
 
 - [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
 - [ ] NTV-01: Extend storage budgets to utilize native iOS/Android bridge commands to calculate available physical disk space.
-- [ ] NORM-01: Wire generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth (deferred from v9.0 → v10.0 candidate).
 
 ### Out of Scope
 
@@ -184,6 +208,10 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Shift brand UAT left into an automated suite instead of manual checkpoints | Manual brand verification doesn't scale and tolerated a real overflow defect; automation catches regressions deterministically | Validated in v9.0 (COLL-05) — caught + fixed a mobile-overflow bug |
 | Split brand CI into a required deterministic gate + an advisory render tier | Pixel/font-level checks differ across Linux-CI vs macOS; only deterministic checks should block merges | Validated in v9.0 — `brand-structural` required, `brand-visual` advisory |
 | Treat planning-milestone version tags (vN.0) as distinct from the Hex 0.x release axis | The repo ships on Hex at 0.x; planning milestones track work tranches, not installable versions | ✓ Good — CHANGELOG + MILESTONE-ARC.md document the distinction |
+| Make `tokens.css` the single generated source for font + dimension, not just color | Typography and spacing were a second hand-maintained source that could silently drift from the brand contract | Validated in v10.0 (Phase 107) |
+| Distribute tokens by verbatim copy + `<link>` rather than a build-step import | Honors the zero-build/no-Tailwind host posture; one documented path with no duplicate palettes to drift | Validated in v10.0 (Phase 107, NORM-03) |
+| Enforce drift prevention with a browser-free structural CI check, not a render diff | Deterministic across Linux-CI/macOS and merge-blocking, consistent with the v9.0 required-vs-advisory split | Validated in v10.0 (Phase 109, PROOF-01) |
+| Treat the v5.0 standalone-package thesis as built-but-undistributed until external consumption is proven | The native cores are extracted but unpublished; `gen.shell` references nonexistent deps, so the "no eject trap" claim only holds inside the monorepo | — Pending; recommended as the next milestone (2026-06-14 assessment, see `threads/release-distribution-truth.md`) |
 
 ## Evolution
 
@@ -203,4 +231,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-13 — after v9.0 Brand System & Visual Identity milestone*
+*Last updated: 2026-06-14 — Phase 110 (Native Publish & Lockstep Infrastructure) complete*

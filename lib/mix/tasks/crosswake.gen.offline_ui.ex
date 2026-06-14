@@ -47,10 +47,15 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     page_content = EEx.eval_file(page_template, web_module: web_module)
     js_content = EEx.eval_file(js_template, web_module: web_module)
 
+    tokens_css_dest = Path.join([dir, "priv", "static", "assets", "tokens.css"])
+    offline_css_dest = Path.join([dir, "priv", "static", "assets", "offline.css"])
+
     ensure_file(controller_dest, controller_content)
     ensure_file(root_layout_dest, root_layout_content)
     ensure_file(page_dest, page_content)
     ensure_file(js_dest, js_content)
+    ensure_file(tokens_css_dest, File.read!(get_tokens_css_path()))
+    ensure_file(offline_css_dest, File.read!(get_offline_css_path()))
 
     Mix.shell().info("""
     Offline UI components generated successfully!
@@ -59,42 +64,15 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     1. Mount the OfflineController in your router (typically in your main browser pipeline):
        get "/offline", #{app_module}Web.OfflineController, :index
 
-    2. Update your tailwind.config.js to include the Crosswake brand colors (if you haven't already):
-       // This enables classes like text-cw-wake-700 and bg-cw-brass-500
-       theme: {
-         extend: {
-           colors: {
-             'cw-wake': {
-               50: '#f0f5fa',
-               100: '#e1ecf4',
-               200: '#c3d8e9',
-               300: '#a5c4df',
-               400: '#87b0d4',
-               500: '#699cc9',
-               600: '#4b88bf',
-               700: '#3c6d99',
-               800: '#2d5273',
-               900: '#1e364d',
-             },
-             'cw-brass': {
-               50: '#fcf8f2',
-               100: '#f9f1e6',
-               200: '#f3e3cd',
-               300: '#edd5b4',
-               400: '#e7c79b',
-               500: '#e1b982',
-               600: '#dbab69',
-               700: '#c59a5e',
-               800: '#af8954',
-               900: '#997849',
-             }
-           }
-         }
-       }
+    2. The generator has copied tokens.css and offline.css into priv/static/assets/.
+       These files are host-owned and editable. Re-running the generator will NOT
+       update them (no-clobber). To pick up upstream token or style changes,
+       delete the files and re-run: mix crosswake.gen.offline_ui
 
-    3. Configure esbuild to bundle offline.js as a separate entry point in your config/config.exs:
-       Update the :esbuild args to include js/offline.js alongside js/app.js:
+    3. If your host bundles JavaScript, configure esbuild to include offline.js
+       as a separate entry point:
        args: ~w(js/app.js js/offline.js --bundle --target=es2017 --outdir=../priv/static/assets ...)
+       (No CSS build step required — offline.css is served as a static file.)
     """)
   end
 
@@ -104,6 +82,24 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
       path
     else
       Path.join(File.cwd!(), "priv/templates/crosswake/offline_ui/#{filename}")
+    end
+  end
+
+  defp get_tokens_css_path do
+    path = Application.app_dir(:crosswake, "priv/static/crosswake/tokens.css")
+    if File.exists?(path) do
+      path
+    else
+      Path.join(File.cwd!(), "priv/static/crosswake/tokens.css")
+    end
+  end
+
+  defp get_offline_css_path do
+    path = Application.app_dir(:crosswake, "priv/static/crosswake/offline.css")
+    if File.exists?(path) do
+      path
+    else
+      Path.join(File.cwd!(), "priv/static/crosswake/offline.css")
     end
   end
 
