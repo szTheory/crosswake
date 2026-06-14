@@ -223,8 +223,15 @@ test('findRetiredTailwindInClassAttrs: blocklist pin — all 9 retired tokens ar
 
 test('check-consumer-drift.mjs exits 0 on current clean tree (green baseline)', () => {
   const scriptPath = resolve(ROOT, 'brandbook/tools/check-consumer-drift.mjs');
-  assert.doesNotThrow(
-    () => execSync(`node ${scriptPath}`, { cwd: ROOT, stdio: 'pipe' }),
-    'gate must exit 0 on the current normalized tree'
-  );
+  try {
+    execSync(`node ${scriptPath}`, { cwd: ROOT, stdio: 'pipe' });
+  } catch (err) {
+    // Surface the gate's captured stdout/stderr (the ::error violation lines)
+    // so a red baseline is diagnosable from the test output alone.
+    assert.fail(
+      'gate must exit 0 on the current normalized tree, but it exited non-zero:\n' +
+      `--- stdout ---\n${err.stdout?.toString() ?? ''}\n` +
+      `--- stderr ---\n${err.stderr?.toString() ?? ''}`
+    );
+  }
 });
