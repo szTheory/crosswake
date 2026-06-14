@@ -58,10 +58,16 @@ const RETIRED_TAILWIND = [
 ];
 
 /**
- * Find bare hex color literals in CSS value positions.
- * Uses a lookbehind to require the # be preceded by a value-context character
- * (: ( , or whitespace), which naturally excludes CSS #id selectors.
- * Valid CSS hex lengths: 3, 6, or 8 digits only.
+ * Find bare hex color literals in CSS/HEEX content.
+ * Matches hex broadly in any position (value separators like ':', '=', ';',
+ * ',', '(', whitespace, or quotes — covering custom-property assignment
+ * `--x=#fff`, SVG/HTML attributes `fill="#fff"`, and `;#fff` separators).
+ * The only excluded case is a CSS `#id` selector that opens a rule block
+ * (e.g. `#status { ... }`), which is detected per-line and skipped for the
+ * id-token at the head of the selector only.
+ * Valid CSS hex lengths: 3, 4, 6, or 8 digits (CSS Color 4 — #RGB, #RGBA,
+ * #RRGGBB, #RRGGBBAA). Alternation is ordered longest-first so the
+ * full-length token is preferred over a shorter prefix.
  * For 6-digit matches, appends palette name if found (e.g. "#2B756A (wake-700)").
  *
  * @param {string} content - File content to scan
@@ -70,13 +76,24 @@ const RETIRED_TAILWIND = [
 export function findHexColors(content) {
   const violations = [];
   const lines = content.split('\n');
+  // Selector-rule heads: a line whose first non-space token is a selector
+  // (starts with '.', '#', ':', a tag name, or '[') and opens a block with '{'.
+  // We only suppress an `#id` match when it sits in this selector head, before
+  // the '{' — a hex inside the rule body on the same line is still flagged.
   for (let i = 0; i < lines.length; i++) {
-    // Lookbehind: # must be preceded by ':', '(', ',', or whitespace.
-    // This excludes CSS #id selectors (which follow selector context, not value context).
-    // Captures 6-digit, 8-digit, or 3-digit hex only (valid CSS hex lengths).
-    const hexRe = /(?<=[:,(\s])#([0-9a-fA-F]{6}|[0-9a-fA-F]{8}|[0-9a-fA-F]{3})\b/g;
+    const line = lines[i];
+    const isSelectorLine = /^\s*[.#:a-zA-Z\[][^{}]*\{/.test(line);
+    const braceIdx = line.indexOf('{');
+    // Match hex in any position; longest-first alternation ({8}|{6}|{4}|{3}).
+    const hexRe = /#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b/g;
     let m;
-    while ((m = hexRe.exec(lines[i])) !== null) {
+    while ((m = hexRe.exec(line)) !== null) {
+      // Skip `#id` selector tokens: on a selector-rule line, a hash that
+      // appears in the selector head (before the opening '{') is an id
+      // selector, not a color literal. A hash after '{' is a real value.
+      if (isSelectorLine && braceIdx !== -1 && m.index < braceIdx) {
+        continue;
+      }
       const fullMatch = m[0]; // e.g. "#2B756A"
       const hexDigits = m[1]; // e.g. "2B756A"
       // PALETTE lookup for human-readable messages (6-digit only; parseHex throws on 3/8-digit)

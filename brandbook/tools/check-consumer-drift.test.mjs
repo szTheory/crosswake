@@ -51,6 +51,39 @@ test('findHexColors: detects #2B756A hex color in CSS value position (SC #1)', (
     `violation text must include palette name wake-700; got: ${hits[0].text}`);
 });
 
+// ─── CR-01: hex detected in non-colon value contexts ─────────────────────────
+
+test('findHexColors: detects #fff after = (CSS custom-property assignment)', () => {
+  const hits = findHexColors('--x=#ffffff');
+  assert.strictEqual(hits.length, 1, 'must detect hex after "="; got ' + hits.length);
+});
+
+test('findHexColors: detects #fff after ; (value separator)', () => {
+  const hits = findHexColors('a:1;#ffffff');
+  assert.strictEqual(hits.length, 1, 'must detect hex after ";"; got ' + hits.length);
+});
+
+test('findHexColors: detects hex inside an attribute (attr="#fff")', () => {
+  const hits = findHexColors('stop-color="#ffffff"');
+  assert.strictEqual(hits.length, 1, 'must detect hex inside attribute; got ' + hits.length);
+});
+
+// ─── WR-02: 4-digit (#RGBA) hex is valid CSS and must be detected ────────────
+
+test('findHexColors: detects 4-digit #RGBA hex (#fff8)', () => {
+  const hits = findHexColors('color: #fff8;');
+  assert.strictEqual(hits.length, 1, 'must detect 4-digit #RGBA hex; got ' + hits.length);
+});
+
+// ─── WR-05: 8-digit #RRGGBBAA hex is detected as one full-length token ────────
+
+test('findHexColors: detects 8-digit #RRGGBBAA hex as one token', () => {
+  const hits = findHexColors('color: #2B756AFF;');
+  assert.strictEqual(hits.length, 1, 'must detect 8-digit hex; got ' + hits.length);
+  assert.ok(hits[0].text.includes('#2B756AFF'),
+    `8-digit match must be the full token; got: ${hits[0].text}`);
+});
+
 // ─── PROOF-01 SC #2: Lost coverage (checkCssSemanticCoverage) ────────────────
 
 test('checkCssSemanticCoverage: no var(--cw-) returns ok=false (SC #2)', () => {
