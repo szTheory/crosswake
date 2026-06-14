@@ -16,10 +16,10 @@ Extends the v9.0 DTCG token system (TOKN-01..03) so `tokens.css` covers everythi
 
 ### Consumer Normalization
 
-- [ ] **NORM-01**: `examples/phoenix_host` CSS consumes the semantic token tier from `tokens.css` (`var(--cw-surface-default)`, `var(--cw-text-default)`, `var(--cw-action-bg)`, font tokens…) with no duplicated flat palette and no inline font stacks, and renders correctly in both light and dark mode.
-- [ ] **NORM-02**: The `offline_ui` generator produces token-backed markup referencing the semantic tier instead of Tailwind utility classes, requiring no Tailwind dependency in the generated host. This covers both the `priv/templates/crosswake/offline_ui/*.eex` templates **and** the stale hardcoded Tailwind color theme emitted by `lib/mix/tasks/crosswake.gen.offline_ui.ex` (legacy blue `#699cc9` / amber `#e1b982`, ~lines 68-90) — the actual color source backing those templates.
+- [x] **NORM-01**: `examples/phoenix_host` CSS consumes the semantic token tier from `tokens.css` (`var(--cw-surface-default)`, `var(--cw-text-default)`, `var(--cw-action-bg)`, font tokens…) with no duplicated flat palette and no inline font stacks, and renders correctly in both light and dark mode.
+- [x] **NORM-02**: The `offline_ui` generator produces token-backed markup referencing the semantic tier instead of Tailwind utility classes, requiring no Tailwind dependency in the generated host. This covers both the `priv/templates/crosswake/offline_ui/*.eex` templates **and** the stale hardcoded Tailwind color theme emitted by `lib/mix/tasks/crosswake.gen.offline_ui.ex` (legacy blue `#699cc9` / amber `#e1b982`, ~lines 68-90) — the actual color source backing those templates.
 - [x] **NORM-03**: `tokens.css` reaches both consumers through one explicit, documented distribution mechanism, with no hand-edited duplicate palettes that can silently drift from the source.
-- [ ] **NORM-04**: The `crosswake.gen.offline_ui` generator test (`test/mix/tasks/crosswake.gen.offline_ui_test.exs`) asserts the new token-backed contract (semantic token / class references) rather than the retired Tailwind class names.
+- [x] **NORM-04**: The `crosswake.gen.offline_ui` generator test (`test/mix/tasks/crosswake.gen.offline_ui_test.exs`) asserts the new token-backed contract (semantic token / class references) rather than the retired Tailwind class names.
 
 ### Drift Prevention
 
@@ -55,7 +55,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-04 | Phase 107 | Complete |
 | TOKN-05 | Phase 107 | Complete |
 | NORM-03 | Phase 107 | Complete |
-| NORM-01 | Phase 108 | Pending |
-| NORM-02 | Phase 108 | Pending |
-| NORM-04 | Phase 108 | Pending |
+| NORM-01 | Phase 108 | Complete |
+| NORM-02 | Phase 108 | Complete |
+| NORM-04 | Phase 108 | Complete |
 | PROOF-01 | Phase 109 | Pending |
