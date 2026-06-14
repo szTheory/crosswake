@@ -20,9 +20,17 @@ on:
   pull_request:
     paths:
       - "brandbook/**"
+      - "examples/phoenix_host/priv/static/css/app.css"
+      - "priv/static/crosswake/**"
+      - "priv/templates/crosswake/offline_ui/**"
+      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
   push:
     paths:
       - "brandbook/**"
+      - "examples/phoenix_host/priv/static/css/app.css"
+      - "priv/static/crosswake/**"
+      - "priv/templates/crosswake/offline_ui/**"
+      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
 
 jobs:
   brand-structural:
@@ -68,6 +76,10 @@ jobs:
       - name: WCAG contrast matrix
         working-directory: brandbook/tools
         run: node --test contrast.test.mjs
+
+      - name: Consumer drift gate (no hex / no primitives / semantic coverage)
+        working-directory: brandbook/tools
+        run: node check-consumer-drift.mjs
 
       - name: Install brand e2e dependencies
         working-directory: brandbook/e2e
