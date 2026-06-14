@@ -59,7 +59,10 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
   3. A GPG public key is on at least two public keyservers, Central Portal namespace `io.github.sztheory` is verified, all five `ORG_GRADLE_PROJECT_*` CI secrets are set, and a local dry-run (`publishToMavenLocal`) passes inspection before any real Central Portal publish
   4. Merging a release PR causes a single release-please run to advance Hex, the iOS mirror tag, and the Android Maven artifact to identical version numbers — no manual per-registry step required
   5. The `ios-mirror` and `android-publish` CI jobs live inside `release-please.yml` under `needs: release-please` + `if: releases_created` — there is no separate `release: published` listener that would silently never fire
-**Plans**: TBD
+**Plans**: 3 plans (2 waves)
+  - [ ] 110-01-PLAN.md — Lockstep manifest config + Android Maven Central publish config (mix.exs revert, release-please linked-versions, signed POM)
+  - [ ] 110-02-PLAN.md — SETUP.md credential provisioning runbook (GPG, Sonatype, mirror repo, secrets, tag ruleset)
+  - [ ] 110-03-PLAN.md — Native publish CI jobs + validated-upload→drop fire-drill + lockstep-truth assertion in release-please.yml
 
 ### Phase 111: Generator Rewire, Clean-Room Proof & Release
 **Goal**: An adopter outside this monorepo can add the Hex dep, run `mix crosswake.gen.shell` (default), and get iOS and Android projects that resolve published, version-matched deps and build — proven by a clean-room CI lane, guarded permanently by a published-dep parity check, and consolidated into the published Hex 0.1.2 release
@@ -89,5 +92,5 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete | 2026-06-14 |
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
-| 110. Native Publish & Lockstep Infrastructure | v11.0 | 0/TBD | Not started | - |
+| 110. Native Publish & Lockstep Infrastructure | v11.0 | 0/3 | Planned | - |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 0/TBD | Not started | - |
