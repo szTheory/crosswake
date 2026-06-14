@@ -36,7 +36,7 @@ Rewire `mix crosswake.gen.shell` so its default (non-`--local`) output reference
 Prove the thesis holds outside the monorepo, and make that guarantee permanent.
 
 - [ ] **PROOF-01**: A clean-room CI lane scaffolds a host **outside the monorepo** (default `gen.shell`, no `--local`, no `packages/` access) and confirms `swift build` and `gradle build` resolve the *published* deps and compile.
-- [ ] **PROOF-02**: A permanent `doctor` / closeout "published-dep parity" check asserts the generated native dep coordinates are version-matched to `crosswake` and point at published, resolvable artifacts rather than monorepo paths — the structural guard that keeps the eject-trap thesis honest (sibling to the v10.0 `brand-structural` gate). *(Graduation candidate — permanent doctor/closeout fixture)*
+- [x] **PROOF-02**: A permanent `doctor` / closeout "published-dep parity" check asserts the generated native dep coordinates are version-matched to `crosswake` and point at published, resolvable artifacts rather than monorepo paths — the structural guard that keeps the eject-trap thesis honest (sibling to the v10.0 `brand-structural` gate). *(Graduation candidate — permanent doctor/closeout fixture)*
 
 ### Release Truth
 
@@ -91,7 +91,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GEN-01 | 111 | Complete |
 | GEN-02 | 111 | Complete |
 | PROOF-01 | 111 | Pending |
-| PROOF-02 | 111 | Pending |
+| PROOF-02 | 111 | Complete |
 | DOCS-01 | 111 | Complete |
 | REL-01 | 111 | Pending |
 
@@ -102,4 +102,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-14*
-*Last updated: 2026-06-14 — traceability filled at roadmap creation*
+*Last updated: 2026-06-14 — PROOF-02 completed during Phase 111 Plan 02*
