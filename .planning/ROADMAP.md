@@ -77,7 +77,10 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
   2. The `brand-structural` CI check fails when a normalized consumer no longer contains any `var(--cw-` reference, detecting a regression to hard-coded values.
   3. The check runs without a browser or pixel-rendering engine; it is purely textual/structural and deterministic across Linux CI and macOS, consistent with the required-vs-advisory split established in v9.0.
   4. A developer can run the same check locally with one command and get the identical pass/fail result that CI produces.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 109-01-PLAN.md — Create check-consumer-drift.mjs: curated 5-consumer manifest + detection (hex/primitive/lost-var/retired-Tailwind) with exported check functions; green baseline runner [wave 1]
+- [ ] 109-02-PLAN.md — Contract/pin test check-consumer-drift.test.mjs: manifest completeness + per-SC synthetic fixtures + false-positive guards + green-baseline integration assertion [wave 2]
+- [ ] 109-03-PLAN.md — Wire the gate into brand-structural (new step before Playwright install) and broaden on.paths with the 4 consumer globs [wave 2]
 
 ## Progress
 
@@ -93,4 +96,4 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete    | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete    | 2026-06-14 |
-| 109. Drift-Prevention Gate | v10.0 | 0/? | Not started | — |
+| 109. Drift-Prevention Gate | v10.0 | 0/3 | Not started | — |
