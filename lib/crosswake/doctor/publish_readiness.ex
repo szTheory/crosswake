@@ -21,6 +21,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
     "guides/native_shell.md",
     "guides/capabilities.md",
     "guides/install.md",
+    "guides/adoption.md",
     "CHANGELOG.md"
   ]
 

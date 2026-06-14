@@ -2,6 +2,8 @@
 
 This guide details the architecture of the Flashcard Demo App and provides step-by-step instructions for adopting the Crosswake offline-sync architecture in your own projects.
 
+> For the definitive install sequence, see [guides/install.md](install.md).
+
 ## Architecture Overview
 
 The demo app demonstrates the `Crosswake.Offline` island philosophy. It is built as a Language Learning / Flashcard app, intentionally chosen to rigorously stress-test offline scenarios and eventual consistency.
@@ -18,7 +20,7 @@ To implement this architecture in your own app, follow these steps:
 
 ### 1. Integrate the Crosswake Shell
 
-Avoid generating host-owned shell code. Instead, rely on standalone dependencies to eliminate the "eject trap". Add the Crosswake dependencies to your native projects (SPM for iOS, Maven/Gradle for Android).
+Generate the shell as a thin, host-owned wrapper that your team reviews and owns after scaffolding. Its native dependencies resolve from published registries — SwiftPM `github.com/szTheory/crosswake-shell-core-ios` for iOS and Maven Central `io.github.sztheory:crosswake-shell-core-android` for Android — rather than vendored or monorepo-local paths. The "eject trap" is eliminated by publishing the reusable core logic as package-manager dependencies, not by avoiding the generator.
 
 ### 2. Configure Offline Mutations
 
