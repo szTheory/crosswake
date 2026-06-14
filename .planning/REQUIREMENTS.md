@@ -43,7 +43,7 @@ Prove the thesis holds outside the monorepo, and make that guarantee permanent.
 Reconcile the public install story to reality and cut the release.
 
 - [x] **DOCS-01**: `guides/adoption.md`, `guides/support_matrix.md`, and `CHANGELOG.md` are reconciled to the published install truth — no 404 install path, no claim of an install route that does not resolve.
-- [ ] **REL-01**: Hex `0.1.2` is cut (last, after `gen.shell` emits correct coordinates) so the published Hex package and the generated shell deps are mutually consistent for an external adopter.
+- [ ] **REL-01**: Hex `0.1.2` is cut (last, after `gen.shell` emits correct coordinates) so the published Hex package and the generated shell deps are mutually consistent for an external adopter. *(Release PR #8 is prepared with lockstep 0.1.2 bumps; merge is blocked until missing publish secrets and Phase 110 human-UAT checks are complete.)*
 
 ## Future Requirements
 
@@ -102,4 +102,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-14*
-*Last updated: 2026-06-14 — PROOF-01/PROOF-02 completed during Phase 111*
+*Last updated: 2026-06-14 — Release PR #8 prepared for REL-01; cut remains blocked on publish credentials/UAT*

@@ -8,7 +8,7 @@ updated: 2026-06-14T20:30:00Z
 
 ## Current Test
 
-[awaiting human testing]
+[blocked on credential provisioning]
 
 ## Tests
 
@@ -39,6 +39,10 @@ passed: 0
 issues: 0
 pending: 4
 skipped: 0
-blocked: 0
+blocked: 4
 
 ## Gaps
+
+- `gh secret list --repo szTheory/crosswake` currently shows only `HEX_API_KEY` and `RELEASE_PLEASE_TOKEN`.
+- Missing secrets before fire-drill/release: `MIRROR_PUSH_TOKEN`, `ORG_GRADLE_PROJECT_mavenCentralUsername`, `ORG_GRADLE_PROJECT_mavenCentralPassword`, `ORG_GRADLE_PROJECT_signingInMemoryKey`, `ORG_GRADLE_PROJECT_signingInMemoryKeyId`, `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword`.
+- Automated setup completed: `szTheory/crosswake-shell-core-ios` exists as an empty public mirror repo, and the `tag-immutability` ruleset is active for tags.
