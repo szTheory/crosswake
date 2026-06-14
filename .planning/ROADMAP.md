@@ -34,7 +34,7 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 
 - [x] **Phase 107: Token Source & Distribution** — Extend compile-tokens.js to emit font and dimension tokens; document the one distribution mechanism (completed 2026-06-13)
 - [x] **Phase 108: Consumer Normalization** — Rewire app.css and offline_ui templates off duplicated values onto semantic tokens; update generator test contract (completed 2026-06-14)
-- [ ] **Phase 109: Drift-Prevention Gate** — Extend brand-structural CI to block on hardcoded hex and missing token references in normalized consumers
+- [x] **Phase 109: Drift-Prevention Gate** — Extend brand-structural CI to block on hardcoded hex and missing token references in normalized consumers (completed 2026-06-14)
 
 ## Phase Details
 
@@ -79,8 +79,8 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
   4. A developer can run the same check locally with one command and get the identical pass/fail result that CI produces.
 **Plans**: 3 plans
 - [x] 109-01-PLAN.md — Create check-consumer-drift.mjs: curated 5-consumer manifest + detection (hex/primitive/lost-var/retired-Tailwind) with exported check functions; green baseline runner [wave 1]
-- [ ] 109-02-PLAN.md — Contract/pin test check-consumer-drift.test.mjs: manifest completeness + per-SC synthetic fixtures + false-positive guards + green-baseline integration assertion [wave 2]
-- [ ] 109-03-PLAN.md — Wire the gate into brand-structural (new step before Playwright install) and broaden on.paths with the 4 consumer globs [wave 2]
+- [x] 109-02-PLAN.md — Contract/pin test check-consumer-drift.test.mjs: manifest completeness + per-SC synthetic fixtures + false-positive guards + green-baseline integration assertion [wave 2]
+- [x] 109-03-PLAN.md — Wire the gate into brand-structural (new step before Playwright install) and broaden on.paths with the 4 consumer globs [wave 2]
 
 ## Progress
 
@@ -96,4 +96,4 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete    | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete    | 2026-06-14 |
-| 109. Drift-Prevention Gate | v10.0 | 1/3 | In Progress|  |
+| 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete   | 2026-06-14 |
