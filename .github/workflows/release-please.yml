@@ -322,3 +322,51 @@ jobs:
             -u "${MAVEN_USERNAME}:${MAVEN_PASSWORD}" \
             "https://central.sonatype.com/api/v1/publisher/deployment/${DEPLOYMENT_ID}"
           echo "SUCCESS: Deployment $DEPLOYMENT_ID dropped. Version coordinate is FREE."
+
+  # On-demand lockstep consistency assertion: confirms the three configured version coordinates
+  # (mix.exs @version, build.gradle.kts version, .release-please-manifest.json) are internally
+  # consistent. This is the D-05 110-equivalent of SC#4 — proves the lockstep CONFIG is correct
+  # without requiring a live 0.1.2 artifact (that happens at Phase 111's real cut).
+  lockstep-truth:
+    name: Assert lockstep version coordinates match
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Assert lockstep version coordinates match
+        run: |
+          set -euo pipefail
+
+          # Extract mix.exs @version (x-release-please-version annotation)
+          MIX_VERSION=$(grep '# x-release-please-version' mix.exs \
+            | sed 's/.*@version "\(.*\)" # x-release-please-version.*/\1/')
+
+          # Extract build.gradle.kts version (x-release-please-version annotation)
+          GRADLE_VERSION=$(grep '// x-release-please-version' packages/crosswake-shell-core-android/build.gradle.kts \
+            | sed 's/.*version = "\(.*\)" \/\/.*/\1/')
+
+          # Extract manifest baselines (. and packages/crosswake-shell-core-android)
+          MANIFEST_ROOT=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['.'])")
+          MANIFEST_ANDROID=$(python3 -c "import json; d=json.load(open('.release-please-manifest.json')); print(d['packages/crosswake-shell-core-android'])")
+
+          echo "mix.exs @version:               $MIX_VERSION"
+          echo "build.gradle.kts version:       $GRADLE_VERSION"
+          echo "manifest . baseline:            $MANIFEST_ROOT"
+          echo "manifest android baseline:      $MANIFEST_ANDROID"
+
+          # All four must be equal for internal lockstep consistency
+          if [ "$MIX_VERSION" != "$GRADLE_VERSION" ] || \
+             [ "$MIX_VERSION" != "$MANIFEST_ROOT" ] || \
+             [ "$MIX_VERSION" != "$MANIFEST_ANDROID" ]; then
+            echo "LOCKSTEP MISMATCH:"
+            echo "  mix.exs @version:             $MIX_VERSION"
+            echo "  build.gradle.kts version:     $GRADLE_VERSION"
+            echo "  manifest . baseline:          $MANIFEST_ROOT"
+            echo "  manifest android baseline:    $MANIFEST_ANDROID"
+            exit 1
+          fi
+
+          echo "LOCKSTEP OK: all coordinates agree on version $MIX_VERSION"
