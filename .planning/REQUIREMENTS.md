@@ -36,7 +36,7 @@ Rewire `mix crosswake.gen.shell` so its default (non-`--local`) output reference
 Prove the thesis holds outside the monorepo, and make that guarantee permanent.
 
 - [ ] **PROOF-01**: A clean-room CI lane scaffolds a host **outside the monorepo** (default `gen.shell`, no `--local`, no `packages/` access) and confirms `swift build` and `gradle build` resolve the *published* deps and compile.
-- [ ] **PROOF-02**: A permanent `doctor` / closeout "published-dep parity" check asserts the generated native dep coordinates are version-matched to `crosswake` and point at published, resolvable artifacts rather than monorepo paths — the structural guard that keeps the eject-trap thesis honest (sibling to the v10.0 `brand-structural` gate).
+- [ ] **PROOF-02**: A permanent `doctor` / closeout "published-dep parity" check asserts the generated native dep coordinates are version-matched to `crosswake` and point at published, resolvable artifacts rather than monorepo paths — the structural guard that keeps the eject-trap thesis honest (sibling to the v10.0 `brand-structural` gate). *(Graduation candidate — permanent doctor/closeout fixture)*
 
 ### Release Truth
 
@@ -83,23 +83,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PUB-01 | TBD | Pending |
-| PUB-02 | TBD | Pending |
-| PUB-03 | TBD | Pending |
-| LOCK-01 | TBD | Pending |
-| LOCK-02 | TBD | Pending |
-| GEN-01 | TBD | Pending |
-| GEN-02 | TBD | Pending |
-| PROOF-01 | TBD | Pending |
-| PROOF-02 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
-| REL-01 | TBD | Pending |
+| PUB-01 | 110 | Pending |
+| PUB-02 | 110 | Pending |
+| PUB-03 | 110 | Pending |
+| LOCK-01 | 110 | Pending |
+| LOCK-02 | 110 | Pending |
+| GEN-01 | 111 | Pending |
+| GEN-02 | 111 | Pending |
+| PROOF-01 | 111 | Pending |
+| PROOF-02 | 111 | Pending |
+| DOCS-01 | 111 | Pending |
+| REL-01 | 111 | Pending |
 
 **Coverage:**
 - v1 requirements: 11 total
-- Mapped to phases: 0 (set by roadmapper)
-- Unmapped: 11 ⚠️ (resolved at roadmap creation)
+- Mapped to phases: 11 (Phase 110: 5, Phase 111: 6)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-14*
-*Last updated: 2026-06-14 — initial definition for milestone v11.0*
+*Last updated: 2026-06-14 — traceability filled at roadmap creation*
