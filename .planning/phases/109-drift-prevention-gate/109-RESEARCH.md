@@ -720,15 +720,17 @@ No security concerns beyond ensuring the script reads only committed files (no n
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the companion contract test live as a new `check-consumer-drift.test.mjs` or as additional tests appended to `compile-tokens.test.mjs`?**
    - What we know: `compile-tokens.test.mjs` is already in the `node --test` step; both patterns are established in the project.
    - What's unclear: The CONTEXT allows discretion on exact script form.
    - Recommendation: New `check-consumer-drift.test.mjs` — keeps concerns separated and makes the drift check self-contained. The planner can override.
+   - **RESOLVED:** New `check-consumer-drift.test.mjs` (Plan 109-02) — drift check is self-contained.
 
 2. **Should `tokens.css` (the distributed copy) be in the manifest with a hex-only check, even though D-04 says "do not re-implement parity"?**
    - Recommendation: No. D-04 is locked. Adding it would create confusion about ownership.
+   - **RESOLVED:** Excluded from the manifest per D-04 (Plan 109-01) — byte-parity stays owned by `compile-tokens.test.mjs:222`.
 
 ---
 
