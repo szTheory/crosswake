@@ -23,7 +23,7 @@ Extends the v9.0 DTCG token system (TOKN-01..03) so `tokens.css` covers everythi
 
 ### Drift Prevention
 
-- [ ] **PROOF-01**: A deterministic structural check, extending the v9.0 `brand-structural` CI gate, fails the build when a normalized consumer contains a hardcoded brand hex value or stops referencing the token source.
+- [x] **PROOF-01**: A deterministic structural check, extending the v9.0 `brand-structural` CI gate, fails the build when a normalized consumer contains a hardcoded brand hex value or stops referencing the token source.
 
 ## Future Requirements
 
@@ -58,4 +58,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NORM-01 | Phase 108 | Complete |
 | NORM-02 | Phase 108 | Complete |
 | NORM-04 | Phase 108 | Complete |
-| PROOF-01 | Phase 109 | Pending |
+| PROOF-01 | Phase 109 | Complete |

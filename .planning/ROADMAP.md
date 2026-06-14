@@ -96,4 +96,4 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete    | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete    | 2026-06-14 |
-| 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete   | 2026-06-14 |
+| 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete    | 2026-06-14 |
