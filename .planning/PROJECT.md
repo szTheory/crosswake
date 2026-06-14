@@ -9,7 +9,22 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- **v10.0 Brand Normalization shipped + archived (2026-06-14)** — planning next milestone
+- **v11.0 Release & Distribution Truth — in planning (started 2026-06-14)**
+- v10.0 Brand Normalization shipped + archived (2026-06-14)
+
+## Current Milestone: v11.0 Release & Distribution Truth
+
+**Goal:** Make the v5.0 standalone-package thesis actually consumable — publish the native cores, lockstep-version them with the Hex package, rewire `mix crosswake.gen.shell` to published coordinates, and prove an outsider can build, before adding any feature breadth.
+
+**Target features:**
+- Publish the iOS SPM core via subtree-mirror to `github.com/szTheory/crosswake-shell-core-ios` with semver tags (SwiftPM root-manifest constraint forbids monorepo-subdir consumption; Apollo iOS / `splitsh-lite` pattern).
+- Publish the Android core to Maven Central under verified `io.github.sztheory` (Vanniktech `maven-publish` + Central Portal; GPG signing, mandatory POM, immutable releases).
+- Rewire `gen.shell` templates to inject `Application.spec(:crosswake)[:vsn]` at generate-time into versioned dep coordinates; delete the placeholder remote and relative-path default; derive every native dep version from the one source of truth.
+- Lockstep versioning via release-please manifest mode + `linked-versions` (Hex + iOS tag + Maven carry one version); native publish jobs gated on `needs: release-please` + `if: releases_created`.
+- A clean-room CI acceptance lane that scaffolds a host **outside the monorepo** (default, not `--local`) and proves `swift build` / `gradle build` resolve the published deps and compile.
+- Reconcile `guides/adoption.md`, support matrix, and CHANGELOG to published truth; cut Hex `0.1.2`.
+
+**Key context:** Research is pre-gathered in `.planning/threads/release-distribution-truth.md` (ecosystem footguns, per-platform distribution how-to, lockstep mechanics). Suggested phase split: A = native publish-config + publish + Hex cut; B = template rewire + clean-room build proof + doc reconciliation. Graduation candidate: a permanent `doctor`/closeout "published-dep parity" check. Adopter-facing gaps (real-E2E, native device proof, docs consolidation) are explicitly downstream and out of scope for this milestone.
 
 **Shipped `v10.0 Brand Normalization` on `2026-06-14`** (Phases 107-109, 10 plans). v10.0 made `tokens.css` the genuine single source of truth for the brand system. The compiler (`compile-tokens.js`) now emits the full token set — `font.*` and `dimension.*` (type/display scale, radius) alongside color — into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`, distributed through one documented path (verbatim copy + `<link>`, `guides/tokens.md`). Both drifted consumers were rewired onto the semantic `--cw-*` tier: the example host's served `app.css` + standalone offline page (flat palettes, primitives, inline font stacks, and the duplicate `assets/css/app.css` all removed; D-12) and the `offline_ui` generator (Tailwind-free templates + vendored `offline.css`, with the stale legacy theme retired from `crosswake.gen.offline_ui.ex`). The generator test now pins the token-backed contract, and a D-13 Playwright render-verify gate measured all surfaces in light + dark (every text element ≥4.5:1, status affordances ≥3:1; two real AA failures caught and fixed; human sign-off approved). A browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + contract tests + CI wiring) now fails the build on any reintroduced brand hex or dropped token reference. TOKN-04/05, NORM-01/02/03/04, PROOF-01 all satisfied.
 
@@ -62,11 +77,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone
 
-v10.0 Brand Normalization is shipped and archived. The 2026-06-14 milestone next-step assessment recommends **Release & Distribution Truth** as the single highest-leverage next wedge — not yet scoped/kicked off.
+v11.0 Release & Distribution Truth is now the **active** milestone (started 2026-06-14; scope above). Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
 
-**Why:** Crosswake is a mature *codebase* (~88% for scope) but a partial *installable product* (~70%). Hex publishes only `0.1.0`; ~4 months of shipped work (planning v3.4→v10.0) is uninstallable, and the flagship v5.0 standalone-package thesis is **built but undistributed** — the native cores have no publish config/CI and `mix crosswake.gen.shell` emits deps that don't exist, so an external adopter's generated shell won't build. The recommendation: publish the iOS SPM + Android Maven cores, lockstep-version them with Hex, rewire `gen.shell` to published coordinates, and prove it with a clean-room out-of-monorepo build — *before* adding any feature breadth. Full scope, research, and evidence in `.planning/threads/release-distribution-truth.md`.
-
-**Suggested ordering after:** (2) CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate); (3) onboarding/docs consolidation once the install path is real.
+**Suggested ordering after v11.0:** (2) CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate); (3) onboarding/docs consolidation once the install path is real.
 
 **Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth deferred as overbuilding on an undistributed base.
 
@@ -216,4 +229,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-14 — milestone next-step assessment (recommended Release & Distribution Truth as next wedge)*
+*Last updated: 2026-06-14 — started milestone v11.0 Release & Distribution Truth*
