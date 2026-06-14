@@ -58,7 +58,9 @@
 .cw-offline-status-label {
   font-size: var(--cw-text-scale-sm);
   font-family: var(--cw-font-display);
-  color: var(--cw-text-muted);
+  /* D-05/render-verify: text-muted (stone-600) on --cw-surface-raised (foam-100) is 4.11:1 — fails AA.
+     This is an <h2> heading, so it takes full-strength --cw-text-default (~17:1) rather than muted. */
+  color: var(--cw-text-default);
   margin-bottom: calc(var(--cw-spacing-base) * 1);
 }
 
