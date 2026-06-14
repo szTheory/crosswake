@@ -33,7 +33,7 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 **v10.0 Brand Normalization (Phases 107-109)**
 
 - [x] **Phase 107: Token Source & Distribution** — Extend compile-tokens.js to emit font and dimension tokens; document the one distribution mechanism (completed 2026-06-13)
-- [ ] **Phase 108: Consumer Normalization** — Rewire app.css and offline_ui templates off duplicated values onto semantic tokens; update generator test contract
+- [x] **Phase 108: Consumer Normalization** — Rewire app.css and offline_ui templates off duplicated values onto semantic tokens; update generator test contract (completed 2026-06-14)
 - [ ] **Phase 109: Drift-Prevention Gate** — Extend brand-structural CI to block on hardcoded hex and missing token references in normalized consumers
 
 ## Phase Details
@@ -65,7 +65,7 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 - [x] 108-01-PLAN.md — Normalize the example host SERVED app.css + reconcile the unserved duplicate + restyle the example offline page onto semantic tokens (NORM-01) [wave 1]
 - [x] 108-02-PLAN.md — Author vendored offline.css + rewrite offline_ui templates off Tailwind + vendor it (no-clobber) and retire the stale theme in the generator (NORM-02) [wave 1]
 - [x] 108-03-PLAN.md — Rewrite the generator test to the semantic-token contract (NORM-04) [wave 2]
-- [ ] 108-04-PLAN.md — D-13 render-verify release gate: browser-render example host + generated offline page in light/dark, remediate any D-06 contrast failure, human sign-off (NORM-01, NORM-02) [wave 3]
+- [x] 108-04-PLAN.md — D-13 render-verify release gate: browser-render example host + generated offline page in light/dark, remediate any D-06 contrast failure, human sign-off (NORM-01, NORM-02) [wave 3]
 **UI hint**: yes
 
 ### Phase 109: Drift-Prevention Gate
@@ -92,5 +92,5 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete    | 2026-06-13 |
-| 108. Consumer Normalization | v10.0 | 3/4 | In Progress|  |
+| 108. Consumer Normalization | v10.0 | 4/4 | Complete   | 2026-06-14 |
 | 109. Drift-Prevention Gate | v10.0 | 0/? | Not started | — |
