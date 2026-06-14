@@ -1,5 +1,5 @@
 {
-  "crosswake_version": "0.1.2",
+  "crosswake_version": "0.1.0",
   "findings": [
     {
       "check": "operator_inspection",

@@ -2,8 +2,8 @@
 
 This guide stays narrow and proof-oriented. The published iOS and Android shell claims
 below are backed by the checked-in example hosts plus the generated-shell verification
-hooks that now pass on the same host-owned artifact classes adopters ship. The default
-non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
+hooks that now pass on the same host-owned artifact classes adopters ship.
+The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
 and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake
 Hex package version; the release-time clean-room proof promotes that path after the
 coordinated cut.

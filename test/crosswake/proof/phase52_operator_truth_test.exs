@@ -132,7 +132,9 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     refute notification["details"]["delivery_supported?"]
 
     auth = find_readiness_check!(decoded, "auth.session_predicate_readiness")
-    assert auth["details"]["demotion_trigger"] =~ "handoff/step-up/auth-return server-record proof"
+
+    assert auth["details"]["demotion_trigger"] =~
+             "handoff/step-up/auth-return server-record proof"
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
@@ -194,11 +196,12 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     )
 
     ProofAssertions.assert_contains_exact(
-      "proof.docs.non_claims.shell_packages_deferred",
+      "proof.docs.non_claims.shell_core_packages",
       "guides/support_matrix.md",
-      "Standalone public shell packages are deferred",
+      "Standalone native shell core packages are consumed by generated host-owned wrappers",
       source: "Crosswake.SupportMatrix.canonical/1 package surfaces",
-      hint: "preserve deferred shell package claim scope",
+      hint:
+        "preserve published shell-core package claim scope without widening native runtime proof",
       posture: :merge_blocking
     )
 

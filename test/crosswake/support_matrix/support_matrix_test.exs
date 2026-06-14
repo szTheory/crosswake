@@ -49,9 +49,10 @@ defmodule Crosswake.SupportMatrixTest do
     assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.proof_status) == [:supported]
 
-    assert Enum.map(matrix.shells, &{&1.target, &1.proof_status}) |> Enum.sort() == [
-             {"android_shell", :supported},
-             {"ios_shell", :supported}
+    assert Enum.map(matrix.shells, &{&1.target, &1.baseline_status, &1.proof_status})
+           |> Enum.sort() == [
+             {"android_shell", :supported, :verification_required},
+             {"ios_shell", :supported, :verification_required}
            ]
 
     assert SupportMatrix.statuses() == [:supported, :verification_required, :unsupported]
@@ -135,7 +136,8 @@ defmodule Crosswake.SupportMatrixTest do
            end)
 
     assert Enum.any?(matrix.package_surfaces, fn entry ->
-             entry.package_class == :defer and entry.surface == "Standalone public shell packages"
+             entry.package_class == :core and
+               entry.surface == "Standalone native shell core packages"
            end)
   end
 
@@ -149,8 +151,17 @@ defmodule Crosswake.SupportMatrixTest do
            end)
 
     refute Enum.any?(matrix.release_boundaries, fn entry ->
-             String.contains?(entry.versioning, "lockstep")
+             entry.target in ["core", "companion"] and
+               String.contains?(entry.versioning, "lockstep")
            end)
+
+    assert Enum.all?(
+             Enum.filter(
+               matrix.release_boundaries,
+               &(&1.target in ["ios_shell", "android_shell"])
+             ),
+             &String.contains?(&1.versioning, "lockstep")
+           )
   end
 
   test "change classes stay frozen to the four public release actions" do
@@ -287,7 +298,9 @@ defmodule Crosswake.SupportMatrixTest do
     test "entry telemetry.forbidden_metadata_keys matches Crosswake.Threadline.Telemetry" do
       alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
       [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
-      assert entry.telemetry.forbidden_metadata_keys == ThreadlineTelemetry.forbidden_metadata_keys()
+
+      assert entry.telemetry.forbidden_metadata_keys ==
+               ThreadlineTelemetry.forbidden_metadata_keys()
     end
 
     test "entry telemetry.event_names matches Crosswake.Threadline.Telemetry" do
@@ -339,7 +352,10 @@ defmodule Crosswake.SupportMatrixTest do
     assert notification_truth.route_activation_proof == :hermetic
     assert notification_truth.activation_authority == :route_gate_sigra
     assert notification_truth.evidence_authority == false
-    assert notification_truth.posture =~ "notification-open workflow proof is hermetic route activation proof"
+
+    assert notification_truth.posture =~
+             "notification-open workflow proof is hermetic route activation proof"
+
     assert notification_truth.posture =~ "RouteGate and Sigra decide activation"
     assert notification_truth.posture =~ "token/open evidence is not auth authority"
     assert notification_truth.posture =~ "APNs/FCM delivery is not part of this proof"
@@ -360,7 +376,10 @@ defmodule Crosswake.SupportMatrixTest do
     assert media_truth.background_transfer_supported == false
     assert media_truth.posture =~ "Rindle media/evidence recovery proof is hermetic"
     assert media_truth.posture =~ "local capture evidence is not availability authority"
-    assert media_truth.posture =~ "backend verification is required before media becomes available"
+
+    assert media_truth.posture =~
+             "backend verification is required before media becomes available"
+
     assert :real_storage_provider in media_truth.deferred
     assert :local_first_sync in media_truth.deferred
   end
@@ -765,6 +784,7 @@ defmodule Crosswake.SupportMatrixTest do
 
   test "validate/1 returns [] for canonical matrix (no false positives from rebuild_matrix gate)" do
     errors = SupportMatrix.validate(SupportMatrix.canonical())
+
     assert errors == [],
            "canonical matrix must be clean — got unexpected errors: #{inspect(errors)}"
   end
@@ -817,7 +837,10 @@ defmodule Crosswake.SupportMatrixTest do
         evidence_tier: :none
       )
 
-    matrix_with_safe_rows = %{canonical | rebuild_matrix: canonical.rebuild_matrix ++ [jvm_row, none_row]}
+    matrix_with_safe_rows = %{
+      canonical
+      | rebuild_matrix: canonical.rebuild_matrix ++ [jvm_row, none_row]
+    }
 
     errors = SupportMatrix.validate(matrix_with_safe_rows)
 
@@ -849,8 +872,13 @@ defmodule Crosswake.SupportMatrixTest do
 
     test "entry deferred list is exactly the three expected atoms" do
       entry = SupportMatrix.diagnostic_export_support_truth() |> List.first()
+
       assert Enum.sort(entry.deferred) ==
-               Enum.sort([:native_diagnostic_export, :metrickit_capture, :application_exit_info_capture])
+               Enum.sort([
+                 :native_diagnostic_export,
+                 :metrickit_capture,
+                 :application_exit_info_capture
+               ])
     end
 
     test "entry telemetry.authority_source is :host_configured_endpoint" do

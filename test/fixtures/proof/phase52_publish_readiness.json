@@ -20,10 +20,10 @@
           "Deferred non-shipped claims",
           "Published Hex truth"
         ],
-        "version": "0.1.2"
+        "version": "0.1.0"
       },
       "docs_reference": "CHANGELOG.md",
-      "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.2] aligned before publishing.",
+      "hint": "Keep package metadata, links, docs extras, files allowlist, [Unreleased], and [0.1.0] aligned before publishing.",
       "id": "publish.parity",
       "message": "local Hex metadata and CHANGELOG.md preserve published-versus-unreleased truth",
       "proof_class": "merge_blocking",
@@ -510,7 +510,7 @@
           "shell.ios.generated_project",
           "shell.android.generated_project"
         ],
-        "proof_status": "supported",
+        "proof_status": "verification_required",
         "required_docs_anchors": [
           "guides/support_matrix.md",
           "guides/native_shell.md"
@@ -562,6 +562,7 @@
           "guides/capabilities.md",
           "guides/bridge.md",
           "guides/offline.md",
+          "guides/tokens.md",
           "guides/commerce.md",
           "guides/companions.md",
           "guides/compatibility.md",

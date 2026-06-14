@@ -215,7 +215,8 @@ defmodule Crosswake.SupportMatrix do
       },
       security_closeout: %{
         status: :shipped,
-        artifact: ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+        artifact:
+          ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
         review_model: :stride,
         proof_class: :merge_blocking,
         unresolved_high_or_critical_findings: 0
@@ -263,7 +264,8 @@ defmodule Crosswake.SupportMatrix do
         status: :shipped,
         event_names: Crosswake.Companions.Chimeway.Telemetry.event_names(),
         metadata_keys: Crosswake.Companions.Chimeway.Telemetry.metadata_keys(),
-        forbidden_metadata_keys: Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys(),
+        forbidden_metadata_keys:
+          Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys(),
         authority_source: :diagnostic_evidence_only,
         proof_class: :merge_blocking
       },
@@ -360,7 +362,7 @@ defmodule Crosswake.SupportMatrix do
       ota_safe: false,
       rebuild_required: true,
       evidence_tier: :jvm_hermetic
-    ),
+    )
   ]
 
   @spec canonical(keyword()) :: SupportMatrix.t()
@@ -405,29 +407,31 @@ defmodule Crosswake.SupportMatrix do
           baseline_status: :supported,
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
-          notes:
-            "Android shell boot is supported based strictly on JVM hermetic CI evidence.",
+          notes: "Android shell boot is supported based strictly on JVM hermetic CI evidence.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
       shells: [
-        support_entry("ios_shell", Keyword.get(opts, :ios_shell_version, "0.1.0"), :supported,
+        support_entry(
+          "ios_shell",
+          Keyword.get(opts, :ios_shell_version, "Hex-matched"),
+          :supported,
           baseline_status: :supported,
-          proof_status: :supported,
-          proof: "script/verify_generated_ios_shell.sh",
+          proof_status: :verification_required,
+          proof: "clean-room-proof-ios; script/verify_generated_ios_shell.sh",
           notes:
-            "Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green.",
+            "Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         ),
         support_entry(
           "android_shell",
-          Keyword.get(opts, :android_shell_version, "0.1.0"),
+          Keyword.get(opts, :android_shell_version, "Hex-matched"),
           :supported,
           baseline_status: :supported,
-          proof_status: :supported,
-          proof: "script/verify_generated_android_shell.sh",
+          proof_status: :verification_required,
+          proof: "clean-room-proof-android; script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence.",
+            "Default non-local scaffolds resolve `io.github.sztheory:crosswake-shell-core-android` via Maven Central at the Crosswake package version; release-time clean-room proof confirms external resolution and `gradle build`.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -713,13 +717,13 @@ defmodule Crosswake.SupportMatrix do
         guide: "guides/capabilities.md#docs-only-boundary"
       ),
       Types.new_package_surface_entry(
-        surface: "Standalone public shell packages",
-        package_class: :defer,
+        surface: "Standalone native shell core packages",
+        package_class: :core,
         why:
-          "Separately versioned shell artifacts stay deferred until release choreography and compatibility policy are mature enough to support them honestly.",
+          "The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths.",
         release_burden:
-          "No first-class package commitment yet; any future promotion must land with runtime-line rules and rebuild guidance.",
-        guide: "guides/compatibility.md#runtime-line-rules"
+          "Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time.",
+        guide: "guides/install.md#step-2-generate-host-owned-native-shells"
       )
     ]
   end
@@ -745,7 +749,7 @@ defmodule Crosswake.SupportMatrix do
       Types.new_release_boundary_entry(
         target: "ios_shell",
         versioning:
-          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+          "SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -754,7 +758,7 @@ defmodule Crosswake.SupportMatrix do
       Types.new_release_boundary_entry(
         target: "android_shell",
         versioning:
-          "Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line.",
+          "Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned.",
         compatibility_contract:
           "Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens.",
         release_rule:
@@ -1283,7 +1287,8 @@ defmodule Crosswake.SupportMatrix do
       # jvm_hermetic promotion MUST NOT be read as device_verified.
       promotion_rule(
         claim_id: "shell.android.device_verified",
-        claim_scope: "Android shell device/emulator-verified proof promotion — GATED until Phases 67/68",
+        claim_scope:
+          "Android shell device/emulator-verified proof promotion — GATED until Phases 67/68",
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "device_verified",
