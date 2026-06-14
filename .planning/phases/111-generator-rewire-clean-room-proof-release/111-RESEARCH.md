@@ -945,7 +945,9 @@ This is a template-rewire and doc-reconciliation phase, not a rename/migration. 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three resolved before planning: Q1 (separate file vs appended jobs) → CONTEXT D-01a RESOLVED to appended jobs in `release-please.yml` (implemented in 111-04); Q2 (`mix archive.install` vs checkout) → guarded as Assumption A3, verified in 111-04 Task 1 with a documented `$RUNNER_TEMP` throwaway-Mix-project fallback; Q3 (parity-guard cwd path) → use `Path.join(cwd, "priv/templates/...")` (implemented in 111-02 Task 1).
 
 1. **`clean-room-proof.yml` as separate file vs. appended jobs in `release-please.yml`**
    - What we know: CONTEXT.md D-01a says "New `clean-room-proof.yml` (follows the `phaseNN-proof.yml` house precedent)". But `phaseNN-proof.yml` is for PR-merge-gating; separate workflow files cannot easily access `needs.release-please.outputs.*` from another workflow.
