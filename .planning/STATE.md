@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v11.0
 milestone_name: Release & Distribution Truth
 status: executing
-last_updated: "2026-06-14T22:22:55Z"
+last_updated: "2026-06-14T22:26:49Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State: Crosswake
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 ## Current Position
 
 Phase: 111 (generator-rewire-clean-room-proof-release) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-06-14
 Resume: /gsd:execute-phase 111. Phase 110 complete; 4 human-UAT items in 110-HUMAN-UAT.md to exercise during Phase 111 (real publish + credential provisioning per SETUP.md).
 
-[███████████████░░░░░] 75% (6/8 v11.0 plans)
+[██████████████████░░] 88% (7/8 v11.0 plans)
 
 ## Performance Metrics
 
@@ -72,17 +72,19 @@ None.
 | Phase 111 P01 | 5 min | 2 tasks | 4 files |
 | Phase 111 P03 | 15 min | 2 tasks | 12 files |
 | Phase 111 P02 | 6 min | 2 tasks | 4 files |
+| Phase 111 P04 | 4 min | 2 tasks | 1 file |
 
 ## Session Continuity
 
-Last session: 2026-06-14T22:22:55Z
-Stopped at: Completed 111-02-PLAN.md; next incomplete plan 111-04
+Last session: 2026-06-14T22:26:49Z
+Stopped at: Completed 111-04-PLAN.md; next incomplete plan 111-05
 Resume file: None
 
 ## Operator Next Steps
 
 - Phase 110 COMPLETE (3/3 plans, 8/8 must-haves; 2 verification blockers found & fixed inline).
-- Continue Phase 111 with 111-04: Clean-room CI jobs in `release-please.yml` (PROOF-01).
+- Continue Phase 111 with 111-05: the non-autonomous 0.1.2 cut and post-cut `release-as` pin removal (REL-01).
 - Before/within Phase 111: provision credentials out-of-band per `SETUP.md`, then exercise the 4 `110-HUMAN-UAT.md` items (android-publish-fire-drill + lockstep-truth dispatch lanes, GPG keyserver upload, Sonatype namespace verify).
 - Phase 111 cuts the real coordinated Hex 0.1.2 (REL-01, last) — the first real release that exercises the publish path fixed in 110.
 - PROOF-02 completed in Phase 111 Plan 02 — `generator_coordinate_parity` is now a permanent publish-readiness guard and plain `mix test` tripwire.
+- PROOF-01 completed in Phase 111 Plan 04 — clean-room proof jobs are wired in `release-please.yml`; first live green run waits for the 0.1.2 cut.

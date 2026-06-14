@@ -78,7 +78,7 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
   - [x] 111-01-PLAN.md — Template rewire: version assign + nil-guard in gen.shell, fix iOS/Android non-local coordinates, dual-surface test assertions (GEN-01, GEN-02)
   - [x] 111-02-PLAN.md — Published-dep parity guard: generator_coordinate_parity ReadinessCheck (merge-blocking) + mirrored test assertions (PROOF-02)
   - [x] 111-03-PLAN.md — Doc reconciliation: whitelist adoption.md, reframe §1 + cross-links, reconcile support_matrix + CHANGELOG [0.1.2] (DOCS-01)
-  - [ ] 111-04-PLAN.md — Clean-room CI jobs in release-please.yml: $RUNNER_TEMP scaffold + swift build / gradle build, version-pinned, SHA-pinned (PROOF-01)
+  - [x] 111-04-PLAN.md — Clean-room CI jobs in release-please.yml: $RUNNER_TEMP scaffold + swift build / gradle build, version-pinned, SHA-pinned (PROOF-01)
   - [ ] 111-05-PLAN.md — The 0.1.2 cut + post-cut release-as pin removal (REL-01, non-autonomous)
 **UI hint**: no
 
@@ -98,4 +98,4 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete | 2026-06-14 |
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete    | 2026-06-14 |
-| 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 3/5 | In Progress|  |
+| 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 4/5 | In Progress|  |
