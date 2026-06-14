@@ -30,7 +30,14 @@ jobs:
     name: Release Please
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
+      # Manifest mode (config-file + manifest-file) emits the PLURAL aggregate
+      # `releases_created` — true if ANY package released. The singular top-level
+      # `release_created` is NOT set in manifest mode, so gating on it silently
+      # skips every publish job. With linked-versions all three packages release
+      # together, so the aggregate is the correct gate (LOCK-02 / ROADMAP SC#5).
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      # For the root package (path "."), release-please-action v4 writes per-path
+      # outputs UNPREFIXED — so `tag_name`/`version` here are the Hex (root) values.
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
     steps:
@@ -51,7 +58,7 @@ jobs:
   publish-hex:
     name: Publish to Hex.pm
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -125,7 +132,7 @@ jobs:
   publish-ios-core:
     name: Mirror iOS core to split repo
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -148,17 +155,21 @@ jobs:
       - name: Push split to mirror and tag
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN }}
-          TAG: ${{ needs.release-please.outputs.tag_name }}
+          # SwiftPM resolves on a bare semver tag (e.g. v0.1.2). The release-please
+          # root tag_name is component-prefixed (`hex-v0.1.2`) and would NOT resolve,
+          # so the mirror tag is derived from the plain `version` output (PUB-01/SC#1).
+          VERSION: ${{ needs.release-please.outputs.version }}
         run: |
+          set -euo pipefail
           git remote add mirror \
             "https://x-access-token:${MIRROR_TOKEN}@github.com/szTheory/crosswake-shell-core-ios.git"
           git push mirror "${SPLIT_SHA}:refs/heads/main"
-          git push mirror "${SPLIT_SHA}:refs/tags/${TAG}"
+          git push mirror "${SPLIT_SHA}:refs/tags/v${VERSION}"
 
   publish-android-core:
     name: Publish Android core to Maven Central
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
