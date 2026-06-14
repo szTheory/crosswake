@@ -20,9 +20,17 @@ on:
   pull_request:
     paths:
       - "brandbook/**"
+      - "examples/phoenix_host/priv/static/css/app.css"
+      - "priv/static/crosswake/**"
+      - "priv/templates/crosswake/offline_ui/**"
+      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
   push:
     paths:
       - "brandbook/**"
+      - "examples/phoenix_host/priv/static/css/app.css"
+      - "priv/static/crosswake/**"
+      - "priv/templates/crosswake/offline_ui/**"
+      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
 
 jobs:
   brand-structural:
