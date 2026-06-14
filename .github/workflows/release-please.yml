@@ -121,3 +121,63 @@ jobs:
           done
           echo "Timed out waiting for https://hex.pm/api/packages/crosswake/releases/${VERSION}"
           exit 1
+
+  publish-ios-core:
+    name: Mirror iOS core to split repo
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Install splitsh-lite v2.0.0
+        run: |
+          curl -L https://github.com/splitsh/lite/releases/download/v2.0.0/lite_linux_amd64.tar.gz \
+            | tar xz
+          sudo mv splitsh-lite /usr/local/bin/splitsh-lite
+
+      - name: Split subtree
+        run: |
+          SHA=$(splitsh-lite --prefix=packages/crosswake-shell-core-ios)
+          echo "SPLIT_SHA=$SHA" >> "$GITHUB_ENV"
+
+      - name: Push split to mirror and tag
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          git remote add mirror \
+            "https://x-access-token:${MIRROR_TOKEN}@github.com/szTheory/crosswake-shell-core-ios.git"
+          git push mirror "${SPLIT_SHA}:refs/heads/main"
+          git push mirror "${SPLIT_SHA}:refs/tags/${TAG}"
+
+  publish-android-core:
+    name: Publish Android core to Maven Central
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Publish to Maven Central
+        working-directory: packages/crosswake-shell-core-android
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+        run: ./gradlew publishToMavenCentral --no-daemon
