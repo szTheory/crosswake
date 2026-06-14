@@ -42,7 +42,7 @@ Prove the thesis holds outside the monorepo, and make that guarantee permanent.
 
 Reconcile the public install story to reality and cut the release.
 
-- [ ] **DOCS-01**: `guides/adoption.md`, `guides/support_matrix.md`, and `CHANGELOG.md` are reconciled to the published install truth — no 404 install path, no claim of an install route that does not resolve.
+- [x] **DOCS-01**: `guides/adoption.md`, `guides/support_matrix.md`, and `CHANGELOG.md` are reconciled to the published install truth — no 404 install path, no claim of an install route that does not resolve.
 - [ ] **REL-01**: Hex `0.1.2` is cut (last, after `gen.shell` emits correct coordinates) so the published Hex package and the generated shell deps are mutually consistent for an external adopter.
 
 ## Future Requirements
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GEN-02 | 111 | Complete |
 | PROOF-01 | 111 | Pending |
 | PROOF-02 | 111 | Pending |
-| DOCS-01 | 111 | Pending |
+| DOCS-01 | 111 | Complete |
 | REL-01 | 111 | Pending |
 
 **Coverage:**
