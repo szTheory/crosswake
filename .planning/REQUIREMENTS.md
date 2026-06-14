@@ -28,8 +28,8 @@ One bump advances all three registries to the same version, so generated code ca
 
 Rewire `mix crosswake.gen.shell` so its default (non-`--local`) output references the published deps, with the version derived from one source of truth.
 
-- [ ] **GEN-01**: `mix crosswake.gen.shell` injects the live `crosswake` version (`Application.spec(:crosswake)[:vsn]`) into the generated native dep coordinates at generate-time — no hardcoded version literal in any template, and every native dep version derives from that single source (no hardcoded satellite version).
-- [ ] **GEN-02**: The default (non-`--local`) generated iOS and Android projects reference the correct published coordinates — iOS `github.com/szTheory/...` with `upToNextMajorVersion`/`from:` pinning (not `exactVersion`, not a branch), Android `io.github.sztheory:crosswake-shell-core-android` — with the placeholder `crosswake/` remote and the relative-path/monorepo default removed.
+- [x] **GEN-01**: `mix crosswake.gen.shell` injects the live `crosswake` version (`Application.spec(:crosswake)[:vsn]`) into the generated native dep coordinates at generate-time — no hardcoded version literal in any template, and every native dep version derives from that single source (no hardcoded satellite version).
+- [x] **GEN-02**: The default (non-`--local`) generated iOS and Android projects reference the correct published coordinates — iOS `github.com/szTheory/...` with `upToNextMajorVersion`/`from:` pinning (not `exactVersion`, not a branch), Android `io.github.sztheory:crosswake-shell-core-android` — with the placeholder `crosswake/` remote and the relative-path/monorepo default removed.
 
 ### Proof
 
@@ -88,8 +88,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PUB-03 | 110 | Complete |
 | LOCK-01 | 110 | Complete |
 | LOCK-02 | 110 | Complete |
-| GEN-01 | 111 | Pending |
-| GEN-02 | 111 | Pending |
+| GEN-01 | 111 | Complete |
+| GEN-02 | 111 | Complete |
 | PROOF-01 | 111 | Pending |
 | PROOF-02 | 111 | Pending |
 | DOCS-01 | 111 | Pending |
