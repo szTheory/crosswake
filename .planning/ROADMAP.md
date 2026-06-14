@@ -62,8 +62,8 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
   3. The generated offline UI requires no Tailwind dependency installed in the host project to render correctly.
   4. `test/mix/tasks/crosswake.gen.offline_ui_test.exs` asserts the presence of semantic token references (e.g., `var(--cw-surface-default)`) and the absence of retired Tailwind class names (`flex`, `bg-white`, `text-cw-*`) in the generated output.
 **Plans**: 4 plans
-- [ ] 108-01-PLAN.md — Normalize the example host SERVED app.css + reconcile the unserved duplicate + restyle the example offline page onto semantic tokens (NORM-01) [wave 1]
-- [ ] 108-02-PLAN.md — Author vendored offline.css + rewrite offline_ui templates off Tailwind + vendor it (no-clobber) and retire the stale theme in the generator (NORM-02) [wave 1]
+- [x] 108-01-PLAN.md — Normalize the example host SERVED app.css + reconcile the unserved duplicate + restyle the example offline page onto semantic tokens (NORM-01) [wave 1]
+- [x] 108-02-PLAN.md — Author vendored offline.css + rewrite offline_ui templates off Tailwind + vendor it (no-clobber) and retire the stale theme in the generator (NORM-02) [wave 1]
 - [ ] 108-03-PLAN.md — Rewrite the generator test to the semantic-token contract (NORM-04) [wave 2]
 - [ ] 108-04-PLAN.md — D-13 render-verify release gate: browser-render example host + generated offline page in light/dark, remediate any D-06 contrast failure, human sign-off (NORM-01, NORM-02) [wave 3]
 **UI hint**: yes
@@ -92,5 +92,5 @@ Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
 | 105. HTML Brand Book | v9.0 | 3/3 | Complete | 2026-06-12 |
 | 106. Collateral, Integration & Closeout | v9.0 | 2/2 | Complete | 2026-06-13 |
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete    | 2026-06-13 |
-| 108. Consumer Normalization | v10.0 | 0/? | Not started | — |
+| 108. Consumer Normalization | v10.0 | 2/4 | In Progress|  |
 | 109. Drift-Prevention Gate | v10.0 | 0/? | Not started | — |
