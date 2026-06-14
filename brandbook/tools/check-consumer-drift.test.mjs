@@ -120,6 +120,29 @@ test('findRetiredTailwindInClassAttrs: flex in class attr is flagged', () => {
   assert.ok(hits.some(h => h.text === 'flex'), 'must detect flex in class attr');
 });
 
+// ─── WR-01: single-quoted and newline-wrapped class lists are scanned ────────
+
+test("findRetiredTailwindInClassAttrs: single-quoted class='flex' is flagged", () => {
+  const hits = findRetiredTailwindInClassAttrs("<div class='flex'>");
+  assert.ok(hits.some(h => h.text === 'flex'),
+    `single-quoted class attr must be scanned; got: ${JSON.stringify(hits)}`);
+});
+
+test('findRetiredTailwindInClassAttrs: newline-wrapped class list is scanned', () => {
+  const content = '<div\n class="foo\n flex">';
+  const hits = findRetiredTailwindInClassAttrs(content);
+  assert.ok(hits.some(h => h.text === 'flex'),
+    `newline-wrapped class list must be scanned; got: ${JSON.stringify(hits)}`);
+});
+
+// ─── WR-01 documented gap: class={...} dynamic binding is NOT scanned ─────────
+
+test('findRetiredTailwindInClassAttrs: class={...} dynamic binding is a documented gap (not flagged)', () => {
+  const hits = findRetiredTailwindInClassAttrs('<div class={@foo}>');
+  assert.strictEqual(hits.length, 0,
+    'class={...} dynamic bindings are an accepted documented blind spot (WR-01)');
+});
+
 // ─── CR-02: per-token matching — substring near-misses are NOT flagged ───────
 
 test('findRetiredTailwindInClassAttrs: inline-flex is NOT flagged (not exact "flex")', () => {

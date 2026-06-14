@@ -147,19 +147,32 @@ export function checkCssSemanticCoverage(content) {
 }
 
 /**
- * Find retired Tailwind utility classes in class="..." attribute values.
- * Scoped to class attribute values ONLY — does not scan CSS property text.
+ * Find retired Tailwind utility classes in class="..." / class='...' attribute
+ * values.
+ * Scoped to quoted class attribute values ONLY — does not scan CSS property text.
  * This guards against false-positives like `display: flex` in inline <style> blocks.
+ *
+ * Accepts either quote style and matches across newlines (the `[^"]`/`[^']`
+ * negated classes span line breaks), covering single-quoted and newline-wrapped
+ * `.heex` class lists.
+ *
+ * KNOWN GAP (WR-01): `class={...}` HEEX dynamic bindings are NOT scanned. The
+ * attribute value is an arbitrary Elixir expression evaluated at runtime, not a
+ * literal class list; tokenizing it reliably is out of scope and would produce
+ * false positives. Retired utilities introduced exclusively via a dynamic
+ * `class={...}` binding are an accepted, documented blind spot of this gate.
  *
  * @param {string} content - File content to scan
  * @returns {{ line: number, text: string, rule: string }[]}
  */
 export function findRetiredTailwindInClassAttrs(content) {
   const violations = [];
-  const classRe = /class="([^"]*)"/g;
+  // Accept double- or single-quoted class attributes. m[1] = double-quoted
+  // body, m[2] = single-quoted body; exactly one is set per match.
+  const classRe = /class=(?:"([^"]*)"|'([^']*)')/g;
   let m;
   while ((m = classRe.exec(content)) !== null) {
-    const classes = m[1];
+    const classes = m[1] ?? m[2];
     // Find line number by counting newlines up to match index
     const lineNum = content.slice(0, m.index).split('\n').length;
     // Tokenize on whitespace and match per-class, NOT by unbounded substring.
