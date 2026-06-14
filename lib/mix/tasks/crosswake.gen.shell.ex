@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   @switches [target: :string, router: :string, local: :boolean]
   @platforms ~w(ios android)
 
-    @android_templates [
+  @android_templates [
     {"settings.gradle", "android/settings.gradle.eex"},
     {"build.gradle", "android/build.gradle.eex"},
     {"gradle.properties", "android/gradle.properties.eex"},
@@ -28,14 +28,14 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
      "android/app/src/main/java/dev/crosswake/shell/MainActivity.kt.eex"},
     {"app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt",
      "android/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt.eex"},
-    {"app/src/main/res/values/themes.xml",
-     "android/app/src/main/res/values/themes.xml.eex"}
+    {"app/src/main/res/values/themes.xml", "android/app/src/main/res/values/themes.xml.eex"}
   ]
-    @ios_templates [
+  @ios_templates [
     {"CrosswakeShell/CrosswakeShellApp.swift", "ios/CrosswakeShellApp.swift.eex"},
     {"CrosswakeShell/Info.plist", "ios/Info.plist.eex"},
     {"CrosswakeShell/CrosswakeCoordinator.swift", "ios/CrosswakeCoordinator.swift.eex"},
-    {"CrosswakeShell.xcodeproj/project.pbxproj", "ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"},
+    {"CrosswakeShell.xcodeproj/project.pbxproj",
+     "ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"},
     {"CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme",
      "ios/CrosswakeShell.xcodeproj/xcshareddata/xcschemes/CrosswakeShell.xcscheme.eex"},
     {"CrosswakeShell/CrosswakeShell.entitlements", "ios/CrosswakeShell.entitlements.eex"},
@@ -123,13 +123,19 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
   defp render_android_templates(root, capabilities, local) do
     Enum.each(@android_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities, local))
+      ensure_file(
+        Path.join(root, relative_path),
+        render_template(template_path, capabilities, local)
+      )
     end)
   end
 
   defp render_ios_templates(root, capabilities, local) do
     Enum.each(@ios_templates, fn {relative_path, template_path} ->
-      ensure_file(Path.join(root, relative_path), render_template(template_path, capabilities, local))
+      ensure_file(
+        Path.join(root, relative_path),
+        render_template(template_path, capabilities, local)
+      )
     end)
   end
 
@@ -137,7 +143,26 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     template =
       Application.app_dir(:crosswake, Path.join("priv/templates/crosswake/shell", template_path))
 
-    EEx.eval_file(template, assigns: [capabilities: capabilities, local: local])
+    version = fetch_version!()
+
+    EEx.eval_file(template, assigns: [capabilities: capabilities, local: local, version: version])
+  end
+
+  defp fetch_version! do
+    version =
+      Application.spec(:crosswake, :vsn) ||
+        Keyword.get(Mix.Project.config(), :version)
+
+    case version do
+      nil ->
+        Mix.raise("""
+        could not determine the crosswake version from Application.spec(:crosswake, :vsn) or Mix.Project.config()[:version].
+        Run `mix app.start` before generating a shell from the Crosswake source checkout, or install crosswake as a Hex dependency in your host project.
+        """)
+
+      vsn ->
+        to_string(vsn)
+    end
   end
 
   defp fetch_capabilities(nil), do: Crosswake.Manifest.Builder.public_route_capability_ids()

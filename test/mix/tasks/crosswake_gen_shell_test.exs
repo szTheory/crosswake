@@ -20,11 +20,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert ios_output =~ "not safely regeneratable"
 
     ios_readme = Path.join(target, "native/ios/crosswake_shell/README.md")
+
     ios_project =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj")
+
     ios_app =
       Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeShellApp.swift")
+
     ios_info = Path.join(target, "native/ios/crosswake_shell/CrosswakeShell/Info.plist")
+
     ios_scheme =
       Path.join(
         target,
@@ -36,13 +40,18 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
     ios_manifest =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/crosswake_manifest.json")
+
     ios_activation =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/route_activation.json")
+
     ios_denial = Path.join(target, "native/ios/crosswake_shell/Fixtures/route_denial.json")
+
     ios_declared_packs =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/declared_pack_requirements.json")
+
     ios_installed_packs =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/installed_packs.json")
+
     ios_pack_inventory =
       Path.join(target, "native/ios/crosswake_shell/Fixtures/pack_inventory.json")
 
@@ -50,10 +59,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(ios_readme) =~ "scaffold once"
     refute File.read!(ios_readme) =~ "Phase 1"
 
-    assert File.read!(ios_project) =~ "PBXNativeTarget"
-    assert File.read!(ios_project) =~ "CrosswakeShellTests"
-    assert File.read!(ios_project) =~ "XCRemoteSwiftPackageReference"
-    refute File.read!(ios_project) =~ "XCLocalSwiftPackageReference"
+    ios_project_contents = File.read!(ios_project)
+    assert ios_project_contents =~ "PBXNativeTarget"
+    assert ios_project_contents =~ "CrosswakeShellTests"
+    assert ios_project_contents =~ "XCRemoteSwiftPackageReference"
+    refute ios_project_contents =~ "XCLocalSwiftPackageReference"
+    refute ios_project_contents =~ "minimumVersion = nil"
 
     assert File.read!(ios_app) =~ "CrosswakeCoordinator"
     assert File.read!(ios_app) =~ "onOpenURL"
@@ -111,6 +122,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
       )
 
     android_app_build = Path.join(target, "native/android/crosswake_shell/app/build.gradle")
+
     android_manifest =
       Path.join(
         target,
@@ -190,6 +202,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
   test "supports --local flag for SPM and Maven dependencies" do
     ios_local_target = tmp_dir!("crosswake-shell-local-ios")
+
     capture_io(fn ->
       Mix.Task.reenable(@task)
       Mix.Task.run(@task, ["ios", "--target", ios_local_target, "--local"])
@@ -201,23 +214,42 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
         "native/ios/crosswake_shell/CrosswakeShell.xcodeproj/project.pbxproj"
       )
 
-    assert File.exists?(Path.join(ios_local_target, "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift"))
-    assert File.read!(ios_project) =~ "XCLocalSwiftPackageReference"
-    refute File.read!(ios_project) =~ "XCRemoteSwiftPackageReference"
+    assert File.exists?(
+             Path.join(
+               ios_local_target,
+               "native/ios/crosswake_shell/CrosswakeShell/CrosswakeCoordinator.swift"
+             )
+           )
+
+    ios_project_contents = File.read!(ios_project)
+    assert ios_project_contents =~ "XCLocalSwiftPackageReference"
+    refute ios_project_contents =~ "XCRemoteSwiftPackageReference"
 
     android_local_target = tmp_dir!("crosswake-shell-local-android")
+
     capture_io(fn ->
       Mix.Task.reenable(@task)
       Mix.Task.run(@task, ["android", "--target", android_local_target, "--local"])
     end)
 
-    android_app_build = Path.join(android_local_target, "native/android/crosswake_shell/app/build.gradle")
-    android_settings = Path.join(android_local_target, "native/android/crosswake_shell/settings.gradle")
+    android_app_build =
+      Path.join(android_local_target, "native/android/crosswake_shell/app/build.gradle")
 
-    assert File.exists?(Path.join(android_local_target, "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt"))
+    android_settings =
+      Path.join(android_local_target, "native/android/crosswake_shell/settings.gradle")
+
+    assert File.exists?(
+             Path.join(
+               android_local_target,
+               "native/android/crosswake_shell/app/src/main/java/dev/crosswake/shell/CrosswakeViewModel.kt"
+             )
+           )
+
     assert File.read!(android_settings) =~ "include ':crosswake-shell-core-android'"
     assert File.read!(android_settings) =~ "packages/crosswake-shell-core-android"
-    assert File.read!(android_app_build) =~ "implementation project(':crosswake-shell-core-android')"
+
+    assert File.read!(android_app_build) =~
+             "implementation project(':crosswake-shell-core-android')"
   end
 
   defp tmp_dir!(prefix) do
