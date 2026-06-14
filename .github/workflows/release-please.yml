@@ -193,6 +193,118 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: ./gradlew publishToMavenCentral --no-daemon
 
+  clean-room-proof-ios:
+    name: Clean-room proof — iOS swift build
+    needs: [release-please, publish-hex, publish-ios-core, publish-android-core]
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: macos-15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Install crosswake archive at just-cut version
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: mix archive.install hex crosswake "$VERSION" --force
+
+      - name: Generate iOS shell outside monorepo
+        run: |
+          set -euo pipefail
+          TARGET="$RUNNER_TEMP/clean-room-proof-ios"
+          rm -rf "$TARGET"
+          mkdir -p "$TARGET"
+          mix crosswake.gen.shell ios --target "$TARGET"
+
+      - name: swift build with mirror tag retry
+        run: |
+          set -euo pipefail
+          PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-ios/native/ios/crosswake_shell"
+          cd "$PROJECT_ROOT"
+
+          for i in 1 2 3; do
+            if swift build; then
+              echo "swift build succeeded on attempt $i"
+              exit 0
+            fi
+
+            echo "swift build attempt $i/3 failed; retrying in 30s for mirror tag availability..."
+            sleep 30
+          done
+
+          echo "swift build failed after 3 attempts."
+          exit 1
+
+  clean-room-proof-android:
+    name: Clean-room proof — Android gradle build
+    needs: [release-please, publish-hex, publish-ios-core, publish-android-core]
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Install crosswake archive at just-cut version
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: mix archive.install hex crosswake "$VERSION" --force
+
+      - name: Generate Android shell outside monorepo
+        run: |
+          set -euo pipefail
+          TARGET="$RUNNER_TEMP/clean-room-proof-android"
+          rm -rf "$TARGET"
+          mkdir -p "$TARGET"
+          mix crosswake.gen.shell android --target "$TARGET"
+
+      - name: gradle build with Maven Central propagation polling
+        run: |
+          set -euo pipefail
+          PROJECT_ROOT="$RUNNER_TEMP/clean-room-proof-android/native/android/crosswake_shell"
+          cd "$PROJECT_ROOT"
+          chmod +x gradlew
+
+          MAX_ATTEMPTS=40
+          DELAY=45
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
+            if ./gradlew build --no-daemon; then
+              echo "gradle build succeeded on attempt $i"
+              exit 0
+            fi
+
+            echo "Attempt $i/$MAX_ATTEMPTS: gradle build failed; Maven Central may not have propagated. Retrying in ${DELAY}s..."
+            sleep "$DELAY"
+          done
+
+          echo "gradle build failed after $MAX_ATTEMPTS attempts (~30 min). Maven Central propagation timeout."
+          exit 1
+
   # Permanent dispatch-only fire-drill: proves the full Android publish path without burning a
   # version coordinate. Run this before every real release as a mandatory pre-publish rehearsal.
   # Preflight -> local-publish asserts -> validated-upload -> DROP (frees coordinate).
