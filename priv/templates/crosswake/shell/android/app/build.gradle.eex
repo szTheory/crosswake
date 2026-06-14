@@ -51,7 +51,7 @@ dependencies {
   <%= if @local do %>
   implementation project(':crosswake-shell-core-android')
   <% else %>
-  implementation 'dev.crosswake:shell-core-android:0.1.0'
+  implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")
   <% end %>
 
   implementation 'androidx.core:core-ktx:1.13.1'

@@ -60,10 +60,17 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     refute File.read!(ios_readme) =~ "Phase 1"
 
     ios_project_contents = File.read!(ios_project)
+    ios_version = Application.spec(:crosswake, :vsn) |> to_string()
+
     assert ios_project_contents =~ "PBXNativeTarget"
     assert ios_project_contents =~ "CrosswakeShellTests"
     assert ios_project_contents =~ "XCRemoteSwiftPackageReference"
+    assert ios_project_contents =~ "github.com/szTheory/crosswake-shell-core-ios"
+    assert ios_project_contents =~ "upToNextMajorVersion"
+    assert ios_project_contents =~ ios_version
     refute ios_project_contents =~ "XCLocalSwiftPackageReference"
+    refute ios_project_contents =~ "crosswake/crosswake-shell-core-ios"
+    refute ios_project_contents =~ "exactVersion"
     refute ios_project_contents =~ "minimumVersion = nil"
 
     assert File.read!(ios_app) =~ "CrosswakeCoordinator"
@@ -172,9 +179,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_wrapper) =~ "Gradle start up script"
     assert File.read!(android_wrapper_props) =~ "gradle-8.7-bin.zip"
 
-    assert File.read!(android_app_build) =~ "applicationId \"dev.crosswake.shell\""
-    assert File.read!(android_app_build) =~ "ManagedVirtualDevice"
-    assert File.read!(android_app_build) =~ "androidx.webkit:webkit:1.15.0"
+    android_app_build_contents = File.read!(android_app_build)
+    android_version = Application.spec(:crosswake, :vsn) |> to_string()
+
+    assert android_app_build_contents =~ "applicationId \"dev.crosswake.shell\""
+    assert android_app_build_contents =~ "ManagedVirtualDevice"
+    assert android_app_build_contents =~ "androidx.webkit:webkit:1.15.0"
+    assert android_app_build_contents =~ "io.github.sztheory:crosswake-shell-core-android"
+    assert android_app_build_contents =~ android_version
+    refute android_app_build_contents =~ "dev.crosswake:shell-core-android"
 
     assert File.read!(android_manifest) =~ "usesCleartextTraffic"
     assert File.read!(android_manifest) =~ "android.intent.category.BROWSABLE"
@@ -224,6 +237,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     ios_project_contents = File.read!(ios_project)
     assert ios_project_contents =~ "XCLocalSwiftPackageReference"
     refute ios_project_contents =~ "XCRemoteSwiftPackageReference"
+    refute ios_project_contents =~ "szTheory/crosswake-shell-core-ios"
 
     android_local_target = tmp_dir!("crosswake-shell-local-android")
 
@@ -248,8 +262,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_settings) =~ "include ':crosswake-shell-core-android'"
     assert File.read!(android_settings) =~ "packages/crosswake-shell-core-android"
 
+    android_app_build_contents = File.read!(android_app_build)
+
     assert File.read!(android_app_build) =~
              "implementation project(':crosswake-shell-core-android')"
+
+    refute android_app_build_contents =~ "io.github.sztheory"
   end
 
   defp tmp_dir!(prefix) do
