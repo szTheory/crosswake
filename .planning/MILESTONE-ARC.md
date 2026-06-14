@@ -110,9 +110,9 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 
 **Status:** SHIPPED — 2026-06-09 (Phases 91-98). Cross-boundary `thread_id` propagation (Plug/telemetry, zero new deps), opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface (`mix crosswake.threadline`). LiveDashboard timeline deferred to a future `crosswake_dashboard` package. Canonical definition in `.planning/threads/threadline-audit.md`.
 
-### Active (recommended): Release & Distribution Truth
+### Active: Release & Distribution Truth
 
-**Status:** RECOMMENDED next strategic wedge (2026-06-14 milestone next-step assessment). Not yet scoped/kicked off. Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
+**Status:** ACTIVE v11.0 milestone (2026-06-14). Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
 
 **Objective**
 - Make the v5.0 standalone-package thesis actually consumable: publish the iOS SPM core (subtree-mirror to its own repo, Apollo pattern) and the Android core to Maven Central (Vanniktech + Central Portal), lockstep-version them with the Hex package (release-please manifest `linked-versions`), rewire `mix crosswake.gen.shell` to inject the published version into generated dep coordinates, and cut Hex `0.1.2`.
@@ -203,4 +203,4 @@ Every milestone close must update or verify:
 - Whether the deferred Threadline operator timeline should live in a separate `crosswake_dashboard` package (LiveDashboard plugin) and when the opt-in audit ledger has enough adoption to justify the visual surface.
 
 ---
-*Last updated: 2026-06-09 — v5.0/v5.1/v6.0 marked shipped; Threadline Audit Capstone (v7.0) promoted to the active strategic milestone.*
+*Last updated: 2026-06-14 — v11.0 Release & Distribution Truth marked active with strategic contract heading restored.*
