@@ -2,7 +2,11 @@
 
 This guide stays narrow and proof-oriented. The published iOS and Android shell claims
 below are backed by the checked-in example hosts plus the generated-shell verification
-hooks that now pass on the same host-owned artifact classes adopters ship.
+hooks that now pass on the same host-owned artifact classes adopters ship. The default
+non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
+and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake
+Hex package version; the release-time clean-room proof promotes that path after the
+coordinated cut.
 
 ## Status Legend
 
@@ -38,8 +42,8 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| ios_shell | 0.1.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated iOS shell artifacts are supported while the Phase 5 iOS verification hook stays green. |
-| android_shell | 0.1.0 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence. |
+| ios_shell | Hex-matched | supported | verification required | clean-room-proof-ios; script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. |
+| android_shell | Hex-matched | supported | verification required | clean-room-proof-android; script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Default non-local scaffolds resolve `io.github.sztheory:crosswake-shell-core-android` via Maven Central at the Crosswake package version; release-time clean-room proof confirms external resolution and `gradle build`. |
 
 ## Capability Families
 
@@ -80,7 +84,7 @@ hooks that now pass on the same host-owned artifact classes adopters ship.
 | Phoenix-facing commerce seam vocabulary | core | `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers. | Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package. | [Guide](capabilities.md#packaging-ledger) |
 | Provider adapters and native-heavy integrations | companion | Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core. | First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors. | [Guide](compatibility.md#companion-compatibility-contract) |
 | Checked-in example hosts and install walkthroughs | example/docs-only | Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages. | Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates. | [Guide](capabilities.md#docs-only-boundary) |
-| Standalone public shell packages | defer | Separately versioned shell artifacts stay deferred until release choreography and compatibility policy are mature enough to support them honestly. | No first-class package commitment yet; any future promotion must land with runtime-line rules and rebuild guidance. | [Guide](compatibility.md#runtime-line-rules) |
+| Standalone native shell core packages | core | The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths. | Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time. | [Guide](install.md#step-2-generate-host-owned-native-shells) |
 
 ## Release And Versioning Policy
 
@@ -90,8 +94,8 @@ package versions alone do not define support truth.
 |--------|------------|------------------------|--------------|
 | core | Independent SemVer for the `crosswake` Hex package. | package versions alone do not define support truth; manifest_schema_version, bridge_protocol_version, and native_runtime_version stay canonical. | Manifest-major, bridge-major, and runtime-line changes must update support docs and doctor before release. |
 | companion | Independent SemVer per first-party companion. | Each companion declares minimum compatible ranges for core, all three compatibility axes, and exposed capability-family majors. | Companion support cannot expand until the adapter publishes explicit compatibility ranges and fail-closed guidance. |
-| ios_shell | Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line. | Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens. | Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required. |
-| android_shell | Platform artifact build numbers may differ, but the shell publishes against the shared native runtime line. | Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens. | Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required. |
+| ios_shell | SwiftPM core package version is lockstep with the Hex package; host app build numbers remain adopter-owned. | Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens. | Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required. |
+| android_shell | Maven Central core artifact version is lockstep with the Hex package; host app build numbers remain adopter-owned. | Breaking bridge semantics require a bridge_protocol_version major bump plus a compatible shell artifact before support widens. | Changes touching native code, entitlements, permissions, registration, or packaged runtime behavior move the native_runtime_version line and mark rebuild required. |
 
 ## Change Classes
 
@@ -170,4 +174,4 @@ Crosswake provides a hermetic Rindle proof for simulated media recovery.
 - StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass.
 - Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contract machinery, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, Phase 58 auth telemetry/security closeout, and Phase 73 auth-sensitive admin workflow proof are shipped for route predicates, `auth_posture`, route-local `auth_return`, `:step_up_required`, canonical `auth.handoff.*`, canonical `auth.step_up_intent.*`, canonical `auth.return.*` denial codes, stable `[:crosswake, :auth, ...]` telemetry events, low-cardinality diagnostic metadata, and proof that persistent shell session state does not grant admin access; refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred.
 - APNs/FCM push delivery execution, delivery metrics, and deep UI native notification presentation remain deferred; notification support focuses strictly on token binding, notification-open routing, RouteGate/Sigra route activation proof, and diagnostic telemetry.
-- Standalone public shell packages are deferred; generated iOS and Android shell projects remain host-owned scaffolds and checked-in example proof artifacts.
+- Standalone native shell core packages are consumed by generated host-owned wrappers through SwiftPM and Maven Central; device/emulator proof and broader native runtime claims remain deferred until separately proven.
