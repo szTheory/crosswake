@@ -1,6 +1,8 @@
 name: "Brandbook Verify"
 
-# Brand-asset quality gates (D-08, COLL-04). Triggers on brandbook/** changes.
+# Brand-asset quality gates (D-08, COLL-04). Runs on every PR because
+# brand-structural is a required branch-protection context; path filtering would
+# leave config-only PRs permanently blocked waiting for a check that never emits.
 #
 # HYBRID GATE (promoted from advisory at v9.0 — see .planning/REQUIREMENTS.md):
 #   • brand-structural — REQUIRED merge gate. Deterministic file / DOM / dimension /
@@ -18,19 +20,7 @@ permissions:
 
 on:
   pull_request:
-    paths:
-      - "brandbook/**"
-      - "examples/phoenix_host/priv/static/css/app.css"
-      - "priv/static/crosswake/**"
-      - "priv/templates/crosswake/offline_ui/**"
-      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
   push:
-    paths:
-      - "brandbook/**"
-      - "examples/phoenix_host/priv/static/css/app.css"
-      - "priv/static/crosswake/**"
-      - "priv/templates/crosswake/offline_ui/**"
-      - "examples/phoenix_host/lib/crosswake_example_web/controllers/offline_html/**"
 
 jobs:
   brand-structural:

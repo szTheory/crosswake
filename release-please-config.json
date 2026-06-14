@@ -16,7 +16,13 @@
       "release-type": "elixir",
       "release-as": "0.1.2",
       "skip-changelog": true,
-      "extra-files": ["mix.exs"],
+      "extra-files": [
+        "mix.exs",
+        {
+          "type": "generic",
+          "path": "packages/crosswake-shell-core-android/build.gradle.kts"
+        }
+      ],
       "changelog-sections": [
         { "type": "feat", "section": "Features" },
         { "type": "fix", "section": "Bug Fixes" },
