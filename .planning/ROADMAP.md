@@ -44,7 +44,7 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 
 ### v11.0 Release & Distribution Truth (Phases 110-111)
 
-- [ ] **Phase 110: Native Publish & Lockstep Infrastructure** - Publish iOS core to subtree-mirror repo with semver tags, publish Android core to Maven Central, wire release-please linked-versions so all three registries advance together
+- [x] **Phase 110: Native Publish & Lockstep Infrastructure** - Publish iOS core to subtree-mirror repo with semver tags, publish Android core to Maven Central, wire release-please linked-versions so all three registries advance together (completed 2026-06-14)
 - [ ] **Phase 111: Generator Rewire, Clean-Room Proof & Release** - Rewire gen.shell templates to published coordinates with version derived from Application.spec, prove the thesis outside the monorepo via clean-room CI, add permanent published-dep parity check, reconcile docs, cut Hex 0.1.2
 
 ## Phase Details
@@ -62,7 +62,7 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 **Plans**: 3 plans (2 waves)
   - [x] 110-01-PLAN.md — Lockstep manifest config + Android Maven Central publish config (mix.exs revert, release-please linked-versions, signed POM)
   - [x] 110-02-PLAN.md — SETUP.md credential provisioning runbook (GPG, Sonatype, mirror repo, secrets, tag ruleset)
-  - [ ] 110-03-PLAN.md — Native publish CI jobs + validated-upload→drop fire-drill + lockstep-truth assertion in release-please.yml
+  - [x] 110-03-PLAN.md — Native publish CI jobs + validated-upload→drop fire-drill + lockstep-truth assertion in release-please.yml
 
 ### Phase 111: Generator Rewire, Clean-Room Proof & Release
 **Goal**: An adopter outside this monorepo can add the Hex dep, run `mix crosswake.gen.shell` (default), and get iOS and Android projects that resolve published, version-matched deps and build — proven by a clean-room CI lane, guarded permanently by a published-dep parity check, and consolidated into the published Hex 0.1.2 release
@@ -92,5 +92,5 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
 | 107. Token Source & Distribution | v10.0 | 3/3 | Complete | 2026-06-13 |
 | 108. Consumer Normalization | v10.0 | 4/4 | Complete | 2026-06-14 |
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
-| 110. Native Publish & Lockstep Infrastructure | v11.0 | 2/3 | In Progress|  |
+| 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete   | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 0/TBD | Not started | - |
