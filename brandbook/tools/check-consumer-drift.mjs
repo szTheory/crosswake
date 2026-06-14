@@ -162,9 +162,17 @@ export function findRetiredTailwindInClassAttrs(content) {
     const classes = m[1];
     // Find line number by counting newlines up to match index
     const lineNum = content.slice(0, m.index).split('\n').length;
+    // Tokenize on whitespace and match per-class, NOT by unbounded substring.
+    // Prefix entries (ending in '-', e.g. 'bg-cw-') use startsWith; exact
+    // entries (e.g. 'flex') use strict equality. This prevents 'inline-flex',
+    // 'flex-col', 'reflex' etc. from falsely matching the exact token 'flex'.
+    const tokens = classes.split(/\s+/).filter(Boolean);
     for (const retired of RETIRED_TAILWIND) {
-      if (classes.includes(retired)) {
-        violations.push({ line: lineNum, text: retired, rule: 'retired-tailwind-class-forbidden' });
+      const isPrefix = retired.endsWith('-');
+      for (const cls of tokens) {
+        if (isPrefix ? cls.startsWith(retired) : cls === retired) {
+          violations.push({ line: lineNum, text: retired, rule: 'retired-tailwind-class-forbidden' });
+        }
       }
     }
   }

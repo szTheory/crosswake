@@ -120,6 +120,26 @@ test('findRetiredTailwindInClassAttrs: flex in class attr is flagged', () => {
   assert.ok(hits.some(h => h.text === 'flex'), 'must detect flex in class attr');
 });
 
+// ─── CR-02: per-token matching — substring near-misses are NOT flagged ───────
+
+test('findRetiredTailwindInClassAttrs: inline-flex is NOT flagged (not exact "flex")', () => {
+  const hits = findRetiredTailwindInClassAttrs('<div class="inline-flex gap-2">');
+  assert.strictEqual(hits.length, 0,
+    `inline-flex must not match exact token "flex"; got: ${JSON.stringify(hits)}`);
+});
+
+test('findRetiredTailwindInClassAttrs: flex-col is NOT flagged (not exact "flex")', () => {
+  const hits = findRetiredTailwindInClassAttrs('<div class="flex-col">');
+  assert.strictEqual(hits.length, 0,
+    `flex-col must not match exact token "flex"; got: ${JSON.stringify(hits)}`);
+});
+
+test('findRetiredTailwindInClassAttrs: reflex is NOT flagged (not exact "flex")', () => {
+  const hits = findRetiredTailwindInClassAttrs('<div class="reflex">');
+  assert.strictEqual(hits.length, 0,
+    `reflex must not match exact token "flex"; got: ${JSON.stringify(hits)}`);
+});
+
 // ─── False-positive guard: #id selector ──────────────────────────────────────
 
 test('findHexColors: #id CSS selector is NOT flagged as hex color', () => {
