@@ -79,7 +79,11 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v4.1 Multi-SaaS Archetype Proof Lanes** — shipped 2026-06-05. Proved subscription commerce, notification re-entry, media/evidence, auth-sensitive admin, and offline/draft workflows via end-to-end hermetic lanes.
 - **v5.0 Standalone Publishable Shell Packages** — shipped 2026-06-06. Extracted `ActivationCoordinator`/`BridgeChannel` into standalone SPM/Maven dependencies with a binary Core + hosted-glue strategy and reactive state APIs, solving the "eject trap".
 - **v5.1 Adoption Evidence Demo App** — shipped 2026-06-09. Transitioned iOS/Android demo hosts onto the standalone deps with reactive flow/publisher architectures, `RouteDelegate` + capability handshake, and a bounded-bridge proof.
-- **v6.0 Adoption Evidence Demo App (Flashcard Cohort)** — shipped 2026-06-09. Flashcard language-learning demo exercising `Crosswake.Offline` end-to-end: `Crosswake.Offline.ContentPack`, `Crosswake.Sync.EventLog` + `mix crosswake.gen.sync`, online LiveView + vanilla-JS offline island over IndexedDB, network-toggling Playwright E2E.
+- **v6.0 Adoption Evidence Demo App (Flashcard Cohort)** — shipped 2026-06-09. Flashcard language-learning demo exercising `Crosswake.Offline` end-to-end: `Crosswake.Offline.ContentPack`, `Crosswake.Sync.EventLog` + `mix crosswake.gen.sync`, online LiveView + vanilla-JS offline island over IndexedDB, network-toggling Playwright E2E (closeout used a mocked E2E that hid a compile break — real-network run deferred; see RETROSPECTIVE).
+- **v7.0 Threadline Audit Capstone** — shipped 2026-06-09 (Phases 91-98). Cross-boundary `thread_id` propagation (Plug/LiveView/bridge telemetry, zero new deps), opt-in host-owned PII-free append-only Ecto audit ledger (`mix crosswake.gen.audit`), text-only operator surface (`mix crosswake.threadline`), and docs-contract parity. LiveDashboard timeline deferred to a future `crosswake_dashboard` package.
+- **v8.0 Offline Sync Hardening and UI Polish** — shipped 2026-06-11 (Phases 99-101). Real network-toggling E2E, advisory runtime storage budgets via `navigator.storage.estimate()`, consolidated brand-aligned `OfflineController` UI.
+- **v9.0 Brand System & Visual Identity** — shipped 2026-06-13 (Phases 102-106). Brand audit + WCAG matrix, frozen DTCG design tokens, path-only logo suite, standalone HTML brand book + `BRAND-SPEC.md`, collateral wired into README/ExDoc (brandbook hex-excluded), and shift-left brand UAT into a Playwright CI suite (`brand-structural` required / `brand-visual` advisory).
+- **v10.0 Brand Normalization** — shipped 2026-06-14 (Phases 107-109). Made `tokens.css` the single generated source of truth (font + dimension + color) with a packaged mirror and one documented distribution path; rewired the example host + `offline_ui` generator onto semantic `--cw-*` tokens; browser-free `brand-structural` drift gate fails the build on reintroduced brand hex / dropped token refs.
 
 ## Strategic Queue
 
@@ -102,28 +106,33 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - `dx-ux`
 - `e2e-testing`
 
-### Active: Threadline Audit Capstone (v7.0)
+### Shipped: Threadline Audit Capstone (v7.0)
 
-**Status:** ACTIVE — started 2026-06-09. North star in `.planning/research/SUMMARY.md`; canonical definition in `.planning/threads/threadline-audit.md`. Scope: cross-boundary `thread_id` propagation (core Plug/telemetry, zero new deps), an opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface. LiveDashboard timeline deferred to a future `crosswake_dashboard` package.
+**Status:** SHIPPED — 2026-06-09 (Phases 91-98). Cross-boundary `thread_id` propagation (Plug/telemetry, zero new deps), opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface (`mix crosswake.threadline`). LiveDashboard timeline deferred to a future `crosswake_dashboard` package. Canonical definition in `.planning/threads/threadline-audit.md`.
+
+### Active (recommended): Release & Distribution Truth
+
+**Status:** RECOMMENDED next strategic wedge (2026-06-14 milestone next-step assessment). Not yet scoped/kicked off. Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
 
 **Objective**
-- Add auditability and distributed state tracking around sensitive route/runtime decisions, commerce events, auth step-up, media evidence, notification-triggered actions, and backend authority promotion.
+- Make the v5.0 standalone-package thesis actually consumable: publish the iOS SPM core (subtree-mirror to its own repo, Apollo pattern) and the Android core to Maven Central (Vanniktech + Central Portal), lockstep-version them with the Hex package (release-please manifest `linked-versions`), rewire `mix crosswake.gen.shell` to inject the published version into generated dep coordinates, and cut Hex `0.1.2`.
 
 **Why now**
-- Following v4.1's delivery of multi-SaaS E2E archetype proof lanes, Crosswake now manages distributed state across Elixir and mobile boundaries (e.g., commerce, auth, notifications). A unified Threadline is the foundational day-2 requirement to make this split-brain architecture operationally supportable in production without database bloat.
+- Crosswake is a mature codebase (~88% for scope) but a partial installable product (~70%). Hex publishes only `0.1.0`; ~4 months of shipped work (v3.4→v10.0) is uninstallable, and the headline "no eject trap" promise is vaporware in the default `gen.shell` path — generated projects reference deps that don't exist, so an external adopter can't build. This is the keystone that unblocks every downstream wedge and repairs thesis credibility. Build nothing new until an outsider can `mix deps.get` + `gen.shell` + build.
 
 **Depends on**
-- Stable commerce, auth, notification, media, shell, and sensitive route-decision surfaces (provided by v3.x and v4.1).
+- The shipped, hardened native cores (v5.0) and the release-please/`hex-publish` automation already wired for the Elixir package.
 
 **Risk tags**
-- `auditability`
-- `observability`
-- `distributed-state`
+- `distribution`
+- `release-truth`
+- `adoption`
 
 **Key outputs**
-- Telemetry-backed `X-Crosswake-Thread-Id` correlation across Plug, Bridge, and Shell.
-- Opt-in `mix crosswake.gen.audit` Ecto ledger for terminal critical events (e.g., receipt validations, auth handoffs).
-- Unified logger metadata for Phoenix console tracing.
+- iOS core auto-mirrored to `github.com/szTheory/crosswake-shell-core-ios` with semver tags; Android core on Maven Central under verified `io.github.sztheory`.
+- `gen.shell` templates referencing published, version-matched deps (no monorepo paths); version injected from `Application.spec(:crosswake)[:vsn]`.
+- A clean-room CI lane that scaffolds a host **outside the monorepo** and proves `swift build` / `gradle build` resolve published deps and compile.
+- Graduation candidate: a permanent `doctor`/closeout "published-dep parity" check.
 
 ### Shipped: Standalone Publishable Shell Packages (v5.0)
 
@@ -155,6 +164,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-06-02:** Milestone-next-step assessment after v3.8 selected v3.9 Chimeway as the highest-leverage next wedge. The shipped reality already has notification-token and permission snapshots, support/operator truth, and Sigra route auth; the missing adopter job is backend token binding, revocation, and notification-open route resolution that still respects route policy and auth. Production shell runtime hardening stays next after Chimeway because it is important support truth but unlocks less new adopter value than notification re-entry.
 - **2026-06-05:** Following the completion of v4.1, the strategic priority shifted to v5.0 "Standalone Publishable Shell Packages" to address the "eject trap" and lock down the native shell runtime interfaces via SPM and Maven before expanding broader day-2 operational features.
 - **2026-06-09:** v5.0 (standalone packages), v5.1 + v6.0 (adoption-evidence demo apps) all shipped. With those wedges closed, the Threadline Audit Capstone (v7.0) becomes the active strategic milestone — the day-2 operational viability layer the arc always positioned last because it consumes the now-stable commerce, auth, notification, media, and offline surfaces. Scope locked narrow and honest: bespoke `thread_id` correlation (no OTel dep), opt-in PII-free append-only ledger with ProvenanceLane, text-only operator surface; LiveDashboard UI deferred to a separate `crosswake_dashboard` package.
+- **2026-06-14:** Milestone next-step assessment after v10.0 (this doc was stale — still marked v7.0 "Active"; reconciled here with v7.0→v10.0 shipped). Verdict: Crosswake is feature-mature for its scope but distribution-incomplete. The single highest-leverage next wedge is **Release & Distribution Truth** — the v5.0 standalone-package thesis is built but undistributed (Hex stuck at `0.1.0`; `gen.shell` default emits nonexistent deps; native cores unpublished, no publish CI), so the "no eject trap" claim only holds inside the monorepo. Recommendation: ship what's built (publish native packages, lockstep versioning, rewire `gen.shell`, clean-room build proof) before any new feature/companion/capability breadth, which would be overbuilding on an undistributed base. Ordering after: CI-honesty/real-E2E sweep, then onboarding/docs once the install path is real. Detail in `.planning/threads/release-distribution-truth.md`.
 
 ## Support Truth Requirements
 

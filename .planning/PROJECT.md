@@ -62,9 +62,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone
 
-v10.0 Brand Normalization is shipped and archived. The next milestone is not yet scoped — run `/gsd:new-milestone` to define it.
+v10.0 Brand Normalization is shipped and archived. The 2026-06-14 milestone next-step assessment recommends **Release & Distribution Truth** as the single highest-leverage next wedge — not yet scoped/kicked off.
 
-**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled.
+**Why:** Crosswake is a mature *codebase* (~88% for scope) but a partial *installable product* (~70%). Hex publishes only `0.1.0`; ~4 months of shipped work (planning v3.4→v10.0) is uninstallable, and the flagship v5.0 standalone-package thesis is **built but undistributed** — the native cores have no publish config/CI and `mix crosswake.gen.shell` emits deps that don't exist, so an external adopter's generated shell won't build. The recommendation: publish the iOS SPM + Android Maven cores, lockstep-version them with Hex, rewire `gen.shell` to published coordinates, and prove it with a clean-room out-of-monorepo build — *before* adding any feature breadth. Full scope, research, and evidence in `.planning/threads/release-distribution-truth.md`.
+
+**Suggested ordering after:** (2) CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate); (3) onboarding/docs consolidation once the install path is real.
+
+**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth deferred as overbuilding on an undistributed base.
 
 ## Requirements
 
@@ -192,6 +196,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Make `tokens.css` the single generated source for font + dimension, not just color | Typography and spacing were a second hand-maintained source that could silently drift from the brand contract | Validated in v10.0 (Phase 107) |
 | Distribute tokens by verbatim copy + `<link>` rather than a build-step import | Honors the zero-build/no-Tailwind host posture; one documented path with no duplicate palettes to drift | Validated in v10.0 (Phase 107, NORM-03) |
 | Enforce drift prevention with a browser-free structural CI check, not a render diff | Deterministic across Linux-CI/macOS and merge-blocking, consistent with the v9.0 required-vs-advisory split | Validated in v10.0 (Phase 109, PROOF-01) |
+| Treat the v5.0 standalone-package thesis as built-but-undistributed until external consumption is proven | The native cores are extracted but unpublished; `gen.shell` references nonexistent deps, so the "no eject trap" claim only holds inside the monorepo | — Pending; recommended as the next milestone (2026-06-14 assessment, see `threads/release-distribution-truth.md`) |
 
 ## Evolution
 
@@ -211,4 +216,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-14 after v10.0 Brand Normalization milestone*
+*Last updated: 2026-06-14 — milestone next-step assessment (recommended Release & Distribution Truth as next wedge)*

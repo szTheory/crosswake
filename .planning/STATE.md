@@ -4,7 +4,7 @@ milestone: v10.0
 milestone_name: Brand Normalization
 status: Awaiting next milestone
 last_updated: "2026-06-14T14:54:39.046Z"
-last_activity: 2026-06-14 — Milestone v10.0 completed and archived
+last_activity: 2026-06-14 — Milestone next-step assessment complete; recommended next wedge: Release & Distribution Truth
 progress:
   total_phases: 3
   completed_phases: 3
@@ -51,7 +51,10 @@ None.
 
 ### Blockers/Concerns
 
-None. (v10.0 Phase 108 three-consumer drift concern resolved — stale legacy theme retired from `crosswake.gen.offline_ui.ex` and both template/host consumers normalized.)
+- **Distribution gap (FOUNDATIONAL, surfaced 2026-06-14 assessment).** Hex publishes only `0.1.0`; ~4 months of shipped work (planning v3.4→v10.0) is uninstallable. The v5.0 standalone-package thesis is not actually distributed — the native cores have no publish config/CI and `mix crosswake.gen.shell` (default `--local false`) emits deps that don't exist (iOS `github.com/crosswake/...`, Android `dev.crosswake:shell-core-android:0.1.0`). An external adopter's generated shell won't build. See `threads/release-distribution-truth.md`.
+- **Doc drift:** `MILESTONE-ARC.md` was stale (marked v7.0 "Active" though v7.0→v10.0 shipped); reconciled 2026-06-14. Watch closeout/parity verifiers that hardcode mid-flight milestones post-archival.
+
+(v10.0 Phase 108 three-consumer drift concern resolved — stale legacy theme retired from `crosswake.gen.offline_ui.ex` and both template/host consumers normalized.)
 
 ## Deferred Items
 
@@ -70,4 +73,5 @@ Resume file: —
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- **Recommended next milestone: Release & Distribution Truth** — publish the iOS SPM + Android Maven cores, lockstep-version with Hex, rewire `gen.shell` to published deps, prove with a clean-room out-of-monorepo build. Full scope + research in `threads/release-distribution-truth.md`. Verdict: ship what's built before adding feature breadth.
+- Kick off with /gsd-new-milestone when ready.
