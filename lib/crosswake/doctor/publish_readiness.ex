@@ -168,7 +168,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
       auth_session_predicate_readiness_check(support_matrix, inspection),
       native_shell_verification_gap_check(support_matrix, inspection),
       docs_support_parity_check(cwd, opts),
-      proof_posture_check(support_matrix, inspection)
+      proof_posture_check(support_matrix, inspection),
+      generator_coordinate_parity_check(cwd)
     ]
   end
 
@@ -530,6 +531,114 @@ defmodule Crosswake.Doctor.PublishReadiness do
           SupportMatrix.release_boundaries(support_matrix) |> Enum.map(& &1.target)
       }
     )
+  end
+
+  defp generator_coordinate_parity_check(cwd) do
+    version = Application.spec(:crosswake, :vsn) |> to_string()
+
+    ios_template_relative =
+      "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"
+
+    android_template_relative = "priv/templates/crosswake/shell/android/app/build.gradle.eex"
+    ios_template = Path.join(cwd, ios_template_relative)
+    android_template = Path.join(cwd, android_template_relative)
+
+    {_ios_ok?, ios_errors} = check_ios_template(ios_template, version)
+    {_android_ok?, android_errors} = check_android_template(android_template, version)
+    errors = ios_errors ++ android_errors
+
+    result_check(
+      id: "generator.coordinate_parity",
+      code:
+        if(errors == [],
+          do: "diag.generator.coordinate_parity_ok",
+          else: "diag.generator.coordinate_parity_failed"
+        ),
+      category: :generator_coordinate_parity,
+      passed?: errors == [],
+      message:
+        if(errors == [],
+          do:
+            "generated native dep coordinates point at published registries with version #{version}",
+          else: "generator coordinate parity failed: #{Enum.join(errors, "; ")}"
+        ),
+      hint:
+        "Run mix crosswake.gen.shell ios|android (without --local) and inspect the generated dep coordinates.",
+      docs_reference: "guides/install.md",
+      proof_class: :merge_blocking,
+      claim_scope: "Generated native dep coordinate truth",
+      details: %{
+        version: version,
+        ios_template: ios_template_relative,
+        android_template: android_template_relative,
+        errors: errors
+      }
+    )
+  end
+
+  defp check_ios_template(template_path, version) do
+    with {:ok, rendered} <- eval_generator_template(template_path, version) do
+      errors =
+        []
+        |> require_truth(
+          rendered =~ "github.com/szTheory/crosswake-shell-core-ios",
+          "iOS URL missing szTheory org"
+        )
+        |> require_truth(
+          rendered =~ version,
+          "iOS template missing version #{version}"
+        )
+        |> require_truth(
+          rendered =~ "upToNextMajorVersion",
+          "iOS template must use upToNextMajorVersion"
+        )
+        |> require_truth(
+          not (rendered =~ "XCLocalSwiftPackageReference"),
+          "iOS non-local branch must not emit XCLocalSwiftPackageReference"
+        )
+        |> require_truth(
+          not (rendered =~ "crosswake/crosswake-shell-core-ios"),
+          "iOS template must not reference old crosswake/ org"
+        )
+
+      {errors == [], Enum.reverse(errors)}
+    else
+      {:error, reason} -> {false, ["iOS template could not render: #{reason}"]}
+    end
+  end
+
+  defp check_android_template(template_path, version) do
+    with {:ok, rendered} <- eval_generator_template(template_path, version) do
+      errors =
+        []
+        |> require_truth(
+          rendered =~ "io.github.sztheory:crosswake-shell-core-android",
+          "Android GAV missing io.github.sztheory"
+        )
+        |> require_truth(
+          rendered =~ version,
+          "Android template missing version #{version}"
+        )
+        |> require_truth(
+          not (rendered =~ "dev.crosswake:shell-core-android"),
+          "Android template must not reference dev.crosswake:shell-core-android"
+        )
+        |> require_truth(
+          not (rendered =~ "project(':crosswake"),
+          "Android non-local branch must not reference local project"
+        )
+
+      {errors == [], Enum.reverse(errors)}
+    else
+      {:error, reason} -> {false, ["Android template could not render: #{reason}"]}
+    end
+  end
+
+  defp eval_generator_template(template_path, version) do
+    {:ok,
+     EEx.eval_file(template_path, assigns: [local: false, version: version, capabilities: []])}
+  rescue
+    error -> {:error, Exception.message(error)}
   end
 
   defp provider_adapter_claim_ids do

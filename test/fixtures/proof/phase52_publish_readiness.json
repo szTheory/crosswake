@@ -620,17 +620,41 @@
       },
       "result": "advisory",
       "severity": "warning"
+    },
+    {
+      "blocking": false,
+      "category": "generator_coordinate_parity",
+      "claim_scope": "Generated native dep coordinate truth",
+      "code": "diag.generator.coordinate_parity_ok",
+      "details": {
+        "android_template": "priv/templates/crosswake/shell/android/app/build.gradle.eex",
+        "errors": [],
+        "ios_template": "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex",
+        "version": "0.1.0"
+      },
+      "docs_reference": "guides/install.md",
+      "hint": "Run mix crosswake.gen.shell ios|android (without --local) and inspect the generated dep coordinates.",
+      "id": "generator.coordinate_parity",
+      "message": "generated native dep coordinates point at published registries with version 0.1.0",
+      "proof_class": "merge_blocking",
+      "rebuild_requirement": {
+        "companion_required": false,
+        "native_required": false,
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
     }
   ],
   "schema_version": "1.0.0",
   "status": "ready",
   "summary": {
-    "advisory_count": 3,
+    "advisory_count": 4,
     "advisory_result_count": 1,
     "blocking_count": 0,
     "error_count": 0,
-    "pass_count": 3,
-    "total_count": 8,
+    "pass_count": 4,
+    "total_count": 9,
     "verification_required_count": 4,
     "warning_count": 5
   }

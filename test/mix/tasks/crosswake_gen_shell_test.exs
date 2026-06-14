@@ -5,6 +5,39 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
   @task "crosswake.gen.shell"
 
+  test "generator coordinate parity holds on non-local template renders" do
+    version = Application.spec(:crosswake, :vsn) |> to_string()
+    assigns = [local: false, version: version, capabilities: []]
+
+    ios_rendered =
+      EEx.eval_file(
+        Path.join(
+          File.cwd!(),
+          "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"
+        ),
+        assigns: assigns
+      )
+
+    android_rendered =
+      EEx.eval_file(
+        Path.join(File.cwd!(), "priv/templates/crosswake/shell/android/app/build.gradle.eex"),
+        assigns: assigns
+      )
+
+    assert ios_rendered =~ "github.com/szTheory/crosswake-shell-core-ios"
+    assert ios_rendered =~ "upToNextMajorVersion"
+    assert ios_rendered =~ version
+    refute ios_rendered =~ "crosswake/crosswake-shell-core-ios"
+    refute ios_rendered =~ "exactVersion"
+    refute ios_rendered =~ "XCLocalSwiftPackageReference"
+    refute ios_rendered =~ "minimumVersion = nil"
+
+    assert android_rendered =~ "io.github.sztheory:crosswake-shell-core-android"
+    assert android_rendered =~ version
+    refute android_rendered =~ "dev.crosswake:shell-core-android"
+    refute android_rendered =~ "project(':crosswake"
+  end
+
   test "generates iOS scaffold" do
     target = tmp_dir!("crosswake-shell-ios")
 

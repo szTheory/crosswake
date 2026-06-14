@@ -124,6 +124,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert :native_shell_verification_gap in categories
     assert :docs_support_parity in categories
     assert :proof_posture in categories
+    assert :generator_coordinate_parity in categories
 
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.publish."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.companion."))
@@ -132,6 +133,62 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.auth."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.shell."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.docs."))
+    assert Enum.any?(codes, &String.starts_with?(&1, "diag.generator."))
+  end
+
+  test "generator coordinate parity blocks stale or local native dependency coordinates" do
+    target = tmp_dir!("crosswake-publish-readiness")
+
+    ios_template_relative =
+      "priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex"
+
+    android_template_relative = "priv/templates/crosswake/shell/android/app/build.gradle.eex"
+    ios_template = Path.join(target, ios_template_relative)
+    android_template = Path.join(target, android_template_relative)
+
+    File.mkdir_p!(Path.dirname(ios_template))
+    File.mkdir_p!(Path.dirname(android_template))
+
+    File.write!(ios_template, """
+    XCLocalSwiftPackageReference
+    https://github.com/crosswake/crosswake-shell-core-ios.git
+    kind = exactVersion;
+    """)
+
+    File.write!(android_template, """
+    implementation 'dev.crosswake:shell-core-android:0.1.0'
+    implementation project(':crosswake-shell-core-android')
+    """)
+
+    report =
+      readiness_report(
+        cwd: target,
+        changelog_contents: File.read!("CHANGELOG.md")
+      )
+
+    parity = find_check!(report, :generator_coordinate_parity)
+    expected_version = Application.spec(:crosswake, :vsn) |> to_string()
+
+    assert parity.blocking
+    assert parity.result == :fail
+    assert parity.severity == :error
+    assert parity.proof_class == :merge_blocking
+    assert parity.docs_reference == "guides/install.md"
+    assert parity.details.version == expected_version
+    assert parity.details.ios_template == ios_template_relative
+    assert parity.details.android_template == android_template_relative
+
+    assert "iOS URL missing szTheory org" in parity.details.errors
+    assert "iOS template missing version #{parity.details.version}" in parity.details.errors
+
+    assert "iOS non-local branch must not emit XCLocalSwiftPackageReference" in parity.details.errors
+
+    assert "iOS template must not reference old crosswake/ org" in parity.details.errors
+    assert "Android GAV missing io.github.sztheory" in parity.details.errors
+
+    assert "Android template must not reference dev.crosswake:shell-core-android" in parity.details.errors
+
+    assert "Android non-local branch must not reference local project" in parity.details.errors
   end
 
   test "deferred support claims stay explicit and do not read as shipped support" do
@@ -367,5 +424,12 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
       flunk(
         "expected #{inspect(category)} check in #{inspect(Enum.map(report.checks, & &1.category))}"
       )
+  end
+
+  defp tmp_dir!(prefix) do
+    path = Path.join(System.tmp_dir!(), "#{prefix}-#{System.unique_integer([:positive])}")
+    File.rm_rf!(path)
+    File.mkdir_p!(path)
+    path
   end
 end
