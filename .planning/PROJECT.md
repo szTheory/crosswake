@@ -9,9 +9,9 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- Milestone v10.0 active — Brand Normalization; v9.0 Brand System & Visual Identity shipped + archived
-- Phase 108 Consumer Normalization complete (2026-06-14): the example host's SERVED `app.css` + standalone offline page and the `offline_ui` generator (templates + vendored `offline.css`) are rewired onto the semantic `--cw-*` token tier — zero flat palettes, zero primitives, zero `var()` fallbacks, zero hand-declared hex/rgba/font-stacks, no Tailwind in the generated host; the duplicate `assets/css/app.css` was deleted (D-12) and the generator test now pins the token-backed contract. The D-13 render-verify release gate browser-rendered all surfaces in light + dark (Playwright, 9 screenshots in the phase `render/` dir): every text element ≥4.5:1 and every status affordance ≥3:1, with two real AA failures caught and fixed (danger button 3.10:1 → D-06 outlined treatment; offline status-label 4.11:1 → text-default) plus a code-review pass that made card elevation theme-adaptive (`color-mix`). NORM-01/02/04 satisfied (verified 19/19, human sign-off approved). Next: Phase 109 Drift-Prevention Gate.
-- Phase 107 Token Source & Distribution complete (2026-06-13): `compile-tokens.js` emits the full token set (font + dimension + color) into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`; one documented distribution mechanism (verbatim copy + `<link>`, `guides/tokens.md`) wired into the `crosswake.gen.offline_ui` generator and the example host. TOKN-04/TOKN-05/NORM-03 satisfied (verified 13/13).
+- **v10.0 Brand Normalization shipped + archived (2026-06-14)** — planning next milestone
+
+**Shipped `v10.0 Brand Normalization` on `2026-06-14`** (Phases 107-109, 10 plans). v10.0 made `tokens.css` the genuine single source of truth for the brand system. The compiler (`compile-tokens.js`) now emits the full token set — `font.*` and `dimension.*` (type/display scale, radius) alongside color — into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`, distributed through one documented path (verbatim copy + `<link>`, `guides/tokens.md`). Both drifted consumers were rewired onto the semantic `--cw-*` tier: the example host's served `app.css` + standalone offline page (flat palettes, primitives, inline font stacks, and the duplicate `assets/css/app.css` all removed; D-12) and the `offline_ui` generator (Tailwind-free templates + vendored `offline.css`, with the stale legacy theme retired from `crosswake.gen.offline_ui.ex`). The generator test now pins the token-backed contract, and a D-13 Playwright render-verify gate measured all surfaces in light + dark (every text element ≥4.5:1, status affordances ≥3:1; two real AA failures caught and fixed; human sign-off approved). A browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + contract tests + CI wiring) now fails the build on any reintroduced brand hex or dropped token reference. TOKN-04/05, NORM-01/02/03/04, PROOF-01 all satisfied.
 
 **Shipped `v9.0 Brand System & Visual Identity` on `2026-06-13`** (Phases 102-106, 16 plans). v9.0 pressure-tested and shipped the full brand system self-contained in `brandbook/`: a 14-section audit + WCAG contrast matrix, a W3C DTCG design-token system, a user-selected path-only logo suite, a zero-build standalone HTML brand book + `BRAND-SPEC.md` v1.0, and launch collateral wired into README/ExDoc with the brandbook excluded from the Hex package (committed size < 1 MB). It also shifted brand UAT left into a self-contained Playwright suite gated in CI (`brand-structural` required / `brand-visual` advisory) — which caught and fixed a real mobile-overflow defect — and added the pending CHANGELOG `[0.1.2]` entry, flipping `doctor --check-publish` to `ready`.
 
@@ -60,17 +60,11 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Current Milestone: v10.0 Brand Normalization
+## Next Milestone
 
-**Goal:** Make `brandbook/tokens/tokens.css` the genuine single source of truth for the brand system — consumed by the generator templates and the example host via semantic CSS custom properties — and mechanically forbid drift.
+v10.0 Brand Normalization is shipped and archived. The next milestone is not yet scoped — run `/gsd:new-milestone` to define it.
 
-**Target features:**
-- Extend the token compiler (`brandbook/tools/compile-tokens.js`) to emit `font.*` and needed `dimension.*` tokens, not just colors, so typography stops being a second source of truth.
-- Rewire `examples/phoenix_host` CSS off its duplicated flat palette + inline font stacks onto the semantic token tier (`var(--cw-action-bg)`, `var(--cw-text-default)`…), inheriting dark mode for free.
-- Rewire the `priv/templates/crosswake/offline_ui/*.eex` generator templates off Tailwind utility classes (the host carries no Tailwind dependency) onto token-backed CSS referencing the semantic tier; update the generator test contract.
-- Add a deterministic drift-prevention structural check (extending the v9.0 `brand-structural` gate) asserting consumers reference tokens and carry no stray hardcoded brand hex.
-
-**Out of milestone:** DASH-01 (dashboard metrics) and NTV-01 (native disk-space budgets) remain deferred siblings, not v10.0 scope.
+**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled.
 
 ## Requirements
 
@@ -132,11 +126,12 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - ✓ **BRND-02**: The offline UI implements explicit, honest microcopy — v8.0
 - ✓ **v9.0 Brand System & Visual Identity** (all 21 v1 requirements: AUDT-*, TOKN-*, LOGO-*, BOOK-*, COLL-01..05) — shipped the brand audit + WCAG matrix + frozen DTCG tokens, the path-only logo suite, the standalone HTML brand book + `BRAND-SPEC.md` v1.0, launch collateral wired into README/ExDoc (brandbook hex-excluded), and (COLL-05) an automated Playwright brand-verification suite gated in CI that replaces manual brand UAT. Validated across Phases 102-106; full detail in `.planning/milestones/v9.0-REQUIREMENTS.md`.
 
+- ✓ **v10.0 Brand Normalization** (all 7 v1 requirements: TOKN-04/05, NORM-01/02/03/04, PROOF-01) — made `tokens.css` the genuine single source of truth: compiler emits font + dimension tokens (not just color) with a packaged mirror and one documented distribution path; the example host CSS and the `offline_ui` generator (templates + vendored `offline.css`, stale legacy theme retired) rewired onto the semantic `--cw-*` tier with no duplicated palettes, inline font stacks, or Tailwind; generator test pins the token contract; and a browser-free `brand-structural` drift gate fails the build on reintroduced brand hex or dropped token references. Validated across Phases 107-109; full detail in `.planning/milestones/v10.0-REQUIREMENTS.md`.
+
 ### Active
 
 - [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
 - [ ] NTV-01: Extend storage budgets to utilize native iOS/Android bridge commands to calculate available physical disk space.
-- [ ] NORM-01: Wire generator templates (`priv/templates/crosswake/offline_ui/*.eex`) and `examples/phoenix_host` CSS onto `brandbook/tokens/tokens.css` as the single source of truth (deferred from v9.0 → v10.0 candidate).
 
 ### Out of Scope
 
@@ -194,6 +189,9 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Shift brand UAT left into an automated suite instead of manual checkpoints | Manual brand verification doesn't scale and tolerated a real overflow defect; automation catches regressions deterministically | Validated in v9.0 (COLL-05) — caught + fixed a mobile-overflow bug |
 | Split brand CI into a required deterministic gate + an advisory render tier | Pixel/font-level checks differ across Linux-CI vs macOS; only deterministic checks should block merges | Validated in v9.0 — `brand-structural` required, `brand-visual` advisory |
 | Treat planning-milestone version tags (vN.0) as distinct from the Hex 0.x release axis | The repo ships on Hex at 0.x; planning milestones track work tranches, not installable versions | ✓ Good — CHANGELOG + MILESTONE-ARC.md document the distinction |
+| Make `tokens.css` the single generated source for font + dimension, not just color | Typography and spacing were a second hand-maintained source that could silently drift from the brand contract | Validated in v10.0 (Phase 107) |
+| Distribute tokens by verbatim copy + `<link>` rather than a build-step import | Honors the zero-build/no-Tailwind host posture; one documented path with no duplicate palettes to drift | Validated in v10.0 (Phase 107, NORM-03) |
+| Enforce drift prevention with a browser-free structural CI check, not a render diff | Deterministic across Linux-CI/macOS and merge-blocking, consistent with the v9.0 required-vs-advisory split | Validated in v10.0 (Phase 109, PROOF-01) |
 
 ## Evolution
 
@@ -213,4 +211,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-14 — v10.0 Brand Normalization: Phase 108 Consumer Normalization complete*
+*Last updated: 2026-06-14 after v10.0 Brand Normalization milestone*

@@ -2,38 +2,32 @@
 gsd_state_version: 1.0
 milestone: v10.0
 milestone_name: Brand Normalization
-status: milestone_complete
-last_updated: 2026-06-14T06:13:07.821Z
-last_activity: 2026-06-14 -- Phase 109 execution started
+status: Awaiting next milestone
+last_updated: "2026-06-14T14:54:39.046Z"
+last_activity: 2026-06-14 — Milestone v10.0 completed and archived
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
   completed_plans: 10
-  percent: 67
-stopped_at: Milestone complete (Phase 109 was final phase)
+  percent: 100
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-13)
+See: .planning/PROJECT.md (updated 2026-06-14)
 
-**Core value:** Make `brandbook/tokens/tokens.css` the genuine single source of truth for the brand system — consumed by the generator templates and the example host via semantic CSS custom properties — and mechanically forbid drift.
-**Current focus:** Milestone complete
+**Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
+**Current focus:** Planning next milestone (v10.0 Brand Normalization shipped + archived)
 
 ## Current Position
 
-Phase: 109
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-06-14
-
-```
-v10.0 Progress [░░░░░░░░░░░░░░░░░░░░] 0% (0/3 phases)
-Phase 107 ░░░  Phase 108 ░░░  Phase 109 ░░░
-```
+Phase: Milestone v10.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-14 — Milestone v10.0 completed and archived
 
 ## Performance Metrics
 
@@ -49,14 +43,7 @@ Phase 107 ░░░  Phase 108 ░░░  Phase 109 ░░░
 
 ### Decisions
 
-- v9.0 brand contract is frozen; v10.0 is wiring-only, not a redesign
-- compile-tokens.js currently emits only color groups; font.* and dimension.* tokens exist in the JSON but are silently dropped — TOKN-04/05 fix this
-- app.css duplicates the entire primitive palette as flat aliases without the `primitive.` namespace prefix (e.g., `--cw-foam-50` not `--cw-primitive-foam-50`) and hand-declares font stacks — these must be removed, not just augmented
-- offline_ui templates use Tailwind utility classes and Tailwind color references (`text-cw-current-950`, `bg-cw-foam-50`) — no Tailwind dependency exists in the generated host; NORM-02 converts these to token-backed markup
-- Distribution mechanism (NORM-03) is documented as part of Phase 107, not a separate phase — it is the contract the consumer phases wire against
-- PROOF-01 is purely textual/structural (grep-style); it stays in the required `brand-structural` gate, not the advisory `brand-visual` tier — consistent with v9.0 hermetic-vs-advisory split
-- brandbook/ remains excluded from the Hex package (v9.0 decision, unchanged)
-- Zero new build toolchain: Node for compile-tokens.js only; no Tailwind, no bundler introduced in the host
+Full decision log in PROJECT.md (Key Decisions). v10.0 milestone decisions archived there.
 
 ### Pending Todos
 
@@ -64,7 +51,7 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 108 (NORM-02) must fix THREE drifted consumers, not two: the worst is `lib/mix/tasks/crosswake.gen.offline_ui.ex` (~lines 68-90), which emits a hardcoded Tailwind theme on a fully stale legacy palette (blue `#699cc9` / amber `#e1b982`) — not canonical teal `#2B756A` / brass `#C98A2E`. This `.ex`-emitted theme is the real color source backing the `.eex` templates' utility classes, so retiring the templates' Tailwind classes without also retiring this emitted theme would leave dead drift behind.
+None. (v10.0 Phase 108 three-consumer drift concern resolved — stale legacy theme retired from `crosswake.gen.offline_ui.ex` and both template/host consumers normalized.)
 
 ## Deferred Items
 
@@ -77,10 +64,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-06-14T04:54:53.489Z
-Stopped at: Phase 109 context gathered
-Resume file: .planning/phases/109-drift-prevention-gate/109-CONTEXT.md
+Last session: 2026-06-14 — v10.0 milestone completed and archived
+Stopped at: Milestone close complete
+Resume file: —
 
 ## Operator Next Steps
 
-- Run `/gsd:plan-phase 107` to plan Phase 107: Token Source & Distribution
+- Start the next milestone with /gsd-new-milestone
