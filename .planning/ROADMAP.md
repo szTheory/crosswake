@@ -79,7 +79,7 @@ Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
   - [x] 111-02-PLAN.md — Published-dep parity guard: generator_coordinate_parity ReadinessCheck (merge-blocking) + mirrored test assertions (PROOF-02)
   - [x] 111-03-PLAN.md — Doc reconciliation: whitelist adoption.md, reframe §1 + cross-links, reconcile support_matrix + CHANGELOG [0.1.2] (DOCS-01)
   - [x] 111-04-PLAN.md — Clean-room CI jobs in release-please.yml: $RUNNER_TEMP scaffold + swift build / gradle build, version-pinned, SHA-pinned (PROOF-01)
-  - [ ] 111-05-PLAN.md — The 0.1.2 cut + post-cut release-as pin removal (REL-01, non-autonomous)
+  - [ ] 111-05-PLAN.md — The 0.1.2 cut + post-cut release-as pin removal (REL-01, non-autonomous; Release PR #8 ready, blocked on missing publish secrets + Phase 110 human-UAT)
 **UI hint**: no
 
 ## Progress
