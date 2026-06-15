@@ -33,7 +33,7 @@ jobs:
         env:
           CROSSWAKE_IOS_PROJECT_ROOT: tmp/ios_shell/native/ios/crosswake_shell
           CROSSWAKE_IOS_LAUNCH_SIMULATOR: 0
-          CROSSWAKE_IOS_BUILD_FOR_TESTING: 1
+          CROSSWAKE_IOS_BUILD_FOR_TESTING: 0
 
       - name: Generate Android Shell (Local)
         run: mix crosswake.gen.shell android --target tmp/android_shell --local
