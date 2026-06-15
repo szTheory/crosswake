@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase5ProofLaneTest do
   use ExUnit.Case, async: false
 
@@ -27,8 +26,14 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
            ]
 
     assert manifest.routes["selective-native-claim-capture"].runtime == :native_screen
-    assert manifest.routes["selective-native-claim-capture"].packs == ["camera_capture_assets@1.0.0"]
-    assert Enum.map(manifest.routes["selective-native-claim-capture"].transfers, & &1.id) == ["capture_upload"]
+
+    assert manifest.routes["selective-native-claim-capture"].packs == [
+             "camera_capture_assets@1.0.0"
+           ]
+
+    assert Enum.map(manifest.routes["selective-native-claim-capture"].transfers, & &1.id) == [
+             "capture_upload"
+           ]
 
     assert manifest.routes["saas-dashboard"].runtime == :live_view
     assert manifest.routes["saas-approval"].runtime == :live_view
@@ -39,15 +44,23 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
 
   test "checked-in iOS and Android example hosts stay aligned to the same example route truth" do
     router = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
-    approval_live = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex")
+
+    approval_live =
+      File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/approval_live.ex")
+
     ios_activation = File.read!("examples/ios_shell_host/Fixtures/route_activation.json")
     ios_manifest = File.read!("examples/ios_shell_host/Fixtures/crosswake_manifest.json")
-    ios_tests = File.read!("examples/ios_shell_host/CrosswakeShellTests/ActivationCoordinatorTests.swift")
-    android_activation = File.read!("examples/android_shell_host/app/src/main/assets/route_activation.json")
-    android_manifest = File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
+
+    android_activation =
+      File.read!("examples/android_shell_host/app/src/main/assets/route_activation.json")
+
+    android_manifest =
+      File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
 
     android_instrumented =
-      File.read!("examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt")
+      File.read!(
+        "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+      )
 
     assert router =~ "lesson_library"
     assert router =~ "native_screen"
@@ -58,12 +71,11 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
 
     assert ios_activation =~ "\"route_id\": \"selective-native-claim-capture\""
     assert ios_activation =~ "\"camera\": \"1.0.0\""
+    assert ios_activation =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
     assert ios_manifest =~ "\"selective-native-claim-capture\""
     assert ios_manifest =~ "\"local-first-study-session\""
     assert ios_manifest =~ "\"local-first-study-history\""
-    assert ios_tests =~ "\"camera\": \"1.0.0\""
-    assert ios_tests =~ "https://example.crosswake.invalid/native/claims/claim-1/capture"
-    assert ios_tests =~ "https://example.crosswake.invalid/study/history"
+    assert ios_manifest =~ "\"path\": \"/study/history\""
 
     assert android_activation =~ "\"route_id\": \"selective-native-claim-capture\""
     assert android_activation =~ "\"camera\": \"1.0.0\""

@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
   use ExUnit.Case, async: false
 
@@ -29,11 +28,12 @@ defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
 
   test "sync API endpoint is present in Phoenix Router" do
     routes = Phoenix.Router.routes(CrosswakeExample.Router)
-    
-    sync_route = Enum.find(routes, fn route -> 
-      route.path == "/study/sync" and route.verb == :post
-    end)
-    
+
+    sync_route =
+      Enum.find(routes, fn route ->
+        route.path == "/study/sync" and route.verb == :post
+      end)
+
     assert sync_route != nil
     assert sync_route.plug == CrosswakeExample.LocalFirst.SyncController
     assert sync_route.plug_opts == :sync
@@ -41,15 +41,17 @@ defmodule Crosswake.Proof.Phase9LocalFirstLaneTest do
 
   test "checked-in shell fixtures carry the local-first route truth" do
     ios_manifest = File.read!("examples/ios_shell_host/Fixtures/crosswake_manifest.json")
-    ios_tests = File.read!("examples/ios_shell_host/CrosswakeShellTests/ActivationCoordinatorTests.swift")
-    android_manifest = File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
+
+    android_manifest =
+      File.read!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json")
 
     android_instrumented =
-      File.read!("examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt")
+      File.read!(
+        "examples/android_shell_host/app/src/androidTest/java/dev/crosswake/shell/LiveViewBootInstrumentedTest.kt"
+      )
 
     assert ios_manifest =~ "\"local-first-study-session\""
     assert ios_manifest =~ "\"path\": \"/study/history\""
-    assert ios_tests =~ "https://example.crosswake.invalid/study/history"
 
     assert android_manifest =~ "\"local-first-study-session\""
     assert android_manifest =~ "\"path\": \"/study/history\""
