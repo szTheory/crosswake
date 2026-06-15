@@ -18,18 +18,52 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine closeout relevance
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only "$base" "$GITHUB_SHA")"
+          pattern='^(lib/crosswake/planning/closeout_verifier\.ex|lib/mix/tasks/closeout\.verify\.ex|test/mix/tasks/closeout_verify_test\.exs|test/crosswake/planning/|\.planning/(STATE|REQUIREMENTS|ROADMAP)\.md|\.planning/milestones/.*-CLOSEOUT\.md|\.planning/milestones/.*-phases/|\.planning/phases/|\.planning/threads/|\.planning/seeds/|CHANGELOG\.md)'
+
+          if printf '%s\n' "$files" | grep -Eq "$pattern"; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Closeout gate skipped
+        if: steps.changes.outputs.relevant != 'true'
+        run: echo "No closeout-relevant files changed; skipping active milestone closeout verification."
 
       - name: Setup BEAM
+        if: steps.changes.outputs.relevant == 'true'
         uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
         with:
           elixir-version: "1.19.5"
           otp-version: "27.3"
 
       - name: Install Elixir dependencies
+        if: steps.changes.outputs.relevant == 'true'
         run: mix deps.get
 
       - name: Compile (warnings as errors)
+        if: steps.changes.outputs.relevant == 'true'
         run: mix compile --warnings-as-errors
 
       - name: Run closeout verification
+        if: steps.changes.outputs.relevant == 'true'
         run: mix closeout.verify

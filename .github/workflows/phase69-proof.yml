@@ -12,14 +12,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine v4.0 closeout relevance
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only "$base" "$GITHUB_SHA")"
+          pattern='^(lib/crosswake/planning/closeout_verifier\.ex|lib/mix/tasks/closeout\.verify\.ex|test/mix/tasks/closeout_verify_test\.exs|test/crosswake/planning/closeout_ci_parity_test\.exs|test/crosswake/proof/phase69_docs_contract_parity_test\.exs|\.planning/milestones/v4\.0-CLOSEOUT\.md|\.planning/milestones/v4\.0-phases/|\.planning/phases/(64|65|66|67|68|69)-)'
+
+          if printf '%s\n' "$files" | grep -Eq "$pattern"; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: v4.0 closeout proof skipped
+        if: steps.changes.outputs.relevant != 'true'
+        run: echo "No v4.0 closeout-relevant files changed; skipping archived closeout proof."
 
       - name: Setup BEAM
+        if: steps.changes.outputs.relevant == 'true'
         uses: erlef/setup-beam@v1
         with:
           elixir-version: "1.19.5"
           otp-version: "27.3"
 
       - name: Cache dependencies
+        if: steps.changes.outputs.relevant == 'true'
         uses: actions/cache@v3
         with:
           path: deps
@@ -27,13 +59,17 @@ jobs:
           restore-keys: ${{ runner.os }}-mix-
 
       - name: Install dependencies
+        if: steps.changes.outputs.relevant == 'true'
         run: mix deps.get
 
       - name: Compile and check warnings
+        if: steps.changes.outputs.relevant == 'true'
         run: mix compile --warnings-as-errors
 
       - name: Run Milestone Closeout Verification
+        if: steps.changes.outputs.relevant == 'true'
         run: mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md
 
       - name: Run Parity Tests
+        if: steps.changes.outputs.relevant == 'true'
         run: mix test test/crosswake/proof/phase69_docs_contract_parity_test.exs test/mix/tasks/closeout_verify_test.exs
