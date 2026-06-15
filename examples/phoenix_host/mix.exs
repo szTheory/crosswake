@@ -35,7 +35,8 @@ defmodule CrosswakeExample.MixProject do
       {:plug, "~> 1.16"},
       {:jason, "~> 1.4"},
       {:ecto_sql, "~> 3.10"},
-      {:ecto_sqlite3, "~> 0.16"}
+      {:ecto_sqlite3, "~> 0.16"},
+      {:bandit, "~> 1.0"}
     ]
   end
 end

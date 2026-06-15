@@ -89,7 +89,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.operator.inspect.json_contract",
-      output,
+      normalize_release_version(output),
       @inspect_fixture,
       source: "mix crosswake.inspect --format json",
       path: @inspect_fixture,
@@ -138,7 +138,7 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
 
     ProofAssertions.assert_normalized_json_fixture(
       "proof.readiness.publish.json_contract",
-      Jason.encode!(decoded["publish_readiness"]),
+      decoded["publish_readiness"] |> Jason.encode!() |> normalize_release_version(),
       @readiness_fixture,
       source: "mix crosswake.doctor --check-publish --format json",
       path: @readiness_fixture,
@@ -270,5 +270,64 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
   defp find_readiness_check!(decoded, id) do
     Enum.find(decoded["publish_readiness"]["checks"], &(&1["id"] == id)) ||
       flunk("missing publish readiness check #{id}")
+  end
+
+  @fixture_release_version "0.1.0"
+  @release_version_check_codes [
+    "diag.publish.local_truth",
+    "diag.generator.coordinate_parity_ok"
+  ]
+
+  defp normalize_release_version(json_payload) do
+    current_version = Application.spec(:crosswake, :vsn) |> to_string()
+
+    json_payload
+    |> Jason.decode!()
+    |> normalize_release_version_value(current_version)
+    |> Jason.encode!()
+  end
+
+  defp normalize_release_version_value(%{"crosswake_version" => version} = map, current_version)
+       when version == current_version do
+    map
+    |> Map.put("crosswake_version", @fixture_release_version)
+    |> normalize_release_version_map(current_version)
+  end
+
+  defp normalize_release_version_value(
+         %{"code" => code, "details" => %{"version" => version} = details} = map,
+         current_version
+       )
+       when code in @release_version_check_codes and version == current_version do
+    map
+    |> Map.put("details", Map.put(details, "version", @fixture_release_version))
+    |> normalize_release_version_strings(current_version)
+    |> normalize_release_version_map(current_version)
+  end
+
+  defp normalize_release_version_value(%{} = map, current_version) do
+    normalize_release_version_map(map, current_version)
+  end
+
+  defp normalize_release_version_value(list, current_version) when is_list(list) do
+    Enum.map(list, &normalize_release_version_value(&1, current_version))
+  end
+
+  defp normalize_release_version_value(value, _current_version), do: value
+
+  defp normalize_release_version_map(map, current_version) do
+    Map.new(map, fn {key, value} ->
+      {key, normalize_release_version_value(value, current_version)}
+    end)
+  end
+
+  defp normalize_release_version_strings(map, current_version) do
+    Map.new(map, fn
+      {key, value} when is_binary(value) ->
+        {key, String.replace(value, current_version, @fixture_release_version)}
+
+      entry ->
+        entry
+    end)
   end
 end

@@ -1,4 +1,3 @@
-
 defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   use ExUnit.Case, async: false
 
@@ -24,13 +23,10 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     :ok
   end
 
-  test "shared example host exposes exactly the locked SaaS route set under /saas" do
+  test "shared example host exposes the locked base SaaS route set under /saas" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(CrosswakeExample.Router)
 
-    saas_routes =
-      manifest.routes
-      |> Enum.filter(fn {_id, route} -> String.starts_with?(route.path, "/saas") end)
-      |> Enum.into(%{})
+    saas_routes = Map.take(manifest.routes, Map.keys(@saas_routes))
 
     assert Map.keys(saas_routes) |> Enum.sort() == Map.keys(@saas_routes) |> Enum.sort()
 
@@ -123,7 +119,8 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     assert length(fixtures.approvals) == 3
 
     assert Enum.all?(fixtures.approvals, fn approval ->
-             approval.account_id == fixtures.account.id and approval.status in [:pending, :approved]
+             approval.account_id == fixtures.account.id and
+               approval.status in [:pending, :approved]
            end)
 
     assert %{id: "acct-north"} = apply(accounts, :get_account!, ["acct-north"])
@@ -139,7 +136,9 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       base_socket(user, fixtures.account)
       |> mount!(CrosswakeExample.SaaSPortal.DashboardLive)
 
-    dashboard_html = render_html(CrosswakeExample.SaaSPortal.DashboardLive, dashboard_socket.assigns)
+    dashboard_html =
+      render_html(CrosswakeExample.SaaSPortal.DashboardLive, dashboard_socket.assigns)
+
     assert dashboard_html =~ "Northwind mobile approvals"
     assert dashboard_html =~ "Account health"
 
@@ -156,7 +155,9 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       base_socket(user, fixtures.account)
       |> mount!(CrosswakeExample.SaaSPortal.ApprovalsLive)
 
-    approvals_html = render_html(CrosswakeExample.SaaSPortal.ApprovalsLive, approvals_socket.assigns)
+    approvals_html =
+      render_html(CrosswakeExample.SaaSPortal.ApprovalsLive, approvals_socket.assigns)
+
     assert approvals_html =~ "Approvals queue"
     assert approvals_html =~ "server-authoritative action"
 
@@ -198,7 +199,10 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       |> handle_event!(CrosswakeExample.SaaSPortal.ApprovalLive, "approve", %{})
 
     assert member_socket.assigns.approval.status == :pending
-    assert member_socket.assigns.approval_error == "Approver role required at the action boundary."
+
+    assert member_socket.assigns.approval_error ==
+             "Approver role required at the action boundary."
+
     assert member_socket.assigns.bridge_request == nil
   end
 

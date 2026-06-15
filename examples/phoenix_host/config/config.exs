@@ -5,10 +5,19 @@ config :phoenix, :json_library, Jason
 config :crosswake_example,
   ecto_repos: [CrosswakeExample.Repo]
 
+config :crosswake_example, CrosswakeExample.Endpoint,
+  adapter: Bandit.PhoenixAdapter,
+  url: [host: "localhost"],
+  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4002")],
+  server: true,
+  secret_key_base: String.duplicate("a", 64),
+  live_view: [signing_salt: "crosswake"]
+
 config :crosswake_example, CrosswakeExample.Repo,
   database: Path.expand("../crosswake_example.db", Path.dirname(__ENV__.file)),
   pool_size: 5
-  # show_sensitive_data_on_connection_error: true  # dev only — omitted (applies to all Mix envs)
+
+# show_sensitive_data_on_connection_error: true  # dev only — omitted (applies to all Mix envs)
 
 config :crosswake_example, CrosswakeExample.Router,
   url: [host: "example.crosswake.invalid", scheme: "https", port: 443]

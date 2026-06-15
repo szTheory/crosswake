@@ -97,7 +97,8 @@ object DiagnosticExportManager {
         return when (reason) {
             ApplicationExitInfo.REASON_ANR -> "hang" to "anr"
             ApplicationExitInfo.REASON_CRASH, ApplicationExitInfo.REASON_CRASH_NATIVE, ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "crash" to "crash"
-            ApplicationExitInfo.REASON_LOW_MEMORY, ApplicationExitInfo.REASON_EXCEEDED_PEAK_MEMORY -> "termination" to "low_memory"
+            ApplicationExitInfo.REASON_LOW_MEMORY,
+            ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "termination" to "low_memory"
             ApplicationExitInfo.REASON_USER_REQUESTED, ApplicationExitInfo.REASON_EXIT_SELF, ApplicationExitInfo.REASON_PERMISSION_CHANGE, ApplicationExitInfo.REASON_USER_STOPPED -> "termination" to "user_requested"
             ApplicationExitInfo.REASON_DEPENDENCY_DIED, ApplicationExitInfo.REASON_SIGNALED -> "termination" to "abnormal_exit"
             else -> "termination" to "other"

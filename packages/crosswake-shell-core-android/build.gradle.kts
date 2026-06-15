@@ -1,7 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlinx-serialization")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
@@ -35,6 +37,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     // Note: Android bridge may use WebKit/WebView and we might need androidx.webkit
     implementation("androidx.webkit:webkit:1.10.0")
+
+    testImplementation("junit:junit:4.13.2")
 }
 
 mavenPublishing {
