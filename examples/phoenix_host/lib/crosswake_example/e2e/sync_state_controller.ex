@@ -1,5 +1,5 @@
 defmodule CrosswakeExample.E2E.SyncStateController do
-  use Phoenix.Controller
+  use Phoenix.Controller, formats: [:json]
 
   alias CrosswakeExample.Repo
   alias CrosswakeExample.LocalFirst.ReviewEvent
@@ -8,6 +8,7 @@ defmodule CrosswakeExample.E2E.SyncStateController do
     case Repo.get_by(ReviewEvent, client_mutation_id: id) do
       nil ->
         json(conn, %{synced: false})
+
       record ->
         json(conn, %{synced: true, status: record.status})
     end

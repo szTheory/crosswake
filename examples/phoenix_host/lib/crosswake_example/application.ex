@@ -10,7 +10,8 @@ defmodule CrosswakeExample.Application do
       # companion registration and enablement config.
       Crosswake.Companions.Rulestead.MockFlagSource,
       {Phoenix.PubSub, name: CrosswakeExample.PubSub},
-      CrosswakeExample.Repo
+      CrosswakeExample.Repo,
+      CrosswakeExample.Endpoint
     ]
 
     opts = [strategy: :one_for_one, name: CrosswakeExample.Supervisor]
