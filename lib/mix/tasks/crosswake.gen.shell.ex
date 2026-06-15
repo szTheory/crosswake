@@ -122,30 +122,78 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   end
 
   defp render_android_templates(root, capabilities, local) do
+    assigns = local_package_assigns(root)
+
     Enum.each(@android_templates, fn {relative_path, template_path} ->
       ensure_file(
         Path.join(root, relative_path),
-        render_template(template_path, capabilities, local)
+        render_template(template_path, capabilities, local, assigns)
       )
     end)
   end
 
   defp render_ios_templates(root, capabilities, local) do
+    assigns = local_package_assigns(root)
+
     Enum.each(@ios_templates, fn {relative_path, template_path} ->
       ensure_file(
         Path.join(root, relative_path),
-        render_template(template_path, capabilities, local)
+        render_template(template_path, capabilities, local, assigns)
       )
     end)
   end
 
-  defp render_template(template_path, capabilities, local) do
+  defp render_template(template_path, capabilities, local, assigns) do
     template =
       Application.app_dir(:crosswake, Path.join("priv/templates/crosswake/shell", template_path))
 
     version = fetch_version!()
 
-    EEx.eval_file(template, assigns: [capabilities: capabilities, local: local, version: version])
+    EEx.eval_file(
+      template,
+      assigns:
+        [
+          capabilities: capabilities,
+          local: local,
+          version: version
+        ] ++ assigns
+    )
+  end
+
+  defp local_package_assigns(root) do
+    packages_root = Path.expand("packages", File.cwd!())
+
+    [
+      local_ios_core_path:
+        relative_path(root, Path.join(packages_root, "crosswake-shell-core-ios")),
+      local_android_core_path:
+        relative_path(root, Path.join(packages_root, "crosswake-shell-core-android"))
+    ]
+  end
+
+  defp relative_path(from_dir, to_path) do
+    from_parts = from_dir |> Path.expand() |> Path.split()
+    to_parts = to_path |> Path.expand() |> Path.split()
+    common_length = common_prefix_length(from_parts, to_parts)
+
+    up =
+      from_parts
+      |> Enum.drop(common_length)
+      |> Enum.map(fn _part -> ".." end)
+
+    down = Enum.drop(to_parts, common_length)
+
+    case up ++ down do
+      [] -> "."
+      parts -> Path.join(parts)
+    end
+  end
+
+  defp common_prefix_length(left, right) do
+    left
+    |> Enum.zip(right)
+    |> Enum.take_while(fn {left_part, right_part} -> left_part == right_part end)
+    |> length()
   end
 
   defp fetch_version! do

@@ -207,7 +207,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     refute File.read!(android_readme) =~ "Phase 1"
 
     assert File.read!(android_settings) =~ "include ':app'"
-    assert File.read!(android_build) =~ "com.android.application"
+    android_build_contents = File.read!(android_build)
+    assert android_build_contents =~ "com.android.application"
+    assert android_build_contents =~ "com.android.library"
+    assert android_build_contents =~ "org.jetbrains.kotlin.plugin.serialization"
     assert File.read!(android_props) =~ "org.gradle.jvmargs"
     assert File.read!(android_wrapper) =~ "Gradle start up script"
     assert File.read!(android_wrapper_props) =~ "gradle-8.7-bin.zip"
@@ -272,6 +275,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     refute ios_project_contents =~ "XCRemoteSwiftPackageReference"
     refute ios_project_contents =~ "szTheory/crosswake-shell-core-ios"
 
+    ios_root = Path.join(ios_local_target, "native/ios/crosswake_shell")
+    [_, ios_local_path] = Regex.run(~r/relativePath = "([^"]+)";/, ios_project_contents)
+
+    assert Path.expand(ios_local_path, ios_root) ==
+             Path.expand("packages/crosswake-shell-core-ios")
+
     android_local_target = tmp_dir!("crosswake-shell-local-android")
 
     capture_io(fn ->
@@ -296,6 +305,14 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
     assert File.read!(android_settings) =~ "packages/crosswake-shell-core-android"
 
     android_app_build_contents = File.read!(android_app_build)
+    android_settings_contents = File.read!(android_settings)
+    android_root = Path.join(android_local_target, "native/android/crosswake_shell")
+
+    [_, android_local_path] =
+      Regex.run(~r/projectDir = new File\('([^']+)'\)/, android_settings_contents)
+
+    assert Path.expand(android_local_path, android_root) ==
+             Path.expand("packages/crosswake-shell-core-android")
 
     assert File.read!(android_app_build) =~
              "implementation project(':crosswake-shell-core-android')"

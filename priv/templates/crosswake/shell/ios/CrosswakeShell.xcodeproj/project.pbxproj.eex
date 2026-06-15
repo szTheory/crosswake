@@ -46,7 +46,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		B10000030000000000000001 /* XCLocalSwiftPackageReference "crosswake-shell-core-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../packages/crosswake-shell-core-ios";
+			relativePath = "<%= @local_ios_core_path %>";
 		};
 /* End XCLocalSwiftPackageReference section */
 <% else %>
