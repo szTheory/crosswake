@@ -46,9 +46,12 @@ jobs:
           export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
           bash script/verify_generated_ios_shell.sh
 
-      - name: Verify checked-in Android shell BridgeChannel proof
+      - name: Verify generated local Android shell BridgeChannel proof
         timeout-minutes: 20
         run: |
-          export CROSSWAKE_ANDROID_PROJECT_ROOT="examples/android_shell_host"
+          android_target="tmp/phase18-android-${GITHUB_RUN_ID}"
+          rm -rf "${android_target}"
+          mix crosswake.gen.shell android --target "${android_target}" --local
+          export CROSSWAKE_ANDROID_PROJECT_ROOT="${android_target}/native/android/crosswake_shell"
           export CROSSWAKE_ANDROID_CONNECTED_TESTS="0"
           bash script/verify_generated_android_shell.sh
