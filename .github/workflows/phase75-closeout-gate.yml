@@ -37,7 +37,7 @@ jobs:
           fi
 
           files="$(git diff --name-only "$base" "$GITHUB_SHA")"
-          pattern='^(lib/crosswake/planning/closeout_verifier\.ex|lib/mix/tasks/closeout\.verify\.ex|test/mix/tasks/closeout_verify_test\.exs|test/crosswake/planning/|\.planning/(STATE|REQUIREMENTS|ROADMAP)\.md|\.planning/milestones/.*-CLOSEOUT\.md|\.planning/milestones/.*-phases/|\.planning/phases/|\.planning/threads/|\.planning/seeds/|CHANGELOG\.md)'
+          pattern='^(lib/crosswake/planning/closeout_verifier\.ex|lib/mix/tasks/closeout\.verify\.ex|test/mix/tasks/closeout_verify_test\.exs|test/crosswake/planning/(closeout_ci_parity_test|closeout_verifier_test|milestone_arc_closeout_parity_test|summary_frontmatter_test|milestone_transition_reset_test)\.exs|\.planning/(STATE|REQUIREMENTS|ROADMAP)\.md|\.planning/milestones/.*-CLOSEOUT\.md|\.planning/milestones/.*-phases/|\.planning/phases/|\.planning/threads/|\.planning/seeds/|CHANGELOG\.md)'
 
           if printf '%s\n' "$files" | grep -Eq "$pattern"; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
