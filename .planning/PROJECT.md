@@ -10,7 +10,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 ## Current State
 - **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
-- **Next:** planning the next milestone (`/gsd:new-milestone`). Suggested wedge: CI honesty / real-E2E sweep.
+- **Active:** v12.0 CI Honesty & Real-E2E Sweep — making the offline-sync proof and closeout gates genuinely honest (see Current Milestone below).
 
 **Shipped `v11.0 Release & Distribution Truth` on `2026-06-17`** (Phases 110-111, 8 plans). v11.0 turned the built-but-undistributed v5.0 thesis into a real install path. It published the iOS SPM core via splitsh-lite subtree mirror to `github.com/szTheory/crosswake-shell-core-ios` (annotated semver tags) and the Android core to Maven Central under verified `io.github.sztheory` (signed POM via Vanniktech → Central Portal), with release-please `linked-versions` advancing all three registries to one version per release and native publish jobs gated on `needs: release-please` + `if: releases_created`. It rewired `mix crosswake.gen.shell` to inject the live `Application.spec(:crosswake)[:vsn]` into published dep coordinates at generate-time (no version literal), proved the thesis outside the monorepo with a `$RUNNER_TEMP` clean-room CI lane (`swift build` / `gradle build` against the just-published deps), and made the guarantee permanent with a merge-blocking `generator_coordinate_parity` readiness check. A footgun-aware SETUP runbook plus a dispatch-only validated-upload→DROP fire-drill and a lockstep-truth assertion de-risked the irreversible first publish. Docs were reconciled to published truth, and `crosswake 0.1.2` was cut (REL-01) — the first live run surfaced and fixed latent pipeline bugs (fire-drill artifact assertion, Android auto-publish flag, Central Portal poll auth/endpoint, splitsh-lite version). All 11 v1 requirements satisfied.
 
@@ -63,9 +63,23 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
+## Current Milestone: v12.0 CI Honesty & Real-E2E Sweep
+
+**Goal:** Make Crosswake's offline-sync proof and closeout gates genuinely honest — the offline-sync E2E exercises the app's real reconnect→flush path against Ecto (not a test-injected scratch variable), that lane actually gates merges, and the validation-ledger closeout passes on real artifacts rather than vacuous globs.
+
+**Why now:** The install path is real (v11.0), but a repo-truth sweep found that several "green" proof surfaces don't prove what they claim. v6.0 shipped a mocked Playwright E2E that hid a compile break; v8.0 added real `setOffline()` toggling but the test still injects a mutation into a test-only `window['crosswake_offline_mutations']` and manually fires the sync — the app's own IndexedDB outbox and reconnect flush (`study_session_live.ex:31`: "here we mock it") are never exercised. The E2E lane runs on PRs but is not declared merge-blocking. Separately, the closeout verifier was tightened (quick task done) but the backlog it now flags — missing `VALIDATION.md` files for archived phases — was never cleaned up. And the docs disagree with themselves about v8.0.
+
+**Target features:**
+- **Real reconnect-driven offline-sync E2E** — replace the `window[]` scratch-var fabrication and the app-level sync mock with a genuine flow: mutate while offline → persist to IndexedDB → app itself flushes the outbox on reconnect → assert against the real Ecto backend (with idempotency-key correctness).
+- **Merge-blocking E2E lane** — make the offline-sync E2E a genuine required status check (`merge-blocking-*` naming + branch-protection), so a fake-green or failing E2E can no longer merge.
+- **Validation-ledger closeout cleanup (LEDG-01)** — create the missing `VALIDATION.md` files the now-strict gate flags (v3.6 48/49/52/53, v3.8 54-58, v3.9 62/63), flip stale deferrals to resolved, and reconcile STATE.md so `mix closeout.verify` passes honestly.
+- **v8.0 doc-truth reconciliation** — reconcile `v1.0-MILESTONE-AUDIT.md` (scores v8.0 0/10) and the missing MILESTONES.md v8.0 entry against PROJECT.md's SYNC-01/02/03 ✓ claims; establish a single authoritative truth.
+
+**Key context:** This is internal CI/test-honesty hardening, not new product features — but the reconnect-flush fix touches real demo-app code (`offline_study.js`, `study_session_live.ex`), not just the test. The branch-protection toggle has historically been harness-blocked in this environment (a human step), so the milestone ships the workflow/naming + a scripted/documented protection path even if the final toggle needs the maintainer. `LEDG-01` here is the GSD closeout-verifier debt (distinct from the v7.0 Threadline `LEDG-*` product requirements, which shipped). Phase numbering continues from v11.0 (last phase 111).
+
 ## Next Milestone
 
-v11.0 shipped (2026-06-17); the install path is now real. No milestone is active — define the next one via `/gsd:new-milestone`.
+After v12.0 closes, the leading candidate is **onboarding / docs consolidation** (`GUIDE-01`: route-policy guide, troubleshooting/rough-edges, web→mobile migration, ExDoc↔guide cross-linking). Define it via `/gsd:new-milestone`.
 
 **Suggested ordering (now that the install path is real):** (1) CI honesty / real-E2E sweep — replace the v6.0 mocked Playwright E2E with a real network-toggling run (`E2E-01`) and resolve the carried `tighten-validation-ledger-closeout-gate` Nyquist debt (`LEDG-01`); (2) onboarding / docs consolidation (`GUIDE-01`: route-policy guide, troubleshooting/rough-edges, web→mobile migration, ExDoc↔guide cross-linking).
 
@@ -226,4 +240,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-17 after v11.0 Release & Distribution Truth milestone*
+*Last updated: 2026-06-17 — started v12.0 CI Honesty & Real-E2E Sweep milestone*
