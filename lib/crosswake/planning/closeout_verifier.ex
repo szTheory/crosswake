@@ -26,6 +26,19 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   )
   @exception_fields ~w(owner scope reason revisit_phase evidence status)
   @v40_phases ~w(64 65 66 67 68 69)
+  # Checks that read the current milestone's CLOSEOUT.md. They only apply while a
+  # milestone is actively being closed out (the CLOSEOUT.md exists). See
+  # relax_inactive_closeout/2.
+  @closeout_artifact_check_ids ~w(
+    closeout.ledger.frontmatter
+    closeout.exceptions.deferred_shape
+    closeout.requirements.state
+    closeout.roadmap.parity
+    closeout.verification.coverage
+    closeout.summaries.frontmatter
+    closeout.validation.ledger
+    closeout.handoff.thread_seed_disposition
+  )
   @unreleased_sections [
     "Unpublished support claims",
     "Verification-required and advisory surfaces",
@@ -102,6 +115,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
           prior_validation_debt_check(cwd, opts),
           thread_seed_disposition_check(cwd, opts)
         ]
+        |> relax_inactive_closeout(active_closeout?(cwd, opts))
       end
       |> maybe_security_closeout_check(cwd, opts)
 
@@ -461,6 +475,33 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       posture: "merge-blocking",
       details: details
     }
+  end
+
+  # A milestone is "actively closing out" only when its CLOSEOUT.md exists (it is
+  # authored by /gsd:complete-milestone). The closeout gate runs on ANY .planning
+  # change, so mid-milestone — when no CLOSEOUT.md exists — the closeout-artifact
+  # checks must NOT block ordinary planning edits.
+  defp active_closeout?(cwd, opts), do: File.exists?(closeout_path(cwd, opts))
+
+  # Keep every check id present (the CI parity contract) but, when no closeout is
+  # active, downgrade the closeout-artifact checks from blocking to pass. The
+  # CHANGELOG continuity and prior-milestone debt checks are independent of the
+  # current closeout and always evaluate normally.
+  defp relax_inactive_closeout(checks, true), do: checks
+
+  defp relax_inactive_closeout(checks, false) do
+    Enum.map(checks, fn check ->
+      if check.id in @closeout_artifact_check_ids and check.blocking do
+        %{
+          check
+          | result: :pass,
+            blocking: false,
+            observed: "no active closeout (no CLOSEOUT.md for the current milestone; skipped)"
+        }
+      else
+        check
+      end
+    end)
   end
 
   defp closeout_path(cwd, opts) do
