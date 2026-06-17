@@ -1,297 +1,276 @@
 # Pitfalls Research
 
-**Domain:** Multi-language publishing + generator rewiring — OSS library (v11.0 Release & Distribution Truth)
-**Researched:** 2026-06-14
-**Confidence:** HIGH (Maven Central immutability docs, release-please issue #1000, SwiftPM SE-0292, repo-local template inspection), MEDIUM (splitsh-lite CI behavior, Package.swift product-name matching), LOW (only where community-pattern-only evidence)
+**Domain:** CI Honesty / Real-E2E Sweep — Crosswake v12.0
+**Researched:** 2026-06-17
+**Confidence:** HIGH (evidence drawn entirely from this repo's own failure history, source files, and audit artifacts)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Burning a Maven Central Version (IRREVERSIBLE)
+### Pitfall 1: Test-Only Global Injection Masking a Dead Application
 
 **What goes wrong:**
-A botched `io.github.sztheory:crosswake-shell-core-android:0.1.0` publish — wrong POM, missing signature, wrong namespace, wrong artifact layout — permanently occupies that version coordinate. Maven Central's immutability policy is absolute: once a release is publicly available, Sonatype will not delete or modify it. Publishing `0.1.2` with a broken POM means `0.1.2` is burned. The fix is to publish `0.1.3` and tell every adopter to skip `0.1.2`.
+The E2E test writes mutations directly to `window['crosswake_offline_mutations']` via `page.evaluate()`, then manually fires a `fetch('/study/sync', ...)` call — also via `page.evaluate()`. The application's own offline JS engine is never invoked. The test asserts the server received the sync payload, but it placed that payload there itself. This is exactly the pattern in `offline_sync.spec.ts` lines 21-50: the test fabricates the outbox entry, calls the flush, intercepts the request it just made, and then checks that the ID matches. The application's IndexedDB write path, its outbox listener, and its reconnect handler are all untested. The demo app's compile break (the `CrosswakeExampleWeb` macro module that did not exist) was hidden for exactly this reason — the Playwright run succeeded without the app actually compiling and serving correctly.
 
 **Why it happens:**
-Developers test the happy path against local Maven (`~/.m2`) which has no POM validation or GPG enforcement. The first time they see the Central Portal's real requirements is when the upload rejects — but if they bypass the dry-run and publish with `--no-sign` or an incomplete POM in a moment of frustration, they get a rejected artifact under the version they intended to ship. Rejected-but-published artifacts are still immutable on the namespace.
+When a real offline flow requires timing-sensitive reconnect events and IndexedDB round-trips, it is tempting to shortcut to "assert the network contract" and inject data through the test rather than let the application write it. This produces a green run immediately, which is accepted under deadline pressure.
 
 **How to avoid:**
-1. Always run `./gradlew publishToMavenLocal` first and inspect `~/.m2/repository/io/github/sztheory/crosswake-shell-core-android/<version>/` for the full GAV layout, POM content, `.asc` signatures, and sources+javadoc jars before attempting Central Portal.
-2. Use Vanniktech maven-publish (≥0.30.0) which defaults to Central Portal and auto-generates the mandatory jars.
-3. Add a mandatory CI dry-run step (`./gradlew publishAllPublicationsToMavenCentralRepository --dry-run` or staging-only publish) that fails fast before the real push.
-4. Never publish manually from a developer machine without the dry-run passing in CI first.
-5. Reserve `0.1.0` as the published version for the first clean cut; if there is any doubt, use a staging namespace test.
+The E2E test must perform only real user actions (click, keyboard, navigation). No `page.evaluate()` that writes application state. The mutation must originate from a real UI interaction that causes the application's JS to write to IndexedDB. The flush must be triggered by `context.setOffline(false)` alone — the application's own reconnect handler must detect the change and flush. Assert only on server-visible state (the `/_e2e/sync-state/:id` poll) after waiting for the application to act.
 
 **Warning signs:**
-- Build script has no `maven-publish` or Vanniktech plugin yet (confirmed: `packages/crosswake-shell-core-android/build.gradle.kts` currently has only `namespace`, no publish config).
-- No `group` or `version` declared in the library's `build.gradle.kts`.
-- No GPG setup verified against a keyserver.
-- No staging publish step in CI.
+- Test contains `page.evaluate()` that assigns to a `window['..._mutations']` or `window['..._outbox']` global.
+- Test manually calls `fetch(...)` inside a `page.evaluate()` to trigger the sync rather than waiting for the application to do it.
+- The workflow has no `mix compile` step before launching Playwright — a compile break cannot be caught.
+- The workflow runs `npx playwright test` directly without a step that would surface a server-startup failure independently.
 
-**Phase to address:** Phase A (native publish-config). The entire publish-config phase must include dry-run verification before any real publish attempt.
+**Phase to address:**
+The phase that replaces the mocked E2E (E2E-01). The compile check and the test rewrite are a single atomic deliverable — they must land together.
 
 ---
 
-### Pitfall 2: GPG Key Not Reachable on a Public Keyserver (Breaks Maven Central Upload)
+### Pitfall 2: `context.setOffline` Does Not Simulate a Real Network Change for All Reconnect Handlers
 
 **What goes wrong:**
-Central Portal requires GPG-signed artifacts and a public key discoverable at `keyserver.ubuntu.com`, `keys.openpgp.org`, or `pool.sks-keyservers.net`. If the key was generated locally and never pushed to a keyserver, upload validation rejects the signature verification. The error is not always obvious — it may look like a checksum mismatch or a generic upload failure.
+`context.setOffline(true/false)` operates at the CDP level and intercepts network requests made by the page. It does not reliably trigger the browser's `online`/`offline` DOM events in all configurations, and it does not interact with registered Service Workers or the Background Sync API. If the application's reconnect handler listens to `window.addEventListener('online', ...)` rather than monitoring `fetch` failures, it may never fire. Additionally, Chromium in headless mode and Ubuntu CI runners may have different timing for `online` event propagation after `setOffline(false)`.
+
+The current `playwright.config.ts` sets `serviceWorkers: 'block'` — this is the correct defense for IndexedDB test isolation — but the reconnect trigger is still application-code-dependent.
 
 **Why it happens:**
-Developers generate a GPG key, sign artifacts, and test locally where the key is in the local keyring. The keyserver upload step (`gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>`) is easy to forget because signing "works" in local testing.
+The CDP `Network.emulateNetworkConditions` behavior is documented as intercepting requests, not as injecting browser lifecycle events. Developers assume `setOffline(false)` is equivalent to a cable being plugged back in. On some Chromium versions it triggers `online` events; on others it does not.
 
 **How to avoid:**
-1. After generating the GPG key, immediately publish to at minimum two keyservers: `gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>` and `gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>`.
-2. Verify propagation: `gpg --keyserver keyserver.ubuntu.com --recv-keys <KEY_ID>` from a clean environment (not the machine that signed).
-3. Store the GPG private key and passphrase in GitHub Actions secrets (`GPG_PRIVATE_KEY`, `GPG_PASSPHRASE`), import with `gpg --import` in the CI publish job.
-4. Add a CI pre-publish check that verifies the key is on the keyserver before attempting the publish.
+After `context.setOffline(false)`, add an explicit poll for a known UI indicator (e.g., a "Syncing..." status element appearing) before asserting the Ecto state. Do not rely on a bare `waitForRequest` timeout as the only reconnect signal. If the application's JS uses `navigator.onLine` polling instead of the `online` event, document that explicitly in the test and verify it works in CI (Ubuntu/headless Chromium specifically). The `retries: 2` already in `playwright.config.ts` masks flake but does not eliminate it — the fix is a deterministic reconnect assertion, not more retries.
 
 **Warning signs:**
-- No `GPG_PRIVATE_KEY` / `GPG_PASSPHRASE` secrets in the repository.
-- No keyserver upload step documented anywhere.
-- Maven Central upload fails with "signature verification failed" or generic 400 errors.
+- Test races past `setOffline(false)` with a hard-coded `waitForTimeout()`.
+- CI passes locally (macOS Chromium) but flakes on Ubuntu runners.
+- The test catches the sync request intermittently — some runs succeed, some time out.
 
-**Phase to address:** Phase A (native publish-config). Must be done before the first real publish attempt, not after.
+**Phase to address:**
+E2E-01 phase (real network-toggling test rewrite). Address the reconnect assertion at the same time as the mutation injection fix.
 
 ---
 
-### Pitfall 3: Relative-Path Dep in Generated Code Silently Produces an Unbuildable Adopter Project
+### Pitfall 3: IndexedDB State Leaking Between Test Runs
 
 **What goes wrong:**
-`mix crosswake.gen.shell` currently defaults `--local false` but its non-local branch emits broken coordinates:
-- iOS: `repositoryURL = "https://github.com/crosswake/crosswake-shell-core-ios.git"` (wrong org — real is `szTheory`; repo absent)
-- Android: `implementation 'dev.crosswake:shell-core-android:0.1.0'` (wrong group ID — real will be `io.github.sztheory`; artifact never published)
+IndexedDB persists across page navigations within the same browser context. If a test leaves stale mutation records in the database, a subsequent test will attempt to sync them to the backend. The backend `/_e2e/sync-state/:id` endpoint may return `{ synced: true }` for an ID from a prior run if the database was not cleaned. The result is a false-positive: the test "passes" because old data satisfies the assertion.
 
-An adopter running `mix crosswake.gen.shell ios` gets an Xcode project that Xcode tries to resolve, fails silently at SPM dependency resolution, and produces a build failure the adopter has no obvious way to diagnose. The generator has no warning and no validation that the referenced dep exists.
+The `playwright.config.ts` uses `webServer.command` with `ecto.drop + ecto.create + ecto.migrate` — this resets the Postgres side per run but does not reset IndexedDB, which lives in the browser context for the duration of the test session.
 
 **Why it happens:**
-The generator was written before the distribution infrastructure existed (v5.0 shipped the code, not the publish). The `--local` flag exists for monorepo development and the non-local branch was written as a placeholder. Nothing in the generation flow validates that the referenced URL/coordinates are real.
+Developers reset the server-side database (visible, explicit) but forget that the client-side IndexedDB is equally stateful and persists within a browser context across tests in the same suite run.
 
 **How to avoid:**
-1. Before changing any template, publish the native cores so the coordinates exist.
-2. Rewire the iOS template: `repositoryURL = "https://github.com/szTheory/crosswake-shell-core-ios.git"` with the correct org.
-3. Rewire the Android template: `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
-4. The `--local` path in `settings.gradle.eex` (`project(':crosswake-shell-core-android').projectDir = new File('../../../packages/...')`) must remain for in-monorepo development but must never appear in a default (non-`--local`) generate.
-5. Add a doctor check or post-generate warning that prints the dep coordinates and tells the adopter to verify `swift package resolve` / `gradle dependencies` succeed.
+Each test that touches IndexedDB must open a fresh `BrowserContext` (`browser.newContext()`) rather than sharing the default context, or must explicitly delete the test database at the start of the test: `await page.evaluate(() => indexedDB.deleteDatabase('crosswake_offline'))`. The `workers: 1` setting in `playwright.config.ts` prevents parallel context sharing but does not prevent sequential tests from seeing each other's IndexedDB.
 
-**Warning signs (current):**
-- `app/build.gradle.eex` line 54: `implementation 'dev.crosswake:shell-core-android:0.1.0'` — wrong group ID and hardcoded version.
-- `project.pbxproj.eex` line 56: `repositoryURL = "https://github.com/crosswake/crosswake-shell-core-ios.git"` — wrong org.
-- No CI lane that runs `gen.shell` outside the monorepo and confirms `swift build` / `gradle build` succeed.
+**Warning signs:**
+- A test that does not write to IndexedDB still returns `synced: true` from the backend check.
+- Tests pass individually but fail when run as part of the full suite.
+- No `beforeEach` or `browser.newContext()` call in tests that assert on sync state.
 
-**Phase to address:** Phase B (template rewire). Must not touch templates until Phase A completes — the published coordinates must exist first, or the rewire introduces new broken coordinates.
+**Phase to address:**
+E2E-01 phase, test harness setup task.
 
 ---
 
-### Pitfall 4: Hardcoded Satellite Version While Main Version Is Derived (Silent Drift)
+### Pitfall 4: Phase 90 Workflow Does Not Compile the Phoenix App Before Running Playwright
 
 **What goes wrong:**
-The generator currently hardcodes `version = 0.1.0` in the Xcode project requirement (`requirement = { kind = exactVersion; version = 0.1.0; }`) and `implementation 'dev.crosswake:shell-core-android:0.1.0'`. If these are not derived at generate-time from the installed Crosswake Hex package version, they become stale as Crosswake releases advance. An adopter on Crosswake 0.1.5 generates shell code pinned to the 0.1.0 native deps — ABI-incompatible by design if the native protocol evolves.
+The `phase90-proof.yml` workflow runs `mix deps.get` and then immediately `npx playwright test`. It never runs `mix compile` or `mix phx.server` in a health-check mode. The `playwright.config.ts` `webServer.command` launches `mix phx.server` as a side effect of Playwright startup — but if the server crashes on startup due to a compile error, Playwright reports a timeout trying to connect to `http://localhost:4002`, not a compile failure. The CI log shows a Playwright connection error, not an Elixir stack trace, making the root cause opaque.
 
-LiveView Native hit exactly this bug: `LiveViewNativeLiveForm` was hardcoded to `from: "0.4.0-rc.1"` while the main package version was derived, causing silent protocol drift when the main package advanced.
+This is the exact mechanism that hid the `CrosswakeExampleWeb` macro module compile break in v6.0: the mocked E2E never actually needed the server to serve anything correctly, so the compile failure was invisible.
 
 **Why it happens:**
-The native version coordinate looks like a constant at write-time. Developers assume the template will be regenerated; in reality the generator's "scaffold once" posture means the generated files are not safely regeneratable over host edits (the README says so explicitly). The version is written once and rots.
+Playwright's `webServer` integration swallows server stderr unless `stderr` is explicitly piped. The failure mode appears as a slow startup or port-connection error, not a compile error. The gap between "deps installed" and "server actually running" is silent.
 
 **How to avoid:**
-1. Inject `Application.spec(:crosswake)[:vsn]` at generate-time into every native dep coordinate (the LiveView Native `lvn.swiftui.gen` pattern).
-2. iOS: emit `.package(url: "https://github.com/szTheory/crosswake-shell-core-ios", from: "<%= @version %>")` using `upToNextMajor` semantics rather than `exactVersion` — allows adopters to receive patch/minor updates without regeneration, while the `Package.resolved` file pins the exact resolved version.
-3. Android: emit `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
-4. The `@version` assign must be sourced from the Hex package spec, not a module attribute or compile-time constant — this ensures it tracks Hex releases automatically.
-5. Add a "published-dep parity" doctor check (graduation candidate from `threads/release-distribution-truth.md`) that asserts generated coordinates match `Application.spec(:crosswake)[:vsn]` post-generate.
+Add an explicit `mix compile --warnings-as-errors` step in the workflow before the Playwright step, run from the `examples/phoenix_host` working directory. This ensures the application compiles cleanly before any E2E test attempts to start the server. Workflow order: deps.get → compile (fail fast, clear error) → Playwright (which starts the server as a subprocess).
 
 **Warning signs:**
-- Template files contain literal version strings (`0.1.0`) rather than EEx expressions.
-- `render_template/3` only passes `[capabilities: capabilities, local: local]` — no `version` assign exists today.
-- No test asserts that the generated version coordinate matches the installed Hex version.
+- CI shows a "server did not start in time" Playwright error with no Elixir output preceding it.
+- The `phase90-proof.yml` workflow has no `mix compile` step.
+- Local developer never sees the error because `reuseExistingServer: !process.env.CI` means the server was already running locally.
 
-**Phase to address:** Phase B (template rewire). The version injection must be implemented as part of the same work that rewires the URL/group-ID.
+**Phase to address:**
+E2E-01 phase, workflow hardening task. Atomic with the test rewrite.
 
 ---
 
-### Pitfall 5: SwiftPM Root-Manifest Constraint — Monorepo Subdir Is Not Consumable (IRREVERSIBLE by Architecture)
+### Pitfall 5: Advisory Lane Masquerading as a Required Gate (or Required Check That Never Runs)
 
 **What goes wrong:**
-SwiftPM resolves packages by git repository identity, not subpath. The constraint (SE-0292) means `packages/crosswake-shell-core-ios/` inside the monorepo cannot be referenced over a git URL with a `subdirectory:` parameter in any Package.swift — the parameter does not exist in SwiftPM. Any attempt to teach adopters to add the monorepo URL with a subpath will fail at `swift package resolve` with an error about no `Package.swift` at the root.
+Two symmetric failure modes exist:
+
+**Advisory-looks-required:** A workflow runs without `continue-on-error: true` but is not listed in GitHub's branch-protection required status checks. The lane runs, appears in the checks list, and developers assume it gates merges. A failure is visible in the PR but does not block merge. This is the current state of `phase90-proof.yml`: it has no `continue-on-error: true`, so it appears required, but its job ID `e2e-offline-sync` is almost certainly not registered in branch protection.
+
+**Required-check-never-runs-means-blocked-forever:** A job is listed in branch-protection required-status-checks, but the workflow's trigger does not fire on that branch or event type. GitHub reports the check as "Expected — Waiting" and the PR cannot merge even though no failure occurred.
 
 **Why it happens:**
-Developers coming from other ecosystems assume "publish a subdir" is analogous to npm workspaces or Maven subprojects. Maven subprojects publish fine to Central; SwiftPM subdir do not.
+Branch protection is configured in GitHub's UI, not in the YAML file. There is no in-repo source of truth for which check contexts are required. Renaming a job (`jobs: e2e-offline-sync` → `jobs: e2e-offline-sync-real`) silently drops it from the required-checks list because GitHub matches by the exact job name string.
 
 **How to avoid:**
-1. The only correct path is a dedicated read-only mirror repository (`github.com/szTheory/crosswake-shell-core-ios`) that receives subtree-pushed commits from the monorepo via `splitsh-lite` in CI.
-2. The mirror must have semver-annotated git tags (`0.1.2`, `0.1.3` etc.) — the tag IS the SwiftPM version; `Package.swift` carries no version field.
-3. In CI, the subtree push job must run `fetch-depth: 0` (full history) — `splitsh-lite` requires full history to produce correct commit trees; shallow clones produce broken splits.
-4. Never re-tag an existing version tag on the mirror repo — SwiftPM clients resolve by tag and `Package.resolved` locks the commit; a re-tag producing a different commit hash is a reproducibility violation.
+- Document required check context names explicitly in the workflow YAML comment, as `brandbook-verify.yml` does: "Add this job's check context to branch-protection required-status-checks."
+- Use the GitHub CLI to verify branch protection after any workflow rename: `gh api repos/{owner}/{repo}/branches/main/protection`.
+- Explicitly mark advisory lanes with `continue-on-error: true` AND an `echo "::notice"` step (as `brand-visual` does) so advisors are visually distinct in the GitHub UI.
+- For required lanes, add a `name:` field under the job key that matches the registered check context exactly.
 
 **Warning signs:**
-- `Package.swift` in `packages/crosswake-shell-core-ios/` has no version field (confirmed — correct, but only because SwiftPM versions come from git tags; the mirror repo must exist and have the tag).
-- No `github.com/szTheory/crosswake-shell-core-ios` repo exists yet.
-- No CI workflow that pushes to the mirror repo on release.
+- A workflow job has no `name:` field — its check context is the raw job key, which changes if the job is renamed.
+- No workflow YAML comment states "this is/is not a required status check."
+- `phase90-proof.yml` has no `name:` on the `e2e-offline-sync` job, no `continue-on-error`, and no branch-protection comment.
 
-**Phase to address:** Phase A (native publish-config). The mirror repo must be created, the CI subtree-push job must be wired, and a test tag must be pushed before the template rewire in Phase B can reference a real URL.
+**Phase to address:**
+Branch-protection hardening phase. Address before or alongside E2E-01, since fixing the E2E and marking it required are the same deliverable.
 
 ---
 
-### Pitfall 6: SwiftPM Product Name Must Match Package.swift Product Declaration (Silent Build Failure)
+### Pitfall 6: Matrix Jobs Create Multiple Check Contexts; Only One May Be Required
 
 **What goes wrong:**
-The Xcode project (`project.pbxproj`) references `CrosswakeShellCore` as the product name (`/* CrosswakeShellCore in Frameworks */`). If the `Package.swift` product declaration on the mirror repo ever changes the product name, or if the mirror repo name differs from what the `XCRemoteSwiftPackageReference` expects, Xcode produces a "missing package product" error that is confusing and non-obvious.
-
-Currently `Package.swift` declares `.library(name: "CrosswakeShellCore", ...)` and the `.pbxproj` references `CrosswakeShellCore`. This is consistent, but the mirror repo is named `crosswake-shell-core-ios` (kebab-case) while the product is `CrosswakeShellCore` (CamelCase). SwiftPM resolves by product name, not repo name, so the mismatch is safe — but any refactor that renames the product without updating both `Package.swift` and the generated template breaks silently.
+If the E2E workflow is expanded to a matrix (e.g., `matrix: { browser: [chromium, firefox] }`), GitHub creates separate check contexts: `e2e-offline-sync (chromium)` and `e2e-offline-sync (firefox)`. If branch protection requires `e2e-offline-sync (chromium)` and the job is later renamed or the matrix key changes, the required check context silently becomes "Expected — Waiting" forever.
 
 **Why it happens:**
-Swift package product names and repository names follow different naming conventions. Developers rename one without updating the other.
+Matrix job names are computed strings. They are not obvious from the workflow YAML alone, and they differ from the bare job key when a matrix is present.
 
 **How to avoid:**
-1. Treat the `Package.swift` product name (`CrosswakeShellCore`) and the `project.pbxproj` product reference as a coupled pair — any rename requires updating both.
-2. Add a CI check on the mirror repo that verifies the `Package.swift` product name has not changed relative to the expected value used in the generator template.
-3. Document the naming invariant explicitly: "The `Package.swift` library name must remain `CrosswakeShellCore`; the repo name is irrelevant to SwiftPM resolution."
+For the v12.0 E2E lane, use a single-browser target (Chromium, as already configured) with no matrix. If multi-browser coverage is added later, the required check must be a separate non-matrix summary job that `needs:` all matrix jobs and is the registered required-check context.
 
 **Warning signs:**
-- Xcode shows "missing package product 'CrosswakeShellCore'" after adding the SPM dependency.
-- The `Package.swift` `.library(name:)` does not match the generated `project.pbxproj` product reference.
+- A matrix exists on the E2E job without a companion `all-passed` summary job.
+- Branch protection requires a string like `e2e-offline-sync` but the actual emitted context is `e2e-offline-sync (chromium)`.
 
-**Phase to address:** Phase A (native publish-config) when setting up the mirror repo; Phase B (template rewire) must verify consistency.
+**Phase to address:**
+Branch-protection hardening phase; document as a constraint in the E2E workflow.
 
 ---
 
-### Pitfall 7: Release-Please GITHUB_TOKEN Does Not Trigger Downstream Native-Publish Workflows
+### Pitfall 7: Closeout Gate Passing Vacuously When the Archived Phase Path Has No Files
 
 **What goes wrong:**
-The current `release-please.yml` uses `secrets.RELEASE_PLEASE_TOKEN || github.token`. When release-please creates a GitHub Release using the default `GITHUB_TOKEN`, that release event does NOT trigger other workflows that listen on `on: release: types: [published]`. GitHub deliberately prevents this loop to avoid recursive workflow runs. This means native-publish jobs gated on `release: published` simply never run.
+`CloseoutVerifier.phase_paths/4` builds a wildcard glob for archived phase artifacts:
 
-This is a confirmed known issue documented in release-please-action issue #1000.
+```
+.planning/milestones/#{milestone}-phases/#{phase}-*/#{suffix}
+```
+
+If `milestone` in STATE.md is `nil` or stale, `phase_paths/4` returns `archived = []`. `validation_ledger_check/2` then evaluates `problematic = Enum.reject(phases, fn phase -> paths != [] and ... end)` — when `paths == []` the rejection condition is true, so the phase is "problematic." However, the outer `passed` condition also checks `closeout =~ ~r/validation_ledger_status:\s*\n\s*status:\s*(complete|deferred_with_reason|archived)/`. If someone marks `validation_ledger_status: status: deferred_with_reason` in the CLOSEOUT.md, the `deferred` escape hatch triggers and the check passes even though no actual ledger files were found.
+
+The previously observed vacuous-pass pattern is this exact path: empty glob → zero ledgers found → escape-hatch YAML string present → passes. The current code correctly checks `status not in ["resolved", "closed"]`, but the risk remains that `milestone` being `nil` causes `phase_paths/4` to return empty for both the archived and live paths simultaneously.
 
 **Why it happens:**
-Developers wire `on: release: types: [published]` and assume the release-please-created release will fire it. The documentation for this loop-prevention behavior is not prominent.
+The escape hatch for `validation-ledger-finalization` deferrals is necessary (ledgers are acknowledged debt), but it fires when the deferred entry exists without requiring that the glob returned anything. "No files found" and "files found, all compliant" produce the same gate result when the deferral is active.
 
 **How to avoid:**
-1. Do NOT gate native publish jobs on `on: release: types: [published]`.
-2. Instead, put native publish jobs as additional `needs:` steps within the same `release-please.yml` workflow, gated with `needs: release-please` and `if: ${{ needs.release-please.outputs.release_created == 'true' }}`. The existing `publish-hex` job already uses this pattern correctly — replicate it for iOS subtree-push and Android Maven Central publish.
-3. Alternatively, use a fine-grained PAT (store as `RELEASE_PLEASE_TOKEN` secret) instead of `github.token` for the release-please step — PAT-created events DO trigger other workflows. The current `release-please.yml` already has the `|| github.token` fallback scaffolded for this.
+Add an assertion in the check that at least one path was found for each expected phase before declaring it compliant. "No paths found" should produce a distinct error from "paths found but not compliant," so a vacuous pass is impossible. The fix is: if `paths == []` and no deferral is active, fail with "no validation artifacts found" rather than silently passing or silently including in `problematic` where it can be escaped.
 
 **Warning signs:**
-- A separate workflow file with `on: release: types: [published]` for native publishing — it will silently never trigger.
-- Checking GitHub Actions runs after a release-please merge shows the release job ran but native publish jobs show no run record.
+- STATE.md has no `milestone:` field or it points to an already-archived milestone.
+- `CloseoutVerifier.run/1` emits `observed: ok` for `closeout.validation.ledger` despite no `*-VALIDATION.md` files existing under the milestone phase directory.
+- The `expected_phases` frontmatter key is missing from CLOSEOUT.md, causing the fallback to `@v40_phases = ~w(64 65 66 67 68 69)` — phases from a completely different milestone.
 
-**Phase to address:** Phase A (native publish-config + CI wiring). The lockstep publish pipeline must be designed correctly before the first real publish attempt.
+**Phase to address:**
+LEDG-01 / closeout-gate tightening phase. This is the "tighten-validation-ledger-closeout-gate" quick task carried since v8.0.
 
 ---
 
-### Pitfall 8: release-please Manifest Mode Not Configured for Multi-Package Lockstep
+### Pitfall 8: Hardcoded Phase Lists Break Post-Archival and Cross-Milestone
 
 **What goes wrong:**
-The current `release-please-config.json` registers only the root package (`.`) with `release-type: elixir` and `.release-please-manifest.json` tracks only `{ ".": "0.1.0" }`. This single-package configuration will advance the Hex version independently of the iOS tag and Android library version. An adopter running `gen.shell` after `crosswake 0.1.2` ships but before native deps are tagged and published gets a generated project referencing `0.1.2` deps that do not exist yet.
+`@v40_phases ~w(64 65 66 67 68 69)` is a module-level constant. Any call to `expected_phases/1` that returns an empty list (missing or malformed `expected_phases:` key in CLOSEOUT.md frontmatter) falls through to these hardcoded v4.0 phase numbers — regardless of the milestone being verified. During v12.0 closeout, the verifier would look for phases 64-69 validation ledgers, find none (they are archived under `v4.0-phases/`), and either vacuously pass (via the deferred escape hatch) or produce misleading "missing verification" errors for the wrong phases.
 
 **Why it happens:**
-The release-please config was set up for Hex-only publishing during v3.3. Adding native packages was deferred until v11.0.
+The fallback exists so the verifier does not silently pass on a malformed CLOSEOUT.md. But the specific phase numbers are v4.0-specific and have no meaning for any subsequent milestone.
 
 **How to avoid:**
-1. Extend `release-please-config.json` to register the Android library path (`packages/crosswake-shell-core-android`) with `release-type: simple` and the iOS mirror trigger (or use `extra-files` to annotate `packages/crosswake-shell-core-android/build.gradle.kts` with `x-release-please-version`).
-2. Use the `linked-versions` plugin in manifest mode to enforce that all registered packages advance together: the release PR carries one version and all packages' version files are updated atomically.
-3. The iOS tag is not a version file that release-please updates — instead, the CI subtree-push job reads `needs.release-please.outputs.version` and uses it to create the annotated git tag on the mirror repo.
-4. Verify: after a release-please PR merge, all three coordinates (Hex `mix.exs @version`, `build.gradle.kts version`, mirror repo tag) must carry the same version before the clean-room proof lane runs.
+The fallback should produce a hard error ("expected_phases not found in CLOSEOUT.md frontmatter — cannot determine which phases to verify") rather than silently substituting a stale phase list. For v12.0, ensure the CLOSEOUT.md template includes an explicit `expected_phases:` list populated from the milestone's actual phase numbers.
 
 **Warning signs:**
-- `release-please-config.json` packages block contains only `"."`.
-- `.release-please-manifest.json` contains only `{ ".": "..." }`.
-- After a release, `packages/crosswake-shell-core-android/build.gradle.kts` still has no `version` field.
+- A new milestone's CLOSEOUT.md is missing the `expected_phases:` frontmatter key.
+- The verifier log references phases 64-69 during a post-v4.0 milestone closeout.
+- No error is surfaced despite the CLOSEOUT.md being invalid.
 
-**Phase to address:** Phase A (native publish-config). Must be done before the first publish so that the version source of truth is correct from day one.
+**Phase to address:**
+LEDG-01 / closeout-gate tightening phase. Fix the fallback to fail loudly before addressing the vacuous-pass path.
 
 ---
 
-### Pitfall 9: Branch-Pinning SwiftPM Dep (`branch: "main"`) Discards Version Guarantee
+### Pitfall 9: Signing a VALIDATION.md to Make the Gate Green Without Actually Validating
 
 **What goes wrong:**
-Pinning the SwiftPM dep with `branch: "main"` instead of `from: "x.y.z"` or `exactVersion` means every `swift package update` pulls whatever commit is on `main` of the mirror at that moment. The adopter's `Package.resolved` re-locks to a new commit hash on update — with no version signal. This is the Capacitor SPM migration bug (issue #7735).
+`validation_ledger_check/2` passes when `nyquist_compliant: true` is present in every `*-VALIDATION.md` file for the phase. This is a string-presence check: `read_file(&1) =~ "nyquist_compliant: true"`. A developer can create a minimal VALIDATION.md with that string and no actual validation evidence — no test run references, no requirement-to-evidence mapping, no phase-specific assertions. The gate goes green.
 
-In the generated `project.pbxproj` the requirement is currently `kind = exactVersion; version = 0.1.0` which is the right intent but uses `exactVersion` which prevents adopters from receiving patch/minor updates without regenerating.
+The v3.9 and v8.0 closeouts explicitly carried validation-ledger debt as `deferred_with_reason` rather than forcing this, but the temptation exists at every closeout under time pressure.
 
 **Why it happens:**
-Branch-pinning is often used during development before tags exist. It gets committed and shipped. `exactVersion` is used when the developer over-corrects toward lock-step reproducibility without considering the adopter's update path.
+The gate checks structure and key presence, not semantic content. There is no cross-reference between what `nyquist_compliant: true` claims and what tests actually ran. It is the fastest path to a passing gate.
 
 **How to avoid:**
-1. Use `from:` (up-to-next-major semantics) in the generated `.package(url:, from: "x.y.z")` Swift package dependency — not `branch:` and not `exactVersion`.
-2. The `from:` constraint allows patch and minor updates to flow to the adopter naturally; breaking changes are gated at majors.
-3. The `Package.resolved` file in the adopter's project pins the exact resolved version, providing reproducibility without preventing non-breaking updates.
-4. The Xcode `.pbxproj` `requirement` block must use `kind = upToNextMajorVersion; minimumVersion = x.y.z` rather than `kind = exactVersion`.
+Treat `nyquist_compliant: true` as a human attestation, not a mechanical check. The v12.0 LEDG-01 work should decide: either (a) make the check more structural by requiring a `tested_by:` list naming actual test files or CI run IDs, or (b) document explicitly that `nyquist_compliant: true` is a human attestation and that the attestation itself is the accountability mechanism. Do not set `nyquist_compliant: true` without pointing to a specific test or CI run.
 
 **Warning signs:**
-- Template `project.pbxproj.eex` uses `kind = exactVersion` (confirmed current state, line 58).
-- Any generated `Package.swift` or `package-collection.json` that uses `branch: "main"`.
+- A `*-VALIDATION.md` file contains `nyquist_compliant: true` and fewer than 5 lines total.
+- No `tested_by:`, `ci_run:`, or `evidence:` field exists alongside the compliance flag.
+- The ledger was added in a commit that also edited the CLOSEOUT.md to close the validation-ledger gap.
 
-**Phase to address:** Phase B (template rewire). Change `exactVersion` to `upToNextMajorVersion` when injecting the version.
+**Phase to address:**
+LEDG-01 / closeout-gate tightening phase.
 
 ---
 
-### Pitfall 10: Clean-Room Proof Lane Inside the Monorepo Does Not Prove Anything
+### Pitfall 10: Stale Deferrals That Accumulate Without Resolution Criteria
 
 **What goes wrong:**
-All existing native proof lanes (`--local` paths in `settings.gradle.eex` and `project.pbxproj.eex`) resolve deps against the monorepo's `packages/` directory. A CI lane that runs `gen.shell` and builds inside the monorepo with `--local` never exercises the published coordinates. It proves only that the code compiles in the development layout. An adopter outside the repo who hits the 404 install path is not protected by this lane.
-
-This is Crosswake's current situation: "The flagship claim is proven only inside this monorepo" (threads/release-distribution-truth.md).
+The `prior_validation_debt_check/2` scans prior `v*-CLOSEOUT.md` files for `deferred_with_reason` entries with `scope: validation-ledger-finalization` and `status:` not `resolved` or `closed`. It flags them as unresolved debt. Currently `tighten-validation-ledger-closeout-gate` (LEDG-01) has been carried through v8.0, v9.0, v10.0, and v11.0. Each time it was acknowledged and re-deferred without a `revisit_phase` that ever produced resolution. The `stale_deferral?/2` helper tags such entries as `(stale)` when the revisit_phase directory now exists — but stale is a label, not a blocker. The debt compounds.
 
 **Why it happens:**
-Clean-room proof requires an external repo and published deps — both of which did not exist until this milestone. CI proof lanes were written against what was available (monorepo-local deps) and were accepted as sufficient at the time.
+Deferrals without concrete acceptance criteria ("we will resolve this when X is true") become permanent background noise. The `revisit_phase` field names a phase but not a condition. When that phase passes without resolving the deferral, no automated mechanism forces resolution.
 
 **How to avoid:**
-1. The acceptance gate must scaffold a host project in a temp directory OUTSIDE the monorepo — e.g., in `$RUNNER_TEMP` or a job-local workspace — using the default (non-`--local`) `gen.shell` invocation.
-2. The clean-room job must have no access to the monorepo `packages/` directory to prevent accidental local resolution.
-3. It must run `swift build` (or `xcodebuild -resolvePackageDependencies`) and `gradle build` against the published mirror tag and Maven Central artifact.
-4. This lane must be required (merge-blocking) and must run after Phase A completes (published deps exist) and after Phase B completes (templates emit correct coordinates).
+The v12.0 LEDG-01 work must define a resolution condition, not just create ledger files. The resolution condition should be: "every phase in every active milestone has a `*-VALIDATION.md` with `nyquist_compliant: true` and at least one `tested_by:` or `evidence:` reference." The deferral status should move to `resolved` only when that condition is met for all historically deferred phases. Do not close LEDG-01 by marking the deferral `resolved` in the CLOSEOUT.md while leaving the underlying ledger files absent or empty.
 
 **Warning signs:**
-- Proof lanes run `gen.shell --local` or reference `packages/` paths.
-- CI proof passes even when `github.com/szTheory/crosswake-shell-core-ios` does not exist.
-- No temp-directory scaffold step in any workflow file.
+- `prior_validation_debt_check` output shows `(stale)` next to the `tighten-validation-ledger-closeout-gate` entry.
+- The LEDG-01 deferral has been carried across more than three milestones with the same `reason:` text and no updated `evidence:`.
+- The new milestone's CLOSEOUT.md marks the deferral `status: resolved` but no new `*-VALIDATION.md` files were added in the milestone.
 
-**Phase to address:** Phase B (clean-room proof). The lane should be the final gating step that proves both Phase A (real published deps) and Phase B (correct template coordinates) together.
+**Phase to address:**
+LEDG-01 phase (dedicated closeout-gate tightening). Must produce actual ledger artifacts, not only a status-field edit.
 
 ---
 
-### Pitfall 11: Re-Tagging an Existing SwiftPM Version Tag (IRREVERSIBLE for Adopters)
+### Pitfall 11: Doc-Truth Precedence — Which File Wins When Documents Disagree?
 
 **What goes wrong:**
-If a tag (`0.1.2`) is pushed to the mirror repo, an adopter resolves it and their `Package.resolved` locks the commit hash. If the tag is force-deleted and re-created pointing at a different commit, any adopter who has already resolved the old commit sees a hash mismatch — `swift package resolve` fails with a "checksum mismatch" or "different package at this version" error. The only fix is for every adopter to delete their `Package.resolved` and re-resolve, which may pull a different (newer) patch.
+The milestone context identifies a specific instance: `v1.0-MILESTONE-AUDIT.md` scores v8.0 at 0/10 while `PROJECT.md` marks those same requirements ✓, and `MILESTONES.md` has no v8.0 entry at all. These three documents have different purposes:
+
+- `PROJECT.md` Requirements section: tracks whether a requirement has been validated across all milestones. Its ✓ marks are the authoritative shipped state after resolution — but they can be edited optimistically without verifying the audit file.
+- `v1.0-MILESTONE-AUDIT.md`: a point-in-time automated snapshot taken at a specific moment. Its `0/10` score reflects that VERIFICATION.md was missing for phases 99-101 at the time of the audit — not that the requirements are permanently unsatisfied.
+- `MILESTONES.md`: a human-curated changelog of completed milestones. v8.0 does not appear here because it was shipped and summarized inline in `PROJECT.md` rather than getting a standalone MILESTONES.md entry.
+
+The trap is treating a stale audit snapshot as the authoritative truth about current state, or treating PROJECT.md ✓ marks as proof that requirements were validated when they may have been marked done without a verification artifact.
 
 **Why it happens:**
-A tag is pushed too early (e.g., before the subtree mirror has the correct content), then force-pushed to fix it.
+There is no documented precedence order. When docs disagree, a reader must infer which is more current or more authoritative, and they will guess wrong. Both conclusions available from reading the two documents are incorrect: "requirements are unresolved today" (from audit) and "there is nothing to fix in E2E" (from PROJECT.md ✓).
 
 **How to avoid:**
-1. Never force-push or re-create a tag on the mirror repo.
-2. Run the subtree-split in CI against the monorepo's release tag, not against `main`. This ensures the mirrored content matches the released Hex package.
-3. If a tag is botched before any adopter has resolved it (within minutes of publish), delete the release on GitHub, delete the tag, and push a corrected new version tag. This is only acceptable if no `Package.resolved` files in the wild have locked the old hash.
-4. Otherwise: publish `0.1.3` with the fix and communicate the skip.
+Establish and document a precedence rule for this repo:
+
+1. `MILESTONES.md` (human-curated, post-archival) — authoritative for shipped state after a milestone is closed and archived.
+2. `PROJECT.md` Requirements section — authoritative during active work; ✓ marks must be backed by a VERIFICATION.md or CI run reference, not assumed to imply perfect proof.
+3. `v*-MILESTONE-AUDIT.md` files — point-in-time audit snapshots. A score of `0/10` with `gaps_found` means verification artifacts were missing at audit time, not necessarily that the work was not done. Both can be true simultaneously: the work shipped but the verification artifacts were incomplete; the audit gap is the honest record of that verification debt.
+
+The doc-truth reconciliation task for v12.0 should write this rule down and reconcile the v8.0 discrepancy by adding a MILESTONES.md entry for v8.0 or annotating `v1.0-MILESTONE-AUDIT.md` to note that the requirements were subsequently satisfied post-audit.
 
 **Warning signs:**
-- CI subtree job pushes to the mirror on every `main` push rather than only on `release_created`.
-- Tag creation happens in a manually-run job rather than the automated release pipeline.
+- A developer reads `v1.0-MILESTONE-AUDIT.md` and concludes SYNC-01/SYNC-02/SYNC-03 are permanently unvalidated.
+- A developer reads PROJECT.md ✓ marks and concludes the E2E is already correct.
+- Neither document explains its own authority scope relative to the other.
 
-**Phase to address:** Phase A (native publish-config). The CI job design must be review-gated so force-push is structurally prevented (branch protection on mirror + no `--force` in the push command).
-
----
-
-### Pitfall 12: Wrong Maven namespace — `io.github.sztheory` Requires Verified Public GitHub Org/User
-
-**What goes wrong:**
-Maven Central's `io.github.*` namespace requires proof of ownership. The namespace `io.github.sztheory` maps to GitHub user `szTheory` (case-insensitive in GitHub, but case-sensitive in Maven GAV). If the namespace was not verified during initial Central Portal account setup, the upload is rejected with a namespace ownership error — not a POM error, a different class of failure entirely.
-
-**Why it happens:**
-The Central Portal's namespace verification is a one-time per-namespace step that happens during account setup. Developers who skip or rush setup and go straight to publishing hit this at upload time.
-
-**How to avoid:**
-1. Complete the Central Portal namespace verification for `io.github.sztheory` before writing a single line of publish config. The process requires creating a temporary public GitHub repository whose name matches the verification token Sonatype provides.
-2. Use `io.github.sztheory` (all lowercase) as the Maven `groupId` — Maven GAV is case-sensitive and `szTheory` vs `sztheory` would be a different namespace.
-3. Verify the namespace is listed as "verified" in the Central Portal dashboard before attempting any upload.
-
-**Warning signs:**
-- Central Portal account exists but namespace verification step was never completed.
-- `build.gradle.kts` has `namespace = "dev.crosswake.shell.core"` (the Android namespace) — this is the application namespace, NOT the Maven groupId. They must be different: Maven groupId should be `io.github.sztheory`.
-- Upload rejects with namespace/ownership error rather than POM validation error.
-
-**Phase to address:** Phase A (native publish-config). Namespace verification is a prerequisite to all Android publish work.
+**Phase to address:**
+Doc-truth reconciliation phase (small, standalone). Should precede or accompany the E2E rewrite so "what is the current honest state" is settled before new claims are made.
 
 ---
 
@@ -299,13 +278,11 @@ The Central Portal's namespace verification is a one-time per-namespace step tha
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Keep `exactVersion` in iOS template | Reproducible adopter builds | Adopter can't receive patch/minor fixes without regenerating shell | Never — switch to `upToNextMajorVersion` |
-| Skip dry-run publish in CI | Faster first publish | Botched release burns a Maven Central version permanently | Never |
-| Gate native publish on `release: published` event | Cleaner separation of concerns | GITHUB_TOKEN loop-prevention means the job never fires | Never — use `needs:` in the same workflow |
-| Keep version literals in templates | Simpler template code | Version drifts from Hex axis silently; adopter gets ABI mismatch | Never for release coordinates |
-| Shallow clone (`fetch-depth: 1`) in subtree-push CI job | Faster CI clone | splitsh-lite produces broken commit trees without full history | Never for the subtree-push job |
-| Run clean-room proof with `--local` | Proof lane works without publishing | Proves nothing about the published install path | Never as the acceptance gate |
-| Leave `release-please-config.json` single-package | No config change needed now | Hex and native versions advance independently; generated code references non-existent native versions | Never once native publishing is wired |
+| Fabricate outbox via `page.evaluate()` | Green E2E in hours, no reconnect timing issues | Hides compile breaks; never exercises real JS flush path; gives false confidence on SYNC-01/02 | Never — the entire value of E2E is exercising the application under test |
+| Mark `nyquist_compliant: true` without evidence | Unblocks milestone closeout gate | Ledger becomes a bureaucratic ritual; future audits cannot distinguish compliant from placeholder | Only if a specific CI run ID or test name is cited alongside |
+| Carry `deferred_with_reason` without a resolution condition | Defers debt without commitment | Debt compounds; `prior_validation_debt_check` perpetually flags stale deferrals; future maintainers cannot tell if "stale" means "fixed" or "forgotten" | Acceptable once per deferral if `revisit_phase` is set; unacceptable across 4+ milestones |
+| Leave advisory lane without `continue-on-error: true` | Appears to be a required gate | Developers assume it blocks merges; trust in CI signals erodes | Never — the advisory/required split must be explicit |
+| No `mix compile` step before Playwright | Faster workflow setup | Compile errors surface as opaque port-connection timeouts in CI | Never for a merge-blocking lane |
 
 ---
 
@@ -313,25 +290,24 @@ The Central Portal's namespace verification is a one-time per-namespace step tha
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Maven Central Portal | Not uploading sources+javadoc jars — upload silently accepts but reviewer rejects | Vanniktech maven-publish auto-generates them; verify `*-sources.jar` and `*-javadoc.jar` are in the local Maven layout before publishing |
-| Maven Central Portal | Using `-SNAPSHOT` suffix on a release version | Strip `-SNAPSHOT`; releases must use plain semver. release-please elixir type produces clean versions |
-| SwiftPM mirror repo | Pushing to mirror on every commit | Only push tagged versions to mirror; continuous pushes produce unversioned commits that SPM cannot resolve by version |
-| release-please linked-versions | Adding iOS `Package.swift` to `extra-files` | `Package.swift` has no version field — version comes from git tag. Only annotate `build.gradle.kts` and `mix.exs` in extra-files |
-| Central Portal GPG | Using a subkey instead of the primary key ID in CI | Export the subkey and primary — Central Portal verifies the primary key is on a keyserver |
-| splitsh-lite | Missing `--scratch` flag causes history bleed between runs | Use `splitsh-lite --prefix packages/crosswake-shell-core-ios --scratch` in CI to ensure clean splits |
+| CDP `setOffline` | Assuming it triggers `window.online` event | Verify with `page.waitForFunction(() => navigator.onLine)` or poll a UI indicator after `setOffline(false)` before asserting |
+| Playwright `webServer` + Phoenix | Assuming startup failure shows as a clear error | Add explicit `mix compile` step; server startup failure surfaces as an Elixir error, not a Playwright timeout |
+| GitHub branch protection + job rename | Renaming a job drops it from required checks silently | Document required check name in YAML comment; verify via `gh api` after any rename |
+| `CloseoutVerifier` + STATE.md | Stale or missing `milestone:` key in STATE.md frontmatter causes `phase_paths/4` to return empty | Verifier should assert `milestone != nil` before evaluating phase artifact globs |
+| IndexedDB + Playwright test isolation | Shared context carries IndexedDB state between tests | Use `browser.newContext()` per test or `indexedDB.deleteDatabase(...)` in `beforeEach` |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Native publish configured:** The presence of `build.gradle.kts` does not mean publish config is present — verify `group`, `version`, Vanniktech plugin, POM block, and signing config are all declared.
-- [ ] **iOS mirror repo:** A `Package.swift` that compiles locally is not a published package — the dedicated mirror repo must exist, have at least one semver tag, and be resolvable by a clean `swift package resolve` invocation outside the monorepo.
-- [ ] **Generator templates rewired:** The generator running without error is not proof the coordinates are correct — check the rendered output for the exact URL, groupId, and version string before any clean-room test.
-- [ ] **Version derived at generate-time:** `Application.spec(:crosswake)[:vsn]` returning a value in development does not guarantee it returns the correct value when the Hex package is installed by an adopter — test from a fresh `mix archive.install hex crosswake` environment.
-- [ ] **Clean-room proof passes:** An in-monorepo build passing `--local` does not prove the published dep path — the clean-room lane must scaffold outside the repo and prove `swift build` + `gradle build` succeed against published artifacts.
-- [ ] **GPG key on keyserver:** `gpg --list-keys` showing the key locally does not mean it is on a keyserver — run `gpg --keyserver keyserver.ubuntu.com --recv-keys <KEY_ID>` from a machine that never saw the key to verify.
-- [ ] **release-please manifest covers all packages:** `release-please` completing without error on the current single-package config does not mean all three artifacts advance in lockstep — verify `release-please-config.json` packages block and `linked-versions` plugin are both present.
-- [ ] **Lockstep verified end-to-end:** A CI run completing does not mean the three version coordinates match — add an explicit assertion step that compares `mix.exs @version`, `build.gradle.kts version`, and the latest mirror repo tag.
+- [ ] **Real E2E:** Playwright test contains no `page.evaluate()` that writes to a `window[...]` global or calls `fetch` directly — verify by grepping test files for `page.evaluate` calls that assign to application state.
+- [ ] **Compile gate:** The E2E workflow has an explicit `mix compile --warnings-as-errors` step in `examples/phoenix_host` before the Playwright step.
+- [ ] **Branch-protection registered:** The new E2E workflow's job `name:` is listed in the branch-protection required status checks and documented in a YAML comment — verified via `gh api repos/{owner}/{repo}/branches/main/protection`.
+- [ ] **Advisory lanes marked:** Every non-required CI lane has `continue-on-error: true` and an `echo "::notice"` step declaring its advisory status.
+- [ ] **Ledger artifacts exist:** Every phase in v12.0 has a `*-VALIDATION.md` file under the archived phase directory with `nyquist_compliant: true` AND a `tested_by:` or `evidence:` reference to a specific test or CI run.
+- [ ] **LEDG-01 deferral resolved:** The `tighten-validation-ledger-closeout-gate` entry in prior CLOSEOUT.md files has `status: resolved` AND the corresponding ledger files now exist (not just the status field changed).
+- [ ] **Fallback phase list removed or hardened:** `CloseoutVerifier` does not silently fall back to `@v40_phases` for missing `expected_phases:` frontmatter — it raises or returns a hard error.
+- [ ] **Doc precedence documented:** The rules for which document wins when PROJECT.md, a MILESTONE-AUDIT.md, and MILESTONES.md disagree are written down and visible to future maintainers.
 
 ---
 
@@ -339,13 +315,14 @@ The Central Portal's namespace verification is a one-time per-namespace step tha
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Burned Maven Central version | LOW-MEDIUM | Publish corrected artifact under the next patch version; document the skipped version in CHANGELOG; tell adopters to use the new version |
-| Wrong iOS mirror tag | LOW (if caught before adoption) | Delete the GitHub release + tag (before any adopter resolves it); push corrected tag; HIGH if adopters have already locked the hash — publish new version |
-| Wrong coordinates in generated code | MEDIUM | Push a patch release with corrected templates; adopters re-run `gen.shell` but the "scaffold once" posture means they may have edited the generated files — document migration steps |
-| GPG key not on keyserver | LOW | Push the public key to keyserver; re-run the publish CI job |
-| GITHUB_TOKEN not triggering native publish | LOW | Move native publish jobs into the release-please workflow using `needs:` pattern; no published artifact is lost, the job just never ran |
-| splitsh shallow clone producing broken mirror | MEDIUM | Re-run the split with `fetch-depth: 0`; force-push to the mirror tag only if no adopter has resolved it yet |
-| Wrong namespace verification | LOW (before first publish) | Complete the Central Portal verification flow; HIGH if a publish was attempted under an unverified namespace — contact Sonatype support |
+| Test-only global injection (discovered post-ship) | MEDIUM | Rewrite test; re-run CI; update VERIFICATION.md with actual run ID; add note to PROJECT.md that prior ✓ was from fabricated E2E |
+| `setOffline` reconnect flake on CI | LOW | Add explicit UI-indicator poll after `setOffline(false)`; confirm passes 5x on Ubuntu runner without retries |
+| IndexedDB state leakage | LOW | Add `beforeEach` database reset; confirm test passes in suite order and reverse order |
+| Missing compile gate (compile break discovered late) | LOW | Add `mix compile` step; re-run; accept the embarrassment that a compile break lived in CI |
+| Advisory lane masquerading as required | LOW | Add `continue-on-error: true`; add `::notice` step; document in YAML comment |
+| Vacuous closeout pass | MEDIUM | Add artifact-existence assertion to verifier; re-run closeout verification; create actual ledger files for affected phases |
+| Stale deferral accumulation | LOW | Define resolution criteria; create ledger files; mark deferral `status: resolved` with evidence |
+| Doc-truth disagreement | LOW | Write precedence rule; add MILESTONES.md entry for v8.0; annotate audit file |
 
 ---
 
@@ -353,35 +330,34 @@ The Central Portal's namespace verification is a one-time per-namespace step tha
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Burned Maven Central version | Phase A: publish-config | Dry-run CI step must pass and be reviewed before real publish |
-| GPG key not on keyserver | Phase A: publish-config | CI pre-publish step verifies key is reachable on keyserver |
-| Relative-path / broken URL in generated code | Phase B: template rewire | Clean-room proof lane scaffolds outside monorepo and confirms `swift build` + `gradle build` succeed |
-| Hardcoded satellite version (drift) | Phase B: template rewire | Doctor "published-dep parity" check asserts generated version = `Application.spec(:crosswake)[:vsn]` |
-| SwiftPM subdir not consumable | Phase A: publish-config | Mirror repo exists with at least one semver tag; `swift package resolve` succeeds against mirror URL |
-| SwiftPM product name mismatch | Phase A (mirror setup) + Phase B (template verification) | CI check on mirror repo verifies `Package.swift` product name matches template expectation |
-| GITHUB_TOKEN not triggering downstream | Phase A: CI wiring | Native publish jobs run as `needs:` in release-please workflow; verify in first release dry-run |
-| release-please not covering all packages | Phase A: publish-config | `release-please-config.json` has all three packages; dry-run PR shows three version bumps |
-| Branch-pinning SwiftPM dep | Phase B: template rewire | Generated `project.pbxproj` uses `upToNextMajorVersion`; template test asserts `kind = upToNextMajorVersion` |
-| Clean-room proof inside monorepo | Phase B: acceptance gate | Proof lane runs in `$RUNNER_TEMP`, no `packages/` in scope, `CROSSWAKE_PHASE5_NATIVE_PROOFS: 1` |
-| Re-tagging existing SwiftPM version | Phase A: CI design | Mirror push job has no `--force`; mirror repo has tag protection; job only runs on `release_created` |
-| Wrong Maven namespace | Phase A: publish-config | Central Portal namespace dashboard shows `io.github.sztheory` as verified before any publish config is written |
+| Test-only global injection (Pitfall 1) | E2E-01: Real network-toggling E2E rewrite | Grep test files for `page.evaluate` assigning to application state; CI run shows real IndexedDB write path |
+| `setOffline` reconnect timing (Pitfall 2) | E2E-01: Real network-toggling E2E rewrite | Test passes on Ubuntu CI without retries; reconnect assertion polls a UI indicator, not a request race |
+| IndexedDB state leakage (Pitfall 3) | E2E-01: Test harness setup | `beforeEach` or new context per test; confirmed by running tests in reverse order with same results |
+| Missing compile gate (Pitfall 4) | E2E-01: Workflow hardening | Introduce a deliberate compile error in phoenix_host; confirm CI catches it before Playwright runs |
+| Advisory lane masquerading as required (Pitfall 5) | Branch-protection hardening phase | `gh api` shows the E2E job `name:` in required checks; advisory lanes have `continue-on-error: true` |
+| Matrix jobs / check-context name drift (Pitfall 6) | Branch-protection hardening phase | Single-browser E2E; no matrix on required job; documented in YAML comment |
+| Vacuous pass from empty glob (Pitfall 7) | LEDG-01: Closeout-gate tightening | Verifier emits an error when `phase_paths` returns empty for an expected phase; test with a deliberately missing ledger |
+| Hardcoded `@v40_phases` fallback (Pitfall 8) | LEDG-01: Closeout-gate tightening | Verifier raises when `expected_phases` is absent; confirmed by removing the key from a test CLOSEOUT.md |
+| Signing VALIDATION.md without evidence (Pitfall 9) | LEDG-01: Closeout-gate tightening | VALIDATION.md schema requires `tested_by:` or `evidence:` field alongside `nyquist_compliant: true` |
+| Stale deferrals without resolution criteria (Pitfall 10) | LEDG-01: Closeout-gate tightening | LEDG-01 deferral entry moves to `status: resolved` in prior CLOSEOUT.md files AND new ledger files exist |
+| Doc-truth precedence (Pitfall 11) | Doc-truth reconciliation phase | Precedence rule is written and reviewed; v8.0 discrepancy is annotated or resolved |
 
 ---
 
 ## Sources
 
-- Maven Central Immutability Policy: https://central.sonatype.org/publish/requirements/immutability/
-- Maven Central POM Requirements: https://central.sonatype.org/publish/requirements/
-- OSSRH Sunset (June 30 2025) confirmed in search results: https://so.nwalsh.com/2025/06/01-maven
-- release-please-action issue #1000 (GITHUB_TOKEN downstream trigger): https://github.com/googleapis/release-please-action/issues/1000
-- release-please manifest mode docs: https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md
-- SwiftPM SE-0292 (root-manifest constraint): https://github.com/swiftlang/swift-evolution/blob/main/proposals/0145-package-manager-version-pinning.md
-- splitsh-lite: https://github.com/splitsh/lite
-- Capacitor SPM branch-pinning issue #7735 (referenced in pre-gathered research)
-- Capacitor relative-path issue #6040 (referenced in pre-gathered research)
-- LiveView Native satellite version drift (referenced in pre-gathered research)
-- Repo-local evidence: `priv/templates/crosswake/shell/android/app/build.gradle.eex` line 54, `priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex` line 56, `packages/crosswake-shell-core-android/build.gradle.kts`, `packages/crosswake-shell-core-ios/Package.swift`, `release-please-config.json`, `.release-please-manifest.json`, `.github/workflows/release-please.yml`
+- `e2e/offline_sync.spec.ts` (this repo) — direct examination of the fabricated mutation injection pattern at lines 21-50
+- `e2e/offline_storage.spec.ts` (this repo) — `addInitScript` storage mock pattern (legitimate for storage boundary tests; distinct from mutation fabrication)
+- `examples/phoenix_host/playwright.config.ts` (this repo) — `serviceWorkers: 'block'`, `retries: 2`, `webServer` command chain
+- `.github/workflows/phase90-proof.yml` (this repo) — missing compile step, missing job `name:`, no `continue-on-error`, no branch-protection comment
+- `.github/workflows/brandbook-verify.yml` (this repo) — correct advisory/required split pattern with `continue-on-error: true` and `::notice`
+- `lib/crosswake/planning/closeout_verifier.ex` (this repo) — `@v40_phases` hardcoded fallback at line 28, `phase_paths/4` wildcard glob at lines 563-574, escape hatch in `validation_ledger_check/2`
+- `.planning/MILESTONES.md` (this repo) — v6.0 known issues: "hidden by the mocked Playwright closeout"; v8.0-v11.0 carried `tighten-validation-ledger-closeout-gate`
+- `.planning/PROJECT.md` Key Decisions (this repo): "Stub a mocked Playwright E2E offline-sync flow for the v6.0 closeout gate — Revisit — mock hid a demo-app compile break"
+- `.planning/v1.0-MILESTONE-AUDIT.md` (this repo) — scores v8.0 at 0/10 (phases 99-101 missing VERIFICATION.md); PROJECT.md marks those requirements ✓
+- `.planning/milestones/v8.0-ROADMAP.md` (this repo) — "Accepted tech debt: Verification gaps on phase 99, 100, 101 noted in v1.0-MILESTONE-AUDIT.md"
+- `.planning/STATE.md` (this repo) — LEDG-01 acknowledged and carried through v11.0 without resolution
 
 ---
-*Pitfalls research for: Multi-language publishing + generator rewiring (v11.0 Release & Distribution Truth)*
-*Researched: 2026-06-14*
+*Pitfalls research for: CI Honesty / Real-E2E Sweep (v12.0)*
+*Researched: 2026-06-17*
