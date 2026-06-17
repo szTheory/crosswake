@@ -57,7 +57,7 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 
 ### v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — ACTIVE
 
-- [ ] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect
+- [x] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect (completed 2026-06-17)
 - [ ] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate
 - [ ] **Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard** - Lock the lane as a required status check and structurally prevent reversion
 - [ ] **Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth** - Tighten the verifier, create missing ledgers, settle v8.0 doc contradictions
@@ -75,8 +75,8 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
   4. `mix test` passes with the mock removed — no test depends on the deleted mock handler
 **Plans**: 2 plans
 Plans:
-- [ ] 112-01-PLAN.md — Real IndexedDB outbox flush + Good/Hard rating controls + honest sync status (offline_study.js, index.html.heex)
-- [ ] 112-02-PLAN.md — De-mock study_session_live.ex (remove sync_outbox handler/button/assigns); mix test stays green
+- [x] 112-01-PLAN.md — Real IndexedDB outbox flush + Good/Hard rating controls + honest sync status (offline_study.js, index.html.heex)
+- [x] 112-02-PLAN.md — De-mock study_session_live.ex (remove sync_outbox handler/button/assigns); mix test stays green
 
 ### Phase 113: Honest E2E Rewrite + Compile Gate
 **Goal**: `offline_sync.spec.ts` proves the full offline→reconnect→reconcile loop using only the app's own code paths, and the CI workflow fails loudly on a demo-app compile break instead of masking it as a Playwright port timeout
@@ -129,7 +129,7 @@ Plans:
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
-| 112. Real Offline Outbox Flush | v12.0 | 0/2 | Not started | - |
+| 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 0/TBD | Not started | - |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 0/TBD | Not started | - |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |
