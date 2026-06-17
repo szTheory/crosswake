@@ -5,6 +5,13 @@
 *.beam
 .DS_Store
 
+# Secrets / keys — NEVER commit (signing keys, certs, tokens)
+*.asc
+*.gpg
+*.pem
+*.p12
+crosswake-signing.asc
+
 # Generated docs (mix docs)
 /doc/
 
@@ -20,6 +27,7 @@ erl_crash.dump
 # iOS
 /**/DerivedData/
 /**/build/
+**/.build/
 
 # Android
 /**/.gradle/
@@ -39,3 +47,8 @@ erl_crash.dump
 /brandbook/e2e/node_modules/
 /brandbook/e2e/playwright-report/
 /brandbook/e2e/test-results/
+
+# Node deps + Playwright artifacts (anywhere — examples, tooling)
+**/node_modules/
+**/playwright-report/
+**/test-results/

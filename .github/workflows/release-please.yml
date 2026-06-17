@@ -365,8 +365,16 @@ jobs:
           echo "Asserting artifacts for version: $VERSION"
           ARTIFACT_DIR="$HOME/.m2/repository/io/github/sztheory/crosswake-shell-core-android/$VERSION"
 
-          for ext in aar sources.jar javadoc.jar pom; do
-            ARTIFACT="$ARTIFACT_DIR/crosswake-shell-core-android-${VERSION}.${ext}"
+          # Maven classifier artifacts (sources/javadoc) use a HYPHEN before the
+          # classifier (e.g. -0.1.0-sources.jar); main artifacts (aar/pom) use a
+          # dot (e.g. -0.1.0.aar). The earlier `.${ext}` form looked for
+          # `.sources.jar`/`.javadoc.jar`, which never exist.
+          for artifact in \
+            "crosswake-shell-core-android-${VERSION}.aar" \
+            "crosswake-shell-core-android-${VERSION}-sources.jar" \
+            "crosswake-shell-core-android-${VERSION}-javadoc.jar" \
+            "crosswake-shell-core-android-${VERSION}.pom"; do
+            ARTIFACT="$ARTIFACT_DIR/$artifact"
             if [ ! -f "$ARTIFACT" ]; then
               echo "MISSING ARTIFACT: $ARTIFACT"
               exit 1
