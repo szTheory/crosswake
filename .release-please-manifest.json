@@ -1,5 +1,5 @@
 {
-  ".": "0.1.0",
-  "packages/crosswake-shell-core-ios": "0.1.0",
-  "packages/crosswake-shell-core-android": "0.1.0"
+  ".": "0.1.2",
+  "packages/crosswake-shell-core-ios": "0.1.2",
+  "packages/crosswake-shell-core-android": "0.1.2"
 }
