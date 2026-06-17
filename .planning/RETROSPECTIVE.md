@@ -470,6 +470,42 @@
 - **Session shape:** Two-day milestone (2026-06-13 → 2026-06-14), 3 phases / 10 plans, 74 files changed (+9,509 / −368).
 - **Carried-forward debt:** the `tighten-validation-ledger-closeout-gate` quick task remains deferred (pre-existing since v8.0); no new deferred work introduced.
 
+## Milestone: v11.0 — Release & Distribution Truth
+
+**Shipped:** 2026-06-17
+**Phases:** 2 (110-111) | **Plans:** 8
+
+### What Was Built
+- iOS SPM core auto-mirrored to `szTheory/crosswake-shell-core-ios` via splitsh-lite subtree (`fetch-depth: 0`) with annotated semver tags; Android core published to Maven Central under verified `io.github.sztheory` (Vanniktech → Central Portal, signed POM).
+- release-please manifest mode + `linked-versions` lockstep so one release advances Hex + iOS tag + Maven artifact to identical versions; native publish jobs gated `needs: release-please` + `if: releases_created` (not a `release: published` listener the default token would never fire).
+- `mix crosswake.gen.shell` rewired to inject `Application.spec(:crosswake)[:vsn]` at generate-time into published coordinates — no version literal, placeholder remote and relative-path default removed.
+- Clean-room CI lane scaffolding a host in `$RUNNER_TEMP` outside the monorepo, proving `swift build` / `gradle build` resolve the *published* deps and compile; permanent merge-blocking `generator_coordinate_parity` readiness check.
+- Footgun-aware 8-section SETUP credential runbook + a dispatch-only validated-upload→DROP Android fire-drill + a lockstep-truth assertion; install docs reconciled to published truth; `crosswake 0.1.2` cut live to all three registries.
+
+### What Worked
+- **Dependency-ordered two-phase split held** — Phase 110 (publish + lockstep) strictly before Phase 111 (rewire + prove + release); you can't clean-room-prove an unpublished dep, and the ordering prevented cutting Hex while `gen.shell` still emitted broken coordinates.
+- **The fire-drill earned its keep** — the dispatch-only validated-upload→DROP lane and dry-run gates meant the irreversible first publish wasn't the first time the pipeline ran; the live cut still surfaced bugs, but no immutable version was burned.
+- **Parity guard makes the thesis permanent** — a point-in-time clean-room proof plus a merge-blocking structural check (sibling to v10.0's `brand-structural`) keeps the eject-trap claim honest going forward, not just at release.
+
+### What Was Inefficient
+- **Latent pipeline bugs only surfaced on the live run** — fire-drill artifact-name assertion, missing Android auto-publish flag (`-PcrosswakeAutomaticRelease=true`), Central Portal poll auth/endpoint shape (Bearer + `/status?id=` + `/deployment/{id}`, no list endpoint), and splitsh-lite version (`v1.0.1`, not assetless `v2.0.0`) all needed post-cut fixes (PRs #20/#21/#22). A real (non-dispatch) end-to-end dry run would have caught some earlier.
+- **iOS mirror completed out-of-band** — the splitsh 404 failed before the iOS push step, so the 0.1.2 mirror was done manually via `git subtree split`; the clean-room PROOF-01 jobs were skipped on the 0.1.2 run (Hex+Maven verified independently). `MIRROR_PUSH_TOKEN` scope stays unexercised until the next release.
+- **Release-checkpoint plan has no SUMMARY** — 111-05 was a non-autonomous PR-merge/Actions checkpoint, so `roadmap.analyze` reported the milestone as 88%/partial at close; the milestone-complete CLI then re-derived STATE progress down to 50%. Both needed manual reconciliation against the shipped reality.
+
+### Patterns Established
+- **Gate irreversible publishes behind a dispatch-only validated-upload→DROP fire-drill** plus dry-run + GPG/namespace preflight, before any real cut.
+- **Lockstep generated-code coordinates via release-please `linked-versions`** with one version source (`Application.spec`), never independent per-platform versioning.
+- **Prove external consumption clean-room (outside the monorepo) AND lock it with a structural parity check** — the proof is point-in-time; the check is the guarantee.
+
+### Key Lessons
+- **A dispatch-only fire-drill is not a full dry run** — it validated upload+drop but didn't exercise the release-gated trigger path, so trigger/auth/version bugs still waited for the live cut. Exercise the real trigger path against a throwaway version when the publish is irreversible.
+- **Release-checkpoint plans break progress derivation** — a non-autonomous PR-merge plan never produces a SUMMARY, so `roadmap.analyze` and `milestone.complete` under-count it; expect to reconcile STATE/ROADMAP by hand and consider a checkpoint-plan convention the tooling recognizes.
+- **CLI placeholder-bullet tax struck a fifth time** — the 110 SUMMARYs' one-liners didn't extract; MILESTONES.md accomplishments were hand-authored yet again.
+
+### Cost Observations
+- **Session shape:** Four-day milestone (2026-06-14 → 2026-06-17), 2 phases / 8 plans, 81 commits; the first live release execution dominated the tail.
+- **Carried-forward debt:** `tighten-validation-ledger-closeout-gate` (= LEDG-01) still deferred (pre-existing since v8.0); `MIRROR_PUSH_TOKEN` scope unexercised, validated on the next release.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -493,4 +529,7 @@
 | Single generated source must cover the whole surface | v10.0 found typography/dimension were a second hand-maintained source even after v9.0 froze color tokens; normalization required generating font + dimension too | When establishing a generated source of truth, generate every consumed dimension of it up front — a partial source invites silent drift in the ungenerated parts |
 | Normalize the cause, not the referencing symptom | v10.0's drifted colors lived in an `.ex`-emitted Tailwind theme, not the `.eex` templates referencing it; CONTEXT-phase discovery caught the real third consumer | Before normalizing consumers, trace values to their actual emission source — referencing code is a symptom, not the source |
 | Structural gates need adversarial hardening | v10.0's drift script took five `fix(109)` rounds to close hex/class-attr detection gaps (substring false positives, 4/8-digit hex, quote styles) | Ship structural CI checks with a contract/fixture test suite from the start and budget a hardening pass; naive grep-style detection has predictable false-positive/negative gaps |
-| CLI placeholder-bullet tax is chronic | v3.4, v3.9, and now v10.0 all emitted `One-liner:` placeholders into MILESTONES.md at close | Either fix SUMMARY one-liner authoring at phase close or fix the extraction CLI; it has recurred across four milestones |
+| CLI placeholder-bullet tax is chronic | v3.4, v3.9, v10.0, and now v11.0 all emitted `One-liner:` placeholders into MILESTONES.md at close | Either fix SUMMARY one-liner authoring at phase close or fix the extraction CLI; it has recurred across five milestones |
+| Irreversible publishes need a fire-drill, and a fire-drill is not a full dry run | v11.0 gated Maven/SPM behind a dispatch-only validated-upload→DROP lane + dry-run; no version was burned, but trigger/auth/version bugs still waited for the live cut | For immutable/irreversible releases, exercise the real release-gated trigger path against a throwaway version — a dispatch-only drill validates upload but not the trigger/auth/version wiring |
+| Release-checkpoint plans break progress derivation | v11.0's 111-05 was a non-autonomous PR-merge/Actions checkpoint with no SUMMARY; `roadmap.analyze` reported 88%/partial and `milestone.complete` re-derived STATE to 50% | Non-autonomous checkpoint plans need a tooling-recognized convention (or expect to hand-reconcile STATE/ROADMAP against shipped reality at close) |
+| Distribution truth is now closed | v5.0 built standalone cores but left them undistributed (`gen.shell` referenced nonexistent deps); v11.0 published all three registries lockstep, proved clean-room build, and added a permanent parity guard | The eject-trap thesis is now genuinely consumable and self-defending; future generator/capability work builds on a real install path, not an aspirational one |
