@@ -42,7 +42,13 @@ dependencies {
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+    // Default false: upload stops at VALIDATED so the fire-drill can validate then
+    // DROP without consuming the coordinate. The real release job opts in with
+    // -PcrosswakeAutomaticRelease=true so the deployment auto-publishes to Maven
+    // Central once validated (no manual Portal click, lets clean-room-proof resolve it).
+    val automaticRelease =
+        (project.findProperty("crosswakeAutomaticRelease") as String?)?.toBoolean() ?: false
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = automaticRelease)
     signAllPublications()
 
     coordinates("io.github.sztheory", "crosswake-shell-core-android", version.toString())
