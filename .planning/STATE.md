@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: active
-last_updated: "2026-06-17"
-last_activity: 2026-06-17
+status: planning
+last_updated: "2026-06-17T21:38:52.808Z"
+last_activity: 2026-06-17 — v12.0 roadmap created
 progress:
   total_phases: 4
   completed_phases: 0
@@ -48,6 +48,7 @@ Last activity: 2026-06-17 — v12.0 roadmap created
 Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archived there.
 
 **v12.0 key decisions (2026-06-17, locked by research):**
+
 - Offline-sync reconnect flush is triggered by `window 'online'` event on the existing socketless `/offline` island — no migration to a LiveView route. The island is socketless by design (`put_root_layout(false)`); migrating would delete the proof the library exists to provide.
 - The vestigial `StudySessionLive` `sync_outbox` mock is removed entirely, not relabeled as a manual-sync affordance. Labeling it "Manual Sync" would misrepresent the mechanism (server-side Elixir list, not client IndexedDB outbox) — a fresh dishonesty.
 - Phase ordering is fixed: 112 (app change) → 113 (test rewrite + compile gate) → 114 (merge-blocking gate + permanent guard). Phase 115 (closeout/ledger/doc track) is independent and parallelizable but must complete before milestone close. Within Phase 115: GATE-02 must precede DEBT-01.
@@ -79,9 +80,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-06-17 (v12.0 roadmap creation)
-Stopped at: Roadmap written (Phases 112-115), REQUIREMENTS.md traceability filled, STATE.md updated
-Resume file: None
+Last session: 2026-06-17T21:38:52.803Z
+Stopped at: Phase 112 context gathered
+Resume file: .planning/phases/112-real-offline-outbox-flush/112-CONTEXT.md
 
 ## Operator Next Steps
 
