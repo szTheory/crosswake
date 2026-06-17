@@ -9,24 +9,10 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
-- **v11.0 Release & Distribution Truth — in progress (started 2026-06-14)**
-  - Phase 110 (Native Publish & Lockstep Infrastructure) complete 2026-06-14 — release-please linked-versions lockstep config, signed Android Maven Central publish config, iOS subtree-mirror + Android publish CI jobs + validated-upload→drop fire-drill, SETUP.md provisioning runbook. No real publish yet (D-01); 4 human-UAT items deferred to Phase 111.
-  - Phase 111 (Generator Rewire, Clean-Room Proof & Release) next.
-- v10.0 Brand Normalization shipped + archived (2026-06-14)
+- **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
+- **Next:** planning the next milestone (`/gsd:new-milestone`). Suggested wedge: CI honesty / real-E2E sweep.
 
-## Current Milestone: v11.0 Release & Distribution Truth
-
-**Goal:** Make the v5.0 standalone-package thesis actually consumable — publish the native cores, lockstep-version them with the Hex package, rewire `mix crosswake.gen.shell` to published coordinates, and prove an outsider can build, before adding any feature breadth.
-
-**Target features:**
-- Publish the iOS SPM core via subtree-mirror to `github.com/szTheory/crosswake-shell-core-ios` with semver tags (SwiftPM root-manifest constraint forbids monorepo-subdir consumption; Apollo iOS / `splitsh-lite` pattern).
-- Publish the Android core to Maven Central under verified `io.github.sztheory` (Vanniktech `maven-publish` + Central Portal; GPG signing, mandatory POM, immutable releases).
-- Rewire `gen.shell` templates to inject `Application.spec(:crosswake)[:vsn]` at generate-time into versioned dep coordinates; delete the placeholder remote and relative-path default; derive every native dep version from the one source of truth.
-- Lockstep versioning via release-please manifest mode + `linked-versions` (Hex + iOS tag + Maven carry one version); native publish jobs gated on `needs: release-please` + `if: releases_created`.
-- A clean-room CI acceptance lane that scaffolds a host **outside the monorepo** (default, not `--local`) and proves `swift build` / `gradle build` resolve the published deps and compile.
-- Reconcile `guides/adoption.md`, support matrix, and CHANGELOG to published truth; cut Hex `0.1.2`.
-
-**Key context:** Research is pre-gathered in `.planning/threads/release-distribution-truth.md` (ecosystem footguns, per-platform distribution how-to, lockstep mechanics). Suggested phase split: A = native publish-config + publish + Hex cut; B = template rewire + clean-room build proof + doc reconciliation. Graduation candidate: a permanent `doctor`/closeout "published-dep parity" check. Adopter-facing gaps (real-E2E, native device proof, docs consolidation) are explicitly downstream and out of scope for this milestone.
+**Shipped `v11.0 Release & Distribution Truth` on `2026-06-17`** (Phases 110-111, 8 plans). v11.0 turned the built-but-undistributed v5.0 thesis into a real install path. It published the iOS SPM core via splitsh-lite subtree mirror to `github.com/szTheory/crosswake-shell-core-ios` (annotated semver tags) and the Android core to Maven Central under verified `io.github.sztheory` (signed POM via Vanniktech → Central Portal), with release-please `linked-versions` advancing all three registries to one version per release and native publish jobs gated on `needs: release-please` + `if: releases_created`. It rewired `mix crosswake.gen.shell` to inject the live `Application.spec(:crosswake)[:vsn]` into published dep coordinates at generate-time (no version literal), proved the thesis outside the monorepo with a `$RUNNER_TEMP` clean-room CI lane (`swift build` / `gradle build` against the just-published deps), and made the guarantee permanent with a merge-blocking `generator_coordinate_parity` readiness check. A footgun-aware SETUP runbook plus a dispatch-only validated-upload→DROP fire-drill and a lockstep-truth assertion de-risked the irreversible first publish. Docs were reconciled to published truth, and `crosswake 0.1.2` was cut (REL-01) — the first live run surfaced and fixed latent pipeline bugs (fire-drill artifact assertion, Android auto-publish flag, Central Portal poll auth/endpoint, splitsh-lite version). All 11 v1 requirements satisfied.
 
 **Shipped `v10.0 Brand Normalization` on `2026-06-14`** (Phases 107-109, 10 plans). v10.0 made `tokens.css` the genuine single source of truth for the brand system. The compiler (`compile-tokens.js`) now emits the full token set — `font.*` and `dimension.*` (type/display scale, radius) alongside color — into `tokens.css` with a byte-identical packaged mirror at `priv/static/crosswake/tokens.css`, distributed through one documented path (verbatim copy + `<link>`, `guides/tokens.md`). Both drifted consumers were rewired onto the semantic `--cw-*` tier: the example host's served `app.css` + standalone offline page (flat palettes, primitives, inline font stacks, and the duplicate `assets/css/app.css` all removed; D-12) and the `offline_ui` generator (Tailwind-free templates + vendored `offline.css`, with the stale legacy theme retired from `crosswake.gen.offline_ui.ex`). The generator test now pins the token-backed contract, and a D-13 Playwright render-verify gate measured all surfaces in light + dark (every text element ≥4.5:1, status affordances ≥3:1; two real AA failures caught and fixed; human sign-off approved). A browser-free `brand-structural` drift gate (`check-consumer-drift.mjs` + contract tests + CI wiring) now fails the build on any reintroduced brand hex or dropped token reference. TOKN-04/05, NORM-01/02/03/04, PROOF-01 all satisfied.
 
@@ -79,11 +65,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ## Next Milestone
 
-v11.0 Release & Distribution Truth is now the **active** milestone (started 2026-06-14; scope above). Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
+v11.0 shipped (2026-06-17); the install path is now real. No milestone is active — define the next one via `/gsd:new-milestone`.
 
-**Suggested ordering after v11.0:** (2) CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate); (3) onboarding/docs consolidation once the install path is real.
+**Suggested ordering (now that the install path is real):** (1) CI honesty / real-E2E sweep — replace the v6.0 mocked Playwright E2E with a real network-toggling run (`E2E-01`) and resolve the carried `tighten-validation-ledger-closeout-gate` Nyquist debt (`LEDG-01`); (2) onboarding / docs consolidation (`GUIDE-01`: route-policy guide, troubleshooting/rough-edges, web→mobile migration, ExDoc↔guide cross-linking).
 
-**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth deferred as overbuilding on an undistributed base.
+**Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth were deferred as overbuilding on an undistributed base — that base is now distributed, so they can be reconsidered.
+
+**Open follow-up:** `MIRROR_PUSH_TOKEN` `Contents: write` scope is unexercised (the 0.1.2 iOS mirror was completed out-of-band); it is validated by the first iOS mirror on the next release.
 
 ## Requirements
 
@@ -147,6 +135,8 @@ v11.0 Release & Distribution Truth is now the **active** milestone (started 2026
 
 - ✓ **v10.0 Brand Normalization** (all 7 v1 requirements: TOKN-04/05, NORM-01/02/03/04, PROOF-01) — made `tokens.css` the genuine single source of truth: compiler emits font + dimension tokens (not just color) with a packaged mirror and one documented distribution path; the example host CSS and the `offline_ui` generator (templates + vendored `offline.css`, stale legacy theme retired) rewired onto the semantic `--cw-*` tier with no duplicated palettes, inline font stacks, or Tailwind; generator test pins the token contract; and a browser-free `brand-structural` drift gate fails the build on reintroduced brand hex or dropped token references. Validated across Phases 107-109; full detail in `.planning/milestones/v10.0-REQUIREMENTS.md`.
 
+- ✓ **v11.0 Release & Distribution Truth** (all 11 v1 requirements: PUB-01/02/03, LOCK-01/02, GEN-01/02, PROOF-01/02, DOCS-01, REL-01) — made the v5.0 standalone-package thesis actually consumable. Published the iOS SPM core (splitsh-lite subtree mirror, semver tags) and Android core (Maven Central, verified `io.github.sztheory`, signed POM) with release-please `linked-versions` lockstep; rewired `gen.shell` to inject the live Hex version into published coordinates at generate-time; proved an outside-the-monorepo clean-room `swift build`/`gradle build` resolves and compiles; added a permanent merge-blocking `generator_coordinate_parity` guard; reconciled install docs to published truth; and cut `crosswake 0.1.2` live to all three registries from one release-please run. Validated across Phases 110-111; full detail in `.planning/milestones/v11.0-REQUIREMENTS.md`.
+
 ### Active
 
 - [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
@@ -169,7 +159,7 @@ v11.0 Release & Distribution Truth is now the **active** milestone (started 2026
 
 ## Context
 
-Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.1.0` live on hex.pm since 2026-05-29) with iOS and Android as first-class targets and web remaining part of the architecture. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
+Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.1.2` live on hex.pm; first published 0.1.0 on 2026-05-29) with iOS and Android as first-class targets and web remaining part of the architecture. As of v11.0 the native shell cores are also published — iOS via the SwiftPM mirror `szTheory/crosswake-shell-core-ios` and Android via Maven Central (`io.github.sztheory:crosswake-shell-core-android`) — all three registries lockstep-versioned, so a generated shell resolves and builds outside the monorepo. The authoritative architecture stance is route policy plus a capability ladder: plain Phoenix/LiveView, LiveView inside a native shell, bounded bridge components, cached/degraded routes, offline islands, native screens, and specialized native SDK adapters. Supporting research emphasizes that the project should not market itself as React Native for Phoenix, Flutter for Phoenix, a generic WebView wrapper, or a "write once, run anywhere" platform.
 
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
@@ -211,7 +201,12 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Make `tokens.css` the single generated source for font + dimension, not just color | Typography and spacing were a second hand-maintained source that could silently drift from the brand contract | Validated in v10.0 (Phase 107) |
 | Distribute tokens by verbatim copy + `<link>` rather than a build-step import | Honors the zero-build/no-Tailwind host posture; one documented path with no duplicate palettes to drift | Validated in v10.0 (Phase 107, NORM-03) |
 | Enforce drift prevention with a browser-free structural CI check, not a render diff | Deterministic across Linux-CI/macOS and merge-blocking, consistent with the v9.0 required-vs-advisory split | Validated in v10.0 (Phase 109, PROOF-01) |
-| Treat the v5.0 standalone-package thesis as built-but-undistributed until external consumption is proven | The native cores are extracted but unpublished; `gen.shell` references nonexistent deps, so the "no eject trap" claim only holds inside the monorepo | — Pending; recommended as the next milestone (2026-06-14 assessment, see `threads/release-distribution-truth.md`) |
+| Treat the v5.0 standalone-package thesis as built-but-undistributed until external consumption is proven | The native cores are extracted but unpublished; `gen.shell` references nonexistent deps, so the "no eject trap" claim only holds inside the monorepo | ✓ Resolved in v11.0 — 0.1.2 published to all three registries; clean-room proof + parity guard make external consumption real and permanent |
+| Lockstep one version across Hex + iOS tag + Maven via release-please `linked-versions`, not independent per-platform versioning | Generated code ties the three coordinates together; a single bump must keep them resolvable and version-matched | Validated in v11.0 (Phase 110, LOCK-01/02) — one release-please run shipped 0.1.2 to all three |
+| Distribute iOS via splitsh-lite subtree mirror to a dedicated repo, not a binary target or monorepo subdir | SwiftPM SE-0292 forbids monorepo-subdir consumption; `.binaryTarget` can't declare deps; source mirror with semver tags is the honest path | Validated in v11.0 (Phase 110, PUB-01) |
+| Gate the irreversible first publish behind a validated-upload→DROP fire-drill + dry-run + GPG/namespace preflight | Maven Central releases are immutable and SwiftPM tags must not move; a burned version is unrecoverable | Validated in v11.0 (Phase 110, PUB-03) — fire-drill caught real bugs before the live cut |
+| Derive every generated native dep version from `Application.spec(:crosswake)[:vsn]` at generate-time, no literal | One source of truth keeps generated coordinates resolvable and version-matched as the package bumps | Validated in v11.0 (Phase 111, GEN-01) |
+| Make external consumption a permanent guarantee via a merge-blocking `generator_coordinate_parity` check (sibling to the v10.0 `brand-structural` gate) | A clean-room proof is point-in-time; a structural CI guard keeps the eject-trap thesis honest forever | Validated in v11.0 (Phase 111, PROOF-02) |
 
 ## Evolution
 
@@ -231,4 +226,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-14 — Phase 110 (Native Publish & Lockstep Infrastructure) complete*
+*Last updated: 2026-06-17 after v11.0 Release & Distribution Truth milestone*
