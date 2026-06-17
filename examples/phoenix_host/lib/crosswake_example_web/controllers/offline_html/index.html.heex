@@ -58,14 +58,12 @@
       }
       .btn-primary { background: var(--cw-action-bg); color: var(--cw-action-fg); }
       /*
-        D-06 outlined treatment: --cw-status-error (rust-600) does NOT flip in dark mode
-        and sits at ~3.1:1 against the near-black surface in either role, so it cannot
-        carry AA text on/under the dark surface. Status is conveyed by a >=3:1 colored
-        border plus the button label; text uses --cw-text-default for full AA in both modes.
+        D-02 neutral secondary: Hard is a scheduling signal, not an error.
+        Uses --cw-border-default (neutral) instead of --cw-status-error (rust).
+        Passes AA contrast in light + dark with no color-only signaling.
         Render-verified light + dark (108-RENDER-VERIFY.md).
       */
-      .btn-success { background: transparent; color: var(--cw-text-default); border-color: var(--cw-status-success); }
-      .btn-danger { background: transparent; color: var(--cw-text-default); border-color: var(--cw-status-error); }
+      .btn-secondary { background: transparent; color: var(--cw-text-default); border-color: var(--cw-border-default); }
       #status {
         margin-top: 2rem;
         font-size: var(--cw-text-scale-sm);
@@ -86,11 +84,11 @@
 
     <div id="controls">
       <button id="btn-flip" class="btn-primary">Flip Card</button>
-      <button id="btn-pass" class="btn-success" style="display: none;">Pass</button>
-      <button id="btn-fail" class="btn-danger" style="display: none;">Fail</button>
+      <button id="btn-good" class="btn-primary" style="display: none;">Good</button>
+      <button id="btn-hard" class="btn-secondary" style="display: none;">Hard</button>
     </div>
 
-    <div id="status"></div>
+    <div id="status" aria-live="polite" role="status" aria-atomic="true"></div>
 
     <script type="module" src="/offline_study.js"></script>
   </body>
