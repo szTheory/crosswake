@@ -27,6 +27,37 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     assert rendered =~ "posture=merge-blocking"
   end
 
+  test "no active closeout: closeout-artifact checks stay present but pass" do
+    tmp = tmp_dir!("no-active-closeout")
+    # write_minimal_files! sets STATE.md milestone: v3.9 but we deliberately do
+    # NOT create v3.9-CLOSEOUT.md — i.e. an ordinary mid-milestone planning edit,
+    # not a closeout. The gate must not block.
+    write_minimal_files!(tmp)
+
+    report = CloseoutVerifier.run(cwd: tmp)
+
+    assert report.status == :passed
+
+    for id <- ~w(
+          closeout.ledger.frontmatter
+          closeout.requirements.state
+          closeout.roadmap.parity
+          closeout.verification.coverage
+          closeout.summaries.frontmatter
+          closeout.validation.ledger
+          closeout.handoff.thread_seed_disposition
+        ) do
+      check = find_check!(report, id)
+      refute check.blocking, "#{id} should not block when no closeout is active"
+      assert check.result == :pass
+      assert check.observed =~ "no active closeout"
+    end
+
+    # Closeout-independent checks still evaluate normally.
+    assert find_check!(report, "closeout.release.changelog_continuity")
+    assert find_check!(report, "closeout.validation.prior_debt")
+  end
+
   test "missing closeout frontmatter fails closed with a closeout stable id" do
     tmp = tmp_dir!("missing-frontmatter")
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
