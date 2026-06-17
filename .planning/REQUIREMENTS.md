@@ -76,22 +76,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| E2E-01 | TBD | Pending |
-| E2E-02 | TBD | Pending |
-| E2E-03 | TBD | Pending |
-| E2E-04 | TBD | Pending |
-| GATE-01 | TBD | Pending |
-| GATE-02 | TBD | Pending |
-| GUARD-01 | TBD | Pending |
-| GUARD-02 | TBD | Pending |
-| DEBT-01 | TBD | Pending |
-| DOC-01 | TBD | Pending |
+| E2E-01 | 112 | Pending |
+| E2E-02 | 112 | Pending |
+| E2E-03 | 113 | Pending |
+| E2E-04 | 113 | Pending |
+| GATE-01 | 114 | Pending |
+| GUARD-01 | 114 | Pending |
+| GUARD-02 | 114 | Pending |
+| GATE-02 | 115 | Pending |
+| DEBT-01 | 115 | Pending |
+| DOC-01 | 115 | Pending |
 
 **Coverage:**
 - v1 requirements: 10 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 10 ⚠️ (filled by roadmapper)
+- Mapped to phases: 10 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-17*
-*Last updated: 2026-06-17 at milestone start*
+*Last updated: 2026-06-17 — traceability filled by roadmapper*

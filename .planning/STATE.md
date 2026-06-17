@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: planning
-last_updated: "2026-06-17T20:14:42.718Z"
+status: active
+last_updated: "2026-06-17"
 last_activity: 2026-06-17
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,23 +17,25 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-14)
+See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Planning next milestone. v11.0 shipped & archived (0.1.2 live on all three registries, 2026-06-17). Suggested next wedge: CI honesty / real-E2E sweep (v6.0 mocked-E2E debt + validation-ledger gate).
+**Current focus:** v12.0 CI Honesty & Real-E2E Sweep — making offline-sync proof and closeout gates genuinely honest. Roadmap defined (Phases 112-115). Ready to plan Phase 112.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 112 — Real Offline Outbox Flush (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-17 — Milestone v12.0 started
+Status: Roadmap defined; ready to plan Phase 112
+Last activity: 2026-06-17 — v12.0 roadmap created
+
+**Progress bar:** Phase 0/4 complete · Plan 0/TBD complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13 (v10.0)
+- Total plans completed: 13 (v10.0) + 8 (v11.0) = 21 across last two milestones
 - Average duration: —
 - Total execution time: —
 
@@ -43,11 +45,15 @@ Last activity: 2026-06-17 — Milestone v12.0 started
 
 ### Decisions
 
-Full decision log in PROJECT.md (Key Decisions). v10.0 milestone decisions archived there.
+Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archived there.
+
+**v12.0 key decisions (2026-06-17, locked by research):**
+- Offline-sync reconnect flush is triggered by `window 'online'` event on the existing socketless `/offline` island — no migration to a LiveView route. The island is socketless by design (`put_root_layout(false)`); migrating would delete the proof the library exists to provide.
+- The vestigial `StudySessionLive` `sync_outbox` mock is removed entirely, not relabeled as a manual-sync affordance. Labeling it "Manual Sync" would misrepresent the mechanism (server-side Elixir list, not client IndexedDB outbox) — a fresh dishonesty.
+- Phase ordering is fixed: 112 (app change) → 113 (test rewrite + compile gate) → 114 (merge-blocking gate + permanent guard). Phase 115 (closeout/ledger/doc track) is independent and parallelizable but must complete before milestone close. Within Phase 115: GATE-02 must precede DEBT-01.
+- `setOffline(false)` does NOT fire the browser `online` event — the test must explicitly `dispatchEvent(new Event('online'))` after calling `setOffline(false)` to trigger the app's reconnect handler.
 
 **v11.0 key decision (2026-06-14):** Two-phase split enforced by dependency graph — Phase 110 (publish + lockstep) must complete before Phase 111 (rewire + prove + release). You cannot clean-room-prove an unpublished dep; you must not cut Hex while gen.shell emits broken coordinates. This ordering is non-negotiable per research.
-
-**v11.0 irreversibility notes (2026-06-14):** Maven Central releases are immutable; SwiftPM tags must not be force-moved after any adopter resolves them. Phase 110 includes mandatory dry-run and GPG verification gates before any real publish. Central Portal namespace `io.github.sztheory` must be verified before any publish config is committed.
 
 ### Pending Todos
 
@@ -56,32 +62,28 @@ None.
 ### Blockers/Concerns
 
 - **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
-- **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14; re-check it points at the next milestone after `/gsd:new-milestone`.
-- **`MIRROR_PUSH_TOKEN` scope unexercised (only open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
+- **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
+- **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
+- **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | v8.0 gap | Phase 81 verification gap (human_needed, carried from v5.1) | Acknowledged | v8.0 close |
-| v8.0 gap | `tighten-validation-ledger-closeout-gate` quick task | Acknowledged | v8.0 close |
-| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred | v8.0 close |
-| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred | v8.0 close |
-| Phase 111 P01 | 5 min | 2 tasks | 4 files |
-| Phase 111 P03 | 15 min | 2 tasks | 12 files |
-| Phase 111 P02 | 6 min | 2 tasks | 4 files |
-| Phase 111 P04 | 4 min | 2 tasks | 1 file |
-| Phase 111 P05 | release checkpoint | DONE — 0.1.2 shipped (PR #8 merged 2026-06-17) | — |
-| v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01) | Acknowledged — carried from v8.0; next-wedge debt | v11.0 close |
+| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred to post-v12.0 | v8.0 close |
+| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred to post-v12.0 | v8.0 close |
+| v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Active — Phase 115 | v11.0 close |
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 
 ## Session Continuity
 
-Last session: 2026-06-17 (release execution)
-Stopped at: v11.0 COMPLETE — 0.1.2 shipped to all three registries; post-release cleanup merged (PR #22)
+Last session: 2026-06-17 (v12.0 roadmap creation)
+Stopped at: Roadmap written (Phases 112-115), REQUIREMENTS.md traceability filled, STATE.md updated
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan Phase 112 with `/gsd:plan-phase 112`
+- Phase 115 (closeout track) can be planned and executed in parallel with 112-114 — it is disjoint from the demo-app/E2E files
