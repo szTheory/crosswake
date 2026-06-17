@@ -73,7 +73,10 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
   2. When network connectivity is restored, `offline_study.js` automatically drains the IndexedDB `mutations` store by POSTing to `/study/sync`, deletes records on 2xx, and leaves them queued on failure — without any test or external caller triggering the flush
   3. The `StudySessionLive` `sync_outbox` mock handler and its "Simulate Network Sync" button are removed entirely from `study_session_live.ex`
   4. `mix test` passes with the mock removed — no test depends on the deleted mock handler
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 112-01-PLAN.md — Real IndexedDB outbox flush + Good/Hard rating controls + honest sync status (offline_study.js, index.html.heex)
+- [ ] 112-02-PLAN.md — De-mock study_session_live.ex (remove sync_outbox handler/button/assigns); mix test stays green
 
 ### Phase 113: Honest E2E Rewrite + Compile Gate
 **Goal**: `offline_sync.spec.ts` proves the full offline→reconnect→reconcile loop using only the app's own code paths, and the CI workflow fails loudly on a demo-app compile break instead of masking it as a Playwright port timeout
@@ -126,7 +129,7 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 | 109. Drift-Prevention Gate | v10.0 | 3/3 | Complete | 2026-06-14 |
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
-| 112. Real Offline Outbox Flush | v12.0 | 0/TBD | Not started | - |
+| 112. Real Offline Outbox Flush | v12.0 | 0/2 | Not started | - |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 0/TBD | Not started | - |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 0/TBD | Not started | - |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |
