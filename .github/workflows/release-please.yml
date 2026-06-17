@@ -141,9 +141,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install splitsh-lite v2.0.0
+      - name: Install splitsh-lite v1.0.1
         run: |
-          curl -L https://github.com/splitsh/lite/releases/download/v2.0.0/lite_linux_amd64.tar.gz \
+          # v2.0.0 exists as a tag but ships NO release assets; only v1.0.x publish
+          # lite_linux_amd64.tar.gz. Pinning v2.0.0 404'd and broke the iOS mirror.
+          curl -fsSL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz \
             | tar xz
           sudo mv splitsh-lite /usr/local/bin/splitsh-lite
 
