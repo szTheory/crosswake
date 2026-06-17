@@ -1,233 +1,120 @@
 # Project Research Summary
 
-**Project:** Crosswake v11.0 — Release & Distribution Truth
-**Domain:** Multi-language OSS library distribution — Hex + SwiftPM subtree mirror + Maven Central, generate-time version injection, lockstep release, clean-room build proof
-**Researched:** 2026-06-14
+**Project:** Crosswake — v12.0 CI Honesty & Real-E2E Sweep
+**Domain:** Internal CI / test-honesty hardening (Phoenix-native Elixir OSS library; offline-sync Playwright E2E + GitHub Actions gating + GSD closeout verifier)
+**Researched:** 2026-06-17
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Crosswake is a mature codebase (~88% feature-complete) but a partial installable product (~70%). The v5.0 "no eject trap" thesis — replace generated shell logic with standalone SPM/Maven dependencies — is fully implemented in the monorepo but has never been distributed. The flagship failure is concrete: an adopter running `mix crosswake.gen.shell ios` today receives an Xcode project whose SPM reference points at `https://github.com/crosswake/crosswake-shell-core-ios.git` (wrong org, repo absent), and `mix crosswake.gen.shell android` emits `implementation 'dev.crosswake:shell-core-android:0.1.0'` (wrong group ID, artifact never published). The adoption guide documents this 404 install path as working — which makes it actively harmful, not merely incomplete.
+This is not a feature milestone — it is a proof-honesty milestone. A repo-truth sweep found that several "green" CI surfaces do not prove what they claim. The flagship case is `examples/phoenix_host/e2e/offline_sync.spec.ts`: it calls the real `context.setOffline(true)` (added in v8.0) but then **injects a mutation into `window['crosswake_offline_mutations']` — a global the app never reads — and manually fires `fetch('/study/sync')` from `page.evaluate()`**. The application's IndexedDB outbox and reconnect path are never invoked, and the "the sync ID matches" assertion is circular (the test creates the ID, sends it, and verifies it returns). All four researchers independently reached the same verdict: the test is structurally fraudulent on **two** axes (mutation injection *and* flush trigger), and either alone makes it worthless as proof.
 
-The recommended approach, grounded in Apollo iOS, LiveView Native, and Capacitor precedent, is a strict two-phase sequence: Phase A publishes the native cores and wires lockstep versioning before any template is touched, then Phase B rewires templates, proves the published path via a clean-room CI lane, reconciles docs, and cuts Hex 0.1.2. The ordering is non-negotiable: you cannot clean-room-prove an unpublished dep, and you must not cut the Hex release while `gen.shell` still emits broken coordinates. The milestone is complete when a CI job scaffolds a host project in `$RUNNER_TEMP` — outside the monorepo, no `--local`, against published artifacts — and `swift build` plus `./gradlew assembleDebug` both exit 0.
+The good news is the gap is precisely bounded and the server side is already correct: `SyncController` → `Study.sync_events/1` already implements idempotency via `on_conflict: :nothing, conflict_target: :client_mutation_id`, and the `/_e2e/sync-state/:id` verification endpoint already exists (router-scoped to `:test`/`:e2e`). The missing piece is purely client-side: `offline_study.js` has `queueMutation()` but **no `flushOutbox()` and no reconnect listener**, and `study_session_live.ex:31` papers over this with a comment-acknowledged mock. So v12.0 is a small, well-understood change surface (three files modified, none created) plus three adjacent honesty cleanups: make the lane merge-blocking, close the long-carried validation-ledger debt (LEDG-01), and reconcile the v8.0 documentation that disagrees with itself.
 
-The top risks are irreversibility and silent breakage. Maven Central releases are immutable: a botched `io.github.sztheory:crosswake-shell-core-android:0.1.2` publish (wrong POM, missing GPG signature, unverified namespace) burns that version coordinate permanently. SwiftPM version tags on the mirror repo cannot be force-replaced once any adopter has resolved them. GPG key missing from a public keyserver causes upload rejection with a non-obvious error. The `GITHUB_TOKEN` loop-prevention rule means native publish jobs wired on `on: release: types: [published]` silently never fire. Every one of these has a concrete prevention protocol in the research.
+The main risks are subtle test-infrastructure gotchas rather than unknowns: Playwright's `setOffline(false)` does **not** fire the browser `online` event, the demo app's stored mutation shape doesn't match the server contract, and the CI workflow still has the exact structural hole that let v6.0's mock hide a compile break (no `mix compile` before Playwright — a compile failure surfaces as a port timeout). Each has a known, cheap mitigation captured below.
 
 ## Key Findings
 
 ### Recommended Stack
 
-All tool choices are constrained by what the repository currently runs, not what the latest versions support. The project is on `gradle-8.7` and `compileSdk 34`, which makes Vanniktech maven-publish 0.36.0 (requires Gradle 9.0+) incompatible. The Hex release pipeline uses `googleapis/release-please-action` at `v4.4.1` (SHA `5c625bf`) already pinned in `release-please.yml`. The SwiftPM package is already at `swift-tools 5.9` and already structured correctly for source distribution — nothing about the iOS package itself needs to change; only the mirror repo and CI job are missing.
+No new frameworks and no Playwright upgrade. `@playwright/test` 1.60.0 already has every API needed; `playwright.config.ts` is already correct (service workers blocked, `retries: 2` in CI, trace on first retry, Phoenix auto-booted). Branch protection on `szTheory/crosswake` is **classic checks (not rulesets)** — confirmed via live `gh api` — so gating is a one-line PATCH, with the critical caveat that the `checks` array is *replaced, not appended* (must list all three checks).
 
-**Core technologies:**
-- `splitsh/lite` v2.0.0: subtree-split `packages/crosswake-shell-core-ios/` to a dedicated mirror repo on every release. The only production-proven approach because SwiftPM's SE-0292 root-manifest constraint makes a monorepo subdir unconsuable over a git URL. Apollo iOS uses this exact pattern.
-- `com.vanniktech.maven.publish` 0.31.0 (NOT 0.36.0): publishes Android AAR + auto-generated sources/javadoc jars to Maven Central via Central Portal with GPG signing. 0.31.0 is the newest version compatible with Gradle 8.5+/AGP 8.0+; 0.36.0 requires Gradle 9.0.0+, which exceeds the project's current `gradle-8.7`.
-- `googleapis/release-please-action` v4.4.1 with `linked-versions` plugin: one Release PR advances Hex, iOS mirror tag, and Android Maven version atomically. Required because `gen.shell` derives native dep coordinates from `Application.spec(:crosswake)[:vsn]` — if the three registries carry different version numbers, the generated code references a coordinate that may not exist in the registry the adopter hits first.
-- EEx + `Application.spec(:crosswake, :vsn)` (Elixir stdlib, zero new deps): generate-time version injection into iOS `.pbxproj.eex` and Android `build.gradle.eex`. This is the LiveView Native `lvn.swiftui.gen` pattern exactly.
-- Maven Central namespace `io.github.sztheory`: auto-provisioned on GitHub OAuth login to `central.sonatype.com` with the `szTheory` account. Must be verified before any publish config is written.
+**Core techniques:**
+- **Playwright `context.setOffline(true/false)`** — real CDP network-layer offline; the genuine toggle already in use.
+- **`setOffline(false)` + `page.evaluate(() => window.dispatchEvent(new Event('online')))`** — REQUIRED two-step: CDP `setOffline` does NOT dispatch the browser `online` event, and `navigator.onLine` does not auto-update (override via `addInitScript`/`evaluate`). This is the load-bearing gotcha.
+- **`page.waitForResponse('/study/sync')` + `expect.poll`** — confirm the server *accepted* the app-driven POST before polling the Ecto `/_e2e/sync-state/:id` endpoint; replaces the current `waitForRequest`/manual-fetch pattern.
+- **`gh api repos/szTheory/crosswake/branches/main/protection` PATCH** — add the renamed `merge-blocking-*` E2E job to required checks (all three checks in the array; job must run green on `main` once first).
 
-**Supporting constraints:**
-- `actions/checkout@v4` with `fetch-depth: 0` is mandatory in the splitsh job — shallow clones break splitsh-lite's commit-tree construction.
-- `MIRROR_PUSH_TOKEN` (fine-grained PAT, `Contents: write` on the mirror repo) is distinct from `RELEASE_PLEASE_TOKEN`. Both must be distinct from `GITHUB_TOKEN`, which cannot trigger downstream workflow runs by design (release-please-action issue #1000).
-- SwiftPM `upToNextMajorVersion` (not `exactVersion`, not `branch:`): lets adopters receive patches and minors without regenerating. `exactVersion` (the current broken template behavior) forces manual regeneration on every patch. `branch:` discards version-sync entirely (the Capacitor issue #7735 anti-pattern).
+### Expected Features (what an *honest* E2E requires)
 
-### Expected Features
+**Must have (table stakes for honesty):**
+- **Mutation via real UI** — click the actual Pass/Fail flashcard control so `offline_study.js` writes to the IndexedDB outbox; no `window[]` injection.
+- **App-driven flush** — a real `flushOutbox()` in `offline_study.js` triggered by reconnect; the test must NOT fire `fetch` itself.
+- **Read-back idempotency key** — assert against the `client_mutation_id` the *app* generated (read from IndexedDB), not one the test minted; if the app's UUID generation breaks, the lookup must fail on the right assertion.
+- **Compile honesty** — `mix compile --warnings-as-errors` before Playwright in `phase90-proof.yml`, so a demo-app compile break fails loudly instead of as a port timeout (the v6.0 failure mode, still live).
+- **Merge-blocking** — the lane is a registered required status check, not an undocumented advisory.
 
-**Must have (table stakes) — all P1, none skippable for milestone closeout:**
-- iOS SPM core published at a semver git tag on `github.com/szTheory/crosswake-shell-core-ios`. Without this, any iOS dep URL fails SPM resolution.
-- Android core published to Maven Central as `io.github.sztheory:crosswake-shell-core-android:0.1.2`. Without this, the generated Gradle dep is a 404 that looks like a typo to the adopter.
-- `gen.shell` injects `Application.spec(:crosswake, :vsn)` at generate-time — never a literal version string in the non-local branch.
-- Default mode (`--local false`) emits resolvable coordinates only. The `--local true` monorepo-dev path remains unchanged.
-- `guides/adoption.md` updated to published truth. A guide documenting a 404 install path is net-harmful.
-- Clean-room CI acceptance lane: scaffold host in `$RUNNER_TEMP` outside monorepo, run `gen.shell` without `--local`, `swift build` + `./gradlew assembleDebug`, assert exit 0. Single observable definition of milestone completion.
-- Hex 0.1.2 cut — the final step, after native publish verified and clean-room proof passes.
-- release-please manifest mode + `linked-versions` group: wire in Phase A before the first publish, or lockstep is broken from the start.
+**Legitimate vs illegitimate test doubles (the honesty criterion):** reading the SUT's own IndexedDB state via `page.evaluate` is *observation* (legitimate — `offline_storage.spec.ts`'s `QuotaExceededError` stub is the established in-repo precedent); *writing* to SUT state or *triggering* SUT-owned behavior via `page.evaluate` is *injection* (illegitimate — what today's test does).
 
-**Should have (differentiators) — P2, do within this milestone but not gating closeout:**
-- `mix doctor --check-publish` "published-dep parity" check: asserts generated shell dep coordinates point at published, resolvable, version-matched artifacts. Graduation candidate from `release-distribution-truth.md`. The structural analog to v10.0's `brand-structural` drift gate. Wire into CI as merge-blocking after publish.
-- SwiftPM `from:` constraint (`upToNextMajorVersion`) instead of `exactVersion`: template change required in Phase B.
-- Source distribution for iOS (not `.binaryTarget`): already correct; document the decision to prevent future XCFramework proposals.
-
-**Defer to post-v11.0:**
-- Real device/emulator proof (iOS simulator CI, Android emulator CI): follows once the distribution path is honest.
-- Route-policy-101 guide, troubleshooting guide, web-to-mobile migration: teaching a broken install path is net-harmful; these follow v11.0.
-- Companion package extraction, new capability breadth: overbuilding on an undistributed base.
+**Should have (differentiators):** outbox-cleared-after-flush assertion; duplicate-flush idempotency test (POST twice, assert one row); `beforeEach` IndexedDB reset for isolation.
 
 ### Architecture Approach
 
-The distribution architecture adds a mirror repo and two CI jobs to the existing monorepo without altering monorepo co-development. The monorepo remains authoritative. The iOS mirror (`github.com/szTheory/crosswake-shell-core-ios`) is a read-only CI output: splitsh-lite re-materializes it from full git history on every release. The Android library publishes from the monorepo subproject directly — unlike SwiftPM, Gradle has no root-manifest constraint. The `--local true` proof lane (`phase79-proof.yml`) is preserved unchanged as the PR merge-blocker. The clean-room lane is a post-release acceptance gate, not a PR gate — wiring it as a PR gate creates a chicken-and-egg deadlock against unpublished deps.
+Pure modification milestone — three files change, none created; the server is already correct and untouched.
 
-**Major components:**
-1. `mix.exs @version` — single source of truth; all downstream systems derive from it via `Application.spec/2` or release-please `extra-files` updater.
-2. `crosswake.gen.shell` task (modified) — adds `version: Application.spec(:crosswake, :vsn) |> to_string()` assign in `render_template/3`.
-3. `project.pbxproj.eex` (modified) — fixes org to `szTheory`, replaces `exactVersion` with `upToNextMajorVersion`, injects `<%= @version %>`.
-4. `app/build.gradle.eex` (modified) — replaces hardcoded GAV with `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
-5. `packages/crosswake-shell-core-android/build.gradle.kts` (modified) — adds Vanniktech 0.31.0, `version = "0.1.0" // x-release-please-version`, full POM with `io.github.sztheory` coordinates.
-6. `release-please.yml` ios-mirror job (new) — splitsh-lite with `fetch-depth: 0`; pushes to mirror; creates annotated tag from `outputs.tag_name`.
-7. `release-please.yml` android-publish job (new) — `./gradlew publishToMavenCentral --no-daemon` with five `ORG_GRADLE_PROJECT_*` secrets.
-8. `clean-room-proof.yml` job (new) — scaffolds host in `$RUNNER_TEMP`, `gen.shell` without `--local`, `swift build` + `gradle build`. Runs as `needs: [ios-mirror, android-publish]`.
-9. `release-please-config.json` (modified) — `linked-versions` plugin; iOS + Android package entries; `extra-files` annotations.
+**Components touched:**
+1. **`offline_study.js`** — add `flushOutbox()` (drain IndexedDB outbox → POST `/study/sync`) + reconnect listener; **fix the payload shape** from `{type, payload:{cardId, result:'pass'/'fail'}}` to the server contract `{client_mutation_id, card_id, rating:'good'/'hard'}`, generating `client_mutation_id` via `crypto.randomUUID()` at *queue* time (not POST time). This shape fix is a hard prerequisite for everything downstream.
+2. **`study_session_live.ex`** — remove the `sync_outbox` mock (line 31 "here we mock it"). Independent of the JS change; can parallelize.
+3. **`offline_sync.spec.ts`** — delete the injection + manual-fetch lines; drive via real UI click → `setOffline(false)` + `dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto.
 
-**Version propagation flow (summary):**
-```
-mix.exs @version "0.1.2"  (single source of truth)
-  -> Application.spec(:crosswake)[:vsn] -> render_template/3 -> @version assign
-      -> project.pbxproj.eex: minimumVersion = 0.1.2 (upToNextMajorVersion)
-      -> app/build.gradle.eex: io.github.sztheory:...-android:0.1.2
-  -> release-please extra-files: bumps mix.exs @version + build.gradle.kts version on release PR
-  -> release-please outputs.version: ios-mirror tag + android-publish GAV
-```
-
-**Release trigger flow:**
-```
-Release PR merged -> release_created == true
-  -> publish-hex (existing)
-  -> ios-mirror: splitsh + annotated tag on szTheory/crosswake-shell-core-ios (new)
-  -> android-publish: Vanniktech to Central Portal (new)
-      -> clean-room-proof: scaffold outside monorepo, swift + gradle build (new)
-```
+**Hard build-order dependency (all four agents agree):** payload-shape fix → `flushOutbox()` + reconnect handler → de-mock LiveView → test rewrite → CI gate.
 
 ### Critical Pitfalls
 
-**IRREVERSIBLE — must get right before any publish:**
-
-1. **Burning a Maven Central version** — wrong POM, missing GPG signature, or unverified namespace at publish time permanently occupies that version coordinate. Prevention: `./gradlew publishToMavenLocal` + inspect `~/.m2` layout before any Central Portal attempt; CI dry-run gate required; never publish from a developer machine without CI dry-run passing. Phase A must include an explicit dry-run verification step.
-
-2. **GPG key not on a public keyserver** — Central Portal rejects uploads if the public key is not on `keyserver.ubuntu.com` or `keys.openpgp.org`. The error is non-obvious. Prevention: push to two keyservers immediately after key generation; verify from a clean environment before writing any publish CI config.
-
-3. **Re-tagging an existing iOS mirror version tag** — `Package.resolved` locks the commit hash; a re-tag producing a different hash causes `checksum mismatch` for all adopters who resolved the original. Prevention: CI push job has no `--force`; mirror repo has tag protection; job runs only on `release_created`.
-
-**SILENT BREAKAGE — non-obvious adopter failures:**
-
-4. **GITHUB_TOKEN does not trigger downstream `release: published` workflows** — GitHub's loop-prevention rule silently drops these events. Native publish jobs wired this way never run. Prevention: all native publish jobs run as `needs:` steps in the same `release-please.yml` with `if: needs.release-please.outputs.release_created == 'true'`. The existing `publish-hex` job already uses this pattern.
-
-5. **Hardcoded satellite version in generated templates** — literal version strings in EEX non-local branches drift silently as Crosswake advances (LiveView Native's documented `LiveViewNativeLiveForm` bug). An adopter on Hex 0.1.5 generates shell code pinned to 0.1.0 native deps. Prevention: every native dep coordinate in the non-local branch uses `<%= @version %>` only; never a literal.
-
-6. **SwiftPM root-manifest constraint makes monorepo subdir unconsuable** — SE-0292 makes package identity equal to the repo root; there is no `subdirectory:` parameter. Architectural, not configurable. Prevention: subtree mirror is the only correct path.
-
-7. **splitsh-lite requires `fetch-depth: 0`** — shallow clones produce broken commit trees. Prevention: ios-mirror job must include `fetch-depth: 0` in `actions/checkout@v4`; no exception.
+1. **CDP `setOffline(false)` doesn't fire `online`** — without the explicit `dispatchEvent('online')`, the app's reconnect handler never runs and the test hangs/false-fails. (Symptom already visible as `retries: 2` masking flake.)
+2. **The v6.0 compile-break mechanism is still structurally present** — `phase90-proof.yml` runs Playwright with no prior `mix compile`; a compile failure looks like a Playwright port timeout. Add `mix compile --warnings-as-errors`.
+3. **Branch-protection PATCH replaces the checks array** — omitting the existing two checks silently un-gates them; a job *rename* without re-registration silently drops the required check. Run green on `main` once, then PATCH with all three.
+4. **Closeout verifier hardcoded-phase fallback** — a `CLOSEOUT.md` missing `expected_phases:` frontmatter falls back to a hardcoded phase set (`@v40_phases`/`@v39_phases` per source), globbing an empty path → zero ledgers found → vacuous pass. Make the fallback hard-error.
+5. **Stale-but-not-blocking deferral** — LEDG-01 has been carried verbatim through v8.0→v11.0 (four milestones) with the same `reason:` text; `stale_deferral?/2` labels it stale but stale does not block merge. Needs explicit resolution criteria + real VALIDATION.md files, not another carry.
 
 ## Implications for Roadmap
 
-The research imposes a hard A-before-B phase constraint with four dependency chains that make reordering impossible:
+Suggested structure: **4–5 phases**, continuing numbering from v11.0 (last phase **111** → start at **112**).
 
-- Cannot clean-room-prove a dep that does not exist yet (clean-room lane requires published artifacts from Phase A).
-- Must not cut Hex 0.1.2 while `gen.shell` emits broken coordinates (even a brief window exposes adopters to a broken scaffold).
-- Template rewire requires knowing final published coordinates (org `szTheory`, group `io.github.sztheory`, version from Hex) — only final after Phase A is wired.
-- `doctor --check-publish` parity check requires published artifacts; must be post-publish-only.
+### Phase 112: Real Offline Outbox Flush (app change)
+**Rationale:** Hard prerequisite — the test cannot be honest until the app it tests actually flushes on reconnect.
+**Delivers:** payload-shape fix + `client_mutation_id` via `crypto.randomUUID()`; `flushOutbox()` + reconnect listener in `offline_study.js`; de-mocked `study_session_live.ex`.
+**Avoids:** Pitfall — fixing the test before the app exists would just move the fabrication.
 
-### Phase A: Native Publish Infrastructure
+### Phase 113: Honest E2E Rewrite + Workflow Compile Gate
+**Rationale:** Depends on 112; atomic unit — a fabricated test that compiles is still dishonest, so the test rewrite and the `mix compile` workflow fix ship together.
+**Delivers:** rewritten `offline_sync.spec.ts` (real UI → `setOffline(false)`+`dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto; outbox-cleared + duplicate-flush idempotency assertions; `beforeEach` reset); `mix compile --warnings-as-errors` added to `phase90-proof.yml`.
+**Uses:** Playwright 1.60.0 APIs from STACK.md.
 
-**Rationale:** Everything in Phase B depends on real published artifacts at correct coordinates. This phase creates them and wires lockstep. It has no dependency on template changes and can proceed immediately.
+### Phase 114: Merge-Blocking CI Gate
+**Rationale:** Last E2E step; requires ≥1 green run of the renamed `merge-blocking-*` job on `main` before registration.
+**Delivers:** job `name:` + `merge-blocking-*` convention; documented required/advisory posture; branch-protection PATCH (all three checks) — or a scripted/documented path if the toggle is harness-blocked (historical constraint in this environment).
 
-**Delivers:**
-- `github.com/szTheory/crosswake-shell-core-ios` mirror repo with `v0.1.2` annotated tag, resolvable via `swift package resolve`.
-- `io.github.sztheory:crosswake-shell-core-android:0.1.2` on Maven Central, visible in `search.maven.org`.
-- `release-please-config.json` updated with `linked-versions` plugin + iOS + Android package entries + `extra-files` annotations.
-- CI pipeline: `ios-mirror` + `android-publish` jobs in `release-please.yml` under `needs: release-please` + `if: release_created`.
-- GPG key infrastructure: public key on two keyservers, five `ORG_GRADLE_PROJECT_*` secrets, `MIRROR_PUSH_TOKEN` PAT.
-
-**Must-avoid pitfalls:** 1 (burned Maven version — dry-run gate), 2 (GPG keyserver — verify before first publish), 3 (re-tagging — no force, branch protection), 7 (GITHUB_TOKEN — same-workflow needs:), 8 (manifest not multi-package — wire linked-versions now), 11 (re-tagging mirror — no --force), 12 (wrong namespace — verify io.github.sztheory in Central Portal first).
-
-**Suggested internal step order:**
-1. Central Portal namespace verification (`io.github.sztheory`) — blocking prerequisite; most likely human-time bottleneck.
-2. GPG key generation + keyserver upload (two servers) + CI secrets provisioning.
-3. `release-please-config.json` / `.release-please-manifest.json` multi-package wiring + `build.gradle.kts` Vanniktech plugin + POM.
-4. Local dry-run: `./gradlew publishToMavenLocal`, inspect `~/.m2` layout for all required jars + `.asc` files.
-5. Create `github.com/szTheory/crosswake-shell-core-ios` empty public repo + `MIRROR_PUSH_TOKEN` secret.
-6. CI job wiring: ios-mirror + android-publish jobs in `release-please.yml`.
-7. First real publish via CI (triggered by Release PR merge).
-8. Verify: iOS tag resolves from clean `swift package resolve`; Android artifact appears in Maven search.
-
-**Research flag:** No additional research phase needed. All tools and config shapes are fully specified. Main execution risk is the one-time GPG + Sonatype namespace setup.
-
----
-
-### Phase B: Template Rewire + Clean-Room Proof + Doc Reconciliation
-
-**Rationale:** Gated on Phase A because the clean-room lane cannot pass until published artifacts exist, and the template rewire introduces the correct org/group/coordinates that only become final when Phase A is complete. Doing Phase B before Phase A would mean rewriting templates twice or shipping a gap between Hex cut and correct templates.
-
-**Delivers:**
-- `gen.shell` task: `version: Application.spec(:crosswake, :vsn) |> to_string()` added to `render_template/3`.
-- `project.pbxproj.eex`: org fixed to `szTheory`, `exactVersion` replaced with `upToNextMajorVersion; minimumVersion = <%= @version %>`.
-- `app/build.gradle.eex`: hardcoded GAV replaced with `implementation("io.github.sztheory:crosswake-shell-core-android:<%= @version %>")`.
-- `clean-room-proof.yml`: scaffolds in `$RUNNER_TEMP`, runs `gen.shell` (no `--local`), `swift build` + `./gradlew assembleDebug`, asserts exit 0. Runs as `needs: [ios-mirror, android-publish]`.
-- `guides/adoption.md` reconciled to real published install path; `guides/support_matrix.md` updated.
-- `mix doctor --check-publish` "published-dep parity" check wired as merge-blocking CI lane.
-- Hex 0.1.2 cut — the final step, triggered after clean-room proof passes.
-
-**Must-avoid pitfalls:** 3 (broken URL — do not change templates until Phase A artifacts exist), 4 (hardcoded version drift — inject `@version` only), 9 (branch/exact pinning — use `upToNextMajorVersion`), 10 (clean-room proof inside monorepo — must scaffold outside in `$RUNNER_TEMP` with no `packages/` access).
-
-**Suggested internal step order:**
-1. Template rewire: `gen.shell` version assign + both EEX template fixes (URL, GAV, version expression).
-2. Verify locally: `mix crosswake.gen.shell ios` and `mix crosswake.gen.shell android` emit correct dep strings.
-3. `clean-room-proof.yml` job wiring.
-4. Verify clean-room lane passes against Phase A published artifacts (milestone acceptance gate).
-5. `doctor --check-publish` parity check wiring.
-6. `guides/adoption.md` + `guides/support_matrix.md` reconciliation.
-7. Merge -> release-please opens PR -> merge -> Hex 0.1.2 published -> clean-room proof runs post-release as final acceptance.
-
-**Research flag:** No additional research phase needed. EEX template editing is stdlib Elixir. Clean-room CI job shape is fully specified in ARCHITECTURE.md. Doctor check design is specified in FEATURES.md.
-
----
+### Phase 115: LEDG-01 Closeout-Gate Honesty + Doc-Truth Reconciliation
+**Rationale:** Fully independent of the E2E track; can parallelize, but must complete before milestone close. Closes 4-milestone-old debt.
+**Delivers:** hard-error fallback in `closeout_verifier.ex`; artifact-existence assertion; resolution criteria for the stale deferral; the actual missing VALIDATION.md files (v3.6 48/49/52/53, v3.8 54-58, v3.9 62/63); LEDG-01 marked `status: resolved` with evidence; STATE.md reconciled; v8.0 doc-truth settled (authoritative doc chosen among PROJECT.md / v1.0-MILESTONE-AUDIT.md / MILESTONES.md, with a MILESTONES.md v8.0 entry added).
 
 ### Phase Ordering Rationale
-
-- **Cannot clean-room-prove an unpublished dep.** The clean-room lane is the milestone acceptance gate. It cannot run until both mirror tag and Maven artifact exist. Those come from Phase A.
-- **Do not cut Hex while gen.shell emits broken coordinates.** The current default `gen.shell` path produces a broken scaffold. Cutting Hex 0.1.2 before Phase B template rewire exposes adopters to it during the gap.
-- **Template rewire should happen once, to final coordinates.** Final published coordinates (correct org, correct group ID) are known only after Phase A is wired.
-- **Lockstep config must precede the first publish.** If `release-please-config.json` is updated after the first native publish, the manifest is out of sync and the first linked bump will fail.
+- 112 before 113 before 114: strict app → test → gate dependency chain (cannot prove or gate what the app doesn't yet do).
+- 115 parallelizable: touches the GSD verifier + planning docs, disjoint from the demo-app/E2E files.
+- Doc-truth reconciliation should land before/with the E2E work so "current honest state" is settled before new proof claims are written.
 
 ### Research Flags
-
-**No research phase needed for either phase.** All tools, config shapes, CI job patterns, and template changes are fully specified in the research files with HIGH-confidence sources. The Vanniktech plugin config block, splitsh CI job, release-please manifest shape, and EEX template changes are reproduced verbatim in STACK.md and ARCHITECTURE.md.
-
-**Validate during execution (not research-phase items):**
-- Central Portal namespace auto-provisioning: in most cases GitHub OAuth login auto-provisions `io.github.sztheory`; if not, the manual verification flow requires a temporary public repo (allocate 30 minutes).
-- splitsh-lite `--scratch` flag in v2.0.0: PITFALLS.md cites it to prevent history bleed between runs; verify flag existence in `splitsh-lite --help` before committing to the CI job template.
-- `Package.swift` product name coupling: template references `CrosswakeShellCore` as product name; `Package.swift` declares `.library(name: "CrosswakeShellCore", ...)` — these must stay coupled; document the invariant.
+**No phases need deeper research during planning** — all patterns are documented and verified against source. Remaining open items are *requirements decisions*, not research gaps (see Gaps below). Skip research-phase for all phases.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All versions verified against official releases and changelogs. Vanniktech 0.31.0 vs 0.36.0 constraint verified against Gradle version requirement in plugin changelog. splitsh v2.0.0 confirmed latest stable. release-please v4.4.1 SHA confirmed. |
-| Features | HIGH | Grounded in repo-local file inspection — actual template bugs confirmed at exact line numbers, not inferred. Table stakes vs deferral boundary is firm based on dependency graph. |
-| Architecture | HIGH | Built from actual file inspection of all 9 modified + 3 new components. Data flow diagrams match actual file structure. Build order is dependency-derived. |
-| Pitfalls | HIGH (critical), MEDIUM (Pitfall 6 / product name) | Critical pitfalls confirmed with official docs and named issues. Pitfall 6 (product name / repo name mismatch) is community-pattern-based. |
+| Stack | HIGH | Playwright APIs verified vs official docs; branch protection vs live `gh api` |
+| Features | HIGH | Both bypasses confirmed by reading `offline_sync.spec.ts` + `offline_study.js` |
+| Architecture | HIGH | Every file inspected; server idempotency (`on_conflict: :nothing`) read directly |
+| Pitfalls | HIGH | Verifier footguns + workflow gap confirmed by direct source inspection |
 
 **Overall confidence:** HIGH
 
-### Gaps to Address
-
-- **splitsh-lite `--scratch` flag in v2.0.0**: PITFALLS.md cites it as preventing history bleed between runs; verify it exists in v2.0.0 before committing to the CI job template. If absent, re-evaluate the split-and-push sequence. Resolution: check `splitsh-lite --help` output in Phase A CI wiring step.
-- **Central Portal staging dry-run API**: research recommends a staging dry-run; `publishToMavenLocal` is the available dry-run path but does not exercise the Central Portal upload path. Resolution: accept local Maven inspection as the dry-run; wire a CI `--dry-run` flag if the Vanniktech task supports it.
-- **`doctor --check-publish` HTTP HEAD endpoint**: design calls for asserting reachability against a Maven Central API endpoint for artifact status. The 2025+ Central Portal API endpoint for artifact lookup was not independently verified. Resolution: scope the Phase B parity check to URL format correctness + registry reachability; full artifact download proof is delegated to the clean-room lane.
+### Gaps to Address (requirements decisions, not research gaps)
+- **Reconnect-trigger surface (DECISION):** FEATURES recommends the LiveView `reconnected()` Hook as primary (server-confirmed-reachable, avoids a network-back-but-socket-stale race). ARCHITECTURE found the `/offline` island page has **no LiveView socket** (`put_root_layout(false)`), so the Hook is architecturally impossible there — `window 'online'` is the only viable trigger given the current route structure. Requirements must either confirm `window 'online'` for v12.0 or commit to migrating the study UI onto a LiveView route. **Recommendation: `window 'online'` only — do not expand scope to a route migration.**
+- **`study_session_live.ex` mock (DECISION):** remove the `sync_outbox` handler entirely (recommended) vs. keep it as a labeled "Manual Sync" escape hatch.
+- **VALIDATION.md evidence schema (DECISION):** exact field names alongside `nyquist_compliant: true` (e.g. `tested_by:`, `evidence:`) — settle before Phase 115.
+- **`/_e2e/sync-state/:id` (VERIFY):** confirm it is exercised by a real IndexedDB-originated mutation (it may have only ever served the mocked flow).
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Vanniktech gradle-maven-publish-plugin changelog + docs: https://vanniktech.github.io/gradle-maven-publish-plugin/ — version compatibility matrix, POM requirements, Central Portal config
-- `googleapis/release-please-action` releases + issue #1000: https://github.com/googleapis/release-please-action — v4.4.1 SHA `5c625bf`, GITHUB_TOKEN downstream trigger limitation, same-workflow job chaining pattern
-- release-please manifest docs: https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md — linked-versions plugin, extra-files, x-release-please-version annotation syntax
-- Central Portal namespace docs: https://central.sonatype.org/register/namespace/ — io.github.USERNAME auto-provisioning, GPG keyserver requirements
-- Maven Central immutability policy: https://central.sonatype.org/publish/requirements/immutability/
-- splitsh/lite releases: https://github.com/splitsh/lite/releases — v2.0.0 confirmed latest stable (released 2025-10-26)
-- SwiftPM SE-0292 root-manifest constraint: https://github.com/swiftlang/swift-evolution/blob/main/proposals/0292-package-registry-service.md
-- Apollo iOS subtree mirror pattern: https://www.apollographql.com/blog/how-apollo-manages-swift-packages-in-a-monorepo-with-git-subtrees
-- Repo-local file inspection: `lib/mix/tasks/crosswake.gen.shell.ex`, `priv/templates/crosswake/shell/ios/CrosswakeShell.xcodeproj/project.pbxproj.eex`, `priv/templates/crosswake/shell/android/app/build.gradle.eex`, `settings.gradle.eex`, `packages/crosswake-shell-core-android/build.gradle.kts`, `packages/crosswake-shell-core-ios/Package.swift`, `.github/workflows/release-please.yml`, `release-please-config.json`, `.release-please-manifest.json`
-- OSSRH sunset confirmation: https://so.nwalsh.com/2025/06/01-maven (shutdown 2025-06-30; Central Portal is the only current path)
+- Direct source inspection: `offline_sync.spec.ts`, `offline_storage.spec.ts`, `offline_study.js`, `study_session_live.ex`, `router.ex`, `closeout_verifier.ex`, `phase90-proof.yml`, `brandbook-verify.yml`.
+- Playwright official docs — `setOffline`, `waitForResponse`, `expect.poll`, `addInitScript`.
+- GitHub REST docs + live `gh api` — branch-protection `checks` array (app_id 15368, two existing checks).
+- Phoenix LiveView JS interop docs (hexdocs) — `reconnected()` Hook semantics.
 
 ### Secondary (MEDIUM confidence)
-- LiveView Native generate-time version injection pattern: referenced in `.planning/threads/release-distribution-truth.md` — `Application.spec(:live_view_native_swiftui)[:vsn]` pattern; GitHub source not independently fetched
-- Capacitor branch-pinning issue #7735 and relative-path issue #6040: referenced in pre-gathered research; not independently re-verified
-- splitsh-lite `--scratch` flag: referenced in PITFALLS.md integration gotchas; not independently verified against v2.0.0 release notes
-- SwiftPackageIndex/PackageList PR submission process: https://github.com/SwiftPackageIndex/PackageList — stable process, not re-verified for 2026
-
-### Tertiary (LOW confidence)
-- Central Portal staging dry-run API availability: inferred from general Sonatype documentation; 2025+ Central Portal staging UI not independently verified
-- Maven Central API endpoint for artifact status lookup (doctor check design): exact endpoint not independently verified for Central Portal 2025+ API
+- Community source for CDP `setOffline` not firing `online` (consistent with documented CDP behavior; `dispatchEvent` is the standard workaround).
 
 ---
-*Research completed: 2026-06-14*
+*Research completed: 2026-06-17*
 *Ready for roadmap: yes*
