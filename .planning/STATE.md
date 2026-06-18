@@ -5,13 +5,13 @@ milestone_name: CI Honesty & Real-E2E Sweep
 current_phase: 114
 current_phase_name: merge-blocking-ci-gate-permanent-honesty-guard
 status: executing
-stopped_at: Phase 114 context gathered
-last_updated: "2026-06-18T06:44:13.882Z"
+stopped_at: Completed 114-03-PLAN.md
+last_updated: "2026-06-18T06:49:33.595Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 50
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 114 (merge-blocking-ci-gate-permanent-honesty-guard) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
 Status: Ready to execute
 
@@ -65,6 +65,8 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 - [Phase ?]: Option-C aggregator topology selected (merge-blocking-offline-sync-e2e as sole required check, re-actors/alls-green)
 - [Phase ?]: Env-scoped cache keys (build-test-* / build-prod-*) + rm -rf _build/prod isolate MIX_ENV compiles (T-114-02 mitigation)
 - [Phase ?]: GUARD-01: typescript resolved via createRequire from examples/phoenix_host; guard-01 CI job must run npm ci --prefix examples/phoenix_host before honesty check
+- [Phase ?]: Direct controller invocation (no ConnCase) for GUARD-02 count-scoping test — lowest footprint, exercises real show/2
+- [Phase ?]: Mix.env() gate unchanged in router.ex — compile-time-out strictly stronger than runtime guard (D-09)
 
 ### Pending Todos
 
@@ -92,12 +94,13 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | Phase 113 P03 | 1min | 1 tasks | 1 files |
 | Phase 114 P01 | 5 | 2 tasks | 1 files |
 | Phase 114 P02 | 5 | 2 tasks | 4 files |
+| Phase 114 P03 | 142 | 3 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T06:44:07.779Z
-Stopped at: Phase 114 context gathered
-Resume file: .planning/phases/114-merge-blocking-ci-gate-permanent-honesty-guard/114-CONTEXT.md
+Last session: 2026-06-18T06:49:33.589Z
+Stopped at: Completed 114-03-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
