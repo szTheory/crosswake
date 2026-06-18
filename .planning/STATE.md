@@ -4,15 +4,15 @@ milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
 current_phase: 114
 current_phase_name: merge-blocking-ci-gate-permanent-honesty-guard
-status: executing
+status: verifying
 stopped_at: Completed 114-03-PLAN.md
-last_updated: "2026-06-18T06:54:17.489Z"
+last_updated: "2026-06-18T07:01:33.828Z"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 50
+  completed_plans: 10
+  percent: 75
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 Phase: 114 (merge-blocking-ci-gate-permanent-honesty-guard) — EXECUTING
 Plan: 5 of 5
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
-Status: Ready to execute
+Status: Phase complete — ready for verification
 
 **Progress bar:** Phase 1/4 complete · Plan 2/TBD complete
 
@@ -67,6 +67,9 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 - [Phase ?]: GUARD-01: typescript resolved via createRequire from examples/phoenix_host; guard-01 CI job must run npm ci --prefix examples/phoenix_host before honesty check
 - [Phase ?]: Direct controller invocation (no ConnCase) for GUARD-02 count-scoping test — lowest footprint, exercises real show/2
 - [Phase ?]: Mix.env() gate unchanged in router.ex — compile-time-out strictly stronger than runtime guard (D-09)
+- [Phase ?]: Plan 114-05: GATE-01 registration script reads live state
+- [Phase ?]: Plan 114-05: register-e2e-gate.sh refuses to register until aggregator goes green on main
+- [Phase ?]: Plan 114-05: GATE-01 registration uses minimal-footprint PATCH endpoint
 
 ### Pending Todos
 
@@ -96,10 +99,11 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | Phase 114 P02 | 5 | 2 tasks | 4 files |
 | Phase 114 P03 | 142 | 3 tasks | 3 files |
 | Phase 114 P04 | 7 | 3 tasks | 15 files |
+| Phase 114 P05 | 2 minutes | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T06:54:12.336Z
+Last session: 2026-06-18T07:01:33.820Z
 Stopped at: Completed 114-03-PLAN.md
 Resume file: None
 
