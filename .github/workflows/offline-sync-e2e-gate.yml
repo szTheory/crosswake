@@ -5,8 +5,29 @@ name: Offline-Sync E2E Gate
 #   Three sibling jobs produce per-signal red/green dots; one aggregator is the ONLY required check.
 #   Branch-protection required-check name: merge-blocking-offline-sync-e2e
 #
-# REGISTRATION (run out-of-band after this workflow goes green on main — plan 114-05):
-#   [placeholder: plan 114-05 will paste the gh api PATCH registration one-liner here]
+# REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
+#
+#   Ordering — must follow this sequence to avoid "Expected — Waiting for status" deadlock:
+#     1. Merge this PR / the rename PR (offline-sync-e2e-gate.yml with aggregator topology).
+#     2. Let merge-blocking-offline-sync-e2e go GREEN on main at least once.
+#     3. Run the registration script (step 3 is harness-blocked; maintainer only):
+#
+#        script/register-e2e-gate.sh
+#
+#        Equivalent gh api one-liner (for reference / auditing):
+#          EP="repos/szTheory/crosswake/branches/main/protection/required_status_checks"
+#          current="$(gh api "$EP")"
+#          desired="$(jq -n --argjson cur "$current" --arg new "merge-blocking-offline-sync-e2e" \
+#            --arg old "e2e-offline-sync" --argjson app 15368 \
+#            '{ strict: $cur.strict,
+#               checks: (($cur.checks // []) | map(select(.context != $old))
+#                        + [{context:$new, app_id:$app}] | unique_by(.context)) }')"
+#          gh api -X PATCH "$EP" --input <(echo "$desired")
+#
+#   This preserves the two existing required checks
+#   ("merge-blocking rulestead proof (hermetic)" and "brand-structural") and strict: true.
+#   The granular required_status_checks endpoint is used — not the full PUT .../protection —
+#   so enforce_admins and review requirements are left untouched.
 
 permissions:
   contents: read
