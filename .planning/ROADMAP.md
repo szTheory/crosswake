@@ -94,15 +94,15 @@ Plans:
   3. The test asserts the IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row
   4. `phase90-proof.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout
 
-**Plans**: 3 plans
+**Plans**: 2/3 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 113-01-PLAN.md — Wave 1: green foundation (pre-flight compile fix, sibling-spec hygiene, scoped count + test-only @moduledoc on the sync-state controller)
+- [x] 113-01-PLAN.md — Wave 1: green foundation (pre-flight compile fix, sibling-spec hygiene, scoped count + test-only @moduledoc on the sync-state controller)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
+- [x] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
 - [ ] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml
 
 ### Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard
@@ -152,6 +152,6 @@ Plans:
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
-| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 0/3 | Not started | - |
+| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 2/3 | In Progress|  |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 0/TBD | Not started | - |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |

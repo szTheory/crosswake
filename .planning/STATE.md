@@ -2,14 +2,16 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
+current_phase: 113
+current_phase_name: honest-e2e-rewrite-compile-gate
 status: executing
 stopped_at: Phase 113 context gathered
-last_updated: "2026-06-18T05:14:47.331Z"
+last_updated: "2026-06-18T05:39:47.336Z"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 4
   percent: 25
 ---
 
@@ -25,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 113 (honest-e2e-rewrite-compile-gate) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
-Status: Executing Phase 113
+Status: Ready to execute
 
 **Progress bar:** Phase 1/4 complete · Plan 2/TBD complete
 
@@ -56,6 +58,9 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 
 **v11.0 key decision (2026-06-14):** Two-phase split enforced by dependency graph — Phase 110 (publish + lockstep) must complete before Phase 111 (rewire + prove + release). You cannot clean-room-prove an unpublished dep; you must not cut Hex while gen.shell emits broken coordinates. This ordering is non-negotiable per research.
 
+- [Phase ?]: D-03 confirmed
+- [Phase ?]: Rule 1: Study.sync_events struct serialization
+
 ### Pending Todos
 
 - **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Pre-existing `FlashcardsTest` field-name drift + flaky `Chimeway.RegistryNotificationOpenTest` surfaced by Phase 112's `elixirc_paths` fix. Out of scope for Phase 112; candidate for Phase 115 (DEBT-01) or standalone cleanup.
@@ -78,10 +83,11 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — candidate for Phase 115 | Phase 112 surfaced |
+| Phase 113 P02 | 14min | 1 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T00:47:01.607Z
+Last session: 2026-06-18T05:39:10.931Z
 Stopped at: Phase 113 context gathered
 Resume file: .planning/phases/113-honest-e2e-rewrite-compile-gate/113-CONTEXT.md
 
