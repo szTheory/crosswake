@@ -1,10 +1,12 @@
 # Thread: Release & Distribution Truth
 
 **Opened:** 2026-06-14 (milestone next-step assessment, post-v10.0)
-**Status:** OPEN — recommended next strategic milestone, not yet scoped/kicked off
+**Status:** RESOLVED by v11.0 — historical thread retained for evidence; current open follow-up is adopter-confidence proof, not distribution
 **Lens:** adopter-first ("a Phoenix SaaS dev who would actually install this")
 
 ## The gap (verified repo-local, high confidence)
+
+> 2026-06-18 refresh: This gap is now historical. v11.0 shipped `crosswake 0.1.2` to Hex, Maven Central, and the SwiftPM mirror, rewired `gen.shell` to generated version-matched published coordinates, and added clean-room/parity proof. Keep the research below as evidence for why v11.0 existed, but do not treat its "unpublished" claims as current truth.
 
 Crosswake is a mature *codebase* (~88% done for scope) but a partial *installable product* (~70%). The missing delta is foundational distribution, not features:
 
@@ -16,6 +18,8 @@ Crosswake is a mature *codebase* (~88% done for scope) but a partial *installabl
    - → An adopter running `gen.shell` in their own repo gets an unbuildable project. The flagship claim is proven only inside this monorepo.
 
 ## Recommended milestone scope
+
+> 2026-06-18 refresh: Completed by v11.0 Release & Distribution Truth. Do not re-scope this as a new milestone unless a future release breaks the published-coordinate guarantee.
 
 "Cut a Hex release" is a near button-press (`doctor --check-publish` ready, release-please wired) — do NOT milestone that. The milestone makes the standalone-package thesis real:
 
@@ -31,12 +35,16 @@ Crosswake is a mature *codebase* (~88% done for scope) but a partial *installabl
 **"Done enough":** an adopter outside this repo adds the Hex dep, runs `gen.shell` (default), and gets iOS+Android projects that resolve published, version-matched deps and build — proven by the clean-room CI lane.
 
 ## Ordering after this wedge
-2. **CI honesty / real-E2E sweep** — v6.0 RETROSPECTIVE flagged the mocked Playwright E2E hid a real compile break ("worse than no E2E"); plus the carried `tighten-validation-ledger-closeout-gate` Nyquist debt. Partly independent; do right after (or a quick pre-step to clean the board first).
-3. **Onboarding/docs consolidation** — route-policy-101, troubleshooting, web→mobile migration. Subordinate: teaching a broken install path is net-harmful, so it follows #1.
-- Defer: companion package extraction; NTV-01 / DASH-01 / `crosswake_dashboard`; any new capability/commerce breadth (overbuilding on an undistributed base).
+
+2026-06-18 current ordering after v11/v12:
+
+1. **Adopter Confidence & Native Evidence** — make the now-real distribution and offline proof runnable, visual, and current for adopters.
+2. **DASH-01 operator metric surfacing** — useful after the proof path is trustworthy.
+3. **NTV-01 native physical storage budgets** — valuable but narrower and higher-cost than confidence/collateral.
+4. **New capability breadth** — defer until the existing thesis is easy to see and run.
 
 ## Graduation candidate
-**"Published-dep parity" belongs as a permanent `doctor` / closeout check** — assert the generated shell deps point at published, resolvable, version-matched coordinates (not monorepo paths). This is the structural guard that keeps the eject-trap thesis honest, in the same spirit as the v10.0 `brand-structural` drift gate. Promote to a Key Decision when the milestone is scoped.
+**"Published-dep parity" graduated in v11.0** as the permanent generator-coordinate parity guard. The next graduation candidate is **adopter-evidence freshness**: proof/collateral should make clear which evidence is merge-blocking, advisory simulator/device proof, or documentation/collateral only.
 
 ## Evidence index
 - `mix.exs:4` `@version "0.1.2"`; `CHANGELOG.md` `[Unreleased]`/`[0.1.2]`/`[0.1.0]`; `git tag` shows only `v0.1.0` on the Hex axis.
