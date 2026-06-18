@@ -1,5 +1,9 @@
 # Project Milestones: Crosswake
 
+## Document Truth Precedence
+
+For shipped-state questions, use this order: `MILESTONES.md` curated shipped-state truth > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md` point-in-time snapshots. `PROJECT.md` Requirements marks remain active-project truth and must cite verification or CI evidence; audit files preserve the evidence available at the time they were written.
+
 ## v11.0 Release & Distribution Truth (Shipped: 2026-06-17)
 
 **Phases completed:** 2 phases (110-111), 8 plans, 13 tasks
@@ -54,6 +58,23 @@
 - **Release hygiene**: added the pending CHANGELOG `[0.1.2]` section, flipping `doctor --check-publish` from `not_ready` → `ready`.
 
 **Known deferred items at close:** 1 — quick task `260603-nzr-tighten-validation-ledger-closeout-gate` (pre-existing v4.0 closeout-verifier ledger debt; see STATE.md Deferred Items).
+
+---
+
+## v8.0 Offline Sync Hardening and UI Polish (Shipped: 2026-06-11)
+
+**Phases completed:** 99-101
+
+**Delivered:** v8.0 hardened the offline-sync proof surface with real network toggling, advisory runtime storage budgets, and a consolidated offline UI while keeping offline claims scoped to the existing Phoenix-first offline island contract.
+
+**Key accomplishments:**
+
+- Real network toggling: Playwright coverage used browser network-offline behavior rather than localStorage-only mocks for the offline study island.
+- Advisory runtime storage budgets: the offline contract and generated UI surfaced storage-budget expectations with standard browser APIs and quota-error handling.
+- Consolidated offline UI: the host-owned `OfflineController` path generated a single brand-aligned offline surface without LiveView websocket coupling.
+- Shipped-state reconciliation: accepted verification debt from the 2026-06-11 audit was carried forward honestly and later addressed by v12.0 proof-honesty work.
+
+**Known deferred items at close:** accepted verification debt for phases 99-101 was recorded in `v1.0-MILESTONE-AUDIT.md` and carried into the v12.0 closeout/doc-truth sweep.
 
 ---
 
