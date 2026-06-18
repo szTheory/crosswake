@@ -150,7 +150,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 115-01-PLAN.md — GATE-02 verifier hardening: strict `expected_phases`, `closeout.expected_phases`, ledger evidence validation, and focused verifier/Mix tests
+- [x] 115-01-PLAN.md — GATE-02 verifier hardening: strict `expected_phases`, `closeout.expected_phases`, ledger evidence validation, and focused verifier/Mix tests
 
 **Wave 2** *(blocked on 115-01)*
 
@@ -177,4 +177,4 @@ Plans:
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
-| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/3 | Planned | - |
+| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 1/3 | In Progress|  |
