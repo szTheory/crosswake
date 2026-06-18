@@ -1,9 +1,9 @@
 ---
 phase: 116
 slug: proof-debt-and-release-truth
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-18
 ---
 
@@ -38,10 +38,10 @@ created: 2026-06-18
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 116-01-flashcards | 01 | 1 | PROOF-01 | T-116-02 | Example-host proof does not depend on schema-drift failures | integration | `cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs` | yes | pending |
-| 116-01-chimeway | 01 | 1 | PROOF-01 | T-116-02 | Registry notification-open proof is deterministic or explicitly excluded with a narrow reason | integration | `cd examples/phoenix_host && mix test test/crosswake_example/chimeway/registry_notification_open_test.exs` | yes | pending |
-| 116-02-release-docs | 02 | 1 | REL-TRUTH-01 | T-116-01 | Public docs do not overclaim stale release/native/offline truth | docs-contract | `mix test test/crosswake/guides/release_boundaries_test.exs test/crosswake/doctor/publish_readiness_test.exs` | yes | pending |
-| 116-03-drift-guard | 03 | 2 | DRIFT-01 | T-116-01 | Drift guard fails on stale current-version and deferred-shell claims | docs-contract | `mix test test/crosswake/guides/release_boundaries_test.exs` | yes | pending |
+| 116-01-flashcards | 01 | 1 | PROOF-01 | T-116-02 | Example-host proof does not depend on schema-drift failures | integration | `cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs` | yes | green |
+| 116-01-chimeway | 01 | 1 | PROOF-01 | T-116-02 | Registry notification-open proof is deterministic or explicitly excluded with a narrow reason | integration | `cd examples/phoenix_host && mix test test/crosswake_example/chimeway/registry_notification_open_test.exs` | yes | green |
+| 116-02-release-docs | 02 | 1 | REL-TRUTH-01 | T-116-01 | Public docs do not overclaim stale release/native/offline truth | docs-contract | `mix test test/crosswake/guides/release_boundaries_test.exs test/crosswake/doctor/publish_readiness_test.exs` | yes | green |
+| 116-03-drift-guard | 03 | 2 | DRIFT-01 | T-116-01 | Drift guard fails on stale current-version and deferred-shell claims | docs-contract | `mix test test/crosswake/guides/release_boundaries_test.exs` | yes | green |
 
 *Status: pending / green / red / flaky*
 
@@ -67,11 +67,11 @@ created: 2026-06-18
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 90s for targeted checks
-- [ ] `nyquist_compliant: true` set in frontmatter after plans are verified
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 90s for targeted checks
+- [x] `nyquist_compliant: true` set in frontmatter after plans are verified
 
-**Approval:** pending
+**Approval:** complete

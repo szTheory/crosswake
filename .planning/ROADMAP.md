@@ -72,7 +72,7 @@ Full phase detail archived in `.planning/milestones/v12.0-ROADMAP.md`.
 
 ### v13.0 Adopter Confidence & Native Evidence (Phases 116-120) — ACTIVE
 
-- [ ] **Phase 116: Proof Debt And Release Truth** - Make the public proof path clean and current before it becomes adopter evidence (0/3 plans)
+- [x] **Phase 116: Proof Debt And Release Truth** - Make the public proof path clean and current before it becomes adopter evidence (3/3 plans)
 - [ ] **Phase 117: Route-Policy And Support-Truth Guide Foundation** - Make the route-owner mental model and proof-label vocabulary the first-read frame (0/3 plans)
 - [ ] **Phase 118: Runnable Quick Start And Real Adoption Proof** - Turn the first hands-on path into a command-verified proof of v11/v12 truth (0/3 plans)
 - [ ] **Phase 119: Native Evidence Classification** - Decide and label whether native evidence is published-coordinate proof, local-dev proof, or advisory collateral (0/3 plans)
@@ -102,7 +102,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 public-truth baseline)*
 
-- [ ] 116-03-PLAN.md — Add deterministic release-truth drift guard for stale versions and deferred-shell claims.
+- [x] 116-03-PLAN.md — Add deterministic release-truth drift guard for stale versions and deferred-shell claims.
 
 ### Phase 117: Route-Policy And Support-Truth Guide Foundation
 
@@ -211,9 +211,9 @@ Plans:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROOF-01 | Phase 116 | Planned |
-| REL-TRUTH-01 | Phase 116 | Planned |
-| DRIFT-01 | Phase 116 | Planned |
+| PROOF-01 | Phase 116 | Complete |
+| REL-TRUTH-01 | Phase 116 | Complete |
+| DRIFT-01 | Phase 116 | Complete |
 | GUIDE-01 | Phase 117 | Planned |
 | MIGRATE-01 | Phase 117 | Planned |
 | TRUTH-01 | Phase 117 | Planned |
@@ -251,7 +251,7 @@ Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete    | 2026-06-18 |
-| 116. Proof Debt And Release Truth | v13.0 | 2/3 | In Progress|  |
+| 116. Proof Debt And Release Truth | v13.0 | 3/3 | Complete    | 2026-06-18 |
 | 117. Route-Policy And Support-Truth Guide Foundation | v13.0 | 0/3 | Not started | - |
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 0/3 | Not started | - |
 | 119. Native Evidence Classification | v13.0 | 0/3 | Not started | - |
