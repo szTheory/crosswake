@@ -24,6 +24,9 @@ erl_crash.dump
 /**/_build/
 /**/deps/
 
+# Example Phoenix host runtime SQLite state
+/examples/phoenix_host/crosswake_example.db*
+
 # iOS
 /**/DerivedData/
 /**/build/
