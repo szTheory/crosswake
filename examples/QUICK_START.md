@@ -1,6 +1,6 @@
 # Crosswake Demo Quick Start
 
-Welcome to the Crosswake example demo! This guide provides step-by-step instructions to test the bounded bridge proof and verify end-to-end functionality between your Phoenix LiveView server and the native mobile shells (iOS and Android).
+Welcome to the Crosswake example demo! This Phase 116 safety pass keeps the first-run instructions from pointing at stale commands while the full quick-start rewrite is handled in Phase 118. Browser and Phoenix proof commands are current; native simulator/device walkthroughs remain advisory until Phase 119 classifies checked-in native evidence.
 
 ## Prerequisites
 
@@ -17,14 +17,16 @@ First, you need to start the backend Phoenix application, which serves the LiveV
 # Navigate to the Phoenix host example directory
 cd examples/phoenix_host
 
-# Install dependencies and set up the database (if needed)
-mix setup
+# Install dependencies and prepare the example database
+mix deps.get
+mix ecto.create
+mix ecto.migrate
 
 # Start the Phoenix server on localhost
 mix phx.server
 ```
 
-The server should now be running at `http://localhost:4000`. Leave this terminal running.
+The server should now be running at `http://localhost:4002`. Leave this terminal running.
 
 ## 2. Start the Mobile Shells
 
@@ -36,9 +38,9 @@ You can run the iOS shell using Xcode:
 
 1.  Open the iOS workspace:
     ```bash
-    open examples/ios_shell_host/ios_shell_host.xcodeproj
+    open examples/ios_shell_host/CrosswakeShell.xcodeproj
     ```
-    *(Note: if using CocoaPods later, you might open `.xcworkspace` instead, but currently `.xcodeproj` is appropriate).*
+    This checked-in host walkthrough is advisory until Phase 119 classifies native evidence labels.
 2.  In Xcode, select your desired simulator (e.g., iPhone 15) and click the **Play (Run)** button or press `Cmd + R`.
 
 Alternatively, you can build and run using `xcodebuild` from the terminal (if you have standard tools configured).
@@ -50,7 +52,7 @@ You can run the Android shell using Android Studio:
 1.  Open **Android Studio**.
 2.  Select **File -> Open...** and choose the `examples/android_shell_host` directory.
 3.  Let the project sync (Gradle sync).
-4.  Select an emulator or a connected physical device.
+4.  Select an emulator. Physical-device evidence is advisory until Phase 119 classifies native evidence labels.
 5.  Click the **Run (Play)** button or press `Shift + F10`.
 
 Alternatively, if you have a device/emulator running, you can install via terminal:

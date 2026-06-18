@@ -12,7 +12,7 @@ The demo app demonstrates the `Crosswake.Offline` island philosophy. It is built
 
 1.  **Phoenix Host (Backend)**: Uses Ecto to manage the truth state of the application.
 2.  **Crosswake Native Shell (Frontend)**: standalone SPM/Maven dependencies injected into the iOS/Android apps.
-3.  **Sync Engine (Bridge)**: Intercepts mutations while offline and buffers them. Once the device reconnects, the Bridge replays the log (eventual consistency) and synchronizes with the Phoenix Host.
+3.  **App-owned offline island**: The current verified proof uses island JavaScript, IndexedDB outbox storage, reconnect-triggered `flushOutbox`, `/study/sync`, and Phoenix/Ecto reconciliation. The bridge is not the offline mutation authority.
 
 ## Adopting the Offline-Sync Architecture
 
@@ -24,16 +24,9 @@ Generate the shell as a thin, host-owned wrapper that your team reviews and owns
 
 ### 2. Configure Offline Mutations
 
-Define which user interactions (e.g., answering a flashcard) can be performed offline. Route these actions through the Crosswake bridge:
-
-```javascript
-// Example: Recording an offline study session
-Crosswake.mutate({
-  type: 'study_card',
-  payload: { cardId: '123', result: 'correct' },
-  offlineCapable: true
-});
-```
+Current verified proof is app-owned IndexedDB outbox plus reconnect-triggered
+Phoenix/Ecto reconciliation. The full adoption rewrite is owned by Phase 118;
+until then, do not treat the bridge as a mutation queue or sync engine.
 
 ### 3. Handle Sync Reconnection
 
