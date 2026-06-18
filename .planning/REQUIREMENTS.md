@@ -24,15 +24,15 @@ Replace the structurally fraudulent `offline_sync.spec.ts` (which injects a muta
 
 Make the proof and the closeout verifier actually enforce, instead of running advisory-in-disguise or passing vacuously.
 
-- [ ] **GATE-01**: The offline-sync E2E job is named `merge-blocking-offline-sync-e2e` and registered as a required status check on `main` with all existing required checks preserved (the branch-protection `checks` array is **replaced, not appended** — all checks listed). The workflow carries a comment with the exact `gh api ... PATCH` command; if the protection toggle is harness-blocked, a `script/register-e2e-gate.sh` ships the complete command. Every non-required CI lane keeps `continue-on-error: true` and a `::notice` marking its advisory status.
+- [x] **GATE-01**: The offline-sync E2E job is named `merge-blocking-offline-sync-e2e` and registered as a required status check on `main` with all existing required checks preserved (the branch-protection `checks` array is **replaced, not appended** — all checks listed). The workflow carries a comment with the exact `gh api ... PATCH` command; if the protection toggle is harness-blocked, a `script/register-e2e-gate.sh` ships the complete command. Every non-required CI lane keeps `continue-on-error: true` and a `::notice` marking its advisory status.
 - [ ] **GATE-02**: The `CloseoutVerifier` fails closed on its two vacuous paths: (a) it raises when `expected_phases` is absent/malformed in `CLOSEOUT.md` frontmatter instead of silently substituting a hardcoded phase set (`@v40_phases`); (b) `validation_ledger_check/2` returns a blocking result when an expected phase resolves to zero ledger files with no active deferral ("no files found" ≠ "found and compliant"). Stale unsatisfied prior-debt entries **block** the closeout rather than merely printing `(stale)`.
 
 ### GUARD — Permanent Structural Guards
 
 Make the honesty guarantee permanent, matching the project DNA (v9.0 `brand-structural`, v11.0 `generator_coordinate_parity`) — a point-in-time fix is not enough.
 
-- [ ] **GUARD-01**: A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the illegitimate-injection anti-patterns (`window['crosswake_offline_mutations']`, a `page.evaluate` that calls `fetch(`, or a test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear, so the test cannot silently revert to fake in a future PR. Registered alongside the E2E job.
-- [ ] **GUARD-02**: The `/_e2e/sync-state/:id` endpoint is confirmed and asserted to be mounted only in `:test`/`:e2e` (never `:prod`) — via a `routes_test.exs` assertion or documented workflow comment — and its test-only purpose is stated in the controller module docstring, so the proof endpoint is not a production data-leak path.
+- [x] **GUARD-01**: A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the illegitimate-injection anti-patterns (`window['crosswake_offline_mutations']`, a `page.evaluate` that calls `fetch(`, or a test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear, so the test cannot silently revert to fake in a future PR. Registered alongside the E2E job.
+- [x] **GUARD-02**: The `/_e2e/sync-state/:id` endpoint is confirmed and asserted to be mounted only in `:test`/`:e2e` (never `:prod`) — via a `routes_test.exs` assertion or documented workflow comment — and its test-only purpose is stated in the controller module docstring, so the proof endpoint is not a production data-leak path.
 
 ### DEBT — Carried Validation-Ledger Debt
 
@@ -80,9 +80,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | E2E-02 | 112 | Satisfied (verified 2026-06-17) |
 | E2E-03 | 113 | Complete |
 | E2E-04 | 113 | Complete |
-| GATE-01 | 114 | Pending |
-| GUARD-01 | 114 | Pending |
-| GUARD-02 | 114 | Pending |
+| GATE-01 | 114 | Complete |
+| GUARD-01 | 114 | Complete |
+| GUARD-02 | 114 | Complete |
 | GATE-02 | 115 | Pending |
 | DEBT-01 | 115 | Pending |
 | DOC-01 | 115 | Pending |

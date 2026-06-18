@@ -3,14 +3,15 @@ gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
 current_phase: 114
+current_phase_name: merge-blocking-ci-gate-permanent-honesty-guard
 status: executing
 stopped_at: Phase 114 context gathered
-last_updated: "2026-06-18T06:31:22.842Z"
+last_updated: "2026-06-18T06:37:20.599Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 10
+  completed_plans: 6
   percent: 50
 ---
 
@@ -21,12 +22,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 114 — merge blocking ci gate + permanent honesty guard
+**Current focus:** Phase 114 — merge-blocking-ci-gate-permanent-honesty-guard
 
 ## Current Position
 
-Phase: 114
-Plan: Not started
+Phase: 114 (merge-blocking-ci-gate-permanent-honesty-guard) — EXECUTING
+Plan: 2 of 5
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
 Status: Ready to execute
 
@@ -61,6 +62,8 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 - [Phase ?]: Rule 1: Study.sync_events struct serialization
 - [Phase ?]: D-04: MIX_ENV=test mandatory in phase90-proof.yml compile gate; catches elixirc_paths(:test) + _e2e route (the v6.0 break path)
 - [Phase ?]: Job name e2e-offline-sync preserved in phase90-proof.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
+- [Phase ?]: Option-C aggregator topology selected (merge-blocking-offline-sync-e2e as sole required check, re-actors/alls-green)
+- [Phase ?]: Env-scoped cache keys (build-test-* / build-prod-*) + rm -rf _build/prod isolate MIX_ENV compiles (T-114-02 mitigation)
 
 ### Pending Todos
 
@@ -86,10 +89,11 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — candidate for Phase 115 | Phase 112 surfaced |
 | Phase 113 P02 | 14min | 1 tasks | 2 files |
 | Phase 113 P03 | 1min | 1 tasks | 1 files |
+| Phase 114 P01 | 5 | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T06:16:39.708Z
+Last session: 2026-06-18T06:36:58.029Z
 Stopped at: Phase 114 context gathered
 Resume file: .planning/phases/114-merge-blocking-ci-gate-permanent-honesty-guard/114-CONTEXT.md
 
