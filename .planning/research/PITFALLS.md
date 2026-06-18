@@ -114,7 +114,7 @@ Branch protection is configured in GitHub's UI, not in the YAML file. There is n
 **How to avoid:**
 - Document required check context names explicitly in the workflow YAML comment, as `brandbook-verify.yml` does: "Add this job's check context to branch-protection required-status-checks."
 - Use the GitHub CLI to verify branch protection after any workflow rename: `gh api repos/{owner}/{repo}/branches/main/protection`.
-- Explicitly mark advisory lanes with `continue-on-error: true` AND an `echo "::notice"` step (as `brand-visual` does) so advisors are visually distinct in the GitHub UI.
+- Mark advisory lanes as non-blocking by **omission from the branch-protection `checks[]` array** (and trigger-scope to `schedule`/`workflow_dispatch` where they should not run per-PR) — **never** via `continue-on-error: true`, which paints a failed lane green and makes it permanently unpromotable (D-02/D-06). Each advisory lane should carry an `advisory-`-prefixed job `name:` and an `echo "::notice"` step so advisors are visually distinct in the GitHub UI; failures surface as honest red.
 - For required lanes, add a `name:` field under the job key that matches the registered check context exactly.
 
 **Warning signs:**
@@ -281,7 +281,7 @@ Doc-truth reconciliation phase (small, standalone). Should precede or accompany 
 | Fabricate outbox via `page.evaluate()` | Green E2E in hours, no reconnect timing issues | Hides compile breaks; never exercises real JS flush path; gives false confidence on SYNC-01/02 | Never — the entire value of E2E is exercising the application under test |
 | Mark `nyquist_compliant: true` without evidence | Unblocks milestone closeout gate | Ledger becomes a bureaucratic ritual; future audits cannot distinguish compliant from placeholder | Only if a specific CI run ID or test name is cited alongside |
 | Carry `deferred_with_reason` without a resolution condition | Defers debt without commitment | Debt compounds; `prior_validation_debt_check` perpetually flags stale deferrals; future maintainers cannot tell if "stale" means "fixed" or "forgotten" | Acceptable once per deferral if `revisit_phase` is set; unacceptable across 4+ milestones |
-| Leave advisory lane without `continue-on-error: true` | Appears to be a required gate | Developers assume it blocks merges; trust in CI signals erodes | Never — the advisory/required split must be explicit |
+| Make advisory lane non-blocking via `continue-on-error: true` instead of omission from `checks[]` | Appears to suppress advisory failures cleanly | A soft-failed lane resolves as success — counts as pass for required checks and `needs:`, making it permanently unpromotable to a real gate; the honest pattern is omission from `checks[]` (D-02/D-06) | Never — use omission from `checks[]` + optional trigger-scoping, never `continue-on-error` |
 | No `mix compile` step before Playwright | Faster workflow setup | Compile errors surface as opaque port-connection timeouts in CI | Never for a merge-blocking lane |
 
 ---
@@ -303,7 +303,7 @@ Doc-truth reconciliation phase (small, standalone). Should precede or accompany 
 - [ ] **Real E2E:** Playwright test contains no `page.evaluate()` that writes to a `window[...]` global or calls `fetch` directly — verify by grepping test files for `page.evaluate` calls that assign to application state.
 - [ ] **Compile gate:** The E2E workflow has an explicit `mix compile --warnings-as-errors` step in `examples/phoenix_host` before the Playwright step.
 - [ ] **Branch-protection registered:** The new E2E workflow's job `name:` is listed in the branch-protection required status checks and documented in a YAML comment — verified via `gh api repos/{owner}/{repo}/branches/main/protection`.
-- [ ] **Advisory lanes marked:** Every non-required CI lane has `continue-on-error: true` and an `echo "::notice"` step declaring its advisory status.
+- [ ] **Advisory lanes marked:** Every non-required CI lane is non-blocking by omission from the branch-protection `checks[]` array (and trigger-scoped to `schedule`/`workflow_dispatch` where it should not run per-PR) — never via `continue-on-error: true`, which paints failures green (D-02/D-06). Each advisory lane carries an `advisory-`-prefixed job `name:` and an `echo "::notice"` step; failures surface as honest red.
 - [ ] **Ledger artifacts exist:** Every phase in v12.0 has a `*-VALIDATION.md` file under the archived phase directory with `nyquist_compliant: true` AND a `tested_by:` or `evidence:` reference to a specific test or CI run.
 - [ ] **LEDG-01 deferral resolved:** The `tighten-validation-ledger-closeout-gate` entry in prior CLOSEOUT.md files has `status: resolved` AND the corresponding ledger files now exist (not just the status field changed).
 - [ ] **Fallback phase list removed or hardened:** `CloseoutVerifier` does not silently fall back to `@v40_phases` for missing `expected_phases:` frontmatter — it raises or returns a hard error.
@@ -319,7 +319,7 @@ Doc-truth reconciliation phase (small, standalone). Should precede or accompany 
 | `setOffline` reconnect flake on CI | LOW | Add explicit UI-indicator poll after `setOffline(false)`; confirm passes 5x on Ubuntu runner without retries |
 | IndexedDB state leakage | LOW | Add `beforeEach` database reset; confirm test passes in suite order and reverse order |
 | Missing compile gate (compile break discovered late) | LOW | Add `mix compile` step; re-run; accept the embarrassment that a compile break lived in CI |
-| Advisory lane masquerading as required | LOW | Add `continue-on-error: true`; add `::notice` step; document in YAML comment |
+| Advisory lane masquerading as required | LOW | Remove from branch-protection `checks[]` (omission-from-checks[] pattern, D-02/D-06); add `advisory-`-prefixed job `name:` and `::notice` step; trigger-scope to `schedule`/`workflow_dispatch` if it should not run per-PR; document in YAML comment — do NOT add `continue-on-error: true` (paints failures green, makes lane permanently unpromotable) |
 | Vacuous closeout pass | MEDIUM | Add artifact-existence assertion to verifier; re-run closeout verification; create actual ledger files for affected phases |
 | Stale deferral accumulation | LOW | Define resolution criteria; create ledger files; mark deferral `status: resolved` with evidence |
 | Doc-truth disagreement | LOW | Write precedence rule; add MILESTONES.md entry for v8.0; annotate audit file |
@@ -334,7 +334,7 @@ Doc-truth reconciliation phase (small, standalone). Should precede or accompany 
 | `setOffline` reconnect timing (Pitfall 2) | E2E-01: Real network-toggling E2E rewrite | Test passes on Ubuntu CI without retries; reconnect assertion polls a UI indicator, not a request race |
 | IndexedDB state leakage (Pitfall 3) | E2E-01: Test harness setup | `beforeEach` or new context per test; confirmed by running tests in reverse order with same results |
 | Missing compile gate (Pitfall 4) | E2E-01: Workflow hardening | Introduce a deliberate compile error in phoenix_host; confirm CI catches it before Playwright runs |
-| Advisory lane masquerading as required (Pitfall 5) | Branch-protection hardening phase | `gh api` shows the E2E job `name:` in required checks; advisory lanes have `continue-on-error: true` |
+| Advisory lane masquerading as required (Pitfall 5) | Branch-protection hardening phase | `gh api` shows the E2E job `name:` in required checks; advisory lanes are non-blocking by omission from `checks[]` (not via `continue-on-error`) and carry `advisory-`-prefixed `name:` + `::notice` step |
 | Matrix jobs / check-context name drift (Pitfall 6) | Branch-protection hardening phase | Single-browser E2E; no matrix on required job; documented in YAML comment |
 | Vacuous pass from empty glob (Pitfall 7) | LEDG-01: Closeout-gate tightening | Verifier emits an error when `phase_paths` returns empty for an expected phase; test with a deliberately missing ledger |
 | Hardcoded `@v40_phases` fallback (Pitfall 8) | LEDG-01: Closeout-gate tightening | Verifier raises when `expected_phases` is absent; confirmed by removing the key from a test CLOSEOUT.md |
