@@ -25,13 +25,13 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     resolved_gaps
   )
   @exception_fields ~w(owner scope reason revisit_phase evidence status)
-  @v40_phases ~w(64 65 66 67 68 69)
   # Checks that read the current milestone's CLOSEOUT.md. They only apply while a
   # milestone is actively being closed out (the CLOSEOUT.md exists). See
   # relax_inactive_closeout/2.
   @closeout_artifact_check_ids ~w(
     closeout.ledger.frontmatter
     closeout.exceptions.deferred_shape
+    closeout.expected_phases
     closeout.requirements.state
     closeout.roadmap.parity
     closeout.verification.coverage
@@ -98,6 +98,9 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   @spec run(keyword()) :: Report.t()
   def run(opts \\ []) do
     cwd = Keyword.get(opts, :cwd, File.cwd!())
+    closeout_content = read_file(closeout_path(cwd, opts))
+    closeout_frontmatter = parse_frontmatter(closeout_content)
+    expected_phases = parse_expected_phases(closeout_frontmatter)
 
     checks =
       if Keyword.get(opts, :security_only?) == true do
@@ -106,12 +109,13 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         [
           closeout_frontmatter_check(cwd, opts),
           deferred_shape_check(cwd, opts),
+          expected_phases_check(cwd, opts, expected_phases),
           release_continuity_check(cwd, opts),
           requirements_state_check(cwd, opts),
           roadmap_state_check(cwd, opts),
-          phase_verification_check(cwd, opts),
-          summary_frontmatter_check(cwd, opts),
-          validation_ledger_check(cwd, opts),
+          phase_verification_check(cwd, opts, expected_phases),
+          summary_frontmatter_check(cwd, opts, expected_phases),
+          validation_ledger_check(cwd, opts, expected_phases),
           prior_validation_debt_check(cwd, opts),
           thread_seed_disposition_check(cwd, opts)
         ]
@@ -191,6 +195,30 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     )
   end
 
+  defp expected_phases_check(cwd, opts, {:ok, phases}) do
+    check(
+      "closeout.expected_phases",
+      "expected phase contract",
+      rel(cwd, closeout_path(cwd, opts)),
+      true,
+      "expected phases: #{Enum.join(phases, ", ")}",
+      "Declare a non-empty inline expected_phases array in CLOSEOUT.md frontmatter.",
+      %{phases: phases}
+    )
+  end
+
+  defp expected_phases_check(cwd, opts, {:error, reason}) do
+    check(
+      "closeout.expected_phases",
+      "expected phase contract",
+      rel(cwd, closeout_path(cwd, opts)),
+      false,
+      "invalid expected_phases: #{format_parse_error(reason)}",
+      "Declare expected_phases as a non-empty inline array, for example expected_phases: [\"112\", \"113\"].",
+      %{error: reason}
+    )
+  end
+
   defp release_continuity_check(cwd, opts) do
     path = Keyword.get(opts, :changelog_path, Path.join(cwd, "CHANGELOG.md"))
     content = read_file(path)
@@ -233,8 +261,14 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     passed =
       closeout =~ ~r/requirements_state:\s*\n\s*status:\s*(complete|archived)/ and
         (requirements =~ "REL-01" or requirements =~ "PROOF-03" or requirements =~ "PROOF-01") and
-        not Regex.match?(~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/, requirements) and
-        not Regex.match?(~r/\|\s*(PROOF-01)\s*\|\s*Phase (75|79)\s*\|\s*Pending\s*\|/, requirements)
+        not Regex.match?(
+          ~r/\|\s*(REL-01|PROOF-03)\s*\|\s*Phase (63|69)\s*\|\s*Pending\s*\|/,
+          requirements
+        ) and
+        not Regex.match?(
+          ~r/\|\s*(PROOF-01)\s*\|\s*Phase (75|79)\s*\|\s*Pending\s*\|/,
+          requirements
+        )
 
     check(
       "closeout.requirements.state",
@@ -254,7 +288,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     passed =
       closeout =~ ~r/roadmap_parity:\s*\n\s*status:\s*(complete|archived)/ and
         not (roadmap =~ "Phase 63: Hermetic Proof And Advisory Promotion Criteria — align") and
-        not (roadmap =~ "Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout — align")
+        not (roadmap =~
+               "Phase 69: Docs-Contract Parity Gate, Android Promotion & Closeout — align")
 
     check(
       "closeout.roadmap.parity",
@@ -267,11 +302,20 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     )
   end
 
-  defp phase_verification_check(cwd, opts) do
+  defp phase_verification_check(_cwd, _opts, {:error, reason}) do
+    skipped_phase_check(
+      "closeout.verification.coverage",
+      "phase verification evidence",
+      ".planning/phases",
+      reason,
+      "Add phase verification files or record a shaped deferred_with_reason exception."
+    )
+  end
+
+  defp phase_verification_check(cwd, opts, {:ok, phases}) do
     closeout = read_file(closeout_path(cwd, opts))
     fm = parse_frontmatter(closeout)
     ms = milestone(fm)
-    phases = expected_phases(fm)
 
     missing =
       Enum.reject(phases, fn phase ->
@@ -294,11 +338,20 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     )
   end
 
-  defp summary_frontmatter_check(cwd, opts) do
+  defp summary_frontmatter_check(_cwd, _opts, {:error, reason}) do
+    skipped_phase_check(
+      "closeout.summaries.frontmatter",
+      "summary requirements-completed frontmatter",
+      ".planning/phases",
+      reason,
+      "Ensure every SUMMARY.md has requirements-completed frontmatter."
+    )
+  end
+
+  defp summary_frontmatter_check(cwd, opts, {:ok, phases}) do
     closeout = read_file(closeout_path(cwd, opts))
     fm = parse_frontmatter(closeout)
     ms = milestone(fm)
-    phases = expected_phases(fm)
 
     summary_paths =
       Enum.flat_map(phases, fn phase ->
@@ -326,16 +379,27 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     )
   end
 
-  defp validation_ledger_check(cwd, opts) do
+  defp validation_ledger_check(_cwd, _opts, {:error, reason}) do
+    skipped_phase_check(
+      "closeout.validation.ledger",
+      "validation ledger status",
+      ".planning/phases",
+      reason,
+      "Mark validation ledgers Nyquist-compliant with concrete tested_by/evidence metadata or record an accepted exception."
+    )
+  end
+
+  defp validation_ledger_check(cwd, opts, {:ok, phases}) do
     closeout = read_file(closeout_path(cwd, opts))
     fm = parse_frontmatter(closeout)
     ms = milestone(fm)
-    phases = expected_phases(fm)
 
     problematic =
       Enum.reject(phases, fn phase ->
         paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
-        paths != [] and Enum.all?(paths, &(read_file(&1) =~ "nyquist_compliant: true"))
+
+        (paths != [] and Enum.all?(paths, &validation_ledger_evidence?(cwd, &1))) or
+          (paths == [] and validation_exception_satisfied?(cwd, ms, phase))
       end)
 
     # The escape hatch only applies to an ACTIVE deferral: a deferred_with_reason
@@ -360,8 +424,8 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       "validation ledger status",
       ".planning/phases",
       passed,
-      "non-compliant or missing validation ledgers for phases: #{Enum.join(problematic, ", ")}",
-      "Mark validation ledgers Nyquist-compliant or defer them with owner/scope/reason evidence.",
+      "non-compliant, missing, or under-evidenced validation ledgers for phases: #{Enum.join(problematic, ", ")}",
+      "Mark validation ledgers Nyquist-compliant with concrete tested_by/evidence metadata or defer them with owner/scope/reason evidence.",
       %{problematic: problematic}
     )
   end
@@ -477,6 +541,20 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     }
   end
 
+  defp skipped_phase_check(id, subject, source, reason, hint) do
+    %Check{
+      id: id,
+      subject: subject,
+      source: source,
+      result: :pass,
+      blocking: false,
+      observed: "skipped: invalid expected_phases contract (#{format_parse_error(reason)})",
+      hint: hint,
+      posture: "merge-blocking",
+      details: %{skipped: true, error: reason}
+    }
+  end
+
   # A milestone is "actively closing out" only when its CLOSEOUT.md exists (it is
   # authored by /gsd:complete-milestone). The closeout gate runs on ANY .planning
   # change, so mid-milestone — when no CLOSEOUT.md exists — the closeout-artifact
@@ -491,7 +569,7 @@ defmodule Crosswake.Planning.CloseoutVerifier do
 
   defp relax_inactive_closeout(checks, false) do
     Enum.map(checks, fn check ->
-      if check.id in @closeout_artifact_check_ids and check.blocking do
+      if check.id in @closeout_artifact_check_ids do
         %{
           check
           | result: :pass,
@@ -518,9 +596,14 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       end
 
     cond do
-      opts[:closeout_path] -> opts[:closeout_path]
-      milestone -> Path.join(cwd, ".planning/milestones/#{milestone}-CLOSEOUT.md")
-      true -> raise "Could not determine milestone from .planning/STATE.md and no :closeout_path provided"
+      opts[:closeout_path] ->
+        opts[:closeout_path]
+
+      milestone ->
+        Path.join(cwd, ".planning/milestones/#{milestone}-CLOSEOUT.md")
+
+      true ->
+        raise "Could not determine milestone from .planning/STATE.md and no :closeout_path provided"
     end
   end
 
@@ -545,20 +628,68 @@ defmodule Crosswake.Planning.CloseoutVerifier do
     end
   end
 
-  defp expected_phases(frontmatter) do
-    case Regex.run(~r/expected_phases:\s*(\[.*?\])/s, frontmatter, capture: :all_but_first) do
-      [list_str] ->
-        phases =
-          ~r/"?(\d+(?:\.\d+)?)"?/
-          |> Regex.scan(list_str, capture: :all_but_first)
-          |> Enum.map(fn [p] -> p end)
+  defp parse_expected_phases(frontmatter) do
+    parse_inline_array_field(frontmatter, "expected_phases")
+  end
 
-        if phases == [], do: @v40_phases, else: phases
+  defp parse_inline_array_field(frontmatter, field) do
+    case Regex.run(~r/^[ \t]*#{Regex.escape(field)}:\s*(.*)$/m, frontmatter,
+           capture: :all_but_first
+         ) do
+      [value] ->
+        parse_inline_array_value(String.trim(value))
 
       nil ->
-        @v40_phases
+        {:error, :missing}
     end
   end
+
+  defp parse_inline_array_value(""), do: {:error, :malformed}
+
+  defp parse_inline_array_value(value) do
+    with true <- String.starts_with?(value, "[") and String.ends_with?(value, "]"),
+         inner <- value |> String.trim_leading("[") |> String.trim_trailing("]"),
+         {:ok, phases} <- parse_phase_items(inner) do
+      {:ok, phases}
+    else
+      false -> {:error, :malformed}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp parse_phase_items(inner) do
+    items =
+      inner
+      |> String.split(",")
+      |> Enum.map(&String.trim/1)
+
+    cond do
+      Enum.all?(items, &(&1 == "")) ->
+        {:error, :empty}
+
+      Enum.any?(items, &(&1 == "")) ->
+        {:error, :malformed}
+
+      true ->
+        phases =
+          Enum.map(items, fn item ->
+            item
+            |> String.trim("\"")
+            |> String.trim("'")
+          end)
+
+        if Enum.all?(phases, &Regex.match?(~r/^\d+(?:\.\d+)?$/, &1)) do
+          {:ok, phases}
+        else
+          {:error, :malformed}
+        end
+    end
+  end
+
+  defp format_parse_error(:missing), do: "missing expected_phases"
+  defp format_parse_error(:empty), do: "expected_phases is empty"
+  defp format_parse_error(:malformed), do: "expected_phases must be a non-empty inline array"
+  defp format_parse_error(reason), do: inspect(reason)
 
   defp phase_paths(cwd, milestone, phase, suffix) do
     archived =
@@ -586,6 +717,113 @@ defmodule Crosswake.Planning.CloseoutVerifier do
       [frontmatter] -> frontmatter
       nil -> ""
     end
+  end
+
+  defp validation_ledger_evidence?(cwd, path) do
+    content = read_file(path)
+    frontmatter = parse_frontmatter(content)
+    contract = if frontmatter == "", do: content, else: frontmatter
+
+    contract =~ ~r/^nyquist_compliant:\s*true\b/m and
+      list_values(contract, "tested_by") != [] and
+      Enum.any?(evidence_entries(contract), &valid_evidence_item?(cwd, &1, false))
+  end
+
+  defp validation_exception_satisfied?(_cwd, nil, _phase), do: false
+
+  defp validation_exception_satisfied?(cwd, milestone, phase) do
+    path = Path.join(cwd, ".planning/milestones/#{milestone}-VALIDATION-EXCEPTION.md")
+
+    if File.exists?(path) do
+      frontmatter = path |> read_file() |> parse_frontmatter()
+
+      with true <- scalar_field(frontmatter, "status") == "accepted_exception",
+           true <- scalar_field(frontmatter, "scope") == "validation-ledger-finalization",
+           true <- scalar_field(frontmatter, "not_reconstructable") == "true",
+           true <- non_empty_scalar?(frontmatter, "reason"),
+           {:ok, affected_phases} <- parse_inline_array_field(frontmatter, "affected_phases") do
+        phase in affected_phases and
+          Enum.any?(evidence_entries(frontmatter), &valid_evidence_item?(cwd, &1, true))
+      else
+        _ -> false
+      end
+    else
+      false
+    end
+  end
+
+  defp list_values(frontmatter, field) do
+    case Regex.run(~r/^#{Regex.escape(field)}:\s*\n((?:[ \t]+-\s+.*\n?)*)/m, frontmatter,
+           capture: :all_but_first
+         ) do
+      [block] ->
+        ~r/^\s*-\s*(.+)$/m
+        |> Regex.scan(block, capture: :all_but_first)
+        |> Enum.map(fn [value] -> strip_scalar(value) end)
+        |> Enum.reject(&(&1 == ""))
+
+      nil ->
+        []
+    end
+  end
+
+  defp evidence_entries(frontmatter) do
+    block_entries(frontmatter, "evidence")
+  end
+
+  defp block_entries(frontmatter, field) do
+    case Regex.run(~r/^#{Regex.escape(field)}:\s*\n((?:[ \t]+.+\n?)*)/m, frontmatter,
+           capture: :all_but_first
+         ) do
+      [block] ->
+        if String.trim(block) == "" do
+          []
+        else
+          ~r/^\s*-\s+(.*?)(?=^\s*-\s+|\z)/ms
+          |> Regex.scan(block, capture: :all_but_first)
+          |> Enum.map(fn [entry] -> entry end)
+        end
+
+      nil ->
+        []
+    end
+  end
+
+  defp valid_evidence_item?(cwd, entry, allow_planning_artifact?) do
+    type = entry_field(entry, "type")
+    ref = entry_field(entry, "ref")
+
+    valid_evidence_ref?(cwd, type, ref, allow_planning_artifact?)
+  end
+
+  defp valid_evidence_ref?(_cwd, _type, nil, _allow_planning_artifact?), do: false
+  defp valid_evidence_ref?(_cwd, _type, "", _allow_planning_artifact?), do: false
+
+  defp valid_evidence_ref?(cwd, "test_file", ref, _allow_planning_artifact?) do
+    local_file_exists?(cwd, ref)
+  end
+
+  defp valid_evidence_ref?(_cwd, "command", ref, _allow_planning_artifact?) do
+    Regex.match?(~r/^mix (?:test|compile|closeout\.verify)(?:\s|$)/, ref)
+  end
+
+  defp valid_evidence_ref?(_cwd, type, ref, _allow_planning_artifact?)
+       when type in ["ci_run", "artifact"] do
+    String.trim(ref) != ""
+  end
+
+  defp valid_evidence_ref?(cwd, "planning_artifact", ref, true) do
+    local_file_exists?(cwd, ref)
+  end
+
+  defp valid_evidence_ref?(_cwd, _type, _ref, _allow_planning_artifact?), do: false
+
+  defp local_file_exists?(cwd, ref) do
+    expanded_cwd = Path.expand(cwd)
+    expanded = Path.expand(ref, expanded_cwd)
+
+    (expanded == expanded_cwd or String.starts_with?(expanded, expanded_cwd <> "/")) and
+      File.exists?(expanded)
   end
 
   defp deferred_entries(frontmatter) do
@@ -622,9 +860,29 @@ defmodule Crosswake.Planning.CloseoutVerifier do
            entry,
            capture: :all_but_first
          ) do
-      [value] -> String.trim(value)
+      [value] -> strip_scalar(value)
       nil -> nil
     end
+  end
+
+  defp scalar_field(frontmatter, field) do
+    case Regex.run(~r/^#{Regex.escape(field)}:\s*(.+)$/m, frontmatter, capture: :all_but_first) do
+      [value] -> strip_scalar(value)
+      nil -> nil
+    end
+  end
+
+  defp non_empty_scalar?(frontmatter, field) do
+    value = scalar_field(frontmatter, field)
+    is_binary(value) and value != ""
+  end
+
+  defp strip_scalar(value) do
+    value
+    |> String.trim()
+    |> String.trim("\"")
+    |> String.trim("'")
+    |> String.trim()
   end
 
   defp stale_deferral?(cwd, entry) do
@@ -652,24 +910,40 @@ defmodule Crosswake.Planning.CloseoutVerifier do
         content = read_file(path)
         fm = parse_frontmatter(content)
         ms = milestone(fm)
-        phases = expected_phases(fm)
+        phase_result = parse_expected_phases(fm)
 
-        deferred_entries(fm)
-        |> Enum.filter(fn entry ->
-          entry_field(entry, "scope") == "validation-ledger-finalization" and
-            entry_field(entry, "status") not in ["resolved", "closed"]
-        end)
-        |> Enum.reject(fn _entry ->
-          Enum.all?(phases, fn phase ->
-            paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
-            paths != [] and Enum.all?(paths, &(read_file(&1) =~ "nyquist_compliant: true"))
+        active_entries =
+          deferred_entries(fm)
+          |> Enum.filter(fn entry ->
+            entry_field(entry, "scope") == "validation-ledger-finalization" and
+              entry_field(entry, "status") not in ["resolved", "closed"]
           end)
-        end)
-        |> Enum.map(fn entry ->
-          reason = entry_field(entry, "reason") || "no reason"
-          stale_note = if stale_deferral?(cwd, entry), do: " (stale)", else: ""
-          "#{ms}: #{reason}#{stale_note}"
-        end)
+
+        case phase_result do
+          {:ok, phases} ->
+            active_entries
+            |> Enum.reject(fn _entry ->
+              Enum.all?(phases, fn phase ->
+                paths = phase_paths(cwd, ms, phase, "*-VALIDATION.md")
+
+                (paths != [] and Enum.all?(paths, &validation_ledger_evidence?(cwd, &1))) or
+                  (paths == [] and validation_exception_satisfied?(cwd, ms, phase))
+              end)
+            end)
+            |> Enum.map(fn entry ->
+              reason = entry_field(entry, "reason") || "no reason"
+              stale_note = if stale_deferral?(cwd, entry), do: " (stale)", else: ""
+              "#{ms}: #{reason}#{stale_note}"
+            end)
+
+          {:error, reason} ->
+            active_entries
+            |> Enum.map(fn entry ->
+              stale_note = if stale_deferral?(cwd, entry), do: " (stale)", else: ""
+
+              "#{ms || rel(cwd, path)}: invalid expected_phases contract (#{format_parse_error(reason)})#{stale_note}"
+            end)
+        end
       end)
 
     passed = unsatisfied == []

@@ -191,7 +191,12 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     File.mkdir_p!(Path.join(cwd, ".planning/seeds"))
 
     File.write!(Path.join(cwd, "CHANGELOG.md"), changelog())
-    File.write!(Path.join(cwd, ".planning/REQUIREMENTS.md"), "| PROOF-03 | Phase 69 | Validated |")
+
+    File.write!(
+      Path.join(cwd, ".planning/REQUIREMENTS.md"),
+      "| PROOF-03 | Phase 69 | Validated |"
+    )
+
     File.write!(Path.join(cwd, ".planning/ROADMAP.md"), "$gsd-discuss-phase 70")
     # The verifier derives the active milestone from STATE.md frontmatter to
     # locate `<milestone>-CLOSEOUT.md`; this fixture writes a v4.0 closeout.
@@ -212,7 +217,11 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
       evidence_file = "test/crosswake/planning/phase_#{phase}_validation_test.exs"
       evidence_path = Path.join(cwd, evidence_file)
       File.mkdir_p!(Path.dirname(evidence_path))
-      File.write!(evidence_path, "defmodule Phase#{phase}ValidationTest do\n  use ExUnit.Case\nend\n")
+
+      File.write!(
+        evidence_path,
+        "defmodule Phase#{phase}ValidationTest do\n  use ExUnit.Case\nend\n"
+      )
 
       File.write!(
         Path.join(phase_dir, "#{phase}-VALIDATION.md"),

@@ -64,7 +64,10 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
   test "missing expected_phases in an active closeout fails closed without guessed phase observations" do
     tmp = tmp_dir!("missing-expected-phases")
     write_minimal_files!(tmp)
-    write_closeout!(tmp, phase_verification_coverage: "phase_verification_coverage:\n  status: complete\n")
+
+    write_closeout!(tmp,
+      phase_verification_coverage: "phase_verification_coverage:\n  status: complete\n"
+    )
 
     report = CloseoutVerifier.run(cwd: tmp)
     check = find_check!(report, "closeout.expected_phases")
@@ -88,9 +91,12 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
   test "malformed expected_phases contracts are blocking" do
     cases = [
-      {"empty inline array", "phase_verification_coverage:\n  status: complete\n  expected_phases: []\n"},
-      {"junk value", "phase_verification_coverage:\n  status: complete\n  expected_phases: definitely-not-an-array\n"},
-      {"block list", "phase_verification_coverage:\n  status: complete\n  expected_phases:\n    - \"64\"\n"}
+      {"empty inline array",
+       "phase_verification_coverage:\n  status: complete\n  expected_phases: []\n"},
+      {"junk value",
+       "phase_verification_coverage:\n  status: complete\n  expected_phases: definitely-not-an-array\n"},
+      {"block list",
+       "phase_verification_coverage:\n  status: complete\n  expected_phases:\n    - \"64\"\n"}
     ]
 
     for {name, coverage} <- cases do
@@ -353,10 +359,11 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
   test "validation ledger evidence rejects missing test files and unsupported commands" do
     cases = [
       {"missing test file", invalid_test_file_ledger()},
-      {"unsupported command", validation_ledger("""
-       - type: command
-         ref: "npm test"
-      """)}
+      {"unsupported command",
+       validation_ledger("""
+        - type: command
+          ref: "npm test"
+       """)}
     ]
 
     for {name, ledger} <- cases do
@@ -374,30 +381,36 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
   test "validation ledger evidence accepts local test files, allowed commands, ci runs, and artifacts" do
     cases = [
-      {"test file", validation_ledger("""
-       - type: test_file
-         ref: #{@fixture_evidence_file}
-      """)},
-      {"mix test command", validation_ledger("""
-       - type: command
-         ref: "mix test #{@fixture_evidence_file}"
-      """)},
-      {"mix compile command", validation_ledger("""
-       - type: command
-         ref: "mix compile"
-      """)},
-      {"mix closeout.verify command", validation_ledger("""
-       - type: command
-         ref: "mix closeout.verify"
-      """)},
-      {"ci run", validation_ledger("""
-       - type: ci_run
-         ref: "26498172516"
-      """)},
-      {"artifact", validation_ledger("""
-       - type: artifact
-         ref: "phase-64-validation"
-      """)}
+      {"test file",
+       validation_ledger("""
+        - type: test_file
+          ref: #{@fixture_evidence_file}
+       """)},
+      {"mix test command",
+       validation_ledger("""
+        - type: command
+          ref: "mix test #{@fixture_evidence_file}"
+       """)},
+      {"mix compile command",
+       validation_ledger("""
+        - type: command
+          ref: "mix compile"
+       """)},
+      {"mix closeout.verify command",
+       validation_ledger("""
+        - type: command
+          ref: "mix closeout.verify"
+       """)},
+      {"ci run",
+       validation_ledger("""
+        - type: ci_run
+          ref: "26498172516"
+       """)},
+      {"artifact",
+       validation_ledger("""
+        - type: artifact
+          ref: "phase-64-validation"
+       """)}
     ]
 
     for {name, ledger} <- cases do
