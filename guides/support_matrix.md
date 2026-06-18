@@ -1,8 +1,9 @@
 # Crosswake Support Matrix
 
-This guide stays narrow and proof-oriented. The published iOS and Android shell claims
-below are backed by the checked-in example hosts plus the generated-shell verification
-hooks that now pass on the same host-owned artifact classes adopters ship.
+This guide stays narrow and proof-oriented. Generated-shell coordinate support is
+backed by release-time clean-room proof plus generated-shell verification hooks.
+The checked-in native hosts remain public proof artifacts; Phase 119 classifies
+whether those hosts are published-coordinate proof or local-development proof.
 The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
 and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake
 Hex package version; the release-time clean-room proof promotes that path after the
@@ -84,7 +85,7 @@ coordinated cut.
 | Phoenix-facing commerce seam vocabulary | core | `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers. | Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package. | [Guide](capabilities.md#packaging-ledger) |
 | Provider adapters and native-heavy integrations | companion | Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core. | First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors. | [Guide](compatibility.md#companion-compatibility-contract) |
 | Checked-in example hosts and install walkthroughs | example/docs-only | Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages. | Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates. | [Guide](capabilities.md#docs-only-boundary) |
-| Standalone native shell core packages | core | The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths. | Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time. | [Guide](install.md#step-2-generate-host-owned-native-shells) |
+| Standalone native shell core packages | core | The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths. | Native core versions move in lockstep with the Crosswake package version through release-please linked versions; clean-room proof verifies the external install path at release time. | [Guide](install.md#step-2-generate-host-owned-native-shells) |
 
 ## Release And Versioning Policy
 
