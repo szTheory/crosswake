@@ -12,7 +12,7 @@
 |-------------------|------|-----------|----------------|---------------|
 | `examples/phoenix_host/e2e/offline_sync.spec.ts` | test | event-driven + request-response | `examples/phoenix_host/e2e/offline_storage.spec.ts` | role-match (same test framework, same route `/offline`, same `addInitScript` pattern) |
 | `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` | controller | request-response | self (extend existing `show/2`) | exact — only additive change |
-| `.github/workflows/phase90-proof.yml` | config | batch | self (insert step between existing anchors) | exact — surgical YAML edit |
+| `.github/workflows/offline-sync-e2e-gate.yml` | config | batch | self (insert step between existing anchors) | exact — surgical YAML edit |
 | `examples/phoenix_host/e2e/offline_storage.spec.ts` | test | event-driven | self (fix two lines) | exact — two-line selector/text fix |
 | `examples/phoenix_host/test/support/flashcards_fixtures.ex` | test | CRUD | self (fix line 47) | exact — one-line rename fix |
 | `examples/phoenix_host/priv/static/offline_study.js` | utility | event-driven | self (optional `export`) | exact — one-line export addition |
@@ -201,7 +201,7 @@ Ecto query pattern sourced from `local_first/` context pattern (same `from/2` + 
 
 ---
 
-### `.github/workflows/phase90-proof.yml` (config, batch)
+### `.github/workflows/offline-sync-e2e-gate.yml` (config, batch)
 
 **Analog:** self — insert a new step between two existing verified anchors.
 
@@ -323,7 +323,7 @@ from(r in ReviewEvent, where: r.client_mutation_id == ^id)
 
 ### `MIX_ENV=test` Compile Requirement
 **Source:** D-04 locked decision
-**Apply to:** `phase90-proof.yml` compile step; local pre-flight verification
+**Apply to:** `offline-sync-e2e-gate.yml` compile step; local pre-flight verification
 - `MIX_ENV=dev` misses `elixirc_paths(:test)` (includes `test/support/`) and the `if Mix.env() in [:test, :e2e]` `_e2e` route — exactly the v6.0 gap
 - Always: `MIX_ENV=test mix compile --warnings-as-errors`
 
@@ -345,6 +345,6 @@ The reconnect trigger pattern (`context.setOffline(false)` + `page.evaluate(disp
 
 ## Metadata
 
-**Analog search scope:** `examples/phoenix_host/e2e/`, `examples/phoenix_host/lib/crosswake_example/e2e/`, `examples/phoenix_host/priv/static/offline_study.js`, `.github/workflows/phase90-proof.yml`, `examples/phoenix_host/test/support/`
-**Files read:** 7 (offline_storage.spec.ts, offline_sync.spec.ts, sync_state_controller.ex, phase90-proof.yml, flashcards_fixtures.ex, offline_study.js lines 1–15 + 120–139)
+**Analog search scope:** `examples/phoenix_host/e2e/`, `examples/phoenix_host/lib/crosswake_example/e2e/`, `examples/phoenix_host/priv/static/offline_study.js`, `.github/workflows/offline-sync-e2e-gate.yml`, `examples/phoenix_host/test/support/`
+**Files read:** 7 (offline_storage.spec.ts, offline_sync.spec.ts, sync_state_controller.ex, offline-sync-e2e-gate.yml, flashcards_fixtures.ex, offline_study.js lines 1–15 + 120–139)
 **Pattern extraction date:** 2026-06-18

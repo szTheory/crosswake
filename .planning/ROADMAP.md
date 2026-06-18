@@ -92,7 +92,7 @@ Plans:
   1. `offline_sync.spec.ts` contains zero `page.evaluate()` calls that write to app state or invoke app-owned behavior — mutation queuing and outbox flushing are driven exclusively by real UI interaction and the app's own reconnect handler
   2. The test reads the `client_mutation_id` from IndexedDB (observation) and confirms it matches the Ecto row via `expect.poll` on `/_e2e/sync-state/:id` — the ID the test asserts is the one the app generated, not one the test minted
   3. The test asserts the IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row
-  4. `phase90-proof.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout
+  4. `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout
 
 **Plans**: 2/3 plans executed
 Plans:
@@ -103,7 +103,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
-- [x] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml
+- [x] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in offline-sync-e2e-gate.yml
 
 ### Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard
 
@@ -122,10 +122,10 @@ Plans:
 
 **Wave 1**
 
-- [x] 114-01-PLAN.md — Rename phase90-proof.yml → offline-sync-e2e-gate.yml; restructure into the 4-job Option-C aggregator topology (guard-01 honesty, guard-02 prod-route-absence, e2e-proof, merge-blocking aggregator)
+- [x] 114-01-PLAN.md — Rename offline-sync-e2e-gate.yml → offline-sync-e2e-gate.yml; restructure into the 4-job Option-C aggregator topology (guard-01 honesty, guard-02 prod-route-absence, e2e-proof, merge-blocking aggregator)
 - [x] 114-02-PLAN.md — GUARD-01 AST honesty check (script/check-e2e-honesty.mjs) + typescript devDependency pin
 - [x] 114-03-PLAN.md — GUARD-02 in-suite assertions (router_test.exs route-presence, controller count-scoping test) + /_e2e namespace comment
-- [ ] 114-04-PLAN.md — D-03 doc amendment: GATE-01/ROADMAP/PITFALLS continue-on-error → omission-from-checks[]; phase90-proof.yml filename-ref updates
+- [ ] 114-04-PLAN.md — D-03 doc amendment: GATE-01/ROADMAP/PITFALLS continue-on-error → omission-from-checks[]; offline-sync-e2e-gate.yml filename-ref updates
 
 **Wave 2** *(blocked on 114-01)*
 

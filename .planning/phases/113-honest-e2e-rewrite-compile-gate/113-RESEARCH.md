@@ -18,7 +18,7 @@
 - **D-03b** `await page.waitForResponse(r => r.url().includes('/study/sync') && r.status() === 200)` between the `online` dispatch and the Ecto poll (deterministic reconnect assertion per PITFALLS Pitfall 2).
 - **D-03c** `page.evaluate` permitted ONLY for read-only IndexedDB observation and the `online` dispatch; forbidden if it writes app state, invokes `flushOutbox` directly, or calls `fetch(`.
 - **D-03d** Full flow: `goto /offline` → `setOffline(true)` → click `#btn-flip` then `#btn-good` → read IndexedDB (observe `{client_mutation_id, card_id, rating}`) → `setOffline(false)` + dispatch `online` → `waitForResponse('/study/sync', 200)` → `expect.poll('/_e2e/sync-state/:id')` `synced: true` → read IndexedDB (assert outbox empty) → duplicate case.
-- **D-04** Add compile step to `phase90-proof.yml` after "Install Mix dependencies" and before npm/Playwright steps: `MIX_ENV=test mix compile --warnings-as-errors` in `examples/phoenix_host`. `MIX_ENV=test` is mandatory.
+- **D-04** Add compile step to `offline-sync-e2e-gate.yml` after "Install Mix dependencies" and before npm/Playwright steps: `MIX_ENV=test mix compile --warnings-as-errors` in `examples/phoenix_host`. `MIX_ENV=test` is mandatory.
 - **D-04b** Pre-flight: fix all warnings in demo app and parent lib before landing the step; the gate must land green.
 - **D-05** Fix `offline_storage.spec.ts:89` `#btn-pass` → `#btn-good` (hard fix — lane is red today). `offline_storage.spec.ts:92` text locator: tighten to full string (recommended).
 - **D-06** Recommended: assert `expect(await page.evaluate(() => !!window.liveSocket)).toBe(false)` — proves the Offline Island boundary. Defer if socket-detection surface is awkward.
@@ -44,7 +44,7 @@
 | ID | Description | Research Support |
 |----|-------------|------------------|
 | E2E-03 | `offline_sync.spec.ts` proves the full offline→reconnect→reconcile loop with zero `page.evaluate()` calls that write app state: (a) real UI click while offline queues via app code; (b) IndexedDB read asserts queued record and extracts app-generated `client_mutation_id`; (c) `setOffline(false)` + `dispatchEvent(new Event('online'))` triggers app's own `flushOutbox()`; (d) `expect.poll` on `/_e2e/sync-state/:id` confirms Ecto row; (e) follow-up IndexedDB read confirms outbox empty; (f) duplicate-flush POSTs same id twice and asserts single Ecto row; `beforeEach` resets IndexedDB | Sections: Standard Stack, Architecture Patterns, Code Examples, Validation Architecture |
-| E2E-04 | `phase90-proof.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` BEFORE Playwright, so a compile break fails loudly instead of masquerading as a port-connection timeout | Sections: Standard Stack, Code Examples, Common Pitfalls, Validation Architecture |
+| E2E-04 | `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` BEFORE Playwright, so a compile break fails loudly instead of masquerading as a port-connection timeout | Sections: Standard Stack, Code Examples, Common Pitfalls, Validation Architecture |
 </phase_requirements>
 
 ---
@@ -163,7 +163,7 @@ examples/phoenix_host/
 └── priv/static/
     └── offline_study.js              # Optional: export DB_NAME (D-01 executor discretion)
 .github/workflows/
-└── phase90-proof.yml                 # Add compile step (D-04)
+└── offline-sync-e2e-gate.yml                 # Add compile step (D-04)
 ```
 
 ### Pattern 1: IndexedDB Delete in `beforeEach` (D-01)
@@ -277,7 +277,7 @@ await expect.poll(async () => {
 **What:** Insert after "Install Mix dependencies" (step 4 at YAML line 28–30) and before "Install dependencies" (step 5 at YAML line 32). `MIX_ENV=test` is mandatory — it compiles the `_e2e` route and `elixirc_paths(:test)` tree (the exact v6.0 break path a dev-env compile misses).
 
 ```yaml
-# Source: CONTEXT.md D-04; insert after line 30 in phase90-proof.yml
+# Source: CONTEXT.md D-04; insert after line 30 in offline-sync-e2e-gate.yml
       - name: Compile (warnings as errors)
         run: MIX_ENV=test mix compile --warnings-as-errors
         working-directory: examples/phoenix_host
@@ -354,7 +354,7 @@ await expect.poll(async () => {
 | `import Ecto.Query` NOT currently present | Verified by grep | CONFIRMED — must add when extending |
 | `Repo`, `ReviewEvent` already aliased | Lines 4–5 | CONFIRMED |
 
-### `phase90-proof.yml` Anchors
+### `offline-sync-e2e-gate.yml` Anchors
 
 | Claim | Verified Line | Status |
 |-------|--------------|--------|
@@ -561,7 +561,7 @@ end
 
 ```yaml
 # Source: CONTEXT.md D-04
-# Insert into .github/workflows/phase90-proof.yml
+# Insert into .github/workflows/offline-sync-e2e-gate.yml
 # AFTER "Install Mix dependencies" step (line 28–30)
 # BEFORE "Install dependencies" (npm ci) step (line 32)
 
@@ -601,7 +601,7 @@ end
 
 **Missing dependencies with no fallback:** None.
 
-**Note on CI:** `phase90-proof.yml` uses `erlef/setup-beam` with `version-file: .tool-versions` — the same toolchain as the local dev environment.
+**Note on CI:** `offline-sync-e2e-gate.yml` uses `erlef/setup-beam` with `version-file: .tool-versions` — the same toolchain as the local dev environment.
 
 ---
 
@@ -617,7 +617,7 @@ end
 | Config file | `examples/phoenix_host/playwright.config.ts` |
 | Quick run command | `cd examples/phoenix_host && npx playwright test e2e/offline_sync.spec.ts` |
 | Full suite command | `cd examples/phoenix_host && npx playwright test` |
-| CI command | `npx playwright test` (from `examples/phoenix_host`, in `phase90-proof.yml`) |
+| CI command | `npx playwright test` (from `examples/phoenix_host`, in `offline-sync-e2e-gate.yml`) |
 
 ### Phase Requirements → Test Map
 
@@ -654,7 +654,7 @@ end
 - [ ] `examples/phoenix_host/e2e/offline_storage.spec.ts:89` — `#btn-pass` → `#btn-good` (collateral; D-05)
 - [ ] `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` — add `count` field + `@moduledoc` (D-02)
 - [ ] `examples/phoenix_host/test/support/flashcards_fixtures.ex:47` — `create_progress` → `upsert_progress` (D-04b pre-flight)
-- [ ] `.github/workflows/phase90-proof.yml` — insert compile step (D-04)
+- [ ] `.github/workflows/offline-sync-e2e-gate.yml` — insert compile step (D-04)
 
 ---
 
@@ -716,7 +716,7 @@ No claims in this research are tagged `[ASSUMED]`. All findings are either:
 
 ### Primary (HIGH confidence)
 
-- Live source tree verification (this session): `offline_study.js`, `offline_storage.spec.ts`, `offline_sync.spec.ts`, `sync_state_controller.ex`, `phase90-proof.yml`, `router.ex:378–383`, `playwright.config.ts`, `flashcards.ex`, `flashcards_fixtures.ex` — all verified by direct file read and grep
+- Live source tree verification (this session): `offline_study.js`, `offline_storage.spec.ts`, `offline_sync.spec.ts`, `sync_state_controller.ex`, `offline-sync-e2e-gate.yml`, `router.ex:378–383`, `playwright.config.ts`, `flashcards.ex`, `flashcards_fixtures.ex` — all verified by direct file read and grep
 - CONTEXT.md D-01..D-07 — produced by two waves of parallel deep-research agents + red-team, embedded in this phase's planning artifact
 - `MIX_ENV=test mix compile --warnings-as-errors` pre-flight run (this session) — surfaced the `create_progress` → `upsert_progress` warning
 

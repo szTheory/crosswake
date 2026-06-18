@@ -10,11 +10,11 @@ dependency_graph:
     - phase: 113-01
       provides: compile-clean-test-tree (MIX_ENV=test mix compile --warnings-as-errors passes green)
   provides:
-    - loud-compile-gate (phase90-proof.yml fails on compile error before Playwright port-timeout)
+    - loud-compile-gate (offline-sync-e2e-gate.yml fails on compile error before Playwright port-timeout)
     - e2e-04-complete (E2E-04 requirement: demo-app compile break surfaces as compile error not timeout)
   affects:
     - 113-04 (Phase 114 GATE-01 owns renaming job to merge-blocking-offline-sync-e2e)
-    - phase90-proof.yml (CI gate now has compile step before Playwright)
+    - offline-sync-e2e-gate.yml (CI gate now has compile step before Playwright)
 
 tech_stack:
   added: []
@@ -25,7 +25,7 @@ tech_stack:
 key_files:
   created: []
   modified:
-    - .github/workflows/phase90-proof.yml
+    - .github/workflows/offline-sync-e2e-gate.yml
 
 key-decisions:
   - "D-04: MIX_ENV=test is mandatory (not MIX_ENV=dev) — compiles elixirc_paths(:test)/test/support tree and the if Mix.env() in [:test, :e2e] _e2e route; MIX_ENV=dev would miss this path, the exact v6.0 break scenario"
@@ -40,7 +40,7 @@ completed: "2026-06-18"
 
 # Phase 113 Plan 03: CI Compile Gate — MIX_ENV=test Before Playwright Summary
 
-**Inserted `MIX_ENV=test mix compile --warnings-as-errors` into phase90-proof.yml before the Playwright steps so a demo-app compile break fails loudly as a compile error instead of masquerading as a Playwright port-connection timeout (v6.0 failure mode).**
+**Inserted `MIX_ENV=test mix compile --warnings-as-errors` into offline-sync-e2e-gate.yml before the Playwright steps so a demo-app compile break fails loudly as a compile error instead of masquerading as a Playwright port-connection timeout (v6.0 failure mode).**
 
 ## Performance
 
@@ -59,11 +59,11 @@ completed: "2026-06-18"
 
 ## Task Commits
 
-1. **Task 1: Insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml (D-04)** - `33e7a29` (feat)
+1. **Task 1: Insert MIX_ENV=test compile gate before Playwright in offline-sync-e2e-gate.yml (D-04)** - `33e7a29` (feat)
 
 ## Files Created/Modified
 
-- `.github/workflows/phase90-proof.yml` — added "Compile (warnings as errors)" step at line 32-34, between "Install Mix dependencies" (line 28) and "Install dependencies" npm ci (line 36)
+- `.github/workflows/offline-sync-e2e-gate.yml` — added "Compile (warnings as errors)" step at line 32-34, between "Install Mix dependencies" (line 28) and "Install dependencies" npm ci (line 36)
 
 ## Decisions Made
 
@@ -94,7 +94,7 @@ None — the compile gate step is complete and functional.
 ## Self-Check: PASSED
 
 Files exist:
-- `/Users/jon/projects/crosswake/.github/workflows/phase90-proof.yml` — FOUND (modified)
+- `/Users/jon/projects/crosswake/.github/workflows/offline-sync-e2e-gate.yml` — FOUND (modified)
 
 Commits:
 - `33e7a29` — FOUND

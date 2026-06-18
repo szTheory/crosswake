@@ -38,7 +38,7 @@ human_verification:
 | 1 | `offline_sync.spec.ts` contains zero `page.evaluate()` calls that write to app state or invoke app-owned behavior — mutation queuing and outbox flushing driven exclusively by real UI and app's own reconnect handler | VERIFIED | `page.evaluate` calls at lines 17, 27, 52, 64 all carry `// OBSERVATION_ONLY`; no `fetch(` inside any `page.evaluate`; no `window['crosswake_offline_mutations']`; `#btn-good`/`#btn-flip` drive the actual `handleReview → queueMutation` path via real UI clicks |
 | 2 | The test reads `client_mutation_id` from IndexedDB (observation) and confirms it matches the Ecto row via `expect.poll` on `/_e2e/sync-state/:id` — the ID asserted is the one the app generated, not one the test minted | VERIFIED | No `randomUUID` in spec; `capturedId` is destructured from the IndexedDB read at line 42; used in `/_e2e/sync-state/${capturedId}` at line 58; UUID regex assertion at line 44 (`/^[0-9a-f-]{36}$/`) validates it is app-generated |
 | 3 | The test asserts IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row | PRESENT_BEHAVIOR_UNVERIFIED | Code is present and wired: `expect(remaining).toHaveLength(0)` at line 78 (E2E-03e); `dupBody.data.accepted_count === 0` at line 89 and `expect.poll({ count: 1 })` at line 94 (E2E-03f). Runtime behavior (app deletion of IndexedDB record, on_conflict: :nothing holding) cannot be confirmed without a live server run |
-| 4 | `phase90-proof.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout | VERIFIED | Compile step at line 33 (`MIX_ENV=test mix compile --warnings-as-errors`, `working-directory: examples/phoenix_host`) precedes first Playwright reference at line 41; awk ordering check confirms compile line 33 < playwright line 41; job name `e2e-offline-sync` preserved at line 11; YAML parses clean |
+| 4 | `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout | VERIFIED | Compile step at line 33 (`MIX_ENV=test mix compile --warnings-as-errors`, `working-directory: examples/phoenix_host`) precedes first Playwright reference at line 41; awk ordering check confirms compile line 33 < playwright line 41; job name `e2e-offline-sync` preserved at line 11; YAML parses clean |
 
 **Score:** 4/4 truths verified (2 present, behavior-unverified — see `behavior_unverified_items` above)
 
@@ -68,9 +68,9 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | `phase90-proof.yml` runs `MIX_ENV=test mix compile --warnings-as-errors` step (working-directory examples/phoenix_host) BEFORE Playwright steps | VERIFIED | Step at lines 32-34 contains name "Compile (warnings as errors)", `run: MIX_ENV=test mix compile --warnings-as-errors`, `working-directory: examples/phoenix_host`; awk ordering: compile at line 33, first playwright at line 41 |
+| 1 | `offline-sync-e2e-gate.yml` runs `MIX_ENV=test mix compile --warnings-as-errors` step (working-directory examples/phoenix_host) BEFORE Playwright steps | VERIFIED | Step at lines 32-34 contains name "Compile (warnings as errors)", `run: MIX_ENV=test mix compile --warnings-as-errors`, `working-directory: examples/phoenix_host`; awk ordering: compile at line 33, first playwright at line 41 |
 | 2 | Compile step positioned after 'Install Mix dependencies' and before 'Install dependencies' (npm ci) | VERIFIED | Line 29-30: "Install Mix dependencies" (`run: mix deps.get`); line 32-34: "Compile (warnings as errors)"; line 36-38: "Install dependencies" (`run: npm ci`) — correct ordering confirmed |
-| 3 | Job is still named `e2e-offline-sync` — NOT renamed | VERIFIED | `e2e-offline-sync:` at line 11 of `phase90-proof.yml` — unchanged |
+| 3 | Job is still named `e2e-offline-sync` — NOT renamed | VERIFIED | `e2e-offline-sync:` at line 11 of `offline-sync-e2e-gate.yml` — unchanged |
 
 ### Required Artifacts
 
@@ -80,7 +80,7 @@ human_verification:
 | `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` | Scoped count field + test-only @moduledoc + `import Ecto.Query` | VERIFIED | All three present: `@moduledoc` (lines 2-7), `import Ecto.Query, warn: false` (line 10), `from(r in ReviewEvent, where: r.client_mutation_id == ^id)` (line 18) |
 | `examples/phoenix_host/test/support/flashcards_fixtures.ex` | Contains `upsert_progress`, not `create_progress` | VERIFIED | Line 47: `CrosswakeExample.Flashcards.upsert_progress()`; no `create_progress` anywhere in file |
 | `examples/phoenix_host/e2e/offline_storage.spec.ts` | Green sibling spec with live `#btn-good` selector | VERIFIED | Line 89: `page.click('#btn-good')`; no `#btn-pass`; full storage-error string at line 92 |
-| `.github/workflows/phase90-proof.yml` | Compile gate before Playwright; job named `e2e-offline-sync` | VERIFIED | Compile step at lines 32-34; job name at line 11; YAML valid (python3 safe_load passes) |
+| `.github/workflows/offline-sync-e2e-gate.yml` | Compile gate before Playwright; job named `e2e-offline-sync` | VERIFIED | Compile step at lines 32-34; job name at line 11; YAML valid (python3 safe_load passes) |
 
 ### Key Link Verification
 
@@ -88,7 +88,7 @@ human_verification:
 |------|----|-----|--------|---------|
 | `offline_sync.spec.ts` | `offline_study.js` | Real UI clicks `#btn-flip`, `#btn-good` drive `handleReview → queueMutation`; `window 'online'` dispatch fires `flushOutbox` listener (offline_study.js:280) | VERIFIED | `#btn-flip` at heex:86, `#btn-good` at heex:87; `window.addEventListener('online', flushOutbox)` at offline_study.js:280; spec clicks wired to real DOM elements |
 | `offline_sync.spec.ts` | `sync_state_controller.ex` | `expect.poll` on `page.request.get(/_e2e/sync-state/${capturedId})` reads `synced` + scoped `count` | VERIFIED | Pattern `_e2e/sync-state/` found at lines 58, 92 of spec; controller `show/2` returns `synced` and `count` in both branches |
-| `phase90-proof.yml` | `examples/phoenix_host` | `MIX_ENV=test mix compile --warnings-as-errors` step with `working-directory: examples/phoenix_host` | VERIFIED | Step confirmed at lines 32-34; ordering correct (before npm/Playwright) |
+| `offline-sync-e2e-gate.yml` | `examples/phoenix_host` | `MIX_ENV=test mix compile --warnings-as-errors` step with `working-directory: examples/phoenix_host` | VERIFIED | Step confirmed at lines 32-34; ordering correct (before npm/Playwright) |
 | `sync_state_controller.ex` | `review_event.ex` | Scoped Ecto aggregate via `from(r in ReviewEvent, where: r.client_mutation_id == ^id)` | VERIFIED | Pattern found at line 18 of controller; `ReviewEvent` aliased at line 13 |
 
 ### Data-Flow Trace (Level 4)
@@ -103,8 +103,8 @@ human_verification:
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| YAML valid — CI workflow parses | `python3 -c "import yaml; yaml.safe_load(open('phase90-proof.yml'))"` | Exit 0, "YAML VALID" | PASS |
-| Compile gate ordering — mix compile before playwright | `awk` ordering check on phase90-proof.yml | Compile at line 33, playwright at line 41 — COMPILE BEFORE PLAYWRIGHT: OK | PASS |
+| YAML valid — CI workflow parses | `python3 -c "import yaml; yaml.safe_load(open('offline-sync-e2e-gate.yml'))"` | Exit 0, "YAML VALID" | PASS |
+| Compile gate ordering — mix compile before playwright | `awk` ordering check on offline-sync-e2e-gate.yml | Compile at line 33, playwright at line 41 — COMPILE BEFORE PLAYWRIGHT: OK | PASS |
 | Prohibited patterns absent | `grep -q "crosswake_offline_mutations\|randomUUID\|study/session" offline_sync.spec.ts` | "NO PROHIBITED PATTERNS" | PASS |
 | `fetch(` absent inside page.evaluate | `grep -n "fetch(" offline_sync.spec.ts` | No output — no fetch inside any page.evaluate | PASS |
 | `#btn-pass` dead selector removed | `grep -n "#btn-pass" offline_storage.spec.ts` | No output — dead selector absent | PASS |
@@ -117,7 +117,7 @@ human_verification:
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|---------|
 | E2E-03 | 113-01, 113-02 | `offline_sync.spec.ts` proves full offline→reconnect→reconcile loop with zero state-writing page.evaluate calls | VERIFIED (structure + wiring; E2E-03c/e behavior-unverified) | All sub-clauses a–f have structural evidence in the spec; runtime behavior of E2E-03c (reconnect flush) and E2E-03e (outbox drain) require human verification |
-| E2E-04 | 113-01, 113-03 | `phase90-proof.yml` runs `mix compile --warnings-as-errors` before Playwright | VERIFIED | Compile step at lines 32-34 of phase90-proof.yml; ordered before npm ci/Playwright |
+| E2E-04 | 113-01, 113-03 | `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` before Playwright | VERIFIED | Compile step at lines 32-34 of offline-sync-e2e-gate.yml; ordered before npm ci/Playwright |
 
 Both requirement IDs declared across all plans (E2E-03 from 113-01/113-02; E2E-04 from 113-01/113-03) are accounted for. No orphaned requirements.
 
@@ -135,7 +135,7 @@ Zero debt markers across all 6 files modified by this phase:
 - `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex`
 - `examples/phoenix_host/test/support/flashcards_fixtures.ex`
 - `examples/phoenix_host/lib/crosswake_example/local_first/study.ex`
-- `.github/workflows/phase90-proof.yml`
+- `.github/workflows/offline-sync-e2e-gate.yml`
 
 ### Human Verification Required
 

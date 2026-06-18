@@ -11,7 +11,7 @@ Rewrite the structurally-fraudulent `examples/phoenix_host/e2e/offline_sync.spec
 **Change surface (the honest list):**
 1. `examples/phoenix_host/e2e/offline_sync.spec.ts` — full rewrite (the fraud → the honest loop on `/offline`).
 2. `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` — extend the existing `/_e2e/sync-state/:id` to also return a **scoped** `count`; add a test-only `@moduledoc` (pre-stages Phase 114 GUARD-02).
-3. `.github/workflows/phase90-proof.yml` — add a `MIX_ENV=test mix compile --warnings-as-errors` step before the Playwright step.
+3. `.github/workflows/offline-sync-e2e-gate.yml` — add a `MIX_ENV=test mix compile --warnings-as-errors` step before the Playwright step.
 4. `examples/phoenix_host/e2e/offline_storage.spec.ts` — fix the two lines Phase 112's button rename left stale (collateral; the whole Playwright lane is red without it).
 5. (Optional, drift-proofing) `examples/phoenix_host/priv/static/offline_study.js` — `export` the `DB_NAME` constant so the spec can import it instead of hardcoding the string.
 
@@ -63,7 +63,7 @@ Resolved by two waves of parallel deep research (4 advisor agents on idiom/footg
 - **D-03d (full flow):** `goto /offline` → `context.setOffline(true)` → real UI: `click('#btn-flip')` then `click('#btn-good')` (drives `handleReview('good')`) → read IndexedDB `mutations` store, observe app-generated `{client_mutation_id, card_id, rating}` → `context.setOffline(false)` + `page.evaluate` dispatch `online` → `waitForResponse('/study/sync', 200)` → `expect.poll('/_e2e/sync-state/:id')` `synced: true` → read IndexedDB, assert outbox empty (E2E-03e) → duplicate case (D-02b).
 
 ### Compile gate (E2E-04)
-- **D-04:** Insert this step into `phase90-proof.yml` **after** "Install Mix dependencies" and **before** the npm/Playwright steps:
+- **D-04:** Insert this step into `offline-sync-e2e-gate.yml` **after** "Install Mix dependencies" and **before** the npm/Playwright steps:
   ```yaml
   - name: Compile (warnings as errors)
     run: MIX_ENV=test mix compile --warnings-as-errors
@@ -106,7 +106,7 @@ Resolved by two waves of parallel deep research (4 advisor agents on idiom/footg
 - `examples/phoenix_host/lib/crosswake_example/local_first/review_event.ex` — `rating ∈ {"good","hard"}`, `card_id` integer, `client_mutation_id` unique (DO NOT change)
 - `examples/phoenix_host/lib/crosswake_example/router.ex` — `/offline`, `/study/sync` (`:api`), `/_e2e/sync-state/:client_mutation_id` (mounted `if Mix.env() in [:test, :e2e]`, lines ~378-383)
 - `examples/phoenix_host/playwright.config.ts` — webServer boots `MIX_ENV=test mix do ecto.drop+create+migrate + phx.server` on :4002; `workers: 1`, `retries: 2` (CI), `serviceWorkers: 'block'`
-- `.github/workflows/phase90-proof.yml` — single job `e2e-offline-sync`; add the compile step after "Install Mix dependencies" (D-04). Do NOT rename the job (Phase 114)
+- `.github/workflows/offline-sync-e2e-gate.yml` — single job `e2e-offline-sync`; add the compile step after "Install Mix dependencies" (D-04). Do NOT rename the job (Phase 114)
 
 ### Project DNA / vision (coherence inputs)
 - `prompts/crosswake-elixir-oss-dna.md` — "install truth is product truth"; deterministic host-app proof lane from the same public path users adopt

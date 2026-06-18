@@ -79,7 +79,7 @@ E2E-01 phase, test harness setup task.
 ### Pitfall 4: Phase 90 Workflow Does Not Compile the Phoenix App Before Running Playwright
 
 **What goes wrong:**
-The `phase90-proof.yml` workflow runs `mix deps.get` and then immediately `npx playwright test`. It never runs `mix compile` or `mix phx.server` in a health-check mode. The `playwright.config.ts` `webServer.command` launches `mix phx.server` as a side effect of Playwright startup — but if the server crashes on startup due to a compile error, Playwright reports a timeout trying to connect to `http://localhost:4002`, not a compile failure. The CI log shows a Playwright connection error, not an Elixir stack trace, making the root cause opaque.
+The `offline-sync-e2e-gate.yml` workflow runs `mix deps.get` and then immediately `npx playwright test`. It never runs `mix compile` or `mix phx.server` in a health-check mode. The `playwright.config.ts` `webServer.command` launches `mix phx.server` as a side effect of Playwright startup — but if the server crashes on startup due to a compile error, Playwright reports a timeout trying to connect to `http://localhost:4002`, not a compile failure. The CI log shows a Playwright connection error, not an Elixir stack trace, making the root cause opaque.
 
 This is the exact mechanism that hid the `CrosswakeExampleWeb` macro module compile break in v6.0: the mocked E2E never actually needed the server to serve anything correctly, so the compile failure was invisible.
 
@@ -91,7 +91,7 @@ Add an explicit `mix compile --warnings-as-errors` step in the workflow before t
 
 **Warning signs:**
 - CI shows a "server did not start in time" Playwright error with no Elixir output preceding it.
-- The `phase90-proof.yml` workflow has no `mix compile` step.
+- The `offline-sync-e2e-gate.yml` workflow has no `mix compile` step.
 - Local developer never sees the error because `reuseExistingServer: !process.env.CI` means the server was already running locally.
 
 **Phase to address:**
@@ -104,7 +104,7 @@ E2E-01 phase, workflow hardening task. Atomic with the test rewrite.
 **What goes wrong:**
 Two symmetric failure modes exist:
 
-**Advisory-looks-required:** A workflow runs without `continue-on-error: true` but is not listed in GitHub's branch-protection required status checks. The lane runs, appears in the checks list, and developers assume it gates merges. A failure is visible in the PR but does not block merge. This is the current state of `phase90-proof.yml`: it has no `continue-on-error: true`, so it appears required, but its job ID `e2e-offline-sync` is almost certainly not registered in branch protection.
+**Advisory-looks-required:** A workflow runs without `continue-on-error: true` but is not listed in GitHub's branch-protection required status checks. The lane runs, appears in the checks list, and developers assume it gates merges. A failure is visible in the PR but does not block merge. This is the current state of `offline-sync-e2e-gate.yml`: it has no `continue-on-error: true`, so it appears required, but its job ID `e2e-offline-sync` is almost certainly not registered in branch protection.
 
 **Required-check-never-runs-means-blocked-forever:** A job is listed in branch-protection required-status-checks, but the workflow's trigger does not fire on that branch or event type. GitHub reports the check as "Expected — Waiting" and the PR cannot merge even though no failure occurred.
 
@@ -120,7 +120,7 @@ Branch protection is configured in GitHub's UI, not in the YAML file. There is n
 **Warning signs:**
 - A workflow job has no `name:` field — its check context is the raw job key, which changes if the job is renamed.
 - No workflow YAML comment states "this is/is not a required status check."
-- `phase90-proof.yml` has no `name:` on the `e2e-offline-sync` job, no `continue-on-error`, and no branch-protection comment.
+- `offline-sync-e2e-gate.yml` has no `name:` on the `e2e-offline-sync` job, no `continue-on-error`, and no branch-protection comment.
 
 **Phase to address:**
 Branch-protection hardening phase. Address before or alongside E2E-01, since fixing the E2E and marking it required are the same deliverable.
@@ -349,7 +349,7 @@ Doc-truth reconciliation phase (small, standalone). Should precede or accompany 
 - `e2e/offline_sync.spec.ts` (this repo) — direct examination of the fabricated mutation injection pattern at lines 21-50
 - `e2e/offline_storage.spec.ts` (this repo) — `addInitScript` storage mock pattern (legitimate for storage boundary tests; distinct from mutation fabrication)
 - `examples/phoenix_host/playwright.config.ts` (this repo) — `serviceWorkers: 'block'`, `retries: 2`, `webServer` command chain
-- `.github/workflows/phase90-proof.yml` (this repo) — missing compile step, missing job `name:`, no `continue-on-error`, no branch-protection comment
+- `.github/workflows/offline-sync-e2e-gate.yml` (this repo) — missing compile step, missing job `name:`, no `continue-on-error`, no branch-protection comment
 - `.github/workflows/brandbook-verify.yml` (this repo) — correct advisory/required split pattern with `continue-on-error: true` and `::notice`
 - `lib/crosswake/planning/closeout_verifier.ex` (this repo) — `@v40_phases` hardcoded fallback at line 28, `phase_paths/4` wildcard glob at lines 563-574, escape hatch in `validation_ledger_check/2`
 - `.planning/MILESTONES.md` (this repo) — v6.0 known issues: "hidden by the mocked Playwright closeout"; v8.0-v11.0 carried `tighten-validation-ledger-closeout-gate`

@@ -35,7 +35,7 @@
 |------|---------|-------|
 | `offline_study.js` — `window.addEventListener('online', flushOutbox)` | The reconnect flush that does not yet exist | This is not a tooling addition — it is the primary app change. The E2E test can only drive a real flush if the app fires one. Must: read all pending mutations from the `mutations` IndexedDB store, POST them to `/study/sync`, clear the store on success. The test then drives this naturally by dispatching `new Event('online')`. |
 | `playwright.config.ts` — no changes needed | Server startup, retry, trace config are already correct | The `webServer` block correctly boots Phoenix with `MIX_ENV=test` and fresh DB migrations. The `serviceWorkers: 'block'` setting prevents SW caching from masking results. No config changes needed for v12.0. |
-| `phase90-proof.yml` — rename job to `merge-blocking-*` | Make the E2E job name match the repo's merge-blocking naming convention | Current job name is `e2e-offline-sync`. Required status checks are matched by job `name:` string. The job must be renamed (e.g. `merge-blocking-offline-sync-proof`) and that string added to branch protection. |
+| `offline-sync-e2e-gate.yml` — rename job to `merge-blocking-*` | Make the E2E job name match the repo's merge-blocking naming convention | Current job name is `e2e-offline-sync`. Required status checks are matched by job `name:` string. The job must be renamed (e.g. `merge-blocking-offline-sync-proof`) and that string added to branch protection. |
 
 ---
 
@@ -144,7 +144,7 @@ gh api repos/szTheory/crosswake/branches/main/protection/required_status_checks 
 - `setOffline` does not fire `online`/`offline` window events: https://adequatica.medium.com/hidden-gems-of-playwright-part-2-ca3e38a5954a — documented limitation confirmed; workaround is `dispatchEvent` (MEDIUM confidence — official docs do not state this explicitly; community source agrees with CDP behavior)
 - GitHub branch protection REST API: https://docs.github.com/en/rest/branches/branch-protection — `PATCH required_status_checks` with `checks` array (HIGH confidence)
 - Live `gh api` call to `repos/szTheory/crosswake/branches/main/protection`: confirmed `checks` array with `app_id: 15368`, no rulesets active (HIGH confidence — live data)
-- Existing project files read directly: `examples/phoenix_host/playwright.config.ts`, `e2e/offline_sync.spec.ts`, `priv/static/offline_study.js`, `.github/workflows/phase90-proof.yml`, all `merge-blocking-*` workflow job names across `.github/workflows/*.yml` (HIGH confidence)
+- Existing project files read directly: `examples/phoenix_host/playwright.config.ts`, `e2e/offline_sync.spec.ts`, `priv/static/offline_study.js`, `.github/workflows/offline-sync-e2e-gate.yml`, all `merge-blocking-*` workflow job names across `.github/workflows/*.yml` (HIGH confidence)
 
 ---
 *Stack research for: Crosswake v12.0 CI Honesty / Real-E2E Sweep*

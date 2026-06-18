@@ -31,7 +31,7 @@ No new frameworks and no Playwright upgrade. `@playwright/test` 1.60.0 already h
 - **Mutation via real UI** — click the actual Pass/Fail flashcard control so `offline_study.js` writes to the IndexedDB outbox; no `window[]` injection.
 - **App-driven flush** — a real `flushOutbox()` in `offline_study.js` triggered by reconnect; the test must NOT fire `fetch` itself.
 - **Read-back idempotency key** — assert against the `client_mutation_id` the *app* generated (read from IndexedDB), not one the test minted; if the app's UUID generation breaks, the lookup must fail on the right assertion.
-- **Compile honesty** — `mix compile --warnings-as-errors` before Playwright in `phase90-proof.yml`, so a demo-app compile break fails loudly instead of as a port timeout (the v6.0 failure mode, still live).
+- **Compile honesty** — `mix compile --warnings-as-errors` before Playwright in `offline-sync-e2e-gate.yml`, so a demo-app compile break fails loudly instead of as a port timeout (the v6.0 failure mode, still live).
 - **Merge-blocking** — the lane is a registered required status check, not an undocumented advisory.
 
 **Legitimate vs illegitimate test doubles (the honesty criterion):** reading the SUT's own IndexedDB state via `page.evaluate` is *observation* (legitimate — `offline_storage.spec.ts`'s `QuotaExceededError` stub is the established in-repo precedent); *writing* to SUT state or *triggering* SUT-owned behavior via `page.evaluate` is *injection* (illegitimate — what today's test does).
@@ -52,7 +52,7 @@ Pure modification milestone — three files change, none created; the server is 
 ### Critical Pitfalls
 
 1. **CDP `setOffline(false)` doesn't fire `online`** — without the explicit `dispatchEvent('online')`, the app's reconnect handler never runs and the test hangs/false-fails. (Symptom already visible as `retries: 2` masking flake.)
-2. **The v6.0 compile-break mechanism is still structurally present** — `phase90-proof.yml` runs Playwright with no prior `mix compile`; a compile failure looks like a Playwright port timeout. Add `mix compile --warnings-as-errors`.
+2. **The v6.0 compile-break mechanism is still structurally present** — `offline-sync-e2e-gate.yml` runs Playwright with no prior `mix compile`; a compile failure looks like a Playwright port timeout. Add `mix compile --warnings-as-errors`.
 3. **Branch-protection PATCH replaces the checks array** — omitting the existing two checks silently un-gates them; a job *rename* without re-registration silently drops the required check. Run green on `main` once, then PATCH with all three.
 4. **Closeout verifier hardcoded-phase fallback** — a `CLOSEOUT.md` missing `expected_phases:` frontmatter falls back to a hardcoded phase set (`@v40_phases`/`@v39_phases` per source), globbing an empty path → zero ledgers found → vacuous pass. Make the fallback hard-error.
 5. **Stale-but-not-blocking deferral** — LEDG-01 has been carried verbatim through v8.0→v11.0 (four milestones) with the same `reason:` text; `stale_deferral?/2` labels it stale but stale does not block merge. Needs explicit resolution criteria + real VALIDATION.md files, not another carry.
@@ -68,7 +68,7 @@ Suggested structure: **4–5 phases**, continuing numbering from v11.0 (last pha
 
 ### Phase 113: Honest E2E Rewrite + Workflow Compile Gate
 **Rationale:** Depends on 112; atomic unit — a fabricated test that compiles is still dishonest, so the test rewrite and the `mix compile` workflow fix ship together.
-**Delivers:** rewritten `offline_sync.spec.ts` (real UI → `setOffline(false)`+`dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto; outbox-cleared + duplicate-flush idempotency assertions; `beforeEach` reset); `mix compile --warnings-as-errors` added to `phase90-proof.yml`.
+**Delivers:** rewritten `offline_sync.spec.ts` (real UI → `setOffline(false)`+`dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto; outbox-cleared + duplicate-flush idempotency assertions; `beforeEach` reset); `mix compile --warnings-as-errors` added to `offline-sync-e2e-gate.yml`.
 **Uses:** Playwright 1.60.0 APIs from STACK.md.
 
 ### Phase 114: Merge-Blocking CI Gate
@@ -107,7 +107,7 @@ Suggested structure: **4–5 phases**, continuing numbering from v11.0 (last pha
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source inspection: `offline_sync.spec.ts`, `offline_storage.spec.ts`, `offline_study.js`, `study_session_live.ex`, `router.ex`, `closeout_verifier.ex`, `phase90-proof.yml`, `brandbook-verify.yml`.
+- Direct source inspection: `offline_sync.spec.ts`, `offline_storage.spec.ts`, `offline_study.js`, `study_session_live.ex`, `router.ex`, `closeout_verifier.ex`, `offline-sync-e2e-gate.yml`, `brandbook-verify.yml`.
 - Playwright official docs — `setOffline`, `waitForResponse`, `expect.poll`, `addInitScript`.
 - GitHub REST docs + live `gh api` — branch-protection `checks` array (app_id 15368, two existing checks).
 - Phoenix LiveView JS interop docs (hexdocs) — `reconnected()` Hook semantics.

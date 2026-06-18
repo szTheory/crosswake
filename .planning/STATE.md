@@ -60,8 +60,8 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 
 - [Phase ?]: D-03 confirmed
 - [Phase ?]: Rule 1: Study.sync_events struct serialization
-- [Phase ?]: D-04: MIX_ENV=test mandatory in phase90-proof.yml compile gate; catches elixirc_paths(:test) + _e2e route (the v6.0 break path)
-- [Phase ?]: Job name e2e-offline-sync preserved in phase90-proof.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
+- [Phase ?]: D-04: MIX_ENV=test mandatory in offline-sync-e2e-gate.yml compile gate; catches elixirc_paths(:test) + _e2e route (the v6.0 break path)
+- [Phase ?]: Job name e2e-offline-sync preserved in offline-sync-e2e-gate.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
 - [Phase ?]: Option-C aggregator topology selected (merge-blocking-offline-sync-e2e as sole required check, re-actors/alls-green)
 - [Phase ?]: Env-scoped cache keys (build-test-* / build-prod-*) + rm -rf _build/prod isolate MIX_ENV compiles (T-114-02 mitigation)
 - [Phase ?]: GUARD-01: typescript resolved via createRequire from examples/phoenix_host; guard-01 CI job must run npm ci --prefix examples/phoenix_host before honesty check
