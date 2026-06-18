@@ -1,5 +1,12 @@
 name: Offline-Sync E2E Gate
 # Renamed from phase90-proof.yml (2026-06). Permanent merge gate — purpose-named, not phase-scoped.
+#
+# TOPOLOGY (Option-C aggregator — D-01):
+#   Three sibling jobs produce per-signal red/green dots; one aggregator is the ONLY required check.
+#   Branch-protection required-check name: merge-blocking-offline-sync-e2e
+#
+# REGISTRATION (run out-of-band after this workflow goes green on main — plan 114-05):
+#   [placeholder: plan 114-05 will paste the gh api PATCH registration one-liner here]
 
 permissions:
   contents: read
@@ -13,39 +20,93 @@ on:
       - main
 
 jobs:
-  e2e-offline-sync:
+  guard-01-e2e-honesty:                 # ~2s, no browser, no Elixir
+    name: guard-01-e2e-honesty
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Run E2E honesty check
+        run: node script/check-e2e-honesty.mjs
+      - name: Step summary
+        run: echo "GUARD-01 e2e-honesty: structural check passed" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Setup BEAM
-        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+  guard-02-prod-route-absence:          # MIX_ENV=prod — ISOLATED runner
+    name: guard-02-prod-route-absence
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
           version-file: .tool-versions
           version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: examples/phoenix_host/_build/prod
+          key: build-prod-${{ hashFiles('examples/phoenix_host/mix.lock') }}
+      - name: Assert NO /_e2e route in a prod compile
+        working-directory: examples/phoenix_host
+        run: |
+          set -euo pipefail
+          rm -rf _build/prod
+          mix deps.get --only prod
+          ROUTES="$(mix phx.routes CrosswakeExample.Router)"
+          echo "$ROUTES"
+          if echo "$ROUTES" | grep -qE '/_e2e(/|$)'; then
+            echo "::error::GUARD-02 FAILED — /_e2e route present in a MIX_ENV=prod compile."
+            echo "Gate test-only routes with 'if Mix.env() in [:test, :e2e]' so they compile OUT of prod."
+            echo "$ROUTES" | grep -E '/_e2e(/|$)'
+            exit 1
+          fi
+          echo "GUARD-02 OK — no /_e2e routes in prod." >> "$GITHUB_STEP_SUMMARY"
 
+  e2e-proof:                            # MIX_ENV=test — ISOLATED runner
+    name: e2e-proof
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: examples/phoenix_host/_build/test
+          key: build-test-${{ hashFiles('examples/phoenix_host/mix.lock') }}
       - name: Install Mix dependencies
+        working-directory: examples/phoenix_host
         run: mix deps.get
-        working-directory: examples/phoenix_host
-
       - name: Compile (warnings as errors)
-        run: MIX_ENV=test mix compile --warnings-as-errors
         working-directory: examples/phoenix_host
-
-      - name: Install dependencies
+        run: mix compile --warnings-as-errors
+      - name: Phoenix route + controller assertions
+        working-directory: examples/phoenix_host
+        run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
+      - name: Install Node dependencies
+        working-directory: examples/phoenix_host
         run: npm ci
+      - name: Install Playwright browsers
         working-directory: examples/phoenix_host
-
-      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-        working-directory: examples/phoenix_host
-
       - name: Run Playwright tests
-        run: npx playwright test
         working-directory: examples/phoenix_host
+        run: npx playwright test
+      - name: Step summary
+        run: echo "E2E: offline-sync IndexedDB-outbox → reconnect-flush → one Ecto row proven" >> "$GITHUB_STEP_SUMMARY"
+
+  merge-blocking-offline-sync-e2e:      # THE ONLY required check (GATE-01 name)
+    name: merge-blocking-offline-sync-e2e
+    if: always()
+    needs: [guard-01-e2e-honesty, guard-02-prod-route-absence, e2e-proof]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up guard results
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
