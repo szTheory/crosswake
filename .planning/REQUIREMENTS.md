@@ -18,7 +18,7 @@ Requirements for milestone v13.0. Each maps to exactly one roadmap phase.
 Make the public proof path clean before using it as adopter evidence.
 
 - [x] **PROOF-01**: `TODO-001` is resolved or explicitly excluded from the public proof path. The deterministic `CrosswakeExample.FlashcardsTest` schema/API drift is fixed or removed from advertised proof commands, the `CrosswakeExample.Chimeway.RegistryNotificationOpenTest` flake is made deterministic or excluded with a narrow reason, and no README/quick-start/proof command depends on known failing or flaky example-host tests.
-- [ ] **REL-TRUTH-01**: Public release/docs truth agrees with `crosswake 0.1.2` or labels old fixture truth explicitly. README, CHANGELOG, install/native/compatibility guides, support matrix references, example manifests, ExDoc extras, and native guide prose must not claim latest Hex is `0.1.0`, `0.1.2` is pending, or standalone public shell packages are deferred.
+- [x] **REL-TRUTH-01**: Public release/docs truth agrees with `crosswake 0.1.2` or labels old fixture truth explicitly. README, CHANGELOG, install/native/compatibility guides, support matrix references, example manifests, ExDoc extras, and native guide prose must not claim latest Hex is `0.1.0`, `0.1.2` is pending, or standalone public shell packages are deferred.
 - [ ] **DRIFT-01**: Cheap release-truth drift is mechanically guarded. A test or script fails when public docs reintroduce stale current-version claims, unlabelled `0.1.0` baseline claims, or deferred-standalone-shell prose that contradicts v11.0 release truth.
 
 ### GUIDE - Route-Policy And Support-Truth Guide Foundation
