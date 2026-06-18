@@ -470,6 +470,78 @@
 - **Session shape:** Two-day milestone (2026-06-13 → 2026-06-14), 3 phases / 10 plans, 74 files changed (+9,509 / −368).
 - **Carried-forward debt:** the `tighten-validation-ledger-closeout-gate` quick task remains deferred (pre-existing since v8.0); no new deferred work introduced.
 
+## Milestone: v11.0 — Release & Distribution Truth
+
+**Shipped:** 2026-06-17
+**Phases:** 2 (110-111) | **Plans:** 8
+
+### What Was Built
+- iOS SPM core auto-mirrored to `szTheory/crosswake-shell-core-ios` via splitsh-lite subtree (`fetch-depth: 0`) with annotated semver tags; Android core published to Maven Central under verified `io.github.sztheory` (Vanniktech → Central Portal, signed POM).
+- release-please manifest mode + `linked-versions` lockstep so one release advances Hex + iOS tag + Maven artifact to identical versions; native publish jobs gated `needs: release-please` + `if: releases_created` (not a `release: published` listener the default token would never fire).
+- `mix crosswake.gen.shell` rewired to inject `Application.spec(:crosswake)[:vsn]` at generate-time into published coordinates — no version literal, placeholder remote and relative-path default removed.
+- Clean-room CI lane scaffolding a host in `$RUNNER_TEMP` outside the monorepo, proving `swift build` / `gradle build` resolve the *published* deps and compile; permanent merge-blocking `generator_coordinate_parity` readiness check.
+- Footgun-aware 8-section SETUP credential runbook + a dispatch-only validated-upload→DROP Android fire-drill + a lockstep-truth assertion; install docs reconciled to published truth; `crosswake 0.1.2` cut live to all three registries.
+
+### What Worked
+- **Dependency-ordered two-phase split held** — Phase 110 (publish + lockstep) strictly before Phase 111 (rewire + prove + release); you can't clean-room-prove an unpublished dep, and the ordering prevented cutting Hex while `gen.shell` still emitted broken coordinates.
+- **The fire-drill earned its keep** — the dispatch-only validated-upload→DROP lane and dry-run gates meant the irreversible first publish wasn't the first time the pipeline ran; the live cut still surfaced bugs, but no immutable version was burned.
+- **Parity guard makes the thesis permanent** — a point-in-time clean-room proof plus a merge-blocking structural check (sibling to v10.0's `brand-structural`) keeps the eject-trap claim honest going forward, not just at release.
+
+### What Was Inefficient
+- **Latent pipeline bugs only surfaced on the live run** — fire-drill artifact-name assertion, missing Android auto-publish flag (`-PcrosswakeAutomaticRelease=true`), Central Portal poll auth/endpoint shape (Bearer + `/status?id=` + `/deployment/{id}`, no list endpoint), and splitsh-lite version (`v1.0.1`, not assetless `v2.0.0`) all needed post-cut fixes (PRs #20/#21/#22). A real (non-dispatch) end-to-end dry run would have caught some earlier.
+- **iOS mirror completed out-of-band** — the splitsh 404 failed before the iOS push step, so the 0.1.2 mirror was done manually via `git subtree split`; the clean-room PROOF-01 jobs were skipped on the 0.1.2 run (Hex+Maven verified independently). `MIRROR_PUSH_TOKEN` scope stays unexercised until the next release.
+- **Release-checkpoint plan has no SUMMARY** — 111-05 was a non-autonomous PR-merge/Actions checkpoint, so `roadmap.analyze` reported the milestone as 88%/partial at close; the milestone-complete CLI then re-derived STATE progress down to 50%. Both needed manual reconciliation against the shipped reality.
+
+### Patterns Established
+- **Gate irreversible publishes behind a dispatch-only validated-upload→DROP fire-drill** plus dry-run + GPG/namespace preflight, before any real cut.
+- **Lockstep generated-code coordinates via release-please `linked-versions`** with one version source (`Application.spec`), never independent per-platform versioning.
+- **Prove external consumption clean-room (outside the monorepo) AND lock it with a structural parity check** — the proof is point-in-time; the check is the guarantee.
+
+### Key Lessons
+- **A dispatch-only fire-drill is not a full dry run** — it validated upload+drop but didn't exercise the release-gated trigger path, so trigger/auth/version bugs still waited for the live cut. Exercise the real trigger path against a throwaway version when the publish is irreversible.
+- **Release-checkpoint plans break progress derivation** — a non-autonomous PR-merge plan never produces a SUMMARY, so `roadmap.analyze` and `milestone.complete` under-count it; expect to reconcile STATE/ROADMAP by hand and consider a checkpoint-plan convention the tooling recognizes.
+- **CLI placeholder-bullet tax struck a fifth time** — the 110 SUMMARYs' one-liners didn't extract; MILESTONES.md accomplishments were hand-authored yet again.
+
+### Cost Observations
+- **Session shape:** Four-day milestone (2026-06-14 → 2026-06-17), 2 phases / 8 plans, 81 commits; the first live release execution dominated the tail.
+- **Carried-forward debt:** `tighten-validation-ledger-closeout-gate` (= LEDG-01) still deferred (pre-existing since v8.0); `MIRROR_PUSH_TOKEN` scope unexercised, validated on the next release.
+
+## Milestone: v12.0 — CI Honesty & Real-E2E Sweep
+
+**Shipped:** 2026-06-18
+**Phases:** 4 (112-115) | **Plans:** 13
+
+### What Was Built
+- Real offline outbox behavior in the demo app: UI ratings write app-shaped IndexedDB mutations and the app drains them through `/study/sync` on reconnect.
+- Honest Playwright proof for the offline loop: UI action -> IndexedDB observation -> app reconnect flush -> Ecto assertion, plus duplicate idempotency proof and a compile-before-Playwright gate.
+- Merge-blocking offline-sync E2E topology with `guard-01`, `guard-02`, `e2e-proof`, and a single aggregator status; branch-protection registration is scripted and documented for the human-gated step.
+- Structural honesty guard (`script/check-e2e-honesty.mjs`) banning the known fabrication shapes, plus test-only `/_e2e` route presence/absence and count-scoping assertions.
+- Fail-closed `CloseoutVerifier` contracts for `expected_phases` and validation ledgers, evidence-backed v3.8/v3.9 ledgers, accepted v3.6 exception, and v8.0 document-truth reconciliation.
+
+### What Worked
+- **Research-locked ordering held** — Phase 112 changed real app behavior before Phase 113 rewrote the test, and Phase 114 only locked the lane after the honest proof existed.
+- **Structural guards match proof risk** — the guard does not try to infer intent generally; it blocks the exact three fabrication shapes that made the prior proof dishonest.
+- **Source-contract tests made doc truth enforceable** — the v8.0 reconciliation is backed by a test that checks precedence and source references instead of relying on prose discipline.
+
+### What Was Inefficient
+- **The archive CLI still emitted draft-quality MILESTONES copy** — placeholder bullets and duplicated one-liners had to be replaced manually before committing closeout.
+- **Validation-ledger debt required archaeology** — v3.6/v3.8/v3.9 evidence had to be reconstructed after the fact, which is slower and less reliable than closing ledgers during each phase.
+- **Branch-protection registration remains human/out-of-band** — the milestone shipped the job topology and script, but the final GitHub ruleset toggle still depends on a maintainer action after a green run on `main`.
+
+### Patterns Established
+- **Honest E2E proof recipe:** drive state through real UI, observe app-owned storage without mutating it, assert backend truth, and pair with a structural fabrication guard.
+- **Closeout contracts fail closed:** `expected_phases` must be explicit and ledger evidence must cite real tests, commands, artifacts, or accepted exceptions.
+- **Document precedence is product surface:** `MILESTONES.md` curated shipped-state truth > `PROJECT.md` requirement marks > point-in-time audit snapshots.
+
+### Key Lessons
+- **A proof that bypasses app-owned state is worse than no proof** — it can hide compile breaks and create false confidence across later milestones.
+- **Structural guard and proof should ship together** — a green test alone does not prevent reintroducing a fabricated shortcut.
+- **Historical audits should be annotated, not rewritten** — preserving the original snapshot and adding a later truth layer keeps the planning record honest.
+
+### Cost Observations
+- **Session shape:** Two-day milestone (2026-06-17 -> 2026-06-18), 4 phases / 13 plans, 22 non-planning files changed (+1,686 / -260).
+- **Carried-forward debt:** TODO-001 remains as a standalone example-host cleanup candidate for pre-existing `FlashcardsTest` field drift and flaky `Chimeway.RegistryNotificationOpenTest`.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
@@ -488,9 +560,13 @@
 | Provider adapters must stay evidence-only | v3.7 shipped StoreKit/Play Billing seams and a paywall facade only after audit proved evidence flows into backend-owned reconciliation and grants wait for backend projection | Future provider or native adapter work should expose explicit swap targets, closed vocabularies, advisory proof posture, and authority-fence tests before widening claims |
 | Auth/session machinery must stay backend-authoritative | v3.8 shipped Sigra session authority, handoff, step-up, and auth-return seams while keeping shell/native/provider events evidence-only until backend projection | Future auth/provider/native UX work should start with authority projection, denial sanitization, replay/expiry proof, and support-truth split before adding provider-specific templates |
 | Backend authority compounds across entry paths | v3.9's notification-open resolver reused `RouteGate.evaluate/4` with `activation_source: :notification`, getting Sigra step-up reuse (OPEN-02) for free | New activation sources (notifications, deep links, future seams) should delegate to the existing route gate via a typed `activation_source` rather than re-implementing auth/step-up |
-| Validation-ledger debt is now systemic | v3.8 and v3.9 both closed with deferred Nyquist VALIDATION.md ledgers despite green proof and requirements | Close validation bookkeeping during phase execution, or add a closeout gate that blocks on draft ledgers, before v4.0 |
+| Validation-ledger debt needs a closeout contract | v3.8/v3.9 closed with deferred Nyquist VALIDATION.md ledgers; v12.0 finally resolved them with evidence-backed ledgers and an accepted v3.6 exception | Close validation bookkeeping during phase execution, and keep closeout fail-closed on missing or bare ledgers |
 | Closeout-as-contract beats prose review | v3.9 used a `CLOSEOUT.md` frontmatter checklist verified by `mix closeout.verify` as the closing gate | Support-truth-sensitive milestones should ship a machine-readable closeout contract alongside the proof lane |
 | Single generated source must cover the whole surface | v10.0 found typography/dimension were a second hand-maintained source even after v9.0 froze color tokens; normalization required generating font + dimension too | When establishing a generated source of truth, generate every consumed dimension of it up front — a partial source invites silent drift in the ungenerated parts |
 | Normalize the cause, not the referencing symptom | v10.0's drifted colors lived in an `.ex`-emitted Tailwind theme, not the `.eex` templates referencing it; CONTEXT-phase discovery caught the real third consumer | Before normalizing consumers, trace values to their actual emission source — referencing code is a symptom, not the source |
 | Structural gates need adversarial hardening | v10.0's drift script took five `fix(109)` rounds to close hex/class-attr detection gaps (substring false positives, 4/8-digit hex, quote styles) | Ship structural CI checks with a contract/fixture test suite from the start and budget a hardening pass; naive grep-style detection has predictable false-positive/negative gaps |
-| CLI placeholder-bullet tax is chronic | v3.4, v3.9, and now v10.0 all emitted `One-liner:` placeholders into MILESTONES.md at close | Either fix SUMMARY one-liner authoring at phase close or fix the extraction CLI; it has recurred across four milestones |
+| CLI placeholder-bullet tax is chronic | v3.4, v3.9, v10.0, v11.0, and v12.0 all emitted placeholder or draft bullets into MILESTONES.md at close | Either fix SUMMARY one-liner authoring at phase close or fix the extraction CLI; milestone summaries must be reviewed before commit |
+| Irreversible publishes need a fire-drill, and a fire-drill is not a full dry run | v11.0 gated Maven/SPM behind a dispatch-only validated-upload→DROP lane + dry-run; no version was burned, but trigger/auth/version bugs still waited for the live cut | For immutable/irreversible releases, exercise the real release-gated trigger path against a throwaway version — a dispatch-only drill validates upload but not the trigger/auth/version wiring |
+| Release-checkpoint plans break progress derivation | v11.0's 111-05 was a non-autonomous PR-merge/Actions checkpoint with no SUMMARY; `roadmap.analyze` reported 88%/partial and `milestone.complete` re-derived STATE to 50% | Non-autonomous checkpoint plans need a tooling-recognized convention (or expect to hand-reconcile STATE/ROADMAP against shipped reality at close) |
+| Distribution truth is now closed | v5.0 built standalone cores but left them undistributed (`gen.shell` referenced nonexistent deps); v11.0 published all three registries lockstep, proved clean-room build, and added a permanent parity guard | The eject-trap thesis is now genuinely consumable and self-defending; future generator/capability work builds on a real install path, not an aspirational one |
+| Proof honesty needs real app paths plus structural guards | v12.0 replaced a fabricated offline-sync test with real UI/IndexedDB/reconnect/Ecto proof and added GUARD-01/GUARD-02 to prevent regression | Any future proof lane that previously relied on test-only shortcuts should get both an app-owned execution path and a source-contract guard |

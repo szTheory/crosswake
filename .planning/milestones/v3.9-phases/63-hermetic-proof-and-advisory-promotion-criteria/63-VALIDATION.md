@@ -5,6 +5,17 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-03
+tested_by:
+  - "mix test test/crosswake/proof/phase63_notification_seam_proof_test.exs"
+  - "mix test test/crosswake/proof/phase63_advisory_proof_test.exs --include advisory_only"
+  - "mix test test/crosswake/proof/phase63_notification_seam_proof_test.exs test/crosswake/proof/phase63_advisory_proof_test.exs test/crosswake/planning/closeout_verifier_test.exs --include advisory_only"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase63_notification_seam_proof_test.exs
+  - type: test_file
+    ref: test/crosswake/proof/phase63_advisory_proof_test.exs
+  - type: command
+    ref: "mix test test/crosswake/proof/phase63_notification_seam_proof_test.exs"
 ---
 
 # Phase 63 — Validation Strategy

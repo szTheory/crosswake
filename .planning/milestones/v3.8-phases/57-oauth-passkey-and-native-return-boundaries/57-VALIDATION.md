@@ -5,6 +5,13 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
+tested_by:
+  - "mix test test/crosswake/proof/phase57_auth_return_boundaries_test.exs --trace"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase57_auth_return_boundaries_test.exs
+  - type: command
+    ref: "mix test test/crosswake/proof/phase57_auth_return_boundaries_test.exs --trace"
 ---
 
 # Phase 57 - Validation Strategy

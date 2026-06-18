@@ -5,6 +5,14 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-01
+tested_by:
+  - "mix test test/crosswake/proof/phase54_sigra_session_authority_test.exs"
+  - "mix test test/crosswake/companions/sigra/contracts_test.exs test/crosswake/proof/phase54_sigra_session_authority_test.exs test/crosswake/policy/schema_test.exs test/crosswake/compatibility/route_gate_test.exs"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase54_sigra_session_authority_test.exs
+  - type: command
+    ref: "mix test test/crosswake/proof/phase54_sigra_session_authority_test.exs"
 ---
 
 # Phase 54 — Validation Strategy

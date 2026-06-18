@@ -5,6 +5,15 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
+tested_by:
+  - "mix test test/crosswake/companions/sigra/step_up_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase56_step_up_ceremony_test.exs
+  - type: test_file
+    ref: test/crosswake/companions/sigra/step_up_test.exs
+  - type: command
+    ref: "mix test test/crosswake/companions/sigra/step_up_test.exs test/crosswake/proof/phase56_step_up_ceremony_test.exs --trace"
 ---
 
 # Phase 56 — Validation Strategy

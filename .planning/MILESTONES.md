@@ -1,5 +1,57 @@
 # Project Milestones: Crosswake
 
+## Document Truth Precedence
+
+For shipped-state questions, use this order: `MILESTONES.md` curated shipped-state truth > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md` point-in-time snapshots. `PROJECT.md` Requirements marks remain active-project truth and must cite verification or CI evidence; audit files preserve the evidence available at the time they were written.
+
+## v12.0 CI Honesty & Real-E2E Sweep (Shipped: 2026-06-18)
+
+**Phases completed:** 4 phases (112-115), 13 plans, 15 tasks
+**Git range:** `feat(112-01)` -> `docs(phase-115)` / audit close; 22 non-planning files changed (+1,686 / -260); 2026-06-17 -> 2026-06-18
+
+**Delivered:** Made the offline-sync and closeout proof surfaces honest: real IndexedDB outbox -> reconnect flush -> Ecto proof, merge-blocking E2E aggregator with structural honesty guard, fail-closed closeout verifier, evidence-backed historical ledgers, and canonical v8.0 document truth.
+
+**Key accomplishments:**
+
+- Replaced the fabricated offline-sync proof with a real UI-driven flow: clicking `#btn-good` queues an IndexedDB mutation, CDP reconnect plus an explicit `online` event triggers the app's `flushOutbox`, Ecto confirms the app-generated mutation ID, and duplicate POST proof verifies idempotency.
+- Added `MIX_ENV=test mix compile --warnings-as-errors` before Playwright so demo-app compile breaks fail as compile errors instead of port-connection noise.
+- Promoted the offline-sync E2E lane into an Option-C merge-blocking aggregator and documented/scripted the branch-protection registration path.
+- Shipped GUARD-01 (`script/check-e2e-honesty.mjs`) to ban the three known fabrication shapes and GUARD-02 tests proving `/_e2e` routes stay test-only and count-scoped.
+- Hardened `CloseoutVerifier` so malformed `expected_phases` contracts and bare validation ledgers fail closed while preserving report-first Mix diagnostics.
+- Closed historical validation-ledger debt with evidence-backed v3.8/v3.9 ledgers and one explicit accepted v3.6 exception.
+- Established the document-truth precedence rule, added the curated v8.0 shipped-state entry, and annotated the old v1.0 audit snapshot without overwriting its original 0/10 context.
+
+**Known deferred items at close:** 1 — TODO-001 for pre-existing example-host `FlashcardsTest` field drift and flaky `Chimeway.RegistryNotificationOpenTest`, surfaced by Phase 112 and left as a standalone cleanup candidate.
+
+**Archive:**
+
+- `.planning/milestones/v12.0-ROADMAP.md`
+- `.planning/milestones/v12.0-REQUIREMENTS.md`
+- `.planning/milestones/v12.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v12.0-phases/`
+
+---
+
+## v11.0 Release & Distribution Truth (Shipped: 2026-06-17)
+
+**Phases completed:** 2 phases (110-111), 8 plans, 13 tasks
+**Git range:** `feat(110-01)` → release `0.1.2` · 81 commits · 2026-06-14 → 2026-06-17
+
+**Delivered:** The first lockstep release — `crosswake 0.1.2` shipped to Hex + Maven Central + the SwiftPM mirror from one release-please run, making the v5.0 standalone-package thesis genuinely consumable by an adopter outside the monorepo.
+
+**Key accomplishments:**
+
+- Native cores published & lockstep-versioned: iOS SPM core auto-mirrored to `szTheory/crosswake-shell-core-ios` (splitsh-lite subtree, annotated semver tags), Android core to Maven Central under verified `io.github.sztheory` (signed POM via Vanniktech → Central Portal), with release-please `linked-versions` advancing all three registries to one version per release.
+- Credential provisioning hardened: an 8-section one-time SETUP runbook (GPG primary-key-only, Sonatype user tokens, empty iOS mirror repo, least-privilege `MIRROR_PUSH_TOKEN`, tag ruleset) plus a permanent dispatch-only Android fire-drill (preflight → local asserts → validated-upload → DROP) and a lockstep-truth assertion, so the first publish couldn't silently fail or burn an immutable version.
+- Generator rewired to published coordinates: `mix crosswake.gen.shell` injects the live `Application.spec(:crosswake)[:vsn]` into iOS/Android dep coordinates at generate-time — no hardcoded version literal, default output references the published coordinates, local scaffold mode preserved.
+- Clean-room proof + permanent parity guard: a CI lane scaffolds a host in `$RUNNER_TEMP` outside the monorepo and proves `swift build` / `gradle build` resolve the *published* deps and compile; a merge-blocking `generator_coordinate_parity` readiness check keeps generated coordinates version-matched and pointed at resolvable artifacts.
+- Docs reconciled to install truth: `guides/adoption.md`, `guides/support_matrix.md`, and `CHANGELOG.md` now point at the published-coordinate generator path with no 404 install route or monorepo-only claim.
+- 0.1.2 cut live (REL-01): Release PR #8 merged; the first live run exposed and fixed latent pipeline bugs (fire-drill artifact assertion, Android auto-publish flag, Central Portal poll auth/endpoint, splitsh-lite version), and the one-time `release-as` pin was removed post-cut.
+
+**Known deferred items at close:** 3 (see STATE.md Deferred Items) — all already-acknowledged carry-overs or stale audit false-positives from a milestone that shipped and is verified live.
+
+---
+
 ## v10.0 Brand Normalization (Shipped: 2026-06-14)
 
 **Phases completed:** 3 phases (107-109), 10 plans, 10 tasks
@@ -34,6 +86,23 @@
 - **Release hygiene**: added the pending CHANGELOG `[0.1.2]` section, flipping `doctor --check-publish` from `not_ready` → `ready`.
 
 **Known deferred items at close:** 1 — quick task `260603-nzr-tighten-validation-ledger-closeout-gate` (pre-existing v4.0 closeout-verifier ledger debt; see STATE.md Deferred Items).
+
+---
+
+## v8.0 Offline Sync Hardening and UI Polish (Shipped: 2026-06-11)
+
+**Phases completed:** 99-101
+
+**Delivered:** v8.0 hardened the offline-sync proof surface with real network toggling, advisory runtime storage budgets, and a consolidated offline UI while keeping offline claims scoped to the existing Phoenix-first offline island contract.
+
+**Key accomplishments:**
+
+- Real network toggling: Playwright coverage used browser network-offline behavior rather than localStorage-only mocks for the offline study island.
+- Advisory runtime storage budgets: the offline contract and generated UI surfaced storage-budget expectations with standard browser APIs and quota-error handling.
+- Consolidated offline UI: the host-owned `OfflineController` path generated a single brand-aligned offline surface without LiveView websocket coupling.
+- Shipped-state reconciliation: accepted verification debt from the 2026-06-11 audit was carried forward honestly and later addressed by v12.0 proof-honesty work.
+
+**Known deferred items at close:** accepted verification debt for phases 99-101 was recorded in `v1.0-MILESTONE-AUDIT.md` and carried into the v12.0 closeout/doc-truth sweep.
 
 ---
 

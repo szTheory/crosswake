@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v11.0
-milestone_name: Release & Distribution Truth
-status: complete
-last_updated: "2026-06-17T15:45:00Z"
-last_activity: 2026-06-17
+milestone: v12.0
+milestone_name: CI Honesty & Real-E2E Sweep
+status: Awaiting next milestone
+stopped_at: v12.0 milestone archived; awaiting next milestone
+last_updated: "2026-06-18T16:14:29.070Z"
+last_activity: 2026-06-18 — Milestone v12.0 completed and archived
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_phases: 4
+  completed_phases: 4
+  total_plans: 13
+  completed_plans: 13
   percent: 100
 ---
 
@@ -17,26 +18,23 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-14)
+See: .planning/PROJECT.md (updated 2026-06-18)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v11.0 COMPLETE — 0.1.2 shipped to all three registries (2026-06-17).
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 111 (generator-rewire-clean-room-proof-release) — COMPLETE
-Plan: 5 of 5 (done)
-Status: RELEASED. crosswake 0.1.2 live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`).
-Last activity: 2026-06-17
-Resume: v11.0 done — next is `/gsd:complete-milestone` (archive v11.0) then `/gsd:new-milestone`.
-
-[████████████████████] 100% (8/8 v11.0 plans)
+Phase: Milestone v12.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-18 — Milestone v12.0 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13 (v10.0)
+- Total plans completed: 10 (v10.0) + 8 (v11.0) + 13 (v12.0) = 31 across last three milestones
 - Average duration: —
 - Total execution time: —
 
@@ -46,48 +44,59 @@ Resume: v11.0 done — next is `/gsd:complete-milestone` (archive v11.0) then `/
 
 ### Decisions
 
-Full decision log in PROJECT.md (Key Decisions). v10.0 milestone decisions archived there.
+Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archived there.
+
+**v12.0 key decisions (2026-06-17, locked by research):**
+
+- Offline-sync reconnect flush is triggered by `window 'online'` event on the existing socketless `/offline` island — no migration to a LiveView route. The island is socketless by design (`put_root_layout(false)`); migrating would delete the proof the library exists to provide.
+- The vestigial `StudySessionLive` `sync_outbox` mock is removed entirely, not relabeled as a manual-sync affordance. Labeling it "Manual Sync" would misrepresent the mechanism (server-side Elixir list, not client IndexedDB outbox) — a fresh dishonesty.
+- Phase ordering is fixed: 112 (app change) → 113 (test rewrite + compile gate) → 114 (merge-blocking gate + permanent guard). Phase 115 (closeout/ledger/doc track) is independent and parallelizable but must complete before milestone close. Within Phase 115: GATE-02 must precede DEBT-01.
+- `setOffline(false)` does NOT fire the browser `online` event — the test must explicitly `dispatchEvent(new Event('online'))` after calling `setOffline(false)` to trigger the app's reconnect handler.
 
 **v11.0 key decision (2026-06-14):** Two-phase split enforced by dependency graph — Phase 110 (publish + lockstep) must complete before Phase 111 (rewire + prove + release). You cannot clean-room-prove an unpublished dep; you must not cut Hex while gen.shell emits broken coordinates. This ordering is non-negotiable per research.
 
-**v11.0 irreversibility notes (2026-06-14):** Maven Central releases are immutable; SwiftPM tags must not be force-moved after any adopter resolves them. Phase 110 includes mandatory dry-run and GPG verification gates before any real publish. Central Portal namespace `io.github.sztheory` must be verified before any publish config is committed.
+- [Phase ?]: D-03 confirmed
+- [Phase ?]: Rule 1: Study.sync_events struct serialization
+- [Phase ?]: D-04: MIX_ENV=test mandatory in offline-sync-e2e-gate.yml compile gate; catches elixirc_paths(:test) + _e2e route (the v6.0 break path)
+- [Phase ?]: Job name e2e-offline-sync preserved in offline-sync-e2e-gate.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
+- [Phase ?]: Option-C aggregator topology selected (merge-blocking-offline-sync-e2e as sole required check, re-actors/alls-green)
+- [Phase ?]: Env-scoped cache keys (build-test-* / build-prod-*) + rm -rf _build/prod isolate MIX_ENV compiles (T-114-02 mitigation)
+- [Phase ?]: GUARD-01: typescript resolved via createRequire from examples/phoenix_host; guard-01 CI job must run npm ci --prefix examples/phoenix_host before honesty check
+- [Phase ?]: Direct controller invocation (no ConnCase) for GUARD-02 count-scoping test — lowest footprint, exercises real show/2
+- [Phase ?]: Mix.env() gate unchanged in router.ex — compile-time-out strictly stronger than runtime guard (D-09)
+- [Phase ?]: Plan 114-05: GATE-01 registration script reads live state
+- [Phase ?]: Plan 114-05: register-e2e-gate.sh refuses to register until aggregator goes green on main
+- [Phase ?]: Plan 114-05: GATE-01 registration uses minimal-footprint PATCH endpoint
 
 ### Pending Todos
 
-None.
+- **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Pre-existing `FlashcardsTest` field-name drift + flaky `Chimeway.RegistryNotificationOpenTest` surfaced by Phase 112's `elixirc_paths` fix. Out of scope for Phase 115; remains a standalone example-host cleanup candidate.
 
 ### Blockers/Concerns
 
-- **Distribution gap (FOUNDATIONAL, surfaced 2026-06-14 assessment).** Hex publishes only `0.1.0`; ~4 months of shipped work (planning v3.4→v10.0) is uninstallable. The v5.0 standalone-package thesis is not actually distributed — the native cores have no publish config/CI and `mix crosswake.gen.shell` (default `--local false`) emits deps that don't exist (iOS `github.com/crosswake/...`, Android `dev.crosswake:shell-core-android:0.1.0`). An external adopter's generated shell won't build. This is the active v11.0 focus; see `threads/release-distribution-truth.md`.
-- **Doc drift:** `MILESTONE-ARC.md` was stale (marked v7.0 "Active" though v7.0→v10.0 shipped); reconciled 2026-06-14. Watch closeout/parity verifiers that hardcode mid-flight milestones post-archival.
-- **~~Release cut blocked (2026-06-14)~~ → RESOLVED 2026-06-17.** All 8 secrets provisioned, 4 `110-HUMAN-UAT.md` checks passed, Release PR #8 merged → **0.1.2 published to Hex + Maven Central + SwiftPM mirror**. The first live run exposed latent pipeline bugs, all fixed on main (PRs #20/#21/#22): fire-drill artifact-name assertion, missing Android auto-publish (`-PcrosswakeAutomaticRelease=true`), Central Portal poll auth/endpoint (Bearer + `/status?id=` + `/deployment/{id}`; no list endpoint), splitsh-lite version (`v1.0.1`, not assetless `v2.0.0`). `release-as` pin removed.
-- **`MIRROR_PUSH_TOKEN` scope unexercised.** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
+- **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
+- **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
+- **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
+- **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | v8.0 gap | Phase 81 verification gap (human_needed, carried from v5.1) | Acknowledged | v8.0 close |
-| v8.0 gap | `tighten-validation-ledger-closeout-gate` quick task | Acknowledged | v8.0 close |
-| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred | v8.0 close |
-| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred | v8.0 close |
-| Phase 111 P01 | 5 min | 2 tasks | 4 files |
-| Phase 111 P03 | 15 min | 2 tasks | 12 files |
-| Phase 111 P02 | 6 min | 2 tasks | 4 files |
-| Phase 111 P04 | 4 min | 2 tasks | 1 file |
-| Phase 111 P05 | release checkpoint | DONE — 0.1.2 shipped (PR #8 merged 2026-06-17) | — |
+| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred to post-v12.0 | v8.0 close |
+| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred to post-v12.0 | v8.0 close |
+| v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
+| v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
+| v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
+| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — standalone cleanup candidate | Phase 112 surfaced |
 
 ## Session Continuity
 
-Last session: 2026-06-17 (release execution)
-Stopped at: v11.0 COMPLETE — 0.1.2 shipped to all three registries; post-release cleanup merged (PR #22)
-Resume file: None
+Last session: 2026-06-18T15:41:37.824Z
+Stopped at: v12.0 milestone archived; awaiting next milestone
+Resume file: .planning/milestones/v12.0-phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-VERIFICATION.md
 
 ## Operator Next Steps
 
-- **v11.0 is DONE.** Next: `/gsd:complete-milestone` to archive v11.0, then `/gsd:new-milestone`.
-- 0.1.2 verified live: Hex `crosswake` 0.1.2; Maven Central `io.github.sztheory:crosswake-shell-core-android:0.1.2` (repo1.maven.org 200); SwiftPM mirror tag `v0.1.2` (clean, `.build` excluded). Phase 110 (3/3) and Phase 111 (5/5) both complete.
-- All 4 `110-HUMAN-UAT.md` items passed; fire-drill now validates-then-drops cleanly via the corrected Central Portal API.
-- The clean-room-proof jobs (PROOF-01) were SKIPPED on the 0.1.2 run because publish-ios-core failed first (splitsh 404, since fixed); they will run green on the next release. Hex+Maven were independently verified live.
-- Only open item: `MIRROR_PUSH_TOKEN` scope, validated on the next iOS mirror (see Blockers).
-- Mirror repo `szTheory/crosswake-shell-core-ios` now seeded: branch `main` + tag `v0.1.2`, default branch `main`, `tag-immutability` ruleset active.
+- Start the next milestone with /gsd:new-milestone

@@ -5,6 +5,16 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
+tested_by:
+  - "mix test test/crosswake/companions/sigra/telemetry_test.exs test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs"
+  - "mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs
+  - type: test_file
+    ref: test/crosswake/companions/sigra/telemetry_test.exs
+  - type: command
+    ref: "mix closeout.verify --security-only --security-closeout .planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
 ---
 
 # Phase 58 - Validation Strategy

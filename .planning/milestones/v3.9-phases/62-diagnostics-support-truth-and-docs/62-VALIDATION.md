@@ -5,6 +5,18 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
+tested_by:
+  - "mix test test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix_test.exs"
+  - "mix test test/crosswake/doctor/doctor_test.exs test/mix/tasks/crosswake_doctor_test.exs test/crosswake/support_matrix_test.exs test/crosswake/companions/chimeway/telemetry_test.exs test/crosswake/operator_inspection/operator_inspection_test.exs test/crosswake/support_matrix/renderer_test.exs"
+evidence:
+  - type: test_file
+    ref: test/crosswake/doctor/doctor_test.exs
+  - type: test_file
+    ref: test/crosswake/support_matrix_test.exs
+  - type: test_file
+    ref: test/crosswake/companions/chimeway/telemetry_test.exs
+  - type: command
+    ref: "mix test test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix_test.exs"
 ---
 
 # Phase 62 — Validation Strategy

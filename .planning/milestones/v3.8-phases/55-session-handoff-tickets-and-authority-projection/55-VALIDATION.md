@@ -5,6 +5,15 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-06-02
+tested_by:
+  - "mix test test/crosswake/companions/sigra/handoff_test.exs test/crosswake/proof/phase55_session_handoff_tickets_test.exs"
+evidence:
+  - type: test_file
+    ref: test/crosswake/proof/phase55_session_handoff_tickets_test.exs
+  - type: test_file
+    ref: test/crosswake/companions/sigra/handoff_test.exs
+  - type: command
+    ref: "mix test test/crosswake/companions/sigra/handoff_test.exs test/crosswake/proof/phase55_session_handoff_tickets_test.exs"
 ---
 
 # Phase 55 — Validation Strategy
