@@ -113,7 +113,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
 
   1. The offline-sync E2E job is named `merge-blocking-offline-sync-e2e` and is registered as a required status check on `main` with all existing required checks preserved in the branch-protection `checks` array (replaced, not appended); a `script/register-e2e-gate.sh` or workflow comment carries the exact `gh api ... PATCH` command for the harness-blocked case
-  2. Every non-required CI lane carries `continue-on-error: true` and a `::notice` marking its advisory status; the advisory/required split is unambiguous in the workflow YAML
+  2. Every non-required CI lane is non-blocking by **omission from the branch-protection `checks[]` array** (and, where it should not run per-PR, by trigger-scoping to `schedule`/`workflow_dispatch`) — **never** via `continue-on-error: true`, which would paint a failed lane green and make it permanently unpromotable (D-06); each advisory lane carries an `advisory-`-prefixed job `name:`, a `::notice` annotation, and a `$GITHUB_STEP_SUMMARY` promotion-path note
   3. A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the three injection anti-patterns (`window['crosswake_offline_mutations']`, `page.evaluate` calling `fetch(`, test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear
   4. The `/_e2e/sync-state/:id` endpoint is confirmed mounted only under `:test`/`:e2e` environments (never `:prod`), verified by a `routes_test.exs` assertion or equivalent, and its test-only purpose is stated in the controller module docstring
 
