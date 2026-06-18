@@ -86,10 +86,10 @@ test.describe('Offline Storage Quota Enforcement', () => {
     
     // Flip a card and pass it to trigger a mutation save
     await page.click('#btn-flip');
-    await page.click('#btn-pass');
-    
+    await page.click('#btn-good');
+
     // Check that the inline notification appears
-    const notification = page.locator('text=Device storage limit reached! Cannot save more progress.');
+    const notification = page.locator('text=Device storage limit reached! Cannot save more progress. Please free up space on your device.');
     await expect(notification).toBeVisible();
     
     // Verify we didn't crash completely - the status message should also say handled
