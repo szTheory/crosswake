@@ -60,7 +60,7 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 - [x] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect (completed 2026-06-17)
 - [x] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate (completed 2026-06-18)
 - [x] **Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard** - Lock the lane as a required status check and structurally prevent reversion (completed 2026-06-18)
-- [ ] **Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth** - Tighten the verifier, create missing ledgers, settle v8.0 doc contradictions
+- [x] **Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth** - Tighten the verifier, create missing ledgers, settle v8.0 doc contradictions (completed 2026-06-18)
 
 ## Phase Details
 
@@ -154,8 +154,8 @@ Plans:
 
 **Wave 2** *(blocked on 115-01)*
 
-- [ ] 115-02-PLAN.md — DEBT-01 ledger evidence normalization: v3.8/v3.9 evidence frontmatter, v3.6 accepted exception, and corrected requirements/roadmap wording
-- [ ] 115-03-PLAN.md — DOC-01 doc-truth reconciliation: `MILESTONES.md` precedence/v8.0 entry, v1.0 audit annotation, and source-contract test
+- [x] 115-02-PLAN.md — DEBT-01 ledger evidence normalization: v3.8/v3.9 evidence frontmatter, v3.6 accepted exception, and corrected requirements/roadmap wording
+- [x] 115-03-PLAN.md — DOC-01 doc-truth reconciliation: `MILESTONES.md` precedence/v8.0 entry, v1.0 audit annotation, and source-contract test
 
 ## Progress
 
@@ -177,4 +177,4 @@ Plans:
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
-| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 1/3 | In Progress|  |
+| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete   | 2026-06-18 |
