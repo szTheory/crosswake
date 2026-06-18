@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: planning
-stopped_at: Phase 115 context gathered
-last_updated: "2026-06-18T14:20:26.046Z"
+status: ready_to_execute
+stopped_at: Phase 115 planned
+last_updated: "2026-06-18T15:03:39.000Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 10
+  total_plans: 13
   completed_plans: 10
   percent: 75
 ---
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 115
-Plan: Not started
-Next: Phase 113 (honest-e2e-rewrite + compile gate)
-Status: Ready to plan
+Plan: 3/3 planned
+Next: Execute Phase 115 (closeout verifier honesty + ledger backlog + doc truth)
+Status: Ready to execute
 
-**Progress bar:** Phase 1/4 complete · Plan 2/TBD complete
+**Progress bar:** Phase 3/4 complete · Plan 10/13 complete
 
 ## Performance Metrics
 
@@ -102,10 +102,11 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 ## Session Continuity
 
 Last session: 2026-06-18T14:20:26.041Z
-Stopped at: Phase 115 context gathered
-Resume file: .planning/phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-CONTEXT.md
+Stopped at: Phase 115 planned
+Resume file: .planning/phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-01-PLAN.md
 
 ## Operator Next Steps
 
-- Plan Phase 113 with `/gsd:plan-phase 113` (honest E2E rewrite + compile gate; depends on Phase 112 — now complete)
-- Phase 115 (closeout track) can be planned and executed in parallel with 113-114 — it is disjoint from the demo-app/E2E files
+- Execute Phase 115 with `/gsd:execute-phase 115`.
+- Wave 1: `115-01-PLAN.md` (GATE-02 verifier hardening).
+- Wave 2: `115-02-PLAN.md` (DEBT-01 ledger/exception cleanup) and `115-03-PLAN.md` (DOC-01 doc truth), both after 115-01.

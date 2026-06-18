@@ -145,7 +145,17 @@ Plans:
   3. Stale deferral entries for this scope are flipped to `status: resolved` with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for the v3.6/v3.8/v3.9 scope
   4. A document-precedence rule is recorded in a canonical location establishing `MILESTONES.md` > `PROJECT.md` Requirements ✓ > `v*-MILESTONE-AUDIT.md`; `MILESTONES.md` gains a v8.0 entry consistent with PROJECT.md's SYNC-01/02/03 ✓; `v1.0-MILESTONE-AUDIT.md` is annotated (not overwritten) to note its `0/10` reflects verification gaps accepted as tech debt, subsequently satisfied
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+
+**Wave 1**
+
+- [ ] 115-01-PLAN.md — GATE-02 verifier hardening: strict `expected_phases`, `closeout.expected_phases`, ledger evidence validation, and focused verifier/Mix tests
+
+**Wave 2** *(blocked on 115-01)*
+
+- [ ] 115-02-PLAN.md — DEBT-01 ledger evidence normalization: v3.8/v3.9 evidence frontmatter, v3.6 accepted exception, and corrected requirements/roadmap wording
+- [ ] 115-03-PLAN.md — DOC-01 doc-truth reconciliation: `MILESTONES.md` precedence/v8.0 entry, v1.0 audit annotation, and source-contract test
 
 ## Progress
 
@@ -167,4 +177,4 @@ Plans:
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
-| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |
+| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/3 | Planned | - |
