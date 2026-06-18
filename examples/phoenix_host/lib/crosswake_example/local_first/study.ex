@@ -38,7 +38,13 @@ defmodule CrosswakeExample.LocalFirst.Study do
     |> Repo.transaction()
     |> case do
       {:ok, %{sync: {count, records}}} ->
-        {:ok, %{accepted_count: count, accepted_records: records, rejected: Enum.reverse(rejections)}}
+        # Convert Ecto structs to plain maps so Jason.Encoder can serialize the response.
+        # insert_all returning: true yields %ReviewEvent{} structs; Jason cannot encode them
+        # without @derive Jason.Encoder. Using Map.from_struct avoids coupling the schema to JSON.
+        serializable = Enum.map(records, fn r ->
+          Map.from_struct(r) |> Map.drop([:__meta__])
+        end)
+        {:ok, %{accepted_count: count, accepted_records: serializable, rejected: Enum.reverse(rejections)}}
 
       {:error, _, reason, _} ->
         {:error, reason}
