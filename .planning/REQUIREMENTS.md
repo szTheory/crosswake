@@ -38,7 +38,7 @@ Make the honesty guarantee permanent, matching the project DNA (v9.0 `brand-stru
 
 Pay off the `tighten-validation-ledger-closeout-gate` backlog carried verbatim through v8.0→v11.0 — the gate now catches the absence (GATE-02), so the missing artifacts must actually exist.
 
-- [ ] **DEBT-01**: Every phase the now-strict gate flags for a missing ledger (v3.6: 48/49/52/53; v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` **and** a `tested_by:`/`evidence:` field citing a concrete CI run, test file, or artifact — not a bare attestation. The carried deferral entries are flipped to `status: resolved` with an evidence citation **only after** the ledgers exist, and `mix closeout.verify` passes with no `(stale)` entries for this scope.
+- [ ] **DEBT-01**: Every real archived ledger the now-strict gate flags (v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` **and** a `tested_by:`/`evidence:` field citing a concrete CI run, test file, command, or artifact — not a bare attestation. The historically non-reconstructable v3.6 phases 48/49/52/53 are represented by `.planning/milestones/v3.6-VALIDATION-EXCEPTION.md` with `status: accepted_exception`, not synthetic per-phase ledgers. The carried deferral entries are resolved with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for this scope.
 
 ### DOC — Documentation Truth
 

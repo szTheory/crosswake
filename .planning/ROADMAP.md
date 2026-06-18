@@ -135,14 +135,14 @@ Plans:
 
 ### Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth
 
-**Goal**: The GSD closeout verifier fails closed instead of passing vacuously, every phase the tightened gate flags has a real `VALIDATION.md`, and the three planning documents that contradict each other about v8.0 converge on a single authoritative truth
+**Goal**: The GSD closeout verifier fails closed instead of passing vacuously, every reconstructable phase the tightened gate flags has a real evidence-backed `VALIDATION.md`, non-reconstructable v3.6 ledger debt is represented by an accepted exception, and the three planning documents that contradict each other about v8.0 converge on a single authoritative truth
 **Depends on**: Nothing (independent of the E2E/gate track; GATE-02 must precede DEBT-01 within this phase)
 **Requirements**: GATE-02, DEBT-01, DOC-01
 **Success Criteria** (what must be TRUE):
 
   1. `CloseoutVerifier` raises on missing or malformed `expected_phases:` frontmatter in `CLOSEOUT.md` (no silent fallback to `@v40_phases`), and `validation_ledger_check/2` returns a blocking result when an expected phase resolves to zero ledger files with no active deferral
-  2. Every phase previously flagged for a missing ledger (v3.6: 48/49/52/53; v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` and a `tested_by:`/`evidence:` field citing a concrete CI run, test file, or artifact — not a bare attestation
-  3. Stale deferral entries for this scope are flipped to `status: resolved` with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for the v3.6/v3.8/v3.9 scope
+  2. Every reconstructable phase previously flagged for missing evidence (v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` and a `tested_by:`/`evidence:` field citing a concrete CI run, test file, command, or artifact — not a bare attestation; v3.6 phases 48/49/52/53 are satisfied by `.planning/milestones/v3.6-VALIDATION-EXCEPTION.md` with `status: accepted_exception`
+  3. Stale deferral entries for this scope are resolved with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for the v3.6/v3.8/v3.9 validation-ledger scope
   4. A document-precedence rule is recorded in a canonical location establishing `MILESTONES.md` > `PROJECT.md` Requirements ✓ > `v*-MILESTONE-AUDIT.md`; `MILESTONES.md` gains a v8.0 entry consistent with PROJECT.md's SYNC-01/02/03 ✓; `v1.0-MILESTONE-AUDIT.md` is annotated (not overwritten) to note its `0/10` reflects verification gaps accepted as tech debt, subsequently satisfied
 
 **Plans**: 3 plans
