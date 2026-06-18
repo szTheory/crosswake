@@ -87,6 +87,79 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert_no_release_truth_failures(failures)
   end
 
+  test "release-truth scanner flags synthetic stale public-doc claims" do
+    current_version = current_version()
+    old_version = stale_package_versions(current_version) |> List.first()
+
+    failures =
+      scan_public_docs(
+        [
+          {"synthetic/latest_hex.md",
+           "The latest Hex release remains `#{old_version}` until native evidence is finished."},
+          {"synthetic/current_pending.md",
+           "Crosswake `#{current_version}` remains pending and unreleased."},
+          {"synthetic/old_baseline.md", "Current baseline: Crosswake version `#{old_version}`."},
+          {"synthetic/standalone_shell.md",
+           "Standalone public shell packages are deferred until a later milestone."}
+        ],
+        current_version
+      )
+
+    assert_failure(failures, :stale_latest_hex, "synthetic/latest_hex.md")
+    assert_failure(failures, :current_version_pending, "synthetic/current_pending.md")
+    assert_failure(failures, :old_current_baseline, "synthetic/old_baseline.md")
+    assert_failure(failures, :standalone_shell_deferred, "synthetic/standalone_shell.md")
+  end
+
+  test "release-truth scanner flags synthetic stale manifest claims" do
+    current_version = current_version()
+    old_version = stale_package_versions(current_version) |> List.first()
+
+    failures =
+      scan_manifest(
+        {"synthetic/manifest.json",
+         %{
+           "crosswake_version" => old_version,
+           "support_matrix" => %{
+             "package_surfaces" => [
+               %{
+                 "surface" => "Standalone native shell core packages",
+                 "release_burden" => "Standalone public shell packages are deferred."
+               }
+             ],
+             "shells" => [
+               %{
+                 "target" => "ios_shell",
+                 "version" => old_version
+               }
+             ]
+           }
+         }},
+        current_version
+      )
+
+    assert_failure(
+      failures,
+      :manifest_crosswake_version,
+      "synthetic/manifest.json",
+      "$.crosswake_version"
+    )
+
+    assert_failure(
+      failures,
+      :manifest_standalone_shell_deferred,
+      "synthetic/manifest.json",
+      "$.support_matrix.package_surfaces[0].release_burden"
+    )
+
+    assert_failure(
+      failures,
+      :manifest_shell_old_version,
+      "synthetic/manifest.json",
+      "$.support_matrix.shells[0].version"
+    )
+  end
+
   defp current_version do
     Application.spec(:crosswake, :vsn) |> to_string()
   end
@@ -369,6 +442,15 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
            "stale release-truth claims found:\n" <> format_release_truth_failures(failures)
   end
 
+  defp assert_failure(failures, category, path, field_path \\ nil) do
+    assert Enum.any?(failures, fn failure ->
+             failure.category == category and failure.path == path and
+               (is_nil(field_path) or failure.field_path == field_path)
+           end),
+           "expected #{inspect(category)} for #{path}#{format_field_path(field_path)}, got:\n" <>
+             format_release_truth_failures(failures)
+  end
+
   defp format_release_truth_failures(failures) do
     failures
     |> Enum.map_join("\n", fn failure ->
@@ -394,4 +476,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       "- #{location} [#{failure.category}] #{failure.detail}#{claim_suffix}"
     end)
   end
+
+  defp format_field_path(nil), do: ""
+  defp format_field_path(field_path), do: " #{field_path}"
 end
