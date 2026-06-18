@@ -117,7 +117,20 @@ Plans:
   3. A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the three injection anti-patterns (`window['crosswake_offline_mutations']`, `page.evaluate` calling `fetch(`, test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear
   4. The `/_e2e/sync-state/:id` endpoint is confirmed mounted only under `:test`/`:e2e` environments (never `:prod`), verified by a `routes_test.exs` assertion or equivalent, and its test-only purpose is stated in the controller module docstring
 
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+
+**Wave 1**
+
+- [ ] 114-01-PLAN.md — Rename phase90-proof.yml → offline-sync-e2e-gate.yml; restructure into the 4-job Option-C aggregator topology (guard-01 honesty, guard-02 prod-route-absence, e2e-proof, merge-blocking aggregator)
+- [ ] 114-02-PLAN.md — GUARD-01 AST honesty check (script/check-e2e-honesty.mjs) + typescript devDependency pin
+- [ ] 114-03-PLAN.md — GUARD-02 in-suite assertions (router_test.exs route-presence, controller count-scoping test) + /_e2e namespace comment
+- [ ] 114-04-PLAN.md — D-03 doc amendment: GATE-01/ROADMAP/PITFALLS continue-on-error → omission-from-checks[]; phase90-proof.yml filename-ref updates
+
+**Wave 2** *(blocked on 114-01)*
+
+- [ ] 114-05-PLAN.md — GATE-01 registration: script/register-e2e-gate.sh (GET-then-replace + green-first preflight) + gh api PATCH comment/runbook in the workflow header
+
 **UI hint**: no
 
 ### Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth
