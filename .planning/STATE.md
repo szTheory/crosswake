@@ -2,17 +2,15 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-current_phase: 113
-current_phase_name: honest-e2e-rewrite-compile-gate
 status: executing
 stopped_at: Phase 113 context gathered
-last_updated: "2026-06-18T05:39:47.336Z"
+last_updated: "2026-06-18T05:44:01.364Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 25
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -27,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 113 (honest-e2e-rewrite-compile-gate) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
 Status: Ready to execute
 
@@ -60,6 +58,8 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 
 - [Phase ?]: D-03 confirmed
 - [Phase ?]: Rule 1: Study.sync_events struct serialization
+- [Phase ?]: D-04: MIX_ENV=test mandatory in phase90-proof.yml compile gate; catches elixirc_paths(:test) + _e2e route (the v6.0 break path)
+- [Phase ?]: Job name e2e-offline-sync preserved in phase90-proof.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
 
 ### Pending Todos
 
@@ -84,12 +84,13 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — candidate for Phase 115 | Phase 112 surfaced |
 | Phase 113 P02 | 14min | 1 tasks | 2 files |
+| Phase 113 P03 | 1min | 1 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T05:39:10.931Z
+Last session: 2026-06-18T05:44:01.359Z
 Stopped at: Phase 113 context gathered
-Resume file: .planning/phases/113-honest-e2e-rewrite-compile-gate/113-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

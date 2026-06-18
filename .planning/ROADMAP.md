@@ -58,7 +58,7 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 ### v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — ACTIVE
 
 - [x] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect (completed 2026-06-17)
-- [ ] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate
+- [x] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate (completed 2026-06-18)
 - [ ] **Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard** - Lock the lane as a required status check and structurally prevent reversion
 - [ ] **Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth** - Tighten the verifier, create missing ledgers, settle v8.0 doc contradictions
 
@@ -103,7 +103,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
-- [ ] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml
+- [x] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml
 
 ### Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard
 
@@ -152,6 +152,6 @@ Plans:
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
-| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 2/3 | In Progress|  |
+| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete   | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 0/TBD | Not started | - |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |
