@@ -2,12 +2,13 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: planning
-last_updated: "2026-06-18T00:47:01.612Z"
+status: executing
+stopped_at: Phase 113 context gathered
+last_updated: "2026-06-18T05:14:47.331Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
+  total_plans: 5
   completed_plans: 2
   percent: 25
 ---
@@ -19,13 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-17)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 113 — honest-e2e-rewrite (next)
+**Current focus:** Phase 113 — honest-e2e-rewrite-compile-gate
 
 ## Current Position
 
-Phase: 112 (real-offline-outbox-flush) — COMPLETE (verified 2026-06-17, 4/4)
+Phase: 113 (honest-e2e-rewrite-compile-gate) — EXECUTING
+Plan: 1 of 3
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
-Status: Phase 112 verified; ready to plan Phase 113
+Status: Executing Phase 113
 
 **Progress bar:** Phase 1/4 complete · Plan 2/TBD complete
 
