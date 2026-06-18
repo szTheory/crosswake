@@ -97,7 +97,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 116-01-PLAN.md — Resolve or explicitly exclude `TODO-001` from public proof commands and reconcile STATE/TODO truth.
+- [x] 116-01-PLAN.md — Resolve or explicitly exclude `TODO-001` from public proof commands and reconcile STATE/TODO truth.
 - [ ] 116-02-PLAN.md — Reconcile README, CHANGELOG, ExDoc extras, guides, support references, and example manifest wording to `0.1.2` release truth.
 
 **Wave 2** *(blocked on Wave 1 public-truth baseline)*
@@ -251,7 +251,7 @@ Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete    | 2026-06-18 |
-| 116. Proof Debt And Release Truth | v13.0 | 0/3 | Not started | - |
+| 116. Proof Debt And Release Truth | v13.0 | 1/3 | In Progress|  |
 | 117. Route-Policy And Support-Truth Guide Foundation | v13.0 | 0/3 | Not started | - |
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 0/3 | Not started | - |
 | 119. Native Evidence Classification | v13.0 | 0/3 | Not started | - |
