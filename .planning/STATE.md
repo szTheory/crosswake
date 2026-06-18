@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v12.0
-milestone_name: CI Honesty & Real-E2E Sweep
-status: Awaiting next milestone
-stopped_at: next-step assessment complete; ready to define v13.0 Adopter Confidence & Native Evidence
-last_updated: "2026-06-18T17:01:54Z"
-last_activity: 2026-06-18 — Next-step assessment recommended v13.0 Adopter Confidence & Native Evidence
+milestone: v13.0
+milestone_name: Adopter Confidence & Native Evidence
+status: planning
+last_updated: "2026-06-18T17:13:47.691Z"
+last_activity: 2026-06-18
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-18)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Ready to define v13.0 Adopter Confidence & Native Evidence
+**Current focus:** Defining v13.0 Adopter Confidence & Native Evidence
 
 ## Current Position
 
-Phase: Not started (next milestone assessed)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Ready to define requirements for v13.0 Adopter Confidence & Native Evidence
-Last activity: 2026-06-18 — Repo-local next-step assessment found Crosswake strong but not yet confidence-complete for a skeptical Phoenix SaaS adopter.
+Status: Defining requirements
+Last activity: 2026-06-18 — Milestone v13.0 started
 
 ## Performance Metrics
 
@@ -83,9 +82,9 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 - **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
 - **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
-- **Adopter proof-path drift (v13 candidate):** README still reports `0.1.0` while `mix.exs`/project truth are `0.1.2`; CHANGELOG still presents `0.1.2` as pending; `examples/QUICK_START.md` references a non-existent iOS project path and `mix setup`; `guides/adoption.md` still teaches generic `Crosswake.mutate` bridge sync instead of the v12 app-owned IndexedDB outbox/reconnect proof.
-- **Checked-in native host drift (v13 candidate):** The generator/release path proves published SwiftPM/Maven coordinates, but the checked-in iOS host still uses a local package ref and the checked-in Android host still references old `dev.crosswake:shell-core-android:0.1.0`. Decide whether checked-in hosts should prove published coordinates or be explicitly labeled local-development proof.
-- **Collateral gap (v13 candidate):** No durable adopter screenshots/videos/artifact uploads were found for the native/browser demo paths. Current proof is strong mechanically, but not yet "seeing is believing" for a maintainer or prospective adopter.
+- **Adopter proof-path drift (v13 active):** README still reports `0.1.0` while `mix.exs`/project truth are `0.1.2`; CHANGELOG still presents `0.1.2` as pending; `examples/QUICK_START.md` references a non-existent iOS project path and `mix setup`; `guides/adoption.md` still teaches generic `Crosswake.mutate` bridge sync instead of the v12 app-owned IndexedDB outbox/reconnect proof.
+- **Checked-in native host drift (v13 active):** The generator/release path proves published SwiftPM/Maven coordinates, but the checked-in iOS host still uses a local package ref and the checked-in Android host still references old `dev.crosswake:shell-core-android:0.1.0`. Decide whether checked-in hosts should prove published coordinates or be explicitly labeled local-development proof.
+- **Collateral gap (v13 active):** No durable adopter screenshots/videos/artifact uploads were found for the native/browser demo paths. Current proof is strong mechanically, but not yet "seeing is believing" for a maintainer or prospective adopter.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
 - **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
 
@@ -103,11 +102,11 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-18T17:01:54Z
-Stopped at: next-step assessment complete; awaiting `/gsd-new-milestone` for v13.0
+Last session: 2026-06-18T17:13:47Z
+Stopped at: v13.0 milestone started; defining requirements
 Resume file: .planning/threads/adoption-evidence-demo.md
 
 ## Operator Next Steps
 
-- Start the next milestone with `/gsd-new-milestone v13.0 Adopter Confidence & Native Evidence`.
-- Scope `GUIDE-01` as proof-path consolidation, not generic docs cleanup.
+- Finish v13.0 requirements and roadmap from the adopter-confidence proof scope.
+- Keep `GUIDE-01` framed as proof-path consolidation, not generic docs cleanup.

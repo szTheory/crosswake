@@ -11,7 +11,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 ## Current State
 - **v12.0 CI Honesty & Real-E2E Sweep — SHIPPED + archived 2026-06-18.** The offline-sync proof now exercises the real IndexedDB outbox and reconnect flush path, the E2E proof lane is merge-blocking with structural honesty guards, the closeout verifier fails closed on invalid phase contracts and bare ledger evidence, the historical validation-ledger debt is represented by evidence-backed ledgers or an accepted exception, and v8.0 document truth is reconciled. Full detail in `.planning/milestones/v12.0-ROADMAP.md`.
 - **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
-- **Active:** No active implementation milestone. Next candidate: **v13.0 Adopter Confidence & Native Evidence** — `GUIDE-01` expanded from generic onboarding/docs consolidation into a seeing-is-believing proof path: runnable quick start, route-policy guide, rough-edge troubleshooting, web-to-mobile migration, ExDoc cross-linking, native simulator/emulator evidence, and screenshot/video collateral.
+- **Active:** **v13.0 Adopter Confidence & Native Evidence** — `GUIDE-01` expanded from generic onboarding/docs consolidation into a seeing-is-believing proof path: runnable quick start, route-policy guide, rough-edge troubleshooting, web-to-mobile migration, ExDoc cross-linking, native simulator/emulator evidence, and screenshot/video collateral.
 
 **Shipped `v12.0 CI Honesty & Real-E2E Sweep` on `2026-06-18`** (Phases 112-115, 13 plans). v12.0 made the offline-sync and closeout proof surfaces honest: the demo app now queues real IndexedDB mutations and flushes them on reconnect; the Playwright E2E asserts app-generated mutation IDs against Ecto and runs behind a compile gate; the merge-blocking E2E aggregator, structural honesty scanner, and test-only route assertions prevent regression to fabricated proof. Phase 115 tightened `CloseoutVerifier` with the `closeout.expected_phases` fail-closed contract, evidence-backed validation ledgers, accepted v3.6 exception handling, and source-contract doc truth tests that establish `MILESTONES.md` > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md`.
 
@@ -80,13 +80,21 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Key context:** This is internal CI/test-honesty hardening, not new product features — but the reconnect-flush fix touches real demo-app code (`offline_study.js`, `study_session_live.ex`), not just the test. The branch-protection toggle has historically been harness-blocked in this environment (a human step), so the milestone ships the workflow/naming + a scripted/documented protection path even if the final toggle needs the maintainer. `LEDG-01` here is the GSD closeout-verifier debt (distinct from the v7.0 Threadline `LEDG-*` product requirements, which shipped). Phase numbering continues from v11.0 (last phase 111).
 
-## Next Milestone
+## Current Milestone: v13.0 Adopter Confidence & Native Evidence
 
-After v12.0, the leading candidate is **v13.0 Adopter Confidence & Native Evidence**. This is `GUIDE-01`, but scoped as an adopter-confidence wedge rather than generic documentation cleanup. The milestone should make the now-real install path and offline proof visible to a skeptical Phoenix SaaS developer: fix quick-start/doc drift, clean the public proof path, run iPhone simulator and Android emulator evidence where available, capture screenshots/video/artifacts, and publish a clear route-policy/troubleshooting/migration guide set.
+**Goal:** Make Crosswake visibly trustworthy to a skeptical Phoenix SaaS developer by turning the now-real install, release, offline, and native proof into a runnable, current, visual, honestly labeled adopter-confidence path.
 
-**Suggested ordering (now that the install path is real and v12.0 is archived):** (1) v13.0 Adopter Confidence & Native Evidence; (2) DASH-01 / operator metric surfacing if the proof path needs stronger runtime visibility; (3) NTV-01 native storage-budget follow-up if physical disk-space checks remain a concrete adopter blocker; (4) new capability breadth only after the public proof path is trustworthy.
+**Why now:** v11.0 made the standalone native packages actually consumable, and v12.0 made the offline-sync proof honest. The remaining trust gap is adopter-facing: docs and quick-starts drift from current release truth, checked-in native hosts do not yet tell a clean published-coordinate story, and there is no durable screenshot/video/simulator collateral that lets a maintainer or prospective adopter see Crosswake working end-to-end.
 
-**v13.0 "done enough":** `TODO-001` is resolved or explicitly removed from the public proof path; README/CHANGELOG/quick-start/adoption docs match the `0.1.2` published truth and v12 IndexedDB-outbox reality; checked-in native hosts either prove published coordinates or are clearly labeled local-development proof; screenshots/recordings and CI artifacts show the Phoenix host plus iOS/Android shells exercising at least one LiveView, bridge, offline-island, and native-screen path; simulator/device evidence is labeled advisory unless explicitly promoted.
+**Target features:**
+- **Proof-path drift cleanup** — resolve or explicitly route `TODO-001`; fix README/CHANGELOG/quick-start/adoption drift; make the public quick start runnable against current `0.1.2` package/version truth and v12's real IndexedDB outbox/reconnect behavior.
+- **Native evidence truth** — reconcile checked-in iOS/Android hosts with the published-coordinate story, or clearly label them as local-development proof; do not let stale local package references masquerade as adopter install truth.
+- **Seeing-is-believing collateral** — capture screenshots, recordings, and durable artifacts for the Phoenix host plus iOS/Android shells exercising at least one LiveView, bounded bridge, offline-island, and native-screen path.
+- **Support-truth guide set** — tighten route-policy guidance, troubleshooting/rough edges, web-to-mobile migration docs, ExDoc/README guide maps, and support matrices so adopters can tell what is proven, advisory, deferred, or out of scope.
+
+**Done enough:** `TODO-001` is resolved or explicitly removed from the public proof path; README/CHANGELOG/quick-start/adoption docs match the `0.1.2` published truth and v12 IndexedDB-outbox reality; checked-in native hosts either prove published coordinates or are clearly labeled local-development proof; screenshots/recordings and CI artifacts show the Phoenix host plus iOS/Android shells exercising at least one LiveView, bridge, offline-island, and native-screen path; simulator/device evidence is labeled advisory unless explicitly promoted.
+
+**Key constraints:** This milestone is proof-path consolidation, not new capability breadth. Simulator/device/native evidence is valuable collateral, but remains advisory unless this milestone creates a repeatable support contract strong enough to promote it. DASH-01 and NTV-01 stay deferred unless the v13 proof path proves they are necessary for adopter confidence.
 
 **Deferred candidates carried forward:** DASH-01 (surface offline adoption/eviction metrics to the deferred `crosswake_dashboard`) and NTV-01 (native iOS/Android disk-space budgets) remain tracked but unscheduled. Companion package extraction and new capability breadth remain tempting, but should not outrun the adopter-confidence proof path.
 
@@ -160,8 +168,11 @@ After v12.0, the leading candidate is **v13.0 Adopter Confidence & Native Eviden
 
 ### Active
 
-- [ ] DASH-01: Surfacing offline adoption and eviction metrics to the deferred `crosswake_dashboard`.
-- [ ] NTV-01: Extend storage budgets to utilize native iOS/Android bridge commands to calculate available physical disk space.
+- [ ] GUIDE-01: Public adopter guide path is current, runnable, and coherent across README, quick start, adoption guide, ExDoc links, route-policy guidance, troubleshooting, rough edges, and web-to-mobile migration.
+- [ ] PROOF-01: The public proof path is clean: `TODO-001` is resolved or excluded, quick-start commands match current repo/package truth, and examples no longer depend on known unaddressed local test debt.
+- [ ] NATIVE-01: Checked-in iOS and Android hosts either prove published `0.1.2` coordinates or are explicitly labeled local-development proof with no stale coordinate claims.
+- [ ] COLL-01: Durable screenshots, recordings, and CI/artifact outputs demonstrate Phoenix host plus iOS/Android shell flows for LiveView, bounded bridge, offline island, and native screen.
+- [ ] TRUTH-01: Simulator/device/native evidence is labeled as advisory or promoted only where repeatable proof justifies the claim.
 
 ### Out of Scope
 
@@ -230,7 +241,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Make external consumption a permanent guarantee via a merge-blocking `generator_coordinate_parity` check (sibling to the v10.0 `brand-structural` gate) | A clean-room proof is point-in-time; a structural CI guard keeps the eject-trap thesis honest forever | Validated in v11.0 (Phase 111, PROOF-02) |
 | Treat proof-honesty regressions as structural CI problems, not review-only risks | The v6/v8 offline-sync path looked green while bypassing app-owned state; proof lanes need source-contract guards that ban known fabrication shapes | Validated in v12.0 (Phases 113-114) |
 | Make closeout verification fail closed on explicit phase contracts and evidence-backed ledgers | Vacuous globs and bare ledger attestations let historical validation debt pass as green | Validated in v12.0 (Phase 115) |
-| Treat v13.0 as adopter-confidence proof before feature breadth | Repo truth after v12.0 shows strong substrate and real offline proof, but the public proof path still has stale docs, quick-start drift, checked-in native host drift, and no screenshot/video/simulator collateral | — Pending |
+| Treat v13.0 as adopter-confidence proof before feature breadth | Repo truth after v12.0 shows strong substrate and real offline proof, but the public proof path still has stale docs, quick-start drift, checked-in native host drift, and no screenshot/video/simulator collateral | Active in v13.0 |
 
 ## Evolution
 
@@ -250,4 +261,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-18 — milestone next-step assessment after v12.0; recommended v13.0 Adopter Confidence & Native Evidence*
+*Last updated: 2026-06-18 — started v13.0 Adopter Confidence & Native Evidence*
