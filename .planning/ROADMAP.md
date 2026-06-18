@@ -117,13 +117,13 @@ Plans:
   3. A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the three injection anti-patterns (`window['crosswake_offline_mutations']`, `page.evaluate` calling `fetch(`, test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear
   4. The `/_e2e/sync-state/:id` endpoint is confirmed mounted only under `:test`/`:e2e` environments (never `:prod`), verified by a `routes_test.exs` assertion or equivalent, and its test-only purpose is stated in the controller module docstring
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 Plans:
 
 **Wave 1**
 
 - [x] 114-01-PLAN.md — Rename phase90-proof.yml → offline-sync-e2e-gate.yml; restructure into the 4-job Option-C aggregator topology (guard-01 honesty, guard-02 prod-route-absence, e2e-proof, merge-blocking aggregator)
-- [ ] 114-02-PLAN.md — GUARD-01 AST honesty check (script/check-e2e-honesty.mjs) + typescript devDependency pin
+- [x] 114-02-PLAN.md — GUARD-01 AST honesty check (script/check-e2e-honesty.mjs) + typescript devDependency pin
 - [ ] 114-03-PLAN.md — GUARD-02 in-suite assertions (router_test.exs route-presence, controller count-scoping test) + /_e2e namespace comment
 - [ ] 114-04-PLAN.md — D-03 doc amendment: GATE-01/ROADMAP/PITFALLS continue-on-error → omission-from-checks[]; phase90-proof.yml filename-ref updates
 
@@ -166,5 +166,5 @@ Plans:
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
-| 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 1/5 | In Progress|  |
+| 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 2/5 | In Progress|  |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |

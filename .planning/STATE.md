@@ -6,12 +6,12 @@ current_phase: 114
 current_phase_name: merge-blocking-ci-gate-permanent-honesty-guard
 status: executing
 stopped_at: Phase 114 context gathered
-last_updated: "2026-06-18T06:37:20.599Z"
+last_updated: "2026-06-18T06:44:13.882Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 50
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 ## Current Position
 
 Phase: 114 (merge-blocking-ci-gate-permanent-honesty-guard) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Next: Phase 113 (honest-e2e-rewrite + compile gate)
 Status: Ready to execute
 
@@ -64,6 +64,7 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 - [Phase ?]: Job name e2e-offline-sync preserved in phase90-proof.yml; Phase 114 GATE-01 owns rename to merge-blocking-offline-sync-e2e to avoid dropping it from branch-protection required-checks
 - [Phase ?]: Option-C aggregator topology selected (merge-blocking-offline-sync-e2e as sole required check, re-actors/alls-green)
 - [Phase ?]: Env-scoped cache keys (build-test-* / build-prod-*) + rm -rf _build/prod isolate MIX_ENV compiles (T-114-02 mitigation)
+- [Phase ?]: GUARD-01: typescript resolved via createRequire from examples/phoenix_host; guard-01 CI job must run npm ci --prefix examples/phoenix_host before honesty check
 
 ### Pending Todos
 
@@ -90,10 +91,11 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | Phase 113 P02 | 14min | 1 tasks | 2 files |
 | Phase 113 P03 | 1min | 1 tasks | 1 files |
 | Phase 114 P01 | 5 | 2 tasks | 1 files |
+| Phase 114 P02 | 5 | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-18T06:36:58.029Z
+Last session: 2026-06-18T06:44:07.779Z
 Stopped at: Phase 114 context gathered
 Resume file: .planning/phases/114-merge-blocking-ci-gate-permanent-honesty-guard/114-CONTEXT.md
 
