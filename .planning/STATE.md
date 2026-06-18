@@ -4,12 +4,12 @@ milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
 status: executing
 stopped_at: Phase 116 context gathered
-last_updated: "2026-06-18T20:04:07.042Z"
-last_activity: 2026-06-18 -- Phase 116 planning complete
+last_updated: "2026-06-18T20:07:17.079Z"
+last_activity: 2026-06-18 -- Phase 116 execution started
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 16
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-18)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Active roadmap for v13.0 Adopter Confidence & Native Evidence
+**Current focus:** Phase 116 — proof-debt-and-release-truth
 
 ## Current Position
 
-Phase: 116 - Proof Debt And Release Truth
-Plan: —
-Status: Ready to execute
-Last activity: 2026-06-18 -- Phase 116 planning complete
+Phase: 116 (proof-debt-and-release-truth) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 116
+Last activity: 2026-06-18 -- Phase 116 execution started
 
 ## Performance Metrics
 
@@ -77,7 +77,11 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ### Pending Todos
 
-- **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Pre-existing `FlashcardsTest` field-name drift + flaky `Chimeway.RegistryNotificationOpenTest` surfaced by Phase 112's `elixirc_paths` fix. Now linked to Phase 116 / PROOF-01: fix it or explicitly exclude it from the public proof path before v13 collateral or quick-start claims depend on it.
+- None.
+
+### Resolved In Current Phase
+
+- **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Resolved by Phase 116 / Plan 01 with targeted repairs to Flashcards schema-aligned tests and Chimeway registry notification-open fixture isolation. Verified with `cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs test/crosswake_example/chimeway/registry_notification_open_test.exs`.
 
 ### Blockers/Concerns
 
@@ -99,7 +103,7 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 | v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
-| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — linked to Phase 116 / PROOF-01 | Phase 112 surfaced |
+| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Resolved — Phase 116 / Plan 01 targeted tests pass | Phase 112 surfaced |
 
 ## Session Continuity
 

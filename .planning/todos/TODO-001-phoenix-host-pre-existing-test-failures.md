@@ -1,13 +1,35 @@
 ---
 id: TODO-001
 title: Pre-existing test failures in examples/phoenix_host suite
-status: open
+status: resolved
 created: 2026-06-17
 surfaced_by: phase-112 (real-offline-outbox-flush)
 relates_to: PROOF-01 (Phase 116), milestone v13.0 Adopter Confidence & Native Evidence
+resolved_by: phase-116 plan-01
+resolved_at: 2026-06-18
+verification: cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs test/crosswake_example/chimeway/registry_notification_open_test.exs
 ---
 
 # Pre-existing test failures in `examples/phoenix_host`
+
+## Resolution
+
+Resolved in Phase 116 / PROOF-01 by targeted repair rather than public-proof
+exclusion:
+
+- `CrosswakeExample.FlashcardsTest` and fixtures now use the current
+  `front_text` / `back_text` schema fields and avoid assuming the persistent
+  SQLite database is empty.
+- `CrosswakeExample.Chimeway.RegistryNotificationOpenTest` now runs
+  sequentially and generates unique values for the active subject-installation
+  identity shape, including `installation_ref`, token identity, app identity
+  posture/ref, audit correlation ref, and open intent refs.
+
+Verified on 2026-06-18 with:
+
+```bash
+cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs test/crosswake_example/chimeway/registry_notification_open_test.exs
+```
 
 Surfaced during Phase 112 post-merge gate. **Not caused by Phase 112** — these
 were masked because the example test suite could not compile until 112-02 added

@@ -1,5 +1,5 @@
 defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias CrosswakeExample.Chimeway.Registry
   alias CrosswakeExample.Chimeway.NotificationOpenIntent
@@ -8,8 +8,9 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
   alias CrosswakeExample.Repo
   import Ecto.Query
 
-  # We use unique keys to avoid SQLite locking/collision issues in parallel test execution
-  defp unique_ref(prefix), do: "#{prefix}_#{:erlang.unique_integer([:positive])}"
+  defp unique_ref(prefix) do
+    "#{prefix}_#{System.system_time(:nanosecond)}_#{System.unique_integer([:positive])}"
+  end
 
   setup do
     open_ref = unique_ref("open")
@@ -20,15 +21,18 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     # "ensure the referenced Chimeway binding is not revoked" -> decision D-04
     # Let's insert a binding first
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     binding = %CrosswakeExample.Chimeway.TokenBinding{
       binding_ref: binding_ref,
       subject_scope: :subject_installation,
       subject_ref: unique_ref("sub"),
       org_ref: unique_ref("org"),
-      installation_ref: "install_123",
+      installation_ref: unique_ref("install"),
       provider: :apns,
       platform: :ios,
       environment: :production,
+      app_identity_posture: :unknown,
+      app_identity_ref: unique_ref("app"),
       token_ref: unique_ref("tok"),
       token_fingerprint: unique_ref("fp"),
       notification_status: :granted,
@@ -38,12 +42,16 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
       bound_at: now,
       last_seen_at: now
     }
+
     binding = Repo.insert!(binding)
 
     %{open_ref: open_ref, binding_ref: binding_ref, binding: binding}
   end
 
-  test "issue_notification_open_intent/2 creates an intent and event", %{open_ref: open_ref, binding_ref: binding_ref} do
+  test "issue_notification_open_intent/2 creates an intent and event", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
     attrs = %{
       open_ref: open_ref,
       binding_ref: binding_ref,
@@ -59,13 +67,17 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert event.open_intent_id == intent.id
   end
 
-  test "consume_intent/1 structurally rejects expired intent", %{open_ref: open_ref, binding_ref: binding_ref} do
+  test "consume_intent/1 structurally rejects expired intent", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
     attrs = %{
       open_ref: open_ref,
       binding_ref: binding_ref,
       route_id: "dashboard",
       expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)
     }
+
     {:ok, %{intent: _}} = Registry.issue_notification_open_intent(attrs)
 
     evidence = %NotificationOpenEvidence{
@@ -81,19 +93,23 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert resolution.state == :expired
   end
 
-  test "consume_intent/1 validates binding_ref mismatch", %{open_ref: open_ref, binding_ref: binding_ref} do
+  test "consume_intent/1 validates binding_ref mismatch", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
     attrs = %{
       open_ref: open_ref,
       binding_ref: binding_ref,
       route_id: "dashboard",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
     }
+
     Registry.issue_notification_open_intent(attrs)
 
     evidence = %NotificationOpenEvidence{
       route_id: "dashboard",
       open_ref: open_ref,
-      binding_ref: "other_binding", # mismatch
+      binding_ref: unique_ref("other_binding"),
       provider: :apns,
       action_ref: "tap",
       auth_context: %{}
@@ -103,13 +119,17 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert resolution.state == :binding_mismatch
   end
 
-  test "consume_intent/1 successfully consumes an issued intent", %{open_ref: open_ref, binding_ref: binding_ref} do
+  test "consume_intent/1 successfully consumes an issued intent", %{
+    open_ref: open_ref,
+    binding_ref: binding_ref
+  } do
     attrs = %{
       open_ref: open_ref,
       binding_ref: binding_ref,
       route_id: "dashboard",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
     }
+
     Registry.issue_notification_open_intent(attrs)
 
     evidence = %NotificationOpenEvidence{
@@ -128,7 +148,13 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
     assert intent.state == "consumed"
     assert intent.consumed_at != nil
 
-    event = Repo.one(from e in NotificationOpenIntentEvent, where: e.open_intent_id == ^intent.id and e.event_type == "consumed")
+    event =
+      Repo.one(
+        from(e in NotificationOpenIntentEvent,
+          where: e.open_intent_id == ^intent.id and e.event_type == "consumed"
+        )
+      )
+
     assert event != nil
   end
 
@@ -169,6 +195,7 @@ defmodule CrosswakeExample.Chimeway.RegistryNotificationOpenTest do
       route_id: "dashboard",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
     }
+
     Registry.issue_notification_open_intent(attrs)
 
     evidence = %NotificationOpenEvidence{
