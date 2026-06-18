@@ -3,6 +3,17 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
   alias Crosswake.Planning.CloseoutVerifier
   @fixture_evidence_file "test/crosswake/planning/fixture_validation_test.exs"
+  @debt_real_ledger_paths [
+    ".planning/milestones/v3.8-phases/54-sigra-session-authority-contract-and-route-gate-semantics/54-VALIDATION.md",
+    ".planning/milestones/v3.8-phases/55-session-handoff-tickets-and-authority-projection/55-VALIDATION.md",
+    ".planning/milestones/v3.8-phases/56-step-up-intent-and-plug-liveview-ceremony/56-VALIDATION.md",
+    ".planning/milestones/v3.8-phases/57-oauth-passkey-and-native-return-boundaries/57-VALIDATION.md",
+    ".planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-VALIDATION.md",
+    ".planning/milestones/v3.9-phases/62-diagnostics-support-truth-and-docs/62-VALIDATION.md",
+    ".planning/milestones/v3.9-phases/63-hermetic-proof-and-advisory-promotion-criteria/63-VALIDATION.md"
+  ]
+  @debt_v36_exception_path ".planning/milestones/v3.6-VALIDATION-EXCEPTION.md"
+  @debt_v36_affected_phases ~w(48 49 52 53)
 
   test "report exposes stable closeout check ids and actionable render text" do
     report = CloseoutVerifier.run(cwd: File.cwd!())
@@ -446,6 +457,74 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     assert check.result == :pass
   end
 
+  test "DEBT-01 repository source contracts cover historical ledger evidence and the v3.6 exception" do
+    cwd = File.cwd!()
+
+    for path <- @debt_real_ledger_paths do
+      content = File.read!(Path.join(cwd, path))
+      frontmatter = repo_frontmatter!(content)
+
+      assert frontmatter =~ ~r/^nyquist_compliant:\s*true\b/m
+      assert frontmatter =~ ~r/^tested_by:\s*\n\s+-\s*"?mix (?:test|compile|closeout\.verify)/m
+      assert frontmatter =~ ~r/^evidence:\s*\n/m
+      assert Regex.match?(~r/^\s*-\s+type:\s*\w+\s*\n\s+ref:\s*.+$/m, frontmatter)
+    end
+
+    v38_check =
+      CloseoutVerifier.run(
+        cwd: cwd,
+        closeout_path: write_repo_closeout_contract!("v3.8", ~w(54 55 56 57 58))
+      )
+      |> find_check!("closeout.validation.ledger")
+
+    refute v38_check.blocking
+
+    v39_check =
+      CloseoutVerifier.run(
+        cwd: cwd,
+        closeout_path: write_repo_closeout_contract!("v3.9", ~w(62 63))
+      )
+      |> find_check!("closeout.validation.ledger")
+
+    refute v39_check.blocking
+
+    exception_frontmatter =
+      cwd
+      |> Path.join(@debt_v36_exception_path)
+      |> File.read!()
+      |> repo_frontmatter!()
+
+    assert exception_frontmatter =~ ~r/^status:\s*accepted_exception\b/m
+    assert exception_frontmatter =~ ~r/^scope:\s*validation-ledger-finalization\b/m
+    assert exception_frontmatter =~ ~r/^not_reconstructable:\s*true\b/m
+    assert exception_frontmatter =~ ~r/^resolved_at:\s*2026-06-18\b/m
+
+    for phase <- @debt_v36_affected_phases do
+      assert exception_frontmatter =~ phase
+      assert Path.wildcard(Path.join(cwd, ".planning/milestones/v3.6-phases/#{phase}-*")) == []
+    end
+
+    assert exception_frontmatter =~ ".planning/milestones/v3.6-CLOSEOUT.md"
+    assert exception_frontmatter =~ ".planning/milestones/v3.6-ROADMAP.md"
+    assert exception_frontmatter =~ ".planning/milestones/v3.6-REQUIREMENTS.md"
+    assert exception_frontmatter =~ "test/crosswake/proof/phase52_operator_truth_test.exs"
+
+    v36_check =
+      CloseoutVerifier.run(
+        cwd: cwd,
+        closeout_path: write_repo_closeout_contract!("v3.6", @debt_v36_affected_phases)
+      )
+      |> find_check!("closeout.validation.ledger")
+
+    refute v36_check.blocking
+
+    prior_debt_check =
+      CloseoutVerifier.run(cwd: cwd)
+      |> find_check!("closeout.validation.prior_debt")
+
+    refute prior_debt_check.observed =~ "(stale)"
+  end
+
   test "resolved_gaps scope keyword does not re-open the validation-ledger escape hatch" do
     tmp = tmp_dir!("resolved-gaps-no-escape")
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
@@ -511,6 +590,55 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
     File.rm_rf!(path)
     File.mkdir_p!(path)
+    path
+  end
+
+  defp repo_frontmatter!(content) do
+    case Regex.run(~r/\A---\r?\n(.*?)\r?\n---\r?\n/ms, content, capture: :all_but_first) do
+      [frontmatter] -> frontmatter
+      nil -> flunk("expected frontmatter")
+    end
+  end
+
+  defp write_repo_closeout_contract!(milestone_id, expected_phases) do
+    tmp = tmp_dir!("repo-closeout-#{milestone_id}")
+    expected_str = Enum.map_join(expected_phases, ", ", &~s("#{&1}"))
+    File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
+
+    path = Path.join(tmp, ".planning/milestones/#{milestone_id}-CLOSEOUT.md")
+
+    File.write!(
+      path,
+      """
+      ---
+      milestone: #{milestone_id}
+      milestone_name: Historical source-contract fixture
+      status: complete
+      shipped_date: 2026-06-18
+      requirements_state:
+        status: complete
+      roadmap_parity:
+        status: complete
+      phase_verification_coverage:
+        status: complete
+        expected_phases: [#{expected_str}]
+      summary_frontmatter_coverage:
+        status: complete
+      validation_ledger_status:
+        status: complete
+      thread_seed_disposition:
+        status: complete
+      release_changelog_continuity:
+        status: complete
+      public_support_claim_changes:
+        status: complete
+      deferred_with_reason: []
+      exceptions: []
+      resolved_gaps: []
+      ---
+      """
+    )
+
     path
   end
 
