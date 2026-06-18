@@ -39,6 +39,31 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
     assert output =~ "posture=merge-blocking"
   end
 
+  test "mix closeout.verify renders malformed expected phases before raising" do
+    cwd = complete_fixture!("malformed-expected-phases")
+
+    File.write!(
+      Path.join(cwd, ".planning/milestones/v4.0-CLOSEOUT.md"),
+      String.replace(
+        complete_closeout(),
+        ~s(expected_phases: ["64", "65", "66", "67", "68", "69"]),
+        "expected_phases: definitely-not-an-array"
+      )
+    )
+
+    output =
+      capture_io(fn ->
+        assert_raise Mix.Error, ~r/closeout verification found blocking issues/, fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--cwd", cwd])
+        end
+      end)
+
+    assert output =~ "closeout.verify failed"
+    assert output =~ "closeout.expected_phases"
+    assert output =~ "posture=merge-blocking"
+  end
+
   test "mix closeout.verify rejects unsupported options" do
     try do
       assert_raise Mix.Error, ~r/invalid options/, fn ->
@@ -184,7 +209,26 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
       phase_dir = Path.join(cwd, ".planning/phases/#{phase}-fixture")
       File.mkdir_p!(phase_dir)
       File.write!(Path.join(phase_dir, "#{phase}-VERIFICATION.md"), "status: passed\n")
-      File.write!(Path.join(phase_dir, "#{phase}-VALIDATION.md"), "nyquist_compliant: true\n")
+      evidence_file = "test/crosswake/planning/phase_#{phase}_validation_test.exs"
+      evidence_path = Path.join(cwd, evidence_file)
+      File.mkdir_p!(Path.dirname(evidence_path))
+      File.write!(evidence_path, "defmodule Phase#{phase}ValidationTest do\n  use ExUnit.Case\nend\n")
+
+      File.write!(
+        Path.join(phase_dir, "#{phase}-VALIDATION.md"),
+        """
+        ---
+        nyquist_compliant: true
+        tested_by:
+          - "mix test #{evidence_file}"
+        evidence:
+          - type: test_file
+            ref: #{evidence_file}
+          - type: command
+            ref: "mix test #{evidence_file}"
+        ---
+        """
+      )
 
       File.write!(
         Path.join(phase_dir, "#{phase}-01-SUMMARY.md"),
@@ -214,6 +258,7 @@ defmodule Mix.Tasks.Closeout.VerifyTest do
       status: complete
     phase_verification_coverage:
       status: complete
+      expected_phases: ["64", "65", "66", "67", "68", "69"]
     summary_frontmatter_coverage:
       status: complete
     validation_ledger_status:

@@ -2,6 +2,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Planning.CloseoutVerifier
+  @fixture_evidence_file "test/crosswake/planning/fixture_validation_test.exs"
 
   test "report exposes stable closeout check ids and actionable render text" do
     report = CloseoutVerifier.run(cwd: File.cwd!())
@@ -13,6 +14,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     ids = Enum.map(report.checks, & &1.id)
     assert "closeout.ledger.frontmatter" in ids
     assert "closeout.exceptions.deferred_shape" in ids
+    assert "closeout.expected_phases" in ids
     assert "closeout.release.changelog_continuity" in ids
     assert "closeout.requirements.state" in ids
     assert "closeout.roadmap.parity" in ids
@@ -40,6 +42,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
 
     for id <- ~w(
           closeout.ledger.frontmatter
+          closeout.expected_phases
           closeout.requirements.state
           closeout.roadmap.parity
           closeout.verification.coverage
@@ -56,6 +59,72 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     # Closeout-independent checks still evaluate normally.
     assert find_check!(report, "closeout.release.changelog_continuity")
     assert find_check!(report, "closeout.validation.prior_debt")
+  end
+
+  test "missing expected_phases in an active closeout fails closed without guessed phase observations" do
+    tmp = tmp_dir!("missing-expected-phases")
+    write_minimal_files!(tmp)
+    write_closeout!(tmp, phase_verification_coverage: "phase_verification_coverage:\n  status: complete\n")
+
+    report = CloseoutVerifier.run(cwd: tmp)
+    check = find_check!(report, "closeout.expected_phases")
+
+    assert report.status == :failed
+    assert check.blocking
+    assert check.observed =~ "missing"
+
+    for id <- ~w(
+          closeout.verification.coverage
+          closeout.summaries.frontmatter
+          closeout.validation.ledger
+        ) do
+      dependent = find_check!(report, id)
+      refute dependent.blocking
+      assert dependent.observed =~ "skipped: invalid expected_phases contract"
+      refute dependent.observed =~ "64"
+      refute dependent.observed =~ "69"
+    end
+  end
+
+  test "malformed expected_phases contracts are blocking" do
+    cases = [
+      {"empty inline array", "phase_verification_coverage:\n  status: complete\n  expected_phases: []\n"},
+      {"junk value", "phase_verification_coverage:\n  status: complete\n  expected_phases: definitely-not-an-array\n"},
+      {"block list", "phase_verification_coverage:\n  status: complete\n  expected_phases:\n    - \"64\"\n"}
+    ]
+
+    for {name, coverage} <- cases do
+      tmp = tmp_dir!("malformed-expected-#{String.replace(name, " ", "-")}")
+      write_minimal_files!(tmp)
+      write_closeout!(tmp, phase_verification_coverage: coverage)
+
+      report = CloseoutVerifier.run(cwd: tmp)
+      check = find_check!(report, "closeout.expected_phases")
+
+      assert check.blocking, "#{name} should block"
+      assert check.observed =~ "expected_phases"
+    end
+  end
+
+  test "top-level and nested inline expected_phases arrays are accepted" do
+    cases = [
+      {"top-level", [top_level_expected_phases?: true]},
+      {"nested", []}
+    ]
+
+    for {name, opts} <- cases do
+      tmp = tmp_dir!("valid-expected-#{name}")
+      write_minimal_files!(tmp)
+      write_closeout!(tmp, opts)
+      write_phase_artifacts!(tmp, "64")
+
+      report = CloseoutVerifier.run(cwd: tmp)
+      check = find_check!(report, "closeout.expected_phases")
+
+      refute check.blocking
+      assert check.result == :pass
+      assert check.details.phases == ["64"]
+    end
   end
 
   test "missing closeout frontmatter fails closed with a closeout stable id" do
@@ -166,7 +235,8 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     # Write a compliant archived VALIDATION.md for phase 48 under v3.6-phases
     ledger_dir = Path.join(tmp, ".planning/milestones/v3.6-phases/48-x")
     File.mkdir_p!(ledger_dir)
-    File.write!(Path.join(ledger_dir, "48-VALIDATION.md"), "nyquist_compliant: true\n")
+    write_evidence_file!(tmp)
+    File.write!(Path.join(ledger_dir, "48-VALIDATION.md"), validation_ledger())
 
     report = CloseoutVerifier.run(cwd: tmp)
     check = find_check!(report, "closeout.validation.prior_debt")
@@ -179,7 +249,7 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     tmp = tmp_dir!("prior-debt-satisfied-resolved")
     write_complete_closeout!(tmp)
     write_minimal_files!(tmp)
-    write_prior_closeout!(tmp, "v3.6", "resolved", revisit_phase: "48", expected_phases: [])
+    write_prior_closeout!(tmp, "v3.6", "resolved", revisit_phase: "48", expected_phases: ["48"])
 
     report = CloseoutVerifier.run(cwd: tmp)
     check = find_check!(report, "closeout.validation.prior_debt")
@@ -255,6 +325,114 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
     assert check.observed =~ "49"
   end
 
+  test "validation_ledger_check blocks when an expected phase resolves to zero ledgers" do
+    tmp = tmp_dir!("zero-ledgers")
+    write_minimal_files!(tmp)
+    write_closeout!(tmp, expected_phases: ["64"])
+    write_verification_and_summary!(tmp, "64")
+
+    check = find_check!(CloseoutVerifier.run(cwd: tmp), "closeout.validation.ledger")
+
+    assert check.blocking
+    assert check.observed =~ "64"
+    assert check.details.problematic == ["64"]
+  end
+
+  test "validation ledgers require tested_by and structured evidence frontmatter" do
+    tmp = tmp_dir!("bare-ledger-evidence")
+    write_minimal_files!(tmp)
+    write_closeout!(tmp, expected_phases: ["64"])
+    write_phase_artifacts!(tmp, "64", validation: "---\nnyquist_compliant: true\n---\n")
+
+    check = find_check!(CloseoutVerifier.run(cwd: tmp), "closeout.validation.ledger")
+
+    assert check.blocking
+    assert check.observed =~ "64"
+  end
+
+  test "validation ledger evidence rejects missing test files and unsupported commands" do
+    cases = [
+      {"missing test file", invalid_test_file_ledger()},
+      {"unsupported command", validation_ledger("""
+       - type: command
+         ref: "npm test"
+      """)}
+    ]
+
+    for {name, ledger} <- cases do
+      tmp = tmp_dir!("invalid-evidence-#{String.replace(name, " ", "-")}")
+      write_minimal_files!(tmp)
+      write_closeout!(tmp, expected_phases: ["64"])
+      write_phase_artifacts!(tmp, "64", validation: ledger)
+
+      check = find_check!(CloseoutVerifier.run(cwd: tmp), "closeout.validation.ledger")
+
+      assert check.blocking, "#{name} should block"
+      assert check.details.problematic == ["64"]
+    end
+  end
+
+  test "validation ledger evidence accepts local test files, allowed commands, ci runs, and artifacts" do
+    cases = [
+      {"test file", validation_ledger("""
+       - type: test_file
+         ref: #{@fixture_evidence_file}
+      """)},
+      {"mix test command", validation_ledger("""
+       - type: command
+         ref: "mix test #{@fixture_evidence_file}"
+      """)},
+      {"mix compile command", validation_ledger("""
+       - type: command
+         ref: "mix compile"
+      """)},
+      {"mix closeout.verify command", validation_ledger("""
+       - type: command
+         ref: "mix closeout.verify"
+      """)},
+      {"ci run", validation_ledger("""
+       - type: ci_run
+         ref: "26498172516"
+      """)},
+      {"artifact", validation_ledger("""
+       - type: artifact
+         ref: "phase-64-validation"
+      """)}
+    ]
+
+    for {name, ledger} <- cases do
+      tmp = tmp_dir!("valid-evidence-#{String.replace(name, " ", "-")}")
+      write_minimal_files!(tmp)
+      write_closeout!(tmp, expected_phases: ["64"])
+      write_evidence_file!(tmp)
+      write_phase_artifacts!(tmp, "64", validation: ledger)
+
+      check = find_check!(CloseoutVerifier.run(cwd: tmp), "closeout.validation.ledger")
+
+      refute check.blocking, "#{name} should pass"
+      assert check.result == :pass
+    end
+  end
+
+  test "accepted validation-ledger exception satisfies a zero-ledger historical phase" do
+    tmp = tmp_dir!("accepted-exception")
+    write_minimal_files!(tmp)
+    write_closeout!(tmp, milestone: "v3.6", expected_phases: ["48"])
+    write_validation_exception!(tmp, "v3.6", ["48"])
+
+    check =
+      find_check!(
+        CloseoutVerifier.run(
+          cwd: tmp,
+          closeout_path: Path.join(tmp, ".planning/milestones/v3.6-CLOSEOUT.md")
+        ),
+        "closeout.validation.ledger"
+      )
+
+    refute check.blocking
+    assert check.result == :pass
+  end
+
   test "resolved_gaps scope keyword does not re-open the validation-ledger escape hatch" do
     tmp = tmp_dir!("resolved-gaps-no-escape")
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
@@ -326,22 +504,56 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
   defp write_complete_closeout!(tmp) do
     File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
 
+    write_closeout!(tmp, expected_phases: ["64"])
+    write_phase_artifacts!(tmp, "64")
+  end
+
+  defp write_closeout!(tmp, opts) do
+    milestone_id = Keyword.get(opts, :milestone, "v3.9")
+    expected_phases = Keyword.get(opts, :expected_phases, ["64"])
+    expected_str = Enum.map_join(expected_phases, ", ", &~s("#{&1}"))
+
+    top_level =
+      if Keyword.get(opts, :top_level_expected_phases?, false) do
+        "expected_phases: [#{expected_str}]\n"
+      else
+        ""
+      end
+
+    default_coverage =
+      if Keyword.get(opts, :top_level_expected_phases?, false) do
+        "phase_verification_coverage:\n  status: complete\n"
+      else
+        "phase_verification_coverage:\n  status: complete\n  expected_phases: [#{expected_str}]\n"
+      end
+
+    phase_verification_coverage =
+      Keyword.get(opts, :phase_verification_coverage, default_coverage)
+
+    File.mkdir_p!(Path.join(tmp, ".planning/milestones"))
+
     File.write!(
-      Path.join(tmp, ".planning/milestones/v3.9-CLOSEOUT.md"),
+      Path.join(tmp, ".planning/milestones/#{milestone_id}-CLOSEOUT.md"),
       """
       ---
-      milestone: v3.9
+      milestone: #{milestone_id}
       milestone_name: Operator Truth and Production Diagnostics
       status: complete
       shipped_date: 2026-06-01
-      requirements_state: {status: complete}
-      roadmap_parity: {status: complete}
-      phase_verification_coverage: {status: complete}
-      summary_frontmatter_coverage: {status: complete}
-      validation_ledger_status: {status: complete}
-      thread_seed_disposition: {status: complete}
-      release_changelog_continuity: {status: complete}
-      public_support_claim_changes: {status: complete}
+      requirements_state:
+        status: complete
+      roadmap_parity:
+        status: complete
+      #{top_level}#{phase_verification_coverage}summary_frontmatter_coverage:
+        status: complete
+      validation_ledger_status:
+        status: complete
+      thread_seed_disposition:
+        status: complete
+      release_changelog_continuity:
+        status: complete
+      public_support_claim_changes:
+        status: complete
       deferred_with_reason: []
       exceptions: []
       resolved_gaps: []
@@ -395,6 +607,98 @@ defmodule Crosswake.Planning.CloseoutVerifierTest do
           status: #{status}
       exceptions: []
       resolved_gaps: []
+      ---
+      """
+    )
+  end
+
+  defp write_phase_artifacts!(tmp, phase, opts \\ []) do
+    write_verification_and_summary!(tmp, phase)
+
+    validation =
+      case Keyword.fetch(opts, :validation) do
+        {:ok, content} ->
+          content
+
+        :error ->
+          write_evidence_file!(tmp)
+          validation_ledger()
+      end
+
+    phase_dir = Path.join(tmp, ".planning/phases/#{phase}-fixture")
+    File.write!(Path.join(phase_dir, "#{phase}-VALIDATION.md"), validation)
+  end
+
+  defp write_verification_and_summary!(tmp, phase) do
+    phase_dir = Path.join(tmp, ".planning/phases/#{phase}-fixture")
+    File.mkdir_p!(phase_dir)
+    File.write!(Path.join(phase_dir, "#{phase}-VERIFICATION.md"), "status: passed\n")
+
+    File.write!(
+      Path.join(phase_dir, "#{phase}-01-SUMMARY.md"),
+      """
+      ---
+      phase: #{phase}-fixture
+      plan: "01"
+      requirements-completed: [REL-01]
+      ---
+      """
+    )
+  end
+
+  defp write_evidence_file!(tmp) do
+    path = Path.join(tmp, @fixture_evidence_file)
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, "defmodule FixtureValidationTest do\n  use ExUnit.Case\nend\n")
+  end
+
+  defp validation_ledger(evidence \\ nil) do
+    evidence =
+      evidence ||
+        """
+         - type: test_file
+           ref: #{@fixture_evidence_file}
+         - type: command
+           ref: "mix test #{@fixture_evidence_file}"
+        """
+
+    """
+    ---
+    nyquist_compliant: true
+    tested_by:
+      - "mix test #{@fixture_evidence_file}"
+    evidence:
+    #{evidence}---
+    """
+  end
+
+  defp invalid_test_file_ledger do
+    validation_ledger("""
+     - type: test_file
+       ref: test/crosswake/planning/missing_validation_test.exs
+    """)
+  end
+
+  defp write_validation_exception!(tmp, milestone_id, phases) do
+    affected = Enum.map_join(phases, ", ", &~s("#{&1}"))
+    write_evidence_file!(tmp)
+
+    File.write!(
+      Path.join(tmp, ".planning/milestones/#{milestone_id}-VALIDATION-EXCEPTION.md"),
+      """
+      ---
+      status: accepted_exception
+      scope: validation-ledger-finalization
+      affected_phases: [#{affected}]
+      not_reconstructable: true
+      owner: maintainer
+      resolved_at: 2026-06-18
+      evidence:
+        - type: planning_artifact
+          ref: .planning/milestones/#{milestone_id}-CLOSEOUT.md
+        - type: test_file
+          ref: #{@fixture_evidence_file}
+      reason: "Historical phase directories were not archived before phase numbers were reused."
       ---
       """
     )
