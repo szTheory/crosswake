@@ -11,8 +11,8 @@ defmodule CrosswakeExample.FlashcardsFixtures do
     {:ok, deck} =
       attrs
       |> Enum.into(%{
-        title: "some title",
-        description: "some description"
+        title: unique_text("deck"),
+        description: unique_text("description")
       })
       |> CrosswakeExample.Flashcards.create_deck()
 
@@ -26,8 +26,8 @@ defmodule CrosswakeExample.FlashcardsFixtures do
     {:ok, card} =
       attrs
       |> Enum.into(%{
-        front: "some front text",
-        back: "some back text"
+        front_text: unique_text("front"),
+        back_text: unique_text("back")
       })
       |> CrosswakeExample.Flashcards.create_card()
 
@@ -47,5 +47,9 @@ defmodule CrosswakeExample.FlashcardsFixtures do
       |> CrosswakeExample.Flashcards.upsert_progress()
 
     progress
+  end
+
+  defp unique_text(prefix) do
+    "#{prefix} #{System.system_time(:nanosecond)} #{System.unique_integer([:positive])}"
   end
 end
