@@ -9,8 +9,11 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
 ## Current State
+- **v12.0 CI Honesty & Real-E2E Sweep — COMPLETE 2026-06-18 (pending archival).** The offline-sync proof now exercises the real IndexedDB outbox and reconnect flush path, the E2E proof lane is merge-blocking with structural honesty guards, the closeout verifier fails closed on invalid phase contracts and bare ledger evidence, the historical validation-ledger debt is represented by evidence-backed ledgers or an accepted exception, and v8.0 document truth is reconciled.
 - **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
-- **Active:** v12.0 CI Honesty & Real-E2E Sweep — making the offline-sync proof and closeout gates genuinely honest (see Current Milestone below).
+- **Active:** No active implementation milestone. Next candidate: onboarding / docs consolidation (`GUIDE-01`).
+
+**Completed `v12.0 CI Honesty & Real-E2E Sweep` on `2026-06-18`** (Phases 112-115, 13 plans). v12.0 made the offline-sync and closeout proof surfaces honest: the demo app now queues real IndexedDB mutations and flushes them on reconnect; the Playwright E2E asserts app-generated mutation IDs against Ecto and runs behind a compile gate; the merge-blocking E2E aggregator, structural honesty scanner, and test-only route assertions prevent regression to fabricated proof. Phase 115 tightened `CloseoutVerifier` with the `closeout.expected_phases` fail-closed contract, evidence-backed validation ledgers, accepted v3.6 exception handling, and source-contract doc truth tests that establish `MILESTONES.md` > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md`.
 
 **Shipped `v11.0 Release & Distribution Truth` on `2026-06-17`** (Phases 110-111, 8 plans). v11.0 turned the built-but-undistributed v5.0 thesis into a real install path. It published the iOS SPM core via splitsh-lite subtree mirror to `github.com/szTheory/crosswake-shell-core-ios` (annotated semver tags) and the Android core to Maven Central under verified `io.github.sztheory` (signed POM via Vanniktech → Central Portal), with release-please `linked-versions` advancing all three registries to one version per release and native publish jobs gated on `needs: release-please` + `if: releases_created`. It rewired `mix crosswake.gen.shell` to inject the live `Application.spec(:crosswake)[:vsn]` into published dep coordinates at generate-time (no version literal), proved the thesis outside the monorepo with a `$RUNNER_TEMP` clean-room CI lane (`swift build` / `gradle build` against the just-published deps), and made the guarantee permanent with a merge-blocking `generator_coordinate_parity` readiness check. A footgun-aware SETUP runbook plus a dispatch-only validated-upload→DROP fire-drill and a lockstep-truth assertion de-risked the irreversible first publish. Docs were reconciled to published truth, and `crosswake 0.1.2` was cut (REL-01) — the first live run surfaced and fixed latent pipeline bugs (fire-drill artifact assertion, Android auto-publish flag, Central Portal poll auth/endpoint, splitsh-lite version). All 11 v1 requirements satisfied.
 
@@ -63,7 +66,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 `v3.1 Native Capabilities and Bridge Expansion` shipped on `2026-05-27`, delivering the first official low-frequency native capability families.
 </details>
 
-## Current Milestone: v12.0 CI Honesty & Real-E2E Sweep
+## Latest Completed Milestone: v12.0 CI Honesty & Real-E2E Sweep
 
 **Goal:** Make Crosswake's offline-sync proof and closeout gates genuinely honest — the offline-sync E2E exercises the app's real reconnect→flush path against Ecto (not a test-injected scratch variable), that lane actually gates merges, and the validation-ledger closeout passes on real artifacts rather than vacuous globs.
 
@@ -150,6 +153,8 @@ After v12.0 closes, the leading candidate is **onboarding / docs consolidation**
 - ✓ **v10.0 Brand Normalization** (all 7 v1 requirements: TOKN-04/05, NORM-01/02/03/04, PROOF-01) — made `tokens.css` the genuine single source of truth: compiler emits font + dimension tokens (not just color) with a packaged mirror and one documented distribution path; the example host CSS and the `offline_ui` generator (templates + vendored `offline.css`, stale legacy theme retired) rewired onto the semantic `--cw-*` tier with no duplicated palettes, inline font stacks, or Tailwind; generator test pins the token contract; and a browser-free `brand-structural` drift gate fails the build on reintroduced brand hex or dropped token references. Validated across Phases 107-109; full detail in `.planning/milestones/v10.0-REQUIREMENTS.md`.
 
 - ✓ **v11.0 Release & Distribution Truth** (all 11 v1 requirements: PUB-01/02/03, LOCK-01/02, GEN-01/02, PROOF-01/02, DOCS-01, REL-01) — made the v5.0 standalone-package thesis actually consumable. Published the iOS SPM core (splitsh-lite subtree mirror, semver tags) and Android core (Maven Central, verified `io.github.sztheory`, signed POM) with release-please `linked-versions` lockstep; rewired `gen.shell` to inject the live Hex version into published coordinates at generate-time; proved an outside-the-monorepo clean-room `swift build`/`gradle build` resolves and compiles; added a permanent merge-blocking `generator_coordinate_parity` guard; reconciled install docs to published truth; and cut `crosswake 0.1.2` live to all three registries from one release-please run. Validated across Phases 110-111; full detail in `.planning/milestones/v11.0-REQUIREMENTS.md`.
+
+- ✓ **v12.0 CI Honesty & Real-E2E Sweep** (all 10 v1 requirements: E2E-01/02/03/04, GATE-01/02, GUARD-01/02, DEBT-01, DOC-01) — replaced fabricated offline-sync proof with a real IndexedDB outbox/reconnect/Ecto loop, made the E2E lane merge-blocking with structural honesty guards, hardened closeout verification against vacuous phase and ledger checks, resolved historical validation-ledger debt with evidence-backed ledgers or an accepted exception, and reconciled v8.0 document truth. Validated across Phases 112-115; full detail in `.planning/REQUIREMENTS.md` and `.planning/phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-VERIFICATION.md`.
 
 ### Active
 
@@ -240,4 +245,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-17 — started v12.0 CI Honesty & Real-E2E Sweep milestone*
+*Last updated: 2026-06-18 — completed v12.0 CI Honesty & Real-E2E Sweep milestone*

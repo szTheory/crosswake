@@ -6,7 +6,7 @@
 - ✅ **v9.0 Brand System & Visual Identity** — Phases 102-106 (shipped 2026-06-13)
 - ✅ **v10.0 Brand Normalization** — Phases 107-109 (shipped 2026-06-14)
 - ✅ **v11.0 Release & Distribution Truth** — Phases 110-111 (shipped 2026-06-17)
-- [ ] **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (active)
+- ✅ **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (completed 2026-06-18)
 
 ## Phases
 
@@ -55,7 +55,7 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 
 </details>
 
-### v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — ACTIVE
+### v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — COMPLETE 2026-06-18
 
 - [x] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect (completed 2026-06-17)
 - [x] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate (completed 2026-06-18)
@@ -177,4 +177,4 @@ Plans:
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
 | 113. Honest E2E Rewrite + Compile Gate | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 5/5 | Complete    | 2026-06-18 |
-| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete   | 2026-06-18 |
+| 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete    | 2026-06-18 |

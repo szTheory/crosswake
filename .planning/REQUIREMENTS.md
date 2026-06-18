@@ -25,7 +25,7 @@ Replace the structurally fraudulent `offline_sync.spec.ts` (which injects a muta
 Make the proof and the closeout verifier actually enforce, instead of running advisory-in-disguise or passing vacuously.
 
 - [x] **GATE-01**: The offline-sync E2E job is named `merge-blocking-offline-sync-e2e` and registered as a required status check on `main` with all existing required checks preserved (the branch-protection `checks` array is **replaced, not appended** — all checks listed). The workflow carries a comment with the exact `gh api ... PATCH` command; if the protection toggle is harness-blocked, a `script/register-e2e-gate.sh` ships the complete command. Every non-required CI lane is non-blocking by **omission from the branch-protection `checks[]` array** (and, where it should not run per-PR, by trigger-scoping to `schedule`/`workflow_dispatch`) — **never** via `continue-on-error: true`, which would paint a failed lane green and make it permanently unpromotable (D-06). Each advisory lane carries an `advisory-`-prefixed job `name:`, a `::notice` annotation, and a `$GITHUB_STEP_SUMMARY` promotion-path note; failures surface as honest red.
-- [ ] **GATE-02**: The `CloseoutVerifier` fails closed on its two vacuous paths: (a) it raises when `expected_phases` is absent/malformed in `CLOSEOUT.md` frontmatter instead of silently substituting a hardcoded phase set (`@v40_phases`); (b) `validation_ledger_check/2` returns a blocking result when an expected phase resolves to zero ledger files with no active deferral ("no files found" ≠ "found and compliant"). Stale unsatisfied prior-debt entries **block** the closeout rather than merely printing `(stale)`.
+- [x] **GATE-02**: The `CloseoutVerifier` fails closed on its two vacuous paths: (a) it raises when `expected_phases` is absent/malformed in `CLOSEOUT.md` frontmatter instead of silently substituting a hardcoded phase set (`@v40_phases`); (b) `validation_ledger_check/2` returns a blocking result when an expected phase resolves to zero ledger files with no active deferral ("no files found" ≠ "found and compliant"). Stale unsatisfied prior-debt entries **block** the closeout rather than merely printing `(stale)`.
 
 ### GUARD — Permanent Structural Guards
 
@@ -38,13 +38,13 @@ Make the honesty guarantee permanent, matching the project DNA (v9.0 `brand-stru
 
 Pay off the `tighten-validation-ledger-closeout-gate` backlog carried verbatim through v8.0→v11.0 — the gate now catches the absence (GATE-02), so the missing artifacts must actually exist.
 
-- [ ] **DEBT-01**: Every real archived ledger the now-strict gate flags (v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` **and** a `tested_by:`/`evidence:` field citing a concrete CI run, test file, command, or artifact — not a bare attestation. The historically non-reconstructable v3.6 phases 48/49/52/53 are represented by `.planning/milestones/v3.6-VALIDATION-EXCEPTION.md` with `status: accepted_exception`, not synthetic per-phase ledgers. The carried deferral entries are resolved with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for this scope.
+- [x] **DEBT-01**: Every real archived ledger the now-strict gate flags (v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` **and** a `tested_by:`/`evidence:` field citing a concrete CI run, test file, command, or artifact — not a bare attestation. The historically non-reconstructable v3.6 phases 48/49/52/53 are represented by `.planning/milestones/v3.6-VALIDATION-EXCEPTION.md` with `status: accepted_exception`, not synthetic per-phase ledgers. The carried deferral entries are resolved with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for this scope.
 
 ### DOC — Documentation Truth
 
 Settle the v8.0 record so three planning documents stop contradicting each other, with a durable precedence rule rather than a silent overwrite.
 
-- [ ] **DOC-01**: A document-precedence rule is recorded in a canonical location: `MILESTONES.md` (curated post-archival truth) > `PROJECT.md` Requirements ✓ marks (active-milestone truth, must cite a VERIFICATION.md or CI run) > `v*-MILESTONE-AUDIT.md` (point-in-time snapshots). `MILESTONES.md` gains a v8.0 entry consistent with PROJECT.md's SYNC-01/02/03 ✓; `v1.0-MILESTONE-AUDIT.md` is **annotated** (not overwritten) to note its `0/10` reflects verification gaps accepted as tech debt, subsequently satisfied.
+- [x] **DOC-01**: A document-precedence rule is recorded in a canonical location: `MILESTONES.md` (curated post-archival truth) > `PROJECT.md` Requirements ✓ marks (active-milestone truth, must cite a VERIFICATION.md or CI run) > `v*-MILESTONE-AUDIT.md` (point-in-time snapshots). `MILESTONES.md` gains a v8.0 entry consistent with PROJECT.md's SYNC-01/02/03 ✓; `v1.0-MILESTONE-AUDIT.md` is **annotated** (not overwritten) to note its `0/10` reflects verification gaps accepted as tech debt, subsequently satisfied.
 
 ## Future Requirements
 
@@ -83,9 +83,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GATE-01 | 114 | Complete |
 | GUARD-01 | 114 | Complete |
 | GUARD-02 | 114 | Complete |
-| GATE-02 | 115 | Pending |
-| DEBT-01 | 115 | Pending |
-| DOC-01 | 115 | Pending |
+| GATE-02 | 115 | Complete |
+| DEBT-01 | 115 | Complete |
+| DOC-01 | 115 | Complete |
 
 **Coverage:**
 
