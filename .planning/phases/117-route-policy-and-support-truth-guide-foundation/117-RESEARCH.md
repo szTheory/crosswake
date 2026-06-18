@@ -499,17 +499,15 @@ All claims in this research are sourced from repo files or command output; no `[
 |---|-------|---------|---------------|
 | none | n/a | n/a | n/a |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should support-truth legend live only in README plus support-matrix intro, or also in `guides/support_truth.md`?**  
    What we know: A separate helper guide is allowed only if it does not create a second source of truth. [VERIFIED: 117-CONTEXT.md D-12]  
-   What's unclear: Whether navigation benefits enough to justify another file. [VERIFIED: 117-CONTEXT.md]  
-   Recommendation: Prefer README plus support-matrix intro first; add `guides/support_truth.md` only if 117-03 needs a stable anchor for ExDoc grouping. [VERIFIED: README.md, mix.exs]
+   RESOLVED: Use README plus the support-matrix intro for the support-truth legend. Do not add `guides/support_truth.md` in Phase 117 unless execution discovers a hard navigation need; `guides/support_matrix.md` remains the canonical source, rendered through `Crosswake.SupportMatrix.Renderer`. [VERIFIED: 117-CONTEXT.md D-12/D-13, 117-03-PLAN.md Task 1]
 
 2. **Should existing support-matrix parity drift be fixed as a separate first task in 117-03?**  
    What we know: Targeted support-matrix tests currently fail on renderer/guide byte identity. [VERIFIED: command output]  
-   What's unclear: Whether the desired final intro should keep the current on-disk Phase 119 caveat or the renderer's older phrasing. [VERIFIED: guides/support_matrix.md, lib/crosswake/support_matrix/renderer.ex]  
-   Recommendation: Resolve in the same 117-03 task that adds the friendly legend, because both edits touch the same renderer/guide/test path. [VERIFIED: test/crosswake/support_matrix/renderer_test.exs]
+   RESOLVED: Fix support-matrix intro/parity inside 117-03 Task 1 by updating `lib/crosswake/support_matrix/renderer.ex`, regenerating `guides/support_matrix.md`, and updating renderer/support-matrix tests. The parity fix and friendly legend belong in the same task because they touch the same canonical renderer/output/test path. [VERIFIED: test/crosswake/support_matrix/renderer_test.exs, 117-03-PLAN.md Task 1]
 
 ## Environment Availability
 
