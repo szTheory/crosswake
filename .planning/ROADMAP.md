@@ -87,7 +87,11 @@ Plans:
   2. The test reads the `client_mutation_id` from IndexedDB (observation) and confirms it matches the Ecto row via `expect.poll` on `/_e2e/sync-state/:id` — the ID the test asserts is the one the app generated, not one the test minted
   3. The test asserts the IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row
   4. `phase90-proof.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 113-01-PLAN.md — Wave 1: green foundation (pre-flight compile fix, sibling-spec hygiene, scoped count + test-only @moduledoc on the sync-state controller)
+- [ ] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
+- [ ] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in phase90-proof.yml
 
 ### Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard
 **Goal**: The offline-sync E2E lane is a registered required status check that blocks merges on failure, and a structural CI check prevents any future PR from silently reverting the test to injection-based fabrication
@@ -130,6 +134,6 @@ Plans:
 | 110. Native Publish & Lockstep Infrastructure | v11.0 | 3/3 | Complete | 2026-06-14 |
 | 111. Generator Rewire, Clean-Room Proof & Release | v11.0 | 5/5 | Complete | 2026-06-17 |
 | 112. Real Offline Outbox Flush | v12.0 | 2/2 | Complete   | 2026-06-17 |
-| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 0/TBD | Not started | - |
+| 113. Honest E2E Rewrite + Compile Gate | v12.0 | 0/3 | Not started | - |
 | 114. Merge-Blocking CI Gate + Permanent Honesty Guard | v12.0 | 0/TBD | Not started | - |
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 0/TBD | Not started | - |
