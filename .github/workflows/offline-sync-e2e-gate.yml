@@ -20,7 +20,7 @@ on:
       - main
 
 jobs:
-  guard-01-e2e-honesty:                 # ~2s, no browser, no Elixir
+  guard-01-e2e-honesty:                 # ~10s, no browser, no Elixir
     name: guard-01-e2e-honesty
     runs-on: ubuntu-latest
     steps:
@@ -28,6 +28,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Install Node dependencies (provides typescript for AST check)
+        run: npm ci --prefix examples/phoenix_host
       - name: Run E2E honesty check
         run: node script/check-e2e-honesty.mjs
       - name: Step summary
