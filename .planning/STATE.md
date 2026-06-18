@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
 status: planning
-last_updated: "2026-06-18T17:13:47.691Z"
+last_updated: "2026-06-18T17:45:00.000Z"
 last_activity: 2026-06-18
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 16
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-18)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Defining v13.0 Adopter Confidence & Native Evidence
+**Current focus:** Active roadmap for v13.0 Adopter Confidence & Native Evidence
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 116 - Proof Debt And Release Truth
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-18 — Milestone v13.0 started
+Status: Ready for phase discussion/planning
+Last activity: 2026-06-18 — Active v13.0 roadmap created with Phases 116-120 and 16 planned plans
 
 ## Performance Metrics
 
@@ -76,7 +76,7 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ### Pending Todos
 
-- **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Pre-existing `FlashcardsTest` field-name drift + flaky `Chimeway.RegistryNotificationOpenTest` surfaced by Phase 112's `elixirc_paths` fix. Out of scope for Phase 115; remains a standalone example-host cleanup candidate.
+- **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Pre-existing `FlashcardsTest` field-name drift + flaky `Chimeway.RegistryNotificationOpenTest` surfaced by Phase 112's `elixirc_paths` fix. Now linked to Phase 116 / PROOF-01: fix it or explicitly exclude it from the public proof path before v13 collateral or quick-start claims depend on it.
 
 ### Blockers/Concerns
 
@@ -98,15 +98,15 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 | v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
-| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — standalone cleanup candidate | Phase 112 surfaced |
+| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — linked to Phase 116 / PROOF-01 | Phase 112 surfaced |
 
 ## Session Continuity
 
-Last session: 2026-06-18T17:13:47Z
-Stopped at: v13.0 milestone started; defining requirements
+Last session: 2026-06-18T17:45:00Z
+Stopped at: v13.0 active roadmap created; Phase 116 ready for discussion/planning
 Resume file: .planning/threads/adoption-evidence-demo.md
 
 ## Operator Next Steps
 
-- Finish v13.0 requirements and roadmap from the adopter-confidence proof scope.
+- Start `$gsd-discuss-phase 116` for Proof Debt And Release Truth.
 - Keep `GUIDE-01` framed as proof-path consolidation, not generic docs cleanup.

@@ -4,7 +4,7 @@ title: Pre-existing test failures in examples/phoenix_host suite
 status: open
 created: 2026-06-17
 surfaced_by: phase-112 (real-offline-outbox-flush)
-relates_to: DEBT-01 (Phase 115), milestone v12.0 CI Honesty
+relates_to: PROOF-01 (Phase 116), milestone v13.0 Adopter Confidence & Native Evidence
 ---
 
 # Pre-existing test failures in `examples/phoenix_host`
@@ -44,9 +44,10 @@ ref generation under the shared SQLite sandbox, not a real product bug.
 Fix: make ref/fixture generation unique per test (or use the Ecto sandbox in
 shared/async-safe mode) so the suite is deterministic.
 
-## Why this matters (CI Honesty, v12.0)
+## Why this matters (Adopter Confidence, v13.0)
 
 A test suite that 404s on compile, then fails 3–6/18 once it runs, is exactly
-the kind of dishonest-green this milestone targets. Candidate to fold into
-Phase 115 DEBT-01 (ledger backlog) or address as a standalone fix before
-milestone closeout.
+the kind of dishonest-green Crosswake should not route prospective adopters
+through. This is now linked to Phase 116 / PROOF-01: fix it or explicitly
+exclude it from the public proof path before v13 collateral or quick-start
+claims depend on it.
