@@ -375,6 +375,7 @@ defmodule CrosswakeExample.Router do
     end
   end
 
+  # /_e2e is the reserved test-harness namespace — compile-time gated OUT of prod beams.
   if Mix.env() in [:test, :e2e] do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api])
