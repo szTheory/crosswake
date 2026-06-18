@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: ready_to_plan
-stopped_at: Phase 113 complete (3/3) — ready to discuss Phase 114
-last_updated: 2026-06-18T05:53:15.156Z
+status: planning
+stopped_at: Phase 114 context gathered
+last_updated: "2026-06-18T06:16:39.717Z"
 progress:
   total_phases: 4
   completed_phases: 2
@@ -88,9 +88,9 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-18T05:44:01.359Z
-Stopped at: Phase 113 context gathered
-Resume file: None
+Last session: 2026-06-18T06:16:39.708Z
+Stopped at: Phase 114 context gathered
+Resume file: .planning/phases/114-merge-blocking-ci-gate-permanent-honesty-guard/114-CONTEXT.md
 
 ## Operator Next Steps
 
