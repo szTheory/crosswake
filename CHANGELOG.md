@@ -13,25 +13,24 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Unpublished support claims
 
-* v3.6 operator-truth work adds local diagnostics, support-matrix parity, closeout verification, and docs-contract proof around route/runtime support claims. These are unreleased planning milestone claims until the next Hex package is cut.
-* v3.7 StoreKit and Play Billing adapter seams are unreleased support claims until the next Hex package is cut.
+* No new support claims have been cut after `0.1.2` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
 
 ### Verification-required and advisory surfaces
 
-* Storefront, provider, device, generated-shell, and optional companion proof lanes remain visible as advisory or verification-required evidence. They are not equivalent to fully supported native runtime breadth.
+* Storefront, provider, device, checked-in native host, and optional companion proof lanes remain visible as advisory or verification-required evidence. They are not equivalent to fully supported native runtime breadth.
 * Provider/device sandbox proof remains advisory unless promotion criteria pass.
 
 ### Deferred non-shipped claims
 
-* RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
 
 ### Published Hex truth
 
-* The latest published Hex release remains `0.1.0`. Public readers should treat this `[Unreleased]` section as development and planning continuity, not an installable release.
+* The current published Hex release is `0.1.2`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
 
-## [0.1.2] — Unreleased (pending next Hex publish)
+## [0.1.2] — 2026-06-17
 
-> Staged next release. Bundles the installable changes since `0.1.0`, including work briefly carried as an internal `0.1.1` version bump that was never published. Not yet cut on Hex — `0.1.0` remains the only published release; see the `[Unreleased]` section above for the authoritative deferral/support-claim truth.
+> Published release. Bundles the installable changes since `0.1.0`, including work briefly carried as an internal `0.1.1` version bump that was never published.
 
 ### Added
 
@@ -47,7 +46,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Notes
 
 * The v9.0 brand system (`brandbook/` — brand book, design tokens, logo suite, collateral, and the COLL-05 automated brand-verification suite) was developed in this window but is **excluded from the Hex package** (`:exclude_patterns: ["brandbook"]`), so it is not part of this installable release.
-* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, full Sigra auth/session machinery, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
+* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.0] — 2026-05-29
 
@@ -63,6 +62,6 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 Internal planning milestones v1.0 (Route Policy Foundation), v2.0 (Adopter Stress Profiles), v3.0 (Capability Contract And Packaging), v3.1 (Native Capabilities and Bridge Expansion), and v3.2 (Commerce And Entitlement Seams) are archived in `.planning/MILESTONES.md`. These are not separate Hex releases. See `.planning/PROJECT.md` for overarching goals.
 
-[Unreleased]: https://github.com/szTheory/crosswake/compare/v0.1.0...HEAD
-[0.1.2]: https://github.com/szTheory/crosswake/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/szTheory/crosswake/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/szTheory/crosswake/compare/v0.1.0...v0.1.2
 [0.1.0]: https://github.com/szTheory/crosswake/releases/tag/v0.1.0

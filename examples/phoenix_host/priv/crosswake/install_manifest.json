@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "crosswake_version": "0.1.0",
+  "crosswake_version": "0.1.2",
   "router_path": "lib/crosswake_example/router.ex",
   "web_module": "CrosswakeExample",
   "policy_module": "CrosswakeExample.Crosswake.Policy",

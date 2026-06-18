@@ -145,7 +145,8 @@ container.
 - Elixir `~> 1.19`
 - Phoenix `~> 1.8`
 - Phoenix LiveView `~> 1.1`
-- Crosswake version `0.1.0`
+- Crosswake version `0.1.2`
+- Generated non-local native shell core coordinates resolve at the Crosswake package version.
 
 See [mix.exs](mix.exs) and [guides/support_matrix.md](guides/support_matrix.md) for
 the current package and platform baseline.

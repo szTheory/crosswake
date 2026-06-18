@@ -4,7 +4,7 @@ defmodule CrosswakeExample.MixProject do
   def project do
     [
       app: :crosswake_example,
-      version: "0.1.0",
+      version: "0.1.2",
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
