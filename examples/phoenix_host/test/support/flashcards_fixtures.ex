@@ -44,7 +44,7 @@ defmodule CrosswakeExample.FlashcardsFixtures do
         status: :new,
         next_review_at: DateTime.utc_now()
       })
-      |> CrosswakeExample.Flashcards.create_progress()
+      |> CrosswakeExample.Flashcards.upsert_progress()
 
     progress
   end
