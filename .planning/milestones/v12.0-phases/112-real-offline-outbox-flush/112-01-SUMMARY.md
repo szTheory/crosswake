@@ -22,6 +22,7 @@ decisions:
   - "partial-success delete semantics: only delete records whose client_mutation_id is in data.data.accepted_records, leave rejected queued"
   - "D-08 cleanup applied: replaced hardcoded hex (#9A4D35, #fee2e2, #ef4444) with brand tokens in displayHardBlock and QuotaExceededError handler"
   - "btn-secondary neutral outlined (--cw-border-default) for Hard button: not an error state, no color-only signaling, passes AA both modes"
+requirements-completed: [E2E-01, E2E-02]
 metrics:
   duration: "~20 minutes"
   completed: "2026-06-17T22:00:13Z"

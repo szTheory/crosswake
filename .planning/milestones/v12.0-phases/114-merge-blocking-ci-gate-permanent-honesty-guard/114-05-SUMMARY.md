@@ -26,6 +26,7 @@ decisions:
   - "DRY_RUN=1 path exits 0 after printing desired JSON, before any PATCH or preflight, enabling safe local preview"
   - "Granular required_status_checks endpoint (not full PUT .../protection) leaves enforce_admins and reviews untouched"
   - "unique_by(.context) makes repeated registration runs idempotent"
+requirements-completed: [GATE-01]
 metrics:
   duration: "~2 minutes"
   completed: "2026-06-18T06:59:20Z"

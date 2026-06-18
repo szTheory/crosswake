@@ -26,6 +26,7 @@ decisions:
   - "Env-scoped cache keys (build-test-* / build-prod-*) isolate the two MIX_ENV compiles — never a shared _build cache key"
   - "rm -rf _build/prod forces a clean prod compile so a :test-compiled router beam cannot make GUARD-02 pass vacuously"
   - "Placeholder comment for plan 114-05 registration one-liner placed in workflow header"
+requirements-completed: [GATE-01]
 metrics:
   duration: "~5 minutes"
   completed: "2026-06-18T06:35:56Z"

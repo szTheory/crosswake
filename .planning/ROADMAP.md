@@ -6,7 +6,7 @@
 - ✅ **v9.0 Brand System & Visual Identity** — Phases 102-106 (shipped 2026-06-13)
 - ✅ **v10.0 Brand Normalization** — Phases 107-109 (shipped 2026-06-14)
 - ✅ **v11.0 Release & Distribution Truth** — Phases 110-111 (shipped 2026-06-17)
-- ✅ **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (completed 2026-06-18)
+- ✅ **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (shipped 2026-06-18)
 
 ## Phases
 
@@ -55,107 +55,19 @@ Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
 
 </details>
 
-### v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — COMPLETE 2026-06-18
+<details>
+<summary>✅ v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — SHIPPED 2026-06-18</summary>
 
-- [x] **Phase 112: Real Offline Outbox Flush** - Make the demo app actually flush the IndexedDB outbox on reconnect (completed 2026-06-17)
-- [x] **Phase 113: Honest E2E Rewrite + Compile Gate** - Replace the fraudulent test with one that exercises real app behavior, with a compile gate (completed 2026-06-18)
-- [x] **Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard** - Lock the lane as a required status check and structurally prevent reversion (completed 2026-06-18)
-- [x] **Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth** - Tighten the verifier, create missing ledgers, settle v8.0 doc contradictions (completed 2026-06-18)
+- [x] Phase 112: Real Offline Outbox Flush (2/2 plans) — completed 2026-06-17
+- [x] Phase 113: Honest E2E Rewrite + Compile Gate (3/3 plans) — completed 2026-06-18
+- [x] Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard (5/5 plans) — completed 2026-06-18
+- [x] Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth (3/3 plans) — completed 2026-06-18
 
-## Phase Details
+All 10 v1 requirements complete (E2E-01/02/03/04, GATE-01/02, GUARD-01/02, DEBT-01, DOC-01). The milestone replaced fabricated offline-sync proof with a real IndexedDB outbox/reconnect/Ecto loop, promoted the E2E lane behind structural guards, hardened closeout verification, closed historical validation-ledger debt, and reconciled v8.0 document truth.
 
-### Phase 112: Real Offline Outbox Flush
+Full phase detail archived in `.planning/milestones/v12.0-ROADMAP.md`.
 
-**Goal**: The demo app's `offline_study.js` manages a real IndexedDB mutation queue and flushes it to the server on reconnect — so any test that runs against it exercises the app's own code path, not a test-injected fabrication
-**Depends on**: Phase 111 (v11.0 complete)
-**Requirements**: E2E-01, E2E-02
-**Success Criteria** (what must be TRUE):
-
-  1. A user clicking a flashcard rating control while offline causes `offline_study.js` to write a record to the IndexedDB `mutations` store (via `queueMutation()`) in the server-contract shape `{client_mutation_id, card_id, rating}`, with `client_mutation_id` from `crypto.randomUUID()`
-  2. When network connectivity is restored, `offline_study.js` automatically drains the IndexedDB `mutations` store by POSTing to `/study/sync`, deletes records on 2xx, and leaves them queued on failure — without any test or external caller triggering the flush
-  3. The `StudySessionLive` `sync_outbox` mock handler and its "Simulate Network Sync" button are removed entirely from `study_session_live.ex`
-  4. `mix test` passes with the mock removed — no test depends on the deleted mock handler
-
-**Plans**: 2 plans
-Plans:
-
-- [x] 112-01-PLAN.md — Real IndexedDB outbox flush + Good/Hard rating controls + honest sync status (offline_study.js, index.html.heex)
-- [x] 112-02-PLAN.md — De-mock study_session_live.ex (remove sync_outbox handler/button/assigns); mix test stays green
-
-### Phase 113: Honest E2E Rewrite + Compile Gate
-
-**Goal**: `offline_sync.spec.ts` proves the full offline→reconnect→reconcile loop using only the app's own code paths, and the CI workflow fails loudly on a demo-app compile break instead of masking it as a Playwright port timeout
-**Depends on**: Phase 112
-**Requirements**: E2E-03, E2E-04
-**Success Criteria** (what must be TRUE):
-
-  1. `offline_sync.spec.ts` contains zero `page.evaluate()` calls that write to app state or invoke app-owned behavior — mutation queuing and outbox flushing are driven exclusively by real UI interaction and the app's own reconnect handler
-  2. The test reads the `client_mutation_id` from IndexedDB (observation) and confirms it matches the Ecto row via `expect.poll` on `/_e2e/sync-state/:id` — the ID the test asserts is the one the app generated, not one the test minted
-  3. The test asserts the IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row
-  4. `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout
-
-**Plans**: 2/3 plans executed
-Plans:
-**Wave 1**
-
-- [x] 113-01-PLAN.md — Wave 1: green foundation (pre-flight compile fix, sibling-spec hygiene, scoped count + test-only @moduledoc on the sync-state controller)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 113-02-PLAN.md — Wave 2: honest offline_sync.spec.ts rewrite (real UI queue → app reconnect flush → Ecto confirm → duplicate idempotency; GUARD-01-clean)
-- [x] 113-03-PLAN.md — Wave 2: insert MIX_ENV=test compile gate before Playwright in offline-sync-e2e-gate.yml
-
-### Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard
-
-**Goal**: The offline-sync E2E lane is a registered required status check that blocks merges on failure, and a structural CI check prevents any future PR from silently reverting the test to injection-based fabrication
-**Depends on**: Phase 113 (requires ≥1 green run of the renamed job on `main`)
-**Requirements**: GATE-01, GUARD-01, GUARD-02
-**Success Criteria** (what must be TRUE):
-
-  1. The offline-sync E2E job is named `merge-blocking-offline-sync-e2e` and is registered as a required status check on `main` with all existing required checks preserved in the branch-protection `checks` array (replaced, not appended); a `script/register-e2e-gate.sh` or workflow comment carries the exact `gh api ... PATCH` command for the harness-blocked case
-  2. Every non-required CI lane is non-blocking by **omission from the branch-protection `checks[]` array** (and, where it should not run per-PR, by trigger-scoping to `schedule`/`workflow_dispatch`) — **never** via `continue-on-error: true`, which would paint a failed lane green and make it permanently unpromotable (D-06); each advisory lane carries an `advisory-`-prefixed job `name:`, a `::notice` annotation, and a `$GITHUB_STEP_SUMMARY` promotion-path note
-  3. A merge-blocking structural check (`script/check-e2e-honesty.mjs` or equivalent) scans `offline_sync.spec.ts` for the three injection anti-patterns (`window['crosswake_offline_mutations']`, `page.evaluate` calling `fetch(`, test-minted UUID asserted before any IndexedDB read) and fails the build if any reappear
-  4. The `/_e2e/sync-state/:id` endpoint is confirmed mounted only under `:test`/`:e2e` environments (never `:prod`), verified by a `routes_test.exs` assertion or equivalent, and its test-only purpose is stated in the controller module docstring
-
-**Plans**: 5/5 plans complete
-Plans:
-
-**Wave 1**
-
-- [x] 114-01-PLAN.md — Rename offline-sync-e2e-gate.yml → offline-sync-e2e-gate.yml; restructure into the 4-job Option-C aggregator topology (guard-01 honesty, guard-02 prod-route-absence, e2e-proof, merge-blocking aggregator)
-- [x] 114-02-PLAN.md — GUARD-01 AST honesty check (script/check-e2e-honesty.mjs) + typescript devDependency pin
-- [x] 114-03-PLAN.md — GUARD-02 in-suite assertions (router_test.exs route-presence, controller count-scoping test) + /_e2e namespace comment
-- [x] 114-04-PLAN.md — D-03 doc amendment: GATE-01/ROADMAP/PITFALLS continue-on-error → omission-from-checks[]; offline-sync-e2e-gate.yml filename-ref updates
-
-**Wave 2** *(blocked on 114-01)*
-
-- [x] 114-05-PLAN.md — GATE-01 registration: script/register-e2e-gate.sh (GET-then-replace + green-first preflight) + gh api PATCH comment/runbook in the workflow header
-
-**UI hint**: no
-
-### Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth
-
-**Goal**: The GSD closeout verifier fails closed instead of passing vacuously, every reconstructable phase the tightened gate flags has a real evidence-backed `VALIDATION.md`, non-reconstructable v3.6 ledger debt is represented by an accepted exception, and the three planning documents that contradict each other about v8.0 converge on a single authoritative truth
-**Depends on**: Nothing (independent of the E2E/gate track; GATE-02 must precede DEBT-01 within this phase)
-**Requirements**: GATE-02, DEBT-01, DOC-01
-**Success Criteria** (what must be TRUE):
-
-  1. `CloseoutVerifier` raises on missing or malformed `expected_phases:` frontmatter in `CLOSEOUT.md` (no silent fallback to `@v40_phases`), and `validation_ledger_check/2` returns a blocking result when an expected phase resolves to zero ledger files with no active deferral
-  2. Every reconstructable phase previously flagged for missing evidence (v3.8: 54-58; v3.9: 62/63) has a `*-VALIDATION.md` containing `nyquist_compliant: true` and a `tested_by:`/`evidence:` field citing a concrete CI run, test file, command, or artifact — not a bare attestation; v3.6 phases 48/49/52/53 are satisfied by `.planning/milestones/v3.6-VALIDATION-EXCEPTION.md` with `status: accepted_exception`
-  3. Stale deferral entries for this scope are resolved with evidence citations, and `mix closeout.verify` passes with no `(stale)` entries for the v3.6/v3.8/v3.9 validation-ledger scope
-  4. A document-precedence rule is recorded in a canonical location establishing `MILESTONES.md` > `PROJECT.md` Requirements ✓ > `v*-MILESTONE-AUDIT.md`; `MILESTONES.md` gains a v8.0 entry consistent with PROJECT.md's SYNC-01/02/03 ✓; `v1.0-MILESTONE-AUDIT.md` is annotated (not overwritten) to note its `0/10` reflects verification gaps accepted as tech debt, subsequently satisfied
-
-**Plans**: 3 plans
-Plans:
-
-**Wave 1**
-
-- [x] 115-01-PLAN.md — GATE-02 verifier hardening: strict `expected_phases`, `closeout.expected_phases`, ledger evidence validation, and focused verifier/Mix tests
-
-**Wave 2** *(blocked on 115-01)*
-
-- [x] 115-02-PLAN.md — DEBT-01 ledger evidence normalization: v3.8/v3.9 evidence frontmatter, v3.6 accepted exception, and corrected requirements/roadmap wording
-- [x] 115-03-PLAN.md — DOC-01 doc-truth reconciliation: `MILESTONES.md` precedence/v8.0 entry, v1.0 audit annotation, and source-contract test
+</details>
 
 ## Progress
 

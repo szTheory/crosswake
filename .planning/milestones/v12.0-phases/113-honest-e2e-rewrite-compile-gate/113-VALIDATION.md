@@ -1,10 +1,23 @@
 ---
 phase: 113
 slug: honest-e2e-rewrite-compile-gate
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-18
+approved: 2026-06-18
+tested_by:
+  - "cd examples/phoenix_host && npx playwright test"
+  - "cd examples/phoenix_host && MIX_ENV=test mix compile --warnings-as-errors"
+evidence:
+  - type: test_file
+    path: examples/phoenix_host/e2e/offline_sync.spec.ts
+  - type: test_file
+    path: examples/phoenix_host/e2e/offline_storage.spec.ts
+  - type: verification
+    path: .planning/phases/113-honest-e2e-rewrite-compile-gate/113-VERIFICATION.md
+  - type: summary
+    path: .planning/phases/113-honest-e2e-rewrite-compile-gate/113-02-SUMMARY.md
 ---
 
 # Phase 113 — Validation Strategy
@@ -43,7 +56,9 @@ created: 2026-06-18
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | Status |
 |---------|------|------|-------------|-----------|-------------------|--------|
-| _TBD by planner_ | | | E2E-03 / E2E-04 | E2E / CI | see RESEARCH § Validation Architecture | ⬜ pending |
+| 113-01 | 01 | 1 | E2E-03 / E2E-04 | compile + E2E setup | `cd examples/phoenix_host && MIX_ENV=test mix compile --warnings-as-errors`; `cd examples/phoenix_host && npx playwright test e2e/offline_storage.spec.ts` | ✅ green |
+| 113-02 | 02 | 2 | E2E-03 | E2E | `cd examples/phoenix_host && npx playwright test e2e/offline_sync.spec.ts`; `cd examples/phoenix_host && npx playwright test` | ✅ green |
+| 113-03 | 03 | 2 | E2E-04 | CI compile gate | workflow source check plus `MIX_ENV=test mix compile --warnings-as-errors` before Playwright | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,10 +66,10 @@ created: 2026-06-18
 
 ## Wave 0 Requirements
 
-- [ ] `examples/phoenix_host/test/support/flashcards_fixtures.ex:47` — `create_progress` → `upsert_progress` (D-04b pre-flight; gate must land green)
-- [ ] `examples/phoenix_host/e2e/offline_storage.spec.ts:89` — `#btn-pass` → `#btn-good` (sibling-spec hygiene; lane is red today)
-- [ ] `examples/phoenix_host/e2e/offline_sync.spec.ts` — full honest rewrite (E2E-03 a–f)
-- [ ] `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` — scoped `count` + test-only `@moduledoc`
+- [x] `examples/phoenix_host/test/support/flashcards_fixtures.ex:47` — `create_progress` → `upsert_progress` (D-04b pre-flight; gate must land green)
+- [x] `examples/phoenix_host/e2e/offline_storage.spec.ts:89` — `#btn-pass` → `#btn-good` (sibling-spec hygiene; lane is red today)
+- [x] `examples/phoenix_host/e2e/offline_sync.spec.ts` — full honest rewrite (E2E-03 a–f)
+- [x] `examples/phoenix_host/lib/crosswake_example/e2e/sync_state_controller.ex` — scoped `count` + test-only `@moduledoc`
 
 ---
 
@@ -68,11 +83,11 @@ created: 2026-06-18
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 120s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-06-18; Phase 113 verification frontmatter records the later Playwright confirmation: `npx playwright test` from `examples/phoenix_host` passed 4/4 on 2026-06-18.

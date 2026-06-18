@@ -9,6 +9,7 @@ duration_seconds: 142
 task_count: 3
 file_count: 3
 requirements: [GUARD-02]
+requirements-completed: [GUARD-02]
 
 dependency_graph:
   requires: [114-01, 114-02]

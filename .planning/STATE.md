@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v12.0
 milestone_name: CI Honesty & Real-E2E Sweep
-status: milestone_complete
-stopped_at: Milestone complete (Phase 115 was final phase)
-last_updated: 2026-06-18T15:41:37.824Z
+status: Awaiting next milestone
+stopped_at: v12.0 milestone archived; awaiting next milestone
+last_updated: "2026-06-18T16:14:29.070Z"
+last_activity: 2026-06-18 — Milestone v12.0 completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -17,19 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-17)
+See: .planning/PROJECT.md (updated 2026-06-18)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Milestone complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 115 — COMPLETE
-Plan: 13/13 complete
-Next: Complete/archive v12.0 milestone, then define the next milestone
-Status: Milestone complete
-
-**Progress bar:** Phase 4/4 complete · Plan 13/13 complete
+Phase: Milestone v12.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-18 — Milestone v12.0 completed and archived
 
 ## Performance Metrics
 
@@ -45,7 +44,7 @@ Status: Milestone complete
 
 ### Decisions
 
-Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archived there.
+Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archived there.
 
 **v12.0 key decisions (2026-06-17, locked by research):**
 
@@ -91,21 +90,13 @@ Full decision log in PROJECT.md (Key Decisions). v11.0 milestone decisions archi
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Open — standalone cleanup candidate | Phase 112 surfaced |
-| Phase 113 P02 | 14min | 1 tasks | 2 files |
-| Phase 113 P03 | 1min | 1 tasks | 1 files |
-| Phase 114 P01 | 5 | 2 tasks | 1 files |
-| Phase 114 P02 | 5 | 2 tasks | 4 files |
-| Phase 114 P03 | 142 | 3 tasks | 3 files |
-| Phase 114 P04 | 7 | 3 tasks | 15 files |
-| Phase 114 P05 | 2 minutes | 2 tasks | 2 files |
 
 ## Session Continuity
 
 Last session: 2026-06-18T15:41:37.824Z
-Stopped at: v12.0 milestone complete after Phase 115 verification
-Resume file: .planning/phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-VERIFICATION.md
+Stopped at: v12.0 milestone archived; awaiting next milestone
+Resume file: .planning/milestones/v12.0-phases/115-closeout-verifier-honesty-ledger-backlog-doc-truth/115-VERIFICATION.md
 
 ## Operator Next Steps
 
-- Run `/gsd:complete-milestone` to archive v12.0 planning artifacts.
-- Start the next milestone with `/gsd:new-milestone`; leading candidate remains onboarding/docs consolidation (`GUIDE-01`).
+- Start the next milestone with /gsd:new-milestone

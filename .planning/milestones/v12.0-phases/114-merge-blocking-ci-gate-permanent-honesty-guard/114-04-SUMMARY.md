@@ -28,6 +28,7 @@ key_files:
 decisions:
   - "Advisory lanes are non-blocking by omission from branch-protection checks[] + trigger-scoping, never via continue-on-error: true (D-02/D-06) — this wording is now canonical in REQUIREMENTS.md GATE-01, ROADMAP.md Phase 114 Success Criterion 2, and PITFALLS.md"
   - "Filename rename phase90-proof.yml → offline-sync-e2e-gate.yml documented across all planning files except the intentional 114 history docs (114-CONTEXT, 114-RESEARCH-SYNTHESIS, 114-DISCUSSION-LOG)"
+requirements-completed: [GATE-01]
 metrics:
   duration: "~7 minutes"
   completed: "2026-06-18T06:53:18Z"

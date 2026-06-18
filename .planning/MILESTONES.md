@@ -4,6 +4,34 @@
 
 For shipped-state questions, use this order: `MILESTONES.md` curated shipped-state truth > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md` point-in-time snapshots. `PROJECT.md` Requirements marks remain active-project truth and must cite verification or CI evidence; audit files preserve the evidence available at the time they were written.
 
+## v12.0 CI Honesty & Real-E2E Sweep (Shipped: 2026-06-18)
+
+**Phases completed:** 4 phases (112-115), 13 plans, 15 tasks
+**Git range:** `feat(112-01)` -> `docs(phase-115)` / audit close; 22 non-planning files changed (+1,686 / -260); 2026-06-17 -> 2026-06-18
+
+**Delivered:** Made the offline-sync and closeout proof surfaces honest: real IndexedDB outbox -> reconnect flush -> Ecto proof, merge-blocking E2E aggregator with structural honesty guard, fail-closed closeout verifier, evidence-backed historical ledgers, and canonical v8.0 document truth.
+
+**Key accomplishments:**
+
+- Replaced the fabricated offline-sync proof with a real UI-driven flow: clicking `#btn-good` queues an IndexedDB mutation, CDP reconnect plus an explicit `online` event triggers the app's `flushOutbox`, Ecto confirms the app-generated mutation ID, and duplicate POST proof verifies idempotency.
+- Added `MIX_ENV=test mix compile --warnings-as-errors` before Playwright so demo-app compile breaks fail as compile errors instead of port-connection noise.
+- Promoted the offline-sync E2E lane into an Option-C merge-blocking aggregator and documented/scripted the branch-protection registration path.
+- Shipped GUARD-01 (`script/check-e2e-honesty.mjs`) to ban the three known fabrication shapes and GUARD-02 tests proving `/_e2e` routes stay test-only and count-scoped.
+- Hardened `CloseoutVerifier` so malformed `expected_phases` contracts and bare validation ledgers fail closed while preserving report-first Mix diagnostics.
+- Closed historical validation-ledger debt with evidence-backed v3.8/v3.9 ledgers and one explicit accepted v3.6 exception.
+- Established the document-truth precedence rule, added the curated v8.0 shipped-state entry, and annotated the old v1.0 audit snapshot without overwriting its original 0/10 context.
+
+**Known deferred items at close:** 1 — TODO-001 for pre-existing example-host `FlashcardsTest` field drift and flaky `Chimeway.RegistryNotificationOpenTest`, surfaced by Phase 112 and left as a standalone cleanup candidate.
+
+**Archive:**
+
+- `.planning/milestones/v12.0-ROADMAP.md`
+- `.planning/milestones/v12.0-REQUIREMENTS.md`
+- `.planning/milestones/v12.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v12.0-phases/`
+
+---
+
 ## v11.0 Release & Distribution Truth (Shipped: 2026-06-17)
 
 **Phases completed:** 2 phases (110-111), 8 plans, 13 tasks

@@ -18,6 +18,7 @@ key_files:
 decisions:
   - Remove sync_outbox mock entirely rather than relabeling — server-side Elixir list misrepresents IndexedDB client outbox
   - Fix elixirc_paths in mix.exs to load test/support so suite can run
+requirements-completed: [E2E-02]
 metrics:
   duration: "198s"
   completed: "2026-06-17T22:00:21Z"

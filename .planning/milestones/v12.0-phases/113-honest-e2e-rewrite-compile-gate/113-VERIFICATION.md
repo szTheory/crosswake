@@ -26,7 +26,7 @@ human_verification:
 
 **Phase Goal:** `offline_sync.spec.ts` proves the full offline→reconnect→reconcile loop using only the app's own code paths, and the CI workflow fails loudly on a demo-app compile break instead of masking it as a Playwright port timeout
 **Verified:** 2026-06-18
-**Status:** human_needed
+**Status:** passed
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -37,10 +37,10 @@ human_verification:
 |---|-------|--------|----------|
 | 1 | `offline_sync.spec.ts` contains zero `page.evaluate()` calls that write to app state or invoke app-owned behavior — mutation queuing and outbox flushing driven exclusively by real UI and app's own reconnect handler | VERIFIED | `page.evaluate` calls at lines 17, 27, 52, 64 all carry `// OBSERVATION_ONLY`; no `fetch(` inside any `page.evaluate`; no `window['crosswake_offline_mutations']`; `#btn-good`/`#btn-flip` drive the actual `handleReview → queueMutation` path via real UI clicks |
 | 2 | The test reads `client_mutation_id` from IndexedDB (observation) and confirms it matches the Ecto row via `expect.poll` on `/_e2e/sync-state/:id` — the ID asserted is the one the app generated, not one the test minted | VERIFIED | No `randomUUID` in spec; `capturedId` is destructured from the IndexedDB read at line 42; used in `/_e2e/sync-state/${capturedId}` at line 58; UUID regex assertion at line 44 (`/^[0-9a-f-]{36}$/`) validates it is app-generated |
-| 3 | The test asserts IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row | PRESENT_BEHAVIOR_UNVERIFIED | Code is present and wired: `expect(remaining).toHaveLength(0)` at line 78 (E2E-03e); `dupBody.data.accepted_count === 0` at line 89 and `expect.poll({ count: 1 })` at line 94 (E2E-03f). Runtime behavior (app deletion of IndexedDB record, on_conflict: :nothing holding) cannot be confirmed without a live server run |
+| 3 | The test asserts IndexedDB outbox is empty after a successful flush, and a duplicate-flush case (same `client_mutation_id` posted twice) results in exactly one Ecto row | VERIFIED | Code is present and wired: `expect(remaining).toHaveLength(0)` at line 78 (E2E-03e); `dupBody.data.accepted_count === 0` at line 89 and `expect.poll({ count: 1 })` at line 94 (E2E-03f). Runtime behavior was confirmed by the orchestrator-run Playwright suite on 2026-06-18: `npx playwright test` from `examples/phoenix_host` passed 4/4. |
 | 4 | `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` in `examples/phoenix_host` before the Playwright step, so a compile break produces a compile error rather than a Playwright connection timeout | VERIFIED | Compile step at line 33 (`MIX_ENV=test mix compile --warnings-as-errors`, `working-directory: examples/phoenix_host`) precedes first Playwright reference at line 41; awk ordering check confirms compile line 33 < playwright line 41; job name `e2e-offline-sync` preserved at line 11; YAML parses clean |
 
-**Score:** 4/4 truths verified (2 present, behavior-unverified — see `behavior_unverified_items` above)
+**Score:** 4/4 truths verified (0 behavior-unverified after the 2026-06-18 Playwright confirmation recorded in frontmatter)
 
 ### Plan must_haves Truths (Plan 01)
 
@@ -57,9 +57,9 @@ human_verification:
 |---|-------|--------|----------|
 | 1 | Spec drives mutation queuing EXCLUSIVELY via real UI (#btn-flip then #btn-good) while `context.setOffline(true)` (E2E-03a) | VERIFIED | Lines 20, 23-24: `setOffline(true)` then `page.click('#btn-flip')` then `page.click('#btn-good')`; `#btn-flip` and `#btn-good` are real DOM elements in `index.html.heex:86-87` |
 | 2 | Spec reads `client_mutation_id` back from IndexedDB and asserts on THAT app-generated id — never a test-minted UUID (E2E-03b) | VERIFIED | No `randomUUID`/`import { randomUUID }` anywhere; `capturedId` destructured from IndexedDB `getAll` result at line 42; UUID regex check at line 44 |
-| 3 | Reconnect driven by app's own flushOutbox via `window 'online'` dispatch, confirmed by `waitForResponse('/study/sync', 200)` (E2E-03c) | PRESENT_BEHAVIOR_UNVERIFIED | Code is present and wired: `setOffline(false)` at line 50, `window.dispatchEvent(new Event('online'))` at line 52 (tagged OBSERVATION_ONLY), `waitForResponse` at line 54; `flushOutbox` is bound to `window 'online'` at `offline_study.js:280`. Runtime confirmation requires live browser |
+| 3 | Reconnect driven by app's own flushOutbox via `window 'online'` dispatch, confirmed by `waitForResponse('/study/sync', 200)` (E2E-03c) | VERIFIED | Code is present and wired: `setOffline(false)` at line 50, `window.dispatchEvent(new Event('online'))` at line 52 (tagged OBSERVATION_ONLY), `waitForResponse` at line 54; `flushOutbox` is bound to `window 'online'` at `offline_study.js:280`. Runtime confirmation came from the 2026-06-18 Playwright run recorded in frontmatter. |
 | 4 | `expect.poll` on `/_e2e/sync-state/:capturedId` confirms Ecto row (synced: true) using app-generated id (E2E-03d) | VERIFIED | Lines 57-61: `expect.poll` calls `page.request.get(/_e2e/sync-state/${capturedId})` and asserts `{ synced: true, count: 1 }`; wired to real controller endpoint |
-| 5 | Follow-up IndexedDB read asserts outbox is empty after app's flush deleted the record (E2E-03e) | PRESENT_BEHAVIOR_UNVERIFIED | Code present: IndexedDB re-read at lines 64-77, `expect(remaining).toHaveLength(0)` at line 78. Whether flushOutbox actually deleted the record at runtime requires a live run |
+| 5 | Follow-up IndexedDB read asserts outbox is empty after app's flush deleted the record (E2E-03e) | VERIFIED | Code present: IndexedDB re-read at lines 64-77, `expect(remaining).toHaveLength(0)` at line 78. The app-code deletion path was confirmed by the 2026-06-18 Playwright run recorded in frontmatter. |
 | 6 | Duplicate `page.request.post('/study/sync')` of same capturedId results in exactly one Ecto row (E2E-03f) | VERIFIED (structure) | Lines 83-94: `page.request.post('/study/sync', { data: { events: [...] } })` with APIRequestContext; `dupBody.data.accepted_count === 0` assertion; `expect.poll({ count: 1 })` second poll |
 | 7 | Each test resets IndexedDB via `beforeEach addInitScript(deleteDatabase(...))` — never `beforeAll` | VERIFIED | `test.beforeEach` at line 4; `indexedDB.deleteDatabase('crosswake_offline_study')` at line 8; no `beforeAll` anywhere in file |
 | 8 | Spec is a teaching artifact: step-labeled comments, precise describe/test name, `// OBSERVATION_ONLY` on every surviving `page.evaluate` | VERIFIED | All 4 `page.evaluate` calls carry `// OBSERVATION_ONLY` (lines 17, 27, 52, 64); step-labeled comments (Step 1 through Step 8); describe name is the full offline→reconcile description |
@@ -110,13 +110,13 @@ human_verification:
 | `#btn-pass` dead selector removed | `grep -n "#btn-pass" offline_storage.spec.ts` | No output — dead selector absent | PASS |
 | `upsert_progress` present, `create_progress` absent in fixtures | `grep -n "upsert_progress\|create_progress" flashcards_fixtures.ex` | Line 47: `upsert_progress()` only | PASS |
 | Real buttons exist in app DOM | `grep "btn-flip\|btn-good" index.html.heex` | Lines 86-87: `id="btn-flip"` and `id="btn-good"` confirmed | PASS |
-| Playwright spec execution (E2E-03c, E2E-03e behavior-dependent) | `npx playwright test e2e/offline_sync.spec.ts` | SKIP — requires running Phoenix server on port 4002; not re-runnable without server | SKIP |
+| Playwright spec execution (E2E-03c, E2E-03e behavior-dependent) | `npx playwright test` from `examples/phoenix_host` | 4/4 pass recorded in frontmatter from the 2026-06-18 orchestrator run | PASS |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|---------|
-| E2E-03 | 113-01, 113-02 | `offline_sync.spec.ts` proves full offline→reconnect→reconcile loop with zero state-writing page.evaluate calls | VERIFIED (structure + wiring; E2E-03c/e behavior-unverified) | All sub-clauses a–f have structural evidence in the spec; runtime behavior of E2E-03c (reconnect flush) and E2E-03e (outbox drain) require human verification |
+| E2E-03 | 113-01, 113-02 | `offline_sync.spec.ts` proves full offline→reconnect→reconcile loop with zero state-writing page.evaluate calls | VERIFIED | All sub-clauses a–f have structural evidence in the spec; runtime behavior of E2E-03c (reconnect flush) and E2E-03e (outbox drain) was confirmed by the 2026-06-18 Playwright run recorded in frontmatter. |
 | E2E-04 | 113-01, 113-03 | `offline-sync-e2e-gate.yml` runs `mix compile --warnings-as-errors` before Playwright | VERIFIED | Compile step at lines 32-34 of offline-sync-e2e-gate.yml; ordered before npm ci/Playwright |
 
 Both requirement IDs declared across all plans (E2E-03 from 113-01/113-02; E2E-04 from 113-01/113-03) are accounted for. No orphaned requirements.
@@ -139,23 +139,11 @@ Zero debt markers across all 6 files modified by this phase:
 
 ### Human Verification Required
 
-#### 1. Full Playwright Suite Pass (behavior-unverified truths E2E-03c and E2E-03e)
-
-**Test:** From `examples/phoenix_host`, run `npx playwright test` (or `npx playwright test e2e/offline_sync.spec.ts`). A running Phoenix server on port 4002 is required (the Playwright config's `webServer` block starts it automatically).
-
-**Expected:** 4/4 tests pass. Specifically, the `offline_sync.spec.ts` test:
-- Step 5 (`waitForResponse('/study/sync', 200)`) resolves without timeout — confirming the `window 'online'` dispatch actually fired the app's `flushOutbox` listener and the POST reached the server (E2E-03c).
-- Step 7 (`expect(remaining).toHaveLength(0)`) passes — confirming `flushOutbox`'s delete-on-2xx branch ran and cleared the IndexedDB record (E2E-03e).
-
-**Why human:** Two truths assert runtime state transitions:
-- E2E-03c: that `window.dispatchEvent(new Event('online'))` (an environment simulation) actually propagates to the app's `window.addEventListener('online', flushOutbox)` binding at `offline_study.js:280` and the subsequent POST returns 200. CDP behavior cannot be verified by file inspection.
-- E2E-03e: that `flushOutbox`'s `deleteRecord(record.id)` on 2xx actually executes and the IndexedDB mutation store becomes empty. This depends on the server returning 200 and the app's success branch running — again, runtime behavior.
-
-Note: SUMMARY.md for Plan 02 reports `npx playwright test e2e/offline_sync.spec.ts — PASSED (1/1)` and full suite `4/4 PASSED`, confirmed during execution on 2026-06-18. This human check re-confirms on a clean run.
+None. The two originally behavior-dependent checks were confirmed by the 2026-06-18 orchestrator-run Playwright suite recorded in frontmatter: `npx playwright test` from `examples/phoenix_host` passed 4/4.
 
 ### Gaps Summary
 
-No gaps found. All four ROADMAP success criteria are verified at the structural and wiring level. The two PRESENT_BEHAVIOR_UNVERIFIED truths (E2E-03c and E2E-03e) have their code present and correctly wired but require a live Playwright run to exercise the runtime state transitions. The phase deliverables are complete and correctly implemented.
+No gaps found. All four ROADMAP success criteria are verified. The originally behavior-dependent E2E-03c and E2E-03e runtime transitions were confirmed by the 2026-06-18 Playwright suite recorded in frontmatter. The phase deliverables are complete and correctly implemented.
 
 ---
 
