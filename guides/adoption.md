@@ -93,6 +93,89 @@ Use these outcome words precisely:
 The browser status copy should stay plain: queued locally, syncing, synced count,
 queued count, or sync failed with local records retained.
 
+## Reusable Offline-Island Recipe
+
+Use this pattern only for a route that truly owns local mutation and replay.
+Cached read-only routes are covered in [guides/offline.md](offline.md).
+
+### 1. Declare the route owner
+
+Choose `:offline_island` only for the route that owns local work:
+
+```elixir
+get("/offline", CrosswakeExample.OfflineController, :index,
+  crosswake: [
+    id: "offline-study",
+    runtime: :offline_island,
+    offline: :local_first,
+    security: :standard
+  ]
+)
+```
+
+Nearby routes can stay `:live_view` or cached read-only. Crosswake works best
+when each route owner is explicit.
+
+### 2. Build the island
+
+Render a small route-owned island that can run without a LiveView socket. The
+checked-in proof uses `CrosswakeExample.OfflineController` and a static module
+script loaded by `offline_html/index.html.heex`.
+
+Keep the island focused on the user job. For the flashcard proof, the user rates
+one card and gets status about local save and replay.
+
+### 3. Persist semantic events
+
+Store small semantic events in local browser storage. In the proof, IndexedDB has
+separate stores for `flashcards` and `mutations`.
+
+Prefer durable event fields that Phoenix can validate:
+
+- app-generated mutation id
+- stable domain id
+- user action or rating
+- enough route/session context for reconciliation
+
+Do not store broad UI snapshots and call that sync. Do not make the bounded
+bridge own local writes.
+
+### 4. Flush on reconnect or explicit sync
+
+Trigger replay when the route is active and the browser is online. The current
+proof uses the `window` `online` event and an eager foreground flush.
+
+If the network request fails, keep queued records in the outbox and show a clear
+local status. Do not silently drop the work.
+
+### 5. Reconcile in Phoenix/Ecto
+
+Keep canonical truth on the Phoenix side:
+
+1. Receive batched events at a route-local endpoint such as `/study/sync`.
+2. Validate each event with an Ecto changeset.
+3. Insert valid events idempotently by client mutation id.
+4. Return accepted records and rejected records separately.
+5. Leave conflicts explicit instead of silently overwriting server truth.
+
+The browser deletes only accepted records. Rejected or conflict outcomes stay
+visible until the app can guide the user.
+
+### 6. Test the whole loop
+
+The useful proof is end-to-end:
+
+- user action queues an IndexedDB event
+- reconnect triggers app code
+- Phoenix receives `/study/sync`
+- Ecto persists one canonical row
+- duplicate replay stays idempotent
+- accepted outbox records are deleted
+- rejected records remain inspectable
+
+Use Playwright or an equivalent browser E2E to prove that flow. Unit tests alone
+do not prove route ownership or reconnect behavior.
+
 ## Bridge Boundary
 
 The bounded bridge remains a low-frequency request/reply affordance for a
