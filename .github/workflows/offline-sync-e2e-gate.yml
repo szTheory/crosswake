@@ -146,6 +146,12 @@ jobs:
       - name: Compile (warnings as errors)
         working-directory: examples/phoenix_host
         run: mix compile --warnings-as-errors
+      - name: Resolve Crosswake version
+        id: crosswake-version
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^  @version "\(.*\)" #.*/\1/p' mix.exs)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Phoenix route assertions
         working-directory: examples/phoenix_host
         run: mix test test/crosswake_example/router_test.exs test/crosswake_example/e2e/sync_state_controller_test.exs
@@ -157,20 +163,44 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run route-tour Playwright proof
         working-directory: examples/phoenix_host
+        env:
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
         run: npx playwright test e2e/route_tour.spec.ts
-      - name: Upload route-tour screenshots
+      - name: Assert route-tour required evidence files
+        run: |
+          set -euo pipefail
+          test -s examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json
+          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/library.png
+          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/bridge-proof.png
+          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/offline-study-replayed.png
+          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/selective-native-claim-capture-unavailable.png
+      - name: Validate route-tour evidence manifest
+        run: |
+          set -euo pipefail
+          mix deps.get
+          CROSSWAKE_EVIDENCE_MANIFEST_PATH=examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json \
+            mix test test/crosswake/guides/evidence_manifest_test.exs
+      - name: Upload route-tour evidence bundle
         uses: actions/upload-artifact@v4
         with:
-          name: route-tour-proof-screenshots
-          path: examples/phoenix_host/playwright-artifacts/route-tour/
+          name: crosswake-route-tour-evidence
+          path: |
+            examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json
+            examples/phoenix_host/playwright-artifacts/route-tour/screenshots/
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
           if-no-files-found: error
           retention-days: 14
       - name: Step summary
         run: |
           {
-            echo "Route-tour proof: semantic Playwright assertions proved route ids library, bridge-proof, offline-study, and selective-native-claim-capture before screenshots were captured."
-            echo "Owner classes: Phoenix LiveView, bounded bridge, offline island replay, and native-screen browser fallback."
-            echo "Screenshots are collateral only and uploaded at route-tour-proof-screenshots from examples/phoenix_host/playwright-artifacts/route-tour/."
+            echo "## Crosswake route-tour evidence"
+            echo ""
+            echo "Proven: semantic Playwright assertions covered route ids library, bridge-proof, offline-study, and selective-native-claim-capture before screenshots were captured."
+            echo "Captured: evidence-manifest.json, browser screenshots, Playwright HTML report, traces when Playwright produces them, and concise test output in crosswake-route-tour-evidence."
+            echo "Advisory: screenshots are route-tour collateral and support reader inspection."
+            echo "Not claimed: native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+            echo "Retention: crosswake-route-tour-evidence is retained for 14 days."
           } >> "$GITHUB_STEP_SUMMARY"
 
   merge-blocking-offline-sync-e2e:      # THE ONLY required check (GATE-01 name)

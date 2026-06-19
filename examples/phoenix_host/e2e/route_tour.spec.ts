@@ -8,8 +8,10 @@ import {
   readQueuedOfflineMutations,
   resetOfflineStudyDatabase,
 } from './support/offline_route_proof';
+import { writeRouteTourEvidenceManifest } from './support/evidence_manifest';
 
 const screenshotDir = path.join(process.cwd(), 'playwright-artifacts', 'route-tour');
+const routeTourScreenshotDir = path.join(screenshotDir, 'screenshots');
 const routerPath = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
 const routeTourCommand = 'npx playwright test e2e/route_tour.spec.ts';
 
@@ -19,7 +21,7 @@ test.describe('Crosswake route-owner browser tour', () => {
   });
 
   test('proves LiveView, bounded bridge, offline island, and native-owned fallback route semantics before screenshots', async ({ page, context }) => {
-    mkdirSync(screenshotDir, { recursive: true });
+    mkdirSync(routeTourScreenshotDir, { recursive: true });
 
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
@@ -32,6 +34,8 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     await proveNativeOwnedRoute(page);
     await captureRouteScreenshot(page, 'selective-native-claim-capture-unavailable.png');
+
+    writeRouteTourEvidenceManifest(screenshotDir, routeTourCommand);
   });
 });
 
@@ -115,7 +119,7 @@ async function proveNativeOwnedRoute(page: Page) {
 }
 
 async function captureRouteScreenshot(page: Page, filename: string) {
-  await page.screenshot({ path: path.join(screenshotDir, filename), fullPage: true });
+  await page.screenshot({ path: path.join(routeTourScreenshotDir, filename), fullPage: true });
 }
 
 async function bridgePayload(page: Page) {
