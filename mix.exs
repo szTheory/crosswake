@@ -94,6 +94,7 @@ defmodule Crosswake.MixProject do
         "guides/install.md",
         "guides/route_policy.md",
         "guides/web_to_mobile_migration.md",
+        "guides/troubleshooting.md",
         "guides/support_matrix.md",
         "guides/adopter_profiles.md",
         "guides/adoption.md",
@@ -138,6 +139,7 @@ defmodule Crosswake.MixProject do
           "guides/commerce.md"
         ],
         Truth: [
+          "guides/troubleshooting.md",
           "guides/support_matrix.md",
           "guides/compatibility.md",
           "guides/android_uat.md"

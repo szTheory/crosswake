@@ -127,9 +127,12 @@ Crosswake treats diagnostics, support truth, and proof lanes as part of the prod
 surface.
 
 - [guides/support_matrix.md](guides/support_matrix.md) is the canonical support-status surface.
-- [guides/support_matrix.md#support-truth-label-legend](guides/support_matrix.md#support-truth-label-legend) defines support-truth labels: merge-blocking proof, advisory evidence, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required.
+- [guides/support_matrix.md#support-truth-label-legend](guides/support_matrix.md#support-truth-label-legend) defines support-truth labels: merge-blocking proof, advisory evidence, checked-in public-coordinate proof, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required.
+- [guides/troubleshooting.md](guides/troubleshooting.md) maps doctor findings, denial reasons, route-unavailable states, offline replay outcomes, and native evidence labels to route-owner fixes.
 - [guides/install.md](guides/install.md) is the canonical install and proof-entry guide.
+- The checked-in `examples/ios_shell_host` and `examples/android_shell_host` hosts are `checked-in public-coordinate proof`; use `--local` only for maintainer/local-dev proof.
 - `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane.
+- The route-tour evidence path uses `merge-blocking proof` for browser semantic assertions, manifest labels for artifacts, and `advisory evidence` for native simulator/emulator collateral.
 - `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks` reruns the local generated-shell verification hooks.
 
 Crosswake stays deliberately narrow and explicit. Unsupported or incompatible routes
@@ -148,6 +151,7 @@ container.
 - [guides/offline.md](guides/offline.md) — cached read-only and offline-island posture
 - [guides/compatibility.md](guides/compatibility.md) — compatibility and denial posture
 - [guides/support_matrix.md](guides/support_matrix.md) — proof classes, support labels, and rebuild truth
+- [guides/troubleshooting.md](guides/troubleshooting.md) — route-owner fixes for doctor findings, denials, offline outcomes, and native evidence labels
 
 ## Current baseline
 

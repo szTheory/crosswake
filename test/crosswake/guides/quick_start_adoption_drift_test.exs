@@ -71,7 +71,7 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     without_native_labels =
       quick_start
       |> String.replace(~r/advisory/i, "optional")
-      |> String.replace("local-development", "local dev")
+      |> String.replace("checked-in public-coordinate proof", "checked-in native proof")
 
     assert_failure_category(
       scan_quick_start({"synthetic/quick_start_missing_native_labels.md", without_native_labels}),
@@ -523,7 +523,8 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
           failure(path, :missing_native_label,
             line: line_number(contents, native_path),
             claim: native_path,
-            detail: "native host paths must be labeled advisory and local-development"
+            detail:
+              "native host paths must be labeled checked-in public-coordinate proof and published-coordinate mode"
           )
         ]
       else
@@ -537,8 +538,8 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     |> context_window(native_path, 1_500)
     |> String.downcase()
     |> then(fn context ->
-      String.contains?(context, "advisory") and
-        String.contains?(context, "local-development")
+      String.contains?(context, "checked-in public-coordinate proof") and
+        String.contains?(context, "published-coordinate mode")
     end)
   end
 
@@ -550,14 +551,16 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
       {"bridge owns mutation queue",
        ~r/\bbridge\s+owns?\s+(?:the\s+)?(?:offline\s+)?mutation\s+queue\b/i},
       {"mutation queue owned by bridge",
-       ~r/\bmutation\s+queue\s+owned\s+by\s+(?:the\s+)?bridge\b/i}
+       ~r/\bmutation\s+queue\s+owned\s+by\s+(?:the\s+)?bridge\b/i},
+      {"native proof overclaim",
+       ~r/\bchecked-in public-coordinate proof\b.*\b(simulator|emulator|physical-device|device)\s+support\b/i}
     ]
 
     Enum.flat_map(forbidden_checks, fn {label, regex} ->
       contents
       |> lines()
       |> Enum.flat_map(fn {line, line_number} ->
-        if Regex.match?(regex, line) do
+        if Regex.match?(regex, line) and not negated?(line) do
           [
             failure(path, :forbidden_offline_authority,
               line: line_number,
@@ -570,6 +573,16 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
         end
       end)
     end)
+  end
+
+  defp negated?(line) do
+    lowered = String.downcase(line)
+
+    String.contains?(lowered, " not ") or
+      String.contains?(lowered, " does not ") or
+      String.contains?(lowered, " cannot ") or
+      String.contains?(lowered, " never ") or
+      String.contains?(lowered, " without ")
   end
 
   defp require_contains(path, contents, needle, category, detail) do

@@ -6,16 +6,16 @@ proof commands that show Crosswake's current route-owner architecture.
 Use it from a clean checkout when you want to see what is proven today:
 Phoenix-owned routes stay Phoenix-owned, `/offline` is an app-owned offline
 island, `/bridge-proof` is a Phoenix-owned route with one bounded Share
-affordance, and native UI steps remain advisory/local-development until Phase
-119 classifies checked-in native evidence.
+affordance, and the checked-in native hosts are `checked-in public-coordinate proof`
+while `--local` remains the explicit maintainer path.
 
 ## Prerequisites
 
 - Elixir and Erlang matching the root `mix.exs`
 - Node and npm for the Playwright proof in `examples/phoenix_host`
-- Xcode only if you want the advisory iOS local-development walkthrough
-- Android Studio, Android SDK, and Java only if you want the advisory Android
-  local-development walkthrough
+- Xcode only if you want to inspect the checked-in iOS host locally
+- Android Studio, Android SDK, and Java only if you want to inspect the
+  checked-in Android host locally
 
 ## First Run
 
@@ -118,15 +118,24 @@ CROSSWAKE_PHASE5_NATIVE_PROOFS=0 bash script/verify_phase5_example_hosts.sh
 ```
 
 This keeps native verification hooks disabled and proves the manifest/example
-host contract lane. It is useful before Phase 119 because the checked-in native
-hosts are not yet classified as published-coordinate proof.
+host contract lane. The checked-in native hosts are already
+`checked-in public-coordinate proof`; this command does not run simulator,
+emulator, or physical-device evidence.
 
-## Native Steps Are Advisory
+## Native Steps Are Labeled Proof
 
-The checked-in native hosts are local-development proof surfaces in this phase.
-Use these steps only when you want to inspect the local host projects manually.
-They are advisory evidence, not merge-blocking proof, not generated
-public-coordinate proof, and not physical-device support.
+The checked-in native host paths are `checked-in public-coordinate proof`:
+
+- `examples/ios_shell_host/CrosswakeShell.xcodeproj` | published-coordinate mode
+- `examples/android_shell_host/app/build.gradle` | published-coordinate mode
+
+What this proves: the checked-in host projects resolve the published native shell
+coordinates by default.
+What this does not prove: simulator, emulator, or physical-device support.
+Next link: [guides/native_shell.md](../guides/native_shell.md)
+
+Use `--local` when you want maintainer/local-dev proof against source-checkout
+dependencies instead of the public default.
 
 ### iOS Local-Development Walkthrough
 
@@ -135,9 +144,8 @@ open examples/ios_shell_host/CrosswakeShell.xcodeproj
 ```
 
 Run the project from Xcode against the Phoenix host you started with
-`PORT=4002 mix phx.server`. This project currently uses a local Swift package
-reference, so do not read a successful simulator launch as published-coordinate
-proof.
+`PORT=4002 mix phx.server`. The checked-in host path is published-coordinate
+proof, but a successful simulator launch still does not prove device support.
 
 ### Android Local-Development Walkthrough
 
@@ -147,8 +155,8 @@ cd examples/android_shell_host
 ```
 
 You need local Android tooling and a running emulator or device for that command.
-The checked-in Android host currently remains a local-development proof surface
-until Phase 119 reconciles native evidence labels.
+The checked-in Android host path is published-coordinate proof, but the emulator
+launch still does not prove physical-device support.
 
 ## Troubleshooting Quick Checks
 
@@ -160,16 +168,15 @@ until Phase 119 reconciles native evidence labels.
   running `npx playwright test e2e/offline_sync.spec.ts`.
 - If `node script/check-e2e-honesty.mjs` cannot find TypeScript, run
   `npm ci` from `examples/phoenix_host` first.
-- If native builds fail, treat that as advisory local tooling state for Phase
-  118; the required contract proof is the native-skipped script above.
+- If native builds fail, treat that as advisory local tooling state; the required
+  contract proof is the native-skipped script above.
 
 ## What This Does Not Prove
 
 - It does not prove broad app-wide local-first behavior or background sync.
 - It does not make the bridge offline mutation authority.
 - It does not prove simulator, emulator, or physical-device support.
-- It does not classify checked-in iOS/Android hosts as published-coordinate
-  adopter proof.
+- It does not widen checked-in host proof into simulator, emulator, or physical-device support.
 - It does not turn Crosswake into a generic WebView wrapper, React Native clone,
   LiveView-to-native renderer, or plugin platform.
 - It does not replace Phase 119 native evidence classification or Phase 120
