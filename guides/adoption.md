@@ -1,42 +1,122 @@
-# Crosswake Adoption Guide: Flashcard Demo App Architecture
+# Crosswake Adoption Guide
 
-This guide details the architecture of the Flashcard Demo App and provides step-by-step instructions for adopting the Crosswake offline-sync architecture in your own projects.
+This guide shows the shipped flashcard proof first, then turns it into a
+route-local recipe for Phoenix SaaS teams.
 
-> For the definitive install sequence, see [guides/install.md](install.md).
+Crosswake is not asking you to make the whole app local-first. The proof path is
+one explicit owner decision: `/offline` is an `:offline_island` route whose local
+work is owned by app JavaScript and reconciled by Phoenix/Ecto.
 
-## Architecture Overview
+For the setup commands, start with [examples/QUICK_START.md](../examples/QUICK_START.md).
+For route-owner selection, read [guides/route_policy.md](route_policy.md) and
+[guides/web_to_mobile_migration.md](web_to_mobile_migration.md).
 
-The demo app demonstrates the `Crosswake.Offline` island philosophy. It is built as a Language Learning / Flashcard app, intentionally chosen to rigorously stress-test offline scenarios and eventual consistency.
+## Proof Walkthrough
 
-### Key Components:
+The checked-in proof is the flashcard study island:
 
-1.  **Phoenix Host (Backend)**: Uses Ecto to manage the truth state of the application.
-2.  **Crosswake Native Shell (Frontend)**: standalone SPM/Maven dependencies injected into the iOS/Android apps.
-3.  **App-owned offline island**: The current verified proof uses island JavaScript, IndexedDB outbox storage, reconnect-triggered `flushOutbox`, `/study/sync`, and Phoenix/Ecto reconciliation. The bridge is not the offline mutation authority.
+- Route: `/offline`
+- Route owner: `:offline_island`
+- HTML entry point: `CrosswakeExample.OfflineController`
+- Browser island code: `examples/phoenix_host/priv/static/offline_study.js`
+- Sync endpoint: `/study/sync`
+- API controller: `CrosswakeExample.LocalFirst.SyncController`
+- Reconciliation context: `CrosswakeExample.LocalFirst.Study.sync_events/1`
+- Ecto schema: `CrosswakeExample.LocalFirst.ReviewEvent`
 
-## Adopting the Offline-Sync Architecture
+Run the proof from `examples/phoenix_host`:
 
-To implement this architecture in your own app, follow these steps:
+```bash
+npm ci
+npx playwright install chromium
+npx playwright test e2e/offline_sync.spec.ts
+```
 
-### 1. Integrate the Crosswake Shell
+That Playwright test opens `/offline`, drives the real UI, observes IndexedDB,
+reconnects the browser, waits for `/study/sync`, checks Ecto state, proves the
+accepted local record is removed from the outbox, and verifies duplicate replay
+is idempotent.
 
-Generate the shell as a thin, host-owned wrapper that your team reviews and owns after scaffolding. Its native dependencies resolve from published registries — SwiftPM `github.com/szTheory/crosswake-shell-core-ios` for iOS and Maven Central `io.github.sztheory:crosswake-shell-core-android` for Android — rather than vendored or monorepo-local paths. The "eject trap" is eliminated by publishing the reusable core logic as package-manager dependencies, not by avoiding the generator.
+## Current Data Path
 
-### 2. Configure Offline Mutations
+The current implementation path is intentionally small and inspectable:
 
-Current verified proof is app-owned IndexedDB outbox plus reconnect-triggered
-Phoenix/Ecto reconciliation. The full adoption rewrite is owned by Phase 118;
-until then, do not treat the bridge as a mutation queue or sync engine.
+```text
+User rates a card on /offline
+  -> offline_study.js handleReview(rating)
+  -> queueMutation(...)
+  -> IndexedDB mutations store
+  -> window online event or foreground route activity
+  -> flushOutbox()
+  -> POST /study/sync
+  -> CrosswakeExample.LocalFirst.SyncController.sync/2
+  -> CrosswakeExample.LocalFirst.Study.sync_events/1
+  -> CrosswakeExample.LocalFirst.ReviewEvent.changeset/2
+  -> Ecto insert_all(... on_conflict: :nothing ...)
+  -> accepted_records deleted from the local outbox
+```
 
-### 3. Handle Sync Reconnection
+`queueMutation` stores small semantic events, not UI state snapshots. Each event
+contains:
 
-Ensure your Phoenix host's endpoints can receive and validate batched offline payloads. The backend must enforce sync state validation post-reconnection to reject invalid operations (tampering mitigation).
+- `client_mutation_id`
+- `card_id`
+- `rating`
 
-When the client reconnects:
-1.  The client transmits the offline mutation log.
-2.  The Ecto sync endpoint processes the log.
-3.  The client receives confirmation and updates its local state.
+`flushOutbox` reads queued mutations from IndexedDB and posts them to
+`/study/sync`. The browser `online` event triggers `flushOutbox`; the route also
+tries an eager flush while the user is online. This is reconnect-triggered,
+route-local replay, not a background service for the whole app.
 
-### 4. End-to-End Verification
+On the Phoenix side, `SyncController.sync/2` accepts a batch and delegates to
+`Study.sync_events/1`. `ReviewEvent.changeset/2` validates required fields and
+rating values. Valid rows are inserted with `insert_all` using
+`on_conflict: :nothing` and `conflict_target: :client_mutation_id`, so duplicate
+replay does not create duplicate canonical rows.
 
-Implement network-toggling E2E tests (like Playwright) in your CI/CD pipeline to simulate offline states and explicitly assert that your truth state is synchronized post-reconnect.
+## Replay Outcomes
+
+Use these outcome words precisely:
+
+- **accepted** - Phoenix/Ecto validated and persisted the event. The browser
+  deletes the matching accepted record from the IndexedDB outbox.
+- **rejected** - Phoenix/Ecto rejected the event with validation errors. The
+  record stays visible/queued locally so the app can show the failure and decide
+  what to do next.
+- **duplicate-idempotent** - replaying the same `client_mutation_id` is accepted
+  by the API shape but inserts no new row because Ecto uses
+  `on_conflict: :nothing`.
+- **conflict** - canonical Crosswake replay vocabulary for a server-side state
+  disagreement that needs attention. The current `/study/sync` demo teaches the
+  outcome class, but it does not ship a full conflict-resolution UI.
+
+The browser status copy should stay plain: queued locally, syncing, synced count,
+queued count, or sync failed with local records retained.
+
+## Bridge Boundary
+
+The bounded bridge remains a low-frequency request/reply affordance for a
+Phoenix-owned route. It can help with a semantic native action such as Share, but
+it does not own offline writes, replay, or reconciliation.
+
+If a flow needs continuous client authority, move it toward an offline island or
+a native screen. Do not push that authority through bridge messages.
+
+## What This Does Not Prove
+
+- No whole-app local-first claim.
+- No whole-app background replay claim.
+- No bridge authority over local writes.
+- No native/device/provider authority for the offline path.
+- No full conflict-resolution UI in the current `/study/sync` demo.
+- No screenshots, recordings, artifact manifests, or native evidence promotion in
+  this phase.
+
+## Reference Map
+
+- [examples/QUICK_START.md](../examples/QUICK_START.md) - runnable commands and proof ladder
+- [guides/route_policy.md](route_policy.md) - route-owner decisions
+- [guides/web_to_mobile_migration.md](web_to_mobile_migration.md) - existing Phoenix SaaS route inventory
+- [guides/offline.md](offline.md) - cached read-only versus offline island
+- [guides/bridge.md](bridge.md) - bounded bridge contract and denials
+- [guides/support_matrix.md](support_matrix.md) - support-truth labels
