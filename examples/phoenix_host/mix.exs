@@ -25,6 +25,9 @@ defmodule CrosswakeExample.MixProject do
 
   defp aliases do
     [
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
       # Provisions the SQLite DB and applies all migrations before running tests.
       # Required in CI where the committed .db file is absent or stale.
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
