@@ -53,7 +53,7 @@ What to look for:
 - `/bridge-proof` renders a LiveView route that declares the bounded `share`
   capability. The button is labeled `Share`.
 - The offline replay endpoint is `/study/sync`; it is used by the browser island,
-  not by a bridge-owned mutation queue.
+  not by the bridge.
 
 ## Prove Offline Replay
 
