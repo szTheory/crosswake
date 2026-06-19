@@ -11,7 +11,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 ## Current State
 - **v12.0 CI Honesty & Real-E2E Sweep — SHIPPED + archived 2026-06-18.** The offline-sync proof now exercises the real IndexedDB outbox and reconnect flush path, the E2E proof lane is merge-blocking with structural honesty guards, the closeout verifier fails closed on invalid phase contracts and bare ledger evidence, the historical validation-ledger debt is represented by evidence-backed ledgers or an accepted exception, and v8.0 document truth is reconciled. Full detail in `.planning/milestones/v12.0-ROADMAP.md`.
 - **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
-- **Active:** **v13.0 Adopter Confidence & Native Evidence** — Phase 117 completed the route-policy, web-to-mobile migration, and support-truth guide foundation. Remaining work starts at Phase 118: command-verified quick start/adoption truth, native evidence classification, and durable collateral/troubleshooting.
+- **Active:** **v13.0 Adopter Confidence & Native Evidence** — Phase 118 completed command-verified quick start/adoption truth and the DRIFT-02 guard. Remaining work starts at Phase 119: native evidence classification, then durable collateral/troubleshooting.
 
 **Shipped `v12.0 CI Honesty & Real-E2E Sweep` on `2026-06-18`** (Phases 112-115, 13 plans). v12.0 made the offline-sync and closeout proof surfaces honest: the demo app now queues real IndexedDB mutations and flushes them on reconnect; the Playwright E2E asserts app-generated mutation IDs against Ecto and runs behind a compile gate; the merge-blocking E2E aggregator, structural honesty scanner, and test-only route assertions prevent regression to fabricated proof. Phase 115 tightened `CloseoutVerifier` with the `closeout.expected_phases` fail-closed contract, evidence-backed validation ledgers, accepted v3.6 exception handling, and source-contract doc truth tests that establish `MILESTONES.md` > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md`.
 
@@ -140,6 +140,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - [x] **GUIDE-01** v13 route-policy/start-here guide explains Crosswake's route-owner job, owner classes, current examples, and manifest/doctor/support truth links. Validated in Phase 117.
 - [x] **MIGRATE-01** v13 web-to-mobile migration guide inventories existing Phoenix SaaS routes and defaults most routes to LiveView before explicit promotion. Validated in Phase 117.
 - [x] **TRUTH-01** v13 README, ExDoc groups, support matrix, and guide maps share one support-truth label vocabulary. Validated in Phase 117.
+- [x] **QUICK-01** v13 quick start is runnable from a clean checkout with exact setup/server/native/proof commands, paths, expected output, and advisory native labels. Validated in Phase 118.
+- [x] **ADOPT-01** v13 adoption guide teaches the app-owned IndexedDB outbox/reconnect/Ecto proof and removes bridge-owned offline mutation language. Validated in Phase 118.
+- [x] **DRIFT-02** v13 quick-start/adoption guide drift is guarded by source-derived ExUnit docs-contract tests. Validated in Phase 118.
 - ✓ **v3.3 Release Readiness** (all 28 requirements: META-*, VER-01, LOG-*, REL-*, HEX-*, PRF-*) — `crosswake 0.1.0` published to hex.pm.
 - ✓ **v3.4 Commerce Archetype Proof** (all 14 requirements: PWAL-01/02, MOCK-01/02/03, WIRE-01/02/03, STATE-01, PROOF-01/02/03, DOCS-01/02) — runnable mocked paywall corridor.
 - ✓ **v3.5 First-Party Companions** (all 15 requirements: COMP-*, GATE-*, MEDIA-*, AUTH-*, PROOF-*) — reusable in-tree companion seam.
@@ -172,9 +175,6 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-- [ ] QUICK-01: `examples/QUICK_START.md` is runnable from a clean checkout and names exact setup/server/native commands, paths, expected output, proof commands, and advisory native steps.
-- [ ] ADOPT-01: `guides/adoption.md` teaches v12 app-owned IndexedDB outbox/reconnect/Ecto truth and removes bridge-owned offline mutation language.
-- [ ] DRIFT-02: Quick-start and adoption guide drift is mechanically guarded.
 - [ ] NATIVE-01: Checked-in iOS and Android hosts either prove published `0.1.2` coordinates or are explicitly labeled local-development proof with no stale coordinate claims.
 - [ ] NATIVE-02: Native docs and support surfaces distinguish published-coordinate proof from local-dev proof and do not overstate JVM, emulator, or device evidence.
 - [ ] DRIFT-03: Native evidence drift is mechanically guarded.
@@ -250,7 +250,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Make external consumption a permanent guarantee via a merge-blocking `generator_coordinate_parity` check (sibling to the v10.0 `brand-structural` gate) | A clean-room proof is point-in-time; a structural CI guard keeps the eject-trap thesis honest forever | Validated in v11.0 (Phase 111, PROOF-02) |
 | Treat proof-honesty regressions as structural CI problems, not review-only risks | The v6/v8 offline-sync path looked green while bypassing app-owned state; proof lanes need source-contract guards that ban known fabrication shapes | Validated in v12.0 (Phases 113-114) |
 | Make closeout verification fail closed on explicit phase contracts and evidence-backed ledgers | Vacuous globs and bare ledger attestations let historical validation debt pass as green | Validated in v12.0 (Phase 115) |
-| Treat v13.0 as adopter-confidence proof before feature breadth | Repo truth after v12.0 shows strong substrate and real offline proof, but the public proof path still has stale docs, quick-start drift, checked-in native host drift, and no screenshot/video/simulator collateral | Active in v13.0 |
+| Treat v13.0 as adopter-confidence proof before feature breadth | Repo truth after v12.0 shows strong substrate and real offline proof, but the public proof path still has stale docs, quick-start drift, checked-in native host drift, and no screenshot/video/simulator collateral | Phase 118 resolved proof-path drift; native evidence and collateral remain active in v13.0 |
 
 ## Evolution
 
@@ -270,4 +270,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-18 — started v13.0 Adopter Confidence & Native Evidence*
+*Last updated: 2026-06-19 — Phase 118 complete; ready for Phase 119 native evidence classification*
