@@ -49,10 +49,10 @@ Make native proof labels impossible to misread before capturing or publishing na
 
 Create seeing-is-believing evidence that is durable, useful, and honestly labeled.
 
-- [ ] **COLL-01**: A deterministic browser route-tour proof runs in CI and captures/links evidence for a Phoenix-owned LiveView route, bounded bridge affordance, offline island queued/replayed state, and native-screen/route-unavailable path. The proof uses semantic assertions for correctness; screenshots are collateral, not the sole correctness check.
-- [ ] **COLL-02**: Artifact packaging is explicit and bounded. Evidence bundles include a manifest with Crosswake version, commit SHA, route id, runtime owner, platform, command, proof class, source job, captured-at timestamp, and known limitations. Rich reports/traces/logs/videos are CI artifacts with bounded retention; committed docs assets are limited to a small optimized screenshot set plus manifest if needed.
-- [ ] **NATIVE-COLL-01**: iOS simulator and Android emulator screenshots/recordings are captured as advisory evidence where available, with coordinate mode, version, command, route/flow, platform/runtime, and support label. They do not imply physical-device support, camera support, media upload support, provider authority, or merge-blocking support unless promotion criteria are explicitly added and met.
-- [ ] **TROUBLE-01**: Troubleshooting and rough-edge docs explain doctor findings, denials, route-unavailable states, native evidence labels, offline replay/conflict failures, and what adopters should change by route owner. Covered examples include undeclared capability, unavailable capability, compatibility mismatch, pack incompatibility, external-entry denial, gate denial, step-up required, and offline conflict/replay outcomes.
+- [x] **COLL-01**: A deterministic browser route-tour proof runs in CI and captures/links evidence for a Phoenix-owned LiveView route, bounded bridge affordance, offline island queued/replayed state, and native-screen/route-unavailable path. The proof uses semantic assertions for correctness; screenshots are collateral, not the sole correctness check.
+- [x] **COLL-02**: Artifact packaging is explicit and bounded. Evidence bundles include a manifest with Crosswake version, commit SHA, route id, runtime owner, platform, command, proof class, source job, captured-at timestamp, and known limitations. Rich reports/traces/logs/videos are CI artifacts with bounded retention; committed docs assets are limited to a small optimized screenshot set plus manifest if needed.
+- [x] **NATIVE-COLL-01**: iOS simulator and Android emulator screenshots/recordings are captured as advisory evidence where available, with coordinate mode, version, command, route/flow, platform/runtime, and support label. They do not imply physical-device support, camera support, media upload support, provider authority, or merge-blocking support unless promotion criteria are explicitly added and met.
+- [x] **TROUBLE-01**: Troubleshooting and rough-edge docs explain doctor findings, denials, route-unavailable states, native evidence labels, offline replay/conflict failures, and what adopters should change by route owner. Covered examples include undeclared capability, unavailable capability, compatibility mismatch, pack incompatibility, external-entry denial, gate denial, step-up required, and offline conflict/replay outcomes.
 
 ## Future Requirements
 
@@ -98,13 +98,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUICK-01 | 118 | Complete |
 | ADOPT-01 | 118 | Complete |
 | DRIFT-02 | 118 | Complete |
-| NATIVE-01 | 119 | Planned |
-| NATIVE-02 | 119 | Planned |
-| DRIFT-03 | 119 | Planned |
-| COLL-01 | 120 | Planned |
-| COLL-02 | 120 | Planned |
-| NATIVE-COLL-01 | 120 | Planned |
-| TROUBLE-01 | 120 | Planned |
+| NATIVE-01 | 119 | Complete |
+| NATIVE-02 | 119 | Complete |
+| DRIFT-03 | 119 | Complete |
+| COLL-01 | 120 | Complete |
+| COLL-02 | 120 | Complete |
+| NATIVE-COLL-01 | 120 | Complete |
+| TROUBLE-01 | 120 | Complete |
 
 **Coverage:**
 

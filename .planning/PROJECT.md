@@ -11,7 +11,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 ## Current State
 - **v12.0 CI Honesty & Real-E2E Sweep — SHIPPED + archived 2026-06-18.** The offline-sync proof now exercises the real IndexedDB outbox and reconnect flush path, the E2E proof lane is merge-blocking with structural honesty guards, the closeout verifier fails closed on invalid phase contracts and bare ledger evidence, the historical validation-ledger debt is represented by evidence-backed ledgers or an accepted exception, and v8.0 document truth is reconciled. Full detail in `.planning/milestones/v12.0-ROADMAP.md`.
 - **v11.0 Release & Distribution Truth — SHIPPED + archived 2026-06-17.** The v5.0 standalone-package thesis is now genuinely consumable: `crosswake 0.1.2` is live on Hex, Maven Central, and the SwiftPM mirror from a single lockstep release-please run; `gen.shell` emits resolvable version-matched coordinates, proven by a clean-room CI lane and guarded by a permanent parity check. Full detail in `.planning/milestones/v11.0-ROADMAP.md`.
-- **Active:** **v13.0 Adopter Confidence & Native Evidence** — Phase 118 completed command-verified quick start/adoption truth and the DRIFT-02 guard. Remaining work starts at Phase 119: native evidence classification, then durable collateral/troubleshooting.
+- **v13.0 Adopter Confidence & Native Evidence — COMPLETE 2026-06-19.** The public proof path now has current release truth, route-owner guides, checked-in public-coordinate native host labels, merge-blocking browser route-tour evidence, bounded evidence manifests, advisory native collateral capture, and route-owner troubleshooting. Phase 120 verification passed 9/9 must-haves.
 
 **Shipped `v12.0 CI Honesty & Real-E2E Sweep` on `2026-06-18`** (Phases 112-115, 13 plans). v12.0 made the offline-sync and closeout proof surfaces honest: the demo app now queues real IndexedDB mutations and flushes them on reconnect; the Playwright E2E asserts app-generated mutation IDs against Ecto and runs behind a compile gate; the merge-blocking E2E aggregator, structural honesty scanner, and test-only route assertions prevent regression to fabricated proof. Phase 115 tightened `CloseoutVerifier` with the `closeout.expected_phases` fail-closed contract, evidence-backed validation ledgers, accepted v3.6 exception handling, and source-contract doc truth tests that establish `MILESTONES.md` > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md`.
 
@@ -143,6 +143,8 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - [x] **QUICK-01** v13 quick start is runnable from a clean checkout with exact setup/server/native/proof commands, paths, expected output, and advisory native labels. Validated in Phase 118.
 - [x] **ADOPT-01** v13 adoption guide teaches the app-owned IndexedDB outbox/reconnect/Ecto proof and removes bridge-owned offline mutation language. Validated in Phase 118.
 - [x] **DRIFT-02** v13 quick-start/adoption guide drift is guarded by source-derived ExUnit docs-contract tests. Validated in Phase 118.
+- [x] **NATIVE-01 / NATIVE-02 / DRIFT-03** v13 checked-in native hosts default to published coordinates, public native docs use consistent evidence labels, and drift is guarded mechanically. Validated in Phase 119.
+- [x] **COLL-01 / COLL-02 / NATIVE-COLL-01 / TROUBLE-01** v13 route-tour evidence, bounded evidence manifests, advisory native collateral, and route-owner troubleshooting are durable and honestly labeled. Validated in Phase 120.
 - ✓ **v3.3 Release Readiness** (all 28 requirements: META-*, VER-01, LOG-*, REL-*, HEX-*, PRF-*) — `crosswake 0.1.0` published to hex.pm.
 - ✓ **v3.4 Commerce Archetype Proof** (all 14 requirements: PWAL-01/02, MOCK-01/02/03, WIRE-01/02/03, STATE-01, PROOF-01/02/03, DOCS-01/02) — runnable mocked paywall corridor.
 - ✓ **v3.5 First-Party Companions** (all 15 requirements: COMP-*, GATE-*, MEDIA-*, AUTH-*, PROOF-*) — reusable in-tree companion seam.
@@ -175,13 +177,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-- [ ] NATIVE-01: Checked-in iOS and Android hosts either prove published `0.1.2` coordinates or are explicitly labeled local-development proof with no stale coordinate claims.
-- [ ] NATIVE-02: Native docs and support surfaces distinguish published-coordinate proof from local-dev proof and do not overstate JVM, emulator, or device evidence.
-- [ ] DRIFT-03: Native evidence drift is mechanically guarded.
-- [ ] COLL-01: Durable browser route-tour evidence captures Phoenix-owned, bounded bridge, offline-island, and native-screen/route-unavailable paths.
-- [ ] COLL-02: Evidence bundles carry explicit manifests, proof classes, source jobs, timestamps, and known limitations.
-- [ ] NATIVE-COLL-01: iOS simulator and Android emulator screenshots/recordings are advisory and honestly labeled where available.
-- [ ] TROUBLE-01: Troubleshooting and rough-edge docs map doctor findings, denials, route-unavailable states, offline outcomes, and route-owner next actions.
+- None. v13.0 is complete; start the next milestone before adding new active requirements.
 
 ### Out of Scope
 

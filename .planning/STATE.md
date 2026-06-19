@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
-status: planning
-stopped_at: Phase 119 context gathered
-last_updated: "2026-06-19T19:31:09.690Z"
-last_activity: 2026-06-19
+status: milestone_complete
+stopped_at: Milestone complete (Phase 120 was final phase)
+last_updated: 2026-06-19T21:08:09.398Z
+last_activity: 2026-06-19 -- Phase 120 verified and v13 milestone complete
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 60
+  completed_phases: 5
+  total_plans: 16
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-19)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 119 — native evidence classification
+**Current focus:** Milestone complete
 
 ## Current Position
 
-Phase: 119
+Phase: 120
 Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-19
+Status: Milestone complete
+Last activity: 2026-06-19 -- Phase 120 verified and v13 milestone complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13 (v10.0) + 8 (v11.0) + 13 (v12.0) = 31 across last three milestones
+- Total plans completed: 17 (v10.0) + 8 (v11.0) + 13 (v12.0) = 31 across last three milestones
 - Average duration: —
 - Total execution time: —
 
@@ -90,13 +90,15 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - **Phase 118 / Plan 01**: QUICK-01 resolved with Phoenix host setup/reset aliases, a working `/` smoke page, a walkthrough-first `examples/QUICK_START.md`, and command-verified offline, bounded-bridge, and native-skipped proof lanes.
 - **Phase 118 / Plan 02**: ADOPT-01 resolved with `guides/adoption.md` teaching the app-owned IndexedDB outbox, reconnect-triggered `flushOutbox`, `/study/sync`, Ecto idempotency, replay outcomes, and bridge non-authority.
 - **Phase 118 / Plan 03**: DRIFT-02 resolved with `test/crosswake/guides/quick_start_adoption_drift_test.exs` scanning source-derived quick-start/adoption truth and synthetic stale-command/offline-authority regressions.
+- **Phase 119 / Plan 01**: Checked-in iOS and Android hosts now default to published coordinates and label themselves as checked-in public-coordinate proof.
+- **Phase 119 / Plan 02**: Public native docs, generated templates, and the canonical support matrix now share one evidence-label vocabulary.
+- **Phase 119 / Plan 03**: Native evidence drift is guarded by `test/crosswake/guides/native_evidence_drift_test.exs` with source-derived rules and synthetic regressions.
 
 ### Blockers/Concerns
 
 - **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
 - **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
 - **~~Adopter proof-path drift (v13 active)~~ → RESOLVED by Phase 118 (2026-06-19).** The quick start and adoption guide now use command-verified paths, current offline proof truth, and a DRIFT-02 docs-contract guard.
-- **Checked-in native host drift (v13 active):** The generator/release path proves published SwiftPM/Maven coordinates, but the checked-in iOS host still uses a local package ref and the checked-in Android host still references old `dev.crosswake:shell-core-android:0.1.0`. Decide whether checked-in hosts should prove published coordinates or be explicitly labeled local-development proof.
 - **Collateral gap (v13 active):** No durable adopter screenshots/videos/artifact uploads were found for the native/browser demo paths. Current proof is strong mechanically, but not yet "seeing is believing" for a maintainer or prospective adopter.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
 - **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
@@ -115,12 +117,11 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-19T19:31:09.678Z
-Stopped at: Phase 119 context gathered
-Resume file: .planning/phases/119-native-evidence-classification/119-CONTEXT.md
+Last session: 2026-06-19T21:08:09.398Z
+Stopped at: v13.0 milestone complete after Phase 120 verification
+Resume file: .planning/phases/120-collateral-artifact-ci-and-troubleshooting/120-VERIFICATION.md
 
 ## Operator Next Steps
 
-- Start `$gsd-discuss-phase 119` for Native Evidence Classification, or `$gsd-plan-phase 119` if discussion is intentionally skipped.
-- Decide whether checked-in iOS/Android hosts prove published coordinates or stay explicitly labeled local-development proof.
-- Keep screenshots, recordings, artifact manifests, and troubleshooting packaging in Phase 120.
+- Run `$gsd-complete-milestone` to archive v13.0 and prepare the next milestone.
+- Review Phase 120 evidence artifacts and verification if a release note or PR summary is needed.

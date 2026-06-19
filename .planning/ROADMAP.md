@@ -7,7 +7,7 @@
 - ✅ **v10.0 Brand Normalization** — Phases 107-109 (shipped 2026-06-14)
 - ✅ **v11.0 Release & Distribution Truth** — Phases 110-111 (shipped 2026-06-17)
 - ✅ **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (shipped 2026-06-18)
-- 🔄 **v13.0 Adopter Confidence & Native Evidence** — Phases 116-120 (active 2026-06-18)
+- ✅ **v13.0 Adopter Confidence & Native Evidence** — Phases 116-120 (completed 2026-06-19)
 
 ## Phases
 
@@ -70,13 +70,13 @@ Full phase detail archived in `.planning/milestones/v12.0-ROADMAP.md`.
 
 </details>
 
-### v13.0 Adopter Confidence & Native Evidence (Phases 116-120) — ACTIVE
+### v13.0 Adopter Confidence & Native Evidence (Phases 116-120) — COMPLETE
 
 - [x] **Phase 116: Proof Debt And Release Truth** - Make the public proof path clean and current before it becomes adopter evidence (3/3 plans)
 - [x] **Phase 117: Route-Policy And Support-Truth Guide Foundation** - Make the route-owner mental model and proof-label vocabulary the first-read frame (3/3 plans)
 - [x] **Phase 118: Runnable Quick Start And Real Adoption Proof** - Turn the first hands-on path into a command-verified proof of v11/v12 truth (3/3 plans) (completed 2026-06-19)
-- [ ] **Phase 119: Native Evidence Classification** - Decide and label whether native evidence is published-coordinate proof, local-dev proof, or advisory collateral (0/3 plans)
-- [ ] **Phase 120: Collateral, Artifact CI, And Troubleshooting** - Package durable route-ownership evidence with honest artifact labels and recovery docs (0/4 plans)
+- [x] **Phase 119: Native Evidence Classification** - Decide and label whether native evidence is published-coordinate proof, local-dev proof, or advisory collateral (3/3 plans) (completed 2026-06-19)
+- [x] **Phase 120: Collateral, Artifact CI, And Troubleshooting** - Package durable route-ownership evidence with honest artifact labels and recovery docs (4/4 plans) (completed 2026-06-19)
 
 ## Phase Details
 
@@ -169,12 +169,12 @@ Plans:
 
 **Wave 1**
 
-- [ ] 119-01-PLAN.md — Record the evidence-label decision and settle checked-in host strategy: published-coordinate default or explicit local-development proof.
-- [ ] 119-02-PLAN.md — Reconcile native READMEs, quick start, support matrix, native shell guide, Android UAT guide, generator docs, and captions to the chosen evidence class.
+- [x] 119-01-PLAN.md — Record the evidence-label decision and settle checked-in host strategy: published-coordinate default or explicit local-development proof.
+- [x] 119-02-PLAN.md — Reconcile native READMEs, quick start, support matrix, native shell guide, Android UAT guide, generator docs, and captions to the chosen evidence class.
 
 **Wave 2** *(blocked on Wave 1 classification)*
 
-- [ ] 119-03-PLAN.md — Add native evidence drift guard for stale coordinates and missing local-dev/advisory labels.
+- [x] 119-03-PLAN.md — Add native evidence drift guard for stale coordinates and missing local-dev/advisory labels.
 
 ### Phase 120: Collateral, Artifact CI, And Troubleshooting
 
@@ -194,16 +194,16 @@ Plans:
 
 **Wave 1**
 
-- [ ] 120-01-PLAN.md — Add deterministic browser route-tour proof, semantic assertions, screenshots, and artifact upload.
+- [x] 120-01-PLAN.md — Add deterministic browser route-tour proof, semantic assertions, screenshots, and artifact upload.
 
 **Wave 2** *(blocked on 120-01 artifact shape)*
 
-- [ ] 120-02-PLAN.md — Add artifact manifest schema/validator, bounded committed asset set, retention labels, and proof-class checks.
-- [ ] 120-03-PLAN.md — Add advisory iOS simulator and Android emulator capture where available, with coordinate mode and support labels.
+- [x] 120-02-PLAN.md — Add artifact manifest schema/validator, bounded committed asset set, retention labels, and proof-class checks.
+- [x] 120-03-PLAN.md — Add advisory iOS simulator and Android emulator capture where available, with coordinate mode and support labels.
 
 **Wave 3** *(blocked on corrected evidence labels and artifact vocabulary)*
 
-- [ ] 120-04-PLAN.md — Add troubleshooting and rough-edge docs for doctor findings, denials, route-unavailable states, offline outcomes, and native evidence caveats.
+- [x] 120-04-PLAN.md — Add troubleshooting and rough-edge docs for doctor findings, denials, route-unavailable states, offline outcomes, and native evidence caveats.
 
 **UI hint**: yes
 
@@ -220,13 +220,13 @@ Plans:
 | QUICK-01 | Phase 118 | Complete |
 | ADOPT-01 | Phase 118 | Complete |
 | DRIFT-02 | Phase 118 | Complete |
-| NATIVE-01 | Phase 119 | Planned |
-| NATIVE-02 | Phase 119 | Planned |
-| DRIFT-03 | Phase 119 | Planned |
-| COLL-01 | Phase 120 | Planned |
-| COLL-02 | Phase 120 | Planned |
-| NATIVE-COLL-01 | Phase 120 | Planned |
-| TROUBLE-01 | Phase 120 | Planned |
+| NATIVE-01 | Phase 119 | Complete |
+| NATIVE-02 | Phase 119 | Complete |
+| DRIFT-03 | Phase 119 | Complete |
+| COLL-01 | Phase 120 | Complete |
+| COLL-02 | Phase 120 | Complete |
+| NATIVE-COLL-01 | Phase 120 | Complete |
+| TROUBLE-01 | Phase 120 | Complete |
 
 Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 
@@ -254,5 +254,5 @@ Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 | 116. Proof Debt And Release Truth | v13.0 | 3/3 | Complete    | 2026-06-18 |
 | 117. Route-Policy And Support-Truth Guide Foundation | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 3/3 | Complete    | 2026-06-19 |
-| 119. Native Evidence Classification | v13.0 | 0/3 | Not started | - |
-| 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 0/4 | Not started | - |
+| 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
+| 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete    | 2026-06-19 |
