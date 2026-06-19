@@ -145,7 +145,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 118-01-PLAN.md — Rewrite and command-verify `examples/QUICK_START.md` against current repo paths, port, setup, proof commands, and advisory native steps.
+- [x] 118-01-PLAN.md — Rewrite and command-verify `examples/QUICK_START.md` against current repo paths, port, setup, proof commands, and advisory native steps.
 - [ ] 118-02-PLAN.md — Rewrite `guides/adoption.md` around the v12 app-owned IndexedDB outbox/reconnect/Ecto proof.
 
 **Wave 2** *(blocked on Wave 1 docs text)*
@@ -253,6 +253,6 @@ Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 116. Proof Debt And Release Truth | v13.0 | 3/3 | Complete    | 2026-06-18 |
 | 117. Route-Policy And Support-Truth Guide Foundation | v13.0 | 3/3 | Complete | 2026-06-19 |
-| 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 0/3 | Not started | - |
+| 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 1/3 | In Progress | - |
 | 119. Native Evidence Classification | v13.0 | 0/3 | Not started | - |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 0/4 | Not started | - |
