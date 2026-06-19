@@ -8,7 +8,7 @@ defmodule CrosswakeExample.BridgeProofLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, bridge_request: nil)}
+    {:ok, assign(socket, bridge_request: nil, bridge_contract: share_request())}
   end
 
   @impl true
@@ -18,18 +18,30 @@ defmodule CrosswakeExample.BridgeProofLive do
 
   @impl true
   def render(assigns) do
+    assigns = Map.put_new(assigns, :bridge_contract, share_request())
+
     ~H"""
     <section>
       <h1>Bridge Proof</h1>
       <p>Demonstrating bounded bridge capability integration.</p>
 
-      <button type="button" phx-click="share">
+      <button
+        type="button"
+        phx-click="share"
+        onclick="document.getElementById('crosswake-bridge-payload')?.removeAttribute('hidden')"
+      >
         Share
       </button>
 
       <script :if={@bridge_request} id={"crosswake-share-#{@bridge_request["correlation_id"]}"}>
         <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
       </script>
+      <pre :if={@bridge_request} id="crosswake-bridge-payload" hidden>
+        <%= Jason.encode!(@bridge_request) %>
+      </pre>
+      <pre :if={!@bridge_request} id="crosswake-bridge-payload" hidden>
+        <%= Jason.encode!(@bridge_contract) %>
+      </pre>
     </section>
     """
   end

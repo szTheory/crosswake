@@ -1,5 +1,5 @@
 /**
- * GUARD-01 — AST-based E2E honesty check for offline_sync.spec.ts
+ * GUARD-01 — AST-based E2E honesty check for offline route proof files
  *
  * Purpose: Prevent future PRs from silently reverting the honest offline-sync E2E test
  * (written in phases 112–113) back to injection-based fabrication. This script parses
@@ -49,23 +49,14 @@ try {
   process.exit(1);
 }
 
-const FILE = 'examples/phoenix_host/e2e/offline_sync.spec.ts';
-
-if (!existsSync(FILE)) {
-  console.error(`\n  ✖ GUARD-01 FAILED — ${FILE} is missing.\n`);
-  console.error('  The spec file must exist. A rename or deletion defeats the honesty guard.');
-  console.error('  See REQUIREMENTS.md GUARD-01 and the phase 112–113 honest rewrite.\n');
-  process.exit(1);
-}
-
-const src = readFileSync(FILE, 'utf8');
-const sf = ts.createSourceFile(FILE, src, ts.ScriptTarget.Latest, /*setParentNodes=*/true);
+const FILES = [
+  'examples/phoenix_host/e2e/offline_sync.spec.ts',
+  'examples/phoenix_host/e2e/route_tour.spec.ts',
+  'examples/phoenix_host/e2e/support/offline_route_proof.ts',
+];
 
 /** Violations accumulated: [lineNumber, ruleId, message] */
 const V = [];
-
-/** 1-based line number of an AST node */
-const at = n => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
 
 /** True if node is a `.evaluate(...)` call expression */
 const isEvaluate = n =>
@@ -82,73 +73,93 @@ const isNetwork = n => {
   return false;
 };
 
-(function walk(node) {
-  // Rule 1: banned global injection symbol as a string literal
-  if (ts.isStringLiteral(node) && /crosswake_offline_mutations/.test(node.text)) {
-    V.push([
-      at(node),
-      'inject-global',
-      "Forbidden string literal 'crosswake_offline_mutations' — this is the injected global from the fake " +
-      "fabrication pattern. The honest spec reads from IndexedDB, never injects a global.",
-    ]);
+for (const file of FILES) {
+  if (!existsSync(file)) {
+    console.error(`\n  ✖ GUARD-01 FAILED — ${file} is missing.\n`);
+    console.error('  The offline route proof files must exist. A rename or deletion defeats the honesty guard.');
+    console.error('  See REQUIREMENTS.md GUARD-01, COLL-01, and the route-tour offline-study proof.\n');
+    process.exit(1);
   }
 
-  // Rule 2: check uuid import (import ... from 'uuid') or require('uuid')
-  if (ts.isImportDeclaration(node)) {
-    const specifier = node.moduleSpecifier;
-    if (ts.isStringLiteral(specifier) && specifier.text === 'uuid') {
+  const src = readFileSync(file, 'utf8');
+  const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, /*setParentNodes=*/true);
+
+  /** 1-based line number of an AST node */
+  const at = n => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
+
+  (function walk(node) {
+    // Rule 1: banned global injection symbol as a string literal
+    if (ts.isStringLiteral(node) && /crosswake_offline_mutations/.test(node.text)) {
       V.push([
+        file,
         at(node),
-        'minted-uuid',
-        "import from 'uuid' detected — the honest test READS client_mutation_id from IndexedDB " +
-        "(minted by the app), never imports a uuid library to mint its own.",
+        'inject-global',
+        "Forbidden string literal 'crosswake_offline_mutations' — this is the injected global from the fake " +
+        "fabrication pattern. The offline-study route proof reads from the app-owned IndexedDB outbox, never injects a global.",
       ]);
     }
-  }
 
-  // Rule 3: randomUUID property access (crypto.randomUUID)
-  if (ts.isPropertyAccessExpression(node) && node.name.text === 'randomUUID') {
-    V.push([
-      at(node),
-      'minted-uuid',
-      "crypto.randomUUID() in spec — the honest test READS client_mutation_id from IndexedDB " +
-      "(app-generated UUID, E2E-03b), never mints its own. See REQUIREMENTS.md GUARD-01.",
-    ]);
-  }
-
-  // Rule 4: scan INSIDE page.evaluate callbacks for network calls only
-  if (isEvaluate(node) && node.arguments[0]) {
-    (function scan(inner) {
-      if (isNetwork(inner)) {
+    // Rule 2: check uuid import (import ... from 'uuid') or require('uuid')
+    if (ts.isImportDeclaration(node)) {
+      const specifier = node.moduleSpecifier;
+      if (ts.isStringLiteral(specifier) && specifier.text === 'uuid') {
         V.push([
-          at(inner),
-          'fetch-in-evaluate',
-          "fetch()/XMLHttpRequest/sendBeacon inside page.evaluate — this is a fabrication shape. " +
-          "The app code must flush the outbox on reconnect, not the test. " +
-          "IndexedDB reads and window.dispatchEvent in the same callback are intentionally NOT flagged.",
+          file,
+          at(node),
+          'minted-uuid',
+          "import from 'uuid' detected — the offline-study route proof READS client_mutation_id from IndexedDB " +
+          "(minted by the app), never imports a uuid library to mint its own.",
         ]);
       }
-      ts.forEachChild(inner, scan);
-    })(node.arguments[0]);
-    // Note: we continue walking the rest of the tree via the fall-through below.
-    // The evaluate callback was already scanned above (network-only scan).
-    // We still need ts.forEachChild(node, walk) to catch outer-level violations.
-  }
+    }
 
-  ts.forEachChild(node, walk);
-})(sf);
+    // Rule 3: randomUUID property access (crypto.randomUUID)
+    if (ts.isPropertyAccessExpression(node) && node.name.text === 'randomUUID') {
+      V.push([
+        file,
+        at(node),
+        'minted-uuid',
+        "crypto.randomUUID() in offline-study proof — the test READS client_mutation_id from IndexedDB " +
+        "(app-generated UUID, E2E-03b), never mints its own. See REQUIREMENTS.md GUARD-01.",
+      ]);
+    }
+
+    // Rule 4: scan INSIDE page.evaluate callbacks for network calls only
+    if (isEvaluate(node) && node.arguments[0]) {
+      (function scan(inner) {
+        if (isNetwork(inner)) {
+          V.push([
+            file,
+            at(inner),
+            'fetch-in-evaluate',
+            "fetch()/XMLHttpRequest/sendBeacon inside page.evaluate — this is a fabrication shape. " +
+            "The offline-study app code must flush the outbox on reconnect, not the route-tour test. " +
+            "IndexedDB reads and window.dispatchEvent in the same callback are intentionally NOT flagged.",
+          ]);
+        }
+        ts.forEachChild(inner, scan);
+      })(node.arguments[0]);
+      // Note: we continue walking the rest of the tree via the fall-through below.
+      // The evaluate callback was already scanned above (network-only scan).
+      // We still need ts.forEachChild(node, walk) to catch outer-level violations.
+    }
+
+    ts.forEachChild(node, walk);
+  })(sf);
+}
 
 if (V.length > 0) {
-  console.error(`\n  ✖ E2E honesty check FAILED — ${FILE} regressed toward fabrication.\n`);
-  for (const [ln, rule, msg] of V) {
+  console.error(`\n  ✖ E2E honesty check FAILED — offline-study proof regressed toward fabrication.\n`);
+  for (const [file, ln, rule, msg] of V) {
+    console.error(`  ${file}`);
     console.error(`  [${rule}] line ${ln}`);
     console.error(`      ${msg}\n`);
   }
-  console.error('  The offline-sync E2E must prove the REAL path:');
+  console.error('  The offline-study E2E and route-tour proof must prove the REAL path:');
   console.error('    UI click → IndexedDB outbox → app-driven reconnect flush → Ecto confirms one row');
   console.error('  NOT fabricate it via window[] injection, fetch-in-evaluate, or minted UUIDs.');
-  console.error('  See REQUIREMENTS.md GUARD-01 and the phase 112–113 honest rewrite.\n');
+  console.error('  See REQUIREMENTS.md GUARD-01, COLL-01, and the phase 112–113 honest rewrite.\n');
   process.exit(1);
 }
 
-console.log(`  ✓ E2E honesty check passed — ${FILE} exercises the real offline-sync path.`);
+console.log(`  ✓ E2E honesty check passed — ${FILES.join(', ')} exercise the real offline-study path.`);

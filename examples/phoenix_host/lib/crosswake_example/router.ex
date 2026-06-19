@@ -403,6 +403,7 @@ defmodule CrosswakeExample.Router do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api])
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
+      post("/native-claim", NativeClaimController, :create)
     end
   end
 end
