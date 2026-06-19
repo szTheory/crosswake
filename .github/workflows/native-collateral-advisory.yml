@@ -1,0 +1,92 @@
+name: Native Collateral Advisory
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ios-simulator-advisory:
+    name: ios-simulator-advisory
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Capture iOS simulator advisory evidence
+        id: capture
+        continue-on-error: true
+        run: node script/capture-native-collateral.mjs --platform ios --output-dir native-collateral/ios
+      - name: Ensure iOS advisory manifest exists
+        if: always()
+        run: |
+          if [ ! -s native-collateral/ios/evidence-manifest.json ]; then
+            node script/capture-native-collateral.mjs --dry-run --platform ios --output-dir native-collateral/ios
+          fi
+      - name: Upload iOS simulator advisory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosswake-ios-simulator-advisory-evidence
+          path: native-collateral/ios/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## iOS simulator advisory evidence"
+            echo ""
+            echo "Native simulator capture is advisory evidence only."
+            echo "Browser route-tour correctness remains the merge-blocking proof."
+            echo "Not claimed: physical-device support, camera support, media-upload support, provider authority, app-store readiness, or merge-blocking native support."
+            echo "Artifact: crosswake-ios-simulator-advisory-evidence, retained for 14 days."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  android-emulator-advisory:
+    name: android-emulator-advisory
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Capture Android emulator advisory evidence
+        id: capture
+        continue-on-error: true
+        run: node script/capture-native-collateral.mjs --platform android --output-dir native-collateral/android
+      - name: Ensure Android advisory manifest exists
+        if: always()
+        run: |
+          if [ ! -s native-collateral/android/evidence-manifest.json ]; then
+            node script/capture-native-collateral.mjs --dry-run --platform android --output-dir native-collateral/android
+          fi
+      - name: Upload Android emulator advisory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosswake-android-emulator-advisory-evidence
+          path: native-collateral/android/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## Android emulator advisory evidence"
+            echo ""
+            echo "Native emulator capture is advisory evidence only."
+            echo "Browser route-tour correctness remains the merge-blocking proof."
+            echo "Not claimed: physical-device support, camera support, media-upload support, provider authority, app-store readiness, or merge-blocking native support."
+            echo "Artifact: crosswake-android-emulator-advisory-evidence, retained for 14 days."
+          } >> "$GITHUB_STEP_SUMMARY"
