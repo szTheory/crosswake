@@ -2,8 +2,8 @@
 
 This guide stays narrow and proof-oriented. Generated-shell coordinate support is
 backed by release-time clean-room proof plus generated-shell verification hooks.
-The checked-in native hosts remain public proof artifacts; Phase 119 classifies
-whether those hosts are published-coordinate proof or local-development proof.
+The checked-in native hosts are `checked-in public-coordinate proof`; the explicit
+maintainer path stays `local-dev proof` behind `--local`.
 The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
 and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake
 Hex package version; the release-time clean-room proof promotes that path after the
@@ -17,6 +17,7 @@ Use these labels literally. Each label says what the evidence proves and what it
 |-------|----------------|------------------------|
 | merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |
 | advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |
+| checked-in public-coordinate proof | A checked-in host path resolves published SwiftPM/Maven coordinates by default. | It is not a device, simulator, or emulator support claim and it does not cover `--local`. |
 | local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |
 | generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |
 | JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |
@@ -53,13 +54,13 @@ Bridge is not high-frequency or mutation authority.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook. |
+| ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Checked-in iOS host boot is `checked-in public-coordinate proof`; generated-shell verification stays separate. |
 
 ## Android
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android shell boot is supported based strictly on JVM hermetic CI evidence. |
+| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. |
 
 ## Shell Artifacts
 

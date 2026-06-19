@@ -395,7 +395,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_ios_shell.sh",
           notes:
-            "Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook.",
+            "Checked-in iOS host boot is `checked-in public-coordinate proof`; generated-shell verification stays separate.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -407,7 +407,8 @@ defmodule Crosswake.SupportMatrix do
           baseline_status: :supported,
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
-          notes: "Android shell boot is supported based strictly on JVM hermetic CI evidence.",
+          notes:
+            "Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],

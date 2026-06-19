@@ -94,6 +94,13 @@ Read [guides/native_shell.md](native_shell.md) for
 the shell contract and [guides/bridge.md](bridge.md)
 for the bounded bridge contract.
 
+## Native Evidence Labels
+
+- `generated public-coordinate proof` is the default non-local shell generation path.
+- `local-dev proof` is the explicit `--local` maintainer path.
+- `checked-in public-coordinate proof` is the label for the checked-in iOS and Android host proof surfaces.
+- None of those labels imply simulator, emulator, or physical-device support.
+
 ## Step 3: Verify Host And Manifest Truth
 
 Run:

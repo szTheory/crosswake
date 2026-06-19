@@ -4,6 +4,10 @@ Crosswake ships host-owned iOS and Android shells that boot from the bundled
 manifest, resolve routes natively first, and fail closed when a route or bridge call
 does not satisfy the declared contract. See [guides/adopter_profiles.md](adopter_profiles.md) for adopter-fit framing of the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow lanes.
 
+The checked-in host paths are `checked-in public-coordinate proof`. The generated
+shell path stays `generated public-coordinate proof`, and `--local` stays
+`local-dev proof` for maintainer iteration.
+
 ## Contract
 
 - Shell projects are `host-owned` after generation.
@@ -28,6 +32,10 @@ Crosswake writes real native projects under:
 
 Those projects are scaffold-once outputs. Patch or document upgrades after that point;
 do not treat them as safely regeneratable overlays.
+
+When you generate shells with the default non-local path, the proof label is
+`generated public-coordinate proof`. When you generate with `--local`, the proof
+label is `local-dev proof`.
 
 ## Manifest-First Activation
 
@@ -135,8 +143,10 @@ The diagnostics export seam allows telemetry and diagnostic state to be securely
 
 ## Android Verification
 
-Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence.
+Generated Android shell artifacts are supported based strictly on `JVM hermetic proof`.
 
 ## Android Device-UAT
 
-For Android, device-UAT and emulator verification lanes are currently advisory. The verified proof is purely `:jvm_hermetic`.
+For Android, device-UAT and emulator verification lanes are currently advisory.
+Use `device evidence` only for named physical-device runs. `JVM hermetic proof`
+does not prove emulator evidence or physical-device support.

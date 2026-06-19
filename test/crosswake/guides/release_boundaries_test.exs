@@ -96,6 +96,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert readme =~ "guides/support_matrix.md#support-truth-label-legend"
     assert readme =~ "merge-blocking proof"
     assert readme =~ "advisory evidence"
+    assert readme =~ "checked-in public-coordinate proof"
     assert readme =~ "local-dev proof"
     assert readme =~ "generated public-coordinate proof"
     assert readme =~ "verification-required"

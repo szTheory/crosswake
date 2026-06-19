@@ -52,8 +52,12 @@
 
 /* Begin XCRemoteSwiftPackageReference section */
 		B10000010000000000000001 /* XCRemoteSwiftPackageReference "crosswake-shell-core-ios" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../packages/crosswake-shell-core-ios";
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/szTheory/crosswake-shell-core-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
+			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 

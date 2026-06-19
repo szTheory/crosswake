@@ -428,6 +428,7 @@ defmodule Crosswake.SupportMatrixTest do
   test "support matrix guide keeps proof labels from laundering stronger claims" do
     guide = Renderer.render(SupportMatrix.canonical())
 
+    assert guide =~ "checked-in public-coordinate proof"
     assert guide =~ "generated public-coordinate proof"
     assert guide =~ "JVM hermetic proof is not emulator evidence or physical-device proof"
     assert guide =~ "Emulator evidence is not physical-device proof"

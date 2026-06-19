@@ -39,9 +39,10 @@ defmodule Crosswake.SupportMatrix.RendererTest do
 
     assert guide =~ "## Support-Truth Label Legend"
 
-    for label <- [
+      for label <- [
           "merge-blocking proof",
           "advisory evidence",
+          "checked-in public-coordinate proof",
           "local-dev proof",
           "generated public-coordinate proof",
           "JVM hermetic proof",

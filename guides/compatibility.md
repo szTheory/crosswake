@@ -3,6 +3,9 @@
 Crosswake keeps runtime ownership explicit per route and keeps compatibility truth
 separate from package versions.
 
+`checked-in public-coordinate proof`, `generated public-coordinate proof`, and
+`local-dev proof` are evidence labels, not compatibility guarantees.
+
 ## Compatibility Axes
 
 Crosswake evaluates compatibility through separate contract axes:
@@ -132,6 +135,9 @@ Generated-host verification remains part of the compatibility contract:
 Run `mix crosswake.doctor` for manifest, support, and release-policy posture, then
 run `mix crosswake.doctor --native-checks` to re-run the generated-host hooks against
 your local shell projects.
+
+`--local` stays the explicit maintainer path, and successful native shell or
+emulator runs do not imply physical-device support.
 
 ## Non-Goals
 

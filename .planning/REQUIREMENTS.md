@@ -41,9 +41,9 @@ Turn the first hands-on adopter path into a command-verified proof of the real s
 
 Make native proof labels impossible to misread before capturing or publishing native collateral.
 
-- [ ] **NATIVE-01**: A v13 evidence-label decision records the valid native evidence classes and applies them consistently. Preferred path: checked-in iOS and Android hosts use published `0.1.2` coordinates by default, while `--local` remains the maintainer/development path. Acceptable fallback: checked-in hosts stay local-development proof only and are labeled that way everywhere.
-- [ ] **NATIVE-02**: Native docs and support surfaces are reconciled to the chosen evidence class. Native host READMEs, quick start, README, native shell guide, support matrix, Android UAT guide, generator docs, and artifact captions distinguish published-coordinate proof from local-dev proof and do not describe Android JVM/hermetic or emulator evidence as physical-device support.
-- [ ] **DRIFT-03**: Native evidence drift is mechanically guarded. A test or script fails if public proof references stale `dev.crosswake:shell-core-android:0.1.0`, silently uses an unlabelled `XCLocalSwiftPackageReference`, or drops required local-dev/advisory labels for checked-in host evidence.
+- [x] **NATIVE-01**: A v13 evidence-label decision records the valid native evidence classes and applies them consistently. Preferred path: checked-in iOS and Android hosts use published `0.1.2` coordinates by default, while `--local` remains the maintainer/development path. Acceptable fallback: checked-in hosts stay local-development proof only and are labeled that way everywhere.
+- [x] **NATIVE-02**: Native docs and support surfaces are reconciled to the chosen evidence class. Native host READMEs, quick start, README, native shell guide, support matrix, Android UAT guide, generator docs, and artifact captions distinguish published-coordinate proof from local-dev proof and do not describe Android JVM/hermetic or emulator evidence as physical-device support.
+- [x] **DRIFT-03**: Native evidence drift is mechanically guarded. A test or script fails if public proof references stale `dev.crosswake:shell-core-android:0.1.0`, silently uses an unlabelled `XCLocalSwiftPackageReference`, or drops required local-dev/advisory labels for checked-in host evidence.
 
 ### COLL - Collateral, Artifact CI, And Troubleshooting
 
