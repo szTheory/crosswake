@@ -488,17 +488,15 @@ Known threat patterns for this phase are documentation-induced overclaiming, sta
 |---|-------|---------|---------------|
 | A1 | No seed file exists in `examples/phoenix_host/priv/repo/seeds.exs`, so the setup alias should either omit seeds or guard that step. | Implementation Strategy | A planner might add an alias that references a missing seed file unless it verifies before editing. [VERIFIED: local repo path check] |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should aliases run seeds if a seed file is added during implementation?**  
+1. **RESOLVED: Should aliases run seeds if a seed file is added during implementation?**  
    What we know: no seed file was found during research, and current setup only needs create/migrate for SQLite. [VERIFIED: examples/phoenix_host/mix.exs; local repo path check]  
-   What's unclear: whether implementers want to add a tiny seed file for clearer demo data. [ASSUMED]  
-   Recommendation: do not add seed scope unless the quick-start path actually needs it; if no seed file exists, keep `ecto.setup` to create/migrate only. [VERIFIED: examples/phoenix_host/priv/static/offline_study.js]
+   Resolution: Plan 118-01 creates `examples/phoenix_host/priv/repo/seeds.exs` as an explicit transparent seed hook and wires `ecto.setup` to run it. The seed hook must not fabricate offline proof data; it exists so `mix setup` follows the Phoenix-style fetch/create/migrate/seed shape while preserving the current app-owned IndexedDB proof. [VERIFIED: .planning/phases/118-runnable-quick-start-and-real-adoption-proof/118-01-PLAN.md; examples/phoenix_host/priv/static/offline_study.js]
 
-2. **Should the Playwright config move from `port` to `url`?**  
+2. **RESOLVED: Should the Playwright config move from `port` to `url`?**  
    What we know: Playwright docs mark `port` deprecated in favor of `url`, but the current config works and Phase 118 is docs/proof-truth work. [CITED: https://playwright.dev/docs/test-webserver; VERIFIED: examples/phoenix_host/playwright.config.ts]  
-   What's unclear: whether maintainers want a harness cleanup now. [ASSUMED]  
-   Recommendation: leave it alone unless a test failure proves it blocks Phase 118; do not widen the phase. [VERIFIED: .planning/phases/118-runnable-quick-start-and-real-adoption-proof/118-CONTEXT.md]
+   Resolution: Leave `examples/phoenix_host/playwright.config.ts` on its current `port` configuration unless execution proves it blocks Phase 118. The plans intentionally treat the existing config as source-of-truth proof infrastructure and do not widen the phase into harness cleanup. [VERIFIED: .planning/phases/118-runnable-quick-start-and-real-adoption-proof/118-01-PLAN.md; examples/phoenix_host/playwright.config.ts]
 
 ## Metadata
 
