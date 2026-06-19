@@ -97,9 +97,8 @@ classes your app actually uses:
 - backend/provider reconciliation posture, if declared
 
 Phase 118 owns the command-verified quick start and adoption rewrite. Treat
-[examples/QUICK_START.md](../examples/QUICK_START.md) and
-[guides/adoption.md](adoption.md) as hands-on follow-up surfaces, not as the source
-of this route-inventory contract.
+`examples/QUICK_START.md` and [guides/adoption.md](adoption.md) as hands-on
+follow-up surfaces, not as the source of this route-inventory contract.
 
 ## Worksheet
 

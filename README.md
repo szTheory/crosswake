@@ -15,6 +15,9 @@ Phoenix applications without pretending one runtime should own every screen.
 Server-centric routes can stay LiveView, device-heavy flows can move into explicit
 native screens, and local-first work can live in honest offline islands.
 
+Crosswake's one job is to declare, enforce, and diagnose which runtime owns each
+route as a Phoenix app crosses into mobile.
+
 ## What this is
 
 Crosswake gives Phoenix apps a mobile runtime contract built around:
@@ -45,6 +48,8 @@ Crosswake is not:
 
 Start with:
 
+- [guides/route_policy.md](guides/route_policy.md) for the start-here route-owner map
+- [guides/web_to_mobile_migration.md](guides/web_to_mobile_migration.md) for an operational Phoenix route inventory pass
 - [guides/user_flows.md](guides/user_flows.md) for the fastest JTBD and user-flow ramp-up
 - [guides/adopter_profiles.md](guides/adopter_profiles.md) for the three target app shapes
 - [guides/install.md](guides/install.md) for the public install and proof path
@@ -122,6 +127,7 @@ Crosswake treats diagnostics, support truth, and proof lanes as part of the prod
 surface.
 
 - [guides/support_matrix.md](guides/support_matrix.md) is the canonical support-status surface.
+- [guides/support_matrix.md#support-truth-label-legend](guides/support_matrix.md#support-truth-label-legend) defines support-truth labels: merge-blocking proof, advisory evidence, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required.
 - [guides/install.md](guides/install.md) is the canonical install and proof-entry guide.
 - `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane.
 - `mix crosswake.doctor --router Elixir.YourAppWeb.Router --native-checks` reruns the local generated-shell verification hooks.
@@ -133,12 +139,15 @@ container.
 ## Guide map
 
 - [guides/install.md](guides/install.md) — Phoenix install path and native shell generation
+- [guides/route_policy.md](guides/route_policy.md) — start-here route-owner decisions and DSL examples
+- [guides/web_to_mobile_migration.md](guides/web_to_mobile_migration.md) — route inventory pass for existing Phoenix SaaS apps
 - [guides/user_flows.md](guides/user_flows.md) — JTBD and route-by-route adopter ramp-up
 - [guides/native_shell.md](guides/native_shell.md) — manifest-first activation and shell contract
 - [guides/bridge.md](guides/bridge.md) — bounded bridge vocabulary
 - [guides/packs.md](guides/packs.md) — required packs, transfers, and native capture handoff
 - [guides/offline.md](guides/offline.md) — cached read-only and offline-island posture
 - [guides/compatibility.md](guides/compatibility.md) — compatibility and denial posture
+- [guides/support_matrix.md](guides/support_matrix.md) — proof classes, support labels, and rebuild truth
 
 ## Current baseline
 

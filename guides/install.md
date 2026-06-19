@@ -4,6 +4,9 @@ Crosswake keeps one primary package surface: `crosswake`. Companion-ready and
 docs-only surfaces stay explicit, but there is still one primary install path for the
 Phoenix host and one scaffold-once path for host-owned native shells.
 
+> Start with [guides/route_policy.md](route_policy.md) for route-owner decisions and
+> [guides/web_to_mobile_migration.md](web_to_mobile_migration.md) for an operational
+> Phoenix route inventory pass.
 > See [guides/adoption.md](adoption.md) for offline-sync architecture context and the rationale for the generated shell pattern.
 
 1. `mix crosswake.install`
@@ -25,7 +28,9 @@ If you are deciding whether your app pressure is mostly LiveView, one explicit
 native route, or one honest offline island, read
 [guides/adopter_profiles.md](adopter_profiles.md)
 for the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow profiles
-before drilling into the deeper shell, offline, or pack contracts.
+and [guides/web_to_mobile_migration.md](web_to_mobile_migration.md)
+for the route inventory pass before drilling into the deeper shell, offline, or pack
+contracts. Use [guides/route_policy.md](route_policy.md) as the owner-decision map.
 
 ## Add Crosswake To Your Dependencies
 

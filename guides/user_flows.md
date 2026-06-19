@@ -18,6 +18,8 @@ If you want the profile matrix first, read
 [guides/adopter_profiles.md](adopter_profiles.md).
 If you want the route-owner decision map before the examples, read
 [guides/route_policy.md](route_policy.md).
+If you want to apply that map to an existing Phoenix product, read
+[guides/web_to_mobile_migration.md](web_to_mobile_migration.md).
 If you want the boundary details after this guide clicks, keep
 [guides/bridge.md](bridge.md),
 [guides/packs.md](packs.md),

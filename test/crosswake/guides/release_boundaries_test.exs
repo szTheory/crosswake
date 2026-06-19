@@ -77,6 +77,49 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     end
   end
 
+  test "public start surfaces expose route-owner guides and support-truth labels" do
+    readme = File.read!("README.md")
+    install = File.read!("guides/install.md")
+    user_flows = File.read!("guides/user_flows.md")
+    docs = Crosswake.MixProject.project()[:docs]
+    extras = docs[:extras]
+    groups = docs[:groups_for_extras]
+
+    assert_contains_sentence(
+      readme,
+      "Crosswake's one job is to declare, enforce, and diagnose which runtime owns each route as a Phoenix app crosses into mobile."
+    )
+
+    assert_order(readme, "guides/route_policy.md", "guides/support_matrix.md")
+    assert_order(readme, "guides/web_to_mobile_migration.md", "guides/support_matrix.md")
+
+    assert readme =~ "guides/support_matrix.md#support-truth-label-legend"
+    assert readme =~ "merge-blocking proof"
+    assert readme =~ "advisory evidence"
+    assert readme =~ "local-dev proof"
+    assert readme =~ "generated public-coordinate proof"
+    assert readme =~ "verification-required"
+    assert readme =~ "rebuild-required"
+
+    for guide <- [install, user_flows] do
+      assert guide =~ "guides/route_policy.md"
+      assert guide =~ "guides/web_to_mobile_migration.md"
+    end
+
+    assert docs[:main] == "readme"
+    assert "guides/route_policy.md" in extras
+    assert "guides/web_to_mobile_migration.md" in extras
+
+    for path <- extras do
+      assert File.exists?(path), "ExDoc extra #{path} must exist"
+    end
+
+    assert Keyword.keys(groups) == [:Start, :Adopt, :"Runtime Owners", :Truth, :"Advanced/Companions"]
+    assert "guides/route_policy.md" in groups[:Start]
+    assert "guides/web_to_mobile_migration.md" in groups[:Adopt]
+    assert "guides/support_matrix.md" in groups[:Truth]
+  end
+
   test "public release truth docs and manifests reject stale current-proof claims" do
     current_version = current_version()
 
@@ -479,4 +522,20 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
 
   defp format_field_path(nil), do: ""
   defp format_field_path(field_path), do: " #{field_path}"
+
+  defp assert_order(contents, earlier, later) do
+    assert String.contains?(contents, earlier), "expected #{inspect(earlier)} in contents"
+    assert String.contains?(contents, later), "expected #{inspect(later)} in contents"
+
+    assert :binary.match(contents, earlier) < :binary.match(contents, later),
+           "expected #{inspect(earlier)} to appear before #{inspect(later)}"
+  end
+
+  defp assert_contains_sentence(contents, sentence) do
+    assert normalize_whitespace(contents) =~ normalize_whitespace(sentence)
+  end
+
+  defp normalize_whitespace(contents) do
+    Regex.replace(~r/\s+/, contents, " ")
+  end
 end
