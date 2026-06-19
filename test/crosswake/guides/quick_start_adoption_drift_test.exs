@@ -41,6 +41,92 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     assert_no_drift_failures(failures)
   end
 
+  test "quick start scanner rejects stale ports, commands, paths, and native labels" do
+    quick_start = File.read!(@quick_start_path)
+    port = phoenix_host_port()
+
+    assert_failure_category(
+      scan_quick_start(
+        {"synthetic/quick_start_wrong_port.md", String.replace(quick_start, port, "4000")}
+      ),
+      :wrong_port
+    )
+
+    assert_failure_category(
+      scan_quick_start(
+        {"synthetic/quick_start_missing_setup.md",
+         String.replace(quick_start, "mix setup", "mix deps.get")}
+      ),
+      :missing_command
+    )
+
+    assert_failure_category(
+      scan_quick_start(
+        {"synthetic/quick_start_missing_path.md",
+         quick_start <> "\nSee `examples/not_a_real_host`.\n"}
+      ),
+      :missing_path
+    )
+
+    without_native_labels =
+      quick_start
+      |> String.replace(~r/advisory/i, "optional")
+      |> String.replace("local-development", "local dev")
+
+    assert_failure_category(
+      scan_quick_start({"synthetic/quick_start_missing_native_labels.md", without_native_labels}),
+      :missing_native_label
+    )
+  end
+
+  test "adoption scanner rejects stale offline-authority wording" do
+    adoption = File.read!(@adoption_path)
+
+    stale_cases = [
+      {"synthetic/adoption_mutate.md",
+       adoption <> "\nCall `Crosswake.mutate(...)` for local writes.\n"},
+      {"synthetic/adoption_sync_engine.md",
+       adoption <> "\nUse the Sync Engine (Bridge) for replay.\n"},
+      {"synthetic/adoption_bridge_owned_queue.md",
+       adoption <> "\nThe bridge-owned mutation queue replays offline writes.\n"}
+    ]
+
+    for {path, contents} <- stale_cases do
+      assert_failure_category(
+        scan_adoption({path, contents}),
+        :forbidden_offline_authority
+      )
+    end
+  end
+
+  test "adoption scanner rejects missing app-owned offline proof teaching" do
+    adoption = File.read!(@adoption_path)
+
+    missing_proof_cases = [
+      {"synthetic/adoption_no_indexeddb.md",
+       String.replace(adoption, "IndexedDB", "browser storage")},
+      {"synthetic/adoption_no_flush.md",
+       String.replace(adoption, "flushOutbox", "flushQueuedWork")},
+      {"synthetic/adoption_no_sync_endpoint.md",
+       String.replace(adoption, "/study/sync", "/sync")},
+      {"synthetic/adoption_no_mutation_id.md",
+       String.replace(adoption, "client_mutation_id", "client_event_id")},
+      {"synthetic/adoption_no_idempotency.md",
+       String.replace(adoption, "on_conflict: :nothing", "server upsert behavior")},
+      {"synthetic/adoption_no_outbox_deletion.md",
+       String.replace(adoption, ~r/\b(?:deleted|removed|deletes)\b/i, "cleared")},
+      {"synthetic/adoption_no_outcomes.md",
+       adoption
+       |> String.replace(~r/\baccepted\b/i, "saved")
+       |> String.replace(~r/\brejected\b/i, "invalid")
+       |> String.replace(~r/\bconflict\b/i, "disagreement")}
+    ]
+
+    for {path, contents} <- missing_proof_cases do
+      assert_failure_category(scan_adoption({path, contents}), :missing_offline_proof)
+    end
+  end
+
   defp current_version do
     Application.spec(:crosswake, :vsn) |> to_string()
   end
@@ -332,6 +418,11 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
   defp assert_no_drift_failures(failures) do
     assert failures == [],
            "quick-start/adoption drift found:\n" <> format_failures(failures)
+  end
+
+  defp assert_failure_category(failures, category) do
+    assert Enum.any?(failures, &(&1.category == category)),
+           "expected #{inspect(category)} failure, got:\n" <> format_failures(failures)
   end
 
   defp normalize_doc({path, contents}), do: {path, contents}
