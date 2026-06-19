@@ -542,6 +542,42 @@
 - **Session shape:** Two-day milestone (2026-06-17 -> 2026-06-18), 4 phases / 13 plans, 22 non-planning files changed (+1,686 / -260).
 - **Carried-forward debt:** TODO-001 remains as a standalone example-host cleanup candidate for pre-existing `FlashcardsTest` field drift and flaky `Chimeway.RegistryNotificationOpenTest`.
 
+## Milestone: v13.0 — Adopter Confidence & Native Evidence
+
+**Shipped:** 2026-06-19
+**Phases:** 5 (116-120) | **Plans:** 16
+
+### What Was Built
+- Cleaned the public proof path by resolving TODO-001, reconciling `crosswake 0.1.2` release truth, and adding release-boundary drift guards.
+- Added route-owner-first guide surfaces: route policy start-here, web-to-mobile migration, support-truth vocabulary, and README/ExDoc guide navigation.
+- Reworked the quick start and adoption guide around the real app-owned IndexedDB outbox, reconnect-triggered flush, `/study/sync`, and Ecto replay semantics.
+- Reclassified native evidence around checked-in public-coordinate proof, explicit local-dev paths, and advisory simulator/emulator collateral, with native drift guards.
+- Added browser route-tour evidence, bounded evidence manifests, advisory native collateral capture, and route-owner troubleshooting for common doctor/denial/offline/native outcomes.
+
+### What Worked
+- **Adopter-proof sequencing held** — release truth and guide vocabulary landed before quick-start claims, native labels landed before collateral, and troubleshooting closed the loop.
+- **Source-derived docs tests scaled well** — the release, quick-start/adoption, native-evidence, support-matrix, evidence-manifest, and troubleshooting guards lock truth without snapshotting whole docs.
+- **Advisory native labeling avoided overclaiming** — simulator/emulator collateral became useful evidence without implying physical-device or provider-authority support.
+
+### What Was Inefficient
+- **Phase 119 closeout bookkeeping lagged implementation** — plans, summaries, validation, and implementation existed, but the phase-level verification report was missing until milestone audit preflight.
+- **Validation metadata is still uneven** — Phases 117, 118, and 120 have passed verification, but their validation files retain partial/draft metadata.
+- **The archive CLI still needs human cleanup** — ROADMAP and PROJECT required manual reorganization after `milestone.complete`.
+
+### Patterns Established
+- **Evidence labels are part of the public contract:** checked-in public-coordinate proof, generated public-coordinate proof, local-dev proof, JVM hermetic proof, emulator/device/advisory evidence, verification-required, and rebuild-required labels now appear consistently.
+- **Collateral is bounded by manifests:** route-tour and native evidence carry version, commit, route, runtime owner, command, proof class, source job, timestamp, artifacts, retention, and limitations.
+- **Troubleshooting should route by owner:** doctor findings, denials, route-unavailable states, offline outcomes, and native evidence caveats now map to Phoenix, bridge, offline-island, native, or support-matrix action.
+
+### Key Lessons
+- **Adopter confidence is not just docs polish** — it needs current release truth, runnable proof commands, visual collateral, and mechanical guards against stale claims.
+- **Native proof language must be narrow by default** — published coordinates, local-dev host wiring, emulator collateral, and physical-device support are different claims.
+- **Milestone audits catch real artifact gaps** — the v13 audit correctly blocked closeout until Phase 119 had a verification report.
+
+### Cost Observations
+- **Session shape:** Two-day milestone (2026-06-18 -> 2026-06-19), 5 phases / 16 plans / 32 tasks.
+- **Residual debt:** Validation metadata cleanup remains for Phases 117, 118, and 120; no v13 requirement gap remains.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |

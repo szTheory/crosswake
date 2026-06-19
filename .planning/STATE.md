@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
-status: milestone_complete
-stopped_at: Milestone complete (Phase 120 was final phase)
-last_updated: 2026-06-19T21:08:09.398Z
-last_activity: 2026-06-19 -- Phase 120 verified and v13 milestone complete
+status: Awaiting next milestone
+stopped_at: v13.0 milestone complete after Phase 120 verification
+last_updated: "2026-06-19T21:28:59.375Z"
+last_activity: 2026-06-19 — Milestone v13.0 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-19)
 
 ## Current Position
 
-Phase: 120
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-06-19 -- Phase 120 verified and v13 milestone complete
+Phase: Milestone v13.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-19 — Milestone v13.0 completed and archived
 
 ## Performance Metrics
 
@@ -123,5 +123,4 @@ Resume file: .planning/phases/120-collateral-artifact-ci-and-troubleshooting/120
 
 ## Operator Next Steps
 
-- Run `$gsd-complete-milestone` to archive v13.0 and prepare the next milestone.
-- Review Phase 120 evidence artifacts and verification if a release note or PR summary is needed.
+- Start the next milestone with /gsd-new-milestone

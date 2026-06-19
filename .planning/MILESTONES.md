@@ -1,5 +1,30 @@
 # Project Milestones: Crosswake
 
+## v13.0 Adopter Confidence & Native Evidence (Shipped: 2026-06-19)
+
+**Phases completed:** 5 phases, 16 plans, 32 tasks
+
+**Key accomplishments:**
+
+- Schema-aligned Flashcards tests and deterministic Chimeway notification-open fixtures remove TODO-001 from the public proof path
+- Crosswake 0.1.2 release truth is now reflected in public docs, example metadata, manifests, and first-read proof-path labels
+- Release-truth drift is now guarded by deterministic ExUnit coverage over public docs and example manifests
+- Route-owner-first guide and docs-contract test make Crosswake's route-policy mental model explicit
+- Phoenix SaaS route-inventory guide defaults to LiveView and promotes only for explicit owner reasons
+- Support-truth labels and public guide navigation now make the route-owner docs first-class
+- The quick start now runs the Phoenix host on port 4002 and proves the current offline and bounded-bridge architecture without native overclaim
+- The adoption guide now teaches the real app-owned IndexedDB outbox, reconnect flush, and Phoenix/Ecto replay path
+- Quick-start and adoption guide truth is now guarded by source-derived ExUnit docs-contract tests
+- Checked-in native hosts now resolve published coordinates by default and label themselves as checked-in public-coordinate proof
+- Public native docs and the canonical support matrix now speak one evidence-label language
+- A source-derived ExUnit scanner now blocks stale native coordinates and missing evidence labels
+- Merge-blocking browser route-tour proof now verifies route ownership semantically before uploading collateral screenshots.
+- Route-tour evidence now ships as a validated run-level manifest with fail-closed CI artifact packaging.
+- Advisory iOS simulator and Android emulator collateral now records captured or unavailable native evidence without promoting support claims.
+- Route-owner-first troubleshooting now maps doctor findings, denials, native evidence labels, and offline outcomes to concrete owner actions.
+
+---
+
 ## Document Truth Precedence
 
 For shipped-state questions, use this order: `MILESTONES.md` curated shipped-state truth > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md` point-in-time snapshots. `PROJECT.md` Requirements marks remain active-project truth and must cite verification or CI evidence; audit files preserve the evidence available at the time they were written.
