@@ -425,6 +425,17 @@ defmodule Crosswake.SupportMatrixTest do
     end
   end
 
+  test "support matrix guide keeps proof labels from laundering stronger claims" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "generated public-coordinate proof"
+    assert guide =~ "JVM hermetic proof is not emulator evidence or physical-device proof"
+    assert guide =~ "Emulator evidence is not physical-device proof"
+    assert guide =~ "Device/provider evidence is not backend/session authority"
+    assert guide =~ "Cached read-only is not offline mutation"
+    assert guide =~ "Bridge is not high-frequency or mutation authority"
+  end
+
   test "commerce corridor support truth stays provider-neutral and uses canonical denial taxonomy" do
     entries = SupportMatrix.commerce_corridors()
 

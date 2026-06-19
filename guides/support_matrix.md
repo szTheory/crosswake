@@ -9,6 +9,28 @@ and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Cross
 Hex package version; the release-time clean-room proof promotes that path after the
 coordinated cut.
 
+## Support-Truth Label Legend
+
+Use these labels literally. Each label says what the evidence proves and what it does not prove.
+
+| Label | What it proves | What it does not prove |
+|-------|----------------|------------------------|
+| merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |
+| advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |
+| local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |
+| generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |
+| JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |
+| emulator evidence | A simulator or emulator run produced advisory platform evidence. | Emulator evidence is not physical-device proof. |
+| device evidence | A physical-device run produced platform evidence. | Device evidence is not backend/session authority. |
+| verification-required | A claim needs an explicit verification lane before it can be treated as supported. | It is not a failure-open support claim. |
+| rebuild-required | A change touches native or companion surfaces that require rebuilding the host artifact. | It is not implied by docs-only or core-only/no native rebuild changes. |
+
+Support status is not device evidence: `supported` is not the same as device-verified.
+Visual collateral is not correctness proof by itself.
+Device/provider evidence is not backend/session authority.
+Cached read-only is not offline mutation.
+Bridge is not high-frequency or mutation authority.
+
 ## Status Legend
 
 - supported
@@ -85,7 +107,7 @@ coordinated cut.
 | Phoenix-facing commerce seam vocabulary | core | `paywall_entry`, `purchase_intent`, `restore_intent`, `entitlement_snapshot`, and `reconciliation_evidence` stay normalized and backend-truthful in core without embedding storefront providers. | Semantics may evolve in core, but provider adapters and native storefront logic remain outside the base package. | [Guide](capabilities.md#packaging-ledger) |
 | Provider adapters and native-heavy integrations | companion | Storefront adapters, media/upload/capture, rollout, auth/session, notifications, and audit/operator seams carry native binary churn or backend coupling beyond core. | First-party companions declare minimum compatible ranges against core, compatibility axes, and capability-family majors. | [Guide](compatibility.md#companion-compatibility-contract) |
 | Checked-in example hosts and install walkthroughs | example/docs-only | Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages. | Not first-class supported as package surfaces; promotion requires reclassification plus proof and support-matrix updates. | [Guide](capabilities.md#docs-only-boundary) |
-| Standalone native shell core packages | core | The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths. | Native core versions move in lockstep with the Crosswake package version through release-please linked versions; clean-room proof verifies the external install path at release time. | [Guide](install.md#step-2-generate-host-owned-native-shells) |
+| Standalone native shell core packages | core | The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths. | Native core versions move in lockstep with the Hex package through release-please linked versions; clean-room proof verifies the external install path at release time. | [Guide](install.md#step-2-generate-host-owned-native-shells) |
 
 ## Release And Versioning Policy
 

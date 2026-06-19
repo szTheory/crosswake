@@ -19,13 +19,16 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "# Crosswake Support Matrix",
       "",
-      "This guide stays narrow and proof-oriented. The published iOS and Android shell claims",
-      "below are backed by the checked-in example hosts plus the generated-shell verification",
-      "hooks that now pass on the same host-owned artifact classes adopters ship.",
+      "This guide stays narrow and proof-oriented. Generated-shell coordinate support is",
+      "backed by release-time clean-room proof plus generated-shell verification hooks.",
+      "The checked-in native hosts remain public proof artifacts; Phase 119 classifies",
+      "whether those hosts are published-coordinate proof or local-development proof.",
       "The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`",
       "and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake",
       "Hex package version; the release-time clean-room proof promotes that path after the",
       "coordinated cut.",
+      "",
+      support_truth_legend_section(),
       "",
       "## Status Legend",
       "",
@@ -180,6 +183,33 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| claim_id | current_state | promotes_to | evidence_class | required_evidence | minimum_consecutive_passes | freshness_window | failure_budget | required_platforms | required_docs_anchors | change_class | action_class | check_ids | demotion_trigger |",
       "|----------|---------------|-------------|----------------|-------------------|----------------------------|------------------|----------------|--------------------|-----------------------|--------------|--------------|-----------|------------------|",
       Enum.map_join(entries, "\n", &promotion_rule_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp support_truth_legend_section do
+    [
+      "## Support-Truth Label Legend",
+      "",
+      "Use these labels literally. Each label says what the evidence proves and what it does not prove.",
+      "",
+      "| Label | What it proves | What it does not prove |",
+      "|-------|----------------|------------------------|",
+      "| merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |",
+      "| advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |",
+      "| local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |",
+      "| generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |",
+      "| JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |",
+      "| emulator evidence | A simulator or emulator run produced advisory platform evidence. | Emulator evidence is not physical-device proof. |",
+      "| device evidence | A physical-device run produced platform evidence. | Device evidence is not backend/session authority. |",
+      "| verification-required | A claim needs an explicit verification lane before it can be treated as supported. | It is not a failure-open support claim. |",
+      "| rebuild-required | A change touches native or companion surfaces that require rebuilding the host artifact. | It is not implied by docs-only or core-only/no native rebuild changes. |",
+      "",
+      "Support status is not device evidence: `supported` is not the same as device-verified.",
+      "Visual collateral is not correctness proof by itself.",
+      "Device/provider evidence is not backend/session authority.",
+      "Cached read-only is not offline mutation.",
+      "Bridge is not high-frequency or mutation authority."
     ]
     |> Enum.join("\n")
   end
