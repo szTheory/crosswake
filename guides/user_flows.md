@@ -16,6 +16,8 @@ That is the real shape of Crosswake today.
 
 If you want the profile matrix first, read
 [guides/adopter_profiles.md](adopter_profiles.md).
+If you want the route-owner decision map before the examples, read
+[guides/route_policy.md](route_policy.md).
 If you want the boundary details after this guide clicks, keep
 [guides/bridge.md](bridge.md),
 [guides/packs.md](packs.md),
