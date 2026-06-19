@@ -3,32 +3,32 @@ gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
 status: planning
-stopped_at: Phase 117 context gathered
-last_updated: "2026-06-18T20:40:49.697Z"
-last_activity: 2026-06-18
+stopped_at: Phase 117 complete
+last_updated: "2026-06-19T14:38:12Z"
+last_activity: 2026-06-19
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 20
+  completed_phases: 2
+  total_plans: 16
+  completed_plans: 6
+  percent: 40
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-18)
+See: .planning/PROJECT.md (updated 2026-06-19)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 117 — route policy and support truth guide foundation
+**Current focus:** Phase 118 — runnable quick start and real adoption proof
 
 ## Current Position
 
-Phase: 117
+Phase: 118
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-06-18
+Last activity: 2026-06-19
 
 ## Performance Metrics
 
@@ -84,6 +84,9 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - **TODO-001** (`.planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md`): Resolved by Phase 116 / Plan 01 with targeted repairs to Flashcards schema-aligned tests and Chimeway registry notification-open fixture isolation. Verified with `cd examples/phoenix_host && mix test test/crosswake_example/flashcards_test.exs test/crosswake_example/chimeway/registry_notification_open_test.exs`.
 - **Phase 116 / Plan 02**: Public release truth reconciled to `crosswake 0.1.2`; README, CHANGELOG, guides, example metadata, and three example manifests no longer present stale current-release or standalone-shell deferral claims.
 - **Phase 116 / Plan 03**: DRIFT-01 resolved with `test/crosswake/guides/release_boundaries_test.exs` scanning public docs and example manifests for stale release truth. Verified with `mix test test/crosswake/guides/release_boundaries_test.exs test/crosswake/doctor/publish_readiness_test.exs`.
+- **Phase 117 / Plan 01**: GUIDE-01 resolved with `guides/route_policy.md`, route-owner examples, and `test/crosswake/guides/route_policy_test.exs`.
+- **Phase 117 / Plan 02**: MIGRATE-01 resolved with `guides/web_to_mobile_migration.md` and `test/crosswake/guides/web_to_mobile_migration_test.exs`.
+- **Phase 117 / Plan 03**: TRUTH-01 resolved with renderer-owned support-truth labels, README/install/user-flow navigation, ExDoc groups, and release-boundary guide assertions.
 
 ### Blockers/Concerns
 
@@ -109,11 +112,11 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-18T20:40:49.692Z
-Stopped at: Phase 117 context gathered
-Resume file: .planning/phases/117-route-policy-and-support-truth-guide-foundation/117-CONTEXT.md
+Last session: 2026-06-19T14:38:12Z
+Stopped at: Phase 117 complete
+Resume file: .planning/ROADMAP.md (Phase 118 section; phase context not generated yet)
 
 ## Operator Next Steps
 
-- Start `$gsd-discuss-phase 117` for Route-Policy And Support-Truth Guide Foundation.
-- Keep `GUIDE-01` framed as proof-path consolidation, not generic docs cleanup.
+- Start `$gsd-discuss-phase 118` for Runnable Quick Start And Real Adoption Proof.
+- Keep Phase 118 scoped to command-verified quick-start/adoption truth and DRIFT-02 guards; native evidence classification remains Phase 119.

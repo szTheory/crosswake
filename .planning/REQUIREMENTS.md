@@ -25,9 +25,9 @@ Make the public proof path clean before using it as adopter evidence.
 
 Make the adopter mental model obvious before the quick start and collateral teach flows.
 
-- [ ] **GUIDE-01**: A route-policy/start-here guide path explains Crosswake's one job: declare, enforce, and diagnose route ownership for Phoenix apps that go mobile. It covers `:live_view`, bounded bridge, cached read-only, `:offline_island`, `:native_screen`, backend/provider seam, and defer decisions with current route-policy examples and links to manifest/doctor/support truth.
-- [ ] **MIGRATE-01**: A web-to-mobile migration guide helps an existing Phoenix SaaS team inventory routes by job-to-be-done, default most routes to Phoenix/LiveView, promote only bounded native affordances where failure can degrade, reserve offline islands for explicit local mutation/replay, and promote native screens only where native runtime ownership is correct.
-- [ ] **TRUTH-01**: README, ExDoc grouping, support matrix entry points, and guide maps use one support-truth vocabulary: merge-blocking proof, advisory evidence, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required. The dense support matrix remains canonical but gets a friendlier first-read legend.
+- [x] **GUIDE-01**: A route-policy/start-here guide path explains Crosswake's one job: declare, enforce, and diagnose route ownership for Phoenix apps that go mobile. It covers `:live_view`, bounded bridge, cached read-only, `:offline_island`, `:native_screen`, backend/provider seam, and defer decisions with current route-policy examples and links to manifest/doctor/support truth.
+- [x] **MIGRATE-01**: A web-to-mobile migration guide helps an existing Phoenix SaaS team inventory routes by job-to-be-done, default most routes to Phoenix/LiveView, promote only bounded native affordances where failure can degrade, reserve offline islands for explicit local mutation/replay, and promote native screens only where native runtime ownership is correct.
+- [x] **TRUTH-01**: README, ExDoc grouping, support matrix entry points, and guide maps use one support-truth vocabulary: merge-blocking proof, advisory evidence, local-dev proof, generated public-coordinate proof, JVM hermetic proof, emulator evidence, device evidence, verification-required, and rebuild-required. The dense support matrix remains canonical but gets a friendlier first-read legend.
 
 ### QUICK - Runnable Quick Start And Real Adoption Proof
 
@@ -92,9 +92,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROOF-01 | 116 | Complete |
 | REL-TRUTH-01 | 116 | Complete |
 | DRIFT-01 | 116 | Complete |
-| GUIDE-01 | 117 | Planned |
-| MIGRATE-01 | 117 | Planned |
-| TRUTH-01 | 117 | Planned |
+| GUIDE-01 | 117 | Complete |
+| MIGRATE-01 | 117 | Complete |
+| TRUTH-01 | 117 | Complete |
 | QUICK-01 | 118 | Planned |
 | ADOPT-01 | 118 | Planned |
 | DRIFT-02 | 118 | Planned |
@@ -114,4 +114,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-18*
-*Last updated: 2026-06-18 - initial v13.0 requirements from research synthesis*
+*Last updated: 2026-06-19 - Phase 117 GUIDE-01, MIGRATE-01, and TRUTH-01 complete*
