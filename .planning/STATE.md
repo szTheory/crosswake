@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Adopter Confidence & Native Evidence
-status: executing
-stopped_at: Completed 118-02-PLAN.md
-last_updated: "2026-06-19T15:47:45.142Z"
+status: verifying
+stopped_at: Completed 118-03-PLAN.md
+last_updated: "2026-06-19T15:55:47.420Z"
 last_activity: 2026-06-19
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 40
+  completed_plans: 9
+  percent: 60
 ---
 
 # Project State: Crosswake
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-06-19)
 
 ## Current Position
 
-Phase: 118 (runnable-quick-start-and-real-adoption-proof) — EXECUTING
+Phase: 118 (runnable-quick-start-and-real-adoption-proof) — VERIFYING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-19
 
 ## Performance Metrics
@@ -87,12 +87,15 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - **Phase 117 / Plan 01**: GUIDE-01 resolved with `guides/route_policy.md`, route-owner examples, and `test/crosswake/guides/route_policy_test.exs`.
 - **Phase 117 / Plan 02**: MIGRATE-01 resolved with `guides/web_to_mobile_migration.md` and `test/crosswake/guides/web_to_mobile_migration_test.exs`.
 - **Phase 117 / Plan 03**: TRUTH-01 resolved with renderer-owned support-truth labels, README/install/user-flow navigation, ExDoc groups, and release-boundary guide assertions.
+- **Phase 118 / Plan 01**: QUICK-01 resolved with Phoenix host setup/reset aliases, a working `/` smoke page, a walkthrough-first `examples/QUICK_START.md`, and command-verified offline, bounded-bridge, and native-skipped proof lanes.
+- **Phase 118 / Plan 02**: ADOPT-01 resolved with `guides/adoption.md` teaching the app-owned IndexedDB outbox, reconnect-triggered `flushOutbox`, `/study/sync`, Ecto idempotency, replay outcomes, and bridge non-authority.
+- **Phase 118 / Plan 03**: DRIFT-02 resolved with `test/crosswake/guides/quick_start_adoption_drift_test.exs` scanning source-derived quick-start/adoption truth and synthetic stale-command/offline-authority regressions.
 
 ### Blockers/Concerns
 
 - **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
 - **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
-- **Adopter proof-path drift (v13 active):** Phase 116 resolved stale release truth, stale quick-start front-door commands, and fictional bridge-owned offline mutation claims in the first-read surfaces it touched. Full command-verified quick-start and adoption rewrite remain Phase 118.
+- **~~Adopter proof-path drift (v13 active)~~ → RESOLVED by Phase 118 (2026-06-19).** The quick start and adoption guide now use command-verified paths, current offline proof truth, and a DRIFT-02 docs-contract guard.
 - **Checked-in native host drift (v13 active):** The generator/release path proves published SwiftPM/Maven coordinates, but the checked-in iOS host still uses a local package ref and the checked-in Android host still references old `dev.crosswake:shell-core-android:0.1.0`. Decide whether checked-in hosts should prove published coordinates or be explicitly labeled local-development proof.
 - **Collateral gap (v13 active):** No durable adopter screenshots/videos/artifact uploads were found for the native/browser demo paths. Current proof is strong mechanically, but not yet "seeing is believing" for a maintainer or prospective adopter.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
@@ -112,12 +115,12 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-19T15:47:45.139Z
-Stopped at: Completed 118-02-PLAN.md
-Resume file: .planning/phases/118-runnable-quick-start-and-real-adoption-proof/118-03-PLAN.md
+Last session: 2026-06-19T15:55:47.415Z
+Stopped at: Completed 118-03-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
-- Start `$gsd-execute-phase 118` for Runnable Quick Start And Real Adoption Proof.
-- Execute Wave 1 plans first (`118-01`, `118-02`), then Wave 2 (`118-03`) after the final quick-start/adoption docs text exists.
-- Keep Phase 118 scoped to command-verified quick-start/adoption truth and DRIFT-02 guards; native evidence classification remains Phase 119.
+- Run final Phase 118 verification and archive/close the phase if the gate passes.
+- Start `$gsd-execute-phase 119` for Native Evidence Classification after Phase 118 verification is accepted.
+- Keep checked-in native host evidence classification in Phase 119; Phase 118 only labels native steps advisory/local-development.

@@ -74,7 +74,7 @@ Full phase detail archived in `.planning/milestones/v12.0-ROADMAP.md`.
 
 - [x] **Phase 116: Proof Debt And Release Truth** - Make the public proof path clean and current before it becomes adopter evidence (3/3 plans)
 - [x] **Phase 117: Route-Policy And Support-Truth Guide Foundation** - Make the route-owner mental model and proof-label vocabulary the first-read frame (3/3 plans)
-- [ ] **Phase 118: Runnable Quick Start And Real Adoption Proof** - Turn the first hands-on path into a command-verified proof of v11/v12 truth (0/3 plans)
+- [x] **Phase 118: Runnable Quick Start And Real Adoption Proof** - Turn the first hands-on path into a command-verified proof of v11/v12 truth (3/3 plans) (completed 2026-06-19)
 - [ ] **Phase 119: Native Evidence Classification** - Decide and label whether native evidence is published-coordinate proof, local-dev proof, or advisory collateral (0/3 plans)
 - [ ] **Phase 120: Collateral, Artifact CI, And Troubleshooting** - Package durable route-ownership evidence with honest artifact labels and recovery docs (0/4 plans)
 
@@ -150,7 +150,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 docs text)*
 
-- [ ] 118-03-PLAN.md — Add quick-start/adoption drift guard for command, path, port, and forbidden offline-authority language.
+- [x] 118-03-PLAN.md — Add quick-start/adoption drift guard for command, path, port, and forbidden offline-authority language.
 
 ### Phase 119: Native Evidence Classification
 
@@ -217,9 +217,9 @@ Plans:
 | GUIDE-01 | Phase 117 | Complete |
 | MIGRATE-01 | Phase 117 | Complete |
 | TRUTH-01 | Phase 117 | Complete |
-| QUICK-01 | Phase 118 | Planned |
-| ADOPT-01 | Phase 118 | Planned |
-| DRIFT-02 | Phase 118 | Planned |
+| QUICK-01 | Phase 118 | Complete |
+| ADOPT-01 | Phase 118 | Complete |
+| DRIFT-02 | Phase 118 | Complete |
 | NATIVE-01 | Phase 119 | Planned |
 | NATIVE-02 | Phase 119 | Planned |
 | DRIFT-03 | Phase 119 | Planned |
@@ -253,6 +253,6 @@ Coverage: 16/16 v13.0 v1 requirements mapped exactly once.
 | 115. Closeout-Verifier Honesty + Ledger Backlog + Doc Truth | v12.0 | 3/3 | Complete    | 2026-06-18 |
 | 116. Proof Debt And Release Truth | v13.0 | 3/3 | Complete    | 2026-06-18 |
 | 117. Route-Policy And Support-Truth Guide Foundation | v13.0 | 3/3 | Complete | 2026-06-19 |
-| 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 2/3 | In Progress | - |
+| 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 3/3 | Complete   | 2026-06-19 |
 | 119. Native Evidence Classification | v13.0 | 0/3 | Not started | - |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 0/4 | Not started | - |

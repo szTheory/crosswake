@@ -35,7 +35,7 @@ Turn the first hands-on adopter path into a command-verified proof of the real s
 
 - [x] **QUICK-01**: `examples/QUICK_START.md` is runnable from a clean checkout and names exact setup/server/native commands, the correct default Phoenix host port (`4002` unless intentionally changed), correct iOS and Android project paths, expected output, proof commands, and which native simulator/emulator steps are advisory.
 - [x] **ADOPT-01**: `guides/adoption.md` teaches v12 truth: app-owned offline island JavaScript, IndexedDB outbox, reconnect-triggered `flushOutbox`, `/study/sync`, Ecto idempotency, outbox deletion, accepted/rejected/conflict semantics, and no broad background sync. It removes `Crosswake.mutate` and "Sync Engine (Bridge)" mutation authority from public guidance.
-- [ ] **DRIFT-02**: Quick-start and adoption guide drift is mechanically guarded. A test or script catches missing setup aliases, wrong port/path claims, forbidden `Crosswake.mutate` examples, and bridge-owned offline mutation language.
+- [x] **DRIFT-02**: Quick-start and adoption guide drift is mechanically guarded. A test or script catches missing setup aliases, wrong port/path claims, forbidden `Crosswake.mutate` examples, and bridge-owned offline mutation language.
 
 ### NATIVE - Native Evidence Classification
 
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GUIDE-01 | 117 | Complete |
 | MIGRATE-01 | 117 | Complete |
 | TRUTH-01 | 117 | Complete |
-| QUICK-01 | 118 | Planned |
-| ADOPT-01 | 118 | Planned |
-| DRIFT-02 | 118 | Planned |
+| QUICK-01 | 118 | Complete |
+| ADOPT-01 | 118 | Complete |
+| DRIFT-02 | 118 | Complete |
 | NATIVE-01 | 119 | Planned |
 | NATIVE-02 | 119 | Planned |
 | DRIFT-03 | 119 | Planned |
