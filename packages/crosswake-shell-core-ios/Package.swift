@@ -22,6 +22,9 @@ let package = Package(
             name: "CrosswakeShellCore"),
         .testTarget(
             name: "CrosswakeShellCoreTests",
-            dependencies: ["CrosswakeShellCore"]),
+            dependencies: ["CrosswakeShellCore"],
+            resources: [
+                .copy("Resources/")
+            ]),
     ]
 )
