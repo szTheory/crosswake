@@ -34,7 +34,9 @@ defmodule Crosswake.Contract.ContractDriftTest do
   @generated_json_paths [
     "examples/ios_shell_host/Fixtures/route_activation.json",
     "examples/android_shell_host/app/src/main/assets/route_activation.json",
-    "test/fixtures/bridge_contract_vectors.json"
+    "test/fixtures/bridge_contract_vectors.json",
+    "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json",
+    "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json"
   ]
 
   @all_surface_paths @manifest_paths ++ @generated_json_paths
@@ -43,7 +45,7 @@ defmodule Crosswake.Contract.ContractDriftTest do
   # Readability / guard sanity test
   # ---------------------------------------------------------------------------
 
-  test "readability: all six committed surfaces exist and canonical version is semver" do
+  test "readability: all seven committed surfaces exist and canonical version is semver" do
     assert @canonical_version =~ ~r/^\d+\.\d+\.\d+$/,
            "Crosswake.Bridge.Contract.version() must return a semver string; got: #{inspect(@canonical_version)}"
 
