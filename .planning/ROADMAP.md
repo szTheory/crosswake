@@ -106,11 +106,12 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   4. The 1.1.0 vs 1.0.0 protocol-version conflict is resolved to one correct current value without altering behavior visible to existing 0.1.x adopters.
   5. `ActivationCoordinator.kt` line 594 no longer contains a `?: "1.0.0"` fallback; native always reads the manifest-provided value and fails closed if absent.
 
-**Plans**: 3/3 plans complete
+**Plans**: 4 plans (3 complete + 1 gap closure)
 
 - [x] 121-01-PLAN.md — Single-source the bridge-protocol axis in Manifest.Types + Shell.Fixtures and repair all test drift (CANON-01/02/04)
 - [x] 121-02-PLAN.md — `mix crosswake.contract.gen` task + emitted JSON fixtures, vectors, docs snippet, idempotent (CANON-02/03)
 - [x] 121-03-PLAN.md — Remove the silent Kotlin `?: "1.0.0"` fallback; native fails closed (CANON-05)
+- [ ] 121-04-PLAN.md — Gap closure: align both committed crosswake_manifest.json to bridge 1.1.0 (closes SC-2 BLOCKER), fix Map.new comment (WR-01), sync CANON-05 tracking (CANON-02/04/05)
 
 ### Phase 122: Drift Guards
 
