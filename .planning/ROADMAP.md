@@ -129,7 +129,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 **Wave 1**
 
 - [x] 122-01-PLAN.md — GUARD-01 parse-based ExUnit drift test over all committed contract surfaces + anti-vacuous synthetic regressions
-- [ ] 122-02-PLAN.md — GUARD-03 contract_version_parity read-only doctor check (sibling to generator_coordinate_parity) + tests
+- [x] 122-02-PLAN.md — GUARD-03 contract_version_parity read-only doctor check (sibling to generator_coordinate_parity) + tests
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -191,6 +191,6 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 122. Drift Guards | v14.0 | 1/3 | In Progress|  |
+| 122. Drift Guards | v14.0 | 2/3 | In Progress|  |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |

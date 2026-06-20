@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
 status: executing
-stopped_at: Phase 122 context gathered
-last_updated: "2026-06-20T18:24:11.894Z"
+stopped_at: Completed 122-02-PLAN.md
+last_updated: "2026-06-20T18:42:02.046Z"
 last_activity: 2026-06-20
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 25
 ---
 
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 ## Current Position
 
 Phase: 122 (drift-guards) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-20
 
 ```
-Progress: [███████░░░] 71%
+Progress: [█████████░] 86%
 ```
 
 ## Performance Metrics
@@ -97,6 +97,7 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase 121]: 121-03: Replace ?: "1.0.0" silent default with kotlin error() at ActivationCoordinator.kt:594; ShellManifest.nativeRuntimeVersion stays non-nullable String (CANON-05 / D-08)
 - [Phase ?]: 121-02: Sorted-pairs-to-map for deterministic JSON; write_if_changed for idempotent writes; docs/_contract_snippet.md path; seed vector IDs vec-001/002/003
 - [Phase ?]: GUARD-01 reads compatibility[bridge_protocol_version] from manifests via Jason.decode; two compare helpers keep failure categories distinct
+- [Phase ?]: GUARD-03: manifest path resolution
 
 ### Pending Todos
 
@@ -143,11 +144,12 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 121 P02 | 4m | - tasks | - files |
 | Phase 121 P04 | 3m | 3 tasks | 4 files |
 | Phase 122 P01 | 3m | 2 tasks | 1 files |
+| Phase 122 P02 | 14m | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T18:24:04.289Z
-Stopped at: Phase 122 context gathered
+Last session: 2026-06-20T18:42:02.042Z
+Stopped at: Completed 122-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

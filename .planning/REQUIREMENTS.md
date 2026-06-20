@@ -23,7 +23,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **GUARD-01**: A deterministic, browser-free, merge-blocking ExUnit drift test fails when any derived surface's contract version diverges from the canonical source, and its failure message names the one file to edit plus the exact regenerate command.
 - [ ] **GUARD-02**: A generate-and-diff CI check (`mix crosswake.contract.gen` followed by `git diff --exit-code`) fails when generated contract artifacts are hand-edited or stale.
-- [ ] **GUARD-03**: A `contract_version_parity` doctor check reports contract drift to operators, as a sibling to the existing `generator_coordinate_parity` check.
+- [x] **GUARD-03**: A `contract_version_parity` doctor check reports contract drift to operators, as a sibling to the existing `generator_coordinate_parity` check.
 - [ ] **GUARD-04**: The contract drift checks are registered in the merge-blocking aggregator and branch protection, while native-toolchain-dependent checks remain advisory (required-vs-advisory split).
 
 ### Native Package Behavioral Proof (NTEST)
@@ -82,7 +82,7 @@ Populated during roadmap creation.
 | CANON-05 | Phase 121 | Complete |
 | GUARD-01 | Phase 122 | Complete |
 | GUARD-02 | Phase 122 | Pending |
-| GUARD-03 | Phase 122 | Pending |
+| GUARD-03 | Phase 122 | Complete |
 | GUARD-04 | Phase 122 | Pending |
 | NTEST-01 | Phase 123 | Pending |
 | NTEST-02 | Phase 123 | Pending |
