@@ -86,7 +86,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 
 **Milestone Goal:** Make the bridge/runtime contract boringly canonical and hard to drift — one source of truth across Elixir, manifest compatibility, generated shells, reusable native packages, examples, proof lanes, and docs — then prove it directly in the native packages rather than only in checked-in example hosts. Coherence work, not feature breadth.
 
-- [ ] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (gaps found 2026-06-20 — SC-2 example-manifest bridge-version drift; see 121-VERIFICATION.md)
+- [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (gaps found 2026-06-20 — SC-2 example-manifest bridge-version drift; see 121-VERIFICATION.md) (completed 2026-06-20)
 - [ ] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge
 - [ ] **Phase 123: Native Package Behavioral Proof** - Six-behavior XCTest and JUnit test suites driven by shared canonical vectors; CI lanes with required-vs-advisory split
 - [ ] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog
@@ -106,12 +106,12 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   4. The 1.1.0 vs 1.0.0 protocol-version conflict is resolved to one correct current value without altering behavior visible to existing 0.1.x adopters.
   5. `ActivationCoordinator.kt` line 594 no longer contains a `?: "1.0.0"` fallback; native always reads the manifest-provided value and fails closed if absent.
 
-**Plans**: 4 plans (3 complete + 1 gap closure)
+**Plans**: 4/4 plans complete
 
 - [x] 121-01-PLAN.md — Single-source the bridge-protocol axis in Manifest.Types + Shell.Fixtures and repair all test drift (CANON-01/02/04)
 - [x] 121-02-PLAN.md — `mix crosswake.contract.gen` task + emitted JSON fixtures, vectors, docs snippet, idempotent (CANON-02/03)
 - [x] 121-03-PLAN.md — Remove the silent Kotlin `?: "1.0.0"` fallback; native fails closed (CANON-05)
-- [ ] 121-04-PLAN.md — Gap closure: align both committed crosswake_manifest.json to bridge 1.1.0 (closes SC-2 BLOCKER), fix Map.new comment (WR-01), sync CANON-05 tracking (CANON-02/04/05)
+- [x] 121-04-PLAN.md — Gap closure: align both committed crosswake_manifest.json to bridge 1.1.0 (closes SC-2 BLOCKER), fix Map.new comment (WR-01), sync CANON-05 tracking (CANON-02/04/05)
 
 ### Phase 122: Drift Guards
 
@@ -182,7 +182,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
-| 121. Canonical Contract Source | v14.0 | 3/3 | Gaps Found | 2026-06-20 |
+| 121. Canonical Contract Source | v14.0 | 4/4 | Complete   | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 0/TBD | Not started | - |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
