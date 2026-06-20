@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
-status: executing
+current_phase: 122
+current_phase_name: drift-guards
+status: verifying
 stopped_at: Completed 122-02-PLAN.md
-last_updated: "2026-06-20T18:42:02.046Z"
+last_updated: "2026-06-20T18:48:14.295Z"
 last_activity: 2026-06-20
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 25
+  completed_plans: 7
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -27,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 
 Phase: 122 (drift-guards) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-20
 
 ```
@@ -98,6 +100,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: 121-02: Sorted-pairs-to-map for deterministic JSON; write_if_changed for idempotent writes; docs/_contract_snippet.md path; seed vector IDs vec-001/002/003
 - [Phase ?]: GUARD-01 reads compatibility[bridge_protocol_version] from manifests via Jason.decode; two compare helpers keep failure categories distinct
 - [Phase ?]: GUARD-03: manifest path resolution
+- [Phase ?]: merge-blocking-contract-drift aggregator with green-first registration script
+- [Phase ?]: git add -A + git diff --cached --exit-code catches newly-emitted untracked generated files (T-122-07 mitigation)
+- [Phase ?]: cloned from register-e2e-gate.sh; OLD_CHECK empty (append-only PATCH); green-first preflight exits 2 until aggregator green on main; maintainer-run/harness-blocked
 
 ### Pending Todos
 
@@ -145,10 +150,11 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 121 P04 | 3m | 3 tasks | 4 files |
 | Phase 122 P01 | 3m | 2 tasks | 1 files |
 | Phase 122 P02 | 14m | 2 tasks | 4 files |
+| Phase 122 P03 | 2m | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T18:42:02.042Z
+Last session: 2026-06-20T18:48:14.288Z
 Stopped at: Completed 122-02-PLAN.md
 Resume file: None
 

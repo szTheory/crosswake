@@ -87,7 +87,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 **Milestone Goal:** Make the bridge/runtime contract boringly canonical and hard to drift — one source of truth across Elixir, manifest compatibility, generated shells, reusable native packages, examples, proof lanes, and docs — then prove it directly in the native packages rather than only in checked-in example hosts. Coherence work, not feature breadth.
 
 - [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (verified 5/5 after 121-04 gap closure; see 121-VERIFICATION.md) (completed 2026-06-20)
-- [ ] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge
+- [x] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge (completed 2026-06-20)
 - [ ] **Phase 123: Native Package Behavioral Proof** - Six-behavior XCTest and JUnit test suites driven by shared canonical vectors; CI lanes with required-vs-advisory split
 - [ ] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog
 
@@ -125,7 +125,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   3. `mix crosswake.doctor` emits a `contract_version_parity` finding that reports drift to operators alongside the existing `generator_coordinate_parity` check; it is green when all surfaces agree.
   4. The drift checks are registered in the merge-blocking CI aggregator; a registration script is committed that documents the branch-protection PATCH step (matching the v12.0 pattern of script + document, not auto-toggle).
 
-**Plans**: 3 plans
+**Plans**: 3/3 plans complete
 **Wave 1**
 
 - [x] 122-01-PLAN.md — GUARD-01 parse-based ExUnit drift test over all committed contract surfaces + anti-vacuous synthetic regressions
@@ -133,7 +133,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 122-03-PLAN.md — GUARD-02 generate-and-diff + GUARD-04 contract-drift-gate.yml (two hermetic jobs + alls-green aggregator) and register-contract-gate.sh
+- [x] 122-03-PLAN.md — GUARD-02 generate-and-diff + GUARD-04 contract-drift-gate.yml (two hermetic jobs + alls-green aggregator) and register-contract-gate.sh
 
 ### Phase 123: Native Package Behavioral Proof
 
@@ -191,6 +191,6 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 122. Drift Guards | v14.0 | 2/3 | In Progress|  |
+| 122. Drift Guards | v14.0 | 3/3 | Complete   | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
