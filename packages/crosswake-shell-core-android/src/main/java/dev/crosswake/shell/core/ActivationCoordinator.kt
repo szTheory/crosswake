@@ -591,7 +591,8 @@ object ActivationFixtures {
     fun loadManifest(context: Context): ShellManifest {
         val root = JSONObject(readAsset(context, "crosswake_manifest.json"))
         val compatibilityJson = root.optJSONObject("compatibility")
-        val nativeRuntimeVersion = compatibilityJson?.getString("native_runtime_version") ?: "1.0.0"
+        val nativeRuntimeVersion = compatibilityJson?.getString("native_runtime_version")
+            ?: error("crosswake_manifest.json is missing native_runtime_version in the compatibility block")
         val routesJson = root.getJSONObject("routes")
         val routes = mutableMapOf<String, ShellManifest.Route>()
 
