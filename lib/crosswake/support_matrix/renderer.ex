@@ -10,6 +10,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
   alias Crosswake.Manifest.Types.CapabilitySupportEntry
   alias Crosswake.Manifest.Types.PackageSurfaceEntry
   alias Crosswake.Manifest.Types.PromotionRuleEntry
+  alias Crosswake.Manifest.Types.RebuildDecisionEntry
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
 
   @type action :: :created | :reused | :updated
@@ -55,6 +56,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       release_boundary_section(support_matrix.release_boundaries),
       "",
       change_class_section(support_matrix.change_classes),
+      "",
+      rebuild_decision_table_section(Crosswake.SupportMatrix.rebuild_decision_table()),
       "",
       action_class_section(Crosswake.SupportMatrix.action_classes()),
       "",
@@ -161,6 +164,21 @@ defmodule Crosswake.SupportMatrix.Renderer do
       Enum.map_join(entries, "\n", &change_class_row/1)
     ]
     |> Enum.join("\n")
+  end
+
+  defp rebuild_decision_table_section(entries) do
+    [
+      "## Rebuild Decision Table",
+      "",
+      "| Axis | Change Kind | Rebuild Class | Adopter Action | Denial Signal | Guide Anchor |",
+      "|------|-------------|---------------|----------------|---------------|--------------|",
+      Enum.map_join(entries, "\n", &rebuild_decision_table_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp rebuild_decision_table_row(%RebuildDecisionEntry{} = entry) do
+    "| #{escape_cell(entry.axis)} | #{escape_cell(Atom.to_string(entry.change_kind))} | #{escape_cell(entry.rebuild_class)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.denial_signal)} | #{escape_cell(entry.guide_anchor)} |"
   end
 
   defp action_class_section(entries) do

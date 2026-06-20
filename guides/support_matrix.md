@@ -130,6 +130,22 @@ package versions alone do not define support truth.
 | compatibility-bump only | Compatibility declarations or package windows narrowed so some older combinations now fail closed, but a fresh binary is not automatically required for already-compatible adopters. | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows. | fail-closed compatibility fixtures |
 | native or companion rebuild required | Native code, generated shell projects, entitlements, permissions, platform config, native dependencies, or companion-native integration code changed. | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts. | core proof plus generated-shell or companion verification lanes |
 
+## Rebuild Decision Table
+
+| Axis | Change Kind | Rebuild Class | Adopter Action | Denial Signal | Guide Anchor |
+|------|-------------|---------------|----------------|---------------|--------------|
+| manifest_schema_version | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | compatibility_mismatch | guides/compatibility.md#manifest_schema_version |
+| manifest_schema_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#manifest_schema_version |
+| bridge_protocol_version | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | compatibility_mismatch | guides/compatibility.md#bridge_protocol_version |
+| bridge_protocol_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#bridge_protocol_version |
+| native_runtime_version | additive | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. Note: unlike schema/protocol axes, native runtime additive bumps always require a rebuild because the runtime lives in the binary. | compatibility_mismatch | guides/compatibility.md#native_runtime_version |
+| native_runtime_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#native_runtime_version |
+| capability_version (core-owned) | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | undeclared_capability | guides/compatibility.md#capability-version |
+| capability_version (native/companion) | additive | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | undeclared_capability | guides/compatibility.md#capability-version |
+| capability_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | undeclared_capability | guides/compatibility.md#capability-version |
+| docs_wording | additive | docs-only | Read the updated guidance and rerun docs integrity only. | n/a | guides/support_matrix.md#change-classes |
+| core_elixir_behavior | additive | core-only/no native rebuild | Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells. | n/a | guides/support_matrix.md#change-classes |
+
 ## Action Classes
 
 | action_class | subject | required_action | rebuild_required | reason | guide_anchor |
