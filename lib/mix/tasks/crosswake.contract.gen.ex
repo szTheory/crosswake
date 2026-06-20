@@ -59,17 +59,17 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   end
 
   # ---------------------------------------------------------------------------
-  # Content builders
+  # Content builders — produce Elixir maps/lists (sorted) then Jason-encode
   # ---------------------------------------------------------------------------
 
   defp ios_activation_json(bridge_vsn) do
-    json_object([
+    encode_doc([
       {"_generated_by", "mix crosswake.contract.gen"},
       {"bridge_protocol_version", bridge_vsn},
-      {"capabilities", json_object([{"camera", "1.0.0"}])},
+      {"capabilities", [{"camera", "1.0.0"}]},
       {"correlation_id", "ios-example-capture-1"},
-      {"declared_pack_requirements", json_object([{"camera_capture_assets", "1.0.0"}])},
-      {"installed_packs", json_object([{"camera_capture_assets", "1.0.0"}])},
+      {"declared_pack_requirements", [{"camera_capture_assets", "1.0.0"}]},
+      {"installed_packs", [{"camera_capture_assets", "1.0.0"}]},
       {"manifest_source", "bundled"},
       {"native_runtime_version", "1.0.0"},
       {"origin", "https://example.crosswake.invalid"},
@@ -80,13 +80,13 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   end
 
   defp android_activation_json(bridge_vsn) do
-    json_object([
+    encode_doc([
       {"_generated_by", "mix crosswake.contract.gen"},
       {"bridge_protocol_version", bridge_vsn},
-      {"capabilities", json_object([{"camera", "1.0.0"}])},
+      {"capabilities", [{"camera", "1.0.0"}]},
       {"correlation_id", "android-example-capture-1"},
-      {"declared_pack_requirements", json_object([{"camera_capture_assets", "1.0.0"}])},
-      {"installed_packs", json_object([{"camera_capture_assets", "1.0.0"}])},
+      {"declared_pack_requirements", [{"camera_capture_assets", "1.0.0"}]},
+      {"installed_packs", [{"camera_capture_assets", "1.0.0"}]},
       {"manifest_source", "bundled"},
       {"native_runtime_version", "1.0.0"},
       {"origin", "https://example.crosswake.invalid"},
@@ -97,7 +97,7 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   end
 
   defp vectors_json(protocol, bridge_vsn, commands, denial_reasons) do
-    json_object([
+    encode_doc([
       {"_comment",
        "Canonical bridge contract conformance vectors. DO NOT EDIT — regenerate with: mix crosswake.contract.gen"},
       {"_generated_by", "mix crosswake.contract.gen"},
@@ -114,30 +114,29 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
 
   defp seed_vectors(bridge_vsn) do
     [
-      json_object([
+      [
         {"id", "vec-001-version-mismatch-deny"},
         {"description",
          "Request with a stale bridge_protocol_version is denied with compatibility_mismatch"},
-        {"request_override", json_object([{"version", "1.0.0"}])},
+        {"request_override", [{"version", "1.0.0"}]},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "compatibility_mismatch"}
-      ]),
-      json_object([
+      ],
+      [
         {"id", "vec-002-unknown-command-deny"},
         {"description", "Request with an unrecognised command is denied"},
-        {"request_override",
-         json_object([{"version", bridge_vsn}, {"command", "unknown.command"}])},
+        {"request_override", [{"version", bridge_vsn}, {"command", "unknown.command"}]},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "undeclared_capability"}
-      ]),
-      json_object([
+      ],
+      [
         {"id", "vec-003-canonical-version-ok"},
         {"description",
          "Request with the canonical bridge_protocol_version and a supported command succeeds"},
-        {"request_override", json_object([{"version", bridge_vsn}, {"command", "app.info.get"}])},
+        {"request_override", [{"version", bridge_vsn}, {"command", "app.info.get"}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil}
-      ])
+      ]
     ]
   end
 
@@ -162,40 +161,55 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   # ---------------------------------------------------------------------------
   # Ordered JSON encoding
   #
-  # We represent JSON objects as sorted keyword-style lists of {key, value} pairs
-  # encoded into a raw JSON string via a recursive builder. This guarantees
-  # byte-stable output on consecutive runs regardless of BEAM map ordering.
+  # We represent JSON objects as lists of {key, value} 2-tuples. Keys are sorted
+  # before encoding so re-runs produce byte-identical output regardless of BEAM
+  # map ordering. Jason.encode_to_iodata! is used on the final sorted structure.
   # ---------------------------------------------------------------------------
 
-  # Encode a list of {key, value} pairs as a pretty-printed JSON object string.
-  # Pairs are sorted by key so re-runs are byte-stable.
-  defp json_object(pairs) when is_list(pairs) do
-    sorted = Enum.sort_by(pairs, fn {k, _} -> k end)
-    entries = Enum.map_join(sorted, ",\n", fn {k, v} -> ~s("#{k}": #{json_value(v)}) end)
-    "{\n#{indent_block(entries)}\n}"
+  # Top-level entry: encode a pairs list as a pretty JSON document with trailing newline.
+  defp encode_doc(pairs) when is_list(pairs) do
+    pairs |> pairs_to_map() |> Jason.encode!(pretty: true) |> Kernel.<>("\n")
   end
 
-  # Scalar values
-  defp json_value(s) when is_binary(s), do: Jason.encode!(s)
-  defp json_value(nil), do: "null"
-  defp json_value(b) when is_boolean(b), do: Jason.encode!(b)
-  defp json_value(n) when is_integer(n) or is_float(n), do: Jason.encode!(n)
-
-  # Already-encoded JSON object string (from json_object/1 recursive call)
-  defp json_value(s) when is_binary(s), do: s
-
-  # Plain list (JSON array of scalar or already-encoded objects)
-  defp json_value(list) when is_list(list) do
-    items = Enum.map_join(list, ",\n", &json_value/1)
-    "[\n#{indent_block(items)}\n]"
+  # Recursively convert a pairs list (list of {key, value} tuples) into a sorted
+  # plain Elixir map. Because Elixir maps do not preserve insertion order but
+  # BEAM sorts atom-key maps lexicographically, we use string keys, which Jason
+  # encodes in the order the runtime holds them. To guarantee sort stability we
+  # first build a sorted keyword list and convert it to a map — this produces a
+  # map whose key insertion order matches the sort, and Jason iterates it in
+  # that order on OTP 26+.
+  #
+  # For nested objects (inner pairs lists) we recurse. For arrays of pairs lists
+  # (like `vectors`) we map over each element. Plain scalar values pass through.
+  defp pairs_to_map(pairs) when is_list(pairs) do
+    if pairs_list?(pairs) do
+      pairs
+      |> Enum.sort_by(fn {k, _} -> to_string(k) end)
+      |> Enum.map(fn {k, v} -> {to_string(k), convert_value(v)} end)
+      |> Map.new()
+    else
+      # Plain list (array of scalars or pre-converted values)
+      Enum.map(pairs, &convert_value/1)
+    end
   end
 
-  # Indent a multi-line block by two spaces per level.
-  defp indent_block(text) do
-    text
-    |> String.split("\n")
-    |> Enum.map_join("\n", fn line -> "  " <> line end)
+  # A pairs list is a non-empty list where the first element is a 2-tuple.
+  defp pairs_list?([]), do: false
+  defp pairs_list?([{_, _} | _]), do: true
+  defp pairs_list?(_), do: false
+
+  defp convert_value(pairs) when is_list(pairs) and pairs != [] do
+    if pairs_list?(pairs) do
+      pairs_to_map(pairs)
+    else
+      # Plain array of scalars or inner objects
+      Enum.map(pairs, &convert_value/1)
+    end
   end
+
+  defp convert_value([]), do: []
+  defp convert_value(nil), do: nil
+  defp convert_value(v), do: v
 
   # ---------------------------------------------------------------------------
   # Idempotent write

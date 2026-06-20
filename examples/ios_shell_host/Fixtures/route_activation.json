@@ -1,5 +1,6 @@
 {
-  "bridge_protocol_version": "1.0.0",
+  "_generated_by": "mix crosswake.contract.gen",
+  "bridge_protocol_version": "1.1.0",
   "capabilities": {
     "camera": "1.0.0"
   },

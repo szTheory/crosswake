@@ -1,0 +1,66 @@
+{
+  "_comment": "Canonical bridge contract conformance vectors. DO NOT EDIT — regenerate with: mix crosswake.contract.gen",
+  "_generated_by": "mix crosswake.contract.gen",
+  "_regenerate": "mix crosswake.contract.gen",
+  "bridge_protocol_version": "1.1.0",
+  "commands": [
+    "app.info.get",
+    "haptics.impact",
+    "permissions.status",
+    "notifications.token.get",
+    "share.invoke",
+    "files.pick",
+    "transfer.download",
+    "transfer.export",
+    "transfer.import",
+    "transfer.upload.prepare"
+  ],
+  "denial_reasons": [
+    "compatibility_mismatch",
+    "undeclared_capability",
+    "unavailable_capability",
+    "commerce_corridor",
+    "origin_denied",
+    "inactive_route",
+    "external_entry_denied",
+    "pack_incompatible",
+    "gate_denied",
+    "kill_switch_active",
+    "step_up_required",
+    "notification_open_denied"
+  ],
+  "manifest_schema_version": "1.0.0",
+  "native_runtime_version": "1.0.0",
+  "protocol": "crosswake.bridge",
+  "vectors": [
+    {
+      "description": "Request with a stale bridge_protocol_version is denied with compatibility_mismatch",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-001-version-mismatch-deny",
+      "request_override": {
+        "version": "1.0.0"
+      }
+    },
+    {
+      "description": "Request with an unrecognised command is denied",
+      "expected_denial_reason": "undeclared_capability",
+      "expected_outcome": "deny",
+      "id": "vec-002-unknown-command-deny",
+      "request_override": {
+        "command": "unknown.command",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "description": "Request with the canonical bridge_protocol_version and a supported command succeeds",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-003-canonical-version-ok",
+      "request_override": {
+        "command": "app.info.get",
+        "version": "1.1.0"
+      }
+    }
+  ]
+}
