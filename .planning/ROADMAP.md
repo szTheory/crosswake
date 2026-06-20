@@ -191,6 +191,6 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 122. Drift Guards | v14.0 | 3/3 | Complete   | 2026-06-20 |
+| 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
