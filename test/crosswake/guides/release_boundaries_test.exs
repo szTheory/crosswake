@@ -524,6 +524,121 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
   defp format_field_path(nil), do: ""
   defp format_field_path(field_path), do: " #{field_path}"
 
+  # The four verbatim change-class strings that must be used in ### Upgrade Impact blocks.
+  # Shared by both the vocabulary test and the legend-parity test so a rename breaks both.
+  @upgrade_impact_change_classes [
+    "docs-only",
+    "core-only/no native rebuild",
+    "compatibility-bump only",
+    "native or companion rebuild required"
+  ]
+
+  test "upgrade impact — structural: every versioned release has exactly one block" do
+    changelog = File.read!("CHANGELOG.md")
+    lines = String.split(changelog, "\n")
+
+    # Use historical_changelog_line?/1 to identify ## [x.y.z] heading lines (versioned releases).
+    # ## [Unreleased] and prose headings do not match, so they are not checked.
+    versioned_release_lines =
+      Enum.filter(lines, fn line ->
+        trimmed = String.trim(line)
+        Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) and historical_changelog_line?(trimmed)
+      end)
+
+    assert versioned_release_lines != [],
+           "CHANGELOG.md must contain at least one ## [x.y.z] release heading"
+
+    # For each versioned release, collect the lines in that release section and assert
+    # exactly one ### Upgrade Impact block is present.
+    release_sections = split_changelog_into_release_sections(lines)
+
+    for {heading, section_lines} <- release_sections do
+      impact_count =
+        Enum.count(section_lines, fn line ->
+          String.trim(line) == "### Upgrade Impact"
+        end)
+
+      assert impact_count == 1,
+             "Release #{inspect(heading)} must have exactly one ### Upgrade Impact subsection; " <>
+               "found #{impact_count}"
+    end
+  end
+
+  test "upgrade impact — vocabulary/legend parity: labels use the locked 4-string set and exist in support_matrix.md" do
+    changelog = File.read!("CHANGELOG.md")
+    support_matrix = File.read!("guides/support_matrix.md")
+
+    # Collect all ### Upgrade Impact label lines from CHANGELOG.md.
+    # A label is the bold line immediately following "### Upgrade Impact"
+    # (matching **some string** on its own line or a plain string).
+    impact_labels = extract_upgrade_impact_labels(changelog)
+
+    # Every label must be one of the 4 verbatim change-class strings.
+    for label <- impact_labels do
+      assert label in @upgrade_impact_change_classes,
+             "### Upgrade Impact label #{inspect(label)} is not in the locked 4-string vocabulary. " <>
+               "Use one of: #{inspect(@upgrade_impact_change_classes)}"
+    end
+
+    # Each of the 4 change-class strings must still exist verbatim in the support_matrix.md
+    # Change Classes table — legend parity so a rename breaks guide + changelog tests together.
+    for class_string <- @upgrade_impact_change_classes do
+      assert String.contains?(support_matrix, class_string),
+             "Change class #{inspect(class_string)} must still exist verbatim in " <>
+               "guides/support_matrix.md Change Classes table (legend parity)"
+    end
+  end
+
+  # Splits CHANGELOG.md lines into a list of {heading, section_lines} pairs,
+  # one per ## [x.y.z] release section (excluding ## [Unreleased] and prose headings).
+  # Uses historical_changelog_line?/1 to identify versioned release heading lines.
+  defp split_changelog_into_release_sections(lines) do
+    {sections, current_heading, current_lines} =
+      Enum.reduce(lines, {[], nil, []}, fn line, {sections, heading, acc_lines} ->
+        trimmed = String.trim(line)
+
+        if historical_changelog_line?(trimmed) and Regex.match?(~r/^## \[\d+\.\d+\.\d+\]/, trimmed) do
+          completed = if heading, do: [{heading, Enum.reverse(acc_lines)}], else: []
+          {sections ++ completed, line, []}
+        else
+          {sections, heading, [line | acc_lines]}
+        end
+      end)
+
+    # Flush the last section
+    last = if current_heading, do: [{current_heading, Enum.reverse(current_lines)}], else: []
+    sections ++ last
+  end
+
+  # Extracts the upgrade-impact label strings from CHANGELOG.md by scanning for
+  # ### Upgrade Impact headings and collecting the bold label on the following non-blank line.
+  defp extract_upgrade_impact_labels(changelog) do
+    lines = String.split(changelog, "\n")
+
+    {labels, _} =
+      Enum.reduce(lines, {[], false}, fn line, {labels, capture_next} ->
+        trimmed = String.trim(line)
+
+        cond do
+          trimmed == "### Upgrade Impact" ->
+            {labels, true}
+
+          capture_next and trimmed == "" ->
+            {labels, true}
+
+          capture_next ->
+            # Strip bold markers if present: **label** -> label
+            label = Regex.replace(~r/^\*\*(.+)\*\*$/, trimmed, "\\1")
+            {[label | labels], false}
+
+          true ->
+            {labels, false}
+        end
+      end)
+
+    Enum.reverse(labels)
+  end
+
   defp assert_order(contents, earlier, later) do
     assert String.contains?(contents, earlier), "expected #{inspect(earlier)} in contents"
     assert String.contains?(contents, later), "expected #{inspect(later)} in contents"
