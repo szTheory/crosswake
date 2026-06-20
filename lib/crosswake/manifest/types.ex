@@ -649,7 +649,7 @@ defmodule Crosswake.Manifest.Types do
   end
 
   @manifest_schema_version "1.0.0"
-  @bridge_protocol_version "1.0.0"
+  @bridge_protocol_version Crosswake.Bridge.Contract.version()
   @native_runtime_version "1.0.0"
   @default_origin "https://example.crosswake.invalid"
 

@@ -79,7 +79,7 @@ defmodule Crosswake.Shell.Fixtures do
       url: "#{Types.default_origin()}/dashboard",
       source: if(platform == "android", do: :deep_link, else: :cold_start),
       manifest_source: :bundled,
-      bridge_protocol_version: "1.0.0",
+      bridge_protocol_version: Crosswake.Bridge.Contract.version(),
       native_runtime_version: "1.0.0",
       correlation_id: "#{platform}-bootstrap-1",
       declared_pack_requirements: @declared_pack_requirements,
