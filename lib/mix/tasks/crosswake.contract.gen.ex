@@ -172,12 +172,20 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   end
 
   # Recursively convert a pairs list (list of {key, value} tuples) into a sorted
-  # plain Elixir map. Because Elixir maps do not preserve insertion order but
-  # BEAM sorts atom-key maps lexicographically, we use string keys, which Jason
-  # encodes in the order the runtime holds them. To guarantee sort stability we
-  # first build a sorted keyword list and convert it to a map — this produces a
-  # map whose key insertion order matches the sort, and Jason iterates it in
-  # that order on OTP 26+.
+  # plain Elixir map, then let Jason emit the result. The idempotency of the
+  # emitted JSON depends on every generated object having FEWER THAN 32 keys.
+  # Below that threshold BEAM uses a "small map" representation whose key
+  # ordering happens to be stable in practice (insertion order is preserved in
+  # the runtime's internal structure, so Jason sees keys in the order they were
+  # inserted). We exploit that by pre-sorting the pairs before calling Map.new/1,
+  # which gives deterministic key order in the JSON output.
+  #
+  # This is an explicit dependency, not a general guarantee. If any generated
+  # object grows to 32 or more keys BEAM promotes it to a hash-array-mapped
+  # trie, key ordering becomes non-deterministic, and write_if_changed/2 would
+  # churn on every run. At that point the encoding must move to an explicitly
+  # ordered structure — for example, encoding the sorted pairs list directly
+  # rather than routing through Map.new/1.
   #
   # For nested objects (inner pairs lists) we recurse. For arrays of pairs lists
   # (like `vectors`) we map over each element. Plain scalar values pass through.
