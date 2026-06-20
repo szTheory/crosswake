@@ -147,7 +147,20 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   3. The `crosswake-shell-core-android` Kotlin package has JVM JUnit behavioral tests (no emulator required) covering the same six behaviors, also parametrized from `bridge_contract_vectors.json`; async assertions use `runTest` not `runBlocking`.
   4. Kotlin JUnit tests run in a merge-blocking CI lane (JVM only); Swift XCTest tests run in an advisory `macos-latest` CI lane; no test hardcodes a version literal — all load fixture JSON derived from the canonical Elixir source.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+**Wave 1**
+
+- [ ] 123-01-PLAN.md — Expand gen task to 7 vectors (+session_override) + emit native copies + regenerate + Elixir behavioral vector test + GUARD-01 tripwire (NTEST-01)
+
+**Wave 2** *(parallel siblings; depend on Wave 1 vectors)*
+
+- [ ] 123-02-PLAN.md — Replace corrupted iOS test file + Package.swift resources + XCTest bridge & activation conformance suites (NTEST-02)
+- [ ] 123-03-PLAN.md — Android JVM JUnit bridge & activation conformance suites + conditional kotlinx-coroutines-test (NTEST-03)
+
+**Wave 3** *(depends on the suites existing)*
+
+- [ ] 123-04-PLAN.md — native-behavioral-proof-gate.yml (Android blocking + iOS advisory + aggregator) + register-native-gate.sh + human-gated branch-protection registration (NTEST-04)
 
 ### Phase 124: Compatibility Semantics & Adopter Truth
 
@@ -192,5 +205,5 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
-| 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
+| 123. Native Package Behavioral Proof | v14.0 | 0/4 | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
