@@ -15,7 +15,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **CANON-01**: A single canonical Elixir source declares the bridge protocol version; `Crosswake.Bridge.Contract`, `Crosswake.Manifest.Types`, and shell fixtures all derive from it instead of carrying independent literals.
 - [x] **CANON-02**: Each of the three version axes (manifest schema, bridge protocol, native runtime) has exactly one named authoritative source, with no second hand-maintained copy.
-- [ ] **CANON-03**: A `mix crosswake.contract.gen` task renders the canonical contract into every derived non-Elixir surface (JSON fixtures, generated shell templates, native conformance vectors, and a docs snippet).
+- [x] **CANON-03**: A `mix crosswake.contract.gen` task renders the canonical contract into every derived non-Elixir surface (JSON fixtures, generated shell templates, native conformance vectors, and a docs snippet).
 - [x] **CANON-04**: The `1.1.0` vs `1.0.0` protocol-version divergence is resolved to one correct current value without silently breaking the published `crosswake 0.1.x` adopter contract.
 - [ ] **CANON-05**: The silent Kotlin `?: "1.0.0"` native-runtime fallback (`ActivationCoordinator.kt:594`) is removed so native always reads the version and never assumes a default.
 
@@ -77,7 +77,7 @@ Populated during roadmap creation.
 |-------------|-------|--------|
 | CANON-01 | Phase 121 | Complete |
 | CANON-02 | Phase 121 | Complete |
-| CANON-03 | Phase 121 | Pending |
+| CANON-03 | Phase 121 | Complete |
 | CANON-04 | Phase 121 | Complete |
 | CANON-05 | Phase 121 | Pending |
 | GUARD-01 | Phase 122 | Pending |

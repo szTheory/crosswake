@@ -4,14 +4,14 @@ milestone: v14.0
 milestone_name: Runtime Contract Confidence
 current_phase: 121
 current_phase_name: canonical-contract-source
-status: executing
-stopped_at: Completed 121-03-PLAN.md
-last_updated: "2026-06-20T14:01:06Z"
+status: verifying
+stopped_at: Completed 121-02-PLAN.md
+last_updated: "2026-06-20T15:19:36.698Z"
 last_activity: 2026-06-20
-last_activity_desc: Phase 121 plan 03 complete — CANON-05 native fallback removed
+last_activity_desc: Phase 121 plan 03 complete (CANON-05)
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
   completed_plans: 3
   percent: 25
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 
 Phase: 121 (canonical-contract-source) — EXECUTING
 Plan: 3 of 3 (COMPLETE)
-Status: Phase 121 complete
+Status: Phase complete — ready for verification
 Last activity: 2026-06-20 — Phase 121 plan 03 complete (CANON-05)
 
 ```
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
+Progress: [██████████] 100%
 ```
 
 ## Performance Metrics
@@ -98,6 +98,7 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: 121-01: Test assertions use Contract.version() not literal '1.1.0' to stay drift-proof against future bridge version bumps
 - [Phase ?]: 121-01: Deliberate deny test fixtures retain bridge_protocol_version '1.0.0' — route_findings pipeline order (bridge step 4, pack step 6) ensures pack denial surfaces as primary via List.first
 - [Phase 121]: 121-03: Replace ?: "1.0.0" silent default with kotlin error() at ActivationCoordinator.kt:594; ShellManifest.nativeRuntimeVersion stays non-nullable String (CANON-05 / D-08)
+- [Phase ?]: 121-02: Sorted-pairs-to-map for deterministic JSON; write_if_changed for idempotent writes; docs/_contract_snippet.md path; seed vector IDs vec-001/002/003
 
 ### Pending Todos
 
@@ -141,11 +142,12 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Resolved — Phase 116 / Plan 01 targeted tests pass | Phase 112 surfaced |
 | Phase 121 P01 | 1007 | 3 tasks | 8 files |
+| Phase 121 P02 | 4m | - tasks | - files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T14:01:06Z
-Stopped at: Completed 121-03-PLAN.md
+Last session: 2026-06-20T15:19:36.694Z
+Stopped at: Completed 121-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
