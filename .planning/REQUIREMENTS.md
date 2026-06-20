@@ -39,7 +39,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **COMPAT-02**: Each version axis is mapped to a rebuild class (core-only / compat-bump only / native-rebuild-required) with documented additive-vs-breaking rules.
 - [x] **COMPAT-03**: The support matrix and a compatibility guide communicate the rebuild classes to adopters, leading with a decision table before explanatory prose.
 - [x] **COMPAT-04**: Doctor findings for a version/rebuild mismatch name the change class, the full action sequence (regenerate → rebuild → resubmit App Store/Play Store → coordinated deploy), the denial reason seen in logs, and a docs link.
-- [ ] **COMPAT-05**: A changelog upgrade-impact label communicates the rebuild requirement for each release that touches the contract.
+- [x] **COMPAT-05**: A changelog upgrade-impact label communicates the rebuild requirement for each release that touches the contract.
 
 ## v2 Requirements
 
@@ -92,7 +92,7 @@ Populated during roadmap creation.
 | COMPAT-02 | Phase 124 | Complete |
 | COMPAT-03 | Phase 124 | Complete |
 | COMPAT-04 | Phase 124 | Complete |
-| COMPAT-05 | Phase 124 | Pending |
+| COMPAT-05 | Phase 124 | Complete |
 
 **Coverage:**
 

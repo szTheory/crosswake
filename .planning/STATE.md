@@ -2,19 +2,16 @@
 gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
-current_phase: 124
-current_phase_name: compatibility-semantics-adopter-truth
-status: executing
+status: verifying
 stopped_at: Completed 124-04-PLAN.md
-last_updated: "2026-06-20T22:55:30.177Z"
+last_updated: "2026-06-20T23:03:19.394Z"
 last_activity: 2026-06-20
-last_activity_desc: Phase 124 execution started
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 15
-  percent: 75
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -30,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 
 Phase: 124 (compatibility-semantics-adopter-truth) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
-Last activity: 2026-06-20 — Phase 124 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-06-20
 
 ```
 Progress: [██████████] 100%
@@ -118,6 +115,8 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: advisory_check/1 used for compatibility_rebuild_guidance — never result_check/1, per D-13
 - [Phase ?]: contract_version_parity_errors/1 extracted as single shared detector (D-14)
 - [Phase ?]: action_sequence_for/1 expands native-rebuild into 4 ordered steps (D-14/D-15)
+- [Phase ?]: CHANGELOG [0.1.2] labeled 'native or companion rebuild required' (worst-case-wins) with core-only exceptions for Threadline + doctor
+- [Phase ?]: @upgrade_impact_change_classes shared list in release_boundaries_test so vocabulary rename breaks guide + changelog tests together (D-19)
 
 ### Pending Todos
 
@@ -173,10 +172,11 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 124 P02 | 4min | 2 tasks | 5 files |
 | Phase 124 P03 | 8min | - tasks | - files |
 | Phase 124 P04 | 3m 14s | 2 tasks | 2 files |
+| Phase 124 P05 | 5m | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T22:55:30.173Z
+Last session: 2026-06-20T23:03:09.739Z
 Stopped at: Completed 124-04-PLAN.md
 Resume file: None
 

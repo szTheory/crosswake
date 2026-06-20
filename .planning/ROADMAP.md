@@ -89,7 +89,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 - [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (verified 5/5 after 121-04 gap closure; see 121-VERIFICATION.md) (completed 2026-06-20)
 - [x] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge (completed 2026-06-20)
 - [x] **Phase 123: Native Package Behavioral Proof** - Six-behavior XCTest and JUnit test suites driven by shared canonical vectors; CI lanes with required-vs-advisory split (completed 2026-06-20)
-- [ ] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog
+- [x] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog (completed 2026-06-20)
 
 ## Phase Details
 
@@ -187,7 +187,7 @@ Plans:
 
 - [x] 124-03-PLAN.md — `guides/compatibility.md` decision-table-first w/ Denial-signal column + `compatibility_test.exs` docs-contract test (COMPAT-03)
 - [x] 124-04-PLAN.md — Doctor advisory `compatibility_rebuild_guidance` check + `action_sequence_for/1` + shared parity detector (COMPAT-04)
-- [ ] 124-05-PLAN.md — CHANGELOG `### Upgrade Impact` labels + CONTRIBUTING intent-gate + `release_boundaries_test` asserts (COMPAT-05)
+- [x] 124-05-PLAN.md — CHANGELOG `### Upgrade Impact` labels + CONTRIBUTING intent-gate + `release_boundaries_test` asserts (COMPAT-05)
 
 ## Progress
 
@@ -218,4 +218,4 @@ Plans:
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 124. Compatibility Semantics & Adopter Truth | v14.0 | 4/5 | In Progress|  |
+| 124. Compatibility Semantics & Adopter Truth | v14.0 | 5/5 | Complete   | 2026-06-20 |
