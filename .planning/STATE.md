@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 
 ## Current Position
 
-Phase: 124 (compatibility-semantics-adopter-truth) — EXECUTING
+Phase: 124 (compatibility-semantics-adopter-truth) — VERIFICATION: GAPS FOUND (4/5)
 Plan: 5 of 5
-Status: Phase complete — ready for verification
+Status: All 5 plans executed; phase verification found gaps in COMPAT-01 (native capability axis still ==, iOS ActivationCoordinator gate missing, phantom floor vectors). Run /gsd-plan-phase 124 --gaps. See 124-VERIFICATION.md.
 Last activity: 2026-06-20
 
 ```

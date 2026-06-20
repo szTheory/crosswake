@@ -89,7 +89,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 - [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (verified 5/5 after 121-04 gap closure; see 121-VERIFICATION.md) (completed 2026-06-20)
 - [x] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge (completed 2026-06-20)
 - [x] **Phase 123: Native Package Behavioral Proof** - Six-behavior XCTest and JUnit test suites driven by shared canonical vectors; CI lanes with required-vs-advisory split (completed 2026-06-20)
-- [x] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog (completed 2026-06-20)
+- [ ] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog (verification: gaps found 2026-06-20 — COMPAT-01 incomplete, see 124-VERIFICATION.md)
 
 ## Phase Details
 
@@ -218,4 +218,4 @@ Plans:
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 124. Compatibility Semantics & Adopter Truth | v14.0 | 5/5 | Complete   | 2026-06-20 |
+| 124. Compatibility Semantics & Adopter Truth | v14.0 | 5/5 | Gaps (4/5) | 2026-06-20 |
