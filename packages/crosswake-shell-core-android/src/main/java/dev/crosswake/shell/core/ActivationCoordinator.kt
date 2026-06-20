@@ -330,14 +330,14 @@ class ActivationCoordinator(
     }
 
     private fun resolve(request: ActivationRequest, manifest: ShellManifest): ShellPresentation {
-        if (request.nativeRuntimeVersion != manifest.nativeRuntimeVersion) {
+        if (!SemVer.compatible(provides = manifest.nativeRuntimeVersion, demands = request.nativeRuntimeVersion)) {
             return ShellPresentation.Denied(
                 denial(
                     manifest = manifest,
                     reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
                     routeId = request.routeId,
                     message = "This route requires a newer shell binary to boot.",
-                    hint = "The server requested a different native runtime version than this shell provides."
+                    hint = "This shell binary is below the minimum native runtime version required by the server. Update to a shell at or above the requested native runtime version."
                 )
             )
         }

@@ -98,7 +98,9 @@ class BridgeChannel(
         request: BridgeRequestEnvelope,
         deferredReply: ((String) -> Unit)? = null
     ): String? {
-        if (request.protocol != PROTOCOL || request.version != session.bridgeProtocolVersion || request.nativeRuntimeVersion != session.nativeRuntimeVersion) {
+        if (request.protocol != PROTOCOL ||
+            !SemVer.compatible(provides = session.bridgeProtocolVersion, demands = request.version) ||
+            !SemVer.compatible(provides = session.nativeRuntimeVersion, demands = request.nativeRuntimeVersion)) {
             return deny(request, "compatibility_mismatch", "Bridge protocol or runtime mismatch.", "Update the shell before retrying this bridge request.")
         }
 
@@ -127,7 +129,7 @@ class BridgeChannel(
             val packId = parts[0]
             val requiredVersion = parts.getOrNull(1)
             val installedVersion = session.installedPacks[packId]
-            if (requiredVersion == null) installedVersion != null else installedVersion == requiredVersion
+            if (requiredVersion == null) installedVersion != null else SemVer.compatible(provides = installedVersion ?: "", demands = requiredVersion)
         }
 
         if (!packsCompatible) {
