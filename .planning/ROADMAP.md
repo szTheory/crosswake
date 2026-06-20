@@ -175,7 +175,14 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   4. Doctor output for a version/rebuild mismatch names the change class, the full action sequence (regenerate shell → rebuild native app → resubmit App Store/Play Store → coordinated deploy), the denial reason from logs, and a link to the compatibility guide.
   5. CHANGELOG entries that touch the bridge/runtime contract carry an upgrade-impact label (e.g., "native rebuild required" or "core-only, no native rebuild") so adopters can triage release notes without reading the full diff.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 124-01-PLAN.md — Native `>=` floor: SemVer ports (iOS+Android), 4 fix sites, fail-closed fallback, floor conformance vectors (COMPAT-01)
+- [ ] 124-02-PLAN.md — Canonical `rebuild_decision_table/0` + Renderer `## Rebuild Decision Table` section, byte-parity guarded (COMPAT-02)
+- [ ] 124-03-PLAN.md — `guides/compatibility.md` decision-table-first w/ Denial-signal column + `compatibility_test.exs` docs-contract test (COMPAT-03)
+- [ ] 124-04-PLAN.md — Doctor advisory `compatibility_rebuild_guidance` check + `action_sequence_for/1` + shared parity detector (COMPAT-04)
+- [ ] 124-05-PLAN.md — CHANGELOG `### Upgrade Impact` labels + CONTRIBUTING intent-gate + `release_boundaries_test` asserts (COMPAT-05)
 
 ## Progress
 
@@ -206,4 +213,4 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
+| 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/5 | Not started | - |
