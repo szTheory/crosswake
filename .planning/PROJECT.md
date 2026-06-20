@@ -76,9 +76,19 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Archive:** `.planning/milestones/v13.0-ROADMAP.md`, `.planning/milestones/v13.0-REQUIREMENTS.md`, and `.planning/milestones/v13.0-MILESTONE-AUDIT.md`.
 
-## Next Milestone Goals
+## Current Milestone: v14.0 Runtime Contract Confidence
 
-Not defined yet. The next milestone should start with `/gsd-new-milestone` so fresh requirements and roadmap phases are derived from the current shipped state. Existing deferred candidates remain DASH-01 (offline adoption/eviction metrics), NTV-01 (native disk-space budgets), companion package extraction, and future capability breadth, but none should be promoted without the next milestone discussion.
+**Goal:** Make Crosswake's bridge/runtime contract boringly canonical and hard to drift — one source of truth across Elixir, manifest compatibility, generated shells, reusable native packages, examples, proof lanes, and docs — then prove it directly in the native packages rather than only in checked-in example hosts. Coherence work, not feature breadth.
+
+**Target features:**
+- One canonical source drives the bridge/runtime protocol version across `Crosswake.Bridge.Contract`, manifest compatibility, shell fixtures, example payloads, route-tour proof, generated templates, the published iOS + Android packages, support matrix, and docs (collapse the current `1.1.0` vs `1.0.0` drift; kill the silent Kotlin `?: "1.0.0"` fallback).
+- Deterministic, merge-blocking, browser-free drift guards that fail if contract truth diverges across any surface, plus a `contract_version_parity` doctor check.
+- Real behavioral tests inside the reusable iOS (XCTest) and Android (JUnit) shell-core packages for activation, bridge denials, capability allowlists, active-route checks, pack checks, and delegate behavior — driven by shared golden conformance vectors.
+- Honest compatibility/rebuild truth: resolve exact-match vs `>=` negotiation, map the three version axes to core-only / compat-bump / native-rebuild-required, and communicate it through the support matrix, compatibility guide, doctor findings, and changelog upgrade-impact labels.
+
+**Key context:** Driven by a concrete production-confidence bug — `Crosswake.Bridge.Contract` defaults to `1.1.0` while manifest/fixtures/native/docs use `1.0.0`, and native bridge code requires exact protocol-version equality, so an otherwise-valid bounded-bridge request gets silently denied. Native code reads the expected version from manifest JSON at runtime (mostly version-agnostic), so the drift surface is Elixir defaults + JSON fixtures + docs + one Kotlin fallback. Elixir's `compatible_version?/2` already negotiates by `>=` floor while native demands exact match — that mismatch is a design fork this milestone resolves. Phase ordering is non-negotiable (registry immutability + lockstep release): canonical source → guards → native proof → compat/docs truth → any publish last. Research synthesis in `.planning/research/SUMMARY.md`.
+
+**Deferred behind this wedge:** native runtime evidence and generated-shell lifecycle hardening, targeted offline sync productization, DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, and future capability/commerce breadth.
 
 ## Requirements
 
@@ -157,7 +167,7 @@ Not defined yet. The next milestone should start with `/gsd-new-milestone` so fr
 
 ### Active
 
-- None. v13.0 is complete; start the next milestone before adding new active requirements.
+- **v14.0 Runtime Contract Confidence** — see `.planning/REQUIREMENTS.md` for scoped REQ-IDs (canonical contract source, drift guards, native package behavioral proof, compatibility semantics & adopter truth).
 
 ### Out of Scope
 
@@ -227,6 +237,7 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Treat proof-honesty regressions as structural CI problems, not review-only risks | The v6/v8 offline-sync path looked green while bypassing app-owned state; proof lanes need source-contract guards that ban known fabrication shapes | Validated in v12.0 (Phases 113-114) |
 | Make closeout verification fail closed on explicit phase contracts and evidence-backed ledgers | Vacuous globs and bare ledger attestations let historical validation debt pass as green | Validated in v12.0 (Phase 115) |
 | Treat v13.0 as adopter-confidence proof before feature breadth | Repo truth after v12.0 showed strong substrate and real offline proof, but the public proof path still had stale docs, quick-start drift, checked-in native host drift, and no screenshot/video/simulator collateral | Validated in v13.0 — proof-path drift, native evidence classification, browser route-tour collateral, advisory native collateral, and troubleshooting shipped |
+| Prioritize runtime contract confidence before new feature breadth | Post-v13 repo inspection found bridge protocol truth split between `1.1.0` Elixir contract posture and `1.0.0` manifest/example/native proof paths; adopters need one canonical runtime contract before more capability or provider breadth | Recommended for v14.0 (2026-06-19 next-step assessment) |
 
 ## Evolution
 
@@ -246,4 +257,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-19 after v13.0 milestone*
+*Last updated: 2026-06-20 after starting milestone v14.0 Runtime Contract Confidence*

@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v13.0
-milestone_name: Adopter Confidence & Native Evidence
-status: Awaiting next milestone
-stopped_at: v13.0 milestone complete after Phase 120 verification
-last_updated: "2026-06-19T21:28:59.375Z"
-last_activity: 2026-06-19 — Milestone v13.0 completed and archived
+milestone: v14.0
+milestone_name: Runtime Contract Confidence
+status: planning
+last_updated: "2026-06-20T12:50:48.198Z"
+last_activity: 2026-06-20
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-19)
 
 ## Current Position
 
-Phase: Milestone v13.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-19 — Milestone v13.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-20 — Milestone v14.0 started
 
 ## Performance Metrics
 
@@ -61,6 +60,14 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - The next milestone should be **v13.0 Adopter Confidence & Native Evidence**, not new capability breadth. Treat `GUIDE-01` as proof-path consolidation: runnable quick start, route-policy guide, troubleshooting/rough edges, web-to-mobile migration, ExDoc cross-linking, simulator/emulator evidence, and screenshot/video collateral.
 - `TODO-001` should be first-phase or precondition work. A public proof path should not depend on an example host with known deterministic and flaky local test debt.
 - Simulator/device/native evidence is valuable for "seeing is believing" collateral, but remains **advisory** unless a future milestone explicitly promotes it to merge-blocking support truth.
+
+**Next-step assessment decision (2026-06-19):**
+
+- Crosswake is roughly **86% done** for its intended scope: strong and credible, with meaningful production-confidence wedges remaining before diminishing returns dominate.
+- The recommended next milestone is **v14.0 Runtime Contract Confidence**, not new feature breadth. Post-v13 repo inspection found bridge protocol truth split between `Crosswake.Bridge.Contract` at `1.1.0` and manifest/example/native proof paths still using `1.0.0`.
+- The next milestone should make bridge/runtime contract truth canonical across Elixir, manifest compatibility, generated templates, shell fixtures, route-tour proof, checked-in examples, reusable native packages, support matrix, and docs.
+- Reusable iOS/Android shell-core package behavior needs stronger direct tests; checked-in host integration proof is useful but should not be the main proof for package-level activation and bridge behavior.
+- Follow-on wedges should be ordered after runtime contract confidence: native runtime evidence/generated-shell lifecycle, offline sync productization, operator metrics/dashboard, then provider commerce or notification/auth re-entry.
 
 - [Phase ?]: D-03 confirmed
 - [Phase ?]: Rule 1: Study.sync_events struct serialization
@@ -99,7 +106,10 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - **~~Distribution gap (FOUNDATIONAL)~~ → RESOLVED by v11.0 (2026-06-17).** The v5.0 standalone-package thesis is now actually distributed: `crosswake 0.1.2` is live on Hex, Maven Central (`io.github.sztheory:crosswake-shell-core-android`), and the SwiftPM mirror (`szTheory/crosswake-shell-core-ios` `v0.1.2`); `gen.shell` emits resolvable, version-matched coordinates, proven by a clean-room CI lane and guarded by the `generator_coordinate_parity` check.
 - **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
 - **~~Adopter proof-path drift (v13 active)~~ → RESOLVED by Phase 118 (2026-06-19).** The quick start and adoption guide now use command-verified paths, current offline proof truth, and a DRIFT-02 docs-contract guard.
-- **Collateral gap (v13 active):** No durable adopter screenshots/videos/artifact uploads were found for the native/browser demo paths. Current proof is strong mechanically, but not yet "seeing is believing" for a maintainer or prospective adopter.
+- **~~Collateral gap (v13 active)~~ → RESOLVED by Phase 120 (2026-06-19).** Browser route-tour evidence, bounded manifests, advisory native collateral capture, and troubleshooting shipped; live native simulator/emulator quality remains advisory and environment-dependent.
+- **Runtime contract drift (candidate v14):** `Crosswake.Bridge.Contract` defaults to `1.1.0`, while manifest compatibility, example bridge payloads, route-tour proof, and native proof paths still commonly use `1.0.0`. Native bridge code requires exact version equality, so this can deny otherwise valid bounded-bridge requests until one canonical source drives all surfaces.
+- **Reusable native package proof depth (candidate v14):** Published iOS/Android shell-core packages exist, but package-level behavioral tests are thin compared with checked-in host integration proof. Move or duplicate activation and bridge behavior proof into the packages before widening native claims.
+- **Root requirements file absent at milestone boundary:** `.planning/REQUIREMENTS.md` is currently absent while archived requirements mention it as the current requirements path. The next `/gsd-new-milestone` run should recreate active requirements from shipped v13 state rather than hand-editing requirements here.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
 - **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
 
