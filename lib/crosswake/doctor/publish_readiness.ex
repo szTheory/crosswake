@@ -169,7 +169,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
       native_shell_verification_gap_check(support_matrix, inspection),
       docs_support_parity_check(cwd, opts),
       proof_posture_check(support_matrix, inspection),
-      generator_coordinate_parity_check(cwd)
+      generator_coordinate_parity_check(cwd),
+      contract_version_parity_check(cwd)
     ]
   end
 
@@ -571,6 +572,102 @@ defmodule Crosswake.Doctor.PublishReadiness do
         version: version,
         ios_template: ios_template_relative,
         android_template: android_template_relative,
+        errors: errors
+      }
+    )
+  end
+
+  # Surface paths for the contract_version_parity_check.
+  # Manifests: bridge_protocol_version lives at ["compatibility"]["bridge_protocol_version"].
+  # Generated JSONs: bridge_protocol_version lives at the document root.
+  @manifest_surfaces [
+    "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+    "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+  ]
+  @generated_json_surfaces [
+    "examples/ios_shell_host/Fixtures/route_activation.json",
+    "examples/android_shell_host/app/src/main/assets/route_activation.json",
+    "test/fixtures/bridge_contract_vectors.json"
+  ]
+  @all_contract_surfaces @manifest_surfaces ++ @generated_json_surfaces
+
+  defp contract_version_parity_check(cwd) do
+    expected = Crosswake.Bridge.Contract.version()
+
+    manifest_errors =
+      Enum.flat_map(@manifest_surfaces, fn rel ->
+        path = Path.join(cwd, rel)
+
+        case File.read(path) do
+          {:ok, contents} ->
+            case Jason.decode(contents) do
+              {:ok, decoded} ->
+                actual = get_in(decoded, ["compatibility", "bridge_protocol_version"])
+
+                if actual == expected do
+                  []
+                else
+                  ["#{rel}: found #{inspect(actual)}, expected #{inspect(expected)}"]
+                end
+
+              {:error, reason} ->
+                ["#{rel}: JSON decode failed — #{inspect(reason)}"]
+            end
+
+          {:error, reason} ->
+            ["#{rel}: file read failed — #{inspect(reason)}"]
+        end
+      end)
+
+    generated_errors =
+      Enum.flat_map(@generated_json_surfaces, fn rel ->
+        path = Path.join(cwd, rel)
+
+        case File.read(path) do
+          {:ok, contents} ->
+            case Jason.decode(contents) do
+              {:ok, decoded} ->
+                actual = decoded["bridge_protocol_version"]
+
+                if actual == expected do
+                  []
+                else
+                  ["#{rel}: found #{inspect(actual)}, expected #{inspect(expected)}"]
+                end
+
+              {:error, reason} ->
+                ["#{rel}: JSON decode failed — #{inspect(reason)}"]
+            end
+
+          {:error, reason} ->
+            ["#{rel}: file read failed — #{inspect(reason)}"]
+        end
+      end)
+
+    errors = manifest_errors ++ generated_errors
+
+    result_check(
+      id: "contract.version_parity",
+      code:
+        if(errors == [],
+          do: "diag.contract.version_parity_ok",
+          else: "diag.contract.version_parity_failed"
+        ),
+      category: :contract_version_parity,
+      passed?: errors == [],
+      message:
+        if(errors == [],
+          do:
+            "all committed contract surfaces carry bridge_protocol_version #{expected}",
+          else: "contract version parity failed: #{Enum.join(errors, "; ")}"
+        ),
+      hint: "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
+      docs_reference: "guides/compatibility.md",
+      proof_class: :merge_blocking,
+      claim_scope: "Contract version parity across committed surfaces",
+      details: %{
+        version: expected,
+        surfaces: @all_contract_surfaces,
         errors: errors
       }
     )
