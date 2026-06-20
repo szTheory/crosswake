@@ -5,15 +5,15 @@ milestone_name: Runtime Contract Confidence
 current_phase: 123
 current_phase_name: native-package-behavioral-proof
 status: executing
-stopped_at: Phase 123 context gathered
-last_updated: "2026-06-20T20:10:31.743Z"
+stopped_at: Completed 123-02-PLAN.md
+last_updated: "2026-06-20T20:18:50.304Z"
 last_activity: 2026-06-20
 last_activity_desc: Phase 123 execution started
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 50
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 ## Current Position
 
 Phase: 123 (native-package-behavioral-proof) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-20 -- Phase 123 execution started
 
@@ -104,6 +104,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: merge-blocking-contract-drift aggregator with green-first registration script
 - [Phase ?]: git add -A + git diff --cached --exit-code catches newly-emitted untracked generated files (T-122-07 mitigation)
 - [Phase ?]: cloned from register-e2e-gate.sh; OLD_CHECK empty (append-only PATCH); green-first preflight exits 2 until aggregator green on main; maintainer-run/harness-blocked
+- [Phase ?]: Session/request capabilities decoupled in BridgeConformanceTests: request uses fixed baseline so vec-007 capability-version mismatch fires correctly
+- [Phase ?]: StubAppInfoDelegate held as strong local var in iOS tests: CrosswakeShellConfig holds weak delegate references (ARC safety)
+- [Phase ?]: ActivationConformanceTests @MainActor: PackStore.init and ActivationCoordinator.init are @MainActor-isolated; class annotation enables synchronous construction
 
 ### Pending Todos
 
@@ -153,11 +156,12 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 122 P02 | 14m | 2 tasks | 4 files |
 | Phase 122 P03 | 2m | 2 tasks | 2 files |
 | Phase 123 P01 | 5m 20s | 3 tasks | 6 files |
+| Phase 123 P02 | 4m 30s | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T20:10:31.738Z
-Stopped at: Phase 123 context gathered
+Last session: 2026-06-20T20:18:50.300Z
+Stopped at: Completed 123-02-PLAN.md
 Resume file: .planning/phases/123-native-package-behavioral-proof/123-CONTEXT.md
 
 ## Operator Next Steps

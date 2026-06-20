@@ -29,7 +29,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Native Package Behavioral Proof (NTEST)
 
 - [x] **NTEST-01**: A single committed `bridge_contract_vectors.json` of canonical request → expected-outcome cases is loaded by the Elixir, Swift, and Kotlin test suites so one version bump fails all three.
-- [ ] **NTEST-02**: The iOS `crosswake-shell-core-ios` package has XCTest behavioral tests (no simulator) covering activation success/failure, bridge denial, capability allowlist, active-route check, pack-version check, and delegate/escape-hatch behavior.
+- [x] **NTEST-02**: The iOS `crosswake-shell-core-ios` package has XCTest behavioral tests (no simulator) covering activation success/failure, bridge denial, capability allowlist, active-route check, pack-version check, and delegate/escape-hatch behavior.
 - [ ] **NTEST-03**: The Android `crosswake-shell-core-android` package has JVM JUnit behavioral tests (no emulator) covering the same six behaviors.
 - [ ] **NTEST-04**: Native package test lanes run in CI (deterministic JVM lane merge-blocking where feasible; macOS native lane advisory) without claiming simulator or device support.
 
@@ -85,7 +85,7 @@ Populated during roadmap creation.
 | GUARD-03 | Phase 122 | Complete |
 | GUARD-04 | Phase 122 | Complete |
 | NTEST-01 | Phase 123 | Complete |
-| NTEST-02 | Phase 123 | Pending |
+| NTEST-02 | Phase 123 | Complete |
 | NTEST-03 | Phase 123 | Pending |
 | NTEST-04 | Phase 123 | Pending |
 | COMPAT-01 | Phase 124 | Pending |
