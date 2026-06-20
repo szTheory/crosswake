@@ -125,7 +125,11 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   3. `mix crosswake.doctor` emits a `contract_version_parity` finding that reports drift to operators alongside the existing `generator_coordinate_parity` check; it is green when all surfaces agree.
   4. The drift checks are registered in the merge-blocking CI aggregator; a registration script is committed that documents the branch-protection PATCH step (matching the v12.0 pattern of script + document, not auto-toggle).
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+- [ ] 122-01-PLAN.md — GUARD-01 parse-based ExUnit drift test over all committed contract surfaces + anti-vacuous synthetic regressions
+- [ ] 122-02-PLAN.md — GUARD-03 contract_version_parity read-only doctor check (sibling to generator_coordinate_parity) + tests
+- [ ] 122-03-PLAN.md — GUARD-02 generate-and-diff + GUARD-04 contract-drift-gate.yml (two hermetic jobs + alls-green aggregator) and register-contract-gate.sh
 
 ### Phase 123: Native Package Behavioral Proof
 
@@ -183,6 +187,6 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 122. Drift Guards | v14.0 | 0/TBD | Not started | - |
+| 122. Drift Guards | v14.0 | 0/3 | Not started | - |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
