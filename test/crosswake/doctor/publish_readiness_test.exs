@@ -125,6 +125,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert :docs_support_parity in categories
     assert :proof_posture in categories
     assert :generator_coordinate_parity in categories
+    assert :contract_version_parity in categories
 
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.publish."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.companion."))
@@ -134,6 +135,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.shell."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.docs."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.generator."))
+    assert Enum.any?(codes, &String.starts_with?(&1, "diag.contract."))
   end
 
   test "generator coordinate parity blocks stale or local native dependency coordinates" do
