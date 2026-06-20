@@ -1,8 +1,8 @@
 ---
 phase: 121
 slug: canonical-contract-source
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-20
 ---
@@ -76,6 +76,6 @@ created: 2026-06-20
 - [ ] Wave 0 covers all MISSING references (gen task + vectors fixture)
 - [ ] No watch-mode flags
 - [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter (planner/checker confirms)
+- [x] `nyquist_compliant: true` set in frontmatter (plan-checker confirmed strategy compliant)
 
-**Approval:** pending
+**Approval:** approved 2026-06-20 (plan-checker PASS) · `wave_0_complete` set by executor when Wave 0 lands
