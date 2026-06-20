@@ -175,12 +175,12 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   4. Doctor output for a version/rebuild mismatch names the change class, the full action sequence (regenerate shell → rebuild native app → resubmit App Store/Play Store → coordinated deploy), the denial reason from logs, and a link to the compatibility guide.
   5. CHANGELOG entries that touch the bridge/runtime contract carry an upgrade-impact label (e.g., "native rebuild required" or "core-only, no native rebuild") so adopters can triage release notes without reading the full diff.
 
-**Plans**: 5 plans
+**Plans**: 1/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 124-01-PLAN.md — Native `>=` floor: SemVer ports (iOS+Android), 4 fix sites, fail-closed fallback, floor conformance vectors (COMPAT-01)
+- [x] 124-01-PLAN.md — Native `>=` floor: SemVer ports (iOS+Android), 4 fix sites, fail-closed fallback, floor conformance vectors (COMPAT-01)
 - [ ] 124-02-PLAN.md — Canonical `rebuild_decision_table/0` + Renderer `## Rebuild Decision Table` section, byte-parity guarded (COMPAT-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -218,4 +218,4 @@ Plans:
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete    | 2026-06-20 |
-| 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/5 | Not started | - |
+| 124. Compatibility Semantics & Adopter Truth | v14.0 | 1/5 | In Progress|  |
