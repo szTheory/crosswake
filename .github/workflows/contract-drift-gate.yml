@@ -1,0 +1,122 @@
+name: Contract Drift Gate
+# Purpose-named per domain (D-09) — NOT folded into offline-sync-e2e-gate.yml.
+# Enforces GUARD-01 (ExUnit drift test) and GUARD-02 (generate-and-diff) as two
+# hermetic, pure-Elixir sibling jobs that roll up to one alls-green aggregator.
+#
+# TOPOLOGY:
+#   Two sibling jobs produce per-signal red/green dots; one aggregator is the ONLY
+#   new required check. Native-toolchain jobs (Xcode, Gradle) remain advisory.
+#   Branch-protection required-check name: merge-blocking-contract-drift
+#
+# REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
+#
+#   Ordering — must follow this sequence to avoid "Expected — Waiting for status" deadlock:
+#     1. Merge this PR (contract-drift-gate.yml with aggregator topology).
+#     2. Let merge-blocking-contract-drift go GREEN on main at least once.
+#     3. Run the registration script (step 3 is harness-blocked; maintainer only):
+#
+#        script/register-contract-gate.sh
+#
+#        Equivalent gh api one-liner (for reference / auditing):
+#          EP="repos/szTheory/crosswake/branches/main/protection/required_status_checks"
+#          current="$(gh api "$EP")"
+#          desired="$(jq -n --argjson cur "$current" --arg new "merge-blocking-contract-drift" \
+#            --argjson app 15368 \
+#            '{ strict: $cur.strict,
+#               checks: (($cur.checks // []) + [{context:$new, app_id:$app}] | unique_by(.context)) }')"
+#          gh api -X PATCH "$EP" --input <(echo "$desired")
+#
+#   The granular required_status_checks endpoint is used — not the full PUT .../protection —
+#   so enforce_admins and review requirements are left untouched.
+#   The aggregator (merge-blocking-contract-drift) is the SOLE new required check;
+#   native-toolchain checks (Xcode, Gradle) remain advisory.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  guard-01-contract-drift-test:          # GUARD-01: ExUnit drift test (D-10 isolated red/green dot)
+    name: guard-01-contract-drift-test
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: _build/test
+          key: build-test-${{ hashFiles('mix.lock') }}
+      - name: Install Mix dependencies
+        run: mix deps.get
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+      - name: Run contract drift test (GUARD-01)
+        # Isolated run of the drift test file so its red/green dot is purpose-named,
+        # not buried in a generic mix test result (D-10).
+        run: mix test test/crosswake/contract/contract_drift_test.exs
+      - name: Step summary
+        run: |
+          echo "GUARD-01 contract-drift-test: ExUnit drift assertion passed" >> "$GITHUB_STEP_SUMMARY"
+
+  guard-02-generate-and-diff:            # GUARD-02: regenerate + staged diff (byte-exact exhaustive check)
+    name: guard-02-generate-and-diff
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: _build/dev
+          key: build-dev-${{ hashFiles('mix.lock') }}
+      - name: Install Mix dependencies
+        run: mix deps.get
+      - name: Compile
+        run: mix compile
+      - name: Regenerate contract surfaces
+        # The gen task uses sorted-key JSON emission and write_if_changed (idempotent),
+        # so a clean committed tree always produces zero diff. Do NOT "optimize" these
+        # invariants away — the determinism is what makes the staged diff gate reliable (D-06).
+        run: mix crosswake.contract.gen
+      - name: Assert no uncommitted drift (staged diff gate — D-06)
+        # GUARD-02 byte-exact owner of all four generator outputs: ios route_activation.json,
+        # android route_activation.json, bridge_contract_vectors.json, docs/_contract_snippet.md.
+        # MUST use git add -A + git diff --cached --exit-code (not bare git diff --exit-code)
+        # so newly-emitted untracked files are caught and cannot spuriously pass (T-122-07).
+        run: |
+          set -euo pipefail
+          git add -A
+          if ! git diff --cached --exit-code; then
+            echo "::error::GUARD-02 FAILED — generated contract surfaces are out of date."
+            echo "::error::Run 'mix crosswake.contract.gen' and commit the regenerated outputs."
+            git --no-pager diff --cached --stat
+            exit 1
+          fi
+          echo "GUARD-02 OK — all generated contract surfaces match the committed tree." >> "$GITHUB_STEP_SUMMARY"
+
+  merge-blocking-contract-drift:         # THE ONLY new required check (GUARD-02 / D-09 name)
+    name: merge-blocking-contract-drift
+    if: always()
+    needs: [guard-01-contract-drift-test, guard-02-generate-and-diff]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up guard results
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
