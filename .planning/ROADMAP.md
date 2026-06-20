@@ -103,7 +103,10 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   3. Running `mix crosswake.contract.gen` regenerates all derived surfaces (JSON fixtures, generated shell templates, native conformance vector stubs, docs snippet) from the canonical constant in a hermetic, network-free step.
   4. The 1.1.0 vs 1.0.0 protocol-version conflict is resolved to one correct current value without altering behavior visible to existing 0.1.x adopters.
   5. `ActivationCoordinator.kt` line 594 no longer contains a `?: "1.0.0"` fallback; native always reads the manifest-provided value and fails closed if absent.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 121-01-PLAN.md — Single-source the bridge-protocol axis in Manifest.Types + Shell.Fixtures and repair all test drift (CANON-01/02/04)
+- [ ] 121-02-PLAN.md — `mix crosswake.contract.gen` task + emitted JSON fixtures, vectors, docs snippet, idempotent (CANON-02/03)
+- [ ] 121-03-PLAN.md — Remove the silent Kotlin `?: "1.0.0"` fallback; native fails closed (CANON-05)
 
 ### Phase 122: Drift Guards
 **Goal**: Any future hand-edit or generator-skip that re-introduces contract-version divergence is caught immediately by merge-blocking CI before it reaches main; operators can discover drift without reading CI logs.
