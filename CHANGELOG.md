@@ -32,6 +32,17 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 > Published release. Bundles the installable changes since `0.1.0`, including work briefly carried as an internal `0.1.1` version bump that was never published.
 
+### Upgrade Impact
+
+**native or companion rebuild required**
+
+This release publishes the reusable iOS and Android shell-core packages to SwiftPM and Maven Central, adds release-time clean-room proof jobs, and extends compatibility-contract gating. Adopters integrating the generated native shell scaffolds must rebuild and resubmit their native host apps.
+
+Lower-impact changes bundled in this release (no native rebuild needed):
+
+* **core-only/no native rebuild** — Threadline request-correlation observability (`Crosswake.Plug.Threadline`, `Crosswake.Live.Threadline`), structured telemetry, and `mix crosswake.threadline` docs-contract task are Elixir-only additions inside the existing contract axes; no native rebuild required.
+* **core-only/no native rebuild** — `mix crosswake.doctor` publish-readiness checks (`--check-publish`), expanded ExDoc guide set, and provider adapter seam contract vocabulary are Elixir-side additions; no native rebuild required.
+
 ### Added
 
 * Published native shell core distribution path: generated iOS scaffolds resolve `github.com/szTheory/crosswake-shell-core-ios` through SwiftPM, generated Android scaffolds resolve `io.github.sztheory:crosswake-shell-core-android` through Maven Central, and both coordinates derive from the Crosswake package version.
@@ -49,6 +60,12 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 * Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.0] — 2026-05-29
+
+### Upgrade Impact
+
+**native or companion rebuild required**
+
+This is the initial published release. Adopters adopting Crosswake for the first time must scaffold and build their native host shells using the generated iOS and Android shell-core project templates. The route policy DSL, bridge contract, offline semantics, and commerce corridor declarations all require native shell code to activate native routes and capabilities.
 
 ### Added
 
