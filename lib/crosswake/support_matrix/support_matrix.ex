@@ -8,6 +8,7 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.CapabilitySupportEntry
   alias Crosswake.Manifest.Types.ChangeClassEntry
   alias Crosswake.Manifest.Types.PackageSurfaceEntry
+  alias Crosswake.Manifest.Types.RebuildDecisionEntry
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
   alias Crosswake.Manifest.Types.RuntimeLineRow
   alias Crosswake.Manifest.Types.SupportEntry
@@ -513,6 +514,138 @@ defmodule Crosswake.SupportMatrix do
 
   @spec change_classes(SupportMatrix.t()) :: [ChangeClassEntry.t()]
   def change_classes(%SupportMatrix{} = support_matrix), do: support_matrix.change_classes
+
+  @doc """
+  Canonical axis→change-kind→rebuild-class decision table.
+
+  Returns a list of `RebuildDecisionEntry` structs encoding the D-09 axis mapping.
+  This is the single authoritative source for rebuild cost per axis/change-kind;
+  all consumers (renderer, doctor, compatibility guide) derive from this table.
+
+  Key asymmetry (D-09): `native_runtime_version` additive bumps map to
+  `\"native or companion rebuild required\"` — unlike `manifest_schema_version` and
+  `bridge_protocol_version` which are `\"compatibility-bump only\"` for additive moves.
+  This holds because floor semantics (`>=`) absorb protocol/schema additive bumps without
+  a binary rebuild, but native_runtime changes live in the binary itself.
+  """
+  @spec rebuild_decision_table() :: [RebuildDecisionEntry.t()]
+  def rebuild_decision_table do
+    [
+      # manifest_schema_version: additive moves are compat-bump-only because floor
+      # semantics (>=) let older adopters continue without a rebuild.
+      Types.new_rebuild_decision_entry(
+        axis: "manifest_schema_version",
+        change_kind: :additive,
+        rebuild_class: "compatibility-bump only",
+        adopter_action:
+          "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#manifest_schema_version"
+      ),
+      Types.new_rebuild_decision_entry(
+        axis: "manifest_schema_version",
+        change_kind: :breaking,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#manifest_schema_version"
+      ),
+      # bridge_protocol_version: additive moves are compat-bump-only because floor
+      # semantics (>=) let older shells serve newer protocol requests without rebuild.
+      Types.new_rebuild_decision_entry(
+        axis: "bridge_protocol_version",
+        change_kind: :additive,
+        rebuild_class: "compatibility-bump only",
+        adopter_action:
+          "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#bridge_protocol_version"
+      ),
+      Types.new_rebuild_decision_entry(
+        axis: "bridge_protocol_version",
+        change_kind: :breaking,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#bridge_protocol_version"
+      ),
+      # native_runtime_version: NO additive-without-rebuild row (D-09 asymmetry).
+      # native_runtime changes live in the binary; even an additive bump requires
+      # a rebuild — there is no floor-semantics escape hatch here.
+      Types.new_rebuild_decision_entry(
+        axis: "native_runtime_version",
+        change_kind: :additive,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. Note: unlike schema/protocol axes, native runtime additive bumps always require a rebuild because the runtime lives in the binary.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#native_runtime_version"
+      ),
+      Types.new_rebuild_decision_entry(
+        axis: "native_runtime_version",
+        change_kind: :breaking,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+        denial_signal: "compatibility_mismatch",
+        guide_anchor: "guides/compatibility.md#native_runtime_version"
+      ),
+      # capability_version (core-owned): additive moves widen the supported window
+      # without requiring a native rebuild.
+      Types.new_rebuild_decision_entry(
+        axis: "capability_version (core-owned)",
+        change_kind: :additive,
+        rebuild_class: "compatibility-bump only",
+        adopter_action:
+          "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures.",
+        denial_signal: "undeclared_capability",
+        guide_anchor: "guides/compatibility.md#capability-version"
+      ),
+      # capability_version (native/companion): even additive moves to native or
+      # companion capabilities require a rebuild.
+      Types.new_rebuild_decision_entry(
+        axis: "capability_version (native/companion)",
+        change_kind: :additive,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+        denial_signal: "undeclared_capability",
+        guide_anchor: "guides/compatibility.md#capability-version"
+      ),
+      Types.new_rebuild_decision_entry(
+        axis: "capability_version",
+        change_kind: :breaking,
+        rebuild_class: "native or companion rebuild required",
+        adopter_action:
+          "Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes.",
+        denial_signal: "undeclared_capability",
+        guide_anchor: "guides/compatibility.md#capability-version"
+      ),
+      # docs/wording: no rebuild required — docs changes do not affect any
+      # compatibility axis, capability version, or native binary.
+      Types.new_rebuild_decision_entry(
+        axis: "docs_wording",
+        change_kind: :additive,
+        rebuild_class: "docs-only",
+        adopter_action: "Read the updated guidance and rerun docs integrity only.",
+        denial_signal: "n/a",
+        guide_anchor: "guides/support_matrix.md#change-classes"
+      ),
+      # core Elixir behavior: changes inside shipped axis/capability versions
+      # do not require a native rebuild.
+      Types.new_rebuild_decision_entry(
+        axis: "core_elixir_behavior",
+        change_kind: :additive,
+        rebuild_class: "core-only/no native rebuild",
+        adopter_action:
+          "Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells.",
+        denial_signal: "n/a",
+        guide_anchor: "guides/support_matrix.md#change-classes"
+      )
+    ]
+  end
 
   @doc """
   Runtime gate-state label.
