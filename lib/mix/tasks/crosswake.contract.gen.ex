@@ -33,6 +33,8 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   @ios_activation_path "examples/ios_shell_host/Fixtures/route_activation.json"
   @android_activation_path "examples/android_shell_host/app/src/main/assets/route_activation.json"
   @vectors_path "test/fixtures/bridge_contract_vectors.json"
+  @ios_vectors_path "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json"
+  @android_vectors_path "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json"
   @docs_snippet_path "docs/_contract_snippet.md"
 
   @impl Mix.Task
@@ -47,6 +49,8 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
     write_if_changed(@ios_activation_path, ios_activation_json(bridge_vsn))
     write_if_changed(@android_activation_path, android_activation_json(bridge_vsn))
     write_if_changed(@vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+    write_if_changed(@ios_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+    write_if_changed(@android_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
     write_if_changed(@docs_snippet_path, docs_snippet(bridge_vsn))
 
     Mix.shell().info("""
@@ -54,6 +58,8 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
       #{@ios_activation_path}
       #{@android_activation_path}
       #{@vectors_path}
+      #{@ios_vectors_path}
+      #{@android_vectors_path}
       #{@docs_snippet_path}
     """)
   end
@@ -119,13 +125,20 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"description",
          "Request with a stale bridge_protocol_version is denied with compatibility_mismatch"},
         {"request_override", [{"version", "1.0.0"}]},
+        {"session_override", []},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "compatibility_mismatch"}
       ],
       [
         {"id", "vec-002-unknown-command-deny"},
         {"description", "Request with an unrecognised command is denied"},
-        {"request_override", [{"version", bridge_vsn}, {"command", "unknown.command"}]},
+        {"request_override",
+         [
+           {"capability", "unknown.command"},
+           {"command", "unknown.command"},
+           {"version", bridge_vsn}
+         ]},
+        {"session_override", []},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "undeclared_capability"}
       ],
@@ -133,9 +146,61 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"id", "vec-003-canonical-version-ok"},
         {"description",
          "Request with the canonical bridge_protocol_version and a supported command succeeds"},
-        {"request_override", [{"version", bridge_vsn}, {"command", "app.info.get"}]},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override", [{"capabilities", [{"app.info.get", "1.0.0"}]}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil}
+      ],
+      [
+        {"id", "vec-004-inactive-route-deny"},
+        {"description", "Request scoped to a different route is denied with inactive_route"},
+        {"request_override",
+         [
+           {"active_route_id", "other-route"},
+           {"capability", "app.info.get"},
+           {"command", "app.info.get"},
+           {"route_id", "other-route"},
+           {"version", bridge_vsn}
+         ]},
+        {"session_override", []},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "inactive_route"}
+      ],
+      [
+        {"id", "vec-005-origin-denied-deny"},
+        {"description", "Request from non-allowlisted origin is denied with origin_denied"},
+        {"request_override",
+         [
+           {"capability", "app.info.get"},
+           {"command", "app.info.get"},
+           {"origin", "https://evil.example.com"},
+           {"version", bridge_vsn}
+         ]},
+        {"session_override", []},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "origin_denied"}
+      ],
+      [
+        {"id", "vec-006-pack-incompatible-deny"},
+        {"description",
+         "Request when required pack is not installed is denied with pack_incompatible"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override",
+         [{"installed_packs", []}, {"route_required_packs", ["test-pack@1.0.0"]}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "pack_incompatible"}
+      ],
+      [
+        {"id", "vec-007-capability-version-deny"},
+        {"description",
+         "Request where session capability version is ahead of request is denied with unavailable_capability"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override", [{"capabilities", [{"app.info.get", "2.0.0"}]}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "unavailable_capability"}
       ]
     ]
   end
