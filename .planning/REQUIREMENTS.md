@@ -38,7 +38,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **COMPAT-01**: The bridge-protocol compatibility check is reconciled to a single `>=` min-version-floor semantics across Elixir and native (the native exact-equality check is changed to negotiate by floor, matching `compatible_version?/2`), so additive protocol bumps no longer cause silent denials.
 - [x] **COMPAT-02**: Each version axis is mapped to a rebuild class (core-only / compat-bump only / native-rebuild-required) with documented additive-vs-breaking rules.
 - [x] **COMPAT-03**: The support matrix and a compatibility guide communicate the rebuild classes to adopters, leading with a decision table before explanatory prose.
-- [ ] **COMPAT-04**: Doctor findings for a version/rebuild mismatch name the change class, the full action sequence (regenerate → rebuild → resubmit App Store/Play Store → coordinated deploy), the denial reason seen in logs, and a docs link.
+- [x] **COMPAT-04**: Doctor findings for a version/rebuild mismatch name the change class, the full action sequence (regenerate → rebuild → resubmit App Store/Play Store → coordinated deploy), the denial reason seen in logs, and a docs link.
 - [ ] **COMPAT-05**: A changelog upgrade-impact label communicates the rebuild requirement for each release that touches the contract.
 
 ## v2 Requirements
@@ -91,7 +91,7 @@ Populated during roadmap creation.
 | COMPAT-01 | Phase 124 | Complete |
 | COMPAT-02 | Phase 124 | Complete |
 | COMPAT-03 | Phase 124 | Complete |
-| COMPAT-04 | Phase 124 | Pending |
+| COMPAT-04 | Phase 124 | Complete |
 | COMPAT-05 | Phase 124 | Pending |
 
 **Coverage:**

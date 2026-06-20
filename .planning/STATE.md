@@ -5,15 +5,15 @@ milestone_name: Runtime Contract Confidence
 current_phase: 124
 current_phase_name: compatibility-semantics-adopter-truth
 status: executing
-stopped_at: Completed 124-03-PLAN.md
-last_updated: "2026-06-20T22:49:03.072Z"
+stopped_at: Completed 124-04-PLAN.md
+last_updated: "2026-06-20T22:55:30.177Z"
 last_activity: 2026-06-20
 last_activity_desc: Phase 124 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
   percent: 75
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 ## Current Position
 
 Phase: 124 (compatibility-semantics-adopter-truth) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-06-20 — Phase 124 execution started
 
@@ -115,6 +115,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: 124-03: prose_sentinel = Crosswake keeps runtime ownership — ordering sentinel in compatibility_test.exs binary.match assert
 - [Phase ?]: 124-03: table column wording = Change type | Axis touched | Rebuild class | Adopter action | Denial signal if you skip it | Guide anchor
 - [Phase ?]: 124-03: native_runtime_version asymmetry stated in adjacent prose, no additive-without-rebuild row
+- [Phase ?]: advisory_check/1 used for compatibility_rebuild_guidance — never result_check/1, per D-13
+- [Phase ?]: contract_version_parity_errors/1 extracted as single shared detector (D-14)
+- [Phase ?]: action_sequence_for/1 expands native-rebuild into 4 ordered steps (D-14/D-15)
 
 ### Pending Todos
 
@@ -169,11 +172,12 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 124 P01 | 12m | 3 tasks | 9 files |
 | Phase 124 P02 | 4min | 2 tasks | 5 files |
 | Phase 124 P03 | 8min | - tasks | - files |
+| Phase 124 P04 | 3m 14s | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T22:49:03.068Z
-Stopped at: Completed 124-03-PLAN.md
+Last session: 2026-06-20T22:55:30.173Z
+Stopped at: Completed 124-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
