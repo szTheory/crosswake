@@ -5,15 +5,15 @@ milestone_name: Runtime Contract Confidence
 current_phase: 124
 current_phase_name: compatibility-semantics-adopter-truth
 status: executing
-stopped_at: Completed 124-02-PLAN.md
-last_updated: "2026-06-20T22:41:19.268Z"
+stopped_at: Completed 124-03-PLAN.md
+last_updated: "2026-06-20T22:49:03.072Z"
 last_activity: 2026-06-20
 last_activity_desc: Phase 124 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
   percent: 75
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 ## Current Position
 
 Phase: 124 (compatibility-semantics-adopter-truth) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-06-20 — Phase 124 execution started
 
@@ -112,6 +112,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: rebuild_decision_table/0 is def not defp (renderer calls it directly like action_classes())
 - [Phase ?]: native_runtime_version additive row maps to native-rebuild (no compat-bump-only) — D-09 asymmetry locked in rebuild_decision_table/0
 - [Phase ?]: manifest_schema/bridge_protocol additive rows map to compatibility-bump only — floor semantics from COMPAT-01 make this safe
+- [Phase ?]: 124-03: prose_sentinel = Crosswake keeps runtime ownership — ordering sentinel in compatibility_test.exs binary.match assert
+- [Phase ?]: 124-03: table column wording = Change type | Axis touched | Rebuild class | Adopter action | Denial signal if you skip it | Guide anchor
+- [Phase ?]: 124-03: native_runtime_version asymmetry stated in adjacent prose, no additive-without-rebuild row
 
 ### Pending Todos
 
@@ -165,11 +168,12 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 123 P03 | 8m 4s | 2 tasks | 3 files |
 | Phase 124 P01 | 12m | 3 tasks | 9 files |
 | Phase 124 P02 | 4min | 2 tasks | 5 files |
+| Phase 124 P03 | 8min | - tasks | - files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T22:41:19.264Z
-Stopped at: Completed 124-02-PLAN.md
+Last session: 2026-06-20T22:49:03.068Z
+Stopped at: Completed 124-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
