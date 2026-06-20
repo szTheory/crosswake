@@ -86,7 +86,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 
 **Milestone Goal:** Make the bridge/runtime contract boringly canonical and hard to drift — one source of truth across Elixir, manifest compatibility, generated shells, reusable native packages, examples, proof lanes, and docs — then prove it directly in the native packages rather than only in checked-in example hosts. Coherence work, not feature breadth.
 
-- [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (gaps found 2026-06-20 — SC-2 example-manifest bridge-version drift; see 121-VERIFICATION.md) (completed 2026-06-20)
+- [x] **Phase 121: Canonical Contract Source** - Collapse protocol-version drift to one Elixir authority; generate all derived surfaces; kill the Kotlin fallback (verified 5/5 after 121-04 gap closure; see 121-VERIFICATION.md) (completed 2026-06-20)
 - [ ] **Phase 122: Drift Guards** - Merge-blocking parse-based ExUnit drift test, generate-and-diff CI check, and doctor check so canonical source can never silently re-diverge
 - [ ] **Phase 123: Native Package Behavioral Proof** - Six-behavior XCTest and JUnit test suites driven by shared canonical vectors; CI lanes with required-vs-advisory split
 - [ ] **Phase 124: Compatibility Semantics & Adopter Truth** - Reconcile `>=` floor negotiation across Elixir and native; map rebuild classes; communicate through support matrix, guide, doctor, and changelog
@@ -182,7 +182,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
-| 121. Canonical Contract Source | v14.0 | 4/4 | Complete   | 2026-06-20 |
+| 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 0/TBD | Not started | - |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
