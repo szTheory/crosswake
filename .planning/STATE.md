@@ -5,16 +5,16 @@ milestone_name: Runtime Contract Confidence
 current_phase: 121
 current_phase_name: canonical-contract-source
 status: executing
-stopped_at: Completed 121-01-PLAN.md
-last_updated: "2026-06-20T13:58:22.563Z"
+stopped_at: Completed 121-03-PLAN.md
+last_updated: "2026-06-20T14:01:06Z"
 last_activity: 2026-06-20
-last_activity_desc: Phase 121 execution started
+last_activity_desc: Phase 121 plan 03 complete — CANON-05 native fallback removed
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 0
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State: Crosswake
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 ## Current Position
 
 Phase: 121 (canonical-contract-source) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
-Last activity: 2026-06-20 — Phase 121 execution started
+Plan: 3 of 3 (COMPLETE)
+Status: Phase 121 complete
+Last activity: 2026-06-20 — Phase 121 plan 03 complete (CANON-05)
 
 ```
 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -97,6 +97,7 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: Fully-qualified call to Contract.version() in types.ex avoids compile cycle
 - [Phase ?]: 121-01: Test assertions use Contract.version() not literal '1.1.0' to stay drift-proof against future bridge version bumps
 - [Phase ?]: 121-01: Deliberate deny test fixtures retain bridge_protocol_version '1.0.0' — route_findings pipeline order (bridge step 4, pack step 6) ensures pack denial surfaces as primary via List.first
+- [Phase 121]: 121-03: Replace ?: "1.0.0" silent default with kotlin error() at ActivationCoordinator.kt:594; ShellManifest.nativeRuntimeVersion stays non-nullable String (CANON-05 / D-08)
 
 ### Pending Todos
 
@@ -143,8 +144,8 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-20T13:58:22.556Z
-Stopped at: Completed 121-01-PLAN.md
+Last session: 2026-06-20T14:01:06Z
+Stopped at: Completed 121-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
