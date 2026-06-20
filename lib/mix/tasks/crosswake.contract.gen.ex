@@ -201,6 +201,129 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"session_override", [{"capabilities", [{"app.info.get", "2.0.0"}]}]},
         {"expected_outcome", "deny"},
         {"expected_denial_reason", "unavailable_capability"}
+      ],
+      # --- Floor conformance vectors (D-05 / D-06) ---
+      # bridge_protocol_version floor — both directions
+      # native_only: session.bridgeProtocolVersion override is native-only (Elixir bridge_findings
+      # checks request vs manifest semantics, not session vs request).
+      [
+        {"id", "vec-008-floor-bridge-shell-newer-allow"},
+        {"description",
+         "Shell providing a newer bridge_protocol_version satisfies a request demanding an older version (floor >=, allow)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", "1.0.0"}]},
+        {"session_override", [{"bridge_protocol_version", bridge_vsn}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+        {"expected_outcome", "ok"},
+        {"expected_denial_reason", nil},
+        {"native_only", true}
+      ],
+      [
+        {"id", "vec-009-floor-bridge-shell-older-deny"},
+        {"description",
+         "Shell providing an older bridge_protocol_version cannot satisfy a request demanding the current version (floor >=, deny)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override", [{"bridge_protocol_version", "1.0.0"}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "compatibility_mismatch"},
+        {"native_only", true}
+      ],
+      # native_runtime_version floor — both directions
+      # native_only: session.nativeRuntimeVersion + request.native_runtime_version overrides
+      # are native-only (Elixir bridge_findings manifest builder does not apply these overrides).
+      [
+        {"id", "vec-010-floor-native-runtime-shell-newer-allow"},
+        {"description",
+         "Shell providing a newer native_runtime_version satisfies a request demanding an older version (floor >=, allow)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}, {"native_runtime_version", "1.0.0"}]},
+        {"session_override", [{"native_runtime_version", "2.0.0"}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+        {"expected_outcome", "ok"},
+        {"expected_denial_reason", nil},
+        {"native_only", true}
+      ],
+      [
+        {"id", "vec-011-floor-native-runtime-shell-older-deny"},
+        {"description",
+         "Shell providing an older native_runtime_version cannot satisfy a request demanding a newer version (floor >=, deny)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}, {"native_runtime_version", "2.0.0"}]},
+        {"session_override", [{"native_runtime_version", "1.0.0"}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "compatibility_mismatch"},
+        {"native_only", true}
+      ],
+      # manifest_schema_version floor — both directions
+      # native_only: manifest_schema is validated at the Elixir compatibility layer (not bridge_findings);
+      # native tests record the floor direction for COMPAT-01 completeness.
+      [
+        {"id", "vec-012-floor-manifest-schema-shell-newer-allow"},
+        {"description",
+         "Manifest schema version newer than demanded — floor semantics allow"},
+        {"request_override", [{"manifest_schema_version", "1.0.0"}]},
+        {"session_override", [{"manifest_schema_version", "2.0.0"}]},
+        {"expected_outcome", "ok"},
+        {"expected_denial_reason", nil},
+        {"native_only", true}
+      ],
+      [
+        {"id", "vec-013-floor-manifest-schema-shell-older-deny"},
+        {"description",
+         "Manifest schema version older than demanded — floor semantics deny"},
+        {"request_override", [{"manifest_schema_version", "2.0.0"}]},
+        {"session_override", [{"manifest_schema_version", "1.0.0"}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "compatibility_mismatch"},
+        {"native_only", true}
+      ],
+      # capability-version floor — both directions
+      # Exercised by both Elixir bridge_findings (compatible_version? on capability axis) and native.
+      [
+        {"id", "vec-014-floor-capability-shell-newer-allow"},
+        {"description",
+         "Session capability version >= request version — floor semantics allow"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override", [{"capabilities", [{"app.info.get", "1.0.0"}]}]},
+        {"expected_outcome", "ok"},
+        {"expected_denial_reason", nil}
+      ],
+      [
+        {"id", "vec-015-floor-capability-shell-older-deny"},
+        {"description",
+         "Session capability version < request version — floor semantics deny (unavailable_capability)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override", [{"capabilities", [{"app.info.get", "2.0.0"}]}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "unavailable_capability"}
+      ],
+      # pack-version floor — both directions
+      # native_only: Elixir bridge_findings uses request.installed_packs (always empty in test
+      # builder); native BridgeChannel uses session.installedPacks from session_override.
+      [
+        {"id", "vec-016-floor-pack-shell-newer-allow"},
+        {"description",
+         "Installed pack version >= required pack version — floor semantics allow"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override",
+         [{"installed_packs", [{"test-pack", "2.0.0"}]}, {"route_required_packs", ["test-pack@1.0.0"]}, {"capabilities", [{"app.info.get", "1.0.0"}]}]},
+        {"expected_outcome", "ok"},
+        {"expected_denial_reason", nil},
+        {"native_only", true}
+      ],
+      [
+        {"id", "vec-017-floor-pack-shell-older-deny"},
+        {"description",
+         "Installed pack version < required pack version — floor semantics deny (pack_incompatible)"},
+        {"request_override",
+         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+        {"session_override",
+         [{"installed_packs", [{"test-pack", "1.0.0"}]}, {"route_required_packs", ["test-pack@2.0.0"]}]},
+        {"expected_outcome", "deny"},
+        {"expected_denial_reason", "pack_incompatible"},
+        {"native_only", true}
       ]
     ]
   end

@@ -38,11 +38,18 @@ struct SessionOverride: Codable {
     let capabilities: [String: String]?
     let installedPacks: [String: String]?
     let routeRequiredPacks: [String]?
+    /// Floor conformance override (COMPAT-01 / D-05): allows per-vector session version axes.
+    let bridgeProtocolVersion: String?
+    let nativeRuntimeVersion: String?
 
-    init(capabilities: [String: String]? = nil, installedPacks: [String: String]? = nil, routeRequiredPacks: [String]? = nil) {
+    init(capabilities: [String: String]? = nil, installedPacks: [String: String]? = nil,
+         routeRequiredPacks: [String]? = nil, bridgeProtocolVersion: String? = nil,
+         nativeRuntimeVersion: String? = nil) {
         self.capabilities = capabilities
         self.installedPacks = installedPacks
         self.routeRequiredPacks = routeRequiredPacks
+        self.bridgeProtocolVersion = bridgeProtocolVersion
+        self.nativeRuntimeVersion = nativeRuntimeVersion
     }
 
     init(from decoder: Decoder) throws {
@@ -53,12 +60,16 @@ struct SessionOverride: Codable {
             self.capabilities = nil
             self.installedPacks = nil
             self.routeRequiredPacks = nil
+            self.bridgeProtocolVersion = nil
+            self.nativeRuntimeVersion = nil
             return
         }
 
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.capabilities = try container.decodeIfPresent([String: String].self, forKey: .capabilities)
         self.routeRequiredPacks = try container.decodeIfPresent([String].self, forKey: .routeRequiredPacks)
+        self.bridgeProtocolVersion = try container.decodeIfPresent(String.self, forKey: .bridgeProtocolVersion)
+        self.nativeRuntimeVersion = try container.decodeIfPresent(String.self, forKey: .nativeRuntimeVersion)
 
         // installed_packs in JSON is [] (empty array) for the pack vector — decode as array then ignore
         // The bridge session only needs routeRequiredPacks + installedPacks as [String: String] dict
@@ -73,6 +84,8 @@ struct SessionOverride: Codable {
         case capabilities
         case installedPacks = "installed_packs"
         case routeRequiredPacks = "route_required_packs"
+        case bridgeProtocolVersion = "bridge_protocol_version"
+        case nativeRuntimeVersion = "native_runtime_version"
     }
 }
 
@@ -99,13 +112,16 @@ final class BridgeConformanceTests: XCTestCase {
         let baseCapabilities: [String: String] = sessionOverride.capabilities ?? [:]
         let baseInstalledPacks: [String: String] = sessionOverride.installedPacks ?? [:]
         let baseRouteRequiredPacks: [String] = sessionOverride.routeRequiredPacks ?? []
+        // Floor conformance (COMPAT-01 / D-05): per-vector version axis overrides.
+        let sessionBridgeVersion = sessionOverride.bridgeProtocolVersion ?? bridgeProtocolVersion
+        let sessionNativeRuntimeVersion = sessionOverride.nativeRuntimeVersion ?? vectorsFile.nativeRuntimeVersion
 
         return LiveViewSession(
             routeID: "dashboard",
             url: URL(string: "https://app.example.com/dashboard")!,
             allowedOrigin: URL(string: "https://app.example.com")!,
-            bridgeProtocolVersion: bridgeProtocolVersion,
-            nativeRuntimeVersion: vectorsFile.nativeRuntimeVersion,
+            bridgeProtocolVersion: sessionBridgeVersion,
+            nativeRuntimeVersion: sessionNativeRuntimeVersion,
             threadID: "test-thread-id",
             installedPacks: baseInstalledPacks,
             routeRequiredPacks: baseRouteRequiredPacks,
@@ -129,6 +145,8 @@ final class BridgeConformanceTests: XCTestCase {
         let routeID = requestOverride["route_id"] ?? "dashboard"
         let activeRouteID = requestOverride["active_route_id"] ?? "dashboard"
         let origin = requestOverride["origin"] ?? "https://app.example.com"
+        // Floor conformance (COMPAT-01 / D-05): allow request native_runtime_version override.
+        let nativeRuntimeVersion = requestOverride["native_runtime_version"] ?? vectorsFile.nativeRuntimeVersion
 
         // Request capabilities default to the base "ok" version for the command.
         // vec-007 has session.capabilities["app.info.get"] = "2.0.0" while the request
@@ -143,7 +161,7 @@ final class BridgeConformanceTests: XCTestCase {
             routeID: routeID,
             activeRouteID: activeRouteID,
             origin: origin,
-            nativeRuntimeVersion: vectorsFile.nativeRuntimeVersion,
+            nativeRuntimeVersion: nativeRuntimeVersion,
             correlationID: "test-correlation-id",
             capabilities: requestCapabilities,
             installedPacks: [:],

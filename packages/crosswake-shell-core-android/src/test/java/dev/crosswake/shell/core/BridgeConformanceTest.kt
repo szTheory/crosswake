@@ -110,6 +110,14 @@ class BridgeConformanceTest {
             }
         }
 
+        // Floor conformance: allow session version axes to be overridden per-vector (COMPAT-01 / D-05)
+        if (overrideObj.has("bridge_protocol_version")) {
+            result = result.copy(bridgeProtocolVersion = overrideObj.getString("bridge_protocol_version"))
+        }
+        if (overrideObj.has("native_runtime_version")) {
+            result = result.copy(nativeRuntimeVersion = overrideObj.getString("native_runtime_version"))
+        }
+
         return result
     }
 
@@ -125,6 +133,10 @@ class BridgeConformanceTest {
         if (requestOverride.has("route_id")) result = result.copy(routeId = requestOverride.getString("route_id"))
         if (requestOverride.has("active_route_id")) result = result.copy(activeRouteId = requestOverride.getString("active_route_id"))
         if (requestOverride.has("origin")) result = result.copy(origin = requestOverride.getString("origin"))
+        // Floor conformance: allow request native_runtime_version to be overridden per-vector (COMPAT-01 / D-05)
+        if (requestOverride.has("native_runtime_version")) {
+            result = result.copy(nativeRuntimeVersion = requestOverride.getString("native_runtime_version"))
+        }
 
         return result
     }

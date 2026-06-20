@@ -130,6 +130,175 @@
           "app.info.get": "2.0.0"
         }
       }
+    },
+    {
+      "description": "Shell providing a newer bridge_protocol_version satisfies a request demanding an older version (floor >=, allow)",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-008-floor-bridge-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.0.0"
+      },
+      "session_override": {
+        "bridge_protocol_version": "1.1.0",
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        }
+      }
+    },
+    {
+      "description": "Shell providing an older bridge_protocol_version cannot satisfy a request demanding the current version (floor >=, deny)",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-009-floor-bridge-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "bridge_protocol_version": "1.0.0"
+      }
+    },
+    {
+      "description": "Shell providing a newer native_runtime_version satisfies a request demanding an older version (floor >=, allow)",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-010-floor-native-runtime-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "native_runtime_version": "1.0.0",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        },
+        "native_runtime_version": "2.0.0"
+      }
+    },
+    {
+      "description": "Shell providing an older native_runtime_version cannot satisfy a request demanding a newer version (floor >=, deny)",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-011-floor-native-runtime-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "native_runtime_version": "2.0.0",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "native_runtime_version": "1.0.0"
+      }
+    },
+    {
+      "description": "Manifest schema version newer than demanded — floor semantics allow",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-012-floor-manifest-schema-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "manifest_schema_version": "1.0.0"
+      },
+      "session_override": {
+        "manifest_schema_version": "2.0.0"
+      }
+    },
+    {
+      "description": "Manifest schema version older than demanded — floor semantics deny",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-013-floor-manifest-schema-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "manifest_schema_version": "2.0.0"
+      },
+      "session_override": {
+        "manifest_schema_version": "1.0.0"
+      }
+    },
+    {
+      "description": "Session capability version >= request version — floor semantics allow",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-014-floor-capability-shell-newer-allow",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        }
+      }
+    },
+    {
+      "description": "Session capability version < request version — floor semantics deny (unavailable_capability)",
+      "expected_denial_reason": "unavailable_capability",
+      "expected_outcome": "deny",
+      "id": "vec-015-floor-capability-shell-older-deny",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "2.0.0"
+        }
+      }
+    },
+    {
+      "description": "Installed pack version >= required pack version — floor semantics allow",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-016-floor-pack-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        },
+        "installed_packs": {
+          "test-pack": "2.0.0"
+        },
+        "route_required_packs": [
+          "test-pack@1.0.0"
+        ]
+      }
+    },
+    {
+      "description": "Installed pack version < required pack version — floor semantics deny (pack_incompatible)",
+      "expected_denial_reason": "pack_incompatible",
+      "expected_outcome": "deny",
+      "id": "vec-017-floor-pack-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "installed_packs": {
+          "test-pack": "1.0.0"
+        },
+        "route_required_packs": [
+          "test-pack@2.0.0"
+        ]
+      }
     }
   ]
 }

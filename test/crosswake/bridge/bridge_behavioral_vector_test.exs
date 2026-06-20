@@ -81,32 +81,36 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
 
     for vector <- vectors do
       id = vector["id"]
-      request_override = vector["request_override"] || %{}
-      session_override = vector["session_override"] || %{}
-      expected_outcome = vector["expected_outcome"]
-      expected_denial_reason = vector["expected_denial_reason"]
+      # Skip vectors that target native-only semantics (session vs request check, not request vs manifest).
+      # These vectors are exercised by the native (Swift/Kotlin) conformance test suites instead.
+      unless vector["native_only"] == true do
+        request_override = vector["request_override"] || %{}
+        session_override = vector["session_override"] || %{}
+        expected_outcome = vector["expected_outcome"]
+        expected_denial_reason = vector["expected_denial_reason"]
 
-      manifest = make_permissive_manifest(session_override)
-      request = make_permissive_request(request_override)
+        manifest = make_permissive_manifest(session_override)
+        request = make_permissive_request(request_override)
 
-      findings = Compatibility.bridge_findings(manifest, request)
+        findings = Compatibility.bridge_findings(manifest, request)
 
-      {actual_outcome, actual_reason} =
-        case findings do
-          [] ->
-            {"ok", nil}
+        {actual_outcome, actual_reason} =
+          case findings do
+            [] ->
+              {"ok", nil}
 
-          [first | _] ->
-            denial = Compatibility.finding_to_denial(first, route_id: request.route_id)
-            {"deny", Atom.to_string(denial.reason)}
+            [first | _] ->
+              denial = Compatibility.finding_to_denial(first, route_id: request.route_id)
+              {"deny", Atom.to_string(denial.reason)}
+          end
+
+        assert actual_outcome == expected_outcome,
+               "Vector #{id}: expected_outcome=#{inspect(expected_outcome)} but got #{inspect(actual_outcome)}. Findings: #{inspect(findings)}"
+
+        if expected_denial_reason do
+          assert actual_reason == expected_denial_reason,
+                 "Vector #{id}: expected_denial_reason=#{inspect(expected_denial_reason)} but got #{inspect(actual_reason)}. Findings: #{inspect(findings)}"
         end
-
-      assert actual_outcome == expected_outcome,
-             "Vector #{id}: expected_outcome=#{inspect(expected_outcome)} but got #{inspect(actual_outcome)}. Findings: #{inspect(findings)}"
-
-      if expected_denial_reason do
-        assert actual_reason == expected_denial_reason,
-               "Vector #{id}: expected_denial_reason=#{inspect(expected_denial_reason)} but got #{inspect(actual_reason)}. Findings: #{inspect(findings)}"
       end
     end
   end
