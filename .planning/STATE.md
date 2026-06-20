@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
-status: planning
-stopped_at: Phase 121 context gathered
-last_updated: "2026-06-20T13:11:01.923Z"
-last_activity: 2026-06-20 — Roadmap created for v14.0 (4 phases, 18 requirements mapped)
+current_phase: 121
+current_phase_name: canonical-contract-source
+status: executing
+stopped_at: Completed 121-01-PLAN.md
+last_updated: "2026-06-20T13:58:22.563Z"
+last_activity: 2026-06-20
+last_activity_desc: Phase 121 execution started
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-20)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v14.0 Runtime Contract Confidence — Phase 121: Canonical Contract Source
+**Current focus:** Phase 121 — canonical-contract-source
 
 ## Current Position
 
-Phase: 121 (not started — ready for plan-phase)
-Plan: —
-Status: Roadmap defined; ready to plan Phase 121
-Last activity: 2026-06-20 — Roadmap created for v14.0 (4 phases, 18 requirements mapped)
+Phase: 121 (canonical-contract-source) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-20 — Phase 121 execution started
 
 ```
 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -91,6 +94,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: Plan 114-05: GATE-01 registration script reads live state
 - [Phase ?]: Plan 114-05: register-e2e-gate.sh refuses to register until aggregator goes green on main
 - [Phase ?]: Plan 114-05: GATE-01 registration uses minimal-footprint PATCH endpoint
+- [Phase ?]: Fully-qualified call to Contract.version() in types.ex avoids compile cycle
+- [Phase ?]: 121-01: Test assertions use Contract.version() not literal '1.1.0' to stay drift-proof against future bridge version bumps
+- [Phase ?]: 121-01: Deliberate deny test fixtures retain bridge_protocol_version '1.0.0' — route_findings pipeline order (bridge step 4, pack step 6) ensures pack denial surfaces as primary via List.first
 
 ### Pending Todos
 
@@ -133,12 +139,13 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
 | v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Resolved — Phase 116 / Plan 01 targeted tests pass | Phase 112 surfaced |
+| Phase 121 P01 | 1007 | 3 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T13:11:01.918Z
-Stopped at: Phase 121 context gathered
-Resume file: .planning/phases/121-canonical-contract-source/121-CONTEXT.md
+Last session: 2026-06-20T13:58:22.556Z
+Stopped at: Completed 121-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

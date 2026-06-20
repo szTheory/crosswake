@@ -94,52 +94,65 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 ## Phase Details
 
 ### Phase 121: Canonical Contract Source
+
 **Goal**: Every version surface in the system derives from one Elixir constant; the 1.1.0 / 1.0.0 divergence is resolved; all generated JSON fixtures, shell templates, and native conformance vectors are emitted by `mix crosswake.contract.gen`; the Kotlin silent fallback is gone.
 **Depends on**: Nothing (first phase of this milestone)
 **Requirements**: CANON-01, CANON-02, CANON-03, CANON-04, CANON-05
 **Success Criteria** (what must be TRUE):
+
   1. `Crosswake.Bridge.Contract.version()` is the sole declared constant; `Crosswake.Manifest.Types` and shell fixtures derive from it at compile time with no independent literals.
   2. Each of the three version axes (manifest schema, bridge protocol, native runtime) has exactly one named authoritative source; `grep -rn '"bridge_protocol_version"' lib/ test/ packages/ examples/` returns a single value everywhere.
   3. Running `mix crosswake.contract.gen` regenerates all derived surfaces (JSON fixtures, generated shell templates, native conformance vector stubs, docs snippet) from the canonical constant in a hermetic, network-free step.
   4. The 1.1.0 vs 1.0.0 protocol-version conflict is resolved to one correct current value without altering behavior visible to existing 0.1.x adopters.
   5. `ActivationCoordinator.kt` line 594 no longer contains a `?: "1.0.0"` fallback; native always reads the manifest-provided value and fails closed if absent.
-**Plans**: 3 plans
-- [ ] 121-01-PLAN.md — Single-source the bridge-protocol axis in Manifest.Types + Shell.Fixtures and repair all test drift (CANON-01/02/04)
+
+**Plans**: 1/3 plans executed
+
+- [x] 121-01-PLAN.md — Single-source the bridge-protocol axis in Manifest.Types + Shell.Fixtures and repair all test drift (CANON-01/02/04)
 - [ ] 121-02-PLAN.md — `mix crosswake.contract.gen` task + emitted JSON fixtures, vectors, docs snippet, idempotent (CANON-02/03)
 - [ ] 121-03-PLAN.md — Remove the silent Kotlin `?: "1.0.0"` fallback; native fails closed (CANON-05)
 
 ### Phase 122: Drift Guards
+
 **Goal**: Any future hand-edit or generator-skip that re-introduces contract-version divergence is caught immediately by merge-blocking CI before it reaches main; operators can discover drift without reading CI logs.
 **Depends on**: Phase 121
 **Requirements**: GUARD-01, GUARD-02, GUARD-03, GUARD-04
 **Success Criteria** (what must be TRUE):
+
   1. A pure-Elixir ExUnit drift test (no Xcode, no Gradle) reads each derived surface via a JSON parser — not a text grep — and asserts it equals `Crosswake.Bridge.Contract.version()`; the failure message names the one canonical file to edit and the exact regenerate command.
   2. A CI step runs `mix crosswake.contract.gen && git diff --exit-code` and fails on any difference between generated output and checked-in artifacts; this check runs without any native toolchain.
   3. `mix crosswake.doctor` emits a `contract_version_parity` finding that reports drift to operators alongside the existing `generator_coordinate_parity` check; it is green when all surfaces agree.
   4. The drift checks are registered in the merge-blocking CI aggregator; a registration script is committed that documents the branch-protection PATCH step (matching the v12.0 pattern of script + document, not auto-toggle).
+
 **Plans**: TBD
 
 ### Phase 123: Native Package Behavioral Proof
+
 **Goal**: The reusable iOS and Android shell-core packages have real behavioral tests for all six key behaviors, all driven from a single committed canonical vector file rather than hardcoded literals, with CI lanes whose required-vs-advisory split matches the project's established hermetic/native split.
 **Depends on**: Phase 121
 **Requirements**: NTEST-01, NTEST-02, NTEST-03, NTEST-04
 **Success Criteria** (what must be TRUE):
+
   1. A committed `bridge_contract_vectors.json` is the sole source for expected request/outcome pairs in Elixir, Swift, and Kotlin test suites; bumping the version in the canonical source causes test failures in all three suites until the vectors are regenerated.
   2. The `crosswake-shell-core-ios` Swift package has XCTest behavioral tests (no simulator required) covering activation success/failure, bridge denial on version mismatch, capability allowlist enforcement, active-route check, pack-version check, and delegate/escape-hatch behavior — all parametrized from `bridge_contract_vectors.json`.
   3. The `crosswake-shell-core-android` Kotlin package has JVM JUnit behavioral tests (no emulator required) covering the same six behaviors, also parametrized from `bridge_contract_vectors.json`; async assertions use `runTest` not `runBlocking`.
   4. Kotlin JUnit tests run in a merge-blocking CI lane (JVM only); Swift XCTest tests run in an advisory `macos-latest` CI lane; no test hardcodes a version literal — all load fixture JSON derived from the canonical Elixir source.
+
 **Plans**: TBD
 
 ### Phase 124: Compatibility Semantics & Adopter Truth
+
 **Goal**: The bridge-protocol compatibility check uses `>=` min-version-floor semantics across both Elixir and native, eliminating the exact-equality denial footgun; adopters have a clear decision table mapping each version-axis change to its rebuild requirement; doctor output names the full action sequence when a mismatch is detected.
 **Depends on**: Phase 123
 **Requirements**: COMPAT-01, COMPAT-02, COMPAT-03, COMPAT-04, COMPAT-05
 **Success Criteria** (what must be TRUE):
+
   1. Native bridge code (`BridgeChannel.swift:182`, `BridgeChannel.kt:101`) now negotiates by `>=` min-version-floor rather than exact string equality, matching `compatible_version?/2`; an additive protocol bump no longer silently denies a valid request from an older native shell.
   2. Each version axis (manifest schema / bridge protocol / native runtime) is mapped to a rebuild class (core-only / compat-bump only / native-rebuild-required) with documented additive-vs-breaking rules in one committed source, guarded by a docs-contract test asserting the table is present.
   3. The support matrix and a `guides/compatibility.md` guide lead with a decision table ("this change type → this rebuild class → this action") before any explanatory prose; the guide is machine-tested via a docs-contract ExUnit test.
   4. Doctor output for a version/rebuild mismatch names the change class, the full action sequence (regenerate shell → rebuild native app → resubmit App Store/Play Store → coordinated deploy), the denial reason from logs, and a link to the compatibility guide.
   5. CHANGELOG entries that touch the bridge/runtime contract carry an upgrade-impact label (e.g., "native rebuild required" or "core-only, no native rebuild") so adopters can triage release notes without reading the full diff.
+
 **Plans**: TBD
 
 ## Progress
@@ -168,7 +181,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 118. Runnable Quick Start And Real Adoption Proof | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 119. Native Evidence Classification | v13.0 | 3/3 | Complete | 2026-06-19 |
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
-| 121. Canonical Contract Source | v14.0 | 0/TBD | Not started | - |
+| 121. Canonical Contract Source | v14.0 | 1/3 | In Progress|  |
 | 122. Drift Guards | v14.0 | 0/TBD | Not started | - |
 | 123. Native Package Behavioral Proof | v14.0 | 0/TBD | Not started | - |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
