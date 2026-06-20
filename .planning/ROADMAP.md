@@ -147,7 +147,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   3. The `crosswake-shell-core-android` Kotlin package has JVM JUnit behavioral tests (no emulator required) covering the same six behaviors, also parametrized from `bridge_contract_vectors.json`; async assertions use `runTest` not `runBlocking`.
   4. Kotlin JUnit tests run in a merge-blocking CI lane (JVM only); Swift XCTest tests run in an advisory `macos-latest` CI lane; no test hardcodes a version literal — all load fixture JSON derived from the canonical Elixir source.
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 
 **Wave 1**
 
@@ -156,7 +156,7 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 **Wave 2** *(parallel siblings; depend on Wave 1 vectors)*
 
 - [x] 123-02-PLAN.md — Replace corrupted iOS test file + Package.swift resources + XCTest bridge & activation conformance suites (NTEST-02)
-- [ ] 123-03-PLAN.md — Android JVM JUnit bridge & activation conformance suites + conditional kotlinx-coroutines-test (NTEST-03)
+- [x] 123-03-PLAN.md — Android JVM JUnit bridge & activation conformance suites + conditional kotlinx-coroutines-test (NTEST-03)
 
 **Wave 3** *(depends on the suites existing)*
 
@@ -205,5 +205,5 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
 | 120. Collateral, Artifact CI, And Troubleshooting | v13.0 | 4/4 | Complete | 2026-06-19 |
 | 121. Canonical Contract Source | v14.0 | 4/4 | Complete    | 2026-06-20 |
 | 122. Drift Guards | v14.0 | 3/3 | Complete    | 2026-06-20 |
-| 123. Native Package Behavioral Proof | v14.0 | 2/4 | In Progress|  |
+| 123. Native Package Behavioral Proof | v14.0 | 3/4 | In Progress|  |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 0/TBD | Not started | - |
