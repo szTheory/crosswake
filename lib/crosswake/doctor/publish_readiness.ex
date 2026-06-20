@@ -593,6 +593,37 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp contract_version_parity_check(cwd) do
     expected = Crosswake.Bridge.Contract.version()
+    errors = contract_version_parity_errors(cwd)
+
+    result_check(
+      id: "contract.version_parity",
+      code:
+        if(errors == [],
+          do: "diag.contract.version_parity_ok",
+          else: "diag.contract.version_parity_failed"
+        ),
+      category: :contract_version_parity,
+      passed?: errors == [],
+      message:
+        if(errors == [],
+          do:
+            "all committed contract surfaces carry bridge_protocol_version #{expected}",
+          else: "contract version parity failed: #{Enum.join(errors, "; ")}"
+        ),
+      hint: "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
+      docs_reference: "guides/compatibility.md",
+      proof_class: :merge_blocking,
+      claim_scope: "Contract version parity across committed surfaces",
+      details: %{
+        version: expected,
+        surfaces: @all_contract_surfaces,
+        errors: errors
+      }
+    )
+  end
+
+  defp contract_version_parity_errors(cwd) do
+    expected = Crosswake.Bridge.Contract.version()
 
     manifest_errors =
       Enum.flat_map(@manifest_surfaces, fn rel ->
@@ -644,33 +675,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
         end
       end)
 
-    errors = manifest_errors ++ generated_errors
-
-    result_check(
-      id: "contract.version_parity",
-      code:
-        if(errors == [],
-          do: "diag.contract.version_parity_ok",
-          else: "diag.contract.version_parity_failed"
-        ),
-      category: :contract_version_parity,
-      passed?: errors == [],
-      message:
-        if(errors == [],
-          do:
-            "all committed contract surfaces carry bridge_protocol_version #{expected}",
-          else: "contract version parity failed: #{Enum.join(errors, "; ")}"
-        ),
-      hint: "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
-      docs_reference: "guides/compatibility.md",
-      proof_class: :merge_blocking,
-      claim_scope: "Contract version parity across committed surfaces",
-      details: %{
-        version: expected,
-        surfaces: @all_contract_surfaces,
-        errors: errors
-      }
-    )
+    manifest_errors ++ generated_errors
   end
 
   defp check_ios_template(template_path, version) do
