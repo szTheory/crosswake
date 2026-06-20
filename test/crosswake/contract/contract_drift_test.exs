@@ -78,6 +78,91 @@ defmodule Crosswake.Contract.ContractDriftTest do
   end
 
   # ---------------------------------------------------------------------------
+  # Synthetic regression tests — prove the guard is non-vacuous (anti-vacuity)
+  #
+  # These tests feed deliberately drifted in-memory decoded JSON into the same
+  # compare_* helpers used by the primary test and assert that the expected
+  # failure categories are produced. This mirrors the synthetic-regression
+  # idiom in native_evidence_drift_test.exs and quick_start_adoption_drift_test.exs.
+  #
+  # If these regressions pass with no failures produced, the guard is vacuous
+  # (T-122-03 threat) — these tests catch that class of bug.
+  # ---------------------------------------------------------------------------
+
+  test "synthetic regression: manifest with wrong bridge_protocol_version produces :manifest_version_drift failure" do
+    # A manifest-shaped decoded map with a deliberately wrong compatibility version.
+    # In production the manifests carry this at ["compatibility"]["bridge_protocol_version"].
+    drifted_manifest = %{
+      "compatibility" => %{
+        "bridge_protocol_version" => "0.9.0",
+        "manifest_schema_version" => "1.0.0",
+        "native_runtime_version" => "1.0.0"
+      }
+    }
+
+    failures =
+      compare_manifest_surface(
+        drifted_manifest,
+        "synthetic/crosswake_manifest.json",
+        @canonical_version
+      )
+
+    assert Enum.any?(failures, &(&1.category == :manifest_version_drift)),
+           "Expected a :manifest_version_drift failure from a manifest with a wrong bridge_protocol_version, got: #{inspect(failures)}"
+  end
+
+  test "synthetic regression: generated JSON with wrong bridge_protocol_version produces :generated_version_drift failure" do
+    # A generated-JSON-shaped decoded map with a deliberately wrong top-level version.
+    drifted_generated = %{
+      "_generated_by" => "mix crosswake.contract.gen",
+      "bridge_protocol_version" => "0.9.0",
+      "protocol" => "crosswake.bridge"
+    }
+
+    failures =
+      compare_generated_surface(
+        drifted_generated,
+        "synthetic/route_activation.json",
+        @canonical_version
+      )
+
+    assert Enum.any?(failures, &(&1.category == :generated_version_drift)),
+           "Expected a :generated_version_drift failure from generated JSON with a wrong bridge_protocol_version, got: #{inspect(failures)}"
+  end
+
+  test "failure message names canonical source, drifted surface, and fix command" do
+    # Build a single drifted failure and render the message; assert the required
+    # terms are present so the guard can never fall back to a bare ExUnit
+    # left/right assertion that omits context.
+    drifted_failure = %{
+      path: "synthetic/crosswake_manifest.json",
+      category: :manifest_version_drift,
+      actual: "0.9.0",
+      expected: @canonical_version
+    }
+
+    message = format_failure_message([drifted_failure])
+
+    assert String.contains?(message, "mix crosswake.contract.gen"),
+           "Failure message must name the fix command 'mix crosswake.contract.gen'"
+
+    assert String.contains?(message, "lib/crosswake/bridge/contract.ex"),
+           "Failure message must name the canonical source 'lib/crosswake/bridge/contract.ex'"
+
+    assert String.contains?(message, "Crosswake.Bridge.Contract.version/0"),
+           "Failure message must name the canonical function 'Crosswake.Bridge.Contract.version/0'"
+
+    assert String.contains?(message, "synthetic/crosswake_manifest.json"),
+           "Failure message must name the drifted surface path"
+
+    assert String.contains?(message, "0.9.0"),
+           "Failure message must include the actual (wrong) version"
+
+    assert String.contains?(message, @canonical_version),
+           "Failure message must include the canonical (expected) version"
+  end
+
+  # ---------------------------------------------------------------------------
   # Helpers — pure comparison (accept decoded maps so synthetic tests can feed
   # in-memory content without touching disk, mirroring the scan_surface idiom
   # from native_evidence_drift_test.exs)
