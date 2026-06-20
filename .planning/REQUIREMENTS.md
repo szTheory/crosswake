@@ -75,30 +75,30 @@ Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CANON-01 | TBD | Pending |
-| CANON-02 | TBD | Pending |
-| CANON-03 | TBD | Pending |
-| CANON-04 | TBD | Pending |
-| CANON-05 | TBD | Pending |
-| GUARD-01 | TBD | Pending |
-| GUARD-02 | TBD | Pending |
-| GUARD-03 | TBD | Pending |
-| GUARD-04 | TBD | Pending |
-| NTEST-01 | TBD | Pending |
-| NTEST-02 | TBD | Pending |
-| NTEST-03 | TBD | Pending |
-| NTEST-04 | TBD | Pending |
-| COMPAT-01 | TBD | Pending |
-| COMPAT-02 | TBD | Pending |
-| COMPAT-03 | TBD | Pending |
-| COMPAT-04 | TBD | Pending |
-| COMPAT-05 | TBD | Pending |
+| CANON-01 | Phase 121 | Pending |
+| CANON-02 | Phase 121 | Pending |
+| CANON-03 | Phase 121 | Pending |
+| CANON-04 | Phase 121 | Pending |
+| CANON-05 | Phase 121 | Pending |
+| GUARD-01 | Phase 122 | Pending |
+| GUARD-02 | Phase 122 | Pending |
+| GUARD-03 | Phase 122 | Pending |
+| GUARD-04 | Phase 122 | Pending |
+| NTEST-01 | Phase 123 | Pending |
+| NTEST-02 | Phase 123 | Pending |
+| NTEST-03 | Phase 123 | Pending |
+| NTEST-04 | Phase 123 | Pending |
+| COMPAT-01 | Phase 124 | Pending |
+| COMPAT-02 | Phase 124 | Pending |
+| COMPAT-03 | Phase 124 | Pending |
+| COMPAT-04 | Phase 124 | Pending |
+| COMPAT-05 | Phase 124 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-20*
-*Last updated: 2026-06-20 after initial definition*
+*Last updated: 2026-06-20 after roadmap creation (traceability populated)*

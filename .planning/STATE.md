@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
 status: planning
-last_updated: "2026-06-20T12:50:48.198Z"
+last_updated: "2026-06-20T14:00:00.000Z"
 last_activity: 2026-06-20
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,23 +17,27 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-19)
+See: .planning/PROJECT.md (updated 2026-06-20)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Milestone complete
+**Current focus:** v14.0 Runtime Contract Confidence — Phase 121: Canonical Contract Source
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 121 (not started — ready for plan-phase)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-20 — Milestone v14.0 started
+Status: Roadmap defined; ready to plan Phase 121
+Last activity: 2026-06-20 — Roadmap created for v14.0 (4 phases, 18 requirements mapped)
+
+```
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
+```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17 (v10.0) + 8 (v11.0) + 13 (v12.0) = 31 across last three milestones
+- Total plans completed: 17 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) = 54 across last four milestones
 - Average duration: —
 - Total execution time: —
 
@@ -43,7 +47,19 @@ Last activity: 2026-06-20 — Milestone v14.0 started
 
 ### Decisions
 
-Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archived there.
+Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archived there.
+
+**v14.0 roadmap decisions (2026-06-20, locked by research + PITFALLS.md):**
+
+- Four phases derived from requirement categories in the mandatory order: CANON (121) → GUARD (122) → NTEST (123) → COMPAT (124). Phase ordering is non-negotiable per registry immutability + lockstep release constraints.
+- Phase 123 (NTEST) depends on Phase 121 (canonical source must exist before vectors can be generated), but can proceed in parallel with Phase 122 (drift guards) in execution if the canonical source is stable. For planning purposes, treat 123 as depending on 121 only; guards and native proof are orthogonal once the canonical source exists.
+- COMPAT-01 (native `>=` floor negotiation) touches native source and must come after NTEST so the compatibility check change can be exercised by the behavioral tests already in place. Phase 124 therefore depends on Phase 123.
+- Drift guards (Phase 122) use parse-based JSON comparison, not text grep, per PITFALLS.md Cluster 3 / Pitfall 3.1. Guards must emit actionable failure messages naming the diverging pair and the fix command (PITFALLS.md Pitfall 3.3).
+- Native tests in Phase 123 must parametrize from `bridge_contract_vectors.json` generated from the canonical source — no hardcoded version literals — to avoid the "vacuous / fabricated proof" pattern documented in PITFALLS.md Pitfall 3.5 and the v6.0/v8.0 history.
+- Kotlin JUnit CI lane is merge-blocking (JVM only); Swift XCTest CI lane is advisory (macOS environment sensitivity) — consistent with the project's hermetic-vs-advisory split pattern.
+- Branch-protection registration for new CI guards follows the v12.0 script + document pattern: ship a registration script, note the human/harness-gated PATCH step, do not auto-toggle.
+- Public docs updates belong in Phase 124 (last), not Phase 121. Documentation claims must be coextensive with passing CI (PITFALLS.md Pitfall 5.4, v13.0 DRIFT-02 lesson).
+- Any native package publish, if required, comes only after all four phases are green on main (PITFALLS.md Pitfall 2.4, v11.0 fire-drill lesson).
 
 **v12.0 key decisions (2026-06-17, locked by research):**
 
@@ -53,13 +69,6 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - `setOffline(false)` does NOT fire the browser `online` event — the test must explicitly `dispatchEvent(new Event('online'))` after calling `setOffline(false)` to trigger the app's reconnect handler.
 
 **v11.0 key decision (2026-06-14):** Two-phase split enforced by dependency graph — Phase 110 (publish + lockstep) must complete before Phase 111 (rewire + prove + release). You cannot clean-room-prove an unpublished dep; you must not cut Hex while gen.shell emits broken coordinates. This ordering is non-negotiable per research.
-
-**Next-step assessment decision (2026-06-18):**
-
-- Crosswake is likely in the **80-89% done** band for intended scope: the route-policy substrate, published install path, diagnostics/support truth, and real offline proof are substantive, but adopter confidence still has meaningful gaps.
-- The next milestone should be **v13.0 Adopter Confidence & Native Evidence**, not new capability breadth. Treat `GUIDE-01` as proof-path consolidation: runnable quick start, route-policy guide, troubleshooting/rough edges, web-to-mobile migration, ExDoc cross-linking, simulator/emulator evidence, and screenshot/video collateral.
-- `TODO-001` should be first-phase or precondition work. A public proof path should not depend on an example host with known deterministic and flaky local test debt.
-- Simulator/device/native evidence is valuable for "seeing is believing" collateral, but remains **advisory** unless a future milestone explicitly promotes it to merge-blocking support truth.
 
 **Next-step assessment decision (2026-06-19):**
 
@@ -107,19 +116,18 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 - **Doc drift (watch, ongoing):** Closeout/parity verifiers that hardcode the mid-flight milestone break post-archival — derive from frontmatter + search archived paths. `MILESTONE-ARC.md` reconciled 2026-06-14.
 - **~~Adopter proof-path drift (v13 active)~~ → RESOLVED by Phase 118 (2026-06-19).** The quick start and adoption guide now use command-verified paths, current offline proof truth, and a DRIFT-02 docs-contract guard.
 - **~~Collateral gap (v13 active)~~ → RESOLVED by Phase 120 (2026-06-19).** Browser route-tour evidence, bounded manifests, advisory native collateral capture, and troubleshooting shipped; live native simulator/emulator quality remains advisory and environment-dependent.
-- **Runtime contract drift (candidate v14):** `Crosswake.Bridge.Contract` defaults to `1.1.0`, while manifest compatibility, example bridge payloads, route-tour proof, and native proof paths still commonly use `1.0.0`. Native bridge code requires exact version equality, so this can deny otherwise valid bounded-bridge requests until one canonical source drives all surfaces.
-- **Reusable native package proof depth (candidate v14):** Published iOS/Android shell-core packages exist, but package-level behavioral tests are thin compared with checked-in host integration proof. Move or duplicate activation and bridge behavior proof into the packages before widening native claims.
-- **Root requirements file absent at milestone boundary:** `.planning/REQUIREMENTS.md` is currently absent while archived requirements mention it as the current requirements path. The next `/gsd-new-milestone` run should recreate active requirements from shipped v13 state rather than hand-editing requirements here.
+- **Runtime contract drift (v14 active — Phase 121):** `Crosswake.Bridge.Contract` defaults to `1.1.0`, while manifest compatibility, example bridge payloads, route-tour proof, and native proof paths still commonly use `1.0.0`. Native bridge code requires exact version equality, so this can deny otherwise valid bounded-bridge requests until one canonical source drives all surfaces.
+- **Reusable native package proof depth (v14 active — Phase 123):** Published iOS/Android shell-core packages exist, but package-level behavioral tests are thin compared with checked-in host integration proof. Move or duplicate activation and bridge behavior proof into the packages before widening native claims.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** The splitsh-lite 404 failed before the iOS push step, so the 0.1.2 mirror was completed out-of-band via `git subtree split`. The token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
-- **Branch-protection toggle (watch, Phase 114).** Registering `merge-blocking-offline-sync-e2e` as a required status check requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 114 ships the scripted/documented path; if toggle fails CI, the `script/register-e2e-gate.sh` carries the exact command. Must run green on `main` at least once before registration.
+- **Branch-protection toggle (watch, Phase 122).** Registering new contract-version drift checks as required status checks requires a `gh api ... PATCH`. Historical constraint: this has been harness-blocked in this environment (human step). Phase 122 ships the scripted/documented path matching the v12.0 pattern.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | v8.0 gap | Phase 81 verification gap (human_needed, carried from v5.1) | Acknowledged | v8.0 close |
-| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until after v13 adopter-confidence proof unless required for evidence visibility | v8.0 close |
-| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred until after v13 adopter-confidence proof; valuable but narrower and higher-cost than proof-path trust | v8.0 close |
+| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until after v14 runtime contract confidence | v8.0 close |
+| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred until after v14 runtime contract confidence | v8.0 close |
 | v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
@@ -127,10 +135,10 @@ Full decision log in PROJECT.md (Key Decisions). v12.0 milestone decisions archi
 
 ## Session Continuity
 
-Last session: 2026-06-19T21:08:09.398Z
-Stopped at: v13.0 milestone complete after Phase 120 verification
-Resume file: .planning/phases/120-collateral-artifact-ci-and-troubleshooting/120-VERIFICATION.md
+Last session: 2026-06-20
+Stopped at: v14.0 roadmap created (ROADMAP.md, REQUIREMENTS.md traceability, STATE.md updated)
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd-plan-phase 121` to plan Phase 121: Canonical Contract Source
