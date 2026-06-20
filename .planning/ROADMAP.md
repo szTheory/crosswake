@@ -126,9 +126,13 @@ Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
   4. The drift checks are registered in the merge-blocking CI aggregator; a registration script is committed that documents the branch-protection PATCH step (matching the v12.0 pattern of script + document, not auto-toggle).
 
 **Plans**: 3 plans
+**Wave 1**
 
 - [ ] 122-01-PLAN.md — GUARD-01 parse-based ExUnit drift test over all committed contract surfaces + anti-vacuous synthetic regressions
 - [ ] 122-02-PLAN.md — GUARD-03 contract_version_parity read-only doctor check (sibling to generator_coordinate_parity) + tests
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 122-03-PLAN.md — GUARD-02 generate-and-diff + GUARD-04 contract-drift-gate.yml (two hermetic jobs + alls-green aggregator) and register-contract-gate.sh
 
 ### Phase 123: Native Package Behavioral Proof
