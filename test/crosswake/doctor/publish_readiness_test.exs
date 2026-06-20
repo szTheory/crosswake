@@ -138,6 +138,80 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.contract."))
   end
 
+  test "contract version parity check passes on the real committed tree" do
+    report = readiness_report()
+
+    check = find_check!(report, :contract_version_parity)
+
+    refute check.blocking,
+           "contract_version_parity should not be blocking on the real tree (all surfaces should carry #{Crosswake.Bridge.Contract.version()})"
+
+    assert check.result == :pass
+    assert check.severity == :advisory
+    assert check.proof_class == :merge_blocking
+    assert check.details.version == Crosswake.Bridge.Contract.version()
+    assert check.details.errors == []
+  end
+
+  test "contract version parity blocks when an ios manifest carries wrong bridge_protocol_version" do
+    target = tmp_dir!("crosswake-contract-version-parity")
+    expected = Crosswake.Bridge.Contract.version()
+
+    # Seed the iOS manifest with a wrong bridge_protocol_version under the
+    # "compatibility" key — this mirrors how the real manifests store the field
+    # (nested, not at the JSON document root).
+    ios_manifest_rel = "examples/ios_shell_host/Fixtures/crosswake_manifest.json"
+    android_manifest_rel = "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+    ios_activation_rel = "examples/ios_shell_host/Fixtures/route_activation.json"
+    android_activation_rel = "examples/android_shell_host/app/src/main/assets/route_activation.json"
+    vectors_rel = "test/fixtures/bridge_contract_vectors.json"
+
+    ios_manifest = Path.join(target, ios_manifest_rel)
+    android_manifest = Path.join(target, android_manifest_rel)
+    ios_activation = Path.join(target, ios_activation_rel)
+    android_activation = Path.join(target, android_activation_rel)
+    vectors = Path.join(target, vectors_rel)
+
+    File.mkdir_p!(Path.dirname(ios_manifest))
+    File.mkdir_p!(Path.dirname(android_manifest))
+    File.mkdir_p!(Path.dirname(ios_activation))
+    File.mkdir_p!(Path.dirname(android_activation))
+    File.mkdir_p!(Path.dirname(vectors))
+
+    # Seed ios manifest with WRONG version (nested under "compatibility")
+    File.write!(ios_manifest, Jason.encode!(%{
+      "compatibility" => %{"bridge_protocol_version" => "0.9.0"}
+    }))
+
+    # Seed the remaining four surfaces with the CORRECT version so only the
+    # iOS manifest drifts — proving the check names the exact drifted surface.
+    File.write!(android_manifest, Jason.encode!(%{
+      "compatibility" => %{"bridge_protocol_version" => expected}
+    }))
+
+    # Generated JSONs carry bridge_protocol_version at the document root.
+    File.write!(ios_activation, Jason.encode!(%{"bridge_protocol_version" => expected}))
+    File.write!(android_activation, Jason.encode!(%{"bridge_protocol_version" => expected}))
+    File.write!(vectors, Jason.encode!(%{"bridge_protocol_version" => expected}))
+
+    report =
+      readiness_report(
+        cwd: target,
+        changelog_contents: File.read!("CHANGELOG.md")
+      )
+
+    check = find_check!(report, :contract_version_parity)
+
+    assert check.blocking, "contract_version_parity must block on drift"
+    assert check.result == :fail
+    assert check.severity == :error
+    assert check.proof_class == :merge_blocking
+    assert check.details.version == expected
+
+    assert Enum.any?(check.details.errors, &String.contains?(&1, ios_manifest_rel)),
+           "errors must name the drifted iOS manifest; got: #{inspect(check.details.errors)}"
+  end
+
   test "generator coordinate parity blocks stale or local native dependency coordinates" do
     target = tmp_dir!("crosswake-publish-readiness")
 

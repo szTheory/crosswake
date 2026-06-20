@@ -569,7 +569,10 @@
           "guides/native_shell.md",
           "guides/android_uat.md",
           "guides/packs.md",
-          "guides/threadline.md"
+          "guides/threadline.md",
+          "guides/route_policy.md",
+          "guides/troubleshooting.md",
+          "guides/web_to_mobile_migration.md"
         ],
         "missing_docs_extras": [],
         "missing_files": []
@@ -644,17 +647,46 @@
       },
       "result": "pass",
       "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "contract_version_parity",
+      "claim_scope": "Contract version parity across committed surfaces",
+      "code": "diag.contract.version_parity_ok",
+      "details": {
+        "errors": [],
+        "surfaces": [
+          "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+          "examples/android_shell_host/app/src/main/assets/route_activation.json",
+          "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+          "examples/ios_shell_host/Fixtures/route_activation.json",
+          "test/fixtures/bridge_contract_vectors.json"
+        ],
+        "version": "1.1.0"
+      },
+      "docs_reference": "guides/compatibility.md",
+      "hint": "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
+      "id": "contract.version_parity",
+      "message": "all committed contract surfaces carry bridge_protocol_version 1.1.0",
+      "proof_class": "merge_blocking",
+      "rebuild_requirement": {
+        "companion_required": false,
+        "native_required": false,
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
     }
   ],
   "schema_version": "1.0.0",
   "status": "ready",
   "summary": {
-    "advisory_count": 4,
+    "advisory_count": 5,
     "advisory_result_count": 1,
     "blocking_count": 0,
     "error_count": 0,
-    "pass_count": 4,
-    "total_count": 9,
+    "pass_count": 5,
+    "total_count": 10,
     "verification_required_count": 4,
     "warning_count": 5
   }
