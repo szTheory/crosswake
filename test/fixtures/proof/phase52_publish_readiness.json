@@ -555,6 +555,9 @@
           "CHANGELOG.md",
           "LICENSE",
           "guides/install.md",
+          "guides/route_policy.md",
+          "guides/web_to_mobile_migration.md",
+          "guides/troubleshooting.md",
           "guides/support_matrix.md",
           "guides/adopter_profiles.md",
           "guides/adoption.md",
@@ -569,10 +572,7 @@
           "guides/native_shell.md",
           "guides/android_uat.md",
           "guides/packs.md",
-          "guides/threadline.md",
-          "guides/route_policy.md",
-          "guides/troubleshooting.md",
-          "guides/web_to_mobile_migration.md"
+          "guides/threadline.md"
         ],
         "missing_docs_extras": [],
         "missing_files": []
@@ -656,10 +656,10 @@
       "details": {
         "errors": [],
         "surfaces": [
-          "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
-          "examples/android_shell_host/app/src/main/assets/route_activation.json",
           "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+          "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
           "examples/ios_shell_host/Fixtures/route_activation.json",
+          "examples/android_shell_host/app/src/main/assets/route_activation.json",
           "test/fixtures/bridge_contract_vectors.json"
         ],
         "version": "1.1.0"
@@ -676,17 +676,76 @@
       },
       "result": "pass",
       "severity": "advisory"
+    },
+    {
+      "blocking": false,
+      "category": "compatibility_rebuild_guidance",
+      "claim_scope": "Compatibility rebuild guidance for adopters",
+      "code": "diag.compat.rebuild_guidance_baseline",
+      "details": {
+        "active_action_sequence": [
+          "Regenerate shell via mix crosswake.gen.shell",
+          "Rebuild native app",
+          "Resubmit to App Store / Play Store",
+          "Coordinated deploy with updated Hex package"
+        ],
+        "change_class_guidance": {
+          "compatibility-bump only": [
+            "Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures."
+          ],
+          "core-only/no native rebuild": [
+            "Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells."
+          ],
+          "docs-only": [
+            "Read the updated guidance and rerun docs integrity only."
+          ],
+          "native or companion rebuild required": [
+            "Regenerate shell via mix crosswake.gen.shell",
+            "Rebuild native app",
+            "Resubmit to App Store / Play Store",
+            "Coordinated deploy with updated Hex package"
+          ]
+        },
+        "denial_vocabulary": [
+          "compatibility_mismatch",
+          "undeclared_capability",
+          "unavailable_capability",
+          "commerce_corridor",
+          "origin_denied",
+          "inactive_route",
+          "external_entry_denied",
+          "pack_incompatible",
+          "gate_denied",
+          "kill_switch_active",
+          "step_up_required",
+          "notification_open_denied"
+        ],
+        "detected_drift_errors": [],
+        "docs_reference": "guides/compatibility.md"
+      },
+      "docs_reference": "guides/compatibility.md",
+      "hint": "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. Denial codes that may surface if you skip a rebuild step: compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied. See guides/compatibility.md for the full rebuild decision table.",
+      "id": "compat.rebuild_guidance",
+      "message": "Compatibility rebuild guidance: no committed-surface drift detected. Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. If a rebuild is needed, run: mix crosswake.contract.gen. Then: 1) Regenerate shell via mix crosswake.gen.shell 2) Rebuild native app 3) Resubmit to App Store / Play Store 4) Coordinated deploy with updated Hex package.",
+      "proof_class": "advisory",
+      "rebuild_requirement": {
+        "companion_required": false,
+        "native_required": false,
+        "reasons": []
+      },
+      "result": "pass",
+      "severity": "advisory"
     }
   ],
   "schema_version": "1.0.0",
   "status": "ready",
   "summary": {
-    "advisory_count": 5,
+    "advisory_count": 6,
     "advisory_result_count": 1,
     "blocking_count": 0,
     "error_count": 0,
-    "pass_count": 5,
-    "total_count": 10,
+    "pass_count": 6,
+    "total_count": 11,
     "verification_required_count": 4,
     "warning_count": 5
   }
