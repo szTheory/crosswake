@@ -2,17 +2,15 @@
 gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
-current_phase: 122
 status: executing
 stopped_at: Phase 122 context gathered
-last_updated: "2026-06-20T18:09:11.892Z"
+last_updated: "2026-06-20T18:24:11.894Z"
 last_activity: 2026-06-20
-last_activity_desc: Phase 122 planning complete
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 25
 ---
 
@@ -23,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-20)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 122 — drift guards
+**Current focus:** Phase 122 — drift-guards
 
 ## Current Position
 
-Phase: 122
-Plan: Not started
+Phase: 122 (drift-guards) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-20 — Phase 122 planning complete
+Last activity: 2026-06-20
 
 ```
-Progress: [██████████] 100%
+Progress: [███████░░░] 71%
 ```
 
 ## Performance Metrics
@@ -98,6 +96,7 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: 121-01: Deliberate deny test fixtures retain bridge_protocol_version '1.0.0' — route_findings pipeline order (bridge step 4, pack step 6) ensures pack denial surfaces as primary via List.first
 - [Phase 121]: 121-03: Replace ?: "1.0.0" silent default with kotlin error() at ActivationCoordinator.kt:594; ShellManifest.nativeRuntimeVersion stays non-nullable String (CANON-05 / D-08)
 - [Phase ?]: 121-02: Sorted-pairs-to-map for deterministic JSON; write_if_changed for idempotent writes; docs/_contract_snippet.md path; seed vector IDs vec-001/002/003
+- [Phase ?]: GUARD-01 reads compatibility[bridge_protocol_version] from manifests via Jason.decode; two compare helpers keep failure categories distinct
 
 ### Pending Todos
 
@@ -143,12 +142,13 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 121 P01 | 1007 | 3 tasks | 8 files |
 | Phase 121 P02 | 4m | - tasks | - files |
 | Phase 121 P04 | 3m | 3 tasks | 4 files |
+| Phase 122 P01 | 3m | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T16:33:44.110Z
+Last session: 2026-06-20T18:24:04.289Z
 Stopped at: Phase 122 context gathered
-Resume file: .planning/phases/122-drift-guards/122-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 
