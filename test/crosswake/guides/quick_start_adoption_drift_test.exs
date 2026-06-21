@@ -3,7 +3,7 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
 
   @quick_start_path "examples/QUICK_START.md"
   @adoption_path "guides/adoption.md"
-  @phoenix_config_path "examples/phoenix_host/config/config.exs"
+  @phoenix_config_path "examples/phoenix_host/config/runtime.exs"
   @playwright_config_path "examples/phoenix_host/playwright.config.ts"
   @phoenix_mix_path "examples/phoenix_host/mix.exs"
 
