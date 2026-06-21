@@ -74,13 +74,30 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmap) | | |
+| DOCKER-01 | Phase 125 | Pending |
+| DOCKER-02 | Phase 125 | Pending |
+| DOCKER-03 | Phase 125 | Pending |
+| DOCKER-04 | Phase 125 | Pending |
+| DOCKER-05 | Phase 125 | Pending |
+| PORT-01 | Phase 125 | Pending |
+| PORT-02 | Phase 125 | Pending |
+| PORT-03 | Phase 125 | Pending |
+| NDEV-01 | Phase 126 | Pending |
+| NDEV-02 | Phase 126 | Pending |
+| NDEV-03 | Phase 126 | Pending |
+| LAUNCH-01 | Phase 127 | Pending |
+| LAUNCH-02 | Phase 127 | Pending |
+| COLL-01 | Phase 128 | Pending |
+| COLL-02 | Phase 128 | Pending |
+| DOCS-01 | Phase 128 | Pending |
+| DOCS-02 | Phase 128 | Pending |
+| DOCS-03 | Phase 128 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: (populated by roadmap)
-- Unmapped: (populated by roadmap)
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-21*
-*Last updated: 2026-06-21 after initial definition*
+*Last updated: 2026-06-21 — traceability populated during roadmap creation*
