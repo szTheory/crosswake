@@ -189,6 +189,10 @@ Plans:
 - [x] 124-04-PLAN.md — Doctor advisory `compatibility_rebuild_guidance` check + `action_sequence_for/1` + shared parity detector (COMPAT-04)
 - [x] 124-05-PLAN.md — CHANGELOG `### Upgrade Impact` labels + CONTRIBUTING intent-gate + `release_boundaries_test` asserts (COMPAT-05)
 
+**Gap Closure** *(COMPAT-01 blockers from 124-VERIFICATION.md)*
+
+- [ ] 124-06-PLAN.md — Floor native capability axis (iOS + Android), add iOS ActivationCoordinator native-runtime gate, make capability conformance vectors discriminating + remove phantom manifest_schema vectors (COMPAT-01 gaps)
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
