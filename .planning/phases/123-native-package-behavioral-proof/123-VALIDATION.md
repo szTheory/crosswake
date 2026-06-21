@@ -1,10 +1,11 @@
 ---
 phase: 123
 slug: native-package-behavioral-proof
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-20
+validated: 2026-06-21
 ---
 
 # Phase 123 — Validation Strategy
@@ -38,11 +39,11 @@ created: 2026-06-20
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 123-01-* | 01 | 1 | NTEST-01 | — | Expanded vectors authored by gen task only; version bump → stale fixture (GUARD-01/02) | unit | `mix test test/crosswake/bridge/bridge_behavioral_vector_test.exs` | ❌ W0 | ⬜ pending |
-| 123-01-* | 01 | 1 | NTEST-01 | — | Gen emits byte-identical iOS + Android copies (GUARD-02 diffs them) | command | `mix crosswake.contract.gen && git diff --exit-code` | ❌ W0 | ⬜ pending |
-| 123-02-* | 02 | 2 | NTEST-02 | — | iOS 6 behaviors deny/allow with reason loaded from vectors JSON, no sim | unit (XCTest) | `swift test` | ❌ W0 | ⬜ pending |
-| 123-03-* | 03 | 2 | NTEST-03 | — | Android 6 behaviors deny/allow with reason loaded from classpath JSON, no emulator | unit (JUnit 4) | `./gradlew test` | ❌ W0 | ⬜ pending |
-| 123-04-* | 04 | 3 | NTEST-04 | — | Android lane merge-blocking; Swift lane advisory; aggregator needs Android only | CI gate | CI push + `script/register-native-gate.sh` (documented PATCH) | ❌ W0 | ⬜ pending |
+| 123-01-* | 01 | 1 | NTEST-01 | — | Expanded vectors authored by gen task only; version bump → stale fixture (GUARD-01/02) | unit | `mix test test/crosswake/bridge/bridge_behavioral_vector_test.exs` | ✅ | ✅ green |
+| 123-01-* | 01 | 1 | NTEST-01 | — | Gen emits byte-identical iOS + Android copies (GUARD-02 diffs them) | command | `mix crosswake.contract.gen && git diff --exit-code` | ✅ | ✅ green |
+| 123-02-* | 02 | 2 | NTEST-02 | — | iOS 6 behaviors deny/allow with reason loaded from vectors JSON, no sim | unit (XCTest) | `swift test` | ✅ | ✅ green |
+| 123-03-* | 03 | 2 | NTEST-03 | — | Android 6 behaviors deny/allow with reason loaded from classpath JSON, no emulator | unit (JUnit 4) | `./gradlew testDebugUnitTest` | ✅ | ✅ green |
+| 123-04-* | 04 | 3 | NTEST-04 | — | Android lane merge-blocking; Swift lane advisory; aggregator needs Android only | CI gate | CI push + `script/register-native-gate.sh` (documented PATCH) | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,17 +53,17 @@ created: 2026-06-20
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/bridge/bridge_behavioral_vector_test.exs` — Elixir behavioral vector test driving `Crosswake.Compatibility.bridge_findings/2` (NTEST-01)
-- [ ] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/` — directory must exist before gen task writes the copy
-- [ ] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift` — Swift bridge vector tests (NTEST-02)
-- [ ] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/ActivationConformanceTests.swift` — Swift activation tests (NTEST-02)
-- [ ] Replace corrupted `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/CrosswakeShellCoreTests.swift` (D-12) — must compile before any `swift test`
-- [ ] `packages/crosswake-shell-core-android/src/test/resources/` — directory must exist before gen task writes the copy
-- [ ] `packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt` — Android bridge tests (NTEST-03)
-- [ ] `packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/ActivationConformanceTest.kt` — Android activation tests (NTEST-03)
-- [ ] `kotlinx-coroutines-test:1.7.3` added to `build.gradle.kts` (only if an async path is tested; `runTest`, never `runBlocking`)
-- [ ] `.github/workflows/native-behavioral-proof-gate.yml` — CI gate (NTEST-04)
-- [ ] `script/register-native-gate.sh` — registration script (NTEST-04)
+- [x] `test/crosswake/bridge/bridge_behavioral_vector_test.exs` — Elixir behavioral vector test driving `Crosswake.Compatibility.bridge_findings/2` (NTEST-01)
+- [x] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/` — directory exists; holds byte-identical gen-emitted copy
+- [x] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift` — Swift bridge vector tests (NTEST-02)
+- [x] `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/ActivationConformanceTests.swift` — Swift activation tests (NTEST-02)
+- [x] Replace corrupted `packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/CrosswakeShellCoreTests.swift` (D-12) — replaced; suite compiles + `swift test` green
+- [x] `packages/crosswake-shell-core-android/src/test/resources/` — directory exists; holds byte-identical gen-emitted copy
+- [x] `packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt` — Android bridge tests (NTEST-03)
+- [x] `packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/ActivationConformanceTest.kt` — Android activation tests (NTEST-03)
+- [~] `kotlinx-coroutines-test:1.7.3` — N/A: no async path tested, so correctly absent (`org.json:json` is the added test dep; no `runBlocking`)
+- [x] `.github/workflows/native-behavioral-proof-gate.yml` — CI gate (NTEST-04)
+- [x] `script/register-native-gate.sh` — registration script (NTEST-04)
 
 Framework install: NOT needed (ExUnit, XCTest, JUnit 4 already present). Version-field "bump fails Elixir" property is ALREADY owned by Phase 122 GUARD-01 — do not duplicate.
 
@@ -79,11 +80,35 @@ Framework install: NOT needed (ExUnit, XCTest, JUnit 4 already present). Version
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** validated 2026-06-21
+
+---
+
+## Validation Audit 2026-06-21
+
+Retroactive Nyquist audit (`/gsd-validate-phase 123`). The draft VALIDATION.md predated execution (all rows ⬜ pending, `nyquist_compliant: false`); the phase shipped 12/12 (see 123-VERIFICATION.md). This audit re-ran every suite against the **current** fixture — note the canonical `bridge_contract_vectors.json` has since grown from 7 → **15 vectors** (`bridge_protocol_version=1.1.0`, expanded by phase 124); all three test-resource copies remain byte-identical, and the data-driven suites exercise all 15 without code changes.
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Audit re-run results (this machine, 2026-06-21):**
+
+| Requirement | Command | Result |
+|-------------|---------|--------|
+| NTEST-01 | `mix test test/crosswake/bridge/bridge_behavioral_vector_test.exs` | ✅ 1 test, 0 failures (anti-vacuous loop over all 15 vectors via real `bridge_findings/2`) |
+| NTEST-01 | `diff` iOS + Android copies vs root fixture | ✅ byte-identical (0 diff) |
+| NTEST-02 | `swift test` (in `packages/crosswake-shell-core-ios/`) | ✅ 6 tests, 0 failures (no simulator) |
+| NTEST-03 | `./gradlew testDebugUnitTest` (`JAVA_HOME=openjdk@17`, in `packages/crosswake-shell-core-android/`) | ✅ 9 tests, 0 failures (no emulator) |
+| NTEST-04 | CI gate yaml + register script present, aggregator topology wired (Android-only `needs:`) | ✅ CI-enforced; branch-protection PATCH remains documented manual-only |
+
+No test generation or auditor spawn was required — all requirements already had automated verification running green. The only defect was the stale draft document, now reconciled.
