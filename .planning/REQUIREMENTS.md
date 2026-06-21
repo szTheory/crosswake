@@ -1,4 +1,4 @@
-# Requirements: Crosswake — v15.0 See It Run
+# Requirements: Crosswake — v15.0 See It Run — Experiential First-Run DX
 
 **Defined:** 2026-06-21
 **Core Value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
