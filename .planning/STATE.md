@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v14.0
-milestone_name: Runtime Contract Confidence
-current_phase: 0
-status: Awaiting next milestone
-stopped_at: Milestone v14.0 archived
-last_updated: "2026-06-21T18:33:26.028Z"
+milestone: v15.0
+milestone_name: See It Run
+status: planning
+last_updated: "2026-06-21T20:21:40.974Z"
 last_activity: 2026-06-21
-last_activity_desc: Milestone v14.0 completed and archived
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
-current_phase_name: —
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 ## Current Position
 
-Phase: Milestone v14.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-21 — Milestone v14.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-21 — Milestone v15.0 started
 
 ## Performance Metrics
 

@@ -81,9 +81,19 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Archive:** `.planning/milestones/v14.0-ROADMAP.md`, `.planning/milestones/v14.0-REQUIREMENTS.md`, and `.planning/milestones/v14.0-MILESTONE-AUDIT.md`.
 
-## Next Milestone
+## Current Milestone: v15.0 See It Run — Experiential First-Run DX
 
-**To be defined** via `/gsd-new-milestone`. Candidate threads deferred behind the v14.0 runtime-contract wedge: native runtime evidence and generated-shell lifecycle hardening (LIFE-01/02), targeted offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, and future capability/commerce breadth.
+**Goal:** Make it trivial and delightful for a newcomer to boot the web, iOS-simulator, and Android-emulator versions of Crosswake against one shared backend and compare them side by side — with a one-command Dockerized backend, no micro-dep management, no port collisions with other OSS lib demos, fast rebuilds (no dep re-downloads on style changes), additive native dev-wiring that leaves the public-coordinate proof artifacts intact, committed visual collateral, a printed URL/route launch banner, and a reader-empathy guide.
+
+**Target features:**
+- One-command containerized shared backend (`docker compose up`) with cached deps, polling live-reload, and SQLite in a named volume; native `mix` path still supported.
+- A static per-lib port convention (Crosswake = 4700) reachable by all three runtimes, plus a reusable PORT-REGISTRY for the maintainer's other libs.
+- Additive iOS `Dev` scheme + Android `dev` flavor pointing at the local backend without modifying the checked-in proof fixtures/assets.
+- A friendly launch entrypoint (`bin/see-it-run.sh`) that boots the backend, advisorily boots sim/emulator when tooling is present, and prints a brand-voiced URL/route/next-command banner with an honest "what's proven / what needs a native build" block.
+- Committed three-runtime screenshots + a short screen recording (honestly labeled advisory native evidence).
+- A new `guides/see_it_run.md` (gameplan-at-top, JTBD-driven), routed from README/QUICK_START and guarded by doc-contract tests.
+
+**Key context:** Deferred behind the v15.0 DX wedge — native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth. Brand source of truth is `brandbook/BRAND-SPEC.md` (v9.0) + `priv/static/crosswake/tokens.css`. Phase numbering continues from v14.0 (phases 125+).
 
 ## Requirements
 
@@ -164,7 +174,16 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-- **Next milestone — to be defined** via `/gsd-new-milestone`. Deferred candidates: native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth.
+**v15.0 See It Run — Experiential First-Run DX** (in progress; full scope in `.planning/REQUIREMENTS.md`):
+
+- [ ] **DOCKER-01..05**: One-command containerized shared backend with cached-deps multi-stage Dockerfile, in-container polling live-reload, SQLite in a named volume, and a lean `.dockerignore`; native `mix` path preserved.
+- [ ] **PORT-01..03**: Stable per-lib port (Crosswake = 4700) via `COMPOSE_PROJECT_NAME` + committed `.env`, reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`), plus a reusable PORT-REGISTRY convention.
+- [ ] **NDEV-01..03**: Additive iOS `Dev` scheme + Android `dev` flavor wired to the local backend without modifying the checked-in public-coordinate proof fixtures/assets.
+- [ ] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) that boots the backend, prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, and advisorily boots sim/emulator.
+- [ ] **COLL-01..02**: Committed three-runtime screenshots + a short screen recording, honestly labeled.
+- [ ] **DOCS-01..03**: `guides/see_it_run.md` (reader-empathy, gameplan-at-top) routed from README/QUICK_START and guarded by doc-contract tests.
+
+Deferred behind this wedge: native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth.
 
 ### Out of Scope
 
@@ -258,4 +277,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-21 after v14.0 Runtime Contract Confidence milestone*
+*Last updated: 2026-06-21 after starting v15.0 See It Run milestone*
