@@ -105,51 +105,65 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 ## Phase Details
 
 ### Phase 125: Containerized Shared Backend + Port Convention
+
 **Goal**: A developer can boot the shared Crosswake demo backend with one command and reach it reliably from all three runtimes, with no port collisions and fast iteration loops
 **Depends on**: Nothing (first phase of v15.0)
 **Requirements**: DOCKER-01, DOCKER-02, DOCKER-03, DOCKER-04, DOCKER-05, PORT-01, PORT-02, PORT-03
 **Success Criteria** (what must be TRUE):
+
   1. Running `docker compose up` from a clean checkout (no local Elixir/Node/SQLite) boots the demo backend and serves the app at `http://localhost:4700`
   2. Editing application code or styles in the bind-mounted source triggers a live-reload in the container without re-downloading or re-recompiling deps (only dep-layer changes trigger dep rebuild)
   3. The SQLite database persists across container restarts (named volume, not a macOS bind-mount) and is auto-seeded on first boot; `mix phx.server` on port 4700 works as a documented alternative
   4. The Docker build context is lean: a `.dockerignore` excludes `_build`, `deps`, `node_modules`, `priv/static`, `.git`, `.planning`, `.claude`, and evidence artifacts
   5. A committed `examples/phoenix_host/.env` (with `COMPOSE_PROJECT_NAME=crosswake` and `PORT=4700`) and `docs/PORT-REGISTRY.md` mean the port never collides with other concurrently running OSS lib demos, and Android emulator can reach the backend at `10.0.2.2:4700`
-**Plans**: 3 plans
+
+**Plans**: 2/3 plans executed
+
 - [x] 125-01-PLAN.md — Config split (config/dev/runtime), 4002→4700 port migration, live_reload dep + endpoint plugs, committed .env, drift-test redirect (Wave 1)
-- [ ] 125-02-PLAN.md — Multi-stage Dockerfile + idempotent entrypoint, lean .dockerignore, docker-compose with named volumes + 4700 mapping (Wave 2)
+- [x] 125-02-PLAN.md — Multi-stage Dockerfile + idempotent entrypoint, lean .dockerignore, docker-compose with named volumes + 4700 mapping (Wave 2)
 - [ ] 125-03-PLAN.md — docs/PORT-REGISTRY.md + source-derived drift test + QUICK_START 4700 migration & Docker path (Wave 2)
+
 **UI hint**: yes
 
 ### Phase 126: Additive Native Dev Wiring
+
 **Goal**: iOS and Android native hosts can load Crosswake routes from the local shared backend without any modification to the checked-in public-coordinate proof fixtures or assets
 **Depends on**: Phase 125
 **Requirements**: NDEV-01, NDEV-02, NDEV-03
 **Success Criteria** (what must be TRUE):
+
   1. An iOS developer can select the `Dev` scheme in Xcode and run the simulator against `http://localhost:4700`; the `Info-Dev.plist` permits cleartext ATS for localhost; the checked-in `Info.plist` and proof fixture files are untouched
   2. An Android developer can run the `dev` flavor Gradle build and the emulator reaches `http://10.0.2.2:4700`; the network-security config permitting cleartext for `10.0.2.2` is additive; the checked-in prod proof assets are untouched
   3. The repo README or NDEV docs surface exact CLI commands (`xcodebuild -scheme Dev`, `./gradlew installDev`, etc.) a newcomer can copy-paste to launch each native runtime against the local backend
+
 **Plans**: TBD
 
 ### Phase 127: Launch Orchestration + Banner
+
 **Goal**: A newcomer can run one command that boots the shared backend, reads a human-voiced banner telling them exactly what is running and what to do next, and optionally watches their sim/emulator launch automatically
 **Depends on**: Phase 125
 **Requirements**: LAUNCH-01, LAUNCH-02
 **Success Criteria** (what must be TRUE):
+
   1. Running `bin/see-it-run.sh` (or `mix crosswake.demo`) from the repo root boots the Docker backend (or uses the already-running container) and prints a plain-ASCII brand-voiced banner listing the served URL, key routes, and the exact next command for each runtime (web, iOS sim, Android emulator)
   2. The banner includes an honest "What's proven / What needs a native build" block — a first-run reader can tell immediately what runs deterministically vs. what requires Xcode/SDK setup
   3. When the iOS/Android toolchain is present, the script advisorily launches the simulator/emulator; when the toolchain is absent, it prints a clear and calm guidance message (not an opaque stack trace or silent skip)
+
 **Plans**: TBD
 
 ### Phase 128: Collateral + "See It Run" Guide
+
 **Goal**: A prospective adopter can see all three runtimes running against one shared backend in committed screenshots and a screen recording, and can follow a reader-empathy guide from README through Docker boot to first native comparison
 **Depends on**: Phase 125, Phase 126, Phase 127
 **Requirements**: COLL-01, COLL-02, DOCS-01, DOCS-02, DOCS-03
 **Success Criteria** (what must be TRUE):
+
   1. The repo contains committed screenshots of the web, iOS simulator, and Android emulator views running against the shared backend — each file is honestly labeled as advisory native evidence (simulator/emulator, not device)
   2. A short screen recording of the three-runtime comparison is captured, committed or linked from the docs, and referenced in the README so a reader landing on the repo can immediately see the DX in action
   3. A new `guides/see_it_run.md` exists with a gameplan summary at the top, JTBD-driven sections, and links to (not duplicates of) `examples/QUICK_START.md`; it is listed in the ExDoc "Start" group after README
   4. README and `examples/QUICK_START.md` both route readers to `guides/see_it_run.md` and the one-command Docker path without overclaiming native support (support labels are honest)
   5. Guide truth (ports, routes, exact commands) is guarded by at least one `test/crosswake/guides/see_it_run_test.exs` doc-contract test derived from source, consistent with the existing guide-test culture
+
 **Plans**: TBD
 **UI hint**: yes
 
@@ -183,7 +197,7 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 | 122. Drift Guards | v14.0 | 3/3 | Complete | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete | 2026-06-20 |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 6/6 | Complete | 2026-06-21 |
-| 125. Containerized Shared Backend + Port Convention | v15.0 | 1/3 | In Progress|  |
+| 125. Containerized Shared Backend + Port Convention | v15.0 | 2/3 | In Progress|  |
 | 126. Additive Native Dev Wiring | v15.0 | 0/TBD | Not started | - |
 | 127. Launch Orchestration + Banner | v15.0 | 0/TBD | Not started | - |
 | 128. Collateral + "See It Run" Guide | v15.0 | 0/TBD | Not started | - |

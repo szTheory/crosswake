@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
+current_phase: 125
+current_phase_name: containerized-shared-backend-port-convention
 status: executing
-stopped_at: Phase 125 context gathered
-last_updated: "2026-06-21T21:06:07.744Z"
+stopped_at: Completed 125-02-PLAN.md
+last_updated: "2026-06-21T21:12:13.700Z"
 last_activity: 2026-06-21
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 ## Current Position
 
 Phase: 125 (containerized-shared-backend-port-convention) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-21
 
@@ -62,6 +64,10 @@ Phase 125 [░░░░░] Phase 126 [░░░░░] Phase 127 [░░░░�
 ### Decisions
 
 Full decision log in PROJECT.md (Key Decisions).
+
+- [Phase ?]: hexpm/elixir Debian bookworm-slim base (glibc) required for ecto_sqlite3 NIF; Alpine/musl unsafe
+- [Phase ?]: Plain unconditional re-seed in entrypoint — seeds.exs is delete_all + insert, inherently idempotent
+- [Phase ?]: docker-compose.yml collocated in examples/phoenix_host/ so build: . and .:/app bind-mount align with .dockerignore
 
 ### Pending Todos
 
@@ -99,11 +105,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | v15.0 future | NTV-01: native disk storage budgets | Deferred behind v15.0 DX wedge | v15.0 scope |
 | v15.0 future | Companion package extraction (Sigra/Chimeway/Rindle/Threadline) | Deferred behind v15.0 DX wedge | v15.0 scope |
 | Phase 125 P01 | 5m | 3 tasks | 8 files |
+| Phase 125 P02 | 4m | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-21T21:06:07.740Z
-Stopped at: Phase 125 context gathered
+Last session: 2026-06-21T21:12:13.694Z
+Stopped at: Completed 125-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

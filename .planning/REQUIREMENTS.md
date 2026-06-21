@@ -10,11 +10,11 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### DOCKER — Containerized shared backend
 
-- [ ] **DOCKER-01**: A developer can boot the full shared demo backend with one command (`docker compose up`) from a clean checkout, with no local Elixir/Erlang/Node/SQLite toolchain required.
-- [ ] **DOCKER-02**: The demo Dockerfile is multi-stage and layer-ordered so that editing application or style code does not re-download or re-compile dependencies (deps are keyed on `mix.exs`/`mix.lock` only).
-- [ ] **DOCKER-03**: In-container live reload reflects Elixir/HEEx/CSS edits using the Phoenix polling reloader, with source bind-mounted and `deps`/`_build`/`node_modules` in named volumes.
-- [ ] **DOCKER-04**: The demo SQLite database persists in a named volume (never a macOS bind-mount) and is auto-created/seeded on first boot; the native `mix phx.server` path remains supported and documented.
-- [ ] **DOCKER-05**: A `.dockerignore` keeps the build context lean and prevents host/container binary mismatches (excludes `_build`, `deps`, `node_modules`, `priv/static`, `.git`, `.planning`, `.claude`, evidence/artifacts).
+- [x] **DOCKER-01**: A developer can boot the full shared demo backend with one command (`docker compose up`) from a clean checkout, with no local Elixir/Erlang/Node/SQLite toolchain required.
+- [x] **DOCKER-02**: The demo Dockerfile is multi-stage and layer-ordered so that editing application or style code does not re-download or re-compile dependencies (deps are keyed on `mix.exs`/`mix.lock` only).
+- [x] **DOCKER-03**: In-container live reload reflects Elixir/HEEx/CSS edits using the Phoenix polling reloader, with source bind-mounted and `deps`/`_build`/`node_modules` in named volumes.
+- [x] **DOCKER-04**: The demo SQLite database persists in a named volume (never a macOS bind-mount) and is auto-created/seeded on first boot; the native `mix phx.server` path remains supported and documented.
+- [x] **DOCKER-05**: A `.dockerignore` keeps the build context lean and prevents host/container binary mismatches (excludes `_build`, `deps`, `node_modules`, `priv/static`, `.git`, `.planning`, `.claude`, evidence/artifacts).
 
 ### PORT — Conflict-free multi-lib convention
 
@@ -74,11 +74,11 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOCKER-01 | Phase 125 | Pending |
-| DOCKER-02 | Phase 125 | Pending |
-| DOCKER-03 | Phase 125 | Pending |
-| DOCKER-04 | Phase 125 | Pending |
-| DOCKER-05 | Phase 125 | Pending |
+| DOCKER-01 | Phase 125 | Complete |
+| DOCKER-02 | Phase 125 | Complete |
+| DOCKER-03 | Phase 125 | Complete |
+| DOCKER-04 | Phase 125 | Complete |
+| DOCKER-05 | Phase 125 | Complete |
 | PORT-01 | Phase 125 | Complete |
 | PORT-02 | Phase 125 | Complete |
 | PORT-03 | Phase 125 | Pending |
@@ -94,6 +94,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | DOCS-03 | Phase 128 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 18 total
 - Mapped to phases: 18
 - Unmapped: 0
