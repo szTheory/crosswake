@@ -29,18 +29,21 @@ final class ActivationConformanceTests: XCTestCase {
         packs: [String] = [],
         allowlistedOrigins: [String] = ["https://app.example.com"]
     ) -> ShellManifest {
-        ShellManifest(routes: [
-            routeID: ShellManifest.Route(
-                id: routeID,
-                path: "/\(routeID)",
-                runtime: runtime,
-                entry: entry,
-                capabilities: [],
-                packs: packs,
-                transfers: [],
-                allowlistedOrigins: allowlistedOrigins
-            )
-        ])
+        ShellManifest(
+            compatibility: ShellManifest.Compatibility(nativeRuntimeVersion: "1.0.0"),
+            routes: [
+                routeID: ShellManifest.Route(
+                    id: routeID,
+                    path: "/\(routeID)",
+                    runtime: runtime,
+                    entry: entry,
+                    capabilities: [],
+                    packs: packs,
+                    transfers: [],
+                    allowlistedOrigins: allowlistedOrigins
+                )
+            ]
+        )
     }
 
     /// Build an ActivationRequest anchored to the loaded bridgeProtocolVersion.
@@ -100,7 +103,7 @@ final class ActivationConformanceTests: XCTestCase {
 
     func test_activation_denies_inactive_route() {
         // Manifest has no routes — any routeID resolves to inactive
-        let manifest = ShellManifest(routes: [:])
+        let manifest = ShellManifest(compatibility: ShellManifest.Compatibility(nativeRuntimeVersion: "1.0.0"), routes: [:])
         let request = makeRequest(routeID: "nonexistent-route")
         let coordinator = makeCoordinator(manifest: manifest, request: request, packStore: emptyPackStore())
 
