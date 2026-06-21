@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v14.0
 milestone_name: Runtime Contract Confidence
-status: verifying
+current_phase: 124
+current_phase_name: compatibility-semantics-adopter-truth
+status: executing
 stopped_at: Completed 124-04-PLAN.md
-last_updated: "2026-06-20T23:03:19.394Z"
-last_activity: 2026-06-20
+last_updated: "2026-06-21T16:28:59.105Z"
+last_activity: 2026-06-21
+last_activity_desc: Phase 124 execution started
 progress:
   total_phases: 4
   completed_phases: 4
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 17
+  completed_plans: 17
   percent: 100
 ---
 
@@ -25,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-20)
 
 ## Current Position
 
-Phase: 124 (compatibility-semantics-adopter-truth) — VERIFICATION: GAPS FOUND (4/5)
-Plan: 5 of 5
-Status: All 5 plans executed; phase verification found gaps in COMPAT-01 (native capability axis still ==, iOS ActivationCoordinator gate missing, phantom floor vectors). Run /gsd-plan-phase 124 --gaps. See 124-VERIFICATION.md.
-Last activity: 2026-06-20
+Phase: 124 (compatibility-semantics-adopter-truth) — EXECUTING
+Plan: 6 of 6
+Status: Ready to execute
+Last activity: 2026-06-21 — Phase 124 execution started
 
 ```
 Progress: [██████████] 100%
@@ -117,6 +120,9 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 - [Phase ?]: action_sequence_for/1 expands native-rebuild into 4 ordered steps (D-14/D-15)
 - [Phase ?]: CHANGELOG [0.1.2] labeled 'native or companion rebuild required' (worst-case-wins) with core-only exceptions for Threadline + doctor
 - [Phase ?]: @upgrade_impact_change_classes shared list in release_boundaries_test so vocabulary rename breaks guide + changelog tests together (D-19)
+- [Phase ?]: Capability-axis provides/demands direction: provides=request, demands=session — OPPOSITE of bridge/runtime sites — per compatibility.ex:585 canonical Elixir semantics
+- [Phase ?]: vec-001 elixir_only flag: Elixir-manifest check direction differs from native; vec-009 covers native bridge-version deny
+- [Phase ?]: iOS ShellManifest.compatibility property added: surfaces native_runtime_version for ActivationCoordinator.resolve() floor gate (D-03 fix-site #4)
 
 ### Pending Todos
 
@@ -173,10 +179,11 @@ Full decision log in PROJECT.md (Key Decisions). v13.0 milestone decisions archi
 | Phase 124 P03 | 8min | - tasks | - files |
 | Phase 124 P04 | 3m 14s | 2 tasks | 2 files |
 | Phase 124 P05 | 5m | 2 tasks | 3 files |
+| Phase 124 P06 | 45min | - tasks | - files |
 
 ## Session Continuity
 
-Last session: 2026-06-20T23:03:09.739Z
+Last session: 2026-06-21T16:28:51.029Z
 Stopped at: Completed 124-04-PLAN.md
 Resume file: None
 
