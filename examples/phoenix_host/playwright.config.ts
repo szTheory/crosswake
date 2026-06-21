@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1, // Ensure tests run sequentially and avoid database locks
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:4002',
+    baseURL: 'http://localhost:4700',
     trace: 'on-first-retry',
     serviceWorkers: 'block', // Prevent service worker caching from masking test results
   },
@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server',
-    port: 4002,
+    port: 4700,
     reuseExistingServer: !process.env.CI,
   },
 });
