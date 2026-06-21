@@ -19,15 +19,29 @@ while `--local` remains the explicit maintainer path.
 
 ## First Run
 
-Start the Phoenix example host:
+### Option A: Docker (no local Elixir/Node/SQLite toolchain required)
+
+Boot the shared backend with one command from `examples/phoenix_host`:
+
+```bash
+cd examples/phoenix_host
+docker compose up
+```
+
+The backend starts and serves the app at `http://localhost:4700`. SQLite data is
+kept in a named Docker volume and survives container restarts.
+
+### Option B: Native
+
+Start the Phoenix example host with the local Elixir toolchain:
 
 ```bash
 cd examples/phoenix_host
 mix setup
-PORT=4002 mix phx.server
+PORT=4700 mix phx.server
 ```
 
-Open `http://localhost:4002/`.
+Open `http://localhost:4700/`.
 
 Expected result: the Crosswake Phoenix Host page loads and links to the route
 owner examples. This smoke path proves the Phoenix host boots with the current
@@ -40,9 +54,9 @@ Leave the server running for the next section.
 Visit these routes while the server is running:
 
 ```text
-http://localhost:4002/
-http://localhost:4002/offline
-http://localhost:4002/bridge-proof
+http://localhost:4700/
+http://localhost:4700/offline
+http://localhost:4700/bridge-proof
 ```
 
 What to look for:
@@ -57,8 +71,8 @@ What to look for:
 
 ## Prove Offline Replay
 
-Stop the `PORT=4002 mix phx.server` process before running this proof. Playwright
-starts its own `MIX_ENV=test` Phoenix server on port `4002` from
+Stop the `PORT=4700 mix phx.server` process before running this proof. Playwright
+starts its own `MIX_ENV=test` Phoenix server on port `4700` from
 `examples/phoenix_host/playwright.config.ts`; that test server also exposes the
 gated `/_e2e` inspection route.
 
@@ -144,7 +158,7 @@ open examples/ios_shell_host/CrosswakeShell.xcodeproj
 ```
 
 Run the project from Xcode against the Phoenix host you started with
-`PORT=4002 mix phx.server`. The checked-in host path is published-coordinate
+`PORT=4700 mix phx.server`. The checked-in host path is published-coordinate
 proof, but a successful simulator launch still does not prove device support.
 
 ### Android Local-Development Walkthrough
@@ -162,7 +176,7 @@ launch still does not prove physical-device support.
 
 - If `mix setup` fails, run it again from `examples/phoenix_host`; it fetches
   deps, creates/migrates SQLite, and runs `priv/repo/seeds.exs`.
-- If `PORT=4002 mix phx.server` says the port is in use, stop the old Phoenix or
+- If `PORT=4700 mix phx.server` says the port is in use, stop the old Phoenix or
   Playwright server and retry.
 - If Playwright fails to start, confirm the Phoenix dev server is stopped before
   running `npx playwright test e2e/offline_sync.spec.ts`.
