@@ -398,7 +398,7 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             return false
         }
 
-        return request.capabilities[command.capability] == requiredCapabilityVersion
+        return SemVer.compatible(provides: request.capabilities[command.capability], demands: requiredCapabilityVersion)
     }
 
     private func unavailableCapability(_ request: BridgeRequestEnvelope) -> BridgeReplyEnvelope {
