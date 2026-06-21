@@ -138,8 +138,7 @@ class BridgeChannel(
 
         return when (command) {
             BridgeCommand.APP_INFO_GET -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.appInfoDelegate
@@ -152,8 +151,7 @@ class BridgeChannel(
             }
 
             BridgeCommand.HAPTICS_IMPACT -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.hapticsDelegate
@@ -168,8 +166,7 @@ class BridgeChannel(
             }
 
             BridgeCommand.PERMISSIONS_STATUS -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.permissionStatusDelegate
@@ -191,8 +188,7 @@ class BridgeChannel(
             }
 
             BridgeCommand.NOTIFICATIONS_TOKEN_GET -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.notificationTokenDelegate
@@ -209,8 +205,7 @@ class BridgeChannel(
             }
 
             BridgeCommand.SHARE_INVOKE -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.shareDelegate
@@ -224,8 +219,7 @@ class BridgeChannel(
             }
 
             BridgeCommand.FILES_PICK -> {
-                val requiredCapabilityVersion = session.capabilities[command.capability]
-                if (requiredCapabilityVersion == null || request.capabilities[command.capability] != requiredCapabilityVersion) {
+                if (!capabilityAvailable(command, request)) {
                     deny(request, "unavailable_capability", "The requested capability is not available at the manifest-backed version.", "Ship the declared capability version before retrying.")
                 } else {
                     val delegate = config.filesPickDelegate
@@ -309,6 +303,11 @@ class BridgeChannel(
     fun evaluateForTesting(request: BridgeRequestEnvelope): String {
         return evaluate(request)
             ?: error("Deferred bridge replies are not supported by evaluateForTesting.")
+    }
+
+    private fun capabilityAvailable(command: BridgeCommand, request: BridgeRequestEnvelope): Boolean {
+        val required = session.capabilities[command.capability] ?: return false
+        return SemVer.compatible(provides = request.capabilities[command.capability], demands = required)
     }
 
     private fun ok(request: BridgeRequestEnvelope, payload: Map<String, String>): String {
