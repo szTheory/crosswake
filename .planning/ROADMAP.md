@@ -114,7 +114,10 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   3. The SQLite database persists across container restarts (named volume, not a macOS bind-mount) and is auto-seeded on first boot; `mix phx.server` on port 4700 works as a documented alternative
   4. The Docker build context is lean: a `.dockerignore` excludes `_build`, `deps`, `node_modules`, `priv/static`, `.git`, `.planning`, `.claude`, and evidence artifacts
   5. A committed `examples/phoenix_host/.env` (with `COMPOSE_PROJECT_NAME=crosswake` and `PORT=4700`) and `docs/PORT-REGISTRY.md` mean the port never collides with other concurrently running OSS lib demos, and Android emulator can reach the backend at `10.0.2.2:4700`
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 125-01-PLAN.md — Config split (config/dev/runtime), 4002→4700 port migration, live_reload dep + endpoint plugs, committed .env, drift-test redirect (Wave 1)
+- [ ] 125-02-PLAN.md — Multi-stage Dockerfile + idempotent entrypoint, lean .dockerignore, docker-compose with named volumes + 4700 mapping (Wave 2)
+- [ ] 125-03-PLAN.md — docs/PORT-REGISTRY.md + source-derived drift test + QUICK_START 4700 migration & Docker path (Wave 2)
 **UI hint**: yes
 
 ### Phase 126: Additive Native Dev Wiring
