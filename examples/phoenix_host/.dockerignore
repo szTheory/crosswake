@@ -1,0 +1,30 @@
+# Compiled artifacts — prevent host/container binary mismatch (DOCKER-05)
+_build/
+deps/
+node_modules/
+
+# Static assets built at runtime (does not conflict with live-reload via bind-mount)
+priv/static/
+
+# Version control and planning artifacts
+.git/
+.github/
+.planning/
+.claude/
+
+# Tests — not needed in the image
+test/
+
+# Evidence / proof artifacts
+evidence/
+artifacts/
+
+# Runtime secrets — never bake into the image
+.env
+
+# SQLite runtime artifacts — must stay out of the image so the named volume is
+# the single DB source; prevents host artifact from shadowing the named volume (DOCKER-05, T-125-06)
+*.db
+*.db-shm
+*.db-wal
+crosswake_example.db*

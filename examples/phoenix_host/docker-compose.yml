@@ -1,0 +1,19 @@
+services:
+  phoenix:
+    build: .
+    env_file: .env
+    environment:
+      - BIND_ALL=true
+      - DATABASE_PATH=/data/crosswake_example.db
+    ports:
+      - "4700:4700"
+    volumes:
+      - .:/app                   # source bind-mount for polling live-reload (DOCKER-03)
+      - deps_cache:/app/deps     # compiled deps cached across restarts (DOCKER-03)
+      - build_cache:/app/_build  # compiled bytecode cached (DOCKER-03)
+      - sqlite_data:/data        # named volume for SQLite persistence (DOCKER-04)
+
+volumes:
+  deps_cache:
+  build_cache:
+  sqlite_data:
