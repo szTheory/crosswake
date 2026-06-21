@@ -115,7 +115,7 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   4. The Docker build context is lean: a `.dockerignore` excludes `_build`, `deps`, `node_modules`, `priv/static`, `.git`, `.planning`, `.claude`, and evidence artifacts
   5. A committed `examples/phoenix_host/.env` (with `COMPOSE_PROJECT_NAME=crosswake` and `PORT=4700`) and `docs/PORT-REGISTRY.md` mean the port never collides with other concurrently running OSS lib demos, and Android emulator can reach the backend at `10.0.2.2:4700`
 **Plans**: 3 plans
-- [ ] 125-01-PLAN.md — Config split (config/dev/runtime), 4002→4700 port migration, live_reload dep + endpoint plugs, committed .env, drift-test redirect (Wave 1)
+- [x] 125-01-PLAN.md — Config split (config/dev/runtime), 4002→4700 port migration, live_reload dep + endpoint plugs, committed .env, drift-test redirect (Wave 1)
 - [ ] 125-02-PLAN.md — Multi-stage Dockerfile + idempotent entrypoint, lean .dockerignore, docker-compose with named volumes + 4700 mapping (Wave 2)
 - [ ] 125-03-PLAN.md — docs/PORT-REGISTRY.md + source-derived drift test + QUICK_START 4700 migration & Docker path (Wave 2)
 **UI hint**: yes
@@ -183,7 +183,7 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 | 122. Drift Guards | v14.0 | 3/3 | Complete | 2026-06-20 |
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete | 2026-06-20 |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 6/6 | Complete | 2026-06-21 |
-| 125. Containerized Shared Backend + Port Convention | v15.0 | 0/TBD | Not started | - |
+| 125. Containerized Shared Backend + Port Convention | v15.0 | 1/3 | In Progress|  |
 | 126. Additive Native Dev Wiring | v15.0 | 0/TBD | Not started | - |
 | 127. Launch Orchestration + Banner | v15.0 | 0/TBD | Not started | - |
 | 128. Collateral + "See It Run" Guide | v15.0 | 0/TBD | Not started | - |

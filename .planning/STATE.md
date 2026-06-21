@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
-status: planning
+status: executing
 stopped_at: Phase 125 context gathered
-last_updated: "2026-06-21T20:38:30.762Z"
-last_activity: 2026-06-21 — Roadmap written for v15.0
+last_updated: "2026-06-21T21:06:07.744Z"
+last_activity: 2026-06-21
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v15.0 See It Run — Experiential First-Run DX (Phase 125 next)
+**Current focus:** Phase 125 — containerized-shared-backend-port-convention
 
 ## Current Position
 
-Phase: Phase 125 — Containerized Shared Backend + Port Convention (not started)
-Plan: —
-Status: Roadmap defined; ready for Phase 125 planning
-Last activity: 2026-06-21 — Roadmap written for v15.0
+Phase: 125 (containerized-shared-backend-port-convention) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-21
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -98,12 +98,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | v15.0 future | DASH-01: operator metrics / LiveDashboard | Deferred behind v15.0 DX wedge | v15.0 scope |
 | v15.0 future | NTV-01: native disk storage budgets | Deferred behind v15.0 DX wedge | v15.0 scope |
 | v15.0 future | Companion package extraction (Sigra/Chimeway/Rindle/Threadline) | Deferred behind v15.0 DX wedge | v15.0 scope |
+| Phase 125 P01 | 5m | 3 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-06-21T20:38:30.758Z
+Last session: 2026-06-21T21:06:07.740Z
 Stopped at: Phase 125 context gathered
-Resume file: .planning/phases/125-containerized-shared-backend-port-convention/125-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 
