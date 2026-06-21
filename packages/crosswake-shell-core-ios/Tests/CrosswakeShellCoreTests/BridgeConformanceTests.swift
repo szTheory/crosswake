@@ -15,13 +15,41 @@ struct BridgeVectorsFile: Codable {
     }
 }
 
+/// Request overrides from JSON — flat string fields plus an optional nested capabilities object.
+struct RequestOverride: Codable {
+    let version: String?
+    let command: String?
+    let capability: String?
+    let routeID: String?
+    let activeRouteID: String?
+    let origin: String?
+    let nativeRuntimeVersion: String?
+    /// Per-vector request capabilities override (COMPAT-01 capability floor discriminating vector).
+    let capabilities: [String: String]?
+
+    enum CodingKeys: String, CodingKey {
+        case version
+        case command
+        case capability
+        case routeID = "route_id"
+        case activeRouteID = "active_route_id"
+        case origin
+        case nativeRuntimeVersion = "native_runtime_version"
+        case capabilities
+    }
+}
+
 struct BridgeVector: Codable {
     let id: String
     let description: String
-    let requestOverride: [String: String]
+    let requestOverride: RequestOverride
     let sessionOverride: SessionOverride
     let expectedOutcome: String
     let expectedDenialReason: String?
+    /// elixir_only vectors test Elixir-manifest direction semantics (target vs manifest);
+    /// native harnesses use session-provides vs request-demands (opposite direction) and must skip these.
+    /// vec-009 and other native_only vectors cover the native bridge-version deny path.
+    let elixirOnly: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -30,6 +58,7 @@ struct BridgeVector: Codable {
         case sessionOverride = "session_override"
         case expectedOutcome = "expected_outcome"
         case expectedDenialReason = "expected_denial_reason"
+        case elixirOnly = "elixir_only"
     }
 }
 
@@ -134,24 +163,26 @@ final class BridgeConformanceTests: XCTestCase {
     /// The request.capabilities default matches a passing baseline; session_override.capabilities
     /// modifies the session independently (so a version mismatch between session and request fires
     /// unavailable_capability as expected for vec-007).
+    /// Per-vector request capabilities override is applied when the vector provides
+    /// request_override.capabilities (COMPAT-01 capability floor discriminating vector, vec-014).
     func makeRequest(
         bridgeProtocolVersion: String,
-        override requestOverride: [String: String]
+        override requestOverride: RequestOverride
     ) -> BridgeRequestEnvelope {
         // Start from permissive defaults
-        let version = requestOverride["version"] ?? bridgeProtocolVersion
-        let command = requestOverride["command"] ?? "app.info.get"
-        let capability = requestOverride["capability"] ?? "app.info.get"
-        let routeID = requestOverride["route_id"] ?? "dashboard"
-        let activeRouteID = requestOverride["active_route_id"] ?? "dashboard"
-        let origin = requestOverride["origin"] ?? "https://app.example.com"
+        let version = requestOverride.version ?? bridgeProtocolVersion
+        let command = requestOverride.command ?? "app.info.get"
+        let capability = requestOverride.capability ?? "app.info.get"
+        let routeID = requestOverride.routeID ?? "dashboard"
+        let activeRouteID = requestOverride.activeRouteID ?? "dashboard"
+        let origin = requestOverride.origin ?? "https://app.example.com"
         // Floor conformance (COMPAT-01 / D-05): allow request native_runtime_version override.
-        let nativeRuntimeVersion = requestOverride["native_runtime_version"] ?? vectorsFile.nativeRuntimeVersion
+        let nativeRuntimeVersion = requestOverride.nativeRuntimeVersion ?? vectorsFile.nativeRuntimeVersion
 
-        // Request capabilities default to the base "ok" version for the command.
-        // vec-007 has session.capabilities["app.info.get"] = "2.0.0" while the request
-        // carries the default "1.0.0", triggering capabilityAvailable() to return false.
-        let requestCapabilities: [String: String] = ["app.info.get": "1.0.0"]
+        // Request capabilities: use the per-vector override when present (COMPAT-01 capability floor
+        // discriminating vector, vec-014: request provides 1.1.0, session demands 1.0.0→ allow under >=).
+        // Fall back to base "1.0.0" baseline only when the vector omits request_override.capabilities.
+        let requestCapabilities: [String: String] = requestOverride.capabilities ?? ["app.info.get": "1.0.0"]
 
         return BridgeRequestEnvelope(
             protocolName: "crosswake.bridge",
@@ -182,6 +213,11 @@ final class BridgeConformanceTests: XCTestCase {
         let bridgeVersion = vectorsFile.bridgeProtocolVersion
 
         for vector in vectorsFile.vectors {
+            // Skip elixir_only vectors: they test Elixir-manifest direction semantics (target vs manifest)
+            // which is the opposite of native (session-provides vs request-demands). vec-009 covers the
+            // native bridge-version deny path instead.
+            if vector.elixirOnly == true { continue }
+
             let session = makeSession(bridgeProtocolVersion: bridgeVersion, override: vector.sessionOverride)
             let request = makeRequest(
                 bridgeProtocolVersion: bridgeVersion,

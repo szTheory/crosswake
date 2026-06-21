@@ -34,7 +34,8 @@
   "protocol": "crosswake.bridge",
   "vectors": [
     {
-      "description": "Request with a stale bridge_protocol_version is denied with compatibility_mismatch",
+      "description": "Request with a bridge_protocol_version older than the manifest floor is denied with compatibility_mismatch (Elixir: target.bridge_protocol_version < manifest.bridge_protocol_version). elixir_only: native harnesses check session-provides vs request-demands (opposite direction); vec-009 covers native bridge-version deny.",
+      "elixir_only": true,
       "expected_denial_reason": "compatibility_mismatch",
       "expected_outcome": "deny",
       "id": "vec-001-version-mismatch-deny",
@@ -200,37 +201,14 @@
       }
     },
     {
-      "description": "Manifest schema version newer than demanded — floor semantics allow",
-      "expected_denial_reason": null,
-      "expected_outcome": "ok",
-      "id": "vec-012-floor-manifest-schema-shell-newer-allow",
-      "native_only": true,
-      "request_override": {
-        "manifest_schema_version": "1.0.0"
-      },
-      "session_override": {
-        "manifest_schema_version": "2.0.0"
-      }
-    },
-    {
-      "description": "Manifest schema version older than demanded — floor semantics deny",
-      "expected_denial_reason": "compatibility_mismatch",
-      "expected_outcome": "deny",
-      "id": "vec-013-floor-manifest-schema-shell-older-deny",
-      "native_only": true,
-      "request_override": {
-        "manifest_schema_version": "2.0.0"
-      },
-      "session_override": {
-        "manifest_schema_version": "1.0.0"
-      }
-    },
-    {
-      "description": "Session capability version >= request version — floor semantics allow",
+      "description": "Request capability version (1.1.0) newer than session floor (1.0.0) — floor semantics allow (provides=request, demands=session). This vector is DISCRIMINATING: it returns ok under >= floor but would return deny under the pre-fix == equality check, proving the floor is applied.",
       "expected_denial_reason": null,
       "expected_outcome": "ok",
       "id": "vec-014-floor-capability-shell-newer-allow",
       "request_override": {
+        "capabilities": {
+          "app.info.get": "1.1.0"
+        },
         "capability": "app.info.get",
         "command": "app.info.get",
         "version": "1.1.0"
@@ -242,7 +220,7 @@
       }
     },
     {
-      "description": "Session capability version < request version — floor semantics deny (unavailable_capability)",
+      "description": "Request capability version (1.0.0) below session floor (2.0.0) — floor semantics deny (unavailable_capability). This vector is DISCRIMINATING: the request does not meet the session floor, correctly denied by both >= floor and the pre-fix == equality check.",
       "expected_denial_reason": "unavailable_capability",
       "expected_outcome": "deny",
       "id": "vec-015-floor-capability-shell-older-deny",

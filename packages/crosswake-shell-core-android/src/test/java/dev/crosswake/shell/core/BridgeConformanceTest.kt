@@ -137,6 +137,16 @@ class BridgeConformanceTest {
         if (requestOverride.has("native_runtime_version")) {
             result = result.copy(nativeRuntimeVersion = requestOverride.getString("native_runtime_version"))
         }
+        // Capability floor discriminating vector (COMPAT-01 vec-014): apply per-vector request capabilities
+        // when present, mirroring the applySessionOverride capabilities pattern at lines 81-86.
+        if (requestOverride.has("capabilities")) {
+            val capObj = requestOverride.optJSONObject("capabilities")
+            if (capObj != null) {
+                val caps = capObj.keys().asSequence()
+                    .associateWith { capObj.getString(it) }
+                result = result.copy(capabilities = caps)
+            }
+        }
 
         return result
     }
@@ -150,6 +160,12 @@ class BridgeConformanceTest {
         for (i in 0 until vectors.length()) {
             val vector = vectors.getJSONObject(i)
             val id = vector.getString("id")
+
+            // Skip elixir_only vectors: they test Elixir-manifest direction semantics (target vs manifest)
+            // which is the opposite of native (session-provides vs request-demands). vec-009 covers the
+            // native bridge-version deny path instead.
+            if (vector.optBoolean("elixir_only", false)) continue
+
             val expectedOutcome = vector.getString("expected_outcome")
             val expectedReason: String? = if (vector.isNull("expected_denial_reason")) null
                                           else vector.optString("expected_denial_reason").takeIf { it.isNotBlank() }

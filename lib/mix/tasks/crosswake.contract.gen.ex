@@ -123,11 +123,12 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
       [
         {"id", "vec-001-version-mismatch-deny"},
         {"description",
-         "Request with a stale bridge_protocol_version is denied with compatibility_mismatch"},
+         "Request with a bridge_protocol_version older than the manifest floor is denied with compatibility_mismatch (Elixir: target.bridge_protocol_version < manifest.bridge_protocol_version). elixir_only: native harnesses check session-provides vs request-demands (opposite direction); vec-009 covers native bridge-version deny."},
         {"request_override", [{"version", "1.0.0"}]},
         {"session_override", []},
         {"expected_outcome", "deny"},
-        {"expected_denial_reason", "compatibility_mismatch"}
+        {"expected_denial_reason", "compatibility_mismatch"},
+        {"elixir_only", true}
       ],
       [
         {"id", "vec-002-unknown-command-deny"},
@@ -253,37 +254,19 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
         {"expected_denial_reason", "compatibility_mismatch"},
         {"native_only", true}
       ],
-      # manifest_schema_version floor — both directions
-      # native_only: manifest_schema is validated at the Elixir compatibility layer (not bridge_findings);
-      # native tests record the floor direction for COMPAT-01 completeness.
-      [
-        {"id", "vec-012-floor-manifest-schema-shell-newer-allow"},
-        {"description",
-         "Manifest schema version newer than demanded — floor semantics allow"},
-        {"request_override", [{"manifest_schema_version", "1.0.0"}]},
-        {"session_override", [{"manifest_schema_version", "2.0.0"}]},
-        {"expected_outcome", "ok"},
-        {"expected_denial_reason", nil},
-        {"native_only", true}
-      ],
-      [
-        {"id", "vec-013-floor-manifest-schema-shell-older-deny"},
-        {"description",
-         "Manifest schema version older than demanded — floor semantics deny"},
-        {"request_override", [{"manifest_schema_version", "2.0.0"}]},
-        {"session_override", [{"manifest_schema_version", "1.0.0"}]},
-        {"expected_outcome", "deny"},
-        {"expected_denial_reason", "compatibility_mismatch"},
-        {"native_only", true}
-      ],
       # capability-version floor — both directions
       # Exercised by both Elixir bridge_findings (compatible_version? on capability axis) and native.
+      # NOTE: vec-012/vec-013 (manifest_schema floor) were removed — manifest_schema_version is
+      # validated by the Elixir Compatibility layer (validate_manifest_schema/2) and has no native
+      # bridge/session surface. Native code decodes zero manifest_schema_version fields, so those
+      # vectors exercised no real native decode-to-SemVer path (phantom vectors).
+      # manifest_schema floor correctness is owned by Elixir tests, not this conformance suite.
       [
         {"id", "vec-014-floor-capability-shell-newer-allow"},
         {"description",
-         "Session capability version >= request version — floor semantics allow"},
+         "Request capability version (1.1.0) newer than session floor (1.0.0) — floor semantics allow (provides=request, demands=session). This vector is DISCRIMINATING: it returns ok under >= floor but would return deny under the pre-fix == equality check, proving the floor is applied."},
         {"request_override",
-         [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
+         [{"capabilities", [{"app.info.get", "1.1.0"}]}, {"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
         {"session_override", [{"capabilities", [{"app.info.get", "1.0.0"}]}]},
         {"expected_outcome", "ok"},
         {"expected_denial_reason", nil}
@@ -291,7 +274,7 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
       [
         {"id", "vec-015-floor-capability-shell-older-deny"},
         {"description",
-         "Session capability version < request version — floor semantics deny (unavailable_capability)"},
+         "Request capability version (1.0.0) below session floor (2.0.0) — floor semantics deny (unavailable_capability). This vector is DISCRIMINATING: the request does not meet the session floor, correctly denied by both >= floor and the pre-fix == equality check."},
         {"request_override",
          [{"capability", "app.info.get"}, {"command", "app.info.get"}, {"version", bridge_vsn}]},
         {"session_override", [{"capabilities", [{"app.info.get", "2.0.0"}]}]},
