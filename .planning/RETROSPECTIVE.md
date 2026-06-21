@@ -578,10 +578,53 @@
 - **Session shape:** Two-day milestone (2026-06-18 -> 2026-06-19), 5 phases / 16 plans / 32 tasks.
 - **Residual debt:** Validation metadata cleanup remains for Phases 117, 118, and 120; no v13 requirement gap remains.
 
+## Milestone: v14.0 — Runtime Contract Confidence
+
+**Shipped:** 2026-06-21
+**Phases:** 4 (121-124) | **Plans:** 17
+
+### What Was Built
+- A single canonical Elixir bridge-protocol constant (`Crosswake.Bridge.Contract.version/0`) with `mix crosswake.contract.gen` rendering it into JSON fixtures, shell templates, native conformance vectors, and a docs snippet; the `1.1.0`/`1.0.0` drift resolved and the Kotlin silent fallback removed.
+- Browser-free, merge-blocking drift guards: a parse-based ExUnit drift test (proven non-vacuous), generate-and-diff CI, a `contract_version_parity` doctor check, and a required-vs-advisory aggregator with registration scripts.
+- Real behavioral tests inside the reusable iOS (XCTest, no simulator) and Android (JUnit, no emulator) shell-core packages, all driven from one committed `bridge_contract_vectors.json` so one version bump fails all three suites.
+- A `>=` min-version-floor compatibility reconciliation across Elixir and native (the native exact-equality footgun removed), with rebuild-class decision tables, a decision-table-first compatibility guide, doctor rebuild-guidance, and CHANGELOG upgrade-impact labels.
+
+### What Worked
+- **Non-negotiable phase ordering held** — canonical source → drift guards → native proof → compat/docs truth. Building the single source first meant the guards and native vectors had one thing to point at.
+- **One committed vector file as cross-language contract** — driving Elixir, Swift, and Kotlin suites from `bridge_contract_vectors.json` made "a version bump fails all three" a real, demonstrated property rather than a claim.
+- **Discriminating vectors caught vacuous proofs** — vec-014 (request `1.1.0` > session `1.0.0`) only passes under the floor fix and fails under the old `==`, so the test actually proves the bugfix instead of coincidentally passing.
+- **The milestone audit's own integration checker surfaced WR-01** — the audit found that the Elixir harness evaluates vec-014 vacuously, turning a latent coverage gap into a documented, tracked item before close.
+
+### What Was Inefficient
+- **COMPAT-01 needed a gap-closure plan (124-06)** — the first verification was `gaps_found 4/5`: the capability axis and iOS `ActivationCoordinator` floor gate were missed in 124-01, and phantom manifest_schema vectors (vec-012/013) tested nothing. A re-verification after 124-06 closed it to 5/5.
+- **Phase 124 shipped without a VALIDATION.md** — Nyquist coverage was reconstructed retroactively at milestone-close pre-flight (`/gsd-validate-phase 124`); the audit had to flag it as the chief tech-debt item first.
+- **Capability-axis provides/demands direction was inverted in the brief** — the plan's critical-correction block had to fix `provides=request, demands=session` (opposite of bridge/runtime sites) before native mirrored Elixir's `compatible_version?/2`.
+- **The archive CLI again emitted placeholder/fragment bullets** — sparse SUMMARY one-liners produced bare filenames in MILESTONES.md, requiring a manual rewrite (the chronic CLI placeholder-bullet tax).
+
+### Patterns Established
+- **Canonical-source + generate-and-diff beats an IDL** — for three version strings and a small command vocabulary, a committed canonical file with a diff-check is the proportionate drift defense; no protobuf/IDL pipeline needed.
+- **Asymmetric vector flags (`native_only` / `elixir_only`)** — when Elixir's request-vs-manifest frame and native's session-vs-request frame disagree, one flag per vector keeps a single shared file honest for both harnesses instead of forking fixtures.
+- **Floor semantics are the default for every version axis** — exact-equality on any wire-version axis is a denial footgun; new axes should negotiate by `>=` min-version-floor from the start.
+- **Adopter truth leads with a decision table** — rebuild-class guidance (support matrix, compatibility guide, doctor, changelog) puts the "this change → this rebuild class → this action" table before prose, machine-tested for ordering.
+
+### Key Lessons
+- **A discriminating test is worth ten passing ones** — vec-014 proved the fix precisely because it would fail on the old code; "passes under both `==` and `>=`" is a vacuous proof and should be treated as a coverage gap.
+- **Verify the proof exercises the production path, not a hardcoded stand-in** — WR-01 exists because the Elixir harness hardcoded capabilities; a green suite can still leave the discriminating dimension untested.
+- **Retroactive Nyquist works but is a tax** — authoring VALIDATION.md at phase close (not at milestone pre-flight) avoids re-running and reconstructing every suite under deadline.
+- **Coherence milestones still need gap-closure budget** — even a "boring" canonicalization milestone produced a 4/5 first verification and a sixth plan; don't assume coherence work is single-pass.
+
+### Cost Observations
+- **Session shape:** Two-day milestone (2026-06-20 → 2026-06-21), 4 phases / 17 plans / 27 tasks; 103 files changed (+14,002 / −118).
+- **Model mix:** Opus reserved for planning/debug + discuss phases; Sonnet for execution and the nyquist auditor (per balanced profile).
+- **Residual debt:** WR-01 capability-axis Elixir coverage caveat (native proof green); WR-02/WR-03 latent native divergences; two unrun branch-protection PATCHes; 4 pre-existing docs-debt test failures; `MIRROR_PUSH_TOKEN` scope still unexercised.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
 |-------|----------|-------------|
+| Canonical-source-plus-diff is the proportionate drift defense | v14.0 collapsed bridge-protocol drift across Elixir/manifest/native/docs with one constant + `mix crosswake.contract.gen` + a generate-and-diff guard, explicitly rejecting an IDL/protobuf redesign | For small contract surfaces (a few version strings + a bounded vocabulary), prefer a committed canonical file + drift-check over codegen pipelines; reserve IDLs for genuinely large/branching schemas |
+| Discriminating proof vectors over coincidental passes | v14.0's vec-014 (1.1.0 > 1.0.0) fails under the old `==` and passes only under the `>=` floor fix; WR-01 was filed precisely because the Elixir harness evaluated it vacuously | Every behavioral vector should be constructed to fail on the unfixed code; "passes under both old and new" is a coverage gap, not a proof, and audits should hunt for it |
+| Retroactive validation/closeout bookkeeping is a recurring tax | v3.8/v3.9 deferred Nyquist ledgers (resolved in v12.0); v13.0 had a missing Phase 119 verification at audit; v14.0 reconstructed Phase 124's VALIDATION.md at milestone pre-flight | Author VALIDATION.md and phase verification at phase close, not at milestone audit — closeout should confirm bookkeeping, not generate it under deadline |
 | Binary Core architecture | v5.0 extracted generated shell logic into standalone packages | The "eject trap" is solved; future generator tasks should focus on thin UI glue and delegate injection |
 | Verification gap accumulation | v5.0 shipped with Phase 76/77 lacking `VERIFICATION.md` | Verification ledgers must be treated as block-merge requirements during phase completion to prevent milestone-level tech debt |
 | Proof truth is part of product surface | v3.1 closed once Phase 18 Proof passed; v3.2 closed once Phase 23 commerce proof lane + parity test were both merge-blocking | Future milestones should define proof lanes before final execution slices, and parity tests for any new traceability convention must ship with the convention |
