@@ -8,6 +8,9 @@ defmodule CrosswakeExample.MixProject do
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      # Phoenix 1.8 drives compile-on-request code reloading through a Mix listener;
+      # without it the dev code reloader raises on every request.
+      listeners: [Phoenix.CodeReloader],
       deps: deps(),
       aliases: aliases()
     ]

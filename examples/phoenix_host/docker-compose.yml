@@ -1,17 +1,31 @@
 services:
   phoenix:
-    build: .
+    # Build context is the repo root so the parent crosswake library (the
+    # `{:crosswake, path: "../.."}` dep) is inside the context. The Dockerfile
+    # lives in this directory.
+    build:
+      context: ../..
+      dockerfile: examples/phoenix_host/Dockerfile
     env_file: .env
     environment:
       - BIND_ALL=true
       - DATABASE_PATH=/data/crosswake_example.db
     ports:
       - "4700:4700"
+    working_dir: /app/examples/phoenix_host
     volumes:
-      - .:/app                   # source bind-mount for polling live-reload (DOCKER-03)
-      - deps_cache:/app/deps     # compiled deps cached across restarts (DOCKER-03)
-      - build_cache:/app/_build  # compiled bytecode cached (DOCKER-03)
-      - sqlite_data:/data        # named volume for SQLite persistence (DOCKER-04)
+      # Source bind-mounts for polling live-reload (DOCKER-03). Only the example's
+      # own source is mounted — the compiled crosswake lib stays baked in the image
+      # at /app, so the bind-mounts never shadow the parent dep.
+      - ./lib:/app/examples/phoenix_host/lib
+      - ./config:/app/examples/phoenix_host/config
+      - ./priv:/app/examples/phoenix_host/priv
+      # Named volumes: deps/_build cached across restarts (DOCKER-03). They start
+      # empty and are populated by the entrypoint on first boot.
+      - deps_cache:/app/examples/phoenix_host/deps
+      - build_cache:/app/examples/phoenix_host/_build
+      # Named volume for SQLite persistence (DOCKER-04) — NOT a macOS bind-mount.
+      - sqlite_data:/data
 
 volumes:
   deps_cache:
