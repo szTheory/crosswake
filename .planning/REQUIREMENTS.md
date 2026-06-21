@@ -20,7 +20,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 - [x] **PORT-01**: Crosswake's demo binds a unique, stable, committed host port (4700) via `COMPOSE_PROJECT_NAME` + a committed `.env`, so it does not collide with the maintainer's other concurrently running OSS lib demos.
 - [x] **PORT-02**: The same stable port is reachable by all three runtimes: web and iOS simulator via `localhost:4700`, Android emulator via `10.0.2.2:4700`.
-- [ ] **PORT-03**: A reusable PORT-REGISTRY document records the per-lib port-allocation convention so the maintainer's other repos can adopt it consistently.
+- [x] **PORT-03**: A reusable PORT-REGISTRY document records the per-lib port-allocation convention so the maintainer's other repos can adopt it consistently.
 
 ### NDEV — Additive native dev-wiring (proof posture intact)
 
@@ -81,7 +81,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | DOCKER-05 | Phase 125 | Complete |
 | PORT-01 | Phase 125 | Complete |
 | PORT-02 | Phase 125 | Complete |
-| PORT-03 | Phase 125 | Pending |
+| PORT-03 | Phase 125 | Complete |
 | NDEV-01 | Phase 126 | Pending |
 | NDEV-02 | Phase 126 | Pending |
 | NDEV-03 | Phase 126 | Pending |
