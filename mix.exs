@@ -89,6 +89,7 @@ defmodule Crosswake.MixProject do
       formatters: ["html"],
       extras: [
         "README.md",
+        "guides/see_it_run.md",
         "CHANGELOG.md",
         "LICENSE",
         "guides/install.md",
@@ -120,6 +121,7 @@ defmodule Crosswake.MixProject do
       groups_for_extras: [
         Start: [
           "README.md",
+          "guides/see_it_run.md",
           "guides/route_policy.md",
           "guides/install.md"
         ],
