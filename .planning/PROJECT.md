@@ -181,7 +181,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - [ ] **DOCKER-01..05**: One-command containerized shared backend with cached-deps multi-stage Dockerfile, in-container polling live-reload, SQLite in a named volume, and a lean `.dockerignore`; native `mix` path preserved.
 - [ ] **PORT-01..03**: Stable per-lib port (Crosswake = 4700) via `COMPOSE_PROJECT_NAME` + committed `.env`, reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`), plus a reusable PORT-REGISTRY convention.
 - [x] **NDEV-01..03**: Additive iOS `Dev` scheme + Android `dev` flavor wired to the local backend without modifying the checked-in public-coordinate proof fixtures/assets. Validated in Phase 126: Additive Native Dev Wiring.
-- [ ] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) that boots the backend, prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, and advisorily boots sim/emulator.
+- [x] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) that boots the backend, prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, and advisorily boots sim/emulator. Validated in Phase 127: Launch Orchestration Banner — one-command launcher probes/reuses :4700 or boots Docker detached behind a curl readiness gate, prints a plain-ASCII payoff-first banner (the three honest routes `/`, `/offline`, `/bridge-proof`, proven/needs-build block, verbatim per-runtime native commands), and advisorily launches sim/emulator without ever changing the web-success exit code; a source-derived banner drift guard (`see_it_run_banner_test.exs`) locks the banner facts to their sources with anti-vacuity cases.
 - [ ] **COLL-01..02**: Committed three-runtime screenshots + a short screen recording, honestly labeled.
 - [ ] **DOCS-01..03**: `guides/see_it_run.md` (reader-empathy, gameplan-at-top) routed from README/QUICK_START and guarded by doc-contract tests.
 
@@ -279,4 +279,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-22 after completing Phase 126 (Additive Native Dev Wiring) — v15.0 in progress, NDEV-01..03 validated; iOS `Dev` scheme + Android `dev` flavor now reach the local backend additively (prod proof fixtures/assets byte-untouched).*
+*Last updated: 2026-06-22 after completing Phase 127 (Launch Orchestration Banner) — v15.0 in progress, LAUNCH-01..02 validated; `bin/see-it-run.sh` is the canonical one-command "See It Run" launcher (boot/reuse + readiness gate + honest banner + advisory native), with a thin `mix crosswake.demo` alias and a source-derived banner drift guard. Next: Phase 128 (collateral + see_it_run guide).*
