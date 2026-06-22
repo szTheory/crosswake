@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
-status: executing
-stopped_at: Phase 128 UI-SPEC approved
-last_updated: "2026-06-22T20:49:36.913Z"
-last_activity: 2026-06-22 -- Phase 128 planning complete
+current_phase: 128
+current_phase_name: collateral-see-it-run-guide
+status: awaiting_human_gate
+stopped_at: Phase 128 automated execution complete + verified — awaiting maintainer native-collateral capture
+last_updated: "2026-06-22T20:52:03.531Z"
+last_activity: 2026-06-22
+last_activity_desc: Phase 128 executed — all 3 plans complete (DOCS-01/02/03 MET); COLL-01/02 partial pending human capture gate
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 12
   percent: 75
 ---
 
@@ -21,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 128 — collateral + "see it run" guide
+**Current focus:** Phase 128 — collateral-see-it-run-guide
 
 ## Current Position
 
-Phase: 128
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-22 -- Phase 128 planning complete
+Phase: 128 (collateral-see-it-run-guide) — AUTOMATED WORK COMPLETE, AWAITING HUMAN GATE
+Plan: 3 of 3 (all complete)
+Status: All 3 plans executed + verified. DOCS-01/02/03 MET. COLL-01/02 PARTIAL — harness + label scaffolding shipped; real native PNG/GIF binaries are the intentional D-03/D-19 maintainer capture gate.
+Last activity: 2026-06-22 — Phase 128 execution + verification complete
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)

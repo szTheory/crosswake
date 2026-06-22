@@ -100,7 +100,7 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 - [x] **Phase 125: Containerized Shared Backend + Port Convention** - Docker Compose one-command backend with cached deps, polling live-reload, named-volume SQLite, lean .dockerignore, and committed port 4700 convention (completed 2026-06-21)
 - [x] **Phase 126: Additive Native Dev Wiring** - iOS Dev scheme + Android dev flavor pointing at the local backend without touching the checked-in proof fixtures or assets (completed 2026-06-22)
 - [x] **Phase 127: Launch Orchestration + Banner** - bin/see-it-run.sh entrypoint that boots the backend, prints a brand-voiced ASCII banner with honest proof/needs-build block, and advisorily boots sim/emulator (completed 2026-06-22)
-- [ ] **Phase 128: Collateral + "See It Run" Guide** - Committed three-runtime screenshots + screen recording, guides/see_it_run.md, README/QUICK_START routing, and doc-contract tests
+- [x] **Phase 128: Collateral + "See It Run" Guide** - Committed three-runtime screenshots + screen recording, guides/see_it_run.md, README/QUICK_START routing, and doc-contract tests (completed 2026-06-22)
 
 ## Phase Details
 
@@ -172,10 +172,12 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   4. README and `examples/QUICK_START.md` both route readers to `guides/see_it_run.md` and the one-command Docker path without overclaiming native support (support labels are honest)
   5. Guide truth (ports, routes, exact commands) is guarded by at least one `test/crosswake/guides/see_it_run_test.exs` doc-contract test derived from source, consistent with the existing guide-test culture
 
-**Plans**: 3 plans
-- [ ] 128-01-PLAN.md — guides/see_it_run.md + source-derived drift test + ExDoc Start-group registration (DOCS-01, DOCS-03)
-- [ ] 128-02-PLAN.md — README `## See it run` section + QUICK_START guide pointer/Option-A rename (DOCS-02)
-- [ ] 128-03-PLAN.md — bin/capture-collateral.sh harness + brandbook collateral honest-label table (COLL-01, COLL-02)
+**Plans**: 3/3 plans complete
+
+- [x] 128-01-PLAN.md — guides/see_it_run.md + source-derived drift test + ExDoc Start-group registration (DOCS-01, DOCS-03)
+- [x] 128-02-PLAN.md — README `## See it run` section + QUICK_START guide pointer/Option-A rename (DOCS-02)
+- [x] 128-03-PLAN.md — bin/capture-collateral.sh harness + brandbook collateral honest-label table (COLL-01, COLL-02)
+
 **UI hint**: yes
 
 ## Progress
@@ -211,4 +213,4 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 | 125. Containerized Shared Backend + Port Convention | v15.0 | 3/3 | Complete    | 2026-06-21 |
 | 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete    | 2026-06-22 |
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete    | 2026-06-22 |
-| 128. Collateral + "See It Run" Guide | v15.0 | 0/TBD | Not started | - |
+| 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete   | 2026-06-22 |
