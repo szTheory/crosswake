@@ -20,6 +20,20 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
 
       mix crosswake.contract.gen
 
+  ## Dev Fixtures
+
+  Pass `--dev` to generate the two dev activation fixtures that point at the local
+  backend instead of the public-coordinate example host:
+
+      mix crosswake.contract.gen --dev
+
+  The dev fixtures differ from prod only in `url` and `origin` (localhost for iOS,
+  10.0.2.2 for Android) and carry a `_generated_by` value ending in ` --dev`.
+  Both dev fixtures are committed to the repository.
+
+  A `--dev` run writes ONLY the two dev fixtures and does NOT touch any prod surface.
+  A default (no-flag) run writes the prod surfaces and does NOT touch the dev fixtures.
+
   ## Regenerating
 
   Re-run this task whenever `Crosswake.Bridge.Contract.@version` is bumped.
@@ -27,41 +41,59 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
   produces no `git diff` churn.
 
   DO NOT EDIT the generated files listed above by hand. Run `mix crosswake.contract.gen`
-  to regenerate them.
+  to regenerate them. DO NOT EDIT the dev fixtures by hand; run
+  `mix crosswake.contract.gen --dev` to regenerate them.
   """
 
   @ios_activation_path "examples/ios_shell_host/Fixtures/route_activation.json"
   @android_activation_path "examples/android_shell_host/app/src/main/assets/route_activation.json"
+  @ios_dev_activation_path "examples/ios_shell_host/Fixtures/route_activation-dev.json"
+  @android_dev_activation_path "examples/android_shell_host/app/src/dev/assets/route_activation.json"
   @vectors_path "test/fixtures/bridge_contract_vectors.json"
   @ios_vectors_path "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json"
   @android_vectors_path "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json"
   @docs_snippet_path "docs/_contract_snippet.md"
 
   @impl Mix.Task
-  def run(_args) do
+  def run(args) do
+    {opts, _argv, _invalid} = OptionParser.parse(args, strict: [dev: :boolean])
+    dev? = Keyword.get(opts, :dev, false)
+
     Mix.Task.run("app.start")
 
     bridge_vsn = Crosswake.Bridge.Contract.version()
-    protocol = Crosswake.Bridge.Contract.protocol()
-    commands = Crosswake.Bridge.Contract.commands()
-    denial_reasons = Crosswake.Shell.Denial.reasons() |> Enum.map(&Atom.to_string/1)
 
-    write_if_changed(@ios_activation_path, ios_activation_json(bridge_vsn))
-    write_if_changed(@android_activation_path, android_activation_json(bridge_vsn))
-    write_if_changed(@vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
-    write_if_changed(@ios_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
-    write_if_changed(@android_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
-    write_if_changed(@docs_snippet_path, docs_snippet(bridge_vsn))
+    if dev? do
+      write_if_changed(@ios_dev_activation_path, ios_dev_activation_json(bridge_vsn))
+      write_if_changed(@android_dev_activation_path, android_dev_activation_json(bridge_vsn))
 
-    Mix.shell().info("""
-    crosswake.contract.gen complete — bridge_protocol_version=#{bridge_vsn}
-      #{@ios_activation_path}
-      #{@android_activation_path}
-      #{@vectors_path}
-      #{@ios_vectors_path}
-      #{@android_vectors_path}
-      #{@docs_snippet_path}
-    """)
+      Mix.shell().info("""
+      crosswake.contract.gen --dev complete — bridge_protocol_version=#{bridge_vsn}
+        #{@ios_dev_activation_path}
+        #{@android_dev_activation_path}
+      """)
+    else
+      protocol = Crosswake.Bridge.Contract.protocol()
+      commands = Crosswake.Bridge.Contract.commands()
+      denial_reasons = Crosswake.Shell.Denial.reasons() |> Enum.map(&Atom.to_string/1)
+
+      write_if_changed(@ios_activation_path, ios_activation_json(bridge_vsn))
+      write_if_changed(@android_activation_path, android_activation_json(bridge_vsn))
+      write_if_changed(@vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+      write_if_changed(@ios_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+      write_if_changed(@android_vectors_path, vectors_json(protocol, bridge_vsn, commands, denial_reasons))
+      write_if_changed(@docs_snippet_path, docs_snippet(bridge_vsn))
+
+      Mix.shell().info("""
+      crosswake.contract.gen complete — bridge_protocol_version=#{bridge_vsn}
+        #{@ios_activation_path}
+        #{@android_activation_path}
+        #{@vectors_path}
+        #{@ios_vectors_path}
+        #{@android_vectors_path}
+        #{@docs_snippet_path}
+      """)
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -99,6 +131,40 @@ defmodule Mix.Tasks.Crosswake.Contract.Gen do
       {"route_id", "selective-native-claim-capture"},
       {"source", "cold_start"},
       {"url", "https://example.crosswake.invalid/native/claims/claim-1/capture"}
+    ])
+  end
+
+  defp ios_dev_activation_json(bridge_vsn) do
+    encode_doc([
+      {"_generated_by", "mix crosswake.contract.gen --dev"},
+      {"bridge_protocol_version", bridge_vsn},
+      {"capabilities", [{"camera", "1.0.0"}]},
+      {"correlation_id", "ios-example-capture-1"},
+      {"declared_pack_requirements", [{"camera_capture_assets", "1.0.0"}]},
+      {"installed_packs", [{"camera_capture_assets", "1.0.0"}]},
+      {"manifest_source", "bundled"},
+      {"native_runtime_version", "1.0.0"},
+      {"origin", "http://localhost:4700"},
+      {"route_id", "selective-native-claim-capture"},
+      {"source", "cold_start"},
+      {"url", "http://localhost:4700/native/claims/claim-1/capture"}
+    ])
+  end
+
+  defp android_dev_activation_json(bridge_vsn) do
+    encode_doc([
+      {"_generated_by", "mix crosswake.contract.gen --dev"},
+      {"bridge_protocol_version", bridge_vsn},
+      {"capabilities", [{"camera", "1.0.0"}]},
+      {"correlation_id", "android-example-capture-1"},
+      {"declared_pack_requirements", [{"camera_capture_assets", "1.0.0"}]},
+      {"installed_packs", [{"camera_capture_assets", "1.0.0"}]},
+      {"manifest_source", "bundled"},
+      {"native_runtime_version", "1.0.0"},
+      {"origin", "http://10.0.2.2:4700"},
+      {"route_id", "selective-native-claim-capture"},
+      {"source", "cold_start"},
+      {"url", "http://10.0.2.2:4700/native/claims/claim-1/capture"}
     ])
   end
 
