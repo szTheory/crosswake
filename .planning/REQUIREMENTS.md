@@ -24,9 +24,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### NDEV — Additive native dev-wiring (proof posture intact)
 
-- [ ] **NDEV-01**: The iOS host gains an additive `Dev` scheme + `Info-Dev.plist` (a localhost cleartext ATS exception) + a dev fixture pointing at `http://localhost:4700`, without modifying the checked-in public-coordinate proof fixtures or `Info.plist`.
-- [ ] **NDEV-02**: The Android host gains an additive `dev` product flavor + a network-security-config permitting `10.0.2.2` cleartext + dev assets pointing at `http://10.0.2.2:4700`, with a separate non-autoVerify dev intent-filter, without modifying the checked-in proof assets.
-- [ ] **NDEV-03**: From the running dev build, the iOS simulator and Android emulator load Crosswake routes served by the local shared backend, documented with exact CLI launch commands.
+- [x] **NDEV-01**: The iOS host gains an additive `Dev` scheme + `Info-Dev.plist` (a localhost cleartext ATS exception) + a dev fixture pointing at `http://localhost:4700`, without modifying the checked-in public-coordinate proof fixtures or `Info.plist`.
+- [x] **NDEV-02**: The Android host gains an additive `dev` product flavor + a network-security-config permitting `10.0.2.2` cleartext + dev assets pointing at `http://10.0.2.2:4700`, with a separate non-autoVerify dev intent-filter, without modifying the checked-in proof assets.
+- [x] **NDEV-03**: From the running dev build, the iOS simulator and Android emulator load Crosswake routes served by the local shared backend, documented with exact CLI launch commands.
 
 ### LAUNCH — Orchestration + launch banner
 
@@ -82,9 +82,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | PORT-01 | Phase 125 | Complete |
 | PORT-02 | Phase 125 | Complete |
 | PORT-03 | Phase 125 | Complete |
-| NDEV-01 | Phase 126 | Pending |
-| NDEV-02 | Phase 126 | Pending |
-| NDEV-03 | Phase 126 | Pending |
+| NDEV-01 | Phase 126 | Complete |
+| NDEV-02 | Phase 126 | Complete |
+| NDEV-03 | Phase 126 | Complete |
 | LAUNCH-01 | Phase 127 | Pending |
 | LAUNCH-02 | Phase 127 | Pending |
 | COLL-01 | Phase 128 | Pending |
