@@ -28,6 +28,9 @@ defmodule Crosswake.Guides.SeeItRunTest do
 
     assert File.exists?(@hero_command_path),
            "expected #{@hero_command_path} to exist"
+
+    assert File.exists?(@router_path),
+           "expected #{@router_path} to exist (canonical route source)"
   end
 
   # ---------------------------------------------------------------------------
@@ -171,6 +174,15 @@ defmodule Crosswake.Guides.SeeItRunTest do
         "emulator evidence",
         :missing_native_label,
         "guide must use the canonical 'emulator evidence' label per support_matrix.md legend"
+      ),
+
+      # Support-matrix legend anchor — the D-15 sentence must link to the legend
+      require_regex(
+        path,
+        contents,
+        ~r/support_matrix\.md#support-truth-label-legend/,
+        :missing_native_label,
+        "guide must link to support_matrix.md#support-truth-label-legend for the emulator-evidence term"
       )
     ]
     |> List.flatten()
