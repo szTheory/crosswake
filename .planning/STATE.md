@@ -4,13 +4,13 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 status: executing
 stopped_at: Phase 126 context gathered
-last_updated: "2026-06-22T15:30:41.873Z"
-last_activity: 2026-06-21 — Phase 125 complete, transitioned to Phase 126
+last_updated: "2026-06-22T17:04:16.917Z"
+last_activity: 2026-06-22
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 7
+  completed_plans: 4
   percent: 25
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 125 — containerized-shared-backend-port-convention
+**Current focus:** Phase 126 — additive-native-dev-wiring
 
 ## Current Position
 
-Phase: 126 — Additive Native Dev Wiring
-Plan: Not started
+Phase: 126 (additive-native-dev-wiring) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-21 — Phase 125 complete, transitioned to Phase 126
+Last activity: 2026-06-22
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -104,12 +104,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | v15.0 future | Companion package extraction (Sigra/Chimeway/Rindle/Threadline) | Deferred behind v15.0 DX wedge | v15.0 scope |
 | Phase 125 P01 | 5m | 3 tasks | 8 files |
 | Phase 125 P02 | 4m | 2 tasks | 4 files |
+| Phase 126 P01 | 3min | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T15:30:41.869Z
+Last session: 2026-06-22T17:04:16.911Z
 Stopped at: Phase 126 context gathered
-Resume file: .planning/phases/126-additive-native-dev-wiring/126-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 
