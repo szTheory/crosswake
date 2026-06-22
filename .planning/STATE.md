@@ -2,13 +2,10 @@
 gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
-current_phase: 126
-current_phase_name: Additive Native Dev Wiring
 status: executing
-stopped_at: Completed 125-02-PLAN.md
-last_updated: "2026-06-21T22:55:31.047Z"
-last_activity: 2026-06-21
-last_activity_desc: Phase 125 complete, transitioned to Phase 126
+stopped_at: Phase 126 context gathered
+last_updated: "2026-06-22T15:30:41.873Z"
+last_activity: 2026-06-21 — Phase 125 complete, transitioned to Phase 126
 progress:
   total_phases: 4
   completed_phases: 1
@@ -110,9 +107,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-06-21T21:12:13.694Z
-Stopped at: Completed 125-02-PLAN.md
-Resume file: None
+Last session: 2026-06-22T15:30:41.869Z
+Stopped at: Phase 126 context gathered
+Resume file: .planning/phases/126-additive-native-dev-wiring/126-CONTEXT.md
 
 ## Operator Next Steps
 
