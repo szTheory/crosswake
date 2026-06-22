@@ -79,7 +79,9 @@ Exceptions: 900px cap on all images (not a spacing multiple — derived from Git
 | Body (guide prose) | 16px | 400 (regular) | 1.5 (24px) | `--cw-text-scale-md` / `--cw-line-height-md` |
 | Label / caption | 14px | 400 (regular) | 1.43 (20px) | `--cw-text-scale-sm` / `--cw-line-height-sm` |
 | Subheading (h3) | 18px | 600 (semibold) | 1.56 (28px) | `--cw-text-scale-lg` / `--cw-line-height-lg` |
-| Section heading (h2) | 20px | 700 (bold) | 1.5 (30px) | `--cw-text-scale-xl` / `--cw-line-height-xl` |
+| Section heading (h2) | 20px | 600 (semibold) | 1.5 (30px) | `--cw-text-scale-xl` / `--cw-line-height-xl` |
+
+**Weight contract:** exactly 2 weights — 400 (regular) for body/label/caption; 600 (semibold) for all headings (h2 and h3). The h2/h3 distinction is expressed via font size (20px vs 18px), not a third weight. 700 (bold) is not authored in this phase; ExDoc and GitHub's own stylesheets may apply it independently, but this contract does not produce it.
 
 **Markdown authoring rules derived from typography contract:**
 
