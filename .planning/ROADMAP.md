@@ -203,6 +203,6 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 | 123. Native Package Behavioral Proof | v14.0 | 4/4 | Complete | 2026-06-20 |
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 6/6 | Complete | 2026-06-21 |
 | 125. Containerized Shared Backend + Port Convention | v15.0 | 3/3 | Complete    | 2026-06-21 |
-| 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete   | 2026-06-22 |
+| 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete    | 2026-06-22 |
 | 127. Launch Orchestration + Banner | v15.0 | 0/TBD | Not started | - |
 | 128. Collateral + "See It Run" Guide | v15.0 | 0/TBD | Not started | - |
