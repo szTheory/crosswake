@@ -23,6 +23,19 @@ android {
     }
   }
 
+  flavorDimensions "env"
+
+  productFlavors {
+    prod {
+      dimension "env"
+    }
+    dev {
+      dimension "env"
+      applicationIdSuffix ".dev"
+      versionNameSuffix "-dev"
+    }
+  }
+
   buildFeatures {
     compose true
   }
