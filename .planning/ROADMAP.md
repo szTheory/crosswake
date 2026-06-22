@@ -136,7 +136,12 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   2. An Android developer can run the `dev` flavor Gradle build and the emulator reaches `http://10.0.2.2:4700`; the network-security config permitting cleartext for `10.0.2.2` is additive; the checked-in prod proof assets are untouched
   3. The repo README or NDEV docs surface exact CLI commands (`xcodebuild -scheme Dev`, `./gradlew installDev`, etc.) a newcomer can copy-paste to launch each native runtime against the local backend
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+- [ ] 126-01-PLAN.md — Extend `mix crosswake.contract.gen --dev` + commit the two dev fixtures + dev-drift guard (D-11/12/13)
+- [ ] 126-02-PLAN.md — iOS additive Dev scheme: `Debug-Dev` config + `Info-Dev.plist` + Run Script copy phase + `Dev.xcscheme` (D-01..D-05)
+- [ ] 126-03-PLAN.md — Android additive `dev` flavor + dev source-set overlay + 10.0.2.2 cleartext config + D-10 lockstep migration (D-06..D-10)
+- [ ] 126-04-PLAN.md — D-14 proof-posture guard test + D-15 additive QUICK_START dev-wiring section + D-16 honest voice (NDEV-03)
 
 ### Phase 127: Launch Orchestration + Banner
 
