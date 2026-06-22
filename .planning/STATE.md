@@ -4,9 +4,9 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 127
 current_phase_name: launch-orchestration-banner
-status: verifying
-stopped_at: Completed 127-02-PLAN.md
-last_updated: "2026-06-22T19:01:37.458Z"
+status: ready_to_plan
+stopped_at: Phase 127 complete (2/2) — ready to discuss Phase 128
+last_updated: 2026-06-22T19:08:16.727Z
 last_activity: 2026-06-22
 last_activity_desc: Phase 127 execution started
 progress:
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 127 — launch-orchestration-banner
+**Current focus:** Phase 128 — collateral + "see it run" guide
 
 ## Current Position
 
-Phase: 127 (launch-orchestration-banner) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-06-22 -- Phase 127 execution started
+Phase: 128
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-22
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -42,7 +42,7 @@ Phase 125 [░░░░░] Phase 126 [░░░░░] Phase 127 [░░░░�
 
 **Velocity:**
 
-- Total plans completed: 41 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) = 88 across last five milestones
+- Total plans completed: 43 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) = 88 across last five milestones
 - Average duration: —
 - Total execution time: —
 
