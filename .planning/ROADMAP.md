@@ -154,7 +154,10 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   2. The banner includes an honest "What's proven / What needs a native build" block — a first-run reader can tell immediately what runs deterministically vs. what requires Xcode/SDK setup
   3. When the iOS/Android toolchain is present, the script advisorily launches the simulator/emulator; when the toolchain is absent, it prints a clear and calm guidance message (not an opaque stack trace or silent skip)
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+- [ ] 127-01-PLAN.md — bin/see-it-run.sh: boot/reuse + curl readiness poll, plain-ASCII brand banner (proven/needs-build block), flag parser + advisory tiered sim/emulator launch + web auto-open (Wave 1)
+- [ ] 127-02-PLAN.md — thin `mix crosswake.demo` System.cmd alias + D-21 source-derived banner drift test with synthetic anti-vacuity cases (Wave 2)
 
 ### Phase 128: Collateral + "See It Run" Guide
 
@@ -204,5 +207,5 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
 | 124. Compatibility Semantics & Adopter Truth | v14.0 | 6/6 | Complete | 2026-06-21 |
 | 125. Containerized Shared Backend + Port Convention | v15.0 | 3/3 | Complete    | 2026-06-21 |
 | 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete    | 2026-06-22 |
-| 127. Launch Orchestration + Banner | v15.0 | 0/TBD | Not started | - |
+| 127. Launch Orchestration + Banner | v15.0 | 0/2 | Not started | - |
 | 128. Collateral + "See It Run" Guide | v15.0 | 0/TBD | Not started | - |
