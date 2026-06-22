@@ -172,7 +172,10 @@ Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
   4. README and `examples/QUICK_START.md` both route readers to `guides/see_it_run.md` and the one-command Docker path without overclaiming native support (support labels are honest)
   5. Guide truth (ports, routes, exact commands) is guarded by at least one `test/crosswake/guides/see_it_run_test.exs` doc-contract test derived from source, consistent with the existing guide-test culture
 
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 128-01-PLAN.md — guides/see_it_run.md + source-derived drift test + ExDoc Start-group registration (DOCS-01, DOCS-03)
+- [ ] 128-02-PLAN.md — README `## See it run` section + QUICK_START guide pointer/Option-A rename (DOCS-02)
+- [ ] 128-03-PLAN.md — bin/capture-collateral.sh harness + brandbook collateral honest-label table (COLL-01, COLL-02)
 **UI hint**: yes
 
 ## Progress
