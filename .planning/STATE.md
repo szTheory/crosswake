@@ -4,13 +4,13 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 status: executing
 stopped_at: Phase 126 context gathered
-last_updated: "2026-06-22T17:04:16.917Z"
+last_updated: "2026-06-22T17:09:42.529Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 25
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 ## Current Position
 
 Phase: 126 (additive-native-dev-wiring) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-22
 
@@ -66,6 +66,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: hexpm/elixir Debian bookworm-slim base (glibc) required for ecto_sqlite3 NIF; Alpine/musl unsafe
 - [Phase ?]: Plain unconditional re-seed in entrypoint — seeds.exs is delete_all + insert, inherently idempotent
 - [Phase ?]: docker-compose.yml collocated in examples/phoenix_host/ so build: . and .:/app bind-mount align with .dockerignore
+- [Phase ?]: INFOPLIST_FILE set inline in target-level Debug-Dev config (not xcconfig) to avoid xcconfig GUI-override precedence
+- [Phase ?]: WKAppBoundDomains in Info-Dev.plist contains both example.com and localhost to prevent WebKit silent navigation refusal
+- [Phase ?]: NSExceptionDomains key uses hostname localhost not 127.0.0.1 (ATS requires hostname not IP)
 
 ### Pending Todos
 
@@ -105,10 +108,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 125 P01 | 5m | 3 tasks | 8 files |
 | Phase 125 P02 | 4m | 2 tasks | 4 files |
 | Phase 126 P01 | 3min | 3 tasks | 4 files |
+| Phase 126 P02 | 3min | 3 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T17:04:16.911Z
+Last session: 2026-06-22T17:09:30.195Z
 Stopped at: Phase 126 context gathered
 Resume file: None
 
