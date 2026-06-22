@@ -172,6 +172,43 @@ You need local Android tooling and a running emulator or device for that command
 The checked-in Android host path is published-coordinate proof, but the emulator
 launch still does not prove physical-device support.
 
+### Run Against the Local Backend (Dev Wiring)
+
+These hosts are `checked-in public-coordinate proof` in `published-coordinate mode`.
+The dev-wiring commands load Crosswake routes advisorily from the local backend:
+a successful simulator or emulator run confirms the dev wiring reaches the local
+backend, but does not prove physical-device support.
+
+Start the shared backend first:
+
+```bash
+cd examples/phoenix_host && PORT=4700 mix phx.server
+# or: docker compose up (from examples/)
+```
+
+**iOS Simulator** (select the `Dev` scheme in Xcode):
+
+```bash
+xcodebuild \
+  -project examples/ios_shell_host/CrosswakeShell.xcodeproj \
+  -scheme Dev \
+  -configuration Debug-Dev \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  build
+```
+
+Or open in Xcode and pick the `Dev` scheme from the scheme picker, then Run.
+
+**Android Emulator:**
+
+```bash
+cd examples/android_shell_host
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew installDevDebug
+adb shell am start -n dev.crosswake.shell.dev/.MainActivity
+```
+
+You need a running Android emulator and local Android tooling (JDK 17 required).
+
 ## Troubleshooting Quick Checks
 
 - If `mix setup` fails, run it again from `examples/phoenix_host`; it fetches
