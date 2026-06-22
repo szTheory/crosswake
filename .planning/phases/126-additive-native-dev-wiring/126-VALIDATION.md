@@ -38,7 +38,17 @@ created: 2026-06-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD — planner fills from RESEARCH.md `## Validation Architecture` and the D-14 guard assertions | — | — | NDEV-01/02/03 | T-126-01 (dev cleartext exposure) | dev-only cleartext scoped to localhost / 10.0.2.2; prod posture default-off | unit | `mix test test/crosswake/guides/native_dev_wiring_test.exs` | ❌ W0 | ⬜ pending |
+| 126-01-01 | 01 | 1 | NDEV-01/02/03 | — | — | compile | `mix compile --warnings-as-errors` | ✅ | ⬜ pending |
+| 126-01-02 | 01 | 1 | NDEV-01/02/03 | T-126-01 | dev fixtures diverge only in url/origin/correlation_id; default run writes no prod surface | behavior | `mix crosswake.contract.gen --dev && git diff --quiet -- <prod surfaces> && test -f <dev fixtures>` | ✅ | ⬜ pending |
+| 126-01-03 | 01 | 1 | NDEV-01/02/03 | — | separate `@dev_generated_json_paths`; prod drift list untouched | unit | `mix test test/crosswake/contract/contract_drift_test.exs` | ✅ | ⬜ pending |
+| 126-02-01 | 02 | 2 | NDEV-01 | T-126-01 | `Info-Dev.plist` localhost-pinned ATS, no `NSAllowsArbitraryLoads`; prod `Info.plist` byte-untouched | lint+diff | `plutil -lint Info-Dev.plist && git diff --quiet -- Info.plist` | ❌ W2 | ⬜ pending |
+| 126-02-02 | 02 | 2 | NDEV-01 | — | `Debug-Dev` config + `CONFIGURATION`-guarded Run Script copy phase | lint | `plutil -lint project.pbxproj && xcodebuild -list \| grep Debug-Dev` | ❌ W2 | ⬜ pending |
+| 126-02-03 | 02 | 2 | NDEV-01 | — | `Dev.xcscheme` points Launch/Test at `Debug-Dev` | xml-lint | `parse Dev.xcscheme && grep buildConfiguration = "Debug-Dev"` | ❌ W2 | ⬜ pending |
+| 126-03-01 | 03 | 2 | NDEV-02 | — | `prod`+`dev` flavors; `versionName "0.1.2"` preserved (drift-safe) | grep | `grep flavorDimensions/applicationIdSuffix/versionName build.gradle` | ❌ W2 | ⬜ pending |
+| 126-03-02 | 03 | 2 | NDEV-02 | T-126-01 | `10.0.2.2`-pinned cleartext via `tools:replace`; prod manifest byte-untouched; default-off base-config | xml+diff | `parse dev manifest+nsc && grep 10.0.2.2 && git diff --quiet -- src/main/AndroidManifest.xml` | ❌ W2 | ⬜ pending |
+| 126-03-03 | 03 | 2 | NDEV-02 | — | D-10 lockstep: example-host Gradle invocations migrated to Prod-flavored names | grep | `grep ProdDebug script/... && grep installProdDebug QUICK_START && ! grep 'gradlew installDebug'` | ❌ W2 | ⬜ pending |
+| 126-04-01 | 04 | 3 | NDEV-03 | T-126-01 | D-14 proof-posture guard: source-derived port, Jason.decode! key lookup, anti-vacuity cases | unit | `mix test test/crosswake/guides/native_dev_wiring_test.exs` | ❌ W3 | ⬜ pending |
+| 126-04-02 | 04 | 3 | NDEV-03 | — | QUICK_START additive section keeps adoption-drift guard green (labels + source-derived port) | unit | `grep section labels QUICK_START && mix test test/crosswake/guides/quick_start_adoption_drift_test.exs` | ❌ W3 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
