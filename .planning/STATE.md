@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
+current_phase: 126
+current_phase_name: additive-native-dev-wiring
 status: executing
 stopped_at: Phase 126 context gathered
-last_updated: "2026-06-22T17:09:42.529Z"
+last_updated: "2026-06-22T17:14:51.664Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 25
 ---
 
@@ -26,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 ## Current Position
 
 Phase: 126 (additive-native-dev-wiring) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-22
 
@@ -69,6 +71,10 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: INFOPLIST_FILE set inline in target-level Debug-Dev config (not xcconfig) to avoid xcconfig GUI-override precedence
 - [Phase ?]: WKAppBoundDomains in Info-Dev.plist contains both example.com and localhost to prevent WebKit silent navigation refusal
 - [Phase ?]: NSExceptionDomains key uses hostname localhost not 127.0.0.1 (ATS requires hostname not IP)
+- [Phase ?]: prod flavor uses no suffix; no src/prod dir needed
+- [Phase ?]: tools:replace on networkSecurityConfig attribute for minimal dev manifest overlay
+- [Phase ?]: dev intent-filter omits android:autoVerify entirely to avoid App Links cascade failure on older APIs
+- [Phase ?]: Parameter-expansion conditional UNIT_TEST_TASK/CONNECTED_TEST_TASK: examples/ uses prod-flavored tasks; template path uses unflavored tasks
 
 ### Pending Todos
 
@@ -109,10 +115,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 125 P02 | 4m | 2 tasks | 4 files |
 | Phase 126 P01 | 3min | 3 tasks | 4 files |
 | Phase 126 P02 | 3min | 3 tasks | 3 files |
+| Phase 126 P03 | 8min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T17:09:30.195Z
+Last session: 2026-06-22T17:14:06.997Z
 Stopped at: Phase 126 context gathered
 Resume file: None
 
