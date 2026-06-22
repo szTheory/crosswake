@@ -165,7 +165,7 @@ proof, but a successful simulator launch still does not prove device support.
 
 ```bash
 cd examples/android_shell_host
-./gradlew installDebug
+./gradlew installProdDebug
 ```
 
 You need local Android tooling and a running emulator or device for that command.

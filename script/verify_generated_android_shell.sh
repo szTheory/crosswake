@@ -227,14 +227,22 @@ main() {
 
   cd "${project_root}"
 
+  # Use prod-flavored task names for the examples/android_shell_host path (which declares
+  # prod/dev product flavors); fall back to unflavored names for the generated-from-template
+  # path (which has no flavors).
+  UNIT_TEST_TASK="${PROJECT_ROOT_INPUT:+testProdDebugUnitTest}"
+  UNIT_TEST_TASK="${UNIT_TEST_TASK:-testDebugUnitTest}"
+  CONNECTED_TEST_TASK="${PROJECT_ROOT_INPUT:+connectedProdDebugAndroidTest}"
+  CONNECTED_TEST_TASK="${CONNECTED_TEST_TASK:-connectedDebugAndroidTest}"
+
   if [[ "${RUN_CONNECTED_TESTS}" == "0" ]]; then
-    ./gradlew --no-daemon --stacktrace testDebugUnitTest
+    ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}"
     return
   fi
 
   create_avd_if_needed
   start_emulator "${emulator_log}"
-  ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --no-daemon --stacktrace testDebugUnitTest connectedDebugAndroidTest
+  ANDROID_SERIAL="${AVD_SERIAL}" ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}" "${CONNECTED_TEST_TASK}"
 }
 
 main "$@"
