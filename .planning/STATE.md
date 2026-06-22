@@ -4,16 +4,16 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 126
 current_phase_name: additive-native-dev-wiring
-status: executing
+status: verifying
 stopped_at: Phase 126 context gathered
-last_updated: "2026-06-22T17:14:51.664Z"
+last_updated: "2026-06-22T17:22:45.930Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 25
+  completed_plans: 7
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 Phase: 126 (additive-native-dev-wiring) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-22
 
 ```
@@ -75,6 +75,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: tools:replace on networkSecurityConfig attribute for minimal dev manifest overlay
 - [Phase ?]: dev intent-filter omits android:autoVerify entirely to avoid App Links cascade failure on older APIs
 - [Phase ?]: Parameter-expansion conditional UNIT_TEST_TASK/CONNECTED_TEST_TASK: examples/ uses prod-flavored tasks; template path uses unflavored tasks
+- [Phase ?]: Source-derived port in guard test (committed_port/0 regex) closes 10.0.2.2 coverage gap
+- [Phase ?]: Anti-vacuity: synthetic plist-with-NSExceptionDomains and dev-fixture-at-proof-domain cases prove guard assertions non-vacuous
+- [Phase ?]: QUICK_START native labels placed within new section body to satisfy native_label_failures 1500-char window for all native host references
 
 ### Pending Todos
 
@@ -116,10 +119,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 126 P01 | 3min | 3 tasks | 4 files |
 | Phase 126 P02 | 3min | 3 tasks | 3 files |
 | Phase 126 P03 | 8min | 3 tasks | 5 files |
+| Phase 126 P04 | 4min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T17:14:06.997Z
+Last session: 2026-06-22T17:22:29.216Z
 Stopped at: Phase 126 context gathered
 Resume file: None
 
