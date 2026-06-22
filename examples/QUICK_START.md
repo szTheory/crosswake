@@ -1,5 +1,7 @@
 # Crosswake Quick Start
 
+> **New here?** Start with [guides/see_it_run.md](../guides/see_it_run.md) to see the three runtimes in action. Come back here for the full proof command reference.
+
 This guide gets the checked-in Phoenix host running first, then walks through the
 proof commands that show Crosswake's current route-owner architecture.
 
@@ -19,17 +21,19 @@ while `--local` remains the explicit maintainer path.
 
 ## First Run
 
-### Option A: Docker (no local Elixir/Node/SQLite toolchain required)
+### Option A: One Command (Docker)
 
-Boot the shared backend with one command from `examples/phoenix_host`:
+Run from the repo root — no local Elixir, Node, or SQLite toolchain required:
 
 ```bash
-cd examples/phoenix_host
-docker compose up
+bin/see-it-run.sh
 ```
 
-The backend starts and serves the app at `http://localhost:4700`. SQLite data is
-kept in a named Docker volume and survives container restarts.
+The script boots the shared backend, prints the launch banner, and auto-opens the
+browser. The app is served at `http://localhost:4700`. SQLite data is kept in a
+named Docker volume and survives container restarts.
+
+To run the Docker backend directly: `cd examples/phoenix_host && docker compose up`
 
 ### Option B: Native
 
