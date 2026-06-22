@@ -95,6 +95,8 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Key context:** Deferred behind the v15.0 DX wedge — native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth. Brand source of truth is `brandbook/BRAND-SPEC.md` (v9.0) + `priv/static/crosswake/tokens.css`. Phase numbering continues from v14.0 (phases 125+).
 
+**Progress:** Phase 125 (Containerized Shared Backend + Port Convention) complete 2026-06-21 — DOCKER-01..05 + PORT-01..03 validated. `docker compose up` was empirically verified to boot the demo backend at `localhost:4700` (HTTP 200), with working bind-mount live-reload (`:fs_poll`) and a persistent SQLite named volume; the reusable `docs/PORT-REGISTRY.md` records the 4700–4799 convention. Next: Phase 126 (additive native dev-wiring).
+
 ## Requirements
 
 ### Validated
@@ -277,4 +279,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-21 after starting v15.0 See It Run milestone*
+*Last updated: 2026-06-21 after completing Phase 125 (Containerized Shared Backend + Port Convention)*
