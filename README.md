@@ -42,6 +42,35 @@ Crosswake is not:
 - “write once, run anywhere”
 - “offline magically works”
 
+## See it run
+
+```bash
+bin/see-it-run.sh
+```
+
+Boots the shared backend on port 4700 and auto-opens the browser. Requires Docker.
+
+<img
+  src=”https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png”
+  alt=”Three-runtime Crosswake comparison: web (localhost:4700), iOS Simulator (emulator evidence — advisory native, not a physical device), Android Emulator (emulator evidence — advisory native, not a physical device)”
+  width=”900”
+/>
+
+Three routes, one shared backend at `http://localhost:4700`:
+
+- `/` — home (Phoenix LiveView)
+- `/offline` — offline island (app-owned, socketless)
+- `/bridge-proof` — bounded bridge (share capability)
+
+> **Advisory native collateral.** The iOS Simulator and Android Emulator frames above are
+> `emulator evidence` — advisory, not physical-device proof. A successful simulator or
+> emulator run confirms the dev wiring reaches the local backend, but does not prove
+> physical-device support. See the
+> [support-truth label legend](guides/support_matrix.md#support-truth-label-legend).
+
+For a guided walkthrough: [guides/see_it_run.md](guides/see_it_run.md).
+For the full proof command reference: [examples/QUICK_START.md](examples/QUICK_START.md).
+
 ## Choose your path
 
 ### Evaluating Crosswake
