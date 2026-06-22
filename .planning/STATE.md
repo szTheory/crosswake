@@ -4,17 +4,17 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 127
 current_phase_name: launch-orchestration-banner
-status: executing
-stopped_at: Phase 127 context gathered
-last_updated: "2026-06-22T18:54:05.638Z"
+status: verifying
+stopped_at: Completed 127-02-PLAN.md
+last_updated: "2026-06-22T19:01:37.458Z"
 last_activity: 2026-06-22
 last_activity_desc: Phase 127 execution started
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 50
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State: Crosswake
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 
 Phase: 127 (launch-orchestration-banner) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-22 -- Phase 127 execution started
 
 ```
@@ -82,6 +82,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: bin/see-it-run.sh canonical; mix crosswake.demo is thin alias (D-01)
 - [Phase ?]: Two exit codes only: 0=backend+banner, 1=backend boot failure; native never changes exit code (D-17)
 - [Phase ?]: Banner in shell (not Elixir): plain-ASCII printf/heredoc, ANSI gated on TTY/NO_COLOR/CI (D-02)
+- [Phase ?]: mix crosswake.demo resolved script path via __DIR__ walking three levels up to repo root
+- [Phase ?]: Banner scan asserts leading-space home route line to avoid false JAVA_HOME substring match
+- [Phase ?]: Anti-vacuity wrong-port case replaces localhost:PORT substring (not bare port) to avoid mutating JAVA_HOME path
 
 ### Pending Todos
 
@@ -125,12 +128,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 126 P03 | 8min | 3 tasks | 5 files |
 | Phase 126 P04 | 4min | 2 tasks | 2 files |
 | Phase 127 P01 | 202 | 3 tasks | 1 files |
+| Phase 127 P02 | 4min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T18:53:53.477Z
-Stopped at: Phase 127 context gathered
-Resume file: .planning/phases/127-launch-orchestration-banner/127-CONTEXT.md
+Last session: 2026-06-22T19:01:37.452Z
+Stopped at: Completed 127-02-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
