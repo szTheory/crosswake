@@ -3,17 +3,18 @@ gsd_state_version: 1.0
 milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 127
-status: ready_to_plan
+current_phase_name: launch-orchestration-banner
+status: executing
 stopped_at: Phase 127 context gathered
-last_updated: "2026-06-22T17:48:55.271Z"
+last_updated: "2026-06-22T18:54:05.638Z"
 last_activity: 2026-06-22
+last_activity_desc: Phase 127 execution started
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 50
-current_phase_name: additive-native-dev-wiring
 ---
 
 # Project State: Crosswake
@@ -23,14 +24,14 @@ current_phase_name: additive-native-dev-wiring
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 127 — launch orchestration + banner
+**Current focus:** Phase 127 — launch-orchestration-banner
 
 ## Current Position
 
-Phase: 127
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-22
+Phase: 127 (launch-orchestration-banner) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-06-22 -- Phase 127 execution started
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
@@ -78,6 +79,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Source-derived port in guard test (committed_port/0 regex) closes 10.0.2.2 coverage gap
 - [Phase ?]: Anti-vacuity: synthetic plist-with-NSExceptionDomains and dev-fixture-at-proof-domain cases prove guard assertions non-vacuous
 - [Phase ?]: QUICK_START native labels placed within new section body to satisfy native_label_failures 1500-char window for all native host references
+- [Phase ?]: bin/see-it-run.sh canonical; mix crosswake.demo is thin alias (D-01)
+- [Phase ?]: Two exit codes only: 0=backend+banner, 1=backend boot failure; native never changes exit code (D-17)
+- [Phase ?]: Banner in shell (not Elixir): plain-ASCII printf/heredoc, ANSI gated on TTY/NO_COLOR/CI (D-02)
 
 ### Pending Todos
 
@@ -120,10 +124,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 126 P02 | 3min | 3 tasks | 3 files |
 | Phase 126 P03 | 8min | 3 tasks | 5 files |
 | Phase 126 P04 | 4min | 2 tasks | 2 files |
+| Phase 127 P01 | 202 | 3 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-22T17:48:55.265Z
+Last session: 2026-06-22T18:53:53.477Z
 Stopped at: Phase 127 context gathered
 Resume file: .planning/phases/127-launch-orchestration-banner/127-CONTEXT.md
 

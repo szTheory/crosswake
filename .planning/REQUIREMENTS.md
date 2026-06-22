@@ -30,8 +30,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### LAUNCH — Orchestration + launch banner
 
-- [ ] **LAUNCH-01**: A single friendly entrypoint (`bin/see-it-run.sh`, with an optional `mix crosswake.demo` alias) boots the shared backend and prints a brand-voiced, plain-ASCII banner listing the key URLs/routes, the exact next commands for each runtime, and an honest "what's proven / what needs a native build" block.
-- [ ] **LAUNCH-02**: The launch helper advisorily boots the iOS simulator and/or Android emulator when the toolchain is present, and prints clear guidance (not an opaque failure) when the toolchain is absent.
+- [x] **LAUNCH-01**: A single friendly entrypoint (`bin/see-it-run.sh`, with an optional `mix crosswake.demo` alias) boots the shared backend and prints a brand-voiced, plain-ASCII banner listing the key URLs/routes, the exact next commands for each runtime, and an honest "what's proven / what needs a native build" block.
+- [x] **LAUNCH-02**: The launch helper advisorily boots the iOS simulator and/or Android emulator when the toolchain is present, and prints clear guidance (not an opaque failure) when the toolchain is absent.
 
 ### COLL — Seeing is believing (visual collateral)
 
@@ -85,8 +85,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | NDEV-01 | Phase 126 | Complete |
 | NDEV-02 | Phase 126 | Complete |
 | NDEV-03 | Phase 126 | Complete |
-| LAUNCH-01 | Phase 127 | Pending |
-| LAUNCH-02 | Phase 127 | Pending |
+| LAUNCH-01 | Phase 127 | Complete |
+| LAUNCH-02 | Phase 127 | Complete |
 | COLL-01 | Phase 128 | Pending |
 | COLL-02 | Phase 128 | Pending |
 | DOCS-01 | Phase 128 | Pending |
