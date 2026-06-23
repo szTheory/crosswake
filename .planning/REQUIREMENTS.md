@@ -40,9 +40,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### DOCS — Reader-empathy guide + routing
 
-- [ ] **DOCS-01**: A new `guides/see_it_run.md` with a gameplan summary at the top and digestible, JTBD-driven sections is added to the ExDoc "Start" group after README, linking to (not duplicating) `examples/QUICK_START.md`.
-- [ ] **DOCS-02**: README and QUICK_START route readers to the new guide and the one-command Docker path while preserving honest support labels (no native overclaim).
-- [ ] **DOCS-03**: Guide truth (ports, routes, commands) is guarded by source-derived doc-contract tests, consistent with the existing `test/crosswake/guides/*_test.exs` culture.
+- [x] **DOCS-01**: A new `guides/see_it_run.md` with a gameplan summary at the top and digestible, JTBD-driven sections is added to the ExDoc "Start" group after README, linking to (not duplicating) `examples/QUICK_START.md`.
+- [x] **DOCS-02**: README and QUICK_START route readers to the new guide and the one-command Docker path while preserving honest support labels (no native overclaim).
+- [x] **DOCS-03**: Guide truth (ports, routes, commands) is guarded by source-derived doc-contract tests, consistent with the existing `test/crosswake/guides/*_test.exs` culture.
 
 ## Future Requirements
 
@@ -87,11 +87,11 @@ Which phases cover which requirements. Populated during roadmap creation.
 | NDEV-03 | Phase 126 | Complete |
 | LAUNCH-01 | Phase 127 | Complete |
 | LAUNCH-02 | Phase 127 | Complete |
-| COLL-01 | Phase 128 | Pending |
-| COLL-02 | Phase 128 | Pending |
-| DOCS-01 | Phase 128 | Pending |
-| DOCS-02 | Phase 128 | Pending |
-| DOCS-03 | Phase 128 | Pending |
+| COLL-01 | Phase 128 | Pending (CI auto-capture — see .github/workflows/see-it-run-collateral.yml) |
+| COLL-02 | Phase 128 | Pending (CI auto-capture — see .github/workflows/see-it-run-collateral.yml) |
+| DOCS-01 | Phase 128 | Complete |
+| DOCS-02 | Phase 128 | Complete |
+| DOCS-03 | Phase 128 | Complete |
 
 **Coverage:**
 

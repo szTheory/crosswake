@@ -7,6 +7,11 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
 const outputDir = args.outputDir || join(repoRoot, 'native-collateral-artifacts');
+// --screenshot-dir redirects ONLY the binary PNG writes (ios-simulator.png /
+// android-emulator.png). The manifest + advisory README stay in --output-dir so
+// they never clobber a curated collateral README. Defaults to outputDir for
+// backward compatibility with the advisory artifact workflow.
+const screenshotDir = args.screenshotDir || outputDir;
 const dryRun = args.dryRun;
 const platforms = args.platform === 'all' ? ['ios', 'android'] : [args.platform];
 const capturedAt = new Date().toISOString();
@@ -14,6 +19,7 @@ const commitSha = git(['rev-parse', 'HEAD']) || process.env.GITHUB_SHA || 'unkno
 const crosswakeVersion = readVersion();
 
 mkdirSync(outputDir, { recursive: true });
+mkdirSync(screenshotDir, { recursive: true });
 
 const manifest = {
   schema_version: '1.0.0',
@@ -77,7 +83,7 @@ function attemptIos() {
     return unavailable(base, `iOS verification failed: ${lastLines(result.output)}`);
   }
 
-  const screenshot = join(outputDir, 'ios-simulator.png');
+  const screenshot = join(screenshotDir, 'ios-simulator.png');
   const capture = spawnSync('xcrun', ['simctl', 'io', 'booted', 'screenshot', screenshot], {
     cwd: repoRoot,
     encoding: 'utf8'
@@ -118,7 +124,7 @@ function attemptAndroid() {
     return unavailable(base, `Android emulator verification failed: ${lastLines(result.output)}`);
   }
 
-  const screenshot = join(outputDir, 'android-emulator.png');
+  const screenshot = join(screenshotDir, 'android-emulator.png');
   const capture = spawnSync(
     'adb',
     ['exec-out', 'screencap', '-p'],
@@ -239,7 +245,7 @@ function writeSummary(path, manifest) {
 }
 
 function parseArgs(argv) {
-  const parsed = { dryRun: false, outputDir: null, platform: 'all' };
+  const parsed = { dryRun: false, outputDir: null, screenshotDir: null, platform: 'all' };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -248,6 +254,8 @@ function parseArgs(argv) {
       parsed.dryRun = true;
     } else if (arg === '--output-dir') {
       parsed.outputDir = argv[++index];
+    } else if (arg === '--screenshot-dir') {
+      parsed.screenshotDir = argv[++index];
     } else if (arg === '--platform') {
       parsed.platform = argv[++index];
     } else {

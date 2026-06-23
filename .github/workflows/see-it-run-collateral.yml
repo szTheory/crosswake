@@ -1,0 +1,228 @@
+name: See It Run Collateral
+
+# Captures the full See It Run visual collateral and lands it on main via an
+# auto-PR — closing the COLL-01 / COLL-02 human gate (v15.0 milestone).
+#
+# Assets produced (brandbook/collateral/see-it-run/):
+#   web-home.png, web-offline.png, web-bridge-proof.png   (Playwright, route-proven)
+#   see-it-run.gif                                          (vhs terminal cast)
+#   ios-simulator.png, android-emulator.png                (simulator/emulator evidence)
+#   three-runtime-montage.png                              (ImageMagick composite)
+#
+# Honest by construction: the native shells render the SAME Phoenix routes in a
+# webview, so the screenshots are simulator/emulator evidence (advisory, not
+# physical device) — exactly what the collateral label table claims.
+#
+# Cadence: weekly + manual dispatch + when the shells / launcher / routes change.
+# The binaries themselves are drift-guarded on EVERY PR by the cheap ubuntu
+# `collateral-binaries-guard` job in offline-sync-e2e-gate.yml.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays 06:17 UTC
+  workflow_dispatch:
+  push:
+    paths:
+      - 'examples/ios_shell_host/**'
+      - 'examples/android_shell_host/**'
+      - 'bin/see-it-run.sh'
+      - 'bin/capture-collateral.sh'
+      - 'examples/phoenix_host/lib/**'
+      - 'brandbook/collateral/see-it-run/see-it-run.tape'
+      - '.github/workflows/see-it-run-collateral.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: see-it-run-collateral
+  cancel-in-progress: true
+
+jobs:
+  web-and-gif:
+    name: web-and-gif
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Mix + Node deps
+        working-directory: examples/phoenix_host
+        run: |
+          mix deps.get
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Boot shared backend on :4700 (detached)
+        run: |
+          set -euo pipefail
+          nohup bash -c 'cd examples/phoenix_host && \
+            MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server' \
+            >/tmp/phx-server.log 2>&1 &
+          echo $! > /tmp/phx-server.pid
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:4700/ >/dev/null 2>&1 && break
+            sleep 2
+          done
+          curl -sf http://localhost:4700/ >/dev/null 2>&1 || { echo "::error::backend never came up"; cat /tmp/phx-server.log; exit 1; }
+      - name: Capture web screenshots (route-proven)
+        env:
+          CI: ""
+        run: bin/capture-collateral.sh --web-only
+      - name: Render see-it-run.gif (terminal cast)
+        uses: charmbracelet/vhs-action@v2
+        with:
+          path: brandbook/collateral/see-it-run/see-it-run.tape
+          install-fonts: true
+      - name: Optimize GIF (<1MB target)
+        run: |
+          set -euo pipefail
+          sudo apt-get update && sudo apt-get install -y gifsicle
+          gifsicle -O3 --colors 128 \
+            -o brandbook/collateral/see-it-run/see-it-run.gif \
+            brandbook/collateral/see-it-run/see-it-run.gif
+          ls -la brandbook/collateral/see-it-run/see-it-run.gif
+      - name: Stop backend
+        if: always()
+        run: kill "$(cat /tmp/phx-server.pid)" 2>/dev/null || true
+      - name: Upload web + gif artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: see-it-run-web-gif
+          path: |
+            brandbook/collateral/see-it-run/web-home.png
+            brandbook/collateral/see-it-run/web-offline.png
+            brandbook/collateral/see-it-run/web-bridge-proof.png
+            brandbook/collateral/see-it-run/see-it-run.gif
+          if-no-files-found: error
+          retention-days: 14
+
+  native:
+    name: native
+    runs-on: macos-latest
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Boot shared backend on :4700 (detached)
+        # iOS Simulator reaches it at localhost:4700; Android Emulator at 10.0.2.2:4700.
+        # The native shells must load a real route, not a connection-error page.
+        run: |
+          set -euo pipefail
+          cd examples/phoenix_host && mix deps.get && cd "$GITHUB_WORKSPACE"
+          nohup bash -c 'cd examples/phoenix_host && \
+            MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server' \
+            >/tmp/phx-server.log 2>&1 &
+          echo $! > /tmp/phx-server.pid
+          for _ in $(seq 1 90); do
+            curl -sf http://localhost:4700/ >/dev/null 2>&1 && break
+            sleep 2
+          done
+          curl -sf http://localhost:4700/ >/dev/null 2>&1 || { echo "::error::backend never came up"; cat /tmp/phx-server.log; exit 1; }
+      - name: Capture iOS simulator + Android emulator screenshots
+        # capture-native-collateral.mjs boots the sim/emulator, builds the Phase-126
+        # Dev variants via the verify scripts, and screenshots the loaded route.
+        run: |
+          node script/capture-native-collateral.mjs \
+            --platform all \
+            --output-dir native-collateral-artifacts \
+            --screenshot-dir brandbook/collateral/see-it-run
+      - name: Assert native screenshots captured (not unavailable)
+        run: |
+          set -euo pipefail
+          test -s brandbook/collateral/see-it-run/ios-simulator.png
+          test -s brandbook/collateral/see-it-run/android-emulator.png
+          # Fail loudly if either platform reported "unavailable" in the manifest.
+          if grep -q '"status": "unavailable"' native-collateral-artifacts/evidence-manifest.json; then
+            echo "::error::a native platform reported unavailable — see manifest"
+            cat native-collateral-artifacts/evidence-manifest.json
+            exit 1
+          fi
+      - name: Stop backend
+        if: always()
+        run: kill "$(cat /tmp/phx-server.pid)" 2>/dev/null || true
+      - name: Upload native artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: see-it-run-native
+          path: |
+            brandbook/collateral/see-it-run/ios-simulator.png
+            brandbook/collateral/see-it-run/android-emulator.png
+            native-collateral-artifacts/evidence-manifest.json
+          if-no-files-found: error
+          retention-days: 14
+
+  assemble-pr:
+    name: assemble-pr
+    runs-on: ubuntu-latest
+    needs: [web-and-gif, native]
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Download web + gif artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: see-it-run-web-gif
+          path: brandbook/collateral/see-it-run
+      - name: Download native artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: see-it-run-native
+          path: brandbook/collateral/see-it-run
+      - name: Compose three-runtime montage
+        run: |
+          set -euo pipefail
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          cd brandbook/collateral/see-it-run
+          convert +append web-home.png ios-simulator.png android-emulator.png three-runtime-montage.png
+          # Drop the scratch manifest so it does not get committed by the PR.
+          rm -f evidence-manifest.json
+      - name: Self-check — collateral existence guard
+        run: |
+          mix deps.get
+          CROSSWAKE_INCLUDE_COLLATERAL=1 mix test test/crosswake/guides/see_it_run_collateral_test.exs
+      - name: Self-check — size budget (<1MB total)
+        run: bash script/check-collateral-size.sh
+      - name: Open auto-PR with refreshed collateral
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: collateral/auto-refresh
+          base: main
+          commit-message: 'chore(collateral): refresh See It Run assets'
+          title: 'chore(collateral): refresh See It Run assets'
+          body: |
+            Automated refresh of the See It Run visual collateral
+            (`brandbook/collateral/see-it-run/`).
+
+            - Web screenshots: Playwright route-proof (`bin/capture-collateral.sh --web-only`)
+            - GIF: vhs terminal cast of `bin/see-it-run.sh`
+            - iOS/Android: simulator/emulator evidence (advisory, not physical device)
+            - Montage: ImageMagick composite of web + iOS + Android
+
+            Source commit: ${{ github.sha }}
+
+            Closes the COLL-01 / COLL-02 capture gate. Merging this keeps the
+            published README + ExDoc guide images resolving on `main`.
+          add-paths: |
+            brandbook/collateral/see-it-run/*.png
+            brandbook/collateral/see-it-run/*.gif
+          delete-branch: true
