@@ -51,9 +51,9 @@ bin/see-it-run.sh
 Boots the shared backend on port 4700 and auto-opens the browser. Requires Docker.
 
 <img
-  src=”https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png”
-  alt=”Three-runtime Crosswake comparison: web (localhost:4700), iOS Simulator (emulator evidence — advisory native, not a physical device), Android Emulator (emulator evidence — advisory native, not a physical device)”
-  width=”900”
+  src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
+  alt="Three-runtime Crosswake comparison: web (localhost:4700), iOS Simulator (emulator evidence — advisory native, not a physical device), Android Emulator (emulator evidence — advisory native, not a physical device)"
+  width="900"
 />
 
 Three routes, one shared backend at `http://localhost:4700`:
