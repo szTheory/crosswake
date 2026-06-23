@@ -65,6 +65,8 @@ jobs:
         run: |
           mix docs
           test -f doc/index.html
+          # The See It Run guide must actually render (ExDoc Start group item 2).
+          test -f doc/see_it_run.html
 
       - name: Verify hex tarball contents
         # Builds and unpacks the hex tarball, asserting expected files are present

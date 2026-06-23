@@ -180,6 +180,30 @@ jobs:
           mix deps.get
           CROSSWAKE_EVIDENCE_MANIFEST_PATH=examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json \
             mix test test/crosswake/guides/evidence_manifest_test.exs
+      - name: Capture web collateral via the harness (end-to-end rename proof)
+        # Exercises bin/capture-collateral.sh --web-only against a live backend so
+        # the Playwright→collateral rename mapping (library.png→web-home.png, etc.)
+        # is proven, not just statically scanned. Starts the shared backend (the
+        # same command Playwright's webServer uses) so the harness's curl pre-flight
+        # passes; CI="" lets the harness's inner Playwright reuse that backend
+        # instead of starting a second one on the same port.
+        env:
+          CI: ""
+          CROSSWAKE_VERSION: ${{ steps.crosswake-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          ( cd examples/phoenix_host && \
+            MIX_ENV=test mix do ecto.drop --quiet + ecto.create --quiet + ecto.migrate --quiet + phx.server ) &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:4700/ >/dev/null 2>&1 && break
+            sleep 2
+          done
+          bin/capture-collateral.sh --web-only
+          test -s brandbook/collateral/see-it-run/web-home.png
+          test -s brandbook/collateral/see-it-run/web-offline.png
+          test -s brandbook/collateral/see-it-run/web-bridge-proof.png
       - name: Upload route-tour evidence bundle
         uses: actions/upload-artifact@v4
         with:
