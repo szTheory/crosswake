@@ -54,4 +54,5 @@ erl_crash.dump
 # Node deps + Playwright artifacts (anywhere — examples, tooling)
 **/node_modules/
 **/playwright-report/
+**/playwright-artifacts/
 **/test-results/
