@@ -12,6 +12,20 @@ defmodule Crosswake.Guides.SeeItRunTest do
   @phoenix_config_path "examples/phoenix_host/config/runtime.exs"
   @router_path "examples/phoenix_host/lib/crosswake_example/router.ex"
 
+  # D-08 JTBD sections — the guide must carry these seven `##` headings in order.
+  @jtbd_sections [
+    "## What You'll See",
+    "## Run It Now (Zero Toolchain)",
+    "## Browse the Route Owners",
+    "## Compare All Three Runtimes (Web, iOS, Android)",
+    "## Wire a Native Runtime to the Local Backend",
+    "## What This Proves (And What It Doesn't)",
+    "## Go Deeper"
+  ]
+
+  # Gameplan blockquote opener — the orientation hook above the first heading.
+  @gameplan_opener "> Boot Crosswake once."
+
   # ---------------------------------------------------------------------------
   # Readability / source-derived sanity
   # ---------------------------------------------------------------------------
@@ -86,6 +100,74 @@ defmodule Crosswake.Guides.SeeItRunTest do
       scan_guide({"synthetic/see_it_run_missing_native_label.md", mutated}),
       :missing_native_label
     )
+  end
+
+  # ---------------------------------------------------------------------------
+  # Structure guard — gameplan blockquote + 7 JTBD sections in order
+  # ---------------------------------------------------------------------------
+
+  test "guide carries the gameplan blockquote and 7 JTBD sections in order" do
+    contents = File.read!(@target_path)
+    assert_no_drift_failures(scan_structure({@target_path, contents}))
+  end
+
+  test "structure scanner rejects a missing JTBD section" do
+    contents = File.read!(@target_path)
+    mutated = String.replace(contents, "## Go Deeper", "## Somewhere Else")
+
+    assert_failure_category(
+      scan_structure({"synthetic/see_it_run_missing_section.md", mutated}),
+      :missing_section
+    )
+  end
+
+  test "structure scanner rejects out-of-order JTBD sections" do
+    contents = File.read!(@target_path)
+
+    # Swap the first and last section headings to break the canonical order.
+    mutated =
+      contents
+      |> String.replace("## What You'll See", "@@FIRST@@")
+      |> String.replace("## Go Deeper", "## What You'll See")
+      |> String.replace("@@FIRST@@", "## Go Deeper")
+
+    assert_failure_category(
+      scan_structure({"synthetic/see_it_run_out_of_order.md", mutated}),
+      :section_out_of_order
+    )
+  end
+
+  test "structure scanner rejects a missing gameplan blockquote" do
+    contents = File.read!(@target_path)
+    mutated = String.replace(contents, @gameplan_opener, "> Something else entirely.")
+
+    assert_failure_category(
+      scan_structure({"synthetic/see_it_run_missing_gameplan.md", mutated}),
+      :missing_gameplan
+    )
+  end
+
+  # ---------------------------------------------------------------------------
+  # ExDoc registration — the guide must be item 2 (after README) in both the
+  # extras list and the Start group, sourced from mix.exs (never hardcoded).
+  # ---------------------------------------------------------------------------
+
+  test "guide is registered as item 2 in ExDoc extras and Start group" do
+    docs = Crosswake.MixProject.project()[:docs]
+    extras = docs[:extras]
+    start_group = docs[:groups_for_extras][:Start]
+
+    assert Enum.at(extras, 0) == "README.md",
+           "expected README.md as the first ExDoc extra"
+
+    assert Enum.at(extras, 1) == @target_path,
+           "expected #{@target_path} as ExDoc extra item 2 (after README), got #{inspect(Enum.at(extras, 1))}"
+
+    assert Enum.at(start_group, 0) == "README.md",
+           "expected README.md first in the Start group"
+
+    assert Enum.at(start_group, 1) == @target_path,
+           "expected #{@target_path} as Start-group item 2 (after README), got #{inspect(Enum.at(start_group, 1))}"
   end
 
   # ---------------------------------------------------------------------------
@@ -188,6 +270,65 @@ defmodule Crosswake.Guides.SeeItRunTest do
     |> List.flatten()
     |> Kernel.++(documented_path_failures(path, contents))
     |> Kernel.++(wrong_port_failures(path, contents, port))
+  end
+
+  # ---------------------------------------------------------------------------
+  # Structure scanner — gameplan opener present + 7 JTBD sections in order
+  # ---------------------------------------------------------------------------
+
+  defp scan_structure({path, contents}) do
+    gameplan =
+      require_contains(
+        path,
+        contents,
+        @gameplan_opener,
+        :missing_gameplan,
+        "guide must open with the gameplan blockquote (#{@gameplan_opener})"
+      )
+
+    present =
+      Enum.flat_map(@jtbd_sections, fn section ->
+        require_contains(
+          path,
+          contents,
+          section,
+          :missing_section,
+          "guide must carry the JTBD section heading #{inspect(section)}"
+        )
+      end)
+
+    [gameplan, present, section_order_failures(path, contents)]
+    |> List.flatten()
+  end
+
+  # Each present section heading must appear in canonical order. Missing sections
+  # are reported by :missing_section above and skipped here so we only flag a true
+  # ordering violation, never a duplicate of an absence.
+  defp section_order_failures(path, contents) do
+    located =
+      @jtbd_sections
+      |> Enum.map(fn section -> {section, line_number(contents, section)} end)
+      |> Enum.reject(fn {_section, line} -> is_nil(line) end)
+
+    lines_only = Enum.map(located, fn {_section, line} -> line end)
+
+    if lines_only == Enum.sort(lines_only) do
+      []
+    else
+      out_of_order =
+        located
+        |> Enum.chunk_every(2, 1, :discard)
+        |> Enum.filter(fn [{_a, la}, {_b, lb}] -> la > lb end)
+        |> Enum.map(fn [{_a, _la}, {section_b, line_b}] ->
+          failure(path, :section_out_of_order,
+            line: line_b,
+            claim: section_b,
+            detail: "JTBD section #{inspect(section_b)} appears out of canonical order"
+          )
+        end)
+
+      out_of_order
+    end
   end
 
   # ---------------------------------------------------------------------------
