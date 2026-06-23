@@ -30,7 +30,54 @@ defmodule CrosswakeExample.LibraryLive do
   use Phoenix.LiveView
 
   def render(assigns) do
-    ~H"<div>lesson library</div>"
+    # Brand-voiced demo page consuming the shared tokens.css design system
+    # (matches the offline study island). The visible title is capitalized via
+    # CSS only — the DOM text stays exactly "lesson library" so the route-tour
+    # owner assertion (toContainText('lesson library')) holds without change.
+    ~H"""
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <style>
+      body {
+        font-family: var(--cw-font-body);
+        background-color: var(--cw-surface-default);
+        color: var(--cw-text-default);
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .cw-title { text-transform: capitalize; margin: 0.5rem 0 1.5rem; }
+      .cw-card {
+        background: var(--cw-surface-inset);
+        border-radius: var(--cw-radius-md);
+        box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--cw-text-default) 10%, transparent);
+        padding: 2rem;
+        width: 100%;
+        max-width: 24rem;
+        text-align: center;
+      }
+      .cw-card h2 { margin: 0 0 0.25rem; font-size: 1.25rem; }
+      .cw-muted { color: var(--cw-text-muted); font-size: var(--cw-text-scale-sm); margin: 0; }
+      .cw-lessons { list-style: none; padding: 0; margin: 1.5rem 0 0; text-align: left; }
+      .cw-lessons li {
+        padding: 0.75rem 1rem;
+        border-radius: var(--cw-radius-sm);
+        background: var(--cw-surface-default);
+        margin-bottom: 0.5rem;
+      }
+    </style>
+    <h1 class="cw-title">lesson library</h1>
+    <div class="cw-card">
+      <h2>Crosswake Lessons</h2>
+      <p class="cw-muted">Phoenix-owned LiveView route</p>
+      <ul class="cw-lessons">
+        <li>Elixir Fundamentals</li>
+        <li>Phoenix LiveView</li>
+        <li>Offline-First Sync</li>
+      </ul>
+    </div>
+    """
   end
 end
 
