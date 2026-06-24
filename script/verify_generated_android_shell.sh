@@ -227,13 +227,19 @@ main() {
 
   cd "${project_root}"
 
-  # Use prod-flavored task names for the examples/android_shell_host path (which declares
-  # prod/dev product flavors); fall back to unflavored names for the generated-from-template
-  # path (which has no flavors).
-  UNIT_TEST_TASK="${PROJECT_ROOT_INPUT:+testProdDebugUnitTest}"
-  UNIT_TEST_TASK="${UNIT_TEST_TASK:-testDebugUnitTest}"
-  CONNECTED_TEST_TASK="${PROJECT_ROOT_INPUT:+connectedProdDebugAndroidTest}"
-  CONNECTED_TEST_TASK="${CONNECTED_TEST_TASK:-connectedDebugAndroidTest}"
+  # Pick the Gradle task names by detecting whether the project ACTUALLY declares
+  # product flavors, not by whether a project root was passed in. The
+  # examples/android_shell_host path declares prod/dev flavors (-> testProdDebugUnitTest);
+  # the generated-from-template path has none (-> testDebugUnitTest). Both paths can set
+  # PROJECT_ROOT_INPUT (phase18/phase79 generate a flavorless shell and point at it), so
+  # keying off the env var alone selects a non-existent prod task and the build fails.
+  if grep -q "productFlavors" app/build.gradle 2>/dev/null; then
+    UNIT_TEST_TASK="testProdDebugUnitTest"
+    CONNECTED_TEST_TASK="connectedProdDebugAndroidTest"
+  else
+    UNIT_TEST_TASK="testDebugUnitTest"
+    CONNECTED_TEST_TASK="connectedDebugAndroidTest"
+  fi
 
   if [[ "${RUN_CONNECTED_TESTS}" == "0" ]]; then
     ./gradlew --no-daemon --stacktrace "${UNIT_TEST_TASK}"
