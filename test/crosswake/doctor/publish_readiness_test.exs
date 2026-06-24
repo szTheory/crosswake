@@ -125,6 +125,8 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert :docs_support_parity in categories
     assert :proof_posture in categories
     assert :generator_coordinate_parity in categories
+    assert :contract_version_parity in categories
+    assert :compatibility_rebuild_guidance in categories
 
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.publish."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.companion."))
@@ -134,6 +136,82 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.shell."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.docs."))
     assert Enum.any?(codes, &String.starts_with?(&1, "diag.generator."))
+    assert Enum.any?(codes, &String.starts_with?(&1, "diag.contract."))
+    assert Enum.any?(codes, &String.starts_with?(&1, "diag.compat."))
+  end
+
+  test "contract version parity check passes on the real committed tree" do
+    report = readiness_report()
+
+    check = find_check!(report, :contract_version_parity)
+
+    refute check.blocking,
+           "contract_version_parity should not be blocking on the real tree (all surfaces should carry #{Crosswake.Bridge.Contract.version()})"
+
+    assert check.result == :pass
+    assert check.severity == :advisory
+    assert check.proof_class == :merge_blocking
+    assert check.details.version == Crosswake.Bridge.Contract.version()
+    assert check.details.errors == []
+  end
+
+  test "contract version parity blocks when an ios manifest carries wrong bridge_protocol_version" do
+    target = tmp_dir!("crosswake-contract-version-parity")
+    expected = Crosswake.Bridge.Contract.version()
+
+    # Seed the iOS manifest with a wrong bridge_protocol_version under the
+    # "compatibility" key — this mirrors how the real manifests store the field
+    # (nested, not at the JSON document root).
+    ios_manifest_rel = "examples/ios_shell_host/Fixtures/crosswake_manifest.json"
+    android_manifest_rel = "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+    ios_activation_rel = "examples/ios_shell_host/Fixtures/route_activation.json"
+    android_activation_rel = "examples/android_shell_host/app/src/main/assets/route_activation.json"
+    vectors_rel = "test/fixtures/bridge_contract_vectors.json"
+
+    ios_manifest = Path.join(target, ios_manifest_rel)
+    android_manifest = Path.join(target, android_manifest_rel)
+    ios_activation = Path.join(target, ios_activation_rel)
+    android_activation = Path.join(target, android_activation_rel)
+    vectors = Path.join(target, vectors_rel)
+
+    File.mkdir_p!(Path.dirname(ios_manifest))
+    File.mkdir_p!(Path.dirname(android_manifest))
+    File.mkdir_p!(Path.dirname(ios_activation))
+    File.mkdir_p!(Path.dirname(android_activation))
+    File.mkdir_p!(Path.dirname(vectors))
+
+    # Seed ios manifest with WRONG version (nested under "compatibility")
+    File.write!(ios_manifest, Jason.encode!(%{
+      "compatibility" => %{"bridge_protocol_version" => "0.9.0"}
+    }))
+
+    # Seed the remaining four surfaces with the CORRECT version so only the
+    # iOS manifest drifts — proving the check names the exact drifted surface.
+    File.write!(android_manifest, Jason.encode!(%{
+      "compatibility" => %{"bridge_protocol_version" => expected}
+    }))
+
+    # Generated JSONs carry bridge_protocol_version at the document root.
+    File.write!(ios_activation, Jason.encode!(%{"bridge_protocol_version" => expected}))
+    File.write!(android_activation, Jason.encode!(%{"bridge_protocol_version" => expected}))
+    File.write!(vectors, Jason.encode!(%{"bridge_protocol_version" => expected}))
+
+    report =
+      readiness_report(
+        cwd: target,
+        changelog_contents: File.read!("CHANGELOG.md")
+      )
+
+    check = find_check!(report, :contract_version_parity)
+
+    assert check.blocking, "contract_version_parity must block on drift"
+    assert check.result == :fail
+    assert check.severity == :error
+    assert check.proof_class == :merge_blocking
+    assert check.details.version == expected
+
+    assert Enum.any?(check.details.errors, &String.contains?(&1, ios_manifest_rel)),
+           "errors must name the drifted iOS manifest; got: #{inspect(check.details.errors)}"
   end
 
   test "generator coordinate parity blocks stale or local native dependency coordinates" do
@@ -404,6 +482,204 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     assert publish.blocking
     assert publish.code == "diag.publish.local_truth_failed"
     assert "CHANGELOG.md must include the current [0.2.0] release" in publish.details.errors
+  end
+
+  test "compatibility_rebuild_guidance check is present and advisory in baseline (no drift)" do
+    report = readiness_report()
+
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    assert check.severity == :advisory,
+           "compatibility_rebuild_guidance must be :advisory at baseline, got: #{inspect(check.severity)}"
+
+    assert check.result == :pass,
+           "compatibility_rebuild_guidance must :pass at baseline, got: #{inspect(check.result)}"
+
+    refute check.blocking,
+           "compatibility_rebuild_guidance must never be blocking"
+
+    assert check.docs_reference == "guides/compatibility.md"
+    assert check.proof_class == :advisory
+    assert is_map(check.details)
+  end
+
+  test "compatibility_rebuild_guidance check is never :error, never blocking" do
+    # Test both baseline (no drift) and a fabricated drift scenario
+    report_baseline = readiness_report()
+    check_baseline = find_check!(report_baseline, :compatibility_rebuild_guidance)
+
+    refute check_baseline.severity == :error,
+           "compatibility_rebuild_guidance must never emit :error (baseline)"
+
+    refute check_baseline.blocking,
+           "compatibility_rebuild_guidance must never be blocking (baseline)"
+
+    # Fabricate drift by using a temp dir with wrong bridge_protocol_version
+    target = tmp_dir!("crosswake-compat-guidance-drift")
+    expected = Crosswake.Bridge.Contract.version()
+
+    ios_manifest_rel = "examples/ios_shell_host/Fixtures/crosswake_manifest.json"
+    android_manifest_rel = "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+    ios_activation_rel = "examples/ios_shell_host/Fixtures/route_activation.json"
+    android_activation_rel = "examples/android_shell_host/app/src/main/assets/route_activation.json"
+    vectors_rel = "test/fixtures/bridge_contract_vectors.json"
+
+    for rel <- [ios_manifest_rel, android_manifest_rel] do
+      File.mkdir_p!(Path.dirname(Path.join(target, rel)))
+      File.write!(Path.join(target, rel), Jason.encode!(%{"compatibility" => %{"bridge_protocol_version" => "0.9.0"}}))
+    end
+
+    for rel <- [ios_activation_rel, android_activation_rel, vectors_rel] do
+      File.mkdir_p!(Path.dirname(Path.join(target, rel)))
+      File.write!(Path.join(target, rel), Jason.encode!(%{"bridge_protocol_version" => expected}))
+    end
+
+    report_drift =
+      readiness_report(
+        cwd: target,
+        changelog_contents: File.read!("CHANGELOG.md")
+      )
+
+    check_drift = find_check!(report_drift, :compatibility_rebuild_guidance)
+
+    refute check_drift.severity == :error,
+           "compatibility_rebuild_guidance must never emit :error (drift case)"
+
+    refute check_drift.blocking,
+           "compatibility_rebuild_guidance must never be blocking (drift case)"
+  end
+
+  test "compatibility_rebuild_guidance elevates to :warning on detected committed-surface drift" do
+    target = tmp_dir!("crosswake-compat-guidance-warn")
+    expected = Crosswake.Bridge.Contract.version()
+
+    ios_manifest_rel = "examples/ios_shell_host/Fixtures/crosswake_manifest.json"
+    android_manifest_rel = "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+    ios_activation_rel = "examples/ios_shell_host/Fixtures/route_activation.json"
+    android_activation_rel = "examples/android_shell_host/app/src/main/assets/route_activation.json"
+    vectors_rel = "test/fixtures/bridge_contract_vectors.json"
+
+    # All manifests carry wrong version — simulates committed-surface drift
+    for rel <- [ios_manifest_rel, android_manifest_rel] do
+      File.mkdir_p!(Path.dirname(Path.join(target, rel)))
+      File.write!(Path.join(target, rel), Jason.encode!(%{"compatibility" => %{"bridge_protocol_version" => "0.9.0"}}))
+    end
+
+    for rel <- [ios_activation_rel, android_activation_rel, vectors_rel] do
+      File.mkdir_p!(Path.dirname(Path.join(target, rel)))
+      File.write!(Path.join(target, rel), Jason.encode!(%{"bridge_protocol_version" => expected}))
+    end
+
+    report =
+      readiness_report(
+        cwd: target,
+        changelog_contents: File.read!("CHANGELOG.md")
+      )
+
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    assert check.severity == :warning,
+           "compatibility_rebuild_guidance must be :warning on detected drift, got: #{inspect(check.severity)}"
+
+    assert check.result == :fail,
+           "compatibility_rebuild_guidance must :fail on detected drift, got: #{inspect(check.result)}"
+
+    refute check.blocking,
+           "compatibility_rebuild_guidance must never be blocking even on drift"
+
+    # Verify it names the detected class
+    assert check.message =~ "native or companion rebuild required",
+           "drift message must name the detected class"
+  end
+
+  test "compatibility_rebuild_guidance details contain active_action_sequence, change_class_guidance, docs_reference" do
+    report = readiness_report()
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    assert is_list(check.details.active_action_sequence),
+           "active_action_sequence must be a list"
+
+    assert length(check.details.active_action_sequence) > 0,
+           "active_action_sequence must be non-empty"
+
+    assert is_map(check.details.change_class_guidance),
+           "change_class_guidance must be a map"
+
+    assert check.details.docs_reference == "guides/compatibility.md",
+           "docs_reference in details must be guides/compatibility.md"
+  end
+
+  test "compatibility_rebuild_guidance native-rebuild action sequence is exactly 4 ordered steps" do
+    report = readiness_report()
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    # The baseline also uses native-rebuild sequence for active_action_sequence
+    sequence = check.details.active_action_sequence
+
+    assert length(sequence) == 4,
+           "native-rebuild sequence must have exactly 4 steps, got: #{inspect(sequence)}"
+
+    assert Enum.at(sequence, 0) =~ "Regenerate shell",
+           "Step 1 must be regenerate shell, got: #{inspect(Enum.at(sequence, 0))}"
+
+    assert Enum.at(sequence, 1) =~ "Rebuild native app",
+           "Step 2 must be rebuild native app, got: #{inspect(Enum.at(sequence, 1))}"
+
+    assert Enum.at(sequence, 2) =~ ~r/App Store|Play Store/,
+           "Step 3 must mention App Store / Play Store, got: #{inspect(Enum.at(sequence, 2))}"
+
+    assert Enum.at(sequence, 3) =~ "deploy",
+           "Step 4 must be coordinated deploy, got: #{inspect(Enum.at(sequence, 3))}"
+  end
+
+  test "compatibility_rebuild_guidance denial vocabulary is present in advisory" do
+    report = readiness_report()
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    denial_vocab = check.details.denial_vocabulary
+    assert is_list(denial_vocab), "denial_vocabulary must be a list"
+    assert "compatibility_mismatch" in denial_vocab, "must include compatibility_mismatch"
+    assert "inactive_route" in denial_vocab, "must include inactive_route"
+    assert "undeclared_capability" in denial_vocab, "must include undeclared_capability"
+    assert "pack_incompatible" in denial_vocab, "must include pack_incompatible"
+  end
+
+  test "compatibility_rebuild_guidance message and hint contain microcopy disclaimer and mix command" do
+    report = readiness_report()
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    # Microcopy: must state it is guidance, not a detected failure
+    assert check.message =~ "cannot observe",
+           "message must contain disclaimer about not observing live denial"
+
+    assert check.message =~ "guidance",
+           "message must contain word 'guidance'"
+
+    # Must include the literal command
+    assert check.message =~ "mix crosswake.contract.gen",
+           "message must include the literal next command"
+
+    # Must include numbered steps
+    assert check.message =~ "1)",
+           "message must include numbered step 1)"
+
+    # Hint also carries the disclaimer
+    assert check.hint =~ "cannot observe",
+           "hint must contain disclaimer"
+
+    assert check.hint =~ "guidance",
+           "hint must contain word 'guidance'"
+  end
+
+  test "compatibility_rebuild_guidance check guide link is present in details" do
+    report = readiness_report()
+    check = find_check!(report, :compatibility_rebuild_guidance)
+
+    assert check.details.docs_reference == "guides/compatibility.md",
+           "docs_reference in details must link to guides/compatibility.md"
+
+    assert check.docs_reference == "guides/compatibility.md",
+           "top-level docs_reference must be guides/compatibility.md"
   end
 
   defp readiness_report(opts \\ []) do

@@ -12,7 +12,7 @@ android {
     minSdk 30
     targetSdk 35
     versionCode 1
-    versionName "0.1.0"
+    versionName "0.1.2"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
 
@@ -20,6 +20,19 @@ android {
     release {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  flavorDimensions "env"
+
+  productFlavors {
+    prod {
+      dimension "env"
+    }
+    dev {
+      dimension "env"
+      applicationIdSuffix ".dev"
+      versionNameSuffix "-dev"
     }
   }
 
@@ -60,7 +73,7 @@ android {
 }
 
 dependencies {
-  implementation 'dev.crosswake:shell-core-android:0.1.0'
+  implementation 'io.github.sztheory:crosswake-shell-core-android:0.1.2'
   implementation 'androidx.core:core-ktx:1.13.1'
   implementation 'androidx.appcompat:appcompat:1.7.0'
   implementation 'androidx.activity:activity-compose:1.9.0'

@@ -1,12 +1,17 @@
 import { test, expect } from '@playwright/test';
+import {
+  assertAppGeneratedMutation,
+  expectOutboxEmpty,
+  expectSyncedReview,
+  readQueuedOfflineMutations,
+  resetOfflineStudyDatabase,
+} from './support/offline_route_proof';
 
 test.describe('Crosswake offline island: card rating queues in IndexedDB, reconnect flushes via app code, Ecto confirms exactly one review row', () => {
   test.beforeEach(async ({ page }) => {
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
-    await page.addInitScript(() => {
-      indexedDB.deleteDatabase('crosswake_offline_study');
-    });
+    await resetOfflineStudyDatabase(page);
   });
 
   test('offline rating queues in IndexedDB, reconnect via app flush, Ecto confirms one row, duplicate is idempotent', async ({ page, context }) => {
@@ -24,24 +29,10 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.click('#btn-good');
 
     // Step 4: Observe the queued record from IndexedDB (OBSERVATION_ONLY — no app state written)
-    const mutations = await page.evaluate(() => { // OBSERVATION_ONLY
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open('crosswake_offline_study', 1);
-        req.onsuccess = () => {
-          const db = req.result;
-          const tx = db.transaction('mutations', 'readonly');
-          const store = tx.objectStore('mutations');
-          const getAll = store.getAll();
-          getAll.onsuccess = () => resolve(getAll.result);
-          getAll.onerror = () => reject(getAll.error);
-        };
-        req.onerror = () => reject(req.error);
-      });
-    });
+    const mutations = await readQueuedOfflineMutations(page); // OBSERVATION_ONLY
     expect(mutations).toHaveLength(1);
-    const { client_mutation_id: capturedId, card_id, rating } = (mutations as Array<{ client_mutation_id: string; card_id: number; rating: string }>)[0];
-    expect(typeof capturedId).toBe('string');
-    expect(capturedId).toMatch(/^[0-9a-f-]{36}$/); // app-generated UUID (E2E-03b)
+    const { client_mutation_id: capturedId, card_id, rating } = mutations[0];
+    assertAppGeneratedMutation(mutations[0]); // app-generated UUID (E2E-03b)
     expect(rating).toBe('good');
 
     // Step 5: Reconnect — two-step: CDP transport + explicit 'online' event
@@ -54,28 +45,10 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await page.waitForResponse(r => r.url().includes('/study/sync') && r.status() === 200);
 
     // Step 6: Server confirms exactly one row (E2E-03d)
-    await expect.poll(async () => {
-      const res = await page.request.get(`/_e2e/sync-state/${capturedId}`);
-      return res.ok() ? res.json() : { synced: false };
-    }, { timeout: 8000, message: 'Ecto row should reflect the flushed mutation' })
-      .toMatchObject({ synced: true, count: 1 });
+    await expectSyncedReview(page.request, capturedId);
 
     // Step 7: Assert outbox is empty — app deleted the accepted record (E2E-03e)
-    const remaining = await page.evaluate(() => { // OBSERVATION_ONLY
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open('crosswake_offline_study', 1);
-        req.onsuccess = () => {
-          const db = req.result;
-          const tx = db.transaction('mutations', 'readonly');
-          const store = tx.objectStore('mutations');
-          const getAll = store.getAll();
-          getAll.onsuccess = () => resolve(getAll.result);
-          getAll.onerror = () => reject(getAll.error);
-        };
-        req.onerror = () => reject(req.error);
-      });
-    });
-    expect(remaining).toHaveLength(0);
+    await expectOutboxEmpty(page);
 
     // Step 8: Duplicate flush — same client_mutation_id — assert exactly one Ecto row (E2E-03f)
     // page.request.post is APIRequestContext; unaffected by context.setOffline; :api pipeline has no CSRF

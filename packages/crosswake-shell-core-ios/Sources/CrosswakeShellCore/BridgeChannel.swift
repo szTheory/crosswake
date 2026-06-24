@@ -179,8 +179,8 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
 
     public func evaluate(_ request: BridgeRequestEnvelope, completion: @escaping (BridgeReplyEnvelope) -> Void) {
         guard request.protocolName == Self.protocolName,
-              request.version == session.bridgeProtocolVersion,
-              request.nativeRuntimeVersion == session.nativeRuntimeVersion else {
+              SemVer.compatible(provides: session.bridgeProtocolVersion, demands: request.version),
+              SemVer.compatible(provides: session.nativeRuntimeVersion, demands: request.nativeRuntimeVersion) else {
             completion(deny(request, reason: "compatibility_mismatch", message: "Bridge protocol or runtime mismatch.", hint: "Update the shell before retrying this bridge request."))
             return
         }
@@ -212,7 +212,7 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             let packID = parts[0]
             let requiredVersion = parts.count == 2 ? parts[1] : nil
             let installedVersion = session.installedPacks[packID]
-            return requiredVersion == nil ? installedVersion != nil : installedVersion == requiredVersion
+            return requiredVersion == nil ? installedVersion != nil : SemVer.compatible(provides: installedVersion ?? "", demands: requiredVersion!)
         }) else {
             completion(deny(request, reason: "pack_incompatible", message: "The active route is missing a compatible declared pack.", hint: "Install or update the required pack before retrying."))
             return
@@ -398,7 +398,7 @@ public final class BridgeChannel: NSObject, WKScriptMessageHandler {
             return false
         }
 
-        return request.capabilities[command.capability] == requiredCapabilityVersion
+        return SemVer.compatible(provides: request.capabilities[command.capability], demands: requiredCapabilityVersion)
     }
 
     private func unavailableCapability(_ request: BridgeRequestEnvelope) -> BridgeReplyEnvelope {

@@ -1,120 +1,64 @@
-# Project Research Summary
+# Project Research Summary — v14.0 Runtime Contract Confidence
 
-**Project:** Crosswake — v12.0 CI Honesty & Real-E2E Sweep
-**Domain:** Internal CI / test-honesty hardening (Phoenix-native Elixir OSS library; offline-sync Playwright E2E + GitHub Actions gating + GSD closeout verifier)
-**Researched:** 2026-06-17
-**Confidence:** HIGH
+**Synthesized:** 2026-06-20 from STACK.md, ARCHITECTURE.md, NATIVE-TESTING.md, FEATURES.md, PITFALLS.md
+**Confidence:** HIGH — every claim grounded in direct repo inspection plus external precedent (Phoenix Channels `vsn`, protobuf/`buf`, Stripe API versioning, Hotwire Native, JSON Schema/CommonMark conformance suites).
 
-## Executive Summary
+## The Problem (confirmed in code)
 
-This is not a feature milestone — it is a proof-honesty milestone. A repo-truth sweep found that several "green" CI surfaces do not prove what they claim. The flagship case is `examples/phoenix_host/e2e/offline_sync.spec.ts`: it calls the real `context.setOffline(true)` (added in v8.0) but then **injects a mutation into `window['crosswake_offline_mutations']` — a global the app never reads — and manually fires `fetch('/study/sync')` from `page.evaluate()`**. The application's IndexedDB outbox and reconnect path are never invoked, and the "the sync ID matches" assertion is circular (the test creates the ID, sends it, and verifies it returns). All four researchers independently reached the same verdict: the test is structurally fraudulent on **two** axes (mutation injection *and* flush trigger), and either alone makes it worthless as proof.
+The bridge/runtime protocol version is hand-authored in ~8 places and has drifted:
 
-The good news is the gap is precisely bounded and the server side is already correct: `SyncController` → `Study.sync_events/1` already implements idempotency via `on_conflict: :nothing, conflict_target: :client_mutation_id`, and the `/_e2e/sync-state/:id` verification endpoint already exists (router-scoped to `:test`/`:e2e`). The missing piece is purely client-side: `offline_study.js` has `queueMutation()` but **no `flushOutbox()` and no reconnect listener**, and `study_session_live.ex:31` papers over this with a comment-acknowledged mock. So v12.0 is a small, well-understood change surface (three files modified, none created) plus three adjacent honesty cleanups: make the lane merge-blocking, close the long-carried validation-ledger debt (LEDG-01), and reconcile the v8.0 documentation that disagrees with itself.
+- `Crosswake.Bridge.Contract` → `@version "1.1.0"` (`lib/crosswake/bridge/contract.ex:10`)
+- `Crosswake.Manifest.Types` → `@bridge_protocol_version/@manifest_schema_version/@native_runtime_version "1.0.0"` (`lib/crosswake/manifest/types.ex:651-653`)
+- `lib/crosswake/shell/fixtures.ex:82-83` + iOS `route_activation.json` fixtures → `"1.0.0"`
+- One silent Kotlin fallback literal: `ActivationCoordinator.kt:594` `?: "1.0.0"`
 
-The main risks are subtle test-infrastructure gotchas rather than unknowns: Playwright's `setOffline(false)` does **not** fire the browser `online` event, the demo app's stored mutation shape doesn't match the server contract, and the CI workflow still has the exact structural hole that let v6.0's mock hide a compile break (no `mix compile` before Playwright — a compile failure surfaces as a port timeout). Each has a known, cheap mitigation captured below.
+Native bridge code does **exact** equality (`BridgeChannel.swift:182`, Kotlin equivalent) but reads the *expected* version from the manifest/compatibility JSON at runtime — so it is mostly version-agnostic; the drift surface is Elixir defaults + JSON fixtures + docs + the one Kotlin fallback. Meanwhile Elixir's `compatible_version?/2` already negotiates by `>=` floor. **Elixir negotiates; native demands exact match. They disagree.**
 
-## Key Findings
+## Convergent Recommendation (one coherent design)
 
-### Recommended Stack
+### 1. Canonical source — Elixir is the authority, generate the rest
+- Collapse the three Elixir sources into ONE compile-time authority for the bridge protocol version (and keep the three axes — manifest schema / bridge protocol / native runtime — explicit but each with a single source). Phoenix's own channels `vsn` precedent: the Elixir module is the server authority.
+- Reach the non-Elixir surfaces (JSON fixtures, generated shell templates, native test vectors, a docs snippet) with a **committed canonical artifact + `mix crosswake.contract.gen` codegen + commit the generated output + `git diff --exit-code` in CI**. This is the `go generate` / `buf generate` / Crosswake's own `brand-structural` + `generator_coordinate_parity` discipline — zero new mental model.
+- Kill the Kotlin `?: "1.0.0"` fallback; native must read the value, never assume it.
+- **Resolve the `1.1.0` vs `1.0.0` value itself** as part of consolidation (decide the true current protocol version; the published 0.1.x adopter contract must not silently break).
 
-No new frameworks and no Playwright upgrade. `@playwright/test` 1.60.0 already has every API needed; `playwright.config.ts` is already correct (service workers blocked, `retries: 2` in CI, trace on first retry, Phoenix auto-booted). Branch protection on `szTheory/crosswake` is **classic checks (not rulesets)** — confirmed via live `gh api` — so gating is a one-line PATCH, with the critical caveat that the `checks` array is *replaced, not appended* (must list all three checks).
+### 2. Drift guards — deterministic, merge-blocking, browser-free
+- A pure-Elixir **single-reader ExUnit test**: read the one canonical value, assert every derived surface (JSON fixtures, generated templates, docs snippet, native test vectors) equals it by file read/parse. No Xcode/Gradle needed → merge-blocking. Exact precedents already in repo (`quick_start_adoption_drift_test.exs`, `phase96_threadline_docs_contract_test.exs`).
+- Plus **generate-and-diff** so a hand-edited fixture can't survive even if an assertion is suppressed.
+- A **`contract_version_parity` doctor check**, sibling to `generator_coordinate_parity`.
+- Wire into the existing `merge-blocking-*` aggregator + branch-protection registration. Native-toolchain checks stay **advisory** (required-vs-advisory split).
+- Failure-message contract: name the ONE place to edit and the exact regenerate command (principle of least surprise). Avoid vacuous/empty-glob asserts (v12 closeout lesson) and green-but-fabricated proof (v6/v8 lesson).
 
-**Core techniques:**
-- **Playwright `context.setOffline(true/false)`** — real CDP network-layer offline; the genuine toggle already in use.
-- **`setOffline(false)` + `page.evaluate(() => window.dispatchEvent(new Event('online')))`** — REQUIRED two-step: CDP `setOffline` does NOT dispatch the browser `online` event, and `navigator.onLine` does not auto-update (override via `addInitScript`/`evaluate`). This is the load-bearing gotcha.
-- **`page.waitForResponse('/study/sync')` + `expect.poll`** — confirm the server *accepted* the app-driven POST before polling the Ecto `/_e2e/sync-state/:id` endpoint; replaces the current `waitForRequest`/manual-fetch pattern.
-- **`gh api repos/szTheory/crosswake/branches/main/protection` PATCH** — add the renamed `merge-blocking-*` E2E job to required checks (all three checks in the array; job must run green on `main` once first).
+### 3. Native package behavioral proof — shared golden vectors
+- Both packages have only ~1 test file today. Add real tests for the **six behaviors**: activation success/failure, bridge denial, capability allowlist, active-route check, pack-version check, delegate/escape-hatch.
+- Most seams already exist (`evaluate()` public on iOS; Android `evaluateForTesting()`; injected `manifestLoader`/`requestLoader`; `PackStore.inMemory()`) — this is writing tests, not restructuring source.
+- **One committed `bridge_contract_vectors.json` loaded by all three suites** (Elixir + Swift XCTest + Kotlin JUnit) → a version bump fails all three simultaneously. This is the cross-language conformance-suite pattern (protobuf/JSON-Schema/OTEL).
+- Run XCTest on `macos-latest` (no simulator), Kotlin on JVM JUnit (no emulator). Decide which lanes are merge-blocking (deterministic JVM) vs advisory (macOS native), consistent with house split.
 
-### Expected Features (what an *honest* E2E requires)
+### 4. Compatibility semantics & adopter truth — keep `>=`, communicate clearly
+- **Recommended fork resolution: keep the `>=` min-version floor, do NOT keep native exact-match.** Exact-match is the footgun that produced the denial; Postgres wire, TLS 1.3, and Phoenix Channels `vsn` all abandoned it. Make the native check negotiate by floor like Elixir already does (or, if deferring the native-comparison change, at minimum make canonical-source agreement render exact-match harmless and document the constraint).
+- Map each axis to a rebuild class: additive/minor (new optional command or field) = **core-only, no rebuild**; breaking/major (remove command, rename denial reason, add required field, change type) = **native rebuild required**; any native-binary change = rebuild required; Elixir-only narrowing = **compat-bump only**.
+- Doctor finding must name the **change class + full action sequence** (gen.shell → rebuild → resubmit App Store/Play Store → coordinated deploy) + the denial reason seen in logs + a docs link. Front-load the action in microcopy: "Your native shell must be rebuilt and resubmitted to the App Store / Play Store."
+- Four cooperating surfaces: changelog upgrade-impact label, support-matrix per-axis table, runtime doctor finding, compatibility-guide decision table (answer first, prose after).
 
-**Must have (table stakes for honesty):**
-- **Mutation via real UI** — click the actual Pass/Fail flashcard control so `offline_study.js` writes to the IndexedDB outbox; no `window[]` injection.
-- **App-driven flush** — a real `flushOutbox()` in `offline_study.js` triggered by reconnect; the test must NOT fire `fetch` itself.
-- **Read-back idempotency key** — assert against the `client_mutation_id` the *app* generated (read from IndexedDB), not one the test minted; if the app's UUID generation breaks, the lookup must fail on the right assertion.
-- **Compile honesty** — `mix compile --warnings-as-errors` before Playwright in `offline-sync-e2e-gate.yml`, so a demo-app compile break fails loudly instead of as a port timeout (the v6.0 failure mode, still live).
-- **Merge-blocking** — the lane is a registered required status check, not an undocumented advisory.
+## Phase Ordering (non-negotiable — registry immutability + lockstep release)
 
-**Legitimate vs illegitimate test doubles (the honesty criterion):** reading the SUT's own IndexedDB state via `page.evaluate` is *observation* (legitimate — `offline_storage.spec.ts`'s `QuotaExceededError` stub is the established in-repo precedent); *writing* to SUT state or *triggering* SUT-owned behavior via `page.evaluate` is *injection* (illegitimate — what today's test does).
+1. **Canonical source** (consolidate Elixir authority, resolve the version value, codegen + kill Kotlin fallback).
+2. **Drift guards** (single-reader test + generate-and-diff + doctor check + aggregator/branch-protection).
+3. **Native behavioral proof** (six behaviors, shared vectors, CI lanes).
+4. **Compatibility semantics + adopter docs/doctor truth** (negotiation decision, axis→rebuild map, support matrix, guide, microcopy).
+5. Any release/publish happens only after 1–4 are green on `main`.
 
-**Should have (differentiators):** outbox-cleared-after-flush assertion; duplicate-flush idempotency test (POST twice, assert one row); `beforeEach` IndexedDB reset for isolation.
+## Anti-Scope (write into requirements explicitly)
 
-### Architecture Approach
-
-Pure modification milestone — three files change, none created; the server is already correct and untouched.
-
-**Components touched:**
-1. **`offline_study.js`** — add `flushOutbox()` (drain IndexedDB outbox → POST `/study/sync`) + reconnect listener; **fix the payload shape** from `{type, payload:{cardId, result:'pass'/'fail'}}` to the server contract `{client_mutation_id, card_id, rating:'good'/'hard'}`, generating `client_mutation_id` via `crypto.randomUUID()` at *queue* time (not POST time). This shape fix is a hard prerequisite for everything downstream.
-2. **`study_session_live.ex`** — remove the `sync_outbox` mock (line 31 "here we mock it"). Independent of the JS change; can parallelize.
-3. **`offline_sync.spec.ts`** — delete the injection + manual-fetch lines; drive via real UI click → `setOffline(false)` + `dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto.
-
-**Hard build-order dependency (all four agents agree):** payload-shape fix → `flushOutbox()` + reconnect handler → de-mock LiveView → test rewrite → CI gate.
-
-### Critical Pitfalls
-
-1. **CDP `setOffline(false)` doesn't fire `online`** — without the explicit `dispatchEvent('online')`, the app's reconnect handler never runs and the test hangs/false-fails. (Symptom already visible as `retries: 2` masking flake.)
-2. **The v6.0 compile-break mechanism is still structurally present** — `offline-sync-e2e-gate.yml` runs Playwright with no prior `mix compile`; a compile failure looks like a Playwright port timeout. Add `mix compile --warnings-as-errors`.
-3. **Branch-protection PATCH replaces the checks array** — omitting the existing two checks silently un-gates them; a job *rename* without re-registration silently drops the required check. Run green on `main` once, then PATCH with all three.
-4. **Closeout verifier hardcoded-phase fallback** — a `CLOSEOUT.md` missing `expected_phases:` frontmatter falls back to a hardcoded phase set (`@v40_phases`/`@v39_phases` per source), globbing an empty path → zero ledgers found → vacuous pass. Make the fallback hard-error.
-5. **Stale-but-not-blocking deferral** — LEDG-01 has been carried verbatim through v8.0→v11.0 (four milestones) with the same `reason:` text; `stale_deferral?/2` labels it stale but stale does not block merge. Needs explicit resolution criteria + real VALIDATION.md files, not another carry.
-
-## Implications for Roadmap
-
-Suggested structure: **4–5 phases**, continuing numbering from v11.0 (last phase **111** → start at **112**).
-
-### Phase 112: Real Offline Outbox Flush (app change)
-**Rationale:** Hard prerequisite — the test cannot be honest until the app it tests actually flushes on reconnect.
-**Delivers:** payload-shape fix + `client_mutation_id` via `crypto.randomUUID()`; `flushOutbox()` + reconnect listener in `offline_study.js`; de-mocked `study_session_live.ex`.
-**Avoids:** Pitfall — fixing the test before the app exists would just move the fabrication.
-
-### Phase 113: Honest E2E Rewrite + Workflow Compile Gate
-**Rationale:** Depends on 112; atomic unit — a fabricated test that compiles is still dishonest, so the test rewrite and the `mix compile` workflow fix ship together.
-**Delivers:** rewritten `offline_sync.spec.ts` (real UI → `setOffline(false)`+`dispatchEvent('online')` → `waitForResponse` → `expect.poll` Ecto; outbox-cleared + duplicate-flush idempotency assertions; `beforeEach` reset); `mix compile --warnings-as-errors` added to `offline-sync-e2e-gate.yml`.
-**Uses:** Playwright 1.60.0 APIs from STACK.md.
-
-### Phase 114: Merge-Blocking CI Gate
-**Rationale:** Last E2E step; requires ≥1 green run of the renamed `merge-blocking-*` job on `main` before registration.
-**Delivers:** job `name:` + `merge-blocking-*` convention; documented required/advisory posture; branch-protection PATCH (all three checks) — or a scripted/documented path if the toggle is harness-blocked (historical constraint in this environment).
-
-### Phase 115: LEDG-01 Closeout-Gate Honesty + Doc-Truth Reconciliation
-**Rationale:** Fully independent of the E2E track; can parallelize, but must complete before milestone close. Closes 4-milestone-old debt.
-**Delivers:** hard-error fallback in `closeout_verifier.ex`; artifact-existence assertion; resolution criteria for the stale deferral; the actual missing VALIDATION.md files (v3.6 48/49/52/53, v3.8 54-58, v3.9 62/63); LEDG-01 marked `status: resolved` with evidence; STATE.md reconciled; v8.0 doc-truth settled (authoritative doc chosen among PROJECT.md / v1.0-MILESTONE-AUDIT.md / MILESTONES.md, with a MILESTONES.md v8.0 entry added).
-
-### Phase Ordering Rationale
-- 112 before 113 before 114: strict app → test → gate dependency chain (cannot prove or gate what the app doesn't yet do).
-- 115 parallelizable: touches the GSD verifier + planning docs, disjoint from the demo-app/E2E files.
-- Doc-truth reconciliation should land before/with the E2E work so "current honest state" is settled before new proof claims are written.
-
-### Research Flags
-**No phases need deeper research during planning** — all patterns are documented and verified against source. Remaining open items are *requirements decisions*, not research gaps (see Gaps below). Skip research-phase for all phases.
-
-## Confidence Assessment
-
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Playwright APIs verified vs official docs; branch protection vs live `gh api` |
-| Features | HIGH | Both bypasses confirmed by reading `offline_sync.spec.ts` + `offline_study.js` |
-| Architecture | HIGH | Every file inspected; server idempotency (`on_conflict: :nothing`) read directly |
-| Pitfalls | HIGH | Verifier footguns + workflow gap confirmed by direct source inspection |
-
-**Overall confidence:** HIGH
-
-### Gaps to Address (requirements decisions, not research gaps)
-- **Reconnect-trigger surface (DECISION):** FEATURES recommends the LiveView `reconnected()` Hook as primary (server-confirmed-reachable, avoids a network-back-but-socket-stale race). ARCHITECTURE found the `/offline` island page has **no LiveView socket** (`put_root_layout(false)`), so the Hook is architecturally impossible there — `window 'online'` is the only viable trigger given the current route structure. Requirements must either confirm `window 'online'` for v12.0 or commit to migrating the study UI onto a LiveView route. **Recommendation: `window 'online'` only — do not expand scope to a route migration.**
-- **`study_session_live.ex` mock (DECISION):** remove the `sync_outbox` handler entirely (recommended) vs. keep it as a labeled "Manual Sync" escape hatch.
-- **VALIDATION.md evidence schema (DECISION):** exact field names alongside `nyquist_compliant: true` (e.g. `tested_by:`, `evidence:`) — settle before Phase 115.
-- **`/_e2e/sync-state/:id` (VERIFY):** confirm it is exercised by a real IndexedDB-originated mutation (it may have only ever served the mocked flow).
+Coherence work only. NOT: new bridge commands/capabilities, an IDL/protobuf redesign, envelope restructuring, breaking the published 0.1.x adopter contract, or promoting simulator/device native evidence to merge-blocking support truth. Over-engineering a full codegen pipeline when a small committed canonical file + diff-check suffices is itself a footgun.
 
 ## Sources
-
-### Primary (HIGH confidence)
-- Direct source inspection: `offline_sync.spec.ts`, `offline_storage.spec.ts`, `offline_study.js`, `study_session_live.ex`, `router.ex`, `closeout_verifier.ex`, `offline-sync-e2e-gate.yml`, `brandbook-verify.yml`.
-- Playwright official docs — `setOffline`, `waitForResponse`, `expect.poll`, `addInitScript`.
-- GitHub REST docs + live `gh api` — branch-protection `checks` array (app_id 15368, two existing checks).
-- Phoenix LiveView JS interop docs (hexdocs) — `reconnected()` Hook semantics.
-
-### Secondary (MEDIUM confidence)
-- Community source for CDP `setOffline` not firing `online` (consistent with documented CDP behavior; `dispatchEvent` is the standard workaround).
-
----
-*Research completed: 2026-06-17*
-*Ready for roadmap: yes*
+- Phoenix Channels `vsn` negotiation — https://hexdocs.pm/phoenix/writing_a_channels_client.html
+- Buf breaking-change detection — https://buf.build/docs/breaking/
+- Stripe API versioning — https://stripe.com/blog/api-versioning ; mobile SDK versioning — https://docs.stripe.com/sdks/mobile-sdk-versioning
+- Protocol Buffers conformance + proto3 compat — https://protobuf.dev/programming-guides/proto3/
+- JSON Schema Test Suite — https://github.com/json-schema-org/JSON-Schema-Test-Suite ; CommonMark spec — https://github.com/commonmark/commonmark-spec
+- PostgreSQL wire protocol — https://www.postgresql.org/docs/current/protocol-overview.html ; RFC 8446 TLS 1.3 — https://datatracker.ietf.org/doc/html/rfc8446
+- Elixir compatibility & deprecations — https://hexdocs.pm/elixir/compatibility-and-deprecations.html
+- Full detail: `.planning/research/STACK.md`, `ARCHITECTURE.md`, `NATIVE-TESTING.md`, `FEATURES.md`, `PITFALLS.md`

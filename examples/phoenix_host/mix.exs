@@ -4,10 +4,13 @@ defmodule CrosswakeExample.MixProject do
   def project do
     [
       app: :crosswake_example,
-      version: "0.1.0",
+      version: "0.1.2",
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      # Phoenix 1.8 drives compile-on-request code reloading through a Mix listener;
+      # without it the dev code reloader raises on every request.
+      listeners: [Phoenix.CodeReloader],
       deps: deps(),
       aliases: aliases()
     ]
@@ -25,8 +28,10 @@ defmodule CrosswakeExample.MixProject do
 
   defp aliases do
     [
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
       # Provisions the SQLite DB and applies all migrations before running tests.
-      # Required in CI where the committed .db file is absent or stale.
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
@@ -36,6 +41,7 @@ defmodule CrosswakeExample.MixProject do
       {:crosswake, path: "../.."},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
+      {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:plug, "~> 1.16"},
       {:jason, "~> 1.4"},
       {:ecto_sql, "~> 3.10"},

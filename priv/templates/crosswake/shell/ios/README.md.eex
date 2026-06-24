@@ -1,5 +1,13 @@
 # Crosswake iOS Shell Skeleton
 
+<%= if @local do %>`local-dev proof`<% else %>`generated public-coordinate proof`<% end %> | <%= if @local do %>maintainer/local mode<% else %>published-coordinate mode<% end %> | `native/ios/crosswake_shell`
+
+What this proves: <%= if @local do %>the generated iOS shell resolves the local maintainer path while you iterate on source-checkout dependencies.<% else %>the generated iOS shell resolves the published SwiftPM mirror by default.<% end %>
+What this does not prove: simulator, emulator, or physical-device support.
+Next link: [guides/native_shell.md](../../../../guides/native_shell.md)
+
+Use `--local` when you need maintainer/local-dev proof.
+
 This workspace is `host-owned` and `editable` after generation. Crosswake created
 the scaffold so you can review and extend it, but it does not retain ownership of
 the native project files.

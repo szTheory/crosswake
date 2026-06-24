@@ -159,6 +159,15 @@ defmodule Crosswake.Proof.Phase52OperatorTruthTest do
     )
 
     ProofAssertions.assert_contains_exact(
+      "proof.docs.support_matrix.rebuild_decision_table_section",
+      "guides/support_matrix.md",
+      "## Rebuild Decision Table",
+      source: "Crosswake.SupportMatrix.rebuild_decision_table/0 via Renderer.render/1",
+      hint: "regenerate support matrix guide — the rebuild decision table section is missing",
+      posture: :merge_blocking
+    )
+
+    ProofAssertions.assert_contains_exact(
       "proof.docs.non_claims.store_providers",
       "guides/support_matrix.md",
       "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass",

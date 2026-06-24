@@ -89,9 +89,13 @@ defmodule Crosswake.MixProject do
       formatters: ["html"],
       extras: [
         "README.md",
+        "guides/see_it_run.md",
         "CHANGELOG.md",
         "LICENSE",
         "guides/install.md",
+        "guides/route_policy.md",
+        "guides/web_to_mobile_migration.md",
+        "guides/troubleshooting.md",
         "guides/support_matrix.md",
         "guides/adopter_profiles.md",
         "guides/adoption.md",
@@ -115,14 +119,39 @@ defmodule Crosswake.MixProject do
         Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/
       ],
       groups_for_extras: [
-        Setup: ["guides/install.md", "guides/support_matrix.md"],
-        Capabilities: [
-          "guides/capabilities.md",
-          "guides/commerce.md",
-          "guides/offline.md",
-          "guides/packs.md"
+        Start: [
+          "README.md",
+          "guides/see_it_run.md",
+          "guides/route_policy.md",
+          "guides/install.md"
         ],
-        Guides: ~r/guides\//
+        Adopt: [
+          "guides/web_to_mobile_migration.md",
+          "guides/user_flows.md",
+          "guides/adopter_profiles.md",
+          "guides/adoption.md"
+        ],
+        "Runtime Owners": [
+          "guides/native_shell.md",
+          "guides/bridge.md",
+          "guides/capabilities.md",
+          "guides/offline.md",
+          "guides/packs.md",
+          "guides/tokens.md",
+          "guides/commerce.md"
+        ],
+        Truth: [
+          "guides/troubleshooting.md",
+          "guides/support_matrix.md",
+          "guides/compatibility.md",
+          "guides/android_uat.md"
+        ],
+        "Advanced/Companions": [
+          "guides/companions.md",
+          "guides/threadline.md",
+          "CHANGELOG.md",
+          "LICENSE"
+        ]
       ]
     ]
   end

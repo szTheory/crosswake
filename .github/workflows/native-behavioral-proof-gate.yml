@@ -1,0 +1,95 @@
+name: Native Behavioral Proof Gate
+# Purpose-named per domain (D-07) — NOT folded into contract-drift-gate.yml.
+# Enforces Android JVM behavioral tests as merge-blocking and Swift tests as advisory;
+# rolls up to one alls-green aggregator that is the SOLE new required check.
+#
+# TOPOLOGY:
+#   android-package-unit  — ubuntu-latest, ./gradlew test, MERGE-BLOCKING
+#                           (JVM-only, no emulator; hermetic per the project split)
+#   ios-package-unit      — macos-latest, swift test, ADVISORY
+#                           (macOS Xcode native toolchain → advisory per the locked project
+#                            split; overrides NATIVE-TESTING.md §10 which incorrectly wanted
+#                            iOS merge-blocking — the roadmap and D-07 are authoritative)
+#   merge-blocking-native-behavioral-proof  — re-actors/alls-green aggregator;
+#                           needs: ONLY android-package-unit (iOS is NOT in needs:);
+#                           this aggregator name is the SOLE new required status check.
+#
+# REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
+#
+#   Ordering — must follow this sequence to avoid "Expected — Waiting for status" deadlock:
+#     1. Merge this PR (native-behavioral-proof-gate.yml with aggregator topology).
+#     2. Let merge-blocking-native-behavioral-proof go GREEN on main at least once.
+#     3. Run the registration script (step 3 is harness-blocked; maintainer only):
+#
+#        script/register-native-gate.sh
+#
+#        Equivalent gh api one-liner (for reference / auditing):
+#          EP="repos/szTheory/crosswake/branches/main/protection/required_status_checks"
+#          current="$(gh api "$EP")"
+#          desired="$(jq -n --argjson cur "$current" --arg new "merge-blocking-native-behavioral-proof" \
+#            --argjson app 15368 \
+#            '{ strict: $cur.strict,
+#               checks: (($cur.checks // []) + [{context:$new, app_id:$app}] | unique_by(.context)) }')"
+#          gh api -X PATCH "$EP" --input <(echo "$desired")
+#
+#   The granular required_status_checks endpoint is used — not the full PUT .../protection —
+#   so enforce_admins and review requirements are left untouched.
+#   The aggregator (merge-blocking-native-behavioral-proof) is the SOLE new required check;
+#   the iOS advisory lane (ios-package-unit) is NOT registered as required.
+#
+# NTEST-04 / Phase 123
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  android-package-unit:                    # MERGE-BLOCKING: JVM tests, no emulator (D-07)
+    name: android-package-unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: packages/crosswake-shell-core-android/.gradle
+          key: gradle-${{ hashFiles('packages/crosswake-shell-core-android/build.gradle.kts') }}
+      - name: Run Android JVM tests
+        working-directory: packages/crosswake-shell-core-android
+        run: ./gradlew test
+      - name: Step summary
+        run: |
+          echo "android-package-unit: Android JVM behavioral proof passed (merge-blocking)" >> "$GITHUB_STEP_SUMMARY"
+
+  ios-package-unit:                        # ADVISORY: macOS Xcode native toolchain — NOT in aggregator needs (D-07)
+    name: ios-package-unit
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: packages/crosswake-shell-core-ios/.build
+          key: spm-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}
+      - name: Run Swift tests
+        working-directory: packages/crosswake-shell-core-ios
+        run: swift test
+      - name: Step summary
+        run: |
+          echo "ios-package-unit: Swift behavioral proof passed (advisory — not merge-blocking)" >> "$GITHUB_STEP_SUMMARY"
+
+  merge-blocking-native-behavioral-proof:  # THE ONLY new required check (NTEST-04 / D-07)
+    name: merge-blocking-native-behavioral-proof
+    if: always()
+    needs: [android-package-unit]          # iOS is NOT here — advisory only (D-07)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up native behavioral proof results
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

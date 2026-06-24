@@ -1,5 +1,57 @@
 # Project Milestones: Crosswake
 
+## v14.0 Runtime Contract Confidence (Shipped: 2026-06-21)
+
+**Phases completed:** 4 phases (121-124), 17 plans, 27 tasks
+**Git range:** `feat(121-01)` (e2c2d04) → `docs(124)` close; 103 files changed (+14,002 / -118); 2026-06-20 → 2026-06-21
+**Requirements:** 18/18 v1 satisfied (CANON-01..05, GUARD-01..04, NTEST-01..04, COMPAT-01..05); audit `tech_debt` (no blockers). Nyquist coverage full (4/4 phases).
+
+**Delivered:** Made the bridge/runtime contract boringly canonical and hard to drift — coherence work, not feature breadth — then proved it directly in the reusable native packages.
+
+**Key accomplishments:**
+
+- **Canonical contract source (CANON):** A single Elixir constant (`Crosswake.Bridge.Contract.version/0`) is the sole declared bridge-protocol literal; `mix crosswake.contract.gen` renders it into JSON fixtures, generated shell templates, native conformance vectors, and a docs snippet (idempotent). The `1.1.0`/`1.0.0` divergence was resolved without breaking the published `crosswake 0.1.x` contract, and the silent Kotlin `?: "1.0.0"` fallback was removed.
+- **Drift guards (GUARD):** A browser-free merge-blocking ExUnit drift test reads every committed surface via `Jason.decode` (never text grep) and asserts equality to the canonical version, naming the one file to edit + regenerate command on failure (proven non-vacuous with synthetic regressions); plus a generate-and-diff CI check, a `contract_version_parity` doctor sibling check, and a required-vs-advisory aggregator with registration scripts.
+- **Native behavioral proof (NTEST):** The reusable iOS `crosswake-shell-core-ios` (XCTest, no simulator) and Android `crosswake-shell-core-android` (JUnit, no emulator) packages gained real tests for activation, bridge denial, capability allowlist, active-route, pack-version, and delegate/escape-hatch — all driven from one committed `bridge_contract_vectors.json` so a single version bump fails all three suites. CI lane is Android-blocking + iOS-advisory.
+- **Floor compatibility reconciliation (COMPAT-01):** Hand-ported `SemVer.compatible(provides:demands:)` into both native packages and converted every version-equality site to `>=` min-version-floor across Elixir and native, eliminating the exact-equality denial footgun — proven by the discriminating vec-014 (request `1.1.0` > session `1.0.0` allows under floor, denied under old `==`) on iOS + Android.
+- **Adopter truth (COMPAT-02..05):** A canonical `rebuild_decision_table/0` (axis → rebuild-class) rendered into the support matrix and a decision-table-first `guides/compatibility.md`; an advisory doctor `compatibility_rebuild_guidance` check naming the full regenerate→rebuild→resubmit→deploy sequence (never `:error`); and per-release CHANGELOG `### Upgrade Impact` labels with a CONTRIBUTING intent-gate.
+
+**Known deferred items at close (non-blocking tech debt, carried forward):**
+
+- **WR-01** — the discriminating capability-axis floor proof (vec-014) runs native-only; the Elixir `bridge_behavioral_vector_test.exs` harness hardcodes capabilities and evaluates it vacuously. Test-coverage gap only — `compatible_version?/2` is correct and native proof is green. Fix: tag vec-014 `native_only` or teach the Elixir harness to honor `request_override.capabilities`.
+- **WR-02 / WR-03** — latent, unexercised native divergences (Android vs iOS malformed-`@` pack parser; `SemVer.compatible` identical-garbage fallback returns true). Bounded; all current inputs are generated well-formed semver.
+- Two committed `register-*-gate.sh` branch-protection PATCHes (`register-contract-gate.sh`, `register-native-gate.sh`) are documented but unrun by design — a maintainer must run them to arm branch protection.
+- 4 pre-existing docs-debt test failures (HexPage×2, Phase48, Phase69) predate v14.0; `MIRROR_PUSH_TOKEN` scope remains unexercised; 2 cosmetic "four surfaces" stale comments (actual is 6).
+
+See `.planning/milestones/v14.0-MILESTONE-AUDIT.md` for the full audit and `.planning/RETROSPECTIVE.md` for the milestone retrospective.
+
+---
+
+## v13.0 Adopter Confidence & Native Evidence (Shipped: 2026-06-19)
+
+**Phases completed:** 5 phases, 16 plans, 32 tasks
+
+**Key accomplishments:**
+
+- Schema-aligned Flashcards tests and deterministic Chimeway notification-open fixtures remove TODO-001 from the public proof path
+- Crosswake 0.1.2 release truth is now reflected in public docs, example metadata, manifests, and first-read proof-path labels
+- Release-truth drift is now guarded by deterministic ExUnit coverage over public docs and example manifests
+- Route-owner-first guide and docs-contract test make Crosswake's route-policy mental model explicit
+- Phoenix SaaS route-inventory guide defaults to LiveView and promotes only for explicit owner reasons
+- Support-truth labels and public guide navigation now make the route-owner docs first-class
+- The quick start now runs the Phoenix host on port 4002 and proves the current offline and bounded-bridge architecture without native overclaim
+- The adoption guide now teaches the real app-owned IndexedDB outbox, reconnect flush, and Phoenix/Ecto replay path
+- Quick-start and adoption guide truth is now guarded by source-derived ExUnit docs-contract tests
+- Checked-in native hosts now resolve published coordinates by default and label themselves as checked-in public-coordinate proof
+- Public native docs and the canonical support matrix now speak one evidence-label language
+- A source-derived ExUnit scanner now blocks stale native coordinates and missing evidence labels
+- Merge-blocking browser route-tour proof now verifies route ownership semantically before uploading collateral screenshots.
+- Route-tour evidence now ships as a validated run-level manifest with fail-closed CI artifact packaging.
+- Advisory iOS simulator and Android emulator collateral now records captured or unavailable native evidence without promoting support claims.
+- Route-owner-first troubleshooting now maps doctor findings, denials, native evidence labels, and offline outcomes to concrete owner actions.
+
+---
+
 ## Document Truth Precedence
 
 For shipped-state questions, use this order: `MILESTONES.md` curated shipped-state truth > `PROJECT.md` Requirements marks > `v*-MILESTONE-AUDIT.md` point-in-time snapshots. `PROJECT.md` Requirements marks remain active-project truth and must cite verification or CI evidence; audit files preserve the evidence available at the time they were written.

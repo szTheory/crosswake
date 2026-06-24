@@ -614,9 +614,18 @@ defmodule Crosswake.Planning.CloseoutVerifier do
   defp requirements_source(cwd, milestone) do
     live = Path.join(cwd, ".planning/REQUIREMENTS.md")
 
+    archived =
+      milestone && Path.join(cwd, ".planning/milestones/#{milestone}-REQUIREMENTS.md")
+
+    # When re-verifying an ARCHIVED closeout, the live .planning/REQUIREMENTS.md
+    # has moved on to a later milestone and no longer carries this milestone's
+    # requirement rows. Prefer the archived per-milestone snapshot when it exists
+    # so the requirements cross-check reflects the milestone actually being
+    # verified. The active milestone has no archived snapshot, so it still reads
+    # the live document — preserving the original behavior.
     cond do
+      archived && File.exists?(archived) -> read_file(archived)
       File.exists?(live) -> read_file(live)
-      milestone -> read_file(Path.join(cwd, ".planning/milestones/#{milestone}-REQUIREMENTS.md"))
       true -> read_file(live)
     end
   end

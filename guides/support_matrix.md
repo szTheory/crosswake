@@ -1,12 +1,36 @@
 # Crosswake Support Matrix
 
-This guide stays narrow and proof-oriented. The published iOS and Android shell claims
-below are backed by the checked-in example hosts plus the generated-shell verification
-hooks that now pass on the same host-owned artifact classes adopters ship.
+This guide stays narrow and proof-oriented. Generated-shell coordinate support is
+backed by release-time clean-room proof plus generated-shell verification hooks.
+The checked-in native hosts are `checked-in public-coordinate proof`; the explicit
+maintainer path stays `local-dev proof` behind `--local`.
 The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`
 and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake
 Hex package version; the release-time clean-room proof promotes that path after the
 coordinated cut.
+
+## Support-Truth Label Legend
+
+Use these labels literally. Each label says what the evidence proves and what it does not prove.
+
+| Label | What it proves | What it does not prove |
+|-------|----------------|------------------------|
+| merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |
+| advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |
+| checked-in public-coordinate proof | A checked-in host path resolves published SwiftPM/Maven coordinates by default. | It is not a device, simulator, or emulator support claim and it does not cover `--local`. |
+| local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |
+| generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |
+| JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |
+| emulator evidence | A simulator or emulator run produced advisory platform evidence. | Emulator evidence is not physical-device proof. |
+| device evidence | A physical-device run produced platform evidence. | Device evidence is not backend/session authority. |
+| verification-required | A claim needs an explicit verification lane before it can be treated as supported. | It is not a failure-open support claim. |
+| rebuild-required | A change touches native or companion surfaces that require rebuilding the host artifact. | It is not implied by docs-only or core-only/no native rebuild changes. |
+
+Support status is not device evidence: `supported` is not the same as device-verified.
+Visual collateral is not correctness proof by itself.
+Device/provider evidence is not backend/session authority.
+Cached read-only is not offline mutation.
+Bridge is not high-frequency or mutation authority.
 
 ## Status Legend
 
@@ -30,13 +54,13 @@ coordinated cut.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Host-owned iOS shell boot is proof-backed by the checked-in example host and generated-shell verification hook. |
+| ios | 17.0 | supported | supported | script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Checked-in iOS host boot is `checked-in public-coordinate proof`; generated-shell verification stays separate. |
 
 ## Android
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Android shell boot is supported based strictly on JVM hermetic CI evidence. |
+| android | 26 | supported | supported | script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. |
 
 ## Shell Artifacts
 
@@ -105,6 +129,22 @@ package versions alone do not define support truth.
 | core-only/no native rebuild | Core Elixir behavior, docs generation, doctor, support rendering, or validation changed inside the already-supported schema, bridge, runtime, and capability versions. | Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells. | Existing manifest_schema_version, bridge_protocol_version, native_runtime_version, and capability majors stay in line. | core contract + doctor/support proof |
 | compatibility-bump only | Compatibility declarations or package windows narrowed so some older combinations now fail closed, but a fresh binary is not automatically required for already-compatible adopters. | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | manifest_schema_version, bridge_protocol_version, native_runtime_version, or capability required-version declarations changed support windows. | fail-closed compatibility fixtures |
 | native or companion rebuild required | Native code, generated shell projects, entitlements, permissions, platform config, native dependencies, or companion-native integration code changed. | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | Every rebuild-required change carries explicit compatibility declarations, especially native_runtime_version, bridge_protocol_version, manifest_schema_version, and capability required-version shifts. | core proof plus generated-shell or companion verification lanes |
+
+## Rebuild Decision Table
+
+| Axis | Change Kind | Rebuild Class | Adopter Action | Denial Signal | Guide Anchor |
+|------|-------------|---------------|----------------|---------------|--------------|
+| manifest_schema_version | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | compatibility_mismatch | guides/compatibility.md#manifest_schema_version |
+| manifest_schema_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#manifest_schema_version |
+| bridge_protocol_version | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | compatibility_mismatch | guides/compatibility.md#bridge_protocol_version |
+| bridge_protocol_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#bridge_protocol_version |
+| native_runtime_version | additive | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. Note: unlike schema/protocol axes, native runtime additive bumps always require a rebuild because the runtime lives in the binary. | compatibility_mismatch | guides/compatibility.md#native_runtime_version |
+| native_runtime_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | compatibility_mismatch | guides/compatibility.md#native_runtime_version |
+| capability_version (core-owned) | additive | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | undeclared_capability | guides/compatibility.md#capability-version |
+| capability_version (native/companion) | additive | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | undeclared_capability | guides/compatibility.md#capability-version |
+| capability_version | breaking | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | undeclared_capability | guides/compatibility.md#capability-version |
+| docs_wording | additive | docs-only | Read the updated guidance and rerun docs integrity only. | n/a | guides/support_matrix.md#change-classes |
+| core_elixir_behavior | additive | core-only/no native rebuild | Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells. | n/a | guides/support_matrix.md#change-classes |
 
 ## Action Classes
 

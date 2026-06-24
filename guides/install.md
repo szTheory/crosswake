@@ -4,6 +4,9 @@ Crosswake keeps one primary package surface: `crosswake`. Companion-ready and
 docs-only surfaces stay explicit, but there is still one primary install path for the
 Phoenix host and one scaffold-once path for host-owned native shells.
 
+> Start with [guides/route_policy.md](route_policy.md) for route-owner decisions and
+> [guides/web_to_mobile_migration.md](web_to_mobile_migration.md) for an operational
+> Phoenix route inventory pass.
 > See [guides/adoption.md](adoption.md) for offline-sync architecture context and the rationale for the generated shell pattern.
 
 1. `mix crosswake.install`
@@ -25,7 +28,9 @@ If you are deciding whether your app pressure is mostly LiveView, one explicit
 native route, or one honest offline island, read
 [guides/adopter_profiles.md](adopter_profiles.md)
 for the Phoenix SaaS Portal, Selective Native Flow, and Local-First Study Flow profiles
-before drilling into the deeper shell, offline, or pack contracts.
+and [guides/web_to_mobile_migration.md](web_to_mobile_migration.md)
+for the route inventory pass before drilling into the deeper shell, offline, or pack
+contracts. Use [guides/route_policy.md](route_policy.md) as the owner-decision map.
 
 ## Add Crosswake To Your Dependencies
 
@@ -89,6 +94,13 @@ Read [guides/native_shell.md](native_shell.md) for
 the shell contract and [guides/bridge.md](bridge.md)
 for the bounded bridge contract.
 
+## Native Evidence Labels
+
+- `generated public-coordinate proof` is the default non-local shell generation path.
+- `local-dev proof` is the explicit `--local` maintainer path.
+- `checked-in public-coordinate proof` is the label for the checked-in iOS and Android host proof surfaces.
+- None of those labels imply simulator, emulator, or physical-device support.
+
 ## Step 3: Verify Host And Manifest Truth
 
 Run:
@@ -145,7 +157,7 @@ The generated support matrix remains authoritative:
 See the canonical action-class table at `guides/support_matrix.md#action-classes`
 and Promotion rules at `guides/support_matrix.md#promotion-rules`.
 
-Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contracts, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 telemetry/security closeout are shipped, refresh-token helpers, provider/device auth proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contracts, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 telemetry/security closeout are shipped, refresh-token helpers, provider/device auth proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone native shell core packages are published through SwiftPM and Maven Central at the Crosswake package version.
 
 compatibility-window narrowing is distinct from a native rebuild; it can be `compatibility-bump only` when the shipped native runtime line remains compatible.
 

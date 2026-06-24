@@ -1,0 +1,46 @@
+name: Collateral Guard
+
+# Cheap, every-PR drift guard for the See It Run collateral binaries.
+# Pairs with see-it-run-collateral.yml (the macOS capture pipeline): that
+# workflow refreshes the assets via auto-PR; this one keeps them present,
+# non-empty, and within the size budget on every change.
+#
+# Bootstrap-safe: web assets are enforced now; native assets auto-enforce once
+# the first capture PR lands. See script/collateral-guard.sh.
+#
+# REGISTRATION (out-of-band, maintainer — after this is green on main):
+#   Add required check "collateral-binaries-guard" to branch protection, and
+#   flip COLLATERAL_REQUIRE_NATIVE to "1" below once the first capture PR merges.
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  collateral-binaries-guard:
+    name: collateral-binaries-guard
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+      COLLATERAL_REQUIRE_NATIVE: '0' # flip to '1' after the first capture PR lands
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Install Mix dependencies
+        run: mix deps.get
+      - name: Guard collateral binaries (existence + non-empty + size budget)
+        run: bash script/collateral-guard.sh
+      - name: Step summary
+        if: always()
+        run: |
+          echo "collateral-binaries-guard ran — See It Run assets checked (web always; native once committed)." >> "$GITHUB_STEP_SUMMARY"

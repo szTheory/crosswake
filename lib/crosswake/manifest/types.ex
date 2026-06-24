@@ -529,6 +529,41 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
+  defmodule RebuildDecisionEntry do
+    @moduledoc false
+    @derive Jason.Encoder
+
+    @enforce_keys [
+      :axis,
+      :change_kind,
+      :rebuild_class,
+      :adopter_action,
+      :denial_signal,
+      :guide_anchor
+    ]
+    defstruct [
+      :axis,
+      :change_kind,
+      :rebuild_class,
+      :adopter_action,
+      :denial_signal,
+      :guide_anchor
+    ]
+
+    @type change_kind :: :additive | :breaking
+    @type rebuild_class ::
+            String.t()
+
+    @type t :: %__MODULE__{
+            axis: String.t(),
+            change_kind: change_kind(),
+            rebuild_class: rebuild_class(),
+            adopter_action: String.t(),
+            denial_signal: String.t(),
+            guide_anchor: String.t()
+          }
+  end
+
   defmodule ActionClassEntry do
     @moduledoc false
     @derive Jason.Encoder
@@ -649,7 +684,7 @@ defmodule Crosswake.Manifest.Types do
   end
 
   @manifest_schema_version "1.0.0"
-  @bridge_protocol_version "1.0.0"
+  @bridge_protocol_version Crosswake.Bridge.Contract.version()
   @native_runtime_version "1.0.0"
   @default_origin "https://example.crosswake.invalid"
 
@@ -903,6 +938,18 @@ defmodule Crosswake.Manifest.Types do
       adopter_action: Keyword.fetch!(attrs, :adopter_action),
       compatibility_signal: Keyword.fetch!(attrs, :compatibility_signal),
       required_proof: Keyword.fetch!(attrs, :required_proof)
+    })
+  end
+
+  @spec new_rebuild_decision_entry(keyword()) :: RebuildDecisionEntry.t()
+  def new_rebuild_decision_entry(attrs) when is_list(attrs) do
+    struct!(RebuildDecisionEntry, %{
+      axis: Keyword.fetch!(attrs, :axis),
+      change_kind: Keyword.fetch!(attrs, :change_kind),
+      rebuild_class: Keyword.fetch!(attrs, :rebuild_class),
+      adopter_action: Keyword.fetch!(attrs, :adopter_action),
+      denial_signal: Keyword.fetch!(attrs, :denial_signal),
+      guide_anchor: Keyword.fetch!(attrs, :guide_anchor)
     })
   end
 

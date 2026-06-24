@@ -1,5 +1,24 @@
 ExUnit.start()
 
-unless System.get_env("MIX_INCLUDE_RULESTEAD") == "1" do
-  ExUnit.configure(exclude: [advisory_only: true])
-end
+# Build the default exclude list once (a second ExUnit.configure(exclude:) call
+# would replace, not merge, the list).
+#
+# - advisory_only: excluded unless MIX_INCLUDE_RULESTEAD=1 (existing behavior).
+# - collateral_binaries: the See It Run collateral assets are runtime/human-
+#   produced (web via bin/capture-collateral.sh; native via the human-gated steps
+#   in brandbook/collateral/see-it-run/README.md), so the existence guard is
+#   excluded by default to keep the suite green before binaries land. Run it with
+#   `mix test --include collateral_binaries` (or CROSSWAKE_INCLUDE_COLLATERAL=1)
+#   once the maintainer commits the real binaries.
+exclude =
+  []
+  |> then(fn acc ->
+    if System.get_env("MIX_INCLUDE_RULESTEAD") == "1", do: acc, else: [{:advisory_only, true} | acc]
+  end)
+  |> then(fn acc ->
+    if System.get_env("CROSSWAKE_INCLUDE_COLLATERAL") == "1",
+      do: acc,
+      else: [{:collateral_binaries, true} | acc]
+  end)
+
+if exclude != [], do: ExUnit.configure(exclude: exclude)

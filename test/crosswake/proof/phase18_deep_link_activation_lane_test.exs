@@ -19,7 +19,7 @@ defmodule Crosswake.Proof.Phase18DeepLinkActivationLaneTest do
           url: "#{Types.default_origin()}/dashboard",
           source: :deep_link,
           manifest_source: :bundled,
-          bridge_protocol_version: "1.0.0",
+          bridge_protocol_version: Crosswake.Bridge.Contract.version(),
           native_runtime_version: "1.0.0",
           correlation_id: "phase18-deep-link-denied",
           capabilities: %{

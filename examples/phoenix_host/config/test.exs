@@ -1,0 +1,10 @@
+import Config
+
+# Test env config. The endpoint (server: true, secret_key_base), HTTP port (4700,
+# overridable via PORT), and the SQLite database path are all set by config.exs +
+# runtime.exs, which apply to every Mix env. The e2e/route-tour harness drives a
+# real running server against a shared SQLite DB (no Ecto sandbox — see
+# test/test_helper.exs), so no sandbox pool is configured here.
+
+# Keep test-server logs quiet so Playwright output stays readable.
+config :logger, level: :warning

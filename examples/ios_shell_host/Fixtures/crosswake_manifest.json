@@ -347,7 +347,7 @@
     }
   },
   "compatibility": {
-    "bridge_protocol_version": "1.0.0",
+    "bridge_protocol_version": "1.1.0",
     "manifest_schema_version": "1.0.0",
     "native_runtime_version": "1.0.0",
     "remote_updates": [
@@ -360,7 +360,7 @@
       "remote"
     ]
   },
-  "crosswake_version": "0.1.0",
+  "crosswake_version": "0.1.2",
   "generated_at": "2026-06-02T01:19:43Z",
   "host": {
     "live_view_version": "~> 1.1",
@@ -1205,11 +1205,11 @@
         "why": "Examples, walkthroughs, reviewer playbooks, and vendor recipes teach boundaries and proof posture without becoming separate runtime packages."
       },
       {
-        "guide": "guides/compatibility.md#runtime-line-rules",
-        "package_class": "defer",
-        "release_burden": "No first-class package commitment yet; any future promotion must land with runtime-line rules and rebuild guidance.",
-        "surface": "Standalone public shell packages",
-        "why": "Separately versioned shell artifacts stay deferred until release choreography and compatibility policy are mature enough to support them honestly."
+        "guide": "guides/install.md#step-2-generate-host-owned-native-shells",
+        "package_class": "core",
+        "release_burden": "Native core versions move in lockstep with the Crosswake package version through release-please linked versions; clean-room proof verifies the external install path at release time.",
+        "surface": "Standalone native shell core packages",
+        "why": "The generated shell stays host-owned, while reusable native core logic resolves from SwiftPM and Maven Central packages instead of monorepo-local paths."
       }
     ],
     "phoenix": [
@@ -1258,7 +1258,7 @@
         "proof_status": "supported",
         "status": "supported",
         "target": "ios_shell",
-        "version": "0.1.0"
+        "version": "Crosswake package version"
       },
       {
         "baseline_status": "supported",
@@ -1268,7 +1268,7 @@
         "proof_status": "verification required",
         "status": "verification required",
         "target": "android_shell",
-        "version": "0.1.0"
+        "version": "Crosswake package version"
       }
     ]
   }

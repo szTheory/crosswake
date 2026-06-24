@@ -10,6 +10,7 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   alias Crosswake.Doctor.Check
   alias Crosswake.OperatorInspection
+  alias Crosswake.Shell.Denial
   alias Crosswake.SupportMatrix
 
   @schema_version "1.0.0"
@@ -169,7 +170,9 @@ defmodule Crosswake.Doctor.PublishReadiness do
       native_shell_verification_gap_check(support_matrix, inspection),
       docs_support_parity_check(cwd, opts),
       proof_posture_check(support_matrix, inspection),
-      generator_coordinate_parity_check(cwd)
+      generator_coordinate_parity_check(cwd),
+      contract_version_parity_check(cwd),
+      compatibility_rebuild_guidance_check(cwd)
     ]
   end
 
@@ -573,6 +576,240 @@ defmodule Crosswake.Doctor.PublishReadiness do
         android_template: android_template_relative,
         errors: errors
       }
+    )
+  end
+
+  # Surface paths for the contract_version_parity_check.
+  # Manifests: bridge_protocol_version lives at ["compatibility"]["bridge_protocol_version"].
+  # Generated JSONs: bridge_protocol_version lives at the document root.
+  @manifest_surfaces [
+    "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+    "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json"
+  ]
+  @generated_json_surfaces [
+    "examples/ios_shell_host/Fixtures/route_activation.json",
+    "examples/android_shell_host/app/src/main/assets/route_activation.json",
+    "test/fixtures/bridge_contract_vectors.json"
+  ]
+  @all_contract_surfaces @manifest_surfaces ++ @generated_json_surfaces
+
+  defp contract_version_parity_check(cwd) do
+    expected = Crosswake.Bridge.Contract.version()
+    errors = contract_version_parity_errors(cwd)
+
+    result_check(
+      id: "contract.version_parity",
+      code:
+        if(errors == [],
+          do: "diag.contract.version_parity_ok",
+          else: "diag.contract.version_parity_failed"
+        ),
+      category: :contract_version_parity,
+      passed?: errors == [],
+      message:
+        if(errors == [],
+          do:
+            "all committed contract surfaces carry bridge_protocol_version #{expected}",
+          else: "contract version parity failed: #{Enum.join(errors, "; ")}"
+        ),
+      hint: "Run mix crosswake.contract.gen and commit the regenerated surfaces. Hand-maintained crosswake_manifest.json files require manual updates.",
+      docs_reference: "guides/compatibility.md",
+      proof_class: :merge_blocking,
+      claim_scope: "Contract version parity across committed surfaces",
+      details: %{
+        version: expected,
+        surfaces: @all_contract_surfaces,
+        errors: errors
+      }
+    )
+  end
+
+  defp contract_version_parity_errors(cwd) do
+    expected = Crosswake.Bridge.Contract.version()
+
+    manifest_errors =
+      Enum.flat_map(@manifest_surfaces, fn rel ->
+        path = Path.join(cwd, rel)
+
+        case File.read(path) do
+          {:ok, contents} ->
+            case Jason.decode(contents) do
+              {:ok, decoded} ->
+                actual = get_in(decoded, ["compatibility", "bridge_protocol_version"])
+
+                if actual == expected do
+                  []
+                else
+                  ["#{rel}: found #{inspect(actual)}, expected #{inspect(expected)}"]
+                end
+
+              {:error, reason} ->
+                ["#{rel}: JSON decode failed — #{inspect(reason)}"]
+            end
+
+          {:error, reason} ->
+            ["#{rel}: file read failed — #{inspect(reason)}"]
+        end
+      end)
+
+    generated_errors =
+      Enum.flat_map(@generated_json_surfaces, fn rel ->
+        path = Path.join(cwd, rel)
+
+        case File.read(path) do
+          {:ok, contents} ->
+            case Jason.decode(contents) do
+              {:ok, decoded} ->
+                actual = decoded["bridge_protocol_version"]
+
+                if actual == expected do
+                  []
+                else
+                  ["#{rel}: found #{inspect(actual)}, expected #{inspect(expected)}"]
+                end
+
+              {:error, reason} ->
+                ["#{rel}: JSON decode failed — #{inspect(reason)}"]
+            end
+
+          {:error, reason} ->
+            ["#{rel}: file read failed — #{inspect(reason)}"]
+        end
+      end)
+
+    manifest_errors ++ generated_errors
+  end
+
+  defp compatibility_rebuild_guidance_check(cwd) do
+    errors = contract_version_parity_errors(cwd)
+    has_drift? = errors != []
+    detected_class = if has_drift?, do: "native or companion rebuild required", else: nil
+    active_sequence = action_sequence_for(detected_class || "native or companion rebuild required")
+    denial_vocabulary = Enum.map(Denial.reasons(), &Atom.to_string/1)
+
+    {severity, result, code, message, hint} =
+      if has_drift? do
+        {
+          :warning,
+          :fail,
+          "diag.compat.rebuild_guidance_drift_detected",
+          "Committed-surface drift detected — class: native or companion rebuild required. " <>
+            "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. " <>
+            "Run: mix crosswake.contract.gen. " <>
+            "Then: 1) Regenerate shell via mix crosswake.gen.shell " <>
+            "2) Rebuild native app " <>
+            "3) Resubmit to App Store / Play Store " <>
+            "4) Coordinated deploy with updated Hex package.",
+          "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. " <>
+            "Run mix crosswake.contract.gen first, then follow the rebuild steps. " <>
+            "See guides/compatibility.md for the full rebuild decision table."
+        }
+      else
+        {
+          :advisory,
+          :pass,
+          "diag.compat.rebuild_guidance_baseline",
+          "Compatibility rebuild guidance: no committed-surface drift detected. " <>
+            "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. " <>
+            "If a rebuild is needed, run: mix crosswake.contract.gen. " <>
+            "Then: 1) Regenerate shell via mix crosswake.gen.shell " <>
+            "2) Rebuild native app " <>
+            "3) Resubmit to App Store / Play Store " <>
+            "4) Coordinated deploy with updated Hex package.",
+          "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. " <>
+            "Denial codes that may surface if you skip a rebuild step: " <>
+            Enum.join(denial_vocabulary, ", ") <>
+            ". See guides/compatibility.md for the full rebuild decision table."
+        }
+      end
+
+    advisory_check(
+      id: "compat.rebuild_guidance",
+      code: code,
+      category: :compatibility_rebuild_guidance,
+      severity: severity,
+      result: result,
+      message: message,
+      hint: hint,
+      docs_reference: "guides/compatibility.md",
+      proof_class: :advisory,
+      claim_scope: "Compatibility rebuild guidance for adopters",
+      details: %{
+        active_action_sequence: active_sequence,
+        change_class_guidance: per_class_guidance_map(),
+        docs_reference: "guides/compatibility.md",
+        denial_vocabulary: denial_vocabulary,
+        detected_drift_errors: errors
+      }
+    )
+  end
+
+  # Returns an ordered list of action steps for the given change class string.
+  # For the "native or companion rebuild required" class, expands into 4 discrete ordered steps.
+  defp action_sequence_for("native or companion rebuild required") do
+    [
+      "Regenerate shell via mix crosswake.gen.shell",
+      "Rebuild native app",
+      "Resubmit to App Store / Play Store",
+      "Coordinated deploy with updated Hex package"
+    ]
+  end
+
+  defp action_sequence_for("compatibility-bump only") do
+    entries = SupportMatrix.change_classes(SupportMatrix.canonical())
+
+    entry =
+      Enum.find(entries, &(&1.change_class == "compatibility-bump only"))
+
+    if entry do
+      [entry.adopter_action]
+    else
+      ["Check the compatibility window and run fail-closed compatibility fixtures"]
+    end
+  end
+
+  defp action_sequence_for("core-only/no native rebuild") do
+    entries = SupportMatrix.change_classes(SupportMatrix.canonical())
+
+    entry =
+      Enum.find(entries, &(&1.change_class == "core-only/no native rebuild"))
+
+    if entry do
+      [entry.adopter_action]
+    else
+      ["Update the Hex package and rerun core contract and doctor/support proof"]
+    end
+  end
+
+  defp action_sequence_for("docs-only") do
+    entries = SupportMatrix.change_classes(SupportMatrix.canonical())
+    entry = Enum.find(entries, &(&1.change_class == "docs-only"))
+
+    if entry do
+      [entry.adopter_action]
+    else
+      ["Read the updated guidance and rerun docs integrity only"]
+    end
+  end
+
+  defp action_sequence_for(_unknown_class) do
+    ["Consult guides/compatibility.md for upgrade guidance"]
+  end
+
+  # Returns a map of change-class string → action sequence for all 4 canonical classes.
+  defp per_class_guidance_map do
+    entries = SupportMatrix.change_classes(SupportMatrix.canonical())
+
+    base =
+      entries
+      |> Enum.map(fn entry -> {entry.change_class, [entry.adopter_action]} end)
+      |> Map.new()
+
+    # Expand native rebuild into the 4-step ordered sequence
+    Map.put(
+      base,
+      "native or companion rebuild required",
+      action_sequence_for("native or companion rebuild required")
     )
   end
 

@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0.0",
+  "crosswake_version": "0.1.2",
+  "commit_sha": "example-commit-sha",
+  "source_job": "route-tour-proof",
+  "captured_at": "2026-06-19T00:00:00.000Z",
+  "retention_label": "ci-artifact-14-days",
+  "routes": [
+    {
+      "route_id": "library",
+      "runtime_owner": "live_view",
+      "platform_runtime": "browser-chromium",
+      "command": "npx playwright test e2e/route_tour.spec.ts",
+      "proof_class": "merge-blocking proof",
+      "support_label": "advisory evidence",
+      "coordinate_mode": null,
+      "source_job": "route-tour-proof",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "artifacts": [
+        "screenshots/library.png"
+      ],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Screenshots are collateral captured after semantic Playwright assertions pass.",
+        "This browser evidence does not prove native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+      ],
+      "status": "captured"
+    },
+    {
+      "route_id": "bridge-proof",
+      "runtime_owner": "bounded_bridge",
+      "platform_runtime": "browser-chromium",
+      "command": "npx playwright test e2e/route_tour.spec.ts",
+      "proof_class": "merge-blocking proof",
+      "support_label": "advisory evidence",
+      "coordinate_mode": null,
+      "source_job": "route-tour-proof",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "artifacts": [
+        "screenshots/bridge-proof.png"
+      ],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Screenshots are collateral captured after semantic Playwright assertions pass.",
+        "This browser evidence does not prove native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+      ],
+      "status": "captured"
+    },
+    {
+      "route_id": "offline-study",
+      "runtime_owner": "offline_island",
+      "platform_runtime": "browser-chromium",
+      "command": "npx playwright test e2e/route_tour.spec.ts",
+      "proof_class": "merge-blocking proof",
+      "support_label": "advisory evidence",
+      "coordinate_mode": null,
+      "source_job": "route-tour-proof",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "artifacts": [
+        "screenshots/offline-study-replayed.png"
+      ],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Screenshots are collateral captured after semantic Playwright assertions pass.",
+        "This browser evidence does not prove native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+      ],
+      "status": "captured"
+    },
+    {
+      "route_id": "selective-native-claim-capture",
+      "runtime_owner": "native_screen",
+      "platform_runtime": "browser-chromium",
+      "command": "npx playwright test e2e/route_tour.spec.ts",
+      "proof_class": "merge-blocking proof",
+      "support_label": "advisory evidence",
+      "coordinate_mode": null,
+      "source_job": "route-tour-proof",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "artifacts": [
+        "screenshots/selective-native-claim-capture-unavailable.png"
+      ],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Screenshots are collateral captured after semantic Playwright assertions pass.",
+        "This browser evidence does not prove native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+      ],
+      "status": "captured"
+    }
+  ]
+}

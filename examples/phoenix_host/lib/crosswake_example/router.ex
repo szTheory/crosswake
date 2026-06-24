@@ -1,13 +1,83 @@
 defmodule CrosswakeExample.PageController do
-  def init(opts), do: opts
-  def call(conn, _opts), do: conn
+  use Phoenix.Controller, formats: [:html]
+
+  def index(conn, _params) do
+    html(conn, """
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Crosswake Phoenix Host</title>
+      </head>
+      <body>
+        <main>
+          <h1>Crosswake Phoenix Host</h1>
+          <p>Route policy for Phoenix apps that go mobile.</p>
+          <ul>
+            <li><a href="/offline">Offline Study Island</a> - app-owned IndexedDB outbox and Phoenix/Ecto replay.</li>
+            <li><a href="/bridge-proof">Bridge Proof</a> - Phoenix-owned LiveView route with one bounded Share affordance.</li>
+            <li><a href="/native/claims">Native claim routes</a> - route policy marks native-owned paths explicitly.</li>
+          </ul>
+        </main>
+      </body>
+    </html>
+    """)
+  end
 end
 
 defmodule CrosswakeExample.LibraryLive do
   use Phoenix.LiveView
 
   def render(assigns) do
-    ~H"<div>lesson library</div>"
+    # Brand-voiced demo page consuming the shared tokens.css design system
+    # (matches the offline study island). The visible title is capitalized via
+    # CSS only — the DOM text stays exactly "lesson library" so the route-tour
+    # owner assertion (toContainText('lesson library')) holds without change.
+    ~H"""
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <style>
+      body {
+        font-family: var(--cw-font-body);
+        background-color: var(--cw-surface-default);
+        color: var(--cw-text-default);
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .cw-title { text-transform: capitalize; margin: 0.5rem 0 1.5rem; }
+      .cw-card {
+        background: var(--cw-surface-inset);
+        border-radius: var(--cw-radius-md);
+        box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--cw-text-default) 10%, transparent);
+        padding: 2rem;
+        width: 100%;
+        max-width: 24rem;
+        text-align: center;
+      }
+      .cw-card h2 { margin: 0 0 0.25rem; font-size: 1.25rem; }
+      .cw-muted { color: var(--cw-text-muted); font-size: var(--cw-text-scale-sm); margin: 0; }
+      .cw-lessons { list-style: none; padding: 0; margin: 1.5rem 0 0; text-align: left; }
+      .cw-lessons li {
+        padding: 0.75rem 1rem;
+        border-radius: var(--cw-radius-sm);
+        background: var(--cw-surface-default);
+        margin-bottom: 0.5rem;
+      }
+    </style>
+    <h1 class="cw-title">lesson library</h1>
+    <div class="cw-card">
+      <h2>Crosswake Lessons</h2>
+      <p class="cw-muted">Phoenix-owned LiveView route</p>
+      <ul class="cw-lessons">
+        <li>Elixir Fundamentals</li>
+        <li>Phoenix LiveView</li>
+        <li>Offline-First Sync</li>
+      </ul>
+    </div>
+    """
   end
 end
 
@@ -380,6 +450,7 @@ defmodule CrosswakeExample.Router do
     scope "/_e2e", CrosswakeExample.E2E do
       pipe_through([:api])
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
+      post("/native-claim", NativeClaimController, :create)
     end
   end
 end

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "crosswake_version": "0.1.2",
+  "commit_sha": "example-commit-sha",
+  "source_job": "native-collateral-advisory",
+  "captured_at": "2026-06-19T00:00:00.000Z",
+  "retention_label": "ci-artifact-14-days",
+  "routes": [
+    {
+      "route_id": "ios-simulator-route-tour",
+      "runtime_owner": "native_shell",
+      "platform_runtime": "ios-simulator",
+      "command": "CROSSWAKE_IOS_PROJECT_ROOT=examples/ios_shell_host bash script/verify_generated_ios_shell.sh",
+      "proof_class": "advisory evidence",
+      "support_label": "simulator evidence",
+      "coordinate_mode": "checked-in public-coordinate proof",
+      "source_job": "native-collateral-advisory",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "commit_sha": "example-commit-sha",
+      "artifacts": [
+        "ios-simulator.png"
+      ],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Native simulator collateral is advisory evidence only.",
+        "This native collateral does not prove physical-device support, camera support, media-upload support, provider authority, app-store readiness, or merge-blocking native support."
+      ],
+      "status": "captured"
+    },
+    {
+      "route_id": "android-emulator-route-tour",
+      "runtime_owner": "native_shell",
+      "platform_runtime": "android-emulator",
+      "command": "CROSSWAKE_ANDROID_PROJECT_ROOT=examples/android_shell_host CROSSWAKE_ANDROID_CONNECTED_TESTS=1 bash script/verify_generated_android_shell.sh",
+      "proof_class": "advisory evidence",
+      "support_label": "advisory evidence",
+      "coordinate_mode": "checked-in public-coordinate proof",
+      "source_job": "native-collateral-advisory",
+      "captured_at": "2026-06-19T00:00:00.000Z",
+      "commit_sha": "example-commit-sha",
+      "artifacts": [],
+      "retention_label": "ci-artifact-14-days",
+      "known_limitations": [
+        "Native emulator collateral is advisory evidence only.",
+        "This native collateral does not prove physical-device support, camera support, media-upload support, provider authority, app-store readiness, or merge-blocking native support."
+      ],
+      "status": "unavailable",
+      "unavailable_reason": "No runnable Java runtime or Android emulator tooling was available on the runner."
+    }
+  ]
+}

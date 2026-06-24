@@ -39,6 +39,11 @@ dependencies {
     implementation("androidx.webkit:webkit:1.10.0")
 
     testImplementation("junit:junit:4.13.2")
+    // Provide the real org.json implementation for JVM unit tests.
+    // Android's android.jar stubs org.json.JSONObject as "not mocked"; the production
+    // BridgeChannel.kt uses JSONObject to build reply strings, so tests that call
+    // evaluateForTesting() need the real implementation on the test classpath.
+    testImplementation("org.json:json:20231013")
 }
 
 mavenPublishing {

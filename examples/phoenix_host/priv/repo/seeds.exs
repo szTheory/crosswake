@@ -9,6 +9,11 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+#
+# The offline study island does not get server-side proof data here. Its
+# cards and review outbox are app-owned browser state seeded by
+# priv/static/offline_study.js so the v12 proof exercises IndexedDB,
+# reconnect-triggered flush, and /study/sync honestly.
 
 alias CrosswakeExample.Repo
 alias CrosswakeExample.Flashcards.Deck
@@ -20,28 +25,34 @@ Repo.delete_all(Card)
 Repo.delete_all(Deck)
 
 # Insert "Elixir Basics" deck
-{:ok, deck} = Flashcards.create_deck(%{
-  title: "Elixir Basics",
-  description: "Core concepts of Elixir"
-})
+{:ok, deck} =
+  Flashcards.create_deck(%{
+    title: "Elixir Basics",
+    description: "Core concepts of Elixir"
+  })
 
 # Insert Cards for the deck
-{:ok, _card1} = Flashcards.create_card(%{
-  deck_id: deck.id,
-  front_text: "What is OTP?",
-  back_text: "Open Telecom Platform - a collection of middleware, libraries, and tools written in Erlang."
-})
+{:ok, _card1} =
+  Flashcards.create_card(%{
+    deck_id: deck.id,
+    front_text: "What is OTP?",
+    back_text:
+      "Open Telecom Platform - a collection of middleware, libraries, and tools written in Erlang."
+  })
 
-{:ok, _card2} = Flashcards.create_card(%{
-  deck_id: deck.id,
-  front_text: "What is a GenServer?",
-  back_text: "A generic server behaviour that abstracts client/server interactions in Elixir/Erlang."
-})
+{:ok, _card2} =
+  Flashcards.create_card(%{
+    deck_id: deck.id,
+    front_text: "What is a GenServer?",
+    back_text:
+      "A generic server behaviour that abstracts client/server interactions in Elixir/Erlang."
+  })
 
-{:ok, _card3} = Flashcards.create_card(%{
-  deck_id: deck.id,
-  front_text: "What is Ecto?",
-  back_text: "A database wrapper and query generator for Elixir."
-})
+{:ok, _card3} =
+  Flashcards.create_card(%{
+    deck_id: deck.id,
+    front_text: "What is Ecto?",
+    back_text: "A database wrapper and query generator for Elixir."
+  })
 
 IO.puts("Successfully seeded the database with 'Elixir Basics' deck and cards!")

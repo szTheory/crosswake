@@ -5,7 +5,10 @@
     "always_propose_done_band": true,
     "always_record_bookkeeping_to_threads_and_state": true,
     "adopter_first_lens": true,
+    "prioritize_seeing_is_believing_evidence": true,
+    "label_simulator_device_evidence_advisory_until_promoted": true,
+    "avoid_new_feature_breadth_before_public_proof_path": true,
     "scope": "crosswake-only"
   },
-  "notes": "Project-local preferences captured during $gsd-new-milestone assessment on 2026-05-27. NOT promoted to global ~/.gsd/defaults.json by maintainer choice. This file is consumed advisorily by future /gsd-new-milestone runs in this project; it does not change gsd-sdk behavior. Pure documentation-of-intent for the next assessment pass to read."
+  "notes": "Project-local preferences captured during $gsd-new-milestone assessment on 2026-05-27 and refreshed on 2026-06-18 after the v12 next-step assessment. NOT promoted to global ~/.gsd/defaults.json by maintainer choice. This file is consumed advisorily by future /gsd-new-milestone runs in this project; it does not change gsd-sdk behavior. Pure documentation-of-intent for the next assessment pass to read."
 }

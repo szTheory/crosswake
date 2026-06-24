@@ -1,0 +1,32 @@
+# Build context for examples/phoenix_host/Dockerfile is the repo root. Only the
+# crosswake library (lib/, priv/, mix.exs, mix.lock) and the phoenix_host example
+# are needed — exclude everything else so the context stays small and reproducible.
+.git
+.github
+.planning
+planning
+prompts
+script
+tmp
+doc
+docs
+guides
+test
+brandbook
+packages
+crosswake-0.1.0
+
+# Build artifacts and fetched deps are regenerated inside the image / named volumes.
+_build
+deps
+**/_build
+**/deps
+**/node_modules
+.elixir_ls
+**/.elixir_ls
+
+# Local SQLite databases and secrets must never enter the image.
+*.db
+*.db-shm
+*.db-wal
+examples/phoenix_host/.env

@@ -1,0 +1,282 @@
+{
+  "_comment": "Canonical bridge contract conformance vectors. DO NOT EDIT — regenerate with: mix crosswake.contract.gen",
+  "_generated_by": "mix crosswake.contract.gen",
+  "_regenerate": "mix crosswake.contract.gen",
+  "bridge_protocol_version": "1.1.0",
+  "commands": [
+    "app.info.get",
+    "haptics.impact",
+    "permissions.status",
+    "notifications.token.get",
+    "share.invoke",
+    "files.pick",
+    "transfer.download",
+    "transfer.export",
+    "transfer.import",
+    "transfer.upload.prepare"
+  ],
+  "denial_reasons": [
+    "compatibility_mismatch",
+    "undeclared_capability",
+    "unavailable_capability",
+    "commerce_corridor",
+    "origin_denied",
+    "inactive_route",
+    "external_entry_denied",
+    "pack_incompatible",
+    "gate_denied",
+    "kill_switch_active",
+    "step_up_required",
+    "notification_open_denied"
+  ],
+  "manifest_schema_version": "1.0.0",
+  "native_runtime_version": "1.0.0",
+  "protocol": "crosswake.bridge",
+  "vectors": [
+    {
+      "description": "Request with a bridge_protocol_version older than the manifest floor is denied with compatibility_mismatch (Elixir: target.bridge_protocol_version < manifest.bridge_protocol_version). elixir_only: native harnesses check session-provides vs request-demands (opposite direction); vec-009 covers native bridge-version deny.",
+      "elixir_only": true,
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-001-version-mismatch-deny",
+      "request_override": {
+        "version": "1.0.0"
+      },
+      "session_override": []
+    },
+    {
+      "description": "Request with an unrecognised command is denied",
+      "expected_denial_reason": "undeclared_capability",
+      "expected_outcome": "deny",
+      "id": "vec-002-unknown-command-deny",
+      "request_override": {
+        "capability": "unknown.command",
+        "command": "unknown.command",
+        "version": "1.1.0"
+      },
+      "session_override": []
+    },
+    {
+      "description": "Request with the canonical bridge_protocol_version and a supported command succeeds",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-003-canonical-version-ok",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        }
+      }
+    },
+    {
+      "description": "Request scoped to a different route is denied with inactive_route",
+      "expected_denial_reason": "inactive_route",
+      "expected_outcome": "deny",
+      "id": "vec-004-inactive-route-deny",
+      "request_override": {
+        "active_route_id": "other-route",
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "route_id": "other-route",
+        "version": "1.1.0"
+      },
+      "session_override": []
+    },
+    {
+      "description": "Request from non-allowlisted origin is denied with origin_denied",
+      "expected_denial_reason": "origin_denied",
+      "expected_outcome": "deny",
+      "id": "vec-005-origin-denied-deny",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "origin": "https://evil.example.com",
+        "version": "1.1.0"
+      },
+      "session_override": []
+    },
+    {
+      "description": "Request when required pack is not installed is denied with pack_incompatible",
+      "expected_denial_reason": "pack_incompatible",
+      "expected_outcome": "deny",
+      "id": "vec-006-pack-incompatible-deny",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "installed_packs": [],
+        "route_required_packs": [
+          "test-pack@1.0.0"
+        ]
+      }
+    },
+    {
+      "description": "Request where session capability version is ahead of request is denied with unavailable_capability",
+      "expected_denial_reason": "unavailable_capability",
+      "expected_outcome": "deny",
+      "id": "vec-007-capability-version-deny",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "2.0.0"
+        }
+      }
+    },
+    {
+      "description": "Shell providing a newer bridge_protocol_version satisfies a request demanding an older version (floor >=, allow)",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-008-floor-bridge-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.0.0"
+      },
+      "session_override": {
+        "bridge_protocol_version": "1.1.0",
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        }
+      }
+    },
+    {
+      "description": "Shell providing an older bridge_protocol_version cannot satisfy a request demanding the current version (floor >=, deny)",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-009-floor-bridge-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "bridge_protocol_version": "1.0.0"
+      }
+    },
+    {
+      "description": "Shell providing a newer native_runtime_version satisfies a request demanding an older version (floor >=, allow)",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-010-floor-native-runtime-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "native_runtime_version": "1.0.0",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        },
+        "native_runtime_version": "2.0.0"
+      }
+    },
+    {
+      "description": "Shell providing an older native_runtime_version cannot satisfy a request demanding a newer version (floor >=, deny)",
+      "expected_denial_reason": "compatibility_mismatch",
+      "expected_outcome": "deny",
+      "id": "vec-011-floor-native-runtime-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "native_runtime_version": "2.0.0",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "native_runtime_version": "1.0.0"
+      }
+    },
+    {
+      "description": "Request capability version (1.1.0) newer than session floor (1.0.0) — floor semantics allow (provides=request, demands=session). This vector is DISCRIMINATING: it returns ok under >= floor but would return deny under the pre-fix == equality check, proving the floor is applied.",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-014-floor-capability-shell-newer-allow",
+      "request_override": {
+        "capabilities": {
+          "app.info.get": "1.1.0"
+        },
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        }
+      }
+    },
+    {
+      "description": "Request capability version (1.0.0) below session floor (2.0.0) — floor semantics deny (unavailable_capability). This vector is DISCRIMINATING: the request does not meet the session floor, correctly denied by both >= floor and the pre-fix == equality check.",
+      "expected_denial_reason": "unavailable_capability",
+      "expected_outcome": "deny",
+      "id": "vec-015-floor-capability-shell-older-deny",
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "2.0.0"
+        }
+      }
+    },
+    {
+      "description": "Installed pack version >= required pack version — floor semantics allow",
+      "expected_denial_reason": null,
+      "expected_outcome": "ok",
+      "id": "vec-016-floor-pack-shell-newer-allow",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "capabilities": {
+          "app.info.get": "1.0.0"
+        },
+        "installed_packs": {
+          "test-pack": "2.0.0"
+        },
+        "route_required_packs": [
+          "test-pack@1.0.0"
+        ]
+      }
+    },
+    {
+      "description": "Installed pack version < required pack version — floor semantics deny (pack_incompatible)",
+      "expected_denial_reason": "pack_incompatible",
+      "expected_outcome": "deny",
+      "id": "vec-017-floor-pack-shell-older-deny",
+      "native_only": true,
+      "request_override": {
+        "capability": "app.info.get",
+        "command": "app.info.get",
+        "version": "1.1.0"
+      },
+      "session_override": {
+        "installed_packs": {
+          "test-pack": "1.0.0"
+        },
+        "route_required_packs": [
+          "test-pack@2.0.0"
+        ]
+      }
+    }
+  ]
+}

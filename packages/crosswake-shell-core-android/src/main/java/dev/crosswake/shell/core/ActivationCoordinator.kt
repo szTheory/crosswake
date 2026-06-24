@@ -330,14 +330,14 @@ class ActivationCoordinator(
     }
 
     private fun resolve(request: ActivationRequest, manifest: ShellManifest): ShellPresentation {
-        if (request.nativeRuntimeVersion != manifest.nativeRuntimeVersion) {
+        if (!SemVer.compatible(provides = manifest.nativeRuntimeVersion, demands = request.nativeRuntimeVersion)) {
             return ShellPresentation.Denied(
                 denial(
                     manifest = manifest,
                     reason = RouteDenialReason.COMPATIBILITY_MISMATCH,
                     routeId = request.routeId,
                     message = "This route requires a newer shell binary to boot.",
-                    hint = "The server requested a different native runtime version than this shell provides."
+                    hint = "This shell binary is below the minimum native runtime version required by the server. Update to a shell at or above the requested native runtime version."
                 )
             )
         }
@@ -591,7 +591,8 @@ object ActivationFixtures {
     fun loadManifest(context: Context): ShellManifest {
         val root = JSONObject(readAsset(context, "crosswake_manifest.json"))
         val compatibilityJson = root.optJSONObject("compatibility")
-        val nativeRuntimeVersion = compatibilityJson?.getString("native_runtime_version") ?: "1.0.0"
+        val nativeRuntimeVersion = compatibilityJson?.getString("native_runtime_version")
+            ?: error("crosswake_manifest.json is missing native_runtime_version in the compatibility block")
         val routesJson = root.getJSONObject("routes")
         val routes = mutableMapOf<String, ShellManifest.Route>()
 

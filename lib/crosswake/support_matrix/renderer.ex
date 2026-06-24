@@ -10,6 +10,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
   alias Crosswake.Manifest.Types.CapabilitySupportEntry
   alias Crosswake.Manifest.Types.PackageSurfaceEntry
   alias Crosswake.Manifest.Types.PromotionRuleEntry
+  alias Crosswake.Manifest.Types.RebuildDecisionEntry
   alias Crosswake.Manifest.Types.ReleaseBoundaryEntry
 
   @type action :: :created | :reused | :updated
@@ -19,13 +20,16 @@ defmodule Crosswake.SupportMatrix.Renderer do
     [
       "# Crosswake Support Matrix",
       "",
-      "This guide stays narrow and proof-oriented. The published iOS and Android shell claims",
-      "below are backed by the checked-in example hosts plus the generated-shell verification",
-      "hooks that now pass on the same host-owned artifact classes adopters ship.",
+      "This guide stays narrow and proof-oriented. Generated-shell coordinate support is",
+      "backed by release-time clean-room proof plus generated-shell verification hooks.",
+      "The checked-in native hosts are `checked-in public-coordinate proof`; the explicit",
+      "maintainer path stays `local-dev proof` behind `--local`.",
       "The default non-local generator path resolves native shell cores from `github.com/szTheory/crosswake-shell-core-ios`",
       "and Maven Central `io.github.sztheory:crosswake-shell-core-android` at the Crosswake",
       "Hex package version; the release-time clean-room proof promotes that path after the",
       "coordinated cut.",
+      "",
+      support_truth_legend_section(),
       "",
       "## Status Legend",
       "",
@@ -52,6 +56,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       release_boundary_section(support_matrix.release_boundaries),
       "",
       change_class_section(support_matrix.change_classes),
+      "",
+      rebuild_decision_table_section(Crosswake.SupportMatrix.rebuild_decision_table()),
       "",
       action_class_section(Crosswake.SupportMatrix.action_classes()),
       "",
@@ -160,6 +166,21 @@ defmodule Crosswake.SupportMatrix.Renderer do
     |> Enum.join("\n")
   end
 
+  defp rebuild_decision_table_section(entries) do
+    [
+      "## Rebuild Decision Table",
+      "",
+      "| Axis | Change Kind | Rebuild Class | Adopter Action | Denial Signal | Guide Anchor |",
+      "|------|-------------|---------------|----------------|---------------|--------------|",
+      Enum.map_join(entries, "\n", &rebuild_decision_table_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp rebuild_decision_table_row(%RebuildDecisionEntry{} = entry) do
+    "| #{escape_cell(entry.axis)} | #{escape_cell(Atom.to_string(entry.change_kind))} | #{escape_cell(entry.rebuild_class)} | #{escape_cell(entry.adopter_action)} | #{escape_cell(entry.denial_signal)} | #{escape_cell(entry.guide_anchor)} |"
+  end
+
   defp action_class_section(entries) do
     [
       "## Action Classes",
@@ -180,6 +201,34 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| claim_id | current_state | promotes_to | evidence_class | required_evidence | minimum_consecutive_passes | freshness_window | failure_budget | required_platforms | required_docs_anchors | change_class | action_class | check_ids | demotion_trigger |",
       "|----------|---------------|-------------|----------------|-------------------|----------------------------|------------------|----------------|--------------------|-----------------------|--------------|--------------|-----------|------------------|",
       Enum.map_join(entries, "\n", &promotion_rule_row/1)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp support_truth_legend_section do
+    [
+      "## Support-Truth Label Legend",
+      "",
+      "Use these labels literally. Each label says what the evidence proves and what it does not prove.",
+      "",
+      "| Label | What it proves | What it does not prove |",
+      "|-------|----------------|------------------------|",
+      "| merge-blocking proof | Required deterministic proof that must pass before the claim can merge. | It does not prove every platform/device path or any unsupported owner class. |",
+      "| advisory evidence | Useful evidence that informs confidence but does not block standard merge flow. | It does not widen support truth by itself. |",
+      "| checked-in public-coordinate proof | A checked-in host path resolves published SwiftPM/Maven coordinates by default. | It is not a device, simulator, or emulator support claim and it does not cover `--local`. |",
+      "| local-dev proof | A checked-in or local host path works for maintainers in this repository. | It is not generated public-coordinate proof. |",
+      "| generated public-coordinate proof | A generated adopter-facing path resolves published SwiftPM/Maven/Hex coordinates. | It does not prove checked-in local hosts use those coordinates. |",
+      "| JVM hermetic proof | Android logic passed deterministic JVM-level CI. | JVM hermetic proof is not emulator evidence or physical-device proof. |",
+      "| emulator evidence | A simulator or emulator run produced advisory platform evidence. | Emulator evidence is not physical-device proof. |",
+      "| device evidence | A physical-device run produced platform evidence. | Device evidence is not backend/session authority. |",
+      "| verification-required | A claim needs an explicit verification lane before it can be treated as supported. | It is not a failure-open support claim. |",
+      "| rebuild-required | A change touches native or companion surfaces that require rebuilding the host artifact. | It is not implied by docs-only or core-only/no native rebuild changes. |",
+      "",
+      "Support status is not device evidence: `supported` is not the same as device-verified.",
+      "Visual collateral is not correctness proof by itself.",
+      "Device/provider evidence is not backend/session authority.",
+      "Cached read-only is not offline mutation.",
+      "Bridge is not high-frequency or mutation authority."
     ]
     |> Enum.join("\n")
   end

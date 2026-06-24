@@ -1,18 +1,9 @@
-# Crosswake IOS Shell Baseline
+# Crosswake iOS Shell Baseline
 
-This generated project is `host-owned`. Crosswake uses a scaffold once posture so your
-team can review, ship, and patch the native shell as an application artifact.
-Do not treat this directory as library-owned or safely regeneratable over host
-edits.
+`checked-in public-coordinate proof` | published-coordinate mode | `examples/ios_shell_host/CrosswakeShell.xcodeproj`
 
-## Included Baseline
+What this proves: the checked-in iOS host resolves the published SwiftPM mirror by default.
+What this does not prove: simulator, emulator, or physical-device support.
+Next link: [guides/native_shell.md](../../guides/native_shell.md)
 
-- Real Xcode project files that match the class of artifact adopters ship
-- Bundled canonical manifest, activation, denial, and pack inventory fixtures
-- Thin native seams for app boot, manifest loading, and route-unavailable handling
-
-## Boundary
-
-- The generated shell is intentionally thin and manifest-first.
-- Crosswake does not claim offline journals, pack managers, or broad plugin registries here.
-- Upgrade this shell with patch-or-doc guidance after generation instead of expecting safe re-ownership.
+`--local` remains the explicit maintainer path for local-dev proof when you want to iterate against source checkout dependencies.

@@ -1,7 +1,29 @@
 # Crosswake Compatibility Boundaries
 
+## Do I need to rebuild? (start here)
+
+Every compatibility question reduces to one of four outcomes. Find your change type below, then follow the action column.
+
+| Change type | Axis touched | Rebuild class | Adopter action | Denial signal if you skip it | Guide anchor |
+|-------------|--------------|---------------|----------------|------------------------------|--------------|
+| Docs or wording updated | docs_wording | docs-only | Read the updated guidance and rerun docs integrity only. | n/a | [Change Classes](support_matrix.md#change-classes) |
+| Core Elixir behavior changed inside existing axis values | core_elixir_behavior | core-only/no native rebuild | Update the Hex package and rerun core contract + doctor/support proof without rebuilding native shells. | n/a | [Change Classes](support_matrix.md#change-classes) |
+| `manifest_schema_version` narrowed (additive) | manifest_schema_version | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | `compatibility_mismatch` | [Compatibility Axes](#compatibility-axes) |
+| `manifest_schema_version` breaking change | manifest_schema_version | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | `compatibility_mismatch` | [Compatibility Axes](#compatibility-axes) |
+| `bridge_protocol_version` narrowed (additive) | bridge_protocol_version | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | `compatibility_mismatch` | [Compatibility Axes](#compatibility-axes) |
+| `bridge_protocol_version` breaking change | bridge_protocol_version | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | `compatibility_mismatch` | [Compatibility Axes](#compatibility-axes) |
+| `native_runtime_version` any change (additive or breaking) | native_runtime_version | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | `compatibility_mismatch` | [Runtime Line Rules](#runtime-line-rules) |
+| Core-owned capability version narrowed | capability_version | compatibility-bump only | Check the compatibility window, confirm your shipped shell/runtime is still in range, and run fail-closed compatibility fixtures. | `undeclared_capability` | [Compatibility Axes](#compatibility-axes) |
+| Native/companion capability version changed | capability_version | native or companion rebuild required | Rebuild the affected shell or companion, publish the updated runtime line, and rerun generated-shell or companion verification lanes. | `undeclared_capability` | [Compatibility Axes](#compatibility-axes) |
+| Pack declared as required but not installed | capability_version | native or companion rebuild required | Rebuild the affected shell or companion and ensure the required pack is installed and version-compatible. | `pack_incompatible` | [Companion Compatibility Contract](#companion-compatibility-contract) |
+
+**The `native_runtime_version` asymmetry:** `manifest_schema_version` and `bridge_protocol_version` additive bumps map to `compatibility-bump only` *precisely because* the native floor is now `>=` (D-01/D-02) — an older shell that satisfies the floor requirement remains valid. `native_runtime_version` has **no** additive-without-rebuild row: the runtime ships in the binary, so every `native_runtime_version` move — additive or breaking — is `native or companion rebuild required`.
+
 Crosswake keeps runtime ownership explicit per route and keeps compatibility truth
 separate from package versions.
+
+`checked-in public-coordinate proof`, `generated public-coordinate proof`, and
+`local-dev proof` are evidence labels, not compatibility guarantees.
 
 ## Compatibility Axes
 
@@ -60,7 +82,7 @@ Use the compatibility axes to describe release impact.
 - Native-code or entitlement change: move to a new `native_runtime_version` line and mark the change as rebuild required.
 - Compatibility-window narrowing: treat it as `compatibility-bump only`, publish the new supported ranges, and keep older combinations fail closed.
 
-## Do I need to rebuild?
+## Do I need to rebuild? (legacy prose)
 
 Crosswake enforces explicit rebuild guidance to maintain honest support claims and compatibility boundaries:
 
@@ -76,7 +98,7 @@ You cannot bypass these rules with hot code pushes or cached manifests. Changing
 See the canonical action-class table at `guides/support_matrix.md#action-classes`
 and Promotion rules at `guides/support_matrix.md#promotion-rules`.
 
-Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contracts, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 telemetry/security closeout are shipped, refresh-token helpers, provider/device auth proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone public shell packages are deferred.
+Promotion rules keep advisory support explicit: StoreKit/Play Billing seams in v3.7 emit reconciliation evidence only, backend projection grants authority, provider/device proof remains advisory unless promotion criteria pass, Sigra session-authority route evaluation, Phase 55 handoff ticket/server-record contracts, Phase 56 step-up intent plus Plug/LiveView ceremony, Phase 57 OAuth/passkey/native auth-return boundary contracts, and Phase 58 telemetry/security closeout are shipped, refresh-token helpers, provider/device auth proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, and native auth UI are deferred, notification-token readiness is provider-snapshot only, and standalone native shell core packages are published through SwiftPM and Maven Central at the Crosswake package version.
 
 compatibility-window narrowing is distinct from a native rebuild; it belongs to `compatibility-bump only` when only the accepted version window changes.
 
@@ -132,6 +154,9 @@ Generated-host verification remains part of the compatibility contract:
 Run `mix crosswake.doctor` for manifest, support, and release-policy posture, then
 run `mix crosswake.doctor --native-checks` to re-run the generated-host hooks against
 your local shell projects.
+
+`--local` stays the explicit maintainer path, and successful native shell or
+emulator runs do not imply physical-device support.
 
 ## Non-Goals
 

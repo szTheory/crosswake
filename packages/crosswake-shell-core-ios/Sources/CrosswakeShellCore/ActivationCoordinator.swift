@@ -154,7 +154,13 @@ public struct ShellManifest: Codable, Equatable {
         }
     }
 
+    public let compatibility: Compatibility
     public let routes: [String: Route]
+
+    enum CodingKeys: String, CodingKey {
+        case compatibility
+        case routes
+    }
 }
 
 public enum RouteUnavailableAction: Equatable {
@@ -331,6 +337,18 @@ public final class ActivationCoordinator: ObservableObject {
     }
 
     public func resolve(request: ActivationRequest, manifest: ShellManifest) -> ShellPresentation {
+        guard SemVer.compatible(provides: manifest.compatibility.nativeRuntimeVersion, demands: request.nativeRuntimeVersion) else {
+            return .denied(
+                denial(
+                    reason: .compatibilityMismatch,
+                    routeID: request.routeID,
+                    manifest: manifest,
+                    message: "This route requires a newer shell binary to boot.",
+                    hint: "This shell binary is below the minimum native runtime version required by the server. Update to a shell at or above the requested native runtime version."
+                )
+            )
+        }
+
         guard let route = route(for: request, manifest: manifest) else {
             return .denied(
                 denial(
