@@ -136,8 +136,20 @@ jobs:
           done
           curl -sf http://localhost:4700/ >/dev/null 2>&1 || { echo "::error::backend never came up"; cat /tmp/phx-server.log; exit 1; }
       - name: Capture iOS simulator + Android emulator screenshots
-        # capture-native-collateral.mjs boots the sim/emulator, builds the Phase-126
-        # Dev variants via the verify scripts, and screenshots the loaded route.
+        # KNOWN GAP (discovered 2026-06-23 by running this locally — see
+        # .planning/v15.0-MILESTONE-AUDIT.md "Native capture findings"):
+        #   1. capture-native-collateral.mjs drives the verify scripts' PROD
+        #      scheme/flavor (CrosswakeShell / connected prod tests), NOT the
+        #      Phase-126 Dev variants (iOS `-scheme Dev -configuration Debug-Dev`,
+        #      Android `installDevDebug`) that point at localhost:4700 / 10.0.2.2.
+        #      It must be taught to build the Dev variants or it screenshots the
+        #      wrong (example.crosswake.invalid) shell.
+        #   2. The iOS Dev scheme does not BUILD on Xcode 26: "Multiple commands
+        #      produce route_activation.json" (prod Resources copy + the Dev
+        #      Run-Script copy collide). The .pbxproj must resolve the duplicate
+        #      producer before any honest iOS capture (local or CI) can succeed.
+        # Until both are fixed this step will (correctly) fail the assert below
+        # rather than commit a misleading screenshot.
         run: |
           node script/capture-native-collateral.mjs \
             --platform all \
