@@ -159,9 +159,9 @@ print_banner() {
   printf "    /offline       app-owned offline island\n"
   printf "    /bridge-proof  LiveView + bounded Share\n"
   printf "\n"
-  printf "----------------------------------------------------------------\n"
+  printf '%s\n' "----------------------------------------------------------------"
   printf "  What is proven now (no extra toolchain required)\n"
-  printf "----------------------------------------------------------------\n"
+  printf '%s\n' "----------------------------------------------------------------"
   printf "\n"
   printf "  - Backend boots from Docker (this script) or native mix phx.server\n"
   printf "  - All three web routes reachable in any browser\n"
@@ -195,7 +195,7 @@ print_banner() {
   printf "    JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew installDevDebug\n"
   printf "    adb shell am start -n dev.crosswake.shell.dev/.MainActivity\n"
   printf "\n"
-  printf "----------------------------------------------------------------\n"
+  printf '%s\n' "----------------------------------------------------------------"
   printf "  Stop the backend when done:\n"
   printf "\n"
   printf "    docker compose -f examples/phoenix_host/docker-compose.yml down\n"
@@ -205,7 +205,7 @@ print_banner() {
   printf "    docker compose -f examples/phoenix_host/docker-compose.yml logs -f\n"
   printf "\n"
   printf "  Full guide: guides/see_it_run.md\n"
-  printf "----------------------------------------------------------------\n"
+  printf '%s\n' "----------------------------------------------------------------"
 }
 
 print_banner
