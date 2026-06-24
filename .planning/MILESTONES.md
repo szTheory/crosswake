@@ -1,5 +1,28 @@
 # Project Milestones: Crosswake
 
+## v15.0 See It Run — Experiential First-Run DX (Shipped: 2026-06-24)
+
+**Phases completed:** 4 phases (125-128), 12 plans
+**Requirements:** 16/18 v1 fully satisfied; COLL-01 accepted as advisory-deferred (1 requirement, advisory native evidence). DOCKER-01..05, PORT-01..03, NDEV-01..03, LAUNCH-01..02, DOCS-01..03, COLL-02 complete.
+
+**Delivered:** Made it trivial and delightful for a newcomer to boot the web, iOS-simulator, and Android-emulator views of Crosswake against one shared backend and compare them — one-command Dockerized backend, static port convention, additive native dev-wiring, a human-voiced launch banner, and a reader-empathy guide.
+
+**Key accomplishments:**
+
+- **One-command shared backend (DOCKER/PORT):** `docker compose up` boots the demo backend at `http://localhost:4700` from a clean checkout (no local Elixir/Node/SQLite) — multi-stage cached-deps Dockerfile, polling live-reload over bind-mounts, SQLite in a named volume, lean `.dockerignore`. A committed static port convention (Crosswake = 4700 via `COMPOSE_PROJECT_NAME` + `.env`) is reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`), with a reusable `docs/PORT-REGISTRY.md`; the native `mix` path is preserved.
+- **Additive native dev-wiring (NDEV):** `mix crosswake.contract.gen --dev` emits iOS + Android dev route-activation fixtures; an additive iOS `Dev` scheme (`Debug-Dev` + `Info-Dev.plist` localhost ATS) and Android `dev` flavor (10.0.2.2 cleartext) point at the local backend, with a source-derived proof-posture guard proving the checked-in prod fixtures/assets/Info.plist are byte-untouched.
+- **Launch orchestration (LAUNCH):** `bin/see-it-run.sh` (+ thin `mix crosswake.demo`) boots or reuses :4700 behind a curl readiness gate and prints a plain-ASCII brand-voiced banner with the three honest routes, an explicit proven/needs-build block, and verbatim per-runtime native commands; advisory sim/emulator launch never changes the web-success exit code. A source-derived banner drift guard locks the facts to their sources.
+- **Reader-empathy docs (DOCS) + collateral (COLL):** `guides/see_it_run.md` (gameplan-at-top, JTBD-driven) routed from README/QUICK_START and guarded by source-derived doc-contract tests; honest support-truth labels throughout. COLL-02 screen recording (`see-it-run.gif`, vhs terminal-cast) shipped; web route-proof PNGs committed. The collateral capture pipeline (`see-it-run-collateral.yml` + merge-blocking drift guards) is shipped.
+
+**Known deferred items at close (advisory, non-blocking):**
+
+- **COLL-01** native screenshot binaries (iOS simulator, Android emulator, three-runtime montage) accepted as **advisory-deferred** — they are advisory native evidence (non-proof), and could not be produced reliably: CI Android-emulator-on-macOS capture hangs (now bounded by `timeout-minutes`), and local capture is blocked by the Xcode-26-vs-published-`crosswake-shell-core@0.1.2` wall. Capture automation is shipped for opportunistic future runs; the binaries remain the standing D-03/D-19 maintainer capture gate.
+- Carried from prior milestones (non-blocking): WR-01/02/03 native-proof gaps, 2 unrun `register-*-gate.sh` branch-protection PATCHes, `MIRROR_PUSH_TOKEN` scope unexercised.
+
+See `.planning/milestones/v15.0-MILESTONE-AUDIT.md` for the full audit.
+
+---
+
 ## v14.0 Runtime Contract Confidence (Shipped: 2026-06-21)
 
 **Phases completed:** 4 phases (121-124), 17 plans, 27 tasks
