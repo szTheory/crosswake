@@ -7,7 +7,7 @@ Crosswake is not asking you to make the whole app local-first. The proof path is
 one explicit owner decision: `/offline` is an `:offline_island` route whose local
 work is owned by app JavaScript and reconciled by Phoenix/Ecto.
 
-For the setup commands, start with [examples/QUICK_START.md](../examples/QUICK_START.md).
+For the setup commands, start with [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md).
 For route-owner selection, read [guides/route_policy.md](route_policy.md) and
 [guides/web_to_mobile_migration.md](web_to_mobile_migration.md).
 
@@ -197,7 +197,7 @@ a native screen. Do not push that authority through bridge messages.
 
 ## Reference Map
 
-- [examples/QUICK_START.md](../examples/QUICK_START.md) - runnable commands and proof ladder
+- [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) - runnable commands and proof ladder
 - [guides/route_policy.md](route_policy.md) - route-owner decisions
 - [guides/web_to_mobile_migration.md](web_to_mobile_migration.md) - existing Phoenix SaaS route inventory
 - [guides/offline.md](offline.md) - cached read-only versus offline island

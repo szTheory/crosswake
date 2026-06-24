@@ -65,11 +65,11 @@ Three routes, one shared backend at `http://localhost:4700`:
 > **Advisory native collateral.** The iOS Simulator and Android Emulator frames above are
 > `emulator evidence` — advisory, not physical-device proof. A successful simulator or
 > emulator run confirms the dev wiring reaches the local backend, but does not prove
-> physical-device support. See the
+> it works on a physical device. See the
 > [support-truth label legend](guides/support_matrix.md#support-truth-label-legend).
 
 For a guided walkthrough: [guides/see_it_run.md](guides/see_it_run.md).
-For the full proof command reference: [examples/QUICK_START.md](examples/QUICK_START.md).
+For the full proof command reference: [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md).
 
 ## Choose your path
 

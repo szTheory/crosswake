@@ -10,7 +10,7 @@
 >
 > The banner prints your next steps.
 >
-> See [examples/QUICK_START.md](../examples/QUICK_START.md) for the full proof command reference.
+> See [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) for the full proof command reference.
 
 ## What You'll See
 
@@ -59,7 +59,7 @@ Host and links to the route owners.
 If you have Elixir installed locally, `mix crosswake.demo` does the same thing.
 
 For the full first-run walkthrough including offline replay proof, see
-[examples/QUICK_START.md](../examples/QUICK_START.md) — Option A: One Command (Docker).
+[examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) — Option A: One Command (Docker).
 
 ## Browse the Route Owners
 
@@ -78,7 +78,7 @@ http://localhost:4700/bridge-proof
 ```
 
 For the Playwright offline replay proof and script commands, see
-[examples/QUICK_START.md](../examples/QUICK_START.md) — See The Route Owners.
+[examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) — See The Route Owners.
 
 ## Compare All Three Runtimes (Web, iOS, Android)
 
@@ -111,7 +111,7 @@ backend, but does not prove physical-device support. This is `emulator evidence`
 per the [support-truth label legend](support_matrix.md#support-truth-label-legend).
 
 For the exact `xcodebuild` and `gradlew` dev-wiring commands, see
-[examples/QUICK_START.md](../examples/QUICK_START.md) — Run Against the Local Backend (Dev Wiring).
+[examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md) — Run Against the Local Backend (Dev Wiring).
 
 ## What This Proves (And What It Doesn't)
 
@@ -128,14 +128,14 @@ What it does not prove:
 - Physical-device support. The iOS and Android runs are emulator evidence only;
   they confirm the dev wiring path, not broad device support.
 - Offline replay correctness. The offline proof requires the Playwright spec in
-  [examples/QUICK_START.md](../examples/QUICK_START.md).
+  [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md).
 - Any claim of simulator or emulator support beyond the advisory label.
 
 "Proven" is reserved for the web path. Native is always labeled `emulator evidence`.
 
 ## Go Deeper
 
-- Full proof command reference: [examples/QUICK_START.md](../examples/QUICK_START.md)
+- Full proof command reference: [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md)
 - Installing the library in your own Phoenix app: [install.md](install.md)
 - Route ownership and the policy model: [route_policy.md](route_policy.md)
 - Choosing the right runtime for your audience: [adopter_profiles.md](adopter_profiles.md)
