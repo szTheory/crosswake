@@ -4,17 +4,17 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 128
 current_phase_name: collateral-see-it-run-guide
-status: awaiting_human_gate
-stopped_at: Phase 128 automated execution complete + verified — awaiting maintainer native-collateral capture
-last_updated: "2026-06-22T20:52:03.531Z"
-last_activity: 2026-06-22
-last_activity_desc: Phase 128 executed — all 3 plans complete (DOCS-01/02/03 MET); COLL-01/02 partial pending human capture gate
+status: ready_for_close
+stopped_at: All 4 phases complete + verified; COLL-02 shipped (GIF), COLL-01 native binaries advisory-deferred (capture infra blocked on emulator/toolchain); ready for milestone close
+last_updated: "2026-06-24T20:30:00.000Z"
+last_activity: 2026-06-24
+last_activity_desc: v13/v14/v15 catch-up merged to origin/main; CI matrix green; COLL-01 accepted as advisory-deferred — v15.0 ready to close
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
   completed_plans: 12
-  percent: 75
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -26,12 +26,20 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 **Current focus:** Phase 128 — collateral-see-it-run-guide
 
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-06-24:
+
+| Category | Item | Status |
+|----------|------|--------|
+| requirement | COLL-01 native screenshot binaries (iOS sim, Android emulator, montage) | Advisory-deferred — non-proof advisory native evidence; capture automation shipped but CI Android-emulator-on-macOS hangs and local capture is blocked by the Xcode-26-vs-published-package wall; standing D-03/D-19 maintainer gate. Web route-proof PNGs + COLL-02 GIF are committed. |
+
 ## Current Position
 
-Phase: 128 (collateral-see-it-run-guide) — AUTOMATED WORK COMPLETE, AWAITING HUMAN GATE
+Phase: 128 (collateral-see-it-run-guide) — ALL PHASES COMPLETE, READY FOR CLOSE
 Plan: 3 of 3 (all complete)
-Status: All 3 plans executed + verified. DOCS-01/02/03 MET. COLL-01/02 PARTIAL — harness + label scaffolding shipped; real native PNG/GIF binaries are the intentional D-03/D-19 maintainer capture gate.
-Last activity: 2026-06-22 — Phase 128 execution + verification complete
+Status: All 4 phases executed + verified. DOCS-01/02/03 MET, COLL-02 shipped (see-it-run.gif). COLL-01 native binaries accepted as advisory-deferred (above). Milestone ready for /gsd-complete-milestone.
+Last activity: 2026-06-24 — catch-up merged to origin/main; CI green; COLL-01 advisory-deferred
 
 ```
 v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)

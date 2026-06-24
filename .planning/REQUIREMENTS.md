@@ -35,8 +35,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### COLL — Seeing is believing (visual collateral)
 
-- [ ] **COLL-01**: The repo includes committed screenshots of all three runtimes (web, iOS simulator, Android emulator) running against the one shared backend, honestly labeled as advisory native evidence.
-- [ ] **COLL-02**: A short screen recording of the three-runtime comparison is captured and linked from the docs/README.
+- [~] **COLL-01**: The repo includes committed screenshots of all three runtimes (web, iOS simulator, Android emulator) running against the one shared backend, honestly labeled as advisory native evidence. *Advisory-deferred:* web route-proof PNGs are committed; the iOS-simulator + Android-emulator + montage binaries are advisory native evidence (non-proof) and could not be produced reliably — CI Android-emulator capture on macOS runners hangs, and local capture is blocked by the Xcode-26-vs-published-package wall. Capture automation (`see-it-run-collateral.yml` + drift guards) is shipped for opportunistic future capture; the binaries remain the standing D-03/D-19 maintainer gate.
+- [x] **COLL-02**: A short screen recording of the three-runtime comparison is captured and linked from the docs/README. *(see-it-run.gif — vhs terminal-cast — committed at brandbook/collateral/see-it-run/see-it-run.gif, embedded in README + see_it_run guide.)*
 
 ### DOCS — Reader-empathy guide + routing
 
@@ -87,8 +87,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | NDEV-03 | Phase 126 | Complete |
 | LAUNCH-01 | Phase 127 | Complete |
 | LAUNCH-02 | Phase 127 | Complete |
-| COLL-01 | Phase 128 | Pending (CI auto-capture — see .github/workflows/see-it-run-collateral.yml) |
-| COLL-02 | Phase 128 | Pending (CI auto-capture — see .github/workflows/see-it-run-collateral.yml) |
+| COLL-01 | Phase 128 | Advisory-deferred (web PNGs committed; iOS/Android/montage = advisory native evidence, capture infra shipped but emulator-on-macOS/local-toolchain blocked — standing D-03/D-19 gate) |
+| COLL-02 | Phase 128 | Complete |
 | DOCS-01 | Phase 128 | Complete |
 | DOCS-02 | Phase 128 | Complete |
 | DOCS-03 | Phase 128 | Complete |

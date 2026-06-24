@@ -109,6 +109,10 @@ jobs:
   native:
     name: native
     runs-on: macos-latest
+    # Hard cap: Android-emulator boot on macOS runners (no hardware accel) can hang
+    # indefinitely. Without this the job inherits the 6-hour default and a stuck
+    # emulator burns a runner for hours. Fail fast so the advisory capture never blocks.
+    timeout-minutes: 35
     env:
       MIX_ENV: test
     steps:
