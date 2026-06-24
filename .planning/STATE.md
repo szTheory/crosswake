@@ -4,8 +4,8 @@ milestone: v15.0
 milestone_name: See It Run — Experiential First-Run DX
 current_phase: 128
 current_phase_name: collateral-see-it-run-guide
-status: ready_for_close
-stopped_at: All 4 phases complete + verified; COLL-02 shipped (GIF), COLL-01 native binaries advisory-deferred (capture infra blocked on emulator/toolchain); ready for milestone close
+status: complete
+stopped_at: v15.0 shipped + archived 2026-06-24; COLL-02 shipped (GIF), COLL-01 native binaries advisory-deferred (capture infra blocked on emulator/toolchain); between milestones — next is /gsd-new-milestone
 last_updated: "2026-06-24T20:30:00.000Z"
 last_activity: 2026-06-24
 last_activity_desc: v13/v14/v15 catch-up merged to origin/main; CI matrix green; COLL-01 accepted as advisory-deferred — v15.0 ready to close
@@ -42,8 +42,8 @@ Status: All 4 phases executed + verified. DOCS-01/02/03 MET, COLL-02 shipped (se
 Last activity: 2026-06-24 — catch-up merged to origin/main; CI green; COLL-01 advisory-deferred
 
 ```
-v15.0 progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/4 phases)
-Phase 125 [░░░░░] Phase 126 [░░░░░] Phase 127 [░░░░░] Phase 128 [░░░░░]
+v15.0 progress: [████████████████████] 100% (4/4 phases) — SHIPPED 2026-06-24
+Phase 125 [█████] Phase 126 [█████] Phase 127 [█████] Phase 128 [█████]
 ```
 
 ## Performance Metrics

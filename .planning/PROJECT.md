@@ -81,7 +81,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Archive:** `.planning/milestones/v14.0-ROADMAP.md`, `.planning/milestones/v14.0-REQUIREMENTS.md`, and `.planning/milestones/v14.0-MILESTONE-AUDIT.md`.
 
-## Current Milestone: v15.0 See It Run — Experiential First-Run DX
+## Last Shipped Milestone: v15.0 See It Run — Experiential First-Run DX (shipped 2026-06-24)
 
 **Goal:** Make it trivial and delightful for a newcomer to boot the web, iOS-simulator, and Android-emulator versions of Crosswake against one shared backend and compare them side by side — with a one-command Dockerized backend, no micro-dep management, no port collisions with other OSS lib demos, fast rebuilds (no dep re-downloads on style changes), additive native dev-wiring that leaves the public-coordinate proof artifacts intact, committed visual collateral, a printed URL/route launch banner, and a reader-empathy guide.
 
@@ -95,7 +95,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Key context:** Deferred behind the v15.0 DX wedge — native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth. Brand source of truth is `brandbook/BRAND-SPEC.md` (v9.0) + `priv/static/crosswake/tokens.css`. Phase numbering continues from v14.0 (phases 125+).
 
-**Progress:** Phase 125 (Containerized Shared Backend + Port Convention) complete 2026-06-21 — DOCKER-01..05 + PORT-01..03 validated. `docker compose up` was empirically verified to boot the demo backend at `localhost:4700` (HTTP 200), with working bind-mount live-reload (`:fs_poll`) and a persistent SQLite named volume; the reusable `docs/PORT-REGISTRY.md` records the 4700–4799 convention. Next: Phase 126 (additive native dev-wiring).
+**Progress:** SHIPPED 2026-06-24. All 4 phases (125-128) complete + verified, 12/12 plans; merged to origin/main. DOCKER/PORT/NDEV/LAUNCH/DOCS all validated; COLL-02 (see-it-run.gif) shipped. COLL-01 native screenshot binaries accepted as advisory-deferred (non-proof advisory native evidence — CI Android-emulator-on-macOS capture hangs, local capture blocked by the Xcode-26-vs-published-package wall; capture infra shipped for opportunistic future runs). Full detail archived in `.planning/milestones/v15.0-*`.
 
 ## Requirements
 
@@ -176,16 +176,15 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-**v15.0 See It Run — Experiential First-Run DX** (in progress; full scope in `.planning/REQUIREMENTS.md`):
+**v15.0 See It Run — Experiential First-Run DX** (shipped 2026-06-24; full scope archived in `.planning/milestones/v15.0-REQUIREMENTS.md`):
 
-- [ ] **DOCKER-01..05**: One-command containerized shared backend with cached-deps multi-stage Dockerfile, in-container polling live-reload, SQLite in a named volume, and a lean `.dockerignore`; native `mix` path preserved.
-- [ ] **PORT-01..03**: Stable per-lib port (Crosswake = 4700) via `COMPOSE_PROJECT_NAME` + committed `.env`, reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`), plus a reusable PORT-REGISTRY convention.
-- [x] **NDEV-01..03**: Additive iOS `Dev` scheme + Android `dev` flavor wired to the local backend without modifying the checked-in public-coordinate proof fixtures/assets. Validated in Phase 126: Additive Native Dev Wiring.
-- [x] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) that boots the backend, prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, and advisorily boots sim/emulator. Validated in Phase 127: Launch Orchestration Banner — one-command launcher probes/reuses :4700 or boots Docker detached behind a curl readiness gate, prints a plain-ASCII payoff-first banner (the three honest routes `/`, `/offline`, `/bridge-proof`, proven/needs-build block, verbatim per-runtime native commands), and advisorily launches sim/emulator without ever changing the web-success exit code; a source-derived banner drift guard (`see_it_run_banner_test.exs`) locks the banner facts to their sources with anti-vacuity cases.
-- [ ] **COLL-01..02**: Committed three-runtime screenshots + a short screen recording, honestly labeled.
-- [ ] **DOCS-01..03**: `guides/see_it_run.md` (reader-empathy, gameplan-at-top) routed from README/QUICK_START and guarded by doc-contract tests.
+- [x] **DOCKER-01..05** / **PORT-01..03**: One-command containerized shared backend (`docker compose up`) with cached-deps multi-stage Dockerfile, polling live-reload, named-volume SQLite, lean `.dockerignore`, and a stable per-lib port (Crosswake = 4700) reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`); native `mix` path preserved. Phase 125.
+- [x] **NDEV-01..03**: Additive iOS `Dev` scheme + Android `dev` flavor wired to the local backend without modifying the checked-in public-coordinate proof fixtures/assets. Phase 126.
+- [x] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) boots/reuses the backend behind a readiness gate and prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, advisorily booting sim/emulator. Phase 127.
+- [~] **COLL-01..02**: COLL-02 screen recording (see-it-run.gif) shipped. COLL-01 native screenshots accepted as **advisory-deferred** — non-proof advisory native evidence; CI Android-emulator-on-macOS capture hangs and local capture is blocked by the Xcode-26-vs-published-package wall; capture infra (`see-it-run-collateral.yml` + drift guards) shipped for opportunistic future runs; standing D-03/D-19 maintainer gate. Phase 128.
+- [x] **DOCS-01..03**: `guides/see_it_run.md` (reader-empathy, gameplan-at-top) routed from README/QUICK_START and guarded by doc-contract tests. Phase 128.
 
-Deferred behind this wedge: native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth.
+Next candidates (deferred behind this wedge): native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth.
 
 ### Out of Scope
 
@@ -279,4 +278,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-22 after completing Phase 127 (Launch Orchestration Banner) — v15.0 in progress, LAUNCH-01..02 validated; `bin/see-it-run.sh` is the canonical one-command "See It Run" launcher (boot/reuse + readiness gate + honest banner + advisory native), with a thin `mix crosswake.demo` alias and a source-derived banner drift guard. Next: Phase 128 (collateral + see_it_run guide).*
+*Last updated: 2026-06-24 — v15.0 See It Run SHIPPED (phases 125-128, 12/12 plans) and merged to origin/main. COLL-02 GIF shipped; COLL-01 native screenshots advisory-deferred (capture infra shipped, emulator/toolchain-blocked). Project is between milestones — next is `/gsd-new-milestone` (candidates: LIFE-01/02, SYNCP-01, DASH-01, NTV-01).*
