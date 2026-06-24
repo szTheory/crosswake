@@ -90,8 +90,12 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       "Crosswake's one job is to declare, enforce, and diagnose which runtime owns each route as a Phoenix app crosses into mobile."
     )
 
-    assert_order(readme, "guides/route_policy.md", "guides/support_matrix.md")
-    assert_order(readme, "guides/web_to_mobile_migration.md", "guides/support_matrix.md")
+    # Anchor the "support-truth comes after route-owner guides" ordering to the
+    # plain nav links (support_matrix.md)) so it skips the See-it-run advisory
+    # legend deep-link (support_matrix.md#support-truth-label-legend) that the
+    # v15.0 "See It Run" section legitimately introduces earlier in the README.
+    assert_order(readme, "guides/route_policy.md", "guides/support_matrix.md)")
+    assert_order(readme, "guides/web_to_mobile_migration.md", "guides/support_matrix.md)")
 
     assert readme =~ "guides/support_matrix.md#support-truth-label-legend"
     assert readme =~ "merge-blocking proof"

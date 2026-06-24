@@ -73,8 +73,8 @@ defmodule Crosswake.Proof.Phase69DocsContractParityTest do
 
     # 1. Guides accurately reflect the typed Elixir support matrix truth without drift.
     # Android support status is :supported based strictly on JVM hermetic CI evidence.
-    expected_android_phrase = "Android shell boot is supported based strictly on JVM hermetic CI evidence"
-    expected_android_shell_phrase = "Generated Android shell artifacts are supported based strictly on JVM hermetic CI evidence"
+    expected_android_phrase = "JVM hermetic CI evidence remains separate"
+    expected_android_shell_phrase = "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof`"
     
     assert String.contains?(ctx.guides_support, expected_android_phrase) or
            String.contains?(ctx.guides_native, expected_android_phrase), message

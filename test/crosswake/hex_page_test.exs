@@ -133,7 +133,7 @@ defmodule Crosswake.HexPageTest do
     test "groups_for_extras defines the expected groups" do
       gfe = config()[:docs][:groups_for_extras]
 
-      for group <- [:Setup, :Capabilities] do
+      for group <- [:Start, :Adopt, :"Runtime Owners", :Truth, :"Advanced/Companions"] do
         assert Keyword.has_key?(gfe, group),
                "groups_for_extras is missing the :#{group} group"
       end

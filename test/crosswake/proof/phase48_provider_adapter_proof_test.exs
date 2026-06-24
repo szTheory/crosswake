@@ -270,7 +270,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.provider_adapters.changelog_unreleased",
       "CHANGELOG.md",
-      "v3.7 StoreKit and Play Billing adapter seams are unreleased support claims until the next Hex package is cut.",
+      "No new support claims have been cut after `0.1.2` yet. Future entries here must distinguish planning milestone work from published Hex release truth.",
       source: "CHANGELOG.md [Unreleased] support claims",
       hint: "separate local support truth from published Hex release truth",
       posture: :merge_blocking
@@ -288,7 +288,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.provider_adapters.changelog_hex_truth",
       "CHANGELOG.md",
-      "The latest published Hex release remains `0.1.0`.",
+      "The current published Hex release is `0.1.2`.",
       source: "CHANGELOG.md published release section",
       hint: "preserve distinction between unreleased planning claims and published package truth",
       posture: :merge_blocking
