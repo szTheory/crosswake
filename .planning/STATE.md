@@ -2,10 +2,13 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: verifying
+current_phase: 130
+current_phase_name: Extraction Mechanics & Footgun Guards
+status: executing
 stopped_at: Phase 130 context gathered
-last_updated: "2026-06-25T18:52:55.734Z"
-last_activity: 2026-06-25 — Phase 129 complete, transitioned to Phase 130
+last_updated: "2026-06-25T20:13:21.194Z"
+last_activity: 2026-06-25
+last_activity_desc: Phase 129 complete, transitioned to Phase 130
 progress:
   total_phases: 6
   completed_phases: 1
@@ -27,17 +30,17 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 130 — Extraction Mechanics & Footgun Guards
 Plan: Not started
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-06-25 — Phase 129 complete, transitioned to Phase 130
 
-> **Planning gate override (re-surface at verify-phase):** The `decision-coverage-plan`
-> gate and advisory post-planning gap analysis returned false-negatives caused by a
-> CONTEXT.md bullet-format parser limitation ("extracted 0 of N — possible format
-> mismatch"; D-NN bullets with long bold spans / embedded colons, e.g. D-03/D-12).
-> Operator proceeded: the independent gsd-plan-checker verified Dimension 7 (all
-> D-01..D-22 implemented) PASS. Flagged D-01/D-16/D-22 are covered in substance
-> (D-01 via D-04 template, D-16 is the freeze test plan 129-01 creates) or no-action
-> informational (D-22). No real coverage gap.
+> **Planning gate override (Phase 130, re-surface at verify-phase):** The blocking
+> `decision-coverage-plan` gate returned a false-negative (`total: 24, covered: 0,
+> uncovered: []`) — the known parser limitation on long-bold / embedded-colon `**D-NN: …**`
+> CONTEXT bullets (e.g. D-04/D-06/D-14), which it silently drops as "unparseable decision
+> bullet" and then matches 0/N. Operator proceeded: the independent gsd-plan-checker
+> verified Dimension 7 (Context Compliance) PASS with all 33 locked decisions D-01..D-33
+> explicitly cited as covered across the 5 plans, plus the 6 phase-specific footgun checks.
+> No real coverage gap — the gate is a tooling false-positive, not a dropped decision.
 
 Progress: [█████░░░░░] 50%
 
