@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: planning
-last_updated: "2026-06-25T00:00:00.000Z"
-last_activity: 2026-06-25
+status: Roadmap defined; ready for `/gsd-plan-phase 129`
+stopped_at: Phase 129 context gathered
+last_updated: "2026-06-25T15:14:11.737Z"
+last_activity: 2026-06-25 — ROADMAP.md written (phases 129-134)
 progress:
   total_phases: 6
   completed_phases: 0
@@ -135,9 +136,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-06-25
-Stopped at: ROADMAP.md written for v16.0 (phases 129-134)
-Resume file: .planning/ROADMAP.md
+Last session: 2026-06-25T15:14:11.732Z
+Stopped at: Phase 129 context gathered
+Resume file: .planning/phases/129-stable-companion-contract-surface/129-CONTEXT.md
 
 ## Operator Next Steps
 
