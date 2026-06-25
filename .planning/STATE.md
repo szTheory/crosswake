@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: Roadmap defined; ready for `/gsd-plan-phase 129`
-stopped_at: Phase 129 context gathered
+status: Phase 129 planned (2 plans, 2 waves); ready for `/gsd-execute-phase 129`
+stopped_at: Phase 129 planned
 last_updated: "2026-06-25T15:14:11.737Z"
-last_activity: 2026-06-25 — ROADMAP.md written (phases 129-134)
+last_activity: 2026-06-25 — Phase 129 planned (research + pattern-map + plan-check PASSED)
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
+  total_plans: 2
   completed_plans: 0
   percent: 0
 ---
@@ -26,9 +26,18 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 129 — Stable Companion Contract Surface
-Plan: —
-Status: Roadmap defined; ready for `/gsd-plan-phase 129`
-Last activity: 2026-06-25 — ROADMAP.md written (phases 129-134)
+Plan: 129-01 (Wave 1, freeze test) · 129-02 (Wave 2, moduledocs+guide+docs config)
+Status: Planned — 2 plans, plan-check PASSED; ready for `/gsd-execute-phase 129`
+Last activity: 2026-06-25 — Phase 129 planned (research + pattern-map + plan-check)
+
+> **Planning gate override (re-surface at verify-phase):** The `decision-coverage-plan`
+> gate and advisory post-planning gap analysis returned false-negatives caused by a
+> CONTEXT.md bullet-format parser limitation ("extracted 0 of N — possible format
+> mismatch"; D-NN bullets with long bold spans / embedded colons, e.g. D-03/D-12).
+> Operator proceeded: the independent gsd-plan-checker verified Dimension 7 (all
+> D-01..D-22 implemented) PASS. Flagged D-01/D-16/D-22 are covered in substance
+> (D-01 via D-04 template, D-16 is the freeze test plan 129-01 creates) or no-action
+> informational (D-22). No real coverage gap.
 
 Progress: 0/6 phases complete
 
