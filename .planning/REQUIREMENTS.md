@@ -87,14 +87,33 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements. Updated during roadmap creation (2026-06-25).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEAM-01..04 | Phase 129 | Pending |
+| SEAM-01 | Phase 129 | Pending |
+| SEAM-02 | Phase 129 | Pending |
+| SEAM-03 | Phase 129 | Pending |
+| SEAM-04 | Phase 129 | Pending |
+| EXTRACT-01 | Phase 130 | Pending |
+| EXTRACT-02 | Phase 130 | Pending |
+| EXTRACT-03 | Phase 130 | Pending |
+| EXTRACT-04 | Phase 130 | Pending |
+| COMPAT-01 | Phase 130 | Pending |
+| EXTRACT-05 | Phase 131 | Pending |
+| EXTRACT-06 | Phase 131 | Pending |
+| PROOF-01 | Phase 131 | Pending |
+| PROOF-02 | Phase 131 | Pending |
+| EXTRACT-07 | Phase 132 | Pending |
 | SEAM-05 | Phase 132 | Pending |
-| EXTRACT-01..04, COMPAT-01 | Phase 130 | Pending |
-| EXTRACT-05..06, PROOF-01..02 | Phase 131 | Pending |
-| EXTRACT-07, COMPAT-02..03 | Phase 132 | Pending |
-| TELEM-01..04 | Phase 133 | Pending |
-| LIFE-01a/b, LIFE-02a/b/c | Phase 134 | Pending |
+| COMPAT-02 | Phase 132 | Pending |
+| COMPAT-03 | Phase 132 | Pending |
+| TELEM-01 | Phase 133 | Pending |
+| TELEM-02 | Phase 133 | Pending |
+| TELEM-03 | Phase 133 | Pending |
+| TELEM-04 | Phase 133 | Pending |
+| LIFE-01a | Phase 134 | Pending |
+| LIFE-01b | Phase 134 | Pending |
+| LIFE-02a | Phase 134 | Pending |
+| LIFE-02b | Phase 134 | Pending |
+| LIFE-02c | Phase 134 | Pending |

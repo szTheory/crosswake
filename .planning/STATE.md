@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 status: planning
-last_updated: "2026-06-25T02:43:32.097Z"
+last_updated: "2026-06-25T00:00:00.000Z"
 last_activity: 2026-06-25
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,37 +17,50 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-21)
+See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 128 — collateral-see-it-run-guide
-
-## Deferred Items
-
-Items acknowledged and deferred at milestone close on 2026-06-24:
-
-| Category | Item | Status |
-|----------|------|--------|
-| requirement | COLL-01 native screenshot binaries (iOS sim, Android emulator, montage) | Advisory-deferred — non-proof advisory native evidence; capture automation shipped but CI Android-emulator-on-macOS hangs and local capture is blocked by the Xcode-26-vs-published-package wall; standing D-03/D-19 maintainer gate. Web route-proof PNGs + COLL-02 GIF are committed. |
+**Current focus:** Phase 129 — Stable Companion Contract Surface (roadmap defined, ready to plan)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 129 — Stable Companion Contract Surface
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-25 — Milestone v16.0 started
+Status: Roadmap defined; ready for `/gsd-plan-phase 129`
+Last activity: 2026-06-25 — ROADMAP.md written (phases 129-134)
+
+Progress: 0/6 phases complete
+
+```
+[          ] 0%
+Phase 129 ──────────────────────────────────────────────── Phase 134
+```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 43 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) = 88 across last five milestones
+- Total plans completed: 43 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
 - Average duration: —
 - Total execution time: —
 
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### v16.0 Roadmap Decisions (2026-06-25, locked)
+
+- Six phases derived from requirement categories in the approved plan order: SEAM (129) → EXTRACT-mechanics (130) → EXTRACT-publish/PROOF rulestead (131) → EXTRACT-rindle/COMPAT (132) → TELEM (133) → LIFE (134).
+- Phase ordering is non-negotiable for the extraction chain: 129 freezes the contract surface before packages depend on it; 130 dress-rehearsal with path-dep before any irreversible publish; 131 first Hex publish (rulestead); 132 generalization proof (rindle). 133 and 134 depend only on 129 and are placed last so irreversible publishes land on a settled contract.
+- Phase 129 surfaces: `lib/crosswake/companion/state.ex`, `lib/crosswake/compatibility/compatibility.ex`, `lib/crosswake/manifest/types.ex`, `mix.exs` docs groups, new `guides/companion_contract.md`. Proof: `test/crosswake/proof/phase129_*` (PR-gating).
+- Phase 130: no Hex publish — dress rehearsal with `path:` dep only. Removes `MIX_INCLUDE_*` env hack, creates `packages/crosswake_rulestead/`, adds two merge-blocking guards (static-reference grep guard + `Code.ensure_loaded?` placement guard) and a fail-closed absence test. Proof: `phase130-proof.yml` (PR-gating, in-monorepo).
+- Phase 131: first irreversible Hex publish for `crosswake_rulestead`. Independently versioned — NOT in the `linked-versions` lockstep group. Gated by `hex.publish --dry-run` + clean-room CI lane before real publish. Surfaces: `release-please-config.json`, `.release-please-manifest.json`, `.github/workflows/release-please.yml`, `script/verify_companion_cleanroom.sh`.
+- Phase 132: identical recipe on rindle (including owned `Contracts.MediaObject` and `Reconciliation`); no rindle-specific branches in core. Ships `guides/companion_compatibility.md` and a drift test. Proof: `phase132-proof.yml` + reused clean-room lane.
+- Phase 133: `Crosswake.Telemetry` is a new public module (`lib/crosswake/telemetry.ex`) + `guides/telemetry.md`. Core never auto-attaches a handler. Bidirectional contract test freezes the declared⇔emitted surface. Independent of 130-132; scheduled last to benefit from settled contract surface.
+- Phase 134: generated-shell lifecycle (template-version stamp + `mix crosswake.shell.status` + `gen.shell --diff` + `guides/native_shell_upgrade.md`) + Android JVM UAT promoted to merge-blocking, iOS stays advisory. Independent of 130-133; scheduled last.
+- Package name ≠ module name convention: `crosswake_rulestead`/`crosswake_rindle` as Hex package names; `Crosswake.Companions.Rulestead`/`.Rindle` as module namespaces. The sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged — extraction is non-breaking.
+- `Crosswake.Shell.Denial` stays core-private; companions emit `Compatibility.Finding`, never the final denial envelope.
+- Shell upgrade is doc-driven + diff only; `gen.shell --diff` is non-destructive. No auto-overwrite.
 
 ### v15.0 Roadmap Decisions (2026-06-21, locked)
 
@@ -97,16 +110,17 @@ Full decision log in PROJECT.md (Key Decisions).
 
 - **WR-01 capability-axis Elixir coverage caveat (v14 carried, non-blocking).** The discriminating vec-014 floor proof runs native-only; `bridge_behavioral_vector_test.exs` hardcodes capabilities and evaluates it vacuously. Production `compatible_version?/2` is correct; native proof is green. Fix: tag vec-014 `native_only` or honor `request_override.capabilities` in the Elixir harness.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** Token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
-- **Branch-protection toggle (watch).** Two `register-*-gate.sh` scripts from v14.0 are committed but unrun — maintainer must run to arm branch protection. Applies to any new required CI gates added in v15.0.
-- **Port migration (Phase 125 execution risk).** Changing the default demo port from 4002 → 4700 touches config, scripts, and playwright.config.ts. The plan must audit all references and ensure `mix phx.server` continues to work with an explicit `PORT=4700` env var, not just Docker.
+- **Branch-protection toggle (watch).** Two `register-*-gate.sh` scripts from v14.0 are committed but unrun — maintainer must run to arm branch protection. Applies to any new required CI gates added in v15.0/v16.0.
+- **Irreversible Hex publish risk (Phase 131/132).** Package names `crosswake_rulestead` and `crosswake_rindle` cannot be reclaimed once published. Phase 130 dress-rehearsal with `path:` dep and Phase 131 `--dry-run` gate front-load this risk before any real publish.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
+| v15.0 close | COLL-01 native screenshot binaries (iOS sim, Android emulator, montage) | Advisory-deferred — non-proof advisory native evidence; capture automation shipped but CI Android-emulator-on-macOS hangs and local capture is blocked by the Xcode-26-vs-published-package wall; standing D-03/D-19 maintainer gate. Web route-proof PNGs + COLL-02 GIF are committed. | v15.0 close |
 | v8.0 gap | Phase 81 verification gap (human_needed, carried from v5.1) | Acknowledged | v8.0 close |
-| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until after v15 DX wedge | v8.0 close |
-| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred until after v15 DX wedge | v8.0 close |
+| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until after companion extraction (crosswake_dashboard, after telemetry contract ships in Phase 133) | v8.0 close |
+| v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred until after companion extraction | v8.0 close |
 | v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
 | v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
 | v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
@@ -115,26 +129,16 @@ Full decision log in PROJECT.md (Key Decisions).
 | v14.0 close | WR-02 / WR-03: latent unexercised native divergences (Android-vs-iOS malformed-`@` pack parser; SemVer identical-garbage fallback) | Acknowledged — bounded; inputs are generated well-formed semver | v14.0 close |
 | v14.0 close | Two `register-*-gate.sh` branch-protection PATCHes (contract-gate + native-gate) committed but unrun by design | Deferred — maintainer/harness-gated; run to arm branch protection | v14.0 close |
 | v14.0 close | 4 pre-existing docs-debt test failures (HexPage×2, Phase48, Phase69); MIRROR_PUSH_TOKEN scope unexercised | Carried — predate / orthogonal to v14.0 | v14.0 close |
-| v15.0 future | LIFE-01 / LIFE-02: native runtime evidence & generated-shell lifecycle hardening | Deferred behind v15.0 DX wedge | v15.0 scope |
-| v15.0 future | SYNCP-01: offline-sync productization | Deferred behind v15.0 DX wedge | v15.0 scope |
-| v15.0 future | DASH-01: operator metrics / LiveDashboard | Deferred behind v15.0 DX wedge | v15.0 scope |
-| v15.0 future | NTV-01: native disk storage budgets | Deferred behind v15.0 DX wedge | v15.0 scope |
-| v15.0 future | Companion package extraction (Sigra/Chimeway/Rindle/Threadline) | Deferred behind v15.0 DX wedge | v15.0 scope |
-| Phase 125 P01 | 5m | 3 tasks | 8 files |
-| Phase 125 P02 | 4m | 2 tasks | 4 files |
-| Phase 126 P01 | 3min | 3 tasks | 4 files |
-| Phase 126 P02 | 3min | 3 tasks | 3 files |
-| Phase 126 P03 | 8min | 3 tasks | 5 files |
-| Phase 126 P04 | 4min | 2 tasks | 2 files |
-| Phase 127 P01 | 202 | 3 tasks | 1 files |
-| Phase 127 P02 | 4min | 2 tasks | 2 files |
+| v16.0 future | Remaining companion extraction: sigra (most entangled), chimeway (depends on sigra AuthContext), threadline (consumes other companions — build last) | Deferred — fast follow-on once the pattern is proven on 2 companions (rulestead + rindle) | v16.0 scope |
+| v16.0 future | SYNCP-01: offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package) | Deferred behind companion packaging wedge | v16.0 scope |
+| v16.0 future | SEED-002: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam | Deferred until package-family pattern is proven | v16.0 scope |
 
 ## Session Continuity
 
-Last session: 2026-06-22T20:34:08.785Z
-Stopped at: Phase 128 UI-SPEC approved
-Resume file: .planning/phases/128-collateral-see-it-run-guide/128-UI-SPEC.md
+Last session: 2026-06-25
+Stopped at: ROADMAP.md written for v16.0 (phases 129-134)
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Plan Phase 125 with `/gsd-plan-phase 125`
+- Plan Phase 129 with `/gsd-plan-phase 129`
