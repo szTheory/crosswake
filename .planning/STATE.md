@@ -2,12 +2,13 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 129
-current_phase_name: stable-companion-contract-surface
+current_phase: 130
+current_phase_name: Extraction Mechanics & Footgun Guards
 status: verifying
 stopped_at: Completed 129-02-PLAN.md
-last_updated: "2026-06-25T16:32:40.543Z"
+last_updated: "2026-06-25T16:48:08.709Z"
 last_activity: 2026-06-25
+last_activity_desc: Phase 129 complete, transitioned to Phase 130
 progress:
   total_phases: 6
   completed_phases: 1
@@ -27,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 ## Current Position
 
-Phase: 129 (stable-companion-contract-surface) — EXECUTING
-Plan: 2 of 2
+Phase: 130 — Extraction Mechanics & Footgun Guards
+Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-06-25
+Last activity: 2026-06-25 — Phase 129 complete, transitioned to Phase 130
 
 > **Planning gate override (re-surface at verify-phase):** The `decision-coverage-plan`
 > gate and advisory post-planning gap analysis returned false-negatives caused by a
