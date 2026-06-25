@@ -130,7 +130,9 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   2. A reader can open `guides/companion_contract.md` and find the complete enumeration of the public surface that extracted packages may depend on, with everything else explicitly labeled private or patch-volatile
   3. `Crosswake.Shell.Denial` is absent from the companion contract guide and from the "Companion Contract" hexdocs group — companions return evidence (`Compatibility.Finding`) but never author the final denial
   4. A merge-blocking test asserts that no behaviour-callback signatures changed from their pre-phase-129 shape, and that each contract type carries a non-false `@moduledoc`
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 129-01-PLAN.md — Write the merge-blocking companion-contract freeze proof test first (callback freeze + moduledoc/typedoc + Denial boundary; write-test-first forcing function)
+- [ ] 129-02-PLAN.md — Promote the 4 struct moduledocs, fix Companion moduledoc + Denial steering note, create companion_contract.md guide, add ExDoc groups, extend hex_page_test
 
 ### Phase 130: Extraction Mechanics & Footgun Guards
 **Goal**: The `MIX_INCLUDE_*` env hack is gone; `packages/crosswake_rulestead/` exists as a `path:` dep that compiles and tests against core; merge-blocking guards prevent re-coupling
