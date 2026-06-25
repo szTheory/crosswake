@@ -1,8 +1,8 @@
 ---
 phase: 130
 slug: extraction-mechanics-footgun-guards
-status: draft
-nyquist_compliant: false
+status: planned
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-25
 ---
@@ -44,11 +44,16 @@ created: 2026-06-25
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| {N}-01-01 | 01 | 1 | EXTRACT-01 | — | core `mix.exs` contains no `MIX_INCLUDE_RULESTEAD`/`MIX_INCLUDE_RINDLE` | source assertion | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | ❌ W0 | ⬜ pending |
-| {N}-02-01 | 0X | — | EXTRACT-03 | — | no `Crosswake.Companions.Rulestead` alias/remote-call AST node in `lib/**/*.ex`; `Companions.Sigra`/`Chimeway` stay legal | AST walk | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | ❌ W0 | ⬜ pending |
-| {N}-03-01 | 0X | — | EXTRACT-04 | — | every `Code.ensure_loaded?` node inside a `def`/`defp`/`defmacro` body; zero at module-eval | AST prune-walk + belt regex | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | ❌ W0 | ⬜ pending |
-| {N}-04-01 | 0X | — | EXTRACT-02 | — | package tarball excludes `test/`, includes adapter source; `hex.publish --dry-run` exit 0; `--warnings-as-errors` clean engine-absent | shell verify + compile | `script/verify_companion_package.sh` | ❌ W0 | ⬜ pending |
-| {N}-05-01 | 0X | — | COMPAT-01 | — | RouteGate denies gated route with `reason: :dependency_missing`, `missing_kind` correct; precedence `dependency_missing → kill_switch → gate_denied`; raise still fails closed | behavior test | `mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs` | ❌ W0 | ⬜ pending |
+| 130-01 (all) | 01 | 0 | scaffold | T-130-01/02 | red proof targets + CompanionGuard API + package skeleton + verify script exist | scaffold | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs` | ❌→✅ W0 | ⬜ pending |
+| 130-02-01 | 02 | 1 | COMPAT-01 | — | `:dependency_missing` is the 13th Denial reason; fixtures regenerated; no exhaustive-case regression | enum + fixture | `mix test test/crosswake/doctor/doctor_test.exs` | ✅ W0 stub | ⬜ pending |
+| 130-02-02 | 02 | 1 | COMPAT-01 | T-130-03/04/05 | RouteGate denies gated route `reason: :dependency_missing`, correct `missing_kind`; precedence `dependency_missing → kill_switch → gate_denied`; raise still fails closed (D-08) | behavior test | `mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs` | ✅ W0 stub | ⬜ pending |
+| 130-03-01 | 03 | 1 | EXTRACT-04, EXTRACT-03 | T-130-06/07/08 | `Code.ensure_loaded?` inside function bodies only; Rulestead alias detected, Sigra exempt (logic) | AST prune-walk + belt | `mix compile --warnings-as-errors` | ✅ W0 stub | ⬜ pending |
+| 130-03-02 | 03 | 1 | EXTRACT-04 | T-130-06 | EXTRACT-04 green vs real lib/; non-vacuity controls green; D-27 runtime:false guard green | AST walk | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | ✅ W0 stub | ⬜ pending |
+| 130-04-01 | 04 | 2 | EXTRACT-02 | T-130-11 | adapter moved out of core lib/; @compile + config-indirection; core tests still green | move + refactor | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs test/crosswake/proof/phase130_fail_closed_contract_test.exs` | ✅ | ⬜ pending |
+| 130-04-02 | 04 | 2 | EXTRACT-01, EXTRACT-02 | T-130-09 | no `MIX_INCLUDE_*` in core mix.exs; test split; engine-present lane stubbed + tagged | source assertion | `mix run -e "no MIX_INCLUDE check"` | ✅ | ⬜ pending |
+| 130-04-03 | 04 | 2 | EXTRACT-02 | T-130-10/SC | package tarball excludes `test/`, includes adapter source; `hex.publish --dry-run` exit 0; `--warnings-as-errors` clean engine-absent | shell verify + compile | `script/verify_companion_package.sh crosswake_rulestead` | ✅ | ⬜ pending |
+| 130-05-01 | 05 | 3 | EXTRACT-03 | T-130-12/14 | no `Crosswake.Companions.Rulestead` alias AST node in real `lib/**/*.ex` (post-extraction); Sigra/Chimeway stay legal | AST walk | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | ✅ | ⬜ pending |
+| 130-05-02 | 05 | 3 | EXTRACT-03 | T-130-13 | companion-lane CI: engine-absent blocking + engine-present advisory with `mix clean`; full exit gate green | CI + full suite | `mix test --exclude requires_example_host --exclude advisory_only` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

@@ -155,7 +155,24 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+**Wave 0**
+
+- [ ] 130-01-PLAN.md — Scaffold the two red proof test files, `Crosswake.CompanionGuard` (frozen MapSet + stubbed API), the verify script, and the `packages/crosswake_rulestead/` skeleton
+
+**Wave 1** *(blocked on Wave 0)*
+
+- [ ] 130-02-PLAN.md — RouteGate fail-closed enforcement: `:dependency_missing` Denial reason (13th), inline synthesis with D-02 precedence + D-08 raise-safety, doctor `missing_kind` branch, fixture regen [COMPAT-01]
+- [ ] 130-03-PLAN.md — Implement `CompanionGuard` AST logic; EXTRACT-04 placement guard + D-27 runtime:false guard green; EXTRACT-03 detection logic proven via non-vacuity controls (real-lib assertion deferred to 05) [EXTRACT-04, EXTRACT-03]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 130-04-PLAN.md — The extraction: move adapter to `crosswake_rulestead` path: dep (name preserved), delete both `MIX_INCLUDE_*` blocks, config-indirection, test split, engine-present advisory lane, root aliases, dress-rehearsal verify, extraction recipe [EXTRACT-01, EXTRACT-02]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 130-05-PLAN.md — Assert EXTRACT-03 static-ref guard green against the post-extraction codebase (Sigra/Chimeway stay legal); wire companion-lane CI; full phase exit gate [EXTRACT-03]
 
 ### Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)
 
