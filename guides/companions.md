@@ -4,6 +4,8 @@ Crosswake companions are first-party, typed integration seams. They are not a ge
 
 This guide is the single canonical v3.5 companion guide. It explains the shared `Crosswake.Companion` contract first, then the shipped companion surfaces (Rulestead, Rindle, Sigra), then proof posture and explicit non-goals.
 
+For a concise enumeration of the stable public surface that companion packages may depend on under semver, see [Companion Contract](companion_contract.md).
+
 ## Core Contract First
 
 Every companion implements `Crosswake.Companion` and lives in-tree under `lib/crosswake/companions/<name>/` in v3.5.

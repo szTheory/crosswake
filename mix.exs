@@ -106,6 +106,7 @@ defmodule Crosswake.MixProject do
         "guides/tokens.md",
         "guides/commerce.md",
         "guides/companions.md",
+        "guides/companion_contract.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
         "guides/android_uat.md",
@@ -116,7 +117,14 @@ defmodule Crosswake.MixProject do
         Policy: [Crosswake.Policy, Crosswake.Router],
         Bridge: ~r/Crosswake\.Bridge(\.|$)/,
         Manifest: [Crosswake.Manifest],
-        Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/
+        Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/,
+        "Companion Contract": [
+          Crosswake.Companion,
+          Crosswake.Companion.State,
+          Crosswake.Compatibility.Finding,
+          Crosswake.Compatibility.Target,
+          Crosswake.Manifest.Types.RouteEntry
+        ]
       ],
       groups_for_extras: [
         Start: [
@@ -145,6 +153,9 @@ defmodule Crosswake.MixProject do
           "guides/support_matrix.md",
           "guides/compatibility.md",
           "guides/android_uat.md"
+        ],
+        "Extension Authors": [
+          "guides/companion_contract.md"
         ],
         "Advanced/Companions": [
           "guides/companions.md",
