@@ -2,13 +2,10 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 130
-current_phase_name: Extraction Mechanics & Footgun Guards
 status: verifying
-stopped_at: Completed 129-02-PLAN.md
-last_updated: "2026-06-25T16:48:08.709Z"
-last_activity: 2026-06-25
-last_activity_desc: Phase 129 complete, transitioned to Phase 130
+stopped_at: Phase 130 context gathered
+last_updated: "2026-06-25T18:52:55.734Z"
+last_activity: 2026-06-25 — Phase 129 complete, transitioned to Phase 130
 progress:
   total_phases: 6
   completed_phases: 1
@@ -157,9 +154,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-06-25T16:32:40.537Z
-Stopped at: Completed 129-02-PLAN.md
-Resume file: None
+Last session: 2026-06-25T18:52:55.730Z
+Stopped at: Phase 130 context gathered
+Resume file: .planning/phases/130-extraction-mechanics-footgun-guards/130-CONTEXT.md
 
 ## Operator Next Steps
 
