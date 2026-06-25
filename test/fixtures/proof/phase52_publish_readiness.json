@@ -569,6 +569,7 @@
           "guides/tokens.md",
           "guides/commerce.md",
           "guides/companions.md",
+          "guides/companion_contract.md",
           "guides/compatibility.md",
           "guides/native_shell.md",
           "guides/android_uat.md",
