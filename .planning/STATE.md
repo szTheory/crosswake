@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: Phase 129 planned (2 plans, 2 waves); ready for `/gsd-execute-phase 129`
-stopped_at: Phase 129 planned
-last_updated: "2026-06-25T15:14:11.737Z"
-last_activity: 2026-06-25 — Phase 129 planned (research + pattern-map + plan-check PASSED)
+status: executing
+stopped_at: Phase 129 context gathered
+last_updated: "2026-06-25T16:23:27.881Z"
+last_activity: 2026-06-25
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 129 — Stable Companion Contract Surface (roadmap defined, ready to plan)
+**Current focus:** Phase 129 — stable-companion-contract-surface
 
 ## Current Position
 
-Phase: 129 — Stable Companion Contract Surface
-Plan: 129-01 (Wave 1, freeze test) · 129-02 (Wave 2, moduledocs+guide+docs config)
-Status: Planned — 2 plans, plan-check PASSED; ready for `/gsd-execute-phase 129`
-Last activity: 2026-06-25 — Phase 129 planned (research + pattern-map + plan-check)
+Phase: 129 (stable-companion-contract-surface) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-06-25
 
 > **Planning gate override (re-surface at verify-phase):** The `decision-coverage-plan`
 > gate and advisory post-planning gap analysis returned false-negatives caused by a
@@ -39,7 +39,7 @@ Last activity: 2026-06-25 — Phase 129 planned (research + pattern-map + plan-c
 > (D-01 via D-04 template, D-16 is the freeze test plan 129-01 creates) or no-action
 > informational (D-22). No real coverage gap.
 
-Progress: 0/6 phases complete
+Progress: [█████░░░░░] 50%
 
 ```
 [          ] 0%
@@ -107,6 +107,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: mix crosswake.demo resolved script path via __DIR__ walking three levels up to repo root
 - [Phase ?]: Banner scan asserts leading-space home route line to avoid false JAVA_HOME substring match
 - [Phase ?]: Anti-vacuity wrong-port case replaces localhost:PORT substring (not bare port) to avoid mutating JAVA_HOME path
+- [Phase ?]: async: true for Phase 129 freeze test (read-only)
+- [Phase ?]: MapSet.equal? callback freeze catches both additions and removals (D-12)
+- [Phase ?]: Mix.Project.config()[:docs][:groups_for_modules] single source of truth for contract module list (D-15)
 
 ### Pending Todos
 
@@ -142,12 +145,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 future | Remaining companion extraction: sigra (most entangled), chimeway (depends on sigra AuthContext), threadline (consumes other companions — build last) | Deferred — fast follow-on once the pattern is proven on 2 companions (rulestead + rindle) | v16.0 scope |
 | v16.0 future | SYNCP-01: offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package) | Deferred behind companion packaging wedge | v16.0 scope |
 | v16.0 future | SEED-002: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam | Deferred until package-family pattern is proven | v16.0 scope |
+| Phase 129 P01 | 1m | 1 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-25T15:14:11.732Z
+Last session: 2026-06-25T16:23:14.574Z
 Stopped at: Phase 129 context gathered
-Resume file: .planning/phases/129-stable-companion-contract-surface/129-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

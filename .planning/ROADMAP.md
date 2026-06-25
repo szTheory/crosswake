@@ -136,7 +136,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Plans**: 2 plans
 **Wave 1**
 
-- [ ] 129-01-PLAN.md — Write the merge-blocking companion-contract freeze proof test first (callback freeze + moduledoc/typedoc + Denial boundary; write-test-first forcing function)
+- [x] 129-01-PLAN.md — Write the merge-blocking companion-contract freeze proof test first (callback freeze + moduledoc/typedoc + Denial boundary; write-test-first forcing function)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -247,7 +247,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete | 2026-06-22 |
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
-| 129. Stable Companion Contract Surface | v16.0 | 0/TBD | Not started | - |
+| 129. Stable Companion Contract Surface | v16.0 | 1/2 | In Progress|  |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 0/TBD | Not started | - |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |

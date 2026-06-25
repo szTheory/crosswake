@@ -12,9 +12,9 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 ### SEAM — Stable Companion Contract Surface
 
-- [ ] **SEAM-01**: An extension author can depend on a documented, semver-governed set of public companion-contract types (`Crosswake.Companion`, `Crosswake.Companion.State`, `Crosswake.Compatibility.Finding`, `Crosswake.Compatibility.Target`, `Crosswake.Manifest.Types.RouteEntry`) — each carries a non-`false` `@moduledoc`/`@typedoc` and a stability note.
+- [x] **SEAM-01**: An extension author can depend on a documented, semver-governed set of public companion-contract types (`Crosswake.Companion`, `Crosswake.Companion.State`, `Crosswake.Compatibility.Finding`, `Crosswake.Compatibility.Target`, `Crosswake.Manifest.Types.RouteEntry`) — each carries a non-`false` `@moduledoc`/`@typedoc` and a stability note.
 - [ ] **SEAM-02**: A reader can find one curated `guides/companion_contract.md` page that enumerates exactly the public surface extracted packages may depend on, and labels everything else private/patch-volatile.
-- [ ] **SEAM-03**: A companion implementation can return restriction evidence (`Compatibility.Finding`) but cannot author the user-facing denial — `Crosswake.Shell.Denial` is absent from the public companion surface.
+- [x] **SEAM-03**: A companion implementation can return restriction evidence (`Compatibility.Finding`) but cannot author the user-facing denial — `Crosswake.Shell.Denial` is absent from the public companion surface.
 - [ ] **SEAM-04**: A developer browsing hexdocs sees the companion-contract types grouped under a "Companion Contract" `groups_for_modules` heading.
 - [ ] **SEAM-05**: The same extraction checklist applies to a second companion with no companion-specific branches added to core (verified when rindle extracts in Phase 132).
 
@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEAM-01 | Phase 129 | Pending |
+| SEAM-01 | Phase 129 | Complete |
 | SEAM-02 | Phase 129 | Pending |
-| SEAM-03 | Phase 129 | Pending |
+| SEAM-03 | Phase 129 | Complete |
 | SEAM-04 | Phase 129 | Pending |
 | EXTRACT-01 | Phase 130 | Pending |
 | EXTRACT-02 | Phase 130 | Pending |
