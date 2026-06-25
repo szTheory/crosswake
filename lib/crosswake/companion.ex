@@ -4,9 +4,14 @@ defmodule Crosswake.Companion do
 
   A companion is a bounded integration seam between Crosswake's route-policy
   system and an external Elixir library (e.g. rulestead for feature flags,
-  rindle for media, sigra for auth). Companions live in-tree under
-  `lib/crosswake/companions/<name>/` for the v3.5 milestone and may be extracted
-  to separate packages in a future milestone once the seam stabilizes.
+  rindle for media, sigra for auth).
+
+  The public companion contract surface — the types and callbacks extension packages
+  may depend on under semver — is exactly five modules:
+  `Crosswake.Companion`, `Crosswake.Companion.State`, `Crosswake.Compatibility.Finding`,
+  `Crosswake.Compatibility.Target`, and `Crosswake.Manifest.Types.RouteEntry`. These are
+  semver-stable under `crosswake` >= 0.1.0. All other modules in `crosswake` are
+  internal implementation details subject to change.
 
   ## Implementing a companion
 

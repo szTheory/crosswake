@@ -12,7 +12,23 @@ defmodule Crosswake.Compatibility do
   alias Crosswake.Packs.Runtime, as: PackRuntime
 
   defmodule Target do
-    @moduledoc false
+    @moduledoc """
+    Evaluation context passed to companion callbacks `route_gated?/2` and
+    `kill_switch_active?/1`.
+
+    Carries the request-time compatibility context: runtime versions, origin,
+    active route, capabilities, and pack state. Companion implementations
+    receive this struct and may read any field but must not construct it directly.
+
+    ## Stability
+
+    Public stable — part of the Crosswake companion contract surface. Semver-protected
+    under `crosswake` >= 0.1.0: no breaking changes to this module's struct fields,
+    types, or callbacks without a major version bump. Companion packages
+    (`crosswake_rulestead`, `crosswake_rindle`, etc.) may safely `alias` and
+    pattern-match on this type.
+    """
+    @moduledoc since: "0.1.0"
 
     defstruct [
       :manifest_schema_version,
@@ -25,6 +41,7 @@ defmodule Crosswake.Compatibility do
       packs: %{}
     ]
 
+    @typedoc "Request-time evaluation context passed to companion gate and kill-switch callbacks."
     @type t :: %__MODULE__{
             manifest_schema_version: String.t() | nil,
             bridge_protocol_version: String.t() | nil,
@@ -38,11 +55,31 @@ defmodule Crosswake.Compatibility do
   end
 
   defmodule Finding do
-    @moduledoc false
+    @moduledoc """
+    Typed restriction evidence returned by `route_gated?/2`.
+
+    Companion implementations return `{:deny, %Finding{}}` to signal that a
+    route is restricted. Core translates findings into `Crosswake.Shell.Denial`
+    structs internally — companions must never construct `Denial` directly.
+
+    Required fields: `:axis` (atom identifying the policy axis, e.g. `:feature_flag`)
+    and `:message` (human-readable explanation). Optional fields add structured
+    evidence for logging and support surfaces.
+
+    ## Stability
+
+    Public stable — part of the Crosswake companion contract surface. Semver-protected
+    under `crosswake` >= 0.1.0: no breaking changes to this module's struct fields,
+    types, or callbacks without a major version bump. Companion packages
+    (`crosswake_rulestead`, `crosswake_rindle`, etc.) may safely `alias` and
+    pattern-match on this type.
+    """
+    @moduledoc since: "0.1.0"
 
     @enforce_keys [:axis, :message]
     defstruct [:axis, :message, :required, :available, :hint, :route_id, :subject]
 
+    @typedoc "Restriction evidence emitted by a companion's `route_gated?/2` callback."
     @type t :: %__MODULE__{
             axis: atom(),
             message: String.t(),
