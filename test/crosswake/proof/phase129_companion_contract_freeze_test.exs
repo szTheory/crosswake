@@ -35,6 +35,20 @@ defmodule Crosswake.Proof.Phase129CompanionContractFreezeTest do
     Crosswake.Manifest.Types.RouteEntry
   ]
 
+  # The canonical Phase 129 contract module set. Equality (not membership) means
+  # both additions AND removals fail — a future PR narrowing the frozen public
+  # surface (e.g. dropping a module from the mix.exs "Companion Contract" group)
+  # trips this merge-blocking test instead of passing silently (D-15, SEAM-01).
+  # Change this attribute AND the mix.exs group in the SAME PR for an intentional
+  # surface change.
+  @expected_contract_modules MapSet.new([
+    Crosswake.Companion,
+    Crosswake.Companion.State,
+    Crosswake.Compatibility.Finding,
+    Crosswake.Compatibility.Target,
+    Crosswake.Manifest.Types.RouteEntry
+  ])
+
   # Derives the "Companion Contract" module list from the single source of truth
   # in mix.exs docs/0 groups_for_modules (D-15). Returns [] until plan 129-02 lands.
   defp contract_modules do
@@ -139,6 +153,25 @@ defmodule Crosswake.Proof.Phase129CompanionContractFreezeTest do
              "Crosswake.Compatibility.Finding not found in contract group",
              "mix.exs",
              "Add Crosswake.Compatibility.Finding to the 'Companion Contract' group in mix.exs (SEAM-03)",
+             :merge_blocking
+           )
+  end
+
+  # ---------------------------------------------------------------------------
+  # Test 5.5 — Contract module SET frozen exactly (D-15, SEAM-01)
+  # ---------------------------------------------------------------------------
+
+  test "the Companion Contract module set is frozen at exactly the Phase 129 surface" do
+    actual = MapSet.new(contract_modules())
+
+    assert MapSet.equal?(@expected_contract_modules, actual),
+           ProofAssertions.stable_id_message(
+             "proof.seam_01.contract.module_set",
+             "the 'Companion Contract' groups_for_modules set must match the frozen Phase 129 surface",
+             "mix.exs docs/0 groups_for_modules :\"Companion Contract\"",
+             "drift detected — actual: #{inspect(MapSet.to_list(actual))}, expected: #{inspect(MapSet.to_list(@expected_contract_modules))}",
+             "mix.exs",
+             "change @expected_contract_modules in this test AND the mix.exs 'Companion Contract' group in the SAME PR so the reviewer sees the intentional surface change",
              :merge_blocking
            )
   end

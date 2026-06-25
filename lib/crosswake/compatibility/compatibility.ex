@@ -62,7 +62,7 @@ defmodule Crosswake.Compatibility do
     route is restricted. Core translates findings into `Crosswake.Shell.Denial`
     structs internally — companions must never construct `Denial` directly.
 
-    Required fields: `:axis` (atom identifying the policy axis, e.g. `:feature_flag`)
+    Required fields: `:axis` (atom identifying the policy axis, e.g. `:route`)
     and `:message` (human-readable explanation). Optional fields add structured
     evidence for logging and support surfaces.
 
