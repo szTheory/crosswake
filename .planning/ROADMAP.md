@@ -112,7 +112,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Milestone Goal:** Turn the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and ship the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires.
 
-- [ ] **Phase 129: Stable Companion Contract Surface** - Promote and document the public companion-contract types extracted packages depend on, before anything moves
+- [x] **Phase 129: Stable Companion Contract Surface** - Promote and document the public companion-contract types extracted packages depend on, before anything moves (completed 2026-06-25)
 - [ ] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling
 - [ ] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex
 - [ ] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex
@@ -133,14 +133,14 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `Crosswake.Shell.Denial` is absent from the companion contract guide and from the "Companion Contract" hexdocs group — companions return evidence (`Compatibility.Finding`) but never author the final denial
   4. A merge-blocking test asserts that no behaviour-callback signatures changed from their pre-phase-129 shape, and that each contract type carries a non-false `@moduledoc`
 
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 **Wave 1**
 
 - [x] 129-01-PLAN.md — Write the merge-blocking companion-contract freeze proof test first (callback freeze + moduledoc/typedoc + Denial boundary; write-test-first forcing function)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 129-02-PLAN.md — Promote the 4 struct moduledocs, fix Companion moduledoc + Denial steering note, create companion_contract.md guide, add ExDoc groups, extend hex_page_test
+- [x] 129-02-PLAN.md — Promote the 4 struct moduledocs, fix Companion moduledoc + Denial steering note, create companion_contract.md guide, add ExDoc groups, extend hex_page_test
 
 ### Phase 130: Extraction Mechanics & Footgun Guards
 
@@ -247,7 +247,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 126. Additive Native Dev Wiring | v15.0 | 4/4 | Complete | 2026-06-22 |
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
-| 129. Stable Companion Contract Surface | v16.0 | 1/2 | In Progress|  |
+| 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete   | 2026-06-25 |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 0/TBD | Not started | - |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |

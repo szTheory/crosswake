@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: executing
-stopped_at: Phase 129 context gathered
-last_updated: "2026-06-25T16:23:27.881Z"
+current_phase: 129
+current_phase_name: stable-companion-contract-surface
+status: verifying
+stopped_at: Completed 129-02-PLAN.md
+last_updated: "2026-06-25T16:32:40.543Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 17
 ---
 
 # Project State: Crosswake
@@ -27,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 129 (stable-companion-contract-surface) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-25
 
 > **Planning gate override (re-surface at verify-phase):** The `decision-coverage-plan`
@@ -110,6 +112,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: async: true for Phase 129 freeze test (read-only)
 - [Phase ?]: MapSet.equal? callback freeze catches both additions and removals (D-12)
 - [Phase ?]: Mix.Project.config()[:docs][:groups_for_modules] single source of truth for contract module list (D-15)
+- [Phase ?]: Companion Contract groups_for_modules uses full module atom list
+- [Phase ?]: guide+extras registered in same commit satisfying orphan-guard and empty-group prerequisite (moduledocs promoted in prior commit)
+- [Phase ?]: Extension Authors extras group positioned between Truth and Advanced/Companions (D-10 distinct audience JTBD)
 
 ### Pending Todos
 
@@ -146,11 +151,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 future | SYNCP-01: offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package) | Deferred behind companion packaging wedge | v16.0 scope |
 | v16.0 future | SEED-002: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam | Deferred until package-family pattern is proven | v16.0 scope |
 | Phase 129 P01 | 1m | 1 tasks | 1 files |
+| Phase 129 P02 | 15m | - tasks | - files |
+| Phase 129 P02 | 15m | - tasks | - files |
 
 ## Session Continuity
 
-Last session: 2026-06-25T16:23:14.574Z
-Stopped at: Phase 129 context gathered
+Last session: 2026-06-25T16:32:40.537Z
+Stopped at: Completed 129-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
