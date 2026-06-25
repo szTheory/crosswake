@@ -155,11 +155,11 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
 
-**Plans**: 5 plans
+**Plans**: 1/5 plans executed
 
 **Wave 0**
 
-- [ ] 130-01-PLAN.md — Scaffold the two red proof test files, `Crosswake.CompanionGuard` (frozen MapSet + stubbed API), the verify script, and the `packages/crosswake_rulestead/` skeleton
+- [x] 130-01-PLAN.md — Scaffold the two red proof test files, `Crosswake.CompanionGuard` (frozen MapSet + stubbed API), the verify script, and the `packages/crosswake_rulestead/` skeleton
 
 **Wave 1** *(blocked on Wave 0)*
 
@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
-| 130. Extraction Mechanics & Footgun Guards | v16.0 | 0/TBD | Not started | - |
+| 130. Extraction Mechanics & Footgun Guards | v16.0 | 1/5 | In Progress|  |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
