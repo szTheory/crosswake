@@ -108,6 +108,7 @@ defmodule Crosswake.DoctorTest do
              Enum.sort([
                "commerce_corridor",
                "compatibility_mismatch",
+               "dependency_missing",
                "external_entry_denied",
                "gate_denied",
                "inactive_route",

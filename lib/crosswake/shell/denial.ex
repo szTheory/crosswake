@@ -23,7 +23,9 @@ defmodule Crosswake.Shell.Denial do
     :gate_denied,
     :kill_switch_active,
     :step_up_required,
-    :notification_open_denied
+    :notification_open_denied,
+    # Phase 130: COMPAT-01 RouteGate fail-closed enforcement
+    :dependency_missing
   ]
 
   @enforce_keys [:reason, :code, :message]
@@ -42,6 +44,7 @@ defmodule Crosswake.Shell.Denial do
           | :kill_switch_active
           | :step_up_required
           | :notification_open_denied
+          | :dependency_missing
 
   @type t :: %__MODULE__{
           reason: reason(),
