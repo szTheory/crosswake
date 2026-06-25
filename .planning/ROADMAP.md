@@ -122,72 +122,95 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 ## Phase Details
 
 ### Phase 129: Stable Companion Contract Surface
+
 **Goal**: Extension authors and extracted packages can depend on a documented, semver-governed public companion-contract surface — before any code moves out of core
 **Depends on**: Phase 128 (v15.0 complete)
 **Requirements**: SEAM-01, SEAM-02, SEAM-03, SEAM-04
 **Success Criteria** (what must be TRUE):
+
   1. A developer browsing hexdocs sees a "Companion Contract" group listing exactly `Crosswake.Companion`, `Crosswake.Companion.State`, `Crosswake.Compatibility.Finding`, `Crosswake.Compatibility.Target`, and `Crosswake.Manifest.Types.RouteEntry` — each with a non-false `@moduledoc` and a stability note
   2. A reader can open `guides/companion_contract.md` and find the complete enumeration of the public surface that extracted packages may depend on, with everything else explicitly labeled private or patch-volatile
   3. `Crosswake.Shell.Denial` is absent from the companion contract guide and from the "Companion Contract" hexdocs group — companions return evidence (`Compatibility.Finding`) but never author the final denial
   4. A merge-blocking test asserts that no behaviour-callback signatures changed from their pre-phase-129 shape, and that each contract type carries a non-false `@moduledoc`
+
 **Plans**: 2 plans
+**Wave 1**
+
 - [ ] 129-01-PLAN.md — Write the merge-blocking companion-contract freeze proof test first (callback freeze + moduledoc/typedoc + Denial boundary; write-test-first forcing function)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 129-02-PLAN.md — Promote the 4 struct moduledocs, fix Companion moduledoc + Denial steering note, create companion_contract.md guide, add ExDoc groups, extend hex_page_test
 
 ### Phase 130: Extraction Mechanics & Footgun Guards
+
 **Goal**: The `MIX_INCLUDE_*` env hack is gone; `packages/crosswake_rulestead/` exists as a `path:` dep that compiles and tests against core; merge-blocking guards prevent re-coupling
 **Depends on**: Phase 129
 **Requirements**: EXTRACT-01, EXTRACT-02, EXTRACT-03, EXTRACT-04, COMPAT-01
 **Success Criteria** (what must be TRUE):
+
   1. Core `mix.exs` contains no `MIX_INCLUDE_RULESTEAD`, `MIX_INCLUDE_RINDLE`, or any companion-conditional dep block; companions appear only in adopter/example/test mix files as `optional: true`
   2. `packages/crosswake_rulestead/` is a fully self-contained Hex project (own `mix.exs`, own `@version`) with the rulestead source and tests moved from core — module name `Crosswake.Companions.Rulestead` preserved — and its tests pass when declared as a `path:` dep against core
   3. A merge-blocking guard test fails the build if any file under `lib/` statically names a companion module — core discovers companions only via the `@behaviour` seam and the runtime `:companions` registry
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
+
 **Plans**: TBD
 
 ### Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)
+
 **Goal**: `crosswake_rulestead` is live on Hex as an independently-versioned package, published only after a `hex.publish --dry-run` gate and a green clean-room install lane
 **Depends on**: Phase 130
 **Requirements**: EXTRACT-05, EXTRACT-06, PROOF-01, PROOF-02
 **Success Criteria** (what must be TRUE):
+
   1. `release-please-config.json` carries `crosswake_rulestead` as a separate `elixir` release component — explicitly NOT in the core `linked-versions` lockstep group — with its own entry in `.release-please-manifest.json`
   2. A per-companion publish job runs for `crosswake_rulestead` (keyed on its release-please output) executing `deps.get` → `compile --warnings-as-errors` → `test` → `hex.publish --dry-run` → `hex.publish` in sequence
   3. `script/verify_companion_cleanroom.sh` creates a throwaway mix project outside the monorepo, installs the published `crosswake` + `crosswake_rulestead`, compiles `--warnings-as-errors`, registers the companion, runs its tests, and runs a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling before the install attempt
   4. No `hex.publish` for rulestead runs until the `--dry-run` gate and the clean-room lane are both green; `crosswake_rulestead` is live and resolvable on Hex at the end of this phase
+
 **Plans**: TBD
 
 ### Phase 132: Generalization Proof (rindle) + Compat Matrix
+
 **Goal**: The identical extraction recipe runs on `rindle` (including its owned `Contracts.MediaObject` and `Reconciliation`) with no rindle-specific branches added to core; both companions live on Hex with a documented, drift-tested cross-package compatibility matrix
 **Depends on**: Phase 131
 **Requirements**: EXTRACT-07, SEAM-05, COMPAT-02, COMPAT-03
 **Success Criteria** (what must be TRUE):
+
   1. `packages/crosswake_rindle/` exists as a standalone Hex project with rindle source, owned `Contracts.MediaObject` and `Reconciliation`, and its own independent version; `crosswake_rindle` is live on Hex and the clean-room install lane resolves and compiles it alongside `crosswake` with `--warnings-as-errors`
   2. A reviewer can verify that no file under `lib/` (core) contains any rindle-specific branch, special-case, or compile-time reference — the recipe is structurally identical to rulestead extraction, and the extraction checklist test passes for both companions
   3. `guides/companion_compatibility.md` documents each companion's minimum required core version and the full cross-package compatibility matrix in a human-readable format
   4. A drift test fails if any companion's `{:crosswake, "~> ..."}` minimum-version requirement in its `mix.exs` is missing from or inconsistent with the compatibility matrix doc
+
 **Plans**: TBD
 
 ### Phase 133: Telemetry Public API
+
 **Goal**: `Crosswake.Telemetry` is a documented, semver-governed public API — events enumerated, guide published, opt-in logger available, bidirectional contract test enforcing the surface
 **Depends on**: Phase 129
 **Requirements**: TELEM-01, TELEM-02, TELEM-03, TELEM-04
 **Success Criteria** (what must be TRUE):
+
   1. A developer can call `Crosswake.Telemetry.events/0` and receive the canonical list of every `:telemetry` event Crosswake emits across companion, RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems — following Keathley naming (`[:crosswake, :subsystem, :start|:stop|:exception]`)
   2. `guides/telemetry.md` documents every event's measurements and metadata, with stop metadata explicitly a superset of start metadata, and is linked from hexdocs under a "Telemetry" group
   3. A host can call `Crosswake.Telemetry.attach_default_logger/1` to opt into structured log output; core never calls this function automatically — attachment is always the host's explicit decision
   4. A bidirectional contract test fails if any event declared in `events/0` is never emitted in the test suite, or any emitted `:telemetry` event with the `[:crosswake, ...]` prefix is undeclared in `events/0`
+
 **Plans**: TBD
 
 ### Phase 134: Shell Lifecycle + Native UAT Promotion
+
 **Goal**: Generated native shells carry a template-version stamp; `mix crosswake.shell.status` and `gen.shell --diff` give hosts a safe upgrade workflow; the hermetic Android JVM UAT lane is merge-blocking
 **Depends on**: Phase 129
 **Requirements**: LIFE-01a, LIFE-01b, LIFE-02a, LIFE-02b, LIFE-02c
 **Success Criteria** (what must be TRUE):
+
   1. A generated native shell file contains a readable `@template_version` stamp reflecting the template version and the `crosswake` library version that produced it; a drift test fails if template files change without bumping `@template_version`
   2. A host can run `mix crosswake.shell.status` and receive a report indicating whether generated shells are up-to-date or how many template versions behind they are; a host can run `mix crosswake.gen.shell --diff` and see a non-destructive unified diff of template changes without any host file being overwritten
   3. `guides/native_shell_upgrade.md` provides a per-template-version changelog that references `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance; the dangling "patch-or-doc guidance" placeholder in `gen.shell.ex` is replaced with a real pointer to this guide
   4. The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking in an aggregator workflow (modeled on `native-behavioral-proof-gate.yml`); the iOS simulator/device UAT lane remains advisory with honest posture labels in `guides/support_matrix.md`
+
 **Plans**: TBD
 
 ## Progress
