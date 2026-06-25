@@ -97,6 +97,22 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Progress:** SHIPPED 2026-06-24. All 4 phases (125-128) complete + verified, 12/12 plans; merged to origin/main. DOCKER/PORT/NDEV/LAUNCH/DOCS all validated; COLL-02 (see-it-run.gif) shipped. COLL-01 native screenshot binaries accepted as advisory-deferred (non-proof advisory native evidence — CI Android-emulator-on-macOS capture hangs, local capture blocked by the Xcode-26-vs-published-package wall; capture infra shipped for opportunistic future runs). Full detail archived in `.planning/milestones/v15.0-*`.
 
+## Current Milestone: v16.0 Companion Extraction & Package-Family Discipline
+
+**Goal:** Turn the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and ship the lifecycle (generated-shell upgrade runbook + native UAT), compatibility-matrix, and telemetry-as-public-API discipline a package family requires. Coherence/packaging work, not feature breadth.
+
+**Why now:** The project's own milestone arc encodes the sequence distribution → coherence/lifecycle → companion packaging → capability breadth (`.planning/MILESTONE-ARC.md`, 2026-06-14). Distribution (v11), coherence (v14), and first-run DX (v15) shipped. The companions already exist in-tree (`lib/crosswake/companions/{rulestead,rindle,chimeway,sigra}`, `lib/crosswake/threadline/`), built "in-tree first, extract later" by explicit v3.5 decision; the v5.0 multi-package release machinery (release-please, clean-room CI) already exists to extract them. Ash/Oban/Swoosh/Nerves validate the exact shape Crosswake has: separately-versioned Hex packages on `@behaviour` seams + optional deps. Making the package-family pattern real is the gateway that turns every deferred breadth candidate (capabilities, commerce, sync, dashboard) into a routine package addition; building breadth first would be overbuilding on a not-yet-extracted family.
+
+**Target features:**
+- Extract `rulestead` (lowest-risk wedge) and `rindle` (cleanest generalization proof) into standalone `crosswake_rulestead` / `crosswake_rindle` Hex packages — module names preserved (`Crosswake.Companions.Rulestead`/`.Rindle`) so the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and extraction is non-breaking.
+- A documented, test-enforced extraction recipe: behaviour stays the seam (core never compile-depends on a companion, grep-guarded); proper `optional: true` deps replacing the `MIX_INCLUDE_*` env hack; runtime-only `Code.ensure_loaded?` (no stale-recompile footgun); fail-closed doctor `:error` for enabled-but-missing.
+- Independent per-companion versioning (NOT in the lockstep linked group) with a documented + drift-tested cross-package compatibility matrix.
+- A clean-room CI lane proving install of published `crosswake` + companion packages outside the monorepo, gated by `hex.publish --dry-run` before any irreversible publish.
+- `Crosswake.Telemetry` — events aggregated and documented as a stable, semver-governed public API (dashboard prerequisite) with an opt-in `attach_default_logger/1`; core never auto-attaches.
+- Generated-shell lifecycle hardening (LIFE-02): template-version stamping + `mix crosswake.shell.status` + non-destructive `gen.shell --diff` + an upgrade runbook. Repeatable native UAT (LIFE-01): hermetic Android JVM lane promoted to merge-blocking, iOS simulator advisory with honest labels.
+
+**Key context:** Establish-the-pattern-first appetite — prove extraction on 2 companions, leave sigra/chimeway/threadline for a fast follow-on (sigra is most entangled; threadline consumes the others). Deferred behind this packaging wedge: DASH-01 dashboard UI (ships later as self-contained `crosswake_dashboard`, Oban Web model), SYNCP-01 sync productization, NTV-01 native disk budgets, and the SEED-002 capability/commerce breadth. Primary risk surface is the irreversible Hex publish + adopter compatibility, front-loaded into a no-publish dress rehearsal (Phase 130). Brand source of truth is `brandbook/BRAND-SPEC.md`; consumer-perspective API elegance and principle of least surprise are the quality bar. Phase numbering continues from v15.0 (phases 129+). Plan: `~/.claude/plans/all-of-those-taht-snug-valiant.md`.
+
 ## Requirements
 
 ### Validated
@@ -174,17 +190,22 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 - ✓ **v14.0 Runtime Contract Confidence** (all 18 v1 requirements: CANON-01..05, GUARD-01..04, NTEST-01..04, COMPAT-01..05) — made the bridge/runtime contract canonical and drift-proof. Single canonical Elixir source (`Crosswake.Bridge.Contract`) feeds manifest types, shell fixtures, native conformance vectors, and a docs snippet via `mix crosswake.contract.gen`; `1.1.0`/`1.0.0` drift resolved and Kotlin silent fallback removed; merge-blocking ExUnit drift test + generate-and-diff CI + `contract_version_parity` doctor check + required-vs-advisory aggregator; real iOS XCTest + Android JUnit behavioral tests driven from one committed `bridge_contract_vectors.json`; and a `>=` min-version-floor compatibility reconciliation across Elixir and native (native exact-equality footgun removed, proven by discriminating vec-014) with rebuild-class decision tables, a decision-table-first compatibility guide, doctor rebuild-guidance, and changelog upgrade-impact labels. Validated across Phases 121-124; full detail in `.planning/milestones/v14.0-REQUIREMENTS.md`.
 
+- ✓ **v15.0 See It Run — Experiential First-Run DX** (16/18 v1 requirements: DOCKER-01..05, PORT-01..03, NDEV-01..03, LAUNCH-01..02, DOCS-01..03, COLL-02; COLL-01 advisory-deferred) — one-command Dockerized shared backend at `localhost:4700`, static per-lib port convention, additive iOS `Dev` scheme + Android `dev` flavor (proof fixtures untouched), a brand-voiced `bin/see-it-run.sh` launch banner, a screen recording, and `guides/see_it_run.md`. COLL-01 native screenshot binaries accepted as advisory-deferred (CI Android-emulator-on-macOS capture hangs; local capture blocked by the Xcode-26-vs-published-package wall). Validated across Phases 125-128; full detail in `.planning/milestones/v15.0-REQUIREMENTS.md`.
+
 ### Active
 
-**v15.0 See It Run — Experiential First-Run DX** (shipped 2026-06-24; full scope archived in `.planning/milestones/v15.0-REQUIREMENTS.md`):
+**v16.0 Companion Extraction & Package-Family Discipline** (in planning; full scope in `.planning/REQUIREMENTS.md`):
 
-- [x] **DOCKER-01..05** / **PORT-01..03**: One-command containerized shared backend (`docker compose up`) with cached-deps multi-stage Dockerfile, polling live-reload, named-volume SQLite, lean `.dockerignore`, and a stable per-lib port (Crosswake = 4700) reachable by web/iOS (`localhost:4700`) and Android emulator (`10.0.2.2:4700`); native `mix` path preserved. Phase 125.
-- [x] **NDEV-01..03**: Additive iOS `Dev` scheme + Android `dev` flavor wired to the local backend without modifying the checked-in public-coordinate proof fixtures/assets. Phase 126.
-- [x] **LAUNCH-01..02**: `bin/see-it-run.sh` (+ optional `mix crosswake.demo`) boots/reuses the backend behind a readiness gate and prints a brand-voiced URL/route/next-command banner with an honest proof/needs-build block, advisorily booting sim/emulator. Phase 127.
-- [~] **COLL-01..02**: COLL-02 screen recording (see-it-run.gif) shipped. COLL-01 native screenshots accepted as **advisory-deferred** — non-proof advisory native evidence; CI Android-emulator-on-macOS capture hangs and local capture is blocked by the Xcode-26-vs-published-package wall; capture infra (`see-it-run-collateral.yml` + drift guards) shipped for opportunistic future runs; standing D-03/D-19 maintainer gate. Phase 128.
-- [x] **DOCS-01..03**: `guides/see_it_run.md` (reader-empathy, gameplan-at-top) routed from README/QUICK_START and guarded by doc-contract tests. Phase 128.
+- **SEAM-01..05**: Promote the companion public-contract surface (`Companion.State`, `Compatibility.Finding`/`Target`, `Manifest.Types.RouteEntry`) to documented, semver-governed APIs; behaviour stays the seam; `Shell.Denial` stays core-private.
+- **EXTRACT-01..07**: Extract `rulestead` then `rindle` into standalone `crosswake_rulestead` / `crosswake_rindle` Hex packages (module names preserved); replace the `MIX_INCLUDE_*` env hack with `optional: true`; core never compile-depends on a companion.
+- **COMPAT-01..03**: Fail-closed enabled-but-missing (doctor `:error`); independent per-companion versioning with a documented + drift-tested cross-package compatibility matrix.
+- **PROOF-01..02**: Clean-room install lane outside the monorepo, gated by `hex.publish --dry-run` before any irreversible publish.
+- **TELEM-01..04**: `Crosswake.Telemetry` — events aggregated/documented as a stable public API + opt-in `attach_default_logger/1` (dashboard prerequisite).
+- **LIFE-01..02**: Generated-shell template-version stamping + `shell.status` + non-destructive `--diff` + upgrade runbook; hermetic Android UAT merge-blocking, iOS advisory.
 
-Next candidates (deferred behind this wedge): native runtime evidence & generated-shell lifecycle hardening (LIFE-01/02), offline-sync productization (SYNCP-01), DASH-01 operator metrics, NTV-01 native disk budgets, companion package extraction, future capability/commerce breadth.
+Establish-the-pattern-first: prove extraction on 2 companions, propagate sigra/chimeway/threadline in a fast follow-on.
+
+Next candidates (deferred behind this packaging wedge): remaining companion extraction (sigra/chimeway/threadline), DASH-01 operator dashboard (`crosswake_dashboard`), SYNCP-01 offline-sync productization, NTV-01 native disk budgets, SEED-002 capability/commerce breadth.
 
 ### Out of Scope
 
@@ -278,4 +299,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-24 — v15.0 See It Run SHIPPED (phases 125-128, 12/12 plans) and merged to origin/main. COLL-02 GIF shipped; COLL-01 native screenshots advisory-deferred (capture infra shipped, emulator/toolchain-blocked). Project is between milestones — next is `/gsd-new-milestone` (candidates: LIFE-01/02, SYNCP-01, DASH-01, NTV-01).*
+*Last updated: 2026-06-24 — v16.0 Companion Extraction & Package-Family Discipline started. Direction chosen via research-then-recommend over the deferred-candidate pool: companion packaging is the next rung on the distribution → coherence → packaging → breadth arc. Scope = extract `rulestead` then `rindle` into standalone Hex packages + the extraction recipe, compat matrix, `Crosswake.Telemetry` public API, and LIFE-01/02 shell-lifecycle/native-UAT discipline (phases 129-134). Breadth (capabilities/commerce/sync/dashboard) deferred. Plan: `~/.claude/plans/all-of-those-taht-snug-valiant.md`.*

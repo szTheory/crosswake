@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v15.0
-milestone_name: See It Run — Experiential First-Run DX
-current_phase: 128
-current_phase_name: collateral-see-it-run-guide
-status: complete
-stopped_at: v15.0 shipped + archived 2026-06-24; COLL-02 shipped (GIF), COLL-01 native binaries advisory-deferred (capture infra blocked on emulator/toolchain); between milestones — next is /gsd-new-milestone
-last_updated: "2026-06-24T20:30:00.000Z"
-last_activity: 2026-06-24
-last_activity_desc: v13/v14/v15 catch-up merged to origin/main; CI matrix green; COLL-01 accepted as advisory-deferred — v15.0 ready to close
+milestone: v16.0
+milestone_name: Companion Extraction & Package-Family Discipline
+status: planning
+last_updated: "2026-06-25T02:43:32.097Z"
+last_activity: 2026-06-25
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -36,15 +32,10 @@ Items acknowledged and deferred at milestone close on 2026-06-24:
 
 ## Current Position
 
-Phase: 128 (collateral-see-it-run-guide) — ALL PHASES COMPLETE, READY FOR CLOSE
-Plan: 3 of 3 (all complete)
-Status: All 4 phases executed + verified. DOCS-01/02/03 MET, COLL-02 shipped (see-it-run.gif). COLL-01 native binaries accepted as advisory-deferred (above). Milestone ready for /gsd-complete-milestone.
-Last activity: 2026-06-24 — catch-up merged to origin/main; CI green; COLL-01 advisory-deferred
-
-```
-v15.0 progress: [████████████████████] 100% (4/4 phases) — SHIPPED 2026-06-24
-Phase 125 [█████] Phase 126 [█████] Phase 127 [█████] Phase 128 [█████]
-```
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-25 — Milestone v16.0 started
 
 ## Performance Metrics
 
