@@ -357,11 +357,24 @@ Key differences from core:
 Run `bash script/verify_companion_cleanroom.sh crosswake_{companion} $VERSION` (Plan 02/03 for rulestead).
 Pattern mirrors existing `clean-room-proof-ios`/`-android` jobs.
 
-### 12f. Remove `release-as` after the first Release PR merges
+### 12f. `release-as` removal — automated (PROOF-03), no manual step
 
-After `crosswake_{companion}-v0.1.0` Release PR is merged:
-- Remove `"release-as": "0.1.0"` from the component config (or set to `""`).
-- Otherwise subsequent runs continue targeting 0.1.0 even after it is already published.
+The one-shot `release-as: "0.1.0"` bootstrap pin MUST be removed once the companion's first
+release tag exists, or every subsequent run re-targets `0.1.0` forever (Pitfall 6). **As of
+Phase 135 this is CI-automated — no manual edit and no per-companion human runbook:**
+
+- **Auto-cleanup PR** — the `release-as-cleanup` job in `release-please.yml` fires when
+  `{companion}_release_created == 'true'`, runs `script/strip_release_as.py crosswake_{companion}`
+  (surgical, minimal-diff, idempotent), and opens a one-line cleanup PR. A human only merges it.
+- **Fail-closed guard** — `.github/workflows/release-as-staleness-gate.yml` (the
+  `merge-blocking-release-as-staleness` check) runs `script/check_release_as_staleness.sh` and goes
+  RED if any `release-as` pin equals an already-released version (`{component}-v{X}` tag). It stays
+  RED until the cleanup PR merges, so the fix cannot be silently skipped.
+
+Both are parametric over every `crosswake_*` package, so new companions inherit this for free —
+no new wiring needed in Step 12 beyond the standard `release-as: "0.1.0"` bootstrap pin in 12a.
+The only intentional human gate in the release chain is merging the Release PR (the irreversible
+`hex.publish` go/no-go).
 
 ---
 
@@ -400,10 +413,12 @@ No manual dep-string editing needed when promoting from dress rehearsal to publi
 - [ ] `release-please.yml` `outputs:` block: three `{companion}_*` aliases with double-dash format (D-08)
 - [ ] `publish-hex-{companion}` job added with `CROSSWAKE_RELEASE=1` env on all mix steps (D-06/D-07)
 - [ ] `clean-room-proof-{companion}` job added, needs publish job (PROOF-01/PROOF-02)
-- [ ] `release-as` removed from config after first Release PR merges (Pitfall 6)
+- [x] `release-as` removal is CI-automated (PROOF-03): `release-as-cleanup` job auto-opens the
+  cleanup PR + `merge-blocking-release-as-staleness` guard enforces it — parametric, no manual step (Pitfall 6)
 
 ---
 
-*Recipe version: Phase 131 (rulestead publish pipeline + crosswake_dep/0 pivot)*
-*Proven on: crosswake_rulestead (Phase 130 extraction + Phase 131 publish wiring)*
-*Next: crosswake_rindle (Phase 132)*
+*Recipe version: Phase 135 (release-as removal CI-automated — PROOF-03)*
+*Base: Phase 131 (rulestead publish pipeline + crosswake_dep/0 pivot)*
+*Proven on: crosswake_rulestead (Phase 130 extraction + Phase 131 publish wiring), crosswake_rindle (Phase 132)*
+*Next: sigra / chimeway / threadline (fast follow-on — inherit 0-human release ops)*

@@ -38,6 +38,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 - [x] **PROOF-01**: A clean-room CI lane (and `script/verify_companion_cleanroom.sh`) creates a throwaway mix project OUTSIDE the monorepo, installs the published `crosswake` + companion package, compiles `--warnings-as-errors`, registers the companion, and runs its tests + a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling.
 - [x] **PROOF-02**: No companion package is published to Hex until a `hex.publish --dry-run` gate and the clean-room/in-monorepo proof lanes are green.
+- [ ] **PROOF-03**: The two post-publish companion-release follow-ups are CI-enforced with no recurring human step (parametric across all `crosswake_*` companions): (a) a **fail-closed `release-as` staleness guard** turns the build RED if any package's `release-as` pin equals an already-released version, so a stale pin can never silently re-target an old version; (b) an **auto-cleanup PR** strips `release-as` + `_TODO_release_as` from the just-released component on release (a human only merges the one-line PR — `main` is protected); (c) an **`if: failure()` alert** on the publish + clean-room-proof jobs opens a GitHub issue on red, so the post-publish proof is 0-touch on the success path and a human engages only when it actually breaks. The only intentional human gate that remains is merging the Release PR (the irreversible publish go/no-go). Recipe Step 12f points at this automation so future companions inherit 0-human release ops.
 
 ### TELEM — Telemetry Public API
 
@@ -108,6 +109,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | SEAM-05 | Phase 132 | Complete |
 | COMPAT-02 | Phase 132 | Complete |
 | COMPAT-03 | Phase 132 | Complete |
+| PROOF-03 | Phase 135 | Pending |
 | TELEM-01 | Phase 133 | Pending |
 | TELEM-02 | Phase 133 | Pending |
 | TELEM-03 | Phase 133 | Pending |
