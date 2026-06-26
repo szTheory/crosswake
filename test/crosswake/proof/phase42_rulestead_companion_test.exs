@@ -128,8 +128,12 @@ defmodule Crosswake.Proof.Phase42RulesteadCompanionTest do
 
   # ---------------------------------------------------------------------------
   # SC#1a: :gated flag -> :gate_denied deny with transition :halt
+  # Requires :engine_present — with COMPAT-01 enforcement active, the RouteGate
+  # check_dependencies/2 fires before gate logic. Reaching :gate_denied requires
+  # Rulestead engine to be loaded so validate_dependency/0 returns :ok. (D-02, D-33)
   # ---------------------------------------------------------------------------
 
+  @tag :engine_present
   test "SC#1a: :gated flag state drives :gate_denied denial with transition :halt" do
     MockFlagSource.set_flag(:rulestead, :gated)
 
@@ -149,8 +153,10 @@ defmodule Crosswake.Proof.Phase42RulesteadCompanionTest do
 
   # ---------------------------------------------------------------------------
   # SC#1b: {:rolling_out, 50} -> :gate_denied deny; report_state gate_status is {:rolling_out, 50}
+  # Requires :engine_present — same reasoning as SC#1a (D-02, D-33).
   # ---------------------------------------------------------------------------
 
+  @tag :engine_present
   test "SC#1b: {:rolling_out, 50} flag state drives :gate_denied denial; report_state reflects rolling_out" do
     MockFlagSource.set_flag(:rulestead, {:rolling_out, 50})
 
@@ -176,8 +182,10 @@ defmodule Crosswake.Proof.Phase42RulesteadCompanionTest do
 
   # ---------------------------------------------------------------------------
   # SC#1c: :killed flag -> :kill_switch_active denial (short-circuits route_gated?/2)
+  # Requires :engine_present — same reasoning as SC#1a (D-02, D-33).
   # ---------------------------------------------------------------------------
 
+  @tag :engine_present
   test "SC#1c: :killed flag state drives :kill_switch_active denial" do
     MockFlagSource.set_flag(:rulestead, :killed)
 

@@ -20,5 +20,13 @@ exclude =
       do: acc,
       else: [{:collateral_binaries, true} | acc]
   end)
+  |> then(fn acc ->
+    # :engine_present — tests that require the Rulestead/Rindle engine to be loaded.
+    # Excluded in hermetic mode (default). Run with MIX_ENGINE_PRESENT=1 in the
+    # advisory engine-present CI lane (D-33, Phase 130 COMPAT-01 enforcement).
+    if System.get_env("MIX_ENGINE_PRESENT") == "1",
+      do: acc,
+      else: [{:engine_present, true} | acc]
+  end)
 
 if exclude != [], do: ExUnit.configure(exclude: exclude)

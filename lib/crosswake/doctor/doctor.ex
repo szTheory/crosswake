@@ -583,17 +583,19 @@ defmodule Crosswake.Doctor do
         {true, {:error, mods}} ->
           mod_names = Enum.map_join(mods, ", ", &inspect/1)
 
+          # D-06: missing_kind :engine_unvalidated — the doctor cold path always calls
+          # validate_dependency/0 directly, so a returned {:error, _} is always engine_unvalidated.
+          # D-05: shared code string "companion.dependency_missing" with RouteGate hot path.
           [
             check(
               :error,
               "companion.dependency_missing",
               "companion.#{companion_id}",
-              "Companion #{inspect(companion_id)} is enabled but its optional " <>
-                "dependency is not loaded: #{mod_names}",
-              "Add the missing library to your application's deps in mix.exs. " <>
-                "Optional companion dependencies are not pulled transitively — " <>
-                "the host app must declare them explicitly.",
-              %{missing_modules: mods}
+              "[crosswake] Companion #{inspect(companion_id)} is enabled but its dependency " <>
+                "is not loaded: #{mod_names}. " <>
+                "Companion dependencies are not pulled transitively; the host app must declare them explicitly.",
+              "Add #{mod_names} to your application's deps in mix.exs.",
+              %{missing_modules: mods, missing_kind: :engine_unvalidated}
             )
           ]
 

@@ -97,7 +97,7 @@ defmodule Crosswake.Compatibility.RouteGate do
   # Non-gated route — skip both kill-switch and gate evaluation (D-11)
   defp prepend_gate_evaluation_findings(acc, %RouteEntry{gated_by: nil}, _target), do: acc
 
-  # Gated route — run kill-switch first (short-circuit), then gate check
+  # Gated route — D-02 precedence: dependency_missing → kill_switch_active → gate_denied
   defp prepend_gate_evaluation_findings(acc, %RouteEntry{} = route, %Target{} = target) do
     companions =
       Application.get_env(:crosswake, :companions, [])
@@ -106,16 +106,83 @@ defmodule Crosswake.Compatibility.RouteGate do
         companion.enabled?(config)
       end)
 
-    case check_kill_switches(companions, route, target) do
-      {:kill_switch, denial} ->
+    case check_dependencies(companions, route) do
+      {:dependency_missing, denial} ->
         [denial | acc]
 
       :pass ->
-        case check_gate(companions, route, target) do
-          {:gate_denied, denial} -> [denial | acc]
-          :pass -> acc
+        case check_kill_switches(companions, route, target) do
+          {:kill_switch, denial} ->
+            [denial | acc]
+
+          :pass ->
+            case check_gate(companions, route, target) do
+              {:gate_denied, denial} -> [denial | acc]
+              :pass -> acc
+            end
         end
     end
+  end
+
+  # Fail-closed dependency check (COMPAT-01, D-01, D-02, D-03).
+  # Fires BEFORE kill-switch and gate checks (D-02 precedence).
+  # Synthesizes the Denial INLINE — does NOT route through finding_to_denial/2
+  # or on_unavailable (D-10 RESOLVED).
+  # Wraps validate_dependency/0 in try/rescue/catch (D-08):
+  #   :ok             → continue
+  #   {:error, _mods} → :engine_unvalidated (D-06)
+  #   raise/throw     → :adapter_unloadable (D-06, D-08)
+  # No cache / :persistent_term — live-compute on every gate path (D-07).
+  defp check_dependencies(companions, route) do
+    Enum.reduce_while(companions, :pass, fn companion, _acc ->
+      {dep_result, missing_kind} =
+        :telemetry.span(
+          [:crosswake, :companion, :dependency_check],
+          %{companion_id: companion.companion_id(), route_id: route.id},
+          fn ->
+            try do
+              case companion.validate_dependency() do
+                :ok ->
+                  result = {:ok, nil}
+                  {result, %{companion_id: companion.companion_id(), route_id: route.id}}
+
+                {:error, _mods} ->
+                  result = {{:error, nil}, :engine_unvalidated}
+                  {result, %{companion_id: companion.companion_id(), route_id: route.id}}
+              end
+            rescue
+              _ ->
+                result = {{:error, nil}, :adapter_unloadable}
+                {result, %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
+            catch
+              _ ->
+                result = {{:error, nil}, :adapter_unloadable}
+                {result, %{companion_id: companion.companion_id(), route_id: route.id, exception: true}}
+            end
+          end
+        )
+
+      case dep_result do
+        {:error, _} ->
+          denial =
+            Denial.new(
+              reason: :dependency_missing,
+              message:
+                "[crosswake] companion #{companion.companion_id()} is registered and enabled " <>
+                  "but its dependency is not loaded. The gate fails closed.",
+              route_id: route.id,
+              details: %{
+                "companion_id" => Atom.to_string(companion.companion_id()),
+                "missing_kind" => Atom.to_string(missing_kind)
+              }
+            )
+
+          {:halt, {:dependency_missing, denial}}
+
+        :ok ->
+          {:cont, :pass}
+      end
+    end)
   end
 
   defp check_kill_switches(companions, route, target) do
