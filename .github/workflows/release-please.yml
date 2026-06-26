@@ -136,6 +136,99 @@ jobs:
           echo "Timed out waiting for https://hex.pm/api/packages/crosswake/releases/${VERSION}"
           exit 1
 
+  publish-hex-rulestead:
+    name: Publish crosswake_rulestead to Hex.pm
+    needs: release-please
+    # D-07: Gate on the PER-COMPONENT output, never the aggregate `releases_created`.
+    # `releases_created` is true if ANY package released — gating on it would publish the
+    # companion on every core-only release. `rulestead_release_created` is set only when
+    # release-please cuts a crosswake_rulestead release PR.
+    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
+    # packages/crosswake_rulestead/mix.exs so every mix step emits the Hex dep (not path:).
+    # Without this, mix hex.build (called by hex.publish) errors: "path: deps excluded".
+    env:
+      CROSSWAKE_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # D-09: Checkout the companion tag (not the core tag) so the tarball is built
+          # from the exact commit release-please tagged for crosswake_rulestead.
+          ref: ${{ needs.release-please.outputs.rulestead_tag_name }}
+
+      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache companion deps
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            packages/crosswake_rulestead/deps
+            packages/crosswake_rulestead/_build
+          key: ${{ runner.os }}-rulestead-${{ hashFiles('packages/crosswake_rulestead/mix.lock') }}
+
+      - name: Install Hex + Rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Fetch companion deps
+        working-directory: packages/crosswake_rulestead
+        run: mix deps.get
+
+      - name: Compile companion (warnings as errors)
+        working-directory: packages/crosswake_rulestead
+        run: mix compile --warnings-as-errors
+
+      - name: Verify release version in mix.exs
+        run: |
+          grep -n "@version \"${{ needs.release-please.outputs.rulestead_version }}\"" packages/crosswake_rulestead/mix.exs
+
+      - name: Run companion tests
+        # D-10: engine-ABSENT hermetic lane — plain `mix test`, no --exclude flag.
+        # The companion test suite is hermetic (engine-absent) by design.
+        # --exclude requires_example_host is a CORE-ONLY tag; do not add it here.
+        working-directory: packages/crosswake_rulestead
+        run: mix test
+
+      - name: Dry run Hex publish
+        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
+        # Assumption A3 confirmed: --dry-run contacts Hex.pm and requires HEX_API_KEY.
+        working-directory: packages/crosswake_rulestead
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --dry-run --yes
+
+      - name: Publish crosswake_rulestead to Hex
+        working-directory: packages/crosswake_rulestead
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --yes
+
+      - name: Verify crosswake_rulestead version on Hex.pm
+        env:
+          VERSION: ${{ needs.release-please.outputs.rulestead_version }}
+        run: |
+          set -euo pipefail
+          MAX_ATTEMPTS=36
+          DELAY=10
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
+            if curl -fsS "https://hex.pm/api/packages/crosswake_rulestead/releases/${VERSION}" | grep -q '"version"'; then
+              echo "[crosswake] Hex.pm lists crosswake_rulestead ${VERSION}"
+              exit 0
+            fi
+            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
+            sleep "$DELAY"
+          done
+          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_rulestead/releases/${VERSION}"
+          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_rulestead ${VERSION} invalid"
+          exit 1
+
   publish-ios-core:
     name: Mirror iOS core to split repo
     needs: release-please
