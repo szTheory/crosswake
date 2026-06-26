@@ -155,7 +155,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
 
-**Plans**: 2/5 plans executed
+**Plans**: 3/5 plans executed
 
 **Wave 0**
 
@@ -164,7 +164,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Wave 1** *(blocked on Wave 0)*
 
 - [x] 130-02-PLAN.md — RouteGate fail-closed enforcement: `:dependency_missing` Denial reason (13th), inline synthesis with D-02 precedence + D-08 raise-safety, doctor `missing_kind` branch, fixture regen [COMPAT-01]
-- [ ] 130-03-PLAN.md — Implement `CompanionGuard` AST logic; EXTRACT-04 placement guard + D-27 runtime:false guard green; EXTRACT-03 detection logic proven via non-vacuity controls (real-lib assertion deferred to 05) [EXTRACT-04, EXTRACT-03]
+- [x] 130-03-PLAN.md — Implement `CompanionGuard` AST logic; EXTRACT-04 placement guard + D-27 runtime:false guard green; EXTRACT-03 detection logic proven via non-vacuity controls (real-lib assertion deferred to 05) [EXTRACT-04, EXTRACT-03]
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
-| 130. Extraction Mechanics & Footgun Guards | v16.0 | 2/5 | In Progress|  |
+| 130. Extraction Mechanics & Footgun Guards | v16.0 | 3/5 | In Progress|  |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |

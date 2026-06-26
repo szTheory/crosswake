@@ -6,14 +6,14 @@ current_phase: 130
 current_phase_name: extraction-mechanics-footgun-guards
 status: executing
 stopped_at: Phase 130 context gathered
-last_updated: "2026-06-26T01:39:54.737Z"
+last_updated: "2026-06-26T01:52:16.484Z"
 last_activity: 2026-06-25
 last_activity_desc: Phase 130 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 17
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 130 (extraction-mechanics-footgun-guards) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-06-25 -- Phase 130 execution started
 
@@ -116,6 +116,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Companion Contract groups_for_modules uses full module atom list
 - [Phase ?]: guide+extras registered in same commit satisfying orphan-guard and empty-group prerequisite (moduledocs promoted in prior commit)
 - [Phase ?]: Extension Authors extras group positioned between Truth and Advanced/Companions (D-10 distinct audience JTBD)
+- [Phase ?]: Derived @banned_alias_parts from string names to avoid {:__aliases__} nodes in own module definition
+- [Phase ?]: AST prune-then-walk is authoritative for EXTRACT-04 placement; belt retained as _belt_matches (not authoritative)
+- [Phase ?]: Real-lib EXTRACT-03 assertion deferred to Plan 05 — rulestead.ex stays in lib/ until Plan 04 extracts it
 
 ### Pending Todos
 
@@ -156,10 +159,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 129 P02 | 15m | - tasks | - files |
 | Phase 130 P01 | 28m | 3 tasks | 7 files |
 | Phase 130 P02 | 45min | 2 tasks | 9 files |
+| Phase 130 P03 | 8min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T01:39:54.724Z
+Last session: 2026-06-26T01:52:16.478Z
 Stopped at: Phase 130 context gathered
 Resume file: .planning/phases/130-extraction-mechanics-footgun-guards/130-CONTEXT.md
 
