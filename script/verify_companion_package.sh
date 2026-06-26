@@ -50,8 +50,11 @@ if [ -d "$UNPACK_DIR/test" ]; then
   exit 1
 fi
 
-if [ ! -f "$UNPACK_DIR/lib/crosswake/companions/rulestead.ex" ]; then
-  echo "[crosswake] FAIL: lib/crosswake/companions/rulestead.ex not found in unpacked tarball — source not moved yet"
+# Parameterize the companion source check from $PACKAGE (e.g. crosswake_rindle -> rindle.ex)
+# so this script works for any crosswake_* companion, not just rulestead.
+COMPANION_NAME=$(echo "$PACKAGE" | sed 's/^crosswake_//')
+if [ ! -f "$UNPACK_DIR/lib/crosswake/companions/${COMPANION_NAME}.ex" ]; then
+  echo "[crosswake] FAIL: lib/crosswake/companions/${COMPANION_NAME}.ex not found in unpacked tarball — source not moved yet"
   exit 1
 fi
 

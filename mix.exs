@@ -52,11 +52,16 @@ defmodule Crosswake.MixProject do
   end
 
   # D-26: Root aliases so contributors never need a bare `cd`.
-  # mix companions.test — runs the companion lane hermetically (engine-ABSENT default).
+  # mix companions.test — runs each companion's own test lane (rulestead + rindle).
+  #   Each lane's default tag exclusions apply (engine-present advisory + example-host
+  #   tests are excluded). Adapter-behavior tests run with the engine in the lane's lock.
   # mix verify — runs companions.test + core hermetic test lane (excludes advisory tags).
   defp aliases do
     [
-      "companions.test": ["cmd --cd packages/crosswake_rulestead mix test"],
+      "companions.test": [
+        "cmd --cd packages/crosswake_rulestead mix test",
+        "cmd --cd packages/crosswake_rindle mix test"
+      ],
       verify: [
         "companions.test",
         "test --exclude requires_example_host --exclude advisory_only"

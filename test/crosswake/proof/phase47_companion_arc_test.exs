@@ -1,7 +1,10 @@
 defmodule Crosswake.Proof.Phase47CompanionArcTest do
   use ExUnit.Case, async: false
 
-  alias Crosswake.Companions.Rindle
+  # Phase 132: Crosswake.Companions.Rindle extracted to packages/crosswake_rindle/.
+  # Drive tests 1-2 through the @behaviour/registry seam via the absent-engine stub
+  # (mirrors the StubRulesteadAbsentCompanion pattern); tests 3-6 use no rindle internals.
+  alias Crosswake.TestSupport.StubRindleAbsentCompanion, as: Rindle
   alias Crosswake.TestSupport.StubRulesteadAbsentCompanion, as: Rulestead
   alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Compatibility.RouteGate
