@@ -211,11 +211,11 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `guides/companion_compatibility.md` documents each companion's minimum required core version and the full cross-package compatibility matrix in a human-readable format
   4. A drift test fails if any companion's `{:crosswake, "~> ..."}` minimum-version requirement in its `mix.exs` is missing from or inconsistent with the compatibility matrix doc
 
-**Plans**: 4 plans
+**Plans**: 1/4 plans executed
 
 **Wave 1**
 
-- [ ] 132-01-PLAN.md — Scaffold `packages/crosswake_rindle/` skeleton (mix.exs + test infra, no source moved) + `StubRindleAbsentCompanion` [EXTRACT-07]
+- [x] 132-01-PLAN.md — Scaffold `packages/crosswake_rindle/` skeleton (mix.exs + test infra, no source moved) + `StubRindleAbsentCompanion` [EXTRACT-07]
 
 **Wave 2** *(blocked on Wave 1; 02 and 03 run in parallel — no file overlap)*
 
@@ -291,6 +291,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
-| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/4 | Not started | - |
+| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 1/4 | In Progress|  |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |

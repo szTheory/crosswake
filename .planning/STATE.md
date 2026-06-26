@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 132
-current_phase_name: rindle
+current_phase_name: generalization-proof-rindle-compat-matrix
 status: executing
 stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T16:49:54.190Z"
+last_updated: "2026-06-26T17:01:34.452Z"
 last_activity: 2026-06-26
-last_activity_desc: Phase 131 complete, transitioned to Phase 132
+last_activity_desc: Phase 132 execution started
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 14
+  completed_plans: 11
   percent: 50
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 131 — publish-pipeline-clean-room-lane-rulestead
+**Current focus:** Phase 132 — generalization-proof-rindle-compat-matrix
 
 ## Current Position
 
-Phase: 132 — Generalization Proof (rindle) + Compat Matrix
-Plan: Not started
+Phase: 132 (generalization-proof-rindle-compat-matrix) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-26 — Phase 131 complete, transitioned to Phase 132
+Last activity: 2026-06-26 -- Phase 132 execution started
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -133,6 +133,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: PROOF-02: needs:[release-please,publish-hex-rulestead] enforces clean-room runs after publish
 - [Phase ?]: D-16: thin YAML delegates all proof logic to verify_companion_cleanroom.sh
 - [Phase ?]: D-04 runbook: release-as removal after first Release PR merges, cross-ref Step 12f for rindle
+- [Phase ?]: Phase 132 P01: rindle config.exs minimal — Rindle reads :crosswake/:rindle directly, no flag-source mock (unlike rulestead MockFlagSource)
+- [Phase ?]: Phase 132 P01: crosswake_rindle CHANGELOG is a clean [Unreleased] skeleton, not core-inherited rulestead history — fresh 0.1.0 companion
 
 ### Pending Todos
 
@@ -180,10 +182,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 131 P01 | 6m | 3 tasks | 6 files |
 | Phase 131 P02 | 10m | 2 tasks | 2 files |
 | Phase 131 P03 | 5m | 2 tasks | 2 files |
+| Phase 132 P01 | 12m | 2 tasks | 10 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T14:51:51.581Z
+Last session: 2026-06-26T17:01:06.465Z
 Stopped at: Phase 132 context gathered
 Resume file: .planning/phases/132-generalization-proof-rindle-compat-matrix/132-CONTEXT.md
 

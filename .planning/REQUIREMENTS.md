@@ -26,7 +26,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 - [x] **EXTRACT-04**: A guard verifies companions probe their optional dependency at runtime (`Code.ensure_loaded?` inside function bodies), never at module-evaluation time — preventing the stale-recompile footgun.
 - [x] **EXTRACT-05**: `release-please` carries `crosswake_rulestead` as a separate `elixir` release component (independent versioning), explicitly NOT in the core lockstep `linked-versions` group.
 - [x] **EXTRACT-06**: A per-companion publish job (`deps.get` → `compile --warnings-as-errors` → `test` → `hex.publish --dry-run` → `hex.publish`) runs for `crosswake_rulestead`, keyed on its release-please output.
-- [ ] **EXTRACT-07**: `rindle` is extracted by the identical recipe (including its owned `Crosswake.Companions.Rindle.Contracts` incl. `MediaObject` and `Reconciliation`) and goes live on Hex, independently versioned.
+- [x] **EXTRACT-07**: `rindle` is extracted by the identical recipe (including its owned `Crosswake.Companions.Rindle.Contracts` incl. `MediaObject` and `Reconciliation`) and goes live on Hex, independently versioned.
 
 ### COMPAT — Compatibility & Fail-Closed Discipline
 
@@ -104,7 +104,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | EXTRACT-06 | Phase 131 | Complete |
 | PROOF-01 | Phase 131 | Complete |
 | PROOF-02 | Phase 131 | Complete |
-| EXTRACT-07 | Phase 132 | Pending |
+| EXTRACT-07 | Phase 132 | Complete |
 | SEAM-05 | Phase 132 | Pending |
 | COMPAT-02 | Phase 132 | Pending |
 | COMPAT-03 | Phase 132 | Pending |
