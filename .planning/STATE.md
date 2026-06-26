@@ -4,13 +4,13 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 status: executing
 stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T17:21:58.384Z"
+last_updated: "2026-06-26T17:28:34.770Z"
 last_activity: 2026-06-26
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 50
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 132 (generalization-proof-rindle-compat-matrix) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-26
 
@@ -40,7 +40,7 @@ Last activity: 2026-06-26
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 93%
 
 ```
 [          ] 0%
@@ -135,6 +135,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 132 P03: rindle companion lane is engine-PRESENT (rulestead phase42 D-20 analog) not engine-absent; ~> 0.1 admits <1.0.0 so resolves real rindle 0.3.1; engine-absent seam coverage in core via StubRindleAbsentCompanion
 - [Phase ?]: Phase 132 P03: media helpers in test/support/example_host/ are require_file-only (excluded from elixirc_paths) avoiding double-load; phase72 hermeticity self-scan asserts require_file basenames
 - [Phase ?]: Phase 132 P03: phase72-proof.yml retired (standalone macOS); proof now runs in rindle companion lane via phase132-proof.yml on ubuntu-latest
+- [Phase ?]: 132-02 compat-matrix drift test keys the requirement assertion on the pinned Requires-crosswake column (HTML-comment contract, D-12), exact-matching that cell only; a whole-row contains check false-passed because the Engine Dependency cell carries its own ~> 0.1 literal.
 
 ### Pending Todos
 
@@ -184,10 +185,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 131 P03 | 5m | 2 tasks | 2 files |
 | Phase 132 P01 | 12m | 2 tasks | 10 files |
 | Phase 132 P03 | ~16m | 3 tasks | 27 files |
+| Phase 132 P02 | ~14m | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T17:21:25.959Z
+Last session: 2026-06-26T17:28:15.654Z
 Stopped at: Phase 132 context gathered
 Resume file: None
 

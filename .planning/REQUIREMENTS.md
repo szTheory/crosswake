@@ -31,8 +31,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 ### COMPAT — Compatibility & Fail-Closed Discipline
 
 - [x] **COMPAT-01**: With a companion registered and enabled but its package absent from deps, `mix crosswake.doctor` returns an `:error` finding (`companion.dependency_missing`) and `RouteGate` fail-closes the gated route — never a silent no-op.
-- [ ] **COMPAT-02**: An adopter can read `guides/companion_compatibility.md` to learn each companion's minimum required core version and the cross-package compatibility matrix.
-- [ ] **COMPAT-03**: A drift test fails if any companion's declared `{:crosswake, "~> ..."}` requirement is missing from the compatibility matrix doc.
+- [x] **COMPAT-02**: An adopter can read `guides/companion_compatibility.md` to learn each companion's minimum required core version and the cross-package compatibility matrix.
+- [x] **COMPAT-03**: A drift test fails if any companion's declared `{:crosswake, "~> ..."}` requirement is missing from the compatibility matrix doc.
 
 ### PROOF — Clean-Room Verification
 
@@ -106,8 +106,8 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | PROOF-02 | Phase 131 | Complete |
 | EXTRACT-07 | Phase 132 | Complete |
 | SEAM-05 | Phase 132 | Complete |
-| COMPAT-02 | Phase 132 | Pending |
-| COMPAT-03 | Phase 132 | Pending |
+| COMPAT-02 | Phase 132 | Complete |
+| COMPAT-03 | Phase 132 | Complete |
 | TELEM-01 | Phase 133 | Pending |
 | TELEM-02 | Phase 133 | Pending |
 | TELEM-03 | Phase 133 | Pending |

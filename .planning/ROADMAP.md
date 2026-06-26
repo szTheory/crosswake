@@ -219,7 +219,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 2** *(blocked on Wave 1; 02 and 03 run in parallel — no file overlap)*
 
-- [ ] 132-02-PLAN.md — Compat matrix doc `guides/companion_compatibility.md` + bidirectional AST-parse drift test [COMPAT-02, COMPAT-03]
+- [x] 132-02-PLAN.md — Compat matrix doc `guides/companion_compatibility.md` + bidirectional AST-parse drift test [COMPAT-02, COMPAT-03]
 - [x] 132-03-PLAN.md — The extraction: move rindle adapter + Contracts + Reconciliation to the package, CompanionGuard MapSet, seam-rewrite core tests, companions.test chain, parameterize verify script, phase132-proof.yml [EXTRACT-07, SEAM-05]
 
 **Wave 3** *(blocked on Wave 2)*
@@ -291,6 +291,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
-| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 2/4 | In Progress|  |
+| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 3/4 | In Progress|  |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
