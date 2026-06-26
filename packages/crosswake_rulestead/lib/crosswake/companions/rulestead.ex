@@ -3,9 +3,13 @@ defmodule Crosswake.Companions.Rulestead do
 
   @behaviour Crosswake.Companion
 
+  # Required: optional: true alone does NOT silence the undefined-module warning
+  # in the engine-ABSENT build (hermetic/COMPAT-01 state). Both are needed for
+  # mix compile --warnings-as-errors to pass without the rulestead engine loaded (D-29).
+  @compile {:no_warn_undefined, Rulestead}
+
   alias Crosswake.Companion.State
   alias Crosswake.Compatibility.Finding
-  alias Crosswake.Companions.Rulestead.MockFlagSource
 
   # ---------------------------------------------------------------------------
   # companion_id/0
@@ -24,20 +28,35 @@ defmodule Crosswake.Companions.Rulestead do
   def enabled?(config), do: Map.get(config, :enabled, false)
 
   # ---------------------------------------------------------------------------
+  # flag_source/0 — config-indirection (D-31)
+  # lib/ references this indirection symbol, never the test MockFlagSource module.
+  # Shipped default nil = honest "no flag source configured" state; already
+  # fail-closed-gated upstream by validate_dependency/0.
+  # Wire in :test config: config :crosswake, :rulestead, flag_source: MockFlagSource
+  # ---------------------------------------------------------------------------
+
+  defp flag_source do
+    Application.compile_env(:crosswake, [:rulestead, :flag_source], nil)
+  end
+
+  # ---------------------------------------------------------------------------
   # route_gated?/2
   # ---------------------------------------------------------------------------
 
   @impl true
   @doc false
   def route_gated?(route, _target) do
-    # Nil-guard: if MockFlagSource is not running, fail-open for gate (do not block requests).
-    # Mirrors the pattern used in kill_switch_active?/1 and report_state/0.
-    case Process.whereis(MockFlagSource) do
+    fs = flag_source()
+
+    # Nil-guard: if flag_source is not configured or not running, fail-open for gate
+    # (do not block requests). Mirrors the pattern used in kill_switch_active?/1 and
+    # report_state/0.
+    case fs && Process.whereis(fs) do
       nil ->
         :pass
 
       _pid ->
-        case MockFlagSource.get_flag(route.gated_by) do
+        case fs.get_flag(route.gated_by) do
           :gated ->
             {:deny,
              %Finding{
@@ -73,10 +92,12 @@ defmodule Crosswake.Companions.Rulestead do
   @impl true
   @doc false
   def kill_switch_active?(_target) do
-    # Nil-guard: if MockFlagSource is not running, treat kill switch as inactive
-    # (fail-closed on the "don't block requests" side — the companion is the
-    # further-restrictor; if it can't check, it should not silently fail-open).
-    case Process.whereis(MockFlagSource) do
+    fs = flag_source()
+
+    # Nil-guard: if flag_source is not configured or not running, treat kill switch
+    # as inactive (fail-closed on the "don't block requests" side — the companion is
+    # the further-restrictor; if it can't check, it should not silently fail-open).
+    case fs && Process.whereis(fs) do
       nil ->
         false
 
@@ -84,7 +105,7 @@ defmodule Crosswake.Companions.Rulestead do
         # Phase 42 simplification: scan all stored flags for any :killed state.
         # This is correct for a single-flag demo but would need refinement for
         # multi-flag scenarios where only some flags should activate the kill switch.
-        MockFlagSource
+        fs
         |> Agent.get(&Map.values/1)
         |> Enum.any?(&(&1 == :killed))
     end
@@ -100,6 +121,7 @@ defmodule Crosswake.Companions.Rulestead do
     # Check for the top-level Rulestead module (root of the rulestead Hex package).
     # In Phase 42, rulestead is deliberately absent from deps — this always returns
     # {:error, [Rulestead]}, which drives the SC#3a doctor :error finding.
+    # EXTRACT-04-clean: probe is inside a function body, not at module-eval time.
     if Code.ensure_loaded?(Rulestead) do
       :ok
     else
@@ -116,25 +138,27 @@ defmodule Crosswake.Companions.Rulestead do
   def report_state do
     config = Application.get_env(:crosswake, :rulestead, %{})
     enabled = Map.get(config, :enabled, false)
+    fs = flag_source()
 
     dependency_status =
+      # EXTRACT-04-clean: probe is inside a function body, not at module-eval time.
       if Code.ensure_loaded?(Rulestead) do
         :present
       else
         {:missing, [Rulestead]}
       end
 
-    # Read the most-restrictive stored gate state from MockFlagSource.
+    # Read the most-restrictive stored gate state from the configured flag source.
     # Precedence: :killed > :gated/:rolling_out > nil (unconfigured).
     # Guard with Process.whereis nil-check; default to unconfigured pairing when
-    # MockFlagSource is not running.
+    # the flag source is not running.
     {gate_status, kill_switch_status} =
-      case Process.whereis(MockFlagSource) do
+      case fs && Process.whereis(fs) do
         nil ->
           {:unconfigured, :unconfigured}
 
         _pid ->
-          values = Agent.get(MockFlagSource, &Map.values/1)
+          values = Agent.get(fs, &Map.values/1)
 
           cond do
             Enum.any?(values, &(&1 == :killed)) ->
