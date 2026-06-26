@@ -12,9 +12,11 @@ human_verification:
   - test: "Post-phase runbook (132-04): after the first crosswake_rindle Release PR merges on CI, remove 'release-as': '0.1.0' and the adjacent '_TODO_release_as' field from the packages/crosswake_rindle block in release-please-config.json, then confirm the next release-please run targets the next SemVer rather than re-targeting 0.1.0."
     expected: "release-as removed once the first rindle release is cut; subsequent runs version forward independently of core."
     why_human: "Irreversible CI-only action gated on a future Release PR merge; cannot be verified at phase-close time (no rindle Hex release exists yet by design — the no-publish dress-rehearsal posture)."
+    disposition: "CI-automatable, not a human-judgment gate — it is a mechanical post-merge config edit. Tracked by PROOF-03/LIFE-03: a fail-closed release-as staleness guard makes a stale pin RED, and an auto-cleanup-PR strips release-as + _TODO_release_as on release. The only residual human action is merging that one-line PR (main is protected). Recurring-benefit: parametric across all companions (sigra/chimeway/threadline)."
   - test: "After the first crosswake_rindle Release PR merges, confirm clean-room-proof-rindle is green on CI: it installs published crosswake + crosswake_rindle + rindle ~> 0.1 outside the monorepo, compiles --warnings-as-errors, asserts validate_dependency == :ok + doctor exit 0 + the Contracts.media_state_vocabulary/0 canary."
     expected: "clean-room-proof-rindle passes post-publish, proving the published artifact resolves and compiles alongside crosswake."
     why_human: "CI-only, post-publish, irreversible — cannot run locally before the first rindle release is cut (intended no-publish dress-rehearsal posture for this milestone)."
+    disposition: "CI-automatable, not a human-judgment gate — the clean-room job already asserts everything (resolvability, --warnings-as-errors compile, doctor exit 0, Contracts canary) and self-reports red/green. Inherently post-publish (can't install an unpublished artifact), so it cannot shift left of publish — but its confirmation becomes 0-touch via an if: failure() alert (PROOF-03/LIFE-03) that opens an issue on red. A human engages only when it actually breaks."
 ---
 
 # Phase 132: Generalization Proof (rindle) + Compat Matrix Verification Report
