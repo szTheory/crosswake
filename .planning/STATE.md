@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: executing
+current_phase: 132
+current_phase_name: generalization-proof-rindle-compat-matrix
+status: verifying
 stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T17:28:34.770Z"
+last_updated: "2026-06-26T17:35:19.414Z"
 last_activity: 2026-06-26
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 14
-  completed_plans: 13
-  percent: 50
+  completed_plans: 14
+  percent: 67
 ---
 
 # Project State: Crosswake
@@ -27,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 132 (generalization-proof-rindle-compat-matrix) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
@@ -40,7 +42,7 @@ Last activity: 2026-06-26
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [█████████░] 93%
+Progress: [██████████] 100%
 
 ```
 [          ] 0%
@@ -136,6 +138,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 132 P03: media helpers in test/support/example_host/ are require_file-only (excluded from elixirc_paths) avoiding double-load; phase72 hermeticity self-scan asserts require_file basenames
 - [Phase ?]: Phase 132 P03: phase72-proof.yml retired (standalone macOS); proof now runs in rindle companion lane via phase132-proof.yml on ubuntu-latest
 - [Phase ?]: 132-02 compat-matrix drift test keys the requirement assertion on the pinned Requires-crosswake column (HTML-comment contract, D-12), exact-matching that cell only; a whole-row contains check false-passed because the Engine Dependency cell carries its own ~> 0.1 literal.
+- [Phase ?]: Phase 132 P04: crosswake_rindle wired into release-please as a separate elixir component (release-as 0.1.0 one-shot), NOT in linked-versions lockstep — independent versioning (EXTRACT-07, D-01)
+- [Phase ?]: Phase 132 P04: rindle_release_created/tag_name/version output aliases + gated publish-hex-rindle (CROSSWAKE_RELEASE=1, dry-run then publish) + clean-room-proof-rindle (needs publish) delegating to verify_companion_cleanroom.sh crosswake_rindle <ver> rindle Rindle
+- [Phase ?]: Phase 132 P04: rindle Contracts.media_state_vocabulary/0 canary appended inside SMOKEEOF heredoc guarded by PACKAGE==crosswake_rindle (D-18); no new script param. Removed pre-existing stray MIX_VERSION echo from rulestead clean-room run (Rule 1)
 
 ### Pending Todos
 
@@ -186,10 +191,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 132 P01 | 12m | 2 tasks | 10 files |
 | Phase 132 P03 | ~16m | 3 tasks | 27 files |
 | Phase 132 P02 | ~14m | 2 tasks | 2 files |
+| Phase 132 P04 | ~9m | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T17:28:15.654Z
+Last session: 2026-06-26T17:34:26.818Z
 Stopped at: Phase 132 context gathered
 Resume file: None
 

@@ -115,7 +115,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 - [x] **Phase 129: Stable Companion Contract Surface** - Promote and document the public companion-contract types extracted packages depend on, before anything moves (completed 2026-06-25)
 - [x] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling (completed 2026-06-26)
 - [x] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex (completed 2026-06-26)
-- [ ] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex
+- [x] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex (completed 2026-06-26)
 - [ ] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1
 - [ ] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking
 
@@ -224,7 +224,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 132-04-PLAN.md — release-please rindle component + gated publish-hex-rindle + clean-room-proof-rindle + Contracts canary [EXTRACT-07]
+- [x] 132-04-PLAN.md — release-please rindle component + gated publish-hex-rindle + clean-room-proof-rindle + Contracts canary [EXTRACT-07]
 
 ### Phase 133: Telemetry Public API
 
@@ -291,6 +291,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
-| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 3/4 | In Progress|  |
+| 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
