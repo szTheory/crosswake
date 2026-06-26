@@ -1,8 +1,18 @@
 defmodule Crosswake.Proof.Phase45RindleCompanionTest do
   @moduledoc """
-  Hermetic merge-blocking proof lane for the Phase 45 Rindle companion.
+  Adapter-behavior proof lane for the Phase 45 Rindle companion.
+  Runs inside the crosswake_rindle companion package as a path: dep.
 
-  The optional Rindle dependency is intentionally absent in this lane.
+  This test runs with the rindle engine installed (optional: true dep is included
+  in the companion's own mix.lock so Code.ensure_loaded?(Rindle) returns true) —
+  the engine-PRESENT context for adapter-behavior testing, mirroring rulestead's
+  phase42 D-20 split.
+
+  The engine-ABSENT behavior (validate_dependency/0 returning {:error, [Rindle]})
+  and the Doctor dependency_missing finding are proved in the core hermetic lane
+  (phase47_companion_arc_test.exs + companions_test.exs) via
+  StubRindleAbsentCompanion, where rindle is not in deps. The D-20 test split
+  preserves both lanes.
   """
 
   use ExUnit.Case, async: false
@@ -90,17 +100,17 @@ defmodule Crosswake.Proof.Phase45RindleCompanionTest do
     assert Rindle.kill_switch_active?(%Crosswake.Compatibility.Target{}) == false
   end
 
-  test "validate_dependency/0 fails closed while optional Rindle library is absent" do
-    assert Rindle.validate_dependency() == {:error, [:"Elixir.Rindle"]}
+  test "validate_dependency/0 returns :ok when the optional Rindle engine is present" do
+    assert Rindle.validate_dependency() == :ok
   end
 
-  test "report_state/0 returns a media contract-only companion state" do
+  test "report_state/0 returns a media contract-only companion state (engine present)" do
     state = Rindle.report_state()
 
     assert %Crosswake.Companion.State{} = state
     assert state.companion_id == :rindle
     assert state.enabled == true
-    assert state.dependency_status == {:missing, [:"Elixir.Rindle"]}
+    assert state.dependency_status == :present
     assert state.gate_status == :unconfigured
     assert state.kill_switch_status == :inactive
     assert state.details.surface == :media
@@ -108,7 +118,7 @@ defmodule Crosswake.Proof.Phase45RindleCompanionTest do
     assert is_integer(state.checked_at)
   end
 
-  test "Doctor emits companion.dependency_missing :error when Rindle is enabled and absent",
+  test "Doctor emits no companion.dependency_missing finding when Rindle engine is present",
        %{target: target, install_manifest_path: install_manifest_path} do
     report =
       Doctor.run(
@@ -117,14 +127,8 @@ defmodule Crosswake.Proof.Phase45RindleCompanionTest do
         cwd: target
       )
 
-    finding = Enum.find(report.findings, &(&1.code == "companion.dependency_missing"))
-
-    assert finding != nil,
-           "expected companion.dependency_missing; got #{inspect(Enum.map(report.findings, & &1.code))}"
-
-    assert finding.severity == :error
-    assert finding.check == "companion.rindle"
-    assert finding.details.missing_modules == [:"Elixir.Rindle"]
+    assert Enum.filter(report.findings, &(&1.code == "companion.dependency_missing")) == [],
+           "engine present — expected no dependency_missing; got #{inspect(Enum.map(report.findings, & &1.code))}"
   end
 
   test "Doctor emits no dependency_missing finding when Rindle is disabled",

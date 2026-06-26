@@ -1,27 +1,8 @@
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/media_lane_live.ex",
-  __DIR__
-)
+Code.require_file("../../support/example_host/reconciliation_keys.ex", __DIR__)
+Code.require_file("../../support/example_host/reconciliation_inbox.ex", __DIR__)
+Code.require_file("../../support/example_host/mock_capture.ex", __DIR__)
+Code.require_file("../../support/example_host/media_projection.ex", __DIR__)
+Code.require_file("../../support/example_host/media_lane_live.ex", __DIR__)
 
 defmodule Crosswake.Proof.Phase45RindleLiveTest do
   use ExUnit.Case, async: false

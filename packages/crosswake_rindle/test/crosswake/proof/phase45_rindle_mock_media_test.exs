@@ -1,22 +1,7 @@
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_keys.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex",
-  __DIR__
-)
-
-Code.require_file(
-  "../../../examples/phoenix_host/lib/crosswake_example/media/media_projection.ex",
-  __DIR__
-)
+Code.require_file("../../support/example_host/reconciliation_keys.ex", __DIR__)
+Code.require_file("../../support/example_host/reconciliation_inbox.ex", __DIR__)
+Code.require_file("../../support/example_host/mock_capture.ex", __DIR__)
+Code.require_file("../../support/example_host/media_projection.ex", __DIR__)
 
 defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
   use ExUnit.Case, async: false
@@ -144,11 +129,11 @@ defmodule Crosswake.Proof.Phase45RindleMockMediaTest do
   end
 
   test "media mock source contains no provider SDK vocabulary or upload shortcut" do
-    files = [
-      "examples/phoenix_host/lib/crosswake_example/media/mock_capture.ex",
-      "examples/phoenix_host/lib/crosswake_example/media/reconciliation_inbox.ex",
-      "examples/phoenix_host/lib/crosswake_example/media/media_projection.ex"
-    ]
+    support_dir = Path.join([__DIR__, "../../support/example_host"])
+
+    files =
+      for name <- ["mock_capture.ex", "reconciliation_inbox.ex", "media_projection.ex"],
+          do: Path.join(support_dir, name)
 
     forbidden = [
       "s" <> "3",

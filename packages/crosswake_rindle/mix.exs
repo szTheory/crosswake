@@ -31,8 +31,19 @@ defmodule CrosswakeRindle.MixProject do
   # When ENGINE_PRESENT_LANE=1 is set, also compile the engine_present/ stub dir.
   # This appends the fake top-level Rindle stub (D-33) without compile-baking
   # engine presence. The advisory lane alias sets this env var before running tests.
+  #
+  # NOTE: test/support/example_host/ is deliberately EXCLUDED from elixirc_paths.
+  # Those media helpers are loaded ONLY via Code.require_file/2 inside the moved
+  # phase45/phase72 proof tests (the phase72 hermeticity self-scan asserts on those
+  # require_file basenames). Compiling them here too would double-load the modules
+  # and emit "redefining module" warnings at test runtime. So we compile only the
+  # StudySessionLive stub from test/support and leave example_host/ to require_file.
   defp elixirc_paths(:test) do
-    base = ["lib", "test/support"]
+    base = [
+      "lib",
+      "test/support/study_session_live.ex",
+      "test/support/example_host.ex"
+    ]
 
     if System.get_env("ENGINE_PRESENT_LANE") == "1" do
       base ++ ["test/engine_present"]
