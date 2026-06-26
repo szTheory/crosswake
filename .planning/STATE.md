@@ -2,18 +2,15 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 132
-current_phase_name: generalization-proof-rindle-compat-matrix
 status: executing
 stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T17:01:34.452Z"
+last_updated: "2026-06-26T17:21:58.384Z"
 last_activity: 2026-06-26
-last_activity_desc: Phase 132 execution started
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 50
 ---
 
@@ -29,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 132 (generalization-proof-rindle-compat-matrix) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
-Last activity: 2026-06-26 -- Phase 132 execution started
+Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -43,7 +40,7 @@ Last activity: 2026-06-26 -- Phase 132 execution started
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [█████████░] 90%
+Progress: [█████████░] 86%
 
 ```
 [          ] 0%
@@ -135,6 +132,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-04 runbook: release-as removal after first Release PR merges, cross-ref Step 12f for rindle
 - [Phase ?]: Phase 132 P01: rindle config.exs minimal — Rindle reads :crosswake/:rindle directly, no flag-source mock (unlike rulestead MockFlagSource)
 - [Phase ?]: Phase 132 P01: crosswake_rindle CHANGELOG is a clean [Unreleased] skeleton, not core-inherited rulestead history — fresh 0.1.0 companion
+- [Phase ?]: Phase 132 P03: rindle companion lane is engine-PRESENT (rulestead phase42 D-20 analog) not engine-absent; ~> 0.1 admits <1.0.0 so resolves real rindle 0.3.1; engine-absent seam coverage in core via StubRindleAbsentCompanion
+- [Phase ?]: Phase 132 P03: media helpers in test/support/example_host/ are require_file-only (excluded from elixirc_paths) avoiding double-load; phase72 hermeticity self-scan asserts require_file basenames
+- [Phase ?]: Phase 132 P03: phase72-proof.yml retired (standalone macOS); proof now runs in rindle companion lane via phase132-proof.yml on ubuntu-latest
 
 ### Pending Todos
 
@@ -183,12 +183,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 131 P02 | 10m | 2 tasks | 2 files |
 | Phase 131 P03 | 5m | 2 tasks | 2 files |
 | Phase 132 P01 | 12m | 2 tasks | 10 files |
+| Phase 132 P03 | ~16m | 3 tasks | 27 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T17:01:06.465Z
+Last session: 2026-06-26T17:21:25.959Z
 Stopped at: Phase 132 context gathered
-Resume file: .planning/phases/132-generalization-proof-rindle-compat-matrix/132-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

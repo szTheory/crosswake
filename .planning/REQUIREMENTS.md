@@ -16,7 +16,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 - [x] **SEAM-02**: A reader can find one curated `guides/companion_contract.md` page that enumerates exactly the public surface extracted packages may depend on, and labels everything else private/patch-volatile.
 - [x] **SEAM-03**: A companion implementation can return restriction evidence (`Compatibility.Finding`) but cannot author the user-facing denial — `Crosswake.Shell.Denial` is absent from the public companion surface.
 - [x] **SEAM-04**: A developer browsing hexdocs sees the companion-contract types grouped under a "Companion Contract" `groups_for_modules` heading.
-- [ ] **SEAM-05**: The same extraction checklist applies to a second companion with no companion-specific branches added to core (verified when rindle extracts in Phase 132).
+- [x] **SEAM-05**: The same extraction checklist applies to a second companion with no companion-specific branches added to core (verified when rindle extracts in Phase 132).
 
 ### EXTRACT — Companion Package Extraction Mechanics
 
@@ -105,7 +105,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | PROOF-01 | Phase 131 | Complete |
 | PROOF-02 | Phase 131 | Complete |
 | EXTRACT-07 | Phase 132 | Complete |
-| SEAM-05 | Phase 132 | Pending |
+| SEAM-05 | Phase 132 | Complete |
 | COMPAT-02 | Phase 132 | Pending |
 | COMPAT-03 | Phase 132 | Pending |
 | TELEM-01 | Phase 133 | Pending |
