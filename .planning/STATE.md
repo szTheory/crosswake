@@ -4,13 +4,13 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 status: executing
 stopped_at: Phase 131 context gathered
-last_updated: "2026-06-26T09:00:20.623Z"
+last_updated: "2026-06-26T09:09:09.569Z"
 last_activity: 2026-06-26
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 33
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 131 (publish-pipeline-clean-room-lane-rulestead) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-26
 
@@ -40,7 +40,7 @@ Last activity: 2026-06-26
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ```
 [          ] 0%
@@ -124,6 +124,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: CROSSWAKE_RELEASE=1 returns Hex dep; unset returns path dep
 - [Phase ?]: independent elixir component, not in linked-versions, manifest 0.1.0, release-as 0.1.0 first-cut
 - [Phase ?]: dress-rehearsal gate removed, hex_metadata.config dep-presence grep under CROSSWAKE_RELEASE=1
+- [Phase ?]: D-07 per-component gate: rulestead_release_created not aggregate releases_created
+- [Phase ?]: job-level CROSSWAKE_RELEASE=1 covers all mix steps in publish-hex-rulestead; plain mix test (no --exclude) for hermetic companion lane (D-10/D-13)
+- [Phase ?]: Open Question 1 resolved: minimal use Phoenix.Router with no routes suffices for doctor --router (router_module!/1 only calls Code.ensure_loaded?)
 
 ### Pending Todos
 
@@ -168,10 +171,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 130 P04 | 60 | 3 tasks | 11 files |
 | Phase 130 P05 | 5min | 2 tasks | 2 files |
 | Phase 131 P01 | 6m | 3 tasks | 6 files |
+| Phase 131 P02 | 10m | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T08:59:42.992Z
+Last session: 2026-06-26T09:08:52.118Z
 Stopped at: Phase 131 context gathered
 Resume file: None
 
