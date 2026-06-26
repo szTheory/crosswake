@@ -113,7 +113,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Milestone Goal:** Turn the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and ship the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires.
 
 - [x] **Phase 129: Stable Companion Contract Surface** - Promote and document the public companion-contract types extracted packages depend on, before anything moves (completed 2026-06-25)
-- [ ] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling
+- [x] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling (completed 2026-06-26)
 - [ ] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex
 - [ ] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex
 - [ ] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1
@@ -155,7 +155,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans complete
 
 **Wave 0**
 
@@ -172,7 +172,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 130-05-PLAN.md — Assert EXTRACT-03 static-ref guard green against the post-extraction codebase (Sigra/Chimeway stay legal); wire companion-lane CI; full phase exit gate [EXTRACT-03]
+- [x] 130-05-PLAN.md — Assert EXTRACT-03 static-ref guard green against the post-extraction codebase (Sigra/Chimeway stay legal); wire companion-lane CI; full phase exit gate [EXTRACT-03]
 
 ### Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)
 
@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
-| 130. Extraction Mechanics & Footgun Guards | v16.0 | 4/5 | In Progress|  |
+| 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete   | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
