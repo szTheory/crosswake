@@ -193,14 +193,39 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
     pkg in doc_package_rows(doc)
   end
 
-  # The requirement cell is the ~>-prefixed literal somewhere on the package's row.
-  # We isolate the package's row, then assert it contains the exact requirement
-  # string (exact-match — reject substring/semver-equivalence, D-13).
+  # Assert the package's row names the exact requirement in the DEDICATED
+  # "Requires `crosswake`" cell — NOT anywhere on the row. The Engine Dependency
+  # cell also contains a `~> 0.1` literal (e.g. `{:rulestead, "~> 0.1", ...}`), so
+  # a whole-line String.contains? would pass even when the requirement cell drifts.
+  # We resolve the column index from the pinned HTML-comment contract (D-12) and
+  # match the exact cell content (reject substring/semver-equivalence, D-13).
   defp doc_row_has_requirement?(doc, pkg, req) do
-    case package_row_line(doc, pkg) do
-      nil -> false
-      line -> String.contains?(line, req)
+    with line when is_binary(line) <- package_row_line(doc, pkg),
+         idx when is_integer(idx) <- requires_crosswake_column_index(doc),
+         cell when is_binary(cell) <- Enum.at(row_cells(line), idx) do
+      # Cells are wrapped in backticks in the matrix house-style; compare the
+      # backtick-stripped cell to the exact requirement literal.
+      String.trim(cell) == "`#{req}`" or String.trim(cell) == req
+    else
+      _ -> false
     end
+  end
+
+  # Locate the zero-based column index of the "Requires `crosswake`" header so the
+  # requirement check keys on the named column, not a fragile absolute index. The
+  # pinned HTML comment above the table names this cell as the contract anchor.
+  defp requires_crosswake_column_index(doc) do
+    doc
+    |> String.split("\n")
+    |> Enum.find_value(fn line ->
+      if String.match?(line, ~r/^\|.*Hex Package.*\|/) do
+        line
+        |> row_cells()
+        |> Enum.find_index(fn cell ->
+          String.contains?(cell, "Requires") and String.contains?(cell, "crosswake")
+        end)
+      end
+    end)
   end
 
   defp package_row_line(doc, pkg) do
@@ -209,5 +234,16 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
     |> Enum.find(fn line ->
       String.match?(line, ~r/^\|\s*`#{Regex.escape(pkg)}`\s*\|/)
     end)
+  end
+
+  # Split a pipe-delimited markdown row into trimmed cell strings, dropping the
+  # empty leading/trailing fragments produced by the bounding pipes.
+  defp row_cells(line) do
+    line
+    |> String.trim()
+    |> String.trim_leading("|")
+    |> String.trim_trailing("|")
+    |> String.split("|")
+    |> Enum.map(&String.trim/1)
   end
 end
