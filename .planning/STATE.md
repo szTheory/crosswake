@@ -5,15 +5,15 @@ milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 130
 current_phase_name: extraction-mechanics-footgun-guards
 status: executing
-stopped_at: Phase 130 context gathered
-last_updated: "2026-06-26T01:52:16.484Z"
+stopped_at: Completed 130-04-PLAN.md
+last_updated: "2026-06-26T02:19:57.221Z"
 last_activity: 2026-06-25
 last_activity_desc: Phase 130 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 17
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 130 (extraction-mechanics-footgun-guards) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-06-25 -- Phase 130 execution started
 
@@ -119,6 +119,10 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Derived @banned_alias_parts from string names to avoid {:__aliases__} nodes in own module definition
 - [Phase ?]: AST prune-then-walk is authoritative for EXTRACT-04 placement; belt retained as _belt_matches (not authoritative)
 - [Phase ?]: Real-lib EXTRACT-03 assertion deferred to Plan 05 — rulestead.ex stays in lib/ until Plan 04 extracts it
+- [Phase ?]: D-20: SC#1 adapter tests moved to companion lane; SC#3a/SC#3b doctor tests stay in core via StubRulesteadAbsentCompanion stub
+- [Phase ?]: D-31: flag_source uses Application.get_env(:crosswake, :rulestead_flag_source) at runtime; dedicated key avoids :rulestead config map clash
+- [Phase ?]: D-33: engine-present advisory lane via conditional elixirc_paths; fake Rulestead stub in test/engine_present/ compiled only with ENGINE_PRESENT_LANE=1
+- [Phase ?]: D-25: script/extract_companion.md is parameterized 12-step extraction recipe proven on rulestead, reusable for rindle (Phase 132)
 
 ### Pending Todos
 
@@ -160,12 +164,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 130 P01 | 28m | 3 tasks | 7 files |
 | Phase 130 P02 | 45min | 2 tasks | 9 files |
 | Phase 130 P03 | 8min | 2 tasks | 2 files |
+| Phase 130 P04 | 60 | 3 tasks | 11 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T01:52:16.478Z
-Stopped at: Phase 130 context gathered
-Resume file: .planning/phases/130-extraction-mechanics-footgun-guards/130-CONTEXT.md
+Last session: 2026-06-26T02:19:57.206Z
+Stopped at: Completed 130-04-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

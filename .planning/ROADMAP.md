@@ -155,7 +155,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. A guard test verifies that every `Code.ensure_loaded?` call for a companion occurs inside a function body, never at module-evaluation time — preventing the stale-recompile footgun
   5. With rulestead registered and enabled but its package absent from deps, `mix crosswake.doctor` returns a `:error` finding with code `companion.dependency_missing` and `RouteGate` denies the gated route instead of silently allowing or crashing
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 
 **Wave 0**
 
@@ -168,7 +168,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 130-04-PLAN.md — The extraction: move adapter to `crosswake_rulestead` path: dep (name preserved), delete both `MIX_INCLUDE_*` blocks, config-indirection, test split, engine-present advisory lane, root aliases, dress-rehearsal verify, extraction recipe [EXTRACT-01, EXTRACT-02]
+- [x] 130-04-PLAN.md — The extraction: move adapter to `crosswake_rulestead` path: dep (name preserved), delete both `MIX_INCLUDE_*` blocks, config-indirection, test split, engine-present advisory lane, root aliases, dress-rehearsal verify, extraction recipe [EXTRACT-01, EXTRACT-02]
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
-| 130. Extraction Mechanics & Footgun Guards | v16.0 | 3/5 | In Progress|  |
+| 130. Extraction Mechanics & Footgun Guards | v16.0 | 4/5 | In Progress|  |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
