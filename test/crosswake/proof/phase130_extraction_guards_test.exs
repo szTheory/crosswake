@@ -76,17 +76,30 @@ defmodule Crosswake.Proof.Phase130ExtractionGuardsTest do
   # ---------------------------------------------------------------------------
 
   describe "EXTRACT-03 — no static alias to extracted companion in lib/" do
-    # This test is skipped here because the rulestead adapter source still lives in
-    # core lib/ until Plan 04 extracts it. Once Plan 04 removes
-    # lib/crosswake/companions/rulestead.ex from core, this skip must be removed and
-    # the test asserted green in Plan 05 (the post-extraction verification plan).
-    @tag :skip
-    test "CompanionGuard.assert_no_static_refs!/0 finds no violations in lib/ — asserted green in Plan 05 (post-extraction)" do
-      # DEFERRED to Plan 05: Plan 04 moves lib/crosswake/companions/rulestead.ex into
-      # packages/crosswake_rulestead/. Only after that extraction is complete should
-      # assert_no_static_refs!/0 pass against the real lib/.
-      # The EXTRACT-03 detection LOGIC is proven non-vacuously in the tests below.
+    test "CompanionGuard.assert_no_static_refs!/0 finds no violations in real core lib/ — GREEN post-extraction (Plan 05)" do
+      # Plan 04 moved lib/crosswake/companions/rulestead.ex into
+      # packages/crosswake_rulestead/ — no Crosswake.Companions.Rulestead alias
+      # node remains in core lib/. This test is now asserted GREEN (EXTRACT-03).
       CompanionGuard.assert_no_static_refs!()
+    end
+
+    test "A real Sigra-referencing core file is NOT flagged by check_source/1 — Sigra/Chimeway stay legal (D-14)" do
+      # Positive assertion: route_gate.ex statically aliases Companions.Sigra.Evaluator
+      # (line 9) — the guard must NOT flag it because Sigra is NOT in the frozen
+      # extracted_companions MapSet (D-14). Proves scope is the MapSet, not a blanket ban.
+      route_gate_source =
+        File.read!(Path.join(File.cwd!(), "lib/crosswake/compatibility/route_gate.ex"))
+
+      assert :ok = CompanionGuard.check_source(route_gate_source),
+             ProofAssertions.stable_id_message(
+               "proof.extract_03.d14.sigra_not_flagged_in_real_file",
+               "route_gate.ex must not be flagged — Sigra/Chimeway aliases are legitimate in-tree (D-14)",
+               "CompanionGuard.check_source(route_gate.ex source)",
+               "check_source returned {:violation, _} for route_gate.ex — guard is incorrectly banning Sigra",
+               "lib/crosswake/companion_guard.ex",
+               "Scope EXTRACT-03 guard to frozen @extracted_companions MapSet only — never a blanket Companions.* ban (D-14)",
+               :merge_blocking
+             )
     end
 
     test "CompanionGuard.check_source/1 detects Crosswake.Companions.Rulestead alias — non-vacuity (EXTRACT-03)" do
