@@ -37,7 +37,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 ### PROOF — Clean-Room Verification
 
 - [x] **PROOF-01**: A clean-room CI lane (and `script/verify_companion_cleanroom.sh`) creates a throwaway mix project OUTSIDE the monorepo, installs the published `crosswake` + companion package, compiles `--warnings-as-errors`, registers the companion, and runs its tests + a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling.
-- [ ] **PROOF-02**: No companion package is published to Hex until a `hex.publish --dry-run` gate and the clean-room/in-monorepo proof lanes are green.
+- [x] **PROOF-02**: No companion package is published to Hex until a `hex.publish --dry-run` gate and the clean-room/in-monorepo proof lanes are green.
 
 ### TELEM — Telemetry Public API
 
@@ -103,7 +103,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | EXTRACT-05 | Phase 131 | Complete |
 | EXTRACT-06 | Phase 131 | Complete |
 | PROOF-01 | Phase 131 | Complete |
-| PROOF-02 | Phase 131 | Pending |
+| PROOF-02 | Phase 131 | Complete |
 | EXTRACT-07 | Phase 132 | Pending |
 | SEAM-05 | Phase 132 | Pending |
 | COMPAT-02 | Phase 132 | Pending |

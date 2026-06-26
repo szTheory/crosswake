@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: executing
-stopped_at: Phase 131 context gathered
-last_updated: "2026-06-26T09:09:09.569Z"
+current_phase: 131
+current_phase_name: publish-pipeline-clean-room-lane-rulestead
+status: verifying
+stopped_at: Completed 131-03-PLAN.md
+last_updated: "2026-06-26T09:14:51.254Z"
 last_activity: 2026-06-26
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 33
+  completed_plans: 10
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -27,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 131 (publish-pipeline-clean-room-lane-rulestead) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
@@ -127,6 +129,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-07 per-component gate: rulestead_release_created not aggregate releases_created
 - [Phase ?]: job-level CROSSWAKE_RELEASE=1 covers all mix steps in publish-hex-rulestead; plain mix test (no --exclude) for hermetic companion lane (D-10/D-13)
 - [Phase ?]: Open Question 1 resolved: minimal use Phoenix.Router with no routes suffices for doctor --router (router_module!/1 only calls Code.ensure_loaded?)
+- [Phase ?]: PROOF-02: needs:[release-please,publish-hex-rulestead] enforces clean-room runs after publish
+- [Phase ?]: D-16: thin YAML delegates all proof logic to verify_companion_cleanroom.sh
+- [Phase ?]: D-04 runbook: release-as removal after first Release PR merges, cross-ref Step 12f for rindle
 
 ### Pending Todos
 
@@ -172,11 +177,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 130 P05 | 5min | 2 tasks | 2 files |
 | Phase 131 P01 | 6m | 3 tasks | 6 files |
 | Phase 131 P02 | 10m | 2 tasks | 2 files |
+| Phase 131 P03 | 5m | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T09:08:52.118Z
-Stopped at: Phase 131 context gathered
+Last session: 2026-06-26T09:14:51.247Z
+Stopped at: Completed 131-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
