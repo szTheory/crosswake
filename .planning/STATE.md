@@ -5,7 +5,7 @@ milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 132
 current_phase_name: generalization-proof-rindle-compat-matrix
 status: phase_complete
-stopped_at: Phase 132 complete — verification passed (items 2&3 transferred to Phase 135/PROOF-03, PR #36)
+stopped_at: Phase 132 complete — verification passed (items 2&3 transferred to Phase 135/PROOF-03)
 last_updated: "2026-06-26T20:32:16Z"
 last_activity: 2026-06-26
 progress:
@@ -23,13 +23,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 132 COMPLETE — verification passed; Phase 135 (PROOF-03 CI-ops) in-flight via PR #36
+**Current focus:** Phase 132 COMPLETE — verification passed; Phase 135 (PROOF-03 CI-ops) implemented + landed on local main (v16.0 WIP), syncs to origin at milestone boundary
 
 ## Current Position
 
 Phase: 132 (generalization-proof-rindle-compat-matrix) — COMPLETE (verification passed 2026-06-26)
 Plan: 4 of 4
-Status: Phase verified. Residual CI-ops items (release-as removal, post-publish proof confirmation) transferred to Phase 135 (PROOF-03), implemented on branch feat/proof-03-release-as-ci-automation (PR #36). Next: plan 133/134, or merge + plan 135.
+Status: Phase verified. Residual CI-ops items (release-as removal, post-publish proof confirmation) transferred to Phase 135 (PROOF-03), implemented + landed on local main 2026-06-26 (v16.0 WIP). Next: plan 133/134; v16.0 (incl. Phase 135) syncs to origin in one catch-up PR at the milestone boundary (#28/#30 pattern).
 Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
@@ -63,7 +63,7 @@ Phase 129 ───────────────────────�
 
 ### Roadmap Evolution
 
-- Phase 135 added (2026-06-26): CI-Ops Hardening — Release-As Automation (PROOF-03). Shifts the two post-publish companion-release follow-ups (one-shot `release-as` removal, clean-room-proof confirmation) left to fail-closed CI — parametric across all `crosswake_*` companions, no recurring human step. Already implemented on branch `feat/proof-03-release-as-ci-automation`. Origin: the Phase 132 verify-work challenge — both items were timing-gated (CI-only/post-publish), not human-judgment gates.
+- Phase 135 added (2026-06-26): CI-Ops Hardening — Release-As Automation (PROOF-03). Shifts the two post-publish companion-release follow-ups (one-shot `release-as` removal, clean-room-proof confirmation) left to fail-closed CI — parametric across all `crosswake_*` companions, no recurring human step. Implemented + landed on local main 2026-06-26 (v16.0 WIP; syncs to origin at the milestone boundary). Origin: the Phase 132 verify-work challenge — both items were timing-gated (CI-only/post-publish), not human-judgment gates.
 
 ### v16.0 Roadmap Decisions (2026-06-25, locked)
 

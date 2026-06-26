@@ -259,7 +259,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Goal**: The two post-publish companion-release follow-ups (one-shot `release-as` removal and clean-room-proof confirmation) are CI-enforced with no recurring human step, parametric across every `crosswake_*` companion; the only intentional human gate is merging the Release PR (the irreversible `hex.publish` go/no-go)
 **Depends on**: Phase 132
 **Requirements**: PROOF-03
-**Status**: Implemented on branch `feat/proof-03-release-as-ci-automation` (pending merge) — this phase formalizes and tracks it
+**Status**: Implemented and landed on local main 2026-06-26 (v16.0 WIP) — syncs to origin at the milestone boundary (per the #28/#30 catch-up pattern); this phase formalizes and tracks it
 **Success Criteria** (what must be TRUE):
 
   1. A fail-closed guard (`merge-blocking-release-as-staleness` / `script/check_release_as_staleness.sh`) turns the build RED if any package's `release-as` pin equals an already-released version (detected by the `{component}-v{X}` git tag), and GREEN once the pin is removed — proven RED→GREEN
