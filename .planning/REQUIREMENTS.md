@@ -24,7 +24,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 - [x] **EXTRACT-02**: `rulestead` lives as a standalone `packages/crosswake_rulestead/` Hex project (own `mix.exs`, own `@version`) with its source and tests moved out of core, preserving the `Crosswake.Companions.Rulestead` module name.
 - [x] **EXTRACT-03**: A merge-blocking guard fails the build if any core (`lib/`) module statically references an extracted companion module — core discovers companions only via the behaviour + the runtime `:companions` registry.
 - [x] **EXTRACT-04**: A guard verifies companions probe their optional dependency at runtime (`Code.ensure_loaded?` inside function bodies), never at module-evaluation time — preventing the stale-recompile footgun.
-- [ ] **EXTRACT-05**: `release-please` carries `crosswake_rulestead` as a separate `elixir` release component (independent versioning), explicitly NOT in the core lockstep `linked-versions` group.
+- [x] **EXTRACT-05**: `release-please` carries `crosswake_rulestead` as a separate `elixir` release component (independent versioning), explicitly NOT in the core lockstep `linked-versions` group.
 - [ ] **EXTRACT-06**: A per-companion publish job (`deps.get` → `compile --warnings-as-errors` → `test` → `hex.publish --dry-run` → `hex.publish`) runs for `crosswake_rulestead`, keyed on its release-please output.
 - [ ] **EXTRACT-07**: `rindle` is extracted by the identical recipe (including its owned `Crosswake.Companions.Rindle.Contracts` incl. `MediaObject` and `Reconciliation`) and goes live on Hex, independently versioned.
 
@@ -100,7 +100,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | EXTRACT-03 | Phase 130 | Complete |
 | EXTRACT-04 | Phase 130 | Complete |
 | COMPAT-01 | Phase 130 | Complete |
-| EXTRACT-05 | Phase 131 | Pending |
+| EXTRACT-05 | Phase 131 | Complete |
 | EXTRACT-06 | Phase 131 | Pending |
 | PROOF-01 | Phase 131 | Pending |
 | PROOF-02 | Phase 131 | Pending |

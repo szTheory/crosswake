@@ -2,17 +2,15 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 131
 status: executing
 stopped_at: Phase 131 context gathered
-last_updated: "2026-06-26T08:37:38.433Z"
+last_updated: "2026-06-26T09:00:20.623Z"
 last_activity: 2026-06-26
-last_activity_desc: Phase 131 planning complete
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
   percent: 33
 ---
 
@@ -23,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 131 — publish pipeline & clean room lane (rulestead)
+**Current focus:** Phase 131 — publish-pipeline-clean-room-lane-rulestead
 
 ## Current Position
 
-Phase: 131
-Plan: Not started
+Phase: 131 (publish-pipeline-clean-room-lane-rulestead) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-26 — Phase 131 planning complete
+Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -42,7 +40,7 @@ Last activity: 2026-06-26 — Phase 131 planning complete
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 80%
 
 ```
 [          ] 0%
@@ -123,6 +121,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-31: flag_source uses Application.get_env(:crosswake, :rulestead_flag_source) at runtime; dedicated key avoids :rulestead config map clash
 - [Phase ?]: D-33: engine-present advisory lane via conditional elixirc_paths; fake Rulestead stub in test/engine_present/ compiled only with ENGINE_PRESENT_LANE=1
 - [Phase ?]: D-25: script/extract_companion.md is parameterized 12-step extraction recipe proven on rulestead, reusable for rindle (Phase 132)
+- [Phase ?]: CROSSWAKE_RELEASE=1 returns Hex dep; unset returns path dep
+- [Phase ?]: independent elixir component, not in linked-versions, manifest 0.1.0, release-as 0.1.0 first-cut
+- [Phase ?]: dress-rehearsal gate removed, hex_metadata.config dep-presence grep under CROSSWAKE_RELEASE=1
 
 ### Pending Todos
 
@@ -166,12 +167,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 130 P03 | 8min | 2 tasks | 2 files |
 | Phase 130 P04 | 60 | 3 tasks | 11 files |
 | Phase 130 P05 | 5min | 2 tasks | 2 files |
+| Phase 131 P01 | 6m | 3 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T02:57:01.071Z
+Last session: 2026-06-26T08:59:42.992Z
 Stopped at: Phase 131 context gathered
-Resume file: .planning/phases/131-publish-pipeline-clean-room-lane-rulestead/131-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

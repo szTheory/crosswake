@@ -189,7 +189,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Plans**: 3 plans (3 waves)
 **Wave 1**
 
-- [ ] 131-01-PLAN.md — release-please component wiring + env-conditional crosswake_dep/0 resolver + verify_companion_package.sh Step 2 activation (EXTRACT-05)
+- [x] 131-01-PLAN.md — release-please component wiring + env-conditional crosswake_dep/0 resolver + verify_companion_package.sh Step 2 activation (EXTRACT-05)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -277,7 +277,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
-| 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
+| 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 1/3 | In Progress|  |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
