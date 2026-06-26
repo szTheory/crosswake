@@ -35,8 +35,8 @@ a legitimate hard-gate set.
 | merge-blocking-closeout-proof | register |
 | merge-blocking-native-behavioral-proof (ubuntu JVM, hermetic) | register |
 | merge-blocking-release-as-staleness (Phase 135) | register |
-| core hermetic proof (merge-blocking) | register **after** the deferred `milestone_transition_reset` / `phase52_operator_truth` failures are fixed — currently red |
-| companion engine-absent proof (merge-blocking) | register once green on origin (transient deps flake seen on PR) |
+| core hermetic proof (merge-blocking) | register — **the two deferred failures (`milestone_transition_reset`, `phase52_operator_truth`) are now fixed in Phase 135; broad hermetic suite is 1109/0 locally** |
+| companion engine-absent proof (merge-blocking) | register once green on origin (the PR failure was a transient deps-fetch flake; `mix companions.test` is 55/0 locally) |
 | merge-blocking auth closeout proof (hermetic) | register |
 | merge-blocking auth-sensitive admin workflow proof (hermetic) | register |
 | merge-blocking commerce support proof (hermetic) | register |
