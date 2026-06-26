@@ -47,11 +47,24 @@ defmodule CrosswakeRulestead.MixProject do
     [
       # D-19: core is a RUNTIME dep of the companion (no :runtime option needed).
       # A real adopter needs :crosswake application started at runtime.
-      {:crosswake, path: "../.."},
+      # D-11/D-13: env-conditional resolver — see crosswake_dep/0 below.
+      crosswake_dep(),
       # D-28: optional: true — Swoosh gold-standard optional-dep idiom.
       # The engine is optional; absence is handled via Code.ensure_loaded? + @compile {:no_warn_undefined}.
       {:rulestead, "~> 0.1", optional: true}
     ]
+  end
+
+  # D-11/D-13: Env-conditional crosswake dep resolver — the publish seam.
+  # Local dev + in-tree CI: test against LOCAL core (path dep, high fidelity — D-11).
+  # Publish job sets CROSSWAKE_RELEASE=1 so the tarball records an honest Hex requirement
+  # rather than a path: dep (which hex.build would error on — D-13).
+  # NOTE: the string "path:" appearing in this function body is expected (Pitfall 4 in RESEARCH.md);
+  # it does NOT represent an active bare path dep in deps/0.
+  defp crosswake_dep do
+    if System.get_env("CROSSWAKE_RELEASE") == "1",
+      do: {:crosswake, "~> 0.1"},
+      else: {:crosswake, path: "../.."}
   end
 
   # D-26 (package-level): engine-present advisory lane alias.
