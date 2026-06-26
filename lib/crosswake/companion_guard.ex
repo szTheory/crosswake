@@ -34,7 +34,10 @@ defmodule Crosswake.CompanionGuard do
   # reviewer sees the intentional shape change.
   @extracted_companion_names [
     # Phase 130: rulestead adapter extracted
-    "Crosswake.Companions.Rulestead"
+    "Crosswake.Companions.Rulestead",
+    # Phase 132: rindle adapter extracted (covers .Contracts/.Reconciliation children
+    # via the alias-parts prefix match; not a blanket Companions.* ban — D-02/D-14)
+    "Crosswake.Companions.Rindle"
   ]
 
   # Pre-compute the frozen MapSet of extracted companion module atoms.

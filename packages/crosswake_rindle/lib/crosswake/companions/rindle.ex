@@ -3,6 +3,11 @@ defmodule Crosswake.Companions.Rindle do
 
   @behaviour Crosswake.Companion
 
+  # Required: optional: true alone does NOT silence the undefined-module warning
+  # in the engine-ABSENT build (hermetic state). Both are needed for
+  # mix compile --warnings-as-errors to pass without the rindle engine loaded (D-29).
+  @compile {:no_warn_undefined, Rindle}
+
   alias Crosswake.Companion.State
 
   @impl true
