@@ -266,6 +266,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   2. On a companion release, a `release-as-cleanup` job runs `script/strip_release_as.py` and auto-opens a minimal-diff, idempotent cleanup PR removing `release-as` + `_TODO_release_as`; a human only merges it (`main` is protected)
   3. A `release-failure-alert` job opens a tracking issue if any companion publish or clean-room-proof job fails, and stays dormant on the green/no-release path
   4. `script/extract_companion.md` Step 12f references the automation (not a manual runbook), so sigra/chimeway/threadline inherit 0-human release ops
+  5. Required-check registration is parametric, not per-gate toil: `script/register_required_checks.sh` discovers ALL `merge-blocking-*` lanes and registers them idempotently (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector that flags any declared merge-blocking lane not actually in branch protection — superseding the bespoke `register-*-gate.sh` scripts. (Registration itself stays an admin/maintainer action — the legitimate human gate.)
 
 **Plans**: TBD
 

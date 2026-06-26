@@ -17,14 +17,11 @@ name: Release-As Staleness Gate
 # REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
 #   1. Merge this PR.
 #   2. Let merge-blocking-release-as-staleness go GREEN on main at least once.
-#   3. Add it to branch protection (granular endpoint — leaves enforce_admins/reviews untouched):
-#        EP="repos/szTheory/crosswake/branches/main/protection/required_status_checks"
-#        current="$(gh api "$EP")"
-#        desired="$(jq -n --argjson cur "$current" --arg new "merge-blocking-release-as-staleness" \
-#          --argjson app 15368 \
-#          '{ strict: $cur.strict,
-#             checks: (($cur.checks // []) + [{context:$new, app_id:$app}] | unique_by(.context)) }')"
-#        gh api -X PATCH "$EP" --input <(echo "$desired")
+#   3. Register it (parametric — discovers ALL merge-blocking lanes, idempotent, green-first):
+#        DRY_RUN=0 script/register_required_checks.sh
+#      Audit which declared lanes are NOT yet required (fail-closed gap detector):
+#        script/check_required_checks_registered.sh
+#   These supersede the per-gate register-*-gate.sh one-liners.
 
 permissions:
   contents: read
