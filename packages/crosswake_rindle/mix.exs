@@ -62,7 +62,10 @@ defmodule CrosswakeRindle.MixProject do
       crosswake_dep(),
       # D-28: optional: true — Swoosh gold-standard optional-dep idiom.
       # The engine is optional; absence is handled via Code.ensure_loaded? + @compile {:no_warn_undefined}.
-      # D-16: engine cap stays ~> 0.1 — rindle 0.3.0 is outside ~> 0.1; widening is deferred.
+      # D-16: engine cap ~> 0.1 admits every 0.x (>= 0.1.0 and < 1.0.0), so rindle 0.3.x
+      # resolves engine-present — proven green by the 132-03 engine-present lane. A 1.0.0
+      # engine would fall outside the cap; widening past the next major is deferred until
+      # the companion contract is proven against it.
       {:rindle, "~> 0.1", optional: true}
     ]
   end

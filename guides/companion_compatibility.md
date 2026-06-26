@@ -49,11 +49,12 @@ does not install `rindle`. You add the engine yourself only when you want the
 engine-present behavior; absent it, the companion fails closed and
 `mix crosswake.doctor` reports `companion.dependency_missing`.
 
-Name the friction honestly: both live engines have a latest release outside the
-companion's `~> 0.1` cap. `rulestead` is at `1.0.0` and `rindle` is at `0.3.0`, and
-neither satisfies `~> 0.1`. To run a companion with its engine present you must pin
-the engine to its `0.1.x` line rather than taking the latest release. Widening the
-cap is deferred until the companion's contract is proven against the newer engine.
+Name the friction honestly. Because `~> 0.1` admits every `0.x` (`>= 0.1.0 and
+< 1.0.0`), a companion only hits the cap when its engine reaches `1.0.0`. `rulestead`
+is at `1.0.0` — outside `~> 0.1` — so to run it engine-present you must pin the engine
+to its `0.1.x` line rather than taking the latest release; widening past the next
+major is deferred until the contract is proven against it. `rindle` is at `0.3.0`,
+which is still within `~> 0.1`, so it resolves engine-present without pinning.
 
 ## Verifying Companion Health
 
