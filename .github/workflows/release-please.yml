@@ -40,6 +40,13 @@ jobs:
       # outputs UNPREFIXED — so `tag_name`/`version` here are the Hex (root) values.
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+      # Companion: crosswake_rulestead
+      # release-please-action v4 path outputs use <path>--<name> (double-dash) format.
+      # GitHub Actions if: cannot index slash-containing keys directly; alias here
+      # so downstream jobs use dot-notation: needs.release-please.outputs.rulestead_* (D-08).
+      rulestead_release_created: ${{ steps.release.outputs['packages/crosswake_rulestead--release_created'] }}
+      rulestead_tag_name: ${{ steps.release.outputs['packages/crosswake_rulestead--tag_name'] }}
+      rulestead_version: ${{ steps.release.outputs['packages/crosswake_rulestead--version'] }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
