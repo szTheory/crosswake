@@ -791,3 +791,92 @@ jobs:
           "${{ needs.release-please.outputs.rindle_version }}"
           rindle
           Rindle
+
+  release-as-cleanup:
+    name: Strip stale release-as after companion release (PROOF-03b)
+    # Runs when ANY companion cut a release this run. The one-shot `release-as` bootstrap pin is
+    # stale the moment its release tag exists — left in place it re-targets the same version forever
+    # (recipe Step 12f / Pitfall 6). This job strips it and opens a cleanup PR automatically, so the
+    # only human action is merging a one-line, guard-verified PR (main is protected). The
+    # release-as-staleness gate stays RED until that PR merges, so it cannot be silently skipped.
+    needs: release-please
+    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' || needs.release-please.outputs.rindle_release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Strip release-as for released companion(s) and open cleanup PR
+        # RELEASE_PLEASE_TOKEN (a PAT) is preferred so required CI — incl. the staleness gate —
+        # runs on the cleanup PR; github.token does not chain-trigger other workflows (file header).
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.release-please.outputs.rulestead_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_rulestead
+          fi
+          if [ "${{ needs.release-please.outputs.rindle_release_created }}" = "true" ]; then
+            python3 script/strip_release_as.py crosswake_rindle
+          fi
+          if [ -z "$(git status --porcelain release-please-config.json)" ]; then
+            echo "[crosswake] No stale release-as pin to strip — nothing to do."
+            exit 0
+          fi
+          branch="chore/release-as-cleanup-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add release-please-config.json
+          git commit -m "chore(release): drop one-shot release-as pin after companion release (PROOF-03b)"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore(release): drop stale release-as pin(s) after companion release" \
+            --body "Auto-generated (PROOF-03b). A companion's first release tag now exists, so its one-shot \`release-as\` bootstrap pin is stale — left in place it re-targets the same version forever (Pitfall 6). This PR strips \`release-as\` (and any adjacent \`_TODO_release_as\`) from the released component block(s). The release-as-staleness gate stays RED until this merges; safe to merge once CI is green."
+
+  release-failure-alert:
+    name: Alert on companion publish/proof failure (PROOF-03c)
+    # Fires ONLY when a downstream companion publish or post-publish clean-room proof job actually
+    # FAILED. Skipped jobs (no companion released this run) are not failures, so this stays dormant
+    # on the happy/no-release path — the post-publish proof needs zero human eyeballing when green.
+    # A human is paged (via an auto-opened issue) only when something is genuinely broken.
+    needs:
+      - publish-hex-rulestead
+      - publish-hex-rindle
+      - clean-room-proof-rulestead
+      - clean-room-proof-rindle
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Open tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          {
+            echo "A companion publish or post-publish clean-room proof job failed on the Release Please workflow."
+            echo
+            echo "- Run: ${run_url}"
+            echo "- Commit: ${{ github.sha }}"
+            echo
+            echo "Job results:"
+            echo "- publish-hex-rulestead: ${{ needs.publish-hex-rulestead.result }}"
+            echo "- publish-hex-rindle: ${{ needs.publish-hex-rindle.result }}"
+            echo "- clean-room-proof-rulestead: ${{ needs.clean-room-proof-rulestead.result }}"
+            echo "- clean-room-proof-rindle: ${{ needs.clean-room-proof-rindle.result }}"
+            echo
+            echo "Opened automatically (PROOF-03c) so the post-publish proof needs no human eyeballing on the success path. Investigate the failed job above, then close."
+          } > /tmp/release_alert_body.md
+          gh issue create --repo "$REPO" \
+            --title "[release] companion publish/clean-room proof failed — run ${{ github.run_id }}" \
+            --body-file /tmp/release_alert_body.md

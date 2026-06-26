@@ -1,0 +1,56 @@
+name: Release-As Staleness Gate
+# PROOF-03 (a): fail-closed guard against stale release-please `release-as` pins.
+#
+# release-please uses `"release-as": "X"` as a ONE-SHOT bootstrap override to force a component's
+# first release to land at exactly X. After that first release tag exists, the pin MUST be removed,
+# or every subsequent run re-targets X forever (the version silently freezes — Pitfall 6).
+# This gate turns that silent footgun into a loud RED: it fails if any package's release-as pin
+# equals an already-released version (detected by the `{component}-v{X}` git tag).
+#
+# Parametric across ALL packages (core + every crosswake_* companion) via
+# script/check_release_as_staleness.sh — so sigra/chimeway/threadline inherit 0-human release ops.
+#
+# TOPOLOGY: one job that IS the check. Modeled on contract-drift-gate.yml (validate -> exit 1,
+# no auto-commit). Pairs with the auto-cleanup-PR job in release-please.yml: that PR removes the
+# stale pin on release; this gate stays RED until it merges, so the fix cannot be forgotten.
+#
+# REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
+#   1. Merge this PR.
+#   2. Let merge-blocking-release-as-staleness go GREEN on main at least once.
+#   3. Add it to branch protection (granular endpoint — leaves enforce_admins/reviews untouched):
+#        EP="repos/szTheory/crosswake/branches/main/protection/required_status_checks"
+#        current="$(gh api "$EP")"
+#        desired="$(jq -n --argjson cur "$current" --arg new "merge-blocking-release-as-staleness" \
+#          --argjson app 15368 \
+#          '{ strict: $cur.strict,
+#             checks: (($cur.checks // []) + [{context:$new, app_id:$app}] | unique_by(.context)) }')"
+#        gh api -X PATCH "$EP" --input <(echo "$desired")
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-release-as-staleness:
+    name: merge-blocking-release-as-staleness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history + tags: the guard keys on `{component}-v{X}` release tags as the
+          # authoritative "already released" signal.
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check for stale release-as pins (PROOF-03a)
+        run: ./script/check_release_as_staleness.sh
+      - name: Step summary
+        if: always()
+        run: |
+          echo "release-as staleness gate: see job log for per-component results" >> "$GITHUB_STEP_SUMMARY"
