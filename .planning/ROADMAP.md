@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 127. Launch Orchestration + Banner | v15.0 | 2/2 | Complete | 2026-06-22 |
 | 128. Collateral + "See It Run" Guide | v15.0 | 3/3 | Complete | 2026-06-22 |
 | 129. Stable Companion Contract Surface | v16.0 | 2/2 | Complete    | 2026-06-25 |
-| 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete   | 2026-06-26 |
+| 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 0/TBD | Not started | - |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 0/TBD | Not started | - |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |

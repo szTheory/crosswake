@@ -4,9 +4,9 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 130
 current_phase_name: extraction-mechanics-footgun-guards
-status: verifying
-stopped_at: Completed 130-04-PLAN.md
-last_updated: "2026-06-26T02:28:19.110Z"
+status: ready_to_plan
+stopped_at: Phase 130 complete (5/5) — ready to discuss Phase 131
+last_updated: 2026-06-26T02:33:59.217Z
 last_activity: 2026-06-25
 last_activity_desc: Phase 130 execution started
 progress:
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 130 — extraction-mechanics-footgun-guards
+**Current focus:** Phase 131 — publish pipeline & clean room lane (rulestead)
 
 ## Current Position
 
-Phase: 130 (extraction-mechanics-footgun-guards) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-06-25 -- Phase 130 execution started
+Phase: 131
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-26
 
 > **Planning gate override (Phase 130, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative (`total: 24, covered: 0,
@@ -53,7 +53,7 @@ Phase 129 ───────────────────────�
 
 **Velocity:**
 
-- Total plans completed: 43 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
+- Total plans completed: 48 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
 - Average duration: —
 - Total execution time: —
 
