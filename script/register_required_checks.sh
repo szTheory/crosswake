@@ -10,8 +10,14 @@
 # privileged apply behind the maintainer's own admin-scoped gh auth.
 #
 # Usage (maintainer, from a shell with gh CLI authenticated at repo-admin scope):
-#   script/register_required_checks.sh                 # DRY-RUN by default: print the plan
-#   DRY_RUN=0 script/register_required_checks.sh       # apply the PATCH
+#   script/register_required_checks.sh                 # DRY-RUN, ALL green declared lanes
+#   DRY_RUN=0 script/register_required_checks.sh       # apply (ALL green declared lanes)
+#   DRY_RUN=0 script/register_required_checks.sh "merge-blocking-contract-drift" "..."  # subset
+#
+# Optional positional args = an ALLOWLIST: only these exact contexts (intersected with the
+# discovered merge-blocking lanes) are considered. Use this to require just the lanes you trust
+# as hard gates and leave known-flaky lanes advisory — blanket-requiring every lane can let a
+# flaky proof block all PRs. With no args, all discovered merge-blocking lanes are candidates.
 #
 # Safety properties:
 #   - Green-first preflight per check (mirrors register-contract-gate.sh): only registers a lane
@@ -31,12 +37,29 @@ ACTIONS_APP_ID="${ACTIONS_APP_ID:-15368}"
 DRY_RUN="${DRY_RUN:-1}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
 
-mapfile -t DECLARED < <(python3 script/list_merge_blocking_checks.py)
-if [ "${#DECLARED[@]}" -eq 0 ]; then
+mapfile -t ALL_DECLARED < <(python3 script/list_merge_blocking_checks.py)
+if [ "${#ALL_DECLARED[@]}" -eq 0 ]; then
   echo "[crosswake] No merge-blocking checks declared in .github/workflows — nothing to register."
   exit 0
 fi
-echo "[crosswake] Declared merge-blocking lanes (${#DECLARED[@]}):"
+
+# Optional allowlist (positional args): intersect with discovered lanes. Unknown args are an error
+# (typo guard — never silently register nothing / something unintended).
+if [ "$#" -gt 0 ]; then
+  DECLARED=()
+  for want in "$@"; do
+    if printf '%s\n' "${ALL_DECLARED[@]}" | grep -qxF "$want"; then
+      DECLARED+=("$want")
+    else
+      echo "[crosswake] FAIL: '$want' is not a discovered merge-blocking lane. Run script/list_merge_blocking_checks.py to see valid names." >&2
+      exit 1
+    fi
+  done
+else
+  DECLARED=("${ALL_DECLARED[@]}")
+fi
+
+echo "[crosswake] Candidate merge-blocking lanes (${#DECLARED[@]} of ${#ALL_DECLARED[@]} declared):"
 printf '  - %s\n' "${DECLARED[@]}"
 
 echo ""
