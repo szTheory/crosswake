@@ -2,7 +2,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
   use ExUnit.Case, async: false
 
   alias Crosswake.Companions.Rindle
-  alias Crosswake.Companions.Rulestead
+  alias Crosswake.TestSupport.StubRulesteadAbsentCompanion, as: Rulestead
   alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target
