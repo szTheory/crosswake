@@ -95,7 +95,7 @@ cp packages/crosswake_rulestead/test/support/study_session_live.ex \
 
 ---
 
-## Step 4: companion mix.exs — version + marker + deps (D-19/D-22/D-28/D-29)
+## Step 4: companion mix.exs — version + marker + deps (D-19/D-22/D-28/D-29/D-11/D-13)
 
 Required fields in `packages/crosswake_{companion}/mix.exs`:
 
@@ -105,11 +105,22 @@ Required fields in `packages/crosswake_{companion}/mix.exs`:
 defp deps do
   [
     # D-19: NO runtime: false — core is a RUNTIME dep of the companion
-    {:crosswake, path: "../.."},                       # Phase 130: path dep (dress rehearsal)
-    # {:crosswake, "~> 0.1"},                          # Phase 131: Hex dep pivot (AFTER publish)
+    # D-11/D-13: env-conditional crosswake_dep/0 — see below
+    crosswake_dep(),
     # D-28: optional: true — adopter installs {engine} themselves
     {:{engine_hex_name}, "~> 0.1", optional: true}
   ]
+end
+
+# D-11/D-13: Env-conditional crosswake dep resolver — the publish seam.
+# Phase 130 dress rehearsal: CROSSWAKE_RELEASE unset → path dep (local fidelity).
+# Phase 131+ publish: CROSSWAKE_RELEASE=1 → Hex dep (honest tarball requirement).
+# NOTE: "path:" still appears in this function body after the pivot (Pitfall 4) —
+# this is expected and does NOT represent an active bare path dep in deps/0.
+defp crosswake_dep do
+  if System.get_env("CROSSWAKE_RELEASE") == "1",
+    do: {:crosswake, "~> 0.1"},
+    else: {:crosswake, path: "../.."}
 end
 
 defp package do
@@ -234,16 +245,19 @@ If multiple companions are extracted, extend `companions.test` to chain:
 ## Step 10: Run verify script (D-24)
 
 ```bash
-# From repo root:
-bash script/verify_companion_package.sh crosswake_{companion}
+# From repo root (Phase 131+: CROSSWAKE_RELEASE=1 required — activates Hex dep in tarball):
+CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_{companion}
 ```
 
-Expected Phase 130/132 dress-rehearsal output:
-- Step 1: files: allowlist assertion (test/ absent, lib/ source present)
-- Step 2: SKIPPED (path: dep present — Phase 131 pivots to Hex dep)
+Expected Phase 131+ output (env-conditional dep pivot in place):
+- Step 1: hex.build --unpack tarball inspection (test/ absent, lib/ source present)
+- Step 2: dep-presence gate (crosswake present in hex_metadata.config)
 - Step 3: mix compile --warnings-as-errors → clean
 
-After Phase 131 path: → Hex pivot, re-run to get full Step 1 + Step 2 verification.
+Phase 130 dress-rehearsal (crosswake_dep/0 not yet in place):
+- The verify script will error if run without CROSSWAKE_RELEASE=1 (path: dep causes hex.build to fail).
+- For Phase 130 only, use the Step 4 companion mix.exs with `{:crosswake, path: "../.."}` directly.
+- Once crosswake_dep/0 is in place (Phase 131), always run with CROSSWAKE_RELEASE=1.
 
 ---
 
@@ -264,48 +278,132 @@ until next EXTRACT-03 test plan runs assert_no_static_refs!), COMPAT-01 (fail-cl
 
 ---
 
-## Step 12: DON'T touch release-please
+## Step 12: Register the release-please component (Phase 131+)
 
-The following files must NOT be modified in Phase 130/132 (dress rehearsal):
+**Phase 130 (dress rehearsal):** Do NOT touch the following files — leave them as-is:
 - `.release-please-manifest.json`
 - `release-please-config.json`
 - `.github/workflows/release-please.yml`
 
 The companion package version (`0.1.0`) is standalone. The `# x-release-please-version`
-marker in the companion `mix.exs` is placed for Phase 131 when the component is registered.
+marker in the companion `mix.exs` is placed in Step 4 above for Phase 131 when the component
+is registered here.
+
+**Phase 131+ (first Hex publish for this companion):**
+
+Perform these mechanical steps to wire the companion into the release pipeline.
+Apply by substituting `{companion}` = your companion name (e.g. `rulestead`, `rindle`):
+
+### 12a. Add component entry to `release-please-config.json`
+
+Add under `"packages"` (do NOT add `"crosswake_{companion}"` to `linked-versions` components):
+
+```json
+"packages/crosswake_{companion}": {
+  "component": "crosswake_{companion}",
+  "release-type": "elixir",
+  "separate-pull-requests": true,
+  "release-as": "0.1.0",
+  "extra-files": ["packages/crosswake_{companion}/mix.exs"],
+  "changelog-sections": [
+    { "type": "feat",     "section": "Features" },
+    { "type": "fix",      "section": "Bug Fixes" },
+    { "type": "perf",     "section": "Performance Improvements" },
+    { "type": "deps",     "section": "Dependencies" },
+    { "type": "chore",    "section": "Miscellaneous",          "hidden": true },
+    { "type": "docs",     "section": "Documentation",          "hidden": true },
+    { "type": "test",     "section": "Tests",                  "hidden": true },
+    { "type": "ci",       "section": "Continuous Integration", "hidden": true },
+    { "type": "refactor", "section": "Refactoring",            "hidden": true },
+    { "type": "build",    "section": "Build System",           "hidden": true }
+  ]
+}
+```
+
+### 12b. Add manifest baseline to `.release-please-manifest.json`
+
+```json
+"packages/crosswake_{companion}": "0.1.0"
+```
+
+### 12c. Add output aliases to `.github/workflows/release-please.yml` `outputs:` block
+
+```yaml
+# Companion: crosswake_{companion}
+# release-please-action v4 path outputs use <path>--<name> (double-dash) format.
+# GitHub Actions if: cannot index slash-containing keys; alias here for dot-notation downstream (D-08).
+{companion}_release_created: ${{ steps.release.outputs['packages/crosswake_{companion}--release_created'] }}
+{companion}_tag_name: ${{ steps.release.outputs['packages/crosswake_{companion}--tag_name'] }}
+{companion}_version: ${{ steps.release.outputs['packages/crosswake_{companion}--version'] }}
+```
+
+### 12d. Add `publish-hex-{companion}` job to `release-please.yml`
+
+Mirror the `publish-hex` core job shape (steps: checkout at tag → setup-beam → cache → hex+rebar →
+deps.get → compile → version grep → mix test → dry-run → publish → poll Hex).
+Key differences from core:
+- `if: needs.release-please.outputs.{companion}_release_created == 'true'`
+- `ref: needs.release-please.outputs.{companion}_tag_name`
+- `working-directory: packages/crosswake_{companion}` on all mix steps
+- `VERSION: needs.release-please.outputs.{companion}_version`
+- Version grep target: `packages/crosswake_{companion}/mix.exs`
+- Test step: `mix test` (no `--exclude requires_example_host` — that is a core-only tag)
+- `CROSSWAKE_RELEASE: "1"` env on all mix steps (activates Hex dep in tarball)
+- Poll URL: `hex.pm/api/packages/crosswake_{companion}/releases/$VERSION`
+
+### 12e. Add `clean-room-proof-{companion}` job to `release-please.yml`
+
+`needs: [release-please, publish-hex-{companion}]`
+Run `bash script/verify_companion_cleanroom.sh crosswake_{companion} $VERSION` (Plan 02/03 for rulestead).
+Pattern mirrors existing `clean-room-proof-ios`/`-android` jobs.
+
+### 12f. Remove `release-as` after the first Release PR merges
+
+After `crosswake_{companion}-v0.1.0` Release PR is merged:
+- Remove `"release-as": "0.1.0"` from the component config (or set to `""`).
+- Otherwise subsequent runs continue targeting 0.1.0 even after it is already published.
 
 ---
 
-## Phase 131 lock pivot (deferred)
+## crosswake_dep/0 pivot recap (D-11/D-13)
 
-When Phase 131 promotes the first companion to Hex:
+The env-conditional resolver in Step 4 above handles the path: → Hex dep pivot automatically.
+No manual dep-string editing needed when promoting from dress rehearsal to publish:
 
-1. Change `{:crosswake, path: "../.."}` → `{:crosswake, "~> 0.1"}` in the companion mix.exs
-2. Run `mix deps.get` to re-lock with the Hex dep
-3. Run `mix hex.publish --dry-run` (Step 2 of verify script now active)
-4. Register the component in `release-please-config.json` and `.release-please-manifest.json`
-5. Run `bash script/verify_companion_package.sh crosswake_rulestead` — all 3 steps should pass
+- Dress rehearsal (Phase 130): `CROSSWAKE_RELEASE` unset → `crosswake_dep()` returns path dep
+- Publish (Phase 131+): `CROSSWAKE_RELEASE=1` set in CI job env → returns Hex dep `{:crosswake, "~> 0.1"}`
+- The committed `mix.lock` retains the path dep entry (still valid for local dev)
+- `mix deps.get` in the publish job resolves the Hex dep fresh
 
 ---
 
 ## Checklist Summary
 
+**Extraction (Steps 1–11 — Phase 130 dress rehearsal):**
 - [ ] Adapter source moved; module name preserved; `@compile {:no_warn_undefined, Engine}` added (D-29)
 - [ ] Config-indirection `flag_source/0` in place; no test-module in lib/ (D-31)
 - [ ] MockFlagSource/equivalent moved to companion `test/support/` (verbatim)
 - [ ] StudySessionLive stub copied to companion `test/support/` (D-23)
 - [ ] Engine-present stub in `test/engine_present/` (D-33)
-- [ ] Companion `mix.exs`: version + marker, `{:crosswake, path:}` NO `runtime: false`, `optional: true` engine dep (D-19/D-22/D-28)
+- [ ] Companion `mix.exs`: version + marker, `crosswake_dep()` call, `optional: true` engine dep (D-19/D-22/D-28/D-11)
+- [ ] `crosswake_dep/0` private function with env-conditional (CROSSWAKE_RELEASE=1 → Hex, else path:) (D-11/D-13)
 - [ ] `config/config.exs` wires test flag_source (D-31)
 - [ ] `mix.lock` committed after `mix deps.get` (D-24)
 - [ ] `MIX_INCLUDE_{COMPANION}` block deleted from core `mix.exs` (D-21)
 - [ ] Root aliases `companions.test` + `verify` wired in core `mix.exs` (D-26)
-- [ ] `bash script/verify_companion_package.sh crosswake_{companion}` passes (D-24)
+- [ ] `CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_{companion}` passes (D-24)
 - [ ] Guard tests green: EXTRACT-01, COMPAT-01, companion lane (D-25)
-- [ ] release-please config/manifest UNTOUCHED (D-22)
+
+**Release-please registration (Step 12 — Phase 131+ only):**
+- [ ] `release-please-config.json`: `packages/crosswake_{companion}` entry with `release-as: "0.1.0"`, NOT in `linked-versions` (D-01/D-04)
+- [ ] `.release-please-manifest.json`: `"packages/crosswake_{companion}": "0.1.0"` added (D-03)
+- [ ] `release-please.yml` `outputs:` block: three `{companion}_*` aliases with double-dash format (D-08)
+- [ ] `publish-hex-{companion}` job added with `CROSSWAKE_RELEASE=1` env on all mix steps (D-06/D-07)
+- [ ] `clean-room-proof-{companion}` job added, needs publish job (PROOF-01/PROOF-02)
+- [ ] `release-as` removed from config after first Release PR merges (Pitfall 6)
 
 ---
 
-*Recipe version: Phase 130 (rulestead extraction proof)*
-*Proven on: crosswake_rulestead (Phase 130)*
+*Recipe version: Phase 131 (rulestead publish pipeline + crosswake_dep/0 pivot)*
+*Proven on: crosswake_rulestead (Phase 130 extraction + Phase 131 publish wiring)*
 *Next: crosswake_rindle (Phase 132)*
