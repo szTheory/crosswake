@@ -61,6 +61,10 @@ Phase 129 ───────────────────────�
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 135 added (2026-06-26): CI-Ops Hardening — Release-As Automation (PROOF-03). Shifts the two post-publish companion-release follow-ups (one-shot `release-as` removal, clean-room-proof confirmation) left to fail-closed CI — parametric across all `crosswake_*` companions, no recurring human step. Already implemented on branch `feat/proof-03-release-as-ci-automation`. Origin: the Phase 132 verify-work challenge — both items were timing-gated (CI-only/post-publish), not human-judgment gates.
+
 ### v16.0 Roadmap Decisions (2026-06-25, locked)
 
 - Six phases derived from requirement categories in the approved plan order: SEAM (129) → EXTRACT-mechanics (130) → EXTRACT-publish/PROOF rulestead (131) → EXTRACT-rindle/COMPAT (132) → TELEM (133) → LIFE (134).

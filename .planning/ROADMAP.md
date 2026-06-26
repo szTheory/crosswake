@@ -254,6 +254,21 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Plans**: TBD
 
+### Phase 135: CI-Ops Hardening — Release-As Automation (PROOF-03)
+
+**Goal**: The two post-publish companion-release follow-ups (one-shot `release-as` removal and clean-room-proof confirmation) are CI-enforced with no recurring human step, parametric across every `crosswake_*` companion; the only intentional human gate is merging the Release PR (the irreversible `hex.publish` go/no-go)
+**Depends on**: Phase 132
+**Requirements**: PROOF-03
+**Status**: Implemented on branch `feat/proof-03-release-as-ci-automation` (pending merge) — this phase formalizes and tracks it
+**Success Criteria** (what must be TRUE):
+
+  1. A fail-closed guard (`merge-blocking-release-as-staleness` / `script/check_release_as_staleness.sh`) turns the build RED if any package's `release-as` pin equals an already-released version (detected by the `{component}-v{X}` git tag), and GREEN once the pin is removed — proven RED→GREEN
+  2. On a companion release, a `release-as-cleanup` job runs `script/strip_release_as.py` and auto-opens a minimal-diff, idempotent cleanup PR removing `release-as` + `_TODO_release_as`; a human only merges it (`main` is protected)
+  3. A `release-failure-alert` job opens a tracking issue if any companion publish or clean-room-proof job fails, and stays dormant on the green/no-release path
+  4. `script/extract_companion.md` Step 12f references the automation (not a manual runbook), so sigra/chimeway/threadline inherit 0-human release ops
+
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -294,3 +309,4 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
 | 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
+| 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |
