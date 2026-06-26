@@ -186,7 +186,10 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `script/verify_companion_cleanroom.sh` creates a throwaway mix project outside the monorepo, installs the published `crosswake` + `crosswake_rulestead`, compiles `--warnings-as-errors`, registers the companion, runs its tests, and runs a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling before the install attempt
   4. No `hex.publish` for rulestead runs until the `--dry-run` gate and the clean-room lane are both green; `crosswake_rulestead` is live and resolvable on Hex at the end of this phase
 
-**Plans**: TBD
+**Plans**: 3 plans (3 waves)
+- [ ] 131-01-PLAN.md — release-please component wiring + env-conditional crosswake_dep/0 resolver + verify_companion_package.sh Step 2 activation (EXTRACT-05)
+- [ ] 131-02-PLAN.md — gated publish-hex-rulestead job + verify_companion_cleanroom.sh (EXTRACT-06, PROOF-01)
+- [ ] 131-03-PLAN.md — post-publish clean-room-proof-rulestead CI job + release-as removal runbook (PROOF-02)
 
 ### Phase 132: Generalization Proof (rindle) + Compat Matrix
 

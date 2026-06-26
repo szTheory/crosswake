@@ -1,8 +1,8 @@
 ---
 phase: 131
 slug: publish-pipeline-clean-room-lane-rulestead
-status: draft
-nyquist_compliant: false
+status: planned
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-26
 ---
@@ -42,7 +42,13 @@ created: 2026-06-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| {N}-01-01 | 01 | 1 | EXTRACT-05 | — | N/A | config | `npx release-please ... --dry-run` | ❌ W0 | ⬜ pending |
+| 131-01-01 | 01 | 1 | EXTRACT-05 | T-131-05 | resolver emits Hex dep only under CROSSWAKE_RELEASE=1 | source | `cd packages/crosswake_rulestead && mix compile --warnings-as-errors && grep -q 'defp crosswake_dep' mix.exs` | ✅ | ⬜ pending |
+| 131-01-02 | 01 | 1 | EXTRACT-05 | T-131-02/03 | companion NOT in linked-versions; outputs expose only public release metadata | config | `python3` assert config+manifest+aliases (see plan verify) | ✅ | ⬜ pending |
+| 131-01-03 | 01 | 1 | EXTRACT-05 | T-131-01 | tarball dep-presence grep on hex_metadata.config | script | `CROSSWAKE_RELEASE=1 bash script/verify_companion_package.sh crosswake_rulestead` | ✅ | ⬜ pending |
+| 131-02-01 | 02 | 2 | EXTRACT-06 | T-131-04/05/06 | gate on rulestead_release_created; HEX_API_KEY no-echo; CROSSWAKE_RELEASE=1 | config (CI) | `python3+yaml` assert publish-hex-rulestead (see plan verify) | ✅ | ⬜ pending |
+| 131-02-02 | 02 | 2 | PROOF-01 | T-131-07 | $VERSION semver-validated before curl; public-seam smoke only | script | `bash -n script/verify_companion_cleanroom.sh` + grep gates **(full run Manual-Only / CI-only — post-publish)** | ✅ | ⬜ pending |
+| 131-03-01 | 03 | 3 | PROOF-02 | T-131-08 | needs:[release-please, publish-hex-rulestead] enforces post-publish ordering | config (CI) | `python3+yaml` assert clean-room-proof-rulestead needs graph | ✅ | ⬜ pending |
+| 131-03-02 | 03 | 3 | PROOF-02 | T-131-09 | release-as left intact pre-cut; removal runbook documented | doc | `test -f 131-RELEASE-AS-REMOVAL.md` + release-as-intact assert | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
