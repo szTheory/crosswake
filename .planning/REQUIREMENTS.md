@@ -1,4 +1,4 @@
-# Requirements: Crosswake v16.0 — Companion Extraction & Package-Family Discipline
+# Requirements: Crosswake — v16.0 Companion Extraction & Package-Family Discipline
 
 **Defined:** 2026-06-25
 **Core Value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
