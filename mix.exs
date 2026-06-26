@@ -114,6 +114,7 @@ defmodule Crosswake.MixProject do
         "guides/commerce.md",
         "guides/companions.md",
         "guides/companion_contract.md",
+        "guides/companion_compatibility.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
         "guides/android_uat.md",
@@ -162,7 +163,8 @@ defmodule Crosswake.MixProject do
           "guides/android_uat.md"
         ],
         "Extension Authors": [
-          "guides/companion_contract.md"
+          "guides/companion_contract.md",
+          "guides/companion_compatibility.md"
         ],
         "Advanced/Companions": [
           "guides/companions.md",

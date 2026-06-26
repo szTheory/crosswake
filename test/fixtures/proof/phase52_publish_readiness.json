@@ -570,6 +570,7 @@
           "guides/commerce.md",
           "guides/companions.md",
           "guides/companion_contract.md",
+          "guides/companion_compatibility.md",
           "guides/compatibility.md",
           "guides/native_shell.md",
           "guides/android_uat.md",
@@ -720,13 +721,14 @@
           "gate_denied",
           "kill_switch_active",
           "step_up_required",
-          "notification_open_denied"
+          "notification_open_denied",
+          "dependency_missing"
         ],
         "detected_drift_errors": [],
         "docs_reference": "guides/compatibility.md"
       },
       "docs_reference": "guides/compatibility.md",
-      "hint": "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. Denial codes that may surface if you skip a rebuild step: compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied. See guides/compatibility.md for the full rebuild decision table.",
+      "hint": "Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. Denial codes that may surface if you skip a rebuild step: compatibility_mismatch, undeclared_capability, unavailable_capability, commerce_corridor, origin_denied, inactive_route, external_entry_denied, pack_incompatible, gate_denied, kill_switch_active, step_up_required, notification_open_denied, dependency_missing. See guides/compatibility.md for the full rebuild decision table.",
       "id": "compat.rebuild_guidance",
       "message": "Compatibility rebuild guidance: no committed-surface drift detected. Doctor cannot observe a live shell's denial — this is guidance, not a detected failure. If a rebuild is needed, run: mix crosswake.contract.gen. Then: 1) Regenerate shell via mix crosswake.gen.shell 2) Rebuild native app 3) Resubmit to App Store / Play Store 4) Coordinated deploy with updated Hex package.",
       "proof_class": "advisory",
