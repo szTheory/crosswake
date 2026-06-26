@@ -218,6 +218,20 @@ defmodule CleanRoom.SmokeTest do
   test "enabled?/1 respects config — true when enabled: true" do
     assert ${COMPANION_MODULE_SUFFIX}.enabled?(%{enabled: true})
   end
+$(if [ "$PACKAGE" = "crosswake_rindle" ]; then cat <<'CANARYEOF'
+
+  # rindle-only Contracts canary (D-18): confirms the Contracts sub-module shipped in
+  # the tarball. rindle owns Crosswake.Companions.Rindle.Contracts (unlike rulestead,
+  # which had no sub-module to verify). Single canary, not a full Contracts suite (D-17).
+  test "Rindle.Contracts.media_state_vocabulary/0 returns a non-empty list (canary: Contracts shipped)" do
+    vocab = Crosswake.Companions.Rindle.Contracts.media_state_vocabulary()
+
+    assert is_list(vocab) and vocab != [],
+           "[crosswake] Rindle.Contracts.media_state_vocabulary/0 returned empty — " <>
+             "the Crosswake.Companions.Rindle.Contracts module may be missing from the tarball"
+  end
+CANARYEOF
+fi)
 end
 SMOKEEOF
 
