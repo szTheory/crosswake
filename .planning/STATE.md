@@ -2,10 +2,12 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: planning
+current_phase: 131
+status: executing
 stopped_at: Phase 131 context gathered
-last_updated: "2026-06-26T02:57:01.074Z"
+last_updated: "2026-06-26T08:37:38.433Z"
 last_activity: 2026-06-26
+last_activity_desc: Phase 131 planning complete
 progress:
   total_phases: 6
   completed_phases: 2
@@ -27,17 +29,18 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 131
 Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-26
+Status: Ready to execute
+Last activity: 2026-06-26 — Phase 131 planning complete
 
-> **Planning gate override (Phase 130, re-surface at verify-phase):** The blocking
-> `decision-coverage-plan` gate returned a false-negative (`total: 24, covered: 0,
-> uncovered: []`) — the known parser limitation on long-bold / embedded-colon `**D-NN: …**`
-> CONTEXT bullets (e.g. D-04/D-06/D-14), which it silently drops as "unparseable decision
-> bullet" and then matches 0/N. Operator proceeded: the independent gsd-plan-checker
-> verified Dimension 7 (Context Compliance) PASS with all 33 locked decisions D-01..D-33
-> explicitly cited as covered across the 5 plans, plus the 6 phase-specific footgun checks.
-> No real coverage gap — the gate is a tooling false-positive, not a dropped decision.
+> **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
+> `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
+> long-bold / embedded-colon `**D-NN: …**` CONTEXT bullets, which it silently drops as
+> "unparseable decision bullet" and then matches 0/N.
+> - Phase 130: `total: 24, covered: 0`; checker Dimension 7 PASS, all 33 decisions D-01..D-33 cited.
+> - Phase 131 (2026-06-26): `covered: 0/13`; the independent gsd-plan-checker verified Dimension 7
+>   (Context Compliance) PASS with all 20 locked decisions D-01..D-20 explicitly cited across the
+>   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
+>   the gate is a tooling false-positive, not a dropped decision.
 
 Progress: [█████░░░░░] 50%
 
