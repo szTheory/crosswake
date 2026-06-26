@@ -4,9 +4,9 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 132
 current_phase_name: rindle
-status: verifying
+status: executing
 stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T14:51:51.588Z"
+last_updated: "2026-06-26T16:49:54.190Z"
 last_activity: 2026-06-26
 last_activity_desc: Phase 131 complete, transitioned to Phase 132
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 132 — Generalization Proof (rindle) + Compat Matrix
 Plan: Not started
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-06-26 — Phase 131 complete, transitioned to Phase 132
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
@@ -168,6 +168,7 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 future | Remaining companion extraction: sigra (most entangled), chimeway (depends on sigra AuthContext), threadline (consumes other companions — build last) | Deferred — fast follow-on once the pattern is proven on 2 companions (rulestead + rindle) | v16.0 scope |
 | v16.0 future | SYNCP-01: offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package) | Deferred behind companion packaging wedge | v16.0 scope |
 | v16.0 future | SEED-002: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam | Deferred until package-family pattern is proven | v16.0 scope |
+| Phase 132 plan | Decision-coverage gate (13a) override: reported 0/10 — KNOWN parser false-negative on multi-line `**D-NN: … — …**` bold/embedded-colon CONTEXT bullets. Cross-checked GREEN: plan-checker Dimension 7 PASS (all 19 D-01..D-19 addressed) + plans literally cite D-01..D-19. Substance covered; gate artifact only. | Proceeded with override — verify-phase to re-confirm | Phase 132 plan |
 | Phase 129 P01 | 1m | 1 tasks | 1 files |
 | Phase 129 P02 | 15m | - tasks | - files |
 | Phase 129 P02 | 15m | - tasks | - files |
