@@ -4,16 +4,16 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 132
 current_phase_name: generalization-proof-rindle-compat-matrix
-status: verifying
-stopped_at: Phase 132 context gathered
-last_updated: "2026-06-26T17:35:19.414Z"
+status: phase_complete
+stopped_at: Phase 132 complete — verification passed (items 2&3 transferred to Phase 135/PROOF-03, PR #36)
+last_updated: "2026-06-26T20:32:16Z"
 last_activity: 2026-06-26
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 4
   total_plans: 14
   completed_plans: 14
-  percent: 67
+  percent: 57
 ---
 
 # Project State: Crosswake
@@ -23,13 +23,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 132 — generalization-proof-rindle-compat-matrix
+**Current focus:** Phase 132 COMPLETE — verification passed; Phase 135 (PROOF-03 CI-ops) in-flight via PR #36
 
 ## Current Position
 
-Phase: 132 (generalization-proof-rindle-compat-matrix) — EXECUTING
+Phase: 132 (generalization-proof-rindle-compat-matrix) — COMPLETE (verification passed 2026-06-26)
 Plan: 4 of 4
-Status: Phase complete — ready for verification
+Status: Phase verified. Residual CI-ops items (release-as removal, post-publish proof confirmation) transferred to Phase 135 (PROOF-03), implemented on branch feat/proof-03-release-as-ci-automation (PR #36). Next: plan 133/134, or merge + plan 135.
 Last activity: 2026-06-26
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking

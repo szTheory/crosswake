@@ -1,7 +1,8 @@
 ---
 phase: 132-generalization-proof-rindle-compat-matrix
 verified: 2026-06-26T00:00:00Z
-status: human_needed
+status: passed
+closeout: "2026-06-26: human item 1 (compat-doc prose) resolved this session (commit 6b26fd1). Items 2&3 (release-as removal, post-publish clean-room confirmation) were timing-gated, not judgment-gated — transferred to PROOF-03 / Phase 135 as fail-closed CI (staleness guard + auto-cleanup-PR + failure alert; implemented on branch feat/proof-03-release-as-ci-automation, PR #36). No remaining human-judgment gate at the 132 level; goal verified 13/13."
 score: 13/13 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
@@ -23,7 +24,7 @@ human_verification:
 
 **Phase Goal:** The identical extraction recipe runs on `rindle` (including its owned `Contracts.MediaObject` and `Reconciliation`) with no rindle-specific branches added to core; both companions live on Hex with a documented, drift-tested cross-package compatibility matrix.
 **Verified:** 2026-06-26
-**Status:** human_needed
+**Status:** passed (closed out 2026-06-26 — see frontmatter `closeout`; item 1 fixed, items 2&3 transferred to PROOF-03/Phase 135)
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -128,7 +129,7 @@ See frontmatter `human_verification`. Summary: (1) compat-doc engine-pinning pro
 
 ### Gaps Summary
 
-No gaps block goal achievement. Every success criterion and must-have is verified in the codebase with behavioral evidence (drift detection proven RED/GREEN, guard + seam + companion lanes run green, verify script ran live). The phase status is `human_needed` (not `passed`) solely because three items legitimately require human attention — one doc-prose accuracy judgment and two CI-only/post-publish actions intrinsic to the milestone's no-publish posture. None is a code defect.
+No gaps block goal achievement. Every success criterion and must-have is verified in the codebase with behavioral evidence (drift detection proven RED/GREEN, guard + seam + companion lanes run green, verify script ran live). The phase was initially `human_needed` for three items; **closed out 2026-06-26 to `passed`**: item 1 (doc-prose accuracy) was fixed this session (commit 6b26fd1); items 2&3 were timing-gated CI-only actions (not judgment calls) and are transferred to **PROOF-03 / Phase 135** as fail-closed automation (staleness guard + auto-cleanup-PR + failure alert; PR #36). None was a code defect.
 
 ---
 
