@@ -13,6 +13,7 @@ defmodule Crosswake.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       description: description(),
       source_url: @source_url,
       homepage_url: @source_url,
@@ -36,7 +37,11 @@ defmodule Crosswake.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
-    base = [
+    # D-21: No companion-conditional dep blocks. Core names no companion in any env.
+    # The conditional env-hack blocks were deleted in Phase 130 — companions now live
+    # as standalone path: deps (crosswake_rulestead in Phase 130, crosswake_rindle in
+    # Phase 132). Their dependencies are declared in the companion's own mix.exs.
+    [
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
       {:phoenix, "~> 1.8"},
@@ -44,22 +49,19 @@ defmodule Crosswake.MixProject do
       {:telemetry, "~> 1.0"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
+  end
 
-    rulestead =
-      if System.get_env("MIX_INCLUDE_RULESTEAD") == "1" do
-        [{:rulestead, "~> 0.1.6"}]
-      else
-        []
-      end
-
-    rindle =
-      if System.get_env("MIX_INCLUDE_RINDLE") == "1" do
-        [{:rindle, "~> 0.1"}]
-      else
-        []
-      end
-
-    base ++ rulestead ++ rindle
+  # D-26: Root aliases so contributors never need a bare `cd`.
+  # mix companions.test — runs the companion lane hermetically (engine-ABSENT default).
+  # mix verify — runs companions.test + core hermetic test lane (excludes advisory tags).
+  defp aliases do
+    [
+      "companions.test": ["cmd --cd packages/crosswake_rulestead mix test"],
+      verify: [
+        "companions.test",
+        "test --exclude requires_example_host --exclude advisory_only"
+      ]
+    ]
   end
 
   defp description do

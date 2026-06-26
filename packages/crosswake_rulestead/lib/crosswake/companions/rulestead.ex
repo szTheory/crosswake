@@ -12,6 +12,20 @@ defmodule Crosswake.Companions.Rulestead do
   alias Crosswake.Compatibility.Finding
 
   # ---------------------------------------------------------------------------
+  # flag_source/0 — config-indirection (D-31)
+  # lib/ references this indirection symbol, never the test MockFlagSource module.
+  # Application.compile_env/3 is evaluated once at compile time, baking the
+  # configured module (or nil) into the .beam. In :test env, config.exs wires
+  # flag_source: MockFlagSource. In production (nil default) the adaptor ships
+  # with no flag-source configured — honest "no flag source" state, already
+  # fail-closed-gated upstream by validate_dependency/0 which fires first.
+  # ---------------------------------------------------------------------------
+
+  @flag_source Application.compile_env(:crosswake, [:rulestead, :flag_source], nil)
+
+  defp flag_source, do: @flag_source
+
+  # ---------------------------------------------------------------------------
   # companion_id/0
   # ---------------------------------------------------------------------------
 
@@ -26,18 +40,6 @@ defmodule Crosswake.Companions.Rulestead do
   @impl true
   @doc false
   def enabled?(config), do: Map.get(config, :enabled, false)
-
-  # ---------------------------------------------------------------------------
-  # flag_source/0 — config-indirection (D-31)
-  # lib/ references this indirection symbol, never the test MockFlagSource module.
-  # Shipped default nil = honest "no flag source configured" state; already
-  # fail-closed-gated upstream by validate_dependency/0.
-  # Wire in :test config: config :crosswake, :rulestead, flag_source: MockFlagSource
-  # ---------------------------------------------------------------------------
-
-  defp flag_source do
-    Application.compile_env(:crosswake, [:rulestead, :flag_source], nil)
-  end
 
   # ---------------------------------------------------------------------------
   # route_gated?/2

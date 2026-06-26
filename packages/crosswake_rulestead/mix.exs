@@ -13,6 +13,7 @@ defmodule CrosswakeRulestead.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       description: description(),
       source_url: @source_url,
       homepage_url: @source_url,
@@ -27,7 +28,19 @@ defmodule CrosswakeRulestead.MixProject do
   end
 
   # Mirror core's pattern (mix.exs lines 35-36).
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  # When ENGINE_PRESENT_LANE=1 is set, also compile the engine_present/ stub dir.
+  # This appends the fake top-level Rulestead stub (D-33) without compile-baking
+  # engine presence. The advisory lane alias sets this env var before running tests.
+  defp elixirc_paths(:test) do
+    base = ["lib", "test/support"]
+
+    if System.get_env("ENGINE_PRESENT_LANE") == "1" do
+      base ++ ["test/engine_present"]
+    else
+      base
+    end
+  end
+
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
@@ -38,6 +51,19 @@ defmodule CrosswakeRulestead.MixProject do
       # D-28: optional: true — Swoosh gold-standard optional-dep idiom.
       # The engine is optional; absence is handled via Code.ensure_loaded? + @compile {:no_warn_undefined}.
       {:rulestead, "~> 0.1", optional: true}
+    ]
+  end
+
+  # D-26 (package-level): engine-present advisory lane alias.
+  # Default mix test = engine-ABSENT (hermetic, merge-blocking).
+  # Advisory lane: mix engine-present.test — sets ENGINE_PRESENT_LANE=1 and runs
+  # mix clean first to avoid a stale stub .beam leaking into the absent lane (D-33).
+  defp aliases do
+    [
+      "engine-present.test": [
+        "clean",
+        "cmd ENGINE_PRESENT_LANE=1 mix test --only engine_present"
+      ]
     ]
   end
 
