@@ -39,6 +39,12 @@ defmodule CrosswakeExample.MixProject do
   defp deps do
     [
       {:crosswake, path: "../.."},
+      # Companion packages this example adopts (extracted in Phases 130/132). The example
+      # uses the Rulestead gate (config.exs) and the Rindle media seam (lib/.../media/*),
+      # so it declares both as ordinary path deps — exactly how a real adopter would add
+      # `{:crosswake_rulestead, "~> 0.1"}` / `{:crosswake_rindle, "~> 0.1"}` from Hex.
+      {:crosswake_rulestead, path: "../../packages/crosswake_rulestead"},
+      {:crosswake_rindle, path: "../../packages/crosswake_rindle"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},

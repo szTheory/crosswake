@@ -28,15 +28,21 @@ config :crosswake, :companions, [Crosswake.Companions.Rulestead]
 # Enable the Rulestead companion for this host. This config map is passed to
 # Crosswake.Companions.Rulestead.enabled?/1 — defaults to false (fail-closed)
 # when not configured, so this key must be present to activate the companion.
+config :crosswake, :rulestead, %{enabled: true}
+
+# Wire the host's flag source: the Rulestead adapter resolves this at runtime via
+# Application.get_env(:crosswake, :rulestead_flag_source) and calls get_flag/1. The
+# adapter fail-opens the gate if this is unset, so an adopter that wants gating must
+# point it at a running flag-source process (here the example's own — see application.ex).
 #
 # Local dev workflow — drive gate states via IEx:
-#   alias Crosswake.Companions.Rulestead.MockFlagSource
-#   MockFlagSource.set_flag(:rulestead, :gated)          # -> :gate_denied denial
-#   MockFlagSource.set_flag(:rulestead, {:rolling_out, 50})  # -> :gate_denied (rolling out)
-#   MockFlagSource.set_flag(:rulestead, :killed)         # -> :kill_switch_active denial
-#   MockFlagSource.delete_flag(:rulestead)               # clear flag
-#   MockFlagSource.reset()                               # clear all flags
+#   alias CrosswakeExample.RulesteadFlagSource, as: Flags
+#   Flags.set_flag(:rulestead, :gated)              # -> :gate_denied denial
+#   Flags.set_flag(:rulestead, {:rolling_out, 50})  # -> :gate_denied (rolling out)
+#   Flags.set_flag(:rulestead, :killed)             # -> :kill_switch_active denial
+#   Flags.delete_flag(:rulestead)                   # clear flag
+#   Flags.reset()                                   # clear all flags
 # Then visit /gating/beta-feature to observe the gate response across states.
-config :crosswake, :rulestead, %{enabled: true}
+config :crosswake, :rulestead_flag_source, CrosswakeExample.RulesteadFlagSource
 
 import_config "#{config_env()}.exs"
