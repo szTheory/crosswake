@@ -59,7 +59,11 @@ defmodule Crosswake.MixProject do
   defp aliases do
     [
       "companions.test": [
+        # deps.get each package first so the alias is self-sufficient on a fresh checkout
+        # (the lanes only fetch one package's deps; `mix test` does not auto-fetch).
+        "cmd --cd packages/crosswake_rulestead mix deps.get",
         "cmd --cd packages/crosswake_rulestead mix test",
+        "cmd --cd packages/crosswake_rindle mix deps.get",
         "cmd --cd packages/crosswake_rindle mix test"
       ],
       verify: [
