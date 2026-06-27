@@ -66,13 +66,16 @@ echo ""
 echo "[crosswake] Fetching live required_status_checks for ${REPO}@${BRANCH} ..."
 current="$(gh api "${EP}")"
 
-# Up to 100 check-runs for the branch HEAD (the repo has ~70 lanes; default page size is 30).
-checkruns="$(gh api "repos/${REPO}/commits/${BRANCH}/check-runs?per_page=100")"
+# Names of all currently-successful check-runs on the branch HEAD. MUST paginate: this repo
+# has ~70 lanes and re-runs push the total over the 100/page cap, so a single page silently
+# drops green lanes onto page 2 → they'd be wrongly skipped. --paginate applies the --jq filter
+# per page and concatenates, so this collects successes across every page.
+green_names="$(gh api --paginate "repos/${REPO}/commits/${BRANCH}/check-runs?per_page=100" \
+                 --jq '.check_runs[] | select(.conclusion=="success") | .name' | sort -u)"
 
 green=()
 for c in "${DECLARED[@]}"; do
-  if printf '%s' "$checkruns" | jq -e --arg n "$c" \
-       '.check_runs | any(.name==$n and .conclusion=="success")' >/dev/null 2>&1; then
+  if printf '%s\n' "$green_names" | grep -qxF "$c"; then
     green+=("$c")
   else
     echo "[crosswake] SKIP (no green run on ${BRANCH} yet — register after it passes once): $c"
