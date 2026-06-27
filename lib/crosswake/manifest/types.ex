@@ -206,7 +206,27 @@ defmodule Crosswake.Manifest.Types do
   end
 
   defmodule RouteEntry do
-    @moduledoc false
+    @moduledoc """
+    Typed route definition passed as the first argument to `route_gated?/2`.
+
+    Companions receive this struct to inspect route metadata when evaluating
+    gate policy. Read-only from the companion's perspective — never construct
+    or modify a `RouteEntry` in companion code.
+
+    Only `RouteEntry.t()` is part of the companion contract surface. All other
+    nested modules in `Crosswake.Manifest.Types` (`Crosswake.Manifest.Types.Root`,
+    `Crosswake.Manifest.Types.Host`, `Crosswake.Manifest.Types.Compatibility`, etc.)
+    are `@moduledoc false` and internal to Crosswake core.
+
+    ## Stability
+
+    Public stable — part of the Crosswake companion contract surface. Semver-protected
+    under `crosswake` >= 0.1.0: no breaking changes to this module's struct fields,
+    types, or callbacks without a major version bump. Companion packages
+    (`crosswake_rulestead`, `crosswake_rindle`, etc.) may safely `alias` and
+    pattern-match on this type.
+    """
+    @moduledoc since: "0.1.0"
 
     @enforce_keys [:id, :path, :runtime]
     defstruct [
@@ -233,6 +253,7 @@ defmodule Crosswake.Manifest.Types do
       allowlisted_origins: []
     ]
 
+    @typedoc "Route definition struct passed to companion gate callbacks."
     @type t :: %__MODULE__{
             id: String.t(),
             path: String.t(),

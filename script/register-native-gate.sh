@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# DEPRECATED (Phase 135 / PROOF-03): superseded by the parametric
+#   script/register_required_checks.sh  (discovers + registers ALL merge-blocking lanes; idempotent)
+#   script/check_required_checks_registered.sh  (fail-closed gap detector)
+# Kept for reference; prefer the parametric pair so a new gate needs no new registration script.
+#
 # register-native-gate.sh — GET-then-append required_status_checks for NTEST-04
 #
 # Registers merge-blocking-native-behavioral-proof as a required check on main.

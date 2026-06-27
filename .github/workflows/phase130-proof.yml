@@ -1,0 +1,184 @@
+name: Phase 130 Proof
+
+# Phase 130 closes out the companion extraction mechanics for v16.0 by splitting
+# proof lanes into:
+#
+#   - core-hermetic-proof: hermetic, deterministic, runs on every PR and push
+#     to main. Covers EXTRACT-01 (no MIX_INCLUDE_* env hack), EXTRACT-03
+#     (no static alias to extracted companion in lib/), EXTRACT-04
+#     (Code.ensure_loaded? inside function bodies only), COMPAT-01 fail-closed
+#     RouteGate contract, and D-27 (no runtime: false on companion path dep).
+#     Merge-blocking. No companion dep in this job.
+#
+#   - companion-engine-absent-proof: runs mix companions.test in the engine-ABSENT
+#     default state (no Rulestead Hex dep). Merge-blocking. Covers the adapter
+#     behavior tests (SC#1) and the verify_companion_package.sh dress-rehearsal.
+#
+#   - companion-engine-present-proof: advisory-only lane. Runs with the fake top-
+#     level Rulestead stub appended to elixirc_paths(:test) via ENGINE_PRESENT_LANE=1.
+#     A mix clean separates this lane from engine-absent so stale .beam files
+#     cannot leak into the blocking lane (D-33). Cannot gate merges.
+#
+# Promotion of the engine-present lane to merge-blocking requires:
+#   1. The real Rulestead.Snapshot adapter lands in the companion package.
+#   2. Sustained stability evidence from advisory runs.
+#   3. An explicit requirement/roadmap scope change (Phase 131 concern).
+#
+# Registration (run out-of-band by maintainer after this workflow goes green on main):
+#   Run script/register-phase130-gate.sh (or the equivalent gh api PATCH call)
+#   to add "core-hermetic-proof" and "companion-engine-absent-proof" as required
+#   checks on the main branch.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Run the advisory engine-present lane weekly (Monday 08:00 UTC) so absence
+    # of advisory results is visible in the CI dashboard between PRs.
+    - cron: "0 8 * * 1"
+
+jobs:
+  core-hermetic-proof:
+    # Required branch check. Runs on every PR and push to main. Hermetic — no
+    # companion Hex dep, no rulestead Hex dep. Covers all core proof files:
+    #   - phase130_extraction_guards_test.exs (EXTRACT-01/03/04, D-27)
+    #   - phase130_fail_closed_contract_test.exs (COMPAT-01)
+    # and the broad hermetic suite (excludes requires_example_host / advisory_only).
+    #
+    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
+    name: core hermetic proof (merge-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies
+        run: mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run Phase 130 extraction guard proof (EXTRACT-01/03/04, D-27)
+        run: mix test test/crosswake/proof/phase130_extraction_guards_test.exs
+
+      - name: Run Phase 130 fail-closed contract proof (COMPAT-01)
+        run: mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs
+
+      - name: Run broad hermetic suite (excludes requires_example_host + advisory_only)
+        run: mix test --exclude requires_example_host --exclude advisory_only
+
+  companion-engine-absent-proof:
+    # Required branch check. Runs mix companions.test in the engine-ABSENT default
+    # state — no Rulestead Hex dep, Code.ensure_loaded?(Rulestead) == false.
+    # Merge-blocking. Covers the adapter behavior tests (SC#1) moved to the
+    # companion lane and the dress-rehearsal verify script (SC#2 / EXTRACT-02).
+    #
+    # Intentionally skipped on the weekly `schedule` trigger (advisory lane only).
+    name: companion engine-absent proof (merge-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies (companion)
+        working-directory: packages/crosswake_rulestead
+        run: mix deps.get
+
+      - name: Compile companion (warnings as errors, engine-absent)
+        working-directory: packages/crosswake_rulestead
+        run: mix compile --warnings-as-errors
+
+      - name: Run companion engine-absent tests (merge-blocking)
+        # mix companions.test runs: cmd --cd packages/crosswake_rulestead mix test
+        # Default tag exclusions from test_helper.exs apply — engine_present tests
+        # are excluded automatically. This is the hermetic, fail-closed lane (D-33).
+        run: mix companions.test
+
+      - name: Run verify_companion_package.sh (EXTRACT-02 dress-rehearsal)
+        # Confirms: test/ excluded from files: allowlist, lib/ source present,
+        # compile --warnings-as-errors in engine-absent state (D-24, SC#2).
+        run: bash script/verify_companion_package.sh crosswake_rulestead
+
+  companion-engine-present-proof:
+    # Advisory lane. Runs on schedule (weekly) and on workflow_dispatch only.
+    # Does NOT run on pull_request or push to main — cannot gate merges even if
+    # every step fails.
+    #
+    # ENGINE_PRESENT_LANE=1 causes test/support/engine_present/rulestead.ex (the
+    # fake top-level Rulestead stub) to be appended to elixirc_paths(:test), making
+    # Code.ensure_loaded?(Rulestead) == true at runtime. The mix clean step BEFORE
+    # this lane prevents stale .beam files from leaking into the engine-absent lane
+    # if the jobs ever share a cache (D-33).
+    #
+    # Asserts the engine-present advisory path: validate_dependency/0 == :ok.
+    name: companion engine-present proof (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    # continue-on-error ensures advisory failures are visible in CI dashboard
+    # but do NOT block merges (D-33).
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+
+      - name: Install Elixir dependencies (companion, engine-present)
+        working-directory: packages/crosswake_rulestead
+        run: mix deps.get
+
+      - name: mix clean — purge stale engine-absent .beam before engine-present build (D-33)
+        # Prevents a stale @compile {:no_warn_undefined, Rulestead} artifact from the
+        # engine-absent build from contaminating the engine-present lane result.
+        working-directory: packages/crosswake_rulestead
+        run: mix clean
+
+      - name: Compile companion (engine-present stub loaded)
+        working-directory: packages/crosswake_rulestead
+        run: mix compile --warnings-as-errors
+        env:
+          ENGINE_PRESENT_LANE: "1"
+
+      - name: Run engine-present advisory tests (validate_dependency :ok)
+        # Runs only the :engine_present-tagged tests. The fake Rulestead stub in
+        # test/support/engine_present/ is compiled into elixirc_paths(:test) when
+        # ENGINE_PRESENT_LANE=1, making Code.ensure_loaded?(Rulestead) true.
+        working-directory: packages/crosswake_rulestead
+        run: mix test --only engine_present
+        env:
+          ENGINE_PRESENT_LANE: "1"
+
+      - name: Advisory lane status summary
+        run: |
+          echo "::notice title=Advisory lane::This lane is advisory only and"
+          echo "::notice::cannot gate merge. Failures here do NOT retract any"
+          echo "::notice::merge-blocking Phase 130 extraction claim. Promotion to"
+          echo "::notice::merge-blocking requires explicit requirement/roadmap"
+          echo "::notice::scope change plus sustained stability evidence (D-33)."

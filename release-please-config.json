@@ -50,6 +50,45 @@
           "path": "packages/crosswake-shell-core-android/build.gradle.kts"
         }
       ]
+    },
+    "packages/crosswake_rulestead": {
+      "component": "crosswake_rulestead",
+      "release-type": "elixir",
+      "separate-pull-requests": true,
+      "release-as": "0.1.0",
+      "extra-files": ["packages/crosswake_rulestead/mix.exs"],
+      "changelog-sections": [
+        { "type": "feat",     "section": "Features" },
+        { "type": "fix",      "section": "Bug Fixes" },
+        { "type": "perf",     "section": "Performance Improvements" },
+        { "type": "deps",     "section": "Dependencies" },
+        { "type": "chore",    "section": "Miscellaneous",          "hidden": true },
+        { "type": "docs",     "section": "Documentation",          "hidden": true },
+        { "type": "test",     "section": "Tests",                  "hidden": true },
+        { "type": "ci",       "section": "Continuous Integration", "hidden": true },
+        { "type": "refactor", "section": "Refactoring",            "hidden": true },
+        { "type": "build",    "section": "Build System",           "hidden": true }
+      ]
+    },
+    "packages/crosswake_rindle": {
+      "component": "crosswake_rindle",
+      "release-type": "elixir",
+      "separate-pull-requests": true,
+      "_TODO_release_as": "ONE-SHOT override (Phase 132 / recipe Step 12f / Pitfall 6): remove 'release-as' after the first crosswake_rindle Release PR merges, or subsequent runs keep re-targeting 0.1.0. rindle is independently versioned — intentionally NOT in the linked-versions lockstep group (D-01).",
+      "release-as": "0.1.0",
+      "extra-files": ["packages/crosswake_rindle/mix.exs"],
+      "changelog-sections": [
+        { "type": "feat",     "section": "Features" },
+        { "type": "fix",      "section": "Bug Fixes" },
+        { "type": "perf",     "section": "Performance Improvements" },
+        { "type": "deps",     "section": "Dependencies" },
+        { "type": "chore",    "section": "Miscellaneous",          "hidden": true },
+        { "type": "docs",     "section": "Documentation",          "hidden": true },
+        { "type": "test",     "section": "Tests",                  "hidden": true },
+        { "type": "ci",       "section": "Continuous Integration", "hidden": true },
+        { "type": "refactor", "section": "Refactoring",            "hidden": true },
+        { "type": "build",    "section": "Build System",           "hidden": true }
+      ]
     }
   }
 }

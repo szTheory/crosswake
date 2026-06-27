@@ -1,6 +1,12 @@
 defmodule Crosswake.Shell.Denial do
   @moduledoc """
   Stable denial envelope shared by shell activation and bounded bridge replies.
+
+  Core-owned denial envelope. Not part of the companion contract surface.
+  Companion implementations return `{:deny, Crosswake.Compatibility.Finding.t()}`
+  from `route_gated?/2`; core translates findings into `Denial` structs internally.
+  Extension authors should never construct or return a `Denial` directly — reach
+  for `Crosswake.Compatibility.Finding` instead.
   """
 
   alias Crosswake.Manifest.Types
@@ -17,7 +23,9 @@ defmodule Crosswake.Shell.Denial do
     :gate_denied,
     :kill_switch_active,
     :step_up_required,
-    :notification_open_denied
+    :notification_open_denied,
+    # Phase 130: COMPAT-01 RouteGate fail-closed enforcement
+    :dependency_missing
   ]
 
   @enforce_keys [:reason, :code, :message]
@@ -36,6 +44,7 @@ defmodule Crosswake.Shell.Denial do
           | :kill_switch_active
           | :step_up_required
           | :notification_open_denied
+          | :dependency_missing
 
   @type t :: %__MODULE__{
           reason: reason(),

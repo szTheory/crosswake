@@ -13,6 +13,7 @@ defmodule Crosswake.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       description: description(),
       source_url: @source_url,
       homepage_url: @source_url,
@@ -36,7 +37,11 @@ defmodule Crosswake.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
-    base = [
+    # D-21: No companion-conditional dep blocks. Core names no companion in any env.
+    # The conditional env-hack blocks were deleted in Phase 130 — companions now live
+    # as standalone path: deps (crosswake_rulestead in Phase 130, crosswake_rindle in
+    # Phase 132). Their dependencies are declared in the companion's own mix.exs.
+    [
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
       {:phoenix, "~> 1.8"},
@@ -44,22 +49,28 @@ defmodule Crosswake.MixProject do
       {:telemetry, "~> 1.0"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
+  end
 
-    rulestead =
-      if System.get_env("MIX_INCLUDE_RULESTEAD") == "1" do
-        [{:rulestead, "~> 0.1.6"}]
-      else
-        []
-      end
-
-    rindle =
-      if System.get_env("MIX_INCLUDE_RINDLE") == "1" do
-        [{:rindle, "~> 0.1"}]
-      else
-        []
-      end
-
-    base ++ rulestead ++ rindle
+  # D-26: Root aliases so contributors never need a bare `cd`.
+  # mix companions.test — runs each companion's own test lane (rulestead + rindle).
+  #   Each lane's default tag exclusions apply (engine-present advisory + example-host
+  #   tests are excluded). Adapter-behavior tests run with the engine in the lane's lock.
+  # mix verify — runs companions.test + core hermetic test lane (excludes advisory tags).
+  defp aliases do
+    [
+      "companions.test": [
+        # deps.get each package first so the alias is self-sufficient on a fresh checkout
+        # (the lanes only fetch one package's deps; `mix test` does not auto-fetch).
+        "cmd --cd packages/crosswake_rulestead mix deps.get",
+        "cmd --cd packages/crosswake_rulestead mix test",
+        "cmd --cd packages/crosswake_rindle mix deps.get",
+        "cmd --cd packages/crosswake_rindle mix test"
+      ],
+      verify: [
+        "companions.test",
+        "test --exclude requires_example_host --exclude advisory_only"
+      ]
+    ]
   end
 
   defp description do
@@ -106,6 +117,8 @@ defmodule Crosswake.MixProject do
         "guides/tokens.md",
         "guides/commerce.md",
         "guides/companions.md",
+        "guides/companion_contract.md",
+        "guides/companion_compatibility.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
         "guides/android_uat.md",
@@ -116,7 +129,14 @@ defmodule Crosswake.MixProject do
         Policy: [Crosswake.Policy, Crosswake.Router],
         Bridge: ~r/Crosswake\.Bridge(\.|$)/,
         Manifest: [Crosswake.Manifest],
-        Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/
+        Capabilities: ~r/Crosswake\.(Commerce|Offline|Packs)/,
+        "Companion Contract": [
+          Crosswake.Companion,
+          Crosswake.Companion.State,
+          Crosswake.Compatibility.Finding,
+          Crosswake.Compatibility.Target,
+          Crosswake.Manifest.Types.RouteEntry
+        ]
       ],
       groups_for_extras: [
         Start: [
@@ -145,6 +165,10 @@ defmodule Crosswake.MixProject do
           "guides/support_matrix.md",
           "guides/compatibility.md",
           "guides/android_uat.md"
+        ],
+        "Extension Authors": [
+          "guides/companion_contract.md",
+          "guides/companion_compatibility.md"
         ],
         "Advanced/Companions": [
           "guides/companions.md",

@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# DEPRECATED (Phase 135 / PROOF-03): superseded by the parametric
+#   script/register_required_checks.sh  (discovers + registers ALL merge-blocking lanes; idempotent)
+#   script/check_required_checks_registered.sh  (fail-closed gap detector)
+# Kept for reference; prefer the parametric pair so a new gate needs no new registration script.
+#
 # register-e2e-gate.sh — GET-then-replace required_status_checks for GATE-01
 #
 # Registers merge-blocking-offline-sync-e2e as a required check on main, dropping

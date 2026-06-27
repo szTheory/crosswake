@@ -27,7 +27,8 @@
     "gate_denied",
     "kill_switch_active",
     "step_up_required",
-    "notification_open_denied"
+    "notification_open_denied",
+    "dependency_missing"
   ],
   "manifest_schema_version": "1.0.0",
   "native_runtime_version": "1.0.0",
