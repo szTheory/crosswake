@@ -281,7 +281,8 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. `script/extract_companion.md` Step 12f references the automation (not a manual runbook), so sigra/chimeway/threadline inherit 0-human release ops
   5. Required-check registration is parametric, not per-gate toil: `script/register_required_checks.sh` discovers ALL `merge-blocking-*` lanes and registers them idempotently (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector that flags any declared merge-blocking lane not actually in branch protection — superseding the bespoke `register-*-gate.sh` scripts. (Registration itself stays an admin/maintainer action — the legitimate human gate.)
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 135-01-PLAN.md — Audit-then-prove SC1–SC5 in one hermetic ExUnit proof test (SC1 RED→GREEN via GIT_DIR fixture; SC2 idempotency + wiring; SC3/SC4/SC5 structural; deferred-failure green self-assertion); minimal fixes only where an audit fails
 
 ## Progress
 
