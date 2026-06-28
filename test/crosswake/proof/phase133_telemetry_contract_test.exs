@@ -153,8 +153,9 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     # Assert each :active event with declared measurement/metadata keys present
     # (subset assertion: declared keys are a subset of the emitted maps — D-16 Side A)
 
-    # companion dependency_check :start — measurements include :system_time, :companion_id, :route_id
-    assert_received {[:crosswake, :companion, :dependency_check, :start], ^ref, dep_start_m, _dep_start_meta}
+    # companion dependency_check :start — measurement :system_time; metadata :companion_id, :route_id
+    # (:telemetry.span/3 puts the span context map into METADATA, not measurements — Keathley convention)
+    assert_received {[:crosswake, :companion, :dependency_check, :start], ^ref, dep_start_m, dep_start_meta}
     assert Map.has_key?(dep_start_m, :system_time),
            ProofAssertions.stable_id_message(
              "proof.telem_04.sideA.dependency_check.start.system_time",
@@ -165,45 +166,46 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              "check that :telemetry.span/3 is called with system_time in the start measurements",
              :merge_blocking
            )
-    assert Map.has_key?(dep_start_m, :companion_id)
-    assert Map.has_key?(dep_start_m, :route_id)
+    assert Map.has_key?(dep_start_meta, :companion_id)
+    assert Map.has_key?(dep_start_meta, :route_id)
 
-    # companion dependency_check :stop — measurements include :duration, :companion_id, :route_id
-    assert_received {[:crosswake, :companion, :dependency_check, :stop], ^ref, dep_stop_m, _dep_stop_meta}
+    # companion dependency_check :stop — measurement :duration; metadata :companion_id, :route_id
+    assert_received {[:crosswake, :companion, :dependency_check, :stop], ^ref, dep_stop_m, dep_stop_meta}
     assert Map.has_key?(dep_stop_m, :duration)
-    assert Map.has_key?(dep_stop_m, :companion_id)
-    assert Map.has_key?(dep_stop_m, :route_id)
+    assert Map.has_key?(dep_stop_meta, :companion_id)
+    assert Map.has_key?(dep_stop_meta, :route_id)
 
     # companion kill_switch :start
-    assert_received {[:crosswake, :companion, :kill_switch, :start], ^ref, ks_start_m, _ks_start_meta}
+    assert_received {[:crosswake, :companion, :kill_switch, :start], ^ref, ks_start_m, ks_start_meta}
     assert Map.has_key?(ks_start_m, :system_time)
-    assert Map.has_key?(ks_start_m, :companion_id)
-    assert Map.has_key?(ks_start_m, :route_id)
+    assert Map.has_key?(ks_start_meta, :companion_id)
+    assert Map.has_key?(ks_start_meta, :route_id)
 
     # companion kill_switch :stop
-    assert_received {[:crosswake, :companion, :kill_switch, :stop], ^ref, ks_stop_m, _ks_stop_meta}
+    assert_received {[:crosswake, :companion, :kill_switch, :stop], ^ref, ks_stop_m, ks_stop_meta}
     assert Map.has_key?(ks_stop_m, :duration)
-    assert Map.has_key?(ks_stop_m, :companion_id)
+    assert Map.has_key?(ks_stop_meta, :companion_id)
 
     # companion route_gate :start
-    assert_received {[:crosswake, :companion, :route_gate, :start], ^ref, rg_start_m, _rg_start_meta}
+    assert_received {[:crosswake, :companion, :route_gate, :start], ^ref, rg_start_m, rg_start_meta}
     assert Map.has_key?(rg_start_m, :system_time)
-    assert Map.has_key?(rg_start_m, :companion_id)
+    assert Map.has_key?(rg_start_meta, :companion_id)
 
     # companion route_gate :stop
-    assert_received {[:crosswake, :companion, :route_gate, :stop], ^ref, rg_stop_m, _rg_stop_meta}
+    assert_received {[:crosswake, :companion, :route_gate, :stop], ^ref, rg_stop_m, rg_stop_meta}
     assert Map.has_key?(rg_stop_m, :duration)
-    assert Map.has_key?(rg_stop_m, :companion_id)
+    assert Map.has_key?(rg_stop_meta, :companion_id)
 
     # companion validate_dependency :start (Doctor path)
-    assert_received {[:crosswake, :companion, :validate_dependency, :start], ^ref, vd_start_m, _vd_start_meta}
+    assert_received {[:crosswake, :companion, :validate_dependency, :start], ^ref, vd_start_m, vd_start_meta}
     assert Map.has_key?(vd_start_m, :system_time)
-    assert Map.has_key?(vd_start_m, :companion_id)
+    assert Map.has_key?(vd_start_meta, :companion_id)
 
-    # companion validate_dependency :stop
-    assert_received {[:crosswake, :companion, :validate_dependency, :stop], ^ref, vd_stop_m, _vd_stop_meta}
+    # companion validate_dependency :stop — stop metadata also carries :result (D-doctor contract)
+    assert_received {[:crosswake, :companion, :validate_dependency, :stop], ^ref, vd_stop_m, vd_stop_meta}
     assert Map.has_key?(vd_stop_m, :duration)
-    assert Map.has_key?(vd_stop_m, :companion_id)
+    assert Map.has_key?(vd_stop_meta, :companion_id)
+    assert Map.has_key?(vd_stop_meta, :result)
 
     # threadline :start — metadata includes thread_id, correlation_id, route_id, source
     assert_received {[:crosswake, :threadline, :request, :start], ^ref, tl_start_m, tl_start_meta}
@@ -305,8 +307,12 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     Application.put_env(:crosswake, :companions,
       [Crosswake.TestSupport.StubTelemetryCompanion])
 
-    result = Crosswake.Telemetry.events()
+    # events/0 probes companions via function_exported?/3 (D-08: NOT Code.ensure_loaded? —
+    # EXTRACT-04-safe). function_exported?/3 returns false for a not-yet-loaded module, so a
+    # test-support companion (not auto-loaded like a real one in the supervision tree) must be
+    # loaded before events/0 is called. Computing its declared events first triggers the load.
     stub_events = Crosswake.TestSupport.StubTelemetryCompanion.telemetry_events()
+    result = Crosswake.Telemetry.events()
 
     for event_doc <- stub_events do
       assert Enum.any?(result, fn e -> e.event == event_doc.event end),

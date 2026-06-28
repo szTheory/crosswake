@@ -78,10 +78,10 @@ defmodule Crosswake.Telemetry do
         tier: :active,
         description:
           "Emitted when RouteGate checks a companion's optional dependency presence. " <>
-            "Start measurements include system_time, companion_id, and route_id. " <>
-            "Stop measurements include duration, companion_id, and route_id.",
-        measurements: [:system_time, :companion_id, :route_id, :duration],
-        metadata: []
+            "Start measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes companion_id and route_id (Keathley span convention).",
+        measurements: [:system_time, :duration],
+        metadata: [:companion_id, :route_id]
       },
       %{
         event: [:crosswake, :companion, :kill_switch],
@@ -89,30 +89,30 @@ defmodule Crosswake.Telemetry do
         description:
           "Emitted when RouteGate evaluates a companion's kill switch. " <>
             "Short-circuits ahead of route_gate evaluation. " <>
-            "Start measurements include system_time, companion_id, and route_id. " <>
-            "Stop measurements include duration, companion_id, and route_id.",
-        measurements: [:system_time, :companion_id, :route_id, :duration],
-        metadata: []
+            "Start measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes companion_id and route_id (Keathley span convention).",
+        measurements: [:system_time, :duration],
+        metadata: [:companion_id, :route_id]
       },
       %{
         event: [:crosswake, :companion, :route_gate],
         tier: :active,
         description:
           "Emitted when RouteGate evaluates a companion's route policy. " <>
-            "Start measurements include system_time, companion_id, and route_id. " <>
-            "Stop measurements include duration, companion_id, and route_id.",
-        measurements: [:system_time, :companion_id, :route_id, :duration],
-        metadata: []
+            "Start measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes companion_id and route_id (Keathley span convention).",
+        measurements: [:system_time, :duration],
+        metadata: [:companion_id, :route_id]
       },
       %{
         event: [:crosswake, :companion, :validate_dependency],
         tier: :active,
         description:
           "Emitted when Doctor runs validate_dependency/0 for each registered companion. " <>
-            "Start measurements include system_time, companion_id, and route_id. " <>
-            "Stop measurements include duration, companion_id, route_id, and result.",
-        measurements: [:system_time, :companion_id, :route_id, :duration, :result],
-        metadata: []
+            "Start measurements include system_time; stop measurements include duration. " <>
+            "Metadata includes companion_id and route_id; stop metadata also includes result.",
+        measurements: [:system_time, :duration],
+        metadata: [:companion_id, :route_id, :result]
       },
       %{
         event: [:crosswake, :threadline, :request],
