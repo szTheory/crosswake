@@ -575,7 +575,8 @@
           "guides/native_shell.md",
           "guides/android_uat.md",
           "guides/packs.md",
-          "guides/threadline.md"
+          "guides/threadline.md",
+          "guides/telemetry.md"
         ],
         "missing_docs_extras": [],
         "missing_files": []

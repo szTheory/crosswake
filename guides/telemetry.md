@@ -30,7 +30,7 @@ Host code that attaches handlers to Crosswake events may depend on this stabilit
 
 The table below lists every `:active` event from `Crosswake.Telemetry.events/0` — events that fire today in production code. Event names follow the Keathley span convention: a prefix atom list expanded to `:start`, `:stop`, and `:exception` suffixes.
 
-For span-based events (emitted via `:telemetry.span/3`), the `:start` event carries `system_time` in measurements; the `:stop` event carries `duration`. For the four companion spans, `companion_id` and `route_id` are passed as start measurements (the second argument to `:telemetry.span/3`), not as metadata — this is the Keathley span convention.
+For span-based events (emitted via `:telemetry.span/3`), the `:start` event carries `system_time` in measurements and the `:stop`/`:exception` events carry `duration`. For the four companion spans, `companion_id` and `route_id` are passed as the span context map (the second argument to `:telemetry.span/3`), which `:telemetry` places in **metadata**, not measurements — this is the Keathley span convention.
 
 **Stop metadata is a superset of start metadata** for span-based events. See the threadline `:exception` caveat below.
 
@@ -40,9 +40,9 @@ Emitted when `RouteGate` checks a companion's optional dependency presence.
 
 | Suffix | Measurements | Metadata |
 |--------|-------------|----------|
-| `:start` | `system_time`, `companion_id`, `route_id` | — |
-| `:stop` | `duration`, `companion_id`, `route_id` | — |
-| `:exception` | `duration` | — |
+| `:start` | `system_time` | `companion_id`, `route_id` |
+| `:stop` | `duration` | `companion_id`, `route_id` |
+| `:exception` | `duration` | `companion_id`, `route_id` |
 
 Event names:
 - `` `[:crosswake, :companion, :dependency_check, :start]` ``
@@ -55,9 +55,9 @@ Emitted when `RouteGate` evaluates a companion's kill switch. Short-circuits ahe
 
 | Suffix | Measurements | Metadata |
 |--------|-------------|----------|
-| `:start` | `system_time`, `companion_id`, `route_id` | — |
-| `:stop` | `duration`, `companion_id`, `route_id` | — |
-| `:exception` | `duration` | — |
+| `:start` | `system_time` | `companion_id`, `route_id` |
+| `:stop` | `duration` | `companion_id`, `route_id` |
+| `:exception` | `duration` | `companion_id`, `route_id` |
 
 Event names:
 - `` `[:crosswake, :companion, :kill_switch, :start]` ``
@@ -70,9 +70,9 @@ Emitted when `RouteGate` evaluates a companion's route policy.
 
 | Suffix | Measurements | Metadata |
 |--------|-------------|----------|
-| `:start` | `system_time`, `companion_id`, `route_id` | — |
-| `:stop` | `duration`, `companion_id`, `route_id` | — |
-| `:exception` | `duration` | — |
+| `:start` | `system_time` | `companion_id`, `route_id` |
+| `:stop` | `duration` | `companion_id`, `route_id` |
+| `:exception` | `duration` | `companion_id`, `route_id` |
 
 Event names:
 - `` `[:crosswake, :companion, :route_gate, :start]` ``
@@ -81,13 +81,13 @@ Event names:
 
 ### Companion: validate\_dependency
 
-Emitted when Doctor runs `validate_dependency/0` for each registered companion. The `:stop` event carries an additional `result` measurement.
+Emitted when Doctor runs `validate_dependency/0` for each registered companion. The `:stop` event carries an additional `result` metadata key.
 
 | Suffix | Measurements | Metadata |
 |--------|-------------|----------|
-| `:start` | `system_time`, `companion_id`, `route_id` | — |
-| `:stop` | `duration`, `companion_id`, `route_id`, `result` | — |
-| `:exception` | `duration` | — |
+| `:start` | `system_time` | `companion_id`, `route_id` |
+| `:stop` | `duration` | `companion_id`, `route_id`, `result` |
+| `:exception` | `duration` | `companion_id`, `route_id` |
 
 Event names:
 - `` `[:crosswake, :companion, :validate_dependency, :start]` ``
