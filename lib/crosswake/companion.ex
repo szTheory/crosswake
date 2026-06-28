@@ -126,4 +126,19 @@ defmodule Crosswake.Companion do
   `:unconfigured` for these fields until Phase 40 wiring is complete.
   """
   @callback report_state() :: State.t()
+
+  @doc """
+  Returns the telemetry events this companion declares, as `Crosswake.Telemetry.event_doc()` maps.
+
+  This callback is optional. Companions that emit no telemetry events may omit it.
+  When implemented, returned events are merged into `Crosswake.Telemetry.events/0`
+  at call time and contribute to the published telemetry contract (D-07, TELEM-04).
+
+  The returned list must not include any events with PII-bearing metadata keys. Only
+  low-cardinality atom key names (never values) should appear in the `metadata` field
+  of each `event_doc` map.
+  """
+  @callback telemetry_events() :: [Crosswake.Telemetry.event_doc()]
+
+  @optional_callbacks telemetry_events: 0
 end

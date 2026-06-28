@@ -24,7 +24,8 @@ defmodule Crosswake.Proof.Phase129CompanionContractFreezeTest do
     {:route_gated?, 2},
     {:kill_switch_active?, 1},
     {:validate_dependency, 0},
-    {:report_state, 0}
+    {:report_state, 0},
+    {:telemetry_events, 0}
   ])
 
   # Struct-bearing contract modules for the typedoc assertion (SEAM-01).
