@@ -2,16 +2,19 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-status: planning
+current_phase: 135
+status: completed
 stopped_at: Phase 135 context gathered
-last_updated: "2026-06-28T17:44:19.817Z"
+last_updated: "2026-06-28T19:10:31.764Z"
 last_activity: 2026-06-28
+last_activity_desc: Phase 135 marked complete
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 18
-  completed_plans: 18
-  percent: 71
+  completed_phases: 6
+  total_plans: 19
+  completed_plans: 19
+  percent: 86
+current_phase_name: ci-ops-hardening-release-as-automation-proof-03
 ---
 
 # Project State: Crosswake
@@ -21,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 135 — ci ops hardening release as automation proof 03
+**Current focus:** Phase 135 — ci-ops-hardening-release-as-automation-proof-03
 
 ## Current Position
 
-Phase: 135
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-28
+Phase: 135 — COMPLETE
+Plan: 1 of 1
+Status: Phase 135 complete
+Last activity: 2026-06-28 — Phase 135 marked complete
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -150,6 +153,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-19: guides/telemetry.md follows brandbook §14 concept order (10 sections)
 - [Phase ?]: D-18: mix.exs Telemetry group in groups_for_extras and groups_for_modules; Offline.Telemetry discoverability-only
 - [Phase ?]: Threadline :exception empty-metadata caveat documented; stop ⊇ start holds for :stop not :exception
+- [Phase ?]: D-01 audit-then-prove: all 5 PROOF-03 SCs audited GREEN, no production-code change (Phase 135 plan 01)
+- [Phase ?]: Q1 resolved: nested mix test for deferred-failure self-assertion; structural read cannot prove green (Phase 135 plan 01)
 
 ### Pending Todos
 
@@ -205,10 +210,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 133 P02 | 5m | 2 tasks | 4 files |
 | Phase 133 P03 | 8min | 1 tasks | 1 files |
 | Phase 133 P04 | 12min | 3 tasks | 3 files |
+| Phase 135 P01 | 3 | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-28T17:44:19.812Z
+Last session: 2026-06-28T19:05:23.102Z
 Stopped at: Phase 135 context gathered
 Resume file: .planning/phases/135-ci-ops-hardening-release-as-automation-proof-03/135-CONTEXT.md
 
