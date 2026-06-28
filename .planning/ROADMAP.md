@@ -238,7 +238,20 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. A host can call `Crosswake.Telemetry.attach_default_logger/1` to opt into structured log output; core never calls this function automatically — attachment is always the host's explicit decision
   4. A bidirectional contract test fails if any event declared in `events/0` is never emitted in the test suite, or any emitted `:telemetry` event with the `[:crosswake, ...]` prefix is undeclared in `events/0`
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+**Wave 0**
+
+- [ ] 133-01-PLAN.md — Write the failing tests first: bidirectional contract proof + attach/detach logger unit test + StubTelemetryCompanion fixture (TELEM-01/03/04 seams, RED)
+
+**Wave 1** *(blocked on Wave 0)*
+
+- [ ] 133-02-PLAN.md — Crosswake.Telemetry facade: event_doc typespec + runtime-aggregating events/0 + optional telemetry_events/0 callback on Companion (TELEM-01, TELEM-04)
+
+**Wave 2** *(blocked on Wave 1; 03 and 04 run in parallel — no file overlap)*
+
+- [ ] 133-03-PLAN.md — attach_default_logger/1 + detach_default_logger/0: opt-in, PII-scrubbed, :exception→:error, encode:false; core never auto-attaches (TELEM-03)
+- [ ] 133-04-PLAN.md — guides/telemetry.md + mix.exs Telemetry docs groups + TELEM-02 doc-presence proof assertions (TELEM-02)
 
 ### Phase 134: Shell Lifecycle + Native UAT Promotion
 
@@ -308,6 +321,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
-| 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
+| 133. Telemetry Public API | v16.0 | 0/4 | Not started | - |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |
