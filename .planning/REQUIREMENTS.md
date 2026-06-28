@@ -42,10 +42,10 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 ### TELEM — Telemetry Public API
 
-- [ ] **TELEM-01**: A developer can call `Crosswake.Telemetry.events/0` to get the canonical list of every `:telemetry` event Crosswake emits across companion/RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems.
+- [x] **TELEM-01**: A developer can call `Crosswake.Telemetry.events/0` to get the canonical list of every `:telemetry` event Crosswake emits across companion/RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems.
 - [ ] **TELEM-02**: A reader can find `guides/telemetry.md` documenting every event's measurements and metadata, following Keathley naming (`[:crosswake, :subsystem, :start|:stop|:exception]`) with stop metadata a superset of start metadata.
-- [ ] **TELEM-03**: A host can opt into `Crosswake.Telemetry.attach_default_logger/1`; core never auto-attaches a handler.
-- [ ] **TELEM-04**: A bidirectional contract test fails if any event in `events/0` is never emitted, or any emitted event is undeclared.
+- [x] **TELEM-03**: A host can opt into `Crosswake.Telemetry.attach_default_logger/1`; core never auto-attaches a handler.
+- [x] **TELEM-04**: A bidirectional contract test fails if any event in `events/0` is never emitted, or any emitted event is undeclared.
 
 ### LIFE — Generated-Shell Lifecycle & Native UAT
 
@@ -110,10 +110,10 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | COMPAT-02 | Phase 132 | Complete |
 | COMPAT-03 | Phase 132 | Complete |
 | PROOF-03 | Phase 135 | Pending |
-| TELEM-01 | Phase 133 | Pending |
+| TELEM-01 | Phase 133 | Complete |
 | TELEM-02 | Phase 133 | Pending |
-| TELEM-03 | Phase 133 | Pending |
-| TELEM-04 | Phase 133 | Pending |
+| TELEM-03 | Phase 133 | Complete |
+| TELEM-04 | Phase 133 | Complete |
 | LIFE-01a | Phase 134 | Pending |
 | LIFE-01b | Phase 134 | Pending |
 | LIFE-02a | Phase 134 | Pending |
