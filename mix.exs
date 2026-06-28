@@ -123,7 +123,8 @@ defmodule Crosswake.MixProject do
         "guides/native_shell.md",
         "guides/android_uat.md",
         "guides/packs.md",
-        "guides/threadline.md"
+        "guides/threadline.md",
+        "guides/telemetry.md"
       ],
       groups_for_modules: [
         Policy: [Crosswake.Policy, Crosswake.Router],
@@ -136,6 +137,13 @@ defmodule Crosswake.MixProject do
           Crosswake.Compatibility.Finding,
           Crosswake.Compatibility.Target,
           Crosswake.Manifest.Types.RouteEntry
+        ],
+        "Telemetry": [
+          Crosswake.Telemetry,
+          Crosswake.Threadline.Telemetry,
+          Crosswake.Companions.Sigra.Telemetry,
+          Crosswake.Companions.Chimeway.Telemetry,
+          Crosswake.Offline.Telemetry
         ]
       ],
       groups_for_extras: [
@@ -165,6 +173,9 @@ defmodule Crosswake.MixProject do
           "guides/support_matrix.md",
           "guides/compatibility.md",
           "guides/android_uat.md"
+        ],
+        "Telemetry": [
+          "guides/telemetry.md"
         ],
         "Extension Authors": [
           "guides/companion_contract.md",
