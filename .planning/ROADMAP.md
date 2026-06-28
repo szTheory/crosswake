@@ -116,7 +116,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 - [x] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling (completed 2026-06-26)
 - [x] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex (completed 2026-06-26)
 - [x] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex (completed 2026-06-26)
-- [ ] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1
+- [x] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1 (completed 2026-06-28)
 - [ ] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking
 
 ## Phase Details
@@ -238,7 +238,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. A host can call `Crosswake.Telemetry.attach_default_logger/1` to opt into structured log output; core never calls this function automatically — attachment is always the host's explicit decision
   4. A bidirectional contract test fails if any event declared in `events/0` is never emitted in the test suite, or any emitted `:telemetry` event with the `[:crosswake, ...]` prefix is undeclared in `events/0`
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 
 **Wave 0**
 
@@ -251,7 +251,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Wave 2** *(blocked on Wave 1; 03 and 04 run in parallel — no file overlap)*
 
 - [x] 133-03-PLAN.md — attach_default_logger/1 + detach_default_logger/0: opt-in, PII-scrubbed, :exception→:error, encode:false; core never auto-attaches (TELEM-03)
-- [ ] 133-04-PLAN.md — guides/telemetry.md + mix.exs Telemetry docs groups + TELEM-02 doc-presence proof assertions (TELEM-02)
+- [x] 133-04-PLAN.md — guides/telemetry.md + mix.exs Telemetry docs groups + TELEM-02 doc-presence proof assertions (TELEM-02)
 
 ### Phase 134: Shell Lifecycle + Native UAT Promotion
 
@@ -321,6 +321,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
-| 133. Telemetry Public API | v16.0 | 3/4 | In Progress|  |
+| 133. Telemetry Public API | v16.0 | 4/4 | Complete   | 2026-06-28 |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |

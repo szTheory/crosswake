@@ -4,17 +4,17 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 133
 current_phase_name: telemetry-public-api
-status: executing
-stopped_at: Phase 133 context gathered
-last_updated: "2026-06-28T17:07:55.688Z"
+status: verifying
+stopped_at: Completed 133-04-PLAN.md
+last_updated: "2026-06-28T17:14:58.234Z"
 last_activity: 2026-06-28
 last_activity_desc: Phase 133 execution started
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
-  completed_plans: 17
-  percent: 57
+  completed_plans: 18
+  percent: 71
 ---
 
 # Project State: Crosswake
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 133 (telemetry-public-api) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-28 -- Phase 133 execution started
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
@@ -150,6 +150,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: events/0 uses private helper functions not module attributes for catalog construction — avoids stale-.beam footgun (D-05)
 - [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
 - [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
+- [Phase ?]: D-19: guides/telemetry.md follows brandbook §14 concept order (10 sections)
+- [Phase ?]: D-18: mix.exs Telemetry group in groups_for_extras and groups_for_modules; Offline.Telemetry discoverability-only
+- [Phase ?]: Threadline :exception empty-metadata caveat documented; stop ⊇ start holds for :stop not :exception
 
 ### Pending Todos
 
@@ -204,12 +207,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 133 P01 | 4m | 3 tasks | 3 files |
 | Phase 133 P02 | 5m | 2 tasks | 4 files |
 | Phase 133 P03 | 8min | 1 tasks | 1 files |
+| Phase 133 P04 | 12min | 3 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-06-28T17:07:55.682Z
-Stopped at: Phase 133 context gathered
-Resume file: .planning/phases/133-telemetry-public-api/133-CONTEXT.md
+Last session: 2026-06-28T17:14:58.228Z
+Stopped at: Completed 133-04-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
