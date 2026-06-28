@@ -408,6 +408,89 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
   end
 
   # ---------------------------------------------------------------------------
+  # TELEM-02 doc-presence assertions
+  # guides/telemetry.md must exist with required sections; mix.exs Telemetry
+  # group must be present. These tie the doc surface to the runtime catalog
+  # so guide and catalog cannot drift independently (D-19 / plan 04).
+  # ---------------------------------------------------------------------------
+
+  test "TELEM-02 guide exists with required sections" do
+    guide_path = "guides/telemetry.md"
+
+    assert File.exists?(guide_path),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.guide.exists",
+             "guides/telemetry.md must exist on disk (TELEM-02)",
+             "guides/telemetry.md",
+             "file not found at #{guide_path}",
+             "guides/telemetry.md",
+             "create guides/telemetry.md per brandbook §14 concept order (plan 04 Task 1)",
+             :merge_blocking
+           )
+
+    source = File.read!(guide_path)
+
+    assert String.contains?(source, "## What Crosswake Telemetry Is NOT"),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.guide.what_is_not_section",
+             "guides/telemetry.md must contain '## What Crosswake Telemetry Is NOT' section",
+             "guides/telemetry.md",
+             "section heading not found in guide",
+             "guides/telemetry.md",
+             "add the 'What Crosswake Telemetry Is NOT' section (brandbook §14 / D-19)",
+             :merge_blocking
+           )
+
+    assert String.contains?(source, "## Semver Contract"),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.guide.semver_contract_section",
+             "guides/telemetry.md must contain '## Semver Contract' section (D-03)",
+             "guides/telemetry.md",
+             "section heading not found in guide",
+             "guides/telemetry.md",
+             "add the 'Semver Contract' section with the D-03 additions/removals statement",
+             :merge_blocking
+           )
+
+    assert String.contains?(source, "## Events"),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.guide.events_section",
+             "guides/telemetry.md must contain '## Events' section",
+             "guides/telemetry.md",
+             "section heading not found in guide",
+             "guides/telemetry.md",
+             "add the 'Events' section listing every :active event with measurements and metadata",
+             :merge_blocking
+           )
+  end
+
+  test "TELEM-02 mix.exs Telemetry group present" do
+    mix_exs = File.read!("mix.exs")
+
+    assert String.contains?(mix_exs, ~s("guides/telemetry.md")),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.mix_group.extras",
+             "mix.exs must list \"guides/telemetry.md\" in the extras: list",
+             "mix.exs",
+             "\"guides/telemetry.md\" not found in mix.exs",
+             "mix.exs",
+             "add \"guides/telemetry.md\" to the extras: list in the docs/0 function (plan 04 Task 2)",
+             :merge_blocking
+           )
+
+    assert String.contains?(mix_exs, ~s("Telemetry")),
+           ProofAssertions.stable_id_message(
+             "proof.telem_02.mix_group.telemetry_group",
+             "mix.exs must contain a \"Telemetry\" group in groups_for_modules or groups_for_extras",
+             "mix.exs",
+             "\"Telemetry\" group token not found in mix.exs",
+             "mix.exs",
+             "add a \"Telemetry\" group to groups_for_modules and groups_for_extras in mix.exs (plan 04 Task 2)",
+             :merge_blocking
+           )
+  end
+
+  # ---------------------------------------------------------------------------
   # Hermetic lane self-assertion (bottom of file — must always be last)
   # This proof file must carry no @moduletag (runs untagged, D-18).
   # ---------------------------------------------------------------------------
