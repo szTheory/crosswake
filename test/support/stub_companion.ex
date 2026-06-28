@@ -182,7 +182,9 @@ defmodule Crosswake.TestSupport.StubTelemetryCompanion do
   end
 
   # Optional callback — proves the companion telemetry_events/0 merge mechanism (D-17).
-  # NOT @impl true — optional callbacks carry no @impl annotation.
+  # @impl true required: Elixir 1.19 tracks optional callbacks in behaviour_info(:callbacks)
+  # and warns if @impl is absent (contrary to earlier Elixir convention).
+  @impl true
   def telemetry_events do
     [
       %{
