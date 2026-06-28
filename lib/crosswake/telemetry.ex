@@ -17,6 +17,8 @@ defmodule Crosswake.Telemetry do
   Zero new dependencies — only `:telemetry`, already a project dependency.
   """
 
+  require Logger
+
   @typedoc """
   A self-describing telemetry event catalog entry.
 
@@ -146,5 +148,146 @@ defmodule Crosswake.Telemetry do
         %{event: name, tier: :reserved, description: "", measurements: [], metadata: []}
       end
     )
+  end
+
+  # ---------------------------------------------------------------------------
+  # Public: opt-in default logger (TELEM-03)
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Attaches a structured default logger to all `:active` Crosswake telemetry events.
+
+  Accepts a `Logger.level()` atom or a keyword list of options:
+  - `:level` — log level for non-exception events (default: `:info`)
+  - `:encode` — when `true`, JSON-encodes the event map into the log message;
+    when `false` (default, D-14), places the structured map in Logger metadata
+    so host formatters can handle JSON encoding (D-14).
+
+  Attaches under handler id `"crosswake-default-logger"`. Returns `:ok` on success;
+  returns `{:error, :already_exists}` if the handler is already attached (D-13:
+  relies on `:telemetry`'s built-in guard — no custom double-attach guard added here).
+
+  Core never calls this function automatically. Attachment is always the host's
+  explicit decision (TELEM-03 / D-13).
+
+  ## Examples
+
+      # Attach with default opts (level: :info, encode: false)
+      Crosswake.Telemetry.attach_default_logger()
+
+      # Attach with a specific log level
+      Crosswake.Telemetry.attach_default_logger(:debug)
+
+      # Attach with keyword options
+      Crosswake.Telemetry.attach_default_logger(level: :info, encode: false)
+
+  """
+  @spec attach_default_logger(Logger.level() | keyword()) :: :ok | {:error, :already_exists}
+  def attach_default_logger(level_or_opts \\ []) do
+    opts = normalize_opts(level_or_opts)
+
+    active_event_names =
+      events()
+      |> Enum.filter(fn %{tier: tier} -> tier == :active end)
+      |> Enum.flat_map(fn %{event: prefix} ->
+        [prefix ++ [:start], prefix ++ [:stop], prefix ++ [:exception]]
+      end)
+
+    :telemetry.attach_many(
+      "crosswake-default-logger",
+      active_event_names,
+      &__MODULE__.__handle_event__/4,
+      opts
+    )
+  end
+
+  @doc """
+  Detaches the default Crosswake telemetry logger handler.
+
+  Returns `:ok` if the handler was attached and is now removed.
+  Returns `{:error, :not_found}` if no handler with id `"crosswake-default-logger"` exists.
+  """
+  @spec detach_default_logger() :: :ok | {:error, :not_found}
+  def detach_default_logger do
+    :telemetry.detach("crosswake-default-logger")
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private: handler, opts normalization, PII scrub
+  # ---------------------------------------------------------------------------
+
+  # The telemetry handler function. Must be public so :telemetry can call it via
+  # a stable MFA reference (avoids the local-function performance advisory).
+  # Named with double underscores to signal it is not part of the public contract.
+  #
+  # D-14: :exception-suffixed events are always logged at :error regardless of
+  #       configured level.
+  # D-14: encode: false (default) — emits structured map into Logger metadata;
+  #       encode: true — JSON-encodes map into message string.
+  # D-15: All PII keys (union of subsystem forbidden_metadata_keys/0 denylists)
+  #       are scrubbed from metadata before logging.
+  # D-20: Log messages are prefixed with "[crosswake]".
+  @doc false
+  def __handle_event__(event_name, measurements, metadata, opts) do
+    configured_level = Keyword.get(opts, :level, :info)
+    encode = Keyword.get(opts, :encode, false)
+
+    # D-14: force :error for :exception events regardless of configured level
+    level =
+      if List.last(event_name) == :exception do
+        :error
+      else
+        configured_level
+      end
+
+    # D-15: scrub PII keys before logging
+    forbidden = all_forbidden_keys()
+    scrubbed_metadata = Map.drop(metadata, forbidden)
+
+    event_label = Enum.join(event_name, ".")
+
+    if encode do
+      payload =
+        %{
+          event: event_label,
+          measurements: measurements,
+          metadata: scrubbed_metadata
+        }
+        |> Jason.encode!()
+
+      Logger.log(level, "[crosswake] #{payload}")
+    else
+      context = %{
+        event: event_label,
+        measurements: measurements,
+        metadata: scrubbed_metadata
+      }
+
+      Logger.metadata(crosswake_telemetry: context)
+      Logger.log(level, "[crosswake] #{event_label}")
+    end
+  end
+
+  # Normalizes the level_or_opts argument for attach_default_logger/1.
+  # Accepts a Logger.level() atom (shorthand) or a keyword list.
+  # Default opts: level: :info, encode: false (D-14).
+  defp normalize_opts(level) when is_atom(level) do
+    [level: level, encode: false]
+  end
+
+  defp normalize_opts(opts) when is_list(opts) do
+    opts
+    |> Keyword.put_new(:level, :info)
+    |> Keyword.put_new(:encode, false)
+  end
+
+  # Returns the runtime union of PII-forbidden metadata keys from all subsystem
+  # telemetry modules (D-15). Reuses existing forbidden_metadata_keys/0 functions;
+  # does not duplicate the denylist.
+  defp all_forbidden_keys do
+    (Crosswake.Threadline.Telemetry.forbidden_metadata_keys() ++
+       Crosswake.Companions.Sigra.Telemetry.forbidden_metadata_keys() ++
+       Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys())
+    |> Enum.uniq()
   end
 end
