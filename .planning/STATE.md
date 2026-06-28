@@ -4,9 +4,9 @@ milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 133
 current_phase_name: telemetry-public-api
-status: verifying
-stopped_at: Completed 133-04-PLAN.md
-last_updated: "2026-06-28T17:14:58.234Z"
+status: ready_to_plan
+stopped_at: Phase 133 complete (4/4) — ready to discuss Phase 135
+last_updated: 2026-06-28T17:26:50.964Z
 last_activity: 2026-06-28
 last_activity_desc: Phase 133 execution started
 progress:
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 133 — telemetry-public-api
+**Current focus:** Phase 135 — ci ops hardening release as automation proof 03
 
 ## Current Position
 
-Phase: 133 (telemetry-public-api) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-06-28 -- Phase 133 execution started
+Phase: 135
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-06-28
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -54,7 +54,7 @@ Phase 129 ───────────────────────�
 
 **Velocity:**
 
-- Total plans completed: 48 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
+- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
 - Average duration: —
 - Total execution time: —
 

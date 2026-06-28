@@ -321,6 +321,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
-| 133. Telemetry Public API | v16.0 | 4/4 | Complete   | 2026-06-28 |
+| 133. Telemetry Public API | v16.0 | 4/4 | Complete    | 2026-06-28 |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |
