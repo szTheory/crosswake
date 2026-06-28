@@ -6,14 +6,14 @@ current_phase: 133
 current_phase_name: telemetry-public-api
 status: executing
 stopped_at: Phase 133 context gathered
-last_updated: "2026-06-28T16:47:00.549Z"
+last_updated: "2026-06-28T16:56:08.697Z"
 last_activity: 2026-06-28
 last_activity_desc: Phase 133 execution started
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
   percent: 57
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 133 (telemetry-public-api) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-28 -- Phase 133 execution started
 
@@ -146,6 +146,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 132 P04: crosswake_rindle wired into release-please as a separate elixir component (release-as 0.1.0 one-shot), NOT in linked-versions lockstep — independent versioning (EXTRACT-07, D-01)
 - [Phase ?]: Phase 132 P04: rindle_release_created/tag_name/version output aliases + gated publish-hex-rindle (CROSSWAKE_RELEASE=1, dry-run then publish) + clean-room-proof-rindle (needs publish) delegating to verify_companion_cleanroom.sh crosswake_rindle <ver> rindle Rindle
 - [Phase ?]: Phase 132 P04: rindle Contracts.media_state_vocabulary/0 canary appended inside SMOKEEOF heredoc guarded by PACKAGE==crosswake_rindle (D-18); no new script param. Removed pre-existing stray MIX_VERSION echo from rulestead clean-room run (Rule 1)
+- [Phase ?]: Elixir 1.19 includes optional callbacks in behaviour_info(:callbacks) — Phase 129 freeze test updated to include telemetry_events: 0 (same-PR pattern per test hint)
+- [Phase ?]: events/0 uses private helper functions not module attributes for catalog construction — avoids stale-.beam footgun (D-05)
 
 ### Pending Todos
 
@@ -198,10 +200,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 132 P02 | ~14m | 2 tasks | 2 files |
 | Phase 132 P04 | ~9m | 3 tasks | 4 files |
 | Phase 133 P01 | 4m | 3 tasks | 3 files |
+| Phase 133 P02 | 5m | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-28T16:46:53.848Z
+Last session: 2026-06-28T16:55:57.109Z
 Stopped at: Phase 133 context gathered
 Resume file: .planning/phases/133-telemetry-public-api/133-CONTEXT.md
 

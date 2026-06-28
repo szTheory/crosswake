@@ -238,7 +238,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. A host can call `Crosswake.Telemetry.attach_default_logger/1` to opt into structured log output; core never calls this function automatically — attachment is always the host's explicit decision
   4. A bidirectional contract test fails if any event declared in `events/0` is never emitted in the test suite, or any emitted `:telemetry` event with the `[:crosswake, ...]` prefix is undeclared in `events/0`
 
-**Plans**: 1/4 plans executed
+**Plans**: 2/4 plans executed
 
 **Wave 0**
 
@@ -246,7 +246,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 1** *(blocked on Wave 0)*
 
-- [ ] 133-02-PLAN.md — Crosswake.Telemetry facade: event_doc typespec + runtime-aggregating events/0 + optional telemetry_events/0 callback on Companion (TELEM-01, TELEM-04)
+- [x] 133-02-PLAN.md — Crosswake.Telemetry facade: event_doc typespec + runtime-aggregating events/0 + optional telemetry_events/0 callback on Companion (TELEM-01, TELEM-04)
 
 **Wave 2** *(blocked on Wave 1; 03 and 04 run in parallel — no file overlap)*
 
@@ -321,6 +321,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
-| 133. Telemetry Public API | v16.0 | 1/4 | In Progress|  |
+| 133. Telemetry Public API | v16.0 | 2/4 | In Progress|  |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |
