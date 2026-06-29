@@ -117,7 +117,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 - [x] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex (completed 2026-06-26)
 - [x] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex (completed 2026-06-26)
 - [x] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1 (completed 2026-06-28)
-- [ ] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking
+- [x] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking (completed 2026-06-29)
 
 ## Phase Details
 
@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `guides/native_shell_upgrade.md` provides a per-template-version changelog that references `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance; the dangling "patch-or-doc guidance" placeholder in `gen.shell.ex` is replaced with a real pointer to this guide
   4. The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking in an aggregator workflow (modeled on `native-behavioral-proof-gate.yml`); the iOS simulator/device UAT lane remains advisory with honest posture labels in `guides/support_matrix.md`
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans complete
 **Wave 1**
 
 - [x] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
@@ -281,7 +281,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 134-04-PLAN.md — Wave 4: upgrade changelog + line-254 fix + android-generated-shell-unit CI lane + support_matrix labels (LIFE-02c, LIFE-01a, LIFE-01b)
+- [x] 134-04-PLAN.md — Wave 4: upgrade changelog + line-254 fix + android-generated-shell-unit CI lane + support_matrix labels (LIFE-02c, LIFE-01a, LIFE-01b)
 
 ### Phase 135: CI-Ops Hardening — Release-As Automation (PROOF-03)
 
@@ -340,5 +340,5 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete    | 2026-06-28 |
-| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 4/5 | In Progress|  |
+| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete   | 2026-06-29 |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete   | 2026-06-28 |
