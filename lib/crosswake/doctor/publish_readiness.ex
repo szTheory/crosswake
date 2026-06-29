@@ -873,7 +873,14 @@ defmodule Crosswake.Doctor.PublishReadiness do
 
   defp eval_generator_template(template_path, version) do
     {:ok,
-     EEx.eval_file(template_path, assigns: [local: false, version: version, capabilities: []])}
+     EEx.eval_file(template_path,
+       assigns: [
+         local: false,
+         version: version,
+         capabilities: [],
+         template_version: Mix.Tasks.Crosswake.Gen.Shell.template_version()
+       ]
+     )}
   rescue
     error -> {:error, Exception.message(error)}
   end
