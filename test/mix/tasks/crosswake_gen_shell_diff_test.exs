@@ -1,121 +1,151 @@
 defmodule Mix.Tasks.Crosswake.GenShell.DiffTest do
   @moduledoc """
-  Scaffold test for LIFE-02b — `mix crosswake.gen.shell --diff` behaviours.
+  Tests for LIFE-02b — `mix crosswake.gen.shell --diff` behaviours.
 
-  Tests are pending-skipped until the `--diff` switch exists in the gen.shell task
-  (Plan 03). The module tag `:phase134_pending` excludes these from CI until it lands.
-
-  Behaviours under test (turning GREEN in Plan 03):
-    - diff-no-write: `--diff` makes NO changes to any file on disk
-    - diff-stdout: captured output contains a unified-diff `---`/`+++` header
+  Three behaviours under test:
+    - diff-no-write: `--diff` makes NO changes to any file on disk (byte-identical before/after)
+    - diff-stdout: captured output contains a unified-diff `---` header when a generated file differs
     - pbxproj-excluded: output does NOT contain `project.pbxproj`
   """
 
-  use ExUnit.Case, async: true
+  # Mix.Task.rerun modifies global Mix task state; async: false prevents races
+  # with other mix-task tests running concurrently.
+  use ExUnit.Case, async: false
 
-  @moduletag :phase134_pending
+  import ExUnit.CaptureIO
 
-  @gen_shell_module Mix.Tasks.Crosswake.Gen.Shell
+  @gen_shell_task "crosswake.gen.shell"
 
   # ---------------------------------------------------------------------------
-  # Guard: all tests skip until the `--diff` option is present in gen.shell.
-  # The switch is detected by checking module attributes via __info__(:attributes).
-  # Plan 03 removes the guard and wires real assertions.
+  # Helper: recursively snapshot all files and their contents in a directory.
+  # Returns a map of path => binary content (or :dir for directories).
   # ---------------------------------------------------------------------------
 
-  defp diff_switch_available? do
-    if Code.ensure_loaded?(@gen_shell_module) do
-      attributes = @gen_shell_module.__info__(:attributes)
-      switches = Keyword.get(attributes, :switches, [])
-      Keyword.has_key?(switches, :diff)
-    else
-      false
-    end
+  defp snapshot_files(dir) do
+    dir
+    |> Path.join("**")
+    |> Path.wildcard()
+    |> Enum.map(fn path ->
+      if File.dir?(path) do
+        {path, :dir}
+      else
+        {path, File.read!(path)}
+      end
+    end)
+    |> Map.new()
   end
 
   # ---------------------------------------------------------------------------
-  # Tests — pending-skipped until --diff switch exists
+  # Test 1: diff-no-write
+  # Generate a shell into a tmp dir, snapshot all files + contents, run --diff,
+  # re-snapshot, assert byte-identical. No file should be created, modified, or deleted.
   # ---------------------------------------------------------------------------
 
   test "diff-no-write: --diff makes no changes to any file on disk" do
-    if Code.ensure_loaded?(@gen_shell_module) and diff_switch_available?() do
-      # Snapshot file mtimes before --diff run
-      tmp = System.tmp_dir!() |> Path.join("cw_diff_test_#{System.unique_integer([:positive])}")
-      File.mkdir_p!(tmp)
+    tmp =
+      System.tmp_dir!()
+      |> Path.join("cw_diff_no_write_#{System.unique_integer([:positive])}")
 
-      try do
-        # Capture mtimes before
-        template_dir = Path.join([File.cwd!(), "priv", "templates", "crosswake", "shell"])
-        files_before = Path.wildcard(Path.join(template_dir, "**/*"))
+    File.mkdir_p!(tmp)
 
-        mtimes_before =
-          Map.new(files_before, fn f ->
-            {f, File.stat!(f).mtime}
-          end)
+    try do
+      # Generate a real android shell
+      capture_io(fn ->
+        Mix.Task.rerun(@gen_shell_task, ["android", "--target", tmp])
+      end)
 
-        contents_before =
-          Map.new(files_before, fn f ->
-            if File.regular?(f), do: {f, File.read!(f)}, else: {f, :dir}
-          end)
+      # Snapshot full file set with content
+      snapshot_before = snapshot_files(tmp)
 
-        # Run --diff (output captured, files should not change)
-        ExUnit.CaptureIO.capture_io(fn ->
-          Mix.Task.rerun("crosswake.gen.shell", ["ios", "--diff"])
-        end)
+      # Run --diff — must write nothing
+      capture_io(fn ->
+        Mix.Task.rerun(@gen_shell_task, ["android", "--target", tmp, "--diff"])
+      end)
 
-        # Verify no files changed
-        for {path, mtime_before} <- mtimes_before do
-          if File.exists?(path) and File.regular?(path) do
-            assert File.read!(path) == contents_before[path],
-                   "--diff must not modify #{path}"
+      snapshot_after = snapshot_files(tmp)
 
-            assert File.stat!(path).mtime == mtime_before,
-                   "--diff must not touch mtime of #{path}"
-          end
-        end
-      after
-        File.rm_rf!(tmp)
-      end
-    else
-      :ok
+      # Assert byte-identical: no files added, removed, or changed
+      assert Map.keys(snapshot_before) |> Enum.sort() ==
+               Map.keys(snapshot_after) |> Enum.sort(),
+             "--diff must not create or delete any files"
+
+      Enum.each(snapshot_before, fn {path, content_before} ->
+        content_after = Map.fetch!(snapshot_after, path)
+
+        assert content_before == content_after,
+               "--diff must not modify #{path}"
+      end)
+    after
+      File.rm_rf!(tmp)
     end
   end
 
-  test "diff-stdout: captured output contains unified-diff --- / +++ header" do
-    if Code.ensure_loaded?(@gen_shell_module) and diff_switch_available?() do
+  # ---------------------------------------------------------------------------
+  # Test 2: diff-stdout
+  # Generate a shell, modify one generated file on disk (to force a diff),
+  # run --diff, assert the output contains a unified-diff `---` header.
+  # We edit the ON-DISK generated file (not the template) so the diff triggers.
+  # ---------------------------------------------------------------------------
+
+  test "diff-stdout: output contains unified-diff --- header when a generated file differs" do
+    tmp =
+      System.tmp_dir!()
+      |> Path.join("cw_diff_stdout_#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(tmp)
+
+    try do
+      # Generate android shell
+      capture_io(fn ->
+        Mix.Task.rerun(@gen_shell_task, ["android", "--target", tmp])
+      end)
+
+      # Modify a generated file to force a diff (edit the on-disk copy, not the template)
+      gradle_props = Path.join([tmp, "native", "android", "crosswake_shell", "gradle.properties"])
+      original = File.read!(gradle_props)
+      File.write!(gradle_props, original <> "\n# diff-test-sentinel-line\n")
+
+      # Run --diff and capture output
       output =
-        ExUnit.CaptureIO.capture_io(fn ->
-          try do
-            Mix.Task.rerun("crosswake.gen.shell", ["ios", "--diff"])
-          catch
-            :exit, _ -> :ok
-          end
+        capture_io(fn ->
+          Mix.Task.rerun(@gen_shell_task, ["android", "--target", tmp, "--diff"])
         end)
 
-      # When templates have changed, expect a unified diff header
-      # (This test verifies the output FORMAT — actual diff content is Plan 03's concern)
-      assert String.contains?(output, "---") or String.contains?(output, "[crosswake]"),
-             "Expected --diff output to contain a unified diff header or [crosswake] info line"
-    else
-      :ok
+      assert String.contains?(output, "---"),
+             "Expected --diff output to contain a unified diff '---' header when a file differs; got:\n#{output}"
+    after
+      File.rm_rf!(tmp)
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Test 3: pbxproj-excluded
+  # Generate an iOS shell, run --diff on it, assert "project.pbxproj" does not
+  # appear anywhere in the output.
+  # ---------------------------------------------------------------------------
 
   test "pbxproj-excluded: --diff output does not contain project.pbxproj" do
-    if Code.ensure_loaded?(@gen_shell_module) and diff_switch_available?() do
+    tmp =
+      System.tmp_dir!()
+      |> Path.join("cw_diff_pbxproj_#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(tmp)
+
+    try do
+      # Generate iOS shell (pbxproj is an iOS template)
+      capture_io(fn ->
+        Mix.Task.rerun(@gen_shell_task, ["ios", "--target", tmp])
+      end)
+
       output =
-        ExUnit.CaptureIO.capture_io(fn ->
-          try do
-            Mix.Task.rerun("crosswake.gen.shell", ["ios", "--diff"])
-          catch
-            :exit, _ -> :ok
-          end
+        capture_io(fn ->
+          Mix.Task.rerun(@gen_shell_task, ["ios", "--target", tmp, "--diff"])
         end)
 
       refute String.contains?(output, "project.pbxproj"),
-             "--diff output must not include project.pbxproj (excluded by @diff_excluded_templates)"
-    else
-      :ok
+             "--diff output must not include project.pbxproj (excluded by @diff_excluded_templates);\ngot:\n#{output}"
+    after
+      File.rm_rf!(tmp)
     end
   end
 end
