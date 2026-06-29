@@ -506,7 +506,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
     - The generated shell is intentionally thin and manifest-first.
     - Crosswake does not claim offline journals, pack managers, or broad plugin registries here.
-    - Upgrade this shell with patch-or-doc guidance after generation instead of expecting safe re-ownership.
+    - Upgrade this shell following guides/native_shell_upgrade.md for per-version changelog and rebuild guidance.
     """
   end
 
