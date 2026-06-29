@@ -121,6 +121,7 @@ defmodule Crosswake.MixProject do
         "guides/companion_compatibility.md",
         "guides/compatibility.md",
         "guides/native_shell.md",
+        "guides/native_shell_upgrade.md",
         "guides/android_uat.md",
         "guides/packs.md",
         "guides/threadline.md",
