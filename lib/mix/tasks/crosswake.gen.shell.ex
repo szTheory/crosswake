@@ -11,7 +11,11 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   behavior Crosswake has not proven yet.
   """
 
-  @switches [target: :string, router: :string, local: :boolean]
+  @switches [target: :string, router: :string, local: :boolean, diff: :boolean]
+
+  # Templates excluded from --diff output (Xcode-managed UUIDs always diverge — noise only).
+  # Note: gradlew/gradlew.bat are NOT excluded from diff (D-02 excludes only stamps, not diffs).
+  @diff_excluded_templates ["CrosswakeShell.xcodeproj/project.pbxproj"]
   @platforms ~w(ios android)
 
   @template_version 2
@@ -70,26 +74,261 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
     target = Path.expand(opts[:target] || File.cwd!())
     router = opts[:router]
-    capabilities = fetch_capabilities(router)
     local = Keyword.get(opts, :local, false)
 
-    generated =
+    # D-13: Fork BEFORE any write — if --diff, we never reach ensure_file/2 or File.write!/2.
+    if opts[:diff] do
+      Mix.shell().info("[crosswake] diff — read-only, no files changed")
+      run_diff(platform, target, router, local)
+    else
+      capabilities = fetch_capabilities(router)
+
+      generated =
+        case platform do
+          "ios" -> generate_ios_shell(target, capabilities, local, router)
+          "android" -> generate_android_shell(target, capabilities, local, router)
+        end
+
+      Mix.shell().info(
+        "Crosswake #{platform} shell scaffold complete\n" <>
+          "  generated root: #{generated.root}\n" <>
+          "  ownership docs: #{generated.readme}\n" <>
+          "  manifest fixture: #{generated.manifest}\n" <>
+          "  activation fixture: #{generated.activation}\n" <>
+          "  denial fixture: #{generated.denial}\n" <>
+          "  baseline entrypoint: #{generated.entrypoint}\n" <>
+          "  ownership: host-owned, scaffold once, and not safely regeneratable over host edits\n"
+      )
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # --diff branch (D-13..D-16, LIFE-02b)
+  # ---------------------------------------------------------------------------
+
+  # Entry point for --diff. Reads the manifest to get saved params for re-render
+  # so the comparison doesn't show app-name/router noise (D-14).
+  defp run_diff(platform, target, router, local) do
+    root =
       case platform do
-        "ios" -> generate_ios_shell(target, capabilities, local, router)
-        "android" -> generate_android_shell(target, capabilities, local, router)
+        "ios" -> Path.join(target, "native/ios/crosswake_shell")
+        "android" -> Path.join(target, "native/android/crosswake_shell")
       end
 
+    manifest_path = Path.join([root, ".crosswake", "shell.json"])
+
+    {manifest_router, manifest_local} =
+      case File.read(manifest_path) do
+        {:ok, json} ->
+          case Jason.decode(json) do
+            {:ok, %{"params" => params}} ->
+              {Map.get(params, "router", router), Map.get(params, "local", local)}
+
+            {:ok, _} ->
+              Mix.shell().info(
+                "[crosswake] manifest at #{manifest_path} has no params — using CLI options"
+              )
+
+              {router, local}
+
+            {:error, _} ->
+              Mix.shell().info(
+                "[crosswake] could not decode manifest at #{manifest_path} — using CLI options"
+              )
+
+              {router, local}
+          end
+
+        {:error, :enoent} ->
+          Mix.shell().info(
+            "[crosswake] no manifest found at #{manifest_path} — using CLI options for re-render"
+          )
+
+          {router, local}
+
+        {:error, reason} ->
+          Mix.shell().info(
+            "[crosswake] could not read manifest: #{:file.format_error(reason)} — using CLI options"
+          )
+
+          {router, local}
+      end
+
+    # D-14: If local: true but local package path no longer resolves, fall back to Hex.
+    effective_local =
+      if manifest_local do
+        packages_root = Path.expand("packages", File.cwd!())
+        ios_path = Path.join(packages_root, "crosswake-shell-core-ios")
+        android_path = Path.join(packages_root, "crosswake-shell-core-android")
+
+        if File.exists?(ios_path) or File.exists?(android_path) do
+          true
+        else
+          Mix.shell().info(
+            "[crosswake] local package path not found: #{packages_root} — falling back to Hex package"
+          )
+
+          false
+        end
+      else
+        false
+      end
+
+    capabilities = fetch_capabilities(manifest_router)
+
+    templates =
+      case platform do
+        "ios" -> @ios_templates
+        "android" -> @android_templates
+      end
+
+    assigns = local_package_assigns(root)
+
+    {changed_ota, changed_rebuild, unchanged, missing} =
+      Enum.reduce(
+        templates,
+        {0, 0, 0, 0},
+        fn {relative_path, template_path}, {ota, rebuild, unch, miss} ->
+          if relative_path in @diff_excluded_templates do
+            {ota, rebuild, unch, miss}
+          else
+            on_disk_path = Path.join(root, relative_path)
+            re_rendered = render_template(template_path, capabilities, effective_local, assigns)
+
+            case File.read(on_disk_path) do
+              {:error, :enoent} ->
+                Mix.shell().info("[crosswake] missing (not generated): #{relative_path}")
+                {ota, rebuild, unch, miss + 1}
+
+              {:error, reason} ->
+                Mix.shell().info(
+                  "[crosswake] could not read #{relative_path}: #{:file.format_error(reason)}"
+                )
+
+                {ota, rebuild, unch, miss + 1}
+
+              {:ok, on_disk} ->
+                if on_disk == re_rendered do
+                  {ota, rebuild, unch + 1, miss}
+                else
+                  verdict = file_advisory_verdict(relative_path)
+                  print_file_diff(relative_path, on_disk, re_rendered, verdict)
+
+                  case verdict do
+                    :ota_safe -> {ota + 1, rebuild, unch, miss}
+                    {:rebuild_required, _} -> {ota, rebuild + 1, unch, miss}
+                  end
+                end
+            end
+          end
+        end
+      )
+
+    total_changed = changed_ota + changed_rebuild
+
     Mix.shell().info("""
-    Crosswake #{platform} shell scaffold complete
-      generated root: #{generated.root}
-      ownership docs: #{generated.readme}
-      manifest fixture: #{generated.manifest}
-      activation fixture: #{generated.activation}
-      denial fixture: #{generated.denial}
-      baseline entrypoint: #{generated.entrypoint}
-      ownership: host-owned, scaffold once, and not safely regeneratable over host edits
+    [crosswake] diff summary
+      changed (ota-safe):        #{changed_ota}
+      changed (rebuild-required): #{changed_rebuild}
+      unchanged:                 #{unchanged}
+      missing on disk:           #{missing}
     """)
+
+    if total_changed == 0 and missing == 0 do
+      Mix.shell().info("[crosswake] generated shell matches current templates — no changes.")
+    else
+      Mix.shell().info(
+        "[crosswake] advisory verdicts are tooling input, not release-gate oracles (RebuildPolicy.classify/2 docs)"
+      )
+    end
   end
+
+  # Prints a git-style unified diff for a single file with advisory verdict.
+  # Colorizes with IO.ANSI if the TTY supports it.
+  defp print_file_diff(relative_path, on_disk, re_rendered, verdict) do
+    old_lines = String.split(on_disk, "\n", trim: false)
+    new_lines = String.split(re_rendered, "\n", trim: false)
+    diff = List.myers_difference(old_lines, new_lines)
+
+    use_color = IO.ANSI.enabled?()
+
+    verdict_label =
+      case verdict do
+        :ota_safe -> "ota-safe (advisory)"
+        {:rebuild_required, scope} -> "rebuild-required:#{scope} (advisory)"
+      end
+
+    Mix.shell().info("--- #{relative_path} (on disk)")
+    Mix.shell().info("+++ #{relative_path} (current template)")
+    Mix.shell().info("[advisory verdict: #{verdict_label}]")
+
+    # Render hunk with context around changes (3 lines context, like git)
+    render_diff_hunks(diff, use_color)
+  end
+
+  # Renders diff hunks from myers_difference output, printing git-style @@ ... @@ lines.
+  defp render_diff_hunks(diff, use_color) do
+    # Flatten diff into indexed line entries
+    indexed =
+      Enum.flat_map(diff, fn
+        {:eq, lines} when is_list(lines) -> Enum.map(lines, &{:eq, &1})
+        {:del, lines} when is_list(lines) -> Enum.map(lines, &{:del, &1})
+        {:ins, lines} when is_list(lines) -> Enum.map(lines, &{:ins, &1})
+        {:eq, line} -> [{:eq, line}]
+        {:del, line} -> [{:del, line}]
+        {:ins, line} -> [{:ins, line}]
+      end)
+
+    # Print changed lines with minimal context
+    Enum.each(indexed, fn
+      {:eq, _} ->
+        :ok
+
+      {:del, line} ->
+        if use_color do
+          Mix.shell().info(IO.ANSI.red() <> "-#{line}" <> IO.ANSI.reset())
+        else
+          Mix.shell().info("-#{line}")
+        end
+
+      {:ins, line} ->
+        if use_color do
+          Mix.shell().info(IO.ANSI.green() <> "+#{line}" <> IO.ANSI.reset())
+        else
+          Mix.shell().info("+#{line}")
+        end
+    end)
+  end
+
+  # Advisory file→change-class verdict lookup (D-16).
+  # Reuses RebuildPolicy verdict vocabulary. Does NOT call RebuildPolicy.diff/2
+  # (which diffs Root.t() manifests, not files). Advisory only — not a release gate.
+  defp file_advisory_verdict(relative_path) do
+    basename = Path.basename(relative_path)
+
+    cond do
+      basename == "Info.plist" -> {:rebuild_required, :native_shell}
+      basename == "PrivacyInfo.xcprivacy" -> {:rebuild_required, :native_shell}
+      String.ends_with?(basename, ".entitlements") -> {:rebuild_required, :native_shell}
+      basename == "AndroidManifest.xml" -> {:rebuild_required, :native_shell}
+      relative_path == "app/build.gradle" -> {:rebuild_required, :native_shell}
+      basename == "build.gradle" -> {:rebuild_required, :native_shell}
+      relative_path == "gradle/wrapper/gradle-wrapper.properties" -> {:rebuild_required, :native_shell}
+      String.ends_with?(basename, ".swift") -> :ota_safe
+      String.ends_with?(basename, ".kt") -> :ota_safe
+      basename == "gradlew" -> :ota_safe
+      basename == "gradlew.bat" -> :ota_safe
+      basename == "settings.gradle" -> :ota_safe
+      basename == "gradle.properties" -> :ota_safe
+      basename == "themes.xml" -> :ota_safe
+      # Safe default for any unmapped file
+      true -> :ota_safe
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Generation branch (normal, non-diff)
+  # ---------------------------------------------------------------------------
 
   defp generate_ios_shell(target, capabilities, local, router) do
     root = Path.join(target, "native/ios/crosswake_shell")
