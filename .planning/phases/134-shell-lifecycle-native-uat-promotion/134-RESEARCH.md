@@ -927,7 +927,12 @@ there ARE gaps; all test files listed above are new)*
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three resolved during planning (Phase 134 plan-checker pass):
+> OQ-1 → Plan 04 Task 2 pins the repo standard `erlef/setup-beam@fc68ffb…`, `elixir-version: "1.19.5"`, `otp-version: "27.3"` (the `27`/`1.18` below was a placeholder).
+> OQ-2 → Plan 02 Task 1 writes one `.crosswake/shell.json` per platform root and probes both relative to cwd (`--target` overrides).
+> OQ-3 → Plan 01 Task 1 starts `@template_version` at `1`.
 
 1. **OTP/Elixir version for the CI job (D-17)**
    - What we know: The project uses `erlef/setup-beam`; other jobs likely pin a version.
