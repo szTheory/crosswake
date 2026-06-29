@@ -6,13 +6,13 @@ current_phase: 134
 current_phase_name: shell-lifecycle-native-uat-promotion
 status: executing
 stopped_at: Phase 134 context gathered
-last_updated: "2026-06-29T20:49:04.405Z"
+last_updated: "2026-06-29T20:59:17.371Z"
 last_activity: 2026-06-29
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 86
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 134 (shell-lifecycle-native-uat-promotion) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-06-29
 
@@ -157,6 +157,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: @template_version shipped as epoch 2: stamp was genuine template change so bump 1->2 is correct
 - [Phase ?]: router opt threaded through generate_ios/android_shell to capture --router flag in manifest params
 - [Phase ?]: XML/plist stamp placed after <?xml ?> prolog to maintain well-formed XML
+- [Phase ?]: @diff_excluded_templates = [project.pbxproj] only; gradlew/gradlew.bat are diffed (REVIEW FIX finding 6)
+- [Phase ?]: run_diff/4 forks before any write — non-destructiveness is structural (D-13)
+- [Phase ?]: file_advisory_verdict/1 reuses RebuildPolicy vocabulary without calling diff/2 (D-16)
 
 ### Pending Todos
 
@@ -215,10 +218,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 135 P01 | 3 | 2 tasks | 1 files |
 | Phase 134 P00 | 4m | 2 tasks | 4 files |
 | Phase 134 P01 | 9m | 4 tasks | 18 files |
+| Phase 134 P03 | 8 minutes | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-06-29T20:49:04.400Z
+Last session: 2026-06-29T20:59:11.031Z
 Stopped at: Phase 134 context gathered
 Resume file: None
 
