@@ -265,7 +265,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `guides/native_shell_upgrade.md` provides a per-template-version changelog that references `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance; the dangling "patch-or-doc guidance" placeholder in `gen.shell.ex` is replaced with a real pointer to this guide
   4. The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking in an aggregator workflow (modeled on `native-behavioral-proof-gate.yml`); the iOS simulator/device UAT lane remains advisory with honest posture labels in `guides/support_matrix.md`
 
-**Plans**: 2/5 plans executed
+**Plans**: 3/5 plans executed
 **Wave 1**
 
 - [x] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
@@ -273,7 +273,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 134-02-PLAN.md — Wave 2: mix crosswake.shell.status (0/2/1 exit, --format json) (LIFE-02b)
+- [x] 134-02-PLAN.md — Wave 2: mix crosswake.shell.status (0/2/1 exit, --format json) (LIFE-02b)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -340,5 +340,5 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete    | 2026-06-28 |
-| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 2/5 | In Progress|  |
+| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 3/5 | In Progress|  |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete   | 2026-06-28 |
