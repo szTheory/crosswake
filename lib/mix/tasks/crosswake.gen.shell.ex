@@ -14,6 +14,18 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   @switches [target: :string, router: :string, local: :boolean]
   @platforms ~w(ios android)
 
+  @template_version 1
+
+  @doc """
+  Returns the current integer template epoch.
+
+  This is the single source of truth for Plans 02/03 (shell.status / gen.shell --diff)
+  to compare against the stamped manifest version. Never re-parse the module source or
+  duplicate this integer — call this function instead.
+  """
+  @spec template_version() :: pos_integer()
+  def template_version, do: @template_version
+
   @android_templates [
     {"settings.gradle", "android/settings.gradle.eex"},
     {"build.gradle", "android/build.gradle.eex"},
@@ -57,13 +69,14 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
       end
 
     target = Path.expand(opts[:target] || File.cwd!())
-    capabilities = fetch_capabilities(opts[:router])
+    router = opts[:router]
+    capabilities = fetch_capabilities(router)
     local = Keyword.get(opts, :local, false)
 
     generated =
       case platform do
-        "ios" -> generate_ios_shell(target, capabilities, local)
-        "android" -> generate_android_shell(target, capabilities, local)
+        "ios" -> generate_ios_shell(target, capabilities, local, router)
+        "android" -> generate_android_shell(target, capabilities, local, router)
       end
 
     Mix.shell().info("""
@@ -78,7 +91,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     """)
   end
 
-  defp generate_ios_shell(target, capabilities, local) do
+  defp generate_ios_shell(target, capabilities, local, router) do
     root = Path.join(target, "native/ios/crosswake_shell")
     fixtures = Fixtures.export("ios")
 
@@ -88,6 +101,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     ensure_file(readme, shell_readme("ios"))
     render_ios_templates(root, capabilities, local)
     write_fixture_files(root, fixtures)
+    write_shell_manifest(root, "ios", router, local, target)
 
     %{
       root: root,
@@ -99,7 +113,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     }
   end
 
-  defp generate_android_shell(target, capabilities, local) do
+  defp generate_android_shell(target, capabilities, local, router) do
     root = Path.join(target, "native/android/crosswake_shell")
     fixtures = Fixtures.export("android")
 
@@ -110,6 +124,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
     write_fixture_files(Path.join(root, "app/src/main"), fixtures)
 
     ensure_executable(Path.join(root, "gradlew"))
+    write_shell_manifest(root, "android", router, local, target)
 
     %{
       root: root,
@@ -155,7 +170,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
         [
           capabilities: capabilities,
           local: local,
-          version: version
+          version: version,
+          template_version: @template_version
         ] ++ assigns
     )
   end
@@ -257,6 +273,26 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
   defp platform_readme_label("ios"), do: "Xcode"
   defp platform_readme_label("android"), do: "Android Studio"
+
+  defp write_shell_manifest(root, platform, router, local, target) do
+    manifest_path = Path.join([root, ".crosswake", "shell.json"])
+
+    manifest = %{
+      "_comment" => "do not hand-edit — regenerate to update",
+      "crosswake_version" => fetch_version!(),
+      "template_version" => @template_version,
+      "platform" => platform,
+      "generated_at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+      "params" => %{
+        "router" => router,
+        "local" => local,
+        "target" => target
+      }
+    }
+
+    File.mkdir_p!(Path.dirname(manifest_path))
+    File.write!(manifest_path, Jason.encode!(manifest, pretty: true))
+  end
 
   defp ensure_file(path, contents) do
     File.mkdir_p!(Path.dirname(path))
