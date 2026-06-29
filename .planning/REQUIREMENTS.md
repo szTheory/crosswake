@@ -51,9 +51,9 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 - [ ] **LIFE-01a**: The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking (in an aggregator modeled on `native-behavioral-proof-gate.yml`).
 - [ ] **LIFE-01b**: The iOS simulator/device UAT stays advisory, with the support posture honestly labeled in `guides/support_matrix.md` (no over-promise).
-- [ ] **LIFE-02a**: A generated native shell records the `@template_version` and live `crosswake` version that produced it, and a drift test fails if `@template_version` is not bumped when shell templates change.
-- [ ] **LIFE-02b**: A host can run `mix crosswake.shell.status` (reports up-to-date / N versions behind) and `mix crosswake.gen.shell --diff` (prints a non-destructive unified diff against current templates — never overwrites host files).
-- [ ] **LIFE-02c**: A host can follow `guides/native_shell_upgrade.md` (per-template-version changelog referencing `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance); the dangling "patch-or-doc guidance" promise in `gen.shell.ex` is replaced with a real pointer.
+- [x] **LIFE-02a**: A generated native shell records the `@template_version` and live `crosswake` version that produced it, and a drift test fails if `@template_version` is not bumped when shell templates change.
+- [x] **LIFE-02b**: A host can run `mix crosswake.shell.status` (reports up-to-date / N versions behind) and `mix crosswake.gen.shell --diff` (prints a non-destructive unified diff against current templates — never overwrites host files).
+- [x] **LIFE-02c**: A host can follow `guides/native_shell_upgrade.md` (per-template-version changelog referencing `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance); the dangling "patch-or-doc guidance" promise in `gen.shell.ex` is replaced with a real pointer.
 
 ## v2 Requirements (deferred — future milestones)
 
@@ -116,6 +116,6 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | TELEM-04 | Phase 133 | Complete |
 | LIFE-01a | Phase 134 | Pending |
 | LIFE-01b | Phase 134 | Pending |
-| LIFE-02a | Phase 134 | Pending |
-| LIFE-02b | Phase 134 | Pending |
-| LIFE-02c | Phase 134 | Pending |
+| LIFE-02a | Phase 134 | Complete |
+| LIFE-02b | Phase 134 | Complete |
+| LIFE-02c | Phase 134 | Complete |

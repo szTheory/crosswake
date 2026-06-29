@@ -2,19 +2,16 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 135
 status: executing
 stopped_at: Phase 134 context gathered
-last_updated: "2026-06-29T18:50:38.052Z"
-last_activity: 2026-06-28
-last_activity_desc: Phase 135 marked complete
+last_updated: "2026-06-29T20:27:02.832Z"
+last_activity: 2026-06-29
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 19
-  completed_plans: 19
-  percent: 86
-current_phase_name: ci-ops-hardening-release-as-automation-proof-03
+  total_plans: 24
+  completed_plans: 20
+  percent: 83
 ---
 
 # Project State: Crosswake
@@ -24,14 +21,14 @@ current_phase_name: ci-ops-hardening-release-as-automation-proof-03
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 135 — ci-ops-hardening-release-as-automation-proof-03
+**Current focus:** Phase 134 — shell-lifecycle-native-uat-promotion
 
 ## Current Position
 
-Phase: 135 — COMPLETE
-Plan: 1 of 1
+Phase: 134 (shell-lifecycle-native-uat-promotion) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-28 — Phase 135 marked complete
+Last activity: 2026-06-29
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -43,7 +40,7 @@ Last activity: 2026-06-28 — Phase 135 marked complete
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [██████████] 100%
+Progress: [████████░░] 83%
 
 ```
 [          ] 0%
@@ -211,12 +208,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 133 P03 | 8min | 1 tasks | 1 files |
 | Phase 133 P04 | 12min | 3 tasks | 3 files |
 | Phase 135 P01 | 3 | 2 tasks | 1 files |
+| Phase 134 P00 | 4m | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-06-28T19:37:11.518Z
+Last session: 2026-06-29T20:27:02.827Z
 Stopped at: Phase 134 context gathered
-Resume file: .planning/phases/134-shell-lifecycle-native-uat-promotion/134-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

@@ -268,7 +268,7 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 **Plans**: 5 plans (waves 0-4)
 **Wave 1**
 
-- [ ] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
+- [x] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
 - [ ] 134-01-PLAN.md — Wave 1 (keystone): @template_version stamp + .crosswake/shell.json manifest + drift test + bump task (LIFE-02a)
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -340,5 +340,5 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete    | 2026-06-28 |
-| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
+| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 1/5 | In Progress|  |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete   | 2026-06-28 |
