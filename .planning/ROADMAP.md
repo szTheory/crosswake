@@ -266,10 +266,21 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking in an aggregator workflow (modeled on `native-behavioral-proof-gate.yml`); the iOS simulator/device UAT lane remains advisory with honest posture labels in `guides/support_matrix.md`
 
 **Plans**: 5 plans (waves 0-4)
+**Wave 1**
+
 - [ ] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
 - [ ] 134-01-PLAN.md — Wave 1 (keystone): @template_version stamp + .crosswake/shell.json manifest + drift test + bump task (LIFE-02a)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 134-02-PLAN.md — Wave 2: mix crosswake.shell.status (0/2/1 exit, --format json) (LIFE-02b)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 134-03-PLAN.md — Wave 3: mix crosswake.gen.shell --diff (non-destructive unified diff) (LIFE-02b)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 134-04-PLAN.md — Wave 4: upgrade changelog + line-254 fix + android-generated-shell-unit CI lane + support_matrix labels (LIFE-02c, LIFE-01a, LIFE-01b)
 
 ### Phase 135: CI-Ops Hardening — Release-As Automation (PROOF-03)
