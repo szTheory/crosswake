@@ -1,31 +1,16 @@
 defmodule Mix.Tasks.Crosswake.Shell.StatusTest do
   @moduledoc """
-  Scaffold test for LIFE-02b — `mix crosswake.shell.status` exit-code behaviours.
+  Tests for LIFE-02b — `mix crosswake.shell.status` exit-code behaviours.
 
-  Tests are pending-skipped until Mix.Tasks.Crosswake.Shell.Status exists (Plan 02).
-  The module tag `:phase134_pending` excludes these from CI until the task lands.
-
-  Behaviours under test (turning GREEN in Plan 02):
-    - exit 0 when shells are up-to-date
+  Behaviours under test:
+    - exit 0 when shells are up-to-date (stamped == live template_version)
     - exit 0 when no .crosswake/shell.json found (not-a-shell path — non-adopter CI safe)
-    - exit 2 when at least one platform is behind
+    - exit 2 when at least one platform is behind (stamped < live)
     - exit 1 (Mix.raise) on bad / unreadable manifest
+    - --format json emits a decodable per-platform status payload
   """
 
   use ExUnit.Case, async: true
-
-  @moduletag :phase134_pending
-
-  @status_task_module Mix.Tasks.Crosswake.Shell.Status
-
-  # ---------------------------------------------------------------------------
-  # Guard: all tests in this file are skipped until the status task module loads.
-  # Plan 02 removes the guard and wires real assertions.
-  # ---------------------------------------------------------------------------
-
-  defp task_loaded? do
-    Code.ensure_loaded?(@status_task_module)
-  end
 
   # ---------------------------------------------------------------------------
   # Helpers — write a minimal .crosswake/shell.json into a tmp dir and run the
@@ -53,90 +38,100 @@ defmodule Mix.Tasks.Crosswake.Shell.StatusTest do
     result
   end
 
+  # Live template version — the single source of truth (Plan 01 ships this as 2).
+  defp live_version, do: Mix.Tasks.Crosswake.Gen.Shell.template_version()
+
   defp up_to_date_manifest do
     Jason.encode!(%{
-      "template_version" => 1,
-      "platforms" => %{
-        "ios" => %{"template_version" => 1},
-        "android" => %{"template_version" => 1}
-      }
+      "template_version" => live_version(),
+      "platform" => "ios"
     })
   end
 
   defp behind_manifest do
     Jason.encode!(%{
-      "template_version" => 5,
-      "platforms" => %{
-        "ios" => %{"template_version" => 3},
-        "android" => %{"template_version" => 5}
-      }
+      "template_version" => live_version() - 1,
+      "platform" => "ios"
     })
   end
 
   # ---------------------------------------------------------------------------
-  # Tests — pending-skipped until @status_task_module is loaded
+  # Tests
   # ---------------------------------------------------------------------------
 
   test "exit 0 when shells are up to date" do
-    if task_loaded?() do
-      tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
-      File.mkdir_p!(tmp)
+    tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
 
-      try do
-        assert {:exit_code, 0} = run_status(tmp, up_to_date_manifest())
-      after
-        File.rm_rf!(tmp)
-      end
-    else
-      :ok
+    try do
+      assert {:exit_code, 0} = run_status(tmp, up_to_date_manifest())
+    after
+      File.rm_rf!(tmp)
     end
   end
 
   test "exit 0 when no .crosswake/shell.json found (not-a-shell path)" do
-    if task_loaded?() do
-      tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
-      File.mkdir_p!(tmp)
+    tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
 
-      try do
-        assert {:exit_code, 0} = run_status(tmp, :no_file)
-      after
-        File.rm_rf!(tmp)
-      end
-    else
-      :ok
+    try do
+      assert {:exit_code, 0} = run_status(tmp, :no_file)
+    after
+      File.rm_rf!(tmp)
     end
   end
 
-  test "exit 2 when at least one platform is behind" do
-    if task_loaded?() do
-      tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
-      File.mkdir_p!(tmp)
+  test "exit 2 when manifest is behind (stamped < live)" do
+    tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
 
-      try do
-        assert {:exit_code, 2} = run_status(tmp, behind_manifest())
-      after
-        File.rm_rf!(tmp)
-      end
-    else
-      :ok
+    try do
+      assert {:exit_code, 2} = run_status(tmp, behind_manifest())
+    after
+      File.rm_rf!(tmp)
     end
   end
 
-  test "exit 1 (Mix.raise) on bad / unreadable manifest" do
-    if task_loaded?() do
-      tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
-      File.mkdir_p!(tmp)
+  test "exit 1 (Mix.raise) on malformed JSON manifest" do
+    tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
 
-      try do
-        # Write invalid JSON so the manifest parse fails
-        assert_raise Mix.Error, fn ->
-          run_status(tmp, "{not valid json}")
-        end
-      after
-        File.rm_rf!(tmp)
+    try do
+      assert_raise Mix.Error, fn ->
+        run_status(tmp, "{not valid json}")
       end
-    else
-      :ok
+    after
+      File.rm_rf!(tmp)
+    end
+  end
+
+  test "--format json emits decodable per-platform payload" do
+    tmp = System.tmp_dir!() |> Path.join("cw_status_test_#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
+
+    try do
+      # Capture output by using Mix.shell() mock
+      output_lines =
+        ExUnit.CaptureIO.capture_io(fn ->
+          run_status(tmp, up_to_date_manifest(), ["--format", "json"])
+        end)
+
+      # The JSON payload should decode to a map with status and platforms keys
+      decoded = Jason.decode!(output_lines)
+      assert decoded["status"] == "up_to_date"
+      assert is_map(decoded["platforms"])
+      assert decoded["current_version"] == live_version()
+
+      # Each present platform entry has the required keys
+      for {_platform, entry} <- decoded["platforms"] do
+        assert Map.has_key?(entry, "status")
+        assert Map.has_key?(entry, "stamped_version")
+        assert Map.has_key?(entry, "current_version")
+        assert Map.has_key?(entry, "versions_behind")
+        assert Map.has_key?(entry, "highest_severity")
+      end
+    after
+      File.rm_rf!(tmp)
     end
   end
 end
