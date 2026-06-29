@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
   @switches [target: :string, router: :string, local: :boolean]
   @platforms ~w(ios android)
 
-  @template_version 1
+  @template_version 2
 
   @doc """
   Returns the current integer template epoch.

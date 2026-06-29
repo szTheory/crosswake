@@ -23,7 +23,7 @@ defmodule Crosswake.Proof.Phase134TemplateVersionDriftTest do
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "shell"])
 
-  @checked_in_hash "0000000000000000000000000000000000000000000000000000000000000000"
+  @checked_in_hash "54ca60edcbe7f16826b782514492c48c4d8d67d8d1b81ad0fb1e40b5b97b0454"
 
   # ---------------------------------------------------------------------------
   # SC#1 — drift guard: live template hash must match the checked-in hash.
