@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
+current_phase: 134
+current_phase_name: shell-lifecycle-native-uat-promotion
 status: executing
 stopped_at: Phase 134 context gathered
-last_updated: "2026-06-29T20:27:02.832Z"
+last_updated: "2026-06-29T20:39:47.278Z"
 last_activity: 2026-06-29
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 24
-  completed_plans: 20
-  percent: 83
+  completed_plans: 21
+  percent: 86
 ---
 
 # Project State: Crosswake
@@ -26,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 134 (shell-lifecycle-native-uat-promotion) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-29
 
@@ -152,6 +154,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Threadline :exception empty-metadata caveat documented; stop ⊇ start holds for :stop not :exception
 - [Phase ?]: D-01 audit-then-prove: all 5 PROOF-03 SCs audited GREEN, no production-code change (Phase 135 plan 01)
 - [Phase ?]: Q1 resolved: nested mix test for deferred-failure self-assertion; structural read cannot prove green (Phase 135 plan 01)
+- [Phase ?]: @template_version shipped as epoch 2: stamp was genuine template change so bump 1->2 is correct
+- [Phase ?]: router opt threaded through generate_ios/android_shell to capture --router flag in manifest params
+- [Phase ?]: XML/plist stamp placed after <?xml ?> prolog to maintain well-formed XML
 
 ### Pending Todos
 
@@ -209,10 +214,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 133 P04 | 12min | 3 tasks | 3 files |
 | Phase 135 P01 | 3 | 2 tasks | 1 files |
 | Phase 134 P00 | 4m | 2 tasks | 4 files |
+| Phase 134 P01 | 9m | 4 tasks | 18 files |
 
 ## Session Continuity
 
-Last session: 2026-06-29T20:27:02.827Z
+Last session: 2026-06-29T20:39:39.162Z
 Stopped at: Phase 134 context gathered
 Resume file: None
 
