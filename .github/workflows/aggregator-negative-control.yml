@@ -1,0 +1,115 @@
+name: Aggregator Negative Control
+# Hermetically PROVES the re-actors/alls-green rollup pattern — shared byte-for-byte by all three
+# merge-blocking aggregators (native-behavioral-proof, contract-drift, offline-sync-e2e) — actually
+# fails on a RED leaf AND on a SKIPPED leaf, and passes on an all-green leaf. Synthetic leaves on
+# ubuntu-latest, ~30s. No Android, no macOS, no live PR.
+#
+# This discharges 134-UAT Test #1 claim 2 (rollup semantics) FOREVER, without the live-PR
+# observation it used to require. The skipped-leaf arm is the load-bearing one: it is the only case
+# that distinguishes the correct design (if:always() + alls-green, which treats skipped as
+# not-success) from "footgun 1" (a naive needs:-only rollup that lets a skipped leaf pass). If a
+# future alls-green pin bump changes skip/failure handling, the merge-blocking gate below goes RED.
+#
+# NAMING DISCIPLINE: ONLY the final assertion job is named `merge-blocking-*`, so it is auto-
+# discovered by script/list_merge_blocking_checks.py and watched by required-checks-audit.yml. The
+# synthetic leaves and intermediate rollups are intentionally red/skipped plumbing and are
+# deliberately NOT merge-blocking-named (so they don't pollute the discovered-lane list).
+#
+# DO NOT "simplify": the `if: ${{ false }}` on skip-leaf (-> result: skipped) and the `if: always()`
+# on control-rollup-skip (forces the rollup to run over the skipped leaf) are both required for the
+# footgun-1 proof to be faithful. Pass ONLY `jobs:` to alls-green — setting allowed-failures /
+# allowed-skips would mask the exact behavior being proven.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ---- FAILURE arm: a hard-failing leaf must fail the rollup ----
+  fail-leaf:
+    name: fail-leaf
+    runs-on: ubuntu-latest
+    steps:
+      - name: Intentionally fail
+        run: exit 1
+
+  control-rollup-fail:
+    name: control-rollup-fail
+    if: always() # mirror the real aggregators exactly
+    needs: [fail-leaf]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up (expected to FAIL)
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+
+  # ---- SKIPPED arm: a skipped leaf must ALSO fail the rollup (footgun 1) ----
+  skip-leaf:
+    name: skip-leaf
+    if: ${{ false }} # never runs -> result == skipped (DO NOT change to continue-on-error)
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "this never executes"
+
+  control-rollup-skip:
+    name: control-rollup-skip
+    if: always() # MANDATORY — else the rollup itself skips and result == skipped, not failure
+    needs: [skip-leaf]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up over a skipped leaf (expected to FAIL — skipped != success)
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+
+  # ---- POSITIVE control: a passing leaf must roll up GREEN ----
+  pass-leaf:
+    name: pass-leaf
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok
+
+  control-rollup-pass:
+    name: control-rollup-pass
+    if: always()
+    needs: [pass-leaf]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up (expected to PASS)
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+
+  # ---- THE GATE: assert all three rollups landed on the expected result ----
+  merge-blocking-aggregator-negative-control:
+    name: merge-blocking-aggregator-negative-control
+    if: always()
+    needs: [control-rollup-fail, control-rollup-skip, control-rollup-pass]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assert alls-green rollup semantics
+        env:
+          FAIL_R: ${{ needs.control-rollup-fail.result }}
+          SKIP_R: ${{ needs.control-rollup-skip.result }}
+          PASS_R: ${{ needs.control-rollup-pass.result }}
+        run: |
+          set -euo pipefail
+          echo "control-rollup-fail.result = $FAIL_R (expect failure)"
+          echo "control-rollup-skip.result = $SKIP_R (expect failure)"
+          echo "control-rollup-pass.result = $PASS_R (expect success)"
+          rc=0
+          [ "$FAIL_R" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a RED leaf"; rc=1; }
+          [ "$SKIP_R" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a SKIPPED leaf (footgun 1 regressed)"; rc=1; }
+          [ "$PASS_R" = "success" ] || { echo "::error::BROKEN — alls-green did NOT pass on an all-green leaf"; rc=1; }
+          if [ "$rc" -eq 0 ]; then
+            echo "OK — alls-green fails on red AND skipped, passes on green. Rollup semantics proven." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$rc"
