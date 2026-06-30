@@ -2,50 +2,46 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 135
-current_phase_name: PROOF-03
-status: complete
-stopped_at: v16.0 origin-synced (PR #40 merged, main=029aa4a); milestone audit PASSED; only remaining gate = admin lane registration, then /gsd-complete-milestone
-last_updated: "2026-06-30T13:55:13Z"
+current_phase: 0
+status: Awaiting next milestone
+stopped_at: Phase 134 context gathered
+last_updated: "2026-06-30T14:30:28.479Z"
 last_activity: 2026-06-30
-last_activity_desc: PR #40 merged to origin (v16.0 sync); CI green after 5 lane fixes; milestone audit PASSED 27/27
+last_activity_desc: Milestone v16.0 completed and archived
 progress:
   total_phases: 7
   completed_phases: 7
   total_plans: 24
   completed_plans: 24
   percent: 100
+current_phase_name: PROOF-03
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-25)
+See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v16.0 SHIPPED to origin (PR #40 merged) — one admin step (lane registration) then complete-milestone
+**Current focus:** Planning next milestone (`/gsd-new-milestone`) — v16.0 shipped + archived 2026-06-30. One admin ship-gate carried: register the 18 `merge-blocking-*` lanes.
 
 ## Current Position
 
-Milestone: v16.0 — all 7 phases (129–135) complete; ORIGIN-SYNCED (main=029aa4a); audit PASSED 27/27
+Phase: Milestone v16.0 complete
 Plan: —
-Status: v16.0 origin-synced + green on CI. Phase 134's last human-UAT item (Android lane merge-blocking) was shifted left into CI (0 recurring human verification). See `## v16.0 Completion Handoff` below for the exact remaining steps.
-Last activity: 2026-06-30 — PR #40 merged; native-gate UAT automated (A: phase134_native_gate_blocking_proof_test [pure Elixir wiring proof], B: aggregator-negative-control.yml [single-job alls-green semantics proof], C: required-checks-audit.yml [scheduled drift auditor])
+Status: Awaiting next milestone
+Last activity: 2026-06-30 — Milestone v16.0 completed and archived
 
-## v16.0 Completion Handoff (fresh context: do these in order)
+## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
-**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN, see `.planning/v16.0-MILESTONE-AUDIT.md`); PR #40 merged → origin at v16.0; CI green after 5 lane fixes (File.cd! race, android `mix deps.get`, negative-control single-job redesign, sdkmanager retry, PyYAML-independence).
+**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN); PR #40 merged → origin at v16.0; CI green after 5 lane fixes (File.cd! race, android `mix deps.get`, negative-control single-job redesign, sdkmanager retry, PyYAML-independence). **`/gsd-complete-milestone v16.0` run 2026-06-30** — ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v16.0-*`, MILESTONES.md + PROJECT.md evolved, REQUIREMENTS.md removed (fresh for next milestone), tag `v16.0` created.
 
-**Remaining — 2 steps:**
-
-1. **Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main (`merge-blocking rulestead proof (hermetic)`, `brand-structural`); the rest — incl. `merge-blocking-native-behavioral-proof` and the new `merge-blocking-aggregator-negative-control` — run and can go red but DON'T block merge. To make them actually merge-blocking:
+**Carried ship-gate — Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main (`merge-blocking rulestead proof (hermetic)`, `brand-structural`); the rest — incl. `merge-blocking-native-behavioral-proof` and `merge-blocking-aggregator-negative-control` — run and can go red but DON'T block merge. To make them actually merge-blocking:
    - First confirm the lanes are green on `main` post-merge (the registrar's green-first preflight skips not-yet-green lanes): `gh run list --branch main --limit 15`.
-   - Then (admin gh auth = repo owner szTheory, already authed): `DRY_RUN=0 script/register_required_checks.sh`
+   - Then (admin gh auth = repo owner szTheory): `DRY_RUN=0 script/register_required_checks.sh`
    - (Optional, enables the standing drift auditor) provision repo secret `BRANCH_PROTECTION_READ_TOKEN` (Administration:read + Issues:write) so `.github/workflows/required-checks-audit.yml` can run.
-   - NOT auto-applied this session: mutating branch protection is the deliberate human go-decision (Artifact C design / PROOF-03 D-03) and was premature (main CI still running at merge time).
-
-2. **Complete the milestone:** `/gsd-complete-milestone v16.0` — archives v16.0 and preps the next version. (Audit already PASSED, so this is unblocked; registration above is a ship-hardening step, not an archival blocker.)
+   - NOT auto-applied: mutating branch protection is the deliberate human go-decision (Artifact C design / PROOF-03 D-03).
 
 **Carried tech-debt (non-blocking, from the audit):** TELEM-04 Side B vacuity (133, assessed: fragile fix, non-exposed — leave) and `companion_compatibility.md:51-54` prose (132, assessed: not actually a bug — leave). Pre-existing MIRROR_PUSH_TOKEN scope still unexercised.
 
@@ -246,4 +242,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Plan Phase 129 with `/gsd-plan-phase 129`
+- Start the next milestone with /gsd-new-milestone

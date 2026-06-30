@@ -1,5 +1,38 @@
 # Project Milestones: Crosswake
 
+## v16.0 Companion Extraction & Package-Family Discipline (Shipped: 2026-06-30)
+
+**Phases completed:** 7 phases (129-135), 24 plans
+**Git range:** `docs(129)` context (2026-06-25) → `docs(v16.0)` origin-sync (2026-06-30); 2026-06-25 → 2026-06-30
+**Requirements:** 27/27 v1 satisfied (SEAM-01..05, EXTRACT-01..07, COMPAT-01..03, PROOF-01..03, TELEM-01..04, LIFE-01a/01b/02a/02b/02c). Audit `passed`; integration CLEAN (0 blockers, 5/5 E2E flows).
+
+**Delivered:** Turned the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and shipped the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires. Module names preserved throughout (`Crosswake.Companions.Rulestead`/`.Rindle`) so extraction is non-breaking.
+
+**Key accomplishments:**
+
+- **Frozen companion contract surface (SEAM):** Replaced the stale "companions live in-tree" framing with a frozen public-surface paragraph naming exactly the 5 public modules and asserting semver stability under `crosswake` >= 0.1.0 — the stable seam every extracted package depends on.
+- **Extraction mechanics + footgun guards (EXTRACT/COMPAT):** `rulestead` then `rindle` extracted to standalone `packages/crosswake_*` Hex projects (own `mix.exs`, own `@version`, source + tests moved out of core, module names preserved). Stdlib-only AST guards (`check_source/1`, `check_ensure_loaded_placement/1` via `Macro.prewalk`) make EXTRACT-03/04 merge-blocking and non-vacuous; RouteGate gained `:dependency_missing` as a fail-closed Denial reason so an absent companion denies rather than crashes. A parameterized extraction recipe captured the pattern for the sigra/chimeway/threadline fast-follow.
+- **Publish pipeline + clean-room proof (PROOF):** `publish-hex-rulestead`/`-rindle` and `clean-room-proof-*` lanes in `release-please.yml`, with companions carried as separate `elixir` release components (independent versioning, explicitly NOT in the core lockstep group).
+- **Compatibility matrix + drift discipline (COMPAT):** `guides/companion_compatibility.md` documents each companion's minimum core version; a drift test keyed on the `Requires crosswake` column fails the build if the matrix and the `~> 0.1` requirement diverge.
+- **Telemetry as public API (TELEM):** `Crosswake.Telemetry` public surface + opt-in PII-safe structured logger (core never auto-attaches), a declared `events/0` ↔ emission-site contract test, and `guides/telemetry.md` — the prerequisite for the deferred operator dashboard.
+- **Generated-shell lifecycle + native UAT (LIFE):** `@template_version`/live-`crosswake`-version stamping with a drift test, `mix crosswake.shell.status` (N-versions-behind) and `mix crosswake.gen.shell --diff` (non-destructive), and `guides/native_shell_upgrade.md` per-version changelog; native shell generation promoted to a real UAT lane.
+- **CI-Ops hardening — 0-human release ops (PROOF-03):** Fail-closed `release-as` staleness guard, auto-cleanup PR that strips stale pins on release, `if: failure()` alert issues on the publish/clean-room jobs, and parametric `register_required_checks.sh` / fail-closed `check_required_checks_registered.sh` superseding the per-gate scripts. A hermetic ExUnit proof pins all 5 CI-ops artifacts as merge-blocking (RED→GREEN via `GIT_DIR` injection, no production code changed).
+
+**Tech debt carried (non-blocking, from audit):**
+
+- **TELEM-04 Side B vacuity** (assessed, deferred) — emitted⇒declared can't catch an undeclared event because emission uses computed names and `:telemetry` has no wildcard handler; the declared set is built from the same source emitters use, so divergence is structurally near-impossible (0 undeclared confirmed). Not worth a fragile test on a green lane.
+- **Compat prose** (`companion_compatibility.md:51-54`) — describes real engine-pin friction, not a contradiction with the requirement cell; drift test unaffected. Left as-is.
+- Carried from prior milestones (non-blocking): WR-01/02/03 native-proof gaps, `MIRROR_PUSH_TOKEN` scope unexercised.
+
+**Known ship-gates at close (one-time, human, milestone-boundary — not gaps):**
+
+- Origin-sync (PR #40) — local `main` was a clean 64-commit superset of `origin/main`; merged 2026-06-30 (`029aa4a` + `f382291` origin-synced).
+- **Register required checks** — provision `BRANCH_PROTECTION_READ_TOKEN`, run `DRY_RUN=0 script/register_required_checks.sh` once to register the 18 unregistered `merge-blocking-*` lanes. Admin-gated by design; **still pending.**
+
+See `.planning/milestones/v16.0-MILESTONE-AUDIT.md` for the full audit.
+
+---
+
 ## v15.0 See It Run — Experiential First-Run DX (Shipped: 2026-06-24)
 
 **Phases completed:** 4 phases (125-128), 12 plans
