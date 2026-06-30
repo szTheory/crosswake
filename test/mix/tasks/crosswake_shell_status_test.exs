@@ -10,7 +10,15 @@ defmodule Mix.Tasks.Crosswake.Shell.StatusTest do
     - --format json emits a decodable per-platform status payload
   """
 
-  use ExUnit.Case, async: true
+  # async: false — run_status/3 changes the global process working directory via
+  # File.cd!/2 while exercising the mix task. Under async: true it raced with the
+  # concurrent crosswake_gen_shell_test.exs, whose template render resolves a
+  # CWD-relative _build path (Application.app_dir) and then failed with File.Error
+  # when CWD pointed at this test's tmp dir. async: false serializes it (matching
+  # crosswake_doctor_test.exs and crosswake_gen_shell_diff_test.exs), eliminating
+  # the race. (deferred-items.md item 1 — confirmed as the cause of red broad-suite
+  # CI lanes on PR #40.)
+  use ExUnit.Case, async: false
 
   # ---------------------------------------------------------------------------
   # Helpers — write a minimal .crosswake/shell.json into a tmp dir and run the
