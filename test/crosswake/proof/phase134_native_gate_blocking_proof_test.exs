@@ -14,13 +14,14 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
   Literal-presence facts are asserted via `File.read!` + `String.contains?`. Structural
   facts that a substring cannot prove (list membership in `needs:`, `if: always()` on THIS
-  job) are delegated to `script/assert_aggregator_wiring.py` via `System.cmd` — the same
-  python3+PyYAML pattern phase135 SC5 already relies on (so it is an established dependency
-  of this hermetic lane). The structural check returns exit 2 when the aggregator is renamed,
-  which fails the assertion: a non-vacuity guard against silent topology drift.
+  job) are checked in pure Elixir: `aggregator_wiring_errors/3` scopes to the aggregator's
+  YAML block (`job_block/2`) and verifies `if: always()`, `needs:` membership, and
+  alls-green/`toJSON(needs)`. A renamed/removed aggregator yields a "job not found" error
+  (non-vacuity guard). No python/PyYAML — the lane stays hermetic and green everywhere
+  (an earlier python+PyYAML version reddened proof lanes whose runners lacked PyYAML).
 
-  Untagged. `async: true` — read-only filesystem + a stateless subprocess; no Application
-  state mutation and (per the deferred-items.md flaky-test lesson) no `File.cd!`.
+  Untagged. `async: true` — read-only filesystem only; no Application state mutation and
+  (per the deferred-items.md flaky-test lesson) no `File.cd!`.
 
   Stable ids (LIFE-01a):
     - proof.life_01a.gate.aggregator_job
@@ -40,7 +41,6 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
   @gate ".github/workflows/native-behavioral-proof-gate.yml"
   @negctl ".github/workflows/aggregator-negative-control.yml"
-  @wiring_script "script/assert_aggregator_wiring.py"
 
   # ---------------------------------------------------------------------------
   # Claim 1a — literal presence of the load-bearing aggregator tokens.
@@ -80,31 +80,26 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
   # ---------------------------------------------------------------------------
   # Claim 1b — structural wiring: if:always() on THIS job, both leaves in needs:,
-  # alls-green/toJSON(needs). Delegated to PyYAML; exit 2 (job-not-found) fails here.
+  # alls-green/toJSON(needs). Pure Elixir (scoped to the aggregator's YAML block) —
+  # no python/PyYAML, so the check stays hermetic and green on every merge-blocking
+  # lane. A renamed/removed aggregator job surfaces as "job not found".
   # ---------------------------------------------------------------------------
 
   test "aggregator structurally gates on both android-package-unit and android-generated-shell-unit" do
-    {out, code} =
-      System.cmd(
-        "python3",
-        [
-          @wiring_script,
-          @gate,
-          "merge-blocking-native-behavioral-proof",
-          "android-package-unit",
-          "android-generated-shell-unit"
-        ],
-        stderr_to_stdout: true
-      )
+    errors =
+      aggregator_wiring_errors(@gate, "merge-blocking-native-behavioral-proof", [
+        "android-package-unit",
+        "android-generated-shell-unit"
+      ])
 
-    assert code == 0,
+    assert errors == [],
            ProofAssertions.stable_id_message(
              "proof.life_01a.gate.structural_wiring",
              "aggregator must have if:always(), needs:{android-package-unit,android-generated-shell-unit}, and alls-green/toJSON(needs)",
-             @wiring_script,
-             "exit #{code}, output: #{String.trim(out)}",
              @gate,
-             "fix the aggregator wiring the script reports as MISSING; both leaves must be in needs: and if:always() must be set",
+             "wiring errors: #{inspect(errors)}",
+             @gate,
+             "fix the reported wiring; both leaves must be in needs: and if:always() must be set",
              :merge_blocking
            )
   end
@@ -157,15 +152,14 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
   test "sibling merge-blocking aggregators share the same rollup wiring" do
     for {file, aggregator, leaves} <- @siblings do
-      {out, code} =
-        System.cmd("python3", [@wiring_script, file, aggregator] ++ leaves, stderr_to_stdout: true)
+      errors = aggregator_wiring_errors(file, aggregator, leaves)
 
-      assert code == 0,
+      assert errors == [],
              ProofAssertions.stable_id_message(
                "proof.life_01a.gate.sibling_wiring.#{aggregator}",
                "sibling aggregator #{aggregator} must share the if:always()+needs+alls-green pattern",
-               @wiring_script,
-               "exit #{code}, output: #{String.trim(out)}",
+               file,
+               "wiring errors: #{inspect(errors)}",
                file,
                "the shared aggregator rollup pattern regressed in #{file}",
                :merge_blocking
@@ -196,6 +190,63 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
                "do not remove #{what} — it proves alls-green fails on a skipped leaf (footgun 1)",
                :merge_blocking
              )
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Pure-Elixir structural wiring check (no python/PyYAML — stays hermetic).
+  # Scopes to the aggregator's YAML block and returns a list of wiring errors
+  # ([] == fully wired). Robust for this repo's single-line `needs: [a, b]` form.
+  # ---------------------------------------------------------------------------
+
+  defp aggregator_wiring_errors(file, aggregator, leaves) do
+    case job_block(File.read!(file), aggregator) do
+      nil ->
+        ["aggregator job '#{aggregator}' not found in #{file}"]
+
+      block ->
+        if_errors =
+          if Regex.match?(~r/^\s+if:\s*always\(\)\s*(#.*)?$/m, block),
+            do: [],
+            else: ["'#{aggregator}' must declare `if: always()` (a skipped dep would else count as success)"]
+
+        alls_green_errors =
+          if String.contains?(block, "re-actors/alls-green@") and String.contains?(block, "toJSON(needs)"),
+            do: [],
+            else: ["'#{aggregator}' must use re-actors/alls-green with `jobs: ${{ toJSON(needs) }}`"]
+
+        if_errors ++ alls_green_errors ++ missing_needs(block, leaves)
+    end
+  end
+
+  # The aggregator's YAML block: from its 2-space-indented job key until the next
+  # job key (2-space) or top-level key (0-space). Blank/deeper-indented lines stay in.
+  defp job_block(src, aggregator) do
+    lines = String.split(src, "\n")
+
+    case Enum.find_index(lines, &Regex.match?(~r/^  #{Regex.escape(aggregator)}:\s*(#.*)?$/, &1)) do
+      nil ->
+        nil
+
+      i ->
+        lines
+        |> Enum.drop(i + 1)
+        |> Enum.take_while(fn l -> not Regex.match?(~r/^ {0,2}\S/, l) end)
+        |> Enum.join("\n")
+    end
+  end
+
+  # Each leaf must appear in the block's `needs: [ ... ]` list.
+  defp missing_needs(block, leaves) do
+    declared =
+      case Regex.run(~r/needs:\s*\[([^\]]*)\]/, block) do
+        [_, inner] -> inner |> String.split(",") |> Enum.map(&String.trim/1)
+        _ -> []
+      end
+
+    case Enum.reject(leaves, &(&1 in declared)) do
+      [] -> []
+      missing -> ["needs: is missing #{inspect(missing)} (declared: #{inspect(declared)})"]
     end
   end
 

@@ -20,8 +20,29 @@ import sys
 try:
     import yaml
 except ImportError:
-    print("[crosswake] FAIL: PyYAML is required (pip install pyyaml)", file=sys.stderr)
-    sys.exit(2)
+    # Self-bootstrap PyYAML. GitHub-hosted runners are inconsistent about whether the
+    # `python3` on PATH already has PyYAML, so a hermetic proof lane that shells to this
+    # script must not depend on ambient availability. Try a few install strategies
+    # (plain, --user, and PEP 668 --break-system-packages) before giving up.
+    import subprocess
+
+    yaml = None
+    for _extra in ([], ["--user"], ["--break-system-packages"]):
+        try:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "--quiet", *_extra, "pyyaml"],
+                check=True,
+                capture_output=True,
+            )
+            import yaml  # noqa: F811
+            break
+        except Exception:
+            yaml = None
+            continue
+
+    if yaml is None:
+        print("[crosswake] FAIL: PyYAML is required (pip install pyyaml)", file=sys.stderr)
+        sys.exit(2)
 
 
 def main() -> int:
