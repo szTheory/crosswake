@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 134
-current_phase_name: shell-lifecycle-native-uat-promotion
-status: verifying
-stopped_at: Phase 134 context gathered
-last_updated: "2026-06-29T21:08:15.161Z"
-last_activity: 2026-06-29
+current_phase: 135
+current_phase_name: PROOF-03
+status: complete
+stopped_at: v16.0 phases 129-135 all complete (7/7); awaiting origin-sync (PR #40) + admin lane registration
+last_updated: "2026-06-30T03:02:39.043Z"
+last_activity: 2026-06-30
+last_activity_desc: Phase 134 verified passed (native-gate UAT shifted left into CI); milestone v16.0 code-complete 7/7
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 24
   completed_plans: 24
   percent: 100
@@ -23,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 134 — shell-lifecycle-native-uat-promotion
+**Current focus:** v16.0 code-complete (7/7) — shipping via origin-sync PR #40, then admin lane registration
 
 ## Current Position
 
-Phase: 134 (shell-lifecycle-native-uat-promotion) — EXECUTING
-Plan: 5 of 5
-Status: Plans 5/5 complete + suite green; verification human_needed — 134-UAT.md tracks 1 live-PR/CI item (Android lane merge-blocking), deferred to origin-sync boundary
-Last activity: 2026-06-29
+Milestone: v16.0 — all 7 phases (129–135) complete + suite green (1207/0)
+Plan: —
+Status: COMPLETE (code). Phase 134's last human-UAT item (Android lane merge-blocking) was shifted left into CI — 0 recurring human verification. Remaining gates are human, one-time, milestone-boundary: (1) merge origin-sync PR #40 (local main is a clean 64-commit superset of origin/main); (2) provision BRANCH_PROTECTION_READ_TOKEN + run `DRY_RUN=0 script/register_required_checks.sh` once (registers the 18 unregistered lanes incl. the new merge-blocking-aggregator-negative-control). After sync lands → /gsd-audit-milestone then /gsd-complete-milestone.
+Last activity: 2026-06-30 — Phase 134 verified passed; native-gate UAT automated (A: phase134_native_gate_blocking_proof_test, B: aggregator-negative-control.yml, C: required-checks-audit.yml)
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -42,11 +43,11 @@ Last activity: 2026-06-29
 >   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
 >   the gate is a tooling false-positive, not a dropped decision.
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ```
-[          ] 0%
-Phase 129 ──────────────────────────────────────────────── Phase 134
+[██████████] 100%
+Phase 129 ──────────────────────────────────────────────── Phase 135 ✓
 ```
 
 ## Performance Metrics
