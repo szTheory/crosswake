@@ -149,3 +149,52 @@ defmodule Crosswake.TestSupport.BrokenCompanion do
     }
   end
 end
+
+defmodule Crosswake.TestSupport.StubTelemetryCompanion do
+  @moduledoc false
+  @behaviour Crosswake.Companion
+
+  @impl true
+  def companion_id, do: :stub_telemetry
+
+  @impl true
+  def enabled?(_config), do: true
+
+  @impl true
+  def route_gated?(_route, _context), do: :pass
+
+  @impl true
+  def kill_switch_active?(_context), do: false
+
+  @impl true
+  def validate_dependency, do: :ok
+
+  @impl true
+  def report_state do
+    %Crosswake.Companion.State{
+      companion_id: :stub_telemetry,
+      enabled: true,
+      dependency_status: :present,
+      gate_status: :unconfigured,
+      kill_switch_status: :unconfigured,
+      checked_at: System.monotonic_time(:millisecond)
+    }
+  end
+
+  # Optional callback — proves the companion telemetry_events/0 merge mechanism (D-17).
+  # @impl true required: Elixir 1.19 tracks optional callbacks in behaviour_info(:callbacks)
+  # and warns if @impl is absent (contrary to earlier Elixir convention).
+  @impl true
+  def telemetry_events do
+    [
+      %{
+        event: [:crosswake, :stub_telemetry, :example],
+        tier: :active,
+        description:
+          "Stub telemetry event for testing the companion merge mechanism (TELEM-04 D-17).",
+        measurements: [:duration],
+        metadata: [:companion_id]
+      }
+    ]
+  end
+end

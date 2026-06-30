@@ -135,7 +135,22 @@ install_android_tools_if_needed() {
     )
   fi
 
-  sdkmanager "${packages[@]}"
+  # Retry sdkmanager — package downloads are an occasional CI flake (e.g. a corrupt
+  # build-tools zip: "Error on ZipFile unknown archive"). Without this, a transient
+  # network/download failure reddens the merge-blocking native-behavioral-proof lane
+  # and blocks an otherwise-mergeable PR. Re-download on failure (usually succeeds).
+  local attempt
+  for attempt in 1 2 3; do
+    if sdkmanager "${packages[@]}"; then
+      return 0
+    fi
+    if [[ "${attempt}" -eq 3 ]]; then
+      echo "[verify-android] sdkmanager failed after 3 attempts" >&2
+      return 1
+    fi
+    echo "[verify-android] sdkmanager attempt ${attempt} failed (transient SDK download?); retrying..." >&2
+    sleep $((attempt * 5))
+  done
 }
 
 create_avd_if_needed() {

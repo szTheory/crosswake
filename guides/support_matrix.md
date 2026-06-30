@@ -66,8 +66,8 @@ Bridge is not high-frequency or mutation authority.
 
 | Target | Version | Baseline | Proof Status | Proof Hook | Boundaries | Notes |
 |--------|---------|----------|--------------|------------|------------|-------|
-| ios_shell | Hex-matched | supported | verification required | clean-room-proof-ios; script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. |
-| android_shell | Hex-matched | supported | verification required | clean-room-proof-android; script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Default non-local scaffolds resolve `io.github.sztheory:crosswake-shell-core-android` via Maven Central at the Crosswake package version; release-time clean-room proof confirms external resolution and `gradle build`. |
+| ios_shell | Hex-matched | supported | verification required | clean-room-proof-ios; script/verify_generated_ios_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Default non-local scaffolds resolve `https://github.com/szTheory/crosswake-shell-core-ios.git` via SwiftPM at the Crosswake package version; release-time clean-room proof confirms external resolution and `swift build`. advisory — not wired as a required CI lane; macOS/Xcode toolchain not guaranteed in CI. |
+| android_shell | Hex-matched | supported | supported | native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh | [View Boundaries](native_shell.md#boundary-warnings--rough-edges) | Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. |
 
 ## Capability Families
 

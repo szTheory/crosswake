@@ -49,9 +49,11 @@ defmodule Crosswake.SupportMatrixTest do
     assert Enum.map(matrix.android, & &1.baseline_status) == [:supported]
     assert Enum.map(matrix.android, & &1.proof_status) == [:supported]
 
+    # D-17/D-20 (Phase 134): android_shell promoted to :supported proof_status — merge-blocking
+    # JVM hermetic lane via android-generated-shell-unit. ios_shell stays :verification_required.
     assert Enum.map(matrix.shells, &{&1.target, &1.baseline_status, &1.proof_status})
            |> Enum.sort() == [
-             {"android_shell", :supported, :verification_required},
+             {"android_shell", :supported, :supported},
              {"ios_shell", :supported, :verification_required}
            ]
 

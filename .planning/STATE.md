@@ -2,18 +2,19 @@
 gsd_state_version: 1.0
 milestone: v16.0
 milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 132
-current_phase_name: generalization-proof-rindle-compat-matrix
-status: phase_complete
-stopped_at: Phase 132 complete — verification passed (items 2&3 transferred to Phase 135/PROOF-03)
-last_updated: "2026-06-26T20:32:16Z"
-last_activity: 2026-06-26
+current_phase: 135
+current_phase_name: PROOF-03
+status: complete
+stopped_at: v16.0 phases 129-135 all complete (7/7); awaiting origin-sync (PR #40) + admin lane registration
+last_updated: "2026-06-30T03:02:39.043Z"
+last_activity: 2026-06-30
+last_activity_desc: Phase 134 verified passed (native-gate UAT shifted left into CI); milestone v16.0 code-complete 7/7
 progress:
   total_phases: 7
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
-  percent: 57
+  completed_phases: 7
+  total_plans: 24
+  completed_plans: 24
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -23,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 132 COMPLETE — verification passed; Phase 135 (PROOF-03 CI-ops) implemented + landed on local main (v16.0 WIP), syncs to origin at milestone boundary
+**Current focus:** v16.0 code-complete (7/7) — shipping via origin-sync PR #40, then admin lane registration
 
 ## Current Position
 
-Phase: 132 (generalization-proof-rindle-compat-matrix) — COMPLETE (verification passed 2026-06-26)
-Plan: 4 of 4
-Status: Phase verified. Residual CI-ops items (release-as removal, post-publish proof confirmation) transferred to Phase 135 (PROOF-03), implemented + landed on local main 2026-06-26 (v16.0 WIP). Next: plan 133/134; v16.0 (incl. Phase 135) syncs to origin in one catch-up PR at the milestone boundary (#28/#30 pattern).
-Last activity: 2026-06-26
+Milestone: v16.0 — all 7 phases (129–135) complete + suite green (1207/0)
+Plan: —
+Status: COMPLETE (code). Phase 134's last human-UAT item (Android lane merge-blocking) was shifted left into CI — 0 recurring human verification. Remaining gates are human, one-time, milestone-boundary: (1) merge origin-sync PR #40 (local main is a clean 64-commit superset of origin/main); (2) provision BRANCH_PROTECTION_READ_TOKEN + run `DRY_RUN=0 script/register_required_checks.sh` once (registers the 18 unregistered lanes incl. the new merge-blocking-aggregator-negative-control). After sync lands → /gsd-audit-milestone then /gsd-complete-milestone.
+Last activity: 2026-06-30 — Phase 134 verified passed; native-gate UAT automated (A: phase134_native_gate_blocking_proof_test, B: aggregator-negative-control.yml, C: required-checks-audit.yml)
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
@@ -45,15 +46,15 @@ Last activity: 2026-06-26
 Progress: [██████████] 100%
 
 ```
-[          ] 0%
-Phase 129 ──────────────────────────────────────────────── Phase 134
+[██████████] 100%
+Phase 129 ──────────────────────────────────────────────── Phase 135 ✓
 ```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 48 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
+- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
 - Average duration: —
 - Total execution time: —
 
@@ -145,6 +146,21 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 132 P04: crosswake_rindle wired into release-please as a separate elixir component (release-as 0.1.0 one-shot), NOT in linked-versions lockstep — independent versioning (EXTRACT-07, D-01)
 - [Phase ?]: Phase 132 P04: rindle_release_created/tag_name/version output aliases + gated publish-hex-rindle (CROSSWAKE_RELEASE=1, dry-run then publish) + clean-room-proof-rindle (needs publish) delegating to verify_companion_cleanroom.sh crosswake_rindle <ver> rindle Rindle
 - [Phase ?]: Phase 132 P04: rindle Contracts.media_state_vocabulary/0 canary appended inside SMOKEEOF heredoc guarded by PACKAGE==crosswake_rindle (D-18); no new script param. Removed pre-existing stray MIX_VERSION echo from rulestead clean-room run (Rule 1)
+- [Phase ?]: Elixir 1.19 includes optional callbacks in behaviour_info(:callbacks) — Phase 129 freeze test updated to include telemetry_events: 0 (same-PR pattern per test hint)
+- [Phase ?]: events/0 uses private helper functions not module attributes for catalog construction — avoids stale-.beam footgun (D-05)
+- [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
+- [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
+- [Phase ?]: D-19: guides/telemetry.md follows brandbook §14 concept order (10 sections)
+- [Phase ?]: D-18: mix.exs Telemetry group in groups_for_extras and groups_for_modules; Offline.Telemetry discoverability-only
+- [Phase ?]: Threadline :exception empty-metadata caveat documented; stop ⊇ start holds for :stop not :exception
+- [Phase ?]: D-01 audit-then-prove: all 5 PROOF-03 SCs audited GREEN, no production-code change (Phase 135 plan 01)
+- [Phase ?]: Q1 resolved: nested mix test for deferred-failure self-assertion; structural read cannot prove green (Phase 135 plan 01)
+- [Phase ?]: @template_version shipped as epoch 2: stamp was genuine template change so bump 1->2 is correct
+- [Phase ?]: router opt threaded through generate_ios/android_shell to capture --router flag in manifest params
+- [Phase ?]: XML/plist stamp placed after <?xml ?> prolog to maintain well-formed XML
+- [Phase ?]: @diff_excluded_templates = [project.pbxproj] only; gradlew/gradlew.bat are diffed (REVIEW FIX finding 6)
+- [Phase ?]: run_diff/4 forks before any write — non-destructiveness is structural (D-13)
+- [Phase ?]: file_advisory_verdict/1 reuses RebuildPolicy vocabulary without calling diff/2 (D-16)
 
 ### Pending Todos
 
@@ -196,11 +212,20 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 132 P03 | ~16m | 3 tasks | 27 files |
 | Phase 132 P02 | ~14m | 2 tasks | 2 files |
 | Phase 132 P04 | ~9m | 3 tasks | 4 files |
+| Phase 133 P01 | 4m | 3 tasks | 3 files |
+| Phase 133 P02 | 5m | 2 tasks | 4 files |
+| Phase 133 P03 | 8min | 1 tasks | 1 files |
+| Phase 133 P04 | 12min | 3 tasks | 3 files |
+| Phase 135 P01 | 3 | 2 tasks | 1 files |
+| Phase 134 P00 | 4m | 2 tasks | 4 files |
+| Phase 134 P01 | 9m | 4 tasks | 18 files |
+| Phase 134 P03 | 8 minutes | 2 tasks | 2 files |
+| Phase 134 P04 | 8min | 4 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-06-26T17:34:26.818Z
-Stopped at: Phase 132 context gathered
+Last session: 2026-06-29T21:08:15.156Z
+Stopped at: Phase 134 context gathered
 Resume file: None
 
 ## Operator Next Steps

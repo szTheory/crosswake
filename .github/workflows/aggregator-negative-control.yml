@@ -1,0 +1,79 @@
+name: Aggregator Negative Control
+# Hermetically PROVES the re-actors/alls-green rollup pattern — shared byte-for-byte by all three
+# merge-blocking aggregators (native-behavioral-proof, contract-drift, offline-sync-e2e) — actually
+# FAILS on a failed leaf result AND on a SKIPPED leaf result, and PASSES on an all-green result.
+# Single ubuntu job, ~15s. No Android, no macOS, no live PR.
+#
+# This discharges 134-UAT Test #1 claim 2 (rollup semantics) FOREVER, without the live-PR
+# observation it used to require. The skipped-result case is the load-bearing one: it is the only
+# case that distinguishes the correct design (alls-green treats skipped as not-success — which is why
+# the real aggregators carry `if: always()` so they RUN over a skipped leaf and then fail) from
+# "footgun 1" (a naive needs:-only rollup that lets a skipped leaf pass). If a future alls-green pin
+# bump changes skip/failure handling, this lane goes RED.
+#
+# DESIGN: each arm feeds alls-green a literal `{"synthetic-leaf": {"result": "<r>"}}` — the exact
+# shape `${{ toJSON(needs) }}` produces — under `continue-on-error: true`, and the final step asserts
+# each step's `outcome`. This keeps the whole proof in ONE green job: no intentionally-red helper jobs
+# cluttering the PR check list or turning the workflow run red (the earlier multi-job design did).
+# That Artifact A structurally asserts the REAL aggregators use `if: always()` + alls-green + toJSON(needs)
+# (sibling parity), combined with this proof of alls-green's skipped/failed semantics, is the complete
+# chain: a skipped/failed real leaf fails the real aggregator and blocks the merge.
+#
+# DO NOT set allowed-failures / allowed-skips on alls-green — the empty defaults are exactly what make
+# skipped/failed count as not-success, i.e. the property being proven.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-aggregator-negative-control:
+    name: merge-blocking-aggregator-negative-control
+    runs-on: ubuntu-latest
+    steps:
+      - name: alls-green must FAIL on a failed leaf result
+        id: neg_fail
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "failure"}}'
+
+      - name: alls-green must FAIL on a SKIPPED leaf result (footgun 1)
+        id: neg_skip
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "skipped"}}'
+
+      - name: alls-green must PASS on an all-green leaf result
+        id: pos
+        continue-on-error: true
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: '{"synthetic-leaf": {"result": "success"}}'
+
+      - name: Assert alls-green rollup semantics
+        env:
+          NEG_FAIL: ${{ steps.neg_fail.outcome }}
+          NEG_SKIP: ${{ steps.neg_skip.outcome }}
+          POS: ${{ steps.pos.outcome }}
+        run: |
+          set -euo pipefail
+          echo "alls-green on a failed  leaf result -> step outcome: $NEG_FAIL (expect failure)"
+          echo "alls-green on a skipped leaf result -> step outcome: $NEG_SKIP (expect failure)"
+          echo "alls-green on a green   leaf result -> step outcome: $POS (expect success)"
+          rc=0
+          [ "$NEG_FAIL" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a FAILED leaf result"; rc=1; }
+          [ "$NEG_SKIP" = "failure" ] || { echo "::error::BROKEN — alls-green did NOT fail on a SKIPPED leaf result (footgun 1 regressed)"; rc=1; }
+          [ "$POS" = "success" ] || { echo "::error::BROKEN — alls-green did NOT pass on an all-green leaf result"; rc=1; }
+          if [ "$rc" -eq 0 ]; then
+            echo "OK — alls-green fails on failed AND skipped, passes on green. Rollup semantics proven." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$rc"

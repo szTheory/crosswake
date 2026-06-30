@@ -7,7 +7,13 @@ defmodule Mix.Tasks.Crosswake.Gen.ShellTest do
 
   test "generator coordinate parity holds on non-local template renders" do
     version = Application.spec(:crosswake, :vsn) |> to_string()
-    assigns = [local: false, version: version, capabilities: []]
+
+    assigns = [
+      local: false,
+      version: version,
+      capabilities: [],
+      template_version: Mix.Tasks.Crosswake.Gen.Shell.template_version()
+    ]
 
     ios_rendered =
       EEx.eval_file(

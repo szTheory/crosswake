@@ -116,8 +116,8 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 - [x] **Phase 130: Extraction Mechanics & Footgun Guards** - Replace the MIX_INCLUDE_* env hack; stand up rulestead as a path-dep dress rehearsal; prove the seam works without coupling (completed 2026-06-26)
 - [x] **Phase 131: Publish Pipeline & Clean-Room Lane (rulestead)** - Wire release-please for an independently-versioned Hex companion; prove clean-room install outside the monorepo; rulestead live on Hex (completed 2026-06-26)
 - [x] **Phase 132: Generalization Proof (rindle) + Compat Matrix** - Run the identical extraction recipe on rindle; ship the cross-package compatibility matrix; rindle live on Hex (completed 2026-06-26)
-- [ ] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1
-- [ ] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking
+- [x] **Phase 133: Telemetry Public API** - Ship Crosswake.Telemetry as the documented stable event contract with opt-in attach_default_logger/1 (completed 2026-06-28)
+- [x] **Phase 134: Shell Lifecycle + Native UAT Promotion** - Template-version stamping, shell.status, gen.shell --diff, upgrade runbook; Android UAT merge-blocking (code complete + suite green 2026-06-29; verifying — 1 live-PR/CI UAT item pending, deferred to origin-sync boundary) (completed 2026-06-30)
 
 ## Phase Details
 
@@ -238,7 +238,20 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. A host can call `Crosswake.Telemetry.attach_default_logger/1` to opt into structured log output; core never calls this function automatically — attachment is always the host's explicit decision
   4. A bidirectional contract test fails if any event declared in `events/0` is never emitted in the test suite, or any emitted `:telemetry` event with the `[:crosswake, ...]` prefix is undeclared in `events/0`
 
-**Plans**: TBD
+**Plans**: 4/4 plans complete
+
+**Wave 0**
+
+- [x] 133-01-PLAN.md — Write the failing tests first: bidirectional contract proof + attach/detach logger unit test + StubTelemetryCompanion fixture (TELEM-01/03/04 seams, RED)
+
+**Wave 1** *(blocked on Wave 0)*
+
+- [x] 133-02-PLAN.md — Crosswake.Telemetry facade: event_doc typespec + runtime-aggregating events/0 + optional telemetry_events/0 callback on Companion (TELEM-01, TELEM-04)
+
+**Wave 2** *(blocked on Wave 1; 03 and 04 run in parallel — no file overlap)*
+
+- [x] 133-03-PLAN.md — attach_default_logger/1 + detach_default_logger/0: opt-in, PII-scrubbed, :exception→:error, encode:false; core never auto-attaches (TELEM-03)
+- [x] 133-04-PLAN.md — guides/telemetry.md + mix.exs Telemetry docs groups + TELEM-02 doc-presence proof assertions (TELEM-02)
 
 ### Phase 134: Shell Lifecycle + Native UAT Promotion
 
@@ -252,7 +265,23 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   3. `guides/native_shell_upgrade.md` provides a per-template-version changelog that references `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance; the dangling "patch-or-doc guidance" placeholder in `gen.shell.ex` is replaced with a real pointer to this guide
   4. The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking in an aggregator workflow (modeled on `native-behavioral-proof-gate.yml`); the iOS simulator/device UAT lane remains advisory with honest posture labels in `guides/support_matrix.md`
 
-**Plans**: TBD
+**Plans**: 5/5 plans complete
+**Wave 1**
+
+- [x] 134-00-PLAN.md — Wave 0: four RED test scaffolds (drift, shell.status, --diff, upgrade-guide)
+- [x] 134-01-PLAN.md — Wave 1 (keystone): @template_version stamp + .crosswake/shell.json manifest + drift test + bump task (LIFE-02a)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 134-02-PLAN.md — Wave 2: mix crosswake.shell.status (0/2/1 exit, --format json) (LIFE-02b)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 134-03-PLAN.md — Wave 3: mix crosswake.gen.shell --diff (non-destructive unified diff) (LIFE-02b)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 134-04-PLAN.md — Wave 4: upgrade changelog + line-254 fix + android-generated-shell-unit CI lane + support_matrix labels (LIFE-02c, LIFE-01a, LIFE-01b)
 
 ### Phase 135: CI-Ops Hardening — Release-As Automation (PROOF-03)
 
@@ -268,7 +297,9 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
   4. `script/extract_companion.md` Step 12f references the automation (not a manual runbook), so sigra/chimeway/threadline inherit 0-human release ops
   5. Required-check registration is parametric, not per-gate toil: `script/register_required_checks.sh` discovers ALL `merge-blocking-*` lanes and registers them idempotently (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector that flags any declared merge-blocking lane not actually in branch protection — superseding the bespoke `register-*-gate.sh` scripts. (Registration itself stays an admin/maintainer action — the legitimate human gate.)
 
-**Plans**: TBD
+**Plans**: 1/1 plans complete
+
+- [x] 135-01-PLAN.md — Audit-then-prove SC1–SC5 in one hermetic ExUnit proof test (SC1 RED→GREEN via GIT_DIR fixture; SC2 idempotency + wiring; SC3/SC4/SC5 structural; deferred-failure green self-assertion); minimal fixes only where an audit fails
 
 ## Progress
 
@@ -308,6 +339,6 @@ Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
 | 130. Extraction Mechanics & Footgun Guards | v16.0 | 5/5 | Complete    | 2026-06-26 |
 | 131. Publish Pipeline & Clean-Room Lane (rulestead) | v16.0 | 3/3 | Complete    | 2026-06-26 |
 | 132. Generalization Proof (rindle) + Compat Matrix | v16.0 | 4/4 | Complete   | 2026-06-26 |
-| 133. Telemetry Public API | v16.0 | 0/TBD | Not started | - |
-| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 0/TBD | Not started | - |
-| 135. CI-Ops Hardening — Release-As Automation | v16.0 | 0/TBD | Not started | - |
+| 133. Telemetry Public API | v16.0 | 4/4 | Complete    | 2026-06-28 |
+| 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete    | 2026-06-29 |
+| 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete   | 2026-06-28 |

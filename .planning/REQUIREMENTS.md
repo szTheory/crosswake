@@ -38,22 +38,22 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (129–1
 
 - [x] **PROOF-01**: A clean-room CI lane (and `script/verify_companion_cleanroom.sh`) creates a throwaway mix project OUTSIDE the monorepo, installs the published `crosswake` + companion package, compiles `--warnings-as-errors`, registers the companion, and runs its tests + a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling.
 - [x] **PROOF-02**: No companion package is published to Hex until a `hex.publish --dry-run` gate and the clean-room/in-monorepo proof lanes are green.
-- [ ] **PROOF-03**: The two post-publish companion-release follow-ups are CI-enforced with no recurring human step (parametric across all `crosswake_*` companions): (a) a **fail-closed `release-as` staleness guard** turns the build RED if any package's `release-as` pin equals an already-released version, so a stale pin can never silently re-target an old version; (b) an **auto-cleanup PR** strips `release-as` + `_TODO_release_as` from the just-released component on release (a human only merges the one-line PR — `main` is protected); (c) an **`if: failure()` alert** on the publish + clean-room-proof jobs opens a GitHub issue on red, so the post-publish proof is 0-touch on the success path and a human engages only when it actually breaks. The only intentional human gate that remains is merging the Release PR (the irreversible publish go/no-go). Recipe Step 12f points at this automation so future companions inherit 0-human release ops. Additionally, required-check **registration** is de-toiled: `script/register_required_checks.sh` discovers and idempotently registers every `merge-blocking-*` lane (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector for any declared merge-blocking lane missing from branch protection — superseding the per-gate `register-*-gate.sh` scripts. Registration stays admin-gated (the legitimate human action), but the recurring toil and the silent "declared-but-advisory" gap are eliminated.
+- [x] **PROOF-03**: The two post-publish companion-release follow-ups are CI-enforced with no recurring human step (parametric across all `crosswake_*` companions): (a) a **fail-closed `release-as` staleness guard** turns the build RED if any package's `release-as` pin equals an already-released version, so a stale pin can never silently re-target an old version; (b) an **auto-cleanup PR** strips `release-as` + `_TODO_release_as` from the just-released component on release (a human only merges the one-line PR — `main` is protected); (c) an **`if: failure()` alert** on the publish + clean-room-proof jobs opens a GitHub issue on red, so the post-publish proof is 0-touch on the success path and a human engages only when it actually breaks. The only intentional human gate that remains is merging the Release PR (the irreversible publish go/no-go). Recipe Step 12f points at this automation so future companions inherit 0-human release ops. Additionally, required-check **registration** is de-toiled: `script/register_required_checks.sh` discovers and idempotently registers every `merge-blocking-*` lane (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector for any declared merge-blocking lane missing from branch protection — superseding the per-gate `register-*-gate.sh` scripts. Registration stays admin-gated (the legitimate human action), but the recurring toil and the silent "declared-but-advisory" gap are eliminated.
 
 ### TELEM — Telemetry Public API
 
-- [ ] **TELEM-01**: A developer can call `Crosswake.Telemetry.events/0` to get the canonical list of every `:telemetry` event Crosswake emits across companion/RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems.
-- [ ] **TELEM-02**: A reader can find `guides/telemetry.md` documenting every event's measurements and metadata, following Keathley naming (`[:crosswake, :subsystem, :start|:stop|:exception]`) with stop metadata a superset of start metadata.
-- [ ] **TELEM-03**: A host can opt into `Crosswake.Telemetry.attach_default_logger/1`; core never auto-attaches a handler.
-- [ ] **TELEM-04**: A bidirectional contract test fails if any event in `events/0` is never emitted, or any emitted event is undeclared.
+- [x] **TELEM-01**: A developer can call `Crosswake.Telemetry.events/0` to get the canonical list of every `:telemetry` event Crosswake emits across companion/RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems.
+- [x] **TELEM-02**: A reader can find `guides/telemetry.md` documenting every event's measurements and metadata, following Keathley naming (`[:crosswake, :subsystem, :start|:stop|:exception]`) with stop metadata a superset of start metadata.
+- [x] **TELEM-03**: A host can opt into `Crosswake.Telemetry.attach_default_logger/1`; core never auto-attaches a handler.
+- [x] **TELEM-04**: A bidirectional contract test fails if any event in `events/0` is never emitted, or any emitted event is undeclared.
 
 ### LIFE — Generated-Shell Lifecycle & Native UAT
 
-- [ ] **LIFE-01a**: The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking (in an aggregator modeled on `native-behavioral-proof-gate.yml`).
-- [ ] **LIFE-01b**: The iOS simulator/device UAT stays advisory, with the support posture honestly labeled in `guides/support_matrix.md` (no over-promise).
-- [ ] **LIFE-02a**: A generated native shell records the `@template_version` and live `crosswake` version that produced it, and a drift test fails if `@template_version` is not bumped when shell templates change.
-- [ ] **LIFE-02b**: A host can run `mix crosswake.shell.status` (reports up-to-date / N versions behind) and `mix crosswake.gen.shell --diff` (prints a non-destructive unified diff against current templates — never overwrites host files).
-- [ ] **LIFE-02c**: A host can follow `guides/native_shell_upgrade.md` (per-template-version changelog referencing `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance); the dangling "patch-or-doc guidance" promise in `gen.shell.ex` is replaced with a real pointer.
+- [x] **LIFE-01a**: The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking (in an aggregator modeled on `native-behavioral-proof-gate.yml`).
+- [x] **LIFE-01b**: The iOS simulator/device UAT stays advisory, with the support posture honestly labeled in `guides/support_matrix.md` (no over-promise).
+- [x] **LIFE-02a**: A generated native shell records the `@template_version` and live `crosswake` version that produced it, and a drift test fails if `@template_version` is not bumped when shell templates change.
+- [x] **LIFE-02b**: A host can run `mix crosswake.shell.status` (reports up-to-date / N versions behind) and `mix crosswake.gen.shell --diff` (prints a non-destructive unified diff against current templates — never overwrites host files).
+- [x] **LIFE-02c**: A host can follow `guides/native_shell_upgrade.md` (per-template-version changelog referencing `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance); the dangling "patch-or-doc guidance" promise in `gen.shell.ex` is replaced with a real pointer.
 
 ## v2 Requirements (deferred — future milestones)
 
@@ -109,13 +109,13 @@ Which phases cover which requirements. Updated during roadmap creation (2026-06-
 | SEAM-05 | Phase 132 | Complete |
 | COMPAT-02 | Phase 132 | Complete |
 | COMPAT-03 | Phase 132 | Complete |
-| PROOF-03 | Phase 135 | Pending |
-| TELEM-01 | Phase 133 | Pending |
-| TELEM-02 | Phase 133 | Pending |
-| TELEM-03 | Phase 133 | Pending |
-| TELEM-04 | Phase 133 | Pending |
-| LIFE-01a | Phase 134 | Pending |
-| LIFE-01b | Phase 134 | Pending |
-| LIFE-02a | Phase 134 | Pending |
-| LIFE-02b | Phase 134 | Pending |
-| LIFE-02c | Phase 134 | Pending |
+| PROOF-03 | Phase 135 | Complete |
+| TELEM-01 | Phase 133 | Complete |
+| TELEM-02 | Phase 133 | Complete |
+| TELEM-03 | Phase 133 | Complete |
+| TELEM-04 | Phase 133 | Complete |
+| LIFE-01a | Phase 134 | Complete |
+| LIFE-01b | Phase 134 | Complete |
+| LIFE-02a | Phase 134 | Complete |
+| LIFE-02b | Phase 134 | Complete |
+| LIFE-02c | Phase 134 | Complete |

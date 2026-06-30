@@ -510,7 +510,7 @@
           "shell.ios.generated_project",
           "shell.android.generated_project"
         ],
-        "proof_status": "verification_required",
+        "proof_status": "supported",
         "required_docs_anchors": [
           "guides/support_matrix.md",
           "guides/native_shell.md"
@@ -573,9 +573,11 @@
           "guides/companion_compatibility.md",
           "guides/compatibility.md",
           "guides/native_shell.md",
+          "guides/native_shell_upgrade.md",
           "guides/android_uat.md",
           "guides/packs.md",
-          "guides/threadline.md"
+          "guides/threadline.md",
+          "guides/telemetry.md"
         ],
         "missing_docs_extras": [],
         "missing_files": []

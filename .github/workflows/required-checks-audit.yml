@@ -1,0 +1,138 @@
+name: Required Checks Audit
+# Scheduled sentinel for the "declared merge-blocking but not actually registered as required" gap
+# (PROOF-03 follow-on). Phase 135's detector found only 2/20 declared merge-blocking lanes are
+# actually registered required checks on main — the other 18 (incl. merge-blocking-native-behavioral-proof)
+# are advisory in practice: they run, can go red, and a PR still merges. This workflow runs the
+# existing fail-closed detector (script/check_required_checks_registered.sh) daily with an admin-
+# scoped PAT (a PR-scoped GITHUB_TOKEN CANNOT read branch protection) and self-pages on drift.
+#
+# This is the standing automation that discharges 134-UAT Test #1 claim 3 (registration) with zero
+# recurring human verification: instead of a human re-checking branch protection, CI proves it daily
+# and opens/auto-closes a single tracking issue.
+#
+#   exit 0  -> all declared lanes registered -> close any open tracking issue, succeed
+#   exit 1  -> GAP (declared-but-not-registered) -> open/update the GAP issue, FAIL the run
+#   exit 3  -> UNVERIFIED (PAT could not read branch protection; "NOT a pass") -> open/update the
+#              UNVERIFIED issue, FAIL the run
+#
+# ONE-TIME HUMAN PREREQUISITES (origin-sync milestone, admin — NOT recurring):
+#   1. Provision repo secret BRANCH_PROTECTION_READ_TOKEN — a fine-grained PAT on szTheory/crosswake
+#      with Administration:read + Issues:write (or a classic `repo`-admin PAT). Fine-grained PATs
+#      expire (<= 1y); on expiry the detector returns exit 3 and this workflow self-pages via the
+#      UNVERIFIED issue (fail-closed), so rotation is never a silent gap.
+#   2. Run once at origin-sync to actually register the unregistered lanes (admin-only,
+#      harness-blocked — the legitimate human gate, like merging a Release PR):
+#        DRY_RUN=0 script/register_required_checks.sh
+#      The registrar is green-first, so let each lane (incl. the new
+#      merge-blocking-aggregator-negative-control) go green on main once before running it.
+#
+# The APPLY stays human by design: an auto-applier with a permanent write-scoped admin PAT in CI
+# could *remove* required checks if buggy/compromised (self-modifying governance) and could trip the
+# green-first deadlock on a transiently-red lane. This auditor does drift DETECTION, not robotic
+# drift CORRECTION.
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: "17 7 * * *" # daily, 07:17 UTC (off-the-hour to dodge top-of-hour congestion)
+  workflow_dispatch: {} # on-demand, e.g. right after the one-time registration apply
+
+jobs:
+  audit-required-checks:
+    name: audit-required-checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
+      REPO: ${{ github.repository }}
+      ISSUE_TITLE_GAP: "[ci-audit] merge-blocking lanes NOT registered as required on main"
+      ISSUE_TITLE_UNVERIFIED: "[ci-audit] required-checks auditor cannot read branch protection"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure PyYAML (list_merge_blocking_checks.py dependency)
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Guard — admin PAT must be present
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::BRANCH_PROTECTION_READ_TOKEN secret is not set — the auditor cannot read branch protection (see workflow header prerequisite 1)."
+            exit 1
+          fi
+
+      - name: Run required-checks detector (capture exit code)
+        id: detect
+        run: |
+          set +e
+          out="$(script/check_required_checks_registered.sh 2>&1)"
+          code=$?
+          set -e
+          echo "$out"
+          {
+            echo "report<<DETECTOR_EOF"
+            echo "$out"
+            echo "DETECTOR_EOF"
+            echo "code=$code"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Reconcile tracking issue with detector result
+        env:
+          CODE: ${{ steps.detect.outputs.code }}
+          REPORT: ${{ steps.detect.outputs.report }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          # Idempotent: find an OPEN issue with the EXACT title; comment if it exists, else create.
+          open_or_update() {
+            title="$1"; body="$2"
+            num="$(gh issue list --repo "$REPO" --state open --search "in:title \"$title\"" \
+                     --json number,title --jq ".[] | select(.title==\"$title\") | .number" | head -n1)"
+            if [ -n "$num" ]; then
+              gh issue comment "$num" --repo "$REPO" --body "$body"
+              echo "Updated existing tracking issue #$num"
+            else
+              gh issue create --repo "$REPO" --title "$title" --body "$body"
+            fi
+          }
+
+          close_if_open() {
+            title="$1"
+            num="$(gh issue list --repo "$REPO" --state open --search "in:title \"$title\"" \
+                     --json number,title --jq ".[] | select(.title==\"$title\") | .number" | head -n1)"
+            if [ -n "$num" ]; then
+              gh issue close "$num" --repo "$REPO" \
+                --comment "Resolved automatically: detector now reports all merge-blocking lanes registered (run ${RUN_URL})."
+              echo "Closed resolved tracking issue #$num"
+            fi
+          }
+
+          case "$CODE" in
+            0)
+              echo "All declared merge-blocking lanes are registered. Closing any open tracking issues."
+              close_if_open "$ISSUE_TITLE_GAP"
+              close_if_open "$ISSUE_TITLE_UNVERIFIED"
+              ;;
+            1)
+              body="$(printf '%s\n\n- Run: %s\n- Commit: %s\n\nRemediation: an admin runs `DRY_RUN=0 script/register_required_checks.sh`.\nThis issue auto-closes when the detector next reports exit 0.' "$REPORT" "$RUN_URL" "$SHA")"
+              open_or_update "$ISSUE_TITLE_GAP" "$body"
+              echo "::error::GAP — declared merge-blocking lanes are not registered as required. See tracking issue."
+              exit 1
+              ;;
+            3)
+              body="$(printf '%s\n\n- Run: %s\n\nThe auditor PAT (BRANCH_PROTECTION_READ_TOKEN) could not read branch protection — likely expired or under-scoped (needs Administration:read). exit 3 is NOT a pass.' "$REPORT" "$RUN_URL")"
+              open_or_update "$ISSUE_TITLE_UNVERIFIED" "$body"
+              echo "::error::UNVERIFIED — auditor could not read branch protection (exit 3)."
+              exit 1
+              ;;
+            *)
+              echo "::error::detector returned unexpected exit code $CODE"
+              exit 1
+              ;;
+          esac

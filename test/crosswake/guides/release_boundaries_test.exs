@@ -119,7 +119,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       assert File.exists?(path), "ExDoc extra #{path} must exist"
     end
 
-    assert Keyword.keys(groups) == [:Start, :Adopt, :"Runtime Owners", :Truth, :"Extension Authors", :"Advanced/Companions"]
+    assert Keyword.keys(groups) == [:Start, :Adopt, :"Runtime Owners", :Truth, :Telemetry, :"Extension Authors", :"Advanced/Companions"]
     assert "guides/route_policy.md" in groups[:Start]
     assert "guides/web_to_mobile_migration.md" in groups[:Adopt]
     assert "guides/support_matrix.md" in groups[:Truth]
