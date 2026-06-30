@@ -5,10 +5,10 @@ milestone_name: Companion Extraction & Package-Family Discipline
 current_phase: 135
 current_phase_name: PROOF-03
 status: complete
-stopped_at: v16.0 phases 129-135 all complete (7/7); awaiting origin-sync (PR #40) + admin lane registration
-last_updated: "2026-06-30T03:02:39.043Z"
+stopped_at: v16.0 origin-synced (PR #40 merged, main=029aa4a); milestone audit PASSED; only remaining gate = admin lane registration, then /gsd-complete-milestone
+last_updated: "2026-06-30T13:55:13Z"
 last_activity: 2026-06-30
-last_activity_desc: Phase 134 verified passed (native-gate UAT shifted left into CI); milestone v16.0 code-complete 7/7
+last_activity_desc: PR #40 merged to origin (v16.0 sync); CI green after 5 lane fixes; milestone audit PASSED 27/27
 progress:
   total_phases: 7
   completed_phases: 7
@@ -24,14 +24,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v16.0 code-complete (7/7) — shipping via origin-sync PR #40, then admin lane registration
+**Current focus:** v16.0 SHIPPED to origin (PR #40 merged) — one admin step (lane registration) then complete-milestone
 
 ## Current Position
 
-Milestone: v16.0 — all 7 phases (129–135) complete + suite green (1207/0)
+Milestone: v16.0 — all 7 phases (129–135) complete; ORIGIN-SYNCED (main=029aa4a); audit PASSED 27/27
 Plan: —
-Status: COMPLETE (code). Phase 134's last human-UAT item (Android lane merge-blocking) was shifted left into CI — 0 recurring human verification. Remaining gates are human, one-time, milestone-boundary: (1) merge origin-sync PR #40 (local main is a clean 64-commit superset of origin/main); (2) provision BRANCH_PROTECTION_READ_TOKEN + run `DRY_RUN=0 script/register_required_checks.sh` once (registers the 18 unregistered lanes incl. the new merge-blocking-aggregator-negative-control). After sync lands → /gsd-audit-milestone then /gsd-complete-milestone.
-Last activity: 2026-06-30 — Phase 134 verified passed; native-gate UAT automated (A: phase134_native_gate_blocking_proof_test, B: aggregator-negative-control.yml, C: required-checks-audit.yml)
+Status: v16.0 origin-synced + green on CI. Phase 134's last human-UAT item (Android lane merge-blocking) was shifted left into CI (0 recurring human verification). See `## v16.0 Completion Handoff` below for the exact remaining steps.
+Last activity: 2026-06-30 — PR #40 merged; native-gate UAT automated (A: phase134_native_gate_blocking_proof_test [pure Elixir wiring proof], B: aggregator-negative-control.yml [single-job alls-green semantics proof], C: required-checks-audit.yml [scheduled drift auditor])
+
+## v16.0 Completion Handoff (fresh context: do these in order)
+
+**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN, see `.planning/v16.0-MILESTONE-AUDIT.md`); PR #40 merged → origin at v16.0; CI green after 5 lane fixes (File.cd! race, android `mix deps.get`, negative-control single-job redesign, sdkmanager retry, PyYAML-independence).
+
+**Remaining — 2 steps:**
+
+1. **Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main (`merge-blocking rulestead proof (hermetic)`, `brand-structural`); the rest — incl. `merge-blocking-native-behavioral-proof` and the new `merge-blocking-aggregator-negative-control` — run and can go red but DON'T block merge. To make them actually merge-blocking:
+   - First confirm the lanes are green on `main` post-merge (the registrar's green-first preflight skips not-yet-green lanes): `gh run list --branch main --limit 15`.
+   - Then (admin gh auth = repo owner szTheory, already authed): `DRY_RUN=0 script/register_required_checks.sh`
+   - (Optional, enables the standing drift auditor) provision repo secret `BRANCH_PROTECTION_READ_TOKEN` (Administration:read + Issues:write) so `.github/workflows/required-checks-audit.yml` can run.
+   - NOT auto-applied this session: mutating branch protection is the deliberate human go-decision (Artifact C design / PROOF-03 D-03) and was premature (main CI still running at merge time).
+
+2. **Complete the milestone:** `/gsd-complete-milestone v16.0` — archives v16.0 and preps the next version. (Audit already PASSED, so this is unblocked; registration above is a ship-hardening step, not an archival blocker.)
+
+**Carried tech-debt (non-blocking, from the audit):** TELEM-04 Side B vacuity (133, assessed: fragile fix, non-exposed — leave) and `companion_compatibility.md:51-54` prose (132, assessed: not actually a bug — leave). Pre-existing MIRROR_PUSH_TOKEN scope still unexercised.
 
 > **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
 > `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
