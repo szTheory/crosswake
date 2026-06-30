@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v16.0
-milestone_name: Companion Extraction & Package-Family Discipline
-current_phase: 0
-status: Awaiting next milestone
-stopped_at: Phase 134 context gathered
-last_updated: "2026-06-30T14:30:28.479Z"
+milestone: v17.0
+milestone_name: Companion Family Completion
+status: planning
+last_updated: "2026-06-30T15:21:03.883Z"
 last_activity: 2026-06-30
-last_activity_desc: Milestone v16.0 completed and archived
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 24
-  completed_plans: 24
-  percent: 100
-current_phase_name: PROOF-03
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
@@ -28,16 +24,17 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 ## Current Position
 
-Phase: Milestone v16.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-30 — Milestone v16.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-30 — Milestone v17.0 started
 
 ## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
 **Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN); PR #40 merged → origin at v16.0; CI green after 5 lane fixes (File.cd! race, android `mix deps.get`, negative-control single-job redesign, sdkmanager retry, PyYAML-independence). **`/gsd-complete-milestone v16.0` run 2026-06-30** — ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v16.0-*`, MILESTONES.md + PROJECT.md evolved, REQUIREMENTS.md removed (fresh for next milestone), tag `v16.0` created.
 
 **Carried ship-gate — Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main (`merge-blocking rulestead proof (hermetic)`, `brand-structural`); the rest — incl. `merge-blocking-native-behavioral-proof` and `merge-blocking-aggregator-negative-control` — run and can go red but DON'T block merge. To make them actually merge-blocking:
+
    - First confirm the lanes are green on `main` post-merge (the registrar's green-first preflight skips not-yet-green lanes): `gh run list --branch main --limit 15`.
    - Then (admin gh auth = repo owner szTheory): `DRY_RUN=0 script/register_required_checks.sh`
    - (Optional, enables the standing drift auditor) provision repo secret `BRANCH_PROTECTION_READ_TOKEN` (Administration:read + Issues:write) so `.github/workflows/required-checks-audit.yml` can run.

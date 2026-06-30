@@ -109,26 +109,20 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 **Archive:** `.planning/milestones/v16.0-ROADMAP.md`, `.planning/milestones/v16.0-REQUIREMENTS.md`, and `.planning/milestones/v16.0-MILESTONE-AUDIT.md`.
 
-## Next Milestone Goals
+## Current Milestone: v17.0 Companion Family Completion
 
-The package-family pattern is now proven on two companions. The deferred-candidate pool for the next milestone (route via `/gsd-new-milestone`):
-
-- **Companion extraction fast-follow** — propagate the recipe to `sigra` (most entangled), `chimeway`, and `threadline` (consumes the others); the pattern, guards, and CI lanes are already in place.
-- **DASH-01 operator dashboard** — ships as a self-contained `crosswake_dashboard` package (Oban Web model) now that `Crosswake.Telemetry` is a stable public event contract.
-- **SYNCP-01** offline-sync productization, **NTV-01** native disk budgets, **SEED-002** capability/commerce breadth — each now a routine package addition on the established family pattern rather than core surgery.
-- **Ship-gate carryover:** register the 18 `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned.
-
-**Why now:** The project's own milestone arc encodes the sequence distribution → coherence/lifecycle → companion packaging → capability breadth (`.planning/MILESTONE-ARC.md`, 2026-06-14). Distribution (v11), coherence (v14), and first-run DX (v15) shipped. The companions already exist in-tree (`lib/crosswake/companions/{rulestead,rindle,chimeway,sigra}`, `lib/crosswake/threadline/`), built "in-tree first, extract later" by explicit v3.5 decision; the v5.0 multi-package release machinery (release-please, clean-room CI) already exists to extract them. Ash/Oban/Swoosh/Nerves validate the exact shape Crosswake has: separately-versioned Hex packages on `@behaviour` seams + optional deps. Making the package-family pattern real is the gateway that turns every deferred breadth candidate (capabilities, commerce, sync, dashboard) into a routine package addition; building breadth first would be overbuilding on a not-yet-extracted family.
+**Goal:** Extract the remaining three first-party companions — `sigra` (auth), `chimeway` (notifications), `threadline` (audit) — into standalone, independently-versioned, fail-closed Hex packages, completing the companion family. Module names preserved (`Crosswake.Companions.Sigra.*` etc.) so the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and extraction is non-breaking.
 
 **Target features:**
-- Extract `rulestead` (lowest-risk wedge) and `rindle` (cleanest generalization proof) into standalone `crosswake_rulestead` / `crosswake_rindle` Hex packages — module names preserved (`Crosswake.Companions.Rulestead`/`.Rindle`) so the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and extraction is non-breaking.
-- A documented, test-enforced extraction recipe: behaviour stays the seam (core never compile-depends on a companion, grep-guarded); proper `optional: true` deps replacing the `MIX_INCLUDE_*` env hack; runtime-only `Code.ensure_loaded?` (no stale-recompile footgun); fail-closed doctor `:error` for enabled-but-missing.
-- Independent per-companion versioning (NOT in the lockstep linked group) with a documented + drift-tested cross-package compatibility matrix.
-- A clean-room CI lane proving install of published `crosswake` + companion packages outside the monorepo, gated by `hex.publish --dry-run` before any irreversible publish.
-- `Crosswake.Telemetry` — events aggregated and documented as a stable, semver-governed public API (dashboard prerequisite) with an opt-in `attach_default_logger/1`; core never auto-attaches.
-- Generated-shell lifecycle hardening (LIFE-02): template-version stamping + `mix crosswake.shell.status` + non-destructive `gen.shell --diff` + an upgrade runbook. Repeatable native UAT (LIFE-01): hermetic Android JVM lane promoted to merge-blocking, iOS simulator advisory with honest labels.
+- **Core decoupling (the new work, lands first):** invert the four compile-time core→companion references onto the runtime `:companions` registry seam — `Crosswake.Telemetry` event/forbidden-key aggregation (`telemetry.ex:145,289`), `RouteGate`'s `Sigra.Evaluator` alias (`route_gate.ex:9,258`), `SupportMatrix`'s Sigra/Chimeway calls (`support_matrix.ex:226,266`), and `Doctor`'s `Sigra.DenialCodes` calls (`doctor.ex:792,797`) — restoring the v16.0 "core never compile-depends on a companion" guard for these two companions and extending the AST guards to cover core `lib/` files.
+- **`crosswake_sigra`** (most entangled, ~3,800 LOC/9 files): standalone package; sigra internals refactored to emit `Compatibility.Finding` at the boundary (core keeps `Denial` private); fail-closed auth preserved (absent auth companion on an auth-required route DENIES, never silent-passes).
+- **`crosswake_chimeway`** (~1,250 LOC): standalone package; telemetry-only coupling; clean-room lane must exclude `crosswake_sigra` (no real inter-companion dep — `auth_context` is a plain `map()`).
+- **`crosswake_threadline`** (~675 LOC incl. audit ledger): standalone package; observes the others purely via `:telemetry.attach_many` by event-name (zero compile deps on siblings); extracted last because core telemetry must decouple first.
+- **Family discipline carried forward:** per-companion drift-tested compatibility-matrix rows (single `Requires crosswake >= X` column — companions depend only on core), `hex.publish --dry-run` + clean-room gate before each of the three irreversible publishes (sequential: sigra → chimeway → threadline), AST guards extended to the new packages, per-package telemetry contract tests.
 
-**Key context:** Establish-the-pattern-first appetite — prove extraction on 2 companions, leave sigra/chimeway/threadline for a fast follow-on (sigra is most entangled; threadline consumes the others). Deferred behind this packaging wedge: DASH-01 dashboard UI (ships later as self-contained `crosswake_dashboard`, Oban Web model), SYNCP-01 sync productization, NTV-01 native disk budgets, and the SEED-002 capability/commerce breadth. Primary risk surface is the irreversible Hex publish + adopter compatibility, front-loaded into a no-publish dress rehearsal (Phase 130). Brand source of truth is `brandbook/BRAND-SPEC.md`; consumer-perspective API elegance and principle of least surprise are the quality bar. Phase numbering continues from v15.0 (phases 129+). Plan: `~/.claude/plans/all-of-those-taht-snug-valiant.md`.
+**Key context:** This is **not** a pure replay of the v16.0 recipe — sigra/chimeway are compile-coupled into core, so the genuine design surface is the core-inversion (extend `Crosswake.Companion` with optional `forbidden_metadata_keys/0`, `denial_codes/0`, and dedicated `evaluate_auth/3` + `auth_authority?/0` callbacks; core iterates the `:companions` registry at runtime via `function_exported?/3`). The inter-companion coupling is a myth at the type level — chimeway already uses `auth_context: map()`, not a sigra struct — so the compatibility matrix stays O(N). Telemetry adds a hardcoded **core baseline PII denylist** (defense-in-depth) so an absent companion can never silently drop token/identity scrubbing. Independent per-companion versioning (NOT lockstep). Full research + locked design decisions D-1..D-9 + footgun register in `.planning/research/v17-companion-family-completion.md`. Consumer-perspective API elegance and principle of least surprise are the quality bar. Phase numbering continues from v16.0 (phases 136+). One human ship-gate carried from v16.0: register the `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned (run before new v17.0 lanes land).
+
+**Deferred behind this wedge (next-candidate pool):** DASH-01 `crosswake_dashboard` (Oban Web model), SYNCP-01 offline-sync productization, NTV-01 native disk budgets, SEED-002 capability/commerce breadth — each a routine package addition once the family is complete.
 
 ## Requirements
 
@@ -213,14 +207,13 @@ The package-family pattern is now proven on two companions. The deferred-candida
 
 ### Active
 
-(None active — v16.0 shipped 2026-06-30. Next milestone defined via `/gsd-new-milestone`.)
+**v17.0 Companion Family Completion** (in planning — requirements being defined via `/gsd-new-milestone`). Extract `sigra` / `chimeway` / `threadline` into standalone independently-versioned Hex packages, preceded by a core-decoupling phase that inverts the four compile-time core→companion references onto the `:companions` registry seam. Locked design spine D-1..D-9 in `.planning/research/v17-companion-family-completion.md`. Requirement IDs assigned when REQUIREMENTS.md is generated.
 
-**Next-candidate pool** (deferred, route via `/gsd-new-milestone`):
+**Next-candidate pool** (deferred behind v17.0):
 
-- **Companion extraction fast-follow** — propagate the proven recipe to `sigra` (most entangled), `chimeway`, and `threadline` (consumes the others). Guards, recipe, and CI lanes already in place.
-- **DASH-01 operator dashboard** — ships as a self-contained `crosswake_dashboard` package (Oban Web model), now unblocked by the `Crosswake.Telemetry` public event contract.
-- **SYNCP-01** offline-sync productization, **NTV-01** native disk budgets, **SEED-002** capability/commerce breadth — each now a routine package addition on the established family pattern.
-- **Ship-gate carryover:** register the 18 `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned (admin-gated).
+- **DASH-01 operator dashboard** — self-contained `crosswake_dashboard` package (Oban Web model), unblocked by the `Crosswake.Telemetry` public event contract.
+- **SYNCP-01** offline-sync productization, **NTV-01** native disk budgets, **SEED-002** capability/commerce breadth — each a routine package addition once the family is complete.
+- **Ship-gate carryover:** register the `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned (admin-gated; run before new v17.0 lanes land).
 
 ### Out of Scope
 
@@ -320,4 +313,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-30 after v16.0 milestone. v16.0 Companion Extraction & Package-Family Discipline SHIPPED (phases 129-135, 24 plans, all 27 v1 requirements satisfied, audit passed): `rulestead` + `rindle` extracted to standalone independently-versioned Hex packages on `@behaviour` seams (module names preserved → non-breaking), fail-closed doctor/RouteGate, drift-tested compatibility matrix, `Crosswake.Telemetry` public API, generated-shell lifecycle (`@template_version`/`shell.status`/`--diff`/upgrade guide), and PROOF-03 0-human release-as automation. Next milestone (route via `/gsd-new-milestone`): companion-extraction fast-follow (sigra/chimeway/threadline), `crosswake_dashboard` (DASH-01), or breadth from the deferred pool. One human ship-gate carried: register the 18 `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned.*
+*Last updated: 2026-06-30 — started milestone v17.0 Companion Family Completion. Extract the remaining three companions (`sigra`/`chimeway`/`threadline`) into standalone independently-versioned Hex packages, completing the family. Unlike v16.0's clean rulestead/rindle seams, sigra/chimeway are compile-coupled into core in four sites (`telemetry.ex`, `route_gate.ex`, `support_matrix.ex`, `doctor.ex`), so a core-decoupling phase that inverts those onto the `:companions` registry seam lands first. Locked design spine (D-1..D-9) + 5-stream research synthesis in `.planning/research/v17-companion-family-completion.md`. Phase numbering continues at 136+. v16.0 SHIPPED 2026-06-30 (phases 129-135, 27 reqs, audit passed). Carried human ship-gate: register the `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned.*
