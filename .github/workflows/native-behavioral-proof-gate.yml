@@ -98,6 +98,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'              # satisfies JAVA_HOME check in verify script
+      - name: Install Elixir dependencies   # the verify script runs `mix crosswake.gen.shell`; a fresh
+        run: mix deps.get                    # checkout has no deps → "Can't continue due to errors on dependencies"
       - name: Run hermetic Android generated-shell verification
         run: script/verify_generated_android_shell.sh
       - name: Step summary

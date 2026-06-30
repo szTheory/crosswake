@@ -184,7 +184,7 @@ defmodule Crosswake.Proof.Phase134NativeGateBlockingProofTest do
 
     for {needle, what} <- [
           {"merge-blocking-aggregator-negative-control", "the merge-blocking gate job"},
-          {"control-rollup-skip", "the footgun-1 skipped-leaf arm"}
+          {~s({"result": "skipped"}), "the footgun-1 skipped-leaf-result arm"}
         ] do
       assert String.contains?(src, needle),
              ProofAssertions.stable_id_message(
