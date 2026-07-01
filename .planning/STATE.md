@@ -28,7 +28,14 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 Phase: 137 — crosswake_sigra Extraction
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-07-01 — Phase 136 complete, transitioned to Phase 137
+Last activity: 2026-07-01 — Phase 137 planned (5 plans / 5 waves), plan-checker PASSED
+
+> **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
+> false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
+> H3-heading decision format (parser expects `- **D-NN:**` bullets — known brittleness).
+> Overridden after plan-checker Dimension 7 Context-Compliance PASSED, independently confirming
+> all four locked decisions are implemented: D-137-A→Plan 01/02, D-137-B→Plan 01, D-137-C→Plan
+> 04/05, D-137-D→Plan 01/03. No decision was dropped; this is a tooling false-negative only.
 
 ```
 [ ] Phase 136 — Core Decoupling

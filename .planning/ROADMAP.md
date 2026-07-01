@@ -180,10 +180,24 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   5. `crosswake_sigra` is registered in `release-please` as an independent `elixir` component (not in the `linked-versions` lockstep group).
 
 **Plans**: 5 plans
+**Wave 1**
+
 - [ ] 137-01-PLAN.md — Core Finding boundary: :code/:details fields, guarded :auth clause, evaluate_auth→Finding callback + RouteGate translation, StubSigraAbsentCompanion (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 137-02-PLAN.md — Sigra-side Finding refactor: Evaluator.deny→Finding, StepUpCeremony re-point + max-age guard, host issue_intent→Finding, remove Denial aliases (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 137-03-PLAN.md — Package skeleton + source/test move + phase54 split + non-vacuous clean-room proof + remove sigra from core + path-dep dress rehearsal (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 137-04-PLAN.md — CI wiring: no-engine clean-room mode, independent release-please component, publish-hex-sigra + clean-room-proof-sigra jobs + cleanup/alert (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 137-05-PLAN.md — Publish gate chain: dry-run verify + HUMAN register-checks / merge Release PR / merge cleanup PR (wave 5)
 
 ### Phase 138: crosswake_chimeway Extraction
