@@ -1,6 +1,7 @@
 defmodule Crosswake.Compatibility.RouteGateTest do
   use ExUnit.Case, async: false
 
+  alias Crosswake.Compatibility.Finding
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target
   alias Crosswake.Companions.Sigra.Contracts
@@ -102,8 +103,8 @@ defmodule Crosswake.Compatibility.RouteGateTest do
   test "evaluator denies missing and invalid auth context with canonical codes" do
     route = route_entry(auth_min_level: :mfa, auth_posture: :strict_recent)
 
-    assert {:deny, missing} = Evaluator.evaluate_route_auth(route, nil, [])
-    assert missing.reason == :step_up_required
+    # D-137-A: Evaluator now emits %Finding{axis: :auth} directly (Plan 02).
+    assert {:deny, %Finding{axis: :auth} = missing} = Evaluator.evaluate_route_auth(route, nil, [])
     assert missing.code == "auth.step_up.missing_context"
     assert Map.keys(missing.details) == ["evaluated_at"]
 
@@ -141,9 +142,9 @@ defmodule Crosswake.Compatibility.RouteGateTest do
     ]
 
     for {context, opts, code} <- cases do
-      assert {:deny, denial} = Evaluator.evaluate_route_auth(route, context, opts)
-      assert denial.reason == :step_up_required
-      assert denial.code == code
+      # D-137-A: Evaluator now emits %Finding{axis: :auth} (Plan 02).
+      assert {:deny, %Finding{axis: :auth} = finding} = Evaluator.evaluate_route_auth(route, context, opts)
+      assert finding.code == code
     end
   end
 

@@ -1,6 +1,7 @@
 defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Compatibility.Finding
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.StepUp
   alias Crosswake.Companions.Sigra.StepUpCeremony
@@ -151,15 +152,17 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
                evaluator_result: {:allow, %{facts: %{ok: true}}}
              )
 
+    # D-137-A: evaluator_result fixtures now use %Finding{axis: :auth} shape (Plan 02).
     assert {:challenge, %StepUp.StepUpIntentRecord{}, %StepUp.StepUpChallenge{} = challenge} =
              StepUpCeremony.evaluate_or_issue(route, auth_context,
                evaluator_result:
                  {:deny,
-                  Denial.new(
-                    reason: :step_up_required,
+                  %Finding{
+                    axis: :auth,
                     code: "auth.step_up.insufficient_assurance",
-                    message: "Additional authentication is required."
-                  )},
+                    message: "Additional authentication is required.",
+                    details: %{}
+                  }},
                issue_intent: fn _attrs ->
                  {:ok, %{intent: step_up_intent_record(), challenge: step_up_challenge()}}
                end
@@ -168,31 +171,34 @@ defmodule Crosswake.Proof.Phase56StepUpCeremonyTest do
     assert challenge.return_route_id == "saas-profile-settings"
     assert challenge.required_assurance_level == :mfa
 
-    host_denial =
-      Denial.new(
-        reason: :step_up_required,
-        code: "auth.step_up_intent.route_mismatch",
-        message: "Additional authentication is required."
-      )
+    # host_denial is now a Finding — issue_intent returns {:error, %Finding{axis: :auth}}.
+    # StepUpCeremony.normalize_issue_result passes it through as {:deny, finding}.
+    host_denial = %Finding{
+      axis: :auth,
+      code: "auth.step_up_intent.route_mismatch",
+      message: "Additional authentication is required.",
+      details: %{}
+    }
 
     assert {:deny, ^host_denial} =
              StepUpCeremony.evaluate_or_issue(route, auth_context,
                evaluator_result:
                  {:deny,
-                  Denial.new(
-                    reason: :step_up_required,
+                  %Finding{
+                    axis: :auth,
                     code: "auth.step_up.stale_auth",
-                    message: "Additional authentication is required."
-                  )},
+                    message: "Additional authentication is required.",
+                    details: %{}
+                  }},
                issue_intent: fn _attrs -> {:error, host_denial} end
              )
 
-    non_challengeable =
-      Denial.new(
-        reason: :step_up_required,
-        code: "auth.step_up.revoked",
-        message: "Additional authentication is required."
-      )
+    non_challengeable = %Finding{
+      axis: :auth,
+      code: "auth.step_up.revoked",
+      message: "Additional authentication is required.",
+      details: %{}
+    }
 
     assert {:deny, ^non_challengeable} =
              StepUpCeremony.evaluate_or_issue(route, auth_context,
