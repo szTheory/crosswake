@@ -150,11 +150,11 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 **Plans**: 5 plans
 **Wave 1**
 
-- [ ] 136-01-PLAN.md — Extend Companion behaviour (4 optional callbacks) + Phase-129 freeze test + 5 Nyquist backstop tests [Wave 1]
+- [x] 136-01-PLAN.md — Extend Companion behaviour (4 optional callbacks) + Phase-129 freeze test + 5 Nyquist backstop tests [Wave 1]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 136-02-PLAN.md — Invert telemetry.ex: runtime reserved-events aggregation + 10-atom baseline PII denylist + attach-time forbidden-key cache + Phase-133 test [Wave 2]
+- [x] 136-02-PLAN.md — Invert telemetry.ex: runtime reserved-events aggregation + 10-atom baseline PII denylist + attach-time forbidden-key cache + Phase-133 test [Wave 2]
 - [ ] 136-03-PLAN.md — Invert route_gate.ex auth dispatch onto registry with fail-closed deny + rescue [Wave 2]
 - [ ] 136-04-PLAN.md — Convert support_matrix stale-beam attributes to runtime helpers + doctor DenialCodes runtime lookup [Wave 2]
 
@@ -262,7 +262,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete | 2026-06-28 |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete | 2026-06-29 |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
-| 136. Core Decoupling | v17.0 | 0/? | Not started | - |
+| 136. Core Decoupling | v17.0 | 2/5 | In Progress|  |
 | 137. crosswake_sigra Extraction | v17.0 | 0/? | Not started | - |
 | 138. crosswake_chimeway Extraction | v17.0 | 0/? | Not started | - |
 | 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
