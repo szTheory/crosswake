@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
+current_phase: 137
+current_phase_name: crosswake-sigra-extraction
 status: executing
 stopped_at: Phase 137 context gathered
-last_updated: "2026-07-01T19:34:38.611Z"
-last_activity: 2026-07-01 — Phase 136 complete, transitioned to Phase 137
+last_updated: "2026-07-01T20:42:02.900Z"
+last_activity: 2026-07-01
+last_activity_desc: Phase 137 execution started
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 11
+  completed_plans: 7
   percent: 20
 ---
 
@@ -21,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 136 — core-decoupling
+**Current focus:** Phase 137 — crosswake-sigra-extraction
 
 ## Current Position
 
-Phase: 137 — crosswake_sigra Extraction
-Plan: Not started
+Phase: 137 (crosswake-sigra-extraction) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-01 — Phase 137 planned (5 plans / 5 waves), plan-checker PASSED
+Last activity: 2026-07-01 -- Phase 137 execution started
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
 > false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
@@ -170,6 +173,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 136]: evaluate_auth/3 passes Denial.t() through unchanged (D-136-B); Finding conversion is Phase 137 SIGRA-02 work
 - [Phase 136]: mix.exs application/0 env: registers [Sigra, Chimeway] as in-tree bridge; removed when each module is extracted in Phase 137/138
 - [Phase 136]: DECOUPLE-03 NOT flipped: 3 Category-B failures remain in operator_inspection (x2) and publish_readiness (x1); gate requires 0 failures; Phase 137 pre-extraction baseline cleanup will fix these
+- [Phase ?]: D-137-A: evaluate_auth/3 callback returns {:deny, Finding.t()}; RouteGate owns Finding→Denial translation via finding_to_denial/2 (Plan 01)
+- [Phase ?]: D-137-B: :auth clause in finding_to_denial/2; base_details guarded with cond so :auth passes finding.details UNMERGED (audit fix ①) (Plan 01)
+- [Phase ?]: Plan 01 shim: sigra facade converts Denial to %Finding{axis: :auth} this wave; Plan 02 removes shim when Evaluator emits Finding natively
 
 ### Pending Todos
 
@@ -204,10 +210,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 136 P02 | 4min | 2 tasks | 2 files |
 | Phase 136 P03 | 5min | 1 tasks | 2 files |
 | Phase 136 P06 | 150min | 3 tasks | 11 files |
+| Phase 137 P01 | 4 | - tasks | - files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T19:34:38.607Z
+Last session: 2026-07-01T20:41:36.564Z
 Stopped at: Phase 137 context gathered
 Resume file: .planning/phases/137-crosswake-sigra-extraction/137-CONTEXT.md
 

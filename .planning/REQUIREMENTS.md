@@ -24,7 +24,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 ### SIGRA — `crosswake_sigra` Extraction
 
 - [ ] **SIGRA-01**: `sigra` source + tests move to a standalone `packages/crosswake_sigra/` Hex project (own `mix.exs`, own `@version`), with all sub-modules (`Evaluator`, `Handoff`, `StepUp`, `StepUpCeremony`, `AuthReturn`, `Contracts`, `DenialCodes`, `Telemetry`) preserving the `Crosswake.Companions.Sigra.*` namespace. (D-9)
-- [ ] **SIGRA-02**: Sigra internals emit `Crosswake.Compatibility.Finding` at the companion boundary; `Crosswake.Shell.Denial` stays core-private and absent from the sigra package; PII detail-sanitization (`DenialCodes.sanitize_details/1`) lives inside the package. All internal `Denial.new` call sites across the sub-modules are refactored to the `Finding` boundary. (D-4)
+- [x] **SIGRA-02**: Sigra internals emit `Crosswake.Compatibility.Finding` at the companion boundary; `Crosswake.Shell.Denial` stays core-private and absent from the sigra package; PII detail-sanitization (`DenialCodes.sanitize_details/1`) lives inside the package. All internal `Denial.new` call sites across the sub-modules are refactored to the `Finding` boundary. (D-4)
 - [ ] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9)
 
 ### CHIME — `crosswake_chimeway` Extraction
@@ -72,7 +72,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | DECOUPLE-05 | Phase 136 | Complete |
 | DECOUPLE-06 | Phase 136 | Complete |
 | SIGRA-01 | Phase 137 | Pending |
-| SIGRA-02 | Phase 137 | Pending |
+| SIGRA-02 | Phase 137 | Complete |
 | SIGRA-03 | Phase 137 | Pending |
 | CHIME-01 | Phase 138 | Pending |
 | CHIME-02 | Phase 138 | Pending |
