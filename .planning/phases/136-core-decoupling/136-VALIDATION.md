@@ -19,7 +19,7 @@ created: 2026-06-30
 |----------|-------|
 | **Framework** | ExUnit (mix test) |
 | **Config file** | `test/test_helper.exs` |
-| **Quick run command** | `mix test test/crosswake/phase136_decouple_proof_test.exs` |
+| **Quick run command** | `mix test test/crosswake/proof/phase136_decouple_proof_test.exs` |
 | **Full suite command** | `mix test` |
 | **Estimated runtime** | ~30 seconds |
 
@@ -46,7 +46,7 @@ created: 2026-06-30
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/phase136_decouple_proof_test.exs` — the five backstop tests (companion raises → rescued deny; zero-companion reserved set empty; multiple auth-authority → first + warning; `baseline_forbidden_metadata_keys/0` public API; forbidden-key set captured at attach time)
+- [ ] `test/crosswake/proof/phase136_decouple_proof_test.exs` — the five backstop tests (companion raises → rescued deny; zero-companion reserved set empty; multiple auth-authority → first + warning; `baseline_forbidden_metadata_keys/0` public API; forbidden-key set captured at attach time)
 - [ ] Existing infrastructure (ExUnit) covers the remaining phase requirements — no framework install needed.
 
 ---
