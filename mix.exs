@@ -24,7 +24,12 @@ defmodule Crosswake.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      # In-tree registration bridge — Sigra first (auth authority), then Chimeway.
+      # This covers dev/test/prod with no config/ directory (Crosswake is a Hex library).
+      # Phase-137 extraction: remove Crosswake.Companions.Sigra from this list when
+      # that module is extracted to the crosswake_sigra package.
+      env: [companions: [Crosswake.Companions.Sigra, Crosswake.Companions.Chimeway]]
     ]
   end
 

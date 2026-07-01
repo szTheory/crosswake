@@ -4,6 +4,7 @@ defmodule Crosswake.Companions.Chimeway do
   @behaviour Crosswake.Companion
 
   alias Crosswake.Companion.State
+  alias Crosswake.Companions.Chimeway.Telemetry, as: ChimewayTelemetry
 
   @impl true
   @doc false
@@ -47,5 +48,30 @@ defmodule Crosswake.Companions.Chimeway do
         raw_token_posture: :redacted
       }
     }
+  end
+
+  # ---------------------------------------------------------------------------
+  # Optional callbacks
+  # Chimeway is NOT an auth authority — auth_authority?/0 is intentionally absent.
+  # ---------------------------------------------------------------------------
+
+  @impl true
+  @doc false
+  def forbidden_metadata_keys, do: ChimewayTelemetry.forbidden_metadata_keys()
+
+  @impl true
+  @doc false
+  def telemetry_events do
+    ChimewayTelemetry.event_names()
+    |> Enum.map(fn name ->
+      %{
+        event: name,
+        tier: :reserved,
+        description:
+          "Chimeway notification diagnostic event #{Enum.join(name, ".")} — emitted by the Chimeway companion",
+        measurements: [],
+        metadata: ChimewayTelemetry.metadata_keys()
+      }
+    end)
   end
 end
