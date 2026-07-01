@@ -126,7 +126,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 ### v17.0 Companion Family Completion (Phases 136-140)
 
-- [x] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: gaps_found 2026-07-01 — 34 test regressions; needs gap closure) (completed 2026-07-01)
+- [x] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: passed 2026-07-01 — gap closure 136-06 resolved the 34 regressions; full suite 1162/0) (completed 2026-07-01)
 - [ ] **Phase 137: crosswake_sigra Extraction** - Extract sigra into a standalone independently-versioned Hex package with the Finding-boundary refactor, dress rehearsal, and irreversible publish.
 - [ ] **Phase 138: crosswake_chimeway Extraction** - Extract chimeway into a standalone Hex package with a vacuity-safe clean-room lane (no sigra dep) and irreversible publish.
 - [ ] **Phase 139: crosswake_threadline Extraction** - Extract threadline as the final observer package (telemetry-by-name, zero compile deps on siblings) and publish.
