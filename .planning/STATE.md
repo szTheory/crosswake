@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
 status: planning
-last_updated: "2026-06-30T15:21:03.883Z"
+last_updated: "2026-06-30T00:00:00.000Z"
 last_activity: 2026-06-30
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,50 +20,61 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Planning next milestone (`/gsd-new-milestone`) — v16.0 shipped + archived 2026-06-30. One admin ship-gate carried: register the 18 `merge-blocking-*` lanes.
+**Current focus:** v17.0 Companion Family Completion — roadmap created 2026-06-30. Starting Phase 136: Core Decoupling.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 136 — Core Decoupling
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-30 — Milestone v17.0 started
+Status: Roadmap created; ready for `/gsd-plan-phase 136`
+Last activity: 2026-06-30 — v17.0 roadmap written (Phases 136-140)
+
+```
+[ ] Phase 136 — Core Decoupling
+[ ] Phase 137 — crosswake_sigra Extraction
+[ ] Phase 138 — crosswake_chimeway Extraction
+[ ] Phase 139 — crosswake_threadline Extraction
+[ ] Phase 140 — Family Discipline & Close
+```
+
+Progress: [          ] 0%
+
+```
+[          ] 0%
+Phase 136 ──────────────────────────────────────────────────────── Phase 140
+```
 
 ## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
-**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN); PR #40 merged → origin at v16.0; CI green after 5 lane fixes (File.cd! race, android `mix deps.get`, negative-control single-job redesign, sdkmanager retry, PyYAML-independence). **`/gsd-complete-milestone v16.0` run 2026-06-30** — ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v16.0-*`, MILESTONES.md + PROJECT.md evolved, REQUIREMENTS.md removed (fresh for next milestone), tag `v16.0` created.
+**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED (27/27 reqs, integration CLEAN); PR #40 merged → origin at v16.0; CI green after 5 lane fixes. **`/gsd-complete-milestone v16.0` run 2026-06-30** — ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v16.0-*`, MILESTONES.md + PROJECT.md evolved, REQUIREMENTS.md removed (fresh for next milestone), tag `v16.0` created.
 
-**Carried ship-gate — Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main (`merge-blocking rulestead proof (hermetic)`, `brand-structural`); the rest — incl. `merge-blocking-native-behavioral-proof` and `merge-blocking-aggregator-negative-control` — run and can go red but DON'T block merge. To make them actually merge-blocking:
+**Carried ship-gate — Register required checks (ADMIN, one-time, human gate by design).** Only 2/20 merge-blocking lanes are currently registered required on main. To make them actually merge-blocking:
 
-   - First confirm the lanes are green on `main` post-merge (the registrar's green-first preflight skips not-yet-green lanes): `gh run list --branch main --limit 15`.
+   - First confirm the lanes are green on `main` post-merge: `gh run list --branch main --limit 15`.
    - Then (admin gh auth = repo owner szTheory): `DRY_RUN=0 script/register_required_checks.sh`
-   - (Optional, enables the standing drift auditor) provision repo secret `BRANCH_PROTECTION_READ_TOKEN` (Administration:read + Issues:write) so `.github/workflows/required-checks-audit.yml` can run.
-   - NOT auto-applied: mutating branch protection is the deliberate human go-decision (Artifact C design / PROOF-03 D-03).
+   - (Optional) provision repo secret `BRANCH_PROTECTION_READ_TOKEN` (Administration:read + Issues:write) so `.github/workflows/required-checks-audit.yml` can run.
+   - This ship-gate is scheduled as part of Phase 140 (FAMILY-04) — run before new v17.0 lanes are relied upon as merge-blocking.
 
-**Carried tech-debt (non-blocking, from the audit):** TELEM-04 Side B vacuity (133, assessed: fragile fix, non-exposed — leave) and `companion_compatibility.md:51-54` prose (132, assessed: not actually a bug — leave). Pre-existing MIRROR_PUSH_TOKEN scope still unexercised.
+**Carried tech-debt (non-blocking):** TELEM-04 Side B vacuity (Phase 133, assessed: fragile fix, non-exposed — leave) and `companion_compatibility.md:51-54` prose (Phase 132, assessed: not a bug — leave). Pre-existing MIRROR_PUSH_TOKEN scope still unexercised.
 
-> **Planning gate override (Phases 130 & 131, re-surface at verify-phase):** The blocking
-> `decision-coverage-plan` gate returned a false-negative — the known parser limitation on
-> long-bold / embedded-colon `**D-NN: …**` CONTEXT bullets, which it silently drops as
-> "unparseable decision bullet" and then matches 0/N.
-> - Phase 130: `total: 24, covered: 0`; checker Dimension 7 PASS, all 33 decisions D-01..D-33 cited.
-> - Phase 131 (2026-06-26): `covered: 0/13`; the independent gsd-plan-checker verified Dimension 7
->   (Context Compliance) PASS with all 20 locked decisions D-01..D-20 explicitly cited across the
->   3 plans, and a `grep` cross-check confirms D-01..D-20 all referenced. No real coverage gap —
->   the gate is a tooling false-positive, not a dropped decision.
+## v17.0 Roadmap Decisions (2026-06-30, locked)
 
-Progress: [██████████] 100%
-
-```
-[██████████] 100%
-Phase 129 ──────────────────────────────────────────────── Phase 135 ✓
-```
+- Five phases derived from the five requirement categories in the research-mandated sequential order: DECOUPLE (136) → SIGRA (137) → CHIME (138) → THREAD (139) → FAMILY (140).
+- Phase ordering is non-negotiable: 136 inverts the four coupling sites before any extraction (core must compile without companions present); 137 first publish (sigra, most entangled, ~3,800 LOC); 138 second publish (chimeway, telemetry-only coupling, clean-room excludes sigra); 139 third publish (threadline, observer, extracted last per D-7 — core telemetry must decouple first); 140 disciplines the family and closes the admin ship-gate.
+- The "chimeway depends on sigra AuthContext" coupling is a myth at the type level — chimeway already uses `auth_context: map()`, not a sigra struct. Compatibility matrix stays O(N), single `Requires crosswake >= X` column.
+- D-1 mechanism: extend `Crosswake.Companion` behaviour with optional callbacks (`forbidden_metadata_keys/0`, `denial_codes/0`, `evaluate_auth/3`, `auth_authority?/0`); core iterates via `function_exported?/3`; never `compile_env`, never `@before_compile`.
+- D-3 fail-closed: auth-predicated route + no auth companion = `:dependency_missing` deny; companion raising = rescued → deny; "no eval = allow" only on non-auth routes.
+- D-4 boundary: sigra internals refactor `Denial.new` → `Finding.t()` at the package boundary; `DenialCodes.sanitize_details/1` stays inside `crosswake_sigra`.
+- D-5 PII: core baseline hardcoded denylist (auth tokens, identity fields) always applied, layered above per-companion `forbidden_metadata_keys/0` aggregation.
+- D-8 versioning: independent `release-please` components, NOT `linked-versions` lockstep (Ash/Broadway/Oban precedent); chimeway `auth_context: map()` moduledoc guard note prevents inter-companion dep creep.
+- D-9 sequencing: register_required_checks.sh runs before new v17.0 lanes land; one release-please component per PR (no batch misfire); chimeway clean-room explicitly excludes `crosswake_sigra`.
+- Three unreclaimable Hex names (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`) — dress-rehearsal + `--dry-run` mandatory before each publish.
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) = 109 across last six milestones
+- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) + 24 (v16.0) = 142 across last seven milestones
 - Average duration: —
 - Total execution time: —
 
@@ -71,35 +82,9 @@ Phase 129 ───────────────────────�
 
 ## Accumulated Context
 
-### Roadmap Evolution
+### Planning Gate Override (Known Pattern)
 
-- Phase 135 added (2026-06-26): CI-Ops Hardening — Release-As Automation (PROOF-03). Shifts the two post-publish companion-release follow-ups (one-shot `release-as` removal, clean-room-proof confirmation) left to fail-closed CI — parametric across all `crosswake_*` companions, no recurring human step. Implemented + landed on local main 2026-06-26 (v16.0 WIP; syncs to origin at the milestone boundary). Origin: the Phase 132 verify-work challenge — both items were timing-gated (CI-only/post-publish), not human-judgment gates.
-
-### v16.0 Roadmap Decisions (2026-06-25, locked)
-
-- Six phases derived from requirement categories in the approved plan order: SEAM (129) → EXTRACT-mechanics (130) → EXTRACT-publish/PROOF rulestead (131) → EXTRACT-rindle/COMPAT (132) → TELEM (133) → LIFE (134).
-- Phase ordering is non-negotiable for the extraction chain: 129 freezes the contract surface before packages depend on it; 130 dress-rehearsal with path-dep before any irreversible publish; 131 first Hex publish (rulestead); 132 generalization proof (rindle). 133 and 134 depend only on 129 and are placed last so irreversible publishes land on a settled contract.
-- Phase 129 surfaces: `lib/crosswake/companion/state.ex`, `lib/crosswake/compatibility/compatibility.ex`, `lib/crosswake/manifest/types.ex`, `mix.exs` docs groups, new `guides/companion_contract.md`. Proof: `test/crosswake/proof/phase129_*` (PR-gating).
-- Phase 130: no Hex publish — dress rehearsal with `path:` dep only. Removes `MIX_INCLUDE_*` env hack, creates `packages/crosswake_rulestead/`, adds two merge-blocking guards (static-reference grep guard + `Code.ensure_loaded?` placement guard) and a fail-closed absence test. Proof: `phase130-proof.yml` (PR-gating, in-monorepo).
-- Phase 131: first irreversible Hex publish for `crosswake_rulestead`. Independently versioned — NOT in the `linked-versions` lockstep group. Gated by `hex.publish --dry-run` + clean-room CI lane before real publish. Surfaces: `release-please-config.json`, `.release-please-manifest.json`, `.github/workflows/release-please.yml`, `script/verify_companion_cleanroom.sh`.
-- Phase 132: identical recipe on rindle (including owned `Contracts.MediaObject` and `Reconciliation`); no rindle-specific branches in core. Ships `guides/companion_compatibility.md` and a drift test. Proof: `phase132-proof.yml` + reused clean-room lane.
-- Phase 133: `Crosswake.Telemetry` is a new public module (`lib/crosswake/telemetry.ex`) + `guides/telemetry.md`. Core never auto-attaches a handler. Bidirectional contract test freezes the declared⇔emitted surface. Independent of 130-132; scheduled last to benefit from settled contract surface.
-- Phase 134: generated-shell lifecycle (template-version stamp + `mix crosswake.shell.status` + `gen.shell --diff` + `guides/native_shell_upgrade.md`) + Android JVM UAT promoted to merge-blocking, iOS stays advisory. Independent of 130-133; scheduled last.
-- Package name ≠ module name convention: `crosswake_rulestead`/`crosswake_rindle` as Hex package names; `Crosswake.Companions.Rulestead`/`.Rindle` as module namespaces. The sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged — extraction is non-breaking.
-- `Crosswake.Shell.Denial` stays core-private; companions emit `Compatibility.Finding`, never the final denial envelope.
-- Shell upgrade is doc-driven + diff only; `gen.shell --diff` is non-destructive. No auto-overwrite.
-
-### v15.0 Roadmap Decisions (2026-06-21, locked)
-
-- Four phases derived from requirement categories in the maintainer-approved order: DOCKER+PORT (125) → NDEV (126) → LAUNCH (127) → COLL+DOCS (128).
-- Phase ordering is non-negotiable: 126 and 127 both depend on 125 (port and backend must be stable before native dev wiring or the launch script can be finalized); Phase 128 depends on 125+126+127 (collateral requires all three runtimes live, docs reference final ports/commands).
-- Phase 125 ships `examples/docker-compose.yml`, `examples/phoenix_host/Dockerfile`, `examples/phoenix_host/.dockerignore`, a committed `examples/phoenix_host/.env` (`COMPOSE_PROJECT_NAME=crosswake`, `PORT=4700`), named volumes for deps/_build/node_modules and SQLite, a polling reloader in the dev config, and `docs/PORT-REGISTRY.md`; it also moves the default demo port from 4002 → 4700 across config/scripts/playwright.config.ts.
-- Phase 126 is strictly additive: iOS Dev scheme + `Info-Dev.plist` + `Fixtures/route_activation-dev.json` for iOS; Android `dev` product flavor + `res/xml/network_security_config_dev.xml` + `src/dev/assets/*` + a non-autoVerify dev intent-filter for Android. The checked-in public-coordinate proof fixtures and assets MUST NOT be modified.
-- Phase 127 ships `bin/see-it-run.sh` and a `Makefile` target; the optional `lib/mix/tasks/crosswake.demo.ex` task is a thin alias. The DRY ASCII banner module is brand-voiced and includes an honest "what's proven / what needs a native build" block. Advisory native boot is present-but-not-required (prints clear guidance when toolchain absent).
-- Phase 128 reuses `script/capture-native-collateral.mjs` and `examples/phoenix_host/e2e/route_tour.spec.ts` for screenshots; captures a short screen recording; writes `guides/see_it_run.md` (gameplan-at-top, JTBD-driven, links rather than duplicates QUICK_START); updates `mix.exs` ExDoc groups + README + `examples/QUICK_START.md`; and adds `test/crosswake/guides/see_it_run_test.exs`.
-- Hermetic-vs-advisory split applies: Docker/web proof can be deterministic (merge-blocking); iOS simulator and Android emulator collateral stays advisory (cannot be deterministic across CI environments).
-- Support labels: no native overclaim anywhere — simulator/emulator evidence is honestly labeled; doc-contract tests guard ports/routes/commands.
-- Proof fixtures and assets in the checked-in iOS/Android example hosts are proof artifacts — additive dev-wiring must never mutate them.
+The blocking `decision-coverage-plan` gate returns false-negatives on long-bold / embedded-colon `**D-NN: …**` CONTEXT bullets (extracts 0 of N). Cross-check plan-checker Dimension 7 manually + `grep D-0` confirmation when this gate fires. Proceed with override if substance is covered.
 
 ### Decisions
 
@@ -157,8 +142,6 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 132 P04: rindle Contracts.media_state_vocabulary/0 canary appended inside SMOKEEOF heredoc guarded by PACKAGE==crosswake_rindle (D-18); no new script param. Removed pre-existing stray MIX_VERSION echo from rulestead clean-room run (Rule 1)
 - [Phase ?]: Elixir 1.19 includes optional callbacks in behaviour_info(:callbacks) — Phase 129 freeze test updated to include telemetry_events: 0 (same-PR pattern per test hint)
 - [Phase ?]: events/0 uses private helper functions not module attributes for catalog construction — avoids stale-.beam footgun (D-05)
-- [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
-- [Phase ?]: /Users/jon/projects/crosswake/.planning/phases/133-telemetry-public-api/133-03-SUMMARY.md
 - [Phase ?]: D-19: guides/telemetry.md follows brandbook §14 concept order (10 sections)
 - [Phase ?]: D-18: mix.exs Telemetry group in groups_for_extras and groups_for_modules; Offline.Telemetry discoverability-only
 - [Phase ?]: Threadline :exception empty-metadata caveat documented; stop ⊇ start holds for :stop not :exception
@@ -181,62 +164,33 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ### Blockers/Concerns
 
-- **WR-01 capability-axis Elixir coverage caveat (v14 carried, non-blocking).** The discriminating vec-014 floor proof runs native-only; `bridge_behavioral_vector_test.exs` hardcodes capabilities and evaluates it vacuously. Production `compatible_version?/2` is correct; native proof is green. Fix: tag vec-014 `native_only` or honor `request_override.capabilities` in the Elixir harness.
+- **WR-01 capability-axis Elixir coverage caveat (v14 carried, non-blocking).** The discriminating vec-014 floor proof runs native-only; `bridge_behavioral_vector_test.exs` hardcodes capabilities and evaluates it vacuously. Production `compatible_version?/2` is correct; native proof is green.
 - **`MIRROR_PUSH_TOKEN` scope unexercised (carried open item).** Token's `Contents: write` scope is validated by the first iOS mirror on the NEXT release; if it 403s, regenerate the fine-grained PAT.
-- **Branch-protection toggle (watch).** Two `register-*-gate.sh` scripts from v14.0 are committed but unrun — maintainer must run to arm branch protection. Applies to any new required CI gates added in v15.0/v16.0.
-- **Irreversible Hex publish risk (Phase 131/132).** Package names `crosswake_rulestead` and `crosswake_rindle` cannot be reclaimed once published. Phase 130 dress-rehearsal with `path:` dep and Phase 131 `--dry-run` gate front-load this risk before any real publish.
+- **Branch-protection toggle (watch).** `register_required_checks.sh` scripts from prior milestones are committed but have not yet been run — maintainer must run to arm branch protection. Scheduled in Phase 140 (FAMILY-04) before new v17.0 lanes land.
+- **Irreversible Hex publish risk (Phases 137/138/139).** Package names `crosswake_sigra`, `crosswake_chimeway`, and `crosswake_threadline` cannot be reclaimed once published. Phase 136 dress-rehearsal and per-phase `--dry-run` gate front-load this risk before any real publish.
+- **`build_reserved_events/0` atomicity risk.** Moving from static module-attribute calls to runtime aggregation must be atomic — if sigra extracts before chimeway, a half-removal breaks the other. Phase 136 must complete the full runtime inversion before either companion is extracted.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | v15.0 close | COLL-01 native screenshot binaries (iOS sim, Android emulator, montage) | Advisory-deferred — non-proof advisory native evidence; capture automation shipped but CI Android-emulator-on-macOS hangs and local capture is blocked by the Xcode-26-vs-published-package wall; standing D-03/D-19 maintainer gate. Web route-proof PNGs + COLL-02 GIF are committed. | v15.0 close |
-| v8.0 gap | Phase 81 verification gap (human_needed, carried from v5.1) | Acknowledged | v8.0 close |
-| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until after companion extraction (crosswake_dashboard, after telemetry contract ships in Phase 133) | v8.0 close |
+| v8.0 gap | DASH-01: Surfacing offline adoption metrics | Deferred until companion family complete (crosswake_dashboard, unblocked by Phase 133 Telemetry public API) | v8.0 close |
 | v8.0 gap | NTV-01: Extend storage budgets to native physical disk space | Deferred until after companion extraction | v8.0 close |
-| v11.0 close | Quick task `tighten-validation-ledger-closeout-gate` (= LEDG-01 / DEBT-01) | Resolved — Phase 115 | v11.0 close |
-| v11.0 close | Phase 110 `110-HUMAN-UAT.md` audit flag | Resolved — status `passed`, 0 pending scenarios (false positive) | v11.0 close |
-| v11.0 close | Phase 110 `110-VERIFICATION.md` [human_needed] | Acknowledged — the human items were the 4 deferred UAT checks, all passed when 0.1.2 shipped live | v11.0 close |
-| v12.0 Phase 112 | TODO-001: pre-existing phoenix_host test failures (FlashcardsTest drift + flaky RegistryNotificationOpenTest) | Resolved — Phase 116 / Plan 01 targeted tests pass | Phase 112 surfaced |
 | v14.0 close | WR-01: Elixir capability-axis floor proof (vec-014) vacuous — discriminating proof native-only | Acknowledged — test-coverage gap, no production impact; native proof green | v14.0 close |
-| v14.0 close | WR-02 / WR-03: latent unexercised native divergences (Android-vs-iOS malformed-`@` pack parser; SemVer identical-garbage fallback) | Acknowledged — bounded; inputs are generated well-formed semver | v14.0 close |
-| v14.0 close | Two `register-*-gate.sh` branch-protection PATCHes (contract-gate + native-gate) committed but unrun by design | Deferred — maintainer/harness-gated; run to arm branch protection | v14.0 close |
-| v14.0 close | 4 pre-existing docs-debt test failures (HexPage×2, Phase48, Phase69); MIRROR_PUSH_TOKEN scope unexercised | Carried — predate / orthogonal to v14.0 | v14.0 close |
-| v16.0 future | Remaining companion extraction: sigra (most entangled), chimeway (depends on sigra AuthContext), threadline (consumes other companions — build last) | Deferred — fast follow-on once the pattern is proven on 2 companions (rulestead + rindle) | v16.0 scope |
-| v16.0 future | SYNCP-01: offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package) | Deferred behind companion packaging wedge | v16.0 scope |
-| v16.0 future | SEED-002: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam | Deferred until package-family pattern is proven | v16.0 scope |
-| Phase 132 plan | Decision-coverage gate (13a) override: reported 0/10 — KNOWN parser false-negative on multi-line `**D-NN: … — …**` bold/embedded-colon CONTEXT bullets. Cross-checked GREEN: plan-checker Dimension 7 PASS (all 19 D-01..D-19 addressed) + plans literally cite D-01..D-19. Substance covered; gate artifact only. | Proceeded with override — verify-phase to re-confirm | Phase 132 plan |
-| Phase 129 P01 | 1m | 1 tasks | 1 files |
-| Phase 129 P02 | 15m | - tasks | - files |
-| Phase 129 P02 | 15m | - tasks | - files |
-| Phase 130 P01 | 28m | 3 tasks | 7 files |
-| Phase 130 P02 | 45min | 2 tasks | 9 files |
-| Phase 130 P03 | 8min | 2 tasks | 2 files |
-| Phase 130 P04 | 60 | 3 tasks | 11 files |
-| Phase 130 P05 | 5min | 2 tasks | 2 files |
-| Phase 131 P01 | 6m | 3 tasks | 6 files |
-| Phase 131 P02 | 10m | 2 tasks | 2 files |
-| Phase 131 P03 | 5m | 2 tasks | 2 files |
-| Phase 132 P01 | 12m | 2 tasks | 10 files |
-| Phase 132 P03 | ~16m | 3 tasks | 27 files |
-| Phase 132 P02 | ~14m | 2 tasks | 2 files |
-| Phase 132 P04 | ~9m | 3 tasks | 4 files |
-| Phase 133 P01 | 4m | 3 tasks | 3 files |
-| Phase 133 P02 | 5m | 2 tasks | 4 files |
-| Phase 133 P03 | 8min | 1 tasks | 1 files |
-| Phase 133 P04 | 12min | 3 tasks | 3 files |
-| Phase 135 P01 | 3 | 2 tasks | 1 files |
-| Phase 134 P00 | 4m | 2 tasks | 4 files |
-| Phase 134 P01 | 9m | 4 tasks | 18 files |
-| Phase 134 P03 | 8 minutes | 2 tasks | 2 files |
-| Phase 134 P04 | 8min | 4 tasks | 6 files |
+| v14.0 close | WR-02 / WR-03: latent unexercised native divergences | Acknowledged — bounded; inputs are generated well-formed semver | v14.0 close |
+| v14.0 close | MIRROR_PUSH_TOKEN scope unexercised | Carried — validates on next release | v14.0 close |
+| v16.0 tech-debt | TELEM-04 Side B vacuity (Phase 133) | Assessed: structurally near-impossible divergence; fragile fix; leave | v16.0 close |
+| v16.0 tech-debt | companion_compatibility.md:51-54 prose (Phase 132) | Assessed: not a bug; leave | v16.0 close |
+| v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
+| v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
 
 ## Session Continuity
 
-Last session: 2026-06-29T21:08:15.156Z
-Stopped at: Phase 134 context gathered
+Last session: 2026-06-30
+Stopped at: v17.0 roadmap created
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd-plan-phase 136` to plan Phase 136: Core Decoupling

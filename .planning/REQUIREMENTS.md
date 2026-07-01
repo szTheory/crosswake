@@ -63,4 +63,24 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
 ## Traceability
 
-*(Filled by the roadmapper — each requirement maps to exactly one phase.)*
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DECOUPLE-01 | Phase 136 | Pending |
+| DECOUPLE-02 | Phase 136 | Pending |
+| DECOUPLE-03 | Phase 136 | Pending |
+| DECOUPLE-04 | Phase 136 | Pending |
+| DECOUPLE-05 | Phase 136 | Pending |
+| DECOUPLE-06 | Phase 136 | Pending |
+| SIGRA-01 | Phase 137 | Pending |
+| SIGRA-02 | Phase 137 | Pending |
+| SIGRA-03 | Phase 137 | Pending |
+| CHIME-01 | Phase 138 | Pending |
+| CHIME-02 | Phase 138 | Pending |
+| CHIME-03 | Phase 138 | Pending |
+| THREAD-01 | Phase 139 | Pending |
+| THREAD-02 | Phase 139 | Pending |
+| THREAD-03 | Phase 139 | Pending |
+| FAMILY-01 | Phase 140 | Pending |
+| FAMILY-02 | Phase 140 | Pending |
+| FAMILY-03 | Phase 140 | Pending |
+| FAMILY-04 | Phase 140 | Pending |
