@@ -724,14 +724,72 @@ defmodule Crosswake.SupportMatrix do
   def auth_contract_truth do
     companions = Application.get_env(:crosswake, :companions, [])
 
+    # Find the first registered auth-authority companion (first-registered wins, matching RouteGate).
+    # Mirrors the RouteGate pattern: call companion_id/0 first so the BEAM loads the module
+    # before the function_exported?/3 check (BEAM defers module loading until first call).
+    auth_authority =
+      Enum.find(companions, fn mod ->
+        _load = mod.companion_id()
+        function_exported?(mod, :auth_authority?, 0) and mod.auth_authority?()
+      end)
+
+    # Aggregate denial_codes from all companions that implement the callback (flat_map preserves
+    # the all-companion pattern; the auth authority will be in this list).
+    # Call companion_id/0 first to ensure the module is loaded before function_exported?/3 check.
     denial_codes =
       Enum.flat_map(companions, fn mod ->
+        _load = mod.companion_id()
         if function_exported?(mod, :denial_codes, 0), do: mod.denial_codes(), else: []
       end)
 
-    safe_detail_keys = []
+    # Remaining fields are sourced specifically from the auth-authority companion
+    # (guarded by function_exported?/3 so that when no auth-authority is registered
+    # the fields fall back to [] — the sentinel behavior the fail-closed tests rely on).
+    safe_detail_keys =
+      if auth_authority && function_exported?(auth_authority, :safe_detail_keys, 0) do
+        auth_authority.safe_detail_keys()
+      else
+        []
+      end
 
-    [@auth_contract_truth_static |> Map.merge(%{denial_codes: denial_codes, safe_detail_keys: safe_detail_keys})]
+    telemetry_event_names =
+      if auth_authority && function_exported?(auth_authority, :telemetry_event_names, 0) do
+        auth_authority.telemetry_event_names()
+      else
+        []
+      end
+
+    telemetry_metadata_keys =
+      if auth_authority && function_exported?(auth_authority, :telemetry_metadata_keys, 0) do
+        auth_authority.telemetry_metadata_keys()
+      else
+        []
+      end
+
+    telemetry_forbidden_metadata_keys =
+      if auth_authority && function_exported?(auth_authority, :forbidden_metadata_keys, 0) do
+        auth_authority.forbidden_metadata_keys()
+      else
+        []
+      end
+
+    # Deep-merge the populated telemetry fields into the static map's telemetry sub-map
+    # without dropping existing keys (status, authority_source, proof_class stay).
+    updated_telemetry =
+      Map.merge(@auth_contract_truth_static.telemetry, %{
+        event_names: telemetry_event_names,
+        metadata_keys: telemetry_metadata_keys,
+        forbidden_metadata_keys: telemetry_forbidden_metadata_keys
+      })
+
+    [
+      @auth_contract_truth_static
+      |> Map.merge(%{
+        denial_codes: denial_codes,
+        safe_detail_keys: safe_detail_keys,
+        telemetry: updated_telemetry
+      })
+    ]
   end
 
   @spec commerce_corridor_denial_codes() :: [String.t()]
