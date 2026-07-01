@@ -63,7 +63,11 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
   setup do
     previous = Application.get_env(:crosswake, :companions)
-    Application.put_env(:crosswake, :companions, [StubCompanion])
+    # Post-DECOUPLE-03: auth denial codes are sourced at runtime from the
+    # registered auth-authority companion. Register the real Sigra facade ahead of
+    # the stub so the publish-readiness auth check sees the Sigra contract; the stub
+    # remains for the non-auth provider/notification assertions. (See 136-06.)
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra, StubCompanion])
 
     on_exit(fn ->
       if is_nil(previous) do

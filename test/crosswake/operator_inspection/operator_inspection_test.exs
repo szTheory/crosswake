@@ -88,7 +88,12 @@ defmodule Crosswake.OperatorInspectionTest do
 
   setup do
     previous = Application.get_env(:crosswake, :companions)
-    Application.put_env(:crosswake, :companions, [StubCompanion])
+    # Post-DECOUPLE-03: the auth contract surface (denial_codes, telemetry event
+    # names, safe_detail_keys) is sourced at runtime from the registered
+    # auth-authority companion, not from static core data. Register the real
+    # Sigra facade ahead of the stub so auth_contract_truth/0 has an authority to
+    # aggregate — the stub remains for the route-gating assertions. (See 136-06.)
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra, StubCompanion])
 
     on_exit(fn ->
       if is_nil(previous) do
