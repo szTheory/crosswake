@@ -5,12 +5,12 @@ milestone_name: Companion Family Completion
 current_phase: 136
 current_phase_name: core-decoupling
 status: executing
-stopped_at: Completed 136-05-PLAN.md
+stopped_at: Phase 136 verification gaps_found (34 test regressions — needs gap closure)
 last_updated: "2026-07-01T15:29:00Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 5
   completed_plans: 5
   percent: 20
