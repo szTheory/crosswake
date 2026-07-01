@@ -36,19 +36,54 @@ defmodule Crosswake.Telemetry do
     metadata: [atom()]
   }
 
+  # The 10-atom core PII baseline denylist (D-136-A / DECOUPLE-05).
+  # Always applied regardless of companion presence — an absent/misconfigured companion
+  # can never silently drop token/identity scrubbing.
+  # Semver contract: adding a key = minor (stricter safety); removing a key = major (weaker safety).
+  @baseline_forbidden_keys [
+    # auth tokens — catastrophic if leaked from any event / any companion
+    :access_token,
+    :refresh_token,
+    :id_token,
+    :authorization_code,
+    :token,
+    # identity anchors — cross-event re-identification
+    :session_ref,
+    :subject_ref,
+    :actor_id,
+    # direct PII — GDPR/CCPA; appears in core route events
+    :ip,
+    :email
+  ]
+
+  @doc """
+  Returns the 10-atom baseline PII forbidden-metadata-key denylist owned by core.
+
+  These keys are always scrubbed from telemetry metadata regardless of whether any companion
+  is registered. Companions may declare additional forbidden keys via their
+  `forbidden_metadata_keys/0` callback; those are unioned with this baseline at attach time.
+
+  **Semver contract:** adding a key is a non-breaking minor (stricter safety);
+  removing a key is a breaking major (weaker safety).
+  """
+  @spec baseline_forbidden_metadata_keys() :: [atom()]
+  def baseline_forbidden_metadata_keys, do: @baseline_forbidden_keys
+
   @doc """
   Returns the runtime-aggregated catalog of all Crosswake telemetry events.
 
   Builds the catalog at call time by concatenating:
   1. Core `:active` span docs for the 5 confirmed emitting prefixes
-  2. `:reserved` docs from `Sigra.Telemetry.event_names/0` and `Chimeway.Telemetry.event_names/0`
-  3. Configured-companion docs from `Application.get_env(:crosswake, :companions, [])`
+  2. `:reserved` docs aggregated at runtime from each registered companion's
+     `telemetry_events/0` callback (guarded by `function_exported?/3`) — zero static
+     companion references (DECOUPLE-01)
+  3. Additional companion docs from `Application.get_env(:crosswake, :companions, [])`
      merged via `function_exported?(mod, :telemetry_events, 0)` (D-07, TELEM-04)
 
   The result is de-duplicated by event prefix and sorted (D-06).
 
-  Fail-closed (D-10): with no companions configured, returns core + reserved events
-  and never raises.
+  Fail-closed (D-10): with no companions configured, returns core events only and
+  never raises. The `:reserved` tier will be empty — that is correct and expected.
   """
   @spec events() :: [event_doc()]
   def events do
@@ -134,20 +169,21 @@ defmodule Crosswake.Telemetry do
   # Private: reserved events
   # ---------------------------------------------------------------------------
 
-  # Builds :reserved event_doc entries from in-tree Sigra and Chimeway telemetry modules.
-  # Sigra: 14 event_names/0 entries; Chimeway: 10 event_names/0 entries.
+  # Builds :reserved event_doc entries by aggregating companion telemetry_events/0 callbacks
+  # at runtime via the :companions registry (DECOUPLE-01). Zero static Sigra/Chimeway references.
   # tier: :reserved — declared but not yet emitted; excluded from the declared=>emitted
   # half of the TELEM-04 contract test.
-  # NOTE: Offline.Telemetry is intentionally NOT included — it has no event_names/0
-  # function and would raise UndefinedFunctionError if called.
+  # With no companions registered, returns [] — the reserved tier is legitimately empty (D-136-D).
   defp build_reserved_events do
-    Enum.map(
-      Crosswake.Companions.Sigra.Telemetry.event_names() ++
-        Crosswake.Companions.Chimeway.Telemetry.event_names(),
-      fn name ->
-        %{event: name, tier: :reserved, description: "", measurements: [], metadata: []}
+    Application.get_env(:crosswake, :companions, [])
+    |> Enum.flat_map(fn mod ->
+      if function_exported?(mod, :telemetry_events, 0) do
+        mod.telemetry_events()
+        |> Enum.filter(fn %{tier: tier} -> tier == :reserved end)
+      else
+        []
       end
-    )
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -193,11 +229,35 @@ defmodule Crosswake.Telemetry do
         [prefix ++ [:start], prefix ++ [:stop], prefix ++ [:exception]]
       end)
 
+    # Build the forbidden-key MapSet ONCE at attach time and capture in the handler closure
+    # (D-136-A / DECOUPLE-05). Baseline is always unioned regardless of companion presence.
+    # Companion keys come from the :companions registry via function_exported?/3.
+    # Threadline stays in-tree for Phase 136 — its keys are included directly.
+    companion_forbidden_keys =
+      Application.get_env(:crosswake, :companions, [])
+      |> Enum.flat_map(fn mod ->
+        if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+      end)
+
+    forbidden_keys =
+      MapSet.union(
+        MapSet.new(@baseline_forbidden_keys),
+        MapSet.new(Crosswake.Threadline.Telemetry.forbidden_metadata_keys() ++ companion_forbidden_keys)
+      )
+
+    # Pass a map (not a keyword list) as the handler config so the test can inspect
+    # handler.config[:forbidden_keys] to verify attach-time capture (DECOUPLE-05).
+    handler_config = %{
+      level: Keyword.get(opts, :level, :info),
+      encode: Keyword.get(opts, :encode, false),
+      forbidden_keys: forbidden_keys
+    }
+
     :telemetry.attach_many(
       "crosswake-default-logger",
       active_event_names,
       &__MODULE__.__handle_event__/4,
-      opts
+      handler_config
     )
   end
 
@@ -224,13 +284,14 @@ defmodule Crosswake.Telemetry do
   #       configured level.
   # D-14: encode: false (default) — emits structured map into Logger metadata;
   #       encode: true — JSON-encodes map into message string.
-  # D-15: All PII keys (union of subsystem forbidden_metadata_keys/0 denylists)
-  #       are scrubbed from metadata before logging.
+  # D-15: All PII keys (union of baseline + companion forbidden_metadata_keys/0 denylists)
+  #       are scrubbed from metadata before logging. The forbidden-key MapSet is captured
+  #       at attach time in the handler config — not re-aggregated per event (D-136-A).
   # D-20: Log messages are prefixed with "[crosswake]".
   @doc false
-  def __handle_event__(event_name, measurements, metadata, opts) do
-    configured_level = Keyword.get(opts, :level, :info)
-    encode = Keyword.get(opts, :encode, false)
+  def __handle_event__(event_name, measurements, metadata, config) do
+    configured_level = Map.get(config, :level, :info)
+    encode = Map.get(config, :encode, false)
 
     # D-14: force :error for :exception events regardless of configured level
     level =
@@ -240,9 +301,9 @@ defmodule Crosswake.Telemetry do
         configured_level
       end
 
-    # D-15: scrub PII keys before logging
-    forbidden = all_forbidden_keys()
-    scrubbed_metadata = Map.drop(metadata, forbidden)
+    # D-15: scrub PII keys before logging — forbidden set captured at attach time (D-136-A)
+    forbidden = Map.get(config, :forbidden_keys, MapSet.new(@baseline_forbidden_keys))
+    scrubbed_metadata = Map.drop(metadata, MapSet.to_list(forbidden))
 
     event_label = Enum.join(event_name, ".")
 
@@ -281,13 +342,4 @@ defmodule Crosswake.Telemetry do
     |> Keyword.put_new(:encode, false)
   end
 
-  # Returns the runtime union of PII-forbidden metadata keys from all subsystem
-  # telemetry modules (D-15). Reuses existing forbidden_metadata_keys/0 functions;
-  # does not duplicate the denylist.
-  defp all_forbidden_keys do
-    (Crosswake.Threadline.Telemetry.forbidden_metadata_keys() ++
-       Crosswake.Companions.Sigra.Telemetry.forbidden_metadata_keys() ++
-       Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys())
-    |> Enum.uniq()
-  end
 end
