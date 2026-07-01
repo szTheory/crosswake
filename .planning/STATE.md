@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-status: planning
-last_updated: "2026-06-30T00:00:00.000Z"
-last_activity: 2026-06-30
+status: Roadmap created; ready for `/gsd-plan-phase 136`
+stopped_at: Phase 136 context gathered
+last_updated: "2026-07-01T01:40:28.991Z"
+last_activity: 2026-06-30 — v17.0 roadmap written (Phases 136-140)
 progress:
   total_phases: 5
   completed_phases: 0
@@ -187,9 +188,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-06-30
-Stopped at: v17.0 roadmap created
-Resume file: None
+Last session: 2026-07-01T01:40:28.987Z
+Stopped at: Phase 136 context gathered
+Resume file: .planning/phases/136-core-decoupling/136-CONTEXT.md
 
 ## Operator Next Steps
 
