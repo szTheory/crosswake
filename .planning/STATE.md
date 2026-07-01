@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
+current_phase: 136
+current_phase_name: core-decoupling
 status: executing
 stopped_at: Completed 136-03-PLAN.md
-last_updated: "2026-07-01T14:57:10.203Z"
+last_updated: "2026-07-01T15:05:28.240Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -26,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 136 (core-decoupling) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-01
 
