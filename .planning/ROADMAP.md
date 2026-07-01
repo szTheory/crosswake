@@ -266,7 +266,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete | 2026-06-28 |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete | 2026-06-29 |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
-| 136. Core Decoupling | v17.0 | 6/6 | Complete   | 2026-07-01 |
+| 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 0/? | Not started | - |
 | 138. crosswake_chimeway Extraction | v17.0 | 0/? | Not started | - |
 | 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |

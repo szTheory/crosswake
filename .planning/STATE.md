@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-current_phase: 136
-current_phase_name: core-decoupling
+current_phase: 137
+current_phase_name: crosswake_sigra Extraction
 status: executing
-stopped_at: Phase 136 verification gaps_found (34 test regressions — needs gap closure)
-last_updated: "2026-07-01T17:50:27.377Z"
+stopped_at: Completed 136-05-PLAN.md (Phase 136 complete)
+last_updated: "2026-07-01T18:12:11.889Z"
 last_activity: 2026-07-01
-last_activity_desc: Phase 136 execution started
+last_activity_desc: Phase 136 complete, transitioned to Phase 137
 progress:
   total_phases: 5
   completed_phases: 1
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 ## Current Position
 
-Phase: 136 (core-decoupling) — EXECUTING
-Plan: 2 of 6
+Phase: 137 — crosswake_sigra Extraction
+Plan: Not started
 Status: Ready to execute
-Last activity: 2026-07-01 — Phase 136 execution started
+Last activity: 2026-07-01 — Phase 136 complete, transitioned to Phase 137
 
 ```
 [ ] Phase 136 — Core Decoupling

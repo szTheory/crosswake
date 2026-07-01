@@ -1,41 +1,26 @@
 ---
 phase: 136-core-decoupling
-verified: 2026-07-01T11:50:00Z
-status: gaps_found
-score: 5/6 must-haves verified
+verified: 2026-07-01T14:20:00Z
+status: passed
+score: 6/6 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "Full ExUnit suite passes (mix test --exclude requires_example_host --exclude advisory_only reports 0 failures)"
-    status: failed
-    reason: "34 failures in mix test. Root cause: in-repo Sigra/Chimeway companion modules do not implement the new evaluate_auth/3 and auth_authority?/0 callbacks. Tests that previously exercised Sigra.Evaluator through a direct call now get :dependency_missing instead of :step_up_required from the registry dispatch. Additionally, SupportMatrix.auth_contract_truth/0 returns denial_codes: [] sentinel because no Sigra companion is registered in the test env and the sentinel pattern does not populate from a companion lacking the denial_codes/0 callback implementation."
-    artifacts:
-      - path: "lib/crosswake/companions/sigra/evaluator.ex"
-        issue: "Does not implement evaluate_auth/3 or auth_authority?/0 — companion module is never registered as an auth_authority?/0 companion in test env"
-      - path: "lib/crosswake/companions/chimeway.ex"
-        issue: "Does not implement evaluate_auth/3 or auth_authority?/0"
-      - path: "lib/crosswake/support_matrix/support_matrix.ex"
-        issue: "auth_contract_truth/0 returns denial_codes: [] because no in-tree companion implements denial_codes/0 callback"
-    missing:
-      - "In-tree Sigra companion entry-point module (lib/crosswake/companions/sigra.ex or equivalent) must implement evaluate_auth/3 and auth_authority?/0 and be registered in test env"
-      - "OR: existing tests (phase46, phase47, phase54-58, phase71, phase73, route_gate_test, chimeway_resolver_test, doctor_test, support_matrix_test, operator_inspection_test, phase135_ci_ops_proof_test, doctor_publish_readiness_test) must be updated to register a stub companion with auth_authority?/0 + evaluate_auth/3 that returns :step_up_required — matching the pre-inversion behavior"
-      - "OR: implement the callbacks in the in-tree Sigra modules and register Crosswake.Companions.Sigra as a companion in test/config; note this is a pre-extraction step that must land before Phase 137 dress rehearsal"
-  - truth: "DECOUPLE-03 requirement checkbox is green (REQUIREMENTS.md)"
-    status: failed
-    reason: "REQUIREMENTS.md still shows DECOUPLE-03 as [ ] Pending (not Complete), confirming the requirement traceability is not closed. The implementation exists at the code level (runtime helpers in support_matrix.ex, doctor.ex) but the test suite regressions caused by the sentinel approach block acceptance."
-    artifacts:
-      - path: ".planning/REQUIREMENTS.md"
-        issue: "DECOUPLE-03 row shows 'Pending' in the tracking table; checkbox is unchecked"
-    missing:
-      - "REQUIREMENTS.md DECOUPLE-03 checkbox must be marked complete — requires the test failures it caused to be resolved"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 5/6
+  gaps_closed:
+    - "Full ExUnit suite passes (mix test --exclude requires_example_host --exclude advisory_only reports 0 failures)"
+    - "DECOUPLE-03 requirement checkbox is green (REQUIREMENTS.md)"
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 136: Core Decoupling Verification Report
 
-**Phase Goal:** Core compiles and operates correctly with no companion package present — all four compile-time sigra/chimeway references inverted onto the `:companions` registry seam.
-**Verified:** 2026-07-01T11:50:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Phase Goal:** Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present.
+**Verified:** 2026-07-01T14:20:00Z
+**Status:** passed
+**Re-verification:** Yes — after gap-closure plan 136-06
 
 ## Goal Achievement
 
@@ -43,41 +28,37 @@ gaps:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | `mix compile --warnings-as-errors` passes with no crosswake_sigra/crosswake_chimeway in mix.exs | VERIFIED | Exit code 0; mix.exs deps contain only jason/nimble_options/phoenix/phoenix_live_view/telemetry/ex_doc |
-| 2 | Phase-129 companion-contract freeze test and COMPAT-01 fail-closed test pass with no companion present | VERIFIED | phase129 (7 tests, 0 failures); phase130_fail_closed (4 tests, 0 failures) |
-| 3 | Auth-predicated routes deny with :dependency_missing when no auth_authority?/0 companion registered; companion that raises is rescued and also denies | VERIFIED | All 5 backstop tests pass (5 tests, 0 failures); tests 1 and 3 directly exercise these behaviors |
-| 4 | Crosswake.Telemetry aggregates via function_exported?/3 at runtime; baseline PII denylist always applied; zero static Sigra/Chimeway refs in telemetry.ex | VERIFIED | grep -c 'Companions.Sigra\|Companions.Chimeway' on non-comment lines returns 0; baseline_forbidden_metadata_keys/0 public; attach-time MapSet captured in closure |
-| 5 | AST guard covers all lib/ minus lib/crosswake/companions/**; Sigra+Chimeway banned; prefix match catches child modules | VERIFIED | mix run -e "Crosswake.CompanionGuard.assert_no_static_refs!()" exits 0; check_source uses List.starts_with? |
-| 6 | Full ExUnit suite passes (mix test reports 0 failures) | FAILED | mix test: 1213 tests, 34 failures — see Gap section below |
+| 1 | `mix compile --warnings-as-errors` passes with no crosswake_sigra/crosswake_chimeway in mix.exs deps | VERIFIED | Exit code 0; no companion packages in deps; mix.exs deps list is jason/nimble_options/phoenix/phoenix_live_view/telemetry/ex_doc only |
+| 2 | Phase-129 companion-contract freeze test and COMPAT-01 fail-closed test pass with no companion present | VERIFIED | 37 combined backstop tests (phase136 x5, phase130_fail_closed x4, phase130_extraction_guards x13, phase129 x7, phase133 x8), all 37 pass |
+| 3 | Auth-predicated routes deny with :dependency_missing when no auth_authority?/0 companion registered; companion that raises is rescued and also denies | VERIFIED | All 5 phase136 backstop proof tests pass; backstop Test 1 (no-authority → :dependency_missing) and Test 3 (raising companion → rescued → :dependency_missing) confirmed |
+| 4 | Crosswake.Telemetry aggregates via function_exported?/3 at runtime; baseline PII denylist always applied; zero static Sigra/Chimeway refs in telemetry.ex | VERIFIED | grep for `Companions\.Sigra\|Companions\.Chimeway` on non-comment lines in telemetry.ex returns 0; backstop tests 4 and 5 pass |
+| 5 | AST guard covers all lib/ minus lib/crosswake/companions/**; Sigra+Chimeway banned; prefix match catches child modules | VERIFIED | `mix run -e "Crosswake.CompanionGuard.assert_no_static_refs!()"` returns :ok (exit 0); assert_no_static_refs! uses List.starts_with? prefix match; phase130 extraction guard tests 13/13 pass |
+| 6 | Full ExUnit suite passes (mix test --exclude requires_example_host --exclude advisory_only reports 0 failures) | VERIFIED | 1162 tests, 0 failures (61 excluded) — exit code 0 |
 
-**Score:** 5/6 truths verified (0 present, behavior-unverified)
+**Score:** 6/6 truths verified (0 present, behavior-unverified)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `lib/crosswake/companion.ex` | 11 callbacks (7 existing + 4 new optional: forbidden_metadata_keys/0, denial_codes/0, evaluate_auth/3, auth_authority?/0) | VERIFIED | @optional_callbacks keyword list has 5 entries; compiles clean |
-| `lib/crosswake/telemetry.ex` | Runtime build_reserved_events/0; @baseline_forbidden_keys; baseline_forbidden_metadata_keys/0; attach-time cached MapSet | VERIFIED | All four present; no static companion refs on non-comment lines |
-| `lib/crosswake/compatibility/route_gate.ex` | Evaluator alias removed; inlined auth_predicated?/1; registry dispatch; fail-closed + rescue | VERIFIED | grep Companions.Sigra returns 0 on non-comment lines; auth_predicated?/1 private helper present; try/rescue in prepend_auth_evaluation_denials/4 |
-| `lib/crosswake/support_matrix/support_matrix.ex` | @auth_contract_truth_static + def auth_contract_truth/0 runtime helper; @notification_support_truth_static; SigraTelemetry alias removed | VERIFIED | grep Companions.Sigra/SigraTelemetry returns 0 on non-comment lines; def auth_contract_truth/0 aggregates denial_codes at call time |
-| `lib/crosswake/doctor/doctor.ex` | Sigra.DenialCodes fallback defaults replaced with registry lookups | VERIFIED | grep Companions.Sigra returns 0 on non-comment lines |
-| `lib/crosswake/companion_guard.ex` | Sigra+Chimeway in @extracted_companion_names; List.starts_with? prefix match; scope excludes companions/** | VERIFIED | Both names present at L43/L46; List.starts_with? at L101; companion_files subtraction in assert_no_static_refs!/0 |
-| `lib/crosswake/policy/schema.ex` | SigraContracts alias removed; @mfa_level_vocabulary inlined | VERIFIED | Deviation from plan was caught and fixed by Plan 05 (5th coupling site discovered at runtime) |
-| `test/crosswake/proof/phase136_decouple_proof_test.exs` | 5 backstop tests covering fail-closed/PII/attach-capture behaviors, all GREEN | VERIFIED | 5 tests, 0 failures confirmed by direct run |
-| `test/crosswake/proof/phase129_companion_contract_freeze_test.exs` | Updated to 11-callback @expected_callbacks; passes | VERIFIED | 7 tests, 0 failures |
-| `test/crosswake/proof/phase133_telemetry_contract_test.exs` | >= 24 count assertion removed; shape assertion added; passes | VERIFIED | 8 tests, 0 failures (confirmed in phase133 run) |
-| `test/crosswake/proof/phase130_extraction_guards_test.exs` | Sigra assertion inverted to {:violation, _}; scope-exclusion test added; passes | VERIFIED | 13 tests, 0 failures |
+| `lib/crosswake/companions/sigra.ex` | @behaviour Crosswake.Companion; 6 required + 5 optional callbacks (auth_authority?/0=true, evaluate_auth/3, denial_codes/0, forbidden_metadata_keys/0, telemetry_events/0); 3 non-behaviour accessors | VERIFIED | File exists; @behaviour declared; all 11 @impl callbacks present; evaluate_auth/3 delegates to Evaluator with Denial passthrough; auth_authority? returns true; tier: :reserved on every telemetry_events/0 map |
+| `lib/crosswake/companions/chimeway.ex` | forbidden_metadata_keys/0 and telemetry_events/0 added; auth_authority?/0 intentionally absent | VERIFIED | forbidden_metadata_keys/0 @impl present delegating to ChimewayTelemetry; telemetry_events/0 @impl present with tier: :reserved maps; no auth_authority? definition |
+| `lib/crosswake/support_matrix/support_matrix.ex` | auth_contract_truth/0 aggregates telemetry.event_names/metadata_keys/forbidden_metadata_keys/denial_codes/safe_detail_keys at runtime; companion_id/0 called first for BEAM loading | VERIFIED | function at L724-795; auth_authority scan with `_load = mod.companion_id()` before function_exported?; deep-merge into static map; all five fields populated from auth-authority companion |
+| `mix.exs` | application/0 env: [companions: [Sigra, Chimeway]] alongside extra_applications: [:logger]; no config/ dir | VERIFIED | application/0 returns both extra_applications: [:logger] and env: [companions: [Crosswake.Companions.Sigra, Crosswake.Companions.Chimeway]]; `mix run -e "IO.inspect(Application.get_env(:crosswake, :companions, []))"` prints the two-module list |
+| `lib/crosswake/companion_guard.ex` | Sigra+Chimeway in @extracted_companion_names; List.starts_with? prefix match; scope excludes companions/** | VERIFIED | Both module names at @extracted_companion_names; List.starts_with? at L101; companion_files subtraction in assert_no_static_refs!/0 |
+| `test/crosswake/proof/phase136_decouple_proof_test.exs` | 5 backstop tests (fail-closed/PII/attach-capture behaviors), all GREEN, unchanged | VERIFIED | 5 tests, 0 failures |
+| `.planning/REQUIREMENTS.md` | All DECOUPLE-01..06 checkboxes [x] and tracking table Complete | VERIFIED | All six DECOUPLE-* rows show [x] checkbox and "Complete" status in traceability table |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `attach_default_logger/1` | Handler closure config | MapSet.union(@baseline_forbidden_keys, companion_keys) passed in :telemetry.attach_many config | WIRED | handler.config[:forbidden_keys] accessible; backstop test 5 verifies closure capture |
-| `:companions registry` | `function_exported?(mod, :telemetry_events, 0)` | `build_reserved_events/0` Enum.flat_map over Application.get_env(:crosswake, :companions, []) | WIRED | Confirmed by zero static refs in telemetry.ex; backstop test 2 verifies empty reserved set with no companions |
-| `:companions registry` | `auth_authority?/0` + `evaluate_auth/3` | `prepend_auth_evaluation_denials/4` registry scan filtered by function_exported? | WIRED | Confirmed by direct inspection; backstop tests 1/3 verify behavior |
-| `:companions registry` | `denial_codes/0` callback | `auth_contract_truth/0` Enum.flat_map aggregation at call time | WIRED (hollow) | Code wired correctly but no in-tree companion implements denial_codes/0 — test env returns [] |
-| `@extracted_companion_names` | `check_source/1` prefix walk | `Enum.any?(@banned_alias_parts, &List.starts_with?(parts, &1))` | WIRED | Confirmed by phase130 guard test (13 tests, 0 failures) |
-| `assert_no_static_refs!/0` | `lib_files -- companion_files` | Path.wildcard two globs, list subtraction | WIRED | Verified by running assert_no_static_refs!() returning :ok |
+| `mix.exs application/0 env:` | `Application.get_env(:crosswake, :companions, [])` | Every registry call site uses get_env not compile_env | WIRED | Confirmed: grep for `Application\.compile_env\b` in core files returns 0 actual call sites (comments only) |
+| `:companions registry` | `auth_authority?/0` + `evaluate_auth/3` | `RouteGate.prepend_auth_evaluation_denials/4` scans registry via function_exported? | WIRED | Backstop tests 1 and 3 confirm :dependency_missing when no authority registered and when authority raises |
+| `:companions registry` | `denial_codes/0` | `auth_contract_truth/0` flat_map + auth-authority selection | WIRED | support_matrix_test 54/54 passing; denial_codes populated from Sigra |
+| `:companions registry` | `telemetry_event_names/0` + `telemetry_metadata_keys/0` + `forbidden_metadata_keys/0` | `auth_contract_truth/0` auth-authority companion accessors | WIRED | Telemetry fields populated at runtime; fail-closed to [] when no authority registered |
+| `@extracted_companion_names` | `check_source/1` prefix walk | `List.starts_with?(@banned_alias_parts)` | WIRED | assert_no_static_refs!() returns :ok; phase130 guard test 13/13 |
+| `lib/crosswake/companions/sigra.ex` | Excluded from assert_no_static_refs! scan | `lib_files -- companion_files` subtraction | WIRED | companions/** excluded; AST guard returns :ok with sigra.ex present |
 
 ### Behavioral Spot-Checks
 
@@ -88,52 +69,59 @@ gaps:
 | COMPAT-01 fail-closed test | `mix test test/crosswake/proof/phase130_fail_closed_contract_test.exs` | 4 tests, 0 failures | PASS |
 | Phase-133 telemetry contract (shape assertion) | `mix test test/crosswake/proof/phase133_telemetry_contract_test.exs` | 8 tests, 0 failures | PASS |
 | Phase-130 extraction guards (Sigra detection) | `mix test test/crosswake/proof/phase130_extraction_guards_test.exs` | 13 tests, 0 failures | PASS |
-| AST static-ref guard (full lib scan) | `mix run -e "Crosswake.CompanionGuard.assert_no_static_refs!()"` | exit 0 | PASS |
+| Companions registry default | `mix run -e "IO.inspect(Application.get_env(:crosswake, :companions, []))"` | [Crosswake.Companions.Sigra, Crosswake.Companions.Chimeway] | PASS |
+| AST static-ref guard (full lib scan) | `mix run -e "Crosswake.CompanionGuard.assert_no_static_refs!()"` | exit 0, output: guard_ok | PASS |
 | Compile gate | `mix compile --warnings-as-errors` | exit 0 | PASS |
-| Full suite | `mix test` | 1213 tests, 34 failures | FAIL |
+| Full suite | `mix test --exclude requires_example_host --exclude advisory_only` | 1162 tests, 0 failures (61 excluded) | PASS |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|----------|
-| DECOUPLE-01 | 136-02 | Telemetry aggregates via runtime registry; zero compile-time companion refs | SATISFIED | telemetry.ex non-comment grep returns 0; build_reserved_events/0 uses function_exported?/3 |
-| DECOUPLE-02 | 136-03 | RouteGate resolves auth via registry; no static Sigra.Evaluator alias | SATISFIED | route_gate.ex non-comment grep returns 0; auth dispatch uses auth_authority?/0 + evaluate_auth/3 |
-| DECOUPLE-03 | 136-04 | SupportMatrix/Doctor get companion denial codes at runtime; no module-eval companion calls | PARTIAL | Code implementation exists (def runtime helpers, registry lookups); REQUIREMENTS.md still shows Pending; 13 test regressions from the sentinel approach blocking full acceptance |
-| DECOUPLE-04 | 136-03 | Auth-predicated routes fail closed with :dependency_missing; raises rescued | SATISFIED | Backstop tests 1 and 3 GREEN; try/rescue present; predicate gate in place |
-| DECOUPLE-05 | 136-02 | 10-atom baseline PII denylist always applied; baseline_forbidden_metadata_keys/0 public | SATISFIED | @baseline_forbidden_keys 10 atoms; public def; attach-time MapSet; backstop tests 4 and 5 GREEN |
+| DECOUPLE-01 | 136-02 | Telemetry aggregates via runtime registry; zero compile-time companion refs | SATISFIED | telemetry.ex non-comment grep returns 0; build_reserved_events/0 uses function_exported?/3; backstop tests 4/5 GREEN |
+| DECOUPLE-02 | 136-03 | RouteGate resolves auth via registry; no static Sigra.Evaluator alias | SATISFIED | route_gate.ex non-comment grep returns 0; auth dispatch uses auth_authority?/0 + evaluate_auth/3; backstop tests 1/3 GREEN |
+| DECOUPLE-03 | 136-04, 136-06 | SupportMatrix/Doctor get companion denial codes at runtime; no module-eval companion calls; Sigra facade wired via mix.exs env: | SATISFIED | auth_contract_truth/0 runtime aggregation verified; mix.exs env: contains [Sigra, Chimeway]; REQUIREMENTS.md checkbox [x] and tracking row Complete; support_matrix_test 54/54 |
+| DECOUPLE-04 | 136-03 | Auth-predicated routes fail closed with :dependency_missing; raises rescued | SATISFIED | Backstop tests 1 and 3 GREEN; try/rescue in prepend_auth_evaluation_denials/4; phase130 fail-closed 4/4 |
+| DECOUPLE-05 | 136-02 | 10-atom baseline PII denylist always applied; baseline_forbidden_metadata_keys/0 public | SATISFIED | @baseline_forbidden_keys 10 atoms; public def; attach-time MapSet; backstop tests 4/5 GREEN |
 | DECOUPLE-06 | 136-05 | AST guard covers all lib/ minus companions/; Sigra+Chimeway banned; prefix match | SATISFIED | assert_no_static_refs!() returns :ok; phase130 guard test 13/13 GREEN |
 
 ### Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `lib/crosswake/support_matrix/support_matrix.ex` | sentinel fields | denial_codes: [], event_names: [], metadata_keys: [], forbidden_metadata_keys: [] in @auth_contract_truth_static | Warning | Sentinel [] values are accurate runtime state when no companion registered, per plan decision; not stubs in the traditional sense. However they cause 13+ test regressions in tests that assert denial_codes populated from Sigra. |
+No `TBD`, `FIXME`, or `XXX` debt markers found in modified production files (`sigra.ex`, `chimeway.ex`, `support_matrix.ex`, `mix.exs`).
 
-No `TBD`, `FIXME`, or `XXX` debt markers found in modified production files.
+The only comment references to `Companions.Sigra` in core files are in code comments explaining the inversion (e.g. `route_gate.ex:257` comment "Inlined from Sigra.Evaluator.auth_predicated?/1") — these are not static alias AST nodes and do not constitute coupling. Confirmed by AST guard returning :ok.
 
 ### Human Verification Required
 
-None — all gaps are mechanically verifiable.
+None — all verification checks are mechanically deterministic.
 
 ---
 
-## Gaps Summary
+## Re-verification Summary
 
-**1 blocking gap — full suite not green.**
+**Previous status:** gaps_found (5/6 — full suite had 34 test regressions; DECOUPLE-03 checkbox unchecked)
 
-The 34 test failures all share the same root cause: the in-repo Sigra companion modules (`lib/crosswake/companions/sigra/evaluator.ex` and siblings) do NOT implement the four new optional callbacks (`evaluate_auth/3`, `auth_authority?/0`, `forbidden_metadata_keys/0`, `denial_codes/0`). No module in `lib/crosswake/companions/sigra/` has `@behaviour Crosswake.Companion` and no companion is registered in the test Application environment with `auth_authority?/0 = true`.
+**Gaps closed by Plan 136-06:**
 
-**Failure categories (34 total):**
+1. Built `lib/crosswake/companions/sigra.ex` — `@behaviour Crosswake.Companion` facade with all 11 callbacks delegating to Sigra sub-modules; `evaluate_auth/3` passes `{:deny, Denial.t()}` through unchanged (D-136-B, no Finding conversion); `auth_authority?/0` returns true.
 
-- **Category A — :dependency_missing instead of :step_up_required (21 failures):** Tests in Phase46SigraAuthContractTest, Phase47CompanionArcTest, Phase55SessionHandoffTicketsTest, Phase56StepUpCeremonyTest, Phase71NotificationWorkflowProofTest, Phase73AuthSensitiveAdminWorkflowProofTest, RouteGateTest, Chimeway.ResolverTest set up auth-predicated routes and call RouteGate.evaluate but do not register a companion with `auth_authority?/0`. Previously Sigra.Evaluator was called directly (no registry); now the registry finds no auth_authority companion and returns :dependency_missing. Fix: add `auth_authority?/0 = true` and `evaluate_auth/3` (returning Sigra's evaluation) to the test stubs OR to the in-tree Sigra facade.
+2. Extended `chimeway.ex` with `forbidden_metadata_keys/0` and `telemetry_events/0`; `auth_authority?/0` correctly absent.
 
-- **Category B — denial_codes: [] (13 failures):** Tests in Phase54SigraSessionAuthorityTest, Phase56StepUpCeremonyTest, Phase57AuthReturnBoundariesTest, Phase58AuthDiagnosticsCloseoutTest, Phase52OperatorTruthTest, SupportMatrixTest, DoctorTest, OperatorInspectionTest, Phase135CiOpsProofTest, Doctor.PublishReadinessTest assert that `SupportMatrix.auth_contract_truth()` returns populated `denial_codes`. The runtime helper now returns `[]` because no companion implements `denial_codes/0`. Fix: implement `denial_codes/0` in the in-tree Sigra companion facade, or update these tests to not assert specific denial_codes from SupportMatrix (moving those assertions to sigra's own companion-package test).
+3. Registered `[Sigra, Chimeway]` via `mix.exs application/0 env:` — idiomatic Hex library mechanism; no `config/` directory created; Sigra listed first for first-registered-wins auth authority scan.
 
-**Why this is a gap, not deferred:** Phase 136's own VALIDATION.md contract requires "Full suite must be green + mix compile --warnings-as-errors" before `/gsd-verify-work`. Plan 05's Task 3 acceptance criteria explicitly requires `mix test --exclude requires_example_host --exclude advisory_only` to report 0 failures. Plan 05's SUMMARY documents 32 failures and explicitly labels this a "Gap documented from Plan 04." The failures are direct regressions introduced by Phase 136's sentinel approach and registry inversion — they are not pre-Phase-136 failures.
+4. Extended `SupportMatrix.auth_contract_truth/0` to aggregate `telemetry.event_names`, `telemetry.metadata_keys`, `telemetry.forbidden_metadata_keys`, `denial_codes`, and `safe_detail_keys` from the registered auth-authority companion at runtime via `function_exported?/3` dispatch; fail-closed when no auth authority is registered. BEAM module-loading guard (`companion_id/0` called before `function_exported?/3`) applied to avoid false-negative from deferred BEAM module loading.
 
-**Phase 137 connection:** Phase 137 SC-3 requires a dress rehearsal where `mix test` passes — this will require implementing the callbacks in the extracted sigra package and registering it. However, the test regressions need to be resolved before Phase 137 extracts sigra, because Phase 137 requires a working baseline to dress-rehearse against. The fix can be done either: (a) in Phase 136 gap closure by adding callback implementations to the in-tree sigra companion modules and registering Sigra in the test env, or (b) at the start of Phase 137 before extraction begins. The VALIDATION.md contract places responsibility on Phase 136.
+5. Fixed `delete_env` state pollution: adding `env:` to `mix.exs` changed semantics of previously-harmless `Application.delete_env` calls in phases 38/40/41/43 test cleanup — patched with save/restore in setup blocks.
+
+6. Pre-authorized test edits: `route_gate_test.exs` and `phase46_sigra_auth_contract_test.exs` now register `Crosswake.Companions.Sigra` (via put_env with save/restore) instead of clearing the registry — the tests' intent (auth-predicated route denies with :step_up_required) is preserved because the real Sigra evaluator is now dispatched. Phase 47 test updated to include Sigra in companion list.
+
+7. Orchestrator resolved 3 escalated Category-B failures in `operator_inspection_test.exs` and `publish_readiness_test.exs` by prepending Sigra to their `[StubCompanion]` companion lists — architecturally required because re-sourcing auth contract data from statics would re-introduce exactly the coupling DECOUPLE-03 removes.
+
+8. REQUIREMENTS.md DECOUPLE-03 flipped to Complete (checkbox `[x]` + tracking table row).
+
+**Full suite result:** 1162 tests, 0 failures (61 excluded) — phase goal achieved.
 
 ---
 
-_Verified: 2026-07-01T11:50:00Z_
+_Verified: 2026-07-01T14:20:00Z_
 _Verifier: Claude (gsd-verifier)_
