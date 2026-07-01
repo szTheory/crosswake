@@ -179,14 +179,14 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room CI lane (`crosswake + crosswake_sigra` only) compiles and passes its tests before the irreversible publish fires.
   5. `crosswake_sigra` is registered in `release-please` as an independent `elixir` component (not in the `linked-versions` lockstep group).
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 **Wave 1**
 
 - [x] 137-01-PLAN.md — Core Finding boundary: :code/:details fields, guarded :auth clause, evaluate_auth→Finding callback + RouteGate translation, StubSigraAbsentCompanion (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 137-02-PLAN.md — Sigra-side Finding refactor: Evaluator.deny→Finding, StepUpCeremony re-point + max-age guard, host issue_intent→Finding, remove Denial aliases (wave 2)
+- [x] 137-02-PLAN.md — Sigra-side Finding refactor: Evaluator.deny→Finding, StepUpCeremony re-point + max-age guard, host issue_intent→Finding, remove Denial aliases (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -286,7 +286,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete | 2026-06-29 |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
 | 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
-| 137. crosswake_sigra Extraction | v17.0 | 1/5 | In Progress|  |
+| 137. crosswake_sigra Extraction | v17.0 | 2/5 | In Progress|  |
 | 138. crosswake_chimeway Extraction | v17.0 | 0/? | Not started | - |
 | 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
 | 140. Family Discipline & Close | v17.0 | 0/? | Not started | - |
