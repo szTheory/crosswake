@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
 status: executing
-stopped_at: Phase 136 context gathered
-last_updated: "2026-07-01T14:48:40.036Z"
+stopped_at: Completed 136-03-PLAN.md
+last_updated: "2026-07-01T14:57:10.203Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 136 (core-decoupling) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-01
 
@@ -38,7 +38,7 @@ Last activity: 2026-07-01
 [ ] Phase 140 — Family Discipline & Close
 ```
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ```
 [          ] 0%
@@ -154,6 +154,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: @diff_excluded_templates = [project.pbxproj] only; gradlew/gradlew.bat are diffed (REVIEW FIX finding 6)
 - [Phase ?]: run_diff/4 forks before any write — non-destructiveness is structural (D-13)
 - [Phase ?]: file_advisory_verdict/1 reuses RebuildPolicy vocabulary without calling diff/2 (D-16)
+- [Phase ?]: Rescue denial reason pinned to :dependency_missing (not :auth_evaluator_error) — single atom covers both failure modes for fail-closed auth evaluation
+- [Phase ?]: Conflict signal as :telemetry.execute/3 event [:crosswake, :companion, :auth_authority_conflict] with first-registered-wins resolution for multiple auth_authority?/0 companions
+- [Phase ?]: Backstop test 3 assertion fixed to check auth-denial absence (not decision.status) — empty Target always generates compatibility denials making status assertion unreliable
 
 ### Pending Todos
 
@@ -186,11 +189,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
 | v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
 | Phase 136 P02 | 4min | 2 tasks | 2 files |
+| Phase 136 P03 | 5min | 1 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T14:48:40.031Z
-Stopped at: Phase 136 context gathered
+Last session: 2026-07-01T14:57:10.197Z
+Stopped at: Completed 136-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
