@@ -86,6 +86,60 @@ defmodule Crosswake.TestSupport.StubRindleAbsentCompanion do
   end
 end
 
+defmodule Crosswake.TestSupport.StubSigraAbsentCompanion do
+  @moduledoc """
+  Stub companion that acts as Sigra with the engine absent from core deps.
+
+  Used in core tests that need to drive the auth fail-closed `:dependency_missing`
+  path after Phase 137 extracts `Crosswake.Companions.Sigra` to the standalone
+  `packages/crosswake_sigra/` package. Once extracted, Sigra is no longer a core
+  dep, so any test exercising the absent-authority path must register this stub
+  instead of the real `Crosswake.Companions.Sigra` module.
+
+  `companion_id/0` returns `:sigra` so Doctor findings carry `finding.check ==
+  "companion.sigra"`. `validate_dependency/0` returns `{:error, [Crosswake.Companions.Sigra]}`
+  to model sigra absent from core deps (post-extraction state).
+
+  `auth_authority?/0` returns `false` — the engine (Sigra.Evaluator) is absent, so
+  this stub has no auth authority. This drives the `:dependency_missing` fail-closed
+  deny path: an auth-predicated route with no companion reporting `auth_authority? == true`
+  in the registry yields `:dependency_missing` (D-137-D, research assumption A1).
+  """
+  @behaviour Crosswake.Companion
+
+  @impl true
+  def companion_id, do: :sigra
+
+  @impl true
+  def enabled?(config), do: Map.get(config, :enabled, false)
+
+  @impl true
+  def route_gated?(_route, _target), do: :pass
+
+  @impl true
+  def kill_switch_active?(_target), do: false
+
+  @impl true
+  def validate_dependency, do: {:error, [Crosswake.Companions.Sigra]}
+
+  @impl true
+  def report_state do
+    config = Application.get_env(:crosswake, :sigra, %{})
+
+    %Crosswake.Companion.State{
+      companion_id: :sigra,
+      enabled: Map.get(config, :enabled, false),
+      dependency_status: {:missing, [Crosswake.Companions.Sigra]},
+      gate_status: :unconfigured,
+      kill_switch_status: :unconfigured,
+      checked_at: System.monotonic_time(:millisecond)
+    }
+  end
+
+  @impl true
+  def auth_authority?, do: false
+end
+
 defmodule Crosswake.TestSupport.StubCompanion do
   @moduledoc false
   @behaviour Crosswake.Companion
