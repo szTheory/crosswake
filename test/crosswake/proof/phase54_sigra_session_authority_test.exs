@@ -4,6 +4,7 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.Evaluator
+  alias Crosswake.Compatibility.Finding
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.SupportMatrix
 
@@ -151,11 +152,13 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
       auth_posture: :strict_recent
     }
 
-    assert {:deny, denial} = Evaluator.evaluate_route_auth(route, nil, [])
+    # D-137-A: Evaluator now emits %Finding{axis: :auth} directly (Plan 02).
+    # RouteGate translates Finding→Denial via finding_to_denial/2 at the core boundary.
+    assert {:deny, %Finding{axis: :auth} = finding} = Evaluator.evaluate_route_auth(route, nil, [])
 
-    assert denial.reason == :step_up_required
-    assert denial.code == "auth.step_up.missing_context"
-    assert Map.keys(denial.details) == ["evaluated_at"]
+    assert finding.code == "auth.step_up.missing_context"
+    assert finding.message == "route requires stronger or fresher backend authentication context"
+    assert Map.keys(finding.details) == ["evaluated_at"]
   end
 
   test "support truth locks route posture vocabulary, denial codes, and later-phase non-claims" do

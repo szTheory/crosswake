@@ -10,8 +10,8 @@ defmodule Crosswake.Companions.Sigra.Evaluator do
   alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Companions.Sigra.Contracts.SessionAuthorityLane
   alias Crosswake.Companions.Sigra.DenialCodes
+  alias Crosswake.Compatibility.Finding
   alias Crosswake.Manifest.Types.RouteEntry
-  alias Crosswake.Shell.Denial
 
   @generic_message "route requires stronger or fresher backend authentication context"
 
@@ -21,7 +21,7 @@ defmodule Crosswake.Companions.Sigra.Evaluator do
   end
 
   @spec evaluate_route_auth(RouteEntry.t() | nil, AuthContext.t() | nil, keyword()) ::
-          {:allow, Result.t()} | {:deny, Denial.t()}
+          {:allow, Result.t()} | {:deny, Finding.t()}
   def evaluate_route_auth(route, auth_context, opts \\ [])
 
   def evaluate_route_auth(nil, _auth_context, _opts), do: {:allow, %Result{status: :allow}}
@@ -239,6 +239,11 @@ defmodule Crosswake.Companions.Sigra.Evaluator do
   end
 
   defp deny(%RouteEntry{} = route, code, details, opts) do
+    # D-137-A / T-137-05: sanitize PII-bearing details once at source (the sole sanitize site).
+    # T-137-07: `code` is always the caller-supplied dotted code (never nil) — prevents silent
+    # downgrade to Atom.to_string(reason) at the finding_to_denial/2 boundary.
+    # T-137-05: @generic_message bypasses sanitize and flows into Denial.message unchanged — no raw
+    # PII in message.
     sanitized =
       details
       |> Map.put_new(
@@ -250,13 +255,13 @@ defmodule Crosswake.Companions.Sigra.Evaluator do
       |> DenialCodes.sanitize_details()
 
     {:deny,
-     Denial.new(
-       reason: :step_up_required,
+     %Finding{
+       axis: :auth,
        code: code,
        message: @generic_message,
        route_id: route.id,
        details: sanitized
-     )}
+     }}
   end
 
   defp maybe_put_ref(details, _key, nil), do: details
