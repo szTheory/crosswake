@@ -730,7 +730,10 @@ defmodule Crosswake.SupportMatrix do
     auth_authority =
       Enum.find(companions, fn mod ->
         _load = mod.companion_id()
-        function_exported?(mod, :auth_authority?, 0) and mod.auth_authority?()
+        config = Application.get_env(:crosswake, mod.companion_id(), %{})
+
+        mod.enabled?(config) and
+          function_exported?(mod, :auth_authority?, 0) and mod.auth_authority?()
       end)
 
     # Aggregate denial_codes from all companions that implement the callback (flat_map preserves

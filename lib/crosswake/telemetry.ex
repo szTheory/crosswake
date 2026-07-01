@@ -179,7 +179,7 @@ defmodule Crosswake.Telemetry do
     |> Enum.flat_map(fn mod ->
       if function_exported?(mod, :telemetry_events, 0) do
         mod.telemetry_events()
-        |> Enum.filter(fn %{tier: tier} -> tier == :reserved end)
+        |> Enum.filter(fn event -> Map.get(event, :tier) == :reserved end)
       else
         []
       end

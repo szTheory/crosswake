@@ -1,5 +1,10 @@
 defmodule Crosswake.OperatorInspection.FormatterTest do
-  use ExUnit.Case, async: true
+  # async: false — this module mutates the global :companions application env in
+  # setup (put_env/delete_env). Post-DECOUPLE-03, SupportMatrix.auth_contract_truth/0
+  # reads that env at runtime, so an async mutator races with async readers
+  # (e.g. phase54) and intermittently empties their view of the registry. Every
+  # other :companions-mutating test module is already async: false for this reason.
+  use ExUnit.Case, async: false
 
   alias Crosswake.OperatorInspection
   alias Crosswake.OperatorInspection.Formatter

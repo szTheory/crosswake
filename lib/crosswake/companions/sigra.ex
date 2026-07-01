@@ -80,8 +80,11 @@ defmodule Crosswake.Companions.Sigra do
   @doc false
   def evaluate_auth(route, auth_context, opts) do
     case Evaluator.evaluate_route_auth(route, auth_context, opts) do
-      {:allow, %Evaluator.Result{} = result} ->
-        {:allow, Map.from_struct(result)}
+      {:allow, %Evaluator.Result{status: status, facts: facts}} ->
+        # Project to a plain map for the {:allow, map()} contract. Omit the struct's
+        # :denial field (always nil on the allow branch) so the allow response never
+        # carries a misleading :denial key.
+        {:allow, %{status: status, facts: facts}}
 
       {:deny, denial} ->
         # Pass the Denial.t() through UNCHANGED so :step_up_required and its
