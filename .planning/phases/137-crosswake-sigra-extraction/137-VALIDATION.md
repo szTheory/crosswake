@@ -1,9 +1,9 @@
 ---
 phase: 137
 slug: crosswake-sigra-extraction
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-01
 ---
 
@@ -75,12 +75,17 @@ created: 2026-07-01
 
 ## Wave 0 Requirements
 
-- [ ] `packages/crosswake_sigra/` skeleton — `mix.exs`, `mix.lock`, `README.md`, `CHANGELOG.md`, `LICENSE` (clone the rindle package block; `@version 0.1.0` first-publish one-shot)
-- [ ] `packages/crosswake_sigra/test/test_helper.exs` — `ExUnit.start(exclude: [:requires_example_host, :advisory_only])` (mirror rindle)
-- [ ] `packages/crosswake_sigra/test/support/` — port the test-support modules rindle moved (verify exact set against `packages/crosswake_rindle/test/support/`)
-- [ ] `test/support/stub_companion.ex` (core) — add `StubSigraAbsentCompanion` beside `StubRulesteadAbsentCompanion`/`StubRindleAbsentCompanion`
-- [ ] `packages/crosswake_sigra/test/crosswake/proof/phase137_sigra_cleanroom_test.exs` — non-vacuous clean-room proof (backstop #1)
-- [ ] `cd packages/crosswake_sigra && mix deps.get` (after `mix.exs` is written)
+**No separate stub-first Wave 0 exists for this phase.** The package does not exist yet, so all
+test infrastructure is created *inside* the plan waves (not pre-seeded ahead of them). Each item
+below is folded into a concrete plan task rather than a pre-execution stub:
+
+- [x] `StubSigraAbsentCompanion` in core `test/support/stub_companion.ex` → **Plan 137-01 Task 3** (Wave 1; lands before any package move, beside the existing Rulestead/Rindle stubs)
+- [x] `packages/crosswake_sigra/` skeleton — `mix.exs` (`@version 0.1.0` one-shot), `README.md`, `CHANGELOG.md`, `LICENSE`, `test/test_helper.exs`, `test/support/` → **Plan 137-03 Task 1** (Wave 3; clone the rindle block, no engine dep)
+- [x] `packages/crosswake_sigra/test/crosswake/proof/phase137_sigra_cleanroom_test.exs` non-vacuous proof (backstop #1) → **Plan 137-03 Task 3** (Wave 3; can only land after the skeleton in Task 1)
+- [x] `cd packages/crosswake_sigra && mix deps.get` → **Plan 137-03 Task 1** (after `mix.exs` is written)
+
+*Every plan `<verify>` block carries an `<automated>` command (confirmed by plan-checker Dimension 8);
+no reference depends on a missing pre-execution stub.*
 
 ---
 
@@ -96,11 +101,11 @@ created: 2026-07-01
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 100s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (folded into plan tasks — see above)
+- [x] No watch-mode flags
+- [x] Feedback latency < 100s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** passed 2026-07-01 (plan-checker confirmed Dimension 8 sampling; sign-off gaps resolved by orchestrator)

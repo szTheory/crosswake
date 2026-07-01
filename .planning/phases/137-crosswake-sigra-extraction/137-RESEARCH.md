@@ -894,7 +894,12 @@ The `code || Atom.to_string(reason)` fallback at L194 (`code: code || Atom.to_st
 | A4 | `normalize_issue_result/1` in StepUpCeremony must use `%Finding{}` for the fallback case | § Pitfall 4 | If wrong, compilation fails with Denial undefined in the package |
 | A5 | `StepUpCeremony.evaluate_or_issue/3` return type `{:deny, Denial.t()}` must become `{:deny, Finding.t()}` throughout | § Pattern 5, Step 5 | If wrong, host callers of `evaluate_or_issue/3` receive `Finding.t()` where they expected `Denial.t()` — need host-side update too |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three resolved concretely in plan task actions during planning (commit 5b9a8bd):
+> **OQ1 → Plan 137-02 Task 2-3** (host `issue_intent` error arm migrated to `{:error, Finding.t()}`; example-host callers updated; affected core proofs get Finding-shape fixtures then move to the package).
+> **OQ2 → Plan 137-04 Task 1** (explicit additive `NO_ENGINE` branch in `verify_companion_cleanroom.sh` so sigra's engine-less invocation skips the rulestead engine defaults).
+> **OQ3 → Plan 137-03 Task 2** (phase54 SupportMatrix assertion retained in core as new `phase54_sigra_support_truth_test.exs`, registering sigra via `Application.put_env` over the path dep so `denial_codes` is populated — non-vacuous, not the `[]` sentinel).
 
 1. **`normalize_issue_result/1` and the host `issue_intent` callback contract**
    - What we know: `normalize_issue_result` currently matches `{:error, %Denial{} = denial}` from the host callback. After D-137-A, sigra cannot reference `Denial`.
