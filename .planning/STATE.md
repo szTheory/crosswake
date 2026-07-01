@@ -6,14 +6,14 @@ current_phase: 137
 current_phase_name: crosswake-sigra-extraction
 status: executing
 stopped_at: Phase 137 context gathered
-last_updated: "2026-07-01T20:54:54.206Z"
+last_updated: "2026-07-01T23:22:15.969Z"
 last_activity: 2026-07-01
 last_activity_desc: Phase 137 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 20
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 137 (crosswake-sigra-extraction) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-01 -- Phase 137 execution started
 
@@ -176,6 +176,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-137-A: evaluate_auth/3 callback returns {:deny, Finding.t()}; RouteGate owns Finding→Denial translation via finding_to_denial/2 (Plan 01)
 - [Phase ?]: D-137-B: :auth clause in finding_to_denial/2; base_details guarded with cond so :auth passes finding.details UNMERGED (audit fix ①) (Plan 01)
 - [Phase ?]: Plan 01 shim: sigra facade converts Denial to %Finding{axis: :auth} this wave; Plan 02 removes shim when Evaluator emits Finding natively
+- [Phase ?]: SupportMatrix test moved to package - circular dep; put_env non-vacuity
+- [Phase ?]: 8 core test files moved to crosswake_sigra package - sigra structs need module at compile/runtime
+- [Phase ?]: chimeway resolver_test: expect :dependency_missing (fail-closed) when no auth-authority companion registered
 
 ### Pending Todos
 
@@ -215,7 +218,7 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-01T20:54:54.200Z
+Last session: 2026-07-01T23:21:11.792Z
 Stopped at: Phase 137 context gathered
 Resume file: .planning/phases/137-crosswake-sigra-extraction/137-CONTEXT.md
 
