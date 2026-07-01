@@ -37,7 +37,13 @@ defmodule Crosswake.CompanionGuard do
     "Crosswake.Companions.Rulestead",
     # Phase 132: rindle adapter extracted (covers .Contracts/.Reconciliation children
     # via the alias-parts prefix match; not a blanket Companions.* ban — D-02/D-14)
-    "Crosswake.Companions.Rindle"
+    "Crosswake.Companions.Rindle",
+    # Phase 136: sigra auth companion extracted (covers child modules like .Evaluator,
+    # .DenialCodes, .Telemetry, .Handoff, .StepUpCeremony, etc. via prefix match)
+    "Crosswake.Companions.Sigra",
+    # Phase 136: chimeway notification companion extracted (covers child modules like
+    # .Telemetry, .DenialCodes, .Resolver, etc. via prefix match)
+    "Crosswake.Companions.Chimeway"
   ]
 
   # Pre-compute the frozen MapSet of extracted companion module atoms.
@@ -91,9 +97,12 @@ defmodule Crosswake.CompanionGuard do
 
     {_, violations} =
       Macro.prewalk(ast, [], fn
-        {:__aliases__, _meta, parts} = node, acc
-        when parts in @banned_alias_parts ->
-          {node, [node | acc]}
+        {:__aliases__, _meta, parts} = node, acc ->
+          if Enum.any?(@banned_alias_parts, &List.starts_with?(parts, &1)) do
+            {node, [node | acc]}
+          else
+            {node, acc}
+          end
 
         node, acc ->
           {node, acc}
@@ -187,10 +196,17 @@ defmodule Crosswake.CompanionGuard do
   """
   @spec assert_no_static_refs!() :: :ok
   def assert_no_static_refs! do
-    lib_glob = Path.join(File.cwd!(), "lib/**/*.ex")
+    # Walk all of lib/**/*.ex MINUS lib/crosswake/companions/**/*.ex.
+    # The companions dir contains in-tree sigra/chimeway files that legitimately
+    # self-reference their own modules — excluding them prevents false-positives
+    # while still covering all core lib/ files for boundary enforcement (DECOUPLE-06).
+    # Path.wildcard/1 has no native negative glob, so we subtract using list difference.
+    lib_files = Path.wildcard(Path.join(File.cwd!(), "lib/**/*.ex"))
+    companion_files = Path.wildcard(Path.join(File.cwd!(), "lib/crosswake/companions/**/*.ex"))
+    walk_files = lib_files -- companion_files
 
     violations =
-      Path.wildcard(lib_glob)
+      walk_files
       |> Enum.flat_map(fn path ->
         source = File.read!(path)
 
