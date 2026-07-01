@@ -118,7 +118,21 @@ defmodule Crosswake.Proof.Phase46SigraAuthContractTest do
   end
 
   setup do
-    Application.delete_env(:crosswake, :companions)
+    # Post-inversion fix: register the real Sigra facade so auth-predicated routes
+    # get :step_up_required instead of :dependency_missing. Pre-inversion, Sigra.Evaluator
+    # was called directly regardless of the registry — delete_env was valid then but is
+    # contradictory now that auth evaluation is registry-dispatched. The test intent
+    # (auth-predicated route denies with :step_up_required) is preserved by registering Sigra.
+    # Tests that put_env their own [KillSwitchCompanion] / [GateDenyCompanion] override this
+    # setup explicitly and must keep doing so (L219/L223) — only the auth-predicated
+    # :step_up_required tests need Sigra registered.
+    original_companions = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+
+    on_exit(fn ->
+      Application.put_env(:crosswake, :companions, original_companions)
+    end)
+
     :ok
   end
 

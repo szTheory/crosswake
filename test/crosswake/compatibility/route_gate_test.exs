@@ -84,7 +84,18 @@ defmodule Crosswake.Compatibility.RouteGateTest do
   end
 
   setup do
-    Application.delete_env(:crosswake, :companions)
+    # Post-inversion fix: register the real Sigra facade so auth-predicated routes
+    # get :step_up_required instead of :dependency_missing. Pre-inversion, Sigra.Evaluator
+    # was called directly regardless of the registry — delete_env was valid then but is
+    # contradictory now that auth evaluation is registry-dispatched. The test intent
+    # (auth-predicated route denies with :step_up_required) is preserved by registering Sigra.
+    original_companions = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+
+    on_exit(fn ->
+      Application.put_env(:crosswake, :companions, original_companions)
+    end)
+
     :ok
   end
 

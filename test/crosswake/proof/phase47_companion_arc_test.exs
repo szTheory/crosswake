@@ -50,7 +50,12 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
     original_rulestead = Application.get_env(:crosswake, :rulestead)
     original_rindle = Application.get_env(:crosswake, :rindle)
 
-    Application.put_env(:crosswake, :companions, [Rulestead, Rindle])
+    # Post-inversion fix: include Sigra (the in-tree auth authority facade) so
+    # auth-predicated routes get :step_up_required instead of :dependency_missing,
+    # and SupportMatrix.auth_contract_truth/0 populates denial_codes from the
+    # registered auth-authority companion. Pre-inversion, Sigra.Evaluator was called
+    # directly regardless of the registry; now it must be registered.
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra, Rulestead, Rindle])
     Application.put_env(:crosswake, :rulestead, %{enabled: true})
     Application.put_env(:crosswake, :rindle, %{enabled: true})
 

@@ -23,11 +23,14 @@ defmodule Crosswake.Proof.Phase43RulesteadAdvisoryTest do
   @moduletag :advisory_only
 
   setup do
+    # Save :companions default (added in mix.exs Phase 136 gap closure) so the on_exit
+    # restore does not call delete_env and destroy the ambient default.
+    original_companions = Application.get_env(:crosswake, :companions)
     Application.put_env(:crosswake, :companions, [Crosswake.Companions.Rulestead])
     Application.put_env(:crosswake, :rulestead, %{enabled: true})
 
     on_exit(fn ->
-      Application.delete_env(:crosswake, :companions)
+      Application.put_env(:crosswake, :companions, original_companions)
       Application.delete_env(:crosswake, :rulestead)
     end)
 
