@@ -3,6 +3,7 @@ defmodule CrosswakeExample.SaaSPortal.StepUpOnMount do
   Thin LiveView on_mount adapter over the shared Sigra step-up ceremony core.
   """
 
+  alias Crosswake.Compatibility.Finding
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Companions.Sigra.StepUp, as: SigraStepUp
   alias Crosswake.Companions.Sigra.StepUpCeremony
@@ -19,8 +20,8 @@ defmodule CrosswakeExample.SaaSPortal.StepUpOnMount do
         redirected = LiveView.redirect(socket, to: challenge_path(challenge))
         {:halt, redirected}
 
-      {:deny, %Denial{} = denial} ->
-        redirected = LiveView.redirect(socket, to: denied_path(denial))
+      {:deny, %Finding{axis: :auth} = finding} ->
+        redirected = LiveView.redirect(socket, to: denied_path(finding))
         {:halt, redirected}
     end
   end
@@ -38,6 +39,20 @@ defmodule CrosswakeExample.SaaSPortal.StepUpOnMount do
            StepUp.challenge(issued.signed_locator, %{request_ref: attrs.request_ref}),
          {:ok, intent} <- to_contract_intent(issued.intent) do
       {:ok, %{intent: intent, challenge: challenge}}
+    else
+      # D-137-A / Task 3: host issue_intent error contract migrated to {:error, Finding.t()}.
+      # StepUpCeremony.normalize_issue_result/1 expects {:error, %Finding{axis: :auth}}.
+      {:error, %Denial{} = denial} ->
+        {:error,
+         %Finding{
+           axis: :auth,
+           code: denial.code,
+           message: denial.message,
+           details: denial.details || %{}
+         }}
+
+      other ->
+        other
     end
   end
 
@@ -119,7 +134,7 @@ defmodule CrosswakeExample.SaaSPortal.StepUpOnMount do
     "/sigra/step-up?challenge_ref=#{URI.encode_www_form(challenge.support_ref || challenge.challenge_ref)}"
   end
 
-  defp denied_path(%Denial{} = denial) do
-    "/sigra/step-up/denied?code=#{URI.encode_www_form(denial.code)}"
+  defp denied_path(%Finding{axis: :auth} = finding) do
+    "/sigra/step-up/denied?code=#{URI.encode_www_form(finding.code)}"
   end
 end
