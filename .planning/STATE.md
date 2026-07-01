@@ -6,13 +6,14 @@ current_phase: 136
 current_phase_name: core-decoupling
 status: executing
 stopped_at: Phase 136 verification gaps_found (34 test regressions — needs gap closure)
-last_updated: "2026-07-01T15:29:00Z"
+last_updated: "2026-07-01T17:50:27.377Z"
 last_activity: 2026-07-01
+last_activity_desc: Phase 136 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 6
   percent: 20
 ---
 
@@ -28,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 136 (core-decoupling) — EXECUTING
-Plan: 5 of 5
-Status: All plans complete
-Last activity: 2026-07-01
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-07-01 — Phase 136 execution started
 
 ```
 [ ] Phase 136 — Core Decoupling
@@ -162,6 +163,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [136-05]: Prefix-match guard via Enum.any?+List.starts_with? in function body (not when guard) — Elixir guards cannot call non-guard-safe functions
 - [136-05]: Scope exclusion via list subtraction lib_files -- companion_files — Path.wildcard has no native negative-glob support
 - [136-05]: policy/schema.ex mfa_level_vocabulary inlined as @mfa_level_vocabulary module attribute — stable 4-atom list; no runtime companion lookup needed for schema validation
+- [Phase 136]: evaluate_auth/3 passes Denial.t() through unchanged (D-136-B); Finding conversion is Phase 137 SIGRA-02 work
+- [Phase 136]: mix.exs application/0 env: registers [Sigra, Chimeway] as in-tree bridge; removed when each module is extracted in Phase 137/138
+- [Phase 136]: DECOUPLE-03 NOT flipped: 3 Category-B failures remain in operator_inspection (x2) and publish_readiness (x1); gate requires 0 failures; Phase 137 pre-extraction baseline cleanup will fix these
 
 ### Pending Todos
 
@@ -195,10 +199,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
 | Phase 136 P02 | 4min | 2 tasks | 2 files |
 | Phase 136 P03 | 5min | 1 tasks | 2 files |
+| Phase 136 P06 | 150min | 3 tasks | 11 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T15:29:00Z
+Last session: 2026-07-01T17:50:27.370Z
 Stopped at: Completed 136-05-PLAN.md (Phase 136 complete)
 Resume file: None
 

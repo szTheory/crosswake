@@ -126,7 +126,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 ### v17.0 Companion Family Completion (Phases 136-140)
 
-- [ ] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: gaps_found 2026-07-01 — 34 test regressions; needs gap closure)
+- [x] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: gaps_found 2026-07-01 — 34 test regressions; needs gap closure) (completed 2026-07-01)
 - [ ] **Phase 137: crosswake_sigra Extraction** - Extract sigra into a standalone independently-versioned Hex package with the Finding-boundary refactor, dress rehearsal, and irreversible publish.
 - [ ] **Phase 138: crosswake_chimeway Extraction** - Extract chimeway into a standalone Hex package with a vacuity-safe clean-room lane (no sigra dep) and irreversible publish.
 - [ ] **Phase 139: crosswake_threadline Extraction** - Extract threadline as the final observer package (telemetry-by-name, zero compile deps on siblings) and publish.
@@ -147,7 +147,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `Crosswake.Telemetry` aggregates companion `telemetry_events/0` and `forbidden_metadata_keys/0` at runtime via `function_exported?/3` iteration; a hardcoded core PII baseline (auth tokens, identity fields) is always applied independent of companion presence.
   5. The AST/grep guard CI job covers all files under `lib/` (not just the companion subdirectory) and fails the build on any new static core→companion reference.
 
-**Plans**: 6 plans (5 complete + 1 gap-closure)
+**Plans**: 6/6 plans complete
 **Wave 1**
 
 - [x] 136-01-PLAN.md — Extend Companion behaviour (4 optional callbacks) + Phase-129 freeze test + 5 Nyquist backstop tests [Wave 1]
@@ -164,7 +164,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 **Wave 4** *(gap closure — resolves 34 test regressions from verification gaps_found)*
 
-- [ ] 136-06-PLAN.md — Build in-tree Crosswake.Companions.Sigra facade (evaluate_auth/3 + auth_authority?/0 + denial_codes/0 + forbidden_metadata_keys/0 + telemetry_events/0) delegating to Sigra sub-modules; extend Chimeway callbacks; register both in config; extend auth_contract_truth/0 runtime aggregation; full suite green; flip DECOUPLE-03 Complete [Wave 4]
+- [x] 136-06-PLAN.md — Build in-tree Crosswake.Companions.Sigra facade (evaluate_auth/3 + auth_authority?/0 + denial_codes/0 + forbidden_metadata_keys/0 + telemetry_events/0) delegating to Sigra sub-modules; extend Chimeway callbacks; register both in config; extend auth_contract_truth/0 runtime aggregation; full suite green; flip DECOUPLE-03 Complete [Wave 4]
 
 ### Phase 137: crosswake_sigra Extraction
 
@@ -266,7 +266,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 133. Telemetry Public API | v16.0 | 4/4 | Complete | 2026-06-28 |
 | 134. Shell Lifecycle + Native UAT Promotion | v16.0 | 5/5 | Complete | 2026-06-29 |
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
-| 136. Core Decoupling | v17.0 | 5/5 | Complete   | 2026-07-01 |
+| 136. Core Decoupling | v17.0 | 6/6 | Complete   | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 0/? | Not started | - |
 | 138. crosswake_chimeway Extraction | v17.0 | 0/? | Not started | - |
 | 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
