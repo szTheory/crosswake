@@ -6,14 +6,14 @@ current_phase: 137
 current_phase_name: crosswake-sigra-extraction
 status: executing
 stopped_at: Phase 137 context gathered
-last_updated: "2026-07-01T23:22:15.969Z"
+last_updated: "2026-07-01T23:34:08.130Z"
 last_activity: 2026-07-01
 last_activity_desc: Phase 137 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 20
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 137 (crosswake-sigra-extraction) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-07-01 -- Phase 137 execution started
 
@@ -179,6 +179,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: SupportMatrix test moved to package - circular dep; put_env non-vacuity
 - [Phase ?]: 8 core test files moved to crosswake_sigra package - sigra structs need module at compile/runtime
 - [Phase ?]: chimeway resolver_test: expect :dependency_missing (fail-closed) when no auth-authority companion registered
+- [Phase ?]: Independent versioning per D-8
+- [Phase ?]: Additive no-engine script mode
+- [Phase ?]: Sigra CI pipeline per-component gate
 
 ### Pending Todos
 
@@ -215,10 +218,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 136 P06 | 150min | 3 tasks | 11 files |
 | Phase 137 P01 | 4 | - tasks | - files |
 | Phase 137 P02 | 15 | 4 tasks | 8 files |
+| Phase 137 P04 | 8 | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T23:21:11.792Z
+Last session: 2026-07-01T23:33:42.754Z
 Stopped at: Phase 137 context gathered
 Resume file: .planning/phases/137-crosswake-sigra-extraction/137-CONTEXT.md
 
