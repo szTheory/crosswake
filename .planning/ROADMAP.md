@@ -144,7 +144,12 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   3. Auth-predicated routes (any of `auth_min_level`, `requires_recent_auth`, `auth_posture` set) deny with `:dependency_missing` when no `auth_authority?/0` companion is registered; a companion that raises during evaluation is rescued and also denies.
   4. `Crosswake.Telemetry` aggregates companion `telemetry_events/0` and `forbidden_metadata_keys/0` at runtime via `function_exported?/3` iteration; a hardcoded core PII baseline (auth tokens, identity fields) is always applied independent of companion presence.
   5. The AST/grep guard CI job covers all files under `lib/` (not just the companion subdirectory) and fails the build on any new static core→companion reference.
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 136-01-PLAN.md — Extend Companion behaviour (4 optional callbacks) + Phase-129 freeze test + 5 Nyquist backstop tests [Wave 1]
+- [ ] 136-02-PLAN.md — Invert telemetry.ex: runtime reserved-events aggregation + 10-atom baseline PII denylist + attach-time forbidden-key cache + Phase-133 test [Wave 2]
+- [ ] 136-03-PLAN.md — Invert route_gate.ex auth dispatch onto registry with fail-closed deny + rescue [Wave 2]
+- [ ] 136-04-PLAN.md — Convert support_matrix stale-beam attributes to runtime helpers + doctor DenialCodes runtime lookup [Wave 2]
+- [ ] 136-05-PLAN.md — Extend companion_guard.ex (prefix match, Sigra+Chimeway banned, scope exclusion) + Phase-130 test + phase merge gate [Wave 3]
 
 ### Phase 137: crosswake_sigra Extraction
 **Goal**: Sigra auth machinery lives in a standalone `packages/crosswake_sigra/` Hex package, published independently, with all module names preserved and the `Finding` boundary cleanly separating companion internals from core.
