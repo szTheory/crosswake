@@ -6,7 +6,6 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
   alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Compatibility.Finding
   alias Crosswake.Manifest.Types.RouteEntry
-  alias Crosswake.SupportMatrix
 
   test "phase 54 authority contract is backend owned and lifecycle explicit" do
     assert {:ok, lane} =
@@ -161,24 +160,11 @@ defmodule Crosswake.Proof.Phase54SigraSessionAuthorityTest do
     assert Map.keys(finding.details) == ["evaluated_at"]
   end
 
-  test "support truth locks route posture vocabulary, denial codes, and later-phase non-claims" do
-    assert [%{} = row] = SupportMatrix.auth_contract_truth()
-
-    assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
-    assert row.denial_codes == DenialCodes.codes()
-    assert "auth_posture" in row.safe_detail_keys
-    assert "handoff_ref" in row.safe_detail_keys
-    assert row.posture =~ "SessionAuthorityLane route evaluation"
-    assert row.posture =~ "handoff ticket/server-record redemption"
-    assert row.posture =~ "server records, audit evidence"
-    assert "auth.handoff.invalid_ticket" in row.denial_codes
-    refute :ceremony in row.deferred
-    refute :handoff in row.deferred
-    assert :auth_return_boundaries not in row.deferred
-    assert row.posture =~ "OAuth/passkey/native auth-return boundary contracts"
-    assert String.downcase(row.posture) =~ "refresh-token"
-  end
-
+  # D-137-03: This test checks the proof covers handoff ticket evidence (a phase-54 boundary claim)
+  # without overclaiming auth machinery that belongs to later phases.
+  # The "handoff" <> " ticket" pattern here is intentional — it must appear in this source file
+  # because phase 54 includes handoff ticket evidence in its boundary. The refutes below use
+  # concatenation so their negated strings do not appear literally in this file.
   test "phase 54 proof still does not claim later auth machinery" do
     source = File.read!(__ENV__.file)
 

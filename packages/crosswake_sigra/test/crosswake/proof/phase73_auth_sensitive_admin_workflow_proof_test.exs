@@ -1,4 +1,5 @@
 defmodule Crosswake.Proof.Phase73AuthSensitiveAdminWorkflowProofTest do
+  # async: false because support-truth test calls Application.put_env.
   use ExUnit.Case, async: false
 
   alias Crosswake.Compatibility.RouteGate
@@ -30,6 +31,19 @@ defmodule Crosswake.Proof.Phase73AuthSensitiveAdminWorkflowProofTest do
     "raw-pkce-verifier",
     "raw-nonce"
   ]
+
+  # D-137-03: Register sigra so SupportMatrix.auth_contract_truth/0 returns a
+  # populated row (denial_codes, posture fields) rather than sentinel [] values.
+  setup do
+    prior = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+
+    on_exit(fn ->
+      Application.put_env(:crosswake, :companions, prior)
+    end)
+
+    :ok
+  end
 
   defmodule IntentLifecycle do
     defstruct [:ref, :state, :route_id, :session_version, :expires_at]
@@ -429,12 +443,29 @@ defmodule Crosswake.Proof.Phase73AuthSensitiveAdminWorkflowProofTest do
     end
 
     test "example host exposes compact admin proof surface and no broad admin console" do
-      route_source = File.read!("examples/phoenix_host/lib/crosswake_example/router.ex")
-      live_source = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/admin_access_live.ex")
-      plug_source = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_plug.ex")
-      mount_source = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_on_mount.ex")
-      auth_source = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/auth.ex")
-      step_up_source = File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/step_up.ex")
+      route_source =
+        File.read!("../../examples/phoenix_host/lib/crosswake_example/router.ex")
+
+      live_source =
+        File.read!(
+          "../../examples/phoenix_host/lib/crosswake_example/saas_portal/admin_access_live.ex"
+        )
+
+      plug_source =
+        File.read!(
+          "../../examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_plug.ex"
+        )
+
+      mount_source =
+        File.read!(
+          "../../examples/phoenix_host/lib/crosswake_example/saas_portal/step_up_on_mount.ex"
+        )
+
+      auth_source =
+        File.read!("../../examples/phoenix_host/lib/crosswake_example/saas_portal/auth.ex")
+
+      step_up_source =
+        File.read!("../../examples/phoenix_host/lib/crosswake_example/saas_portal/step_up.ex")
 
       assert route_source =~ @admin_route_id
       assert route_source =~ "offline: :unavailable"
