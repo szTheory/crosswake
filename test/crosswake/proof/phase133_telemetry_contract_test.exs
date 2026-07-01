@@ -339,17 +339,17 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       Crosswake.Telemetry.events()
       |> Enum.filter(fn e -> e.tier == :reserved end)
 
-    # Sigra has 14, Chimeway has 10 — none should be in the :active tier
-    assert length(reserved_events) >= 24,
-           ProofAssertions.stable_id_message(
-             "proof.telem_04.reserved.minimum_count",
-             "expected at least 24 reserved events (Sigra 14 + Chimeway 10)",
-             "Crosswake.Telemetry.events/0 |> filter(tier == :reserved)",
-             "got #{length(reserved_events)} reserved events",
-             "lib/crosswake/telemetry.ex",
-             "include Sigra.Telemetry.event_names/0 and Chimeway.Telemetry.event_names/0 as :reserved tier in events/0",
-             :merge_blocking
-           )
+    # Shape assertion (D-136-D): each :reserved entry must have a non-empty atom-list event,
+    # tier: :reserved, and list-typed measurements and metadata.
+    # Count-independent — passes with zero companions registered (reserved set legitimately empty).
+    for entry <- reserved_events do
+      assert match?(
+               %{event: [_ | _], tier: :reserved, measurements: m, metadata: meta}
+               when is_list(m) and is_list(meta),
+               entry
+             ),
+             "reserved entry failed shape assertion: #{inspect(entry)}"
+    end
 
     active_prefixes =
       Crosswake.Telemetry.events()
