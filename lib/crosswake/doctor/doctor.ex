@@ -788,14 +788,19 @@ defmodule Crosswake.Doctor do
                 |> Map.get(:telemetry, %{})
                 |> Map.drop([:forbidden_metadata_keys]),
               security_closeout: Map.get(auth_truth, :security_closeout, %{}),
+              # denial_codes and safe_detail_keys are obtained at runtime via the :companions
+              # registry using the denial_codes/0 optional callback. auth_contract_truth/0
+              # already populates these fields from the registry (DECOUPLE-03 / T-136-04).
+              # Fallback to [] when no companion exposes denial_codes/0.
               denial_codes:
-                Map.get(auth_truth, :denial_codes, Crosswake.Companions.Sigra.DenialCodes.codes()),
-              safe_detail_keys:
-                Map.get(
-                  auth_truth,
-                  :safe_detail_keys,
-                  Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys()
-                ),
+                Map.get(auth_truth, :denial_codes) ||
+                  Enum.flat_map(
+                    Application.get_env(:crosswake, :companions, []),
+                    fn mod ->
+                      if function_exported?(mod, :denial_codes, 0), do: mod.denial_codes(), else: []
+                    end
+                  ),
+              safe_detail_keys: Map.get(auth_truth, :safe_detail_keys, []),
               deferred: Map.get(auth_truth, :deferred, [])
             }
           )
