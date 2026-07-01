@@ -315,8 +315,19 @@ defmodule Crosswake.Compatibility.RouteGate do
             end
 
           case result do
-            {:allow, _} -> acc
-            {:deny, denial} -> [denial | acc]
+            {:allow, _} ->
+              acc
+
+            {:deny, %Finding{} = finding} ->
+              # D-137-A: translate Finding → Denial at the RouteGate boundary.
+              # Core owns this translation; companions never construct Denial directly.
+              denial = Compatibility.finding_to_denial(finding, route_id: route.id)
+              [denial | acc]
+
+            {:deny, %Denial{} = denial} ->
+              # Rescue path (try/rescue above) may still return a pre-built Denial.
+              # Pass it through unchanged so the fail-closed path is never double-wrapped.
+              [denial | acc]
           end
       end
     else

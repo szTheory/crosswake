@@ -171,10 +171,17 @@ defmodule Crosswake.Companion do
   Core dispatches to at most one `auth_authority?/0` companion per evaluation
   (first-registered wins; multiple authorities emit a telemetry conflict warning).
 
-  Returns `{:allow, result_map}` to permit access, or `{:deny, Crosswake.Shell.Denial.t()}`
-  to block access with a denial struct. Core wraps this call in `try/rescue` — if the
-  callback raises, the error is rescued and a `:dependency_missing` denial is returned
-  (fail-closed, DECOUPLE-04, D-3).
+  Returns `{:allow, result_map}` to permit access, or `{:deny, Finding.t()}`
+  to block access with structured restriction evidence. Core translates the
+  `Crosswake.Compatibility.Finding.t()` to a `Crosswake.Shell.Denial` via
+  `Compatibility.finding_to_denial/2` at the `RouteGate` boundary — companions
+  must never construct `Denial` directly (D-137-A). The `:auth` axis and the
+  `:code`/`:details` fields on the Finding carry the sub-classification and
+  already-sanitized evidence to the translation boundary.
+
+  Core wraps this call in `try/rescue` — if the callback raises, the error is
+  rescued and a `:dependency_missing` denial is returned (fail-closed,
+  DECOUPLE-04, D-3).
 
   `route` is the `RouteEntry.t()` being evaluated. `auth_context` is the host-supplied
   map (e.g. from Plug assigns or LiveView socket). `opts` carries call-site keyword
@@ -184,7 +191,7 @@ defmodule Crosswake.Companion do
               route :: RouteEntry.t(),
               auth_context :: map(),
               opts :: keyword()
-            ) :: {:allow, map()} | {:deny, Crosswake.Shell.Denial.t()}
+            ) :: {:allow, map()} | {:deny, Finding.t()}
 
   @doc """
   Returns whether this companion is the designated auth evaluator for the host.

@@ -19,6 +19,7 @@ defmodule Crosswake.Companions.Sigra do
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
+  alias Crosswake.Compatibility.Finding
 
   # ---------------------------------------------------------------------------
   # Required callbacks (mirror chimeway.ex conventions)
@@ -87,10 +88,22 @@ defmodule Crosswake.Companions.Sigra do
         {:allow, %{status: status, facts: facts}}
 
       {:deny, denial} ->
-        # Pass the Denial.t() through UNCHANGED so :step_up_required and its
-        # sanitized details reach RouteGate exactly as before the inversion.
-        # No Finding conversion — D-136-B; Finding-boundary refactor is Phase 137.
-        {:deny, denial}
+        # D-137-A Phase 137 shim: the Evaluator still returns Denial.t() internally
+        # (Plan 02 will refactor Evaluator.deny/4 to emit Finding directly). This
+        # shim converts the Denial to a minimal %Finding{axis: :auth} so the
+        # evaluate_auth/3 callback contract ({:deny, Finding.t()}) holds end-to-end
+        # this wave. RouteGate will then call finding_to_denial/2 to translate back.
+        # Plan 02 removes this shim when the Evaluator emits Finding natively.
+        finding = %Finding{
+          axis: :auth,
+          message: denial.message,
+          code: denial.code,
+          details: denial.details,
+          hint: denial.hint,
+          route_id: denial.route_id
+        }
+
+        {:deny, finding}
     end
   end
 
