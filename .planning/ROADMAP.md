@@ -147,7 +147,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `Crosswake.Telemetry` aggregates companion `telemetry_events/0` and `forbidden_metadata_keys/0` at runtime via `function_exported?/3` iteration; a hardcoded core PII baseline (auth tokens, identity fields) is always applied independent of companion presence.
   5. The AST/grep guard CI job covers all files under `lib/` (not just the companion subdirectory) and fails the build on any new static core→companion reference.
 
-**Plans**: 5/5 plans complete
+**Plans**: 6 plans (5 complete + 1 gap-closure)
 **Wave 1**
 
 - [x] 136-01-PLAN.md — Extend Companion behaviour (4 optional callbacks) + Phase-129 freeze test + 5 Nyquist backstop tests [Wave 1]
@@ -161,6 +161,10 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 136-05-PLAN.md — Extend companion_guard.ex (prefix match, Sigra+Chimeway banned, scope exclusion) + Phase-130 test + phase merge gate [Wave 3]
+
+**Wave 4** *(gap closure — resolves 34 test regressions from verification gaps_found)*
+
+- [ ] 136-06-PLAN.md — Build in-tree Crosswake.Companions.Sigra facade (evaluate_auth/3 + auth_authority?/0 + denial_codes/0 + forbidden_metadata_keys/0 + telemetry_events/0) delegating to Sigra sub-modules; extend Chimeway callbacks; register both in config; extend auth_contract_truth/0 runtime aggregation; full suite green; flip DECOUPLE-03 Complete [Wave 4]
 
 ### Phase 137: crosswake_sigra Extraction
 
