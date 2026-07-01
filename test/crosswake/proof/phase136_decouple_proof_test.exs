@@ -348,15 +348,19 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
 
     decision = RouteGate.evaluate(manifest, "auth-predicated-stub-route", target)
 
-    # First-registered companion's evaluate_auth/3 returns {:allow, %{source: :stub_auth_first}}
-    # Non-auth routes may pass through as :allow; auth-predicated routes should use first authority.
-    # The decision must reflect the FIRST companion's outcome (allow in this stub case).
-    assert decision.status == :allow,
+    # First-registered companion's evaluate_auth/3 returns {:allow, %{source: :stub_auth_first}}.
+    # The stub Target{} has no origin/capability data so compatibility denials are expected (origin
+    # mismatch, bridge protocol, etc.) — but NO auth denial must be present, proving the first
+    # authority's :allow outcome was used and no auth-specific deny was prepended.
+    auth_denial_reasons = [:dependency_missing, :auth_evaluator_error]
+    auth_denials = Enum.filter(decision.denials, fn d -> d.reason in auth_denial_reasons end)
+
+    assert auth_denials == [],
            ProofAssertions.stable_id_message(
              "proof.decouple_04.multi_authority_first_wins",
-             "with two auth_authority?/0 companions, the first-registered evaluate_auth/3 decision must be used",
-             "RouteGate.evaluate/4",
-             "decision.status was #{inspect(decision.status)} — expected :allow (first companion allows)",
+             "with two auth_authority?/0 companions, the first-registered evaluate_auth/3 decision must be used (no auth denial)",
+             "RouteGate.evaluate/4 -> decision.denials",
+             "auth denials present: #{inspect(Enum.map(auth_denials, & &1.reason))} — expected none (first companion allows)",
              "lib/crosswake/compatibility/route_gate.ex",
              "Plan 03 must select the first auth_authority?/0 companion and dispatch evaluate_auth/3 to it (DECOUPLE-04)",
              :merge_blocking

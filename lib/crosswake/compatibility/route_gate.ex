@@ -6,7 +6,6 @@ defmodule Crosswake.Compatibility.RouteGate do
   alias Crosswake.Compatibility
   alias Crosswake.Compatibility.Finding
   alias Crosswake.Compatibility.Target
-  alias Crosswake.Companions.Sigra.Evaluator
   alias Crosswake.Manifest.Types.Root
   alias Crosswake.Manifest.Types.RouteEntry
   alias Crosswake.Shell.Denial
@@ -255,10 +254,81 @@ defmodule Crosswake.Compatibility.RouteGate do
   defp prepend_auth_evaluation_denials(acc, nil, _opts, _gate_denials), do: acc
 
   defp prepend_auth_evaluation_denials(acc, %RouteEntry{} = route, opts, _gate_denials) do
-    case Evaluator.evaluate_route_auth(route, Keyword.get(opts, :auth_context), opts) do
-      {:allow, _result} -> acc
-      {:deny, denial} -> [denial | acc]
+    # Inline auth-predicate check (inlined from Sigra.Evaluator.auth_predicated?/1).
+    # Non-auth-predicated routes skip companion scan entirely — "no eval = allow" for these only.
+    if auth_predicated?(route) do
+      auth_companions =
+        Application.get_env(:crosswake, :companions, [])
+        |> Enum.filter(fn companion ->
+          config = Application.get_env(:crosswake, companion.companion_id(), %{})
+          companion.enabled?(config) and
+            function_exported?(companion, :auth_authority?, 0) and
+            companion.auth_authority?()
+        end)
+
+      case auth_companions do
+        [] ->
+          # Fail-closed: auth-predicated route with no registered auth authority → deny.
+          denial =
+            Denial.new(
+              reason: :dependency_missing,
+              message:
+                "[crosswake] route #{route.id} requires auth evaluation but no companion " <>
+                  "with auth_authority?/0 returning true is registered. The gate fails closed.",
+              route_id: route.id,
+              details: %{"missing_kind" => "auth_authority_companion"}
+            )
+
+          [denial | acc]
+
+        [authority | rest] ->
+          # Multiple authorities: emit conflict signal (first-registered wins).
+          if rest != [] do
+            :telemetry.execute(
+              [:crosswake, :companion, :auth_authority_conflict],
+              %{count: length(auth_companions)},
+              %{
+                route_id: route.id,
+                first_authority: authority.companion_id(),
+                all_authorities: Enum.map(auth_companions, & &1.companion_id())
+              }
+            )
+          end
+
+          # Dispatch to first-registered auth authority, wrapped in try/rescue (fail-closed).
+          auth_context = Keyword.get(opts, :auth_context)
+
+          result =
+            try do
+              authority.evaluate_auth(route, auth_context, opts)
+            rescue
+              _ ->
+                {:deny,
+                 Denial.new(
+                   reason: :dependency_missing,
+                   message:
+                     "[crosswake] companion #{authority.companion_id()} raised during " <>
+                       "evaluate_auth/3. The gate fails closed.",
+                   route_id: route.id,
+                   details: %{"companion_id" => Atom.to_string(authority.companion_id())}
+                 )}
+            end
+
+          case result do
+            {:allow, _} -> acc
+            {:deny, denial} -> [denial | acc]
+          end
+      end
+    else
+      # Non-auth-predicated route: no companion scan, no denial prepended.
+      acc
     end
+  end
+
+  # Inlined from Sigra.Evaluator.auth_predicated?/1 — core can no longer call the Sigra module.
+  defp auth_predicated?(%RouteEntry{} = route) do
+    not is_nil(route.auth_min_level) or not is_nil(route.requires_recent_auth) or
+      not is_nil(route.auth_posture)
   end
 
   defp prepend_commerce_corridor_findings(findings, %RouteEntry{} = route, %Root{} = manifest) do
