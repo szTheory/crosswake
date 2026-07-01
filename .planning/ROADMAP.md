@@ -179,7 +179,12 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room CI lane (`crosswake + crosswake_sigra` only) compiles and passes its tests before the irreversible publish fires.
   5. `crosswake_sigra` is registered in `release-please` as an independent `elixir` component (not in the `linked-versions` lockstep group).
 
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 137-01-PLAN.md — Core Finding boundary: :code/:details fields, guarded :auth clause, evaluate_auth→Finding callback + RouteGate translation, StubSigraAbsentCompanion (wave 1)
+- [ ] 137-02-PLAN.md — Sigra-side Finding refactor: Evaluator.deny→Finding, StepUpCeremony re-point + max-age guard, host issue_intent→Finding, remove Denial aliases (wave 2)
+- [ ] 137-03-PLAN.md — Package skeleton + source/test move + phase54 split + non-vacuous clean-room proof + remove sigra from core + path-dep dress rehearsal (wave 3)
+- [ ] 137-04-PLAN.md — CI wiring: no-engine clean-room mode, independent release-please component, publish-hex-sigra + clean-room-proof-sigra jobs + cleanup/alert (wave 4)
+- [ ] 137-05-PLAN.md — Publish gate chain: dry-run verify + HUMAN register-checks / merge Release PR / merge cleanup PR (wave 5)
 
 ### Phase 138: crosswake_chimeway Extraction
 
