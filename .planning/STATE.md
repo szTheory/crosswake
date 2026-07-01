@@ -5,15 +5,15 @@ milestone_name: Companion Family Completion
 current_phase: 136
 current_phase_name: core-decoupling
 status: executing
-stopped_at: Completed 136-03-PLAN.md
-last_updated: "2026-07-01T15:05:28.240Z"
+stopped_at: Completed 136-05-PLAN.md
+last_updated: "2026-07-01T15:29:00Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 0
+  completed_plans: 5
+  percent: 20
 ---
 
 # Project State: Crosswake
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 136 (core-decoupling) — EXECUTING
-Plan: 4 of 5
-Status: Ready to execute
+Plan: 5 of 5
+Status: All plans complete
 Last activity: 2026-07-01
 
 ```
@@ -40,7 +40,7 @@ Last activity: 2026-07-01
 [ ] Phase 140 — Family Discipline & Close
 ```
 
-Progress: [██████░░░░] 60%
+Progress: [██████████] 100%
 
 ```
 [          ] 0%
@@ -159,6 +159,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Rescue denial reason pinned to :dependency_missing (not :auth_evaluator_error) — single atom covers both failure modes for fail-closed auth evaluation
 - [Phase ?]: Conflict signal as :telemetry.execute/3 event [:crosswake, :companion, :auth_authority_conflict] with first-registered-wins resolution for multiple auth_authority?/0 companions
 - [Phase ?]: Backstop test 3 assertion fixed to check auth-denial absence (not decision.status) — empty Target always generates compatibility denials making status assertion unreliable
+- [136-05]: Prefix-match guard via Enum.any?+List.starts_with? in function body (not when guard) — Elixir guards cannot call non-guard-safe functions
+- [136-05]: Scope exclusion via list subtraction lib_files -- companion_files — Path.wildcard has no native negative-glob support
+- [136-05]: policy/schema.ex mfa_level_vocabulary inlined as @mfa_level_vocabulary module attribute — stable 4-atom list; no runtime companion lookup needed for schema validation
 
 ### Pending Todos
 
@@ -195,8 +198,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-01T14:57:10.197Z
-Stopped at: Completed 136-03-PLAN.md
+Last session: 2026-07-01T15:29:00Z
+Stopped at: Completed 136-05-PLAN.md (Phase 136 complete)
 Resume file: None
 
 ## Operator Next Steps

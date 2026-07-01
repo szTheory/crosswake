@@ -19,7 +19,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 - [ ] **DECOUPLE-03**: Core's `SupportMatrix` and `Doctor` obtain companion denial codes and support truth at runtime from the registry via an optional `denial_codes/0` callback — the `@auth_contract_truth`/`@notification_support_truth` module attributes are converted to runtime helpers so no companion function is called at module-evaluation time (`support_matrix.ex:226,266`, `doctor.ex:792,797` inverted). (D-1)
 - [x] **DECOUPLE-04**: An absent or misconfigured auth companion on an auth-predicated route (`auth_min_level`/`requires_recent_auth`/`auth_posture` set) fails closed — denies with `:dependency_missing`; a companion raising during evaluation is rescued and treated as deny. "No evaluation = allow" is reachable only on non-auth routes; multiple `auth_authority?/0` companions resolve to the first registered plus a doctor warning. (D-3)
 - [x] **DECOUPLE-05**: Core ships a hardcoded baseline PII forbidden-metadata-key denylist (auth tokens + identity fields) that the safe logger **always** applies regardless of which companions are present, layered above the per-companion runtime aggregation — so an absent/misconfigured companion can never silently drop token/identity scrubbing. (D-5)
-- [ ] **DECOUPLE-06**: The AST/grep guards enforcing "core never compile-depends on a companion" cover all core `lib/` files (not just the companion dir), and `crosswake` compiles `--warnings-as-errors`, passes COMPAT-01 fail-closed behavior, and passes the Phase-129 companion-contract freeze test with **no** companion package present. (D-1, D-9)
+- [x] **DECOUPLE-06**: The AST/grep guards enforcing "core never compile-depends on a companion" cover all core `lib/` files (not just the companion dir), and `crosswake` compiles `--warnings-as-errors`, passes COMPAT-01 fail-closed behavior, and passes the Phase-129 companion-contract freeze test with **no** companion package present. (D-1, D-9)
 
 ### SIGRA — `crosswake_sigra` Extraction
 
@@ -70,7 +70,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | DECOUPLE-03 | Phase 136 | Pending |
 | DECOUPLE-04 | Phase 136 | Complete |
 | DECOUPLE-05 | Phase 136 | Complete |
-| DECOUPLE-06 | Phase 136 | Pending |
+| DECOUPLE-06 | Phase 136 | Complete |
 | SIGRA-01 | Phase 137 | Pending |
 | SIGRA-02 | Phase 137 | Pending |
 | SIGRA-03 | Phase 137 | Pending |
