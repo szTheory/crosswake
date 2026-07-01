@@ -62,6 +62,15 @@ defmodule Crosswake.Proof.Phase71NotificationWorkflowProofTest do
     end
   end
 
+  # D-137-03: Register Sigra so RouteGate.evaluate/4 returns :step_up_required
+  # (not the :dependency_missing fail-closed sentinel) for auth-predicated routes.
+  setup do
+    prior = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+    on_exit(fn -> Application.put_env(:crosswake, :companions, prior) end)
+    :ok
+  end
+
   describe "hermetic proof shape" do
     test "proof uses inline manifest and intent consumer without provider/device runtime dependencies" do
       source = __ENV__.file |> File.read!() |> String.downcase()

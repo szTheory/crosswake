@@ -1,4 +1,6 @@
 defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
+  # D-137-03: Moved from core test suite (sigra modules not available post-extraction).
+  # async: false because setup calls Application.put_env for SupportMatrix non-vacuity.
   use ExUnit.Case, async: false
 
   alias Crosswake.Companions.Sigra.DenialCodes
@@ -35,6 +37,19 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
         ]
       )
     end
+  end
+
+  # D-137-03: Register sigra so SupportMatrix.auth_contract_truth/0 and Doctor.run/1
+  # return populated telemetry fields (event_names, metadata_keys) rather than sentinel [].
+  setup do
+    prior = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+
+    on_exit(fn ->
+      Application.put_env(:crosswake, :companions, prior)
+    end)
+
+    :ok
   end
 
   test "phase 58 locks stable auth telemetry names metadata and secret exclusions" do
@@ -93,7 +108,7 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
     report =
       Doctor.run(
         route_source: AuthRouter,
-        install_manifest_path: "priv/crosswake/install_manifest.json",
+        install_manifest_path: "../../priv/crosswake/install_manifest.json",
         cwd: File.cwd!()
       )
 
@@ -122,12 +137,12 @@ defmodule Crosswake.Proof.Phase58AuthDiagnosticsCloseoutTest do
   end
 
   test "guides and security closeout preserve provider device non-claims and secret bans" do
-    companions = File.read!("guides/companions.md")
-    support = File.read!("guides/support_matrix.md")
+    companions = File.read!("../../guides/companions.md")
+    support = File.read!("../../guides/support_matrix.md")
 
     security =
       File.read!(
-        ".planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
+        "../../.planning/milestones/v3.8-phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md"
       )
 
     assert companions =~ "Crosswake.Companions.Sigra.Telemetry"

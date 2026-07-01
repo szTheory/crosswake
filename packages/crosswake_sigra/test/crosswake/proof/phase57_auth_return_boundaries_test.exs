@@ -1,5 +1,7 @@
 defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
-  use ExUnit.Case, async: true
+  # async: false because setup calls Application.put_env for SupportMatrix non-vacuity.
+  # D-137-03: Moved from core test suite (sigra modules not available post-extraction).
+  use ExUnit.Case, async: false
 
   alias Crosswake.Companions.Sigra.AuthReturn
   alias Crosswake.Companions.Sigra.Contracts
@@ -35,6 +37,19 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
     "auth.return.native_auth.callback_mismatch",
     "auth.return.native_auth.projection_failed"
   ]
+
+  # D-137-03: Register sigra so SupportMatrix.auth_contract_truth/0 returns a
+  # populated row (denial_codes, shipped_contracts) rather than sentinel [] values.
+  setup do
+    prior = Application.get_env(:crosswake, :companions, [])
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
+
+    on_exit(fn ->
+      Application.put_env(:crosswake, :companions, prior)
+    end)
+
+    :ok
+  end
 
   test "phase 57 locks canonical auth-return denial vocabulary under step_up_required" do
     assert Enum.filter(DenialCodes.codes(), &String.starts_with?(&1, "auth.return.")) ==
@@ -289,11 +304,13 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
 
   test "example host exposes Ecto-owned auth-return replay and audit records" do
     attempt_source =
-      File.read!("examples/phoenix_host/lib/crosswake_example/saas_portal/auth_return_attempt.ex")
+      File.read!(
+        "../../examples/phoenix_host/lib/crosswake_example/saas_portal/auth_return_attempt.ex"
+      )
 
     audit_source =
       File.read!(
-        "examples/phoenix_host/lib/crosswake_example/saas_portal/auth_return_audit_event.ex"
+        "../../examples/phoenix_host/lib/crosswake_example/saas_portal/auth_return_audit_event.ex"
       )
 
     assert attempt_source =~ ~s(schema "sigra_auth_return_attempts")
@@ -305,11 +322,11 @@ defmodule Crosswake.Proof.Phase57AuthReturnBoundariesTest do
     assert audit_source =~ "binding_result"
 
     assert File.exists?(
-             "examples/phoenix_host/priv/repo/migrations/20260602080000_create_sigra_auth_return_attempts.exs"
+             "../../examples/phoenix_host/priv/repo/migrations/20260602080000_create_sigra_auth_return_attempts.exs"
            )
 
     assert File.exists?(
-             "examples/phoenix_host/priv/repo/migrations/20260602080100_create_sigra_auth_return_audit_events.exs"
+             "../../examples/phoenix_host/priv/repo/migrations/20260602080100_create_sigra_auth_return_audit_events.exs"
            )
   end
 

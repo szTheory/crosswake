@@ -1,11 +1,33 @@
 defmodule Crosswake.Proof.Phase47CompanionArcTest do
   use ExUnit.Case, async: false
 
-  # Phase 132: Crosswake.Companions.Rindle extracted to packages/crosswake_rindle/.
-  # Drive tests 1-2 through the @behaviour/registry seam via the absent-engine stub
-  # (mirrors the StubRulesteadAbsentCompanion pattern); tests 3-6 use no rindle internals.
-  alias Crosswake.TestSupport.StubRindleAbsentCompanion, as: Rindle
-  alias Crosswake.TestSupport.StubRulesteadAbsentCompanion, as: Rulestead
+  # D-137-03: StubRulesteadAbsentCompanion and StubRindleAbsentCompanion are core
+  # test support modules not available in the package load path. Inline stubs mirror
+  # the absent-engine pattern (validate_dependency returns {:error, [missing_module]}).
+  defmodule StubRulesteadAbsent do
+    @behaviour Crosswake.Companion
+    def companion_id, do: :rulestead
+    def enabled?(%{enabled: false}), do: false
+    def enabled?(_), do: true
+    def validate_dependency, do: {:error, [Rulestead.Engine]}
+    def report_state, do: %{status: :dependency_missing}
+    def route_gated?(_route_id, _companion_id), do: false
+    def kill_switch_active?(_config), do: false
+  end
+
+  defmodule StubRindleAbsent do
+    @behaviour Crosswake.Companion
+    def companion_id, do: :rindle
+    def enabled?(%{enabled: false}), do: false
+    def enabled?(_), do: true
+    def validate_dependency, do: {:error, [Rindle.Engine]}
+    def report_state, do: %{status: :dependency_missing}
+    def route_gated?(_route_id, _companion_id), do: false
+    def kill_switch_active?(_config), do: false
+  end
+
+  alias Crosswake.Proof.Phase47CompanionArcTest.StubRulesteadAbsent, as: Rulestead
+  alias Crosswake.Proof.Phase47CompanionArcTest.StubRindleAbsent, as: Rindle
   alias Crosswake.Companions.Sigra.Contracts.AuthContext
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target

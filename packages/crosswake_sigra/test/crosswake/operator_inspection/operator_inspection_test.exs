@@ -1,9 +1,11 @@
 defmodule Crosswake.OperatorInspectionTest do
+  # D-137-03: Moved from core test suite. OperatorInspection.inspect/1 calls
+  # Crosswake.Companions.Sigra.companion_id/0 at runtime (via SupportMatrix); moving
+  # to crosswake_sigra package ensures the module is available in the load path.
   use ExUnit.Case, async: false
 
   alias Crosswake.OperatorInspection
   alias Crosswake.OperatorInspection.Types
-  alias Crosswake.TestSupport.StubCompanion
 
   defmodule PageController do
     def init(opts), do: opts
@@ -88,12 +90,10 @@ defmodule Crosswake.OperatorInspectionTest do
 
   setup do
     previous = Application.get_env(:crosswake, :companions)
-    # Post-DECOUPLE-03: the auth contract surface (denial_codes, telemetry event
-    # names, safe_detail_keys) is sourced at runtime from the registered
-    # auth-authority companion, not from static core data. Register the real
-    # Sigra facade ahead of the stub so auth_contract_truth/0 has an authority to
-    # aggregate — the stub remains for the route-gating assertions. (See 136-06.)
-    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra, StubCompanion])
+    # D-137-03: Register Sigra as the auth-authority companion so auth_contract_truth/0
+    # returns populated denial_codes, safe_detail_keys, and telemetry fields.
+    # StubCompanion (core test support) is not available in the package load path.
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
 
     on_exit(fn ->
       if is_nil(previous) do

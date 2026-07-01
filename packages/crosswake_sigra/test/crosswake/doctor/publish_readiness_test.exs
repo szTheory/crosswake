@@ -1,8 +1,11 @@
 defmodule Crosswake.Doctor.PublishReadinessTest do
+  # D-137-03: Moved from core test suite. PublishReadiness.run/1 calls
+  # Crosswake.Companions.Sigra.companion_id/0 at runtime (via SupportMatrix); moving
+  # to crosswake_sigra package ensures the module is available in the load path.
+  # Path adjustments: File.read!("../../CHANGELOG.md"), cwd: Path.expand("../../", File.cwd!())
   use ExUnit.Case, async: false
 
   alias Crosswake.Doctor.PublishReadiness
-  alias Crosswake.TestSupport.StubCompanion
 
   defmodule PageController do
     def init(opts), do: opts
@@ -63,11 +66,10 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
   setup do
     previous = Application.get_env(:crosswake, :companions)
-    # Post-DECOUPLE-03: auth denial codes are sourced at runtime from the
-    # registered auth-authority companion. Register the real Sigra facade ahead of
-    # the stub so the publish-readiness auth check sees the Sigra contract; the stub
-    # remains for the non-auth provider/notification assertions. (See 136-06.)
-    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra, StubCompanion])
+    # D-137-03: Register Sigra as the auth-authority companion so the publish-readiness
+    # auth check sees the Sigra contract. StubCompanion (core test support) is not
+    # available in the package load path.
+    Application.put_env(:crosswake, :companions, [Crosswake.Companions.Sigra])
 
     on_exit(fn ->
       if is_nil(previous) do
@@ -203,7 +205,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     report =
       readiness_report(
         cwd: target,
-        changelog_contents: File.read!("CHANGELOG.md")
+        changelog_contents: File.read!("../../CHANGELOG.md")
       )
 
     check = find_check!(report, :contract_version_parity)
@@ -245,7 +247,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     report =
       readiness_report(
         cwd: target,
-        changelog_contents: File.read!("CHANGELOG.md")
+        changelog_contents: File.read!("../../CHANGELOG.md")
       )
 
     parity = find_check!(report, :generator_coordinate_parity)
@@ -541,7 +543,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     report_drift =
       readiness_report(
         cwd: target,
-        changelog_contents: File.read!("CHANGELOG.md")
+        changelog_contents: File.read!("../../CHANGELOG.md")
       )
 
     check_drift = find_check!(report_drift, :compatibility_rebuild_guidance)
@@ -577,7 +579,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     report =
       readiness_report(
         cwd: target,
-        changelog_contents: File.read!("CHANGELOG.md")
+        changelog_contents: File.read!("../../CHANGELOG.md")
       )
 
     check = find_check!(report, :compatibility_rebuild_guidance)
@@ -692,7 +694,9 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
         [
           route_source: ReadinessRouter,
           generated_at: "2026-05-31T00:00:00Z",
-          cwd: File.cwd!()
+          # D-137-03: cwd must point to the repo root (not the package dir) so
+          # PublishReadiness.run/1 can find CHANGELOG.md, guides/, priv/, examples/.
+          cwd: Path.expand("../../", File.cwd!())
         ],
         opts
       )

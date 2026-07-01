@@ -725,9 +725,13 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.auth_return.envelope_authority == false
     assert row.auth_return.route_policy_seam == :auth_return
     assert row.telemetry.status == :shipped
-    assert [:crosswake, :auth, :denial] in row.telemetry.event_names
-    assert :denial_code in row.telemetry.metadata_keys
-    assert :access_token in row.telemetry.forbidden_metadata_keys
+    # D-137-03: telemetry.event_names, metadata_keys, forbidden_metadata_keys are
+    # runtime-populated from the registered auth-authority companion (Sigra). Without
+    # Sigra in :companions, sentinel [] is returned. Non-vacuous assertions live in
+    # packages/crosswake_sigra/test/ (phase58_auth_diagnostics_closeout_test.exs).
+    assert is_list(row.telemetry.event_names)
+    assert is_list(row.telemetry.metadata_keys)
+    assert is_list(row.telemetry.forbidden_metadata_keys)
     assert row.telemetry.authority_source == :diagnostic_evidence_only
     assert row.security_closeout.status == :shipped
     assert row.security_closeout.review_model == :stride
@@ -746,13 +750,11 @@ defmodule Crosswake.SupportMatrixTest do
     assert row.step_up.liveview_invalidation == :required
     assert row.route_predicates == [:auth_min_level, :requires_recent_auth, :auth_posture]
     assert row.denial_vocabulary == :step_up_required
-    assert "auth.step_up.missing_context" in row.denial_codes
-    assert "auth.handoff.invalid_ticket" in row.denial_codes
-    assert "auth.step_up_intent.invalid_intent" in row.denial_codes
-    assert "auth.return.oauth.invalid_return" in row.denial_codes
-    assert "auth_posture" in row.safe_detail_keys
-    assert "handoff_ref" in row.safe_detail_keys
-    assert "step_up_intent_ref" in row.safe_detail_keys
+    # D-137-03: denial_codes and safe_detail_keys are runtime-populated from Sigra.
+    # Without Sigra in :companions, sentinel [] is returned. Non-vacuous assertions live
+    # in packages/crosswake_sigra/test/ (phase54, phase55, phase58 proof tests).
+    assert is_list(row.denial_codes)
+    assert is_list(row.safe_detail_keys)
     assert row.fallback == :step_up_required
     assert row.surface =~ "SessionAuthorityLane"
     assert row.surface =~ "handoff"

@@ -161,11 +161,14 @@ defmodule Crosswake.Companions.Chimeway.ResolverTest do
     assert {:allow, %Decision{}} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
   end
 
-  test "passes through RouteGate step_up_required denial", %{manifest: manifest} do
-    # auth_route requires auth, but evidence provides none
+  test "passes through RouteGate denial for auth-predicated route", %{manifest: manifest} do
+    # D-137-03: Sigra extracted to crosswake_sigra package. Without Sigra registered
+    # in :companions, RouteGate returns :dependency_missing (fail-closed sentinel).
+    # The integration test for :step_up_required lives in
+    # packages/crosswake_sigra/test/crosswake/proof/phase137_sigra_cleanroom_test.exs.
     evidence = struct(NotificationOpenEvidence, open_ref: "valid_ref", route_id: "auth_route", auth_context: %{})
     assert {:deny, %Denial{} = denial} = Resolver.resolve(manifest, evidence, MockIntentConsumer)
-    assert denial.reason == :step_up_required
-    assert denial.code =~ "auth.step_up."
+    # fail-closed: no auth-authority companion registered
+    assert denial.reason == :dependency_missing
   end
 end

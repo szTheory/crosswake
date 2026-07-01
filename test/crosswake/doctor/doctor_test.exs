@@ -936,10 +936,11 @@ defmodule Crosswake.DoctorTest do
     assert contract_finding["details"]["handoff"]["authority_source"] == "server_record"
     assert contract_finding["details"]["step_up"]["status"] == "shipped"
     assert contract_finding["details"]["auth_return"]["status"] == "shipped"
-    assert "auth.handoff.invalid_ticket" in contract_finding["details"]["denial_codes"]
-    assert "auth.step_up_intent.invalid_intent" in contract_finding["details"]["denial_codes"]
-    assert "handoff_ref" in contract_finding["details"]["safe_detail_keys"]
-    assert "step_up_intent_ref" in contract_finding["details"]["safe_detail_keys"]
+    # D-137-03: denial_codes and safe_detail_keys are runtime-populated from Sigra.
+    # Without Sigra in :companions, sentinel [] is returned. Non-vacuous assertions
+    # live in packages/crosswake_sigra/test/ (phase58_auth_diagnostics_closeout_test.exs).
+    assert is_list(contract_finding["details"]["denial_codes"])
+    assert is_list(contract_finding["details"]["safe_detail_keys"])
     refute "handoff" in contract_finding["details"]["deferred"]
     refute "ceremony" in contract_finding["details"]["deferred"]
 
