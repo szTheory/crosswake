@@ -25,11 +25,10 @@ defmodule Crosswake.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      # In-tree registration bridge — Sigra first (auth authority), then Chimeway.
-      # This covers dev/test/prod with no config/ directory (Crosswake is a Hex library).
-      # Phase-137 extraction: remove Crosswake.Companions.Sigra from this list when
-      # that module is extracted to the crosswake_sigra package.
-      env: [companions: [Crosswake.Companions.Sigra, Crosswake.Companions.Chimeway]]
+      # In-tree registration bridge — Chimeway only after Phase-137 sigra extraction.
+      # Phase-138 extraction: remove Crosswake.Companions.Chimeway from this list when
+      # that module is extracted to the crosswake_chimeway package.
+      env: [companions: [Crosswake.Companions.Chimeway]]
     ]
   end
 
@@ -44,8 +43,10 @@ defmodule Crosswake.MixProject do
   defp deps do
     # D-21: No companion-conditional dep blocks. Core names no companion in any env.
     # The conditional env-hack blocks were deleted in Phase 130 — companions now live
-    # as standalone path: deps (crosswake_rulestead in Phase 130, crosswake_rindle in
-    # Phase 132). Their dependencies are declared in the companion's own mix.exs.
+    # as standalone Hex packages (crosswake_rulestead in Phase 130, crosswake_rindle in
+    # Phase 132, crosswake_sigra in Phase 137). Their dependencies are declared in the
+    # companion's own mix.exs. The dress-rehearsal for each companion runs via
+    # `mix companions.test` alias (runs each package's own test lane separately).
     [
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
@@ -69,7 +70,9 @@ defmodule Crosswake.MixProject do
         "cmd --cd packages/crosswake_rulestead mix deps.get",
         "cmd --cd packages/crosswake_rulestead mix test",
         "cmd --cd packages/crosswake_rindle mix deps.get",
-        "cmd --cd packages/crosswake_rindle mix test"
+        "cmd --cd packages/crosswake_rindle mix test",
+        "cmd --cd packages/crosswake_sigra mix deps.get",
+        "cmd --cd packages/crosswake_sigra mix test"
       ],
       verify: [
         "companions.test",
@@ -147,7 +150,6 @@ defmodule Crosswake.MixProject do
         "Telemetry": [
           Crosswake.Telemetry,
           Crosswake.Threadline.Telemetry,
-          Crosswake.Companions.Sigra.Telemetry,
           Crosswake.Companions.Chimeway.Telemetry,
           Crosswake.Offline.Telemetry
         ]
