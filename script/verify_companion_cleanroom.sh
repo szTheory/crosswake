@@ -7,22 +7,28 @@
 # Arguments:
 #   PACKAGE        Hex package name (default: crosswake_rulestead)
 #   VERSION        Hex version to verify — REQUIRED (e.g. 0.1.0)
-#   ENGINE_PACKAGE Engine Hex package name (default: rulestead)
-#   ENGINE_MODULE  Engine top-level Elixir module atom (default: Rulestead)
+#   ENGINE_PACKAGE Engine Hex package name (default: rulestead); pass empty string or "none" to
+#                  activate no-engine mode (sigra has no engine dep — pure-Elixir auth machinery).
+#   ENGINE_MODULE  Engine top-level Elixir module atom (default: Rulestead); ignored in no-engine mode.
 #
 # What this script does (D-17, SC#3):
 #   1. Polls Hex.pm propagation until VERSION is listed for PACKAGE.
 #   2. Creates a throwaway Phoenix host app OUTSIDE the monorepo in $RUNNER_TEMP.
-#   3. Installs the published trio: crosswake + PACKAGE + ENGINE_PACKAGE via mix deps.get.
+#   3. Installs the published duo (no-engine) or trio (engine): crosswake + PACKAGE [+ ENGINE_PACKAGE].
 #   4. Compiles the throwaway app with --warnings-as-errors.
 #   5. Writes a minimal Phoenix router stub (required by mix crosswake.doctor --router).
 #   6. Writes an inline ExUnit smoke test asserting the public seam of the companion.
 #   7. Runs mix test test/smoke_test.exs (D-18 — public-seam only, no MockFlagSource).
-#   8. Registers companion + engine config in config/runtime.exs.
+#   8. Registers companion config in config/runtime.exs (no engine registration in no-engine mode).
 #   9. Runs mix crosswake.doctor --router CleanRoomHost.Router and asserts exit 0 (D-19/D-20).
 #
 # Parameterized for rindle reuse (D-16):
 #   bash script/verify_companion_cleanroom.sh crosswake_rindle 0.1.0 rindle Rindle
+#
+# No-engine mode (sigra — validate_dependency/0 returns :ok unconditionally, no engine dep):
+#   bash script/verify_companion_cleanroom.sh crosswake_sigra 0.1.0
+#   bash script/verify_companion_cleanroom.sh crosswake_sigra 0.1.0 none
+#   bash script/verify_companion_cleanroom.sh crosswake_sigra 0.1.0 "" ""
 #
 # NOTE: Full end-to-end execution is CI-only / post-publish (PROOF-01 irreversible).
 # This script requires a live published crosswake_PACKAGE on Hex.pm — it cannot run
@@ -42,8 +48,21 @@ if [ -z "${VERSION:-}" ]; then
   echo "[crosswake] FAIL: VERSION required as \$2 (e.g. 0.1.0)"
   exit 1
 fi
-ENGINE_PACKAGE="${3:-rulestead}"
-ENGINE_MODULE="${4:-Rulestead}"
+
+# No-engine mode: activated when $3/$4 are omitted, empty, or the sentinel "none".
+# Sigra has no engine dep — pure-Elixir auth machinery, validate_dependency/0 is always :ok.
+# The default engine path (rulestead/Rulestead) is preserved for back-compat.
+_RAW_ENGINE_PKG="${3:-}"
+_RAW_ENGINE_MOD="${4:-}"
+if [ -z "$_RAW_ENGINE_PKG" ] || [ "$_RAW_ENGINE_PKG" = "none" ]; then
+  NO_ENGINE=1
+  ENGINE_PACKAGE=""
+  ENGINE_MODULE=""
+else
+  NO_ENGINE=0
+  ENGINE_PACKAGE="${_RAW_ENGINE_PKG:-rulestead}"
+  ENGINE_MODULE="${_RAW_ENGINE_MOD:-Rulestead}"
+fi
 
 # ---------------------------------------------------------------------------
 # Security: validate $VERSION looks like a semver string before using it in
@@ -56,7 +75,11 @@ if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][a-zA-Z0-9._-]+)?$'
   exit 1
 fi
 
-echo "[crosswake] verify_companion_cleanroom: PACKAGE=${PACKAGE} VERSION=${VERSION} ENGINE_PACKAGE=${ENGINE_PACKAGE} ENGINE_MODULE=${ENGINE_MODULE}"
+if [ "$NO_ENGINE" = "1" ]; then
+  echo "[crosswake] verify_companion_cleanroom: PACKAGE=${PACKAGE} VERSION=${VERSION} (no-engine mode)"
+else
+  echo "[crosswake] verify_companion_cleanroom: PACKAGE=${PACKAGE} VERSION=${VERSION} ENGINE_PACKAGE=${ENGINE_PACKAGE} ENGINE_MODULE=${ENGINE_MODULE}"
+fi
 
 # ---------------------------------------------------------------------------
 # Step 1: Poll Hex.pm propagation (mirror of publish-hex job poll, MAX_ATTEMPTS=36/DELAY=10)
@@ -106,8 +129,38 @@ mix new "$APP_NAME" --sup
 
 cd "$CLEAN_ROOM_DIR"
 
-# Patch mix.exs to add Phoenix + companion + engine deps.
-# Replace the empty deps list with the required trio.
+# Patch mix.exs to add Phoenix + companion deps (and engine dep if not in no-engine mode).
+# No-engine mode (NO_ENGINE=1): duo — crosswake + PACKAGE only (sigra has no engine dep).
+# Engine mode (NO_ENGINE=0): trio — crosswake + PACKAGE + ENGINE_PACKAGE.
+if [ "$NO_ENGINE" = "1" ]; then
+python3 - <<PYEOF
+import re
+
+with open("mix.exs", "r") as f:
+    content = f.read()
+
+deps_block = '''  defp deps do
+    [
+      {:phoenix, "~> 1.8"},
+      {:phoenix_live_view, "~> 1.2"},
+      {:crosswake, "~> 0.1"},
+      {:"${PACKAGE}", "~> 0.1"}
+    ]
+  end'''
+
+content = re.sub(
+    r'defp deps do\s*\[.*?\]\s*end',
+    deps_block,
+    content,
+    flags=re.DOTALL
+)
+
+with open("mix.exs", "w") as f:
+    f.write(content)
+
+print("[crosswake] mix.exs deps patched (no-engine: duo — crosswake + ${PACKAGE})")
+PYEOF
+else
 python3 - <<PYEOF
 import re
 
@@ -124,7 +177,6 @@ deps_block = '''  defp deps do
     ]
   end'''
 
-# Replace the existing defp deps do ... end block
 content = re.sub(
     r'defp deps do\s*\[.*?\]\s*end',
     deps_block,
@@ -135,8 +187,9 @@ content = re.sub(
 with open("mix.exs", "w") as f:
     f.write(content)
 
-print("[crosswake] mix.exs deps patched")
+print("[crosswake] mix.exs deps patched (engine: trio — crosswake + ${PACKAGE} + ${ENGINE_PACKAGE})")
 PYEOF
+fi
 
 echo "[crosswake] Step 2 OK: throwaway app created at ${CLEAN_ROOM_DIR}"
 
@@ -189,6 +242,39 @@ COMPANION_SUFFIX=$(echo "$PACKAGE" | sed 's/^crosswake_//')
 COMPANION_MODULE_SUFFIX=$(echo "$COMPANION_SUFFIX" | python3 -c "import sys; s=sys.stdin.read().strip(); print(s[0].upper() + s[1:])")
 COMPANION_MODULE="Crosswake.Companions.${COMPANION_MODULE_SUFFIX}"
 
+if [ "$NO_ENGINE" = "1" ]; then
+# No-engine smoke test: validate_dependency/0 is unconditionally :ok (no engine gate in sigra).
+cat > test/smoke_test.exs <<SMOKEEOF
+# Inline clean-room smoke test — generated by verify_companion_cleanroom.sh (D-18)
+# Tests public seam only: no MockFlagSource, no internal modules.
+# Companion: ${COMPANION_MODULE}
+# No-engine mode: validate_dependency/0 returns :ok unconditionally (pure-Elixir auth machinery).
+
+ExUnit.start()
+
+defmodule CleanRoom.SmokeTest do
+  use ExUnit.Case
+
+  alias ${COMPANION_MODULE}
+
+  test "validate_dependency/0 returns :ok (no engine dep — pure-Elixir auth)" do
+    assert ${COMPANION_MODULE_SUFFIX}.validate_dependency() == :ok
+  end
+
+  test "companion_id/0 returns :${COMPANION_SUFFIX}" do
+    assert ${COMPANION_MODULE_SUFFIX}.companion_id() == :${COMPANION_SUFFIX}
+  end
+
+  test "enabled?/1 respects config — false when no :enabled key" do
+    refute ${COMPANION_MODULE_SUFFIX}.enabled?(%{})
+  end
+
+  test "enabled?/1 respects config — true when enabled: true" do
+    assert ${COMPANION_MODULE_SUFFIX}.enabled?(%{enabled: true})
+  end
+end
+SMOKEEOF
+else
 cat > test/smoke_test.exs <<SMOKEEOF
 # Inline clean-room smoke test — generated by verify_companion_cleanroom.sh (D-18)
 # Tests public seam only: no MockFlagSource, no internal modules.
@@ -234,6 +320,7 @@ CANARYEOF
 fi)
 end
 SMOKEEOF
+fi
 
 echo "[crosswake] Step 5: running smoke test..."
 mix test test/smoke_test.exs
@@ -248,7 +335,17 @@ echo "[crosswake] Step 6: registering companion in config/runtime.exs..."
 
 mkdir -p config
 
-# Append companion registration (idempotent — each clean-room run starts fresh)
+if [ "$NO_ENGINE" = "1" ]; then
+# No-engine mode: register companion only — no engine config line (sigra needs no engine).
+cat >> config/runtime.exs <<CONFIGEOF
+
+import Config
+# Clean-room: register ${COMPANION_MODULE} (no-engine mode — pure-Elixir auth, no engine dep)
+config :crosswake, :companions, [${COMPANION_MODULE}]
+config :crosswake, :${COMPANION_SUFFIX}, enabled: true
+CONFIGEOF
+else
+# Engine mode: register companion + engine config.
 cat >> config/runtime.exs <<CONFIGEOF
 
 import Config
@@ -256,6 +353,7 @@ import Config
 config :crosswake, :companions, [${COMPANION_MODULE}]
 config :crosswake, :${COMPANION_SUFFIX}, enabled: true
 CONFIGEOF
+fi
 
 echo "[crosswake] Step 6 OK: companion registered"
 
