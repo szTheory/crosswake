@@ -50,11 +50,7 @@ defmodule Crosswake.MixProject do
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
       {:telemetry, "~> 1.0"},
-      {:ex_doc, "~> 0.38", only: :dev, runtime: false},
-      # test-only dep: phase133_telemetry_contract_test.exs uses Crosswake.Plug.Threadline
-      # as the TELEM-04 Side-A trigger. After Phase 139 extraction, the module lives in the
-      # package — the test-only path dep keeps it compiling in the core test lane.
-      {:crosswake_threadline, path: "packages/crosswake_threadline", only: :test}
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]
   end
 

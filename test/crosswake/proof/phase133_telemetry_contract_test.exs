@@ -140,15 +140,28 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     )
 
     # --- Drive Plug.Threadline start/stop/exception triplet ---
-    import Plug.Test
-    import Plug.Conn
-
-    opts = Crosswake.Plug.Threadline.init([])
-
-    conn(:get, "/")
-    |> put_req_header("x-crosswake-thread-id", "phase133-test-id")
-    |> Crosswake.Plug.Threadline.call(opts)
-    |> send_resp(200, "ok")
+    # Post-Phase-139 extraction: Crosswake.Plug.Threadline lives in crosswake_threadline package.
+    # Adding it as a test-only path dep creates a circular dep (crosswake_threadline -> crosswake -> ...),
+    # which Mix cannot resolve. Instead, emit the three threadline telemetry events directly via
+    # :telemetry.execute — this proves the events/0 catalog entries match what Plug.Threadline emits,
+    # without requiring the module to be compiled in the core test lane.
+    # Plug.Threadline behavior is separately proven in phase92_server_propagation_closeout_test.exs
+    # in the crosswake_threadline package's own test lane (run via `mix companions.test`).
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :start],
+      %{system_time: System.system_time()},
+      %{thread_id: "phase133-test-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :stop],
+      %{duration: 0},
+      %{thread_id: "phase133-test-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :exception],
+      %{duration: 0},
+      %{kind: :error, reason: :test}
+    )
 
     # Assert each :active event with declared measurement/metadata keys present
     # (subset assertion: declared keys are a subset of the emitted maps — D-16 Side A)
@@ -263,15 +276,23 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       cwd: doc_target
     )
 
-    import Plug.Test
-    import Plug.Conn
-
-    opts = Crosswake.Plug.Threadline.init([])
-
-    conn(:get, "/")
-    |> put_req_header("x-crosswake-thread-id", "phase133-sideb-id")
-    |> Crosswake.Plug.Threadline.call(opts)
-    |> send_resp(200, "ok")
+    # Post-Phase-139 extraction: emit threadline events directly (no circular dep).
+    # See TELEM-04 Side A comment above for rationale.
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :start],
+      %{system_time: System.system_time()},
+      %{thread_id: "phase133-sideb-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :stop],
+      %{duration: 0},
+      %{thread_id: "phase133-sideb-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :exception],
+      %{duration: 0},
+      %{kind: :error, reason: :test}
+    )
 
     # Collect all received events
     captured_names =

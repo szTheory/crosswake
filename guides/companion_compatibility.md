@@ -23,6 +23,7 @@ cell drifts from the package source in either direction.
 | `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
 | `crosswake_sigra` | `:sigra` | `0.1.0` | `~> 0.1` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
 | `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.1` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
+| `crosswake_threadline` | `:threadline` | `0.1.0` | `~> 0.1` | none (pure-Elixir audit/correlation observer; optional :plug + :phoenix_live_view for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
 The `Current Version` column records the last published line for orientation only;
 the live number is whatever each package's hexdocs link reports.

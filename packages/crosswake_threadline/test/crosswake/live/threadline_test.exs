@@ -19,7 +19,7 @@ defmodule Crosswake.Live.ThreadlineTest do
     }
 
     assert {:cont, ^socket} = Threadline.on_mount(:default, %{}, %{}, socket)
-    
+
     assert Logger.metadata()[:crosswake_thread_id] == "tid-123"
   end
 
@@ -34,7 +34,7 @@ defmodule Crosswake.Live.ThreadlineTest do
     }
 
     assert {:cont, ^socket} = Threadline.on_mount(:default, %{}, %{}, socket)
-    
+
     assert Logger.metadata()[:crosswake_thread_id] == nil
   end
 
@@ -49,7 +49,7 @@ defmodule Crosswake.Live.ThreadlineTest do
     }
 
     assert {:cont, ^socket} = Threadline.on_mount(:default, %{}, %{}, socket)
-    
+
     assert Logger.metadata()[:crosswake_thread_id] == nil
   end
 
@@ -64,7 +64,7 @@ defmodule Crosswake.Live.ThreadlineTest do
     }
 
     assert {:cont, ^socket} = Threadline.on_mount(:default, %{}, %{}, socket)
-    
+
     assert Logger.metadata()[:crosswake_thread_id] == nil
   end
 
@@ -75,7 +75,7 @@ defmodule Crosswake.Live.ThreadlineTest do
     }
 
     assert {:cont, ^socket} = Threadline.on_mount(:default, %{}, %{}, socket)
-    
+
     assert Logger.metadata()[:crosswake_thread_id] == nil
   end
 end

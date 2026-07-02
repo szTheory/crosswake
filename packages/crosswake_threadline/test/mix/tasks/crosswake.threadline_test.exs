@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
           Mix.Task.run(@task, ["--thread-id", "test-thread-123"])
         end)
 
-      assert output =~ "Posture: Ephemeral. No ledger configured."
+      assert output =~ "Posture: Ephemeral"
     end
 
     test "prints ephemeral posture with --actor-ref flag as well" do
@@ -56,7 +56,19 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
           Mix.Task.run(@task, ["--actor-ref", "user:42"])
         end)
 
-      assert output =~ "Posture: Ephemeral. No ledger configured."
+      assert output =~ "Posture: Ephemeral"
+    end
+
+    test "ephemeral posture line names audit_repo/audit_ledger config keys" do
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--thread-id", "test-thread-123"])
+        end)
+
+      # The ephemeral line should guide operators to the config keys they must set
+      assert output =~ "audit_repo" or output =~ "audit_ledger",
+             "Ephemeral posture message must name the :audit_repo or :audit_ledger config keys so operators know what to set"
     end
   end
 
@@ -126,6 +138,17 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
       :ok
     end
 
+    test "prints durable posture line 'Posture: Durable — querying audit ledger'" do
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--thread-id", "test-thread-123"])
+        end)
+
+      assert output =~ "Posture: Durable — querying audit ledger",
+             "Durable posture line must read 'Posture: Durable — querying audit ledger'"
+    end
+
     test "prints durable posture and tree-formatted events grouped by tier" do
       output =
         capture_io(fn ->
@@ -133,11 +156,8 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
           Mix.Task.run(@task, ["--thread-id", "test-thread-123"])
         end)
 
-      # Check durable posture header
-      assert output =~ "Posture: Durable"
-
       # Check tree connectors present
-      assert output =~ "├──" or output =~ "└──"
+      assert output =~ "├──" or output =~ "└──" or output =~ "+--" or output =~ "\\--"
 
       # Check tier grouping (Native -> Bridge -> Phoenix)
       assert output =~ "Native"
@@ -151,6 +171,80 @@ defmodule Mix.Tasks.Crosswake.ThreadlineTest do
 
       assert native_pos < bridge_pos
       assert bridge_pos < phoenix_pos
+    end
+
+    test "NO_COLOR env makes render_durable emit ASCII glyphs (+-- / \\-- / |  ) instead of Unicode" do
+      System.put_env("NO_COLOR", "1")
+
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--thread-id", "test-thread-123"])
+        end)
+
+      System.delete_env("NO_COLOR")
+
+      # Should have ASCII glyphs, NOT Unicode box-drawing glyphs
+      has_ascii = output =~ "+--" or output =~ "\\--" or output =~ "|   "
+      has_unicode = output =~ "├──" or output =~ "└──" or output =~ "│"
+
+      assert has_ascii or not has_unicode,
+             "When NO_COLOR is set, ASCII glyphs (+-- / \\-- / |  ) must be used instead of Unicode box-drawing glyphs"
+
+      refute has_unicode,
+             "When NO_COLOR is set, Unicode box-drawing glyphs (├──, └──, │) must NOT be emitted"
+    end
+  end
+
+  describe "empty durable result guard" do
+    defmodule MockLedgerSchemaEmpty do
+      @moduledoc false
+
+      defstruct [:thread_id, :actor_ref, :tier, :event_type, :inserted_at]
+
+      def __schema__(:fields), do: [:thread_id, :actor_ref, :tier, :event_type, :inserted_at]
+    end
+
+    defmodule MockRepoEmpty do
+      @moduledoc false
+
+      def all(_query), do: []
+      def all(_query, _opts), do: []
+    end
+
+    setup do
+      prev_repo = Application.get_env(:crosswake, :audit_repo)
+      prev_ledger = Application.get_env(:crosswake, :audit_ledger)
+
+      Application.put_env(:crosswake, :audit_repo, MockRepoEmpty)
+      Application.put_env(:crosswake, :audit_ledger, MockLedgerSchemaEmpty)
+
+      on_exit(fn ->
+        if prev_repo do
+          Application.put_env(:crosswake, :audit_repo, prev_repo)
+        else
+          Application.delete_env(:crosswake, :audit_repo)
+        end
+
+        if prev_ledger do
+          Application.put_env(:crosswake, :audit_ledger, prev_ledger)
+        else
+          Application.delete_env(:crosswake, :audit_ledger)
+        end
+      end)
+
+      :ok
+    end
+
+    test "empty durable result prints 'No events found' instead of a bare empty tree" do
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--thread-id", "empty-thread-id"])
+        end)
+
+      assert output =~ "No events found",
+             "When durable query returns zero events, must print 'No events found' (not a silent empty tree)"
     end
   end
 
