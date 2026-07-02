@@ -86,6 +86,53 @@ defmodule Crosswake.TestSupport.StubRindleAbsentCompanion do
   end
 end
 
+defmodule Crosswake.TestSupport.StubChimewayAbsentCompanion do
+  @moduledoc """
+  Stub companion that acts as Chimeway with the package absent from core deps.
+
+  Models the post-Phase-138 extracted state where `Crosswake.Companions.Chimeway`
+  is not in core deps. The stub has `companion_id: :chimeway` so Doctor findings
+  carry `finding.check == "companion.chimeway"`.
+
+  `validate_dependency/0` returns `{:error, [Crosswake.Companions.Chimeway]}` to
+  model chimeway absent from core deps (EXTRACT-01 guard, D-21).
+
+  Note: `auth_authority?/0` is intentionally absent. Chimeway is a notification
+  companion, not an auth authority — it has no auth_authority?/0 callback in the
+  real implementation either. This stub correctly omits it (CHIME-02).
+  """
+  @behaviour Crosswake.Companion
+
+  @impl true
+  def companion_id, do: :chimeway
+
+  @impl true
+  def enabled?(config), do: Map.get(config, :enabled, false)
+
+  @impl true
+  def route_gated?(_route, _target), do: :pass
+
+  @impl true
+  def kill_switch_active?(_target), do: false
+
+  @impl true
+  def validate_dependency, do: {:error, [Crosswake.Companions.Chimeway]}
+
+  @impl true
+  def report_state do
+    config = Application.get_env(:crosswake, :chimeway, %{})
+
+    %Crosswake.Companion.State{
+      companion_id: :chimeway,
+      enabled: Map.get(config, :enabled, false),
+      dependency_status: {:missing, [Crosswake.Companions.Chimeway]},
+      gate_status: :unconfigured,
+      kill_switch_status: :unconfigured,
+      checked_at: System.monotonic_time(:millisecond)
+    }
+  end
+end
+
 defmodule Crosswake.TestSupport.StubSigraAbsentCompanion do
   @moduledoc """
   Stub companion that acts as Sigra with the engine absent from core deps.
