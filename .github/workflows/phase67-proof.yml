@@ -17,7 +17,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v6
       - name: Run Android JVM tests
         run: ./gradlew testDebugUnitTest
         working-directory: packages/crosswake-shell-core-android
