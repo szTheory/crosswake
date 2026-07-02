@@ -177,6 +177,18 @@ defmodule Mix.Tasks.Crosswake.Threadline do
 
   defp to_naive(_), do: @epoch_sentinel
 
+  # ASCII tree glyphs for NO_COLOR mode (per no-color.org: any non-nil value triggers fallback).
+  # Unicode box-drawing glyphs are preferred in terminals that support them.
+  # NO_COLOR aids screen-readers and CI environments that mangle Unicode.
+  defp ascii_mode?, do: not is_nil(System.get_env("NO_COLOR"))
+
+  defp glyph(:tier_last), do: if(ascii_mode?(), do: "\\--", else: "└──")
+  defp glyph(:tier_mid), do: if(ascii_mode?(), do: "+--", else: "├──")
+  defp glyph(:event_last), do: if(ascii_mode?(), do: "\\--", else: "└──")
+  defp glyph(:event_mid), do: if(ascii_mode?(), do: "+--", else: "├──")
+  defp glyph(:branch_prefix), do: if(ascii_mode?(), do: "|   ", else: "│   ")
+  defp glyph(:branch_blank), do: "    "
+
   defp render_durable(events) do
     Mix.shell().info("Posture: Durable")
 
@@ -206,7 +218,7 @@ defmodule Mix.Tasks.Crosswake.Threadline do
     tiers_with_events
     |> Enum.with_index()
     |> Enum.each(fn {{label, tier_events}, tier_idx} ->
-      tier_connector = if tier_idx == tier_count - 1, do: "└──", else: "├──"
+      tier_connector = if tier_idx == tier_count - 1, do: glyph(:tier_last), else: glyph(:tier_mid)
       Mix.shell().info("#{tier_connector} #{label}")
 
       event_count = length(tier_events)
@@ -217,8 +229,8 @@ defmodule Mix.Tasks.Crosswake.Threadline do
         is_last_event = event_idx == event_count - 1
         is_last_tier = tier_idx == tier_count - 1
 
-        branch_prefix = if is_last_tier, do: "    ", else: "│   "
-        event_connector = if is_last_event, do: "└──", else: "├──"
+        branch_prefix = if is_last_tier, do: glyph(:branch_blank), else: glyph(:branch_prefix)
+        event_connector = if is_last_event, do: glyph(:event_last), else: glyph(:event_mid)
 
         event_type = Map.get(event, :event_type) || Map.get(event, "event_type") || "unknown"
 
