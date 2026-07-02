@@ -6,14 +6,14 @@ current_phase: 139
 current_phase_name: crosswake-threadline-extraction
 status: planned
 stopped_at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate). Repo-hygiene boundary sync in progress (land local main → origin, no publish).
-last_updated: "2026-07-02T21:18:28.220Z"
+last_updated: "2026-07-02T21:52:56.391Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 139 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 19
-  completed_plans: 14
+  completed_plans: 15
   percent: 20
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 ## Current Position
 
 Phase: 139 (crosswake-threadline-extraction) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Plans: 4 waved plans (138-01..04); plan-checker PASSED. Next: /gsd-execute-phase 138 (waves 1-3 in-tree; wave 4 = deferred human publish gate).
 Wave collapse: 4 waves vs 137's 5 — chimeway has NO Finding-boundary refactor (Resolver uses core `Crosswake.Shell.Denial` directly, no D-138-A analog). Verified no-sigra-dep invariant + vacuity-safe clean-room.
 Phase 137: waves 1-4 executed green; 137-05 = deferred human hex-publish gate.
@@ -184,6 +184,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Independent versioning per D-8
 - [Phase ?]: Additive no-engine script mode
 - [Phase ?]: Sigra CI pipeline per-component gate
+- [Phase ?]: circular-dep fix: removed crosswake_threadline path dep from core mix.exs; phase133 TELEM-04 rewritten to use telemetry.execute directly
+- [Phase ?]: anti-drift D-5 test: core_baseline SUBSET union(companion forbidden_metadata_keys), non-vacuous, baseline count = 11 atoms post-139
+- [Phase ?]: ledger.ex.eex: try/rescue crash-isolation in handler, on_conflict: :nothing, advisory row_hash/prev_hash moduledoc
 
 ### Pending Todos
 
@@ -216,10 +219,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
 | v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
 | Phase 139 P01 | 9m | 2 tasks | 19 files |
+| Phase 139-crosswake-threadline-extraction P02 | 55min | 5 tasks | 21 files |
 
 ## Session Continuity
 
-Last session: 2026-07-02T21:18:28.216Z
+Last session: 2026-07-02T21:52:33.331Z
 Stopped at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate). Repo-hygiene boundary sync in progress (land local main → origin, no publish).
 Resume file: .planning/phases/137-crosswake-sigra-extraction/137-05-PLAN.md (deferred human publish gate)
 
