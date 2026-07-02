@@ -244,11 +244,11 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room lane succeeds before the irreversible publish fires; threadline publishes after sigra and chimeway are live.
   5. `crosswake_threadline` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: 4 plans (4 waves — mirrors Phase 138; Wave 1 folds in the atomic two-site core decouple, unique to threadline)
+**Plans**: 1/4 plans executed
 
 **Wave 1**
 
-- [ ] 139-01-PLAN.md — Scaffold packages/crosswake_threadline/ (files: incl priv, optional-Phoenix guards), move all threadline source + EEX templates (namespace preserved), fix gen.audit app_dir atom, atomic core decouple (support_matrix SITE 1 freeze + telemetry SITE 2 curated-floor delta), core test-only path dep [Wave 1]
+- [x] 139-01-PLAN.md — Scaffold packages/crosswake_threadline/ (files: incl priv, optional-Phoenix guards), move all threadline source + EEX templates (namespace preserved), fix gen.audit app_dir atom, atomic core decouple (support_matrix SITE 1 freeze + telemetry SITE 2 curated-floor delta), core test-only path dep [Wave 1]
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -320,5 +320,5 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 4/5 | In Progress|  |
 | 138. crosswake_chimeway Extraction | v17.0 | 3/4 | In Progress|  |
-| 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
+| 139. crosswake_threadline Extraction | v17.0 | 1/4 | In Progress|  |
 | 140. Family Discipline & Close | v17.0 | 0/? | Not started | - |

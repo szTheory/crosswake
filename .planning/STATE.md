@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
+current_phase: 139
+current_phase_name: crosswake-threadline-extraction
 status: planned
 stopped_at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate). Repo-hygiene boundary sync in progress (land local main → origin, no publish).
-last_updated: "2026-07-02T18:07:22.685Z"
-last_activity: 2026-07-02 -- Phase 138 execution started
+last_updated: "2026-07-02T21:18:28.220Z"
+last_activity: 2026-07-02
+last_activity_desc: Phase 139 execution started
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 15
-  completed_plans: 10
+  total_plans: 19
+  completed_plans: 14
   percent: 20
 ---
 
@@ -21,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 138 — crosswake-chimeway-extraction
+**Current focus:** Phase 139 — crosswake-threadline-extraction
 
 ## Current Position
 
-Phase: 138 (crosswake-chimeway-extraction) — EXECUTING
-Plan: 1 of 4
+Phase: 139 (crosswake-threadline-extraction) — EXECUTING
+Plan: 2 of 4
 Plans: 4 waved plans (138-01..04); plan-checker PASSED. Next: /gsd-execute-phase 138 (waves 1-3 in-tree; wave 4 = deferred human publish gate).
 Wave collapse: 4 waves vs 137's 5 — chimeway has NO Finding-boundary refactor (Resolver uses core `Crosswake.Shell.Denial` directly, no D-138-A analog). Verified no-sigra-dep invariant + vacuity-safe clean-room.
 Phase 137: waves 1-4 executed green; 137-05 = deferred human hex-publish gate.
-Last activity: 2026-07-02 -- Phase 138 execution started
+Last activity: 2026-07-02 — Phase 139 execution started
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
 > false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
@@ -212,10 +215,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 tech-debt | companion_compatibility.md:51-54 prose (Phase 132) | Assessed: not a bug; leave | v16.0 close |
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
 | v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
+| Phase 139 P01 | 9m | 2 tasks | 19 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01
+Last session: 2026-07-02T21:18:28.216Z
 Stopped at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate). Repo-hygiene boundary sync in progress (land local main → origin, no publish).
 Resume file: .planning/phases/137-crosswake-sigra-extraction/137-05-PLAN.md (deferred human publish gate)
 

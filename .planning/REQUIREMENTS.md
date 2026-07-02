@@ -35,8 +35,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
 ### THREAD — `crosswake_threadline` Extraction (observer, extracted last)
 
-- [ ] **THREAD-01**: threadline (`Crosswake.Threadline.*`, `Crosswake.Audit.Ledger`, `Crosswake.Plug.Threadline`, `Crosswake.Live.Threadline`, and the `crosswake.threadline` + `crosswake.gen.audit` mix tasks) moves to a standalone `packages/crosswake_threadline/` Hex project; the `gen.audit` template path is repointed to `Application.app_dir(:crosswake_threadline, ...)`; host Plug/Live wiring touch-points stay stable. (D-7)
-- [ ] **THREAD-02**: threadline observes companion/core events purely via `:telemetry.attach_many` by event-name (zero compile deps on sibling companions); it owns its forbidden-metadata-key list locally; the audit handler is crash-isolated (`try/rescue`) so a write failure cannot silently detach it; the ledger stays append-only and PII-free. (D-7)
+- [x] **THREAD-01**: threadline (`Crosswake.Threadline.*`, `Crosswake.Audit.Ledger`, `Crosswake.Plug.Threadline`, `Crosswake.Live.Threadline`, and the `crosswake.threadline` + `crosswake.gen.audit` mix tasks) moves to a standalone `packages/crosswake_threadline/` Hex project; the `gen.audit` template path is repointed to `Application.app_dir(:crosswake_threadline, ...)`; host Plug/Live wiring touch-points stay stable. (D-7)
+- [x] **THREAD-02**: threadline observes companion/core events purely via `:telemetry.attach_many` by event-name (zero compile deps on sibling companions); it owns its forbidden-metadata-key list locally; the audit handler is crash-isolated (`try/rescue`) so a write failure cannot silently detach it; the ledger stays append-only and PII-free. (D-7)
 - [ ] **THREAD-03**: `crosswake_threadline` publishes to Hex as an independent `release-please` component, gated by `hex.publish --dry-run` + clean-room before publish, after sigra and chimeway are live. (D-7, D-9)
 
 ### FAMILY — Package-Family Discipline & Close
@@ -77,8 +77,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | CHIME-01 | Phase 138 | Pending |
 | CHIME-02 | Phase 138 | Pending |
 | CHIME-03 | Phase 138 | Pending |
-| THREAD-01 | Phase 139 | Pending |
-| THREAD-02 | Phase 139 | Pending |
+| THREAD-01 | Phase 139 | Complete |
+| THREAD-02 | Phase 139 | Complete |
 | THREAD-03 | Phase 139 | Pending |
 | FAMILY-01 | Phase 140 | Pending |
 | FAMILY-02 | Phase 140 | Pending |
