@@ -64,7 +64,12 @@ defmodule Mix.Tasks.Crosswake.Threadline do
       {:durable, repo, schema} ->
         Mix.Task.run("app.start")
         events = query_events(repo, schema, thread_id, actor_ref)
-        render_durable(events)
+        filter = cond do
+          thread_id != nil -> {:thread_id, thread_id}
+          actor_ref != nil -> {:actor_ref, actor_ref}
+          true -> nil
+        end
+        render_durable(events, filter)
     end
   end
 
@@ -189,7 +194,22 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   defp glyph(:branch_prefix), do: if(ascii_mode?(), do: "|   ", else: "│   ")
   defp glyph(:branch_blank), do: "    "
 
-  defp render_durable(events) do
+  defp render_durable(events, filter \\ nil)
+
+  defp render_durable([], filter) do
+    Mix.shell().info("Posture: Durable")
+
+    filter_desc =
+      case filter do
+        {:thread_id, id} -> "thread_id=#{id}"
+        {:actor_ref, ref} -> "actor_ref=#{ref}"
+        _ -> "the given filter"
+      end
+
+    Mix.shell().info("No events found for #{filter_desc}.")
+  end
+
+  defp render_durable(events, _filter) do
     Mix.shell().info("Posture: Durable")
 
     grouped = Enum.group_by(events, &tier_of/1)
