@@ -53,7 +53,10 @@ defmodule Crosswake.Audit.Ledger do
     secret = opts[:secret] || Application.get_env(:crosswake, :audit_hmac_secret)
 
     unless secret do
-      raise ArgumentError, "Missing audit HMAC secret in options or application environment"
+      raise ArgumentError,
+        "Missing HMAC secret for Crosswake.Audit.Ledger.actor_ref/2. " <>
+          "Provide it via the :secret option (actor_ref(id, secret: \"...\")) " <>
+          "or set Application.put_env(:crosswake, :audit_hmac_secret, \"...\") in your config."
     end
 
     :crypto.mac(:hmac, :sha256, secret, to_string(id))
