@@ -52,7 +52,7 @@ jobs:
       ISSUE_TITLE_GAP: "[ci-audit] merge-blocking lanes NOT registered as required on main"
       ISSUE_TITLE_UNVERIFIED: "[ci-audit] required-checks auditor cannot read branch protection"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Ensure PyYAML (list_merge_blocking_checks.py dependency)
         run: python3 -m pip install --quiet pyyaml
