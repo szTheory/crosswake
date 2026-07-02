@@ -35,9 +35,20 @@ defmodule CrosswakeChimeway.MixProject do
     [
       # D-19: core is a RUNTIME dep of the companion.
       # D-11/D-13: env-conditional resolver — see crosswake_dep/0 below.
-      crosswake_dep()
-      # NOTE: No optional engine dep — chimeway has no third-party engine library.
-      # The notification machinery is pure Elixir.
+      crosswake_dep(),
+      # D-138-02: test-only dep for phase71_notification_workflow_proof_test.exs.
+      # phase71 requires a real validated %SigraContracts.AuthContext{} (via
+      # SigraContracts.new_session_authority_lane/1 + new_auth_context/1) because
+      # the proof pattern-matches on %SigraContracts.AuthContext{} and drives sigra's
+      # evaluator through RouteGate — plain map literals cannot reproduce that evaluation.
+      # This dep is NEVER compiled into the runtime/prod package:
+      # - only: :test scopes it to test compilation only
+      # - the package/0 files: allowlist (~w(lib mix.exs README.md LICENSE CHANGELOG.md))
+      #   excludes test/ so the Hex tarball never ships this dep or the test source
+      # - the clean-room lane (Task 3) installs the published tarball where sigra is absent
+      # CHIME-02 invariant preserved: no runtime/prod sigra dep; test-only dep confirmed
+      # by the no-runtime-sigra-dep vacuity guard in phase138_chimeway_cleanroom_test.exs.
+      {:crosswake_sigra, path: "../../packages/crosswake_sigra", only: :test}
     ]
   end
 
