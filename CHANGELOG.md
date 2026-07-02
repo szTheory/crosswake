@@ -14,6 +14,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Unpublished support claims
 
 * No new support claims have been cut after `0.1.2` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
+* **Companion-family extraction is in progress but unpublished.** The core "companion decoupling" refactor (v17.0 planning milestone) inverts the auth/notification coupling sites onto the runtime `:companions` registry. It is an **internal, non-breaking** architecture change — the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and module names are preserved — so it does **not** alter the installable `0.1.2` surface or require an adopter rebuild.
 
 ### Verification-required and advisory surfaces
 
@@ -23,6 +24,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Deferred non-shipped claims
 
 * RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* **Standalone companion packages are extracted in-tree but NOT yet published to Hex.** `crosswake_rulestead` and `crosswake_rindle` (v16.0) have release-please Release PRs open but unmerged; `crosswake_sigra` (v17.0) is now extracted into `packages/crosswake_sigra/`, dress-rehearsed against a path dependency, and its `hex.publish --dry-run` is green — but the irreversible Hex publish is a deliberate deferred human gate and has not run. Treat these companions as planning-continuity, not installable Hex releases, until their Release PRs are merged.
 
 ### Published Hex truth
 

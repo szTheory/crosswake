@@ -117,19 +117,19 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "live code guard — contract and support modules export expected functions" do
     # Phase 130: Crosswake.Companions.Rulestead extracted to packages/crosswake_rulestead/.
     # Phase 132: Crosswake.Companions.Rindle extracted to packages/crosswake_rindle/.
-    # Their API guards now live in each companion's own test lane (phase42 / phase45 in
-    # packages/crosswake_*/test/). Core only guards the seam + remaining in-tree companions.
+    # Phase 137: Crosswake.Companions.Sigra extracted to packages/crosswake_sigra/.
+    # Their API guards now live in each companion's own test lane (phase42 / phase45 / phase46+
+    # in packages/crosswake_*/test/). Core only guards the seam + remaining in-tree companions.
     Code.ensure_loaded!(Crosswake.Companion)
     Code.ensure_loaded!(Crosswake.Companion.State)
-    Code.ensure_loaded!(Crosswake.Companions.Sigra.Contracts)
-    Code.ensure_loaded!(Crosswake.Companions.Sigra.Handoff)
-    Code.ensure_loaded!(Crosswake.Companions.Sigra.Telemetry)
     Code.ensure_loaded!(Crosswake.Companions.Chimeway)
     Code.ensure_loaded!(Crosswake.Companions.Chimeway.Contracts)
     Code.ensure_loaded!(Crosswake.SupportMatrix)
     Code.ensure_loaded!(Crosswake.Shell.Denial)
 
-    assert function_exported?(Crosswake.Companions.Sigra.Telemetry, :event_names, 0)
+    # Sigra API guards live in packages/crosswake_sigra/test/ (phase46, phase58, etc.)
+    # after Phase 137 extraction — not checked here to avoid requiring the companion package
+    # in core's test compilation path.
     assert function_exported?(Crosswake.Companions.Chimeway, :report_state, 0)
     assert function_exported?(Crosswake.Companions.Chimeway.Contracts, :new_token_evidence, 1)
     assert function_exported?(Crosswake.SupportMatrix, :gating_truth, 0)

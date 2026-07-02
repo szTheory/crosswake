@@ -140,5 +140,76 @@ defmodule Crosswake.Companion do
   """
   @callback telemetry_events() :: [Crosswake.Telemetry.event_doc()]
 
-  @optional_callbacks telemetry_events: 0
+  @doc """
+  Returns the list of metadata key atoms this companion considers PII or sensitive.
+
+  This callback is optional. When implemented, the returned atoms are unioned with
+  core's baseline PII denylist and scrubbed from all telemetry event metadata before
+  the event is forwarded to attached handlers. This prevents companion-specific
+  sensitive keys from leaking through the telemetry pipeline (DECOUPLE-05).
+
+  Keys must be atom literals — substring or regex matching is not used. Only add keys
+  that genuinely contain sensitive data (credentials, identity fields, tokens).
+  """
+  @callback forbidden_metadata_keys() :: [atom()]
+
+  @doc """
+  Returns the list of denial reason codes this companion may produce.
+
+  This callback is optional. When implemented, the returned codes are incorporated
+  into `SupportMatrix.auth_contract_truth/0` and surfaced in the doctor's Phase 46
+  auth findings. Codes must be `String.t()` values matching the companion's
+  `Crosswake.Shell.Denial.t()` reason strings (DECOUPLE-03).
+  """
+  @callback denial_codes() :: [String.t()]
+
+  @doc """
+  Evaluates whether a specific route permits the given auth context.
+
+  This callback is optional. Companions implementing auth evaluation must also
+  implement `auth_authority?/0` returning `true` to be selected as the auth evaluator.
+  Core dispatches to at most one `auth_authority?/0` companion per evaluation
+  (first-registered wins; multiple authorities emit a telemetry conflict warning).
+
+  Returns `{:allow, result_map}` to permit access, or `{:deny, Finding.t()}`
+  to block access with structured restriction evidence. Core translates the
+  `Crosswake.Compatibility.Finding.t()` to a `Crosswake.Shell.Denial` via
+  `Compatibility.finding_to_denial/2` at the `RouteGate` boundary — companions
+  must never construct `Denial` directly (D-137-A). The `:auth` axis and the
+  `:code`/`:details` fields on the Finding carry the sub-classification and
+  already-sanitized evidence to the translation boundary.
+
+  Core wraps this call in `try/rescue` — if the callback raises, the error is
+  rescued and a `:dependency_missing` denial is returned (fail-closed,
+  DECOUPLE-04, D-3).
+
+  `route` is the `RouteEntry.t()` being evaluated. `auth_context` is the host-supplied
+  map (e.g. from Plug assigns or LiveView socket). `opts` carries call-site keyword
+  options forwarded from `RouteGate.evaluate/4`.
+  """
+  @callback evaluate_auth(
+              route :: RouteEntry.t(),
+              auth_context :: map(),
+              opts :: keyword()
+            ) :: {:allow, map()} | {:deny, Finding.t()}
+
+  @doc """
+  Returns whether this companion is the designated auth evaluator for the host.
+
+  This callback is optional. When a route is auth-predicated (has `auth_min_level`,
+  `requires_recent_auth`, or `auth_posture` set), core scans the companion registry for
+  the first companion that exports `auth_authority?/0` and returns `true`, then dispatches
+  `evaluate_auth/3` to that companion.
+
+  If no companion returns `true`, auth-predicated routes receive a `:dependency_missing`
+  denial (fail-closed). If multiple companions return `true`, the first-registered one
+  is used and a telemetry conflict event is emitted (DECOUPLE-04, D-3).
+  """
+  @callback auth_authority?() :: boolean()
+
+  @optional_callbacks telemetry_events: 0,
+                      forbidden_metadata_keys: 0,
+                      denial_codes: 0,
+                      evaluate_auth: 3,
+                      auth_authority?: 0
 end

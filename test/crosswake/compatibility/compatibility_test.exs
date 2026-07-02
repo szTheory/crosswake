@@ -394,6 +394,54 @@ defmodule Crosswake.CompatibilityTest do
            end)
   end
 
+  # D-137-A / D-137-B: auth Finding→Denial translation and base_details guard
+
+  test "finding_to_denial on an :auth Finding returns :step_up_required with details UNMERGED" do
+    finding = %Compatibility.Finding{
+      axis: :auth,
+      message: "stale authentication — step-up required",
+      code: "auth.step_up.stale_auth",
+      details: %{"max_auth_age_seconds" => 300}
+    }
+
+    denial = Compatibility.finding_to_denial(finding, route_id: "secure")
+
+    assert denial.reason == :step_up_required
+    assert denial.code == "auth.step_up.stale_auth"
+    assert denial.details == %{"max_auth_age_seconds" => 300}
+    # :axis must NOT be injected into already-sanitized auth details (audit fix ①)
+    refute Map.has_key?(denial.details, :axis)
+    refute Map.has_key?(denial.details, "axis")
+  end
+
+  test "finding_to_denial on an :auth Finding with nil code falls back to string reason" do
+    finding = %Compatibility.Finding{
+      axis: :auth,
+      message: "auth denied",
+      code: nil,
+      details: %{}
+    }
+
+    denial = Compatibility.finding_to_denial(finding, route_id: "secure")
+
+    assert denial.reason == :step_up_required
+    # nil code downgrades to Atom.to_string(reason) — documented nil-code downgrade (T-137-03)
+    assert denial.code == "step_up_required"
+  end
+
+  test "Finding struct builds without :code/:details and existing non-auth axes are unchanged" do
+    # :code defaults nil, :details defaults %{} — additive, non-breaking
+    finding = %Compatibility.Finding{axis: :route, message: "route inactive"}
+    assert finding.code == nil
+    assert finding.details == %{}
+
+    # Non-auth axis translation is unchanged
+    denial = Compatibility.finding_to_denial(finding, route_id: "camera")
+    assert denial.reason == :inactive_route
+    # Non-auth finding still gets base_details merged (includes :axis)
+    assert denial.details[:axis] == :route
+  end
+
   test "compatibility guide keeps package versions separate from runtime axes" do
     guide = File.read!("guides/compatibility.md")
 

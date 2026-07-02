@@ -173,6 +173,10 @@ defmodule Crosswake.Proof.Phase40GateEvaluationTest do
   setup do
     Process.delete(:route_gated_called)
     Process.delete(:kill_switch_active_called)
+    # Save/restore :companions so per-test put_env + delete_env cleanup does not
+    # destroy the application-env default added in mix.exs in Phase 136 gap closure.
+    original_companions = Application.get_env(:crosswake, :companions)
+    on_exit(fn -> Application.put_env(:crosswake, :companions, original_companions) end)
     :ok
   end
 

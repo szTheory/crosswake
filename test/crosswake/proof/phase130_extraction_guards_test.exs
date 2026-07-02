@@ -83,21 +83,22 @@ defmodule Crosswake.Proof.Phase130ExtractionGuardsTest do
       CompanionGuard.assert_no_static_refs!()
     end
 
-    test "A real Sigra-referencing core file is NOT flagged by check_source/1 — Sigra/Chimeway stay legal (D-14)" do
-      # Positive assertion: route_gate.ex statically aliases Companions.Sigra.Evaluator
-      # (line 9) — the guard must NOT flag it because Sigra is NOT in the frozen
-      # extracted_companions MapSet (D-14). Proves scope is the MapSet, not a blanket ban.
+    test "A real core file (route_gate.ex) is NOT flagged by check_source/1 — Plans 02/03 removed the Sigra alias (Plan 05 GREEN)" do
+      # Plan 03 removed the static alias Crosswake.Companions.Sigra.Evaluator from
+      # route_gate.ex (line 9) as part of DECOUPLE-02 inversion. After Plan 05 adds
+      # Sigra to the banned set, this real-file test must still return :ok — proving
+      # the inversion is complete (no residual __aliases__ node for Sigra in core files).
       route_gate_source =
         File.read!(Path.join(File.cwd!(), "lib/crosswake/compatibility/route_gate.ex"))
 
       assert :ok = CompanionGuard.check_source(route_gate_source),
              ProofAssertions.stable_id_message(
                "proof.extract_03.d14.sigra_not_flagged_in_real_file",
-               "route_gate.ex must not be flagged — Sigra/Chimeway aliases are legitimate in-tree (D-14)",
+               "route_gate.ex must not be flagged — Sigra alias was removed by Plan 03 (DECOUPLE-02)",
                "CompanionGuard.check_source(route_gate.ex source)",
-               "check_source returned {:violation, _} for route_gate.ex — guard is incorrectly banning Sigra",
-               "lib/crosswake/companion_guard.ex",
-               "Scope EXTRACT-03 guard to frozen @extracted_companions MapSet only — never a blanket Companions.* ban (D-14)",
+               "check_source returned {:violation, _} for route_gate.ex — residual Sigra alias present",
+               "lib/crosswake/compatibility/route_gate.ex",
+               "Plan 03 must have removed the static alias Crosswake.Companions.Sigra.Evaluator (DECOUPLE-02)",
                :merge_blocking
              )
     end
@@ -119,18 +120,40 @@ defmodule Crosswake.Proof.Phase130ExtractionGuardsTest do
              )
     end
 
-    test "CompanionGuard.check_source/1 does NOT detect Crosswake.Companions.Sigra alias (legitimate in-tree) — non-vacuity (EXTRACT-03, D-14)" do
-      # Sigra stays in-tree — must NOT be flagged by the guard.
-      legitimate = "alias Crosswake.Companions.Sigra.Evaluator"
+    test "CompanionGuard.check_source/1 DETECTS Crosswake.Companions.Sigra.Evaluator alias — Sigra is banned (Phase 136, DECOUPLE-06)" do
+      # Phase 136 (Plan 05) adds Sigra to @extracted_companion_names. The guard now uses
+      # prefix matching, so Sigra.Evaluator (a child module) is flagged via the
+      # [:Crosswake, :Companions, :Sigra] prefix. This non-vacuity test proves child-module
+      # detection works (catches the exact-match silent-pass pitfall — Pitfall 3 in RESEARCH.md).
+      violating = "alias Crosswake.Companions.Sigra.Evaluator"
 
-      assert :ok = CompanionGuard.check_source(legitimate),
+      assert {:violation, _} = CompanionGuard.check_source(violating),
              ProofAssertions.stable_id_message(
-               "proof.extract_03.non_vacuity.sigra_not_detected",
-               "check_source/1 must NOT flag Crosswake.Companions.Sigra — it is a legitimate in-tree companion",
+               "proof.extract_03.non_vacuity.sigra_child_module_detected",
+               "check_source/1 must detect Crosswake.Companions.Sigra.Evaluator — Sigra is extracted/banned (Plan 05, DECOUPLE-06)",
                "CompanionGuard.check_source/1",
-               "check_source returned {:violation, _} for a legitimate alias",
+               "check_source returned :ok for Sigra.Evaluator alias — prefix match not working",
                "lib/crosswake/companion_guard.ex",
-               "Scope guard to frozen @extracted_companions MapSet only — Sigra is NOT extracted (D-14)",
+               "Plan 05 must use List.starts_with? prefix match so child modules like Sigra.Evaluator are caught (DECOUPLE-06)",
+               :merge_blocking
+             )
+    end
+
+    test "CompanionGuard.assert_no_static_refs!/0 scope excludes lib/crosswake/companions/** — in-tree Sigra files not flagged" do
+      # Scope-exclusion non-vacuity: the extended guard walks lib/**/*.ex MINUS
+      # lib/crosswake/companions/**/*.ex. In-tree sigra/chimeway companion files
+      # legitimately self-reference their own modules, and the scope exclusion prevents
+      # false-positives from those self-references during Phase 136 (before extraction).
+      # This test asserts assert_no_static_refs!/0 returns :ok, which would FAIL if
+      # the companions dir were included in the walk (since those files contain Sigra aliases).
+      assert :ok = CompanionGuard.assert_no_static_refs!(),
+             ProofAssertions.stable_id_message(
+               "proof.extract_03.scope_exclusion.companions_dir_excluded",
+               "assert_no_static_refs!/0 must return :ok — lib/crosswake/companions/** files are excluded from the walk",
+               "CompanionGuard.assert_no_static_refs!()",
+               "assert_no_static_refs!() raised — companions dir included in scope walk, self-references incorrectly flagged",
+               "lib/crosswake/companion_guard.ex",
+               "Plan 05 must subtract companion_files from lib_files (lib_files -- companion_files) in assert_no_static_refs!/0",
                :merge_blocking
              )
     end

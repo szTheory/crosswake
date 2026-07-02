@@ -1,121 +1,86 @@
-# Requirements: Crosswake — v16.0 Companion Extraction & Package-Family Discipline
+# Requirements: Crosswake — v17.0 Companion Family Completion
 
-**Defined:** 2026-06-25
+**Defined:** 2026-06-30
 **Core Value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Milestone Goal:** Turn the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and ship the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires.
+**Milestone Goal:** Extract the remaining three first-party companions — `sigra` (auth), `chimeway` (notifications), `threadline` (audit) — into standalone, independently-versioned, fail-closed Hex packages, completing the companion family. Unlike v16.0's clean rulestead/rindle seams, sigra/chimeway are compile-coupled into core in four sites, so a core-decoupling phase that inverts those onto the `:companions` registry seam lands first.
 
-> Naming convention reminder: each companion ships as Hex package `crosswake_<name>` while keeping module namespace `Crosswake.Companions.<Name>`, so the sole adopter touch-point — `config :crosswake, :companions, [...]` — is unchanged and extraction is non-breaking.
+> Naming convention reminder: each companion ships as Hex package `crosswake_<name>` while keeping module namespace `Crosswake.Companions.<Name>` (and `Crosswake.Threadline.*`/`Crosswake.Audit.*` for threadline), so the sole adopter touch-point — `config :crosswake, :companions, [...]` — is unchanged and extraction is non-breaking.
+
+> Design spine: the locked decisions D-1..D-9, the 5-stream research synthesis, the four coupling sites, and the footgun register are in `.planning/research/v17-companion-family-completion.md`. Requirements below trace to those decisions.
 
 ## v1 Requirements
 
-Requirements for this milestone. Each maps to exactly one roadmap phase (129–134).
+Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
-### SEAM — Stable Companion Contract Surface
+### DECOUPLE — Core-Inversion Seam (lands first, no publish risk)
 
-- [x] **SEAM-01**: An extension author can depend on a documented, semver-governed set of public companion-contract types (`Crosswake.Companion`, `Crosswake.Companion.State`, `Crosswake.Compatibility.Finding`, `Crosswake.Compatibility.Target`, `Crosswake.Manifest.Types.RouteEntry`) — each carries a non-`false` `@moduledoc`/`@typedoc` and a stability note.
-- [x] **SEAM-02**: A reader can find one curated `guides/companion_contract.md` page that enumerates exactly the public surface extracted packages may depend on, and labels everything else private/patch-volatile.
-- [x] **SEAM-03**: A companion implementation can return restriction evidence (`Compatibility.Finding`) but cannot author the user-facing denial — `Crosswake.Shell.Denial` is absent from the public companion surface.
-- [x] **SEAM-04**: A developer browsing hexdocs sees the companion-contract types grouped under a "Companion Contract" `groups_for_modules` heading.
-- [x] **SEAM-05**: The same extraction checklist applies to a second companion with no companion-specific branches added to core (verified when rindle extracts in Phase 132).
+- [x] **DECOUPLE-01**: Core's `Crosswake.Telemetry` aggregates companion telemetry events **and** forbidden-metadata-keys at runtime by iterating the `:companions` registry via optional behaviour callbacks (`telemetry_events/0`, new `forbidden_metadata_keys/0`) guarded by `function_exported?/3` — with zero compile-time reference to any companion module (`telemetry.ex:145,289` inverted). (D-1, D-5)
+- [x] **DECOUPLE-02**: Core's `RouteGate` resolves the auth evaluator at runtime from the registry via a dedicated `evaluate_auth/3` + `auth_authority?/0` callback pair, with no static `Crosswake.Companions.Sigra.Evaluator` alias (`route_gate.ex:9,258` inverted). The auth callback is distinct from `route_gated?/2` (richer `AuthContext` input, distinct denial namespace). (D-2)
+- [x] **DECOUPLE-03**: Core's `SupportMatrix` and `Doctor` obtain companion denial codes and support truth at runtime from the registry via an optional `denial_codes/0` callback — the `@auth_contract_truth`/`@notification_support_truth` module attributes are converted to runtime helpers so no companion function is called at module-evaluation time (`support_matrix.ex:226,266`, `doctor.ex:792,797` inverted). (D-1)
+- [x] **DECOUPLE-04**: An absent or misconfigured auth companion on an auth-predicated route (`auth_min_level`/`requires_recent_auth`/`auth_posture` set) fails closed — denies with `:dependency_missing`; a companion raising during evaluation is rescued and treated as deny. "No evaluation = allow" is reachable only on non-auth routes; multiple `auth_authority?/0` companions resolve to the first registered plus a doctor warning. (D-3)
+- [x] **DECOUPLE-05**: Core ships a hardcoded baseline PII forbidden-metadata-key denylist (auth tokens + identity fields) that the safe logger **always** applies regardless of which companions are present, layered above the per-companion runtime aggregation — so an absent/misconfigured companion can never silently drop token/identity scrubbing. (D-5)
+- [x] **DECOUPLE-06**: The AST/grep guards enforcing "core never compile-depends on a companion" cover all core `lib/` files (not just the companion dir), and `crosswake` compiles `--warnings-as-errors`, passes COMPAT-01 fail-closed behavior, and passes the Phase-129 companion-contract freeze test with **no** companion package present. (D-1, D-9)
 
-### EXTRACT — Companion Package Extraction Mechanics
+### SIGRA — `crosswake_sigra` Extraction
 
-- [x] **EXTRACT-01**: A maintainer no longer relies on the `MIX_INCLUDE_RULESTEAD`/`MIX_INCLUDE_RINDLE` env hack in core `mix.exs`; companions are ordinary `optional: true` deps declared in adopter/example/test mix files, and core lists no companion deps at all.
-- [x] **EXTRACT-02**: `rulestead` lives as a standalone `packages/crosswake_rulestead/` Hex project (own `mix.exs`, own `@version`) with its source and tests moved out of core, preserving the `Crosswake.Companions.Rulestead` module name.
-- [x] **EXTRACT-03**: A merge-blocking guard fails the build if any core (`lib/`) module statically references an extracted companion module — core discovers companions only via the behaviour + the runtime `:companions` registry.
-- [x] **EXTRACT-04**: A guard verifies companions probe their optional dependency at runtime (`Code.ensure_loaded?` inside function bodies), never at module-evaluation time — preventing the stale-recompile footgun.
-- [x] **EXTRACT-05**: `release-please` carries `crosswake_rulestead` as a separate `elixir` release component (independent versioning), explicitly NOT in the core lockstep `linked-versions` group.
-- [x] **EXTRACT-06**: A per-companion publish job (`deps.get` → `compile --warnings-as-errors` → `test` → `hex.publish --dry-run` → `hex.publish`) runs for `crosswake_rulestead`, keyed on its release-please output.
-- [x] **EXTRACT-07**: `rindle` is extracted by the identical recipe (including its owned `Crosswake.Companions.Rindle.Contracts` incl. `MediaObject` and `Reconciliation`) and goes live on Hex, independently versioned.
+- [x] **SIGRA-01**: `sigra` source + tests move to a standalone `packages/crosswake_sigra/` Hex project (own `mix.exs`, own `@version`), with all sub-modules (`Evaluator`, `Handoff`, `StepUp`, `StepUpCeremony`, `AuthReturn`, `Contracts`, `DenialCodes`, `Telemetry`) preserving the `Crosswake.Companions.Sigra.*` namespace. (D-9)
+- [x] **SIGRA-02**: Sigra internals emit `Crosswake.Compatibility.Finding` at the companion boundary; `Crosswake.Shell.Denial` stays core-private and absent from the sigra package; PII detail-sanitization (`DenialCodes.sanitize_details/1`) lives inside the package. All internal `Denial.new` call sites across the sub-modules are refactored to the `Finding` boundary. (D-4)
+- [~] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9) — **CI pipeline + independent component wired, dress rehearsal + `hex.publish --dry-run` green (Plan 137-04); the irreversible Hex publish is the deferred human gate (Plan 137-05, wave 5) and has NOT run.**
 
-### COMPAT — Compatibility & Fail-Closed Discipline
+### CHIME — `crosswake_chimeway` Extraction
 
-- [x] **COMPAT-01**: With a companion registered and enabled but its package absent from deps, `mix crosswake.doctor` returns an `:error` finding (`companion.dependency_missing`) and `RouteGate` fail-closes the gated route — never a silent no-op.
-- [x] **COMPAT-02**: An adopter can read `guides/companion_compatibility.md` to learn each companion's minimum required core version and the cross-package compatibility matrix.
-- [x] **COMPAT-03**: A drift test fails if any companion's declared `{:crosswake, "~> ..."}` requirement is missing from the compatibility matrix doc.
+- [ ] **CHIME-01**: `chimeway` source + tests move to a standalone `packages/crosswake_chimeway/` Hex project (own `mix.exs`, own `@version`), preserving the `Crosswake.Companions.Chimeway.*` namespace. (D-9)
+- [ ] **CHIME-02**: `crosswake_chimeway` depends only on core — no `crosswake_sigra` dependency; `auth_context` stays typed `map()` with a moduledoc note guarding against tightening to `AuthContext.t()`; the clean-room lane installs `crosswake + crosswake_chimeway + chimeway` but **not** `crosswake_sigra` (vacuity guard). (D-8)
+- [ ] **CHIME-03**: `crosswake_chimeway` publishes to Hex as an independent `release-please` component, preceded by a dress rehearsal and gated by `hex.publish --dry-run` + clean-room before publish. (D-8, D-9)
 
-### PROOF — Clean-Room Verification
+### THREAD — `crosswake_threadline` Extraction (observer, extracted last)
 
-- [x] **PROOF-01**: A clean-room CI lane (and `script/verify_companion_cleanroom.sh`) creates a throwaway mix project OUTSIDE the monorepo, installs the published `crosswake` + companion package, compiles `--warnings-as-errors`, registers the companion, and runs its tests + a `mix crosswake.doctor` smoke check — all green, with Hex-propagation polling.
-- [x] **PROOF-02**: No companion package is published to Hex until a `hex.publish --dry-run` gate and the clean-room/in-monorepo proof lanes are green.
-- [x] **PROOF-03**: The two post-publish companion-release follow-ups are CI-enforced with no recurring human step (parametric across all `crosswake_*` companions): (a) a **fail-closed `release-as` staleness guard** turns the build RED if any package's `release-as` pin equals an already-released version, so a stale pin can never silently re-target an old version; (b) an **auto-cleanup PR** strips `release-as` + `_TODO_release_as` from the just-released component on release (a human only merges the one-line PR — `main` is protected); (c) an **`if: failure()` alert** on the publish + clean-room-proof jobs opens a GitHub issue on red, so the post-publish proof is 0-touch on the success path and a human engages only when it actually breaks. The only intentional human gate that remains is merging the Release PR (the irreversible publish go/no-go). Recipe Step 12f points at this automation so future companions inherit 0-human release ops. Additionally, required-check **registration** is de-toiled: `script/register_required_checks.sh` discovers and idempotently registers every `merge-blocking-*` lane (green-first), and `script/check_required_checks_registered.sh` is a fail-closed detector for any declared merge-blocking lane missing from branch protection — superseding the per-gate `register-*-gate.sh` scripts. Registration stays admin-gated (the legitimate human action), but the recurring toil and the silent "declared-but-advisory" gap are eliminated.
+- [ ] **THREAD-01**: threadline (`Crosswake.Threadline.*`, `Crosswake.Audit.Ledger`, `Crosswake.Plug.Threadline`, `Crosswake.Live.Threadline`, and the `crosswake.threadline` + `crosswake.gen.audit` mix tasks) moves to a standalone `packages/crosswake_threadline/` Hex project; the `gen.audit` template path is repointed to `Application.app_dir(:crosswake_threadline, ...)`; host Plug/Live wiring touch-points stay stable. (D-7)
+- [ ] **THREAD-02**: threadline observes companion/core events purely via `:telemetry.attach_many` by event-name (zero compile deps on sibling companions); it owns its forbidden-metadata-key list locally; the audit handler is crash-isolated (`try/rescue`) so a write failure cannot silently detach it; the ledger stays append-only and PII-free. (D-7)
+- [ ] **THREAD-03**: `crosswake_threadline` publishes to Hex as an independent `release-please` component, gated by `hex.publish --dry-run` + clean-room before publish, after sigra and chimeway are live. (D-7, D-9)
 
-### TELEM — Telemetry Public API
+### FAMILY — Package-Family Discipline & Close
 
-- [x] **TELEM-01**: A developer can call `Crosswake.Telemetry.events/0` to get the canonical list of every `:telemetry` event Crosswake emits across companion/RouteGate, doctor, sigra, chimeway, threadline, and offline subsystems.
-- [x] **TELEM-02**: A reader can find `guides/telemetry.md` documenting every event's measurements and metadata, following Keathley naming (`[:crosswake, :subsystem, :start|:stop|:exception]`) with stop metadata a superset of start metadata.
-- [x] **TELEM-03**: A host can opt into `Crosswake.Telemetry.attach_default_logger/1`; core never auto-attaches a handler.
-- [x] **TELEM-04**: A bidirectional contract test fails if any event in `events/0` is never emitted, or any emitted event is undeclared.
+- [ ] **FAMILY-01**: Each new companion has a drift-tested compatibility-matrix row in `guides/companion_compatibility.md` (single `Requires crosswake >= X` column); the matrix stays O(N) with no inter-companion columns — companions depend only on core. (D-8)
+- [ ] **FAMILY-02**: The extraction recipe `script/extract_companion.md` gains a documented "Step 0: core decoupling" prerequisite for entangled companions and a guard step that greps all of `lib/` (not just the companion dir) for stale companion references. (D-9)
+- [ ] **FAMILY-03**: Each companion package carries its own telemetry "declared ⇔ emitted" Side-A contract test; core's hardcoded reserved-event count assertion (`length(reserved_events) >= 24`) is removed in favor of a shape assertion. (D-6)
+- [ ] **FAMILY-04**: The three publishes are registered and executed **sequentially** (sigra → chimeway → threadline), one `release-please` component added per PR so a misfire cannot publish all three; the carried `merge-blocking-*` lane-registration ship-gate (`register_required_checks.sh`) is run before new v17.0 lanes are relied upon as merge-blocking. (D-9)
 
-### LIFE — Generated-Shell Lifecycle & Native UAT
+## Future Requirements (deferred)
 
-- [x] **LIFE-01a**: The hermetic Android JVM generated-shell UAT lane is promoted to merge-blocking (in an aggregator modeled on `native-behavioral-proof-gate.yml`).
-- [x] **LIFE-01b**: The iOS simulator/device UAT stays advisory, with the support posture honestly labeled in `guides/support_matrix.md` (no over-promise).
-- [x] **LIFE-02a**: A generated native shell records the `@template_version` and live `crosswake` version that produced it, and a drift test fails if `@template_version` is not bumped when shell templates change.
-- [x] **LIFE-02b**: A host can run `mix crosswake.shell.status` (reports up-to-date / N versions behind) and `mix crosswake.gen.shell --diff` (prints a non-destructive unified diff against current templates — never overwrites host files).
-- [x] **LIFE-02c**: A host can follow `guides/native_shell_upgrade.md` (per-template-version changelog referencing `RuntimeLine.RebuildPolicy.classify/2` for rebuild guidance); the dangling "patch-or-doc guidance" promise in `gen.shell.ex` is replaced with a real pointer.
-
-## v2 Requirements (deferred — future milestones)
-
-### Remaining Companion Extraction
-
-- **EXTRACT-FUT-01**: Extract `sigra` (most entangled — depends on `Manifest.Types.RouteEntry`, `Shell.Denial`, bridge types).
-- **EXTRACT-FUT-02**: Extract `chimeway` (depends on sigra `AuthContext`).
-- **EXTRACT-FUT-03**: Extract `threadline` (consumes the other companions' contracts — build last).
-
-### Operator Dashboard
-
-- **DASH-01**: Ship a self-contained `crosswake_dashboard` package (LiveDashboard plugin or standalone LiveView, Oban-Web model — no host asset-pipeline coupling) consuming the v16.0 telemetry contract.
-
-### Other Deferred Tracks
-
+- **DASH-01**: A self-contained `crosswake_dashboard` package (Oban Web model) surfaces operator/telemetry metrics — unblocked by the `Crosswake.Telemetry` public event contract; deferred until the family is complete.
 - **SYNCP-01**: Offline-sync productization (reusable idempotent replay helpers; likely a `crosswake_sync` package).
-- **NTV-01**: Native disk-budget bridge command (real `volumeAvailableCapacity` / `StatFs` vs browser `navigator.storage.estimate()` heuristic).
-- **SEED-002**: Native capability breadth (scanner/QR, biometrics, location) + Phoenix-first commerce paywall/subscription seam — each as a bounded package in the family.
+- **NTV-01**: Extend offline storage budgets to native physical disk space.
+- **SEED-002**: Phoenix-first native capability breadth (scanner/QR, biometrics, location) + paywall/subscription seams.
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Adding companion packages to the core `linked-versions` lockstep group | Companions must version independently; lockstep would force needless core bumps for companion fixes. |
-| Renaming companion modules (e.g. to `CrosswakeRulestead`) | Would break the one adopter touch-point (`config :crosswake, :companions`); package name ≠ module name is the deliberate least-surprise call. |
-| `Crosswake.Shell.Denial` in the public companion surface | Companions emit evidence (`Finding`) and may further-restrict; core owns the final denial envelope — minimal seam. |
-| Destructive `mix crosswake.gen.shell --upgrade` that overwrites host files | Host owns the generated artifact; upgrade is doc-driven `--diff`, never auto-overwrite. |
-| Promoting iOS simulator/device UAT to merge-blocking | Environment-flaky; only the hermetic Android JVM lane becomes required (honest support labels). |
-| Building the operator dashboard UI in this milestone | Telemetry contract ships now as the prerequisite; the dashboard is deferred to `crosswake_dashboard` (DASH-01). |
-| New native capabilities, commerce/paywall breadth, sync productization | Deliberately deferred until the package-family pattern is proven — building breadth first is the Cordova-unbounded-bus footgun. |
-| Auto-attaching telemetry handlers from core | Telemetry attachment is the host's job; core only emits + documents + offers an opt-in logger. |
+- Re-versioning the existing `crosswake_rulestead` / `crosswake_rindle` packages — v17.0 only adds the three remaining companions.
+- Any inter-companion Hex dependency — companions depend only on core; shared types graduate to core's public contract surface rather than creating companion-on-companion coupling (the Absinthe `absinthe_phoenix → absinthe_plug` cautionary pattern).
+- Folding companions into the core `linked-versions` lockstep group — independent versioning is confirmed correct (Ash/Broadway/Oban precedent).
+- New companion **features** — v17.0 is extraction/coherence work; the auth/notification/audit surfaces ship at their current behavior, only relocated and decoupled.
+- Closing the TELEM-04 Side-B vacuity in core via a `:telemetry` wildcard handler — distributed to each companion's own Side-A proof instead.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation (2026-06-25).
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEAM-01 | Phase 129 | Complete |
-| SEAM-02 | Phase 129 | Complete |
-| SEAM-03 | Phase 129 | Complete |
-| SEAM-04 | Phase 129 | Complete |
-| EXTRACT-01 | Phase 130 | Complete |
-| EXTRACT-02 | Phase 130 | Complete |
-| EXTRACT-03 | Phase 130 | Complete |
-| EXTRACT-04 | Phase 130 | Complete |
-| COMPAT-01 | Phase 130 | Complete |
-| EXTRACT-05 | Phase 131 | Complete |
-| EXTRACT-06 | Phase 131 | Complete |
-| PROOF-01 | Phase 131 | Complete |
-| PROOF-02 | Phase 131 | Complete |
-| EXTRACT-07 | Phase 132 | Complete |
-| SEAM-05 | Phase 132 | Complete |
-| COMPAT-02 | Phase 132 | Complete |
-| COMPAT-03 | Phase 132 | Complete |
-| PROOF-03 | Phase 135 | Complete |
-| TELEM-01 | Phase 133 | Complete |
-| TELEM-02 | Phase 133 | Complete |
-| TELEM-03 | Phase 133 | Complete |
-| TELEM-04 | Phase 133 | Complete |
-| LIFE-01a | Phase 134 | Complete |
-| LIFE-01b | Phase 134 | Complete |
-| LIFE-02a | Phase 134 | Complete |
-| LIFE-02b | Phase 134 | Complete |
-| LIFE-02c | Phase 134 | Complete |
+| DECOUPLE-01 | Phase 136 | Complete |
+| DECOUPLE-02 | Phase 136 | Complete |
+| DECOUPLE-03 | Phase 136 | Complete |
+| DECOUPLE-04 | Phase 136 | Complete |
+| DECOUPLE-05 | Phase 136 | Complete |
+| DECOUPLE-06 | Phase 136 | Complete |
+| SIGRA-01 | Phase 137 | Complete |
+| SIGRA-02 | Phase 137 | Complete |
+| SIGRA-03 | Phase 137 | In Progress — pipeline wired + dry-run green; publish deferred (human gate 137-05) |
+| CHIME-01 | Phase 138 | Pending |
+| CHIME-02 | Phase 138 | Pending |
+| CHIME-03 | Phase 138 | Pending |
+| THREAD-01 | Phase 139 | Pending |
+| THREAD-02 | Phase 139 | Pending |
+| THREAD-03 | Phase 139 | Pending |
+| FAMILY-01 | Phase 140 | Pending |
+| FAMILY-02 | Phase 140 | Pending |
+| FAMILY-03 | Phase 140 | Pending |
+| FAMILY-04 | Phase 140 | Pending |

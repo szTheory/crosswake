@@ -49,8 +49,15 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
+      # Phase 73 auth-sensitive admin workflow proof moved into crosswake_sigra during the
+      # SIGRA-01 extraction (Phase 137). Run it from the package (crosswake resolves via path dep).
+      - name: Install crosswake_sigra dependencies
+        run: mix deps.get
+        working-directory: packages/crosswake_sigra
+
       - name: Run hermetic Phase 73 auth-sensitive admin workflow proof
         run: mix test test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs
+        working-directory: packages/crosswake_sigra
 
   advisory-native-auth-device-audit-proof:
     name: advisory native auth/device/audit proof (non-promoting)

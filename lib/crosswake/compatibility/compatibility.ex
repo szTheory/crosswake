@@ -56,7 +56,7 @@ defmodule Crosswake.Compatibility do
 
   defmodule Finding do
     @moduledoc """
-    Typed restriction evidence returned by `route_gated?/2`.
+    Typed restriction evidence returned by `route_gated?/2` and `evaluate_auth/3`.
 
     Companion implementations return `{:deny, %Finding{}}` to signal that a
     route is restricted. Core translates findings into `Crosswake.Shell.Denial`
@@ -65,6 +65,22 @@ defmodule Crosswake.Compatibility do
     Required fields: `:axis` (atom identifying the policy axis, e.g. `:route`)
     and `:message` (human-readable explanation). Optional fields add structured
     evidence for logging and support surfaces.
+
+    ## Auth-classification fields (`:code` and `:details`)
+
+    `:code` carries a sub-classification string for auth-axis findings
+    (e.g. `"auth.step_up.stale_auth"`). Auth companions MUST populate `:code`;
+    a nil code downgrades to the string form of the denial reason at the
+    `finding_to_denial/2` boundary (documented nil-code downgrade, T-137-03).
+
+    `:details` carries an already-sanitized map of structured evidence for
+    auth-axis findings. For `:auth` axis, `finding_to_denial/2` passes
+    `:details` through UNMERGED (no `:axis` key injected) so sanitization
+    applied at the companion source is preserved exactly.
+
+    These two fields are additive — non-breaking to `crosswake_rulestead` and
+    `crosswake_rindle` companions whose findings carry neither field (both
+    default to nil / `%{}`).
 
     ## Stability
 
@@ -77,9 +93,9 @@ defmodule Crosswake.Compatibility do
     @moduledoc since: "0.1.0"
 
     @enforce_keys [:axis, :message]
-    defstruct [:axis, :message, :required, :available, :hint, :route_id, :subject]
+    defstruct [:axis, :message, :required, :available, :hint, :route_id, :subject, :code, details: %{}]
 
-    @typedoc "Restriction evidence emitted by a companion's `route_gated?/2` callback."
+    @typedoc "Restriction evidence emitted by a companion's `route_gated?/2` or `evaluate_auth/3` callback."
     @type t :: %__MODULE__{
             axis: atom(),
             message: String.t(),
@@ -87,7 +103,9 @@ defmodule Crosswake.Compatibility do
             available: String.t() | atom() | nil,
             hint: String.t() | nil,
             route_id: String.t() | nil,
-            subject: String.t() | nil
+            subject: String.t() | nil,
+            code: String.t() | nil,
+            details: map()
           }
   end
 
@@ -174,6 +192,12 @@ defmodule Crosswake.Compatibility do
           {:pack_incompatible, nil, recovery_for(:pack_incompatible, opts),
            pack_details(finding, opts)}
 
+        :auth ->
+          # D-137-B: auth sub-classification is carried in finding.code; details are
+          # already sanitized by the companion source (DenialCodes.sanitize_details/1).
+          # Pass details through UNMERGED — no :axis key injected (audit fix ①).
+          {:step_up_required, finding.code, %{}, finding.details}
+
         axis ->
           if axis in commerce_corridor_axes() do
             {code, recovery, details} = commerce_corridor_denial(axis, finding, opts)
@@ -184,10 +208,19 @@ defmodule Crosswake.Compatibility do
       end
 
     details =
-      if finding.axis == :pack_version and Keyword.has_key?(opts, :current_route_id) do
-        details
-      else
-        Map.merge(base_details(finding), details)
+      cond do
+        finding.axis == :auth ->
+          # :auth details are already sanitized; pass through UNMERGED (audit fix ①).
+          # base_details/1 injects :axis for all axes and :auth is not in the sigra
+          # allowlist, so an unguarded merge would smuggle a non-allowlisted key into
+          # already-sanitized auth details.
+          details
+
+        finding.axis == :pack_version and Keyword.has_key?(opts, :current_route_id) ->
+          details
+
+        true ->
+          Map.merge(base_details(finding), details)
       end
 
     Denial.new(

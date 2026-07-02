@@ -13,7 +13,6 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.RuntimeLineRow
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
-  alias Crosswake.Companions.Sigra.Telemetry, as: SigraTelemetry
   alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
 
   @statuses [:supported, :verification_required, :unsupported]
@@ -125,116 +124,122 @@ defmodule Crosswake.SupportMatrix do
       advisory_provider_proof: true
     }
   ]
-  @auth_contract_truth [
-    %{
-      surface:
-        "Sigra SessionAuthorityLane route authority evaluator, handoff contract, step-up ceremony, and auth-return boundaries",
-      owner: :backend_seam,
-      package_class: :companion,
+  # @auth_contract_truth was previously a module attribute (stale-beam footgun: companion
+  # functions called at module-evaluation time, baking values into the .beam). Converted to
+  # a def runtime helper in Phase 136 (DECOUPLE-03 / T-136-03). Companion-sourced fields
+  # (event_names, metadata_keys, forbidden_metadata_keys, denial_codes, safe_detail_keys)
+  # are now sentinel [] / nil values that callers (Doctor) fill via the :companions registry
+  # and the denial_codes/0 callback at runtime. No companion function is called at module-eval.
+  @auth_contract_truth_static %{
+    surface:
+      "Sigra SessionAuthorityLane route authority evaluator, handoff contract, step-up ceremony, and auth-return boundaries",
+    owner: :backend_seam,
+    package_class: :companion,
+    proof_class: :merge_blocking,
+    shipped_contracts: [
+      :session_authority,
+      :handoff_ticket,
+      :server_record_redemption,
+      :step_up_intent,
+      :plug_liveview_ceremony,
+      :auth_return_boundary,
+      :auth_return_attempt
+    ],
+    handoff: %{
+      status: :shipped,
+      authority_source: :server_record,
+      envelope_authority: false,
+      audit_fields: [
+        :event_id,
+        :event_type,
+        :handoff_ref,
+        :state_before,
+        :state_after,
+        :outcome,
+        :denial_code,
+        :occurred_at,
+        :route_id,
+        :intent_kind,
+        :source_session_ref,
+        :projected_session_ref,
+        :session_version_before,
+        :session_version_after,
+        :assurance_after,
+        :auth_methods_after,
+        :binding_result,
+        :request_ref,
+        :actor_kind
+      ],
+      proof_class: :merge_blocking
+    },
+    step_up: %{
+      status: :shipped,
+      authority_source: :server_record,
+      locator_authority: false,
+      lifecycle_states: [:issued, :challenged, :consumed, :expired, :canceled, :revoked],
+      challenge_kinds: [:host_confirm_password],
+      route_target_validation: :manifest_route_id,
+      session_renewal: :host_instructions,
+      csrf_rotation: :host_instruction,
+      liveview_invalidation: :required,
+      proof_class: :merge_blocking
+    },
+    auth_return: %{
+      status: :shipped,
+      authority_source: :server_record,
+      envelope_authority: false,
+      route_policy_seam: :auth_return,
+      kinds: [:oauth, :passkey, :native_auth],
+      transports: [:http_callback, :verified_https_link, :custom_scheme, :bridge_event],
+      sensitive_transport: :verified_https_link_required,
+      custom_scheme_posture: :advisory_only,
+      route_target_validation: :manifest_route_id,
+      proof_class: :merge_blocking
+    },
+    route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
+    contract_surface: :full_sigra_machinery,
+    contract_proof_class: :merge_blocking,
+    route_authority_source: :session_authority_lane,
+    evidence_authority: %{
+      handoff_envelope: false,
+      step_up_locator: false,
+      auth_return_envelope: false,
+      deep_link: false,
+      bridge_event: false,
+      provider_payload: false
+    },
+    host_readiness: :verification_required,
+    provider_device_proof: :advisory,
+    # telemetry companion-sourced fields are [] sentinels (filled by callers at runtime)
+    telemetry: %{
+      status: :shipped,
+      event_names: [],
+      metadata_keys: [],
+      forbidden_metadata_keys: [],
+      authority_source: :diagnostic_evidence_only,
+      proof_class: :merge_blocking
+    },
+    security_closeout: %{
+      status: :shipped,
+      artifact:
+        ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
+      review_model: :stride,
       proof_class: :merge_blocking,
-      shipped_contracts: [
-        :session_authority,
-        :handoff_ticket,
-        :server_record_redemption,
-        :step_up_intent,
-        :plug_liveview_ceremony,
-        :auth_return_boundary,
-        :auth_return_attempt
-      ],
-      handoff: %{
-        status: :shipped,
-        authority_source: :server_record,
-        envelope_authority: false,
-        audit_fields: [
-          :event_id,
-          :event_type,
-          :handoff_ref,
-          :state_before,
-          :state_after,
-          :outcome,
-          :denial_code,
-          :occurred_at,
-          :route_id,
-          :intent_kind,
-          :source_session_ref,
-          :projected_session_ref,
-          :session_version_before,
-          :session_version_after,
-          :assurance_after,
-          :auth_methods_after,
-          :binding_result,
-          :request_ref,
-          :actor_kind
-        ],
-        proof_class: :merge_blocking
-      },
-      step_up: %{
-        status: :shipped,
-        authority_source: :server_record,
-        locator_authority: false,
-        lifecycle_states: [:issued, :challenged, :consumed, :expired, :canceled, :revoked],
-        challenge_kinds: [:host_confirm_password],
-        route_target_validation: :manifest_route_id,
-        session_renewal: :host_instructions,
-        csrf_rotation: :host_instruction,
-        liveview_invalidation: :required,
-        proof_class: :merge_blocking
-      },
-      auth_return: %{
-        status: :shipped,
-        authority_source: :server_record,
-        envelope_authority: false,
-        route_policy_seam: :auth_return,
-        kinds: [:oauth, :passkey, :native_auth],
-        transports: [:http_callback, :verified_https_link, :custom_scheme, :bridge_event],
-        sensitive_transport: :verified_https_link_required,
-        custom_scheme_posture: :advisory_only,
-        route_target_validation: :manifest_route_id,
-        proof_class: :merge_blocking
-      },
-      route_predicates: [:auth_min_level, :requires_recent_auth, :auth_posture],
-      contract_surface: :full_sigra_machinery,
-      contract_proof_class: :merge_blocking,
-      route_authority_source: :session_authority_lane,
-      evidence_authority: %{
-        handoff_envelope: false,
-        step_up_locator: false,
-        auth_return_envelope: false,
-        deep_link: false,
-        bridge_event: false,
-        provider_payload: false
-      },
-      host_readiness: :verification_required,
-      provider_device_proof: :advisory,
-      telemetry: %{
-        status: :shipped,
-        event_names: SigraTelemetry.event_names(),
-        metadata_keys: SigraTelemetry.metadata_keys(),
-        forbidden_metadata_keys: SigraTelemetry.forbidden_metadata_keys(),
-        authority_source: :diagnostic_evidence_only,
-        proof_class: :merge_blocking
-      },
-      security_closeout: %{
-        status: :shipped,
-        artifact:
-          ".planning/phases/58-auth-diagnostics-proof-and-security-closeout/58-SECURITY.md",
-        review_model: :stride,
-        proof_class: :merge_blocking,
-        unresolved_high_or_critical_findings: 0
-      },
-      denial_vocabulary: :step_up_required,
-      denial_codes: Crosswake.Companions.Sigra.DenialCodes.codes(),
-      safe_detail_keys: Crosswake.Companions.Sigra.DenialCodes.allowed_detail_keys(),
-      fallback: :step_up_required,
-      deferred: [
-        :refresh_tokens,
-        :native_auth_ui,
-        :provider_device_proof
-      ],
-      posture:
-        "Phase 73 Sigra admin posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, dedicated security closeout, and a hermetic auth-sensitive admin workflow proof. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, persistent shell session state, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and a generic audit system remain deferred."
-    }
-  ]
+      unresolved_high_or_critical_findings: 0
+    },
+    denial_vocabulary: :step_up_required,
+    # denial_codes and safe_detail_keys are [] sentinels; callers fill from registry denial_codes/0
+    denial_codes: [],
+    safe_detail_keys: [],
+    fallback: :step_up_required,
+    deferred: [
+      :refresh_tokens,
+      :native_auth_ui,
+      :provider_device_proof
+    ],
+    posture:
+      "Phase 73 Sigra admin posture: backend-owned SessionAuthorityLane route evaluation, shipped short-lived handoff ticket/server-record redemption, shipped server-owned step-up intent plus shared Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable low-cardinality auth telemetry, dedicated security closeout, and a hermetic auth-sensitive admin workflow proof. Handoff envelopes, step-up locators, OAuth/passkey/native return envelopes, deep links, bridge events, provider payloads, persistent shell session state, and telemetry are evidence only; server records, audit evidence, and refreshed SessionAuthorityLane projections remain authoritative. Refresh-token helpers, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and a generic audit system remain deferred."
+  }
   @companion_support_truth [
     %{
       surface:
@@ -251,30 +256,32 @@ defmodule Crosswake.SupportMatrix do
         "Sigra support includes backend session-authority contracts, auth_posture route truth, fail-closed step_up_required denial codes, shipped handoff ticket/server-record contracts, shipped step-up intent plus Plug/LiveView ceremony proof, shipped OAuth/passkey/native auth-return boundary contracts, stable auth telemetry, security closeout, and hermetic auth-sensitive admin workflow proof; refresh tokens, provider/device proof, provider templates, passkey SDK wrappers, direct shell/WebView token authority, native auth UI, and generic audit machinery remain deferred."
     }
   ]
-  @notification_support_truth [
-    %{
-      surface: "notification-open route activation proof",
-      proof_class: :advisory,
-      action_class: "companion_native",
-      docs_anchor: "guides/support_matrix.md#notification-surface-v39",
-      delivery_supported: false,
-      route_activation_proof: :hermetic,
-      activation_authority: :route_gate_sigra,
-      evidence_authority: false,
-      telemetry: %{
-        status: :shipped,
-        event_names: Crosswake.Companions.Chimeway.Telemetry.event_names(),
-        metadata_keys: Crosswake.Companions.Chimeway.Telemetry.metadata_keys(),
-        forbidden_metadata_keys:
-          Crosswake.Companions.Chimeway.Telemetry.forbidden_metadata_keys(),
-        authority_source: :diagnostic_evidence_only,
-        proof_class: :merge_blocking
-      },
-      deferred: [:chimeway_delivery, :push_delivery_guarantees],
-      posture:
-        "notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory."
-    }
-  ]
+  # @notification_support_truth was previously a module attribute (stale-beam footgun: Chimeway
+  # companion functions called at module-evaluation time). Converted to a def runtime helper in
+  # Phase 136 (DECOUPLE-03 / T-136-03). Companion-sourced telemetry fields (event_names,
+  # metadata_keys, forbidden_metadata_keys) are now [] sentinels filled by callers at runtime.
+  @notification_support_truth_static %{
+    surface: "notification-open route activation proof",
+    proof_class: :advisory,
+    action_class: "companion_native",
+    docs_anchor: "guides/support_matrix.md#notification-surface-v39",
+    delivery_supported: false,
+    route_activation_proof: :hermetic,
+    activation_authority: :route_gate_sigra,
+    evidence_authority: false,
+    # telemetry companion-sourced fields are [] sentinels (filled by callers at runtime)
+    telemetry: %{
+      status: :shipped,
+      event_names: [],
+      metadata_keys: [],
+      forbidden_metadata_keys: [],
+      authority_source: :diagnostic_evidence_only,
+      proof_class: :merge_blocking
+    },
+    deferred: [:chimeway_delivery, :push_delivery_guarantees],
+    posture:
+      "notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory."
+  }
   @audit_ledger_support_truth [
     %{
       surface: "threadline audit ledger",
@@ -477,8 +484,17 @@ defmodule Crosswake.SupportMatrix do
   @spec companion_support_truth() :: [map()]
   def companion_support_truth, do: @companion_support_truth
 
+  @doc """
+  Returns the canonical notification support truth for the Chimeway companion surface.
+
+  Companion-sourced telemetry fields (event_names, metadata_keys, forbidden_metadata_keys)
+  are [] sentinels filled by callers at runtime via the :companions registry. No companion
+  function is called at module-evaluation time (DECOUPLE-03 / T-136-03 stale-beam fix).
+  """
   @spec notification_support_truth() :: [map()]
-  def notification_support_truth, do: @notification_support_truth
+  def notification_support_truth do
+    [@notification_support_truth_static]
+  end
 
   @spec audit_ledger_support_truth() :: [map()]
   def audit_ledger_support_truth, do: @audit_ledger_support_truth
@@ -693,8 +709,91 @@ defmodule Crosswake.SupportMatrix do
   @spec commerce_corridors() :: [map()]
   def commerce_corridors, do: @commerce_corridor_entries
 
+  @doc """
+  Returns the canonical auth contract truth for Sigra's SessionAuthorityLane surface.
+
+  Companion-sourced fields (telemetry event names, metadata keys, forbidden metadata keys,
+  denial codes, and safe detail keys) are populated at runtime via the :companions registry
+  using the `denial_codes/0` optional callback. No companion function is called at
+  module-evaluation time (DECOUPLE-03 / T-136-03 stale-beam fix).
+
+  Callers that need populated denial_codes / safe_detail_keys should use
+  `Doctor.phase_46_auth_findings/1` which fills these sentinels at runtime.
+  """
   @spec auth_contract_truth() :: [map()]
-  def auth_contract_truth, do: @auth_contract_truth
+  def auth_contract_truth do
+    companions = Application.get_env(:crosswake, :companions, [])
+
+    # Find the first registered auth-authority companion (first-registered wins, matching RouteGate).
+    # Mirrors the RouteGate pattern: call companion_id/0 first so the BEAM loads the module
+    # before the function_exported?/3 check (BEAM defers module loading until first call).
+    auth_authority =
+      Enum.find(companions, fn mod ->
+        _load = mod.companion_id()
+        config = Application.get_env(:crosswake, mod.companion_id(), %{})
+
+        mod.enabled?(config) and
+          function_exported?(mod, :auth_authority?, 0) and mod.auth_authority?()
+      end)
+
+    # Aggregate denial_codes from all companions that implement the callback (flat_map preserves
+    # the all-companion pattern; the auth authority will be in this list).
+    # Call companion_id/0 first to ensure the module is loaded before function_exported?/3 check.
+    denial_codes =
+      Enum.flat_map(companions, fn mod ->
+        _load = mod.companion_id()
+        if function_exported?(mod, :denial_codes, 0), do: mod.denial_codes(), else: []
+      end)
+
+    # Remaining fields are sourced specifically from the auth-authority companion
+    # (guarded by function_exported?/3 so that when no auth-authority is registered
+    # the fields fall back to [] — the sentinel behavior the fail-closed tests rely on).
+    safe_detail_keys =
+      if auth_authority && function_exported?(auth_authority, :safe_detail_keys, 0) do
+        auth_authority.safe_detail_keys()
+      else
+        []
+      end
+
+    telemetry_event_names =
+      if auth_authority && function_exported?(auth_authority, :telemetry_event_names, 0) do
+        auth_authority.telemetry_event_names()
+      else
+        []
+      end
+
+    telemetry_metadata_keys =
+      if auth_authority && function_exported?(auth_authority, :telemetry_metadata_keys, 0) do
+        auth_authority.telemetry_metadata_keys()
+      else
+        []
+      end
+
+    telemetry_forbidden_metadata_keys =
+      if auth_authority && function_exported?(auth_authority, :forbidden_metadata_keys, 0) do
+        auth_authority.forbidden_metadata_keys()
+      else
+        []
+      end
+
+    # Deep-merge the populated telemetry fields into the static map's telemetry sub-map
+    # without dropping existing keys (status, authority_source, proof_class stay).
+    updated_telemetry =
+      Map.merge(@auth_contract_truth_static.telemetry, %{
+        event_names: telemetry_event_names,
+        metadata_keys: telemetry_metadata_keys,
+        forbidden_metadata_keys: telemetry_forbidden_metadata_keys
+      })
+
+    [
+      @auth_contract_truth_static
+      |> Map.merge(%{
+        denial_codes: denial_codes,
+        safe_detail_keys: safe_detail_keys,
+        telemetry: updated_telemetry
+      })
+    ]
+  end
 
   @spec commerce_corridor_denial_codes() :: [String.t()]
   def commerce_corridor_denial_codes do

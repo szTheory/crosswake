@@ -21,6 +21,7 @@ cell drifts from the package source in either direction.
 |---|---|---|---|---|---|
 | `crosswake_rulestead` | `:rulestead` | `0.1.0` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
 | `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
+| `crosswake_sigra` | `:sigra` | `0.1.0` | `~> 0.1` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
 
 The `Current Version` column records the last published line for orientation only;
 the live number is whatever each package's hexdocs link reports.

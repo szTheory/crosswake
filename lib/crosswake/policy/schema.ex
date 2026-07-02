@@ -4,8 +4,14 @@ defmodule Crosswake.Policy.Schema do
   """
 
   alias Crosswake.Transfer.Contracts
-  alias Crosswake.Companions.Sigra.Contracts, as: SigraContracts
   alias Crosswake.Offline.ContentPack
+
+  # MFA level vocabulary — stable contract between core route policy and the sigra auth companion.
+  # Inlined here for DECOUPLE-06: schema.ex must compile without a static Sigra alias.
+  # When Sigra is extracted (Phase 137+), the companion's `mfa_level_vocabulary/0` callback
+  # will provide the authoritative list; until then, this static list is the source of truth.
+  # Adding a level = minor; removing = major. (D-136-C)
+  @mfa_level_vocabulary [:none, :password, :mfa, :phishing_resistant]
 
   @runtime_values [:live_view, :offline_island, :native_screen]
   @offline_values [:unavailable, :cached_read_only, :local_first]
@@ -264,7 +270,7 @@ defmodule Crosswake.Policy.Schema do
   def validate_auth_min_level(nil), do: {:ok, nil}
 
   def validate_auth_min_level(value) when is_atom(value) do
-    if value in SigraContracts.mfa_level_vocabulary() do
+    if value in @mfa_level_vocabulary do
       {:ok, value}
     else
       {:error,
