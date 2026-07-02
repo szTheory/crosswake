@@ -59,7 +59,11 @@ defmodule Mix.Tasks.Crosswake.Threadline do
 
     case ledger_posture() do
       :ephemeral ->
-        Mix.shell().info("Posture: Ephemeral. No ledger configured.")
+        Mix.shell().info(
+          "Posture: Ephemeral — no audit ledger configured.\n" <>
+            "Set :audit_repo and :audit_ledger under :crosswake in your config, then run:\n" <>
+            "  mix crosswake.gen.audit"
+        )
 
       {:durable, repo, schema} ->
         Mix.Task.run("app.start")
@@ -197,7 +201,7 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   defp render_durable(events, filter \\ nil)
 
   defp render_durable([], filter) do
-    Mix.shell().info("Posture: Durable")
+    Mix.shell().info("Posture: Durable — querying audit ledger")
 
     filter_desc =
       case filter do
@@ -210,7 +214,7 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   end
 
   defp render_durable(events, _filter) do
-    Mix.shell().info("Posture: Durable")
+    Mix.shell().info("Posture: Durable — querying audit ledger")
 
     grouped = Enum.group_by(events, &tier_of/1)
 
