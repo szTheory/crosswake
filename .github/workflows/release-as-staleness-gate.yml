@@ -43,7 +43,7 @@ jobs:
     name: merge-blocking-release-as-staleness
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Full history + tags: the guard keys on `{component}-v{X}` release tags as the
           # authoritative "already released" signal.

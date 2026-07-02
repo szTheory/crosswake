@@ -59,7 +59,7 @@ jobs:
     name: android-package-unit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: packages/crosswake-shell-core-android/.gradle
@@ -75,7 +75,7 @@ jobs:
     name: ios-package-unit
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: packages/crosswake-shell-core-ios/.build
@@ -93,7 +93,7 @@ jobs:
     env:
       CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"  # hermetic JVM-only; bypasses emulator branches (script line 9)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
         with:
           elixir-version: "1.19.5"        # project standard (phase73-proof.yml)
