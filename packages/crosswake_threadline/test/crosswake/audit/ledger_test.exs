@@ -64,6 +64,21 @@ defmodule Crosswake.Audit.LedgerTest do
       end
     end
 
+    test "ArgumentError message names both the :secret opt and the :audit_hmac_secret app-env key" do
+      Application.delete_env(:crosswake, :audit_hmac_secret)
+
+      error =
+        assert_raise ArgumentError, fn ->
+          Ledger.actor_ref("user_789")
+        end
+
+      assert error.message =~ "secret",
+             "ArgumentError must mention 'secret' (the opts key :secret)"
+
+      assert error.message =~ "audit_hmac_secret",
+             "ArgumentError must mention 'audit_hmac_secret' (the app-env key) so operators know both resolution paths"
+    end
+
     test "converts non-string ids to string before hashing" do
       id = 12345
       secret = "test_secret_key"

@@ -85,4 +85,47 @@ defmodule Mix.Tasks.Crosswake.Gen.AuditTest do
     assert schema_content =~ "idempotency_key",
            "Generated ledger must name idempotency_key as the real integrity guarantee"
   end
+
+  test "Next steps output contains mix crosswake.threadline CTA (brand-voice inspect guidance)" do
+    import ExUnit.CaptureIO
+
+    output =
+      capture_io(fn ->
+        run(["--dir", @tmp_dir, "--app", "TestApp"])
+      end)
+
+    assert output =~ "mix crosswake.threadline",
+           "Next steps must include 'mix crosswake.threadline' CTA so operators know how to inspect recorded events"
+  end
+
+  test "Next steps output contains mix ecto.create note (brand-voice database-first guidance)" do
+    import ExUnit.CaptureIO
+
+    output =
+      capture_io(fn ->
+        run(["--dir", @tmp_dir, "--app", "TestApp"])
+      end)
+
+    assert output =~ "mix ecto.create",
+           "Next steps must include 'mix ecto.create' note so operators know to create the database first"
+  end
+
+  test "skipping message used (not 'reused') when file already exists — clear verb" do
+    import ExUnit.CaptureIO
+
+    # First run creates the files
+    run(["--dir", @tmp_dir, "--app", "TestApp"])
+
+    # Second run should say "skipping", not "reused"
+    output =
+      capture_io(fn ->
+        run(["--dir", @tmp_dir, "--app", "TestApp"])
+      end)
+
+    assert output =~ "skipping",
+           "Idempotent re-run must print 'skipping' (not 'reused') to clearly communicate the file was not re-written"
+
+    refute output =~ "reused",
+           "Must not print 'reused' — use 'skipping' to match brandbook voice (verb-first, concrete)"
+  end
 end
