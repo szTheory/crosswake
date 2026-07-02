@@ -197,12 +197,12 @@ jobs:
           version-file: .tool-versions
           version-type: strict
       - name: Download web + gif artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: see-it-run-web-gif
           path: brandbook/collateral/see-it-run
       - name: Download native artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: see-it-run-native
           path: brandbook/collateral/see-it-run
