@@ -244,7 +244,20 @@ defmodule Crosswake.Companions.Chimeway.Contracts do
   end
 
   defmodule NotificationOpenEvidence do
-    @moduledoc false
+    @moduledoc """
+    Evidence struct for a notification-open event submitted to the Chimeway resolver.
+
+    ## auth_context type discipline (CHIME-02 invariant — D-8)
+
+    The `auth_context` field is intentionally typed `map()` and MUST remain `map()`.
+    Do NOT tighten this type to the sigra auth-context struct or any other companion's
+    auth type. Doing so would create a compile-time inter-companion dependency, violating
+    the Crosswake package-family rule that companions never depend on each other. The
+    auth_context carried here is the raw context map as received from the route gateway
+    call; Chimeway never inspects its internal structure. If you need to extract
+    auth-context fields, do so by key (`Map.get/3`) — never by structural pattern-match
+    against a companion-specific type.
+    """
 
     @enforce_keys [
       :route_id,
