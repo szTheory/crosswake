@@ -221,7 +221,7 @@ jobs:
       - name: Self-check — size budget (<1MB total)
         run: bash script/check-collateral-size.sh
       - name: Open auto-PR with refreshed collateral
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: collateral/auto-refresh
           base: main
