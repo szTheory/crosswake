@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-current_phase: 137
-current_phase_name: crosswake-sigra-extraction
-status: executing
-stopped_at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate, deferred)
-last_updated: "2026-07-01T23:34:08.130Z"
-last_activity: 2026-07-01
-last_activity_desc: Phase 137 waves 1-4 executed (crosswake_sigra extraction); paused at wave 5 publish gate
+current_phase: 138
+current_phase_name: crosswake-chimeway-extraction
+status: planned
+stopped_at: Phase 138 planned (research→pattern-map→plan→verify all green); 4 waved plans ready for /gsd-execute-phase 138. Phase 137 waves 1-4 executed; 137 wave 5 + 138 wave 4 = deferred family hex-publish gates.
+last_updated: "2026-07-02T00:00:00.000Z"
+last_activity: 2026-07-02
+last_activity_desc: Phase 138 planned — 4 waved plans (chimeway extraction), plan-checker PASSED (no-sigra-dep + vacuity-safe invariants verified)
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 11
+  total_plans: 15
   completed_plans: 10
   percent: 20
 ---
@@ -24,14 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 137 — crosswake-sigra-extraction
+**Current focus:** Phase 138 — crosswake-chimeway-extraction (planned; ready to execute)
 
 ## Current Position
 
-Phase: 137 (crosswake-sigra-extraction) — EXECUTING (paused at wave 5 human publish gate)
-Plans: 4 of 5 executed green (137-01..04); 137-05 = deferred human hex-publish gate (wave 5)
-Status: Waves 1-4 landed — Finding boundary + sigra extraction + CI pipeline; publish deferred (no hex.pm publish yet)
-Last activity: 2026-07-01 -- Phase 137 waves 1-4 executed; repo-hygiene boundary sync in progress
+Phase: 138 (crosswake-chimeway-extraction) — PLANNED (research→pattern-map→plan→verify all green)
+Plans: 4 waved plans (138-01..04); plan-checker PASSED. Next: /gsd-execute-phase 138 (waves 1-3 in-tree; wave 4 = deferred human publish gate).
+Wave collapse: 4 waves vs 137's 5 — chimeway has NO Finding-boundary refactor (Resolver uses core `Crosswake.Shell.Denial` directly, no D-138-A analog). Verified no-sigra-dep invariant + vacuity-safe clean-room.
+Phase 137: waves 1-4 executed green; 137-05 = deferred human hex-publish gate.
+Last activity: 2026-07-02 -- Phase 138 planned (4 plans, checker PASSED); repo hygiene complete (22/21 lanes registered, boundary synced)
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
 > false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
@@ -43,7 +44,7 @@ Last activity: 2026-07-01 -- Phase 137 waves 1-4 executed; repo-hygiene boundary
 ```
 [x] Phase 136 — Core Decoupling                    (complete, verified 2026-07-01)
 [~] Phase 137 — crosswake_sigra Extraction         (waves 1-4 green; wave 5 = deferred publish gate)
-[ ] Phase 138 — crosswake_chimeway Extraction
+[P] Phase 138 — crosswake_chimeway Extraction      (planned, checker PASSED; 4 waves; wave 4 = deferred publish gate)
 [ ] Phase 139 — crosswake_threadline Extraction
 [ ] Phase 140 — Family Discipline & Close
 ```
