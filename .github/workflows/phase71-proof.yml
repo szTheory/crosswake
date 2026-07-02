@@ -49,8 +49,15 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
+      # Phase 71 notification workflow proof is sigra-dependent and moved into crosswake_sigra
+      # during the SIGRA-01 extraction (Phase 137). Run it from the package (crosswake via path dep).
+      - name: Install crosswake_sigra dependencies
+        run: mix deps.get
+        working-directory: packages/crosswake_sigra
+
       - name: Run hermetic Phase 71 notification workflow proof
         run: mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs
+        working-directory: packages/crosswake_sigra
 
   advisory-push-provider-device-proof:
     name: advisory push provider/device proof (non-delivery)
