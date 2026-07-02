@@ -25,7 +25,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
 - [x] **SIGRA-01**: `sigra` source + tests move to a standalone `packages/crosswake_sigra/` Hex project (own `mix.exs`, own `@version`), with all sub-modules (`Evaluator`, `Handoff`, `StepUp`, `StepUpCeremony`, `AuthReturn`, `Contracts`, `DenialCodes`, `Telemetry`) preserving the `Crosswake.Companions.Sigra.*` namespace. (D-9)
 - [x] **SIGRA-02**: Sigra internals emit `Crosswake.Compatibility.Finding` at the companion boundary; `Crosswake.Shell.Denial` stays core-private and absent from the sigra package; PII detail-sanitization (`DenialCodes.sanitize_details/1`) lives inside the package. All internal `Denial.new` call sites across the sub-modules are refactored to the `Finding` boundary. (D-4)
-- [x] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9)
+- [~] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9) — **CI pipeline + independent component wired, dress rehearsal + `hex.publish --dry-run` green (Plan 137-04); the irreversible Hex publish is the deferred human gate (Plan 137-05, wave 5) and has NOT run.**
 
 ### CHIME — `crosswake_chimeway` Extraction
 
@@ -73,7 +73,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | DECOUPLE-06 | Phase 136 | Complete |
 | SIGRA-01 | Phase 137 | Complete |
 | SIGRA-02 | Phase 137 | Complete |
-| SIGRA-03 | Phase 137 | Complete |
+| SIGRA-03 | Phase 137 | In Progress — pipeline wired + dry-run green; publish deferred (human gate 137-05) |
 | CHIME-01 | Phase 138 | Pending |
 | CHIME-02 | Phase 138 | Pending |
 | CHIME-03 | Phase 138 | Pending |
