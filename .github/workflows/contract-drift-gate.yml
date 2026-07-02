@@ -1,4 +1,8 @@
 name: Contract Drift Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 # Purpose-named per domain (D-09) — NOT folded into offline-sync-e2e-gate.yml.
 # Enforces GUARD-01 (ExUnit drift test) and GUARD-02 (generate-and-diff) as two
 # hermetic, pure-Elixir sibling jobs that roll up to one alls-green aggregator.

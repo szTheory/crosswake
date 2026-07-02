@@ -1,5 +1,9 @@
 name: Phase 132 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 132 generalizes the companion extraction recipe to a SECOND companion
 # (rindle) and adds the COMPAT compatibility-matrix drift lane. Proof lanes mirror
 # phase130-proof.yml:

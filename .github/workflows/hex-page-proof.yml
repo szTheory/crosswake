@@ -1,5 +1,9 @@
 name: Hex Page Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Merge-blocking, hermetic proof lane for the published hex.pm package surface
 # (the "hex page polish" deliverables). Runs on every PR and push to main so
 # regressions in package metadata, docs grouping, README/guide links, or tarball

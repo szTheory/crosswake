@@ -1,5 +1,9 @@
 name: Phase 23 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 23 closes the commerce support/proof posture for v3.2 by splitting
 # proof lanes into:
 #

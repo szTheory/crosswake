@@ -1,5 +1,9 @@
 name: Phase 34 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 34+ closes the paywall corridor proof posture for v3.4 by splitting
 # proof lanes into:
 #

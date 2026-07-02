@@ -1,4 +1,8 @@
 name: Offline-Sync E2E Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 # Renamed from phase90-proof.yml (2026-06). Permanent merge gate — purpose-named, not phase-scoped.
 #
 # TOPOLOGY (Option-C aggregator — D-01):

@@ -1,5 +1,9 @@
 name: Phase 43 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 43 closes the rulestead companion proof posture for v3.5 by splitting
 # proof lanes into:
 #

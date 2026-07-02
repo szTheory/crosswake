@@ -1,4 +1,8 @@
 name: Release-As Staleness Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 # PROOF-03 (a): fail-closed guard against stale release-please `release-as` pins.
 #
 # release-please uses `"release-as": "X"` as a ONE-SHOT bootstrap override to force a component's

@@ -1,4 +1,8 @@
 name: Native Behavioral Proof Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 # Purpose-named per domain (D-07) — NOT folded into contract-drift-gate.yml.
 # Enforces Android JVM behavioral tests as merge-blocking and Swift tests as advisory;
 # rolls up to one alls-green aggregator that is the SOLE new required check.

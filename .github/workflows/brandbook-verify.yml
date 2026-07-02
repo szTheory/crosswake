@@ -1,5 +1,9 @@
 name: "Brandbook Verify"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Brand-asset quality gates (D-08, COLL-04). Runs on every PR because
 # brand-structural is a required branch-protection context; path filtering would
 # leave config-only PRs permanently blocked waiting for a check that never emits.
