@@ -36,10 +36,17 @@ defmodule Crosswake.Telemetry do
     metadata: [atom()]
   }
 
-  # The 10-atom core PII baseline denylist (D-136-A / DECOUPLE-05).
+  # The 11-atom core PII baseline denylist (D-136-A / DECOUPLE-05 / D-5 Phase 139).
   # Always applied regardless of companion presence — an absent/misconfigured companion
   # can never silently drop token/identity scrubbing.
   # Semver contract: adding a key = minor (stricter safety); removing a key = major (weaker safety).
+  #
+  # Phase 139 curated universal-floor delta: added :actor_ref — the HMAC-anonymized audit
+  # identity anchor used by the audit ledger. This is a universal-floor key (auth/identity
+  # concept, not OAuth/passkey-ceremony domain) that must be scrubbed even with zero companions
+  # registered. OAuth/passkey-ceremony keys (device/org/credential/PKCE/provider minutiae) are
+  # companion-domain and stay companion-local — they are scrubbed at emission by the companion,
+  # not at the core baseline level (D-5 boundary: universal floor ≠ companion domain).
   @baseline_forbidden_keys [
     # auth tokens — catastrophic if leaked from any event / any companion
     :access_token,
@@ -53,15 +60,20 @@ defmodule Crosswake.Telemetry do
     :actor_id,
     # direct PII — GDPR/CCPA; appears in core route events
     :ip,
-    :email
+    :email,
+    # universal-floor audit identity anchor — HMAC-anonymized actor reference (Phase 139 / D-5)
+    :actor_ref
   ]
 
   @doc """
-  Returns the 10-atom baseline PII forbidden-metadata-key denylist owned by core.
+  Returns the 11-atom baseline PII forbidden-metadata-key denylist owned by core.
 
   These keys are always scrubbed from telemetry metadata regardless of whether any companion
   is registered. Companions may declare additional forbidden keys via their
   `forbidden_metadata_keys/0` callback; those are unioned with this baseline at attach time.
+
+  Phase 139 added `:actor_ref` as the curated universal-floor delta (D-5): the HMAC-anonymized
+  audit identity anchor that must be scrubbed even with zero companions registered.
 
   **Semver contract:** adding a key is a non-breaking minor (stricter safety);
   removing a key is a breaking major (weaker safety).
@@ -230,9 +242,11 @@ defmodule Crosswake.Telemetry do
       end)
 
     # Build the forbidden-key MapSet ONCE at attach time and capture in the handler closure
-    # (D-136-A / DECOUPLE-05). Baseline is always unioned regardless of companion presence.
-    # Companion keys come from the :companions registry via function_exported?/3.
-    # Threadline stays in-tree for Phase 136 — its keys are included directly.
+    # (D-136-A / DECOUPLE-05 / Phase 139 SITE 2). Baseline is always unioned regardless of
+    # companion presence. Companion keys come from the :companions registry via function_exported?/3.
+    # Phase 139: the static compile-time Crosswake.Threadline.Telemetry.forbidden_metadata_keys()
+    # call is removed. The universal-floor baseline now includes :actor_ref (curated D-5 delta).
+    # Companion-domain OAuth/passkey keys stay companion-local, scrubbed at emission by the companion.
     companion_forbidden_keys =
       Application.get_env(:crosswake, :companions, [])
       |> Enum.flat_map(fn mod ->
@@ -242,7 +256,7 @@ defmodule Crosswake.Telemetry do
     forbidden_keys =
       MapSet.union(
         MapSet.new(@baseline_forbidden_keys),
-        MapSet.new(Crosswake.Threadline.Telemetry.forbidden_metadata_keys() ++ companion_forbidden_keys)
+        MapSet.new(companion_forbidden_keys)
       )
 
     # Pass a map (not a keyword list) as the handler config so the test can inspect

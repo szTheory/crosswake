@@ -380,12 +380,14 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Test 4 — DECOUPLE-05: baseline_forbidden_metadata_keys/0 returns exactly 10 atoms
-  # RED until Plan 02 adds Crosswake.Telemetry.baseline_forbidden_metadata_keys/0
+  # Test 4 — DECOUPLE-05: baseline_forbidden_metadata_keys/0 returns exactly 11 atoms
+  # Updated in Phase 139 (SITE 2 decouple): added :actor_ref as universal-floor delta (D-5).
+  # :actor_ref is the HMAC-anonymized audit identity anchor — a universal-floor key that
+  # must be scrubbed even with zero companions registered.
   # ---------------------------------------------------------------------------
 
   @tag :decouple_05
-  test "DECOUPLE-05: baseline_forbidden_metadata_keys/0 is callable and returns exactly the 10-atom set" do
+  test "DECOUPLE-05: baseline_forbidden_metadata_keys/0 is callable and returns exactly the 11-atom set" do
     expected =
       MapSet.new([
         :access_token,
@@ -397,7 +399,9 @@ defmodule Crosswake.Proof.Phase136DecoupleProofTest do
         :subject_ref,
         :actor_id,
         :ip,
-        :email
+        :email,
+        # Phase 139 universal-floor delta: HMAC-anonymized audit identity anchor (D-5)
+        :actor_ref
       ])
 
     actual = MapSet.new(Crosswake.Telemetry.baseline_forbidden_metadata_keys())

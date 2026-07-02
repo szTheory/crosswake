@@ -13,8 +13,6 @@ defmodule Crosswake.SupportMatrix do
   alias Crosswake.Manifest.Types.RuntimeLineRow
   alias Crosswake.Manifest.Types.SupportEntry
   alias Crosswake.Manifest.Types.SupportMatrix
-  alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
-
   @statuses [:supported, :verification_required, :unsupported]
   @proof_classes [:merge_blocking, :advisory, :not_applicable]
   @diagnostic_severities [:error, :warning, :advisory]
@@ -282,25 +280,55 @@ defmodule Crosswake.SupportMatrix do
     posture:
       "notification-open workflow proof is hermetic route activation proof: token/open evidence is not auth authority, backend binding and one-time open intent records feed Chimeway, and RouteGate and Sigra decide activation. APNs/FCM delivery is not part of this proof and remains unsupported/advisory."
   }
-  @audit_ledger_support_truth [
-    %{
-      surface: "threadline audit ledger",
-      proof_class: :advisory,
-      action_class: "operator_surface",
-      docs_anchor: "guides/threadline.md",
-      ephemeral_posture: :supported,
-      durable_posture: :supported,
-      telemetry: %{
-        status: :shipped,
-        event_names: ThreadlineTelemetry.event_names(),
-        metadata_keys: ThreadlineTelemetry.metadata_keys(),
-        forbidden_metadata_keys: ThreadlineTelemetry.forbidden_metadata_keys()
-      },
-      deferred: [:crosswake_dashboard, :hash_chain_verify_task],
-      posture:
-        "Threadline provides an honest, PII-free correlation across Native -> Bridge -> Phoenix via X-Crosswake-Thread-Id. It is an append-only sequence reconstruction tool, not an APM or full replay system."
-    }
-  ]
+  # @audit_ledger_support_truth was previously a module attribute (stale-beam footgun:
+  # Crosswake.Threadline.Telemetry functions called at module-evaluation time, baking values
+  # into the .beam). Converted to frozen literals in Phase 139 (THREAD-01 / SITE 1 atomic
+  # decouple). Companion-sourced telemetry fields (event_names, metadata_keys,
+  # forbidden_metadata_keys) are now frozen literal values from the Phase 139 extraction.
+  # No companion function is called at module-eval.
+  @audit_ledger_support_truth_static %{
+    surface: "threadline audit ledger",
+    proof_class: :advisory,
+    action_class: "operator_surface",
+    docs_anchor: "guides/threadline.md",
+    ephemeral_posture: :supported,
+    durable_posture: :supported,
+    telemetry: %{
+      status: :shipped,
+      # Frozen from Crosswake.Threadline.Telemetry — compile dep removed Phase 139 (SITE 1).
+      event_names: [
+        [:crosswake, :threadline, :request, :start],
+        [:crosswake, :threadline, :request, :stop],
+        [:crosswake, :threadline, :request, :exception]
+      ],
+      metadata_keys: [:thread_id, :correlation_id, :route_id, :source],
+      forbidden_metadata_keys: [
+        :access_token,
+        :actor_id,
+        :actor_ref,
+        :authorization_code,
+        :credential_id,
+        :device_id,
+        :email,
+        :id_token,
+        :ip,
+        :nonce,
+        :org_id,
+        :passkey_credential_id,
+        :pkce_verifier,
+        :provider_payload,
+        :raw_return_to,
+        :refresh_token,
+        :return_to,
+        :session_ref,
+        :subject_ref,
+        :user_agent
+      ]
+    },
+    deferred: [:crosswake_dashboard, :hash_chain_verify_task],
+    posture:
+      "Threadline provides an honest, PII-free correlation across Native -> Bridge -> Phoenix via X-Crosswake-Thread-Id. It is an append-only sequence reconstruction tool, not an APM or full replay system."
+  }
   @diagnostic_export_support_truth [
     %{
       surface: "diagnostic export envelope contract",
@@ -497,7 +525,7 @@ defmodule Crosswake.SupportMatrix do
   end
 
   @spec audit_ledger_support_truth() :: [map()]
-  def audit_ledger_support_truth, do: @audit_ledger_support_truth
+  def audit_ledger_support_truth, do: [@audit_ledger_support_truth_static]
 
   @spec diagnostic_export_support_truth() :: [map()]
   def diagnostic_export_support_truth, do: @diagnostic_export_support_truth
