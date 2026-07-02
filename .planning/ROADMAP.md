@@ -244,7 +244,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room lane succeeds before the irreversible publish fires; threadline publishes after sigra and chimeway are live.
   5. `crosswake_threadline` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 
 **Wave 1**
 
@@ -256,7 +256,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 139-03-PLAN.md — Threadline-correct no-engine clean-room smoke (suppress companion-behaviour assertions + Telemetry/Plug/Ledger canaries), release-please independent component + manifest, publish/clean-room CI jobs (both siblings absent), example-host path dep, compat-matrix row [Wave 3]
+- [x] 139-03-PLAN.md — Threadline-correct no-engine clean-room smoke (suppress companion-behaviour assertions + Telemetry/Plug/Ledger canaries), release-please independent component + manifest, publish/clean-room CI jobs (both siblings absent), example-host path dep, compat-matrix row [Wave 3]
 
 **Wave 4** *(blocked on Wave 3 — human publish gate, DEFERRED to family batch)*
 
@@ -320,5 +320,5 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 4/5 | In Progress|  |
 | 138. crosswake_chimeway Extraction | v17.0 | 3/4 | In Progress|  |
-| 139. crosswake_threadline Extraction | v17.0 | 2/4 | In Progress|  |
+| 139. crosswake_threadline Extraction | v17.0 | 3/4 | In Progress|  |
 | 140. Family Discipline & Close | v17.0 | 0/? | Not started | - |
