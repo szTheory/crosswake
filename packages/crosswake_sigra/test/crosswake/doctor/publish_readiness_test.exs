@@ -65,7 +65,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
   end
 
   setup do
-    previous = Application.get_env(:crosswake, :companions)
+    previous = Application.get_env(:crosswake, :companions, [])
     # D-137-03: Register Sigra as the auth-authority companion so the publish-readiness
     # auth check sees the Sigra contract. StubCompanion (core test support) is not
     # available in the package load path.

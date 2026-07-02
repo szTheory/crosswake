@@ -89,7 +89,7 @@ defmodule Crosswake.OperatorInspectionTest do
   end
 
   setup do
-    previous = Application.get_env(:crosswake, :companions)
+    previous = Application.get_env(:crosswake, :companions, [])
     # D-137-03: Register Sigra as the auth-authority companion so auth_contract_truth/0
     # returns populated denial_codes, safe_detail_keys, and telemetry fields.
     # StubCompanion (core test support) is not available in the package load path.

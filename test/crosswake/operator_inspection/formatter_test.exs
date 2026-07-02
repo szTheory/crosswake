@@ -92,7 +92,7 @@ defmodule Crosswake.OperatorInspection.FormatterTest do
   end
 
   test "renders support and proof separately while showing rebuild action metadata" do
-    previous = Application.get_env(:crosswake, :companions)
+    previous = Application.get_env(:crosswake, :companions, [])
     Application.put_env(:crosswake, :companions, [StubCompanion])
 
     on_exit(fn ->

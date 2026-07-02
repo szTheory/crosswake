@@ -4,7 +4,7 @@ defmodule Crosswake.Proof.Phase54SigraSupportTruthTest do
   alias Crosswake.Companions.Sigra.DenialCodes
   alias Crosswake.SupportMatrix
 
-  # D-137-03: SupportMatrix.auth_contract_truth/0 reads Application.get_env(:crosswake, :companions)
+  # D-137-03: SupportMatrix.auth_contract_truth/0 reads Application.get_env(:crosswake, :companions, [])
   # at runtime. Sigra is not in core's application env after extraction (Phase 137). Register it
   # here so denial_codes is populated with the live DenialCodes.codes() result and the support
   # truth assertion is non-vacuous.

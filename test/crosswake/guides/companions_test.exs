@@ -137,7 +137,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "documented companion ids stay parity-locked with runtime gating truth", %{
     content: content
   } do
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
 
     # Phase 130: Crosswake.Companions.Rulestead extracted to companion package.
     # Use StubRulesteadAbsentCompanion (companion_id: :rulestead, validate_dependency: {:error, _})
@@ -214,7 +214,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   end
 
   test "doctor finding codes are asserted from live Doctor.run/1 output", %{content: content} do
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
     original_rulestead = Application.get_env(:crosswake, :rulestead)
     original_rindle = Application.get_env(:crosswake, :rindle)
 

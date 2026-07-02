@@ -267,7 +267,7 @@ defmodule Crosswake.Proof.Phase41GatingDoctorTest do
 
     # Save/restore :companions so per-test put_env + delete_env cleanup does not
     # destroy the application-env default added in mix.exs in Phase 136 gap closure.
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
     on_exit(fn -> Application.put_env(:crosswake, :companions, original_companions) end)
 
     %{target: target, install_manifest_path: install_manifest_path}
