@@ -244,7 +244,23 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room lane succeeds before the irreversible publish fires; threadline publishes after sigra and chimeway are live.
   5. `crosswake_threadline` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: TBD
+**Plans**: 4 plans (4 waves — mirrors Phase 138; Wave 1 folds in the atomic two-site core decouple, unique to threadline)
+
+**Wave 1**
+
+- [ ] 139-01-PLAN.md — Scaffold packages/crosswake_threadline/ (files: incl priv, optional-Phoenix guards), move all threadline source + EEX templates (namespace preserved), fix gen.audit app_dir atom, atomic core decouple (support_matrix SITE 1 freeze + telemetry SITE 2 curated-floor delta), core test-only path dep [Wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 139-02-PLAN.md — Move threadline test suite + anti-drift PII-floor test (baseline-count reconcile), harden gen.audit handler template (try/rescue never-reraise + on_conflict + advisory moduledoc), vacuity-safe clean-room proof (async: true), 4 brand-voice DX wins (NO_COLOR/ASCII + empty-result + microcopy, each own commit) [Wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 139-03-PLAN.md — Threadline-correct no-engine clean-room smoke (suppress companion-behaviour assertions + Telemetry/Plug/Ledger canaries), release-please independent component + manifest, publish/clean-room CI jobs (both siblings absent), example-host path dep, compat-matrix row [Wave 3]
+
+**Wave 4** *(blocked on Wave 3 — human publish gate, DEFERRED to family batch)*
+
+- [ ] 139-04-PLAN.md — Pre-publish gates (dress rehearsal + hex.publish --dry-run: priv/ in, test/ out) then HUMAN go/no-go: merge Release PR (irreversible publish LAST after sigra+chimeway live) + merge release-as-cleanup PR [Wave 4, autonomous: false]
 
 ### Phase 140: Family Discipline & Close
 
