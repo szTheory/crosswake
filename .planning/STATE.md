@@ -2,13 +2,10 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-current_phase: 139
-current_phase_name: crosswake-threadline-extraction
 status: planned
-stopped_at: Completed 139-03-PLAN.md
-last_updated: "2026-07-02T22:02:24.289Z"
-last_activity: 2026-07-02
-last_activity_desc: Phase 139 execution started
+stopped_at: Phase 140 context gathered
+last_updated: "2026-07-02T23:21:52.189Z"
+last_activity: 2026-07-02 — Phase 139 execution started
 progress:
   total_phases: 5
   completed_phases: 1
@@ -227,9 +224,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-02T22:02:24.284Z
-Stopped at: Completed 139-03-PLAN.md
-Resume file: None
+Last session: 2026-07-02T23:21:52.186Z
+Stopped at: Phase 140 context gathered
+Resume file: .planning/phases/140-family-discipline-close/140-CONTEXT.md
 
 ## Operator Next Steps
 
