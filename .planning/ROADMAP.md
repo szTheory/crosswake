@@ -217,15 +217,15 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 **Wave 1**
 
-- [ ] 138-01-PLAN.md — Scaffold packages/crosswake_chimeway/, move 6 sub-modules + facade (namespace preserved), auth_context map() guard note, remove chimeway from core, StubChimewayAbsentCompanion (no auth_authority?/0) [Wave 1]
+- [x] 138-01-PLAN.md — Scaffold packages/crosswake_chimeway/, move 6 sub-modules + facade (namespace preserved), auth_context map() guard note, remove chimeway from core, StubChimewayAbsentCompanion (no auth_authority?/0) [Wave 1]
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 138-02-PLAN.md — Move chimeway-internal tests + split phase59 (notification_support_truth/0 stays non-vacuous in core), move phase71 to chimeway pkg (test-only sigra dep), non-vacuous clean-room proof (A2-corrected forbidden-keys seam) [Wave 2]
+- [x] 138-02-PLAN.md — Move chimeway-internal tests + split phase59 (notification_support_truth/0 stays non-vacuous in core), move phase71 to chimeway pkg (test-only sigra dep), non-vacuous clean-room proof (A2-corrected forbidden-keys seam) [Wave 2]
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 138-03-PLAN.md — Chimeway-correct no-engine clean-room smoke (assert enabled?(%{}) + Telemetry canary), release-please independent component + manifest, publish/clean-room CI jobs, example-host path dep, compat-matrix row [Wave 3]
+- [x] 138-03-PLAN.md — Chimeway-correct no-engine clean-room smoke (assert enabled?(%{}) + Telemetry canary), release-please independent component + manifest, publish/clean-room CI jobs, example-host path dep, compat-matrix row [Wave 3]
 
 **Wave 4** *(blocked on Wave 3 — human publish gate)*
 
@@ -303,6 +303,6 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
 | 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 4/5 | In Progress|  |
-| 138. crosswake_chimeway Extraction | v17.0 | 0/4 | Planned | - |
+| 138. crosswake_chimeway Extraction | v17.0 | 3/4 | In Progress|  |
 | 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
 | 140. Family Discipline & Close | v17.0 | 0/? | Not started | - |
