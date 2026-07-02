@@ -50,12 +50,16 @@ defmodule Crosswake.MixProject do
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
       {:telemetry, "~> 1.0"},
-      {:ex_doc, "~> 0.38", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false},
+      # test-only dep: phase133_telemetry_contract_test.exs uses Crosswake.Plug.Threadline
+      # as the TELEM-04 Side-A trigger. After Phase 139 extraction, the module lives in the
+      # package — the test-only path dep keeps it compiling in the core test lane.
+      {:crosswake_threadline, path: "packages/crosswake_threadline", only: :test}
     ]
   end
 
   # D-26: Root aliases so contributors never need a bare `cd`.
-  # mix companions.test — runs each companion's own test lane (rulestead + rindle + sigra + chimeway).
+  # mix companions.test — runs each companion's own test lane (rulestead + rindle + sigra + chimeway + threadline).
   #   Each lane's default tag exclusions apply (engine-present advisory + example-host
   #   tests are excluded). Adapter-behavior tests run with the engine in the lane's lock.
   # mix verify — runs companions.test + core hermetic test lane (excludes advisory tags).
@@ -71,7 +75,9 @@ defmodule Crosswake.MixProject do
         "cmd --cd packages/crosswake_sigra mix deps.get",
         "cmd --cd packages/crosswake_sigra mix test",
         "cmd --cd packages/crosswake_chimeway mix deps.get",
-        "cmd --cd packages/crosswake_chimeway mix test"
+        "cmd --cd packages/crosswake_chimeway mix test",
+        "cmd --cd packages/crosswake_threadline mix deps.get",
+        "cmd --cd packages/crosswake_threadline mix test"
       ],
       verify: [
         "companions.test",
@@ -148,7 +154,6 @@ defmodule Crosswake.MixProject do
         ],
         "Telemetry": [
           Crosswake.Telemetry,
-          Crosswake.Threadline.Telemetry,
           Crosswake.Offline.Telemetry
         ]
       ],

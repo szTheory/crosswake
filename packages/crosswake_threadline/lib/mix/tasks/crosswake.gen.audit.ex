@@ -20,8 +20,8 @@ defmodule Mix.Tasks.Crosswake.Gen.Audit do
 
     schema_dest = Path.join([dir, "lib", app_snake, "audit", "ledger.ex"])
 
-    schema_template = Application.app_dir(:crosswake, "priv/templates/crosswake/audit/ledger.ex.eex")
-    migration_template = Application.app_dir(:crosswake, "priv/templates/crosswake/audit/migration.exs.eex")
+    schema_template = Application.app_dir(:crosswake_threadline, "priv/templates/crosswake/audit/ledger.ex.eex")
+    migration_template = Application.app_dir(:crosswake_threadline, "priv/templates/crosswake/audit/migration.exs.eex")
 
     schema_template = if File.exists?(schema_template), do: schema_template, else: Path.join(File.cwd!(), "priv/templates/crosswake/audit/ledger.ex.eex")
     migration_template = if File.exists?(migration_template), do: migration_template, else: Path.join(File.cwd!(), "priv/templates/crosswake/audit/migration.exs.eex")
@@ -30,23 +30,23 @@ defmodule Mix.Tasks.Crosswake.Gen.Audit do
     migration_content = EEx.eval_file(migration_template, app_module: app_module)
 
     ensure_file(schema_dest, schema_content)
-    
+
     # Ensure migrations directory exists
     migrations_dir = Path.join([dir, "priv", "repo", "migrations"])
     File.mkdir_p!(migrations_dir)
-    
+
     # Check if migration exists
     existing_migration = Enum.find(File.ls!(migrations_dir), fn file ->
       String.ends_with?(file, "_create_crosswake_audit_events.exs")
     end)
-    
+
     if existing_migration do
-      Mix.shell().info("  reused #{Path.join(["priv", "repo", "migrations", existing_migration])}")
+      Mix.shell().info("  skipping #{Path.join(["priv", "repo", "migrations", existing_migration])} (already exists)")
     else
       timestamp = Calendar.strftime(DateTime.utc_now(), "%Y%m%d%H%M%S")
       filename = "#{timestamp}_create_crosswake_audit_events.exs"
       migration_dest = Path.join(migrations_dir, filename)
-      
+
       File.write!(migration_dest, migration_content)
       Mix.shell().info("  created #{Path.relative_to_cwd(migration_dest)}")
     end
@@ -55,12 +55,31 @@ defmodule Mix.Tasks.Crosswake.Gen.Audit do
     Audit ledger components generated successfully!
 
     Next steps:
-    1. Run your migrations:
+    1. Run your migrations (create the database first if needed):
+       mix ecto.create  # if not already created
        mix ecto.migrate
-       
-    2. Start recording audit events in your multi transactions:
+
+    2. Start recording audit events in your Ecto.Multi transactions:
        Ecto.Multi.new()
-       |> #{app_module}.Audit.Ledger.record_in_multi(:audit_event, %{...})
+       |> #{app_module}.Audit.Ledger.record_in_multi(:audit_event, %{
+            thread_id: ...,
+            correlation_id: ...,
+            route_id: ...,
+            actor_ref: Crosswake.Audit.Ledger.actor_ref(user_id, secret: secret),
+            actor_kind: "user",
+            event_class: "auth",
+            event_type: "login",
+            outcome: "success",
+            provenance: :backend_accepted,
+            occurred_at: DateTime.utc_now(),
+            recorded_at: DateTime.utc_now(),
+            idempotency_key: idempotency_key
+          })
+       |> MyApp.Repo.transaction()
+
+    3. Inspect events from the terminal:
+       mix crosswake.threadline --thread-id <thread_id>
+       mix crosswake.threadline --actor-ref <actor_ref>
     """)
   end
 
@@ -76,7 +95,7 @@ defmodule Mix.Tasks.Crosswake.Gen.Audit do
 
     case File.read(path) do
       {:ok, _existing} ->
-        Mix.shell().info("  reused #{Path.relative_to_cwd(path)}")
+        Mix.shell().info("  skipping #{Path.relative_to_cwd(path)} (already exists)")
         :reused
 
       {:error, :enoent} ->
