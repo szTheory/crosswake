@@ -213,7 +213,23 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and the clean-room lane succeeds before the irreversible publish fires.
   5. `crosswake_chimeway` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: TBD
+**Plans**: 4 plans (4 waves — sigra's 5 minus the collapsed Finding-boundary wave; chimeway has no D-138-A refactor)
+
+**Wave 1**
+
+- [ ] 138-01-PLAN.md — Scaffold packages/crosswake_chimeway/, move 6 sub-modules + facade (namespace preserved), auth_context map() guard note, remove chimeway from core, StubChimewayAbsentCompanion (no auth_authority?/0) [Wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 138-02-PLAN.md — Move chimeway-internal tests + split phase59 (notification_support_truth/0 stays non-vacuous in core), move phase71 to chimeway pkg (test-only sigra dep), non-vacuous clean-room proof (A2-corrected forbidden-keys seam) [Wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 138-03-PLAN.md — Chimeway-correct no-engine clean-room smoke (assert enabled?(%{}) + Telemetry canary), release-please independent component + manifest, publish/clean-room CI jobs, example-host path dep, compat-matrix row [Wave 3]
+
+**Wave 4** *(blocked on Wave 3 — human publish gate)*
+
+- [ ] 138-04-PLAN.md — Pre-publish gates (dress rehearsal + hex.publish --dry-run) then HUMAN go/no-go: merge Release PR (irreversible publish, sigra absent) + merge release-as-cleanup PR [Wave 4, autonomous: false]
 
 ### Phase 139: crosswake_threadline Extraction
 
