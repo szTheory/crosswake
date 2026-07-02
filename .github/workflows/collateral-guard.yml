@@ -1,5 +1,9 @@
 name: Collateral Guard
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Cheap, every-PR drift guard for the See It Run collateral binaries.
 # Pairs with see-it-run-collateral.yml (the macOS capture pipeline): that
 # workflow refreshes the assets via auto-PR; this one keeps them present,

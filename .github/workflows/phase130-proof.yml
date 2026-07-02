@@ -1,5 +1,9 @@
 name: Phase 130 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 130 closes out the companion extraction mechanics for v16.0 by splitting
 # proof lanes into:
 #

@@ -1,5 +1,9 @@
 name: Phase 96 Proof - Threadline Docs Contract
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

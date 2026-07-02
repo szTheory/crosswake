@@ -1,5 +1,9 @@
 name: Phase 41 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 41 closes the gating doctor and support matrix truth proof posture for v3.5.
 #
 # This workflow proves:

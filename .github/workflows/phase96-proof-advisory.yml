@@ -1,5 +1,9 @@
 name: "Phase 96 Proof - Threadline Docs Contract (Advisory)"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Advisory example-host lane for PROOF-02: Ecto-backed durable-posture proof.
 #
 # This workflow runs ONLY on schedule and workflow_dispatch — never on PR or push.
