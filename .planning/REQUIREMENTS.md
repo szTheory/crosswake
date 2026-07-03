@@ -45,6 +45,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 - [ ] **FAMILY-02**: The extraction recipe `script/extract_companion.md` gains a documented "Step 0: core decoupling" prerequisite for entangled companions and a guard step that greps all of `lib/` (not just the companion dir) for stale companion references. (D-9)
 - [ ] **FAMILY-03**: Each companion package carries its own telemetry "declared ⇔ emitted" Side-A contract test; core's hardcoded reserved-event count assertion (`length(reserved_events) >= 24`) is removed in favor of a shape assertion. (D-6)
 - [ ] **FAMILY-04**: The three publishes are registered and executed **sequentially** (sigra → chimeway → threadline), one `release-please` component added per PR so a misfire cannot publish all three; the carried `merge-blocking-*` lane-registration ship-gate (`register_required_checks.sh`) is run before new v17.0 lanes are relied upon as merge-blocking. (D-9)
+- [ ] **FAMILY-05**: Core is published to Hex **first**, at the version that introduces the companion-required API (`Crosswake.Compatibility.Finding.{code,details}`, `:auth` clause, `:companions` registry) — a minor bump to `0.2.0` — **before** any companion publish; each companion's `crosswake_dep()` publish seam floor is raised `~> 0.1` → `~> 0.2` so the "Requires crosswake >= 0.2.0" compat-matrix column is honest and a downstream resolve cannot compile a companion against a too-old core. (Discovered 2026-07-03: the sigra publish failed at compile — `KeyError :code` from published core 0.1.2 — because companions depend on unpublished v17.0 core; the FAMILY-04 publish plan omitted core-first ordering.)
 
 ## Future Requirements (deferred)
 
@@ -80,7 +81,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | THREAD-01 | Phase 139 | Complete |
 | THREAD-02 | Phase 139 | Complete |
 | THREAD-03 | Phase 139 | Complete |
-| FAMILY-01 | Phase 140 | Pending |
-| FAMILY-02 | Phase 140 | Pending |
-| FAMILY-03 | Phase 140 | Pending |
-| FAMILY-04 | Phase 140 | Pending |
+| FAMILY-01 | Phase 140 | Complete |
+| FAMILY-02 | Phase 140 | Complete |
+| FAMILY-03 | Phase 140 | Complete |
+| FAMILY-04 | Phase 140 (readiness) / Phase 141 (execution) | In Progress — runbook + pipeline ready (140-04); sequential publish blocked on FAMILY-05, moved to Phase 141 |
+| FAMILY-05 | Phase 141 | Pending |
