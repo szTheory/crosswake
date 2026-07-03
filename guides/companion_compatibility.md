@@ -22,9 +22,9 @@ cell drifts from the package source in either direction.
 |---|---|---|---|---|---|
 | `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
 | `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
-| `crosswake_sigra` | `:sigra` | `unpublished` | `~> 0.1` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
-| `crosswake_chimeway` | `:chimeway` | `unpublished` | `~> 0.1` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
-| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `unpublished` | `~> 0.1` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
+| `crosswake_sigra` | `:sigra` | `unpublished` | `~> 0.2` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
+| `crosswake_chimeway` | `:chimeway` | `unpublished` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
+| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `unpublished` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
 The `Current Version` column reads "unpublished" until each package's first Hex
 release; after that release lands, the human writes the confirmed number back from
@@ -44,19 +44,23 @@ modules.
 
 ## Independent Versioning
 
-These are first-party companion packages, each with its own SemVer line. A companion
-at `0.1.0` runs against core `0.1.2` — the version numbers do not move in lockstep.
-The `Requires crosswake` cell declares a **minimum**, not a ceiling: `~> 0.1` means
-the companion accepts any core release in the `0.x` line, so adding `crosswake_rindle`
-`0.1.0` to a project already on `crosswake` `0.1.2` resolves cleanly without pinning
-core back.
+These are first-party companion packages, each with its own SemVer line — the version
+numbers do not move in lockstep with core or with each other. The `Requires crosswake`
+cell declares a **minimum**, not a ceiling, and that minimum now differs by companion.
+`rulestead` and `rindle` still declare `~> 0.1`, so adding `crosswake_rindle` `0.1.0`
+to a project already on `crosswake` `0.1.2` resolves cleanly without pinning core back.
+The three v17.0 companions (`crosswake_sigra`, `crosswake_chimeway`,
+`crosswake_threadline`) declare `~> 0.2` and will **not** resolve against a `0.1.x`
+core — they require `crosswake` `0.2.0` or later.
 
 ## Reading the Requirement Syntax
 
-`~> 0.1` means `>= 0.1.0 and < 1.0.0`. It admits every `0.x` core release and stops
-at the next major. That is the only requirement form in the matrix today; if a
-companion ever needs a tighter floor it will name a fuller version (for example
-`~> 0.2`), and the drift test will require that exact literal in this doc.
+Two requirement forms are live in the matrix today. `~> 0.1` (`rulestead`, `rindle`)
+means `>= 0.1.0 and < 1.0.0` — it admits every `0.x` core release, including `0.1.2`,
+and stops at the next major. `~> 0.2` (`sigra`, `chimeway`, `threadline`) means
+`>= 0.2.0 and < 1.0.0` — it excludes the entire `0.1.x` line, so those companions
+require core `0.2.0` or newer. If a companion ever needs a still tighter floor it will
+name a fuller version, and the drift test will require that exact literal in this doc.
 
 ## Engine Dependencies
 
