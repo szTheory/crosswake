@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
 status: executing
-stopped_at: Phase 140 Wave 1 done + origin-synced (PR #45); sigra publish ATTEMPTED → BLOCKED on unpublished-core dep (Finding.code); core-first fix needs planning
-last_updated: "2026-07-03T01:12:24.844Z"
+stopped_at: Phase 140 context gathered
+last_updated: "2026-07-03T08:59:07.586Z"
 last_activity: 2026-07-03
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 1
-  total_plans: 24
-  completed_plans: 23
-  percent: 96
+  total_plans: 28
+  completed_plans: 22
+  percent: 17
 ---
 
 # Project State: Crosswake
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 140 — family-discipline-close
+**Current focus:** Phase 141 — core-first-publish-family-release
 
 ## Current Position
 
-Phase: 140 (family-discipline-close) — EXECUTING (Wave 1 done; Wave 2 human-gated)
-Plan: 5 of 5 (140-05 pending human go-decision)
+Phase: 141 (core-first-publish-family-release) — EXECUTING
+Plan: 2 of 4
 Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
 Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE). ATTEMPTED sigra publish 2026-07-03 (user-authorized, canary-first) → **BLOCKED, nothing published.** Boundary sync PR #45 landed first (origin==main, CI green, all 22 required lanes; fixed phase71-proof.yml sigra→chimeway drift). Then merged sigra Release PR #42 → `publish-hex-sigra` FAILED at the COMPILE step (never reached hex.publish): `KeyError key :code not found ... (crosswake 0.1.2) Finding.__struct__`.
 **ROOT CAUSE (systemic, blocks whole family):** companions depend on UNPUBLISHED v17.0 core. sigra evaluator.ex:258 + chimeway resolver.ex:102 build `%Finding{code:}`; the `:code` field was added to core `Finding` in cc87362d (phase 137-01) — unpublished (core is 0.1.2 on Hex). Companion publish seam resolves `{:crosswake, "~> 0.1"}` → Hex serves 0.1.2 (pre-`:code`) → compile fails. All 3 companions share the `~> 0.1` floor → all blocked identically. The 140-05 plan/runbook OMITTED that CORE must publish first.
