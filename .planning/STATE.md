@@ -233,3 +233,5 @@ Resume file: .planning/phases/140-family-discipline-close/140-CONTEXT.md
 - **Repo-hygiene boundary sync (in progress):** land the accumulated local main onto origin via a `sync/main-*` PR, get CI green, triage open PRs. See `docs/MILESTONE-BOUNDARY-HYGIENE.md`. NO hex publish in this pass.
 - **Phase 137 wave 5 (deferred human gate):** when ready to publish, drive `137-05-PLAN.md` — ① land to origin + CI green → ② register required checks green-first (`DRY_RUN=0 script/register_required_checks.sh`) → ③ merge the `crosswake_sigra 0.1.0` Release PR (irreversible publish) → ④ merge the release-as-cleanup PR.
 - Then continue v17.0: Phase 138 (crosswake_chimeway) → 139 (threadline) → 140 (family discipline + close).
+
+<!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->
