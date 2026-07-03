@@ -343,6 +343,13 @@ Phase 130 dress-rehearsal (crosswake_dep/0 not yet in place):
 - For Phase 130 only, use the Step 4 companion mix.exs with `{:crosswake, path: "../.."}` directly.
 - Once crosswake_dep/0 is in place (Phase 131), always run with CROSSWAKE_RELEASE=1.
 
+> If this step fails: check the failing step in the script output. A tarball-inspection failure
+> (test/ present, or lib/ source missing) means the `files:` list in Step 4 is wrong — fix
+> `package/0`. A dep-presence failure (crosswake absent from `hex_metadata.config`) means you ran
+> without `CROSSWAKE_RELEASE=1` so `crosswake_dep/0` returned the path dep — re-run with the env set.
+> A `--warnings-as-errors` compile failure means a static core→companion reference survived — return
+> to Step 0 for this companion's type.
+
 ---
 
 ## Step 11: Run the three guards
@@ -359,6 +366,13 @@ mix companions.test
 Expected: all green. EXTRACT-01 (no MIX_INCLUDE_*), EXTRACT-03 (no static refs, still skipped
 until next EXTRACT-03 test plan runs assert_no_static_refs!), COMPAT-01 (fail-closed), EXTRACT-04
 (ensure_loaded? placement) — all assertions pass.
+
+> If this step fails: a red guard means a static core→companion reference survived. Grep the
+> failing module for `Crosswake.{Companion}` (both the call-site and the `@\w+ .*Crosswake.{Companion}.`
+> module-attribute form), then apply the Step-0 decoupling for this companion's type — registry
+> inversion (compile-coupled) or attribute freeze + telemetry cut (observer). If the companion lane
+> (`mix companions.test`) is red instead, the failure is inside the moved package (test/support stub
+> or config wiring) — fix it in `packages/crosswake_{companion}/`, not core.
 
 ---
 
@@ -502,7 +516,13 @@ No manual dep-string editing needed when promoting from dress rehearsal to publi
 
 ---
 
-*Recipe version: Phase 135 (release-as removal CI-automated — PROOF-03)*
-*Base: Phase 131 (rulestead publish pipeline + crosswake_dep/0 pivot)*
-*Proven on: crosswake_rulestead (Phase 130 extraction + Phase 131 publish wiring), crosswake_rindle (Phase 132)*
-*Next: sigra / chimeway / threadline (fast follow-on — inherit 0-human release ops)*
+*Recipe version: Phase 140 (family-discipline hardening — Step 0 coupling-audit gate + grep exit-code fix + module-attribute pass + observer variant + inline failure callouts)*
+*Base: Phase 131 (rulestead publish pipeline + crosswake_dep/0 pivot); Phase 135 (release-as removal CI-automated — PROOF-03)*
+*Proven on the complete companion family (all five, tagged by coupling type):*
+- *`crosswake_rulestead` (pure) — Phase 130 extraction + Phase 131 publish wiring*
+- *`crosswake_rindle` (pure) — Phase 132*
+- *`crosswake_sigra` (compile-coupled) — Phase 137 (registry inversion via :companions seam, Phase 136)*
+- *`crosswake_chimeway` (compile-coupled) — Phase 138 (registry inversion via :companions seam, Phase 136)*
+- *`crosswake_threadline` (observer) — Phase 139 (non-:companions; @audit_ledger_support_truth freeze + telemetry attach-time cut)*
+
+*Next: the family is complete — all five companions are extracted and this recipe is proven across every coupling type (pure, compile-coupled, observer). The next application is a hypothetical 6th companion, for which Step 0 will triage the type and the module-attribute pass guards against the @audit_ledger_support_truth-class footgun.*
