@@ -1,7 +1,10 @@
 defmodule Crosswake.Threadline.TelemetryTest do
   use ExUnit.Case, async: true
 
+  import Plug.Test
+
   alias Crosswake.Threadline.Telemetry
+  alias Crosswake.Plug.Threadline, as: PlugThreadline
 
   # -----------------------------------------------------------------------
   # Contract: event names — exact list equality (published contract)
@@ -167,5 +170,79 @@ defmodule Crosswake.Threadline.TelemetryTest do
     refute Map.has_key?(received_metadata, :email)
     assert received_metadata[:thread_id] == "tid-ok"
     assert received_metadata[:correlation_id] == "cid-ok"
+  end
+
+  # -----------------------------------------------------------------------
+  # Side-A "declared ⇔ emitted" contract (FAMILY-03 / D-17).
+  #
+  # The exact-list contract tests above are legitimate published-contract equality
+  # checks for the observer's stable 3-event list — they stay. This section adds the
+  # catalog-driven emission proof + drives the previously-declared-but-never-driven
+  # :exception event LIVE through Crosswake.Plug.Threadline's error path.
+  #
+  # HARD RULE: subset (Map.has_key?) assertions only — never an exact metadata COUNT.
+  # -----------------------------------------------------------------------
+
+  # Part (a): catalog-iterating Side-A test. Pulls names live from event_names/0
+  # (never hardcoded), so declaring a 4th event without emitting it fails here.
+  test "Side-A: every declared event name emits with :thread_id metadata present" do
+    for event_name <- Telemetry.event_names() do
+      handler_id = "threadline-sideA-#{System.unique_integer([:positive])}"
+
+      :telemetry.attach(
+        handler_id,
+        event_name,
+        fn ^event_name, measurements, metadata, _config ->
+          send(self(), {:threadline_sideA, event_name, measurements, metadata})
+        end,
+        nil
+      )
+
+      on_exit(fn -> :telemetry.detach(handler_id) end)
+
+      assert :ok = Telemetry.execute(event_name, %{}, %{thread_id: "tid-catalog"})
+
+      assert_receive {:threadline_sideA, ^event_name, _measurements, metadata}
+
+      # Subset assertion only — the always-present key must be present. Do NOT
+      # assert an exact metadata count.
+      assert Map.has_key?(metadata, :thread_id)
+    end
+  end
+
+  # Part (b): drive the :exception event LIVE through Plug.Threadline's rescue clause.
+  # Passing a non-Plug.Conn value makes Conn.get_req_header/2 raise inside the try
+  # block; the rescue emits prefix ++ [:exception] then reraises. This proves the
+  # declared :exception event is actually emitted (not just declared) AND that the
+  # reraise propagates. :plug is a test-available dep in this package, so
+  # Crosswake.Plug.Threadline compiles (guarded by Code.ensure_loaded?(Plug.Conn)).
+  test "Side-A: :exception event is driven live through Plug.Threadline error path with reraise" do
+    event_name = [:crosswake, :threadline, :request, :exception]
+    handler_id = "threadline-exception-#{System.unique_integer([:positive])}"
+
+    :telemetry.attach(
+      handler_id,
+      event_name,
+      fn ^event_name, measurements, metadata, _config ->
+        send(self(), {:threadline_exception, measurements, metadata})
+      end,
+      nil
+    )
+
+    on_exit(fn -> :telemetry.detach(handler_id) end)
+
+    # A non-Plug.Conn value forces Conn.get_req_header/2 to raise inside call/2's
+    # try block; the rescue fires the :exception event, then reraises.
+    assert_raise FunctionClauseError, fn ->
+      PlugThreadline.call(:not_a_conn, PlugThreadline.init([]))
+    end
+
+    # The :exception event fired (proving it is emitted, not just declared) with its
+    # :duration measurement. The rescue passes %{kind:, reason:} but those are not
+    # allowlisted metadata keys, so metadata/1 sanitizes them out — the observed
+    # metadata is empty, which is the correct PII-safe contract.
+    assert_receive {:threadline_exception, measurements, metadata}
+    assert Map.has_key?(measurements, :duration)
+    assert metadata == %{}
   end
 end
