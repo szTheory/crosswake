@@ -22,6 +22,42 @@
         {
           "type": "generic",
           "path": "packages/crosswake-shell-core-android/build.gradle.kts"
+        },
+        {
+          "type": "json",
+          "path": "examples/phoenix_host/evidence/evidence-manifest.example.json",
+          "jsonpath": "$.crosswake_version"
+        },
+        {
+          "type": "json",
+          "path": "examples/phoenix_host/priv/crosswake/install_manifest.json",
+          "jsonpath": "$.crosswake_version"
+        },
+        {
+          "type": "json",
+          "path": "examples/ios_shell_host/Fixtures/crosswake_manifest.json",
+          "jsonpath": "$.crosswake_version"
+        },
+        {
+          "type": "json",
+          "path": "examples/android_shell_host/app/src/main/assets/crosswake_manifest.json",
+          "jsonpath": "$.crosswake_version"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        },
+        {
+          "type": "generic",
+          "path": "guides/android_uat.md"
+        },
+        {
+          "type": "generic",
+          "path": "examples/android_shell_host/app/build.gradle"
+        },
+        {
+          "type": "generic",
+          "path": "examples/ios_shell_host/CrosswakeShell.xcodeproj/project.pbxproj"
         }
       ],
       "changelog-sections": [
