@@ -1,7 +1,7 @@
 defmodule CrosswakeSigra.MixProject do
   use Mix.Project
 
-  @version "0.1.0" # x-release-please-version — D-22: separate from core 0.1.2; do NOT touch core release-please config/manifest
+  @version "0.1.1" # x-release-please-version — D-22: separate from core 0.1.2; do NOT touch core release-please config/manifest
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
