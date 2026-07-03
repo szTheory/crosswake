@@ -137,6 +137,91 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   end
 
   # ---------------------------------------------------------------------------
+  # SC#5 — O(N) structural guard (D-07): the "no inter-companion columns"
+  # invariant made real. Parse the header row, drop col 0 (`Hex Package`, whose
+  # DATA rows legitimately name `crosswake_*` packages but whose HEADER cell is
+  # `Hex Package`), and refute any remaining HEADER cell matching `crosswake_\w+`.
+  # A future `Requires crosswake_sigra` header column must fail HERE, keeping the
+  # matrix O(N) (companions depend on core only, never on each other).
+  # ---------------------------------------------------------------------------
+
+  test "no header column beyond col 1 names another companion package (O(N) guard)" do
+    doc = File.read!(@doc_path)
+    header_cells = header_row_cells(doc)
+
+    assert is_list(header_cells) and length(header_cells) >= 2,
+           ProofAssertions.stable_id_message(
+             "proof.compat_03.no_inter_companion_columns",
+             "the compat matrix header row must be locatable to enforce the O(N) column guard",
+             "guides/companion_compatibility.md header row (line matching `| Hex Package | ... |`)",
+             "could not locate a header row with >= 2 columns — the matrix header was reshaped or removed",
+             "guides/companion_compatibility.md",
+             "restore the `| Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |` header",
+             :merge_blocking
+           )
+
+    # Drop col 0 (`Hex Package`) — every column beyond it must be a per-companion
+    # AXIS, never a per-companion COLUMN. A `crosswake_\w+` token in a header cell
+    # beyond col 0 is an inter-companion column (e.g. "Requires crosswake_sigra").
+    offending =
+      header_cells
+      |> Enum.drop(1)
+      |> Enum.filter(&String.match?(&1, ~r/crosswake_\w+/))
+
+    assert offending == [],
+           ProofAssertions.stable_id_message(
+             "proof.compat_03.no_inter_companion_columns",
+             "no compat matrix header column beyond col 1 may name a specific companion package",
+             "header cells (col 1..N) matched against ~r/crosswake_\\w+/",
+             "header column(s) #{inspect(offending)} name a specific companion — the matrix must stay O(N) (companions depend on core only, never on each other)",
+             "guides/companion_compatibility.md",
+             "remove the inter-companion column; per-companion facts belong in the single `Requires `crosswake`` axis, not a new column",
+             :merge_blocking
+           )
+  end
+
+  # ---------------------------------------------------------------------------
+  # SC#6 — version-cell FORMAT guard (D-08): each `Current Version` cell must be
+  # `unpublished` OR a bare backticked semver. Catches prose-creep / hand-edit
+  # mistakes WITHOUT fencing the value — the test asserts FORMAT only; hex.pm
+  # stays the version authority (no specific version literal is asserted).
+  # ---------------------------------------------------------------------------
+
+  test "every Current Version cell is `unpublished` or a bare semver (format guard)" do
+    doc = File.read!(@doc_path)
+    idx = current_version_column_index(doc)
+
+    assert is_integer(idx),
+           ProofAssertions.stable_id_message(
+             "proof.compat_03.version_cell_format",
+             "the `Current Version` column must be locatable by its header cell",
+             "guides/companion_compatibility.md header row search for a `Current Version` cell",
+             "no `Current Version` header cell found — the column was renamed or removed",
+             "guides/companion_compatibility.md",
+             "restore the `Current Version` header cell in the matrix table",
+             :merge_blocking
+           )
+
+    # Iterate the same `crosswake_*` data rows the existing @row_regex recognizes so
+    # the loop is non-vacuous (SC#2 guarantees >= 2 packages exist).
+    for pkg <- doc_package_rows(doc) do
+      line = package_row_line(doc, pkg)
+      cell = line |> row_cells() |> Enum.at(idx) |> to_string() |> String.trim()
+
+      assert cell == "`unpublished`" or String.match?(cell, ~r/^`\d+\.\d+\.\d+`$/),
+             ProofAssertions.stable_id_message(
+               "proof.compat_03.version_cell_format",
+               "the #{pkg} Current Version cell must be `unpublished` or a bare backticked semver",
+               "guides/companion_compatibility.md #{pkg} Current Version cell",
+               "#{pkg} Current Version cell is #{inspect(cell)} — neither `unpublished` nor a `X.Y.Z` semver literal",
+               "guides/companion_compatibility.md",
+               "set the #{pkg} Current Version cell to `unpublished` (pre-publish) or the confirmed hex.pm `X.Y.Z` semver post-publish",
+               :merge_blocking
+             )
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # AST extraction — MUST parse, not grep. A bare grep on `crosswake` returns BOTH
   # the Hex requirement and the `path: "../.."` dev branch (Pitfall 1).
   # ---------------------------------------------------------------------------
@@ -161,6 +246,16 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   # `{:crosswake, "~> 0.1"}`; the else: branch is the `path:` dev dep we ignore.
   # A fallthrough returning nil makes a refactored resolver fail loudly (the
   # version_mismatch case fires) rather than passing silently.
+  #
+  # TODO(core-1.0, D-09): when core reaches 1.0.0 a companion may declare a
+  # COMPOUND requirement to span the major boundary, e.g. `~> 0.1 or ~> 1.0`.
+  # That parses as an `{:or, _, [left, right]}` AST node in the do: position, not
+  # a bare `req` binary, so this matcher will fall through to nil and surface as a
+  # cryptic `version_mismatch` drift failure. Widen `extract_hex_req_from_if/1`
+  # (and the doc-cell comparison in `doc_row_has_requirement?/3`) to accept the
+  # `or`-constraint form at that point. Do NOT add `or`-parsing now — no companion
+  # declares a compound requirement yet, and speculatively widening the matcher
+  # would weaken the exact-literal drift guarantee for the single `~> 0.1` form.
   defp extract_hex_req_from_if({:if, _, [_cond, [do: {:crosswake, req}, else: _]]})
        when is_binary(req),
        do: req
@@ -216,16 +311,43 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   # pinned HTML comment above the table names this cell as the contract anchor.
   defp requires_crosswake_column_index(doc) do
     doc
-    |> String.split("\n")
-    |> Enum.find_value(fn line ->
-      if String.match?(line, ~r/^\|.*Hex Package.*\|/) do
-        line
-        |> row_cells()
-        |> Enum.find_index(fn cell ->
+    |> header_row_cells()
+    |> then(fn
+      cells when is_list(cells) ->
+        Enum.find_index(cells, fn cell ->
           String.contains?(cell, "Requires") and String.contains?(cell, "crosswake")
         end)
-      end
+
+      _ ->
+        nil
     end)
+  end
+
+  # Locate the zero-based column index of the "Current Version" header (D-08 format
+  # guard), keyed on the same header-detection idiom.
+  defp current_version_column_index(doc) do
+    doc
+    |> header_row_cells()
+    |> then(fn
+      cells when is_list(cells) ->
+        Enum.find_index(cells, &String.contains?(&1, "Current Version"))
+
+      _ ->
+        nil
+    end)
+  end
+
+  # The trimmed cells of the matrix HEADER row, using the same
+  # `^\|.*Hex Package.*\|` idiom `requires_crosswake_column_index/1` established.
+  # Returns a list of trimmed cell strings, or nil if no header row is present.
+  defp header_row_cells(doc) do
+    doc
+    |> String.split("\n")
+    |> Enum.find(&String.match?(&1, ~r/^\|.*Hex Package.*\|/))
+    |> case do
+      nil -> nil
+      line -> row_cells(line)
+    end
   end
 
   defp package_row_line(doc, pkg) do
