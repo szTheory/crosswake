@@ -112,6 +112,49 @@ ready for the human-triggered batched publish once the preconditions below are m
 
 ---
 
+## Step 0 — Publish core FIRST (the load-bearing prerequisite, D-141-B)
+
+**This step is mandatory and must complete, fully, before ANY companion Release
+PR is merged.** It was missing from the original FAMILY-04 revision of this
+runbook, and its absence was the direct cause of a failed sigra publish attempt
+on 2026-07-03.
+
+**Why.** The companion packages build `%Finding{code: ...}` (sigra
+`evaluator.ex:258`, chimeway `resolver.ex:102`) using core API — the `:code`
+and `:details` fields plus the `:auth` clause on `Crosswake.Compatibility.Finding`
+— that was added to core post-0.1.2 and has **never been published to Hex**.
+The companion publish seam (`crosswake_dep()`, D-11/D-13) resolves
+`{:crosswake, "~> 0.2"}` at publish time. If published core is still `0.1.2`,
+Hex serves the pre-`:code` struct and the companion fails to compile — **before
+`mix hex.publish` even runs, so nothing gets published, but the Release PR
+merge is wasted and the loop stalls.** This is exactly what happened on
+2026-07-03: sigra Release PR #42 merged, `publish-hex-sigra` ran, and
+`mix compile` died with `(KeyError) key :code not found` expanding
+`Crosswake.Compatibility.Finding.__struct__/1` against the published `0.1.2`
+struct. Dress-rehearsals never caught this because they compile against the
+local path dependency, not the Hex-resolved version — only a real publish
+attempt exercises the seam that broke.
+
+**How.** Merge the root release-please Release PR (**#25**, "chore: release
+main") — with the `release-as: "0.2.0"` pin from Step 0's companion task
+(141-01 Task 1) in place, it recomputes to core `0.2.0` instead of a
+pre-major patch. Merging it triggers the `publish-hex` job
+(`release-please.yml` ~L92), gated on `needs.release-please.outputs.releases_created`,
+which checks out the `hex-vX.Y.Z` tag, verifies `@version` in `mix.exs`
+matches, and runs `mix hex.publish`. This takes core `0.2.0` live on Hex.
+
+**The gate.** Do **NOT** merge ANY companion Release PR (`crosswake_sigra`,
+`crosswake_chimeway`, or `crosswake_threadline`) until BOTH of the following are
+true:
+
+- `mix hex.info crosswake` shows `0.2.0`.
+- `https://hexdocs.pm/crosswake/0.2.0` resolves.
+
+Only once both are confirmed does the per-companion publish loop below become
+safe to start.
+
+---
+
 ## Preconditions (do NOT start until all are true)
 
 Per decision D-01 (USER-LOCKED), the batched publish is deferred behind a small
@@ -126,7 +169,11 @@ these clear; there is no reason to hold it back further.
    work and gets CI green. This publish runbook is what fires afterward.
 2. **Phases 137 / 138 / 139 are execution-verified.** The sigra, chimeway, and
    threadline extractions have each been executed and verified green in-tree.
-3. **You have hex.pm publish rights** for the `crosswake_*` packages and a shell
+3. **Core 0.2.0 is live on Hex.** See Step 0 above — this is the load-bearing
+   prerequisite the original runbook omitted. Do not proceed to the
+   per-companion loop until `mix hex.info crosswake` shows `0.2.0` and
+   `hexdocs.pm/crosswake/0.2.0` resolves.
+4. **You have hex.pm publish rights** for the `crosswake_*` packages and a shell
    with `gh` authenticated at repo-admin scope (needed only for the ship-gate
    registration step, not for the publish itself).
 
@@ -162,7 +209,12 @@ For companion `<name>` (in order `sigra`, then `chimeway`, then `threadline`):
 3. **Confirm the docs actually published.** Open
    `https://hexdocs.pm/crosswake_<name>/0.1.0` and confirm it resolves (hexdocs
    lags hex.pm by a short interval; give it a minute). If it never resolves, treat
-   it as a failure — investigate before continuing.
+   it as a failure — investigate before continuing. Because Step 0 already put
+   core `0.2.0` live before this loop started, the `clean-room-proof-<name>` job
+   in step 2 is what actually proves the companion resolves against core `0.2.0`
+   (not the stale `0.1.2`) — a green clean-room proof is the real confirmation
+   that the core-first gate worked, not just that the companion's own docs page
+   resolves.
 4. **Merge the auto-opened `release-as-cleanup` PR.** The `release-as-cleanup` job
    (`release-please.yml` ~L1202, PROOF-03b) auto-opens a one-line PR stripping the
    now-stale one-shot `release-as: "0.1.0"` pin (and its `_TODO_release_as` note)
