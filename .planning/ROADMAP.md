@@ -303,7 +303,13 @@ Plans:
   4. The carried `register_required_checks.sh` ship-gate is run green-first so any new v17.0 `merge-blocking-*` lane is registered as required, with `publish-hex-*` / `clean-room-proof-*` deliberately excluded.
   5. Every irreversible `hex.publish` (core + each companion) is a human go/no-go gate (autonomous: false) — no publish runs inside autonomous phase execution.
 
-**Plans**: TBD (to be created by /gsd-plan-phase 141)
+**Plans**: 4 plans
+
+Plans:
+- [ ] 141-01-PLAN.md — release-please core-0.2.0 nudge (`release-as: "0.2.0"` on `.`) + runbook core-first step (D-141-A/B) [Wave 1, autonomous]
+- [ ] 141-02-PLAN.md — bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (sigra/chimeway/threadline) + compat-matrix cells, drift-test green (D-141-C/D) [Wave 1, autonomous]
+- [ ] 141-03-PLAN.md — boundary PR green + ship-gate registration + CORE 0.2.0 publish FIRST (human-gated, autonomous:false; D-141-B/E) [Wave 2]
+- [ ] 141-04-PLAN.md — sequential companion publish sigra→chimeway→threadline, each clean-room-proofed against core 0.2.0 (human-gated, autonomous:false; D-141-B/E, FAMILY-04) [Wave 3]
 
 ## Progress
 
