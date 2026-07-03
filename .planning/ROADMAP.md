@@ -124,7 +124,7 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 </details>
 
-### v17.0 Companion Family Completion (Phases 136-140)
+### v17.0 Companion Family Completion (Phases 136-141)
 
 - [x] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: passed 2026-07-01 — gap closure 136-06 resolved the 34 regressions; full suite 1162/0) (completed 2026-07-01)
 - [ ] **Phase 137: crosswake_sigra Extraction** - Extract sigra into a standalone independently-versioned Hex package with the Finding-boundary refactor, dress rehearsal, and irreversible publish.
