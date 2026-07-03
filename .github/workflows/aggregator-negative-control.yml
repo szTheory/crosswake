@@ -1,4 +1,8 @@
 name: Aggregator Negative Control
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 # Hermetically PROVES the re-actors/alls-green rollup pattern — shared byte-for-byte by all three
 # merge-blocking aggregators (native-behavioral-proof, contract-drift, offline-sync-e2e) — actually
 # FAILS on a failed leaf result AND on a SKIPPED leaf result, and PASSES on an all-green result.

@@ -1,5 +1,9 @@
 name: Phase 45 Proof
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 # Phase 45 closes the rindle companion proof posture for v3.5 by splitting
 # proof lanes into:
 #
