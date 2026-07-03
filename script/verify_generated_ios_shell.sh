@@ -46,7 +46,15 @@ if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
   ios_core_remote="https://github.com/szTheory/crosswake-shell-core-ios.git"
   ios_core_version="$(sed -n 's/.*minimumVersion = \([0-9][0-9.]*\);.*/\1/p' "${project}/project.pbxproj" | head -1)"
   ios_core_clone="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-core.XXXXXX")/crosswake-shell-core-ios"
-  git clone -q "${ROOT_DIR}/packages/crosswake-shell-core-ios" "${ios_core_clone}"
+  # The package is a regular subtree of the monorepo (not a submodule/standalone repo), so a
+  # fresh CI checkout has no .git here — build a throwaway git repo from the files so SwiftPM
+  # can resolve a version tag from it (git clone of a non-repo path fails: phase18 hermetic).
+  mkdir -p "${ios_core_clone}"
+  cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
+  rm -rf "${ios_core_clone}/.git"
+  git -C "${ios_core_clone}" init -q
+  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci add -A
+  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${ios_core_version}" >/dev/null 2>&1
   git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "${ios_core_version}" -m "hermetic ${ios_core_version}" >/dev/null 2>&1
   git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "v${ios_core_version}" -m "hermetic v${ios_core_version}" >/dev/null 2>&1
   mirror_dir="${HOME}/.swiftpm/configuration"
