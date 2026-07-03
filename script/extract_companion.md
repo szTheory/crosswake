@@ -18,6 +18,45 @@ Before starting:
 
 ---
 
+## Step 0: Core-coupling audit (required before extraction)
+
+**This is a BLOCKING gate, not a prerequisites bullet.** Before you move ANY source, classify
+the companion and complete the decoupling its type requires. Starting Step 1 with core still
+compile-coupled to the companion produces an undiagnosable compile failure after the source is
+gone. Step 0 is skippable ONLY for the `pure` type; **every other type MUST complete Step 0 green
+before Step 1.**
+
+**Companion-type triage:**
+
+| Type | Companions | What core does | What Step 0 requires |
+|------|-----------|----------------|----------------------|
+| `pure` | rulestead, rindle | No core→companion compile coupling. | Nothing — skip the Step 0 body and proceed directly to Step 1. |
+| `compile-coupled` | sigra, chimeway | Core references the companion module at **compile time** (telemetry / route-gate / support-matrix / doctor call sites). | You MUST first **invert** those references onto the `:companions` registry seam — the Phase 136 pattern: optional `@behaviour` callbacks resolved at runtime via `function_exported?/3` — so core names no companion module. No source may move until core compiles clean with the companion registered only through the seam. |
+| `observer` | threadline | The companion is **NOT** a `:companions` registrant. Its coupling lives in core **module attributes** + a **telemetry attach-time static call** — there is NO registry-inversion step. | Fix both non-obvious sites (named below) before Step 1. |
+
+**Observer decoupling — the two sites (threadline worked example):**
+
+1. **Freeze the coupled `@module_attribute` into static literals.** Any core module attribute that
+   called the companion's functions at module-evaluation time bakes the returned values into the
+   `.beam` (a stale-beam footgun that a call-site/alias grep never sees). Worked example:
+   `@audit_ledger_support_truth` in `lib/crosswake/support_matrix/support_matrix.ex` — it evaluated
+   `Crosswake.Threadline.Telemetry.event_names()` etc. at compile time and was frozen to
+   `@audit_ledger_support_truth_static` literal values in Phase 139 (SITE 1). Freeze the attribute
+   to literals; no companion function may be called at module-eval.
+
+2. **Cut the static companion-function call at telemetry attach time.** Remove the static
+   `Threadline.Telemetry.forbidden_metadata_keys()` call from `attach_default_logger/1` in core
+   `telemetry.ex` (SITE 2). The observer supplies its forbidden keys at runtime; core must not call
+   the companion at attach time.
+
+> If this step fails: a `compile-coupled` companion whose core references you have NOT yet inverted
+> onto the `:companions` registry, or an `observer` whose two sites are not yet cut, will fail the
+> Step-1 clean-lib guard (below) or the Step-11 `--warnings-as-errors` compile. Do NOT proceed —
+> finish the registry inversion (compile-coupled) or the attribute freeze + telemetry cut (observer)
+> and re-run this audit until it is green.
+
+---
+
 ## Step 1: Move source — preserve module names (non-breaking)
 
 ```bash
@@ -47,9 +86,54 @@ mv lib/crosswake/companions/{companion}.ex \
 3. Move test/support modules (e.g. `MockFlagSource`) to `packages/.../test/support/` (next step).
 
 **Verify core lib/ is clean after the move:**
+
 ```bash
-grep -r "Crosswake.Companions.{Companion}" lib/ && echo "FAIL: references remain" || echo "CLEAN"
+# IDIOM RULE: use the 'if grep ...; then exit 1; fi' form — NEVER '&& echo FAIL || echo CLEAN'.
+# The '&& echo FAIL || echo CLEAN' form is the exit-code trap: grep exits 0 on a match, so the
+# '&&' runs echo, the '||' is skipped, and the whole line ALWAYS exits 0 — the guard can never
+# fail CI. Use -n (line numbers, for MTTR), never -q. Use 'if grep; then exit 1; fi', never
+# '... || exit 1' (the '||' form breaks under 'set -euo pipefail' on a clean tree, where grep's
+# exit-1-on-no-match trips the trap). Put --exclude-dir BEFORE the search paths (BSD/macOS grep
+# portability — this recipe runs on darwin/zsh).
+
+# Primary guard: call-site / alias coupling. Matches BOTH ref forms in lib/ test/ mix.exs.
+if grep -rn --exclude-dir=packages "Crosswake\.\(Companions\.\)\?{Companion}\." lib/ test/ mix.exs; then
+  echo "FAIL: core still references Crosswake.Companions.{Companion} or Crosswake.{Companion}."
+  exit 1
+fi
+
+# Second guard: module-attribute coupling (the stale-beam class a call-site grep misses).
+# A core '@attr Crosswake...{Companion}.fn()' evaluates the companion at module-eval time and
+# bakes values into the .beam — the pre-Phase-139 @audit_ledger_support_truth footgun. Scope to
+# lib/crosswake/ only (this is core-internal compile coupling, not test refs).
+if grep -rn --exclude-dir=packages "@\w\+ .*Crosswake\.\(Companions\.\)\?{Companion}\." lib/crosswake/; then
+  echo "FAIL: core module attribute evaluates Crosswake.{Companion} at compile time — freeze it to literals (see Step 0 observer site 1)."
+  exit 1
+fi
+
+echo "CLEAN"
 ```
+
+**Known guard limits (what grep cannot see):**
+- **Atom-only config references** (e.g. `config :crosswake, :{companion}_flag_source, ...`) are
+  host-owned RUNTIME wiring, not compile coupling — do NOT flag them.
+- **`apply/3` dynamic dispatch** cannot be grepped. The Step-11 compile with `--warnings-as-errors`
+  under `set -e` is the hard backstop for what the grep guards cannot see.
+
+**When the widened `test/` scope legitimately flags a core file (D-13):** a `test/` match is not
+automatically a bug. Confirm which of these the flagged test is, then act:
+- **(a) It belongs in the companion package lane** → move it to
+  `packages/crosswake_{companion}/test/` and re-run the guard.
+- **(b) It is a core fail-closed contract test that legitimately must NOT reference the companion
+  module directly** → rewrite it with the EXTRACT-03 **"test the behavior without aliasing the
+  module"** pattern: define stub companions implementing `@behaviour Crosswake.Companion`
+  OUTSIDE the test module (not aliases to `Crosswake.Companions.{Companion}`), as in
+  `test/crosswake/proof/phase130_fail_closed_contract_test.exs`. This makes the guard pass
+  WITHOUT weakening the fail-closed contract.
+
+> If this step fails: a match means core still references the companion. Return to Step 0 and finish
+> the registry inversion (compile-coupled) or the attribute freeze / telemetry cut (observer) before
+> re-running — UNLESS the match is a `test/` file, in which case apply the D-13 (a)/(b) decision above.
 
 ---
 
