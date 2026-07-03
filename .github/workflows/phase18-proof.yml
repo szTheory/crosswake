@@ -46,6 +46,9 @@ jobs:
         env:
           CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
           CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
+          CROSSWAKE_IOS_USE_LOCAL_CORE: "1"   # resolve the checked-in host's shell-core from a local
+                                              # tagged clone so a version-bump release PR resolves the
+                                              # not-yet-published version (see verify_generated_ios_shell.sh)
         run: |
           export CROSSWAKE_IOS_PROJECT_ROOT="examples/ios_shell_host"
           bash script/verify_generated_ios_shell.sh

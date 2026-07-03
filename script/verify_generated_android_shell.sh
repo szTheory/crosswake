@@ -242,6 +242,16 @@ main() {
 
   cd "${project_root}"
 
+  # Hermetic release-PR resolution: on a version-bump release PR the
+  # crosswake-shell-core-android artifact for the CURRENT version is not on Maven
+  # Central yet (it publishes when the release PR merges). When the CI lane has
+  # published it to the local Maven repo (~/.m2) via `publishToMavenLocal`, resolve
+  # from there by adding mavenLocal() to the GENERATED settings.gradle only — never
+  # the public template, so adopter-generated shells stay reproducible (no mavenLocal()).
+  if [[ "${CROSSWAKE_ANDROID_USE_MAVEN_LOCAL:-0}" == "1" ]] && ! grep -q "mavenLocal()" settings.gradle; then
+    perl -0777 -pi -e 's/(dependencyResolutionManagement\s*\{[^}]*?repositories\s*\{)/$1\n    mavenLocal()/s' settings.gradle
+  fi
+
   # Pick the Gradle task names by detecting whether the project ACTUALLY declares
   # product flavors, not by whether a project root was passed in. The
   # examples/android_shell_host path declares prod/dev flavors (-> testProdDebugUnitTest);

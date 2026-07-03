@@ -1,6 +1,6 @@
 # Android Device-UAT Checklist
 
-**Last verified against:** Crosswake v0.1.2 on Android 15 (API 35) <!-- x-release-please-version -->
+**Last verified against:** Crosswake v0.2.0 on Android 15 (API 35) <!-- x-release-please-version -->
 
 ## What This Proves
 

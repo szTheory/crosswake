@@ -477,7 +477,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
     report =
       readiness_report(
         project_config: [
-          version: "0.2.0",
+          version: "0.3.0",
           source_url: "https://github.com/szTheory/crosswake",
           package: [name: "crosswake"]
         ]
@@ -487,7 +487,7 @@ defmodule Crosswake.Doctor.PublishReadinessTest do
 
     assert publish.blocking
     assert publish.code == "diag.publish.local_truth_failed"
-    assert "CHANGELOG.md must include the current [0.2.0] release" in publish.details.errors
+    assert "CHANGELOG.md must include the current [0.3.0] release" in publish.details.errors
   end
 
   test "compatibility_rebuild_guidance check is present and advisory in baseline (no drift)" do
