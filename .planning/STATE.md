@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
 status: executing
-stopped_at: Phase 140 Wave 1 complete (140-01..04); Wave 2 (140-05 publish) human-gated
-last_updated: "2026-07-03T01:12:24.844Z"
+stopped_at: Phase 140 context gathered
+last_updated: "2026-07-03T08:59:07.586Z"
 last_activity: 2026-07-03
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 1
-  total_plans: 24
-  completed_plans: 23
-  percent: 96
+  total_plans: 28
+  completed_plans: 22
+  percent: 17
 ---
 
 # Project State: Crosswake
@@ -21,14 +21,19 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 140 — family-discipline-close
+**Current focus:** Phase 141 — core-first-publish-family-release
 
 ## Current Position
 
-Phase: 140 (family-discipline-close) — EXECUTING (Wave 1 done; Wave 2 human-gated)
-Plan: 5 of 5 (140-05 pending human go-decision)
+Phase: 141 (core-first-publish-family-release) — EXECUTING
+Plan: 2 of 4
 Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
-Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE hex publishes sigra→chimeway→threadline + register_required_checks.sh ship-gate). DEFERRED per user "no publish now" + requires origin push + green CI first. Awaiting explicit human go-decision.
+Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE). ATTEMPTED sigra publish 2026-07-03 (user-authorized, canary-first) → **BLOCKED, nothing published.** Boundary sync PR #45 landed first (origin==main, CI green, all 22 required lanes; fixed phase71-proof.yml sigra→chimeway drift). Then merged sigra Release PR #42 → `publish-hex-sigra` FAILED at the COMPILE step (never reached hex.publish): `KeyError key :code not found ... (crosswake 0.1.2) Finding.__struct__`.
+**ROOT CAUSE (systemic, blocks whole family):** companions depend on UNPUBLISHED v17.0 core. sigra evaluator.ex:258 + chimeway resolver.ex:102 build `%Finding{code:}`; the `:code` field was added to core `Finding` in cc87362d (phase 137-01) — unpublished (core is 0.1.2 on Hex). Companion publish seam resolves `{:crosswake, "~> 0.1"}` → Hex serves 0.1.2 (pre-`:code`) → compile fails. All 3 companions share the `~> 0.1` floor → all blocked identically. The 140-05 plan/runbook OMITTED that CORE must publish first.
+**RECOVERY PATH (needs planning — do NOT continue merging Release PRs):** (1) publish core first at a new version (e.g. 0.2.0) with the v17.0 decoupling API — this is what stale root release PR #25 should recompute into over phases 136-140; (2) bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (honest "Requires crosswake >= 0.2", matches compat-matrix column); (3) re-publish companions (re-cut tags after floor bump — mind release-please manifest state, sigra entry already 0.1.0).
+CLEANUP DONE 2026-07-03: deleted dangling `crosswake_sigra-v0.1.0` release+tag (publish failed so package NOT on Hex — removed false "Latest"), closed auto-opened release-as-cleanup PR #48. main clean 0/0. release-failure-alert fired as designed; Release-As Staleness Gate green (future PRs not blocked). Open Release PRs remain: #47 threadline, #46 chimeway, #39 rulestead, #38 rindle, #25 root (all deferred/unmerged).
+PHASE 141 PLANNED 2026-07-03 (`/gsd-progress` route → user chose "plan core-first fix phase"; decisions locked via AskUserQuestion: core 0.2.0 + 3 v17 companions, rulestead/rindle separate, every hex.publish human-gated). Added Phase 141 "Core-First Publish & Family Release" to ROADMAP + FAMILY-05 requirement + 141-CONTEXT.md (D-141-A..E). gsd-planner produced **4 plans / 3 waves** (commit 85a048bc); gsd-plan-checker PASS (core-first ordering triply enforced; applied its 1 recommended fix — core release-as-cleanup step in 141-03). KEY PLANNER FINDING: release-please would compute core **0.1.3** not 0.2.0 (pre-major patch-bumping: `bump-minor-pre-major:false` + `bump-patch-for-minor-pre-major:true`, 53 feat commits since 0.1.2) → 141-01 adds `release-as: "0.2.0"` pin on `.` (safe/auditable vs fabricating feat!). Waves: W1 (autonomous prep) 141-01 release-as pin + runbook core-first Step 0 / 141-02 bump companion `~> 0.1`→`~> 0.2` floors + compat-matrix cells (phase132 drift test is the gate; rulestead/rindle stay `~> 0.1`); W2 141-03 (human-gated) boundary PR→ship-gate→**publish CORE 0.2.0 first** via root Release PR #25; W3 141-04 (human-gated) sequential sigra→chimeway→threadline, each clean-room-proofed against published 0.2.0. rulestead/rindle confirmed NOT blocked (use only 0.1.2-era Finding fields, no `:code`) → out of scope [[project-crosswake-core-first-publish]].
+NEXT: `/gsd-execute-phase 141` — Wave 1 autonomous prep lands first + boundary-syncs green; Waves 2-3 are human-gated irreversible publishes (core-first). The classifier will (correctly) require explicit per-publish authorization.
 Last activity: 2026-07-03
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`

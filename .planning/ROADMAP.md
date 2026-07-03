@@ -11,7 +11,7 @@
 - ✅ **v14.0 Runtime Contract Confidence** — Phases 121-124 (shipped 2026-06-21)
 - ✅ **v15.0 See It Run — Experiential First-Run DX** — Phases 125-128 (shipped 2026-06-24)
 - ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
-- 🔄 **v17.0 Companion Family Completion** — Phases 136-140 (in progress)
+- 🔄 **v17.0 Companion Family Completion** — Phases 136-141 (in progress)
 
 ## Phases
 
@@ -124,13 +124,14 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 
 </details>
 
-### v17.0 Companion Family Completion (Phases 136-140)
+### v17.0 Companion Family Completion (Phases 136-141)
 
 - [x] **Phase 136: Core Decoupling** - Invert all four compile-time core→companion coupling sites onto the runtime `:companions` registry seam so core compiles without any companion present. (verification: passed 2026-07-01 — gap closure 136-06 resolved the 34 regressions; full suite 1162/0) (completed 2026-07-01)
 - [ ] **Phase 137: crosswake_sigra Extraction** - Extract sigra into a standalone independently-versioned Hex package with the Finding-boundary refactor, dress rehearsal, and irreversible publish.
 - [ ] **Phase 138: crosswake_chimeway Extraction** - Extract chimeway into a standalone Hex package with a vacuity-safe clean-room lane (no sigra dep) and irreversible publish.
 - [ ] **Phase 139: crosswake_threadline Extraction** - Extract threadline as the final observer package (telemetry-by-name, zero compile deps on siblings) and publish.
 - [ ] **Phase 140: Family Discipline & Close** - Ship per-companion compat-matrix rows, per-package telemetry contract tests, updated extraction recipe, and run the carried merge-blocking lane registration ship-gate.
+- [ ] **Phase 141: Core-First Publish & Family Release** - Publish core `0.2.0` (the v17.0 decoupling API) first, bump companion dep floors `~> 0.1`→`~> 0.2`, then execute the sequential sigra→chimeway→threadline publish that was blocked when companions depended on unpublished core.
 
 ## Phase Details
 
@@ -286,7 +287,29 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 140-05-PLAN.md — FAMILY-04 execution (human-gated, autonomous:false): sequential sigra→chimeway→threadline publish + register_required_checks.sh ship-gate [Wave 2]
+- [ ] 140-05-PLAN.md — FAMILY-04 execution (human-gated, autonomous:false): sequential sigra→chimeway→threadline publish + register_required_checks.sh ship-gate [Wave 2] — SUPERSEDED by Phase 141 (blocked on the core-first prerequisite; publish execution re-homed there)
+
+### Phase 141: Core-First Publish & Family Release
+
+**Goal**: The companion family is published to Hex in the correct dependency order — core `0.2.0` (carrying the v17.0 decoupling API companions compile against) is published first, companion dep-floors are raised to require it, and the three v17.0 companions then publish sequentially and land live with hexdocs resolving.
+**Depends on**: Phase 140
+**Requirements**: FAMILY-05, FAMILY-04 (execution)
+**Context**: A canary-first sigra publish on 2026-07-03 (user-authorized) failed at the `mix compile` step — `KeyError key :code not found (crosswake 0.1.2) Finding.__struct__` — because companions build `%Finding{code: ...}` (core `:code` field added in phase 137-01, unpublished) while the publish seam `{:crosswake, "~> 0.1"}` resolves to the published core `0.1.2`. Nothing was published; the dangling `crosswake_sigra-v0.1.0` release/tag was cleaned up. The FAMILY-04 publish plan (140-05) omitted that **core must be published first**. v16.0 companions rulestead/rindle use only 0.1.2-era `Finding` fields (no `:code`) so they are NOT blocked and stay out of scope (published separately, if at all).
+**Success Criteria** (what must be TRUE):
+
+  1. Core is published to Hex at `0.2.0` (minor bump for the additive `Finding.{code,details}` + `:auth` clause + `:companions` registry API) with hexdocs resolving; the root `release-please` Release PR (#25) is the publish vehicle, recomputed over phases 136–140.
+  2. Each v17.0 companion's `crosswake_dep()` publish seam floor is raised `~> 0.1` → `~> 0.2` (and the compat-matrix "Requires crosswake >= 0.2.0" column reflects it), so a clean-room resolve compiles the companion against core `0.2.0`, not `0.1.2`.
+  3. The three companions publish **sequentially** (sigra → chimeway → threadline), each `publish-hex-*` + `clean-room-proof-*` green and hexdocs resolving before the next begins; each is a single `release-please` component per PR.
+  4. The carried `register_required_checks.sh` ship-gate is run green-first so any new v17.0 `merge-blocking-*` lane is registered as required, with `publish-hex-*` / `clean-room-proof-*` deliberately excluded.
+  5. Every irreversible `hex.publish` (core + each companion) is a human go/no-go gate (autonomous: false) — no publish runs inside autonomous phase execution.
+
+**Plans**: 4 plans
+
+Plans:
+- [ ] 141-01-PLAN.md — release-please core-0.2.0 nudge (`release-as: "0.2.0"` on `.`) + runbook core-first step (D-141-A/B) [Wave 1, autonomous]
+- [ ] 141-02-PLAN.md — bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (sigra/chimeway/threadline) + compat-matrix cells, drift-test green (D-141-C/D) [Wave 1, autonomous]
+- [ ] 141-03-PLAN.md — boundary PR green + ship-gate registration + CORE 0.2.0 publish FIRST (human-gated, autonomous:false; D-141-B/E) [Wave 2]
+- [ ] 141-04-PLAN.md — sequential companion publish sigra→chimeway→threadline, each clean-room-proofed against core 0.2.0 (human-gated, autonomous:false; D-141-B/E, FAMILY-04) [Wave 3]
 
 ## Progress
 
