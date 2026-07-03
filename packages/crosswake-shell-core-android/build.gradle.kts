@@ -7,7 +7,7 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
-version = "0.1.2" // x-release-please-version
+version = "0.2.0" // x-release-please-version
 
 android {
     namespace = "dev.crosswake.shell.core"
@@ -54,7 +54,15 @@ mavenPublishing {
     val automaticRelease =
         (project.findProperty("crosswakeAutomaticRelease") as String?)?.toBoolean() ?: false
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = automaticRelease)
-    signAllPublications()
+    // Signing is required for the real Maven Central publish (default). CI's hermetic
+    // `publishToMavenLocal` (used so a version-bump release PR can resolve the not-yet-
+    // published shell-core from ~/.m2) has no signing keys, so it opts out with
+    // -PcrosswakeSkipSigning=true. Local publish is never uploaded, so it needs no signature.
+    val skipSigning =
+        (project.findProperty("crosswakeSkipSigning") as String?)?.toBoolean() ?: false
+    if (!skipSigning) {
+        signAllPublications()
+    }
 
     coordinates("io.github.sztheory", "crosswake-shell-core-android", version.toString())
 

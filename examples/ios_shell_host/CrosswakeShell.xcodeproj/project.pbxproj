@@ -56,7 +56,7 @@
 			repositoryURL = "https://github.com/szTheory/crosswake-shell-core-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.2;
+				minimumVersion = 0.2.0; /* x-release-please-version */
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

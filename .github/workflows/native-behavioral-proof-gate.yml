@@ -92,6 +92,8 @@ jobs:
     runs-on: macos-latest                  # REVIEW FIX finding 2: verify script is mac-specific (arch() exit-1s off-mac)
     env:
       CROSSWAKE_ANDROID_CONNECTED_TESTS: "0"  # hermetic JVM-only; bypasses emulator branches (script line 9)
+      CROSSWAKE_ANDROID_USE_MAVEN_LOCAL: "1"  # resolve shell-core from ~/.m2 (see publishToMavenLocal step) so a
+                                              # version-bump release PR builds against the not-yet-published version
     steps:
       - uses: actions/checkout@v7
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
@@ -104,6 +106,13 @@ jobs:
           java-version: '17'              # satisfies JAVA_HOME check in verify script
       - name: Install Elixir dependencies   # the verify script runs `mix crosswake.gen.shell`; a fresh
         run: mix deps.get                    # checkout has no deps → "Can't continue due to errors on dependencies"
+      - name: Publish shell-core to local Maven (~/.m2) for hermetic resolution
+        working-directory: packages/crosswake-shell-core-android
+        # The generated shell references the CURRENT-version published coordinate
+        # (io.github.sztheory:crosswake-shell-core-android:<version>). On a version-bump
+        # release PR that version isn't on Maven Central yet, so publish it to ~/.m2 first;
+        # skip signing (no keys in CI, local publish is never uploaded).
+        run: ./gradlew publishToMavenLocal --no-daemon -PcrosswakeSkipSigning=true
       - name: Run hermetic Android generated-shell verification
         run: script/verify_generated_android_shell.sh
       - name: Step summary

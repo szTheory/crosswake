@@ -13,8 +13,8 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Unpublished support claims
 
-* No new support claims have been cut after `0.1.2` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
-* **Companion-family extraction is in progress but unpublished.** The core "companion decoupling" refactor (v17.0 planning milestone) inverts the auth/notification coupling sites onto the runtime `:companions` registry. It is an **internal, non-breaking** architecture change — the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged and module names are preserved — so it does **not** alter the installable `0.1.2` surface or require an adopter rebuild.
+* No new support claims have been cut after `0.2.0` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
+* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below). The standalone companion *packages* that consume it are extracted in-tree but their Hex publish is still a deferred gate — see "Deferred non-shipped claims" below.
 
 ### Verification-required and advisory surfaces
 
@@ -28,7 +28,27 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Published Hex truth
 
-* The current published Hex release is `0.1.2`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
+* The current published Hex release is `0.2.0`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
+
+## [0.2.0] — 2026-07-03
+
+> Published release. Additive, non-breaking core API since `0.1.2` that the v17.0 first-party companion packages depend on.
+
+### Upgrade Impact
+
+**core-only/no native rebuild**
+
+Additive, Elixir-only core surface: `Crosswake.Shell.Finding` gains `code` and `details` fields, route policy gains an `:auth` clause, and the runtime `:companions` registry now drives the auth, notification, support-matrix, and doctor coupling sites through optional `@behaviour` callbacks (`function_exported?/3`) instead of compile-time coupling. Module names are preserved and the sole adopter touch-point (`config :crosswake, :companions, [...]`) is unchanged, so no native rebuild or adopter code change is required. `manifest_schema_version`, `bridge_protocol_version`, `native_runtime_version`, and capability majors are unchanged.
+
+### Added
+
+* Additive `Crosswake.Shell.Finding` `code` and `details` fields and an `:auth` route-policy clause — surface consumed by the first-party companion packages; existing adopter code is unaffected.
+* Runtime `:companions` registry inversion: the core auth, notification, support-matrix, and doctor coupling sites now dispatch to registered companions via optional behaviour callbacks, decoupling core from any specific companion at compile time.
+
+### Notes
+
+* This core release is the published prerequisite for the v17.0 first-party companion packages (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`), which publish separately at their own `0.1.0` and require `crosswake` `~> 0.2` (`>= 0.2.0`).
+* Deferred and not shipped (unchanged from `0.1.2`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.2] — 2026-06-17
 
@@ -81,6 +101,7 @@ This is the initial published release. Adopters adopting Crosswake for the first
 
 Internal planning milestones v1.0 (Route Policy Foundation), v2.0 (Adopter Stress Profiles), v3.0 (Capability Contract And Packaging), v3.1 (Native Capabilities and Bridge Expansion), and v3.2 (Commerce And Entitlement Seams) are archived in `.planning/MILESTONES.md`. These are not separate Hex releases. See `.planning/PROJECT.md` for overarching goals.
 
-[Unreleased]: https://github.com/szTheory/crosswake/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/szTheory/crosswake/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/szTheory/crosswake/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/szTheory/crosswake/compare/v0.1.0...v0.1.2
 [0.1.0]: https://github.com/szTheory/crosswake/releases/tag/v0.1.0
