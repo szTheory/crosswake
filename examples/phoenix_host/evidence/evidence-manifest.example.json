@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "crosswake_version": "0.1.2",
+  "crosswake_version": "0.2.0",
   "commit_sha": "example-commit-sha",
   "source_job": "route-tour-proof",
   "captured_at": "2026-06-19T00:00:00.000Z",
