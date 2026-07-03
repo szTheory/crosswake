@@ -45,10 +45,15 @@ scheme="${SCHEME}"
 if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
   ios_core_remote="https://github.com/szTheory/crosswake-shell-core-ios.git"
   ios_core_version="$(sed -n 's/.*minimumVersion = \([0-9][0-9.]*\);.*/\1/p' "${project}/project.pbxproj" | head -1)"
-  ios_core_clone="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-core.XXXXXX")/crosswake-shell-core-ios"
+  # Keep the throwaway clone off /var/folders — xcodebuild's package resolution can't reliably
+  # read mktemp paths there (CI showed the mirror tags present yet "no versions match", i.e.
+  # the redirect target was unreadable/unhonored). RUNNER_TEMP (/Users/runner/work/_temp) is
+  # accessible on CI; fall back to a workspace dir locally.
+  ios_core_clone="${RUNNER_TEMP:-${ROOT_DIR}/tmp}/crosswake-ios-core-hermetic"
   # The package is a regular subtree of the monorepo (not a submodule/standalone repo), so a
   # fresh CI checkout has no .git here — build a throwaway git repo from the files so SwiftPM
   # can resolve a version tag from it (git clone of a non-repo path fails: phase18 hermetic).
+  rm -rf "${ios_core_clone}"
   mkdir -p "${ios_core_clone}"
   cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
   rm -rf "${ios_core_clone}/.git"
@@ -58,6 +63,10 @@ if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
   # Lightweight tags (no -m) — most broadly recognized by SwiftPM's version resolver.
   git -C "${ios_core_clone}" tag -f "${ios_core_version}"
   git -C "${ios_core_clone}" tag -f "v${ios_core_version}"
+  # Redirect at the GIT layer (insteadOf, honored by SwiftPM which shells out to git) — more
+  # robust than the SwiftPM mirror config, which CI's xcodebuild ignored. Keep the SwiftPM
+  # mirror too as a belt-and-suspenders second mechanism.
+  git config --global "url.${ios_core_clone}.insteadOf" "${ios_core_remote}"
   mirror_dir="${HOME}/.swiftpm/configuration"
   mkdir -p "${mirror_dir}"
   cat > "${mirror_dir}/mirrors.json" <<JSON
@@ -73,9 +82,7 @@ if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
 JSON
   echo "hermetic: redirected ${ios_core_remote} -> ${ios_core_clone} @ ${ios_core_version}"
   echo "hermetic-debug: mirror tags = [$(git -C "${ios_core_clone}" tag | tr '\n' ' ')]"
-  echo "hermetic-debug: mirror HEAD = $(git -C "${ios_core_clone}" rev-parse --short HEAD)"
-  echo "hermetic-debug: Package.swift line1 = $(head -1 "${ios_core_clone}/Package.swift")"
-  echo "hermetic-debug: mirrors.json ="; cat "${mirror_dir}/mirrors.json"
+  echo "hermetic-debug: git insteadOf = $(git config --global --get "url.${ios_core_clone}.insteadOf")"
 fi
 
 # Force a clean SwiftPM package cache so resolution reads the mirror's tags fresh
