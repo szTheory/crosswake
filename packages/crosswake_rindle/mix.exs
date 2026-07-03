@@ -66,7 +66,9 @@ defmodule CrosswakeRindle.MixProject do
       # resolves engine-present — proven green by the 132-03 engine-present lane. A 1.0.0
       # engine would fall outside the cap; widening past the next major is deferred until
       # the companion contract is proven against it.
-      {:rindle, "~> 0.1", optional: true}
+      {:rindle, "~> 0.1", optional: true},
+      # ex_doc is required by `mix hex.publish` to build package docs (matches core).
+      {:ex_doc, "~> 0.38", only: [:dev, :test]}
     ]
   end
 
