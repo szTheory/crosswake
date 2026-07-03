@@ -47,7 +47,7 @@ defmodule CrosswakeSigra.MixProject do
   # rather than a path: dep (which hex.build would error on — D-13).
   defp crosswake_dep do
     if System.get_env("CROSSWAKE_RELEASE") == "1",
-      do: {:crosswake, "~> 0.1"},
+      do: {:crosswake, "~> 0.2"},
       else: {:crosswake, path: "../.."}
   end
 
