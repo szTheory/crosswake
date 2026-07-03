@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
 status: executing
-stopped_at: Phase 140 Wave 1 complete (140-01..04); Wave 2 (140-05 publish) human-gated
+stopped_at: Phase 140 Wave 1 done + origin-synced (PR #45); sigra publish ATTEMPTED → BLOCKED on unpublished-core dep (Finding.code); core-first fix needs planning
 last_updated: "2026-07-03T01:12:24.844Z"
 last_activity: 2026-07-03
 progress:
@@ -28,7 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 Phase: 140 (family-discipline-close) — EXECUTING (Wave 1 done; Wave 2 human-gated)
 Plan: 5 of 5 (140-05 pending human go-decision)
 Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
-Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE hex publishes sigra→chimeway→threadline + register_required_checks.sh ship-gate). DEFERRED per user "no publish now" + requires origin push + green CI first. Awaiting explicit human go-decision.
+Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE). ATTEMPTED sigra publish 2026-07-03 (user-authorized, canary-first) → **BLOCKED, nothing published.** Boundary sync PR #45 landed first (origin==main, CI green, all 22 required lanes; fixed phase71-proof.yml sigra→chimeway drift). Then merged sigra Release PR #42 → `publish-hex-sigra` FAILED at the COMPILE step (never reached hex.publish): `KeyError key :code not found ... (crosswake 0.1.2) Finding.__struct__`.
+**ROOT CAUSE (systemic, blocks whole family):** companions depend on UNPUBLISHED v17.0 core. sigra evaluator.ex:258 + chimeway resolver.ex:102 build `%Finding{code:}`; the `:code` field was added to core `Finding` in cc87362d (phase 137-01) — unpublished (core is 0.1.2 on Hex). Companion publish seam resolves `{:crosswake, "~> 0.1"}` → Hex serves 0.1.2 (pre-`:code`) → compile fails. All 3 companions share the `~> 0.1` floor → all blocked identically. The 140-05 plan/runbook OMITTED that CORE must publish first.
+**RECOVERY PATH (needs planning — do NOT continue merging Release PRs):** (1) publish core first at a new version (e.g. 0.2.0) with the v17.0 decoupling API — this is what stale root release PR #25 should recompute into over phases 136-140; (2) bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (honest "Requires crosswake >= 0.2", matches compat-matrix column); (3) re-publish companions (re-cut tags after floor bump — mind release-please manifest state, sigra entry already 0.1.0).
+CLEANUP DONE 2026-07-03: deleted dangling `crosswake_sigra-v0.1.0` release+tag (publish failed so package NOT on Hex — removed false "Latest"), closed auto-opened release-as-cleanup PR #48. main clean 0/0. release-failure-alert fired as designed; Release-As Staleness Gate green (future PRs not blocked). Open Release PRs remain: #47 threadline, #46 chimeway, #39 rulestead, #38 rindle, #25 root (all deferred/unmerged).
+NEXT: plan the core-first publish fix (new phase or 140 fix-plan). rulestead/rindle (v16.0) likely share the same unpublished-core dependency — audit before any publish.
 Last activity: 2026-07-03
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
