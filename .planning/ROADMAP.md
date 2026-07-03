@@ -274,7 +274,14 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   3. `script/extract_companion.md` documents a "Step 0: core decoupling" prerequisite for entangled companions and includes a guard step that greps all of `lib/` for stale companion references.
   4. The three new companions are published sequentially (sigra → chimeway → threadline), each as a single `release-please` component per PR; the carried `register_required_checks.sh` ship-gate has been run and new v17.0 merge-blocking lanes are registered before being relied upon.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 140-01-PLAN.md — FAMILY-01: compat-matrix cell discipline + O(N) column guard + version-cell format guard [Wave 1]
+- [ ] 140-02-PLAN.md — FAMILY-03: sigra + chimeway Side-A emission tests + threadline upgrade + `>= 24` regression guard [Wave 1]
+- [ ] 140-03-PLAN.md — FAMILY-02: extraction-recipe hardening (Step 0 gate, grep-exit fix, scope widen + module-attr pass, observer variant, callouts, proven-on) [Wave 1]
+- [ ] 140-04-PLAN.md — FAMILY-04 readiness: verify pipeline primitives + author publish runbook + ship-gate ordering (no publish) [Wave 1]
+- [ ] 140-05-PLAN.md — FAMILY-04 execution (human-gated, autonomous:false): sequential sigra→chimeway→threadline publish + register_required_checks.sh ship-gate [Wave 2]
 
 ## Progress
 
