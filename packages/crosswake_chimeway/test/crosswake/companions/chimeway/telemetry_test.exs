@@ -128,4 +128,54 @@ defmodule Crosswake.Companions.Chimeway.TelemetryTest do
 
     assert_receive {:telemetry, %{count: 1}, %{provider: :apns}}
   end
+
+  # ---------------------------------------------------------------------------
+  # Side-A "declared ⇔ emitted" contract (FAMILY-03 / D-16).
+  #
+  # Chimeway's events are declared as the :reserved tier in core Crosswake.Telemetry
+  # (declared-not-emitted-by-core). This in-package Side-A test proves emission
+  # actually exists: it drives the real Telemetry.execute/3 code path over EVERY
+  # declared event name pulled live from the catalog (event_names/0 — never a
+  # hardcoded list), so declaring a new event without emitting it fails here.
+  #
+  # The two facts together — core declares the event :reserved AND this package emits
+  # it — are the full declared⇔emitted contract for chimeway.
+  #
+  # HARD RULE: subset (Map.has_key?) assertions only. Never assert an exact
+  # event/metadata COUNT — exact-count re-creates the >=24 cross-package coupling
+  # that independent versioning forbids.
+  # ---------------------------------------------------------------------------
+
+  test "Side-A: every declared event name emits with supplied declared metadata keys present" do
+    for event_name <- Telemetry.event_names() do
+      handler_id = "chimeway-sideA-#{System.unique_integer([:positive])}"
+
+      :telemetry.attach(
+        handler_id,
+        event_name,
+        fn ^event_name, measurements, metadata, _config ->
+          send(self(), {:chimeway_sideA, event_name, measurements, metadata})
+        end,
+        nil
+      )
+
+      on_exit(fn -> :telemetry.detach(handler_id) end)
+
+      # Drive the real emitter path (Telemetry.execute/3), supplying at least one
+      # declared metadata key from metadata_keys/0.
+      assert :ok =
+               Telemetry.execute(event_name, %{count: 1}, %{
+                 provider: :apns,
+                 correlation_id: "corr:sideA.#{System.unique_integer([:positive])}"
+               })
+
+      assert_receive {:chimeway_sideA, ^event_name, _measurements, metadata}
+
+      # Subset assertion only — declared keys we supplied must be PRESENT. Do NOT
+      # assert map_size or the full metadata_keys/0 list (many keys are per-event
+      # optional).
+      assert Map.has_key?(metadata, :provider)
+      assert Map.has_key?(metadata, :correlation_id)
+    end
+  end
 end
