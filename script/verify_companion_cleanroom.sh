@@ -123,7 +123,9 @@ echo "[crosswake] Step 1 OK: ${PACKAGE} ${VERSION} is live on Hex.pm"
 # Step 2: Create throwaway Phoenix host OUTSIDE the monorepo (D-17)
 # ---------------------------------------------------------------------------
 
-CLEAN_ROOM_DIR="${RUNNER_TEMP:-/tmp}/clean-room-${PACKAGE}"
+# Underscores, not hyphens: the basename becomes the `mix new` app name, which must be a
+# valid Elixir atom (hyphens error: "Application name must start with a lowercase ASCII letter").
+CLEAN_ROOM_DIR="${RUNNER_TEMP:-/tmp}/clean_room_${PACKAGE}"
 
 echo "[crosswake] Step 2: creating throwaway Phoenix host at ${CLEAN_ROOM_DIR}..."
 
