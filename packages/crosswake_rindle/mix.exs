@@ -68,7 +68,7 @@ defmodule CrosswakeRindle.MixProject do
       # the companion contract is proven against it.
       {:rindle, "~> 0.1", optional: true},
       # ex_doc is required by `mix hex.publish` to build package docs (matches core).
-      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.38", only: [:dev, :test]}
     ]
   end
 

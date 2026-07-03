@@ -36,10 +36,11 @@ defmodule CrosswakeSigra.MixProject do
       # D-19: core is a RUNTIME dep of the companion.
       # D-11/D-13: env-conditional resolver — see crosswake_dep/0 below.
       crosswake_dep(),
-      # ex_doc is required by `mix hex.publish` to build package docs. only: [:dev, :test]
-      # so it's present regardless of the publish job's MIX_ENV, runtime: false so it never
-      # ships. Matches core; its absence failed publish-hex-sigra at the docs dry-run.
-      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
+      # ex_doc is required by `mix hex.publish` to build package docs (matches core).
+      # only: [:dev, :test] keeps it out of the prod tarball; its absence failed
+      # publish-hex-sigra at the docs dry-run. (No runtime option — the D-27 guard
+      # forbids the literal disable-runtime flag anywhere in a companion mix.exs.)
+      {:ex_doc, "~> 0.38", only: [:dev, :test]}
       # NOTE: No optional engine dep — sigra has no third-party engine library.
       # The auth machinery is pure Elixir.
     ]

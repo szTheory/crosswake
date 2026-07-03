@@ -50,7 +50,7 @@ defmodule CrosswakeChimeway.MixProject do
       # by the no-runtime-sigra-dep vacuity guard in phase138_chimeway_cleanroom_test.exs.
       {:crosswake_sigra, path: "../../packages/crosswake_sigra", only: :test},
       # ex_doc is required by `mix hex.publish` to build package docs (matches core).
-      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.38", only: [:dev, :test]}
     ]
   end
 
