@@ -94,8 +94,6 @@
       "component": "crosswake_sigra",
       "release-type": "elixir",
       "separate-pull-requests": true,
-      "_TODO_release_as": "ONE-SHOT override (Phase 137 / recipe Step 12f / Pitfall 6): remove 'release-as' after the first crosswake_sigra Release PR merges, or subsequent runs keep re-targeting 0.1.0. sigra is independently versioned — intentionally NOT in the linked-versions lockstep group (D-8).",
-      "release-as": "0.1.0",
       "extra-files": ["packages/crosswake_sigra/mix.exs"],
       "changelog-sections": [
         { "type": "feat",     "section": "Features" },
