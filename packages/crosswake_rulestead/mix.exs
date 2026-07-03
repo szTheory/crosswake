@@ -51,7 +51,9 @@ defmodule CrosswakeRulestead.MixProject do
       crosswake_dep(),
       # D-28: optional: true — Swoosh gold-standard optional-dep idiom.
       # The engine is optional; absence is handled via Code.ensure_loaded? + @compile {:no_warn_undefined}.
-      {:rulestead, "~> 0.1", optional: true}
+      {:rulestead, "~> 0.1", optional: true},
+      # ex_doc is required by `mix hex.publish` to build package docs (matches core).
+      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
     ]
   end
 

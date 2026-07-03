@@ -48,7 +48,9 @@ defmodule CrosswakeChimeway.MixProject do
       # - the clean-room lane (Task 3) installs the published tarball where sigra is absent
       # CHIME-02 invariant preserved: no runtime/prod sigra dep; test-only dep confirmed
       # by the no-runtime-sigra-dep vacuity guard in phase138_chimeway_cleanroom_test.exs.
-      {:crosswake_sigra, path: "../../packages/crosswake_sigra", only: :test}
+      {:crosswake_sigra, path: "../../packages/crosswake_sigra", only: :test},
+      # ex_doc is required by `mix hex.publish` to build package docs (matches core).
+      {:ex_doc, "~> 0.38", only: [:dev, :test], runtime: false}
     ]
   end
 
