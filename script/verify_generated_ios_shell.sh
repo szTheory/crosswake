@@ -52,11 +52,12 @@ if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
   mkdir -p "${ios_core_clone}"
   cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
   rm -rf "${ios_core_clone}/.git"
-  git -C "${ios_core_clone}" init -q
+  git -C "${ios_core_clone}" -c init.defaultBranch=main init -q
   git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci add -A
-  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${ios_core_version}" >/dev/null 2>&1
-  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "${ios_core_version}" -m "hermetic ${ios_core_version}" >/dev/null 2>&1
-  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "v${ios_core_version}" -m "hermetic v${ios_core_version}" >/dev/null 2>&1
+  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${ios_core_version}"
+  # Lightweight tags (no -m) — most broadly recognized by SwiftPM's version resolver.
+  git -C "${ios_core_clone}" tag -f "${ios_core_version}"
+  git -C "${ios_core_clone}" tag -f "v${ios_core_version}"
   mirror_dir="${HOME}/.swiftpm/configuration"
   mkdir -p "${mirror_dir}"
   cat > "${mirror_dir}/mirrors.json" <<JSON
@@ -71,9 +72,19 @@ if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
 }
 JSON
   echo "hermetic: redirected ${ios_core_remote} -> ${ios_core_clone} @ ${ios_core_version}"
+  echo "hermetic-debug: mirror tags = [$(git -C "${ios_core_clone}" tag | tr '\n' ' ')]"
+  echo "hermetic-debug: mirror HEAD = $(git -C "${ios_core_clone}" rev-parse --short HEAD)"
+  echo "hermetic-debug: Package.swift line1 = $(head -1 "${ios_core_clone}/Package.swift")"
+  echo "hermetic-debug: mirrors.json ="; cat "${mirror_dir}/mirrors.json"
 fi
 
-project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
+# Force a clean SwiftPM package cache so resolution reads the mirror's tags fresh
+# (avoids any stale "no versions" cache keyed on the original URL). Harmless for the
+# non-hermetic generated-shell path. Unconditional to avoid empty-array expansion
+# under `set -u` on macOS bash 3.2.
+IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
+
+project_check="$(xcodebuild -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
   echo "error: generated scheme is not buildable via xcodebuild -list" >&2
   printf '%s\n' "$project_check" >&2
   exit 1
