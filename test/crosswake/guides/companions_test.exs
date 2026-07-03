@@ -118,20 +118,17 @@ defmodule Crosswake.Guides.CompanionsTest do
     # Phase 130: Crosswake.Companions.Rulestead extracted to packages/crosswake_rulestead/.
     # Phase 132: Crosswake.Companions.Rindle extracted to packages/crosswake_rindle/.
     # Phase 137: Crosswake.Companions.Sigra extracted to packages/crosswake_sigra/.
-    # Their API guards now live in each companion's own test lane (phase42 / phase45 / phase46+
-    # in packages/crosswake_*/test/). Core only guards the seam + remaining in-tree companions.
+    # Phase 138: Crosswake.Companions.Chimeway extracted to packages/crosswake_chimeway/.
+    # Companion API guards now live in each companion's own test lane
+    # (in packages/crosswake_*/test/). Core only guards the seam contracts.
     Code.ensure_loaded!(Crosswake.Companion)
     Code.ensure_loaded!(Crosswake.Companion.State)
-    Code.ensure_loaded!(Crosswake.Companions.Chimeway)
-    Code.ensure_loaded!(Crosswake.Companions.Chimeway.Contracts)
     Code.ensure_loaded!(Crosswake.SupportMatrix)
     Code.ensure_loaded!(Crosswake.Shell.Denial)
 
-    # Sigra API guards live in packages/crosswake_sigra/test/ (phase46, phase58, etc.)
-    # after Phase 137 extraction — not checked here to avoid requiring the companion package
+    # Chimeway API guards live in packages/crosswake_chimeway/test/ (phase59, phase71, etc.)
+    # after Phase 138 extraction — not checked here to avoid requiring the companion package
     # in core's test compilation path.
-    assert function_exported?(Crosswake.Companions.Chimeway, :report_state, 0)
-    assert function_exported?(Crosswake.Companions.Chimeway.Contracts, :new_token_evidence, 1)
     assert function_exported?(Crosswake.SupportMatrix, :gating_truth, 0)
     assert function_exported?(Crosswake.SupportMatrix, :auth_contract_truth, 0)
     assert function_exported?(Crosswake.Shell.Denial, :reasons, 0)
@@ -140,7 +137,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   test "documented companion ids stay parity-locked with runtime gating truth", %{
     content: content
   } do
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
 
     # Phase 130: Crosswake.Companions.Rulestead extracted to companion package.
     # Use StubRulesteadAbsentCompanion (companion_id: :rulestead, validate_dependency: {:error, _})
@@ -217,7 +214,7 @@ defmodule Crosswake.Guides.CompanionsTest do
   end
 
   test "doctor finding codes are asserted from live Doctor.run/1 output", %{content: content} do
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
     original_rulestead = Application.get_env(:crosswake, :rulestead)
     original_rindle = Application.get_env(:crosswake, :rindle)
 

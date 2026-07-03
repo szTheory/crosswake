@@ -213,7 +213,23 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and the clean-room lane succeeds before the irreversible publish fires.
   5. `crosswake_chimeway` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: TBD
+**Plans**: 4 plans (4 waves — sigra's 5 minus the collapsed Finding-boundary wave; chimeway has no D-138-A refactor)
+
+**Wave 1**
+
+- [x] 138-01-PLAN.md — Scaffold packages/crosswake_chimeway/, move 6 sub-modules + facade (namespace preserved), auth_context map() guard note, remove chimeway from core, StubChimewayAbsentCompanion (no auth_authority?/0) [Wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [x] 138-02-PLAN.md — Move chimeway-internal tests + split phase59 (notification_support_truth/0 stays non-vacuous in core), move phase71 to chimeway pkg (test-only sigra dep), non-vacuous clean-room proof (A2-corrected forbidden-keys seam) [Wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [x] 138-03-PLAN.md — Chimeway-correct no-engine clean-room smoke (assert enabled?(%{}) + Telemetry canary), release-please independent component + manifest, publish/clean-room CI jobs, example-host path dep, compat-matrix row [Wave 3]
+
+**Wave 4** *(blocked on Wave 3 — human publish gate)*
+
+- [ ] 138-04-PLAN.md — Pre-publish gates (dress rehearsal + hex.publish --dry-run) then HUMAN go/no-go: merge Release PR (irreversible publish, sigra absent) + merge release-as-cleanup PR [Wave 4, autonomous: false]
 
 ### Phase 139: crosswake_threadline Extraction
 
@@ -228,7 +244,23 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   4. `hex.publish --dry-run` passes and a clean-room lane succeeds before the irreversible publish fires; threadline publishes after sigra and chimeway are live.
   5. `crosswake_threadline` is registered in `release-please` as an independent `elixir` component (not in `linked-versions`).
 
-**Plans**: TBD
+**Plans**: 3/4 plans executed
+
+**Wave 1**
+
+- [x] 139-01-PLAN.md — Scaffold packages/crosswake_threadline/ (files: incl priv, optional-Phoenix guards), move all threadline source + EEX templates (namespace preserved), fix gen.audit app_dir atom, atomic core decouple (support_matrix SITE 1 freeze + telemetry SITE 2 curated-floor delta), core test-only path dep [Wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [x] 139-02-PLAN.md — Move threadline test suite + anti-drift PII-floor test (baseline-count reconcile), harden gen.audit handler template (try/rescue never-reraise + on_conflict + advisory moduledoc), vacuity-safe clean-room proof (async: true), 4 brand-voice DX wins (NO_COLOR/ASCII + empty-result + microcopy, each own commit) [Wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [x] 139-03-PLAN.md — Threadline-correct no-engine clean-room smoke (suppress companion-behaviour assertions + Telemetry/Plug/Ledger canaries), release-please independent component + manifest, publish/clean-room CI jobs (both siblings absent), example-host path dep, compat-matrix row [Wave 3]
+
+**Wave 4** *(blocked on Wave 3 — human publish gate, DEFERRED to family batch)*
+
+- [ ] 139-04-PLAN.md — Pre-publish gates (dress rehearsal + hex.publish --dry-run: priv/ in, test/ out) then HUMAN go/no-go: merge Release PR (irreversible publish LAST after sigra+chimeway live) + merge release-as-cleanup PR [Wave 4, autonomous: false]
 
 ### Phase 140: Family Discipline & Close
 
@@ -242,7 +274,19 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
   3. `script/extract_companion.md` documents a "Step 0: core decoupling" prerequisite for entangled companions and includes a guard step that greps all of `lib/` for stale companion references.
   4. The three new companions are published sequentially (sigra → chimeway → threadline), each as a single `release-please` component per PR; the carried `register_required_checks.sh` ship-gate has been run and new v17.0 merge-blocking lanes are registered before being relied upon.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+**Wave 1**
+
+- [x] 140-01-PLAN.md — FAMILY-01: compat-matrix cell discipline + O(N) column guard + version-cell format guard [Wave 1]
+- [x] 140-02-PLAN.md — FAMILY-03: sigra + chimeway Side-A emission tests + threadline upgrade + `>= 24` regression guard [Wave 1]
+- [x] 140-03-PLAN.md — FAMILY-02: extraction-recipe hardening (Step 0 gate, grep-exit fix, scope widen + module-attr pass, observer variant, callouts, proven-on) [Wave 1]
+- [x] 140-04-PLAN.md — FAMILY-04 readiness: verify pipeline primitives + author publish runbook + ship-gate ordering (no publish) [Wave 1]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 140-05-PLAN.md — FAMILY-04 execution (human-gated, autonomous:false): sequential sigra→chimeway→threadline publish + register_required_checks.sh ship-gate [Wave 2]
 
 ## Progress
 
@@ -287,6 +331,6 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 | 135. CI-Ops Hardening — Release-As Automation | v16.0 | 1/1 | Complete | 2026-06-28 |
 | 136. Core Decoupling | v17.0 | 6/6 | Complete    | 2026-07-01 |
 | 137. crosswake_sigra Extraction | v17.0 | 4/5 | In Progress|  |
-| 138. crosswake_chimeway Extraction | v17.0 | 0/? | Not started | - |
-| 139. crosswake_threadline Extraction | v17.0 | 0/? | Not started | - |
+| 138. crosswake_chimeway Extraction | v17.0 | 3/4 | In Progress|  |
+| 139. crosswake_threadline Extraction | v17.0 | 3/4 | In Progress|  |
 | 140. Family Discipline & Close | v17.0 | 0/? | Not started | - |

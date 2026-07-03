@@ -2,19 +2,16 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-current_phase: 137
-current_phase_name: crosswake-sigra-extraction
 status: executing
-stopped_at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate, deferred)
-last_updated: "2026-07-01T23:34:08.130Z"
-last_activity: 2026-07-01
-last_activity_desc: Phase 137 waves 1-4 executed (crosswake_sigra extraction); paused at wave 5 publish gate
+stopped_at: Phase 140 Wave 1 complete (140-01..04); Wave 2 (140-05 publish) human-gated
+last_updated: "2026-07-03T01:12:24.844Z"
+last_activity: 2026-07-03
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 11
-  completed_plans: 10
-  percent: 20
+  total_plans: 24
+  completed_plans: 23
+  percent: 96
 ---
 
 # Project State: Crosswake
@@ -24,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 137 — crosswake-sigra-extraction
+**Current focus:** Phase 140 — family-discipline-close
 
 ## Current Position
 
-Phase: 137 (crosswake-sigra-extraction) — EXECUTING (paused at wave 5 human publish gate)
-Plans: 4 of 5 executed green (137-01..04); 137-05 = deferred human hex-publish gate (wave 5)
-Status: Waves 1-4 landed — Finding boundary + sigra extraction + CI pipeline; publish deferred (no hex.pm publish yet)
-Last activity: 2026-07-01 -- Phase 137 waves 1-4 executed; repo-hygiene boundary sync in progress
+Phase: 140 (family-discipline-close) — EXECUTING (Wave 1 done; Wave 2 human-gated)
+Plan: 5 of 5 (140-05 pending human go-decision)
+Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
+Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE hex publishes sigra→chimeway→threadline + register_required_checks.sh ship-gate). DEFERRED per user "no publish now" + requires origin push + green CI first. Awaiting explicit human go-decision.
+Last activity: 2026-07-03
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
 > false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
@@ -43,7 +41,7 @@ Last activity: 2026-07-01 -- Phase 137 waves 1-4 executed; repo-hygiene boundary
 ```
 [x] Phase 136 — Core Decoupling                    (complete, verified 2026-07-01)
 [~] Phase 137 — crosswake_sigra Extraction         (waves 1-4 green; wave 5 = deferred publish gate)
-[ ] Phase 138 — crosswake_chimeway Extraction
+[P] Phase 138 — crosswake_chimeway Extraction      (planned, checker PASSED; 4 waves; wave 4 = deferred publish gate)
 [ ] Phase 139 — crosswake_threadline Extraction
 [ ] Phase 140 — Family Discipline & Close
 ```
@@ -182,6 +180,12 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Independent versioning per D-8
 - [Phase ?]: Additive no-engine script mode
 - [Phase ?]: Sigra CI pipeline per-component gate
+- [Phase ?]: circular-dep fix: removed crosswake_threadline path dep from core mix.exs; phase133 TELEM-04 rewritten to use telemetry.execute directly
+- [Phase ?]: anti-drift D-5 test: core_baseline SUBSET union(companion forbidden_metadata_keys), non-vacuous, baseline count = 11 atoms post-139
+- [Phase ?]: ledger.ex.eex: try/rescue crash-isolation in handler, on_conflict: :nothing, advisory row_hash/prev_hash moduledoc
+- [Phase ?]: crosswake_threadline registered as independent elixir release-please component (NOT in linked-versions, one-shot release-as 0.1.0, THREAD-03)
+- [Phase ?]: cleanroom script threadline-correct: companion-behaviour assertions suppressed; three module-shipment canaries (Telemetry/Plug/Ledger) + zero-sibling-dep invariant (T-139-11, THREAD-02)
+- [Phase ?]: clean-room-proof-threadline: no-engine non-companion mode; installs crosswake + crosswake_threadline only (NOT sigra, NOT chimeway — T-139-18 zero-sibling-dep at CI level)
 
 ### Pending Todos
 
@@ -213,15 +217,20 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 tech-debt | companion_compatibility.md:51-54 prose (Phase 132) | Assessed: not a bug; leave | v16.0 close |
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
 | v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
+| Phase 139 P01 | 9m | 2 tasks | 19 files |
+| Phase 139-crosswake-threadline-extraction P02 | 55min | 5 tasks | 21 files |
+| Phase 139 P03 | 7 min | 3 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01
-Stopped at: Phase 137 waves 1-4 executed green; paused at wave 5 (human hex-publish gate). Repo-hygiene boundary sync in progress (land local main → origin, no publish).
-Resume file: .planning/phases/137-crosswake-sigra-extraction/137-05-PLAN.md (deferred human publish gate)
+Last session: 2026-07-02T23:21:52.186Z
+Stopped at: Phase 140 context gathered
+Resume file: .planning/phases/140-family-discipline-close/140-CONTEXT.md
 
 ## Operator Next Steps
 
 - **Repo-hygiene boundary sync (in progress):** land the accumulated local main onto origin via a `sync/main-*` PR, get CI green, triage open PRs. See `docs/MILESTONE-BOUNDARY-HYGIENE.md`. NO hex publish in this pass.
 - **Phase 137 wave 5 (deferred human gate):** when ready to publish, drive `137-05-PLAN.md` — ① land to origin + CI green → ② register required checks green-first (`DRY_RUN=0 script/register_required_checks.sh`) → ③ merge the `crosswake_sigra 0.1.0` Release PR (irreversible publish) → ④ merge the release-as-cleanup PR.
 - Then continue v17.0: Phase 138 (crosswake_chimeway) → 139 (threadline) → 140 (family discipline + close).
+
+<!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->

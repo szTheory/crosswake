@@ -68,7 +68,7 @@ defmodule Crosswake.Proof.Phase47CompanionArcTest do
   end
 
   setup do
-    original_companions = Application.get_env(:crosswake, :companions)
+    original_companions = Application.get_env(:crosswake, :companions, [])
     original_rulestead = Application.get_env(:crosswake, :rulestead)
     original_rindle = Application.get_env(:crosswake, :rindle)
 

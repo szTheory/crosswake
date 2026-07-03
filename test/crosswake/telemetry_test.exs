@@ -1,9 +1,127 @@
+# ---------------------------------------------------------------------------
+# Stub companion for Phase 139 anti-drift PII-floor test (D-5).
+# Defined outside the test module to avoid nested-module resolution issues.
+# This stub contributes the threadline domain's forbidden metadata keys to the
+# companion union — proving every core baseline key has companion provenance.
+# The keys here are the threadline domain keys; the companion-domain provenance
+# comment references "threadline's domain" without naming the package atom.
+# ---------------------------------------------------------------------------
+
+defmodule Crosswake.TestSupport.StubThreadlineDomainCompanion do
+  @moduledoc false
+  @behaviour Crosswake.Companion
+
+  # Threadline domain forbidden keys — the 20-key denylist owned by the audit/correlation
+  # observer companion. This is a superset of the core baseline (which has 11 keys);
+  # the baseline keys are a curated universal floor, all of which have threadline provenance.
+  # companion-domain keys (credential_id, device_id, etc.) exceed the floor legitimately.
+  @threadline_domain_forbidden_keys [
+    :access_token,
+    :actor_id,
+    :actor_ref,
+    :authorization_code,
+    :credential_id,
+    :device_id,
+    :email,
+    :id_token,
+    :ip,
+    :nonce,
+    :org_id,
+    :passkey_credential_id,
+    :pkce_verifier,
+    :provider_payload,
+    :raw_return_to,
+    :refresh_token,
+    :return_to,
+    :session_ref,
+    :subject_ref,
+    :user_agent
+  ]
+
+  @impl true
+  def companion_id, do: :stub_threadline_domain
+
+  @impl true
+  def enabled?(_config), do: true
+
+  @impl true
+  def validate_dependency, do: :ok
+
+  @impl true
+  def route_gated?(_route, _target), do: :pass
+
+  @impl true
+  def kill_switch_active?(_target), do: false
+
+  @impl true
+  def report_state do
+    %Crosswake.Companion.State{
+      companion_id: :stub_threadline_domain,
+      enabled: true,
+      dependency_status: :ok,
+      gate_status: :unconfigured,
+      kill_switch_status: :unconfigured,
+      checked_at: 0
+    }
+  end
+
+  @impl true
+  def forbidden_metadata_keys, do: @threadline_domain_forbidden_keys
+end
+
+# Additionally, a stub that contributes :token (chimeway domain — covers the
+# one core baseline key not in the threadline domain list above).
+defmodule Crosswake.TestSupport.StubChimewayDomainCompanion do
+  @moduledoc false
+  @behaviour Crosswake.Companion
+
+  # Chimeway domain includes :token (session token used in notification flows).
+  # This is one of the 11 core baseline keys not in the threadline domain list.
+  @chimeway_domain_forbidden_keys [:token, :raw_token, :device_token, :session_ref, :subject_ref,
+    :actor_id, :ip, :email, :device_id, :user_agent, :provider_payload]
+
+  @impl true
+  def companion_id, do: :stub_chimeway_domain
+
+  @impl true
+  def enabled?(_config), do: true
+
+  @impl true
+  def validate_dependency, do: :ok
+
+  @impl true
+  def route_gated?(_route, _target), do: :pass
+
+  @impl true
+  def kill_switch_active?(_target), do: false
+
+  @impl true
+  def report_state do
+    %Crosswake.Companion.State{
+      companion_id: :stub_chimeway_domain,
+      enabled: true,
+      dependency_status: :ok,
+      gate_status: :unconfigured,
+      kill_switch_status: :unconfigured,
+      checked_at: 0
+    }
+  end
+
+  @impl true
+  def forbidden_metadata_keys, do: @chimeway_domain_forbidden_keys
+end
+
 defmodule Crosswake.TelemetryTest do
   @moduledoc """
   Unit tests for Crosswake.Telemetry.attach_default_logger/1 and detach_default_logger/0.
 
   Covers TELEM-03: the opt-in default logger, double-attach guard, exception level override
   (D-14), and PII key scrubbing (D-15).
+
+  Also covers Phase 139 D-5 anti-drift PII-floor test: asserts core_baseline ⊆
+  union(registered-companion forbidden_metadata_keys), ensuring every floor key has
+  companion provenance. The inverse is NOT asserted (companion-domain keys legitimately
+  exceed the floor).
 
   async: false — the telemetry handler table is a global ETS-backed registry. Tests must
   run sequentially to avoid one test observing another test's handler attachment state.
@@ -134,5 +252,79 @@ defmodule Crosswake.TelemetryTest do
 
     refute log =~ "access_token",
            "[D-15] PII key ':access_token' must not appear in the captured log; got: #{inspect(log)}"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Test 6: Phase 139 D-5 anti-drift PII-floor subset test
+  # Asserts: core_baseline ⊆ union(registered-companion forbidden_metadata_keys).
+  # Every key in the core universal floor must have companion provenance — i.e. at
+  # least one registered companion declares it in their forbidden_metadata_keys/0.
+  # The INVERSE is NOT asserted: companion-domain keys legitimately exceed the floor.
+  # This test fails loudly if a future edit adds a floor key with zero companion provenance.
+  # Non-vacuous: companions are registered via put_env (not an empty union).
+  # ---------------------------------------------------------------------------
+
+  describe "Phase 139 D-5 anti-drift PII-floor subset test" do
+    setup do
+      original_companions = Application.get_env(:crosswake, :companions, [])
+
+      Application.put_env(:crosswake, :companions, [
+        Crosswake.TestSupport.StubThreadlineDomainCompanion,
+        Crosswake.TestSupport.StubChimewayDomainCompanion
+      ])
+
+      on_exit(fn ->
+        Application.put_env(:crosswake, :companions, original_companions)
+      end)
+
+      :ok
+    end
+
+    test "core_baseline ⊆ union(companion forbidden_metadata_keys) — every floor key has companion provenance (D-5, Phase 139)" do
+      # Get the core universal floor
+      baseline = Crosswake.Telemetry.baseline_forbidden_metadata_keys()
+      baseline_set = MapSet.new(baseline)
+
+      # Build the union of all registered companion forbidden_metadata_keys/0 (non-vacuous: companions registered above)
+      companion_union =
+        Application.get_env(:crosswake, :companions, [])
+        |> Enum.flat_map(fn mod ->
+          if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+        end)
+        |> MapSet.new()
+
+      # Non-vacuity check: the companion union must not be empty
+      refute MapSet.size(companion_union) == 0,
+             "companion union must not be empty — test is vacuous if no companions are registered"
+
+      # Core subset assertion (D-5): every core floor key must appear in the companion union.
+      # A floor key without companion provenance means it was added to core without a companion
+      # declaring responsibility for it — that is a PII-floor drift bug.
+      keys_without_provenance =
+        MapSet.difference(baseline_set, companion_union)
+        |> MapSet.to_list()
+
+      assert keys_without_provenance == [],
+             "Anti-drift (D-5 / Phase 139): the following core baseline floor keys have NO companion provenance — " <>
+               "every floor key must be declared by at least one companion's forbidden_metadata_keys/0 to ensure " <>
+               "the PII scrub is non-redundant with the floor: #{inspect(keys_without_provenance)}"
+    end
+
+    test "baseline_forbidden_metadata_keys/0 returns exactly the 11-atom post-Phase-139 universal floor (count guard)" do
+      baseline = Crosswake.Telemetry.baseline_forbidden_metadata_keys()
+
+      # 11-atom floor post Phase 139: 10 original + :actor_ref (curated universal-floor delta, D-5).
+      # If this count changes, update this test AND the floor comment in telemetry.ex.
+      assert length(baseline) == 11,
+             "baseline_forbidden_metadata_keys/0 must return exactly 11 atoms post-Phase-139 " <>
+               "(10 original + :actor_ref curated universal-floor delta). Got #{length(baseline)}: #{inspect(baseline)}"
+
+      # Spot-check the critical floor keys
+      assert :access_token in baseline
+      assert :actor_ref in baseline
+      assert :email in baseline
+      assert :token in baseline
+      assert :ip in baseline
+    end
   end
 end

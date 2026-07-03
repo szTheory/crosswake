@@ -53,15 +53,17 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
-      # Phase 71 notification workflow proof is sigra-dependent and moved into crosswake_sigra
-      # during the SIGRA-01 extraction (Phase 137). Run it from the package (crosswake via path dep).
-      - name: Install crosswake_sigra dependencies
+      # Phase 71 notification workflow proof is a chimeway-domain (notification) proof and now
+      # lives in crosswake_chimeway after the CHIME-01 extraction (Phase 138). Run it from the
+      # package (core resolved via path dep). The Phase 137 wiring pointed at crosswake_sigra,
+      # but this notification proof followed chimeway, not sigra — corrected in Phase 140.
+      - name: Install crosswake_chimeway dependencies
         run: mix deps.get
-        working-directory: packages/crosswake_sigra
+        working-directory: packages/crosswake_chimeway
 
       - name: Run hermetic Phase 71 notification workflow proof
         run: mix test test/crosswake/proof/phase71_notification_workflow_proof_test.exs
-        working-directory: packages/crosswake_sigra
+        working-directory: packages/crosswake_chimeway
 
   advisory-push-provider-device-proof:
     name: advisory push provider/device proof (non-delivery)

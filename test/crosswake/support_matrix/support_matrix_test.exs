@@ -297,24 +297,54 @@ defmodule Crosswake.SupportMatrixTest do
       assert entry.telemetry.status == :shipped
     end
 
-    test "entry telemetry.forbidden_metadata_keys matches Crosswake.Threadline.Telemetry" do
-      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
-      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+    # Post-Phase-139 extraction: Crosswake.Threadline.Telemetry lives in the crosswake_threadline
+    # package. The three tests below compare the frozen literal in @audit_ledger_support_truth_static
+    # (support_matrix.ex SITE 1) against the expected values directly — the live module is not
+    # compiled in the core test lane (no circular path dep; module values frozen at extraction time).
+    # The package's own test lane enforces parity via its drift tests.
 
-      assert entry.telemetry.forbidden_metadata_keys ==
-               ThreadlineTelemetry.forbidden_metadata_keys()
+    test "entry telemetry.forbidden_metadata_keys contains the 20 threadline PII keys (frozen literal — SITE 1)" do
+      [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
+      keys = entry.telemetry.forbidden_metadata_keys
+
+      # Spot-check the full set of 20 keys frozen in @audit_ledger_support_truth_static.
+      assert length(keys) == 20,
+             "frozen literal should have 20 forbidden_metadata_keys; got #{length(keys)}"
+
+      for key <- [
+            :access_token, :actor_id, :actor_ref, :authorization_code, :credential_id,
+            :device_id, :email, :id_token, :ip, :nonce, :org_id, :passkey_credential_id,
+            :pkce_verifier, :provider_payload, :raw_return_to, :refresh_token, :return_to,
+            :session_ref, :subject_ref, :user_agent
+          ] do
+        assert key in keys,
+               "#{key} must be in the frozen forbidden_metadata_keys (SITE 1 freeze)"
+      end
     end
 
-    test "entry telemetry.event_names matches Crosswake.Threadline.Telemetry" do
-      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+    test "entry telemetry.event_names contains the 3 threadline request events (frozen literal — SITE 1)" do
       [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
-      assert entry.telemetry.event_names == ThreadlineTelemetry.event_names()
+      event_names = entry.telemetry.event_names
+
+      assert length(event_names) == 3,
+             "frozen literal should have 3 event_names; got #{length(event_names)}"
+
+      assert [:crosswake, :threadline, :request, :start] in event_names
+      assert [:crosswake, :threadline, :request, :stop] in event_names
+      assert [:crosswake, :threadline, :request, :exception] in event_names
     end
 
-    test "entry telemetry.metadata_keys matches Crosswake.Threadline.Telemetry" do
-      alias Crosswake.Threadline.Telemetry, as: ThreadlineTelemetry
+    test "entry telemetry.metadata_keys contains the 4 threadline metadata keys (frozen literal — SITE 1)" do
       [entry] = Crosswake.SupportMatrix.audit_ledger_support_truth()
-      assert entry.telemetry.metadata_keys == ThreadlineTelemetry.metadata_keys()
+      metadata_keys = entry.telemetry.metadata_keys
+
+      assert length(metadata_keys) == 4,
+             "frozen literal should have 4 metadata_keys; got #{length(metadata_keys)}"
+
+      for key <- [:thread_id, :correlation_id, :route_id, :source] do
+        assert key in metadata_keys,
+               "#{key} must be in the frozen metadata_keys (SITE 1 freeze)"
+      end
     end
 
     test "entry deferred list contains expected deferred items" do

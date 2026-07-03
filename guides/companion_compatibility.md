@@ -17,14 +17,30 @@ cell drifts from the package source in either direction.
 
 <!-- compat-03 contract: col1=Hex Package, requirement cell = "Requires `crosswake`";
      do not reorder columns without updating phase132_compat_matrix_drift_test.exs -->
+<!-- Current Version: do not hand-edit; update this column post-publish from the confirmed hex.pm release page -->
 | Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |
 |---|---|---|---|---|---|
-| `crosswake_rulestead` | `:rulestead` | `0.1.0` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
-| `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
-| `crosswake_sigra` | `:sigra` | `0.1.0` | `~> 0.1` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
+| `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
+| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
+| `crosswake_sigra` | `:sigra` | `unpublished` | `~> 0.1` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
+| `crosswake_chimeway` | `:chimeway` | `unpublished` | `~> 0.1` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
+| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `unpublished` | `~> 0.1` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
-The `Current Version` column records the last published line for orientation only;
-the live number is whatever each package's hexdocs link reports.
+The `Current Version` column reads "unpublished" until each package's first Hex
+release; after that release lands, the human writes the confirmed number back from
+the hex.pm release page (the column is never hand-edited to a guessed value, and the
+live number is always whatever each package's hexdocs link reports).
+
+## Threadline wiring
+
+Threadline is the one companion that is **not** a `:companions` registrant — its
+`Companion ID` cell reads `N/A (observer)` for that reason. Instead of registering in
+`:companions` config, Threadline is wired into a host application through two Phoenix
+integration points: the `Crosswake.Plug.Threadline` plug (added to the endpoint or a
+router pipeline) and `on_mount: Crosswake.Live.Threadline` (added to a LiveView or
+`live_session`). As a pure-OTP audit/correlation observer it has no engine dependency;
+`:plug` and `:phoenix_live_view` are optional and needed only for those surface
+modules.
 
 ## Independent Versioning
 

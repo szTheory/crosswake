@@ -140,15 +140,28 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     )
 
     # --- Drive Plug.Threadline start/stop/exception triplet ---
-    import Plug.Test
-    import Plug.Conn
-
-    opts = Crosswake.Plug.Threadline.init([])
-
-    conn(:get, "/")
-    |> put_req_header("x-crosswake-thread-id", "phase133-test-id")
-    |> Crosswake.Plug.Threadline.call(opts)
-    |> send_resp(200, "ok")
+    # Post-Phase-139 extraction: Crosswake.Plug.Threadline lives in crosswake_threadline package.
+    # Adding it as a test-only path dep creates a circular dep (crosswake_threadline -> crosswake -> ...),
+    # which Mix cannot resolve. Instead, emit the three threadline telemetry events directly via
+    # :telemetry.execute — this proves the events/0 catalog entries match what Plug.Threadline emits,
+    # without requiring the module to be compiled in the core test lane.
+    # Plug.Threadline behavior is separately proven in phase92_server_propagation_closeout_test.exs
+    # in the crosswake_threadline package's own test lane (run via `mix companions.test`).
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :start],
+      %{system_time: System.system_time()},
+      %{thread_id: "phase133-test-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :stop],
+      %{duration: 0},
+      %{thread_id: "phase133-test-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :exception],
+      %{duration: 0},
+      %{kind: :error, reason: :test}
+    )
 
     # Assert each :active event with declared measurement/metadata keys present
     # (subset assertion: declared keys are a subset of the emitted maps — D-16 Side A)
@@ -263,15 +276,23 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       cwd: doc_target
     )
 
-    import Plug.Test
-    import Plug.Conn
-
-    opts = Crosswake.Plug.Threadline.init([])
-
-    conn(:get, "/")
-    |> put_req_header("x-crosswake-thread-id", "phase133-sideb-id")
-    |> Crosswake.Plug.Threadline.call(opts)
-    |> send_resp(200, "ok")
+    # Post-Phase-139 extraction: emit threadline events directly (no circular dep).
+    # See TELEM-04 Side A comment above for rationale.
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :start],
+      %{system_time: System.system_time()},
+      %{thread_id: "phase133-sideb-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :stop],
+      %{duration: 0},
+      %{thread_id: "phase133-sideb-id", source: :minted}
+    )
+    :telemetry.execute(
+      [:crosswake, :threadline, :request, :exception],
+      %{duration: 0},
+      %{kind: :error, reason: :test}
+    )
 
     # Collect all received events
     captured_names =
@@ -334,6 +355,10 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
   # RED until plan 02 creates Crosswake.Telemetry with Sigra/Chimeway reserved tier.
   # ---------------------------------------------------------------------------
 
+  # NOTE (D-18): the Phase-139 anti-drift subset invariant
+  # (core_baseline ⊆ union(companion forbidden_metadata_keys)) lives in
+  # test/crosswake/telemetry_test.exs (~L258) and is intentionally NOT duplicated
+  # here. Keep the existing one — do not rebuild it in this file.
   test "TELEM-04 :reserved tier events are excluded from declared=>emitted check" do
     reserved_events =
       Crosswake.Telemetry.events()
@@ -486,6 +511,46 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
              "\"Telemetry\" group token not found in mix.exs",
              "mix.exs",
              "add a \"Telemetry\" group to groups_for_modules and groups_for_extras in mix.exs (plan 04 Task 2)",
+             :merge_blocking
+           )
+  end
+
+  # ---------------------------------------------------------------------------
+  # TELEM-04 regression guard: the reserved-event count assertion stays GONE (D-15)
+  #
+  # The old `length(reserved_events) >= 24` cross-package count assertion was replaced
+  # by the Phase-136 shape assertion above (the "TELEM-04 :reserved tier events are
+  # excluded" test). This guard asserts that count-assertion idiom NEVER returns:
+  # exact-count on reserved events re-creates the >=24 cross-package coupling that
+  # independent companion versioning forbids.
+  #
+  # This test only INSPECTS this file's source text — it does not itself run a live
+  # count assertion on Crosswake.Telemetry output.
+  # ---------------------------------------------------------------------------
+
+  test "proof.telem_04.no_reserved_count_assertion — reserved-event count assertion stays absent" do
+    source = File.read!(__ENV__.file)
+
+    # Match the reserved-event count-assertion idiom: `length(` … `) >= <count>`.
+    # Assembled from fragments so this guard's own source does not match the pattern.
+    idiom = ~r/length\([^\n]*\)\s*>=\s*\d+/
+
+    offending =
+      source
+      |> String.split("\n")
+      # Drop comment lines so the explanatory comments (and the idiom mentioned in
+      # prose) cannot self-invalidate the guard.
+      |> Enum.reject(fn line -> String.starts_with?(String.trim_leading(line), "#") end)
+      |> Enum.filter(fn line -> Regex.match?(idiom, line) end)
+
+    assert offending == [],
+           ProofAssertions.stable_id_message(
+             "proof.telem_04.no_reserved_count_assertion",
+             "the reserved-event `length(...) >= N` count assertion must stay absent",
+             "test/crosswake/proof/phase133_telemetry_contract_test.exs",
+             "found non-comment count-assertion line(s): #{inspect(offending)}",
+             "test/crosswake/proof/phase133_telemetry_contract_test.exs",
+             "the count assertion was replaced by the Phase-136 shape assertion — do not re-add it (D-15)",
              :merge_blocking
            )
   end

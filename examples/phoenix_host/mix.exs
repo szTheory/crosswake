@@ -39,14 +39,19 @@ defmodule CrosswakeExample.MixProject do
   defp deps do
     [
       {:crosswake, path: "../.."},
-      # Companion packages this example adopts (extracted in Phases 130/132/137). The example
-      # uses the Rulestead gate (config.exs), the Rindle media seam (lib/.../media/*), and the
+      # Companion packages this example adopts (extracted in Phases 130/132/137/138/139). The example
+      # uses the Rulestead gate (config.exs), the Rindle media seam (lib/.../media/*), the
       # Sigra auth companion (saas_portal/handoff.ex uses Sigra.Handoff/Contracts/DenialCodes),
-      # so it declares them as ordinary path deps — exactly how a real adopter would add
-      # `{:crosswake_rulestead, "~> 0.1"}` / `{:crosswake_rindle, "~> 0.1"}` / `{:crosswake_sigra, "~> 0.1"}` from Hex.
+      # the Chimeway notification companion, and the Threadline audit/correlation observer —
+      # so it declares them as ordinary path deps, exactly how a real adopter would add
+      # `{:crosswake_rulestead, "~> 0.1"}` / `{:crosswake_rindle, "~> 0.1"}` /
+      # `{:crosswake_sigra, "~> 0.1"}` / `{:crosswake_chimeway, "~> 0.1"}` /
+      # `{:crosswake_threadline, "~> 0.1"}` from Hex.
       {:crosswake_rulestead, path: "../../packages/crosswake_rulestead"},
       {:crosswake_rindle, path: "../../packages/crosswake_rindle"},
       {:crosswake_sigra, path: "../../packages/crosswake_sigra"},
+      {:crosswake_chimeway, path: "../../packages/crosswake_chimeway"},
+      {:crosswake_threadline, path: "../../packages/crosswake_threadline"},
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
