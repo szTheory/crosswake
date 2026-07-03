@@ -36,6 +36,35 @@ DERIVED_DATA_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-derived.XXXXXX")"
 project="${PROJECT_ROOT}/CrosswakeShell.xcodeproj"
 scheme="${SCHEME}"
 
+# Hermetic release-PR resolution: the checked-in host pins the remote SwiftPM
+# package at the CURRENT version, which isn't tagged on the remote mirror until the
+# release PR merges. When CROSSWAKE_IOS_USE_LOCAL_CORE=1, redirect the remote URL to a
+# locally-tagged clone of packages/crosswake-shell-core-ios via a SwiftPM mirror
+# (~/.swiftpm/configuration/mirrors.json, honored by xcodebuild) — no pbxproj edit, so
+# the checked-in remote ref stays intact for the native-evidence drift guards.
+if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
+  ios_core_remote="https://github.com/szTheory/crosswake-shell-core-ios.git"
+  ios_core_version="$(sed -n 's/.*minimumVersion = \([0-9][0-9.]*\);.*/\1/p' "${project}/project.pbxproj" | head -1)"
+  ios_core_clone="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-core.XXXXXX")/crosswake-shell-core-ios"
+  git clone -q "${ROOT_DIR}/packages/crosswake-shell-core-ios" "${ios_core_clone}"
+  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "${ios_core_version}" -m "hermetic ${ios_core_version}" >/dev/null 2>&1
+  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci tag -f "v${ios_core_version}" -m "hermetic v${ios_core_version}" >/dev/null 2>&1
+  mirror_dir="${HOME}/.swiftpm/configuration"
+  mkdir -p "${mirror_dir}"
+  cat > "${mirror_dir}/mirrors.json" <<JSON
+{
+  "object" : [
+    {
+      "mirror" : "${ios_core_clone}",
+      "original" : "${ios_core_remote}"
+    }
+  ],
+  "version" : 1
+}
+JSON
+  echo "hermetic: redirected ${ios_core_remote} -> ${ios_core_clone} @ ${ios_core_version}"
+fi
+
 project_check="$(xcodebuild -list -project "$project" 2>&1)" || {
   echo "error: generated scheme is not buildable via xcodebuild -list" >&2
   printf '%s\n' "$project_check" >&2
