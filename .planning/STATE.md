@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-status: planned
-stopped_at: Phase 140 context gathered
-last_updated: "2026-07-02T23:21:52.189Z"
-last_activity: 2026-07-02 — Phase 139 execution started
+status: executing
+stopped_at: Phase 140 Wave 1 complete (140-01..04); Wave 2 (140-05 publish) human-gated
+last_updated: "2026-07-03T01:12:24.844Z"
+last_activity: 2026-07-03
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 19
-  completed_plans: 16
-  percent: 20
+  total_plans: 24
+  completed_plans: 23
+  percent: 96
 ---
 
 # Project State: Crosswake
@@ -21,16 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 139 — crosswake-threadline-extraction
+**Current focus:** Phase 140 — family-discipline-close
 
 ## Current Position
 
-Phase: 139 (crosswake-threadline-extraction) — EXECUTING
-Plan: 4 of 4
-Plans: 4 waved plans (138-01..04); plan-checker PASSED. Next: /gsd-execute-phase 138 (waves 1-3 in-tree; wave 4 = deferred human publish gate).
-Wave collapse: 4 waves vs 137's 5 — chimeway has NO Finding-boundary refactor (Resolver uses core `Crosswake.Shell.Denial` directly, no D-138-A analog). Verified no-sigra-dep invariant + vacuity-safe clean-room.
-Phase 137: waves 1-4 executed green; 137-05 = deferred human hex-publish gate.
-Last activity: 2026-07-02 — Phase 139 execution started
+Phase: 140 (family-discipline-close) — EXECUTING (Wave 1 done; Wave 2 human-gated)
+Plan: 5 of 5 (140-05 pending human go-decision)
+Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
+Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE hex publishes sigra→chimeway→threadline + register_required_checks.sh ship-gate). DEFERRED per user "no publish now" + requires origin push + green CI first. Awaiting explicit human go-decision.
+Last activity: 2026-07-03
 
 > **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
 > false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`

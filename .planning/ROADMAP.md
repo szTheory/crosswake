@@ -279,10 +279,10 @@ Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
 Plans:
 **Wave 1**
 
-- [ ] 140-01-PLAN.md — FAMILY-01: compat-matrix cell discipline + O(N) column guard + version-cell format guard [Wave 1]
-- [ ] 140-02-PLAN.md — FAMILY-03: sigra + chimeway Side-A emission tests + threadline upgrade + `>= 24` regression guard [Wave 1]
-- [ ] 140-03-PLAN.md — FAMILY-02: extraction-recipe hardening (Step 0 gate, grep-exit fix, scope widen + module-attr pass, observer variant, callouts, proven-on) [Wave 1]
-- [ ] 140-04-PLAN.md — FAMILY-04 readiness: verify pipeline primitives + author publish runbook + ship-gate ordering (no publish) [Wave 1]
+- [x] 140-01-PLAN.md — FAMILY-01: compat-matrix cell discipline + O(N) column guard + version-cell format guard [Wave 1]
+- [x] 140-02-PLAN.md — FAMILY-03: sigra + chimeway Side-A emission tests + threadline upgrade + `>= 24` regression guard [Wave 1]
+- [x] 140-03-PLAN.md — FAMILY-02: extraction-recipe hardening (Step 0 gate, grep-exit fix, scope widen + module-attr pass, observer variant, callouts, proven-on) [Wave 1]
+- [x] 140-04-PLAN.md — FAMILY-04 readiness: verify pipeline primitives + author publish runbook + ship-gate ordering (no publish) [Wave 1]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
