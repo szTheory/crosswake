@@ -30,6 +30,11 @@
         },
         {
           "type": "json",
+          "path": "examples/native_evidence/evidence-manifest.example.json",
+          "jsonpath": "$.crosswake_version"
+        },
+        {
+          "type": "json",
           "path": "examples/phoenix_host/priv/crosswake/install_manifest.json",
           "jsonpath": "$.crosswake_version"
         },
