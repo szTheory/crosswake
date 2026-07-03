@@ -21,6 +21,21 @@ compatibility matrix.
 * **137-03:** add clean-room proof, move remaining sigra-dependent core tests to package ([b92e001](https://github.com/szTheory/crosswake/commit/b92e0015faef2ec462a1358665e5ecc924b6ae79))
 * **137-03:** move sigra-internal tests to package, split proof tests ([24510cc](https://github.com/szTheory/crosswake/commit/24510ccab664b43d775b6cd99a0387a241925c3d))
 * **137-03:** scaffold crosswake_sigra package, move sigra source to package, update core mix.exs ([a18c3e8](https://github.com/szTheory/crosswake/commit/a18c3e814afd4dc0d05c8eb6b2e2cdfe3cbc7602))
+* **141-02:** bump v17.0 companion crosswake_dep seams to ~&gt; 0.2 ([4285a85](https://github.com/szTheory/crosswake/commit/4285a85ddf7eb4f42cd9588f9727a490a9046ad7))
+
+
+### Bug Fixes
+
+* **138:** stop :companions env nil-poisoning in test captures (seed-stable suite) ([0804ba5](https://github.com/szTheory/crosswake/commit/0804ba57c669620e8258a4e79e80f32528651865))
+
+## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_sigra-v0.1.0...crosswake_sigra-v0.1.0) (2026-07-03)
+
+
+### Features
+
+* **137-03:** add clean-room proof, move remaining sigra-dependent core tests to package ([b92e001](https://github.com/szTheory/crosswake/commit/b92e0015faef2ec462a1358665e5ecc924b6ae79))
+* **137-03:** move sigra-internal tests to package, split proof tests ([24510cc](https://github.com/szTheory/crosswake/commit/24510ccab664b43d775b6cd99a0387a241925c3d))
+* **137-03:** scaffold crosswake_sigra package, move sigra source to package, update core mix.exs ([a18c3e8](https://github.com/szTheory/crosswake/commit/a18c3e814afd4dc0d05c8eb6b2e2cdfe3cbc7602))
 
 
 ### Bug Fixes
