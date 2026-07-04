@@ -153,8 +153,6 @@
       "component": "crosswake_chimeway",
       "release-type": "elixir",
       "separate-pull-requests": true,
-      "_TODO_release_as": "ONE-SHOT override (Phase 138 / recipe Step 12f / Pitfall 6): remove 'release-as' after the first crosswake_chimeway Release PR merges, or subsequent runs keep re-targeting 0.1.0. chimeway is independently versioned — intentionally NOT in the linked-versions lockstep group (D-8).",
-      "release-as": "0.1.0",
       "extra-files": ["packages/crosswake_chimeway/mix.exs"],
       "changelog-sections": [
         { "type": "feat",     "section": "Features" },
