@@ -130,11 +130,13 @@ CLEAN_ROOM_DIR="${RUNNER_TEMP:-/tmp}/clean_room_${PACKAGE}"
 echo "[crosswake] Step 2: creating throwaway Phoenix host at ${CLEAN_ROOM_DIR}..."
 
 rm -rf "$CLEAN_ROOM_DIR"
-mkdir -p "$CLEAN_ROOM_DIR"
 
-# mix new in the PARENT of CLEAN_ROOM_DIR, naming the subdirectory
+# mix new in the PARENT of CLEAN_ROOM_DIR, naming the subdirectory.
+# Create ONLY the parent — `mix new "$APP_NAME"` creates the leaf dir itself; pre-creating
+# it makes mix prompt "directory already exists? [Yn]", which EOFs to abort under `bash -e`.
 PARENT_DIR=$(dirname "$CLEAN_ROOM_DIR")
 APP_NAME=$(basename "$CLEAN_ROOM_DIR")
+mkdir -p "$PARENT_DIR"
 cd "$PARENT_DIR"
 mix new "$APP_NAME" --sup
 
