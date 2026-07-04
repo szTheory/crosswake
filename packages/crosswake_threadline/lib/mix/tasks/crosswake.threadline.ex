@@ -198,8 +198,6 @@ defmodule Mix.Tasks.Crosswake.Threadline do
   defp glyph(:branch_prefix), do: if(ascii_mode?(), do: "|   ", else: "│   ")
   defp glyph(:branch_blank), do: "    "
 
-  defp render_durable(events, filter \\ nil)
-
   defp render_durable([], filter) do
     Mix.shell().info("Posture: Durable — querying audit ledger")
 
