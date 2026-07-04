@@ -1,5 +1,37 @@
 # Project Milestones: Crosswake
 
+## v17.0 Companion Family Completion (Shipped: 2026-07-04)
+
+**Phases completed:** 6 phases (136-141), 29 plans
+**Git range:** `docs: start milestone v17.0` (15ec46bf, 2026-06-30) → v17.0 close (2026-07-04); 193 commits, 269 files (+24,240/−4,169)
+**Requirements:** 20/20 v1 satisfied (DECOUPLE-01..06, SIGRA-01..03, CHIME-01..03, THREAD-01..03, FAMILY-01..05). Closeout type: `override_closeout` — verification was empirical (all four packages proven LIVE on Hex via `mix hex.info`; in-tree suites green through execution; the publish-gated plans' work re-homed to Phase 141). Phase 139 carries a formal `VERIFICATION.md` (passed); 137/138/140/141 closed on publish evidence. No `v17.0-MILESTONE-AUDIT.md` run (family provably live; audit is paper-trail only) — deferred by explicit choice.
+
+**Delivered:** Finished the companion family — the three remaining in-tree companions extracted to standalone, independently-versioned first-party Hex packages, all LIVE on Hex: **`crosswake` 0.2.0** (core; +hexdocs +Android Maven) · **`crosswake_sigra` 0.1.1** (auth) · **`crosswake_chimeway` 0.1.0** (notifications) · **`crosswake_threadline` 0.1.0** (audit observer). Module names preserved throughout (`Crosswake.Companions.Sigra.*`/`.Chimeway.*`, `Crosswake.Threadline.*`) so extraction is non-breaking.
+
+**Key accomplishments:**
+
+- **Core decoupling via runtime registry inversion (DECOUPLE):** All four compile-time core→companion coupling sites (telemetry, route_gate, support_matrix, doctor) inverted onto a `:companions` registry seam using optional `@behaviour` callbacks + `function_exported?/3`. Core compiles `--warnings-as-errors` with no companion present; auth-predicated routes fail **closed** (`:dependency_missing`) when no `auth_authority?/0` companion is registered; a raising companion is rescued and denies. A curated universal PII floor (auth-token/session/identity) is always applied above per-companion runtime aggregation. (Gap-closure 136-06 resolved 34 regressions; full suite 1162/0.)
+- **Three standalone extractions, non-breaking (SIGRA/CHIME/THREAD):** sigra emits `Crosswake.Compatibility.Finding` at its boundary (`Crosswake.Shell.Denial` stays core-private); chimeway proven sigra-free by a vacuity-safe clean-room lane (the "chimeway→sigra" dep was a myth — `auth_context: map()`); threadline observes purely via `:telemetry.attach_many` by event-name with a crash-isolated (`try/rescue`) append-only PII-free ledger, and decoupled its own 2 core compile sites atomically.
+- **Family discipline (FAMILY):** O(N) compat-matrix rows (single `Requires crosswake >= X` column, no inter-companion columns) with drift guards; per-package Side-A "declared ⇔ emitted" telemetry contract tests (core's hardcoded `>= 24` count assertion replaced by a shape assertion); extraction recipe gained a "Step 0: core decoupling" prerequisite + all-`lib/` stale-reference grep guard; COMPANION-PUBLISH-RUNBOOK authored.
+- **Core-first ordered publish (FAMILY-05):** Discovered mid-flight — companions compile against unpublished v17.0 core (`KeyError :code` from published core 0.1.2). Resolved by publishing **core `0.2.0` first** (a `release-as: "0.2.0"` pin forced the intended minor over release-please's pre-major `0.1.3` patch-bump), bumping every companion floor `~> 0.1` → `~> 0.2`, then publishing companions **sequentially** (one Release PR each, never batched) so each resolves against published core 0.2.0 — the real version-mismatch check the path-dep dress rehearsal could not catch.
+
+**Recovery deviations (all resolved; family fully live):**
+
+- sigra `0.1.0` first-publish failed on missing `ex_doc` (docs task) → re-cut `0.1.1`.
+- threadline `0.1.0` publish failed `--warnings-as-errors` on a dead default arg (`render_durable/2`) → deleted dud tag, fixed via #70, re-cut clean `0.1.0` via #71; closeout #74 stripped the stale `release-as` pin + deduped CHANGELOG.
+- clean-room proof harness (non-required/advisory) hit a chain of bugs — app-name hyphens (#64), mkdir-leaf (#67), and an OPEN doctor-router issue → **SEED-004**; resolvability proven (steps 1-6 green), publishes succeeded.
+
+**Tech debt / follow-ups carried (non-blocking):**
+
+- **SEED-003** — iOS SwiftPM mirror push 403: core `0.2.0` published to Hex + Android Maven, but the iOS split-repo tag was NOT mirrored (`MIRROR_PUSH_TOKEN` lacks push scope). iOS native adopters can't resolve 0.2.0 until the token is fixed and the mirror job re-run. User owns the token.
+- **SEED-004** — clean-room proof harness doctor-router bug (advisory, non-required).
+- Deferred future requirements: DASH-01 (`crosswake_dashboard`), SYNCP-01 (offline-sync productization), NTV-01 (native storage budgets), SEED-002 (Phoenix-first native breadth).
+- Carried from prior milestones (non-blocking): TELEM-04 Side-B vacuity (assessed, deferred); WR-01/02/03 native-proof gaps.
+
+See `.planning/milestones/v17.0-ROADMAP.md` and `.planning/milestones/v17.0-REQUIREMENTS.md` for full detail.
+
+---
+
 ## v16.0 Companion Extraction & Package-Family Discipline (Shipped: 2026-06-30)
 
 **Phases completed:** 7 phases (129-135), 24 plans

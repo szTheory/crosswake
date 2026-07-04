@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-status: executing
-stopped_at: Phase 140 context gathered
-last_updated: "2026-07-03T08:59:07.586Z"
-last_activity: 2026-07-03
+status: shipped
+stopped_at: v17.0 SHIPPED + ARCHIVED + tagged 2026-07-04 — companion family fully published to Hex; milestone closed
+last_updated: "2026-07-04T00:00:00.000Z"
+last_activity: 2026-07-04
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 6
   total_plans: 28
-  completed_plans: 22
-  percent: 17
+  completed_plans: 28
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -24,6 +24,14 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 **Current focus:** Phase 141 — core-first-publish-family-release
 
 ## Current Position
+
+**✅ v17.0 "Companion Family Completion" SHIPPED + ARCHIVED + tagged 2026-07-04.** Milestone closed via `/gsd-complete-milestone` (`override_closeout` — empirical: all four packages proven LIVE on Hex). Phases 136-141 all `complete` (the deferred/superseded publish plans got honest SUMMARYs tracing their work to Phase 141). 20/20 v1 reqs Complete. Archived to `.planning/milestones/v17.0-{ROADMAP,REQUIREMENTS}.md`; `MILESTONES.md` entry added; `REQUIREMENTS.md` removed (fresh for next milestone); ROADMAP collapsed; `git tag v17.0`. Carried follow-ups: SEED-003 (iOS mirror push token), SEED-004 (clean-room harness). NEXT: `/gsd-new-milestone` when ready.
+
+Phase: 141 (core-first-publish-family-release) — ✅ COMPLETE 2026-07-04. **The v17.0 Companion Family is FULLY PUBLISHED to Hex.**
+
+**LIVE ON HEX:** `crosswake` 0.2.0 (core; +hexdocs +Android Maven) · `crosswake_sigra` 0.1.1 · `crosswake_chimeway` 0.1.0 · `crosswake_threadline` 0.1.0. Core-first ordering held; companions sequential sigra→chimeway→threadline (never batched). The KeyError-on-unpublished-core blocker (Finding.code) is resolved — companions resolve against published core 0.2.0. Recovery deviations during execution: sigra 0.1.0 first-publish failed (missing ex_doc) → re-cut 0.1.1; threadline 0.1.0 publish failed (dead-default-arg warnings-as-errors) → deleted dud tag, fixed (#70), re-cut clean 0.1.0 (#71); clean-room proof harness bugs fixed (#64 app-name, #67 mkdir) with one OPEN advisory (#SEED-004 doctor-router). Closeout: stale release-as pins stripped (chimeway #67, threadline #74), CHANGELOG dedup, staleness gate green, redundant #59 closed. Follow-ups planted: SEED-003 (iOS mirror push token — core iOS SwiftPM 0.2.0 not mirrored), SEED-004 (clean-room proof harness — advisory, non-blocking). NOTE: phases 137-140 remain "in_progress" in GSD bookkeeping (executed in-tree, publish deferred to 141) — their substantive work shipped via the 141 publish.
+
+--- prior planned/blocked history below (superseded by the completion above) ---
 
 Phase: 141 (core-first-publish-family-release) — EXECUTING
 Plan: 2 of 4

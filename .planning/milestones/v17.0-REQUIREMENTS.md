@@ -25,13 +25,13 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
 - [x] **SIGRA-01**: `sigra` source + tests move to a standalone `packages/crosswake_sigra/` Hex project (own `mix.exs`, own `@version`), with all sub-modules (`Evaluator`, `Handoff`, `StepUp`, `StepUpCeremony`, `AuthReturn`, `Contracts`, `DenialCodes`, `Telemetry`) preserving the `Crosswake.Companions.Sigra.*` namespace. (D-9)
 - [x] **SIGRA-02**: Sigra internals emit `Crosswake.Compatibility.Finding` at the companion boundary; `Crosswake.Shell.Denial` stays core-private and absent from the sigra package; PII detail-sanitization (`DenialCodes.sanitize_details/1`) lives inside the package. All internal `Denial.new` call sites across the sub-modules are refactored to the `Finding` boundary. (D-4)
-- [~] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9) — **CI pipeline + independent component wired, dress rehearsal + `hex.publish --dry-run` green (Plan 137-04); the irreversible Hex publish is the deferred human gate (Plan 137-05, wave 5) and has NOT run.**
+- [x] **SIGRA-03**: `crosswake_sigra` publishes to Hex as an independent `release-please` component (not lockstep), preceded by a path-dep dress rehearsal and gated by `hex.publish --dry-run` + a clean-room install lane before the irreversible publish. (D-8, D-9) — **CI pipeline + independent component wired, dress rehearsal + `hex.publish --dry-run` green (Plan 137-04); the irreversible Hex publish is the deferred human gate (Plan 137-05, wave 5) and has NOT run.**
 
 ### CHIME — `crosswake_chimeway` Extraction
 
-- [ ] **CHIME-01**: `chimeway` source + tests move to a standalone `packages/crosswake_chimeway/` Hex project (own `mix.exs`, own `@version`), preserving the `Crosswake.Companions.Chimeway.*` namespace. (D-9)
-- [ ] **CHIME-02**: `crosswake_chimeway` depends only on core — no `crosswake_sigra` dependency; `auth_context` stays typed `map()` with a moduledoc note guarding against tightening to `AuthContext.t()`; the clean-room lane installs `crosswake + crosswake_chimeway + chimeway` but **not** `crosswake_sigra` (vacuity guard). (D-8)
-- [ ] **CHIME-03**: `crosswake_chimeway` publishes to Hex as an independent `release-please` component, preceded by a dress rehearsal and gated by `hex.publish --dry-run` + clean-room before publish. (D-8, D-9)
+- [x] **CHIME-01**: `chimeway` source + tests move to a standalone `packages/crosswake_chimeway/` Hex project (own `mix.exs`, own `@version`), preserving the `Crosswake.Companions.Chimeway.*` namespace. (D-9)
+- [x] **CHIME-02**: `crosswake_chimeway` depends only on core — no `crosswake_sigra` dependency; `auth_context` stays typed `map()` with a moduledoc note guarding against tightening to `AuthContext.t()`; the clean-room lane installs `crosswake + crosswake_chimeway + chimeway` but **not** `crosswake_sigra` (vacuity guard). (D-8)
+- [x] **CHIME-03**: `crosswake_chimeway` publishes to Hex as an independent `release-please` component, preceded by a dress rehearsal and gated by `hex.publish --dry-run` + clean-room before publish. (D-8, D-9)
 
 ### THREAD — `crosswake_threadline` Extraction (observer, extracted last)
 
@@ -41,11 +41,11 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 
 ### FAMILY — Package-Family Discipline & Close
 
-- [ ] **FAMILY-01**: Each new companion has a drift-tested compatibility-matrix row in `guides/companion_compatibility.md` (single `Requires crosswake >= X` column); the matrix stays O(N) with no inter-companion columns — companions depend only on core. (D-8)
-- [ ] **FAMILY-02**: The extraction recipe `script/extract_companion.md` gains a documented "Step 0: core decoupling" prerequisite for entangled companions and a guard step that greps all of `lib/` (not just the companion dir) for stale companion references. (D-9)
-- [ ] **FAMILY-03**: Each companion package carries its own telemetry "declared ⇔ emitted" Side-A contract test; core's hardcoded reserved-event count assertion (`length(reserved_events) >= 24`) is removed in favor of a shape assertion. (D-6)
-- [ ] **FAMILY-04**: The three publishes are registered and executed **sequentially** (sigra → chimeway → threadline), one `release-please` component added per PR so a misfire cannot publish all three; the carried `merge-blocking-*` lane-registration ship-gate (`register_required_checks.sh`) is run before new v17.0 lanes are relied upon as merge-blocking. (D-9)
-- [ ] **FAMILY-05**: Core is published to Hex **first**, at the version that introduces the companion-required API (`Crosswake.Compatibility.Finding.{code,details}`, `:auth` clause, `:companions` registry) — a minor bump to `0.2.0` — **before** any companion publish; each companion's `crosswake_dep()` publish seam floor is raised `~> 0.1` → `~> 0.2` so the "Requires crosswake >= 0.2.0" compat-matrix column is honest and a downstream resolve cannot compile a companion against a too-old core. (Discovered 2026-07-03: the sigra publish failed at compile — `KeyError :code` from published core 0.1.2 — because companions depend on unpublished v17.0 core; the FAMILY-04 publish plan omitted core-first ordering.)
+- [x] **FAMILY-01**: Each new companion has a drift-tested compatibility-matrix row in `guides/companion_compatibility.md` (single `Requires crosswake >= X` column); the matrix stays O(N) with no inter-companion columns — companions depend only on core. (D-8)
+- [x] **FAMILY-02**: The extraction recipe `script/extract_companion.md` gains a documented "Step 0: core decoupling" prerequisite for entangled companions and a guard step that greps all of `lib/` (not just the companion dir) for stale companion references. (D-9)
+- [x] **FAMILY-03**: Each companion package carries its own telemetry "declared ⇔ emitted" Side-A contract test; core's hardcoded reserved-event count assertion (`length(reserved_events) >= 24`) is removed in favor of a shape assertion. (D-6)
+- [x] **FAMILY-04**: The three publishes are registered and executed **sequentially** (sigra → chimeway → threadline), one `release-please` component added per PR so a misfire cannot publish all three; the carried `merge-blocking-*` lane-registration ship-gate (`register_required_checks.sh`) is run before new v17.0 lanes are relied upon as merge-blocking. (D-9)
+- [x] **FAMILY-05**: Core is published to Hex **first**, at the version that introduces the companion-required API (`Crosswake.Compatibility.Finding.{code,details}`, `:auth` clause, `:companions` registry) — a minor bump to `0.2.0` — **before** any companion publish; each companion's `crosswake_dep()` publish seam floor is raised `~> 0.1` → `~> 0.2` so the "Requires crosswake >= 0.2.0" compat-matrix column is honest and a downstream resolve cannot compile a companion against a too-old core. (Discovered 2026-07-03: the sigra publish failed at compile — `KeyError :code` from published core 0.1.2 — because companions depend on unpublished v17.0 core; the FAMILY-04 publish plan omitted core-first ordering.)
 
 ## Future Requirements (deferred)
 
@@ -74,15 +74,15 @@ Requirements for this milestone. Each maps to exactly one roadmap phase (136+).
 | DECOUPLE-06 | Phase 136 | Complete |
 | SIGRA-01 | Phase 137 | Complete |
 | SIGRA-02 | Phase 137 | Complete |
-| SIGRA-03 | Phase 137 | In Progress — pipeline wired + dry-run green; publish deferred (human gate 137-05) |
-| CHIME-01 | Phase 138 | Pending |
-| CHIME-02 | Phase 138 | Pending |
-| CHIME-03 | Phase 138 | Pending |
+| SIGRA-03 | Phase 137 (extraction) / Phase 141 (publish) | Complete — LIVE on Hex `crosswake_sigra` 0.1.1 |
+| CHIME-01 | Phase 138 | Complete |
+| CHIME-02 | Phase 138 | Complete |
+| CHIME-03 | Phase 138 (extraction) / Phase 141 (publish) | Complete — LIVE on Hex `crosswake_chimeway` 0.1.0 |
 | THREAD-01 | Phase 139 | Complete |
 | THREAD-02 | Phase 139 | Complete |
 | THREAD-03 | Phase 139 | Complete |
 | FAMILY-01 | Phase 140 | Complete |
 | FAMILY-02 | Phase 140 | Complete |
 | FAMILY-03 | Phase 140 | Complete |
-| FAMILY-04 | Phase 140 (readiness) / Phase 141 (execution) | In Progress — runbook + pipeline ready (140-04); sequential publish blocked on FAMILY-05, moved to Phase 141 |
-| FAMILY-05 | Phase 141 | Pending |
+| FAMILY-04 | Phase 140 (readiness) / Phase 141 (execution) | Complete — sequential publish executed (sigra→chimeway→threadline, one Release PR each) |
+| FAMILY-05 | Phase 141 | Complete — core `crosswake` 0.2.0 published FIRST; companion floors bumped `~> 0.1`→`~> 0.2` |
