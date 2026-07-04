@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v17.0
 milestone_name: Companion Family Completion
-status: executing
-stopped_at: Phase 141 COMPLETE — v17.0 companion family fully published to Hex
+status: shipped
+stopped_at: v17.0 SHIPPED + ARCHIVED + tagged 2026-07-04 — companion family fully published to Hex; milestone closed
 last_updated: "2026-07-04T00:00:00.000Z"
 last_activity: 2026-07-04
 progress:
@@ -24,6 +24,8 @@ See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
 **Current focus:** Phase 141 — core-first-publish-family-release
 
 ## Current Position
+
+**✅ v17.0 "Companion Family Completion" SHIPPED + ARCHIVED + tagged 2026-07-04.** Milestone closed via `/gsd-complete-milestone` (`override_closeout` — empirical: all four packages proven LIVE on Hex). Phases 136-141 all `complete` (the deferred/superseded publish plans got honest SUMMARYs tracing their work to Phase 141). 20/20 v1 reqs Complete. Archived to `.planning/milestones/v17.0-{ROADMAP,REQUIREMENTS}.md`; `MILESTONES.md` entry added; `REQUIREMENTS.md` removed (fresh for next milestone); ROADMAP collapsed; `git tag v17.0`. Carried follow-ups: SEED-003 (iOS mirror push token), SEED-004 (clean-room harness). NEXT: `/gsd-new-milestone` when ready.
 
 Phase: 141 (core-first-publish-family-release) — ✅ COMPLETE 2026-07-04. **The v17.0 Companion Family is FULLY PUBLISHED to Hex.**
 
