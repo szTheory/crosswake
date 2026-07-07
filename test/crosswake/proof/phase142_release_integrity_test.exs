@@ -107,6 +107,28 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert exit_code == 0, output
   end
 
+  test "inline comments and step text cannot satisfy path gates" do
+    inline_comment_decoy =
+      real_workflow()
+      |> replace_in_job(
+        "publish-hex",
+        "if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
+        "if: ${{ false }} # contains(fromJSON(needs.release-please.outputs.paths_released), '.')"
+      )
+
+    assert_failure!("release.root_hex.path_gate", inline_comment_decoy)
+
+    run_text_decoy =
+      real_workflow()
+      |> replace_in_job(
+        "publish-hex",
+        "if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}",
+        "if: ${{ false }}\n    env:\n      DECOY: \"contains(fromJSON(needs.release-please.outputs.paths_released), '.')\""
+      )
+
+    assert_failure!("release.root_hex.path_gate", run_text_decoy)
+  end
+
   test "cleanup ignoring clean-room proof fails with stable check id" do
     workflow =
       real_workflow()
@@ -120,12 +142,46 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert_failure!("release.cleanup.after_publish_and_proof", workflow)
   end
 
+  test "companion proof jobs must gate on the matching component after publish" do
+    skipped_proof =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-rulestead",
+        "if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}",
+        "if: ${{ false }}"
+      )
+
+    assert_failure!("release.rulestead.proof_gate", skipped_proof)
+    assert_failure!("release.cleanup.after_publish_and_proof", skipped_proof)
+
+    proof_before_publish =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-rulestead",
+        "needs: [release-please, publish-hex-rulestead]",
+        "needs: [release-please]"
+      )
+
+    assert_failure!("release.rulestead.proof_gate", proof_before_publish)
+    assert_failure!("release.cleanup.after_publish_and_proof", proof_before_publish)
+  end
+
   test "cleanup direct main mutation fails with stable check id" do
     workflow =
       real_workflow()
       |> String.replace("git push origin \"$branch\"", "git push origin main", global: false)
 
     assert_failure!("release.cleanup.pr_only", workflow)
+
+    refs_push =
+      real_workflow()
+      |> String.replace(
+        "git push origin \"$branch\"",
+        "git push origin \"$branch\"\n          git push origin HEAD:refs/heads/main",
+        global: false
+      )
+
+    assert_failure!("release.cleanup.pr_only", refs_push)
   end
 
   defp assert_failure!(check_id, workflow) do
@@ -150,6 +206,15 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
 
   defp run_scanner(path) do
     System.cmd("elixir", [@scanner, path], stderr_to_stdout: true)
+  end
+
+  defp replace_in_job(workflow, job, pattern, replacement) do
+    Regex.replace(
+      ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+      workflow,
+      fn block -> String.replace(block, pattern, replacement, global: false) end,
+      global: false
+    )
   end
 
   defp real_workflow, do: File.read!(@workflow)

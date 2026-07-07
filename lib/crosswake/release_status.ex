@@ -144,6 +144,8 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp checks(cwd, manifest, _config, workflow, core, companions) do
+    jobs = job_blocks(workflow)
+
     base_checks = [
       check(
         :ok,
@@ -162,20 +164,19 @@ defmodule Crosswake.ReleaseStatus do
       check(
         :ok,
         "release.workflow_path_gates",
-        "root/native publish jobs use paths_released gates",
-        workflow =~ "paths_released:" and
-          workflow =~ "contains(fromJSON(needs.release-please.outputs.paths_released), '.')",
-        "root/native publish jobs are not path-gated"
+        "root/native publish jobs use exact paths_released gates",
+        workflow =~ "paths_released:" and core_path_gates?(jobs),
+        "root/native publish jobs are not exact path-gated; next: #{@workflow_integrity_command}"
       )
     ]
 
     proof_checks = [
       check(
-        :ok,
+        :warning,
         "release.cleanroom_dependency_floor",
-        "clean-room harness derives package floors and exact companion version",
+        "downstream clean-room dependency-floor evidence is present; PREF validation remains Phase 144",
         cleanroom_script_hardened?(cwd),
-        "clean-room harness still has stale hardcoded dependency requirements"
+        "downstream clean-room dependency-floor evidence is missing; PREF validation remains Phase 144"
       )
     ]
 
@@ -220,23 +221,27 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp behavioral_identity_gates?(jobs) do
-    Enum.all?(@core_path_gates, fn {job, path} ->
-      job_block(jobs, job)
-      |> includes?("contains(fromJSON(needs.release-please.outputs.paths_released), '#{path}')")
-    end) and
-      Enum.all?(@release_components, fn component ->
-        block = job_block(jobs, "publish-hex-#{component}")
-
-        includes?(block, "needs.release-please.outputs.#{component}_release_created == 'true'") and
-          not includes?(block, "needs.release-please.outputs.releases_created")
-      end) and
+    core_path_gates?(jobs) and component_publish_gates?(jobs) and
+      component_proof_jobs_after_publish?(jobs) and
       behavioral_jobs_avoid_aggregate?(jobs)
   end
 
+  defp core_path_gates?(jobs) do
+    Enum.all?(@core_path_gates, fn {job, path} ->
+      job_if(jobs, job) == path_gate_expression(path)
+    end)
+  end
+
+  defp component_publish_gates?(jobs) do
+    Enum.all?(@release_components, fn component ->
+      job_if(jobs, "publish-hex-#{component}") == component_gate_expression(component)
+    end)
+  end
+
   defp behavioral_jobs_avoid_aggregate?(jobs) do
-    Enum.all?(jobs, fn {job, block} ->
+    Enum.all?(jobs, fn {job, _block} ->
       not behavioral_job?(job) or
-        not includes?(block, "needs.release-please.outputs.releases_created")
+        not includes?(job_if(jobs, job), "needs.release-please.outputs.releases_created")
     end)
   end
 
@@ -247,21 +252,25 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp cleanup_after_proof?(jobs) do
-    block = job_block(jobs, "release-as-cleanup")
+    condition = job_if(jobs, "release-as-cleanup")
 
-    includes?(block, "- release-please") and
-      includes?(block, "always()") and
+    job_needs?(jobs, "release-as-cleanup", "release-please") and
+      includes?(condition, "always()") and
       Enum.all?(@release_components, fn component ->
-        includes?(block, "- publish-hex-#{component}")
+        job_needs?(jobs, "release-as-cleanup", "publish-hex-#{component}")
       end) and
       Enum.all?(@release_components, fn component ->
-        includes?(block, "- clean-room-proof-#{component}")
+        job_needs?(jobs, "release-as-cleanup", "clean-room-proof-#{component}")
       end) and
       Enum.all?(@release_components, fn component ->
-        includes?(block, "needs.release-please.outputs.#{component}_release_created != 'true'") and
-          includes?(block, "needs.publish-hex-#{component}.result == 'success'") and
-          includes?(block, "needs.clean-room-proof-#{component}.result == 'success'")
-      end)
+        includes?(
+          condition,
+          "needs.release-please.outputs.#{component}_release_created != 'true'"
+        ) and
+          includes?(condition, "needs.publish-hex-#{component}.result == 'success'") and
+          includes?(condition, "needs.clean-room-proof-#{component}.result == 'success'")
+      end) and
+      component_proof_jobs_after_publish?(jobs)
   end
 
   defp job_blocks(workflow) do
@@ -276,6 +285,75 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp job_block(jobs, job), do: Map.get(jobs, job, "")
+
+  defp job_if(jobs, job), do: jobs |> job_block(job) |> job_key("if") |> normalize_expression()
+
+  defp job_needs(jobs, job) do
+    jobs
+    |> job_block(job)
+    |> job_key("needs")
+    |> then(&Regex.scan(~r/[A-Za-z0-9_-]+/, &1))
+    |> List.flatten()
+  end
+
+  defp job_needs?(jobs, job, need), do: need in job_needs(jobs, job)
+
+  defp job_key(block, key) do
+    lines = String.split(block, "\n", trim: false)
+    key_regex = ~r/^    #{Regex.escape(key)}:\s*(.*)$/
+
+    case Enum.find_index(lines, &Regex.match?(key_regex, &1)) do
+      nil ->
+        ""
+
+      index ->
+        line = Enum.at(lines, index)
+        [raw_value] = Regex.run(key_regex, line, capture: :all_but_first)
+        raw_value = raw_value |> strip_inline_comment() |> String.trim()
+
+        if raw_value == "" or raw_value in ["|", "|-", ">", ">-"] do
+          lines
+          |> Enum.drop(index + 1)
+          |> Enum.take_while(&(not job_level_key?(&1)))
+          |> Enum.join("\n")
+        else
+          raw_value
+        end
+    end
+  end
+
+  defp job_level_key?(line), do: Regex.match?(~r/^    [A-Za-z0-9_-]+:\s*/, line)
+
+  defp strip_inline_comment(line), do: line |> String.split(~r/\s+#/, parts: 2) |> hd()
+
+  defp normalize_expression(value) do
+    value
+    |> String.split("\n", trim: false)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.join(" ")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
+
+  defp path_gate_expression(path),
+    do: "${{ contains(fromJSON(needs.release-please.outputs.paths_released), '#{path}') }}"
+
+  defp component_gate_expression(component),
+    do: "${{ needs.release-please.outputs.#{component}_release_created == 'true' }}"
+
+  defp component_proof_jobs_after_publish?(jobs) do
+    Enum.all?(@release_components, &component_proof_after_publish?(jobs, &1))
+  end
+
+  defp component_proof_after_publish?(jobs, component) do
+    job = "clean-room-proof-#{component}"
+
+    job_if(jobs, job) == component_gate_expression(component) and
+      job_needs?(jobs, job, "release-please") and
+      job_needs?(jobs, job, "publish-hex-#{component}") and
+      not includes?(job_if(jobs, job), "needs.release-please.outputs.releases_created")
+  end
 
   defp strip_full_line_comments(text) do
     text

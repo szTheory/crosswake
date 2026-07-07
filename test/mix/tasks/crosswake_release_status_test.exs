@@ -17,7 +17,12 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert Enum.any?(status.core, &(&1.component == "hex"))
     assert Enum.any?(status.companions, &(&1.package == "crosswake_sigra"))
     assert Enum.any?(status.checks, &(&1.code == "release.workflow_path_gates"))
-    assert Enum.any?(status.checks, &(&1.code == "release.cleanroom_dependency_floor"))
+
+    assert %{status: :warning, message: cleanroom_message} =
+             Enum.find(status.checks, &(&1.code == "release.cleanroom_dependency_floor"))
+
+    assert cleanroom_message =~ "downstream"
+    assert cleanroom_message =~ "PREF validation remains Phase 144"
 
     for code <- @governance_check_codes do
       assert Enum.any?(status.checks, &(&1.code == code))
@@ -40,6 +45,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert output =~ "Companions"
     assert output =~ "Checks:"
     assert output =~ "release.workflow_path_gates"
+    assert output =~ "PREF validation remains Phase 144"
+    refute output =~ "clean-room harness derives package floors and exact companion version"
 
     for code <- @governance_check_codes do
       assert output =~ code
