@@ -60,7 +60,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 143-03-PLAN.md — Semantic proof, version-graph/floor guardrails, and runbook reconciliation.
+- [x] 143-03-PLAN.md — Semantic proof, version-graph/floor guardrails, and runbook reconciliation.
 
 ### Phase 144: Published-Core Compatibility & Clean-Room Proof
 
@@ -253,7 +253,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
-| 143. Guarded Auto-Publish Train | v18.0 | 2/3 | In Progress|  |
+| 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete   | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |
