@@ -23,7 +23,8 @@ permissions:
 
 concurrency:
   group: release-please-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   release-please:
@@ -31,11 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       # Manifest mode (config-file + manifest-file) emits the PLURAL aggregate
-      # `releases_created` — true if ANY package released. The singular top-level
-      # `release_created` is NOT set in manifest mode, so gating on it silently
-      # skips every publish job. With linked-versions all three packages release
-      # together, so the aggregate is the correct gate (LOCK-02 / ROADMAP SC#5).
+      # `releases_created` — true if ANY package released. Keep it available for
+      # summaries, alerts, and logging only; behavioral jobs below gate on exact
+      # path/component identity instead of the aggregate.
       releases_created: ${{ steps.release.outputs.releases_created }}
+      # JSON array of component paths released by this run. Root/native publish jobs
+      # gate on this instead of the aggregate releases_created so a companion-only
+      # release cannot publish the core Hex package or native artifacts.
+      paths_released: ${{ steps.release.outputs.paths_released || '[]' }}
       # For the root package (path "."), release-please-action v4 writes per-path
       # outputs UNPREFIXED — so `tag_name`/`version` here are the Hex (root) values.
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -92,7 +96,7 @@ jobs:
   publish-hex:
     name: Publish to Hex.pm
     needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -624,7 +628,7 @@ jobs:
   publish-ios-core:
     name: Mirror iOS core to split repo
     needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -655,15 +659,25 @@ jobs:
           VERSION: ${{ needs.release-please.outputs.version }}
         run: |
           set -euo pipefail
+          if [ -z "${MIRROR_TOKEN:-}" ]; then
+            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN is not configured."
+            echo "[crosswake] What to do next: create a fine-grained PAT or GitHub App token with Contents:write on szTheory/crosswake-shell-core-ios and store it as MIRROR_PUSH_TOKEN."
+            exit 1
+          fi
           git remote add mirror \
             "https://x-access-token:${MIRROR_TOKEN}@github.com/szTheory/crosswake-shell-core-ios.git"
+          git ls-remote mirror HEAD >/dev/null
+          if git ls-remote --exit-code mirror "refs/tags/v${VERSION}" >/dev/null 2>&1; then
+            echo "[crosswake] iOS mirror tag v${VERSION} already exists; skipping mirror push."
+            exit 0
+          fi
           git push mirror "${SPLIT_SHA}:refs/heads/main"
           git push mirror "${SPLIT_SHA}:refs/tags/v${VERSION}"
 
   publish-android-core:
     name: Publish Android core to Maven Central
     needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -691,8 +705,8 @@ jobs:
 
   clean-room-proof-ios:
     name: Clean-room proof — iOS swift build
-    needs: [release-please, publish-hex, publish-ios-core, publish-android-core]
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    needs: [release-please, publish-hex, publish-ios-core]
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: macos-15
     permissions:
       contents: read
@@ -743,8 +757,8 @@ jobs:
 
   clean-room-proof-android:
     name: Clean-room proof — Android gradle build
-    needs: [release-please, publish-hex, publish-ios-core, publish-android-core]
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    needs: [release-please, publish-hex, publish-android-core]
+    if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -880,7 +894,7 @@ jobs:
               echo "MISSING SIGNATURE: $ASC"
               exit 1
             fi
-            echo "OK: $(basename $ARTIFACT) + .asc"
+            echo "OK: $(basename "$ARTIFACT") + .asc"
           done
 
           POM="$ARTIFACT_DIR/crosswake-shell-core-android-${VERSION}.pom"
@@ -1206,8 +1220,64 @@ jobs:
     # (recipe Step 12f / Pitfall 6). This job strips it and opens a cleanup PR automatically, so the
     # only human action is merging a one-line, guard-verified PR (main is protected). The
     # release-as-staleness gate stays RED until that PR merges, so it cannot be silently skipped.
-    needs: release-please
-    if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' || needs.release-please.outputs.rindle_release_created == 'true' || needs.release-please.outputs.sigra_release_created == 'true' || needs.release-please.outputs.chimeway_release_created == 'true' || needs.release-please.outputs.threadline_release_created == 'true' }}
+    needs:
+      - release-please
+      - publish-hex-rulestead
+      - publish-hex-rindle
+      - publish-hex-sigra
+      - publish-hex-chimeway
+      - publish-hex-threadline
+      - clean-room-proof-rulestead
+      - clean-room-proof-rindle
+      - clean-room-proof-sigra
+      - clean-room-proof-chimeway
+      - clean-room-proof-threadline
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.release-please.outputs.rulestead_release_created == 'true' ||
+          needs.release-please.outputs.rindle_release_created == 'true' ||
+          needs.release-please.outputs.sigra_release_created == 'true' ||
+          needs.release-please.outputs.chimeway_release_created == 'true' ||
+          needs.release-please.outputs.threadline_release_created == 'true'
+        ) &&
+        (
+          needs.release-please.outputs.rulestead_release_created != 'true' ||
+          (
+            needs.publish-hex-rulestead.result == 'success' &&
+            needs.clean-room-proof-rulestead.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.rindle_release_created != 'true' ||
+          (
+            needs.publish-hex-rindle.result == 'success' &&
+            needs.clean-room-proof-rindle.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.sigra_release_created != 'true' ||
+          (
+            needs.publish-hex-sigra.result == 'success' &&
+            needs.clean-room-proof-sigra.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.chimeway_release_created != 'true' ||
+          (
+            needs.publish-hex-chimeway.result == 'success' &&
+            needs.clean-room-proof-chimeway.result == 'success'
+          )
+        ) &&
+        (
+          needs.release-please.outputs.threadline_release_created != 'true' ||
+          (
+            needs.publish-hex-threadline.result == 'success' &&
+            needs.clean-room-proof-threadline.result == 'success'
+          )
+        )
+      }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
