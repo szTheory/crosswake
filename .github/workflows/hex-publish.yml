@@ -1,6 +1,8 @@
-# Manual recovery: publish an already-tagged (or pinned SHA) revision to Hex when
-# automation did not run or needs a one-off retry. Default path is **Release Please**
-# (`.github/workflows/release-please.yml`) on merge of the Release PR.
+# Manual recovery: publish a Hex package from an already-tagged or pinned-SHA
+# revision when automatic Release Please publishing did not run or needs a
+# one-off retry. The default path is Release Please
+# (`.github/workflows/release-please.yml`) on merge of the Release PR; this
+# workflow is recovery/fire-drill only.
 #
 # Requires repository secret: HEX_API_KEY (Actions secrets).
 
@@ -9,69 +11,111 @@ name: Hex publish (manual recovery)
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Git tag or commit SHA to publish from (e.g. v0.1.0).'
+      package:
+        description: 'Hex package to recover.'
+        required: true
+        type: choice
+        options:
+          - crosswake
+          - crosswake_rulestead
+          - crosswake_rindle
+          - crosswake_sigra
+          - crosswake_chimeway
+          - crosswake_threadline
+      ref:
+        description: 'Exact recovery ref: full 40-character lowercase SHA or explicit refs/tags/vX.Y.Z tag ref.'
         required: true
         type: string
       release_version:
-        description: 'Expected @version string in mix.exs at that ref (e.g. 0.1.0).'
+        description: 'Expected @version string in the selected package mix.exs at that ref.'
         required: true
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
-    name: Publish to Hex.pm
+    name: Recover Hex package
     runs-on: ubuntu-latest
     steps:
+      - name: Validate recovery ref
+        env:
+          RECOVERY_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+
+          FULL_SHA_PATTERN='^[0-9a-f]{40}$'
+          RELEASE_TAG_PATTERN='^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+
+          case "$RECOVERY_REF" in
+            release/v0.2.0|feature/v0.2.0|v0.2.0|refs/heads/release/v0.2.0|refs/heads/*|heads/*|main|master)
+              echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is branch-shaped, bare-version-shaped, or mutable."
+              echo "[crosswake] What to do next: pass a full 40-character lowercase commit SHA or explicit refs/tags/vX.Y.Z release tag ref."
+              exit 1
+              ;;
+          esac
+
+          if printf '%s' "$RECOVERY_REF" | grep -Eq "$FULL_SHA_PATTERN"; then
+            echo "[crosswake] OK: recovery ref is a full commit SHA."
+            exit 0
+          fi
+
+          if printf '%s' "$RECOVERY_REF" | grep -Eq "$RELEASE_TAG_PATTERN"; then
+            echo "[crosswake] OK: recovery ref is an explicit release tag ref."
+            exit 0
+          fi
+
+          echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is not exact enough for Hex recovery."
+          echo "[crosswake] Rejected examples include release/v0.2.0, feature/v0.2.0, bare v0.2.0, refs/heads/release/v0.2.0, refs/heads/*, heads/*, main, and master."
+          echo "[crosswake] What to do next: pass a ref matching ^[0-9a-f]{40}$ or refs/tags/vX.Y.Z."
+          exit 1
+
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.ref }}
+
+      - name: Print checked-out SHA
+        env:
+          RECOVERY_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "[crosswake] checked out ${RECOVERY_REF} at ${SHA}"
 
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
         with:
           version-file: .tool-versions
           version-type: strict
 
-      - name: Cache library deps
+      - name: Cache Hex package deps
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-library-${{ hashFiles('mix.lock') }}
+            packages/crosswake_rulestead/deps
+            packages/crosswake_rulestead/_build
+            packages/crosswake_rindle/deps
+            packages/crosswake_rindle/_build
+            packages/crosswake_sigra/deps
+            packages/crosswake_sigra/_build
+            packages/crosswake_chimeway/deps
+            packages/crosswake_chimeway/_build
+            packages/crosswake_threadline/deps
+            packages/crosswake_threadline/_build
+          key: ${{ runner.os }}-hex-recovery-${{ inputs.package }}-${{ hashFiles('mix.lock', 'packages/crosswake_*/mix.lock') }}
 
       - name: Install Hex + Rebar
         run: |
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Verify release version in mix.exs
-        run: grep -n "@version \"${{ inputs.release_version }}\"" mix.exs
-
-      - name: Fetch library deps
-        run: mix deps.get
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      - name: Run library tests
-        # Exclude :requires_example_host — those proof tests need the checked-in
-        # example Phoenix app compiled (gated on PRs by phase5-proof.yml). A bare
-        # `mix test` on a clean runner would fail with CrosswakeExample.Router
-        # undefined and block the publish.
-        env:
-          MIX_ENV: test
-        run: mix test --exclude requires_example_host
-
-      - name: Dry run Hex publish
+      - name: Guarded Hex recovery publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish to Hex
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
+        run: >
+          bash script/guarded_hex_publish.sh
+          "${{ inputs.package }}"
+          "${{ inputs.release_version }}"
+          "${{ inputs.ref }}"
