@@ -2,11 +2,9 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-current_phase: 144
-current_phase_name: Published-Core Compatibility & Clean-Room Proof
 status: ready_to_plan
-stopped_at: Phase 143 complete (3/3) — ready to discuss Phase 144
-last_updated: 2026-07-07T22:11:00.319Z
+stopped_at: Phase 144 context gathered
+last_updated: "2026-07-07T22:29:30.118Z"
 progress:
   total_phases: 5
   completed_phases: 2
@@ -253,9 +251,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-07T22:04:21.858Z
-Stopped at: Completed 143-03-PLAN.md
-Resume file: None
+Last session: 2026-07-07T22:29:30.115Z
+Stopped at: Phase 144 context gathered
+Resume file: .planning/phases/144-published-core-compatibility-clean-room-proof/144-CONTEXT.md
 
 ## Operator Next Steps
 
