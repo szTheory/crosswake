@@ -112,6 +112,8 @@ jobs:
           mix local.rebar --force
 
       - name: Guarded Hex recovery publish
+        # Hex-only recovery: SwiftPM mirror, Maven Central, and native backfill
+        # remain Phase 145 scope and do not belong in this workflow.
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: >
