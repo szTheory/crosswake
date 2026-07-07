@@ -5,8 +5,8 @@ milestone_name: Release Integrity & Automated Package Operations
 current_phase: 143
 current_phase_name: Guarded Auto-Publish Train
 status: Ready to plan
-stopped_at: Phase 142 complete — ready to plan Phase 143
-last_updated: "2026-07-07T16:29:09.174Z"
+stopped_at: Phase 143 context gathered; ready for $gsd-plan-phase 143
+last_updated: "2026-07-07T20:44:08.617Z"
 progress:
   total_phases: 5
   completed_phases: 1
@@ -240,13 +240,13 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-07T16:29:09Z
-Stopped at: Phase 142 complete; ready to plan Phase 143
-Resume file: None
+Last session: 2026-07-07T20:44:08.613Z
+Stopped at: Phase 143 context gathered; ready for $gsd-plan-phase 143
+Resume file: .planning/phases/143-guarded-auto-publish-train/143-CONTEXT.md
 
 ## Operator Next Steps
 
-- Run `$gsd-discuss-phase 143` to refine the guarded auto-publish train before planning, or `$gsd-plan-phase 143` if discussion is intentionally skipped.
+- Run `$gsd-plan-phase 143` using `.planning/phases/143-guarded-auto-publish-train/143-CONTEXT.md`.
 - Keep downstream phase ownership honest: Phase 144, 145, and 146 must validate their already-present implementation spillover before being claimed complete.
 - Do not perform Hex/package publish operations from this planning pass.
 
