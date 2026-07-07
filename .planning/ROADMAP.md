@@ -66,7 +66,20 @@ Plans:
 
 **Goal:** Repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers.
 **Requirements:** PREF-01, PREF-02, PREF-03
-**Plans:** 0/3
+**Plans:** 3/3 plans created
+
+Plans:
+**Wave 1**
+
+- [ ] 144-01-PLAN.md — Published Hex metadata floor, exact companion pin, lockfile postconditions, and package-profile preservation for clean-room proof.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 144-02-PLAN.md — Doctor-owned fresh-router loading, app config readiness, and removal of harness-side router preload masking.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 144-03-PLAN.md — Merge-blocking static scanner and ExUnit fixtures for PREF-03 release-integrity regressions.
 
 ### Phase 145: Native Registry & Mirror Parity
 
