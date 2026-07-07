@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     release.governance_behavioral_identity_gates
     release.governance_cleanup_after_proof
   )
+  @downstream_requirement_ids ~w(PREF-01 MIRR-01 STAT-01)
 
   test "release status reports local graph and guard checks" do
     status = Crosswake.ReleaseStatus.build()
@@ -43,6 +44,10 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     for code <- @governance_check_codes do
       assert output =~ code
     end
+
+    for requirement_id <- @downstream_requirement_ids do
+      refute output =~ requirement_id
+    end
   end
 
   test "json task output is scriptable" do
@@ -65,6 +70,12 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
     for code <- @governance_check_codes do
       assert Enum.any?(decoded["checks"], &(&1["code"] == code))
+    end
+
+    encoded = Jason.encode!(decoded)
+
+    for requirement_id <- @downstream_requirement_ids do
+      refute encoded =~ requirement_id
     end
   end
 
