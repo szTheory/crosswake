@@ -47,7 +47,12 @@ Success criteria:
 
 **Goal:** Make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning.
 **Requirements:** AUTO-01, AUTO-02, AUTO-03
-**Plans:** 0/3
+**Plans:** 3 plans
+
+Plans:
+- [ ] 143-01-PLAN.md — Shared guarded Hex publish helper and automatic Release Please workflow integration.
+- [ ] 143-02-PLAN.md — Component-aware exact-ref manual Hex recovery workflow.
+- [ ] 143-03-PLAN.md — Semantic proof, version-graph/floor guardrails, and runbook reconciliation.
 
 ### Phase 144: Published-Core Compatibility & Clean-Room Proof
 
