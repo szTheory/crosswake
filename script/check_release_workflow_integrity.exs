@@ -2,13 +2,42 @@
 
 defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_workflow ".github/workflows/release-please.yml"
+  @default_recovery_workflow ".github/workflows/hex-publish.yml"
+  @default_helper "script/guarded_hex_publish.sh"
+  @default_release_config "release-please-config.json"
+  @default_manifest ".release-please-manifest.json"
+  @default_companion_root "packages"
   @components ~w(rulestead rindle sigra chimeway threadline)
+  @hex_packages ~w(crosswake crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
+  @companion_floors %{
+    "crosswake_rulestead" => "~> 0.1",
+    "crosswake_rindle" => "~> 0.1",
+    "crosswake_sigra" => "~> 0.2",
+    "crosswake_chimeway" => "~> 0.2",
+    "crosswake_threadline" => "~> 0.2"
+  }
 
   def run(argv \\ System.argv(), env_path \\ System.get_env("RELEASE_WORKFLOW_PATH")) do
     workflow_path = workflow_path(argv, env_path)
     workflow = File.read!(workflow_path)
     non_comment_workflow = strip_full_line_comments(workflow)
     jobs = job_blocks(workflow)
+    recovery_workflow = File.read!(path_from_env("HEX_PUBLISH_WORKFLOW_PATH", @default_recovery_workflow))
+    non_comment_recovery = strip_full_line_comments(recovery_workflow)
+    helper = File.read!(path_from_env("GUARDED_HEX_PUBLISH_PATH", @default_helper))
+    non_comment_helper = strip_full_line_comments(helper)
+
+    release_config =
+      path_from_env("RELEASE_PLEASE_CONFIG_PATH", @default_release_config)
+      |> File.read!()
+      |> JSON.decode!()
+
+    release_manifest =
+      path_from_env("RELEASE_PLEASE_MANIFEST_PATH", @default_manifest)
+      |> File.read!()
+      |> JSON.decode!()
+
+    companion_root = path_from_env("COMPANION_MIX_ROOT", @default_companion_root)
 
     checks =
       [
@@ -34,7 +63,17 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         android_proof_decoupled(jobs),
         mirror_token_preflight(jobs),
         cleanup_after_publish_and_proof(jobs),
-        cleanup_pr_only(jobs)
+        cleanup_pr_only(jobs),
+        hex_publish_already_live_preflight(non_comment_helper),
+        hex_publish_no_replace(non_comment_workflow, non_comment_recovery, non_comment_helper),
+        hex_publish_shared_helper(jobs, non_comment_workflow),
+        recovery_component_input(non_comment_recovery),
+        recovery_exact_ref_only(non_comment_recovery),
+        recovery_package_map_complete(non_comment_helper, non_comment_recovery),
+        recovery_already_live_success_continues(non_comment_helper),
+        version_graph_lockstep_core_native_only(release_config),
+        version_graph_companions_independent(release_config, release_manifest),
+        version_graph_companion_floors_honest(companion_root)
       ] ++ component_gates(jobs) ++ component_proof_gates(jobs)
 
     failures = Enum.filter(checks, &match?({:error, _, _}, &1))
@@ -54,6 +93,13 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp workflow_path([path | _], _env_path) when is_binary(path) and path != "", do: path
   defp workflow_path(_, env_path) when is_binary(env_path) and env_path != "", do: env_path
   defp workflow_path(_, _), do: @default_workflow
+
+  defp path_from_env(name, default) do
+    case System.get_env(name) do
+      value when is_binary(value) and value != "" -> value
+      _ -> default
+    end
+  end
 
   defp job_blocks(workflow) do
     ~r/(?ms)^  ([A-Za-z0-9_-]+):\n(.*?)(?=^  [A-Za-z0-9_-]+:\n|\z)/
@@ -125,6 +171,159 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp includes?(text, value) when is_binary(value), do: String.contains?(text, value)
   defp includes?(text, %Regex{} = regex), do: Regex.match?(regex, text)
+
+  defp hex_publish_already_live_preflight(helper) do
+    check(
+      "release.hex_publish.already_live_preflight",
+      includes?(helper, "https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}") and
+        includes?(helper, "json.load") and
+        includes?(helper, "seen_version") and
+        includes?(helper, "[crosswake] OK:") and
+        includes?(helper, "already live on Hex.pm; no publish attempted") and
+        includes?(helper, "Continuing to proof"),
+      "guarded Hex helper must parse exact Hex release JSON and report already-live package/version as success"
+    )
+  end
+
+  defp hex_publish_no_replace(workflow, recovery_workflow, helper) do
+    check(
+      "release.hex_publish.no_replace",
+      not includes?(workflow, "--replace") and not includes?(recovery_workflow, "--replace") and
+        not includes?(helper, "--replace"),
+      "normal publish and recovery paths must not use routine registry replacement syntax"
+    )
+  end
+
+  defp hex_publish_shared_helper(jobs, workflow) do
+    expected_jobs = [{"publish-hex", "crosswake"}] ++
+      Enum.map(@components, &{"publish-hex-#{&1}", "crosswake_#{&1}"})
+
+    helper_jobs_ok? =
+      Enum.all?(expected_jobs, fn {job, package} ->
+        block = job_block(jobs, job)
+        includes?(block, "script/guarded_hex_publish.sh") and includes?(block, package)
+      end)
+
+    check(
+      "release.hex_publish.shared_helper",
+      helper_jobs_ok? and not includes?(workflow, "mix hex.publish --yes"),
+      "all automatic Hex jobs must call script/guarded_hex_publish.sh and avoid direct publish commands"
+    )
+  end
+
+  defp recovery_component_input(recovery_workflow) do
+    has_inputs? =
+      includes?(recovery_workflow, ~r/^\s+package:\s*$/m) and
+        includes?(recovery_workflow, ~r/^\s+ref:\s*$/m) and
+        includes?(recovery_workflow, ~r/^\s+release_version:\s*$/m)
+
+    has_packages? = Enum.all?(@hex_packages, &includes?(recovery_workflow, &1))
+
+    check(
+      "recovery.hex.component_input",
+      has_inputs? and has_packages? and not includes?(recovery_workflow, "inputs.tag"),
+      "manual Hex recovery must expose package/ref/release_version inputs for exactly the Hex package family"
+    )
+  end
+
+  defp recovery_exact_ref_only(recovery_workflow) do
+    forbidden_samples =
+      ~w(release/v0.2.0 feature/v0.2.0 refs/heads/release/v0.2.0 refs/heads/* heads/* main master)
+
+    check(
+      "recovery.hex.exact_ref_only",
+      includes?(recovery_workflow, "^[0-9a-f]{40}$") and
+        includes?(recovery_workflow, "refs/tags/") and
+        includes?(recovery_workflow, "actions/checkout") and
+        includes?(recovery_workflow, "ref: ${{ inputs.ref }}") and
+        Enum.all?(forbidden_samples, &includes?(recovery_workflow, &1)) and
+        includes?(recovery_workflow, "git rev-parse HEAD"),
+      "manual Hex recovery must reject mutable/bare refs before checkout and print the checked-out SHA"
+    )
+  end
+
+  defp recovery_package_map_complete(helper, recovery_workflow) do
+    helper_cases_ok? =
+      Enum.all?(@hex_packages, fn package ->
+        includes?(helper, ~r/^\s*#{Regex.escape(package)}\)/m)
+      end)
+
+    recovery_options_ok? = Enum.all?(@hex_packages, &includes?(recovery_workflow, &1))
+
+    check(
+      "recovery.hex.package_map_complete",
+      helper_cases_ok? and recovery_options_ok?,
+      "guarded helper and manual recovery options must cover root Hex plus all five companion Hex packages"
+    )
+  end
+
+  defp recovery_already_live_success_continues(helper) do
+    check(
+      "recovery.hex.already_live_success_continues",
+      includes?(helper, "already live on Hex.pm; no publish attempted. Continuing to proof.") and
+        includes?(helper, "emit_outputs \"already_live\"") and
+        includes?(helper, "proof=continue"),
+      "already-live package/version state must exit successfully with proof continuation state"
+    )
+  end
+
+  defp version_graph_lockstep_core_native_only(config) do
+    linked =
+      config
+      |> Map.get("plugins", [])
+      |> Enum.find(%{}, &(Map.get(&1, "type") == "linked-versions"))
+      |> Map.get("components", [])
+
+    check(
+      "release.version_graph.lockstep_core_native_only",
+      MapSet.new(linked) == MapSet.new(~w(hex ios-core android-core)),
+      "Release Please linked-versions group must contain only hex, ios-core, and android-core"
+    )
+  end
+
+  defp version_graph_companions_independent(config, manifest) do
+    packages = Map.get(config, "packages", %{})
+    linked_components =
+      config
+      |> Map.get("plugins", [])
+      |> Enum.find(%{}, &(Map.get(&1, "type") == "linked-versions"))
+      |> Map.get("components", [])
+      |> MapSet.new()
+
+    companions_ok? =
+      Enum.all?(@components, fn component ->
+        path = "packages/crosswake_#{component}"
+        package = Map.get(packages, path, %{})
+
+        Map.get(package, "component") == "crosswake_#{component}" and
+          Map.get(package, "separate-pull-requests") == true and
+          not MapSet.member?(linked_components, "crosswake_#{component}") and
+          Map.has_key?(manifest, path)
+      end)
+
+    check(
+      "release.version_graph.companions_independent",
+      companions_ok?,
+      "all crosswake_* companions must remain separately versioned Release Please components"
+    )
+  end
+
+  defp version_graph_companion_floors_honest(companion_root) do
+    floors_ok? =
+      Enum.all?(@companion_floors, fn {package, floor} ->
+        mix_path = Path.join([companion_root, package, "mix.exs"])
+
+        File.exists?(mix_path) and
+          (File.read!(mix_path)
+           |> includes?(~r/\{:crosswake,\s*"#{Regex.escape(floor)}"\}/))
+      end)
+
+    check(
+      "release.version_graph.companion_floors_honest",
+      floors_ok?,
+      "companion crosswake_dep floors must stay mixed: rulestead/rindle ~> 0.1 and sigra/chimeway/threadline ~> 0.2"
+    )
+  end
 
   defp concurrency_not_cancelled(workflow) do
     check(
