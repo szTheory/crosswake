@@ -13,9 +13,9 @@
 
 ### Automated Publishing
 
-- [ ] **AUTO-01**: The happy-path release train publishes package artifacts from Release Please outputs without maintainer-run `mix hex.publish` commands.
-- [ ] **AUTO-02**: Core/native artifacts remain lockstep while `crosswake_*` companions remain independently versioned.
-- [ ] **AUTO-03**: Recovery paths stay exact-ref and idempotent so already-live versions are reported rather than re-published.
+- [x] **AUTO-01**: The happy-path release train publishes package artifacts from Release Please outputs without maintainer-run `mix hex.publish` commands.
+- [x] **AUTO-02**: Core/native artifacts remain lockstep while `crosswake_*` companions remain independently versioned.
+- [x] **AUTO-03**: Recovery paths stay exact-ref and idempotent so already-live versions are reported rather than re-published.
 
 ### Preflight And Clean-Room Proof
 
@@ -61,9 +61,9 @@
 | RELG-01 | Phase 142 | Complete |
 | RELG-02 | Phase 142 | Complete |
 | RELG-03 | Phase 142 | Complete |
-| AUTO-01 | Phase 143 | Pending |
-| AUTO-02 | Phase 143 | Pending |
-| AUTO-03 | Phase 143 | Pending |
+| AUTO-01 | Phase 143 | Complete |
+| AUTO-02 | Phase 143 | Complete |
+| AUTO-03 | Phase 143 | Complete |
 | PREF-01 | Phase 144 | Pending |
 | PREF-02 | Phase 144 | Pending |
 | PREF-03 | Phase 144 | Pending |

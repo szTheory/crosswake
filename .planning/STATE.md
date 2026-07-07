@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-current_phase: 143
-current_phase_name: Guarded Auto-Publish Train
-status: Ready for verification
-stopped_at: Completed 143-03-PLAN.md
-last_updated: "2026-07-07T22:04:21.861Z"
+current_phase: 144
+current_phase_name: Published-Core Compatibility & Clean-Room Proof
+status: ready_to_plan
+stopped_at: Phase 143 complete (3/3) — ready to discuss Phase 144
+last_updated: 2026-07-07T22:11:00.319Z
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,14 +22,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 143 — guarded-auto-publish-train
+**Current focus:** Phase 144 — published core compatibility & clean room proof
 
 ## Current Position
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 143 (guarded-auto-publish-train) — EXECUTING
-Plan: 3 of 3
+Phase: 144
+Plan: Not started
 
 Phase 142 discussion output:
 
@@ -112,7 +112,7 @@ Deferred behind v18:
 
 **Velocity:**
 
-- Total plans completed: 142 across v10.0-v17.0 + 3 in v18.0 Phase 142 = 145
+- Total plans completed: 142 across v10.0-v17.0 + 6 in v18.0 Phases 142-143 = 148
 - Average duration: —
 - Total execution time: —
 
