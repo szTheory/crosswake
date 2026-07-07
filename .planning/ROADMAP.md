@@ -12,8 +12,61 @@
 - ✅ **v15.0 See It Run — Experiential First-Run DX** — Phases 125-128 (shipped 2026-06-24)
 - ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
 - ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
+- ◆ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (active)
 
 ## Phases
+
+<details open>
+<summary>◆ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — ACTIVE</summary>
+
+Goal: make Crosswake's package-family release path automated, path-specific, and honest before adding new product breadth. v18 harvests SEED-003 and SEED-004, finishes release-gate discipline, and keeps dashboard/offline/capability breadth deferred.
+
+- [ ] Phase 142: Release Graph & Governance Contract — encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output. Requirements: RELG-01, RELG-02, RELG-03.
+- [ ] Phase 143: Guarded Auto-Publish Train — make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning. Requirements: AUTO-01, AUTO-02, AUTO-03.
+- [ ] Phase 144: Published-Core Compatibility & Clean-Room Proof — repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers. Requirements: PREF-01, PREF-02, PREF-03.
+- [ ] Phase 145: Native Registry & Mirror Parity — harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag. Requirements: MIRR-01, MIRR-02, MIRR-03.
+- [ ] Phase 146: Release Status DX & Docs Truth — ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs. Requirements: STAT-01, STAT-02, STAT-03.
+
+Success criteria:
+1. Companion-only releases cannot publish core Hex, iOS mirror, or Android Maven artifacts.
+2. The clean-room harness resolves the exact package under test against its real published-core floor.
+3. Maintainers can run one local command for package-family release status and a machine-readable JSON variant.
+4. Missing or invalid iOS mirror credentials fail with a clear action instead of leaving SwiftPM silently behind.
+5. Deferred product-breadth seeds remain out of scope until release integrity is trustworthy.
+
+## Phase Details
+
+### Phase 142: Release Graph & Governance Contract
+
+**Goal:** Encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output.
+**Requirements:** RELG-01, RELG-02, RELG-03
+**Plans:** 3/3
+
+### Phase 143: Guarded Auto-Publish Train
+
+**Goal:** Make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning.
+**Requirements:** AUTO-01, AUTO-02, AUTO-03
+**Plans:** 0/3
+
+### Phase 144: Published-Core Compatibility & Clean-Room Proof
+
+**Goal:** Repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers.
+**Requirements:** PREF-01, PREF-02, PREF-03
+**Plans:** 0/3
+
+### Phase 145: Native Registry & Mirror Parity
+
+**Goal:** Harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag.
+**Requirements:** MIRR-01, MIRR-02, MIRR-03
+**Plans:** 0/3
+
+### Phase 146: Release Status DX & Docs Truth
+
+**Goal:** Ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs.
+**Requirements:** STAT-01, STAT-02, STAT-03
+**Plans:** 0/3
+
+</details>
 
 <details>
 <summary>✅ v8.0 Offline Sync Hardening and UI Polish (Phases 99-101) — SHIPPED 2026-06-11</summary>
@@ -185,3 +238,8 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 139. crosswake_threadline Extraction | v17.0 | 4/4 | Complete | 2026-07-04 |
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
+| 142. Release Graph & Governance Contract | v18.0 | 3/3 | Planned | — |
+| 143. Guarded Auto-Publish Train | v18.0 | 0/3 | Pending | — |
+| 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
+| 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
+| 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |

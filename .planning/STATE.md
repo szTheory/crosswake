@@ -1,70 +1,67 @@
 ---
 gsd_state_version: 1.0
-milestone: v17.0
-milestone_name: Companion Family Completion
-status: shipped
-stopped_at: v17.0 SHIPPED + ARCHIVED + tagged 2026-07-04 — companion family fully published to Hex; milestone closed
-last_updated: "2026-07-04T00:00:00.000Z"
-last_activity: 2026-07-04
+milestone: v18.0
+milestone_name: Release Integrity & Automated Package Operations
+status: in_progress
+stopped_at: Phase 142 planned — release graph governance ready for execute-phase
+last_updated: "2026-07-07T14:52:55.000Z"
+last_activity: 2026-07-07
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 28
-  completed_plans: 28
-  percent: 100
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 15
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
+See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 141 — core-first-publish-family-release
+**Current focus:** Phase 142 — release-graph-governance-contract
 
 ## Current Position
 
-**✅ v17.0 "Companion Family Completion" SHIPPED + ARCHIVED + tagged 2026-07-04.** Milestone closed via `/gsd-complete-milestone` (`override_closeout` — empirical: all four packages proven LIVE on Hex). Phases 136-141 all `complete` (the deferred/superseded publish plans got honest SUMMARYs tracing their work to Phase 141). 20/20 v1 reqs Complete. Archived to `.planning/milestones/v17.0-{ROADMAP,REQUIREMENTS}.md`; `MILESTONES.md` entry added; `REQUIREMENTS.md` removed (fresh for next milestone); ROADMAP collapsed; `git tag v17.0`. Carried follow-ups: SEED-003 (iOS mirror push token), SEED-004 (clean-room harness). NEXT: `/gsd-new-milestone` when ready.
+**v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 141 (core-first-publish-family-release) — ✅ COMPLETE 2026-07-04. **The v17.0 Companion Family is FULLY PUBLISHED to Hex.**
+Phase: 142 (release-graph-governance-contract) — planned; ready for execute-phase.
 
-**LIVE ON HEX:** `crosswake` 0.2.0 (core; +hexdocs +Android Maven) · `crosswake_sigra` 0.1.1 · `crosswake_chimeway` 0.1.0 · `crosswake_threadline` 0.1.0. Core-first ordering held; companions sequential sigra→chimeway→threadline (never batched). The KeyError-on-unpublished-core blocker (Finding.code) is resolved — companions resolve against published core 0.2.0. Recovery deviations during execution: sigra 0.1.0 first-publish failed (missing ex_doc) → re-cut 0.1.1; threadline 0.1.0 publish failed (dead-default-arg warnings-as-errors) → deleted dud tag, fixed (#70), re-cut clean 0.1.0 (#71); clean-room proof harness bugs fixed (#64 app-name, #67 mkdir) with one OPEN advisory (#SEED-004 doctor-router). Closeout: stale release-as pins stripped (chimeway #67, threadline #74), CHANGELOG dedup, staleness gate green, redundant #59 closed. Follow-ups planted: SEED-003 (iOS mirror push token — core iOS SwiftPM 0.2.0 not mirrored), SEED-004 (clean-room proof harness — advisory, non-blocking). NOTE: phases 137-140 remain "in_progress" in GSD bookkeeping (executed in-tree, publish deferred to 141) — their substantive work shipped via the 141 publish.
+Phase 142 discussion output:
+- `.planning/phases/142-release-graph-governance-contract/142-CONTEXT.md`
+- `.planning/phases/142-release-graph-governance-contract/142-DISCUSSION-LOG.md`
+- Commit: `9d035b1e docs(142): capture phase context`
+- Key implementation gaps identified for planning: add/justify `queue: max`, make `release-as-cleanup` wait for released companion proof success, and harden the workflow integrity scanner against aggregate-gate and comment-only false passes.
 
---- prior planned/blocked history below (superseded by the completion above) ---
+Phase 142 planning output:
+- `.planning/phases/142-release-graph-governance-contract/142-RESEARCH.md`
+- `.planning/phases/142-release-graph-governance-contract/142-VALIDATION.md`
+- `.planning/phases/142-release-graph-governance-contract/142-01-PLAN.md`
+- `.planning/phases/142-release-graph-governance-contract/142-02-PLAN.md`
+- `.planning/phases/142-release-graph-governance-contract/142-03-PLAN.md`
+- Plan checker: passed after revisions; RELG-01, RELG-02, and RELG-03 covered; decision coverage gate passed 30/30.
 
-Phase: 141 (core-first-publish-family-release) — EXECUTING
-Plan: 2 of 4
-Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
-Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE). ATTEMPTED sigra publish 2026-07-03 (user-authorized, canary-first) → **BLOCKED, nothing published.** Boundary sync PR #45 landed first (origin==main, CI green, all 22 required lanes; fixed phase71-proof.yml sigra→chimeway drift). Then merged sigra Release PR #42 → `publish-hex-sigra` FAILED at the COMPILE step (never reached hex.publish): `KeyError key :code not found ... (crosswake 0.1.2) Finding.__struct__`.
-**ROOT CAUSE (systemic, blocks whole family):** companions depend on UNPUBLISHED v17.0 core. sigra evaluator.ex:258 + chimeway resolver.ex:102 build `%Finding{code:}`; the `:code` field was added to core `Finding` in cc87362d (phase 137-01) — unpublished (core is 0.1.2 on Hex). Companion publish seam resolves `{:crosswake, "~> 0.1"}` → Hex serves 0.1.2 (pre-`:code`) → compile fails. All 3 companions share the `~> 0.1` floor → all blocked identically. The 140-05 plan/runbook OMITTED that CORE must publish first.
-**RECOVERY PATH (needs planning — do NOT continue merging Release PRs):** (1) publish core first at a new version (e.g. 0.2.0) with the v17.0 decoupling API — this is what stale root release PR #25 should recompute into over phases 136-140; (2) bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (honest "Requires crosswake >= 0.2", matches compat-matrix column); (3) re-publish companions (re-cut tags after floor bump — mind release-please manifest state, sigra entry already 0.1.0).
-CLEANUP DONE 2026-07-03: deleted dangling `crosswake_sigra-v0.1.0` release+tag (publish failed so package NOT on Hex — removed false "Latest"), closed auto-opened release-as-cleanup PR #48. main clean 0/0. release-failure-alert fired as designed; Release-As Staleness Gate green (future PRs not blocked). Open Release PRs remain: #47 threadline, #46 chimeway, #39 rulestead, #38 rindle, #25 root (all deferred/unmerged).
-PHASE 141 PLANNED 2026-07-03 (`/gsd-progress` route → user chose "plan core-first fix phase"; decisions locked via AskUserQuestion: core 0.2.0 + 3 v17 companions, rulestead/rindle separate, every hex.publish human-gated). Added Phase 141 "Core-First Publish & Family Release" to ROADMAP + FAMILY-05 requirement + 141-CONTEXT.md (D-141-A..E). gsd-planner produced **4 plans / 3 waves** (commit 85a048bc); gsd-plan-checker PASS (core-first ordering triply enforced; applied its 1 recommended fix — core release-as-cleanup step in 141-03). KEY PLANNER FINDING: release-please would compute core **0.1.3** not 0.2.0 (pre-major patch-bumping: `bump-minor-pre-major:false` + `bump-patch-for-minor-pre-major:true`, 53 feat commits since 0.1.2) → 141-01 adds `release-as: "0.2.0"` pin on `.` (safe/auditable vs fabricating feat!). Waves: W1 (autonomous prep) 141-01 release-as pin + runbook core-first Step 0 / 141-02 bump companion `~> 0.1`→`~> 0.2` floors + compat-matrix cells (phase132 drift test is the gate; rulestead/rindle stay `~> 0.1`); W2 141-03 (human-gated) boundary PR→ship-gate→**publish CORE 0.2.0 first** via root Release PR #25; W3 141-04 (human-gated) sequential sigra→chimeway→threadline, each clean-room-proofed against published 0.2.0. rulestead/rindle confirmed NOT blocked (use only 0.1.2-era Finding fields, no `:code`) → out of scope [[project-crosswake-core-first-publish]].
-NEXT: `/gsd-execute-phase 141` — Wave 1 autonomous prep lands first + boundary-syncs green; Waves 2-3 are human-gated irreversible publishes (core-first). The classifier will (correctly) require explicit per-publish authorization.
-Last activity: 2026-07-03
+Implemented in the current work slice:
+- Root/native publish jobs now gate on Release Please `paths_released` instead of aggregate `releases_created`.
+- Release workflow publish/proof concurrency is non-canceling.
+- iOS mirror job fails fast on missing/invalid `MIRROR_PUSH_TOKEN` and skips an already-existing mirror tag.
+- iOS and Android clean-room proofs no longer depend on each other.
+- `release-as-cleanup` waits for companion publish jobs to finish successfully.
+- `script/verify_companion_cleanroom.sh` now derives the core floor from the package under test and installs the exact just-published companion version.
+- `mix crosswake.doctor --router` compiles/loadpaths before rejecting a freshly compiled router.
+- `mix crosswake.release.status [--json] [--live]` added as the text/JSON release operator surface.
 
-> **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
-> false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
-> H3-heading decision format (parser expects `- **D-NN:**` bullets — known brittleness).
-> Overridden after plan-checker Dimension 7 Context-Compliance PASSED, independently confirming
-> all four locked decisions are implemented: D-137-A→Plan 01/02, D-137-B→Plan 01, D-137-C→Plan
-> 04/05, D-137-D→Plan 01/03. No decision was dropped; this is a tooling false-negative only.
+Carried seeds being harvested:
+- **SEED-003** — iOS SwiftPM mirror push token / missing `v0.2.0` mirror tag.
+- **SEED-004** — companion clean-room proof harness.
 
-```
-[x] Phase 136 — Core Decoupling                    (complete, verified 2026-07-01)
-[~] Phase 137 — crosswake_sigra Extraction         (waves 1-4 green; wave 5 = deferred publish gate)
-[P] Phase 138 — crosswake_chimeway Extraction      (planned, checker PASSED; 4 waves; wave 4 = deferred publish gate)
-[ ] Phase 139 — crosswake_threadline Extraction
-[ ] Phase 140 — Family Discipline & Close
-```
-
-Phases: 1 of 5 complete, 1 in progress (137 at 4/5 plans). Plans: 10 of 11 executed.
-
-```
-[██▓       ] ~30%
-Phase 136 ──────────────────────────────────────────────────────── Phase 140
-```
+Deferred behind v18:
+- DASH-01 `crosswake_dashboard`
+- SYNCP-01 offline-sync productization
+- NTV-01 native disk budgets
+- SEED-002 Phoenix-first native capability/commerce breadth
 
 ## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
@@ -236,14 +233,14 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-02T23:21:52.186Z
-Stopped at: Phase 140 context gathered
-Resume file: .planning/phases/140-family-discipline-close/140-CONTEXT.md
+Last session: 2026-07-07T13:34:10Z
+Stopped at: Phase 142 planned; ready for `$gsd-execute-phase 142`
+Resume file: .planning/phases/142-release-graph-governance-contract/142-01-PLAN.md
 
 ## Operator Next Steps
 
-- **Repo-hygiene boundary sync (in progress):** land the accumulated local main onto origin via a `sync/main-*` PR, get CI green, triage open PRs. See `docs/MILESTONE-BOUNDARY-HYGIENE.md`. NO hex publish in this pass.
-- **Phase 137 wave 5 (deferred human gate):** when ready to publish, drive `137-05-PLAN.md` — ① land to origin + CI green → ② register required checks green-first (`DRY_RUN=0 script/register_required_checks.sh`) → ③ merge the `crosswake_sigra 0.1.0` Release PR (irreversible publish) → ④ merge the release-as-cleanup PR.
-- Then continue v17.0: Phase 138 (crosswake_chimeway) → 139 (threadline) → 140 (family discipline + close).
+- Run `$gsd-execute-phase 142` using the three verified plans.
+- Keep downstream phase ownership honest: Phase 144, 145, and 146 must validate their already-present implementation spillover before being claimed complete.
+- Do not perform Hex/package publish operations from this planning pass.
 
 <!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->
