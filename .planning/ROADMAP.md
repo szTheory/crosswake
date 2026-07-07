@@ -50,8 +50,16 @@ Success criteria:
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 143-01-PLAN.md — Shared guarded Hex publish helper and automatic Release Please workflow integration.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 143-02-PLAN.md — Component-aware exact-ref manual Hex recovery workflow.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 143-03-PLAN.md — Semantic proof, version-graph/floor guardrails, and runbook reconciliation.
 
 ### Phase 144: Published-Core Compatibility & Clean-Room Proof
