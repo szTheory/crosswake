@@ -11,8 +11,24 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   use ExUnit.Case, async: true
 
   @workflow ".github/workflows/release-please.yml"
+  @recovery_workflow ".github/workflows/hex-publish.yml"
   @scanner "script/check_release_workflow_integrity.exs"
   @cleanroom_script "script/verify_companion_cleanroom.sh"
+  @guarded_helper "script/guarded_hex_publish.sh"
+  @release_config "release-please-config.json"
+
+  @phase143_ids ~w(
+    release.hex_publish.already_live_preflight
+    release.hex_publish.no_replace
+    release.hex_publish.shared_helper
+    recovery.hex.component_input
+    recovery.hex.exact_ref_only
+    recovery.hex.package_map_complete
+    recovery.hex.already_live_success_continues
+    release.version_graph.lockstep_core_native_only
+    release.version_graph.companions_independent
+    release.version_graph.companion_floors_honest
+  )
 
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
@@ -22,6 +38,17 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert output =~ "release.concurrency.queue_max"
     assert output =~ "release.aggregate_gate.behavioral_jobs_absent"
     assert output =~ "release.cleanup.after_publish_and_proof"
+  end
+
+  @tag :phase143_auto_publish
+  test "phase 143 guarded auto publish scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase143_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
   end
 
   test "root and native publish jobs do not gate on aggregate releases_created" do
@@ -184,8 +211,154 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert_failure!("release.cleanup.pr_only", refs_push)
   end
 
+  @tag :phase143_auto_publish
+  test "direct automatic Hex publish fails the shared helper check" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-hex-sigra",
+        "bash script/guarded_hex_publish.sh",
+        "mix hex.publish --yes"
+      )
+
+    assert_failure!("release.hex_publish.shared_helper", workflow)
+  end
+
+  @tag :phase143_auto_publish
+  test "missing already-live helper preflight fails with stable check id" do
+    helper =
+      guarded_helper()
+      |> String.replace("already live on Hex.pm; no publish attempted", "live on Hex.pm")
+
+    assert_failure_with_fixtures!(
+      "release.hex_publish.already_live_preflight",
+      helper: helper
+    )
+  end
+
+  @tag :phase143_recovery
+  test "root-only recovery input surface fails with stable check id" do
+    recovery =
+      recovery_workflow()
+      |> String.replace(~r/\n      package:\n[\s\S]*?      ref:\n/, "\n      ref:\n")
+
+    assert_failure_with_fixtures!(
+      "recovery.hex.component_input",
+      recovery_workflow: recovery
+    )
+  end
+
+  @tag :phase143_recovery
+  test "mutable recovery ref samples must stay rejected" do
+    for sample <- [
+          "release/v0.2.0",
+          "feature/v0.2.0",
+          "refs/heads/release/v0.2.0",
+          "v0.2.0"
+        ] do
+      recovery = String.replace(recovery_workflow(), sample, "REMOVED_SAMPLE")
+
+      assert_failure_with_fixtures!(
+        "recovery.hex.exact_ref_only",
+        recovery_workflow: recovery
+      )
+    end
+  end
+
+  @tag :phase143_recovery
+  test "missing helper package map entry fails with stable check id" do
+    helper =
+      guarded_helper()
+      |> String.replace("    crosswake_threadline)", "    crosswake_threadline_removed)")
+
+    assert_failure_with_fixtures!(
+      "recovery.hex.package_map_complete",
+      helper: helper
+    )
+  end
+
+  @tag :phase143_recovery
+  test "already-live recovery must continue to proof" do
+    helper =
+      guarded_helper()
+      |> String.replace("Continuing to proof.", "Stopping before proof.")
+
+    assert_failure_with_fixtures!(
+      "recovery.hex.already_live_success_continues",
+      helper: helper
+    )
+  end
+
+  @tag :phase143_recovery
+  test "routine registry replacement syntax fails with stable check id" do
+    helper = guarded_helper() <> "\nMIX_HEX_PUBLISH_FLAGS='--replace'\n"
+
+    assert_failure_with_fixtures!(
+      "release.hex_publish.no_replace",
+      helper: helper
+    )
+  end
+
+  @tag :phase143_version_graph
+  test "companions cannot join the core native lockstep group" do
+    config =
+      release_config()
+      |> String.replace(
+        ~s("components": ["hex", "ios-core", "android-core"]),
+        ~s("components": ["hex", "ios-core", "android-core", "crosswake_sigra"])
+      )
+
+    assert_failure_with_fixtures!(
+      "release.version_graph.lockstep_core_native_only",
+      release_config: config
+    )
+
+    assert_failure_with_fixtures!(
+      "release.version_graph.companions_independent",
+      release_config: config
+    )
+  end
+
+  @tag :phase143_version_graph
+  test "flattened companion floors fail with stable check id" do
+    temp_root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase143-floors-#{System.unique_integer([:positive])}"
+      )
+
+    File.mkdir_p!(temp_root)
+    on_exit(fn -> File.rm_rf(temp_root) end)
+
+    for package <- ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
+      source = Path.join(["packages", package, "mix.exs"])
+      target_dir = Path.join(temp_root, package)
+      File.mkdir_p!(target_dir)
+
+      contents =
+        source
+        |> File.read!()
+        |> String.replace(~s({:crosswake, "~> 0.1"}), ~s({:crosswake, "~> 0.2"}))
+
+      File.write!(Path.join(target_dir, "mix.exs"), contents)
+    end
+
+    {output, exit_code} =
+      run_scanner(@workflow, [{"COMPANION_MIX_ROOT", temp_root}])
+
+    assert exit_code == 1, output
+    assert output =~ "[crosswake] FAIL: release.version_graph.companion_floors_honest"
+  end
+
   defp assert_failure!(check_id, workflow) do
     {output, exit_code} = run_fixture(workflow)
+
+    assert exit_code == 1, output
+    assert output =~ "[crosswake] FAIL: #{check_id}"
+  end
+
+  defp assert_failure_with_fixtures!(check_id, fixtures) do
+    {output, exit_code} = run_fixture_set(fixtures)
 
     assert exit_code == 1, output
     assert output =~ "[crosswake] FAIL: #{check_id}"
@@ -204,8 +377,31 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     run_scanner(path)
   end
 
-  defp run_scanner(path) do
-    System.cmd("elixir", [@scanner, path], stderr_to_stdout: true)
+  defp run_fixture_set(fixtures) do
+    env =
+      fixtures
+      |> Enum.map(fn {name, contents} ->
+        path =
+          Path.join(
+            System.tmp_dir!(),
+            "crosswake-phase143-#{name}-#{System.unique_integer([:positive])}"
+          )
+
+        File.write!(path, contents)
+        on_exit(fn -> File.rm(path) end)
+
+        {fixture_env_name(name), path}
+      end)
+
+    run_scanner(@workflow, env)
+  end
+
+  defp fixture_env_name(:recovery_workflow), do: "HEX_PUBLISH_WORKFLOW_PATH"
+  defp fixture_env_name(:helper), do: "GUARDED_HEX_PUBLISH_PATH"
+  defp fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
+
+  defp run_scanner(path, env \\ []) do
+    System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
   end
 
   defp replace_in_job(workflow, job, pattern, replacement) do
@@ -218,4 +414,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   defp real_workflow, do: File.read!(@workflow)
+  defp recovery_workflow, do: File.read!(@recovery_workflow)
+  defp guarded_helper, do: File.read!(@guarded_helper)
+  defp release_config, do: File.read!(@release_config)
 end
