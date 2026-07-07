@@ -437,18 +437,16 @@ echo "[crosswake] checked out ${REF} at ${checked_out_sha}"
 |---|-------|---------|---------------|
 | — | All planning-critical claims were verified from local files, command output, live Hex probes, or official docs during this research. | all | — |
 
-## Open Questions
+## Resolved Questions
 
-1. **Why do `crosswake_rulestead` and `crosswake_rindle` return 404 from Hex at their manifest versions?**
+1. **RESOLVED: `crosswake_rulestead` and `crosswake_rindle` 404s are registry state to re-probe and record, not a manual first-publish exception.**
    - What we know: `.release-please-manifest.json` lists `packages/crosswake_rulestead` and `packages/crosswake_rindle` at `0.1.0`, and their `mix.exs` package names are `crosswake_rulestead` and `crosswake_rindle`. [VERIFIED: .release-please-manifest.json] [VERIFIED: packages/crosswake_rulestead/mix.exs] [VERIFIED: packages/crosswake_rindle/mix.exs]
    - What we know: live probes on 2026-07-07 returned HTTP 404 for `https://hex.pm/api/packages/crosswake_rulestead/releases/0.1.0` and `https://hex.pm/api/packages/crosswake_rindle/releases/0.1.0`, while `crosswake`, `crosswake_sigra`, `crosswake_chimeway`, and `crosswake_threadline` returned 200 for their current versions. [VERIFIED: curl Hex API 2026-07-07]
-   - What's unclear: whether these two packages are unpublished, private, removed, or documented incorrectly. [VERIFIED: curl Hex API 2026-07-07]
-   - Recommendation: before execution, add a Wave 0 verification task that reruns the live probe and asks the maintainer whether Phase 143 should auto-publish these two if absent or treat them as a first-publish exception requiring a separate decision. [VERIFIED: 143-CONTEXT.md]
+   - Resolution: Plan 01 must re-probe `crosswake_rulestead` and `crosswake_rindle` and record the HTTP codes in its summary. Treat HTTP 404 as current registry state. If Release Please emits a release for either package, the guarded helper treats exact absence as publish-required state after version/ref validation, not as a manual first-publish exception. If exact package/version/ref identity cannot be proven, the helper fails closed with a clear next action. This preserves D-05, D-06, D-07, and D-14. [VERIFIED: 143-CONTEXT.md]
 
-2. **Should the helper live as Bash or Elixir?**
-   - What we know: publish orchestration is CLI-heavy and existing workflow helpers already use shell for CI glue. [VERIFIED: .github/workflows/release-please.yml] [VERIFIED: script/verify_companion_cleanroom.sh]
-   - What's unclear: whether maintainers prefer a richer Elixir helper for argument parsing and tests. [VERIFIED: 143-CONTEXT.md]
-   - Recommendation: use Bash for the publish helper and keep semantic correctness in `check_release_workflow_integrity.exs` plus ExUnit fixtures. [VERIFIED: script/check_release_workflow_integrity.exs] [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs]
+2. **RESOLVED: implement the guarded publish helper in Bash, with semantic correctness enforced by Elixir scanner and ExUnit proof.**
+   - What we know: publish orchestration is CLI-heavy GitHub Actions glue, existing workflow helpers already use shell, and the closest local patterns are Bash scripts. [VERIFIED: .github/workflows/release-please.yml] [VERIFIED: script/verify_companion_cleanroom.sh] [VERIFIED: script/check_release_as_staleness.sh]
+   - Resolution: use Bash for `script/guarded_hex_publish.sh`, while enforcing behavior through `script/check_release_workflow_integrity.exs` and `test/crosswake/proof/phase142_release_integrity_test.exs`. This keeps the helper aligned with local CI script patterns and keeps semantic validation in the existing Elixir proof lane. [VERIFIED: script/check_release_workflow_integrity.exs] [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs]
 
 ## Environment Availability
 
