@@ -123,49 +123,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch library deps
-        run: mix deps.get
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: grep -n "@version \"${{ needs.release-please.outputs.version }}\"" mix.exs
-
-      - name: Run library tests
-        # Exclude :requires_example_host — those proof tests (phase5/7/8/9/21)
-        # need the checked-in example Phoenix app compiled and are gated on PRs
-        # by phase5-proof.yml. A bare `mix test` here on a clean runner would
-        # fail with CrosswakeExample.Router undefined and block the publish.
-        env:
-          MIX_ENV: test
-        run: mix test --exclude requires_example_host
-
-      - name: Dry run Hex publish
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish to Hex
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.version }}
-        run: |
-          set -euo pipefail
-          for i in $(seq 1 36); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake/releases/${VERSION}" | grep -q "\"version\""; then
-              echo "Hex.pm lists crosswake ${VERSION}"
-              exit 0
-            fi
-            echo "waiting for Hex index... (${i}/36)"
-            sleep 10
-          done
-          echo "Timed out waiting for https://hex.pm/api/packages/crosswake/releases/${VERSION}"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake
+          "${{ needs.release-please.outputs.version }}"
+          "${{ needs.release-please.outputs.tag_name }}"
 
   publish-hex-rulestead:
     name: Publish crosswake_rulestead to Hex.pm
@@ -208,57 +173,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch companion deps
-        working-directory: packages/crosswake_rulestead
-        run: mix deps.get
-
-      - name: Compile companion (warnings as errors)
-        working-directory: packages/crosswake_rulestead
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: |
-          grep -n "@version \"${{ needs.release-please.outputs.rulestead_version }}\"" packages/crosswake_rulestead/mix.exs
-
-      - name: Run companion tests
-        # D-10: engine-ABSENT hermetic lane — plain `mix test`, no --exclude flag.
-        # The companion test suite is hermetic (engine-absent) by design.
-        # --exclude requires_example_host is a CORE-ONLY tag; do not add it here.
-        working-directory: packages/crosswake_rulestead
-        run: mix test
-
-      - name: Dry run Hex publish
-        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
-        # Assumption A3 confirmed: --dry-run contacts Hex.pm and requires HEX_API_KEY.
-        working-directory: packages/crosswake_rulestead
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish crosswake_rulestead to Hex
-        working-directory: packages/crosswake_rulestead
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify crosswake_rulestead version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.rulestead_version }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=36
-          DELAY=10
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake_rulestead/releases/${VERSION}" | grep -q '"version"'; then
-              echo "[crosswake] Hex.pm lists crosswake_rulestead ${VERSION}"
-              exit 0
-            fi
-            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-            sleep "$DELAY"
-          done
-          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_rulestead/releases/${VERSION}"
-          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_rulestead ${VERSION} invalid"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_rulestead
+          "${{ needs.release-please.outputs.rulestead_version }}"
+          "${{ needs.release-please.outputs.rulestead_tag_name }}"
 
   publish-hex-rindle:
     name: Publish crosswake_rindle to Hex.pm
@@ -301,55 +223,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch companion deps
-        working-directory: packages/crosswake_rindle
-        run: mix deps.get
-
-      - name: Compile companion (warnings as errors)
-        working-directory: packages/crosswake_rindle
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: |
-          grep -n "@version \"${{ needs.release-please.outputs.rindle_version }}\"" packages/crosswake_rindle/mix.exs
-
-      - name: Run companion tests
-        # The companion test suite is hermetic by default; --exclude requires_example_host
-        # is a CORE-ONLY tag and must NOT be added here.
-        working-directory: packages/crosswake_rindle
-        run: mix test
-
-      - name: Dry run Hex publish
-        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
-        working-directory: packages/crosswake_rindle
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish crosswake_rindle to Hex
-        working-directory: packages/crosswake_rindle
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify crosswake_rindle version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.rindle_version }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=36
-          DELAY=10
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake_rindle/releases/${VERSION}" | grep -q '"version"'; then
-              echo "[crosswake] Hex.pm lists crosswake_rindle ${VERSION}"
-              exit 0
-            fi
-            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-            sleep "$DELAY"
-          done
-          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_rindle/releases/${VERSION}"
-          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_rindle ${VERSION} invalid"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_rindle
+          "${{ needs.release-please.outputs.rindle_version }}"
+          "${{ needs.release-please.outputs.rindle_tag_name }}"
 
   publish-hex-sigra:
     name: Publish crosswake_sigra to Hex.pm
@@ -392,55 +273,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch companion deps
-        working-directory: packages/crosswake_sigra
-        run: mix deps.get
-
-      - name: Compile companion (warnings as errors)
-        working-directory: packages/crosswake_sigra
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: |
-          grep -n "@version \"${{ needs.release-please.outputs.sigra_version }}\"" packages/crosswake_sigra/mix.exs
-
-      - name: Run companion tests
-        # The companion test suite is hermetic by default; --exclude requires_example_host
-        # is a CORE-ONLY tag and must NOT be added here.
-        working-directory: packages/crosswake_sigra
-        run: mix test
-
-      - name: Dry run Hex publish
-        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
-        working-directory: packages/crosswake_sigra
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish crosswake_sigra to Hex
-        working-directory: packages/crosswake_sigra
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify crosswake_sigra version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.sigra_version }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=36
-          DELAY=10
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake_sigra/releases/${VERSION}" | grep -q '"version"'; then
-              echo "[crosswake] Hex.pm lists crosswake_sigra ${VERSION}"
-              exit 0
-            fi
-            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-            sleep "$DELAY"
-          done
-          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_sigra/releases/${VERSION}"
-          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_sigra ${VERSION} invalid"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_sigra
+          "${{ needs.release-please.outputs.sigra_version }}"
+          "${{ needs.release-please.outputs.sigra_tag_name }}"
 
   publish-hex-chimeway:
     name: Publish crosswake_chimeway to Hex.pm
@@ -483,55 +323,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch companion deps
-        working-directory: packages/crosswake_chimeway
-        run: mix deps.get
-
-      - name: Compile companion (warnings as errors)
-        working-directory: packages/crosswake_chimeway
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: |
-          grep -n "@version \"${{ needs.release-please.outputs.chimeway_version }}\"" packages/crosswake_chimeway/mix.exs
-
-      - name: Run companion tests
-        # The companion test suite is hermetic by default; --exclude requires_example_host
-        # is a CORE-ONLY tag and must NOT be added here.
-        working-directory: packages/crosswake_chimeway
-        run: mix test
-
-      - name: Dry run Hex publish
-        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
-        working-directory: packages/crosswake_chimeway
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish crosswake_chimeway to Hex
-        working-directory: packages/crosswake_chimeway
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify crosswake_chimeway version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.chimeway_version }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=36
-          DELAY=10
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake_chimeway/releases/${VERSION}" | grep -q '"version"'; then
-              echo "[crosswake] Hex.pm lists crosswake_chimeway ${VERSION}"
-              exit 0
-            fi
-            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-            sleep "$DELAY"
-          done
-          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_chimeway/releases/${VERSION}"
-          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_chimeway ${VERSION} invalid"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_chimeway
+          "${{ needs.release-please.outputs.chimeway_version }}"
+          "${{ needs.release-please.outputs.chimeway_tag_name }}"
 
   publish-hex-threadline:
     name: Publish crosswake_threadline to Hex.pm
@@ -575,55 +374,14 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
-      - name: Fetch observer deps
-        working-directory: packages/crosswake_threadline
-        run: mix deps.get
-
-      - name: Compile observer (warnings as errors)
-        working-directory: packages/crosswake_threadline
-        run: mix compile --warnings-as-errors
-
-      - name: Verify release version in mix.exs
-        run: |
-          grep -n "@version \"${{ needs.release-please.outputs.threadline_version }}\"" packages/crosswake_threadline/mix.exs
-
-      - name: Run observer tests
-        # The observer test suite is hermetic by default; --exclude requires_example_host
-        # is a CORE-ONLY tag and must NOT be added here.
-        working-directory: packages/crosswake_threadline
-        run: mix test
-
-      - name: Dry run Hex publish
-        # SC#4 / PROOF-02: dry-run gate MUST precede the real publish in the same job.
-        working-directory: packages/crosswake_threadline
+      - name: Guarded Hex publish
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --dry-run --yes
-
-      - name: Publish crosswake_threadline to Hex
-        working-directory: packages/crosswake_threadline
-        env:
-          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
-        run: mix hex.publish --yes
-
-      - name: Verify crosswake_threadline version on Hex.pm
-        env:
-          VERSION: ${{ needs.release-please.outputs.threadline_version }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=36
-          DELAY=10
-          for i in $(seq 1 "$MAX_ATTEMPTS"); do
-            if curl -fsS "https://hex.pm/api/packages/crosswake_threadline/releases/${VERSION}" | grep -q '"version"'; then
-              echo "[crosswake] Hex.pm lists crosswake_threadline ${VERSION}"
-              exit 0
-            fi
-            echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-            sleep "$DELAY"
-          done
-          echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/crosswake_threadline/releases/${VERSION}"
-          echo "[crosswake] What to do next: check Hex.pm status; if propagation stalled, run: mix hex.retire crosswake_threadline ${VERSION} invalid"
-          exit 1
+        run: >
+          bash script/guarded_hex_publish.sh
+          crosswake_threadline
+          "${{ needs.release-please.outputs.threadline_version }}"
+          "${{ needs.release-please.outputs.threadline_tag_name }}"
 
   publish-ios-core:
     name: Mirror iOS core to split repo
