@@ -437,17 +437,19 @@ All claims in this research were verified from local project files, local comman
 |---|-------|---------|---------------|
 | — | — | — | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should actionlint become a required Phase 142 gate?**  
    What we know: `actionlint` is installed and official docs describe useful syntax/expression/needs checks. [VERIFIED: local command] [CITED: github.com/rhysd/actionlint]  
    What's unclear: whether Phase 142 should spend scope fixing the pre-existing SC2086 in the Android fire-drill block. [VERIFIED: local command]  
    Recommendation: keep actionlint optional unless the plan includes the small quote fix at workflow line 897. [VERIFIED: local command]
+   RESOLVED: Phase 142 Plan 01 fixes the known quote issue by using `basename "$ARTIFACT"`, then treats `actionlint .github/workflows/release-please.yml` as additive evidence. The required release-identity proof remains `elixir script/check_release_workflow_integrity.exs` plus `mix test test/crosswake/proof/phase142_release_integrity_test.exs`.
 
 2. **Should cleanup use one large condition or a generated helper pattern?**  
    What we know: GitHub `needs.<job_id>.result` gives exact result values for direct dependencies. [CITED: docs.github.com/actions-contexts]  
    What's unclear: whether maintainers prefer a long explicit YAML condition or a preceding step that computes cleanup eligibility. [VERIFIED: 142-CONTEXT.md]  
    Recommendation: use explicit YAML per-component implications first; it is easier for the semantic scanner to verify. [VERIFIED: 142-CONTEXT.md]
+   RESOLVED: Use explicit per-component cleanup implications in the `release-as-cleanup` YAML condition and in the semantic scanner checks; do not compute cleanup eligibility through a helper step or generated helper pattern.
 
 ## Environment Availability
 
