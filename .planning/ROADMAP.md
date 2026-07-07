@@ -52,7 +52,7 @@ Success criteria:
 Plans:
 **Wave 1**
 
-- [ ] 143-01-PLAN.md — Shared guarded Hex publish helper and automatic Release Please workflow integration.
+- [x] 143-01-PLAN.md — Shared guarded Hex publish helper and automatic Release Please workflow integration.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -253,7 +253,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
-| 143. Guarded Auto-Publish Train | v18.0 | 0/3 | Pending | — |
+| 143. Guarded Auto-Publish Train | v18.0 | 1/3 | In Progress|  |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |
