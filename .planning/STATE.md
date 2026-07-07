@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
+current_phase: 142
+current_phase_name: release-graph-governance-contract
 status: in_progress
 stopped_at: Phase 142 planned — release graph governance ready for execute-phase
-last_updated: "2026-07-07T14:52:55.000Z"
-last_activity: 2026-07-07
+last_updated: "2026-07-07T15:02:16.932Z"
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 15
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -27,15 +28,17 @@ See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 142 (release-graph-governance-contract) — planned; ready for execute-phase.
+Phase: 142 (release-graph-governance-contract) — EXECUTING
 
 Phase 142 discussion output:
+
 - `.planning/phases/142-release-graph-governance-contract/142-CONTEXT.md`
 - `.planning/phases/142-release-graph-governance-contract/142-DISCUSSION-LOG.md`
 - Commit: `9d035b1e docs(142): capture phase context`
 - Key implementation gaps identified for planning: add/justify `queue: max`, make `release-as-cleanup` wait for released companion proof success, and harden the workflow integrity scanner against aggregate-gate and comment-only false passes.
 
 Phase 142 planning output:
+
 - `.planning/phases/142-release-graph-governance-contract/142-RESEARCH.md`
 - `.planning/phases/142-release-graph-governance-contract/142-VALIDATION.md`
 - `.planning/phases/142-release-graph-governance-contract/142-01-PLAN.md`
@@ -44,6 +47,7 @@ Phase 142 planning output:
 - Plan checker: passed after revisions; RELG-01, RELG-02, and RELG-03 covered; decision coverage gate passed 30/30.
 
 Implemented in the current work slice:
+
 - Root/native publish jobs now gate on Release Please `paths_released` instead of aggregate `releases_created`.
 - Release workflow publish/proof concurrency is non-canceling.
 - iOS mirror job fails fast on missing/invalid `MIRROR_PUSH_TOKEN` and skips an already-existing mirror tag.
@@ -54,10 +58,12 @@ Implemented in the current work slice:
 - `mix crosswake.release.status [--json] [--live]` added as the text/JSON release operator surface.
 
 Carried seeds being harvested:
+
 - **SEED-003** — iOS SwiftPM mirror push token / missing `v0.2.0` mirror tag.
 - **SEED-004** — companion clean-room proof harness.
 
 Deferred behind v18:
+
 - DASH-01 `crosswake_dashboard`
 - SYNCP-01 offline-sync productization
 - NTV-01 native disk budgets

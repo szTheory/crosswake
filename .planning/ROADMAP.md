@@ -28,6 +28,7 @@ Goal: make Crosswake's package-family release path automated, path-specific, and
 - [ ] Phase 146: Release Status DX & Docs Truth — ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs. Requirements: STAT-01, STAT-02, STAT-03.
 
 Success criteria:
+
 1. Companion-only releases cannot publish core Hex, iOS mirror, or Android Maven artifacts.
 2. The clean-room harness resolves the exact package under test against its real published-core floor.
 3. Maintainers can run one local command for package-family release status and a machine-readable JSON variant.
@@ -238,7 +239,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 139. crosswake_threadline Extraction | v17.0 | 4/4 | Complete | 2026-07-04 |
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
-| 142. Release Graph & Governance Contract | v18.0 | 3/3 | Planned | — |
+| 142. Release Graph & Governance Contract | v18.0 | 1/3 | In Progress|  |
 | 143. Guarded Auto-Publish Train | v18.0 | 0/3 | Pending | — |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
