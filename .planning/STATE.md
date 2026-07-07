@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-current_phase: 142
-current_phase_name: release-graph-governance-contract
-status: in_progress
-stopped_at: Completed 142-02-PLAN.md
-last_updated: "2026-07-07T15:20:24.750Z"
+current_phase: 143
+current_phase_name: Guarded Auto-Publish Train
+status: Ready to plan
+stopped_at: Phase 142 complete — ready to plan Phase 143
+last_updated: "2026-07-07T16:29:09.174Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 20
 ---
 
 # Project State: Crosswake
@@ -22,13 +22,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 142 — release-graph-governance-contract
+**Current focus:** Phase 143 — guarded-auto-publish-train
 
 ## Current Position
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 142 (release-graph-governance-contract) — EXECUTING
+Phase: 143 — Guarded Auto-Publish Train
 
 Phase 142 discussion output:
 
@@ -49,10 +49,10 @@ Phase 142 planning output:
 Implemented in the current work slice:
 
 - Root/native publish jobs now gate on Release Please `paths_released` instead of aggregate `releases_created`.
-- Release workflow publish/proof concurrency is non-canceling.
+- Release workflow publish/proof concurrency is non-canceling and preserves pending runs with `queue: max`.
 - iOS mirror job fails fast on missing/invalid `MIRROR_PUSH_TOKEN` and skips an already-existing mirror tag.
 - iOS and Android clean-room proofs no longer depend on each other.
-- `release-as-cleanup` waits for companion publish jobs to finish successfully.
+- `release-as-cleanup` waits for released companion publish and clean-room proof jobs to finish successfully, then opens a cleanup PR only.
 - `script/verify_companion_cleanroom.sh` now derives the core floor from the package under test and installs the exact just-published companion version.
 - `mix crosswake.doctor --router` compiles/loadpaths before rejecting a freshly compiled router.
 - `mix crosswake.release.status [--json] [--live]` added as the text/JSON release operator surface.
@@ -99,7 +99,7 @@ Deferred behind v18:
 
 **Velocity:**
 
-- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) + 24 (v16.0) = 142 across last seven milestones
+- Total plans completed: 142 across v10.0-v17.0 + 3 in v18.0 Phase 142 = 145
 - Average duration: —
 - Total execution time: —
 
@@ -240,13 +240,13 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-07T15:20:24.522Z
-Stopped at: Completed 142-02-PLAN.md
+Last session: 2026-07-07T16:29:09Z
+Stopped at: Phase 142 complete; ready to plan Phase 143
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-execute-phase 142` using the three verified plans.
+- Run `$gsd-discuss-phase 143` to refine the guarded auto-publish train before planning, or `$gsd-plan-phase 143` if discussion is intentionally skipped.
 - Keep downstream phase ownership honest: Phase 144, 145, and 146 must validate their already-present implementation spillover before being claimed complete.
 - Do not perform Hex/package publish operations from this planning pass.
 

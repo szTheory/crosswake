@@ -21,7 +21,7 @@
 
 Goal: make Crosswake's package-family release path automated, path-specific, and honest before adding new product breadth. v18 harvests SEED-003 and SEED-004, finishes release-gate discipline, and keeps dashboard/offline/capability breadth deferred.
 
-- [ ] Phase 142: Release Graph & Governance Contract — encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output. Requirements: RELG-01, RELG-02, RELG-03.
+- [x] Phase 142: Release Graph & Governance Contract — encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output. Requirements: RELG-01, RELG-02, RELG-03. (completed 2026-07-07)
 - [ ] Phase 143: Guarded Auto-Publish Train — make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning. Requirements: AUTO-01, AUTO-02, AUTO-03.
 - [ ] Phase 144: Published-Core Compatibility & Clean-Room Proof — repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers. Requirements: PREF-01, PREF-02, PREF-03.
 - [ ] Phase 145: Native Registry & Mirror Parity — harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag. Requirements: MIRR-01, MIRR-02, MIRR-03.
@@ -41,7 +41,7 @@ Success criteria:
 
 **Goal:** Encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output.
 **Requirements:** RELG-01, RELG-02, RELG-03
-**Plans:** 3/3
+**Plans:** 3/3 plans complete
 
 ### Phase 143: Guarded Auto-Publish Train
 
@@ -239,7 +239,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 139. crosswake_threadline Extraction | v17.0 | 4/4 | Complete | 2026-07-04 |
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
-| 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete   | 2026-07-07 |
+| 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 0/3 | Pending | — |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
