@@ -1,295 +1,124 @@
 # Companion Publish Runbook
 
-**The safety rail for the irreversible, batched companion-family publish.**
+This runbook describes the current package-family release operating model for
+Crosswake Hex packages. The publish path is now guarded CI automation, not a
+maintainer's local `mix hex.publish` loop.
 
-This runbook is the human-facing operating procedure for taking the three
-extracted companion packages — `crosswake_sigra`, `crosswake_chimeway`,
-`crosswake_threadline` — live on hex.pm, one at a time, in a fixed order. Hex is
-**irreversible** after a ~60-minute grace window, so the discipline here matters
-more than the machinery: the pipeline is already built and verified; the human
-just has to drive it in the right order and stop the moment anything looks wrong.
+## Current Operating Model
 
-> **Readiness, not execution.** Authoring and verifying this runbook is the
-> complete Phase-140 `FAMILY-04` deliverable. The publish itself (merging Release
-> PRs, `mix hex.publish` via CI, `register_required_checks.sh DRY_RUN=0`) is a
-> **separate human trigger** carried by the `autonomous: false` execution plan
-> (140-05), fired outside this phase after origin-sync + 137/138/139
-> execution-verification land. Nothing is published by authoring this document.
+The Release Please Release PR merge is the human approval boundary. After that
+merge, CI owns the happy-path publish path for every package Release Please says
+was released.
 
----
+For Hex packages, the release workflow routes root `crosswake` and all five
+`crosswake_*` companions through `script/guarded_hex_publish.sh`:
 
-## Pipeline primitives (verified present)
+- `crosswake`
+- `crosswake_rulestead`
+- `crosswake_rindle`
+- `crosswake_sigra`
+- `crosswake_chimeway`
+- `crosswake_threadline`
 
-Every CI primitive the publish depends on already exists in-repo and was
-confirmed on disk while authoring this runbook (Phase 140 plan 04, Task 1). **No
-new CI wiring is required for the publish** (decision D-02). The list below is the
-authoritative "what's already wired" reference — locations are current as of this
-writing; if a job moves, re-grep the anchor name rather than trusting the line
-number.
+The helper verifies the checked-out package/version, checks the exact Hex.pm
+package release endpoint, and then chooses one of two states:
 
-### The load-bearing invariant
+- Exact package/version is already live: report success, skip publish, and let
+  proof continue.
+- Exact package/version is not live: run deps, compile, tests, dry-run, publish,
+  and poll until Hex.pm reports the exact version.
 
-Companions depend on **core only, never on each other.** This is why publish order
-among the companions is arbitrary-after-core and why sequencing lives in this
-runbook (human discipline) rather than in CI `needs:` edges. There is **no**
-`crosswake_chimeway → crosswake_sigra` dependency to encode.
+Core Hex, iOS core, and Android core remain the only lockstep release group.
+Companion packages remain independently versioned Release Please components.
 
-### Per-companion primitives
+## Already-Live State
 
-For each of `sigra`, `chimeway`, `threadline` the following are confirmed present:
+Hex packages are immutable after the public release window. Treat an exact live
+package/version as registry state, not as a failed duplicate publish.
 
-**1. `release-please-config.json` component block** — each companion is registered
-as an independent release-please component with `separate-pull-requests: true`
-(so each gets its OWN Release PR, merged in its OWN workflow run) plus the one-shot
-`release-as: "0.1.0"` bootstrap pin and its `_TODO_release_as` reminder note:
+Expected already-live success copy:
 
-| Companion | `release-please-config.json` block | `separate-pull-requests` | `release-as` + `_TODO_release_as` |
-|---|---|---|---|
-| sigra | `packages/crosswake_sigra` (~L93) | `true` (L96) | `"0.1.0"` (L98) + `_TODO_release_as` (L97) |
-| chimeway | `packages/crosswake_chimeway` (~L113) | `true` (L116) | `"0.1.0"` (L118) + `_TODO_release_as` (L117) |
-| threadline | `packages/crosswake_threadline` (~L133) | `true` (L136) | `"0.1.0"` (L138) + `_TODO_release_as` (L137) |
+```text
+[crosswake] OK: crosswake_sigra 0.1.1 is already live on Hex.pm; no publish attempted. Continuing to proof.
+```
 
-**2. Manifest baseline** in `.release-please-manifest.json` — each companion is
-pinned at `0.1.0` so the first Release PR cuts `0.1.0`:
+Expected fail-closed copy:
 
-- `"packages/crosswake_sigra": "0.1.0"` (L7)
-- `"packages/crosswake_chimeway": "0.1.0"` (L8)
-- `"packages/crosswake_threadline": "0.1.0"` (L9)
+```text
+[crosswake] FAIL: Hex.pm returned HTTP 500 for crosswake_sigra 0.1.1.
+[crosswake] What to do next: Retry after confirming Hex.pm status; do not publish until registry identity can be checked.
+```
 
-**3. `publish-hex-<name>` job** in `.github/workflows/release-please.yml`, gated on
-the PER-COMPONENT `<name>_release_created == 'true'` output (never the aggregate
-`releases_created`, which would republish on every core-only release):
+The important operator facts are package, release ref, version, registry state,
+live artifact, proof, cleanup PR, and the next safe command. Do not rely on
+prose scraping for machine state; helper outputs include `package`, `version`,
+`publish_state`, `hex_release_url`, and `checked_sha` for later status tooling.
 
-| Job | Location | Gate |
-|---|---|---|
-| `publish-hex-sigra` | ~L350 | `if: needs.release-please.outputs.sigra_release_created == 'true'` (L357) |
-| `publish-hex-chimeway` | ~L441 | `if: needs.release-please.outputs.chimeway_release_created == 'true'` (L448) |
-| `publish-hex-threadline` | ~L532 | `if: needs.release-please.outputs.threadline_release_created == 'true'` (L539) |
+## Manual Recovery
 
-The per-component `*_release_created` outputs are declared on the `release-please`
-job (`sigra` L59, `chimeway` L65, `threadline` L74).
+Manual dispatch is exact-ref Hex recovery and fire-drill only. It is not the
+happy path and should not be used when the Release Please publish train is
+healthy.
 
-**4. Within-run `clean-room-proof-<name>` job** — the post-publish resolvability +
-`mix crosswake.doctor` proof, structurally ordered AFTER its publish job via
-`needs: [release-please, publish-hex-<name>]`. This `needs:` edge is the ONLY
-ordering primitive in CI, and it holds **within a single workflow run**:
+Use the `Hex publish (manual recovery)` workflow with:
 
-| Job | Location | `needs:` |
-|---|---|---|
-| `clean-room-proof-sigra` | ~L1090 | `[release-please, publish-hex-sigra]` (L1095) |
-| `clean-room-proof-chimeway` | ~L1124 | `[release-please, publish-hex-chimeway]` (L1129) |
-| `clean-room-proof-threadline` | ~L1162 | `[release-please, publish-hex-threadline]` (L1167) |
+- `package`: one of the six Hex packages listed above.
+- `ref`: either a full 40-character lowercase commit SHA or an explicit
+  `refs/tags/vX.Y.Z` release tag ref.
+- `release_version`: the expected package version at that ref.
 
-**5. `release-failure-alert` coverage** — the `release-failure-alert` job (~L1258)
-fires `if: ${{ failure() }}` (L1275) and lists ALL companion publish + clean-room
-jobs in its `needs:` (L1264–L1274): `publish-hex-{rulestead,rindle,sigra,chimeway,threadline}`
-and `clean-room-proof-{rulestead,rindle,sigra,chimeway,threadline}`. On any
-failure it auto-opens a tracking issue (`issues: write`), so the happy path needs
-zero human eyeballing and a genuine failure pages a human.
+The workflow rejects branch-shaped and bare version-looking refs before
+checkout, including `release/v0.2.0`, `feature/v0.2.0`,
+`refs/heads/release/v0.2.0`, bare `v0.2.0`, `main`, and `master`. It prints the
+checked-out SHA before calling the guarded helper.
 
-### Why no cross-companion `needs:` edge exists — and must NOT be added (D-02)
+Recovery remains Hex-only in Phase 143. SwiftPM mirror recovery, Maven Central
+recovery, and the missing iOS `v0.2.0` mirror backfill belong to Phase 145.
 
-GitHub Actions `needs:` **cannot span workflow runs.** Because every companion has
-`separate-pull-requests: true`, each companion's Release PR merges in its OWN
-workflow run. A hypothetical `publish-hex-chimeway: needs: publish-hex-sigra` edge
-would reference a job that does not exist in chimeway's run — GitHub would either
-silently skip it (no ordering enforced) or, with an explicit `if: success()`,
-deadlock waiting on a job that never runs. So:
+## Companion Floors
 
-- The within-run `clean-room-proof-<name>: needs: publish-hex-<name>` edge is the
-  ONLY safe CI ordering primitive — it orders *publish → proof* inside one run.
-- Cross-companion sequencing (sigra → chimeway → threadline) is **the human's job
-  via this runbook.** It is intentionally NOT encoded in CI.
+Mixed floors are intentional release truth:
 
-> **If you are tempted to add a `needs:` edge between companion publish jobs:
-> don't.** It cannot work (cross-run) and will silently skip or deadlock. The
-> sequencing lives here, in operator discipline.
+| Hex package | Requires `crosswake` |
+|---|---|
+| `crosswake_rulestead` | `~> 0.1` |
+| `crosswake_rindle` | `~> 0.1` |
+| `crosswake_sigra` | `~> 0.2` |
+| `crosswake_chimeway` | `~> 0.2` |
+| `crosswake_threadline` | `~> 0.2` |
 
-### Readiness status
+A companion that needs a newer core API bumps its own floor in its own release.
+Do not preemptively constrain older-compatible companions to a newer core line.
 
-All primitives above are **present and verified.** No BLOCKER. The pipeline is
-ready for the human-triggered batched publish once the preconditions below are met.
+## Required Check Boundary
 
----
+The `publish-hex-*` and `clean-room-proof-*` jobs are post-merge release jobs.
+They are skipped on normal PRs and MUST NOT be registered as required PR checks.
+Registering them would deadlock ordinary PRs waiting for statuses that cannot
+run before merge.
 
-## Step 0 — Publish core FIRST (the load-bearing prerequisite, D-141-B)
+Keep merge-blocking proof on the semantic workflow checks and source tests. The
+post-merge publish/proof jobs are release execution evidence, not PR gates.
 
-**This step is mandatory and must complete, fully, before ANY companion Release
-PR is merged.** It was missing from the original FAMILY-04 revision of this
-runbook, and its absence was the direct cause of a failed sigra publish attempt
-on 2026-07-03.
+## Phase Boundaries
 
-**Why.** The companion packages build `%Finding{code: ...}` (sigra
-`evaluator.ex:258`, chimeway `resolver.ex:102`) using core API — the `:code`
-and `:details` fields plus the `:auth` clause on `Crosswake.Compatibility.Finding`
-— that was added to core post-0.1.2 and has **never been published to Hex**.
-The companion publish seam (`crosswake_dep()`, D-11/D-13) resolves
-`{:crosswake, "~> 0.2"}` at publish time. If published core is still `0.1.2`,
-Hex serves the pre-`:code` struct and the companion fails to compile — **before
-`mix hex.publish` even runs, so nothing gets published, but the Release PR
-merge is wasted and the loop stalls.** This is exactly what happened on
-2026-07-03: sigra Release PR #42 merged, `publish-hex-sigra` ran, and
-`mix compile` died with `(KeyError) key :code not found` expanding
-`Crosswake.Compatibility.Finding.__struct__/1` against the published `0.1.2`
-struct. Dress-rehearsals never caught this because they compile against the
-local path dependency, not the Hex-resolved version — only a real publish
-attempt exercises the seam that broke.
+Phase 143 owns the guarded automatic Hex publish train and exact-ref Hex
+recovery.
 
-**How.** Merge the root release-please Release PR (**#25**, "chore: release
-main") — with the `release-as: "0.2.0"` pin from Step 0's companion task
-(141-01 Task 1) in place, it recomputes to core `0.2.0` instead of a
-pre-major patch. Merging it triggers the `publish-hex` job
-(`release-please.yml` ~L92), gated on `needs.release-please.outputs.releases_created`,
-which checks out the `hex-vX.Y.Z` tag, verifies `@version` in `mix.exs`
-matches, and runs `mix hex.publish`. This takes core `0.2.0` live on Hex.
+Phase 144 owns clean-room exactness completion: exact just-published companion
+installs, derived core floors, and fresh-router doctor loading.
 
-**The gate.** Do **NOT** merge ANY companion Release PR (`crosswake_sigra`,
-`crosswake_chimeway`, or `crosswake_threadline`) until BOTH of the following are
-true:
+Phase 145 owns native registry recovery and parity: SwiftPM mirror credential
+preflight, Maven/SwiftPM recovery semantics, native proof decoupling, and iOS
+mirror backfill.
 
-- `mix hex.info crosswake` shows `0.2.0`.
-- `https://hexdocs.pm/crosswake/0.2.0` resolves.
+Phase 146 owns full release-status DX: local text output, JSON output, optional
+live registry probes, and any issue-opening automation.
 
-Only once both are confirmed does the per-companion publish loop below become
-safe to start.
+## Irreversible Registry Warning
 
----
-
-## Preconditions (do NOT start until all are true)
-
-Per decision D-01 (USER-LOCKED), the batched publish is deferred behind a small
-set of preconditions. **Deferred ≠ indefinite** — the family should go live once
-these clear; there is no reason to hold it back further.
-
-1. **Origin-sync has landed.** Local `main` has been pushed to `origin/main` and CI
-   is green on origin. Crosswake accumulates work on protected local `main` and
-   syncs via a single boundary PR — run the
-   [Milestone-Boundary Hygiene Runbook](./MILESTONE-BOUNDARY-HYGIENE.md) FIRST.
-   That runbook explicitly does **not** publish to hex; it only lands accumulated
-   work and gets CI green. This publish runbook is what fires afterward.
-2. **Phases 137 / 138 / 139 are execution-verified.** The sigra, chimeway, and
-   threadline extractions have each been executed and verified green in-tree.
-3. **Core 0.2.0 is live on Hex.** See Step 0 above — this is the load-bearing
-   prerequisite the original runbook omitted. Do not proceed to the
-   per-companion loop until `mix hex.info crosswake` shows `0.2.0` and
-   `hexdocs.pm/crosswake/0.2.0` resolves.
-4. **You have hex.pm publish rights** for the `crosswake_*` packages and a shell
-   with `gh` authenticated at repo-admin scope (needed only for the ship-gate
-   registration step, not for the publish itself).
-
-If any precondition is false, STOP — the publish is not yet ready.
-
----
-
-## Per-companion publish loop (D-03)
-
-Run this loop for **exactly ONE companion at a time**, in the fixed order:
-
-> **sigra → chimeway → threadline**
-
-Threadline (the pure observer) is published LAST as belt-and-suspenders: by the
-time it goes live, sigra and chimeway are already proven on hex, so if the
-observer's telemetry-by-name wiring were ever going to surface a surprise, it does
-so against a known-good baseline.
-
-**Never batch. Never merge two Release PRs at once.** Complete all five steps for
-one companion before touching the next.
-
-For companion `<name>` (in order `sigra`, then `chimeway`, then `threadline`):
-
-1. **Merge exactly ONE Release PR** — the release-please PR for `crosswake_<name>`
-   (title contains `crosswake_<name>`). One at a time. Do not merge the next
-   companion's Release PR yet.
-2. **Wait for green on `main`.** After the merge, the
-   `publish-hex-<name>` job runs (`mix hex.publish`), then — gated within the same
-   run by `needs: [release-please, publish-hex-<name>]` — the
-   `clean-room-proof-<name>` job builds a throwaway host, resolves the freshly
-   published package from hex, and runs `mix crosswake.doctor`. **Both must be
-   GREEN** before proceeding.
-3. **Confirm the docs actually published.** Open
-   `https://hexdocs.pm/crosswake_<name>/0.1.0` and confirm it resolves (hexdocs
-   lags hex.pm by a short interval; give it a minute). If it never resolves, treat
-   it as a failure — investigate before continuing. Because Step 0 already put
-   core `0.2.0` live before this loop started, the `clean-room-proof-<name>` job
-   in step 2 is what actually proves the companion resolves against core `0.2.0`
-   (not the stale `0.1.2`) — a green clean-room proof is the real confirmation
-   that the core-first gate worked, not just that the companion's own docs page
-   resolves.
-4. **Merge the auto-opened `release-as-cleanup` PR.** The `release-as-cleanup` job
-   (`release-please.yml` ~L1202, PROOF-03b) auto-opens a one-line PR stripping the
-   now-stale one-shot `release-as: "0.1.0"` pin (and its `_TODO_release_as` note)
-   for the released component — left in place, every subsequent run would
-   re-target `0.1.0` forever (Pitfall 6). The `merge-blocking-release-as-staleness`
-   gate (`.github/workflows/release-as-staleness-gate.yml`) stays **RED** until
-   this PR merges, so it cannot be silently skipped. Merge it once its CI is green.
-5. **ONLY THEN proceed to the next companion.** Return to step 1 for the next name
-   in the order.
-
-### Hex is irreversible — the ~60-minute revert window
-
-Once `mix hex.publish` completes, the package version is **permanent.** There is a
-~60-minute grace window in which a mistaken publish can be corrected with
-`mix hex.retire crosswake_<name> 0.1.0 --message "..."` (retire, not delete — the
-version stays but is marked unusable). After that window, `0.1.0` is frozen forever
-and the only path forward is a NEW version.
-
-- **Do NOT retry a failed publish by re-pushing.** First check whether the version
-  already made it to hex.pm. If it did, re-pushing will fail (version exists) and
-  you must go through `mix hex.retire` + a new version — never assume a failed job
-  means "nothing published."
-- **If `release-failure-alert` fires** (it auto-opens a tracking issue on any
-  publish/clean-room failure — see `release-please.yml` ~L1258, `if: failure()`),
-  **STOP.** Investigate the failed job named in the issue BEFORE touching the next
-  companion. Do not advance the order while a failure is open.
-
----
-
-## Ship-gate ordering — `register_required_checks.sh` (D-04)
-
-Registering merge-blocking lanes as required status checks is a **separate,
-admin-only** action from the publish. It runs **green-first, AFTER new lanes have
-gone green on `main` at least once — never before.**
-
-Order:
-
-1. **Land Phase 140** (and any change that introduces a NEW `merge-blocking-*`
-   lane) onto `main`.
-2. **Let each new `merge-blocking-*` lane run GREEN on `main` at least once.** The
-   script's paginated green-first preflight (`register_required_checks.sh` L73–L88)
-   SKIPS any lane with no green run on branch HEAD — registering a never-green
-   check freezes every open PR at "Expected — Waiting for status."
-3. **Preview:** `DRY_RUN=1 script/register_required_checks.sh` (default; prints the
-   desired `required_status_checks`, writes nothing).
-4. **Apply:** `DRY_RUN=0 script/register_required_checks.sh` (PATCHes the granular
-   `required_status_checks` endpoint — appends, `unique_by(.context)`, idempotent;
-   leaves `enforce_admins` and review requirements untouched).
-5. **Confirm:** let the daily `required-checks-audit.yml` verify the registration.
-
-### Hard rule — never register the publish/proof jobs
-
-The companion `publish-hex-*` and `clean-room-proof-*` jobs are **POST-MERGE** jobs:
-they run only after a Release PR merges and are SKIPPED on normal PRs (their
-`if: <name>_release_created == 'true'` gate is false on non-release PRs). Requiring
-a check that is skipped on normal PRs creates a **permanent PR deadlock** — every
-open PR waits forever for a status that will never report.
-
-> **MUST NOT** register `publish-hex-*` or `clean-room-proof-*` as required checks.
-> They are post-merge publish jobs, not PR gates. The green-first preflight will
-> also refuse to register them (they never run green on a normal PR HEAD), but do
-> not rely on that — never pass them as allowlist args.
-
----
-
-## Why this is deferred, and what counts as "done" for Phase 140
-
-Per D-01 (USER-LOCKED), **authoring and verifying this runbook IS the complete
-Phase-140 `FAMILY-04` deliverable** (the "readiness" half). The actual EXECUTION —
-merging Release PRs, the hex publishes, and `register_required_checks.sh DRY_RUN=0`
-registration — is carried by the **`autonomous: false` execution plan (140-05)**,
-fired **separately by the human** outside this phase once the preconditions above
-are met.
-
-So for Phase 140: **readiness delivered, execution deferred by design.** Downstream
-`execute-phase` and the plan checker should treat this readiness runbook as the
-satisfied deliverable; they must NOT expect a hex publish or a required-check
-registration to have happened inside Phase 140.
+Once `mix hex.publish` completes, the package version is public registry state.
+Do not retry a failed release by forcing an overwrite path. First check whether
+the exact version is already live. If it is live, continue to proof or recovery
+verification. If identity cannot be proven, stop and inspect the release ref,
+GitHub release/tag, Hex.pm package page, and workflow logs before retrying.
