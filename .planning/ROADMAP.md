@@ -239,7 +239,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 139. crosswake_threadline Extraction | v17.0 | 4/4 | Complete | 2026-07-04 |
 | 140. Family Discipline & Close | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
-| 142. Release Graph & Governance Contract | v18.0 | 2/3 | In Progress|  |
+| 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete   | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 0/3 | Pending | — |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 0/3 | Pending | — |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
