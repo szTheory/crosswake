@@ -1,7 +1,7 @@
 # Phase 144: Published-Core Compatibility & Clean-Room Proof - Research
 
-**Researched:** 2026-07-07  
-**Domain:** Elixir/Mix release proof, Hex package metadata, GitHub Actions release graph, clean-room package-family validation  
+**Researched:** 2026-07-07
+**Domain:** Elixir/Mix release proof, Hex package metadata, GitHub Actions release graph, clean-room package-family validation
 **Confidence:** MEDIUM
 
 <user_constraints>
@@ -140,7 +140,7 @@ Live Hex registry truth is mixed as of 2026-07-07: `crosswake_sigra` 0.1.1, `cro
 | `crosswake_rulestead` | Hex | Release `0.1.0` returned 404 on 2026-07-07 | Not available | `github.com/szTheory/crosswake` | Existing planned package, not live at queried coordinate | Keep static coverage; real clean-room proof must fail closed on 404. [VERIFIED: Hex API] |
 | `crosswake_rindle` | Hex | Release `0.1.0` returned 404 on 2026-07-07 | Not available | `github.com/szTheory/crosswake` | Existing planned package, not live at queried coordinate | Keep static coverage; real clean-room proof must fail closed on 404. [VERIFIED: Hex API] |
 
-**Packages removed due to [SLOP] verdict:** none. [VERIFIED: codebase]  
+**Packages removed due to [SLOP] verdict:** none. [VERIFIED: codebase]
 **Packages flagged as suspicious [SUS]:** none; no new package names are recommended. [VERIFIED: codebase]
 
 ## Architecture Patterns
@@ -185,7 +185,7 @@ test/mix/tasks/
 
 ### Pattern 1: Registry-Truth Floor, Lockfile Postcondition
 
-**What:** Fetch exact Hex release JSON, derive `requirements.crosswake.requirement`, install `{PACKAGE, "== ${VERSION}"}`, then assert selected lockfile versions. [VERIFIED: 144-CONTEXT.md] [VERIFIED: Hex API]  
+**What:** Fetch exact Hex release JSON, derive `requirements.crosswake.requirement`, install `{PACKAGE, "== ${VERSION}"}`, then assert selected lockfile versions. [VERIFIED: 144-CONTEXT.md] [VERIFIED: Hex API]
 **When to use:** Every release-triggered companion clean-room proof. [VERIFIED: .github/workflows/release-please.yml]
 
 **Example:**
@@ -213,7 +213,7 @@ mix run -e '
 
 ### Pattern 2: Doctor Owns Router Readiness
 
-**What:** Make the Mix task run app config/load readiness and compile/reload enough to resolve host modules, without starting the host app. [VERIFIED: 144-CONTEXT.md] [CITED: https://hexdocs.pm/mix/Mix.Task.html]  
+**What:** Make the Mix task run app config/load readiness and compile/reload enough to resolve host modules, without starting the host app. [VERIFIED: 144-CONTEXT.md] [CITED: https://hexdocs.pm/mix/Mix.Task.html]
 **When to use:** `mix crosswake.doctor --router Some.Router` in a clean-room host or adopter app. [VERIFIED: lib/mix/tasks/crosswake.doctor.ex]
 
 **Example:**
@@ -234,7 +234,7 @@ end
 
 ### Pattern 3: Static Guard IDs With Negative Fixtures
 
-**What:** Add named scanner checks and mutate real workflow/script text in tests to prove each check fails for the intended regression. [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs]  
+**What:** Add named scanner checks and mutate real workflow/script text in tests to prove each check fails for the intended regression. [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs]
 **When to use:** PREF-03 invariants: Hex metadata floor, exact pin, lockfile assertion, package matrix, doctor requirement, and proof-after-publish. [VERIFIED: 144-CONTEXT.md]
 
 **Example:**
@@ -274,32 +274,32 @@ end
 ## Common Pitfalls
 
 ### Pitfall 1: Local Floors Masquerade As Published Floors
-**What goes wrong:** The proof says it tested the package's floor but actually scraped local source. [VERIFIED: script/verify_companion_cleanroom.sh:80]  
-**Why it happens:** The in-repo package exists during CI checkout and is easier to grep than the published release metadata. [VERIFIED: codebase]  
-**How to avoid:** Fetch `https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}` and require `requirements.crosswake.requirement`. [VERIFIED: Hex API]  
+**What goes wrong:** The proof says it tested the package's floor but actually scraped local source. [VERIFIED: script/verify_companion_cleanroom.sh:80]
+**Why it happens:** The in-repo package exists during CI checkout and is easier to grep than the published release metadata. [VERIFIED: codebase]
+**How to avoid:** Fetch `https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}` and require `requirements.crosswake.requirement`. [VERIFIED: Hex API]
 **Warning signs:** `CORE_REQUIREMENT=$(grep ... packages/$PACKAGE/mix.exs)` remains in the script. [VERIFIED: script/verify_companion_cleanroom.sh:80]
 
 ### Pitfall 2: Exact Pin Without Lockfile Proof
-**What goes wrong:** The generated `mix.exs` looks exact, but the proof never verifies the resolver selected that exact package and a compatible core. [VERIFIED: 144-CONTEXT.md]  
-**Why it happens:** `mix deps.get` may resolve unlocked dependencies and writes `mix.lock`; the postcondition lives after resolution. [CITED: https://hex.pm/docs/usage]  
-**How to avoid:** Assert `mix.lock` package version equals `${VERSION}` and `crosswake` satisfies `CORE_REQUIREMENT`. [VERIFIED: 144-CONTEXT.md]  
+**What goes wrong:** The generated `mix.exs` looks exact, but the proof never verifies the resolver selected that exact package and a compatible core. [VERIFIED: 144-CONTEXT.md]
+**Why it happens:** `mix deps.get` may resolve unlocked dependencies and writes `mix.lock`; the postcondition lives after resolution. [CITED: https://hex.pm/docs/usage]
+**How to avoid:** Assert `mix.lock` package version equals `${VERSION}` and `crosswake` satisfies `CORE_REQUIREMENT`. [VERIFIED: 144-CONTEXT.md]
 **Warning signs:** No check ID like `release.cleanroom.lockfile_postcondition`. [VERIFIED: script/check_release_workflow_integrity.exs]
 
 ### Pitfall 3: Doctor Fresh-Router Proof Is Pre-Proven Outside Doctor
-**What goes wrong:** The script loads `CleanRoomHost.Router` before doctor, hiding whether the doctor task can prepare host code itself. [VERIFIED: script/verify_companion_cleanroom.sh:540]  
-**Why it happens:** The current task runs `Mix.Task.run("compile")` internally but lacks explicit requirements and targeted fresh-router tests. [VERIFIED: lib/mix/tasks/crosswake.doctor.ex:100]  
-**How to avoid:** Add `@requirements ["app.config"]`, keep compile readiness inside the task, and remove the script-level pre-load as a proof step. [VERIFIED: 144-CONTEXT.md] [CITED: https://hexdocs.pm/mix/Mix.Task.html]  
+**What goes wrong:** The script loads `CleanRoomHost.Router` before doctor, hiding whether the doctor task can prepare host code itself. [VERIFIED: script/verify_companion_cleanroom.sh:540]
+**Why it happens:** The current task runs `Mix.Task.run("compile")` internally but lacks explicit requirements and targeted fresh-router tests. [VERIFIED: lib/mix/tasks/crosswake.doctor.ex:100]
+**How to avoid:** Add `@requirements ["app.config"]`, keep compile readiness inside the task, and remove the script-level pre-load as a proof step. [VERIFIED: 144-CONTEXT.md] [CITED: https://hexdocs.pm/mix/Mix.Task.html]
 **Warning signs:** `mix run -e 'Code.ensure_loaded?...'` remains immediately before `mix crosswake.doctor`. [VERIFIED: script/verify_companion_cleanroom.sh:541]
 
 ### Pitfall 4: Live 404 Becomes A Silent Skip
-**What goes wrong:** Missing published packages get treated as "not applicable" and D-15 coverage erodes. [VERIFIED: Hex API]  
-**Why it happens:** Current live API returns 404 for `crosswake_rulestead` 0.1.0 and `crosswake_rindle` 0.1.0 while release graph/docs still list them. [VERIFIED: Hex API] [VERIFIED: .release-please-manifest.json]  
-**How to avoid:** Static tests cover all five; real script fails closed on 404 with package/version-specific copy. [VERIFIED: 144-CONTEXT.md]  
+**What goes wrong:** Missing published packages get treated as "not applicable" and D-15 coverage erodes. [VERIFIED: Hex API]
+**Why it happens:** Current live API returns 404 for `crosswake_rulestead` 0.1.0 and `crosswake_rindle` 0.1.0 while release graph/docs still list them. [VERIFIED: Hex API] [VERIFIED: .release-please-manifest.json]
+**How to avoid:** Static tests cover all five; real script fails closed on 404 with package/version-specific copy. [VERIFIED: 144-CONTEXT.md]
 **Warning signs:** Tests only enumerate Sigra/Chimeway/Threadline because they are live today. [VERIFIED: codebase]
 
 ### Pitfall 5: Release Status Claims Phase 144 Before It Is Hardened
-**What goes wrong:** The adjacent `release.cleanroom_dependency_floor` check becomes green from shallow string checks. [VERIFIED: lib/crosswake/release_status.ex:436]  
-**Why it happens:** `cleanroom_script_hardened?/1` currently checks for variables and generated dep strings, not Hex metadata authority or lockfile postconditions. [VERIFIED: lib/crosswake/release_status.ex:436]  
+**What goes wrong:** The adjacent `release.cleanroom_dependency_floor` check becomes green from shallow string checks. [VERIFIED: lib/crosswake/release_status.ex:436]
+**Why it happens:** `cleanroom_script_hardened?/1` currently checks for variables and generated dep strings, not Hex metadata authority or lockfile postconditions. [VERIFIED: lib/crosswake/release_status.ex:436]
 **How to avoid:** Either leave it warning until Phase 146 owns STAT, or update it only after Phase 144 static IDs prove the stronger conditions. [VERIFIED: test/mix/tasks/crosswake_release_status_test.exs]
 
 ## Code Examples
@@ -373,17 +373,17 @@ check(
 |---|-------|---------|---------------|
 | — | No unverified assumptions are needed for planning. All recommendations are grounded in CONTEXT.md, local code reads, official docs, local tool probes, or live Hex API checks from this session. | All | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Are `crosswake_rulestead` and `crosswake_rindle` intentionally not live on Hex at `0.1.0` as of 2026-07-07?**  
-   - What we know: Hex API returns 404 for both package names/versions, while release config, manifest, and guide list them as release-managed `0.1.0` packages. [VERIFIED: Hex API] [VERIFIED: release-please-config.json] [VERIFIED: .release-please-manifest.json]  
-   - What's unclear: Whether those releases were never cut, deleted, renamed, or blocked by pending Release PRs. [VERIFIED: Hex API]  
-   - Recommendation: Do not weaken Phase 144. Keep static coverage for all five packages, make live proof fail closed on 404, and leave broader release-status presentation to Phase 146. [VERIFIED: 144-CONTEXT.md]
+1. **Are `crosswake_rulestead` and `crosswake_rindle` intentionally not live on Hex at `0.1.0` as of 2026-07-07?**
+   - What we know: Hex API returns 404 for both package names/versions, while release config, manifest, and guide list them as release-managed `0.1.0` packages. [VERIFIED: Hex API] [VERIFIED: release-please-config.json] [VERIFIED: .release-please-manifest.json]
+   - Resolution basis: The cause is not needed for Phase 144 planning; the execution contract treats 404 as fail-closed release truth while keeping all-five static coverage. [VERIFIED: Hex API]
+   - RESOLVED for Phase 144: Do not weaken Phase 144. Keep static coverage for all five packages, make live proof fail closed on 404, and leave broader release-status presentation to Phase 146. [VERIFIED: 144-CONTEXT.md]
 
-2. **Should Phase 144 update `Crosswake.ReleaseStatus.cleanroom_script_hardened?/1` now or leave it warning until Phase 146?**  
-   - What we know: The current status check intentionally says PREF validation remains Phase 144 and uses shallow script string checks. [VERIFIED: lib/crosswake/release_status.ex] [VERIFIED: test/mix/tasks/crosswake_release_status_test.exs]  
-   - What's unclear: Whether the planner wants status output reconciled immediately or only static scanner proof in Phase 144. [VERIFIED: 144-CONTEXT.md]  
-   - Recommendation: Keep Phase 144 focused on scanner/test truth; only update release-status if needed to avoid false "hardened" output. [VERIFIED: 144-CONTEXT.md]
+2. **Should Phase 144 update `Crosswake.ReleaseStatus.cleanroom_script_hardened?/1` now or leave it warning until Phase 146?**
+   - What we know: The current status check intentionally says PREF validation remains Phase 144 and uses shallow script string checks. [VERIFIED: lib/crosswake/release_status.ex] [VERIFIED: test/mix/tasks/crosswake_release_status_test.exs]
+   - Resolution basis: Phase 144 only updates release-status if needed to avoid false green output; otherwise the text/JSON status surface remains Phase 146 scope. [VERIFIED: 144-CONTEXT.md]
+   - RESOLVED for Phase 144: Keep Phase 144 focused on scanner/test truth; only update release-status if needed to avoid false "hardened" output. Full release-status completion remains Phase 146. [VERIFIED: 144-CONTEXT.md]
 
 ## Environment Availability
 
@@ -398,7 +398,7 @@ check(
 | GitHub CLI | Existing cleanup/alert workflow | ✓ | 2.95.0 | Not required for local Phase 144 tests. [VERIFIED: local command] |
 | Hex.pm public API | Release metadata proof | ✓ for live public network | 200 for crosswake/sigra/chimeway/threadline; 404 for rulestead/rindle queried versions | Deterministic tests should use fixtures; real release proof fails closed. [VERIFIED: Hex API] |
 
-**Missing dependencies with no fallback:** none for local research/planning. [VERIFIED: local command]  
+**Missing dependencies with no fallback:** none for local research/planning. [VERIFIED: local command]
 **Missing dependencies with fallback:** `ctx7` CLI not installed; official docs were fetched directly. [VERIFIED: local command]
 
 ## Validation Architecture
@@ -416,13 +416,13 @@ check(
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|--------------|
-| PREF-01 | Exact package pin, Hex metadata-derived floor, and lockfile postconditions | unit/static + release-script fixture | `mix test test/crosswake/proof/phase142_release_integrity_test.exs --only phase144_cleanroom -x` | ❌ Wave 0 for stronger tests. [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs] |
-| PREF-02 | Doctor loads fresh router itself and distinguishes unavailable/non-router failures | Mix task integration | `mix test test/mix/tasks/crosswake_doctor_router_test.exs -x` | ❌ Wave 0. [VERIFIED: lib/mix/tasks/crosswake.doctor.ex] |
-| PREF-03 | Static scanner fails aggregate gates, stale/local floors, missing lockfile proof, proof cascades, missing mirror-token preflight | scanner + ExUnit negative fixtures | `elixir script/check_release_workflow_integrity.exs && mix test test/crosswake/proof/phase142_release_integrity_test.exs -x` | ✅ existing base; ❌ Phase 144 IDs missing. [VERIFIED: local command] |
+| PREF-01 | Exact package pin, Hex metadata-derived floor, and lockfile postconditions | unit/static + release-script fixture | `mix test test/crosswake/proof/phase142_release_integrity_test.exs --only phase144_cleanroom` | ❌ Wave 0 for stronger tests. [VERIFIED: test/crosswake/proof/phase142_release_integrity_test.exs] |
+| PREF-02 | Doctor loads fresh router itself and distinguishes unavailable/non-router failures | Mix task integration | `mix test test/mix/tasks/crosswake_doctor_router_test.exs` | ❌ Wave 0. [VERIFIED: lib/mix/tasks/crosswake.doctor.ex] |
+| PREF-03 | Static scanner fails aggregate gates, stale/local floors, missing lockfile proof, proof cascades, missing mirror-token preflight | scanner + ExUnit negative fixtures | `elixir script/check_release_workflow_integrity.exs && mix test test/crosswake/proof/phase142_release_integrity_test.exs` | ✅ existing base; ❌ Phase 144 IDs missing. [VERIFIED: local command] |
 
 ### Sampling Rate
-- **Per task commit:** `mix test test/crosswake/proof/phase142_release_integrity_test.exs -x` or the focused new Phase 144 test file. [VERIFIED: codebase]  
-- **Per wave merge:** `elixir script/check_release_workflow_integrity.exs && mix test test/crosswake/proof/phase142_release_integrity_test.exs && mix test test/mix/tasks/crosswake_doctor_router_test.exs`. [VERIFIED: codebase]  
+- **Per task commit:** `mix test test/crosswake/proof/phase142_release_integrity_test.exs` or the focused new Phase 144 test file. [VERIFIED: codebase]
+- **Per wave merge:** `elixir script/check_release_workflow_integrity.exs && mix test test/crosswake/proof/phase142_release_integrity_test.exs && mix test test/mix/tasks/crosswake_doctor_router_test.exs`. [VERIFIED: codebase]
 - **Phase gate:** `mix verify` plus the two targeted release/doctor commands above. [VERIFIED: mix.exs]
 
 ### Wave 0 Gaps
@@ -488,5 +488,5 @@ check(
 - Pitfalls: HIGH - each pitfall maps to a current file line, locked decision, or live Hex API result. [VERIFIED: codebase] [VERIFIED: Hex API]
 - Live registry state: MEDIUM - observed on 2026-07-07; registry state can change after releases. [VERIFIED: Hex API]
 
-**Research date:** 2026-07-07  
+**Research date:** 2026-07-07
 **Valid until:** 2026-07-14 for live registry and GitHub Actions semantics; local code findings remain valid until changed. [VERIFIED: research timestamp]
