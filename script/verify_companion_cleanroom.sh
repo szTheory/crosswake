@@ -7,14 +7,17 @@
 # Arguments:
 #   PACKAGE        Hex package name (default: crosswake_rulestead)
 #   VERSION        Hex version to verify — REQUIRED (e.g. 0.1.0)
-#   ENGINE_PACKAGE Engine Hex package name (default: rulestead); pass empty string or "none" to
-#                  activate no-engine mode (sigra has no engine dep — pure-Elixir auth machinery).
-#   ENGINE_MODULE  Engine top-level Elixir module atom (default: Rulestead); ignored in no-engine mode.
+#   ENGINE_PACKAGE Optional engine Hex package override. Defaults come from PACKAGE profile:
+#                  rulestead/rindle are engine-present, sigra/chimeway are no-engine,
+#                  and threadline is an observer. Pass empty string or "none" to force no-engine.
+#   ENGINE_MODULE  Engine top-level Elixir module atom; required only when overriding ENGINE_PACKAGE.
 #
 # What this script does (D-17, SC#3):
-#   1. Polls Hex.pm propagation until VERSION is listed for PACKAGE.
+#   1. Reads the exact Hex release metadata for PACKAGE/VERSION and derives
+#      requirements.crosswake.requirement as the core floor.
 #   2. Creates a throwaway Phoenix host app OUTSIDE the monorepo in $RUNNER_TEMP.
-#   3. Installs the published duo (no-engine) or trio (engine): crosswake + PACKAGE [+ ENGINE_PACKAGE].
+#   3. Installs the published duo (no-engine) or trio (engine):
+#      crosswake + PACKAGE == VERSION [+ ENGINE_PACKAGE].
 #   4. Compiles the throwaway app with --warnings-as-errors.
 #   5. Writes a minimal Phoenix router stub (required by mix crosswake.doctor --router).
 #   6. Writes an inline ExUnit smoke test asserting the public seam of the companion.
@@ -51,73 +54,270 @@ set -euo pipefail
 # Parameters (D-16)
 # ---------------------------------------------------------------------------
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+
 PACKAGE="${1:-crosswake_rulestead}"
-VERSION="${2:?}" # required: VERSION?: pass a semver string as \$2 (e.g. bash script/verify_companion_cleanroom.sh crosswake_rulestead 0.1.0)
-if [ -z "${VERSION:-}" ]; then
-  echo "[crosswake] FAIL: VERSION required as \$2 (e.g. 0.1.0)"
+VERSION="${2:-}"
+_RAW_ENGINE_PKG="${3-__crosswake_default__}"
+_RAW_ENGINE_MOD="${4-}"
+
+CORE_REQUIREMENT=""
+PACKAGE_REQUIREMENT=""
+SELECTED_CORE_VERSION=""
+PROFILE=""
+NO_ENGINE=""
+ENGINE_PACKAGE=""
+ENGINE_MODULE=""
+
+log() {
+  echo "[crosswake] $*"
+}
+
+ok() {
+  echo "[crosswake] OK: $*"
+}
+
+fail() {
+  local message="$1"
+  local next_action="${2:-Stop and inspect the package, version, release metadata, and clean-room lockfile before retrying.}"
+
+  echo "[crosswake] FAIL: ${message}"
+  log "package=${PACKAGE:-unknown} version=${VERSION:-unknown} core_floor=${CORE_REQUIREMENT:-unknown} selected_core=${SELECTED_CORE_VERSION:-unknown} state=failed"
+  log "What to do next: ${next_action}"
   exit 1
-fi
+}
 
-# No-engine mode: activated when $3/$4 are omitted, empty, or the sentinel "none".
-# Sigra has no engine dep — pure-Elixir auth machinery, validate_dependency/0 is always :ok.
-# The default engine path (rulestead/Rulestead) is preserved for back-compat.
-_RAW_ENGINE_PKG="${3:-}"
-_RAW_ENGINE_MOD="${4:-}"
-if [ -z "$_RAW_ENGINE_PKG" ] || [ "$_RAW_ENGINE_PKG" = "none" ]; then
-  NO_ENGINE=1
-  ENGINE_PACKAGE=""
-  ENGINE_MODULE=""
-else
-  NO_ENGINE=0
-  ENGINE_PACKAGE="${_RAW_ENGINE_PKG:-rulestead}"
-  ENGINE_MODULE="${_RAW_ENGINE_MOD:-Rulestead}"
-fi
+package_config() {
+  case "$PACKAGE" in
+    crosswake_rulestead)
+      PROFILE="engine-present"
+      NO_ENGINE=0
+      ENGINE_PACKAGE="rulestead"
+      ENGINE_MODULE="Rulestead"
+      ;;
+    crosswake_rindle)
+      PROFILE="engine-present"
+      NO_ENGINE=0
+      ENGINE_PACKAGE="rindle"
+      ENGINE_MODULE="Rindle"
+      ;;
+    crosswake_sigra)
+      PROFILE="no-engine-companion"
+      NO_ENGINE=1
+      ENGINE_PACKAGE=""
+      ENGINE_MODULE=""
+      ;;
+    crosswake_chimeway)
+      PROFILE="no-engine-companion"
+      NO_ENGINE=1
+      ENGINE_PACKAGE=""
+      ENGINE_MODULE=""
+      ;;
+    crosswake_threadline)
+      PROFILE="threadline-observer"
+      NO_ENGINE=1
+      ENGINE_PACKAGE=""
+      ENGINE_MODULE=""
+      ;;
+    *)
+      fail "unknown Hex package '${PACKAGE:-<empty>}'." "Choose one of: crosswake_rulestead, crosswake_rindle, crosswake_sigra, crosswake_chimeway, crosswake_threadline."
+      ;;
+  esac
+}
 
-# ---------------------------------------------------------------------------
-# Security: validate $VERSION looks like a semver string before using it in
-# curl URL construction (T-131-07 injection prevention).
-# ---------------------------------------------------------------------------
+validate_inputs() {
+  if [ -z "${VERSION:-}" ]; then
+    fail "VERSION required as \$2 (e.g. 0.1.0)." "Pass the exact Release Please component version output for ${PACKAGE}."
+  fi
 
-if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][a-zA-Z0-9._-]+)?$'; then
-  echo "[crosswake] FAIL: VERSION '${VERSION}' does not look like a valid semver (e.g. 0.1.0)."
-  echo "[crosswake] What to do next: pass a valid semver string as \$2."
-  exit 1
-fi
+  if ! printf "%s" "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z._-]+)?$'; then
+    fail "VERSION '${VERSION:-<empty>}' does not look like a valid semver string." "Pass the exact Release Please component version output for ${PACKAGE}."
+  fi
+
+  if [ "$_RAW_ENGINE_PKG" != "__crosswake_default__" ]; then
+    if [ -z "$_RAW_ENGINE_PKG" ] || [ "$_RAW_ENGINE_PKG" = "none" ]; then
+      NO_ENGINE=1
+      ENGINE_PACKAGE=""
+      ENGINE_MODULE=""
+    else
+      NO_ENGINE=0
+      ENGINE_PACKAGE="$_RAW_ENGINE_PKG"
+      ENGINE_MODULE="${_RAW_ENGINE_MOD:-}"
+      if [ -z "$ENGINE_MODULE" ]; then
+        fail "ENGINE_MODULE required when overriding ENGINE_PACKAGE for ${PACKAGE}." "Pass both engine package and top-level module, or omit both to use the ${PROFILE} profile."
+      fi
+    fi
+  fi
+}
+
+fetch_hex_release_metadata() {
+  local body_file="$1"
+  local url="https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}"
+  local code
+
+  code=$(curl -sS -o "$body_file" -w "%{http_code}" "$url" || true)
+
+  case "$code" in
+    200)
+      ok "package=${PACKAGE} version=${VERSION} state=hex-metadata-found proof=continue"
+      ;;
+    404)
+      fail "Hex.pm returned 404 for ${PACKAGE} ${VERSION}; clean-room proof runs only after publish." "Confirm the Release Please version output and Hex package URL: ${url}"
+      ;;
+    *)
+      fail "Hex.pm release metadata returned HTTP ${code} for ${PACKAGE} ${VERSION}." "Retry after confirming Hex.pm status; do not claim clean-room proof until metadata is readable."
+      ;;
+  esac
+}
+
+parse_core_requirement_from_release() {
+  local body_file="$1"
+  local parsed
+
+  if ! parsed=$(python3 - "$body_file" "$VERSION" <<'PYEOF'
+import json
+import sys
+
+body_path = sys.argv[1]
+expected_version = sys.argv[2]
+
+try:
+    with open(body_path, "r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+except Exception as exc:
+    print(f"malformed JSON: {exc}", file=sys.stderr)
+    sys.exit(2)
+
+version = payload.get("version")
+if version != expected_version:
+    print(f"version mismatch: expected {expected_version}, got {version!r}", file=sys.stderr)
+    sys.exit(3)
+
+if payload.get("retirement") or payload.get("retired"):
+    print("release is retired or unusable", file=sys.stderr)
+    sys.exit(4)
+
+requirements = payload.get("requirements")
+if not isinstance(requirements, dict):
+    print("missing requirements object", file=sys.stderr)
+    sys.exit(5)
+
+crosswake = requirements.get("crosswake")
+if not isinstance(crosswake, dict):
+    print("missing requirements.crosswake object", file=sys.stderr)
+    sys.exit(6)
+
+requirement = crosswake.get("requirement")
+if not isinstance(requirement, str) or not requirement.strip():
+    print("missing requirements.crosswake.requirement", file=sys.stderr)
+    sys.exit(7)
+
+print(requirement.strip())
+PYEOF
+  ); then
+    fail "Hex.pm metadata for ${PACKAGE} ${VERSION} is malformed or unusable." "Inspect https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}; required field: requirements.crosswake.requirement."
+  fi
+
+  CORE_REQUIREMENT="$parsed"
+  PACKAGE_REQUIREMENT="== ${VERSION}"
+  ok "package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} state=metadata-ready proof=continue"
+}
+
+lock_version_for() {
+  local package="$1"
+
+  PACKAGE_FOR_LOCK="$package" elixir -e '
+lock_path = "mix.lock"
+unless File.exists?(lock_path), do: System.halt(2)
+{lock, _binding} = Code.eval_file(lock_path)
+package = System.fetch_env!("PACKAGE_FOR_LOCK") |> String.to_atom()
+
+case Map.fetch(lock, package) do
+  {:ok, tuple} when is_tuple(tuple) and tuple_size(tuple) >= 3 ->
+    version = elem(tuple, 2)
+    if is_binary(version), do: IO.puts(version), else: System.halt(3)
+
+  _ ->
+    System.halt(4)
+end
+'
+}
+
+assert_absent_lock_deps() {
+  local dep
+
+  for dep in "$@"; do
+    if LOCK_DEP="$dep" elixir -e '
+lock_path = "mix.lock"
+unless File.exists?(lock_path), do: System.halt(2)
+{lock, _binding} = Code.eval_file(lock_path)
+dep = System.fetch_env!("LOCK_DEP") |> String.to_atom()
+if Map.has_key?(lock, dep), do: System.halt(1), else: :ok
+'; then
+      ok "package=${PACKAGE} version=${VERSION} absent_dep=${dep} state=absence-verified"
+    else
+      fail "mix.lock unexpectedly selected ${dep} for ${PACKAGE} ${VERSION}." "Inspect clean-room mix.lock; ${dep} must stay absent for this package profile."
+    fi
+  done
+}
+
+assert_lockfile_postconditions() {
+  local selected_package
+
+  if ! selected_package=$(lock_version_for "$PACKAGE"); then
+    fail "mix.lock does not contain ${PACKAGE} after mix deps.get." "Inspect ${CLEAN_ROOM_DIR}/mix.lock before retrying."
+  fi
+
+  if [ "$selected_package" != "$VERSION" ]; then
+    fail "mix.lock selected ${PACKAGE} ${selected_package}, expected ${VERSION}." "The companion dependency must stay pinned as == ${VERSION}."
+  fi
+
+  if ! SELECTED_CORE_VERSION=$(lock_version_for "crosswake"); then
+    fail "mix.lock does not contain crosswake after mix deps.get." "Inspect ${CLEAN_ROOM_DIR}/mix.lock before retrying."
+  fi
+
+  if ! CORE_REQUIREMENT="$CORE_REQUIREMENT" SELECTED_CORE_VERSION="$SELECTED_CORE_VERSION" elixir -e '
+requirement = Version.parse_requirement!(System.fetch_env!("CORE_REQUIREMENT"))
+version = Version.parse!(System.fetch_env!("SELECTED_CORE_VERSION"))
+unless Version.match?(version, requirement), do: System.halt(1)
+'; then
+    fail "mix.lock selected crosswake ${SELECTED_CORE_VERSION}, which does not satisfy ${CORE_REQUIREMENT}." "Inspect the Hex metadata floor and clean-room resolver output before retrying."
+  fi
+
+  case "$PACKAGE" in
+    crosswake_chimeway)
+      assert_absent_lock_deps crosswake_sigra
+      ;;
+    crosswake_threadline)
+      assert_absent_lock_deps crosswake_sigra crosswake_chimeway
+      ;;
+  esac
+
+  ok "package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} state=lockfile-verified proof=continue"
+}
+
+package_config
+validate_inputs
+
+METADATA_FILE=$(mktemp "${TMPDIR:-/tmp}/crosswake-cleanroom-release.XXXXXX.json")
+trap 'rm -f "$METADATA_FILE"' EXIT
+
+fetch_hex_release_metadata "$METADATA_FILE"
+parse_core_requirement_from_release "$METADATA_FILE"
 
 if [ "$NO_ENGINE" = "1" ]; then
-  echo "[crosswake] verify_companion_cleanroom: PACKAGE=${PACKAGE} VERSION=${VERSION} (no-engine mode)"
+  log "verify_companion_cleanroom: package=${PACKAGE} version=${VERSION} profile=${PROFILE} core_floor=${CORE_REQUIREMENT}"
 else
-  echo "[crosswake] verify_companion_cleanroom: PACKAGE=${PACKAGE} VERSION=${VERSION} ENGINE_PACKAGE=${ENGINE_PACKAGE} ENGINE_MODULE=${ENGINE_MODULE}"
+  log "verify_companion_cleanroom: package=${PACKAGE} version=${VERSION} profile=${PROFILE} engine_package=${ENGINE_PACKAGE} engine_module=${ENGINE_MODULE} core_floor=${CORE_REQUIREMENT}"
 fi
+log "clean-room deps: crosswake ${CORE_REQUIREMENT}; ${PACKAGE} ${PACKAGE_REQUIREMENT}"
 
 # ---------------------------------------------------------------------------
-# Step 1: Poll Hex.pm propagation (mirror of publish-hex job poll, MAX_ATTEMPTS=36/DELAY=10)
+# Step 1: Hex release metadata has already been fetched and parsed.
 # ---------------------------------------------------------------------------
 
-MAX_ATTEMPTS=36
-DELAY=10
-
-echo "[crosswake] Step 1: polling Hex.pm for ${PACKAGE} ${VERSION} (up to $((MAX_ATTEMPTS * DELAY))s)..."
-
-HEX_FOUND=false
-for i in $(seq 1 "$MAX_ATTEMPTS"); do
-  if curl -fsS "https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}" | grep -q '"version"'; then
-    echo "[crosswake] Hex.pm lists ${PACKAGE} ${VERSION}"
-    HEX_FOUND=true
-    break
-  fi
-  echo "[crosswake] waiting for Hex propagation... (${i}/${MAX_ATTEMPTS})"
-  sleep "$DELAY"
-done
-
-if [ "$HEX_FOUND" = "false" ]; then
-  echo "[crosswake] FAIL: timed out waiting for https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}"
-  echo "[crosswake] What happened: Hex.pm propagation did not complete within $((MAX_ATTEMPTS * DELAY)) seconds."
-  echo "[crosswake] What to do next: check Hex.pm status page; if the package is broken, run: mix hex.retire ${PACKAGE} ${VERSION} invalid"
-  exit 1
-fi
-
-echo "[crosswake] Step 1 OK: ${PACKAGE} ${VERSION} is live on Hex.pm"
+ok "Step 1: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} state=hex-release-authority"
 
 # ---------------------------------------------------------------------------
 # Step 2: Create throwaway Phoenix host OUTSIDE the monorepo (D-17)
@@ -156,8 +356,8 @@ deps_block = '''  defp deps do
     [
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.2"},
-      {:crosswake, "~> 0.1"},
-      {:"${PACKAGE}", "~> 0.1"}
+      {:crosswake, "${CORE_REQUIREMENT}"},
+      {:${PACKAGE}, "${PACKAGE_REQUIREMENT}"}
     ]
   end'''
 
@@ -184,9 +384,9 @@ deps_block = '''  defp deps do
     [
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.2"},
-      {:crosswake, "~> 0.1"},
-      {:"${PACKAGE}", "~> 0.1"},
-      {:"${ENGINE_PACKAGE}", "~> 0.1"}
+      {:crosswake, "${CORE_REQUIREMENT}"},
+      {:${PACKAGE}, "${PACKAGE_REQUIREMENT}"},
+      {:${ENGINE_PACKAGE}, "~> 0.1"}
     ]
   end'''
 
@@ -212,6 +412,7 @@ echo "[crosswake] Step 2 OK: throwaway app created at ${CLEAN_ROOM_DIR}"
 
 echo "[crosswake] Step 3: mix deps.get..."
 mix deps.get
+assert_lockfile_postconditions
 
 echo "[crosswake] Step 3: mix compile --warnings-as-errors..."
 mix compile --warnings-as-errors
@@ -469,7 +670,7 @@ echo "[crosswake] Step 5 OK: inline smoke test passed"
 # Step 6: Register companion + engine in config/runtime.exs (D-17)
 # ---------------------------------------------------------------------------
 
-echo "[crosswake] Step 6: registering companion in config/runtime.exs..."
+echo "[crosswake] Step 6: writing runtime config for ${PACKAGE} (${PROFILE})..."
 
 mkdir -p config
 
@@ -506,7 +707,11 @@ config :crosswake, :${COMPANION_SUFFIX}, enabled: true
 CONFIGEOF
 fi
 
-echo "[crosswake] Step 6 OK: companion registered"
+if [ "$PACKAGE" = "crosswake_threadline" ]; then
+  ok "Step 6: package=${PACKAGE} version=${VERSION} profile=${PROFILE} state=observer-not-registered"
+else
+  ok "Step 6: package=${PACKAGE} version=${VERSION} profile=${PROFILE} state=companion-registered"
+fi
 
 # ---------------------------------------------------------------------------
 # Step 7: Run mix crosswake.doctor --router and assert exit 0 (D-19/D-20)
@@ -514,16 +719,16 @@ echo "[crosswake] Step 6 OK: companion registered"
 
 echo "[crosswake] Step 7: running mix crosswake.doctor --router CleanRoomHost.Router..."
 
-# Recompile to pick up config/runtime.exs changes
+# Recompile to pick up config/runtime.exs changes before invoking the doctor task.
 mix compile
 
 mix crosswake.doctor --router CleanRoomHost.Router
 
-echo "[crosswake] Step 7 OK: doctor exited 0 — companion registered, engine present, router accepted"
+ok "Step 7: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} profile=${PROFILE} state=doctor-green"
 
 # ---------------------------------------------------------------------------
 # Done
 # ---------------------------------------------------------------------------
 
-echo "[crosswake] verify_companion_cleanroom: ${PACKAGE} ${VERSION} PASSED"
-echo "[crosswake] Clean-room proof: published trio installed, smoke test green, doctor exit 0 (PROOF-01 SC#3)"
+ok "verify_companion_cleanroom: package=${PACKAGE} version=${VERSION} core_floor=${CORE_REQUIREMENT} selected_core=${SELECTED_CORE_VERSION} profile=${PROFILE} state=passed"
+log "Next safe command: elixir script/check_release_workflow_integrity.exs"
