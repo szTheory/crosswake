@@ -98,7 +98,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 145-03-PLAN.md — Verify-first iOS `v0.2.0` mirror backfill script, dispatch wrapper, guardrails, and docs.
+- [x] 145-03-PLAN.md — Verify-first iOS `v0.2.0` mirror backfill script, dispatch wrapper, guardrails, and docs.
 
 ### Phase 146: Release Status DX & Docs Truth
 
@@ -281,5 +281,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 145. Native Registry & Mirror Parity | v18.0 | 2/3 | In Progress|  |
+| 145. Native Registry & Mirror Parity | v18.0 | 3/3 | In Progress|  |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |

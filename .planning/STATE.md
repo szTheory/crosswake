@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
 status: Ready to execute
-stopped_at: Completed 145-02-PLAN.md
-last_updated: "2026-07-08T18:49:24.483Z"
+stopped_at: Completed 145-03-PLAN.md
+last_updated: "2026-07-08T18:56:44.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
   percent: 60
 ---
 
@@ -87,6 +87,8 @@ Implemented in the current work slice:
 - Release workflow publish/proof concurrency is non-canceling and preserves pending runs with `queue: max`.
 - iOS mirror job fails fast on missing/invalid `MIRROR_PUSH_TOKEN` and skips an already-existing mirror tag.
 - iOS and Android clean-room proofs no longer depend on each other.
+- Native release state now emits an always-running rollup summary and `native-release-status` JSON artifact.
+- Maintainers now have a verify-first script and manual workflow to verify or backfill the iOS SwiftPM `v0.2.0` mirror tag without rerunning immutable publish paths.
 - `release-as-cleanup` waits for released companion publish and clean-room proof jobs to finish successfully, then opens a cleanup PR only.
 - `script/verify_companion_cleanroom.sh` now derives the core floor from the package under test and installs the exact just-published companion version.
 - `mix crosswake.doctor --router` compiles/loadpaths before rejecting a freshly compiled router.
@@ -280,16 +282,17 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 144 P03 | 21 min | 2 tasks | 2 files |
 | Phase 145 P01 | 8 min | 2 tasks | 4 files |
 | Phase 145 P02 | 3 min | 2 tasks | 3 files |
+| Phase 145 P03 | 8 min | 3 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-07-08T18:49:24.479Z
-Stopped at: Completed 145-02-PLAN.md
+Last session: 2026-07-08T18:56:44.000Z
+Stopped at: Completed 145-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-execute-phase 145` using `.planning/phases/145-native-registry-mirror-parity/*-PLAN.md`.
+- Run phase 145 code review and phase-level verification, then complete the phase and advance to Phase 146.
 - Keep downstream phase ownership honest: Phase 144, 145, and 146 must validate their already-present implementation spillover before being claimed complete.
 - Do not perform Hex/package publish operations from this planning pass.
 
