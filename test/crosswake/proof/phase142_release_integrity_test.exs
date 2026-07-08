@@ -239,7 +239,11 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 missing native rollup summary fails summary id" do
     workflow =
       real_workflow()
-      |> replace_in_job("native-release-rollup", "$GITHUB_STEP_SUMMARY", "GITHUB_STEP_SUMMARY_REMOVED")
+      |> replace_in_job(
+        "native-release-rollup",
+        "$GITHUB_STEP_SUMMARY",
+        "GITHUB_STEP_SUMMARY_REMOVED"
+      )
 
     assert_failure!("release.workflow.native_rollup_summary", workflow)
   end
@@ -248,7 +252,11 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 missing native status artifact fails artifact id" do
     workflow =
       real_workflow()
-      |> replace_in_job("native-release-rollup", "actions/upload-artifact@v4", "actions/checkout@v4")
+      |> replace_in_job(
+        "native-release-rollup",
+        "actions/upload-artifact@v4",
+        "actions/checkout@v4"
+      )
 
     assert_failure!("release.workflow.native_status_artifact", workflow)
   end
@@ -257,7 +265,11 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 native complete copy cannot replace partial native state" do
     workflow =
       real_workflow()
-      |> replace_in_job("native-release-rollup", "native_core=\"partial\"", "native_core=\"complete\"")
+      |> replace_in_job(
+        "native-release-rollup",
+        "native_core=\"partial\"",
+        "native_core=\"complete\""
+      )
 
     assert_failure!("release.workflow.native_rollup_summary", workflow)
   end
@@ -289,11 +301,23 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 iOS backfill requires explicit apply before mutation" do
     script =
       ios_backfill_script()
-      |> String.replace("MIRROR_PUSH_TOKEN is required for --apply", "MIRROR_PUSH_TOKEN is optional")
+      |> String.replace(
+        "MIRROR_PUSH_TOKEN is required for --apply",
+        "MIRROR_PUSH_TOKEN is optional"
+      )
 
     assert_failure_with_fixtures!(
       "release.ios_backfill.verify_first",
       ios_backfill_script: script
+    )
+
+    workflow =
+      ios_backfill_workflow()
+      |> replace_in_workflow_input("apply", "default: false", "default: true")
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.verify_first",
+      ios_backfill_workflow: workflow
     )
   end
 
@@ -321,6 +345,15 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert_failure_with_fixtures!(
       "release.ios_backfill.no_default_main_force",
       ios_backfill_script: script
+    )
+
+    workflow =
+      ios_backfill_workflow()
+      |> replace_in_workflow_input("update_main", "default: false", "default: true")
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.no_default_main_force",
+      ios_backfill_workflow: workflow
     )
   end
 
@@ -966,6 +999,15 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp replace_in_job(workflow, job, pattern, replacement) do
     Regex.replace(
       ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+      workflow,
+      fn block -> String.replace(block, pattern, replacement, global: false) end,
+      global: false
+    )
+  end
+
+  defp replace_in_workflow_input(workflow, input, pattern, replacement) do
+    Regex.replace(
+      ~r/(?ms)^      #{Regex.escape(input)}:\n.*?(?=^      [A-Za-z0-9_-]+:\n|^\S|\z)/,
       workflow,
       fn block -> String.replace(block, pattern, replacement, global: false) end,
       global: false

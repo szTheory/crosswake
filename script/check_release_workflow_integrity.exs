@@ -40,6 +40,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     non_comment_cleanroom_script = strip_full_line_comments(cleanroom_script)
     doctor_task = File.read!(path_from_env("DOCTOR_TASK_PATH", @default_doctor_task))
     non_comment_doctor_task = strip_full_line_comments(doctor_task)
+
     ios_backfill_script =
       File.read!(path_from_env("IOS_BACKFILL_SCRIPT_PATH", @default_ios_backfill_script))
 
@@ -92,10 +93,19 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         mirror_token_write_preflight(jobs),
         native_rollup_summary(jobs),
         native_status_artifact(jobs),
-        ios_backfill_verify_first(non_comment_ios_backfill_script, non_comment_ios_backfill_workflow),
-        ios_backfill_exact_release_ref(non_comment_ios_backfill_script, non_comment_ios_backfill_workflow),
+        ios_backfill_verify_first(
+          non_comment_ios_backfill_script,
+          non_comment_ios_backfill_workflow
+        ),
+        ios_backfill_exact_release_ref(
+          non_comment_ios_backfill_script,
+          non_comment_ios_backfill_workflow
+        ),
         ios_backfill_tag_idempotent(non_comment_ios_backfill_script),
-        ios_backfill_no_default_main_force(non_comment_ios_backfill_script, non_comment_ios_backfill_workflow),
+        ios_backfill_no_default_main_force(
+          non_comment_ios_backfill_script,
+          non_comment_ios_backfill_workflow
+        ),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -216,6 +226,16 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp includes?(text, value) when is_binary(value), do: String.contains?(text, value)
   defp includes?(text, %Regex{} = regex), do: Regex.match?(regex, text)
+
+  defp workflow_input_default?(workflow, input, expected_default) do
+    input_regex = Regex.escape(input)
+    default_regex = Regex.escape(expected_default)
+
+    Regex.match?(
+      ~r/(?ms)^      #{input_regex}:\n(?:(?!^      [A-Za-z0-9_-]+:\n|^\S).)*?^        default:\s*#{default_regex}\s*$/,
+      workflow
+    )
+  end
 
   defp hex_publish_already_live_preflight(helper) do
     check(
@@ -828,8 +848,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       includes?(script, "APPLY=0") and includes?(script, "--apply") and
         includes?(script, "MIRROR_PUSH_TOKEN is required for --apply") and
         includes?(script, "verification-only mode made no changes") and
-        includes?(workflow, "workflow_dispatch") and includes?(workflow, "verify-or-backfill-ios-mirror") and
-        includes?(workflow, "type: boolean") and includes?(workflow, "default: false") and
+        includes?(workflow, "workflow_dispatch") and
+        includes?(workflow, "verify-or-backfill-ios-mirror") and
+        includes?(workflow, "type: boolean") and
+        workflow_input_default?(workflow, "apply", "false") and
         includes?(workflow, "bash script/verify_ios_mirror_backfill.sh"),
       "iOS mirror backfill must default to verify-only and require explicit apply before mutation"
     )
@@ -843,7 +865,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(script, "refs/tags/android-core-v${VERSION}") and
         includes?(script, "main|master|HEAD|heads/*|refs/heads/*|v*|[0-9]*") and
         includes?(workflow, "release_ref") and
-        includes?(workflow, "default: 'refs/tags/ios-core-v0.2.0'") and
+        workflow_input_default?(workflow, "release_ref", "'refs/tags/ios-core-v0.2.0'") and
         includes?(workflow, "--ref \"$RELEASE_REF\""),
       "iOS mirror backfill must use the exact Release Please iOS component ref, not main/HEAD/current checkout/bare version tags"
     )
@@ -863,10 +885,11 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp ios_backfill_no_default_main_force(script, workflow) do
     check(
       "release.ios_backfill.no_default_main_force",
-      includes?(script, "--update-main") and includes?(script, "--force-with-lease=refs/heads/main") and
+      includes?(script, "--update-main") and
+        includes?(script, "--force-with-lease=refs/heads/main") and
         includes?(script, "mirror-only commit evidence") and
         includes?(workflow, "update_main") and includes?(workflow, "Update main: ${UPDATE_MAIN}") and
-        includes?(workflow, "default: false"),
+        workflow_input_default?(workflow, "update_main", "false"),
       "iOS mirror backfill must prefer tag verification/creation and only realign main with explicit update_main plus force-with-lease guardrails"
     )
   end
