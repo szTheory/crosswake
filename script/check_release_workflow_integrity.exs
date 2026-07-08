@@ -4,6 +4,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_workflow ".github/workflows/release-please.yml"
   @default_recovery_workflow ".github/workflows/hex-publish.yml"
   @default_helper "script/guarded_hex_publish.sh"
+  @default_cleanroom_script "script/verify_companion_cleanroom.sh"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
   @default_companion_root "packages"
@@ -26,6 +27,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     non_comment_recovery = strip_full_line_comments(recovery_workflow)
     helper = File.read!(path_from_env("GUARDED_HEX_PUBLISH_PATH", @default_helper))
     non_comment_helper = strip_full_line_comments(helper)
+    cleanroom_script = File.read!(path_from_env("CLEANROOM_SCRIPT_PATH", @default_cleanroom_script))
+    non_comment_cleanroom_script = strip_full_line_comments(cleanroom_script)
 
     release_config =
       path_from_env("RELEASE_PLEASE_CONFIG_PATH", @default_release_config)
@@ -71,6 +74,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         recovery_exact_ref_only(non_comment_recovery),
         recovery_package_map_complete(non_comment_helper, non_comment_recovery),
         recovery_already_live_success_continues(non_comment_helper),
+        cleanroom_hex_metadata_floor(non_comment_cleanroom_script),
+        cleanroom_exact_companion_pin(non_comment_cleanroom_script),
+        cleanroom_lockfile_postcondition(non_comment_cleanroom_script),
+        cleanroom_package_profiles_preserved(non_comment_cleanroom_script),
         version_graph_lockstep_core_native_only(release_config),
         version_graph_companions_independent(release_config, release_manifest),
         version_graph_companion_floors_honest(companion_root)
@@ -264,6 +271,82 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(helper, "emit_outputs \"already_live\"") and
         includes?(helper, "proof=continue"),
       "already-live package/version state must exit successfully with proof continuation state"
+    )
+  end
+
+  defp cleanroom_hex_metadata_floor(script) do
+    required_evidence = [
+      "package_config",
+      "validate_inputs",
+      "fetch_hex_release_metadata",
+      "parse_core_requirement_from_release",
+      "https://hex.pm/api/packages/${PACKAGE}/releases/${VERSION}",
+      "requirements.crosswake.requirement",
+      "json.load",
+      "unknown Hex package",
+      "does not look like a valid semver string",
+      "Hex.pm returned 404",
+      "version mismatch",
+      "retired or unusable",
+      "missing requirements.crosswake.requirement",
+      "malformed JSON"
+    ]
+
+    local_floor_evidence? =
+      includes?(script, "CROSSWAKE_CORE_REQUIREMENT") or
+        includes?(script, "PACKAGE_DIR") or
+        includes?(script, ~r/grep\s+-E[^\n]*:crosswake/)
+
+    check(
+      "release.cleanroom.hex_metadata_floor",
+      Enum.all?(required_evidence, &includes?(script, &1)) and not local_floor_evidence?,
+      "clean-room proof must derive the core floor from exact Hex metadata requirements.crosswake.requirement and fail closed on bad package/version/release metadata"
+    )
+  end
+
+  defp cleanroom_exact_companion_pin(script) do
+    check(
+      "release.cleanroom.exact_companion_pin",
+      includes?(script, "PACKAGE_REQUIREMENT=\"== ${VERSION}\"") and
+        includes?(script, "{:${PACKAGE}, \"${PACKAGE_REQUIREMENT}\"}") and
+        not includes?(script, "PACKAGE_REQUIREMENT=\"${PACKAGE_REQUIREMENT:-== ${VERSION}}\"") and
+        not includes?(script, "{:\"${PACKAGE}\", \"~> 0.1\"}") and
+        not includes?(script, "{:\"${PACKAGE}\", \"~> 0.2\"}"),
+      "clean-room proof must install the companion under test as == VERSION, not a range or env fallback"
+    )
+  end
+
+  defp cleanroom_lockfile_postcondition(script) do
+    check(
+      "release.cleanroom.lockfile_postcondition",
+      includes?(script, "assert_lockfile_postconditions") and
+        includes?(script, "lock_version_for") and
+        includes?(script, ~r/mix deps\.get\s*\nassert_lockfile_postconditions/) and
+        includes?(script, "mix.lock") and
+        includes?(script, "Version.match?") and
+        includes?(script, "SELECTED_CORE_VERSION") and
+        includes?(script, "assert_absent_lock_deps"),
+      "clean-room proof must assert mix.lock selected the exact companion and a crosswake version matching the derived floor"
+    )
+  end
+
+  defp cleanroom_package_profiles_preserved(script) do
+    all_package_cases? =
+      Enum.all?(@components, fn component ->
+        includes?(script, ~r/^\s*crosswake_#{component}\)/m)
+      end)
+
+    check(
+      "release.cleanroom.package_profiles_preserved",
+      all_package_cases? and
+        includes?(script, "PROFILE=\"engine-present\"") and
+        includes?(script, "PROFILE=\"no-engine-companion\"") and
+        includes?(script, "PROFILE=\"threadline-observer\"") and
+        includes?(script, "assert_absent_lock_deps crosswake_sigra") and
+        includes?(script, "assert_absent_lock_deps crosswake_sigra crosswake_chimeway") and
+        includes?(script, "observer-not-registered") and
+        includes?(script, "config :crosswake, :companions, [${COMPANION_MODULE}]"),
+      "clean-room proof must preserve all five package profiles, Chimeway/Sigra absence, and Threadline observer non-registration"
     )
   end
 
