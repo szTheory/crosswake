@@ -26,7 +26,7 @@
 ### Native Registry Parity
 
 - [x] **MIRR-01**: The iOS mirror job fails fast when `MIRROR_PUSH_TOKEN` is absent or unusable.
-- [ ] **MIRR-02**: iOS and Android clean-room proofs no longer depend on each other when only one native registry path fails.
+- [x] **MIRR-02**: iOS and Android clean-room proofs no longer depend on each other when only one native registry path fails.
 - [ ] **MIRR-03**: Maintainers have an explicit path to verify or backfill the missing iOS `v0.2.0` mirror tag.
 
 ### Release Status DX
@@ -68,7 +68,7 @@
 | PREF-02 | Phase 144 | Complete |
 | PREF-03 | Phase 144 | Complete |
 | MIRR-01 | Phase 145 | Complete |
-| MIRR-02 | Phase 145 | Pending |
+| MIRR-02 | Phase 145 | Complete |
 | MIRR-03 | Phase 145 | Pending |
 | STAT-01 | Phase 146 | Pending |
 | STAT-02 | Phase 146 | Pending |
