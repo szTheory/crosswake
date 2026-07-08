@@ -132,6 +132,184 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     end
   end
 
+  @tag :phase144_release_integrity
+  test "phase 144 aggregate behavioral gate fails consolidated id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-hex-rindle",
+        "if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}",
+        "if: ${{ needs.release-please.outputs.releases_created == 'true' }}"
+      )
+
+    assert_failure!("release.workflow.aggregate_gate.behavioral_jobs_absent", workflow)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 docs-derived floor authority fails clean-room id" do
+    cleanroom =
+      cleanroom_script() <>
+        "\nCORE_REQUIREMENT=$(grep -E 'Requires `crosswake`' guides/companion_compatibility.md)\n"
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.hex_metadata_floor",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 weak exact pin and missing lockfile postcondition fail stable ids" do
+    weak_pin =
+      cleanroom_script()
+      |> String.replace("PACKAGE_REQUIREMENT=\"== ${VERSION}\"", "PACKAGE_REQUIREMENT=\"~> 0.2\"")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.exact_companion_pin",
+      cleanroom_script: weak_pin
+    )
+
+    missing_lockfile =
+      cleanroom_script()
+      |> String.replace("assert_lockfile_postconditions", "lockfile_postconditions_removed")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.lockfile_postcondition",
+      cleanroom_script: missing_lockfile
+    )
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 proof before publish fails consolidated proof order id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-chimeway",
+        "needs: [release-please, publish-hex-chimeway]",
+        "needs: [release-please]"
+      )
+
+    assert_failure!("release.workflow.proof_after_publish", workflow)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 native proof cascade fails consolidated native id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-ios",
+        "needs: [release-please, publish-hex, publish-ios-core]",
+        "needs: [release-please, publish-hex, publish-ios-core, publish-android-core]"
+      )
+
+    assert_failure!("release.workflow.native_proof_decoupled", workflow)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 missing mirror token preflight fails consolidated mirror id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-ios-core",
+        "MIRROR_PUSH_TOKEN is not configured",
+        "mirror token absent"
+      )
+      |> replace_in_job(
+        "publish-ios-core",
+        "git ls-remote mirror HEAD >/dev/null",
+        "echo mirror preflight skipped"
+      )
+
+    assert_failure!("release.workflow.mirror_token_preflight", workflow)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 missing package proof job and script profile fail matrix id" do
+    missing_job =
+      Regex.replace(
+        ~r/(?ms)^  clean-room-proof-threadline:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+        real_workflow(),
+        "",
+        global: false
+      )
+
+    assert_failure!("release.cleanroom.package_matrix_complete", missing_job)
+
+    missing_profile =
+      cleanroom_script()
+      |> String.replace("crosswake_chimeway)", "crosswake_chimeway_removed)")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.package_matrix_complete",
+      cleanroom_script: missing_profile
+    )
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 clean-room proof job step text cannot satisfy package matrix" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-sigra",
+        """
+          bash script/verify_companion_cleanroom.sh
+          crosswake_sigra
+          "${{ needs.release-please.outputs.sigra_version }}"
+        """,
+        """
+          bash script/verify_companion_cleanroom.sh
+          "${{ needs.release-please.outputs.sigra_version }}"
+        env:
+          DECOY: "crosswake_sigra"
+        """
+      )
+
+    assert_failure!("release.cleanroom.package_matrix_complete", workflow)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 doctor preload masking fails consolidated doctor id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace(
+        ~r/^mix crosswake\.doctor --router CleanRoomHost\.Router$/m,
+        """
+        mix run -e 'Code.ensure_loaded?(CleanRoomHost.Router) || raise "masked router preload"'
+
+        mix crosswake.doctor --router CleanRoomHost.Router
+        """,
+        global: false
+      )
+
+    assert_failure_with_fixtures!(
+      "release.workflow.doctor_proof_unmasked",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 queue and cancellation regressions fail consolidated concurrency ids" do
+    missing_queue =
+      real_workflow()
+      |> String.replace(~r/^\s+queue:\s*max\n/m, "")
+
+    assert_failure!("release.workflow.concurrency_queue_max", missing_queue)
+
+    true_cancel =
+      real_workflow()
+      |> String.replace("cancel-in-progress: false", "cancel-in-progress: true")
+
+    assert_failure!("release.workflow.no_cancel_in_progress_true", true_cancel)
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 comment-only queue decoy cannot satisfy consolidated concurrency id" do
+    workflow =
+      real_workflow()
+      |> String.replace("  queue: max", "  # queue: max", global: false)
+
+    assert_failure!("release.workflow.concurrency_queue_max", workflow)
+  end
+
   @tag :phase144_cleanroom
   test "clean-room script derives Hex metadata floor and exact companion version" do
     script = File.read!(@cleanroom_script)
