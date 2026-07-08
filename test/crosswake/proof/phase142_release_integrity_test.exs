@@ -30,6 +30,13 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.version_graph.companion_floors_honest
   )
 
+  @phase144_cleanroom_ids ~w(
+    release.cleanroom.hex_metadata_floor
+    release.cleanroom.exact_companion_pin
+    release.cleanroom.lockfile_postcondition
+    release.cleanroom.package_profiles_preserved
+  )
+
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
 
@@ -74,16 +81,103 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
              ~r/publish-android-core:[\s\S]*?if: \$\{\{ needs\.release-please\.outputs\.releases_created == 'true' \}\}/
   end
 
-  test "clean-room script derives core floor and exact companion version" do
+  @tag :phase144_cleanroom
+  test "phase 144 clean-room scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase144_cleanroom_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
+  @tag :phase144_cleanroom
+  test "clean-room script derives Hex metadata floor and exact companion version" do
     script = File.read!(@cleanroom_script)
 
-    assert script =~ "CORE_REQUIREMENT="
-    assert script =~ "PACKAGE_REQUIREMENT=\"${PACKAGE_REQUIREMENT:-== ${VERSION}}\""
+    assert script =~ "requirements.crosswake.requirement"
+    assert script =~ "fetch_hex_release_metadata"
+    assert script =~ "parse_core_requirement_from_release"
+    assert script =~ "PACKAGE_REQUIREMENT=\"== ${VERSION}\""
     assert script =~ "{:crosswake, \"${CORE_REQUIREMENT}\"}"
     assert script =~ "{:${PACKAGE}, \"${PACKAGE_REQUIREMENT}\"}"
+    assert script =~ "assert_lockfile_postconditions"
+    assert script =~ "Version.match?"
 
-    refute script =~ "{:crosswake, \"~> 0.1\"}"
-    refute script =~ "{:\"${PACKAGE}\", \"~> 0.1\"}"
+    refute script =~ "CROSSWAKE_CORE_REQUIREMENT"
+    refute script =~ "grep -E 'do: \\{:crosswake"
+  end
+
+  @tag :phase144_cleanroom
+  test "local source floor authority fails with stable check id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace("requirements.crosswake.requirement", "local packages/${PACKAGE}/mix.exs")
+      |> Kernel.<>("\nCORE_REQUIREMENT=$(grep -E 'do: {:crosswake, \"' \"$PACKAGE_DIR/mix.exs\")\n")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.hex_metadata_floor",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_cleanroom
+  test "weak companion pin fails with stable check id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace("PACKAGE_REQUIREMENT=\"== ${VERSION}\"", "PACKAGE_REQUIREMENT=\"~> 0.2\"")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.exact_companion_pin",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_cleanroom
+  test "missing lockfile postcondition fails with stable check id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace("assert_lockfile_postconditions", "lockfile_postconditions_removed")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.lockfile_postcondition",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_cleanroom
+  test "collapsed package profiles fail with stable check id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace("crosswake_threadline)", "crosswake_threadline_removed)")
+
+    assert_failure_with_fixtures!(
+      "release.cleanroom.package_profiles_preserved",
+      cleanroom_script: cleanroom
+    )
+  end
+
+  @tag :phase144_cleanroom
+  test "D-03 fail-closed evidence fails with stable check id" do
+    cases = [
+      {"unknown package", "unknown Hex package", "unsupported Hex package"},
+      {"invalid semver", "does not look like a valid semver string", "has a bad version"},
+      {"HTTP 404", "Hex.pm returned 404", "Hex.pm was not ready"},
+      {"version mismatch", "version mismatch", "version drift"},
+      {"retired release", "retired or unusable", "retired release"},
+      {"missing requirement", "missing requirements.crosswake.requirement", "missing crosswake requirement"},
+      {"malformed JSON", "malformed JSON", "bad JSON"}
+    ]
+
+    for {_label, required, replacement} <- cases do
+      cleanroom = String.replace(cleanroom_script(), required, replacement, global: false)
+
+      assert_failure_with_fixtures!(
+        "release.cleanroom.hex_metadata_floor",
+        cleanroom_script: cleanroom
+      )
+    end
   end
 
   test "missing queue max fails with stable check id" do
@@ -399,6 +493,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp fixture_env_name(:recovery_workflow), do: "HEX_PUBLISH_WORKFLOW_PATH"
   defp fixture_env_name(:helper), do: "GUARDED_HEX_PUBLISH_PATH"
   defp fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
+  defp fixture_env_name(:cleanroom_script), do: "CLEANROOM_SCRIPT_PATH"
 
   defp run_scanner(path, env \\ []) do
     System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
@@ -417,4 +512,5 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp recovery_workflow, do: File.read!(@recovery_workflow)
   defp guarded_helper, do: File.read!(@guarded_helper)
   defp release_config, do: File.read!(@release_config)
+  defp cleanroom_script, do: File.read!(@cleanroom_script)
 end
