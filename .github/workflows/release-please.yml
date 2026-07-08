@@ -590,6 +590,116 @@ jobs:
           echo "gradle build failed after $MAX_ATTEMPTS attempts (~30 min). Maven Central propagation timeout."
           exit 1
 
+  native-release-rollup:
+    name: Native release status rollup
+    needs:
+      - release-please
+      - publish-ios-core
+      - clean-room-proof-ios
+      - publish-android-core
+      - clean-room-proof-android
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Build native release status
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+          PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released || '[]' }}
+          IOS_PUBLISH_RESULT: ${{ needs.publish-ios-core.result }}
+          IOS_PROOF_RESULT: ${{ needs.clean-room-proof-ios.result }}
+          ANDROID_PUBLISH_RESULT: ${{ needs.publish-android-core.result }}
+          ANDROID_PROOF_RESULT: ${{ needs.clean-room-proof-android.result }}
+        run: |
+          set -euo pipefail
+
+          released_path() {
+            case "$PATHS_RELEASED" in
+              *"$1"*) printf "true" ;;
+              *) printf "false" ;;
+            esac
+          }
+
+          platform_state() {
+            released="$1"
+            publish_result="$2"
+            proof_result="$3"
+
+            if [ "$released" != "true" ]; then
+              printf "skipped"
+            elif [ "$publish_result" != "success" ]; then
+              printf "failed"
+            elif [ "$proof_result" = "success" ]; then
+              printf "proven"
+            elif [ "$proof_result" = "skipped" ]; then
+              printf "published"
+            else
+              printf "failed"
+            fi
+          }
+
+          ios_released="$(released_path "packages/crosswake-shell-core-ios")"
+          android_released="$(released_path "packages/crosswake-shell-core-android")"
+          ios_state="$(platform_state "$ios_released" "$IOS_PUBLISH_RESULT" "$IOS_PROOF_RESULT")"
+          android_state="$(platform_state "$android_released" "$ANDROID_PUBLISH_RESULT" "$ANDROID_PROOF_RESULT")"
+
+          if [ "$ios_released" != "true" ] && [ "$android_released" != "true" ]; then
+            native_core="none"
+          elif [ "$ios_state" = "proven" ] && [ "$android_state" = "proven" ]; then
+            native_core="complete"
+          else
+            native_core="partial"
+          fi
+
+          if [ "$native_core" = "complete" ]; then
+            next_action="No native recovery action needed."
+          elif [ "$ios_released" = "true" ] && [ "$ios_state" != "proven" ]; then
+            next_action="Fix MIRROR_PUSH_TOKEN or run the iOS mirror backfill workflow."
+          elif [ "$android_released" = "true" ] && [ "$android_state" != "proven" ]; then
+            next_action="Inspect Android Maven publish/proof before declaring native complete."
+          else
+            next_action="Review native release paths before declaring native complete."
+          fi
+
+          cat > native-release-status.json <<JSON
+          {
+            "version": "${VERSION}",
+            "native_core": "${native_core}",
+            "ios": {
+              "released": ${ios_released},
+              "publish": "${IOS_PUBLISH_RESULT}",
+              "proof": "${IOS_PROOF_RESULT}",
+              "state": "${ios_state}"
+            },
+            "android": {
+              "released": ${android_released},
+              "publish": "${ANDROID_PUBLISH_RESULT}",
+              "proof": "${ANDROID_PROOF_RESULT}",
+              "state": "${android_state}"
+            },
+            "next_action": "${next_action}"
+          }
+          JSON
+
+          {
+            echo "## Native release status"
+            echo ""
+            echo "- Version: ${VERSION:-unknown}"
+            echo "- native_core=${native_core}"
+            echo "- iOS: released=${ios_released}, publish=${IOS_PUBLISH_RESULT}, proof=${IOS_PROOF_RESULT}, state=${ios_state}"
+            echo "- Android: released=${android_released}, publish=${ANDROID_PUBLISH_RESULT}, proof=${ANDROID_PROOF_RESULT}, state=${android_state}"
+            echo "- Next action: ${next_action}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload native release status
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-release-status
+          path: native-release-status.json
+          if-no-files-found: error
+          retention-days: 14
+
   # Permanent dispatch-only fire-drill: proves the full Android publish path without burning a
   # version coordinate. Run this before every real release as a mandatory pre-publish rehearsal.
   # Preflight -> local-publish asserts -> validated-upload -> DROP (frees coordinate).
