@@ -491,22 +491,19 @@ This shape is phase evidence only, not the final Phase 146 CLI JSON contract. [V
 |---|-------|---------|---------------|
 | - | None. All planning-critical claims are from phase context, local code/probes, or official docs. [VERIFIED: source audit] | - | - |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the backfill dispatch live in `release-please.yml` or a separate workflow?**
-   - What we know: Context allows either, but requires thin YAML over script-owned logic. [VERIFIED: 145-CONTEXT.md]
-   - What's unclear: Repository maintainers may prefer a separate workflow to reduce release workflow size. [VERIFIED: 145-CONTEXT.md]
-   - Recommendation: Use a separate dispatch workflow only if the scanner can still verify it by path/env override; otherwise keep a small dispatch block in `release-please.yml`. [VERIFIED: script/check_release_workflow_integrity.exs]
+1. **RESOLVED: Backfill dispatch lives in a separate workflow.**
+   - Decision: Plan 03 creates `.github/workflows/ios-mirror-backfill.yml` as the thin `workflow_dispatch` wrapper over script-owned logic. [VERIFIED: 145-03-PLAN.md]
+   - Rationale: The separate workflow keeps the normal release workflow focused while preserving scanner visibility through explicit workflow/script paths. [VERIFIED: script/check_release_workflow_integrity.exs]
 
-2. **Should mirror `main` be realigned during `v0.2.0` backfill?**
-   - What we know: SwiftPM version resolution needs the `v0.2.0` tag; mirror `main` currently points to `6417ae6543219f1c35be120766827503eaa8ceea`, the existing `v0.1.2` state. [VERIFIED: GitHub git ls-remote]
-   - What's unclear: Whether maintainers want mirror branch hygiene in the same operation. [VERIFIED: 145-CONTEXT.md]
-   - Recommendation: Default to tag-only; add optional `--update-main` only with explicit operator input and guarded `--force-with-lease` semantics after verifying no mirror-only commits. [VERIFIED: 145-CONTEXT.md] [CITED: https://git-scm.com/docs/git-push]
+2. **RESOLVED: Mirror `main` is not realigned by default during `v0.2.0` backfill.**
+   - Decision: Backfill defaults to tag verification/creation only; mirror branch realignment requires explicit `--update-main`. [VERIFIED: 145-03-PLAN.md]
+   - Rationale: SwiftPM version resolution needs `refs/tags/v0.2.0`; branch hygiene is secondary and must be guarded with explicit operator input and `--force-with-lease` semantics. [VERIFIED: 145-CONTEXT.md] [CITED: https://git-scm.com/docs/git-push]
 
-3. **Should a deliberate scratch-ref fire-drill be added now?**
-   - What we know: Context forbids scratch-ref mutation as routine preflight but allows it as deliberate fire-drill/backfill path if needed. [VERIFIED: 145-CONTEXT.md]
-   - What's unclear: Whether dry-run will be sufficient under mirror branch/tag protection rules. [VERIFIED: 145-CONTEXT.md]
-   - Recommendation: Do not include scratch-ref mutation in the normal release job; document it as break-glass only if real dry-run/real-push behavior shows branch-protection ambiguity. [VERIFIED: 145-CONTEXT.md]
+3. **RESOLVED: No scratch-ref fire-drill is added to the normal flow.**
+   - Decision: Plan 01 keeps normal release preflight to read check plus non-mutating push dry-run, and Plan 03 keeps backfill tag-first/idempotent without routine scratch-ref mutation. [VERIFIED: 145-01-PLAN.md] [VERIFIED: 145-03-PLAN.md]
+   - Rationale: Scratch refs mutate the public mirror and can trigger downstream effects; they remain break-glass only if real dry-run or real-push behavior later proves branch-protection ambiguity. [VERIFIED: 145-CONTEXT.md]
 
 ## Environment Availability
 
