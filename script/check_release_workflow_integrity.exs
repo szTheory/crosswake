@@ -79,6 +79,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         workflow_native_proof_decoupled(jobs),
         workflow_mirror_token_preflight(jobs),
         mirror_token_write_preflight(jobs),
+        native_rollup_summary(jobs),
+        native_status_artifact(jobs),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -763,6 +765,45 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, ~s("${SPLIT_SHA}:refs/heads/main")) and
         includes?(block, ~s("${SPLIT_SHA}:refs/tags/v${VERSION}")),
       "publish-ios-core must prove iOS mirror write authority with a non-mutating git push --dry-run --porcelain mirror before real mutation"
+    )
+  end
+
+  defp native_rollup_summary(jobs) do
+    block = job_block(jobs, "native-release-rollup")
+
+    required_needs =
+      Enum.all?(
+        ~w(release-please publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android),
+        &job_needs?(jobs, "native-release-rollup", &1)
+      )
+
+    required_results =
+      Enum.all?(
+        ~w(needs.publish-ios-core.result needs.clean-room-proof-ios.result needs.publish-android-core.result needs.clean-room-proof-android.result),
+        &includes?(block, &1)
+      )
+
+    check(
+      "release.workflow.native_rollup_summary",
+      required_needs and job_if(jobs, "native-release-rollup") == "${{ always() }}" and
+        required_results and includes?(block, "$GITHUB_STEP_SUMMARY") and
+        includes?(block, "native_core=\"partial\"") and
+        includes?(block, "native_core=${native_core}") and includes?(block, "next_action") and
+        includes?(block, "Fix MIRROR_PUSH_TOKEN or run the iOS mirror backfill workflow."),
+      "native-release-rollup must always summarize native publish/proof results, expose partial native_core state, and give a next safe action"
+    )
+  end
+
+  defp native_status_artifact(jobs) do
+    block = job_block(jobs, "native-release-rollup")
+
+    check(
+      "release.workflow.native_status_artifact",
+      includes?(block, "native-release-status.json") and
+        includes?(block, "actions/upload-artifact@v4") and
+        includes?(block, "name: native-release-status") and
+        includes?(block, "if-no-files-found: error"),
+      "native-release-rollup must write native-release-status.json and upload it as the native-release-status artifact"
     )
   end
 

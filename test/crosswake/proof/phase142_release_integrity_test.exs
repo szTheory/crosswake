@@ -59,6 +59,12 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.mirror_token.write_preflight
   )
 
+  @phase145_native_rollup_ids ~w(
+    release.workflow.native_proof_decoupled
+    release.workflow.native_rollup_summary
+    release.workflow.native_status_artifact
+  )
+
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
 
@@ -186,6 +192,67 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert workflow =~ "already points at ${SPLIT_SHA}; no mirror push needed"
     assert workflow =~ "points at ${mirror_tag_sha}, expected ${SPLIT_SHA}"
     assert workflow =~ "do not delete or move the public SwiftPM tag automatically"
+  end
+
+  @tag :phase145_native_rollup
+  test "phase 145 native rollup scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase145_native_rollup_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
+  @tag :phase145_native_rollup
+  test "phase 145 sibling native proof dependencies fail decoupling id" do
+    ios_depends_on_android =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-ios",
+        "needs: [release-please, publish-hex, publish-ios-core]",
+        "needs: [release-please, publish-hex, publish-ios-core, publish-android-core]"
+      )
+
+    assert_failure!("release.workflow.native_proof_decoupled", ios_depends_on_android)
+
+    android_depends_on_ios =
+      real_workflow()
+      |> replace_in_job(
+        "clean-room-proof-android",
+        "needs: [release-please, publish-hex, publish-android-core]",
+        "needs: [release-please, publish-hex, publish-android-core, publish-ios-core]"
+      )
+
+    assert_failure!("release.workflow.native_proof_decoupled", android_depends_on_ios)
+  end
+
+  @tag :phase145_native_rollup
+  test "phase 145 missing native rollup summary fails summary id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job("native-release-rollup", "$GITHUB_STEP_SUMMARY", "GITHUB_STEP_SUMMARY_REMOVED")
+
+    assert_failure!("release.workflow.native_rollup_summary", workflow)
+  end
+
+  @tag :phase145_native_rollup
+  test "phase 145 missing native status artifact fails artifact id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job("native-release-rollup", "actions/upload-artifact@v4", "actions/checkout@v4")
+
+    assert_failure!("release.workflow.native_status_artifact", workflow)
+  end
+
+  @tag :phase145_native_rollup
+  test "phase 145 native complete copy cannot replace partial native state" do
+    workflow =
+      real_workflow()
+      |> replace_in_job("native-release-rollup", "native_core=\"partial\"", "native_core=\"complete\"")
+
+    assert_failure!("release.workflow.native_rollup_summary", workflow)
   end
 
   @tag :phase144_release_integrity
