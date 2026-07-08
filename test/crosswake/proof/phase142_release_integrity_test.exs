@@ -16,6 +16,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   @cleanroom_script "script/verify_companion_cleanroom.sh"
   @guarded_helper "script/guarded_hex_publish.sh"
   @release_config "release-please-config.json"
+  @doctor_task "lib/mix/tasks/crosswake.doctor.ex"
 
   @phase143_ids ~w(
     release.hex_publish.already_live_preflight
@@ -35,6 +36,11 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.cleanroom.exact_companion_pin
     release.cleanroom.lockfile_postcondition
     release.cleanroom.package_profiles_preserved
+  )
+
+  @phase144_doctor_ids ~w(
+    release.doctor.app_config_requirement
+    release.doctor.fresh_router_loaded
   )
 
   test "release workflow integrity script passes" do
@@ -92,6 +98,17 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     end
   end
 
+  @tag :phase144_doctor
+  test "phase 144 doctor scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase144_doctor_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
   @tag :phase144_cleanroom
   test "clean-room script derives Hex metadata floor and exact companion version" do
     script = File.read!(@cleanroom_script)
@@ -114,7 +131,9 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     cleanroom =
       cleanroom_script()
       |> String.replace("requirements.crosswake.requirement", "local packages/${PACKAGE}/mix.exs")
-      |> Kernel.<>("\nCORE_REQUIREMENT=$(grep -E 'do: {:crosswake, \"' \"$PACKAGE_DIR/mix.exs\")\n")
+      |> Kernel.<>(
+        "\nCORE_REQUIREMENT=$(grep -E 'do: {:crosswake, \"' \"$PACKAGE_DIR/mix.exs\")\n"
+      )
 
     assert_failure_with_fixtures!(
       "release.cleanroom.hex_metadata_floor",
@@ -166,7 +185,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       {"HTTP 404", "Hex.pm returned 404", "Hex.pm was not ready"},
       {"version mismatch", "version mismatch", "version drift"},
       {"retired release", "retired or unusable", "retired release"},
-      {"missing requirement", "missing requirements.crosswake.requirement", "missing crosswake requirement"},
+      {"missing requirement", "missing requirements.crosswake.requirement",
+       "missing crosswake requirement"},
       {"malformed JSON", "malformed JSON", "bad JSON"}
     ]
 
@@ -178,6 +198,53 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
         cleanroom_script: cleanroom
       )
     end
+  end
+
+  @tag :phase144_doctor
+  test "missing doctor app config requirement fails with stable check id" do
+    doctor =
+      doctor_task()
+      |> String.replace(~s(@requirements ["app.config"]), "")
+
+    assert_failure_with_fixtures!(
+      "release.doctor.app_config_requirement",
+      doctor_task: doctor
+    )
+  end
+
+  @tag :phase144_doctor
+  test "doctor app start requirement fails with stable check id" do
+    doctor =
+      doctor_task()
+      |> String.replace(
+        ~s(@requirements ["app.config"]),
+        ~s(@requirements ["app.config"]\n  @requirements ["app.start"])
+      )
+
+    assert_failure_with_fixtures!(
+      "release.doctor.app_config_requirement",
+      doctor_task: doctor
+    )
+  end
+
+  @tag :phase144_doctor
+  test "clean-room router preload before doctor fails with stable check id" do
+    cleanroom =
+      cleanroom_script()
+      |> String.replace(
+        "mix crosswake.doctor --router CleanRoomHost.Router",
+        """
+        mix run -e 'Code.ensure_loaded?(CleanRoomHost.Router) || raise "masked router preload"'
+
+        mix crosswake.doctor --router CleanRoomHost.Router
+        """,
+        global: false
+      )
+
+    assert_failure_with_fixtures!(
+      "release.doctor.fresh_router_loaded",
+      cleanroom_script: cleanroom
+    )
   end
 
   test "missing queue max fails with stable check id" do
@@ -424,7 +491,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     File.mkdir_p!(temp_root)
     on_exit(fn -> File.rm_rf(temp_root) end)
 
-    for package <- ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
+    for package <-
+          ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline) do
       source = Path.join(["packages", package, "mix.exs"])
       target_dir = Path.join(temp_root, package)
       File.mkdir_p!(target_dir)
@@ -494,6 +562,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp fixture_env_name(:helper), do: "GUARDED_HEX_PUBLISH_PATH"
   defp fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
   defp fixture_env_name(:cleanroom_script), do: "CLEANROOM_SCRIPT_PATH"
+  defp fixture_env_name(:doctor_task), do: "DOCTOR_TASK_PATH"
 
   defp run_scanner(path, env \\ []) do
     System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
@@ -513,4 +582,5 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp guarded_helper, do: File.read!(@guarded_helper)
   defp release_config, do: File.read!(@release_config)
   defp cleanroom_script, do: File.read!(@cleanroom_script)
+  defp doctor_task, do: File.read!(@doctor_task)
 end
