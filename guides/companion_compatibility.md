@@ -70,8 +70,10 @@ floors: Release Please Release PR merge is the human approval boundary, CI owns
 happy-path Hex publishing, and manual dispatch is exact-ref Hex recovery only.
 Phase 144 owns clean-room exactness completion, Phase 145 owns SwiftPM/Maven
 recovery and iOS mirror backfill, and Phase 146 owns full text/JSON release
-status DX. This guide remains the floor contract; live registry presence is a
-status concern, not a reason to normalize older-compatible companion floors.
+status DX. Phase 145 can verify or backfill the SwiftPM `v0.2.0` mirror tag, but
+that is release-registry state for the core/native lockstep family. This guide
+remains the floor contract; live registry presence is a status concern, not a
+reason to normalize older-compatible companion floors.
 
 ## Engine Dependencies
 

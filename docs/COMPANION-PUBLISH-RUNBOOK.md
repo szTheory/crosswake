@@ -73,7 +73,43 @@ checkout, including `release/v0.2.0`, `feature/v0.2.0`,
 checked-out SHA before calling the guarded helper.
 
 Recovery remains Hex-only in Phase 143. SwiftPM mirror recovery, Maven Central
-recovery, and the missing iOS `v0.2.0` mirror backfill belong to Phase 145.
+recovery, and the missing iOS `v0.2.0` mirror backfill are native-registry
+operations with their own guarded path below.
+
+## iOS Mirror Backfill
+
+The canonical path for the missing SwiftPM mirror tag is verify-first:
+
+```bash
+script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0
+```
+
+Verification mode does not require `MIRROR_PUSH_TOKEN` and does not mutate the
+public mirror. Mutation is explicit:
+
+```bash
+script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0 --apply
+```
+
+The operator wrapper is the `iOS mirror backfill` workflow. It exposes
+`version`, `release_ref`, `apply`, and `update_main` inputs and delegates the
+release identity, split, registry, and tag checks to the script.
+
+Expected states:
+
+- Exact already-present mirror tag: `[crosswake] OK`, exit 0, no push.
+- Missing mirror tag in verify-only mode: `[crosswake] OK`, exit 0, next action
+  names the apply command/workflow.
+- Mismatched mirror tag: `[crosswake] FAIL`, exit nonzero, no automatic delete or
+  move of `refs/tags/v0.2.0`.
+
+Before any apply-mode mutation, the script verifies root Hex `crosswake 0.2.0`,
+Android Maven `io.github.sztheory:crosswake-shell-core-android:0.2.0`, the
+lockstep Release Please refs (`hex-v0.2.0`, `ios-core-v0.2.0`,
+`android-core-v0.2.0`), and `.release-please-manifest.json` version truth.
+Rerunning the original release workflow is not the primary recovery path because
+Hex and Maven coordinates are immutable once live; use the backfill path to
+repair only the missing SwiftPM mirror tag.
 
 ## Companion Floors
 
@@ -110,7 +146,8 @@ installs, derived core floors, and fresh-router doctor loading.
 
 Phase 145 owns native registry recovery and parity: SwiftPM mirror credential
 preflight, Maven/SwiftPM recovery semantics, native proof decoupling, and iOS
-mirror backfill.
+mirror backfill through `script/verify_ios_mirror_backfill.sh` and the
+`iOS mirror backfill` workflow.
 
 Phase 146 owns full release-status DX: local text output, JSON output, optional
 live registry probes, and any issue-opening automation.
