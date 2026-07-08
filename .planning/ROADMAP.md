@@ -90,7 +90,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 145-01-PLAN.md — iOS mirror write-authority dry-run preflight and MIRR-01 scanner fixtures.
+- [x] 145-01-PLAN.md — iOS mirror write-authority dry-run preflight and MIRR-01 scanner fixtures.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -281,5 +281,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
+| 145. Native Registry & Mirror Parity | v18.0 | 1/3 | In Progress|  |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |
