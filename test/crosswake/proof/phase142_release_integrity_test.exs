@@ -43,6 +43,18 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.doctor.fresh_router_loaded
   )
 
+  @phase144_release_integrity_ids ~w(
+    release.workflow.aggregate_gate.behavioral_jobs_absent
+    release.workflow.proof_after_publish
+    release.workflow.native_proof_decoupled
+    release.workflow.mirror_token_preflight
+    release.workflow.concurrency_queue_max
+    release.workflow.no_cancel_in_progress_true
+    release.cleanroom.package_matrix_complete
+    release.workflow.companion_floors_honest
+    release.workflow.doctor_proof_unmasked
+  )
+
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
 
@@ -105,6 +117,17 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     assert exit_code == 0, output
 
     for check_id <- @phase144_doctor_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
+  @tag :phase144_release_integrity
+  test "phase 144 consolidated release integrity scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase144_release_integrity_ids do
       assert output =~ "[crosswake] OK: #{check_id}"
     end
   end
