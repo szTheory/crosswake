@@ -424,10 +424,27 @@ jobs:
           fi
           git remote add mirror \
             "https://x-access-token:${MIRROR_TOKEN}@github.com/szTheory/crosswake-shell-core-ios.git"
-          git ls-remote mirror HEAD >/dev/null
-          if git ls-remote --exit-code mirror "refs/tags/v${VERSION}" >/dev/null 2>&1; then
-            echo "[crosswake] iOS mirror tag v${VERSION} already exists; skipping mirror push."
-            exit 0
+          if ! git ls-remote mirror HEAD >/dev/null; then
+            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN cannot read szTheory/crosswake-shell-core-ios."
+            echo "[crosswake] What to do next: store a fine-grained PAT or GitHub App token with Contents:write on szTheory/crosswake-shell-core-ios as MIRROR_PUSH_TOKEN, then retry this release job or run the Phase 145 iOS mirror backfill route for refs/tags/v${VERSION}."
+            exit 1
+          fi
+          mirror_tag_sha="$(git ls-remote mirror "refs/tags/v${VERSION}" | awk '{print $1}' || true)"
+          if [ -n "$mirror_tag_sha" ]; then
+            if [ "$mirror_tag_sha" = "$SPLIT_SHA" ]; then
+              echo "[crosswake] OK: iOS mirror tag refs/tags/v${VERSION} already points at ${SPLIT_SHA}; no mirror push needed."
+              exit 0
+            fi
+            echo "[crosswake] FAIL: iOS mirror tag refs/tags/v${VERSION} points at ${mirror_tag_sha}, expected ${SPLIT_SHA}."
+            echo "[crosswake] What to do next: do not delete or move the public SwiftPM tag automatically. Inspect szTheory/crosswake-shell-core-ios and use the Phase 145 iOS mirror backfill route only after confirming the intended release identity."
+            exit 1
+          fi
+          if ! git push --dry-run --porcelain mirror \
+            "${SPLIT_SHA}:refs/heads/main" \
+            "${SPLIT_SHA}:refs/tags/v${VERSION}"; then
+            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN cannot push refs/tags/v${VERSION} to szTheory/crosswake-shell-core-ios."
+            echo "[crosswake] What to do next: configure a mirror-scoped token with Contents:write, then retry this release job or run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION}."
+            exit 1
           fi
           git push mirror "${SPLIT_SHA}:refs/heads/main"
           git push mirror "${SPLIT_SHA}:refs/tags/v${VERSION}"
