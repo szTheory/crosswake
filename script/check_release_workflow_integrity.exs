@@ -74,6 +74,12 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         ios_proof_decoupled(jobs),
         android_proof_decoupled(jobs),
         mirror_token_preflight(jobs),
+        workflow_aggregate_gate_absent(jobs),
+        workflow_proof_after_publish(jobs),
+        workflow_native_proof_decoupled(jobs),
+        workflow_mirror_token_preflight(jobs),
+        workflow_concurrency_queue_max(non_comment_workflow),
+        workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
         cleanup_pr_only(jobs),
         hex_publish_already_live_preflight(non_comment_helper),
@@ -89,6 +95,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         cleanroom_package_profiles_preserved(non_comment_cleanroom_script),
         doctor_app_config_requirement(non_comment_doctor_task),
         doctor_fresh_router_loaded(non_comment_cleanroom_script),
+        cleanroom_package_matrix_complete(jobs, non_comment_cleanroom_script),
+        workflow_companion_floors_honest(companion_root),
+        workflow_doctor_proof_unmasked(non_comment_doctor_task, non_comment_cleanroom_script),
         version_graph_lockstep_core_native_only(release_config),
         version_graph_companions_independent(release_config, release_manifest),
         version_graph_companion_floors_honest(companion_root)
@@ -362,6 +371,57 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  defp cleanroom_package_matrix_complete(jobs, script) do
+    workflow_jobs_complete? =
+      Enum.all?(@components, fn component ->
+        job = "clean-room-proof-#{component}"
+        block = job_block(jobs, job)
+
+        Map.has_key?(jobs, job) and
+          includes?(block, "bash script/verify_companion_cleanroom.sh") and
+          includes?(block, "crosswake_#{component}") and
+          includes?(block, "${{ needs.release-please.outputs.#{component}_version }}")
+      end)
+
+    script_packages_complete? =
+      Enum.all?(@components, fn component ->
+        includes?(script, ~r/^\s*crosswake_#{component}\)/m) and
+          includes?(script, "crosswake_#{component}")
+      end)
+
+    threadline_runtime = threadline_runtime_config_section(script)
+
+    chimeway_absence? = includes?(script, "assert_absent_lock_deps crosswake_sigra")
+
+    threadline_absence? =
+      includes?(script, "assert_absent_lock_deps crosswake_sigra crosswake_chimeway") and
+        includes?(threadline_runtime, "observer-not-registered") and
+        not includes?(threadline_runtime, "config :crosswake, :companions")
+
+    check(
+      "release.cleanroom.package_matrix_complete",
+      workflow_jobs_complete? and script_packages_complete? and chimeway_absence? and
+        threadline_absence?,
+      "release-please.yml and script/verify_companion_cleanroom.sh must cover all five package proof jobs, Release Please version args, chimeway/threadline sibling absence, and threadline observer non-registration; rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp threadline_runtime_config_section(script) do
+    marker = ~s(if [ "$PACKAGE" = "crosswake_threadline" ]; then)
+    stop = ~s(elif [ "$NO_ENGINE" = "1" ]; then)
+
+    case String.split(script, marker) do
+      [_] ->
+        ""
+
+      parts ->
+        parts
+        |> List.last()
+        |> String.split(stop, parts: 2)
+        |> hd()
+    end
+  end
+
   defp doctor_app_config_requirement(doctor_task) do
     requirements =
       ~r/@requirements\s+\[(.*?)\]/s
@@ -394,6 +454,34 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       "release.doctor.fresh_router_loaded",
       doctor_command? and not script_preloads_router?,
       "clean-room proof must rely on mix crosswake.doctor --router CleanRoomHost.Router without a separate router preload"
+    )
+  end
+
+  defp workflow_doctor_proof_unmasked(doctor_task, cleanroom_script) do
+    requirements =
+      ~r/@requirements\s+\[(.*?)\]/s
+      |> Regex.scan(doctor_task, capture: :all_but_first)
+      |> List.flatten()
+
+    doctor_owns_app_config? =
+      Enum.any?(requirements, &String.contains?(&1, ~s("app.config"))) and
+        Enum.all?(requirements, &(not String.contains?(&1, "app.start")))
+
+    doctor_command? =
+      includes?(
+        cleanroom_script,
+        ~r/^\s*mix\s+crosswake\.doctor\s+--router\s+CleanRoomHost\.Router\s*$/m
+      )
+
+    script_preloads_router? =
+      includes?(cleanroom_script, "Code.ensure_loaded?(CleanRoomHost.Router)") or
+        includes?(cleanroom_script, "Code.ensure_compiled(CleanRoomHost.Router)") or
+        includes?(cleanroom_script, "Code.ensure_compiled?(CleanRoomHost.Router)")
+
+    check(
+      "release.workflow.doctor_proof_unmasked",
+      doctor_owns_app_config? and doctor_command? and not script_preloads_router?,
+      "lib/mix/tasks/crosswake.doctor.ex must own app.config readiness and script/verify_companion_cleanroom.sh must not preload CleanRoomHost.Router before the doctor command; rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 
@@ -456,6 +544,23 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  defp workflow_companion_floors_honest(companion_root) do
+    floors_ok? =
+      Enum.all?(@companion_floors, fn {package, floor} ->
+        mix_path = Path.join([companion_root, package, "mix.exs"])
+
+        File.exists?(mix_path) and
+          File.read!(mix_path)
+          |> includes?(~r/\{:crosswake,\s*"#{Regex.escape(floor)}"\}/)
+      end)
+
+    check(
+      "release.workflow.companion_floors_honest",
+      floors_ok?,
+      "package mix.exs files must preserve mixed clean-room floors: rulestead/rindle ~> 0.1 and sigra/chimeway/threadline ~> 0.2; inspect packages/crosswake_*/mix.exs and rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
   defp concurrency_not_cancelled(workflow) do
     check(
       "release.concurrency.not_cancelled",
@@ -477,6 +582,22 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       "release.concurrency.no_true_cancellation",
       not includes?(workflow, ~r/^\s*cancel-in-progress:\s*true\s*$/m),
       "release workflow must not combine release preservation with cancel-in-progress: true; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp workflow_concurrency_queue_max(workflow) do
+    check(
+      "release.workflow.concurrency_queue_max",
+      includes?(workflow, ~r/^\s*queue:\s*max\s*$/m),
+      ".github/workflows/release-please.yml concurrency must keep queue: max so pending release runs are preserved; rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp workflow_no_cancel_in_progress_true(workflow) do
+    check(
+      "release.workflow.no_cancel_in_progress_true",
+      not includes?(workflow, ~r/^\s*cancel-in-progress:\s*true\s*$/m),
+      ".github/workflows/release-please.yml must not set cancel-in-progress: true for release publish/proof runs; rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 
@@ -524,6 +645,28 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check("release.aggregate_gate.behavioral_jobs_absent", offenders == [], detail)
   end
 
+  defp workflow_aggregate_gate_absent(jobs) do
+    offenders =
+      jobs
+      |> Enum.filter(fn {job, _block} ->
+        behavioral_job?(job) and
+          includes?(job_if(jobs, job), "needs.release-please.outputs.releases_created")
+      end)
+      |> Enum.map(&elem(&1, 0))
+      |> Enum.sort()
+
+    detail =
+      case offenders do
+        [] ->
+          ".github/workflows/release-please.yml behavioral jobs must not gate on aggregate releases_created; rerun elixir script/check_release_workflow_integrity.exs"
+
+        jobs ->
+          "behavioral jobs use aggregate releases_created: #{Enum.join(jobs, ", ")}; use exact path/component gates in .github/workflows/release-please.yml"
+      end
+
+    check("release.workflow.aggregate_gate.behavioral_jobs_absent", offenders == [], detail)
+  end
+
   defp behavioral_job?(job) do
     String.starts_with?(job, "publish-") or
       String.starts_with?(job, "clean-room-proof-") or
@@ -556,6 +699,30 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  defp workflow_native_proof_decoupled(jobs) do
+    ios_ok? =
+      job_needs?(jobs, "clean-room-proof-ios", "release-please") and
+        job_needs?(jobs, "clean-room-proof-ios", "publish-hex") and
+        job_needs?(jobs, "clean-room-proof-ios", "publish-ios-core") and
+        not job_needs?(jobs, "clean-room-proof-ios", "publish-android-core") and
+        job_if(jobs, "clean-room-proof-ios") ==
+          path_gate_expression("packages/crosswake-shell-core-ios")
+
+    android_ok? =
+      job_needs?(jobs, "clean-room-proof-android", "release-please") and
+        job_needs?(jobs, "clean-room-proof-android", "publish-hex") and
+        job_needs?(jobs, "clean-room-proof-android", "publish-android-core") and
+        not job_needs?(jobs, "clean-room-proof-android", "publish-ios-core") and
+        job_if(jobs, "clean-room-proof-android") ==
+          path_gate_expression("packages/crosswake-shell-core-android")
+
+    check(
+      "release.workflow.native_proof_decoupled",
+      ios_ok? and android_ok?,
+      "native clean-room proofs in .github/workflows/release-please.yml must depend only on their own native publish job plus root Hex publish; rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
   defp mirror_token_preflight(jobs) do
     block = job_block(jobs, "publish-ios-core")
 
@@ -564,6 +731,17 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       includes?(block, "MIRROR_PUSH_TOKEN is not configured") and
         includes?(block, "git ls-remote mirror HEAD"),
       "iOS mirror job must fail fast when MIRROR_PUSH_TOKEN is absent or unusable; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp workflow_mirror_token_preflight(jobs) do
+    block = job_block(jobs, "publish-ios-core")
+
+    check(
+      "release.workflow.mirror_token_preflight",
+      includes?(block, "MIRROR_PUSH_TOKEN is not configured") and
+        includes?(block, "git ls-remote mirror HEAD"),
+      "publish-ios-core in .github/workflows/release-please.yml must fail fast on missing or unusable MIRROR_PUSH_TOKEN; rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 
@@ -595,6 +773,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         has_all_proof_needs? and has_all_result_implications? and
         companion_proof_jobs_after_publish?(jobs),
       "release-as-cleanup must need every companion publish/proof job and require success for released components; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp workflow_proof_after_publish(jobs) do
+    check(
+      "release.workflow.proof_after_publish",
+      companion_proof_jobs_after_publish?(jobs),
+      "every clean-room-proof-* companion job in .github/workflows/release-please.yml must gate on its component release output and need its matching publish-hex-* job; rerun elixir script/check_release_workflow_integrity.exs"
     )
   end
 
