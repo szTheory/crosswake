@@ -24,7 +24,7 @@ Goal: make Crosswake's package-family release path automated, path-specific, and
 - [x] Phase 142: Release Graph & Governance Contract — encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output. Requirements: RELG-01, RELG-02, RELG-03. (completed 2026-07-07)
 - [x] Phase 143: Guarded Auto-Publish Train — make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning. Requirements: AUTO-01, AUTO-02, AUTO-03. (completed 2026-07-07)
 - [x] Phase 144: Published-Core Compatibility & Clean-Room Proof — repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers. Requirements: PREF-01, PREF-02, PREF-03. (completed 2026-07-08)
-- [ ] Phase 145: Native Registry & Mirror Parity — harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag. Requirements: MIRR-01, MIRR-02, MIRR-03.
+- [x] Phase 145: Native Registry & Mirror Parity — harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag. Requirements: MIRR-01, MIRR-02, MIRR-03. (completed 2026-07-08)
 - [ ] Phase 146: Release Status DX & Docs Truth — ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs. Requirements: STAT-01, STAT-02, STAT-03.
 
 Success criteria:
@@ -281,5 +281,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 145. Native Registry & Mirror Parity | v18.0 | 3/3 | In Progress|  |
+| 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |

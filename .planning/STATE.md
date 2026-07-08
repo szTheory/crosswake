@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-status: Ready to execute
-stopped_at: Completed 145-03-PLAN.md
-last_updated: "2026-07-08T18:56:44.000Z"
+status: ready_to_plan
+stopped_at: Phase 145 complete (3/3) — ready to discuss Phase 146
+last_updated: 2026-07-08T19:03:59.045Z
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
   completed_plans: 12
-  percent: 60
+  percent: 80
 ---
 
 # Project State: Crosswake
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 145 — native-registry-mirror-parity
+**Current focus:** Phase 146 — release status dx & docs truth
 
 ## Current Position
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 145 (native-registry-mirror-parity) — EXECUTING
-Plan: 3 of 3
+Phase: 146
+Plan: Not started
 
 Phase 142 discussion output:
 
@@ -136,7 +136,7 @@ Deferred behind v18:
 
 **Velocity:**
 
-- Total plans completed: 142 across v10.0-v17.0 + 9 in v18.0 Phases 142-144 = 151
+- Total plans completed: 142 across v10.0-v17.0 + 12 in v18.0 Phases 142-145 = 154
 - Average duration: —
 - Total execution time: —
 
@@ -286,14 +286,14 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-08T18:56:44.000Z
-Stopped at: Completed 145-03-PLAN.md
+Last session: 2026-07-08T19:03:59.045Z
+Stopped at: Phase 145 complete (3/3) — ready to discuss Phase 146
 Resume file: None
 
 ## Operator Next Steps
 
-- Run phase 145 code review and phase-level verification, then complete the phase and advance to Phase 146.
-- Keep downstream phase ownership honest: Phase 144, 145, and 146 must validate their already-present implementation spillover before being claimed complete.
+- Run `$gsd-discuss-phase 146` before planning Release Status DX & Docs Truth.
+- Keep downstream phase ownership honest: Phase 146 must validate its already-present implementation spillover before being claimed complete.
 - Do not perform Hex/package publish operations from this planning pass.
 
 <!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->
