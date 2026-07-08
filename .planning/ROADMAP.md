@@ -85,7 +85,20 @@ Plans:
 
 **Goal:** Harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag.
 **Requirements:** MIRR-01, MIRR-02, MIRR-03
-**Plans:** 0/3
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 145-01-PLAN.md — iOS mirror write-authority dry-run preflight and MIRR-01 scanner fixtures.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 145-02-PLAN.md — Native proof DAG preservation plus always-running rollup summary and JSON artifact.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 145-03-PLAN.md — Verify-first iOS `v0.2.0` mirror backfill script, dispatch wrapper, guardrails, and docs.
 
 ### Phase 146: Release Status DX & Docs Truth
 
