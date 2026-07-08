@@ -141,12 +141,17 @@ validate_inputs() {
       ENGINE_PACKAGE=""
       ENGINE_MODULE=""
     else
+      case "${_RAW_ENGINE_PKG}:${_RAW_ENGINE_MOD:-}" in
+        rulestead:Rulestead | rindle:Rindle)
+          ;;
+        *)
+          fail "unsupported engine override '${_RAW_ENGINE_PKG}:${_RAW_ENGINE_MOD:-}'." "Use the built-in package profile, 'none', or an allowlisted engine/module pair."
+          ;;
+      esac
+
       NO_ENGINE=0
       ENGINE_PACKAGE="$_RAW_ENGINE_PKG"
       ENGINE_MODULE="${_RAW_ENGINE_MOD:-}"
-      if [ -z "$ENGINE_MODULE" ]; then
-        fail "ENGINE_MODULE required when overriding ENGINE_PACKAGE for ${PACKAGE}." "Pass both engine package and top-level module, or omit both to use the ${PROFILE} profile."
-      fi
     fi
   fi
 }
