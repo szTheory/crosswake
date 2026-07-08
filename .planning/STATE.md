@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-current_phase: 144
-current_phase_name: published-core-compatibility-clean-room-proof
-status: ready_to_execute
+current_phase: 145
+current_phase_name: Native Registry & Mirror Parity
+status: Ready to plan
 stopped_at: Completed 144-03-PLAN.md
-last_updated: "2026-07-08T13:51:17.076Z"
+last_updated: "2026-07-08T14:15:25.132Z"
 progress:
   total_phases: 5
   completed_phases: 3
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 144 (published-core-compatibility-clean-room-proof) — EXECUTING
-Plan: 3 of 3
+Phase: 145 — Native Registry & Mirror Parity
+Plan: Not started
 
 Phase 142 discussion output:
 
@@ -123,7 +123,7 @@ Deferred behind v18:
 
 **Velocity:**
 
-- Total plans completed: 142 across v10.0-v17.0 + 6 in v18.0 Phases 142-143 = 148
+- Total plans completed: 142 across v10.0-v17.0 + 9 in v18.0 Phases 142-144 = 151
 - Average duration: —
 - Total execution time: —
 
