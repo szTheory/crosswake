@@ -78,6 +78,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         workflow_proof_after_publish(jobs),
         workflow_native_proof_decoupled(jobs),
         workflow_mirror_token_preflight(jobs),
+        mirror_token_write_preflight(jobs),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -750,6 +751,18 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       includes?(block, "MIRROR_PUSH_TOKEN is not configured") and
         includes?(block, "git ls-remote mirror HEAD"),
       "publish-ios-core in .github/workflows/release-please.yml must fail fast on missing or unusable MIRROR_PUSH_TOKEN; rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp mirror_token_write_preflight(jobs) do
+    block = job_block(jobs, "publish-ios-core")
+
+    check(
+      "release.mirror_token.write_preflight",
+      includes?(block, "git push --dry-run --porcelain mirror") and
+        includes?(block, ~s("${SPLIT_SHA}:refs/heads/main")) and
+        includes?(block, ~s("${SPLIT_SHA}:refs/tags/v${VERSION}")),
+      "publish-ios-core must prove iOS mirror write authority with a non-mutating git push --dry-run --porcelain mirror before real mutation"
     )
   end
 

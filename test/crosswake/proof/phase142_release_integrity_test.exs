@@ -55,6 +55,10 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.workflow.doctor_proof_unmasked
   )
 
+  @phase145_mirror_ids ~w(
+    release.mirror_token.write_preflight
+  )
+
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
 
@@ -130,6 +134,58 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     for check_id <- @phase144_release_integrity_ids do
       assert output =~ "[crosswake] OK: #{check_id}"
     end
+  end
+
+  @tag :phase145_mirror
+  test "phase 145 mirror write-preflight scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase145_mirror_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
+  @tag :phase145_mirror
+  test "phase 145 read-only mirror preflight fails write-authority id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-ios-core",
+        "git push --dry-run --porcelain mirror",
+        "echo '[crosswake] read-only mirror preflight kept git ls-remote mirror HEAD only'"
+      )
+
+    assert_failure!("release.mirror_token.write_preflight", workflow)
+  end
+
+  @tag :phase145_mirror
+  test "phase 145 comment-only mirror dry-run decoy fails write-authority id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-ios-core",
+        "git push --dry-run --porcelain mirror",
+        "echo '[crosswake] mirror write dry-run omitted'"
+      )
+      |> replace_in_job(
+        "publish-ios-core",
+        "mirror_tag_sha=",
+        "# git push --dry-run --porcelain mirror \"${SPLIT_SHA}:refs/heads/main\" \"${SPLIT_SHA}:refs/tags/v${VERSION}\"\n          mirror_tag_sha="
+      )
+
+    assert_failure!("release.mirror_token.write_preflight", workflow)
+  end
+
+  @tag :phase145_mirror
+  test "phase 145 mirror tag handling distinguishes exact and mismatched tag identity" do
+    workflow = real_workflow()
+
+    assert workflow =~ "mirror_tag_sha=\"$(git ls-remote mirror \"refs/tags/v${VERSION}\""
+    assert workflow =~ "already points at ${SPLIT_SHA}; no mirror push needed"
+    assert workflow =~ "points at ${mirror_tag_sha}, expected ${SPLIT_SHA}"
+    assert workflow =~ "do not delete or move the public SwiftPM tag automatically"
   end
 
   @tag :phase144_release_integrity
