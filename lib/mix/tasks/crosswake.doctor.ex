@@ -6,6 +6,7 @@ defmodule Mix.Tasks.Crosswake.Doctor do
   alias Crosswake.Doctor.JSONFormatter
 
   @shortdoc "Diagnose Crosswake install, policy, manifest, and support truth"
+  @requirements ["app.config"]
 
   @moduledoc """
   Runs host-truth-first diagnostics over installer state, route-policy compilation,
@@ -84,12 +85,46 @@ defmodule Mix.Tasks.Crosswake.Doctor do
   end
 
   defp router_module!(name) when is_binary(name) do
-    module = String.to_atom(name)
+    module = module_from_name(name)
 
-    if Code.ensure_loaded?(module) do
-      module
-    else
-      Mix.raise("router module #{name} is not available")
+    unless ensure_router_loaded?(module) do
+      Mix.raise("router module #{name} is not available after app.config and compile")
     end
+
+    unless phoenix_router?(module) do
+      Mix.raise("router module #{name} loaded but is not a Phoenix router (__routes__/0 missing)")
+    end
+
+    module
+  end
+
+  defp module_from_name("Elixir." <> _ = name), do: String.to_atom(name)
+
+  defp module_from_name(name) do
+    name
+    |> String.split(".", trim: true)
+    |> Module.concat()
+  end
+
+  defp ensure_router_loaded?(module) do
+    router_loaded?(module) || compile_and_reload_router?(module)
+  end
+
+  defp compile_and_reload_router?(module) do
+    Mix.Task.reenable("compile")
+    Mix.Task.run("compile")
+    Mix.Task.reenable("loadpaths")
+    Mix.Task.run("loadpaths", ["--no-compile"])
+    router_loaded?(module)
+  rescue
+    Mix.Error -> false
+  end
+
+  defp router_loaded?(module) do
+    Code.ensure_loaded?(module)
+  end
+
+  defp phoenix_router?(module) do
+    function_exported?(module, :__routes__, 0)
   end
 end

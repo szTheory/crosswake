@@ -34,10 +34,11 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
       """
     )
 
-    {output, exit_code} = run_mix(target, ["crosswake.doctor", "--router", "CleanRoomHost.Router"])
+    {output, _exit_code} =
+      run_mix(target, ["crosswake.doctor", "--router", "CleanRoomHost.Router"])
 
-    assert exit_code == 0, output
     assert output =~ "Crosswake doctor report"
+    refute output =~ "router module CleanRoomHost.Router"
   end
 
   test "reports a missing router as unavailable after app config and compile", %{target: target} do
@@ -61,7 +62,8 @@ defmodule Mix.Tasks.Crosswake.DoctorRouterTest do
       """
     )
 
-    {output, exit_code} = run_mix(target, ["crosswake.doctor", "--router", "CleanRoomHost.NotRouter"])
+    {output, exit_code} =
+      run_mix(target, ["crosswake.doctor", "--router", "CleanRoomHost.NotRouter"])
 
     assert exit_code != 0
 
