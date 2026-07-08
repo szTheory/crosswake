@@ -232,7 +232,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     cleanroom =
       cleanroom_script()
       |> String.replace(
-        "mix crosswake.doctor --router CleanRoomHost.Router",
+        ~r/^mix crosswake\.doctor --router CleanRoomHost\.Router$/m,
         """
         mix run -e 'Code.ensure_loaded?(CleanRoomHost.Router) || raise "masked router preload"'
 

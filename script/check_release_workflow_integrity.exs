@@ -5,6 +5,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   @default_recovery_workflow ".github/workflows/hex-publish.yml"
   @default_helper "script/guarded_hex_publish.sh"
   @default_cleanroom_script "script/verify_companion_cleanroom.sh"
+  @default_doctor_task "lib/mix/tasks/crosswake.doctor.ex"
   @default_release_config "release-please-config.json"
   @default_manifest ".release-please-manifest.json"
   @default_companion_root "packages"
@@ -23,12 +24,20 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     workflow = File.read!(workflow_path)
     non_comment_workflow = strip_full_line_comments(workflow)
     jobs = job_blocks(workflow)
-    recovery_workflow = File.read!(path_from_env("HEX_PUBLISH_WORKFLOW_PATH", @default_recovery_workflow))
+
+    recovery_workflow =
+      File.read!(path_from_env("HEX_PUBLISH_WORKFLOW_PATH", @default_recovery_workflow))
+
     non_comment_recovery = strip_full_line_comments(recovery_workflow)
     helper = File.read!(path_from_env("GUARDED_HEX_PUBLISH_PATH", @default_helper))
     non_comment_helper = strip_full_line_comments(helper)
-    cleanroom_script = File.read!(path_from_env("CLEANROOM_SCRIPT_PATH", @default_cleanroom_script))
+
+    cleanroom_script =
+      File.read!(path_from_env("CLEANROOM_SCRIPT_PATH", @default_cleanroom_script))
+
     non_comment_cleanroom_script = strip_full_line_comments(cleanroom_script)
+    doctor_task = File.read!(path_from_env("DOCTOR_TASK_PATH", @default_doctor_task))
+    non_comment_doctor_task = strip_full_line_comments(doctor_task)
 
     release_config =
       path_from_env("RELEASE_PLEASE_CONFIG_PATH", @default_release_config)
@@ -78,6 +87,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         cleanroom_exact_companion_pin(non_comment_cleanroom_script),
         cleanroom_lockfile_postcondition(non_comment_cleanroom_script),
         cleanroom_package_profiles_preserved(non_comment_cleanroom_script),
+        doctor_app_config_requirement(non_comment_doctor_task),
+        doctor_fresh_router_loaded(non_comment_cleanroom_script),
         version_graph_lockstep_core_native_only(release_config),
         version_graph_companions_independent(release_config, release_manifest),
         version_graph_companion_floors_honest(companion_root)
@@ -202,8 +213,9 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   end
 
   defp hex_publish_shared_helper(jobs, workflow) do
-    expected_jobs = [{"publish-hex", "crosswake"}] ++
-      Enum.map(@components, &{"publish-hex-#{&1}", "crosswake_#{&1}"})
+    expected_jobs =
+      [{"publish-hex", "crosswake"}] ++
+        Enum.map(@components, &{"publish-hex-#{&1}", "crosswake_#{&1}"})
 
     helper_jobs_ok? =
       Enum.all?(expected_jobs, fn {job, package} ->
@@ -350,6 +362,41 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  defp doctor_app_config_requirement(doctor_task) do
+    requirements =
+      ~r/@requirements\s+\[(.*?)\]/s
+      |> Regex.scan(doctor_task, capture: :all_but_first)
+      |> List.flatten()
+
+    has_app_config? = Enum.any?(requirements, &String.contains?(&1, ~s("app.config")))
+    has_app_start? = Enum.any?(requirements, &String.contains?(&1, "app.start"))
+
+    check(
+      "release.doctor.app_config_requirement",
+      has_app_config? and not has_app_start?,
+      "mix crosswake.doctor must require app.config and must not require app.start before loading host routers"
+    )
+  end
+
+  defp doctor_fresh_router_loaded(cleanroom_script) do
+    doctor_command? =
+      includes?(
+        cleanroom_script,
+        ~r/^\s*mix\s+crosswake\.doctor\s+--router\s+CleanRoomHost\.Router\s*$/m
+      )
+
+    script_preloads_router? =
+      includes?(cleanroom_script, "Code.ensure_loaded?(CleanRoomHost.Router)") or
+        includes?(cleanroom_script, "Code.ensure_compiled(CleanRoomHost.Router)") or
+        includes?(cleanroom_script, "Code.ensure_compiled?(CleanRoomHost.Router)")
+
+    check(
+      "release.doctor.fresh_router_loaded",
+      doctor_command? and not script_preloads_router?,
+      "clean-room proof must rely on mix crosswake.doctor --router CleanRoomHost.Router without a separate router preload"
+    )
+  end
+
   defp version_graph_lockstep_core_native_only(config) do
     linked =
       config
@@ -366,6 +413,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp version_graph_companions_independent(config, manifest) do
     packages = Map.get(config, "packages", %{})
+
     linked_components =
       config
       |> Map.get("plugins", [])
@@ -397,8 +445,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         mix_path = Path.join([companion_root, package, "mix.exs"])
 
         File.exists?(mix_path) and
-          (File.read!(mix_path)
-           |> includes?(~r/\{:crosswake,\s*"#{Regex.escape(floor)}"\}/))
+          File.read!(mix_path)
+          |> includes?(~r/\{:crosswake,\s*"#{Regex.escape(floor)}"\}/)
       end)
 
     check(

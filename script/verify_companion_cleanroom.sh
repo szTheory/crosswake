@@ -435,7 +435,7 @@ defmodule CleanRoomHost.Router do
 end
 ROUTEREOF
 
-# Recompile so the router module is loaded before the doctor smoke
+# Compile setup only; the doctor command below is the router loadability proof.
 mix compile
 
 echo "[crosswake] Step 4 OK: router stub compiled"
@@ -719,7 +719,7 @@ fi
 
 echo "[crosswake] Step 7: running mix crosswake.doctor --router CleanRoomHost.Router..."
 
-# Recompile to pick up config/runtime.exs changes before invoking the doctor task.
+# Compile setup only after runtime config changes; mix crosswake.doctor is the proof.
 mix compile
 
 mix crosswake.doctor --router CleanRoomHost.Router
