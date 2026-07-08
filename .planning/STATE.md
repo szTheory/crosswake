@@ -5,14 +5,14 @@ milestone_name: Release Integrity & Automated Package Operations
 current_phase: 144
 current_phase_name: published-core-compatibility-clean-room-proof
 status: ready_to_execute
-stopped_at: Completed 144-02-PLAN.md
-last_updated: "2026-07-08T13:36:41.404Z"
+stopped_at: Completed 144-03-PLAN.md
+last_updated: "2026-07-08T13:51:17.076Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 40
+  completed_plans: 9
+  percent: 60
 ---
 
 # Project State: Crosswake
@@ -226,6 +226,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: crosswake_threadline registered as independent elixir release-please component (NOT in linked-versions, one-shot release-as 0.1.0, THREAD-03)
 - [Phase ?]: cleanroom script threadline-correct: companion-behaviour assertions suppressed; three module-shipment canaries (Telemetry/Plug/Ledger) + zero-sibling-dep invariant (T-139-11, THREAD-02)
 - [Phase ?]: clean-room-proof-threadline: no-engine non-companion mode; installs crosswake + crosswake_threadline only (NOT sigra, NOT chimeway — T-139-18 zero-sibling-dep at CI level)
+- [Phase 144]: Kept script/check_release_workflow_integrity.exs plus ExUnit as the authoritative PREF-03 proof instead of introducing a YAML parser or actionlint dependency. — The existing scanner already encodes Crosswake-specific release policy and stable operator-facing IDs, while Phase 144 scope explicitly forbids replacing it with a generic parser.
+- [Phase 144]: Added Phase 144 umbrella IDs without replacing the existing Phase 142/143 scanner IDs. — Future operators and tests may still rely on historical stable IDs, while PREF-03 needs its own consolidated IDs.
+- [Phase 144]: Required clean-room proof jobs to pass package/version as real script arguments, not loose job-block text. — A job-level string search could be satisfied by comments, labels, or env decoys; argument-order matching keeps PREF-03 non-vacuous.
 
 ### Pending Todos
 
@@ -263,11 +266,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 142 P02 | 5 min | 3 tasks | 2 files |
 | Phase 144 P01 | 9 min | 2 tasks | 3 files |
 | Phase 144 P02 | 17 min | 2 tasks | 5 files |
+| Phase 144 P03 | 21 min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-07-08T13:36:41.399Z
-Stopped at: Completed 144-02-PLAN.md
+Last session: 2026-07-08T13:51:17.071Z
+Stopped at: Completed 144-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

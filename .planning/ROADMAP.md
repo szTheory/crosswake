@@ -79,7 +79,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 144-03-PLAN.md — Merge-blocking static scanner and ExUnit fixtures for PREF-03 release-integrity regressions.
+- [x] 144-03-PLAN.md — Merge-blocking static scanner and ExUnit fixtures for PREF-03 release-integrity regressions.
 
 ### Phase 145: Native Registry & Mirror Parity
 
@@ -267,6 +267,6 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 141. Core-First Publish & Family Release | v17.0 | 5/5 | Complete | 2026-07-04 |
 | 142. Release Graph & Governance Contract | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
-| 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 2/3 | In Progress|  |
+| 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete   | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 0/3 | Pending | — |
 | 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |

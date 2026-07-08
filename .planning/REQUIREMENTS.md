@@ -21,7 +21,7 @@
 
 - [x] **PREF-01**: Companion clean-room proof installs the exact just-published companion version and derives the required `crosswake` floor from the package under test.
 - [x] **PREF-02**: `mix crosswake.doctor --router` can load a router from a freshly compiled clean-room host before failing with "router unavailable."
-- [ ] **PREF-03**: Release integrity has a merge-blocking static test that fails on aggregate gates, stale dependency floors, proof cascades, or missing mirror-token preflight.
+- [x] **PREF-03**: Release integrity has a merge-blocking static test that fails on aggregate gates, stale dependency floors, proof cascades, or missing mirror-token preflight.
 
 ### Native Registry Parity
 
@@ -66,7 +66,7 @@
 | AUTO-03 | Phase 143 | Complete |
 | PREF-01 | Phase 144 | Complete |
 | PREF-02 | Phase 144 | Complete |
-| PREF-03 | Phase 144 | Pending |
+| PREF-03 | Phase 144 | Complete |
 | MIRR-01 | Phase 145 | Pending |
 | MIRR-02 | Phase 145 | Pending |
 | MIRR-03 | Phase 145 | Pending |
