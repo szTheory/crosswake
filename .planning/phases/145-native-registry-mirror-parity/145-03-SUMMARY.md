@@ -64,8 +64,9 @@ Each task was committed atomically:
 1. **Task 1: Create verify-first iOS mirror backfill script** - `a3a0ec7f` (feat)
 2. **Task 2: Add thin dispatch wrapper and MIRR-03 scanner fixtures** - `470e1efc` (test)
 3. **Task 3: Reconcile native backfill runbook and support truth** - `50af7233` (docs)
+4. **Review fix: Tighten workflow input default fixtures** - `3ff2c5c5` (test)
 
-**Plan metadata:** pending in this commit
+**Plan metadata:** `ef9984f8` (docs)
 
 ## Files Created/Modified
 
@@ -95,7 +96,7 @@ None - plan executed exactly as written.
 
 ## Issues Encountered
 
-None.
+- Local code-review fallback found a scanner false positive: `release.ios_backfill.verify_first` and `release.ios_backfill.no_default_main_force` accepted any `default: false` in the workflow, so an `apply` or `update_main` input could regress to `default: true` while another boolean input kept the scanner green. Fixed by binding scanner checks to named workflow input blocks and adding negative fixtures.
 
 ## Verification
 
