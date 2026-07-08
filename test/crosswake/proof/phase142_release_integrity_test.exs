@@ -65,6 +65,13 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.workflow.native_status_artifact
   )
 
+  @phase145_ios_backfill_ids ~w(
+    release.ios_backfill.verify_first
+    release.ios_backfill.exact_release_ref
+    release.ios_backfill.tag_idempotent
+    release.ios_backfill.no_default_main_force
+  )
+
   test "release workflow integrity script passes" do
     {output, exit_code} = run_scanner(@workflow)
 
@@ -253,6 +260,68 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       |> replace_in_job("native-release-rollup", "native_core=\"partial\"", "native_core=\"complete\"")
 
     assert_failure!("release.workflow.native_rollup_summary", workflow)
+  end
+
+  @tag :phase145_ios_backfill
+  test "phase 145 iOS backfill scanner ids pass" do
+    {output, exit_code} = run_scanner(@workflow)
+
+    assert exit_code == 0, output
+
+    for check_id <- @phase145_ios_backfill_ids do
+      assert output =~ "[crosswake] OK: #{check_id}"
+    end
+  end
+
+  @tag :phase145_ios_backfill
+  test "phase 145 iOS backfill rejects current-head source refs" do
+    workflow =
+      ios_backfill_workflow()
+      |> String.replace("default: 'refs/tags/ios-core-v0.2.0'", "default: 'main'")
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.exact_release_ref",
+      ios_backfill_workflow: workflow
+    )
+  end
+
+  @tag :phase145_ios_backfill
+  test "phase 145 iOS backfill requires explicit apply before mutation" do
+    script =
+      ios_backfill_script()
+      |> String.replace("MIRROR_PUSH_TOKEN is required for --apply", "MIRROR_PUSH_TOKEN is optional")
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.verify_first",
+      ios_backfill_script: script
+    )
+  end
+
+  @tag :phase145_ios_backfill
+  test "phase 145 iOS backfill cannot ignore mismatched public tags" do
+    script =
+      ios_backfill_script()
+      |> String.replace(
+        "Do not delete or move the public SwiftPM tag automatically",
+        "Move the public SwiftPM tag automatically"
+      )
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.tag_idempotent",
+      ios_backfill_script: script
+    )
+  end
+
+  @tag :phase145_ios_backfill
+  test "phase 145 iOS backfill does not force mirror main by default" do
+    script =
+      ios_backfill_script()
+      |> String.replace("--force-with-lease=refs/heads/main", "--force")
+
+    assert_failure_with_fixtures!(
+      "release.ios_backfill.no_default_main_force",
+      ios_backfill_script: script
+    )
   end
 
   @tag :phase144_release_integrity
@@ -887,6 +956,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp fixture_env_name(:release_config), do: "RELEASE_PLEASE_CONFIG_PATH"
   defp fixture_env_name(:cleanroom_script), do: "CLEANROOM_SCRIPT_PATH"
   defp fixture_env_name(:doctor_task), do: "DOCTOR_TASK_PATH"
+  defp fixture_env_name(:ios_backfill_script), do: "IOS_BACKFILL_SCRIPT_PATH"
+  defp fixture_env_name(:ios_backfill_workflow), do: "IOS_BACKFILL_WORKFLOW_PATH"
 
   defp run_scanner(path, env \\ []) do
     System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
@@ -907,4 +978,6 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   defp release_config, do: File.read!(@release_config)
   defp cleanroom_script, do: File.read!(@cleanroom_script)
   defp doctor_task, do: File.read!(@doctor_task)
+  defp ios_backfill_script, do: File.read!("script/verify_ios_mirror_backfill.sh")
+  defp ios_backfill_workflow, do: File.read!(".github/workflows/ios-mirror-backfill.yml")
 end
