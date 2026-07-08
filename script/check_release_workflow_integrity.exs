@@ -316,6 +316,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     local_floor_evidence? =
       includes?(script, "CROSSWAKE_CORE_REQUIREMENT") or
         includes?(script, "PACKAGE_DIR") or
+        includes?(script, "companion_compatibility.md") or
         includes?(script, ~r/grep\s+-E[^\n]*:crosswake/)
 
     check(
@@ -378,9 +379,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         block = job_block(jobs, job)
 
         Map.has_key?(jobs, job) and
-          includes?(block, "bash script/verify_companion_cleanroom.sh") and
-          includes?(block, "crosswake_#{component}") and
-          includes?(block, "${{ needs.release-please.outputs.#{component}_version }}")
+          cleanroom_job_invokes_package?(block, component)
       end)
 
     script_packages_complete? =
@@ -403,6 +402,15 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       workflow_jobs_complete? and script_packages_complete? and chimeway_absence? and
         threadline_absence?,
       "release-please.yml and script/verify_companion_cleanroom.sh must cover all five package proof jobs, Release Please version args, chimeway/threadline sibling absence, and threadline observer non-registration; rerun elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp cleanroom_job_invokes_package?(block, component) do
+    package = "crosswake_#{component}"
+
+    includes?(
+      block,
+      ~r/bash\s+script\/verify_companion_cleanroom\.sh\s+#{Regex.escape(package)}\s+"?\$\{\{\s*needs\.release-please\.outputs\.#{component}_version\s*\}\}"?/s
     )
   end
 

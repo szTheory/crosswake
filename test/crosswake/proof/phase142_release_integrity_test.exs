@@ -250,13 +250,13 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
       real_workflow()
       |> replace_in_job(
         "clean-room-proof-sigra",
+        "          crosswake_sigra\n",
+        ""
+      )
+      |> replace_in_job(
+        "clean-room-proof-sigra",
+        "          \"${{ needs.release-please.outputs.sigra_version }}\"",
         """
-          bash script/verify_companion_cleanroom.sh
-          crosswake_sigra
-          "${{ needs.release-please.outputs.sigra_version }}"
-        """,
-        """
-          bash script/verify_companion_cleanroom.sh
           "${{ needs.release-please.outputs.sigra_version }}"
         env:
           DECOY: "crosswake_sigra"
