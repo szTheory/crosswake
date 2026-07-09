@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
 current_phase: 146
-current_phase_name: release-status-dx-docs-truth
-status: ready_to_execute
+status: Milestone complete
 stopped_at: Completed 146-03-PLAN.md
-last_updated: "2026-07-09T13:37:03.887Z"
+last_updated: "2026-07-09T14:04:08.232Z"
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 15
   completed_plans: 15
   percent: 100
+current_phase_name: release-status-dx-docs-truth
 ---
 
 # Project State: Crosswake
@@ -22,13 +22,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 146 — release-status-dx-docs-truth
+**Current focus:** v18.0 milestone closeout — Phase 146 verified and complete.
 
 ## Current Position
 
 **v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
 
-Phase: 146 (release-status-dx-docs-truth) — EXECUTING
+Phase: 146 (release-status-dx-docs-truth) — COMPLETE
 Plan: 3 of 3
 
 Phase 142 discussion output:
@@ -148,7 +148,7 @@ Deferred behind v18:
 
 **Velocity:**
 
-- Total plans completed: 142 across v10.0-v17.0 + 12 in v18.0 Phases 142-145 = 154
+- Total plans completed: 142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 = 157
 - Average duration: —
 - Total execution time: —
 
@@ -301,14 +301,14 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-09T13:37:03.674Z
-Stopped at: Completed 146-03-PLAN.md
+Last session: 2026-07-09T14:04:08.232Z
+Stopped at: Phase 146 verified and completed; v18.0 milestone ready for closeout.
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-discuss-phase 146` before planning Release Status DX & Docs Truth.
-- Keep downstream phase ownership honest: Phase 146 must validate its already-present implementation spillover before being claimed complete.
+- Run milestone closeout for v18.0 now that phases 142-146 are verified complete.
+- Preserve advisory live-registry honesty: iOS `v0.2.0`, `crosswake_rulestead`, and `crosswake_rindle` missing live endpoints remain warnings surfaced by `mix crosswake.release.status --live`, not local graph failures.
 - Do not perform Hex/package publish operations from this planning pass.
 
 <!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->

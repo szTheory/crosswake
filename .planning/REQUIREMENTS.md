@@ -31,9 +31,9 @@
 
 ### Release Status DX
 
-- [ ] **STAT-01**: Maintainers can run one local command to inspect core/native lockstep, companion versions, compatibility floors, release-as pins, and release workflow guard status.
-- [ ] **STAT-02**: The release status command has JSON output suitable for CI or issue-opening automation.
-- [ ] **STAT-03**: Release status can optionally probe live public registries without making live network checks mandatory for normal CI.
+- [x] **STAT-01**: Maintainers can run one local command to inspect core/native lockstep, companion versions, compatibility floors, release-as pins, and release workflow guard status.
+- [x] **STAT-02**: The release status command has JSON output suitable for CI or issue-opening automation.
+- [x] **STAT-03**: Release status can optionally probe live public registries without making live network checks mandatory for normal CI.
 
 ## v2 Requirements
 
@@ -70,9 +70,9 @@
 | MIRR-01 | Phase 145 | Complete |
 | MIRR-02 | Phase 145 | Complete |
 | MIRR-03 | Phase 145 | Complete |
-| STAT-01 | Phase 146 | Pending |
-| STAT-02 | Phase 146 | Pending |
-| STAT-03 | Phase 146 | Pending |
+| STAT-01 | Phase 146 | Complete |
+| STAT-02 | Phase 146 | Complete |
+| STAT-03 | Phase 146 | Complete |
 
 **Coverage:**
 
