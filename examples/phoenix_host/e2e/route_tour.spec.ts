@@ -39,6 +39,20 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     writeRouteTourEvidenceManifest(screenshotDir, routeTourCommand);
   });
+
+  test('keeps the showcase hub readable in mobile dark reduced-motion mode', async ({ page }) => {
+    mkdirSync(routeTourScreenshotDir, { recursive: true });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    await proveShowcaseHub(page);
+    await expectNoHorizontalOverflow(page, 'showcase-hub');
+
+    await page.keyboard.press('Tab');
+    await expectVisibleFocus(page, 'showcase-hub');
+
+    await captureRouteScreenshot(page, 'showcase-mobile-dark-reduced.png');
+  });
 });
 
 async function proveShowcaseHub(page: Page) {
@@ -147,6 +161,35 @@ async function proveNativeOwnedRoute(page: Page) {
 
 async function captureRouteScreenshot(page: Page, filename: string) {
   await page.screenshot({ path: path.join(routeTourScreenshotDir, filename), fullPage: true });
+}
+
+async function expectNoHorizontalOverflow(page: Page, routeId: string) {
+  const metrics = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    bodyScrollWidth: document.body.scrollWidth,
+  }));
+  expect(
+    Math.max(metrics.scrollWidth, metrics.bodyScrollWidth),
+    ownerMessage(routeId, 'mobile viewport containment'),
+  ).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+async function expectVisibleFocus(page: Page, routeId: string) {
+  const focus = await page.evaluate(() => {
+    const active = document.activeElement;
+    const style = window.getComputedStyle(active!);
+
+    return {
+      text: active?.textContent?.trim(),
+      outlineStyle: style.outlineStyle,
+      outlineWidth: Number.parseFloat(style.outlineWidth),
+    };
+  });
+
+  expect(focus.text, ownerMessage(routeId, 'keyboard focus target')).toContain('Explore Showcase');
+  expect(focus.outlineStyle, ownerMessage(routeId, 'keyboard focus outline')).not.toBe('none');
+  expect(focus.outlineWidth, ownerMessage(routeId, 'keyboard focus outline')).toBeGreaterThan(0);
 }
 
 async function bridgePayload(page: Page) {

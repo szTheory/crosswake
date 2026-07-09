@@ -53,6 +53,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Buttons */
 .btn-primary {
+  box-sizing: border-box;
   background-color: var(--cw-action-bg);
   color: var(--cw-action-fg);
   border: none;
@@ -77,6 +78,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
+  box-sizing: border-box;
   background-color: transparent;
   color: var(--cw-text-default);
   border: 1px solid var(--cw-border-default);
