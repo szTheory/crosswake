@@ -24,7 +24,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Deferred non-shipped claims
 
-* RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
+* RevenueCat provider adapter, Chimeway notification delivery execution, native device/emulator proof lanes, and broad native runtime expansion beyond the listed live companion packages are not shipped in the published core Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
 * Future companion or native breadth still requires its own release, proof, and support-matrix update. Existing live companion packages do not promote RevenueCat, push delivery execution, physical-device evidence, or broad native runtime expansion.
 
 ### Published Hex truth
@@ -48,7 +48,7 @@ Additive, Elixir-only core surface: `Crosswake.Shell.Finding` gains `code` and `
 
 ### Notes
 
-* This core release is the published prerequisite for the v17.0 first-party companion packages (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`), which publish separately at their own `0.1.0` and require `crosswake` `~> 0.2` (`>= 0.2.0`).
+* This core release is the published prerequisite for the v17.0 first-party companion packages (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`), which publish separately and require `crosswake` `~> 0.2` (`>= 0.2.0`). Current companion versions are tracked in `[Unreleased]` and `guides/companion_compatibility.md`.
 * Deferred and not shipped (unchanged from `0.1.2`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.2] — 2026-06-17
@@ -80,7 +80,7 @@ Lower-impact changes bundled in this release (no native rebuild needed):
 ### Notes
 
 * The v9.0 brand system (`brandbook/` — brand book, design tokens, logo suite, collateral, and the COLL-05 automated brand-verification suite) was developed in this window but is **excluded from the Hex package** (`:exclude_patterns: ["brandbook"]`), so it is not part of this installable release.
-* Deferred and not shipped (unchanged from `[Unreleased]`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
+* Deferred and not shipped in `0.1.2`: RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.0] — 2026-05-29
 

@@ -10,6 +10,14 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   )
   @forbidden_public_ids ~w(PREF-01 MIRR-01 STAT-01)
   @stale_phrase Enum.join(["PREF validation", "remains", "Phase 144"], " ")
+  @stale_companion_deferred Enum.join(
+                              [
+                                "companion extraction",
+                                "and broad native runtime expansion are not shipped"
+                              ],
+                              ", "
+                            )
+  @stale_companion_version Enum.join(["publish separately at", "their own `0.1.0`"], " ")
 
   test "release status reports local graph and scanner-backed guard checks" do
     status = Crosswake.ReleaseStatus.build()
@@ -32,6 +40,36 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
       assert %{status: :ok, source: "script/check_release_workflow_integrity.exs"} =
                check!(status, code)
     end
+  end
+
+  test "scanner failure outside scoped evidence IDs fails the status surface" do
+    baseline = Crosswake.ReleaseStatus.build()
+
+    checks =
+      baseline.checks
+      |> Enum.filter(&(&1.source == "script/check_release_workflow_integrity.exs"))
+      |> Enum.flat_map(& &1.evidence)
+      |> Enum.uniq()
+      |> Map.new(&{&1, %{status: :ok, detail: "fixture ok"}})
+      |> Map.put("release.unscoped.regression", %{status: :error, detail: "fixture failure"})
+
+    status =
+      Crosswake.ReleaseStatus.build(
+        workflow_integrity: %{
+          status: :failed,
+          checks: checks,
+          message: "scanner reported release workflow drift"
+        }
+      )
+
+    assert status.status == :error
+
+    assert %{status: :error, evidence: evidence, message: message, next_action: next_action} =
+             check!(status, "release.workflow_path_gates")
+
+    assert "release.unscoped.regression" in evidence
+    assert message =~ "failing scanner IDs: release.unscoped.regression"
+    assert next_action == "elixir script/check_release_workflow_integrity.exs"
   end
 
   test "human task output names package-family release posture without stale phase copy" do
@@ -167,6 +205,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
 
   test "release status source stays read-only and avoids mutation commands" do
     source = File.read!("lib/crosswake/release_status.ex")
+    changelog = File.read!("CHANGELOG.md")
     rendered = Crosswake.ReleaseStatus.build() |> Crosswake.ReleaseStatus.render()
     json = Crosswake.ReleaseStatus.build() |> Jason.encode!()
 
@@ -179,6 +218,8 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     refute source =~ "--apply"
     refute source =~ "gh pr"
     refute source =~ "gh issue"
+    refute changelog =~ @stale_companion_deferred
+    refute changelog =~ @stale_companion_version
   end
 
   defp check!(status, code) do

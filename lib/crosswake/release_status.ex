@@ -67,7 +67,9 @@ defmodule Crosswake.ReleaseStatus do
     config = read_json!(cwd, @config_path)
     workflow = read_file!(cwd, @workflow_path)
     probes = live_probes(opts)
-    workflow_integrity = workflow_integrity_evidence(cwd)
+
+    workflow_integrity =
+      Keyword.get_lazy(opts, :workflow_integrity, fn -> workflow_integrity_evidence(cwd) end)
 
     core = core_components(cwd, manifest, live?, probes)
     companions = companion_components(cwd, manifest, config, live?, probes)
@@ -570,6 +572,29 @@ defmodule Crosswake.ReleaseStatus do
 
   defp scanner_ids_result(%{status: :unavailable, message: message}, _required_ids),
     do: {false, [], message}
+
+  defp scanner_ids_result(%{status: :failed, checks: checks}, required_ids) do
+    missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
+
+    failing =
+      checks
+      |> Enum.filter(fn {_id, check} -> match?(%{status: :error}, check) end)
+      |> Enum.map(fn {id, _check} -> id end)
+      |> Enum.sort()
+
+    evidence = Enum.uniq(missing ++ failing)
+
+    cond do
+      missing != [] ->
+        {false, evidence, "missing scanner IDs: #{Enum.join(missing, ", ")}"}
+
+      failing != [] ->
+        {false, evidence, "failing scanner IDs: #{Enum.join(failing, ", ")}"}
+
+      true ->
+        {false, evidence, "scanner exited nonzero without parseable failing IDs"}
+    end
+  end
 
   defp scanner_ids_result(%{checks: checks}, required_ids) do
     missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
