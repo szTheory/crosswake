@@ -32,6 +32,7 @@
 **Requirements:** ARC-01, ARC-02, ARC-03, SHOW-01, SHOW-02, SHOW-03, SHOW-04
 
 **Success criteria:**
+
 1. Planning docs preserve the v19 showcase -> v20 native-controls thread and classify SEED-002/003/004 correctly.
 2. The example host has a first-screen showcase hub with SaaS/admin, field-service, and learning/training lanes visible.
 3. Showcase data has a deterministic reset/reseed path with believable records for all three lanes.
@@ -41,10 +42,18 @@
 **Plans:** 5 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 147-01-PLAN.md — Preserve the v19/v20 arc and SEED-002/003/004 classifications.
 - [ ] 147-02-PLAN.md — Create the showcase catalog and route-owner/support label verification.
 - [ ] 147-03-PLAN.md — Build deterministic fixture/reset orchestration and seed/CLI delegation.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 147-04-PLAN.md — Wire the root showcase hub and gated reset endpoint.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 147-05-PLAN.md — Repoint first-run banner/docs and add a narrow hub route-tour smoke.
 
 ### Phase 148: SaaS/Admin Showcase
@@ -54,6 +63,7 @@ Plans:
 **Requirements:** SAAS-01, SAAS-02, SAAS-03, SAAS-04
 
 **Success criteria:**
+
 1. A user can click through realistic SaaS/admin records such as accounts, teams, roles, settings, and operational events.
 2. The lane makes LiveView-first ownership and auth-sensitive/admin posture visible without implying native rendering.
 3. Diagnostics, support truth, and route policy are reachable from the lane.
@@ -66,6 +76,7 @@ Plans:
 **Requirements:** FIELD-01, FIELD-02, FIELD-03, FIELD-04
 
 **Success criteria:**
+
 1. A user can click through realistic field-service jobs, assets, inspections, notes, technician state, and evidence records.
 2. Device-pressure flows clearly distinguish shipped support from capture/scanning/permission gaps.
 3. Offline or degraded states are represented honestly without claiming local-first mutation unless a real journal/outbox path exists.
@@ -78,6 +89,7 @@ Plans:
 **Requirements:** LEARN-01, LEARN-02, LEARN-03, LEARN-04
 
 **Success criteria:**
+
 1. A user can click through realistic courses, lessons, packs, learners, progress, and subscription state.
 2. Content-pack and offline-study behavior is visible and connected to existing Crosswake offline posture.
 3. Sync/reconciliation state is shown honestly and does not imply a generic sync engine.
@@ -90,6 +102,7 @@ Plans:
 **Requirements:** CAPMAP-01, CAPMAP-02, CAPMAP-03, CAPMAP-04, PROOF-01, PROOF-02, PROOF-03, PROOF-04
 
 **Success criteria:**
+
 1. Capability map classifies shipped, demoed, missing, deferred, and next-pack capabilities with package ownership and proof posture.
 2. v20 Native Controls Pack 1 is scoped from v19 evidence without re-opening the whole product arc.
 3. Fixture reset and route-tour coverage prove deterministic data plus one happy path per lane.
