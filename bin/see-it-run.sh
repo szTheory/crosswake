@@ -22,7 +22,7 @@ WEB_ONLY=0
 IOS_ONLY=0
 ANDROID_ONLY=0
 DO_BUILD=0
-NO_OPEN=0
+NO_OPEN_REQUESTED=0
 SHOW_HELP=0
 
 while [[ $# -gt 0 ]]; do
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
     --android)    ANDROID_ONLY=1; shift ;;
     --all)        IOS_ONLY=0; ANDROID_ONLY=0; shift ;;  # default: both platforms
     --build)      DO_BUILD=1; shift ;;
-    --no-open)    NO_OPEN=1; shift ;;
+    --no-open)    NO_OPEN_REQUESTED=1; shift ;;
     --help|-h)    SHOW_HELP=1; shift ;;
     *)
       echo "[crosswake] Unknown flag: $1" >&2
@@ -218,7 +218,7 @@ print_banner
 # ---------------------------------------------------------------------------
 # Task 3: Web auto-open (D-19)
 # ---------------------------------------------------------------------------
-if [ "$NO_OPEN" -eq 0 ] && [ -t 1 ] && [ -z "${CI:-}" ] && [ -z "${NO_OPEN:-}" ]; then
+if [ "$NO_OPEN_REQUESTED" -eq 0 ] && [ -t 1 ] && [ -z "${CI:-}" ]; then
   if command -v open >/dev/null 2>&1; then
     open "${BACKEND_URL}/" || true
   elif command -v xdg-open >/dev/null 2>&1; then

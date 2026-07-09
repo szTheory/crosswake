@@ -198,8 +198,10 @@ backend, but does not prove physical-device support.
 Start the shared backend first:
 
 ```bash
-cd examples/phoenix_host && PORT=4700 mix phx.server
-# or: docker compose up (from examples/)
+cd examples/phoenix_host
+PORT=4700 mix phx.server
+# or, from the same directory:
+docker compose up
 ```
 
 **iOS Simulator** (select the `Dev` scheme in Xcode):
