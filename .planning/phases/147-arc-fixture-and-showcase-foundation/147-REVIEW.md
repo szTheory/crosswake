@@ -1,6 +1,6 @@
 ---
 phase: 147-arc-fixture-and-showcase-foundation
-reviewed: 2026-07-09T20:38:00Z
+reviewed: 2026-07-09T21:03:12Z
 depth: standard
 files_reviewed: 23
 files_reviewed_list:
@@ -37,7 +37,7 @@ status: clean
 
 # Phase 147: Code Review Report
 
-**Reviewed:** 2026-07-09T20:38:00Z
+**Reviewed:** 2026-07-09T21:03:12Z
 **Depth:** standard
 **Files Reviewed:** 23
 **Status:** clean
@@ -46,19 +46,12 @@ status: clean
 
 ## Summary
 
-Re-reviewed the same Phase 147 scope against the current worktree after the CR-01 and WR-01 fixes. The launcher now uses `NO_OPEN_REQUESTED` without the always-false empty-variable guard, and the Quick Start dev-wiring block now changes into `examples/phoenix_host` before both `mix` and `docker compose` commands. No remaining blocker, warning, or info findings were found in the reviewed files.
+Re-reviewed the Phase 147 source scope at standard depth after the Learning/Training lane target fix. The reviewed catalog, hub, route metadata, reset orchestration, route-tour test, and docs-contract tests are consistent with the showcase-first Phase 147 requirements.
 
-All reviewed files meet quality standards for this standard-depth pass. No issues found.
-
-Verification run during re-review:
-
-- `bash -n bin/see-it-run.sh`
-- `mix test test/crosswake/guides/quick_start_adoption_drift_test.exs test/crosswake/guides/see_it_run_test.exs`
-- `mix test test/crosswake/guides/see_it_run_banner_test.exs test/crosswake/guides/readme_see_it_run_test.exs`
-- `cd examples/phoenix_host && mix test test/crosswake_example/showcase/catalog_test.exs test/crosswake_example/showcase/hub_live_test.exs test/crosswake_example/showcase/reset_test.exs test/crosswake_example/e2e/showcase_reset_controller_test.exs test/crosswake_example/router_test.exs`
+All reviewed files meet quality standards. No issues found.
 
 ---
 
-_Reviewed: 2026-07-09T20:38:00Z_
+_Reviewed: 2026-07-09T21:03:12Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
