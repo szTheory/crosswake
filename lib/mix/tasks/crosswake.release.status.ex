@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Crosswake.Release.Status do
 
     Mix.shell().info(output)
 
-    if status.status == :error do
+    if Crosswake.ReleaseStatus.exit_code(status) != 0 do
       Mix.raise("Crosswake release status found blocking release issues")
     end
   end

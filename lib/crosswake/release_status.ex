@@ -12,6 +12,7 @@ defmodule Crosswake.ReleaseStatus do
   @workflow_path ".github/workflows/release-please.yml"
   @android_gradle_path "packages/crosswake-shell-core-android/build.gradle.kts"
   @ios_mirror_url "https://github.com/szTheory/crosswake-shell-core-ios.git"
+  @workflow_integrity_source "script/check_release_workflow_integrity.exs"
   @workflow_integrity_command "elixir script/check_release_workflow_integrity.exs"
   @core_path_gates [
     {"publish-hex", "."},
@@ -19,6 +20,43 @@ defmodule Crosswake.ReleaseStatus do
     {"publish-android-core", "packages/crosswake-shell-core-android"}
   ]
   @release_components ~w(rulestead rindle sigra chimeway threadline)
+  @cleanroom_evidence_ids ~w(
+    release.cleanroom.hex_metadata_floor
+    release.cleanroom.exact_companion_pin
+    release.cleanroom.lockfile_postcondition
+    release.cleanroom.package_matrix_complete
+    release.doctor.fresh_router_loaded
+    release.workflow.doctor_proof_unmasked
+  )
+  @workflow_path_gate_ids ~w(
+    release.outputs.paths_released
+    release.root_hex.path_gate
+    release.ios.path_gate
+    release.android.path_gate
+  )
+  @governance_queue_ids ~w(
+    release.concurrency.queue_max
+    release.workflow.concurrency_queue_max
+    release.workflow.no_cancel_in_progress_true
+  )
+  @behavioral_identity_ids ~w(
+    release.aggregate_gate.behavioral_jobs_absent
+    release.workflow.aggregate_gate.behavioral_jobs_absent
+    release.workflow.proof_after_publish
+    release.workflow.native_proof_decoupled
+    release.workflow.mirror_token_preflight
+    release.mirror_token.write_preflight
+    release.workflow.native_rollup_summary
+    release.workflow.native_status_artifact
+    release.workflow.companion_floors_honest
+    release.version_graph.lockstep_core_native_only
+    release.version_graph.companions_independent
+    release.version_graph.companion_floors_honest
+  )
+  @cleanup_evidence_ids ~w(
+    release.cleanup.after_publish_and_proof
+    release.cleanup.pr_only
+  )
 
   @spec build(keyword()) :: map()
   def build(opts \\ []) do
@@ -29,10 +67,11 @@ defmodule Crosswake.ReleaseStatus do
     config = read_json!(cwd, @config_path)
     workflow = read_file!(cwd, @workflow_path)
     probes = live_probes(opts)
+    workflow_integrity = workflow_integrity_evidence(cwd)
 
     core = core_components(cwd, manifest, live?, probes)
     companions = companion_components(cwd, manifest, config, live?, probes)
-    checks = checks(cwd, manifest, config, workflow, core, companions)
+    checks = checks(manifest, workflow, core, companions, workflow_integrity)
 
     %{
       schema_version: @schema_version,
@@ -72,12 +111,12 @@ defmodule Crosswake.ReleaseStatus do
           release_as =
             case companion.release_as do
               nil -> ""
-              value -> " release-as=#{value}"
+              value -> " release-as pin=#{value}"
             end
 
           live = live_label(companion)
 
-          "- #{companion.package}: version=#{companion.version} requires_crosswake=#{companion.core_requirement}#{release_as}#{live}"
+          "- #{companion.package}: manifest=#{companion.manifest_version} configured=#{companion.configured_version} requires_crosswake=#{companion.core_requirement}#{release_as}#{live}"
         end)
 
     check_lines =
@@ -86,10 +125,27 @@ defmodule Crosswake.ReleaseStatus do
         "Checks:"
       ] ++
         Enum.map(status.checks, fn check ->
-          "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}"
+          next_action =
+            if check.status == :ok or is_nil(check.next_action) do
+              ""
+            else
+              " next action: #{check.next_action}"
+            end
+
+          "- #{String.upcase(to_string(check.status))} #{check.code}: #{check.message}#{next_action}"
         end)
 
-    Enum.join(lines ++ core_lines ++ companion_lines ++ check_lines, "\n") <> "\n"
+    live_lines =
+      if status.live_checked do
+        [
+          "",
+          "Live registry state:"
+        ] ++ Enum.map(status.core ++ status.companions, &live_registry_line/1)
+      else
+        []
+      end
+
+    Enum.join(lines ++ core_lines ++ companion_lines ++ live_lines ++ check_lines, "\n") <> "\n"
   end
 
   defp core_components(cwd, manifest, live?, probes) do
@@ -97,6 +153,8 @@ defmodule Crosswake.ReleaseStatus do
 
     [
       %{
+        kind: "core",
+        name: "crosswake",
         component: "hex",
         path: ".",
         manifest_version: version,
@@ -104,6 +162,8 @@ defmodule Crosswake.ReleaseStatus do
         live: maybe_hex_live("crosswake", version, live?, probes)
       },
       %{
+        kind: "native",
+        name: "ios-core",
         component: "ios-core",
         path: "packages/crosswake-shell-core-ios",
         manifest_version: Map.fetch!(manifest, "packages/crosswake-shell-core-ios"),
@@ -111,6 +171,8 @@ defmodule Crosswake.ReleaseStatus do
         live: maybe_ios_mirror_live(version, live?, probes)
       },
       %{
+        kind: "native",
+        name: "android-core",
         component: "android-core",
         path: "packages/crosswake-shell-core-android",
         manifest_version: Map.fetch!(manifest, "packages/crosswake-shell-core-android"),
@@ -128,22 +190,29 @@ defmodule Crosswake.ReleaseStatus do
     |> Enum.map(fn path ->
       package = Path.basename(path)
       mix_path = Path.join(path, "mix.exs")
+      version = Map.fetch!(manifest, path)
 
       %{
+        kind: companion_kind(package),
+        name: package,
         package: package,
         path: path,
-        version: Map.fetch!(manifest, path),
+        manifest_version: version,
+        version: version,
         configured_version: mix_version!(cwd, mix_path),
         core_requirement: crosswake_requirement!(cwd, mix_path),
         release_as: get_in(config, ["packages", path, "release-as"]),
         release_as_tag_exists:
           release_as_tag_exists?(cwd, package, get_in(config, ["packages", path, "release-as"])),
-        live: maybe_hex_live(package, Map.fetch!(manifest, path), live?, probes)
+        live: maybe_hex_live(package, version, live?, probes)
       }
     end)
   end
 
-  defp checks(cwd, manifest, _config, workflow, core, companions) do
+  defp companion_kind("crosswake_threadline"), do: "observer"
+  defp companion_kind(_package), do: "companion"
+
+  defp checks(manifest, workflow, core, companions, workflow_integrity) do
     jobs = job_blocks(workflow)
 
     base_checks = [
@@ -152,64 +221,79 @@ defmodule Crosswake.ReleaseStatus do
         "release.lockstep_manifest",
         "core/native manifest versions are #{Map.fetch!(manifest, ".")}",
         Enum.all?(core, &(&1.manifest_version == Map.fetch!(manifest, "."))),
-        "core/native manifest versions must match"
+        "core/native manifest versions must match",
+        source: @manifest_path,
+        evidence: Enum.map(core, &"#{&1.component}=#{&1.manifest_version}"),
+        next_action: "inspect #{@manifest_path}"
       ),
       check(
         :ok,
         "release.lockstep_config",
         "core/native configured versions match manifest",
         Enum.all?(core, &(&1.configured_version == &1.manifest_version)),
-        "configured root/native versions drift from manifest"
+        "configured root/native versions drift from manifest",
+        source: "mix.exs and #{@android_gradle_path}",
+        evidence: Enum.map(core, &"#{&1.component}=#{&1.configured_version}"),
+        next_action: "reconcile configured version values with #{@manifest_path}"
       ),
-      check(
+      scanner_check(
         :ok,
         "release.workflow_path_gates",
         "root/native publish jobs use exact paths_released gates",
-        workflow =~ "paths_released:" and core_path_gates?(jobs),
-        "root/native publish jobs are not exact path-gated; next: #{@workflow_integrity_command}"
+        "root/native publish jobs are not exact path-gated",
+        workflow_integrity,
+        @workflow_path_gate_ids,
+        workflow =~ "paths_released:" and core_path_gates?(jobs)
       )
     ]
 
     proof_checks = [
-      check(
-        :warning,
+      scanner_check(
+        :ok,
         "release.cleanroom_dependency_floor",
-        "downstream clean-room dependency-floor evidence is present; PREF validation remains Phase 144",
-        cleanroom_script_hardened?(cwd),
-        "downstream clean-room dependency-floor evidence is missing; PREF validation remains Phase 144"
+        "clean-room proof uses Hex metadata floors and exact companion pins",
+        "clean-room proof evidence is missing or stale",
+        workflow_integrity,
+        @cleanroom_evidence_ids
       )
     ]
 
     base_checks ++
-      local_governance_checks(workflow) ++
+      local_governance_checks(workflow, workflow_integrity) ++
       proof_checks ++ live_registry_checks(core, companions) ++ release_as_checks(companions)
   end
 
-  defp local_governance_checks(workflow) do
+  defp local_governance_checks(workflow, workflow_integrity) do
     non_comment_workflow = strip_full_line_comments(workflow)
     jobs = job_blocks(workflow)
 
     [
-      check(
+      scanner_check(
         :ok,
         "release.governance_queue_max",
         "release workflow queues pending runs with queue: max and cancel-in-progress: false",
-        governance_queue_max?(non_comment_workflow),
-        "release workflow must set queue: max, cancel-in-progress: false, and avoid cancel-in-progress: true; next: #{@workflow_integrity_command}"
+        "release workflow must preserve pending release runs",
+        workflow_integrity,
+        @governance_queue_ids,
+        governance_queue_max?(non_comment_workflow)
       ),
-      check(
+      scanner_check(
         :ok,
         "release.governance_behavioral_identity_gates",
         "behavioral release jobs use exact path/component gates",
-        behavioral_identity_gates?(jobs),
-        "behavioral release jobs must use exact paths_released/component gates and avoid aggregate releases_created gates; next: #{@workflow_integrity_command}"
+        "behavioral release jobs must use exact release identity gates",
+        workflow_integrity,
+        @behavioral_identity_ids ++ component_gate_ids() ++ component_proof_ids(),
+        behavioral_identity_gates?(jobs)
       ),
-      check(
+      scanner_check(
         :ok,
         "release.governance_cleanup_after_proof",
         "release-as cleanup waits for released companion publish and proof success",
-        cleanup_after_proof?(jobs),
-        "release-as cleanup must wait for each released companion publish and clean-room proof success; next: #{@workflow_integrity_command}"
+        "release-as cleanup must wait for companion publish and proof success",
+        workflow_integrity,
+        @cleanup_evidence_ids,
+        cleanup_after_proof?(jobs)
       )
     ]
   end
@@ -355,6 +439,14 @@ defmodule Crosswake.ReleaseStatus do
       not includes?(job_if(jobs, job), "needs.release-please.outputs.releases_created")
   end
 
+  defp component_gate_ids do
+    Enum.map(@release_components, &"release.#{&1}.component_gate")
+  end
+
+  defp component_proof_ids do
+    Enum.map(@release_components, &"release.#{&1}.proof_gate")
+  end
+
   defp strip_full_line_comments(text) do
     text
     |> String.split("\n", trim: false)
@@ -372,16 +464,24 @@ defmodule Crosswake.ReleaseStatus do
       []
     else
       missing = Enum.reject(entries, &(&1.live.status == :ok))
+      evidence = Enum.map(entries, &live_evidence/1)
 
       [
         %{
           status: if(missing == [], do: :ok, else: :warning),
           code: "release.live_registry_presence",
+          source: "live registry probes",
+          evidence: evidence,
+          next_action:
+            if(missing == [],
+              do: nil,
+              else: "review live registry state or rerun mix crosswake.release.status --live"
+            ),
           message:
             if missing == [] do
               "all live registry probes found manifest versions"
             else
-              "live registry probes missing: #{Enum.map_join(missing, ", ", &live_missing_label/1)}"
+              "live registry probes need attention: #{Enum.map_join(missing, ", ", &live_missing_label/1)}"
             end
         }
       ]
@@ -389,10 +489,16 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp live_missing_label(%{component: component, manifest_version: version, live: live}),
-    do: "#{component}@#{version} on #{live.source}"
+    do: "#{component}@#{version} #{live.status} on #{live.source}"
 
   defp live_missing_label(%{package: package, version: version, live: live}),
-    do: "#{package}@#{version} on #{live.source}"
+    do: "#{package}@#{version} #{live.status} on #{live.source}"
+
+  defp live_evidence(%{component: component, manifest_version: version, live: live}),
+    do: "#{component}@#{version}=#{live.status}"
+
+  defp live_evidence(%{package: package, manifest_version: version, live: live}),
+    do: "#{package}@#{version}=#{live.status}"
 
   defp release_as_checks(companions) do
     stale =
@@ -404,6 +510,16 @@ defmodule Crosswake.ReleaseStatus do
       %{
         status: if(stale == [], do: :ok, else: :error),
         code: "release.release_as_staleness",
+        source: "release-please-config.json",
+        evidence:
+          Enum.map(companions, fn companion ->
+            "#{companion.package}:release-as=#{companion.release_as || "none"}"
+          end),
+        next_action:
+          if(stale == [],
+            do: nil,
+            else: "remove stale release-as pins from release-please-config.json"
+          ),
         message:
           if stale == [] do
             "no release-as pin points at an existing local release tag"
@@ -415,13 +531,66 @@ defmodule Crosswake.ReleaseStatus do
     ]
   end
 
-  defp check(status_when_ok, code, ok_message, true, _error_message),
-    do: %{status: status_when_ok, code: code, message: ok_message}
+  defp check(status_when_ok, code, ok_message, condition, error_message, opts) do
+    status = if condition, do: status_when_ok, else: :error
 
-  defp check(_status_when_ok, code, _ok_message, false, error_message),
-    do: %{status: :error, code: code, message: error_message}
+    %{
+      status: status,
+      code: code,
+      message: if(condition, do: ok_message, else: error_message),
+      next_action: if(status == :ok, do: nil, else: Keyword.fetch!(opts, :next_action)),
+      source: Keyword.fetch!(opts, :source)
+    }
+    |> maybe_put(:evidence, Keyword.get(opts, :evidence))
+  end
 
-  defp aggregate_status(checks) do
+  defp scanner_check(
+         status_when_ok,
+         code,
+         ok_message,
+         error_message,
+         workflow_integrity,
+         required_ids,
+         local_ok? \\ true
+       ) do
+    {scanner_ok?, evidence, scanner_message} =
+      scanner_ids_result(workflow_integrity, required_ids)
+
+    ok? = local_ok? and scanner_ok?
+
+    %{
+      status: if(ok?, do: status_when_ok, else: :error),
+      code: code,
+      message: if(ok?, do: ok_message, else: "#{error_message}: #{scanner_message}"),
+      next_action: if(ok?, do: nil, else: @workflow_integrity_command),
+      source: @workflow_integrity_source,
+      evidence: evidence
+    }
+  end
+
+  defp scanner_ids_result(%{status: :unavailable, message: message}, _required_ids),
+    do: {false, [], message}
+
+  defp scanner_ids_result(%{checks: checks}, required_ids) do
+    missing = Enum.reject(required_ids, &Map.has_key?(checks, &1))
+
+    failing =
+      required_ids
+      |> Enum.filter(fn id -> match?(%{status: :error}, Map.get(checks, id)) end)
+
+    cond do
+      missing == [] and failing == [] ->
+        {true, required_ids, "all scanner IDs passed"}
+
+      missing != [] ->
+        {false, missing ++ failing, "missing scanner IDs: #{Enum.join(missing, ", ")}"}
+
+      true ->
+        {false, failing, "failing scanner IDs: #{Enum.join(failing, ", ")}"}
+    end
+  end
+
+  def aggregate_status(checks) do
     cond do
       Enum.any?(checks, &(&1.status == :error)) -> :error
       Enum.any?(checks, &(&1.status == :warning)) -> :warning
@@ -429,16 +598,106 @@ defmodule Crosswake.ReleaseStatus do
     end
   end
 
+  def exit_code(:error), do: 1
+  def exit_code(%{status: status}), do: exit_code(status)
+  def exit_code(_status), do: 0
+
   defp live_label(%{live: nil}), do: ""
   defp live_label(%{live: %{status: status, source: source}}), do: " live_#{source}=#{status}"
 
-  defp cleanroom_script_hardened?(cwd) do
-    script = read_file!(cwd, "script/verify_companion_cleanroom.sh")
+  defp live_registry_line(%{component: component, manifest_version: version, live: live}) do
+    "- #{component}: manifest version=#{version} #{live_registry_state(live)}"
+  end
 
-    script =~ "CORE_REQUIREMENT=" and
-      script =~ "PACKAGE_REQUIREMENT=\"${PACKAGE_REQUIREMENT:-== ${VERSION}}\"" and
-      script =~ "{:crosswake, \"${CORE_REQUIREMENT}\"}" and
-      script =~ "{:${PACKAGE}, \"${PACKAGE_REQUIREMENT}\"}"
+  defp live_registry_line(%{package: package, manifest_version: version, live: live}) do
+    "- #{package}: manifest version=#{version} #{live_registry_state(live)}"
+  end
+
+  defp live_registry_state(nil), do: "live registry state=not checked"
+
+  defp live_registry_state(%{status: status, source: source}) do
+    "live registry state=#{status} source=#{source}"
+  end
+
+  defp workflow_integrity_evidence(cwd) do
+    case System.cmd("elixir", [@workflow_integrity_source], cd: cwd, stderr_to_stdout: true) do
+      {output, exit_code} ->
+        checks = parse_workflow_integrity_output(output)
+
+        cond do
+          checks == %{} ->
+            %{
+              status: :unavailable,
+              checks: %{},
+              message: "scanner output was empty or unparseable"
+            }
+
+          exit_code == 0 ->
+            %{status: :ok, checks: checks, message: "scanner passed"}
+
+          true ->
+            %{status: :failed, checks: checks, message: "scanner reported release workflow drift"}
+        end
+    end
+  rescue
+    error ->
+      %{status: :unavailable, checks: %{}, message: Exception.message(error)}
+  end
+
+  defp parse_workflow_integrity_output(output) do
+    output
+    |> String.split("\n", trim: true)
+    |> Enum.flat_map(fn line ->
+      case Regex.run(~r/^\[crosswake\] (OK|FAIL): ([^\s]+) - (.*)$/, line,
+             capture: :all_but_first
+           ) do
+        [status, id, detail] ->
+          [{id, %{status: scanner_status(status), detail: detail}}]
+
+        _ ->
+          []
+      end
+    end)
+    |> Map.new()
+  end
+
+  defp scanner_status("OK"), do: :ok
+  defp scanner_status("FAIL"), do: :error
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, _key, []), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  defp normalize_live_result(result, base) when is_boolean(result) do
+    normalize_live_result(if(result, do: :ok, else: :missing), base)
+  end
+
+  defp normalize_live_result(status, base) when status in [:ok, :missing, :unavailable] do
+    Map.merge(base, %{status: status})
+  end
+
+  defp normalize_live_result(%{} = result, base) do
+    result =
+      result
+      |> atomize_live_keys()
+      |> Map.update(:status, :unavailable, &normalize_live_status/1)
+
+    Map.merge(base, result)
+  end
+
+  defp normalize_live_result(_result, base), do: Map.merge(base, %{status: :unavailable})
+
+  defp normalize_live_status(status) when status in [:ok, :missing, :unavailable], do: status
+  defp normalize_live_status("ok"), do: :ok
+  defp normalize_live_status("missing"), do: :missing
+  defp normalize_live_status("unavailable"), do: :unavailable
+  defp normalize_live_status(_status), do: :unavailable
+
+  defp atomize_live_keys(result) do
+    Map.new(result, fn
+      {key, value} when is_binary(key) -> {String.to_existing_atom(key), value}
+      pair -> pair
+    end)
   end
 
   defp mix_version!(cwd, path) do
@@ -474,15 +733,32 @@ defmodule Crosswake.ReleaseStatus do
 
   defp maybe_hex_live(package, version, true, probes) do
     url = "https://hex.pm/api/packages/#{package}/releases/#{version}"
-    %{source: "hex", status: if(probes.http.(url), do: :ok, else: :missing)}
+
+    probes.http
+    |> call_probe([url, %{kind: :hex, package: package, version: version}])
+    |> normalize_live_result(%{
+      source: "hex",
+      checked: true,
+      url: url,
+      next_action: "verify #{package} #{version} on Hex.pm or rerun release publish proof"
+    })
   end
 
   defp maybe_ios_mirror_live(_version, false, _probes), do: nil
 
   defp maybe_ios_mirror_live(version, true, probes) do
     ref = "refs/tags/v#{version}"
-    status = if probes.git_ref.(@ios_mirror_url, ref), do: :ok, else: :missing
-    %{source: "ios_mirror", status: status}
+
+    probes.git_ref
+    |> call_probe([@ios_mirror_url, ref])
+    |> normalize_live_result(%{
+      source: "ios_mirror",
+      checked: true,
+      remote: @ios_mirror_url,
+      ref: ref,
+      next_action:
+        "run script/verify_ios_mirror_backfill.sh --version #{version} --ref refs/tags/ios-core-v#{version}"
+    })
   end
 
   defp maybe_maven_live(_version, false, _probes), do: nil
@@ -491,49 +767,119 @@ defmodule Crosswake.ReleaseStatus do
     url =
       "https://repo1.maven.org/maven2/io/github/sztheory/crosswake-shell-core-android/#{version}/crosswake-shell-core-android-#{version}.pom"
 
-    %{source: "maven", status: if(probes.http.(url), do: :ok, else: :missing)}
+    probes.http
+    |> call_probe([url, %{kind: :maven, version: version}])
+    |> normalize_live_result(%{
+      source: "maven",
+      checked: true,
+      url: url,
+      next_action: "verify Android Maven Central publication for #{version}"
+    })
   end
 
   defp live_probes(opts) do
     %{
-      http: Keyword.get(opts, :http_probe, &http_ok?/1),
-      git_ref: Keyword.get(opts, :git_ref_probe, &git_ref_exists?/2)
+      http: Keyword.get(opts, :http_probe, &http_live_probe/2),
+      git_ref: Keyword.get(opts, :git_ref_probe, &git_ref_live_probe/2)
     }
   end
 
-  defp git_ref_exists?(remote_url, ref) do
-    case System.cmd("git", ["ls-remote", "--tags", remote_url, ref], stderr_to_stdout: true) do
-      {output, 0} -> String.contains?(output, ref)
-      _ -> false
-    end
-  rescue
-    _ -> false
+  defp call_probe(fun, args) do
+    {:arity, arity} = Function.info(fun, :arity)
+    apply(fun, Enum.take(args, arity))
   end
 
-  defp http_ok?(url) do
+  defp git_ref_live_probe(remote_url, ref) do
+    with git when is_binary(git) <- System.find_executable("git") do
+      case System.cmd(git, ["-c", "core.askPass=", "ls-remote", "--tags", remote_url, ref],
+             env: [{"GIT_TERMINAL_PROMPT", "0"}],
+             stderr_to_stdout: true
+           ) do
+        {output, 0} ->
+          if String.contains?(output, ref) do
+            %{status: :ok, evidence: ["ref=#{ref}"]}
+          else
+            %{status: :missing, evidence: ["ref=#{ref}"]}
+          end
+
+        {output, _} ->
+          %{status: :unavailable, evidence: [concise_probe_error(output)]}
+      end
+    else
+      _ -> %{status: :unavailable, evidence: ["git executable unavailable"]}
+    end
+  rescue
+    error -> %{status: :unavailable, evidence: [Exception.message(error)]}
+  end
+
+  defp http_live_probe(url, context) do
     with curl when is_binary(curl) <- System.find_executable("curl"),
-         {_output, 0} <-
+         {output, 0} <-
            System.cmd(
              curl,
              [
-               "--fail",
                "--silent",
                "--show-error",
                "--location",
                "--max-time",
                "5",
-               "--output",
-               "/dev/null",
+               "--write-out",
+               "\n%{http_code}",
                url
              ],
              stderr_to_stdout: true
            ) do
-      true
+      {body, code} = split_http_output(output)
+      http_status_result(code, body, context)
     else
-      _ -> false
+      {output, _exit_code} -> %{status: :unavailable, evidence: [concise_probe_error(output)]}
+      _ -> %{status: :unavailable, evidence: ["curl executable unavailable"]}
     end
   rescue
-    _ -> false
+    error -> %{status: :unavailable, evidence: [Exception.message(error)]}
+  end
+
+  defp split_http_output(output) do
+    lines = String.split(output, "\n", trim: false)
+    {status_lines, [code]} = Enum.split(lines, -1)
+    {Enum.join(status_lines, "\n"), String.trim(code)}
+  end
+
+  defp http_status_result("200", body, %{kind: :hex, version: version}) do
+    case Jason.decode(body) do
+      {:ok, %{"version" => ^version} = release} ->
+        if Map.get(release, "retirement") in [nil, false] do
+          %{status: :ok, evidence: ["version=#{version}"]}
+        else
+          %{status: :unavailable, evidence: ["hex release is retired"]}
+        end
+
+      {:ok, _payload} ->
+        %{status: :unavailable, evidence: ["hex payload version mismatch"]}
+
+      {:error, _} ->
+        %{status: :unavailable, evidence: ["hex payload malformed"]}
+    end
+  end
+
+  defp http_status_result("200", _body, %{kind: :maven, version: version}) do
+    %{status: :ok, evidence: ["version=#{version}"]}
+  end
+
+  defp http_status_result("404", _body, _context), do: %{status: :missing, evidence: ["http=404"]}
+
+  defp http_status_result(code, _body, _context) do
+    %{status: :unavailable, evidence: ["http=#{code}"]}
+  end
+
+  defp concise_probe_error(output) do
+    output
+    |> String.split("\n", trim: true)
+    |> List.first()
+    |> case do
+      nil -> "probe failed"
+      line -> String.slice(line, 0, 160)
+    end
   end
 
   defp read_json!(cwd, path), do: cwd |> read_file!(path) |> Jason.decode!()
