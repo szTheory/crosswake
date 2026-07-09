@@ -23,6 +23,8 @@ test.describe('Crosswake route-owner browser tour', () => {
   test('proves LiveView, bounded bridge, offline island, and native-owned fallback route semantics before screenshots', async ({ page, context }) => {
     mkdirSync(routeTourScreenshotDir, { recursive: true });
 
+    await proveShowcaseHub(page);
+
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
 
