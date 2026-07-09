@@ -88,12 +88,23 @@ defmodule CrosswakeExample.Showcase.HubLive do
 
   defp badge_class(label) do
     cond do
-      label =~ "LiveView" -> "showcase-badge-liveview"
-      label =~ "Offline" or label =~ "Local-first" or label =~ "Cached" -> "showcase-badge-offline"
-      label =~ "Native" or label =~ "native" -> "showcase-badge-native"
-      label =~ "Proof" -> "showcase-badge-bridge"
-      label =~ "Future" or label =~ "Demo" or label =~ "Sensitive" -> "showcase-badge-sensitive"
-      true -> "showcase-badge-support"
+      label =~ "LiveView" ->
+        "showcase-badge-liveview"
+
+      label =~ "Offline" or label =~ "Local-first" or label =~ "Cached" ->
+        "showcase-badge-offline"
+
+      label =~ "Native" or label =~ "native" ->
+        "showcase-badge-native"
+
+      label =~ "Proof" ->
+        "showcase-badge-bridge"
+
+      label =~ "Future" or label =~ "Demo" or label =~ "Sensitive" ->
+        "showcase-badge-sensitive"
+
+      true ->
+        "showcase-badge-support"
     end
   end
 end

@@ -31,7 +31,8 @@ defmodule CrosswakeExample.RouterTest do
       Path.expand("../../lib/crosswake_example/router.ex", __DIR__)
       |> File.read!()
 
-    assert source =~ ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*post\("\/showcase-reset", ShowcaseResetController, :create\)/s
+    assert source =~
+             ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*post\("\/showcase-reset", ShowcaseResetController, :create\)/s
   end
 
   test "root route is the Crosswake showcase hub LiveView with cached read-only metadata" do
