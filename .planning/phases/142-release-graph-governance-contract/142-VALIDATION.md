@@ -1,10 +1,11 @@
 ---
 phase: 142
 slug: release-graph-governance-contract
-status: ready
+status: validated
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-07
+audited: 2026-07-09
 ---
 
 # Phase 142 - Validation Strategy
@@ -41,11 +42,11 @@ created: 2026-07-07
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 142-01-01 | 01 | 1 | RELG-02 | T-142-02 | Release workflow preserves running and pending publish/proof runs with `cancel-in-progress: false` and `queue: max`. | semantic proof | `elixir script/check_release_workflow_integrity.exs` | yes | pending |
-| 142-01-02 | 01 | 1 | RELG-01 | T-142-01 | Behavioral jobs never use aggregate `releases_created`; root/native jobs use exact `paths_released` membership. | ExUnit/source proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | pending |
-| 142-01-03 | 01 | 1 | RELG-03 | T-142-03 | `release-as-cleanup` waits for released companion publish and clean-room proof success while allowing skipped unreleased components. | ExUnit/source proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | pending |
-| 142-02-01 | 02 | 1 | RELG-01, RELG-02, RELG-03 | T-142-04 | Semantic scanner fails closed on aggregate-gate, missing-queue, cleanup-without-proof, and comment-only false-pass fixtures. | adversarial unit proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | pending |
-| 142-03-01 | 03 | 2 | RELG-01, RELG-02, RELG-03 | T-142-05 | Operator-facing release governance output names the exact invariant and next command without claiming downstream PREF/MIRR/STAT requirements complete. | focused regression | `mix test test/mix/tasks/crosswake_release_status_test.exs` | yes | pending |
+| 142-01-01 | 01 | 1 | RELG-02 | T-142-02 | Release workflow preserves running and pending publish/proof runs with `cancel-in-progress: false` and `queue: max`. | semantic proof | `elixir script/check_release_workflow_integrity.exs` | yes | green |
+| 142-01-02 | 01 | 1 | RELG-01 | T-142-01 | Behavioral jobs never use aggregate `releases_created`; root/native jobs use exact `paths_released` membership. | ExUnit/source proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | green |
+| 142-01-03 | 01 | 1 | RELG-03 | T-142-03 | `release-as-cleanup` waits for released companion publish and clean-room proof success while allowing skipped unreleased components. | ExUnit/source proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | green |
+| 142-02-01 | 02 | 1 | RELG-01, RELG-02, RELG-03 | T-142-04 | Semantic scanner fails closed on aggregate-gate, missing-queue, cleanup-without-proof, and comment-only false-pass fixtures. | adversarial unit proof | `mix test test/crosswake/proof/phase142_release_integrity_test.exs` | yes | green |
+| 142-03-01 | 03 | 2 | RELG-01, RELG-02, RELG-03 | T-142-05 | Operator-facing release governance output names the exact invariant and next command without claiming downstream PREF/MIRR/STAT requirements complete. | focused regression | `mix test test/mix/tasks/crosswake_release_status_test.exs` | yes | green |
 
 *Status: pending, green, red, or flaky.*
 
@@ -53,9 +54,9 @@ created: 2026-07-07
 
 ## Wave 0 Requirements
 
-- [ ] `script/check_release_workflow_integrity.exs` exposes named checks for `release.concurrency.queue_max`, `release.cleanup.after_publish_and_proof`, and behavioral aggregate-gate absence.
-- [ ] `test/crosswake/proof/phase142_release_integrity_test.exs` contains adversarial cases for missing `queue: max`, cleanup ignoring proof results, aggregate `releases_created` in behavioral jobs, and comment-only false passes.
-- [ ] `.github/workflows/release-please.yml` has an explicit Phase 142 decision about `actionlint`: either quote the line-897 `basename "$ARTIFACT"` issue and make lint eligible, or keep lint advisory with the reason documented.
+- [x] `script/check_release_workflow_integrity.exs` exposes named checks for `release.concurrency.queue_max`, `release.cleanup.after_publish_and_proof`, and behavioral aggregate-gate absence.
+- [x] `test/crosswake/proof/phase142_release_integrity_test.exs` contains adversarial cases for missing `queue: max`, cleanup ignoring proof results, aggregate `releases_created` in behavioral jobs, and comment-only false passes.
+- [x] `.github/workflows/release-please.yml` has an explicit Phase 142 decision about `actionlint`: actionlint remains advisory because local actionlint lag rejects the required `queue: max` syntax; scanner/ExUnit are authoritative.
 
 ---
 
@@ -76,4 +77,25 @@ created: 2026-07-07
 - [x] Feedback latency is below 30 seconds for the focused proof loop.
 - [x] `nyquist_compliant: true` is set in frontmatter.
 
-**Approval:** approved 2026-07-07 for Phase 142 planning.
+**Approval:** audited 2026-07-09; Phase 142 is Nyquist-compliant.
+
+---
+
+## Validation Audit 2026-07-09
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+| Manual-only Phase 142 items | 0 |
+| Focused commands run | 3 |
+| Focused command failures | 0 |
+
+Focused commands executed:
+
+- `elixir script/check_release_workflow_integrity.exs` - passed.
+- `mix test test/crosswake/proof/phase142_release_integrity_test.exs` - passed, 58 tests / 0 failures.
+- `mix test test/mix/tasks/crosswake_release_status_test.exs` - passed, 7 tests / 0 failures.
+
+Auditor spawn skipped because the gap set was empty after reading the PLAN, SUMMARY, VERIFICATION, scanner, and test artifacts.

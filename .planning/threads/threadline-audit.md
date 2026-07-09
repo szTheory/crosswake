@@ -1,7 +1,7 @@
 # Threadline Audit Capstone
 
 **Context:** Evaluated 2026-06-05 post-v4.1.
-**Status:** ACTIVE STRATEGIC MILESTONE
+**Status:** RESOLVED by v7.0 — historical thread retained for evidence; future visual operator surface is deferred to DASH-01 `crosswake_dashboard`.
 
 Crosswake has solved the structural problem of routing Elixir to native mobile shells and has proven this across all major SaaS archetypes (commerce, notifications, auth, media, offline). 
 

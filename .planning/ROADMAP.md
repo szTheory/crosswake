@@ -12,112 +12,20 @@
 - ✅ **v15.0 See It Run — Experiential First-Run DX** — Phases 125-128 (shipped 2026-06-24)
 - ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
 - ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
-- ◆ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (active)
+- ✅ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (shipped 2026-07-09)
 
 ## Phases
 
-<details open>
-<summary>◆ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — ACTIVE</summary>
+<details>
+<summary>✅ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — SHIPPED 2026-07-09</summary>
 
-Goal: make Crosswake's package-family release path automated, path-specific, and honest before adding new product breadth. v18 harvests SEED-003 and SEED-004, finishes release-gate discipline, and keeps dashboard/offline/capability breadth deferred.
+- [x] Phase 142: Release Graph & Governance Contract (3/3 plans) — completed 2026-07-07
+- [x] Phase 143: Guarded Auto-Publish Train (3/3 plans) — completed 2026-07-07
+- [x] Phase 144: Published-Core Compatibility & Clean-Room Proof (3/3 plans) — completed 2026-07-08
+- [x] Phase 145: Native Registry & Mirror Parity (3/3 plans) — completed 2026-07-08
+- [x] Phase 146: Release Status DX & Docs Truth (3/3 plans) — completed 2026-07-09
 
-- [x] Phase 142: Release Graph & Governance Contract — encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output. Requirements: RELG-01, RELG-02, RELG-03. (completed 2026-07-07)
-- [x] Phase 143: Guarded Auto-Publish Train — make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning. Requirements: AUTO-01, AUTO-02, AUTO-03. (completed 2026-07-07)
-- [x] Phase 144: Published-Core Compatibility & Clean-Room Proof — repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers. Requirements: PREF-01, PREF-02, PREF-03. (completed 2026-07-08)
-- [x] Phase 145: Native Registry & Mirror Parity — harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag. Requirements: MIRR-01, MIRR-02, MIRR-03. (completed 2026-07-08)
-- [x] Phase 146: Release Status DX & Docs Truth — ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs. Requirements: STAT-01, STAT-02, STAT-03. (completed 2026-07-09)
-
-Success criteria:
-
-1. Companion-only releases cannot publish core Hex, iOS mirror, or Android Maven artifacts.
-2. The clean-room harness resolves the exact package under test against its real published-core floor.
-3. Maintainers can run one local command for package-family release status and a machine-readable JSON variant.
-4. Missing or invalid iOS mirror credentials fail with a clear action instead of leaving SwiftPM silently behind.
-5. Deferred product-breadth seeds remain out of scope until release integrity is trustworthy.
-
-## Phase Details
-
-### Phase 142: Release Graph & Governance Contract
-
-**Goal:** Encode and test the release DAG so core/native/companion publish jobs cannot be triggered by the wrong Release Please output.
-**Requirements:** RELG-01, RELG-02, RELG-03
-**Plans:** 3/3 plans complete
-
-### Phase 143: Guarded Auto-Publish Train
-
-**Goal:** Make package publishes hands-free on the happy path while preserving exact-ref recovery and independent companion versioning.
-**Requirements:** AUTO-01, AUTO-02, AUTO-03
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 143-01-PLAN.md — Shared guarded Hex publish helper and automatic Release Please workflow integration.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 143-02-PLAN.md — Component-aware exact-ref manual Hex recovery workflow.
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 143-03-PLAN.md — Semantic proof, version-graph/floor guardrails, and runbook reconciliation.
-
-### Phase 144: Published-Core Compatibility & Clean-Room Proof
-
-**Goal:** Repair the clean-room harness, use exact companion versions and derived core floors, and prove doctor can load fresh routers.
-**Requirements:** PREF-01, PREF-02, PREF-03
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 144-01-PLAN.md — Published Hex metadata floor, exact companion pin, lockfile postconditions, and package-profile preservation for clean-room proof.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 144-02-PLAN.md — Doctor-owned fresh-router loading, app config readiness, and removal of harness-side router preload masking.
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 144-03-PLAN.md — Merge-blocking static scanner and ExUnit fixtures for PREF-03 release-integrity regressions.
-
-### Phase 145: Native Registry & Mirror Parity
-
-**Goal:** Harden the iOS mirror token path, decouple native clean-room proofs, and document/backfill the missing `v0.2.0` SwiftPM tag.
-**Requirements:** MIRR-01, MIRR-02, MIRR-03
-**Plans:** 3 plans
-
-Plans:
-**Wave 1**
-
-- [x] 145-01-PLAN.md — iOS mirror write-authority dry-run preflight and MIRR-01 scanner fixtures.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 145-02-PLAN.md — Native proof DAG preservation plus always-running rollup summary and JSON artifact.
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 145-03-PLAN.md — Verify-first iOS `v0.2.0` mirror backfill script, dispatch wrapper, guardrails, and docs.
-
-### Phase 146: Release Status DX & Docs Truth
-
-**Goal:** Ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs.
-**Requirements:** STAT-01, STAT-02, STAT-03
-**Plans:** 3/3 plans complete
-
-Plans:
-**Wave 1**
-
-- [x] 146-01-PLAN.md — Local scanner-backed status truth for STAT-01.
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 146-02-PLAN.md — JSON contract and exit behavior for STAT-02.
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 146-03-PLAN.md — Live probe taxonomy and docs truth for STAT-03.
+Full phase detail archived in `.planning/milestones/v18.0-ROADMAP.md`.
 
 </details>
 

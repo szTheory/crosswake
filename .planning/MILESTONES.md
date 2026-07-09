@@ -1,5 +1,30 @@
 # Project Milestones: Crosswake
 
+## v18.0 Release Integrity & Automated Package Operations (Shipped: 2026-07-09)
+
+**Phases completed:** 5 phases (142-146), 15 plans, 34 tasks
+**Requirements:** 15/15 v1 satisfied (RELG-01..03, AUTO-01..03, PREF-01..03, MIRR-01..03, STAT-01..03). Audit `passed`; integration CLEAN (0 blockers, 5/5 flows).
+
+**Delivered:** Made Crosswake's package-family release path automated, path-specific, and operator-visible before adding product breadth.
+
+**Key accomplishments:**
+
+- **Path-specific release graph:** Release Please publish/proof jobs now key off exact release identity and component paths, use non-replacing concurrency, and gate `release-as` cleanup on the relevant companion publish/proof success.
+- **Guarded automated Hex publishing:** The happy path publishes from CI via `script/guarded_hex_publish.sh`; manual recovery is package-scoped, exact-ref, and idempotent for already-live versions.
+- **Published-core clean-room proof:** Companion proof derives the required `crosswake` floor from exact Hex metadata, pins the just-published companion version, verifies `mix.lock`, and lets `mix crosswake.doctor --router` own fresh-router loading.
+- **Native registry parity:** iOS mirror publishing now fails fast on missing/invalid `MIRROR_PUSH_TOKEN`; iOS and Android clean-room proofs are decoupled; maintainers have a guarded verify-first path to backfill the missing SwiftPM `v0.2.0` tag.
+- **Release-status operator surface:** `mix crosswake.release.status` reports local package-family truth, workflow guard status, compatibility floors, stale pins, JSON output, stable exit behavior, and optional advisory live probes.
+- **Scope discipline preserved:** DASH-01, SYNCP-01, NTV-01, and SEED-002 remain deferred until the next milestone is intentionally selected.
+
+**Residual external risks:**
+
+- Real iOS mirror mutation still requires a correctly scoped maintainer `MIRROR_PUSH_TOKEN` and the guarded backfill path.
+- Live registry probes remain advisory; normal CI is local/read-only by design.
+
+See `.planning/milestones/v18.0-ROADMAP.md`, `.planning/milestones/v18.0-REQUIREMENTS.md`, and `.planning/milestones/v18.0-MILESTONE-AUDIT.md` for full detail.
+
+---
+
 ## v17.0 Companion Family Completion (Shipped: 2026-07-04)
 
 **Phases completed:** 6 phases (136-141), 29 plans

@@ -110,29 +110,31 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 
 **Status:** SHIPPED — 2026-06-09 (Phases 91-98). Cross-boundary `thread_id` propagation (Plug/telemetry, zero new deps), opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface (`mix crosswake.threadline`). LiveDashboard timeline deferred to a future `crosswake_dashboard` package. Canonical definition in `.planning/threads/threadline-audit.md`.
 
-### Active: Release & Distribution Truth
+### Shipped: Release Integrity & Automated Package Operations (v18.0)
 
-**Status:** ACTIVE v11.0 milestone (2026-06-14). Full scope, research, and verified evidence in `.planning/threads/release-distribution-truth.md`.
+**Status:** SHIPPED — 2026-07-09 (Phases 142-146). Full scope and archive in `.planning/milestones/v18.0-REQUIREMENTS.md` and `.planning/milestones/v18.0-ROADMAP.md`.
 
 **Objective**
-- Make the v5.0 standalone-package thesis actually consumable: publish the iOS SPM core (subtree-mirror to its own repo, Apollo pattern) and the Android core to Maven Central (Vanniktech + Central Portal), lockstep-version them with the Hex package (release-please manifest `linked-versions`), rewire `mix crosswake.gen.shell` to inject the published version into generated dep coordinates, and cut Hex `0.1.2`.
+- Make Crosswake's package-family release path automated, path-specific, and honest before new product breadth: core/native lockstep, independent companion releases, published-core clean-room proof, iOS mirror parity, release-as hygiene, and text/JSON release-status diagnostics.
 
 **Why now**
-- Crosswake is a mature codebase (~88% for scope) but a partial installable product (~70%). Hex publishes only `0.1.0`; ~4 months of shipped work (v3.4→v10.0) is uninstallable, and the headline "no eject trap" promise is vaporware in the default `gen.shell` path — generated projects reference deps that don't exist, so an external adopter can't build. This is the keystone that unblocks every downstream wedge and repairs thesis credibility. Build nothing new until an outsider can `mix deps.get` + `gen.shell` + build.
+- v17.0 completed the companion family but exposed release-ops truth gaps: the iOS SwiftPM mirror missed `v0.2.0` because the mirror token lacked push scope, the companion clean-room harness stayed advisory-red, and aggregate release gates could make unrelated component releases trigger core/native publish jobs. CI/CD is product surface; these should be fixed before DASH/SYNCP/NTV/capability breadth.
 
 **Depends on**
-- The shipped, hardened native cores (v5.0) and the release-please/`hex-publish` automation already wired for the Elixir package.
+- v17.0 package-family completion, v16.0 companion release discipline, and v11.0 multi-registry publishing.
 
 **Risk tags**
-- `distribution`
-- `release-truth`
+- `release-integrity`
+- `ci-cd`
+- `devops`
 - `adoption`
 
 **Key outputs**
-- iOS core auto-mirrored to `github.com/szTheory/crosswake-shell-core-ios` with semver tags; Android core on Maven Central under verified `io.github.sztheory`.
-- `gen.shell` templates referencing published, version-matched deps (no monorepo paths); version injected from `Application.spec(:crosswake)[:vsn]`.
-- A clean-room CI lane that scaffolds a host **outside the monorepo** and proves `swift build` / `gradle build` resolve published deps and compile.
-- Graduation candidate: a permanent `doctor`/closeout "published-dep parity" check.
+- Path-specific Release Please gates and static workflow integrity proof.
+- Guarded auto-publish train with exact-ref/idempotent recovery.
+- Clean-room proof that installs the exact companion under test against its real published-core floor.
+- iOS mirror-token preflight and `v0.2.0` backfill path.
+- `mix crosswake.release.status [--json] [--live]`.
 
 ### Shipped: Standalone Publishable Shell Packages (v5.0)
 
@@ -203,4 +205,4 @@ Every milestone close must update or verify:
 - Whether the deferred Threadline operator timeline should live in a separate `crosswake_dashboard` package (LiveDashboard plugin) and when the opt-in audit ledger has enough adoption to justify the visual surface.
 
 ---
-*Last updated: 2026-06-14 — v11.0 Release & Distribution Truth marked active with strategic contract heading restored.*
+*Last updated: 2026-07-09 — v18.0 Release Integrity & Automated Package Operations marked shipped; Crosswake is between milestones pending `/gsd-new-milestone`.*

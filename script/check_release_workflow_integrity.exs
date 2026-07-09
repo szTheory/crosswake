@@ -294,17 +294,20 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   defp recovery_exact_ref_only(recovery_workflow) do
     forbidden_samples =
-      ~w(release/v0.2.0 feature/v0.2.0 refs/heads/release/v0.2.0 refs/heads/* heads/* main master)
+      ~w(release/v0.2.0 feature/v0.2.0 refs/tags/v0.2.0 refs/heads/release/v0.2.0 refs/heads/* heads/* main master)
 
     check(
       "recovery.hex.exact_ref_only",
       includes?(recovery_workflow, "^[0-9a-f]{40}$") and
-        includes?(recovery_workflow, "refs/tags/") and
+        includes?(recovery_workflow, "EXPECTED_TAG_REF=\"refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}\"") and
+        includes?(recovery_workflow, "crosswake) TAG_COMPONENT=\"hex\"") and
+        includes?(recovery_workflow, "crosswake_sigra|crosswake_chimeway|crosswake_threadline") and
+        includes?(recovery_workflow, "[ \"$RECOVERY_REF\" = \"$EXPECTED_TAG_REF\" ]") and
         includes?(recovery_workflow, "actions/checkout") and
         includes?(recovery_workflow, "ref: ${{ inputs.ref }}") and
         Enum.all?(forbidden_samples, &includes?(recovery_workflow, &1)) and
         includes?(recovery_workflow, "git rev-parse HEAD"),
-      "manual Hex recovery must reject mutable/bare refs before checkout and print the checked-out SHA"
+      "manual Hex recovery must reject mutable/bare refs, require package-scoped release tags, and print the checked-out SHA"
     )
   end
 

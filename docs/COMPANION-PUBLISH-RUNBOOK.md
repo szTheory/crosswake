@@ -64,13 +64,17 @@ Use the `Hex publish (manual recovery)` workflow with:
 
 - `package`: one of the six Hex packages listed above.
 - `ref`: either a full 40-character lowercase commit SHA or an explicit
-  `refs/tags/vX.Y.Z` release tag ref.
+  package-scoped Release Please tag ref:
+  - `refs/tags/hex-vX.Y.Z` for the root `crosswake` Hex package.
+  - `refs/tags/crosswake_<companion>-vX.Y.Z` for companion packages, for example
+    `refs/tags/crosswake_sigra-v0.1.1`.
 - `release_version`: the expected package version at that ref.
 
 The workflow rejects branch-shaped and bare version-looking refs before
 checkout, including `release/v0.2.0`, `feature/v0.2.0`,
-`refs/heads/release/v0.2.0`, bare `v0.2.0`, `main`, and `master`. It prints the
-checked-out SHA before calling the guarded helper.
+`refs/heads/release/v0.2.0`, bare `v0.2.0`, bare-semver tag refs such as
+`refs/tags/v0.2.0`, `main`, and `master`. It prints the checked-out SHA before
+calling the guarded helper.
 
 Recovery remains Hex-only in Phase 143. SwiftPM mirror recovery, Maven Central
 recovery, and the missing iOS `v0.2.0` mirror backfill are native-registry

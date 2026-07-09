@@ -840,6 +840,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     for sample <- [
           "release/v0.2.0",
           "feature/v0.2.0",
+          "refs/tags/v0.2.0",
           "refs/heads/release/v0.2.0",
           "v0.2.0"
         ] do
@@ -850,6 +851,21 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
         recovery_workflow: recovery
       )
     end
+  end
+
+  @tag :phase143_recovery
+  test "package-scoped Release Please tag validation must stay wired" do
+    recovery =
+      recovery_workflow()
+      |> String.replace(
+        "EXPECTED_TAG_REF=\"refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}\"",
+        "EXPECTED_TAG_REF=\"refs/tags/v${EXPECTED_VERSION}\""
+      )
+
+    assert_failure_with_fixtures!(
+      "recovery.hex.exact_ref_only",
+      recovery_workflow: recovery
+    )
   end
 
   @tag :phase143_recovery

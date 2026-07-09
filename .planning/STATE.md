@@ -2,10 +2,12 @@
 gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Release Integrity & Automated Package Operations
-current_phase: 146
-status: Milestone complete
-stopped_at: Completed 146-03-PLAN.md
-last_updated: "2026-07-09T14:04:08.232Z"
+current_phase: 0
+status: Awaiting next milestone
+stopped_at: v18.0 milestone archived and closed.
+last_updated: "2026-07-09T16:35:09.775Z"
+last_activity: 2026-07-09
+last_activity_desc: Milestone v18.0 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -19,104 +21,25 @@ current_phase_name: release-status-dx-docs-truth
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-07 after v18.0 milestone start)
+See: .planning/PROJECT.md (updated 2026-07-09 after v18.0 milestone closeout)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v18.0 milestone closeout — Phase 146 verified and complete.
+**Current focus:** Between milestones — select the next scope with `/gsd-new-milestone`.
 
 ## Current Position
 
-**v18.0 "Release Integrity & Automated Package Operations" ACTIVE as of 2026-07-07.** Scope is CI/CD and release operations, not product breadth. Requirements live in `.planning/REQUIREMENTS.md`; roadmap phases 142-146 are active in `.planning/ROADMAP.md`.
+Phase: Milestone v18.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-09 — Milestone v18.0 completed and archived
 
-Phase: 146 (release-status-dx-docs-truth) — COMPLETE
-Plan: 3 of 3
+## v18.0 Closed (2026-07-09)
 
-Phase 142 discussion output:
+**Done:** all 5 phases verified passed; `/gsd-audit-milestone` PASSED (15/15 requirements, integration CLEAN, 5/5 flows); ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v18.0-*`; MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md, and RETROSPECTIVE.md evolved; REQUIREMENTS.md removed for the next milestone.
 
-- `.planning/phases/142-release-graph-governance-contract/142-CONTEXT.md`
-- `.planning/phases/142-release-graph-governance-contract/142-DISCUSSION-LOG.md`
-- Commit: `9d035b1e docs(142): capture phase context`
-- Key implementation gaps identified for planning: add/justify `queue: max`, make `release-as-cleanup` wait for released companion proof success, and harden the workflow integrity scanner against aggregate-gate and comment-only false passes.
+**Delivered:** path-specific Release Please gates, non-canceling release workflow semantics, guarded CI Hex publishing with exact-ref recovery, exact companion/core-floor clean-room proof, doctor-owned fresh-router loading, iOS mirror credential/backfill guardrails, decoupled native proofs, and `mix crosswake.release.status [--json] [--live]`.
 
-Phase 142 planning output:
-
-- `.planning/phases/142-release-graph-governance-contract/142-RESEARCH.md`
-- `.planning/phases/142-release-graph-governance-contract/142-VALIDATION.md`
-- `.planning/phases/142-release-graph-governance-contract/142-01-PLAN.md`
-- `.planning/phases/142-release-graph-governance-contract/142-02-PLAN.md`
-- `.planning/phases/142-release-graph-governance-contract/142-03-PLAN.md`
-- Plan checker: passed after revisions; RELG-01, RELG-02, and RELG-03 covered; decision coverage gate passed 30/30.
-
-Phase 143 planning output:
-
-- `.planning/phases/143-guarded-auto-publish-train/143-RESEARCH.md`
-- `.planning/phases/143-guarded-auto-publish-train/143-VALIDATION.md`
-- `.planning/phases/143-guarded-auto-publish-train/143-PATTERNS.md`
-- `.planning/phases/143-guarded-auto-publish-train/143-01-PLAN.md`
-- `.planning/phases/143-guarded-auto-publish-train/143-02-PLAN.md`
-- `.planning/phases/143-guarded-auto-publish-train/143-03-PLAN.md`
-- Research commit: `70845e96 docs(143): research guarded auto-publish train`
-- Validation/pattern/plan commits: `ccd78cba`, `607a5481`, `82896bcb`, `2476f17c`, `3abb7aad`
-- Plan checker: passed after two targeted revisions; AUTO-01, AUTO-02, and AUTO-03 covered; decision coverage gate passed 34/34.
-
-Phase 144 planning output:
-
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-RESEARCH.md`
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-VALIDATION.md`
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-PATTERNS.md`
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-01-PLAN.md`
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-02-PLAN.md`
-- `.planning/phases/144-published-core-compatibility-clean-room-proof/144-03-PLAN.md`
-- Research/validation/pattern/plan commits: `a65bd5aa`, `ba87d1d3`, `a98ab794`, `3caaff05`
-- Plan checker: passed after targeted revisions; PREF-01, PREF-02, and PREF-03 covered; decision coverage gate passed 21/21; post-planning gap analysis passed 24/24.
-
-Phase 145 planning output:
-
-- `.planning/phases/145-native-registry-mirror-parity/145-CONTEXT.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-DISCUSSION-LOG.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-RESEARCH.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-VALIDATION.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-PATTERNS.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-01-PLAN.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-02-PLAN.md`
-- `.planning/phases/145-native-registry-mirror-parity/145-03-PLAN.md`
-- Research/validation/pattern/plan commits: `9063d0d5`, `a3951b3d`, `9d84b626`, `299f039b`, `dc1fdad4`
-- Plan checker: passed after one targeted revision; MIRR-01, MIRR-02, and MIRR-03 covered; decision coverage gate passed 30/30; post-planning gap analysis passed 33/33.
-
-Phase 146 planning output:
-
-- `.planning/phases/146-release-status-dx-docs-truth/146-RESEARCH.md`
-- `.planning/phases/146-release-status-dx-docs-truth/146-VALIDATION.md`
-- `.planning/phases/146-release-status-dx-docs-truth/146-01-PLAN.md`
-- `.planning/phases/146-release-status-dx-docs-truth/146-02-PLAN.md`
-- `.planning/phases/146-release-status-dx-docs-truth/146-03-PLAN.md`
-- Research/validation commits: `9e594f49`, `160d8781`
-- Plan checker: passed after one targeted revision; STAT-01, STAT-02, and STAT-03 covered; decision coverage gate passed 35/35.
-
-Implemented in the current work slice:
-
-- Root/native publish jobs now gate on Release Please `paths_released` instead of aggregate `releases_created`.
-- Release workflow publish/proof concurrency is non-canceling and preserves pending runs with `queue: max`.
-- iOS mirror job fails fast on missing/invalid `MIRROR_PUSH_TOKEN` and skips an already-existing mirror tag.
-- iOS and Android clean-room proofs no longer depend on each other.
-- Native release state now emits an always-running rollup summary and `native-release-status` JSON artifact.
-- Maintainers now have a verify-first script and manual workflow to verify or backfill the iOS SwiftPM `v0.2.0` mirror tag without rerunning immutable publish paths.
-- `release-as-cleanup` waits for released companion publish and clean-room proof jobs to finish successfully, then opens a cleanup PR only.
-- `script/verify_companion_cleanroom.sh` now derives the core floor from the package under test and installs the exact just-published companion version.
-- `mix crosswake.doctor --router` compiles/loadpaths before rejecting a freshly compiled router.
-- `mix crosswake.release.status [--json] [--live]` added as the text/JSON release operator surface.
-
-Carried seeds being harvested:
-
-- **SEED-003** — iOS SwiftPM mirror push token / missing `v0.2.0` mirror tag.
-- **SEED-004** — companion clean-room proof harness.
-
-Deferred behind v18:
-
-- DASH-01 `crosswake_dashboard`
-- SYNCP-01 offline-sync productization
-- NTV-01 native disk budgets
-- SEED-002 Phoenix-first native capability/commerce breadth
+**Residual external risks:** real iOS mirror mutation still requires a correctly scoped maintainer `MIRROR_PUSH_TOKEN`; live registry probes remain advisory and are intentionally outside normal local/CI truth.
 
 ## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
@@ -307,8 +230,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Run milestone closeout for v18.0 now that phases 142-146 are verified complete.
-- Preserve advisory live-registry honesty: iOS `v0.2.0`, `crosswake_rulestead`, and `crosswake_rindle` missing live endpoints remain warnings surfaced by `mix crosswake.release.status --live`, not local graph failures.
-- Do not perform Hex/package publish operations from this planning pass.
-
-<!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->
+- Start the next milestone with /gsd-new-milestone

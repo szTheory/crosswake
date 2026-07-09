@@ -23,7 +23,7 @@ on:
           - crosswake_chimeway
           - crosswake_threadline
       ref:
-        description: 'Exact recovery ref: full 40-character lowercase SHA or explicit refs/tags/vX.Y.Z tag ref.'
+        description: 'Exact recovery ref: full 40-character lowercase SHA or package-scoped refs/tags/<component>-vX.Y.Z tag ref.'
         required: true
         type: string
       release_version:
@@ -42,33 +42,51 @@ jobs:
       - name: Validate recovery ref
         env:
           RECOVERY_REF: ${{ inputs.ref }}
+          RECOVERY_PACKAGE: ${{ inputs.package }}
+          EXPECTED_VERSION: ${{ inputs.release_version }}
         run: |
           set -euo pipefail
 
           FULL_SHA_PATTERN='^[0-9a-f]{40}$'
-          RELEASE_TAG_PATTERN='^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+          VERSION_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
 
           case "$RECOVERY_REF" in
-            release/v0.2.0|feature/v0.2.0|v0.2.0|refs/heads/release/v0.2.0|refs/heads/*|heads/*|main|master)
+            release/v0.2.0|feature/v0.2.0|v0.2.0|refs/tags/v0.2.0|refs/heads/release/v0.2.0|refs/heads/*|heads/*|main|master)
               echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is branch-shaped, bare-version-shaped, or mutable."
-              echo "[crosswake] What to do next: pass a full 40-character lowercase commit SHA or explicit refs/tags/vX.Y.Z release tag ref."
+              echo "[crosswake] What to do next: pass a full 40-character lowercase commit SHA or the package-scoped Release Please tag ref."
               exit 1
               ;;
           esac
+
+          if ! printf '%s' "$EXPECTED_VERSION" | grep -Eq "$VERSION_PATTERN"; then
+            echo "[crosswake] FAIL: release_version '${EXPECTED_VERSION}' is not a semver version."
+            exit 1
+          fi
 
           if printf '%s' "$RECOVERY_REF" | grep -Eq "$FULL_SHA_PATTERN"; then
             echo "[crosswake] OK: recovery ref is a full commit SHA."
             exit 0
           fi
 
-          if printf '%s' "$RECOVERY_REF" | grep -Eq "$RELEASE_TAG_PATTERN"; then
-            echo "[crosswake] OK: recovery ref is an explicit release tag ref."
+          case "$RECOVERY_PACKAGE" in
+            crosswake) TAG_COMPONENT="hex" ;;
+            crosswake_rulestead|crosswake_rindle|crosswake_sigra|crosswake_chimeway|crosswake_threadline) TAG_COMPONENT="$RECOVERY_PACKAGE" ;;
+            *)
+              echo "[crosswake] FAIL: unsupported Hex recovery package '${RECOVERY_PACKAGE}'."
+              exit 1
+              ;;
+          esac
+
+          EXPECTED_TAG_REF="refs/tags/${TAG_COMPONENT}-v${EXPECTED_VERSION}"
+
+          if [ "$RECOVERY_REF" = "$EXPECTED_TAG_REF" ]; then
+            echo "[crosswake] OK: recovery ref is the package-scoped Release Please tag ref ${EXPECTED_TAG_REF}."
             exit 0
           fi
 
           echo "[crosswake] FAIL: recovery ref '${RECOVERY_REF}' is not exact enough for Hex recovery."
-          echo "[crosswake] Rejected examples include release/v0.2.0, feature/v0.2.0, bare v0.2.0, refs/heads/release/v0.2.0, refs/heads/*, heads/*, main, and master."
-          echo "[crosswake] What to do next: pass a ref matching ^[0-9a-f]{40}$ or refs/tags/vX.Y.Z."
+          echo "[crosswake] Rejected examples include release/v0.2.0, feature/v0.2.0, bare v0.2.0, refs/tags/v0.2.0, refs/heads/release/v0.2.0, refs/heads/*, heads/*, main, and master."
+          echo "[crosswake] What to do next: pass a ref matching ^[0-9a-f]{40}$ or ${EXPECTED_TAG_REF}."
           exit 1
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
