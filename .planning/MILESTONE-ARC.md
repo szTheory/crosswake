@@ -131,7 +131,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - Ship the first official Crosswake native-control pack for common low-frequency affordances, likely alert/confirm, menu/action buttons, haptics, share, toast/review prompt, permission status, and notification-token UX integration.
 - Keep every control typed, route-local, allowlisted, support-matrix-backed, and proof-lane-classified.
 
-**Why next**
+**Why now**
 - The user-facing goal is a polished production-ready framework with native controls for common use cases, similar in category coverage to Hotwire Native Bridge Components but expressed through Crosswake's Phoenix-first architecture. v19.0 should provide the evidence and prioritization so v20.0 can implement the controls without becoming a generic plugin bus.
 
 **Depends on**

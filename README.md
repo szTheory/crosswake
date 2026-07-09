@@ -61,6 +61,9 @@ Open the showcase hub first at `http://localhost:4700/`. It introduces the
 SaaS/Admin, Field Service, and Learning/Training lanes with route-owner labels
 before asking you to inspect proof routes.
 
+The root route `/` — home showcase hub, LiveView route, cached read-only — is
+the newcomer entrypoint for this checked-in host.
+
 Proof routes stay one click deeper and are secondary to the product-shaped
 showcase:
 

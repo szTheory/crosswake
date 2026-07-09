@@ -104,10 +104,18 @@ status: complete
 - **Verification:** `mix test test/crosswake/guides/quick_start_adoption_drift_test.exs test/crosswake/guides/see_it_run_test.exs`
 - **Committed in:** `03d65659`
 
+**2. [Rule 1 - Bug] Fixed phase-level docs guard compatibility**
+- **Found during:** Orchestrator post-plan verification
+- **Issue:** The root `mix test` suite still expected README's `/` home route-owner wording and the strategic planning contract required the v20 section heading `**Why now**`.
+- **Fix:** Added explicit README root-route owner copy and renamed the v20 MILESTONE-ARC field from `Why next` to `Why now`.
+- **Files modified:** `README.md`, `.planning/MILESTONE-ARC.md`
+- **Verification:** `mix test test/crosswake/guides/readme_see_it_run_test.exs test/crosswake/planning/milestone_arc_closeout_parity_test.exs`
+- **Committed in:** post-summary fix commit
+
 ---
 
-**Total deviations:** 1 auto-fixed (Rule 1).
-**Impact on plan:** Test-harness-only correction. No scope expansion and no production behavior change.
+**Total deviations:** 2 auto-fixed (Rule 1).
+**Impact on plan:** Documentation and test-harness compatibility corrections only. No scope expansion and no production behavior change.
 
 ## Issues Encountered
 
