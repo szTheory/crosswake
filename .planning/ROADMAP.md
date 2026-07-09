@@ -117,7 +117,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 146-03-PLAN.md — Live probe taxonomy and docs truth for STAT-03.
+- [x] 146-03-PLAN.md — Live probe taxonomy and docs truth for STAT-03.
 
 </details>
 
@@ -295,4 +295,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 146. Release Status DX & Docs Truth | v18.0 | 2/3 | In Progress|  |
+| 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete   | 2026-07-09 |
