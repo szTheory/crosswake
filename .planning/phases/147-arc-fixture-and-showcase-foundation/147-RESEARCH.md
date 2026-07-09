@@ -422,17 +422,17 @@ Proof lanes:
 |---|-------|---------|---------------|
 | none | All research claims are verified from local code/planning docs or cited official documentation. | n/a | n/a |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the optional reset endpoint be `:test`/`:e2e` only or also explicit dev-local?**
-   - What we know: Context allows `:test`/`:e2e` or explicitly local/dev-only, and the router already gates `/_e2e` routes out of prod. [VERIFIED: 147-CONTEXT.md] [VERIFIED: codebase grep]
-   - What's unclear: Whether local humans need a browser-triggered reset in dev, or whether `mix showcase.reset` plus seeds is enough. [VERIFIED: 147-CONTEXT.md]
-   - Recommendation: Plan `_e2e` reset for tests and a Mix alias/task for humans; add a dev route only if the implementation needs an in-app reset button. [VERIFIED: 147-CONTEXT.md]
+1. **Reset endpoint scope: chosen answer**
+   - Use one fixed server-side reset contract for Phase 147 foundation data. `priv/repo/seeds.exs` and a local `mix showcase.reset` entrypoint are the dev/local human reset path, while the browser-callable endpoint is limited to `POST /_e2e/showcase-reset` compiled only under `Mix.env() in [:test, :e2e]`. [VERIFIED: 147-CONTEXT.md] [VERIFIED: 147-PATTERNS.md]
+   - Do not add a production reset endpoint, a general browser dev reset route, or any arbitrary reset scope/table parameters. The endpoint returns structured counts and a deterministic digest from the fixed contract only. [VERIFIED: 147-CONTEXT.md]
+   - Browser-owned offline state remains out of scope for server reset: the reset result must state `browser_state_reset: false`, and IndexedDB/outbox cleanup stays in Playwright/browser helpers. This is not a true offline or IndexedDB reset claim. [VERIFIED: 147-CONTEXT.md] [VERIFIED: codebase grep]
 
-2. **How much field-service data belongs in Phase 147?**
-   - What we know: Full field-service modeling is Phase 149, but Phase 147 needs believable records for all three lanes. [VERIFIED: .planning/ROADMAP.md] [VERIFIED: 147-CONTEXT.md]
-   - What's unclear: Whether to reuse `SelectiveNative` claim records as the foundation label for field-service or introduce a tiny `FieldService` fixture namespace now. [VERIFIED: codebase grep]
-   - Recommendation: Use deterministic maps or a thin fixture module for field-service card data now, and defer full schemas/workflows to Phase 149. [VERIFIED: 147-CONTEXT.md]
+2. **Field-service fixture strategy: chosen answer**
+   - Phase 147 creates only the deterministic field-service fixture skeleton/data foundation needed for the hub card and reset digest. Use stable maps or a thin example-host fixture module, and optionally reuse/reset existing selective-native claim data as native-pressure evidence. [VERIFIED: .planning/ROADMAP.md] [VERIFIED: 147-CONTEXT.md]
+   - Do not add full field-service Ecto schemas, complete technician workflows, scanner/capture production APIs, permission flows, or local-first field-service mutation in Phase 147. [VERIFIED: 147-CONTEXT.md] [VERIFIED: .planning/REQUIREMENTS.md]
+   - Full field-service lane workflows, deeper job/asset/inspection state, and device-pressure walkthroughs remain Phase 149 scope. [VERIFIED: .planning/ROADMAP.md]
 
 ## Existing App Structure And Likely Files
 
