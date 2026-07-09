@@ -1,6 +1,8 @@
 defmodule CrosswakeExample.RouterTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.Policy.RouterMetadata
+
   @path "/_e2e/sync-state/:client_mutation_id"
 
   test "E2E sync-state route present in :test, wired to scoping controller" do
@@ -13,5 +15,36 @@ defmodule CrosswakeExample.RouterTest do
     assert route.verb == :get
     assert route.plug == CrosswakeExample.E2E.SyncStateController
     assert route.plug_opts == :show
+  end
+
+  test "root route is the Crosswake showcase hub LiveView with cached read-only metadata" do
+    route = route_by_path("/")
+    {:ok, policy} = RouterMetadata.fetch(route.metadata)
+
+    assert route.verb == :get
+    assert route.plug == Phoenix.LiveView.Plug
+    assert route.plug_opts == CrosswakeExample.Showcase.HubLive
+    assert policy.id == "showcase-hub"
+    assert policy.runtime == :live_view
+    assert policy.offline == :cached_read_only
+    assert policy.security == :standard
+  end
+
+  test "legacy proof routes remain reachable after the root showcase replacement" do
+    paths =
+      CrosswakeExample.Router
+      |> Phoenix.Router.routes()
+      |> Enum.map(& &1.path)
+      |> MapSet.new()
+
+    assert MapSet.member?(paths, "/offline")
+    assert MapSet.member?(paths, "/bridge-proof")
+    assert MapSet.member?(paths, "/native/claims")
+  end
+
+  defp route_by_path(path) do
+    CrosswakeExample.Router
+    |> Phoenix.Router.routes()
+    |> Enum.find(&(&1.path == path))
   end
 end
