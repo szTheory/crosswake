@@ -17,6 +17,23 @@ defmodule CrosswakeExample.RouterTest do
     assert route.plug_opts == :show
   end
 
+  test "E2E showcase reset route is present in :test and wired to fixed reset controller" do
+    route = route_by_path("/_e2e/showcase-reset")
+
+    assert route, "expected /_e2e/showcase-reset compiled in :test"
+    assert route.verb == :post
+    assert route.plug == CrosswakeExample.E2E.ShowcaseResetController
+    assert route.plug_opts == :create
+  end
+
+  test "E2E showcase reset route remains inside the compile-time test/e2e guard" do
+    source =
+      Path.expand("../../lib/crosswake_example/router.ex", __DIR__)
+      |> File.read!()
+
+    assert source =~ ~r/if Mix\.env\(\) in \[:test, :e2e\] do.*post\("\/showcase-reset", ShowcaseResetController, :create\)/s
+  end
+
   test "root route is the Crosswake showcase hub LiveView with cached read-only metadata" do
     route = route_by_path("/")
     {:ok, policy} = RouterMetadata.fetch(route.metadata)
