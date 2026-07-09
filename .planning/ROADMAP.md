@@ -13,8 +13,79 @@
 - ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
 - ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
 - ✅ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (shipped 2026-07-09)
+- ◆ **v19.0 Showcase Apps & Capability Map** — Phases 147-151 (active)
 
 ## Phases
+
+## v19.0 Showcase Apps & Capability Map
+
+**Goal:** Turn Crosswake into a product-shaped, click-around DX showcase across realistic app domains, then use that evidence to define v20.0 Native Controls Pack 1.
+
+**Phase count:** 5
+**Requirements covered:** 27/27
+**Starting phase:** 147
+
+### Phase 147: Arc, Fixture, and Showcase Foundation
+
+**Goal:** Establish the durable v19/v20 arc, deterministic data foundation, and first-screen showcase hub.
+
+**Requirements:** ARC-01, ARC-02, ARC-03, SHOW-01, SHOW-02, SHOW-03, SHOW-04
+
+**Success criteria:**
+1. Planning docs preserve the v19 showcase -> v20 native-controls thread and classify SEED-002/003/004 correctly.
+2. The example host has a first-screen showcase hub with SaaS/admin, field-service, and learning/training lanes visible.
+3. Showcase data has a deterministic reset/reseed path with believable records for all three lanes.
+4. Route-owner/support labels are present in the hub foundation and avoid blurring shipped support with future gaps.
+5. The existing first-run path points users toward the showcase as the product-shaped entrypoint.
+
+### Phase 148: SaaS/Admin Showcase
+
+**Goal:** Build the LiveView-first SaaS/admin lane that demonstrates Phoenix-native route ownership, auth/admin pressure, diagnostics, and support truth.
+
+**Requirements:** SAAS-01, SAAS-02, SAAS-03, SAAS-04
+
+**Success criteria:**
+1. A user can click through realistic SaaS/admin records such as accounts, teams, roles, settings, and operational events.
+2. The lane makes LiveView-first ownership and auth-sensitive/admin posture visible without implying native rendering.
+3. Diagnostics, support truth, and route policy are reachable from the lane.
+4. A representative admin workflow completes without requiring new native-control APIs.
+
+### Phase 149: Field-Service Showcase
+
+**Goal:** Build the device-pressure field-service lane that demonstrates capture/scanning intent, media/evidence pressure, offline/degraded posture, and explicit future native gaps.
+
+**Requirements:** FIELD-01, FIELD-02, FIELD-03, FIELD-04
+
+**Success criteria:**
+1. A user can click through realistic field-service jobs, assets, inspections, notes, technician state, and evidence records.
+2. Device-pressure flows clearly distinguish shipped support from capture/scanning/permission gaps.
+3. Offline or degraded states are represented honestly without claiming local-first mutation unless a real journal/outbox path exists.
+4. Route-owner labels show which flows stay LiveView, become offline islands, or should become future native screens.
+
+### Phase 150: Subscription Learning Showcase
+
+**Goal:** Build the subscription learning/training lane that demonstrates content packs, offline study/training, sync/reconciliation visibility, and entitlement/paywall pressure.
+
+**Requirements:** LEARN-01, LEARN-02, LEARN-03, LEARN-04
+
+**Success criteria:**
+1. A user can click through realistic courses, lessons, packs, learners, progress, and subscription state.
+2. Content-pack and offline-study behavior is visible and connected to existing Crosswake offline posture.
+3. Sync/reconciliation state is shown honestly and does not imply a generic sync engine.
+4. Entitlement/paywall pressure is represented as backend-owned or mocked state without claiming live storefront support.
+
+### Phase 151: Capability Map, Collateral, and v20 Handoff
+
+**Goal:** Convert showcase evidence into a durable capability map, proof/collateral surface, and decision-ready v20 Native Controls Pack 1 brief.
+
+**Requirements:** CAPMAP-01, CAPMAP-02, CAPMAP-03, CAPMAP-04, PROOF-01, PROOF-02, PROOF-03, PROOF-04
+
+**Success criteria:**
+1. Capability map classifies shipped, demoed, missing, deferred, and next-pack capabilities with package ownership and proof posture.
+2. v20 Native Controls Pack 1 is scoped from v19 evidence without re-opening the whole product arc.
+3. Fixture reset and route-tour coverage prove deterministic data plus one happy path per lane.
+4. Docs/support checks prevent unsupported native controls from being presented as shipped.
+5. Showcase collateral explains what Crosswake supports today, what is demo pressure, and what is planned for v20+.
 
 <details>
 <summary>✅ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — SHIPPED 2026-07-09</summary>
@@ -204,3 +275,8 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
+| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 0/0 | Pending | — |
+| 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
+| 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
+| 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
+| 151. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |

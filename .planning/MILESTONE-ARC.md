@@ -8,6 +8,8 @@ The planning bias remains **contracts first, proof always**. New breadth should 
 
 Strategic planning artifacts follow the same Phoenix/Plug contract posture as runtime seams: required fields are explicit, composable across artifacts, boringly named, and fail closed when required evidence is absent. A missing closeout artifact or vague exception is not treated as success.
 
+The current product-DX arc is **showcase first, controls next**. v19.0 should turn the existing proof-backed substrate into a polished, seeded, click-around showcase across realistic app domains; v20.0 should then ship Native Controls Pack 1 from the capability gaps the showcase exposes. Later milestones should expand into capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization in that order unless v19 evidence changes the priority.
+
 ## Locked Guardrails
 
 - Per-route runtime ownership remains authoritative.
@@ -22,6 +24,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 ## Durable Lessons
 
 - **Install truth is product truth.** Public value is limited until the Hex package, HexDocs, changelog, and release automation reflect the shipped surface.
+- **Showcase truth is product truth.** A production-ready framework needs click-around examples with believable data, not only proof lanes and guides.
 - **Mock the provider boundary before shipping provider SDK code.** v3.4 proved a paywall corridor by mocking only the storefront edge while keeping the real reconciliation/projection path.
 - **Backend authority must be explicit.** Commerce, Rindle media, and Sigra auth all treat device/client signals as evidence until backend contracts promote them.
 - **Hermetic and advisory proof lanes must stay separate.** Merge-blocking proof should be deterministic; device, storefront, simulator, and provider checks stay advisory until promotion criteria are explicit and repeatable.
@@ -86,6 +89,60 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **v10.0 Brand Normalization** — shipped 2026-06-14 (Phases 107-109). Made `tokens.css` the single generated source of truth (font + dimension + color) with a packaged mirror and one documented distribution path; rewired the example host + `offline_ui` generator onto semantic `--cw-*` tokens; browser-free `brand-structural` drift gate fails the build on reintroduced brand hex / dropped token refs.
 
 ## Strategic Queue
+
+### Active: Showcase Apps & Capability Map (v19.0)
+
+**Status:** ACTIVE — v19.0 starts after v18.0 release integrity made package-family operations trustworthy enough to return to product-shaped DX.
+
+**Objective**
+- Build a polished first-screen showcase hub with deterministic seeded/fixture data across three domains: SaaS/admin, field-service, and subscription learning/training.
+- Use the examples to make route ownership, LiveView-first flows, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth visible without reading implementation docs first.
+- Produce a capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy and proof-lane posture.
+
+**Why now**
+- v18.0 closed the release-ops trust gap, and v17.0 completed the package family. The highest-impact remaining DX gap is that Crosswake's value is still distributed across proof lanes, guides, and archived milestones instead of obvious, product-shaped examples.
+- SEED-002 should now become a sequenced multi-milestone arc: first expose capability pressure through examples, then implement the first native controls pack.
+
+**Depends on**
+- v18.0 Release Integrity & Automated Package Operations
+- v15.0 See It Run
+- v16.0/v17.0 companion package-family completion
+- SEED-002 Phoenix-first native capability and commerce breadth
+
+**Risk tags**
+- `dx-ux`
+- `adoption`
+- `examples`
+- `native-capabilities`
+- `proof-truth`
+
+**Key outputs**
+- Click-around showcase hub and three domain lanes.
+- Resettable, deterministic seeded/fixture data.
+- Route-tour and fixture-reset proof.
+- Capability map with v20 Native Controls Pack 1 handoff.
+
+### Next: Native Controls Pack 1 (v20.0)
+
+**Status:** NEXT — should follow v19.0 unless the showcase evidence points to a higher-impact wedge.
+
+**Objective**
+- Ship the first official Crosswake native-control pack for common low-frequency affordances, likely alert/confirm, menu/action buttons, haptics, share, toast/review prompt, permission status, and notification-token UX integration.
+- Keep every control typed, route-local, allowlisted, support-matrix-backed, and proof-lane-classified.
+
+**Why next**
+- The user-facing goal is a polished production-ready framework with native controls for common use cases, similar in category coverage to Hotwire Native Bridge Components but expressed through Crosswake's Phoenix-first architecture. v19.0 should provide the evidence and prioritization so v20.0 can implement the controls without becoming a generic plugin bus.
+
+**Depends on**
+- v19.0 capability map and showcase evidence
+- v14.0 runtime contract confidence
+- v16.0/v17.0 package-family seams
+
+**Risk tags**
+- `native-capabilities`
+- `contract-design`
+- `support-truth`
+- `ios-android`
 
 ### Shipped: Adoption Evidence Demo App (v5.1 → v6.0)
 
@@ -155,6 +212,8 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - `v4.0 Production Shell Runtime Line` consolidates native runtime truth before broad production archetype proof.
 - `v4.1 Archetype Proof Lanes` validates shipped surfaces together.
 - `Threadline Audit Capstone` follows the sensitive event surfaces it will audit.
+- `v19.0 Showcase Apps & Capability Map` precedes `v20.0 Native Controls Pack 1` because examples should expose the real capability gaps before Crosswake widens official native-control APIs.
+- `v20.0 Native Controls Pack 1` precedes capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the sequence.
 
 ## Decision Notes
 
@@ -167,6 +226,7 @@ Strategic planning artifacts follow the same Phoenix/Plug contract posture as ru
 - **2026-06-05:** Following the completion of v4.1, the strategic priority shifted to v5.0 "Standalone Publishable Shell Packages" to address the "eject trap" and lock down the native shell runtime interfaces via SPM and Maven before expanding broader day-2 operational features.
 - **2026-06-09:** v5.0 (standalone packages), v5.1 + v6.0 (adoption-evidence demo apps) all shipped. With those wedges closed, the Threadline Audit Capstone (v7.0) becomes the active strategic milestone — the day-2 operational viability layer the arc always positioned last because it consumes the now-stable commerce, auth, notification, media, and offline surfaces. Scope locked narrow and honest: bespoke `thread_id` correlation (no OTel dep), opt-in PII-free append-only ledger with ProvenanceLane, text-only operator surface; LiveDashboard UI deferred to a separate `crosswake_dashboard` package.
 - **2026-06-14:** Milestone next-step assessment after v10.0 (this doc was stale — still marked v7.0 "Active"; reconciled here with v7.0→v10.0 shipped). Verdict: Crosswake is feature-mature for its scope but distribution-incomplete. The single highest-leverage next wedge is **Release & Distribution Truth** — the v5.0 standalone-package thesis is built but undistributed (Hex stuck at `0.1.0`; `gen.shell` default emits nonexistent deps; native cores unpublished, no publish CI), so the "no eject trap" claim only holds inside the monorepo. Recommendation: ship what's built (publish native packages, lockstep versioning, rewire `gen.shell`, clean-room build proof) before any new feature/companion/capability breadth, which would be overbuilding on an undistributed base. Ordering after: CI-honesty/real-E2E sweep, then onboarding/docs once the install path is real. Detail in `.planning/threads/release-distribution-truth.md`.
+- **2026-07-09:** After v18.0 closed release integrity, the next arc is locked as **Showcase Apps & Capability Map** before native-control breadth. The maintainer's stated goal is a production-ready Phoenix mobile framework with great DX, seeded click-around examples across app/business domains, and common native controls comparable in category coverage to Hotwire Native bridge components while preserving Crosswake's route-policy thesis. v19.0 builds the showcase and capability map; v20.0 should ship Native Controls Pack 1; later milestones should sequence capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization.
 
 ## Support Truth Requirements
 
@@ -203,6 +263,8 @@ Every milestone close must update or verify:
 - Which scanning/capture flows belong in Rindle/native-screen lanes versus bounded bridge families.
 - What minimum Android evidence is required to move shell support from "verification required" to fully verified.
 - Whether the deferred Threadline operator timeline should live in a separate `crosswake_dashboard` package (LiveDashboard plugin) and when the opt-in audit ledger has enough adoption to justify the visual surface.
+- Which exact Native Controls Pack 1 controls v19.0 evidence should promote into v20.0.
+- Whether scanner/document-scan/biometrics/location belong in v20.0 or a later capture/device controls pack.
 
 ---
-*Last updated: 2026-07-09 — v18.0 Release Integrity & Automated Package Operations marked shipped; Crosswake is between milestones pending `/gsd-new-milestone`.*
+*Last updated: 2026-07-09 — v19.0 Showcase Apps & Capability Map selected as active arc; v20.0 Native Controls Pack 1 recorded as the logical follow-on.*

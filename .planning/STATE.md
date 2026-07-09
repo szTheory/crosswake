@@ -1,37 +1,45 @@
 ---
 gsd_state_version: 1.0
-milestone: v18.0
-milestone_name: Release Integrity & Automated Package Operations
-current_phase: 0
-status: Awaiting next milestone
-stopped_at: v18.0 milestone archived and closed.
-last_updated: "2026-07-09T16:35:09.775Z"
+milestone: v19.0
+milestone_name: Showcase Apps & Capability Map
+current_phase: 147
+status: Roadmap ready
+last_updated: "2026-07-09T17:25:34.354Z"
 last_activity: 2026-07-09
-last_activity_desc: Milestone v18.0 completed and archived
 progress:
   total_phases: 5
-  completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
-current_phase_name: release-status-dx-docs-truth
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+current_phase_name: arc-fixture-showcase-foundation
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-09 after v18.0 milestone closeout)
+See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Between milestones — select the next scope with `/gsd-new-milestone`.
+**Current focus:** v19.0 Showcase Apps & Capability Map — build the product-shaped example surface and v20 native-controls handoff.
 
 ## Current Position
 
-Phase: Milestone v18.0 complete
+Phase: 147 — Arc, Fixture, and Showcase Foundation
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-09 — Milestone v18.0 completed and archived
+Status: Roadmap ready
+Last activity: 2026-07-09 — Milestone v19.0 roadmap initialized
+
+## v19.0 Roadmap Decisions (2026-07-09, locked)
+
+- Milestone: **v19.0 Showcase Apps & Capability Map**.
+- Goal: make Crosswake feel like a polished, production-ready Phoenix mobile framework through seeded, click-around examples across realistic app domains, then convert the revealed gaps into a v20 Native Controls Pack 1 handoff.
+- Phase ordering: 147 foundation and fixture reset → 148 SaaS/admin lane → 149 field-service lane → 150 subscription learning/training lane → 151 capability map, proof, collateral, and v20 handoff.
+- Selected GSD seed: **SEED-002** as strategic input for Phoenix-first native capability and commerce breadth. SEED-001 remains historical precedent; SEED-003/004 remain release-infrastructure carryovers, not v19 headline scope.
+- Domain set: SaaS/admin, field service, subscription learning/training.
+- Follow-on milestone: **v20.0 Native Controls Pack 1**, likely alert/confirm, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration, finalized by v19 evidence.
+- Anti-scope: do not implement the full native-controls catalog, scanner/document-scan/biometrics/location/NFC production APIs, live commerce/paywall SDK support, `crosswake_dashboard`, or generic sync-engine behavior in v19.
 
 ## v18.0 Closed (2026-07-09)
 
@@ -207,7 +215,7 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 tech-debt | TELEM-04 Side B vacuity (Phase 133) | Assessed: structurally near-impossible divergence; fragile fix; leave | v16.0 close |
 | v16.0 tech-debt | companion_compatibility.md:51-54 prose (Phase 132) | Assessed: not a bug; leave | v16.0 close |
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
-| v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
+| v17.0 next | SEED-002: capability/commerce breadth | Active strategic input for v19 capability map and v20 Native Controls Pack 1 handoff; implementation breadth remains deferred to v20+ | v17.0 plan |
 | Phase 139 P01 | 9m | 2 tasks | 19 files |
 | Phase 139-crosswake-threadline-extraction P02 | 55min | 5 tasks | 21 files |
 | Phase 139 P03 | 7 min | 3 tasks | 6 files |
@@ -224,10 +232,10 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-09T14:04:08.232Z
-Stopped at: Phase 146 verified and completed; v18.0 milestone ready for closeout.
+Last session: 2026-07-09T17:25:34.354Z
+Stopped at: v19.0 milestone roadmap initialized; ready for Phase 147 discussion/planning.
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start Phase 147 with `/gsd-discuss-phase 147` (recommended) or `/gsd-plan-phase 147`.

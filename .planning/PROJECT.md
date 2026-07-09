@@ -8,6 +8,17 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
+## Current Milestone: v19.0 Showcase Apps & Capability Map
+
+**Goal:** Turn Crosswake's proof-backed substrate into a polished, click-around DX showcase across realistic app domains, then use those examples to define the next native-controls milestone.
+
+**Target features:**
+- A first-screen showcase hub with deterministic seeded/fixture data for SaaS/admin, field-service, and subscription learning/training domains.
+- Three domain lanes that demonstrate route ownership, LiveView-first surfaces, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth without overclaiming unsupported native breadth.
+- A capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy, typed-contract, proof-lane, and package-ownership posture.
+
+**Strategic through-line:** v19.0 creates the product-shaped proof surface; v20.0 should logically follow with Native Controls Pack 1, informed by gaps exposed in the showcase. Later milestones can expand into capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization.
+
 ## Current State
 - **v18.0 Release Integrity & Automated Package Operations — SHIPPED 2026-07-09.** The package-family release path is now automated, path-specific, and operator-visible: Release Please publish/proof jobs key off exact release identity and component paths instead of aggregate release outputs; release concurrency preserves in-flight publishes; Hex publishing runs through a guarded CI helper with exact already-live preflight and package-scoped recovery refs; companion clean-room proof installs the exact published companion version and derives its real `crosswake` floor from Hex metadata; doctor owns fresh-router loading; iOS mirror publishing fails fast on missing/invalid `MIRROR_PUSH_TOKEN`; native clean-room proofs are decoupled with rollup evidence; maintainers have a verify-first path to backfill the missing SwiftPM `v0.2.0` tag; and `mix crosswake.release.status [--json] [--live]` surfaces lockstep, compatibility floors, stale pins, workflow guard posture, and optional advisory registry truth. 15/15 v1 requirements satisfied; audit passed. Residual external risks are intentionally outside local automation: real iOS mirror mutation still needs the maintainer token, and live registry probes remain advisory. Full detail in `.planning/milestones/v18.0-ROADMAP.md`.
 - **v17.0 Companion Family Completion — SHIPPED 2026-07-04.** The companion family is complete and LIVE on Hex: **`crosswake` 0.2.0** (core; +hexdocs +Android Maven) · **`crosswake_sigra` 0.1.1** (auth) · **`crosswake_chimeway` 0.1.0** (notifications) · **`crosswake_threadline` 0.1.0** (audit observer). Core was decoupled from all companions first — the four compile-time core→companion coupling sites (telemetry, route_gate, support_matrix, doctor) inverted onto a runtime `:companions` registry seam (optional `@behaviour` callbacks + `function_exported?/3`), so core compiles `--warnings-as-errors` with no companion present and auth-predicated routes fail **closed** (`:dependency_missing`). The three remaining in-tree companions then extracted to standalone independently-versioned `crosswake_*` Hex packages with module names preserved (non-breaking): sigra emits `Crosswake.Compatibility.Finding` at its boundary; chimeway proven sigra-free (the "chimeway→sigra" dep was a myth — `auth_context: map()`); threadline observes purely by telemetry event-name. Family discipline: O(N) drift-tested compat matrix, per-package Side-A telemetry contract tests, a hardened extraction recipe. Published in strict dependency order — **core `0.2.0` first**, companion floors bumped `~> 0.1`→`~> 0.2`, then sequential `sigra→chimeway→threadline` (each resolved against published core, never batched). 20/20 v1 requirements satisfied; `override_closeout` (empirical — all four proven live on Hex). Carried non-blocking: **SEED-003** (iOS mirror push token — core iOS SwiftPM 0.2.0 not yet mirrored), **SEED-004** (clean-room proof harness). Full detail in `.planning/milestones/v17.0-ROADMAP.md`.
@@ -208,13 +219,9 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-No active milestone. Start the next milestone with `/gsd-new-milestone` so requirements and roadmap scope are defined fresh.
-
-**Next-candidate pool** (available for next milestone selection):
-
-- **DASH-01 operator dashboard** — self-contained `crosswake_dashboard` package (Oban Web model), unblocked by the `Crosswake.Telemetry` public event contract.
-- **SYNCP-01** offline-sync productization, **NTV-01** native disk budgets, **SEED-002** capability/commerce breadth — each a routine package addition once the family is complete.
-- **Ship-gate carryover:** register the `merge-blocking-*` lanes once `BRANCH_PROTECTION_READ_TOKEN` is provisioned. v18 keeps branch protection admin controls detect/report-only; it does not self-apply repository settings.
+- [ ] **v19.0 Showcase Apps & Capability Map** — create a polished, seeded, click-around example surface across SaaS/admin, field-service, and subscription learning/training domains; map capability gaps into the v20 Native Controls Pack 1 handoff.
+- [ ] **ARC-01** — preserve the multi-milestone product thread: v19 showcase, v20 native controls, then capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage follow-ons.
+- [ ] **SEED-002 carried into planning** — Phoenix-first native capability and commerce breadth informs the capability map and v20 handoff, but broad native controls are not implemented in v19 unless a showcase flow requires a narrow existing contract.
 
 ### Out of Scope
 
@@ -238,6 +245,8 @@ Crosswake is a published Elixir/Phoenix OSS library (`crosswake 0.2.0` live on H
 The maintainer's OSS house style materially constrains the project. Install truth matters as much as the happy path. Public support claims must be narrow and documented. Proof lanes, docs-contract checks, release automation, and recovery-conscious publishing are part of the product. Generated host code, optional dependencies, and operator-facing diagnostics should be intentional and honest.
 
 The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce, `v3.4` proved the mocked commerce archetype, `v3.5` locked the companion pattern, `v3.6` made the surface inspectable by operators, `v3.7` added StoreKit/Play Billing adapter seams, `v3.8` expanded Sigra into auth/session machinery, `v3.9` added the Chimeway notification seam, and `v5.0` shifted the architecture to standalone publishable shell packages to solve the "eject trap".
+
+After v18.0, the next strategic arc shifts from release integrity back to product-shaped DX. v19.0 should make Crosswake obvious to a newcomer through click-around examples with rich, resettable data across multiple app domains. v20.0 should then ship the first native-controls pack guided by the v19 capability map, with future milestones expanding into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
 
 ## Constraints
 
@@ -298,6 +307,8 @@ The strategic source of truth for the current sequence is `.planning/MILESTONE-A
 | Gate release publishing by exact component/path identity, not aggregate Release Please outputs | Companion-only releases must never be able to publish core Hex, iOS mirror, or Android Maven artifacts; aggregate `releases_created` is too broad for a package family | ✓ Validated in v18.0 (RELG-01/PREF-03) — path-specific gates plus scanner fixtures guard the workflow |
 | Keep package publishing CI-owned on the happy path, with exact-ref/idempotent recovery only | Maintainer-run `mix hex.publish` does not scale across six packages and makes recovery state ambiguous; immutable registries require exact refs and already-live handling | ✓ Validated in v18.0 (AUTO-01..03) — guarded helper, package-scoped recovery refs, and already-live preflight shipped |
 | Treat live registry checks and real mirror mutation as optional/advisory external state | Normal CI should stay deterministic and read-only; registry availability and maintainer secret scope are real-world state, not local graph truth | ✓ Validated in v18.0 (MIRR-01..03, STAT-03) — mirror preflight/backfill path exists; release status live probes are explicit warnings |
+| Use v19.0 to build product-shaped showcase apps before v20.0 native-control breadth | The highest-impact DX gap is not only missing controls; Crosswake needs vivid, seeded examples that make route ownership, offline posture, native pressure, diagnostics, and capability gaps obvious before the next controls pack is implemented | — Pending in v19.0 |
+| Treat SEED-002 as a multi-milestone arc, not a single broad feature dump | Native controls, capture/device flows, and commerce/paywall support should be sequenced from examples and capability-map evidence so Crosswake stays Phoenix-first and does not drift into a generic WebView plugin catalog | — Pending in v19.0/v20.0 |
 
 ## Evolution
 
@@ -317,4 +328,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-09 — shipped milestone v18.0 Release Integrity & Automated Package Operations. Crosswake is between milestones; run `/gsd-new-milestone` to select the next scope from DASH-01, SYNCP-01, NTV-01, SEED-002, or another explicit candidate.*
+*Last updated: 2026-07-09 — started milestone v19.0 Showcase Apps & Capability Map after selecting the product-shaped DX showcase arc and v20.0 Native Controls Pack 1 follow-on.*
