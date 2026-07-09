@@ -39,7 +39,7 @@
 4. Route-owner/support labels are present in the hub foundation and avoid blurring shipped support with future gaps.
 5. The existing first-run path points users toward the showcase as the product-shaped entrypoint.
 
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
 **Wave 1**
@@ -297,7 +297,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
-| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete   | 2026-07-09 |
+| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
 | 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
