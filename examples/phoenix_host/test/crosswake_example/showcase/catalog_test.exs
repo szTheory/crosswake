@@ -64,7 +64,8 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
       assert posture.security == policy.security,
              "D-13/D-15: #{route_id} security posture drifted from compiled route metadata"
 
-      assert normalized_capabilities(posture.capabilities) == normalized_capabilities(policy.capabilities),
+      assert normalized_capabilities(posture.capabilities) ==
+               normalized_capabilities(policy.capabilities),
              "D-13/D-15: #{route_id} capability posture drifted from compiled route metadata"
     end
   end
