@@ -38,6 +38,15 @@
 4. Route-owner/support labels are present in the hub foundation and avoid blurring shipped support with future gaps.
 5. The existing first-run path points users toward the showcase as the product-shaped entrypoint.
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 147-01-PLAN.md — Preserve the v19/v20 arc and SEED-002/003/004 classifications.
+- [ ] 147-02-PLAN.md — Create the showcase catalog and route-owner/support label verification.
+- [ ] 147-03-PLAN.md — Build deterministic fixture/reset orchestration and seed/CLI delegation.
+- [ ] 147-04-PLAN.md — Wire the root showcase hub and gated reset endpoint.
+- [ ] 147-05-PLAN.md — Repoint first-run banner/docs and add a narrow hub route-tour smoke.
+
 ### Phase 148: SaaS/Admin Showcase
 
 **Goal:** Build the LiveView-first SaaS/admin lane that demonstrates Phoenix-native route ownership, auth/admin pressure, diagnostics, and support truth.
@@ -275,7 +284,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
-| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 0/0 | Pending | — |
+| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 0/5 | Pending | — |
 | 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
 | 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
