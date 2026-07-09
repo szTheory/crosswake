@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 147
 current_phase_name: arc-fixture-and-showcase-foundation
 status: executing
-stopped_at: Completed 147-01-PLAN.md
-last_updated: "2026-07-09T19:47:53.760Z"
+stopped_at: Completed Wave 1 for Phase 147
+last_updated: "2026-07-09T19:56:48.209Z"
 last_activity: 2026-07-09
 last_activity_desc: Phase 147 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 147 (arc-fixture-and-showcase-foundation) — EXECUTING
-Plan: 2 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-09 — Phase 147 execution started
 
@@ -233,11 +233,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 146 P02 | 3 min | 2 tasks | 3 files |
 | Phase 146 P03 | 5 min | 2 tasks | 6 files |
 | Phase 147 P01 | 6 min | 2 tasks | 5 files |
+| Phase 147 P02 | 5 min | 2 tasks | 2 files |
+| Phase 147 P03 | 7 min | 3 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-07-09T19:47:53.545Z
-Stopped at: Completed 147-01-PLAN.md
+Last session: 2026-07-09T19:56:43.148Z
+Stopped at: Completed Wave 1 for Phase 147
 Resume file: None
 
 ## Operator Next Steps

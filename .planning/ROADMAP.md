@@ -45,8 +45,8 @@ Plans:
 **Wave 1**
 
 - [x] 147-01-PLAN.md — Preserve the v19/v20 arc and SEED-002/003/004 classifications.
-- [ ] 147-02-PLAN.md — Create the showcase catalog and route-owner/support label verification.
-- [ ] 147-03-PLAN.md — Build deterministic fixture/reset orchestration and seed/CLI delegation.
+- [x] 147-02-PLAN.md — Create the showcase catalog and route-owner/support label verification.
+- [x] 147-03-PLAN.md — Build deterministic fixture/reset orchestration and seed/CLI delegation.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -297,7 +297,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
-| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 1/5 | In Progress | — |
+| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 3/5 | In Progress | — |
 | 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
 | 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
