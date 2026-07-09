@@ -9,9 +9,9 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 
 ### Arc
 
-- [ ] **ARC-01**: Maintainer can read the planning docs and see the durable multi-milestone thread: v19 showcase, v20 Native Controls Pack 1, then capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage follow-ons.
-- [ ] **ARC-02**: Maintainer can see SEED-002 reflected as strategic input for capability breadth without treating v19 as the broad native-controls implementation milestone.
-- [ ] **ARC-03**: Maintainer can see SEED-003 and SEED-004 classified as release-infrastructure carryovers rather than v19 headline scope.
+- [x] **ARC-01**: Maintainer can read the planning docs and see the durable multi-milestone thread: v19 showcase, v20 Native Controls Pack 1, then capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage follow-ons.
+- [x] **ARC-02**: Maintainer can see SEED-002 reflected as strategic input for capability breadth without treating v19 as the broad native-controls implementation milestone.
+- [x] **ARC-03**: Maintainer can see SEED-003 and SEED-004 classified as release-infrastructure carryovers rather than v19 headline scope.
 
 ### Showcase Foundation
 
@@ -102,9 +102,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARC-01 | Phase 147 | Pending |
-| ARC-02 | Phase 147 | Pending |
-| ARC-03 | Phase 147 | Pending |
+| ARC-01 | Phase 147 | Complete |
+| ARC-02 | Phase 147 | Complete |
+| ARC-03 | Phase 147 | Complete |
 | SHOW-01 | Phase 147 | Pending |
 | SHOW-02 | Phase 147 | Pending |
 | SHOW-03 | Phase 147 | Pending |
@@ -131,6 +131,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROOF-04 | Phase 151 | Pending |
 
 **Coverage:**
+
 - v19.0 requirements: 27 total
 - Mapped to phases: 27
 - Unmapped: 0
