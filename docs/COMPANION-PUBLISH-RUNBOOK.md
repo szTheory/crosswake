@@ -126,6 +126,32 @@ Mixed floors are intentional release truth:
 A companion that needs a newer core API bumps its own floor in its own release.
 Do not preemptively constrain older-compatible companions to a newer core line.
 
+## Release Status
+
+Use the release-status task for the current read-only operator view:
+
+```bash
+mix crosswake.release.status
+mix crosswake.release.status --json
+mix crosswake.release.status --live
+```
+
+Default status reads checked-in source, release config, package files, workflow
+guards, and scanner evidence only. It does not call public registries, GitHub
+APIs, or workflow artifacts. Use `--json` when CI or issue tooling needs the
+stable machine contract; consumers should key on `code`, `status`, `source`,
+`next_action`, and structured component fields, not prose.
+
+Use `--live` only when public registry presence matters. Live probes are
+advisory and distinguish `ok`, `missing`, and `unavailable` for Hex, Maven
+Central, and the SwiftPM mirror. A `missing` result means the exact artifact or
+tag was checked and absent. An `unavailable` result means network, registry, or
+tooling state prevented an honest absence claim.
+
+The status task is read-only. Mutation stays in the guarded release surfaces:
+`script/guarded_hex_publish.sh`, the Release Please publish jobs,
+`script/verify_ios_mirror_backfill.sh`, and the `iOS mirror backfill` workflow.
+
 ## Required Check Boundary
 
 The `publish-hex-*` and `clean-room-proof-*` jobs are post-merge release jobs.
@@ -136,7 +162,7 @@ run before merge.
 Keep merge-blocking proof on the semantic workflow checks and source tests. The
 post-merge publish/proof jobs are release execution evidence, not PR gates.
 
-## Phase Boundaries
+## Historical Phase Boundaries
 
 Phase 143 owns the guarded automatic Hex publish train and exact-ref Hex
 recovery.
@@ -148,9 +174,6 @@ Phase 145 owns native registry recovery and parity: SwiftPM mirror credential
 preflight, Maven/SwiftPM recovery semantics, native proof decoupling, and iOS
 mirror backfill through `script/verify_ios_mirror_backfill.sh` and the
 `iOS mirror backfill` workflow.
-
-Phase 146 owns full release-status DX: local text output, JSON output, optional
-live registry probes, and any issue-opening automation.
 
 ## Irreversible Registry Warning
 

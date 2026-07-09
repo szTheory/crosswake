@@ -11,10 +11,11 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Unpublished support claims
+### Package-family release truth
 
 * No new support claims have been cut after `0.2.0` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
-* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below). The standalone companion *packages* that consume it are extracted in-tree but their Hex publish is still a deferred gate — see "Deferred non-shipped claims" below.
+* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below).
+* The current published Hex family includes `crosswake 0.2.0`, `crosswake_sigra 0.1.1`, `crosswake_chimeway 0.1.0`, and `crosswake_threadline 0.1.0`. The local release graph also tracks `crosswake_rulestead 0.1.0` and `crosswake_rindle 0.1.0`; public registry presence is reported by `mix crosswake.release.status --live`, and compatibility floors remain documented in `guides/companion_compatibility.md`.
 
 ### Verification-required and advisory surfaces
 
@@ -24,7 +25,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Deferred non-shipped claims
 
 * RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, companion extraction, and broad native runtime expansion are not shipped in the published Hex package. They stay routed to future milestones and must not be promoted without provider/native proof.
-* **Standalone companion packages are extracted in-tree but NOT yet published to Hex.** `crosswake_rulestead` and `crosswake_rindle` (v16.0) have release-please Release PRs open but unmerged. The three v17.0 companions are now all extracted in-tree — `crosswake_sigra` (phase 137), `crosswake_chimeway` (phase 138), and `crosswake_threadline` (phase 139) — each dress-rehearsed against a path dependency with a green `hex.publish --dry-run`, and each carrying its own Side-A "declared ⇔ emitted" telemetry contract test plus a disciplined compat-matrix row and hardened extraction recipe (phase 140). The irreversible batched Hex publish (sequential sigra → chimeway → threadline) is a deliberate deferred human gate and has not run. Treat all companions as planning-continuity, not installable Hex releases, until their Release PRs are merged.
+* Future companion or native breadth still requires its own release, proof, and support-matrix update. Existing live companion packages do not promote RevenueCat, push delivery execution, physical-device evidence, or broad native runtime expansion.
 
 ### Published Hex truth
 

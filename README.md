@@ -115,6 +115,7 @@ Read:
 - [guides/native_shell.md](guides/native_shell.md)
 - [guides/packs.md](guides/packs.md)
 - [guides/offline.md](guides/offline.md)
+- [docs/COMPANION-PUBLISH-RUNBOOK.md](docs/COMPANION-PUBLISH-RUNBOOK.md) and `mix crosswake.release.status [--json] [--live]` for package-family release status.
 
 The checked-in example hosts under `examples/` are the primary public proof artifacts.
 

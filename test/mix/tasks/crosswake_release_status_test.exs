@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     release.governance_cleanup_after_proof
   )
   @forbidden_public_ids ~w(PREF-01 MIRR-01 STAT-01)
-  @stale_phrase Enum.join(["PREF validation remains", "Phase 144"], " ")
+  @stale_phrase Enum.join(["PREF validation", "remains", "Phase 144"], " ")
 
   test "release status reports local graph and scanner-backed guard checks" do
     status = Crosswake.ReleaseStatus.build()
