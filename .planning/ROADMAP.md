@@ -109,7 +109,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 146-01-PLAN.md — Local scanner-backed status truth for STAT-01.
+- [x] 146-01-PLAN.md — Local scanner-backed status truth for STAT-01.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -295,4 +295,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 146. Release Status DX & Docs Truth | v18.0 | 3 plans | Planned | — |
+| 146. Release Status DX & Docs Truth | v18.0 | 1/3 | In Progress|  |
