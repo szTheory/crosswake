@@ -430,6 +430,7 @@ defmodule CrosswakeExample.Router do
       pipe_through([:api])
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
       post("/native-claim", NativeClaimController, :create)
+      post("/showcase-reset", ShowcaseResetController, :create)
     end
   end
 end
