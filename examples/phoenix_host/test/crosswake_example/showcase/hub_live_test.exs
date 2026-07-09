@@ -17,7 +17,8 @@ defmodule CrosswakeExample.Showcase.HubLiveTest do
 
     assert html =~ "/saas/dashboard"
     assert html =~ "/native/claims/:id/capture"
-    assert html =~ "/study/session"
+    assert html =~ ~s(href="/offline")
+    refute html =~ "/study/session"
 
     for lane <- Catalog.lanes() do
       assert html =~ lane.primary_cta

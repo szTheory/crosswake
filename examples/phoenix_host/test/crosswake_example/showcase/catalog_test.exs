@@ -47,6 +47,14 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
     end
   end
 
+  test "learning lane targets the browser-owned offline proof surface" do
+    learning_lane = Enum.find(Catalog.lanes(), &(&1.id == :learning_training))
+
+    assert learning_lane.primary_path == "/offline"
+    assert learning_lane.primary_route_id == "offline-study"
+    assert learning_lane.primary_cta == "Open Offline Study Proof"
+  end
+
   test "card posture matches compiled runtime, offline, security, and capability metadata" do
     compiled = compiled_route_map()
 

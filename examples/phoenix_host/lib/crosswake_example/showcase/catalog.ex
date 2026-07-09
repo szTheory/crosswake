@@ -75,9 +75,9 @@ defmodule CrosswakeExample.Showcase.Catalog do
       id: :learning_training,
       heading: "Learning/Training",
       body: "Content packs and offline study without pretending every action commits offline.",
-      primary_path: "/study/session",
-      primary_route_id: "local-first-study-session",
-      primary_cta: "Open Learning Lane",
+      primary_path: "/offline",
+      primary_route_id: "offline-study",
+      primary_cta: "Open Offline Study Proof",
       route_posture: %{
         runtime: :offline_island,
         offline: :local_first,
