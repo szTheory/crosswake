@@ -110,12 +110,12 @@ defmodule Crosswake.Guides.SeeItRunTest do
     missing_proof_secondary =
       String.replace(guide, "Proof routes stay one click deeper", "Proof commands are primary")
 
-    missing_support_truth = String.replace(guide, "support-truth", "support status")
+    missing_support_truth = String.replace(guide, ~r/support-truth/i, "support status")
 
     missing_collateral =
       String.replace(
         guide,
-        "route-tour assertions prove route-owner semantics",
+        ~r/route-tour assertions prove\s+route-owner semantics/i,
         "screenshots prove everything"
       )
 

@@ -1,9 +1,14 @@
 # Crosswake Quick Start
 
-> **New here?** Start with [guides/see_it_run.md](../guides/see_it_run.md) to see the three runtimes in action. Come back here for the full proof command reference.
+> **New here?** Start with [guides/see_it_run.md](../guides/see_it_run.md) and
+> open the showcase hub at `http://localhost:4700/`. Come back here for the full
+> proof command reference.
 
 This guide gets the checked-in Phoenix host running first, then walks through the
 proof commands that show Crosswake's current route-owner architecture.
+Proof routes stay one click deeper: the showcase hub is the newcomer entrypoint,
+while `/offline`, `/bridge-proof`, `/native/claims`, diagnostics, and E2E routes
+remain proof surfaces.
 
 Use it from a clean checkout when you want to see what is proven today:
 Phoenix-owned routes stay Phoenix-owned, `/offline` is an app-owned offline
@@ -45,11 +50,12 @@ mix setup
 PORT=4700 mix phx.server
 ```
 
-Open `http://localhost:4700/`.
+Open the showcase hub at `http://localhost:4700/`.
 
-Expected result: the Crosswake Phoenix Host page loads and links to the route
-owner examples. This smoke path proves the Phoenix host boots with the current
-SQLite migrations and seed hook. It is not the offline correctness proof.
+Expected result: the Crosswake showcase hub loads with SaaS/Admin, Field Service,
+and Learning/Training lanes plus route-owner labels. This smoke path proves the
+Phoenix host boots with the current SQLite migrations and seed hook. It is not
+the offline correctness proof.
 
 Leave the server running for the next section.
 
@@ -65,13 +71,19 @@ http://localhost:4700/bridge-proof
 
 What to look for:
 
-- `/` is the Phoenix-owned starting point for the checked-in host.
+- `/` is the Phoenix-owned showcase hub for the checked-in host.
 - `/offline` renders the Offline Study Island. It is a socketless
   `:offline_island` route backed by `examples/phoenix_host/priv/static/offline_study.js`.
 - `/bridge-proof` renders a LiveView route that declares the bounded `share`
   capability. The button is labeled `Share`.
 - The offline replay endpoint is `/study/sync`; it is used by the browser island,
   not by the bridge.
+
+Support-truth labels stay literal in this guide: `Available today`,
+`Proof-backed example`, `Demo pressure`, and `Future gap` separate shipped proof
+from native-control pressure. Showcase screenshots explain the product surface;
+route-tour assertions prove route-owner semantics before screenshots or other
+collateral are accepted.
 
 ## Prove Offline Replay
 

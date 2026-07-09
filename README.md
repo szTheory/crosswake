@@ -48,7 +48,8 @@ Crosswake is not:
 bin/see-it-run.sh
 ```
 
-Boots the shared backend on port 4700 and auto-opens the browser. Requires Docker.
+Boots the shared backend on port 4700 and auto-opens `http://localhost:4700/`,
+the showcase hub for the checked-in example host. Requires Docker.
 
 <img
   src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
@@ -56,11 +57,22 @@ Boots the shared backend on port 4700 and auto-opens the browser. Requires Docke
   width="900"
 />
 
-Three routes, one shared backend at `http://localhost:4700`:
+Open the showcase hub first at `http://localhost:4700/`. It introduces the
+SaaS/Admin, Field Service, and Learning/Training lanes with route-owner labels
+before asking you to inspect proof routes.
 
-- `/` — home (Phoenix LiveView)
+Proof routes stay one click deeper and are secondary to the product-shaped
+showcase:
+
 - `/offline` — offline island (app-owned, socketless)
 - `/bridge-proof` — bounded bridge (share capability)
+- `/native/claims` — native-pressure route list
+
+Support-truth labels in this first run stay narrow: `Available today` and
+`Proof-backed example` describe web proof surfaces, while `Demo pressure` and
+`Future gap` describe native-control candidates that are not shipped broadly.
+Showcase screenshots explain the product surface; route-tour assertions prove
+route-owner semantics.
 
 > **Advisory native collateral.** The iOS Simulator and Android Emulator frames above are
 > `emulator evidence` — advisory, not physical-device proof. A successful simulator or
