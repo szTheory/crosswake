@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 147
-current_phase_name: Arc, Fixture, and Showcase Foundation
-status: Ready to execute
+current_phase_name: arc-fixture-and-showcase-foundation
+status: executing
 stopped_at: Phase 147 planned
-last_updated: "2026-07-09T19:36:38Z"
+last_updated: "2026-07-09T19:43:40.662Z"
 last_activity: 2026-07-09
-last_activity_desc: Phase 147 planned with 5 execution plans
+last_activity_desc: Phase 147 execution started
 progress:
   total_phases: 5
   completed_phases: 0
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** v19.0 Showcase Apps & Capability Map — build the product-shaped example surface and v20 native-controls handoff.
+**Current focus:** Phase 147 — arc-fixture-and-showcase-foundation
 
 ## Current Position
 
-Phase: 147 — Arc, Fixture, and Showcase Foundation
-Plan: 5 plans ready
-Status: Ready to execute
-Last activity: 2026-07-09 — Phase 147 planned with 5 execution plans
+Phase: 147 (arc-fixture-and-showcase-foundation) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 147
+Last activity: 2026-07-09 — Phase 147 execution started
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -39,6 +39,7 @@ Last activity: 2026-07-09 — Phase 147 planned with 5 execution plans
 - Goal: make Crosswake feel like a polished, production-ready Phoenix mobile framework through seeded, click-around examples across realistic app domains, then convert the revealed gaps into a v20 Native Controls Pack 1 handoff.
 - Phase ordering: 147 foundation and fixture reset → 148 SaaS/admin lane → 149 field-service lane → 150 subscription learning/training lane → 151 capability map, proof, collateral, and v20 handoff.
 - Selected GSD seed: **SEED-002** as strategic input for Phoenix-first native capability and commerce breadth. SEED-001 remains historical precedent; SEED-003/004 remain release-infrastructure carryovers, not v19 headline scope.
+- Product arc sequence: v19 showcase evidence → v20 Native Controls Pack 1 → later capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the queue.
 - Domain set: SaaS/admin, field service, subscription learning/training.
 - Follow-on milestone: **v20.0 Native Controls Pack 1**, likely alert/confirm, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration, finalized by v19 evidence.
 - Anti-scope: do not implement the full native-controls catalog, scanner/document-scan/biometrics/location/NFC production APIs, live commerce/paywall SDK support, `crosswake_dashboard`, or generic sync-engine behavior in v19.

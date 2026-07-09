@@ -33,7 +33,7 @@
 
 **Success criteria:**
 
-1. Planning docs preserve the v19 showcase -> v20 native-controls thread and classify SEED-002/003/004 correctly.
+1. Planning docs preserve the v19 showcase -> v20 Native Controls Pack 1 -> later capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage thread, with SEED-002 as strategic input and SEED-003/004 as release-infrastructure carryovers.
 2. The example host has a first-screen showcase hub with SaaS/admin, field-service, and learning/training lanes visible.
 3. Showcase data has a deterministic reset/reseed path with believable records for all three lanes.
 4. Route-owner/support labels are present in the hub foundation and avoid blurring shipped support with future gaps.

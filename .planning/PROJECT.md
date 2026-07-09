@@ -16,6 +16,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 - A first-screen showcase hub with deterministic seeded/fixture data for SaaS/admin, field-service, and subscription learning/training domains.
 - Three domain lanes that demonstrate route ownership, LiveView-first surfaces, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth without overclaiming unsupported native breadth.
 - A capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy, typed-contract, proof-lane, and package-ownership posture.
+- Seed classification stays explicit: **SEED-002** informs capability breadth and v20 prioritization, while **SEED-003** (iOS mirror token/backfill) and **SEED-004** (clean-room proof harness) remain release-infrastructure carryovers rather than v19 app-showcase scope.
 
 **Strategic through-line:** v19.0 creates the product-shaped proof surface; v20.0 should logically follow with Native Controls Pack 1, informed by gaps exposed in the showcase. Later milestones can expand into capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization.
 
@@ -222,6 +223,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - [ ] **v19.0 Showcase Apps & Capability Map** — create a polished, seeded, click-around example surface across SaaS/admin, field-service, and subscription learning/training domains; map capability gaps into the v20 Native Controls Pack 1 handoff.
 - [ ] **ARC-01** — preserve the multi-milestone product thread: v19 showcase, v20 native controls, then capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage follow-ons.
 - [ ] **SEED-002 carried into planning** — Phoenix-first native capability and commerce breadth informs the capability map and v20 handoff, but broad native controls are not implemented in v19 unless a showcase flow requires a narrow existing contract.
+- [ ] **SEED-003/004 classified as release-infrastructure carryovers** — mirror-token and clean-room proof-harness follow-ups stay visible as release-integrity work, not as headline v19 showcase requirements.
 
 ### Out of Scope
 

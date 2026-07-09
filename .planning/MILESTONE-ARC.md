@@ -102,6 +102,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 **Why now**
 - v18.0 closed the release-ops trust gap, and v17.0 completed the package family. The highest-impact remaining DX gap is that Crosswake's value is still distributed across proof lanes, guides, and archived milestones instead of obvious, product-shaped examples.
 - SEED-002 should now become a sequenced multi-milestone arc: first expose capability pressure through examples, then implement the first native controls pack.
+- SEED-003 and SEED-004 remain release-infrastructure carryovers from the package-family arc; they should stay visible for release integrity but must not become v19 showcase headline scope.
 
 **Depends on**
 - v18.0 Release Integrity & Automated Package Operations
