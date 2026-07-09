@@ -106,6 +106,12 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
   end
 
   test "exit behavior is non-fatal for ok and warning, fatal for error, and strict for args" do
+    assert Crosswake.ReleaseStatus.aggregate_status([%{status: :ok}, %{status: :warning}]) ==
+             :warning
+
+    assert Crosswake.ReleaseStatus.aggregate_status([%{status: :warning}, %{status: :error}]) ==
+             :error
+
     assert Crosswake.ReleaseStatus.exit_code(:ok) == 0
     assert Crosswake.ReleaseStatus.exit_code(:warning) == 0
     assert Crosswake.ReleaseStatus.exit_code(:error) == 1
@@ -152,6 +158,11 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert "android-core@0.2.0=missing" in evidence
     assert message =~ "ios-core@0.2.0 missing on ios_mirror"
     assert message =~ "crosswake_sigra@0.1.1 unavailable on hex"
+
+    for check <- status.checks, check.status != :ok do
+      assert is_binary(check.next_action)
+      assert check.next_action != ""
+    end
   end
 
   test "release status source stays read-only and avoids mutation commands" do
