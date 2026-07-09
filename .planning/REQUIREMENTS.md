@@ -15,9 +15,9 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 
 ### Showcase Foundation
 
-- [ ] **SHOW-01**: User can open a first-screen showcase hub from the example host and understand the three domain lanes without reading implementation docs first.
+- [x] **SHOW-01**: User can open a first-screen showcase hub from the example host and understand the three domain lanes without reading implementation docs first.
 - [x] **SHOW-02**: User can reset or reseed deterministic showcase data so every demo lane starts from a believable, repeatable state.
-- [ ] **SHOW-03**: User can see explicit route-owner/support labels in the showcase so LiveView, offline island, native-pressure, and unsupported-gap surfaces are not blurred together.
+- [x] **SHOW-03**: User can see explicit route-owner/support labels in the showcase so LiveView, offline island, native-pressure, and unsupported-gap surfaces are not blurred together.
 - [ ] **SHOW-04**: User can run the existing first-run path and discover the showcase as the product-shaped Crosswake entrypoint.
 
 ### SaaS/Admin Lane
@@ -105,9 +105,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARC-01 | Phase 147 | Complete |
 | ARC-02 | Phase 147 | Complete |
 | ARC-03 | Phase 147 | Complete |
-| SHOW-01 | Phase 147 | Pending |
+| SHOW-01 | Phase 147 | Complete |
 | SHOW-02 | Phase 147 | Complete |
-| SHOW-03 | Phase 147 | Pending |
+| SHOW-03 | Phase 147 | Complete |
 | SHOW-04 | Phase 147 | Pending |
 | SAAS-01 | Phase 148 | Pending |
 | SAAS-02 | Phase 148 | Pending |
