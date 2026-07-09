@@ -472,17 +472,20 @@ Mix docs state public tasks use a `Mix.Tasks.*` module, `use Mix.Task`, and `run
 |---|-------|---------|---------------|
 | A1 | Research validity window is estimated as 30 days for repo-local planning and 7 days for live-probe implementation details. [ASSUMED] | Metadata | Planner may need to re-check registry/docs behavior sooner if upstream registries or CLI behavior changes. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should Phase 146 add `--fail-on-warning` now?**  
+   - Final disposition: Deferred for Phase 146; no plan adds this option, and default `--live` warnings remain exit 0.
    - What we know: Context allows a strict option but does not require it. [VERIFIED: .planning/phases/146-release-status-dx-docs-truth/146-CONTEXT.md]  
    - What's unclear: Whether any immediate CI wrapper needs warnings to fail. [VERIFIED: .planning/REQUIREMENTS.md:35]  
    - Recommendation: Defer unless a plan adds scheduled issue-opening automation; default `--live` warnings must stay exit 0. [VERIFIED: .planning/phases/146-release-status-dx-docs-truth/146-CONTEXT.md]
 2. **Should `--native-status PATH` be added now?**  
+   - Final disposition: Deferred for Phase 146; plans keep the default local command independent of GitHub API access and artifact downloads.
    - What we know: Context permits an explicit file input but says default local command must not require GitHub API/artifact downloads. [VERIFIED: .planning/phases/146-release-status-dx-docs-truth/146-CONTEXT.md]  
    - What's unclear: Whether any current operator flow has a local artifact file to consume. [VERIFIED: .github/workflows/release-please.yml:593]  
    - Recommendation: Defer unless trivial; Phase 146 can satisfy STAT-01/02/03 without artifact consumption. [VERIFIED: .planning/REQUIREMENTS.md:34]
 3. **Should README mention the release-status command?**  
+   - Final disposition: Add the concise maintainer README bullet planned in Plan 03; detailed behavior stays in the runbook and task help.
    - What we know: README has a maintainer/contributor section but no release-status command today. [VERIFIED: README.md:109]  
    - What's unclear: Whether this maintainer-only surface belongs in public first-read docs or only in the runbook/task help. [VERIFIED: README.md:171]  
    - Recommendation: Add a concise maintainer bullet only if it does not distract from adopter-facing install/proof paths; otherwise document in runbook and task moduledoc. [VERIFIED: .planning/phases/146-release-status-dx-docs-truth/146-CONTEXT.md]

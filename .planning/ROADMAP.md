@@ -104,7 +104,20 @@ Plans:
 
 **Goal:** Ship `mix crosswake.release.status`, JSON output, optional live probes, and reconcile stale release docs.
 **Requirements:** STAT-01, STAT-02, STAT-03
-**Plans:** 0/3
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 146-01-PLAN.md — Local scanner-backed status truth for STAT-01.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 146-02-PLAN.md — JSON contract and exit behavior for STAT-02.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 146-03-PLAN.md — Live probe taxonomy and docs truth for STAT-03.
 
 </details>
 
@@ -282,4 +295,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 143. Guarded Auto-Publish Train | v18.0 | 3/3 | Complete    | 2026-07-07 |
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
-| 146. Release Status DX & Docs Truth | v18.0 | 0/3 | Pending | — |
+| 146. Release Status DX & Docs Truth | v18.0 | 3 plans | Planned | — |
