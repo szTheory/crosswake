@@ -41,6 +41,31 @@ test.describe('Crosswake route-owner browser tour', () => {
   });
 });
 
+async function proveShowcaseHub(page: Page) {
+  await page.goto('/');
+
+  await expect(
+    page.getByRole('heading', { name: /Phoenix routes, native where it matters\./ }),
+    ownerMessage('showcase-hub', 'live_view showcase'),
+  ).toBeVisible();
+
+  await expect(page.getByRole('heading', { name: 'SaaS/Admin' }), ownerMessage('showcase-hub', 'saas lane')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Field Service' }), ownerMessage('showcase-hub', 'field-service lane')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Learning/Training' }), ownerMessage('showcase-hub', 'learning lane')).toBeVisible();
+
+  const body = page.locator('body');
+  await expect(body, ownerMessage('showcase-hub', 'cached read-only support label')).toContainText('Cached read-only');
+  await expect(body, ownerMessage('showcase-hub', 'demo pressure support label')).toContainText('Demo pressure');
+  await expect(body, ownerMessage('showcase-hub', 'future native-control support label')).toContainText('Future native-control candidate');
+  await expect(body, ownerMessage('showcase-hub', 'proof routes secondary')).toContainText('Proof routes stay one click deeper');
+  await expect(body, ownerMessage('showcase-hub', 'route-owner semantics before screenshots')).toContainText('route-owner semantics');
+  await expect(body, ownerMessage('showcase-hub', 'showcase before proof')).toContainText('after the showcase explains the product shape');
+
+  const router = readFileSync(routerPath, 'utf8');
+  expect(router, ownerMessage('showcase-hub', 'root live_view route')).toContain('id: "showcase-hub"');
+  expect(router, ownerMessage('showcase-hub', 'root live_view route')).toContain('live("/", CrosswakeExample.Showcase.HubLive');
+}
+
 async function proveLibraryRoute(page: Page) {
   await page.goto('/library');
 
