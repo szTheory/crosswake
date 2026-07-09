@@ -54,7 +54,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 147-05-PLAN.md — Repoint first-run banner/docs and add a narrow hub route-tour smoke.
+- [x] 147-05-PLAN.md — Repoint first-run banner/docs and add a narrow hub route-tour smoke.
 
 ### Phase 148: SaaS/Admin Showcase
 
@@ -297,7 +297,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 144. Published-Core Compatibility & Clean-Room Proof | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
-| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 4/5 | In Progress | — |
+| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete   | 2026-07-09 |
 | 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
 | 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
