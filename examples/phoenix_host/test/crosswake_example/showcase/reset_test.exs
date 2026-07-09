@@ -35,6 +35,7 @@ defmodule CrosswakeExample.Showcase.ResetTest do
     # D-07/D-10: field-service/native-pressure server fixtures are reset-safe server state only.
     assert initial_count == 2
     assert after_first_seed == initial_count
+
     assert after_second_seed == initial_count,
            "D-07 requires repeated native-pressure fixture seeds to avoid duplicate persisted claims"
   end
@@ -53,6 +54,7 @@ defmodule CrosswakeExample.Showcase.ResetTest do
     # D-11: Phase 147 proves believable foundation data without modeling every future domain table.
     assert result.counts.saas_admin == %{accounts: 1, approvals: 3, users: 2}
     assert result.counts.field_service_native_pressure == %{claims: 2, submissions: 0}
+
     assert result.counts.learning_training == %{
              browser_state_reset: false,
              cards: 3,

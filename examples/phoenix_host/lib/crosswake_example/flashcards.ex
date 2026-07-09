@@ -9,6 +9,33 @@ defmodule CrosswakeExample.Flashcards do
   alias CrosswakeExample.Flashcards.Deck
   alias CrosswakeExample.Flashcards.Card
   alias CrosswakeExample.Flashcards.Progress
+  alias CrosswakeExample.LocalFirst.ReviewEvent
+
+  @seed_deck %{
+    id: "11111111-1111-4111-8111-111111111111",
+    title: "Elixir Basics",
+    description: "Core concepts of Elixir"
+  }
+
+  @seed_cards [
+    %{
+      id: "22222222-2222-4222-8222-222222222221",
+      front_text: "What is OTP?",
+      back_text:
+        "Open Telecom Platform - a collection of middleware, libraries, and tools written in Erlang."
+    },
+    %{
+      id: "22222222-2222-4222-8222-222222222222",
+      front_text: "What is a GenServer?",
+      back_text:
+        "A generic server behaviour that abstracts client/server interactions in Elixir/Erlang."
+    },
+    %{
+      id: "22222222-2222-4222-8222-222222222223",
+      front_text: "What is Ecto?",
+      back_text: "A database wrapper and query generator for Elixir."
+    }
+  ]
 
   # --- Decks ---
 
@@ -86,5 +113,50 @@ defmodule CrosswakeExample.Flashcards do
       on_conflict: :replace_all,
       conflict_target: [:card_id, :user_id]
     )
+  end
+
+  def reset_seed! do
+    {:ok, counts} =
+      Repo.transaction(fn ->
+        Repo.delete_all(ReviewEvent)
+        Repo.delete_all(Progress)
+        Repo.delete_all(Card)
+        Repo.delete_all(Deck)
+
+        deck =
+          Repo.insert!(%Deck{
+            id: @seed_deck.id,
+            title: @seed_deck.title,
+            description: @seed_deck.description
+          })
+
+        Enum.each(@seed_cards, fn attrs ->
+          Repo.insert!(%Card{
+            id: attrs.id,
+            deck_id: deck.id,
+            front_text: attrs.front_text,
+            back_text: attrs.back_text
+          })
+        end)
+
+        %{
+          browser_state_reset: false,
+          decks: 1,
+          cards: length(@seed_cards),
+          progress: 0,
+          synced_reviews: 0
+        }
+      end)
+
+    counts
+  end
+
+  def seed_digest_components do
+    [
+      "learning_training.deck:#{@seed_deck.id}:#{@seed_deck.title}:#{@seed_deck.description}",
+      @seed_cards
+      |> Enum.sort_by(& &1.id)
+      |> Enum.map_join("|", &"learning_training.card:#{&1.id}:#{&1.front_text}:#{&1.back_text}")
+    ]
   end
 end
