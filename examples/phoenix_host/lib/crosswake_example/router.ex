@@ -1,31 +1,3 @@
-defmodule CrosswakeExample.PageController do
-  use Phoenix.Controller, formats: [:html]
-
-  def index(conn, _params) do
-    html(conn, """
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Crosswake Phoenix Host</title>
-      </head>
-      <body>
-        <main>
-          <h1>Crosswake Phoenix Host</h1>
-          <p>Route policy for Phoenix apps that go mobile.</p>
-          <ul>
-            <li><a href="/offline">Offline Study Island</a> - app-owned IndexedDB outbox and Phoenix/Ecto replay.</li>
-            <li><a href="/bridge-proof">Bridge Proof</a> - Phoenix-owned LiveView route with one bounded Share affordance.</li>
-            <li><a href="/native/claims">Native claim routes</a> - route policy marks native-owned paths explicitly.</li>
-          </ul>
-        </main>
-      </body>
-    </html>
-    """)
-  end
-end
-
 defmodule CrosswakeExample.LibraryLive do
   use Phoenix.LiveView
 
@@ -164,7 +136,14 @@ defmodule CrosswakeExample.Router do
     pipe_through([:browser])
 
     crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
-      get("/", CrosswakeExample.PageController, :index, crosswake: [id: "home"])
+      live("/", CrosswakeExample.Showcase.HubLive,
+        crosswake: [
+          id: "showcase-hub",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
 
       get("/offline", CrosswakeExample.OfflineController, :index,
         crosswake: [
