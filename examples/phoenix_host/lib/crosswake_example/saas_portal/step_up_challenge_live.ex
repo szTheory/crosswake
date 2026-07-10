@@ -2,6 +2,7 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
   use Phoenix.LiveView
   import Ecto.Query
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.Repo
   alias CrosswakeExample.SaaSPortal.StepUpIntent
   alias Crosswake.Companions.Sigra.StepUp, as: SigraStepUp
@@ -12,17 +13,32 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
   def mount(params, _session, socket) do
     challenge_ref = params["challenge_ref"]
 
-    intent = 
+    intent =
       if challenge_ref do
-        Repo.one(from i in StepUpIntent, where: i.audit_correlation_ref == ^challenge_ref and i.state == "challenged")
+        Repo.one(
+          from(i in StepUpIntent,
+            where: i.audit_correlation_ref == ^challenge_ref and i.state == "challenged"
+          )
+        )
       else
         nil
       end
 
     if intent do
-      {:ok, assign(socket, intent: intent, challenge_ref: challenge_ref, request_ref: "req_#{System.unique_integer()}")}
+      {:ok,
+       assign(socket,
+         intent: intent,
+         challenge_ref: challenge_ref,
+         page_title: PageTitle.admin("Step-up Challenge"),
+         request_ref: "req_#{System.unique_integer()}"
+       )}
     else
-      {:ok, assign(socket, intent: nil, challenge_ref: challenge_ref)}
+      {:ok,
+       assign(socket,
+         intent: nil,
+         challenge_ref: challenge_ref,
+         page_title: PageTitle.admin("Step-up Challenge")
+       )}
     end
   end
 
@@ -52,10 +68,10 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
 
     if intent do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
-      
+
       # For proof purposes, simulate consume in the state machine (or equivalent)
       # We transition intent to "consumed" and return renewal instructions
-      
+
       # 1. Prepare completion
       authority_attrs =
         intent.projected_authority
@@ -63,15 +79,15 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
         |> Map.put(:as_of, DateTime.to_iso8601(now))
         |> Map.update(:state, :active, &string_to_existing_atom/1)
         |> Map.update(:assurance_level, :mfa, &string_to_existing_atom/1)
-        |> Map.update(:authn_methods, [:password, :totp], fn methods -> 
-           Enum.map(methods || [], &string_to_existing_atom/1)
+        |> Map.update(:authn_methods, [:password, :totp], fn methods ->
+          Enum.map(methods || [], &string_to_existing_atom/1)
         end)
 
       {:ok, lane} = Contracts.new_session_authority_lane(authority_attrs)
 
       {:ok, %{manifest: manifest}} = Manifest.compile(Router)
       route = manifest.routes[intent.return_route_id]
-      
+
       {:ok, _renewal} =
         SigraStepUp.new_session_renewal_instructions(%{
           renew_session?: true,
@@ -90,7 +106,7 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
         from(row in StepUpIntent,
           where: row.id == ^intent.id and row.state == "challenged"
         )
-      
+
       Repo.update_all(query, set: [state: "consumed", consumed_at: now, updated_at: now])
 
       # Redirect with completion instructions via session or auth plug
@@ -98,21 +114,22 @@ defmodule CrosswakeExample.SaaSPortal.StepUpChallengeLive do
       # but in LiveView we can just redirect to the target path. 
       # We would also need to update the session. We can do that by redirecting to a controller 
       # or just sending a message. For the proof, the LiveView UI is sufficient if we redirect.
-      
+
       {:noreply, redirect(socket, to: route.path)}
     else
       {:noreply, socket}
     end
   end
-  
+
   defp normalize_key(key) when is_atom(key), do: key
   defp normalize_key(key) when is_binary(key), do: String.to_atom(key)
   defp normalize_key(key), do: key
-  
+
   defp string_to_existing_atom(value) when is_binary(value) do
     String.to_existing_atom(value)
   rescue
     ArgumentError -> value
   end
+
   defp string_to_existing_atom(value), do: value
 end

@@ -1,11 +1,13 @@
 defmodule CrosswakeExample.SaaSPortal.AdminAccessLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
-       page_title: "Admin member access",
+       page_title: PageTitle.admin("Admin Member Access"),
        proof_state: :blocked,
        route_id: "saas-admin-member-access",
        runtime_owner: "Phoenix LiveView",

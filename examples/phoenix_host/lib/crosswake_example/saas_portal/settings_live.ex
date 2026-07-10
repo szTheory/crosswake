@@ -1,9 +1,11 @@
 defmodule CrosswakeExample.SaaSPortal.SettingsLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, page_title: "Profile settings")}
+    {:ok, assign(socket, page_title: PageTitle.admin("Profile Settings"))}
   end
 
   @impl true

@@ -1,10 +1,14 @@
 defmodule CrosswakeExample.LocalFirst.StudySessionLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   def mount(_params, _session, socket) do
-    {:ok, assign(socket,
-      current_card_id: 1
-    )}
+    {:ok,
+     assign(socket,
+       current_card_id: 1,
+       page_title: PageTitle.learn("Study Session")
+     )}
   end
 
   def handle_event("rate", %{"rating" => _rating}, socket) do

@@ -1,6 +1,12 @@
 defmodule CrosswakeExample.LibraryLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, page_title: PageTitle.crosswake("Lesson Library"))}
+  end
+
   def render(assigns) do
     # Brand-voiced demo page consuming the shared tokens.css design system
     # (matches the offline study island). The visible title is capitalized via
@@ -92,6 +98,7 @@ defmodule CrosswakeExample.Router do
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
+    plug(:put_root_layout, html: {CrosswakeExample.Layouts, :root})
   end
 
   pipeline :saas_portal do

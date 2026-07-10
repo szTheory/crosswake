@@ -1,12 +1,18 @@
 defmodule CrosswakeExample.Showcase.HubLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.Showcase.Branding
   alias CrosswakeExample.Showcase.Catalog
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, lanes: Catalog.lanes(), parent_brand: Branding.root())}
+    {:ok,
+     assign(socket,
+       lanes: Catalog.lanes(),
+       page_title: PageTitle.crosswake("Showcase"),
+       parent_brand: Branding.root()
+     )}
   end
 
   @impl true

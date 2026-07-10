@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.SaaSPortal.AccountLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SaaSPortal.Accounts
   alias CrosswakeExample.SaaSPortal.Approvals
 
@@ -8,7 +9,7 @@ defmodule CrosswakeExample.SaaSPortal.AccountLive do
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
-       page_title: "Account health",
+       page_title: PageTitle.admin("Account Health"),
        account: socket.assigns.current_saas_account,
        approval_summary: %{pending: 0, approved: 0}
      )}
@@ -29,7 +30,12 @@ defmodule CrosswakeExample.SaaSPortal.AccountLive do
         }
       end)
 
-    {:noreply, assign(socket, account: account, approval_summary: summary)}
+    {:noreply,
+     assign(socket,
+       account: account,
+       approval_summary: summary,
+       page_title: PageTitle.admin(account.name)
+     )}
   end
 
   @impl true

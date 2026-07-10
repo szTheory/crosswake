@@ -1,11 +1,12 @@
 defmodule CrosswakeExample.SelectiveNative.ClaimLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SelectiveNative.Claims
 
   def mount(%{"id" => id}, _session, socket) do
     claim = Claims.get_claim!(id)
-    {:ok, assign(socket, claim: claim)}
+    {:ok, assign(socket, claim: claim, page_title: PageTitle.field(claim.title))}
   end
 
   def render(assigns) do

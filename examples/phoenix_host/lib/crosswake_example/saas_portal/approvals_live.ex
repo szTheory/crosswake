@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.SaaSPortal.ApprovalsLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SaaSPortal.Approvals
 
   @impl true
@@ -9,7 +10,7 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalsLive do
 
     {:ok,
      assign(socket,
-       page_title: "Approvals queue",
+       page_title: PageTitle.admin("Approvals"),
        approvals: approvals,
        pending_count: Enum.count(approvals, &(&1.status == :pending))
      )}

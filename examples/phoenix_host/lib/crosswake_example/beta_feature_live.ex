@@ -24,9 +24,12 @@ defmodule CrosswakeExample.BetaFeatureLive do
   """
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :flag_key, :rulestead)}
+    {:ok,
+     assign(socket, flag_key: :rulestead, page_title: PageTitle.crosswake("Beta Feature Gate"))}
   end
 
   @impl true

@@ -25,6 +25,9 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     await proveShowcaseHub(page);
 
+    await proveSaasRoute(page);
+    await captureRouteScreenshot(page, 'saas-dashboard.png');
+
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
 
@@ -57,6 +60,8 @@ test.describe('Crosswake route-owner browser tour', () => {
 
 async function proveShowcaseHub(page: Page) {
   await page.goto('/');
+
+  await expect(page, ownerMessage('showcase-hub', 'browser title')).toHaveTitle('Showcase · Crosswake');
 
   await expect(
     page.getByRole('heading', { name: /Phoenix routes, native where it matters\./ }),
@@ -114,6 +119,17 @@ async function proveShowcaseHub(page: Page) {
   expect(router, ownerMessage('showcase-hub', 'root live_view route')).toContain('live("/", CrosswakeExample.Showcase.HubLive');
 }
 
+async function proveSaasRoute(page: Page) {
+  await page.goto('/saas/dashboard');
+
+  await expect(page, ownerMessage('saas-dashboard', 'browser title')).toHaveTitle('Dashboard · AdminPilot · Crosswake');
+  await expect(page.getByRole('heading', { name: 'Northwind mobile approvals' }), ownerMessage('saas-dashboard', 'live_view')).toBeVisible();
+
+  const router = readFileSync(routerPath, 'utf8');
+  expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('id: "saas-dashboard"');
+  expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('live("/dashboard"');
+}
+
 async function proveLibraryRoute(page: Page) {
   await page.goto('/library');
 
@@ -146,6 +162,7 @@ async function proveBridgeRoute(page: Page) {
 async function proveOfflineRoute(page: Page, context: BrowserContext) {
   await page.goto('/offline');
 
+  await expect(page, ownerMessage('offline-study', 'browser title')).toHaveTitle('Offline Study · LearnLoop · Crosswake');
   expect(await page.evaluate(() => !!window.liveSocket), ownerMessage('offline-study', 'offline_island')).toBe(false);
   await expect(page.locator('#flashcard-container'), ownerMessage('offline-study', 'offline_island')).toContainText('Elixir');
 
@@ -184,6 +201,7 @@ async function proveNativeOwnedRoute(page: Page) {
   const claimId = await createNativeRouteTourClaim(page);
   await page.goto(`/native/claims/${claimId}/capture`);
 
+  await expect(page, ownerMessage('selective-native-claim-capture', 'browser title')).toHaveTitle('Capture Evidence · Fieldserv · Crosswake');
   await expect(page.getByRole('heading', { name: /Capture Evidence for Route Tour Claim/ }), ownerMessage('selective-native-claim-capture', 'native_screen')).toBeVisible();
   await expect(page.locator('.native-capture-fallback'), ownerMessage('selective-native-claim-capture', 'native_screen')).toContainText('Please use the native mobile application to capture media.');
 

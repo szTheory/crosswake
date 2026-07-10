@@ -1,13 +1,19 @@
 defmodule CrosswakeExample.SelectiveNative.ClaimCaptureLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SelectiveNative.Claims
 
   def mount(%{"id" => id}, _session, socket) do
     claim = Claims.get_claim!(id)
     # The native shell handles the actual capture UI, so this LiveView
     # serves as the fallback/host context when mounted.
-    {:ok, assign(socket, claim: claim, capture_completed: false)}
+    {:ok,
+     assign(socket,
+       claim: claim,
+       capture_completed: false,
+       page_title: PageTitle.field("Capture Evidence")
+     )}
   end
 
   def handle_event("route_return", _payload, socket) do

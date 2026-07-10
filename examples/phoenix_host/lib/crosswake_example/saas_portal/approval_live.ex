@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SaaSPortal.Approvals
 
   @bridge_capability_version "1.0.0"
@@ -12,7 +13,7 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket,
-       page_title: "Approval detail",
+       page_title: PageTitle.admin("Approval Detail"),
        approval: nil,
        approval_notice: nil,
        approval_error: nil,
@@ -22,7 +23,13 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
 
   @impl true
   def handle_params(%{"id" => approval_id}, _uri, socket) do
-    {:noreply, assign(socket, approval: Approvals.get_approval!(approval_id))}
+    approval = Approvals.get_approval!(approval_id)
+
+    {:noreply,
+     assign(socket,
+       approval: approval,
+       page_title: PageTitle.admin(approval.title)
+     )}
   end
 
   @impl true
