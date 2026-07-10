@@ -85,6 +85,34 @@ Plans:
 3. Diagnostics, support truth, and route policy are reachable from the lane.
 4. A representative admin workflow completes without requiring new native-control APIs.
 
+**Plans:** 7 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 149-01-PLAN.md — Create Wave 0 AdminPilot ExUnit and route-tour contracts.
+
+**Wave 1** *(blocked on Wave 0 test contracts)*
+
+- [ ] 149-02-PLAN.md — Expand deterministic SaaS/admin fixture breadth and read contexts.
+- [ ] 149-03-PLAN.md — Add lane-local route-policy diagnostics derived from compiled router metadata.
+
+**Wave 2** *(blocked on fixture breadth)*
+
+- [ ] 149-04-PLAN.md — Persist only mutable approval/activity evidence and wire reset/digest truth.
+
+**Wave 3** *(blocked on fixture breadth, diagnostics, and approval context)*
+
+- [ ] 149-05-PLAN.md — Build AdminPilot shell, context pages, diagnostics panel, and responsive styling.
+
+**Wave 4** *(blocked on approval context and shared UI)*
+
+- [ ] 149-06-PLAN.md — Complete approval queue/detail LiveViews with server-authoritative approve action.
+
+**Wave 5** *(blocked on AdminPilot UI and approval workflow)*
+
+- [ ] 149-07-PLAN.md — Add gated e2e approver session helper and run full ExUnit plus Playwright proof.
+
 ### Phase 150: Field-Service Showcase
 
 **Goal:** Build the device-pressure field-service lane that demonstrates capture/scanning intent, media/evidence pressure, offline/degraded posture, and explicit future native gaps.
@@ -315,7 +343,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
-| 149. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
+| 149. SaaS/Admin Showcase | v19.0 | 0/7 | Planned | — |
 | 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
