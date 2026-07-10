@@ -1,11 +1,12 @@
 defmodule CrosswakeExample.Showcase.HubLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.Showcase.Branding
   alias CrosswakeExample.Showcase.Catalog
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, lanes: Catalog.lanes())}
+    {:ok, assign(socket, lanes: Catalog.lanes(), parent_brand: Branding.root())}
   end
 
   @impl true
@@ -15,30 +16,64 @@ defmodule CrosswakeExample.Showcase.HubLive do
     <link rel="stylesheet" href="/css/app.css" />
 
     <main class="showcase-shell">
+      <header class="showcase-brandbar" aria-label={@parent_brand.name}>
+        <picture>
+          <source srcset={@parent_brand.logo_dark_path} media="(prefers-color-scheme: dark)" />
+          <img
+            class="showcase-crosswake-logo"
+            src={@parent_brand.logo_path}
+            alt="Crosswake"
+            width="260"
+            height="70"
+          />
+        </picture>
+        <p><%= @parent_brand.eyebrow %></p>
+      </header>
+
       <section class="showcase-intro" aria-labelledby="showcase-heading">
-        <p class="showcase-kicker">Crosswake example host</p>
+        <p class="showcase-kicker"><%= @parent_brand.name %></p>
         <div class="showcase-intro-copy">
-          <h1 id="showcase-heading">Phoenix routes, native where it matters.</h1>
-          <p>
-            Three seeded lanes show which runtime owns each route: LiveView, offline island,
-            or native-pressure path.
-          </p>
+          <h1 id="showcase-heading"><%= @parent_brand.headline %></h1>
+          <p><%= @parent_brand.deck %></p>
         </div>
         <a class="btn-primary showcase-primary-cta" href="#showcase-lanes">Explore Showcase</a>
       </section>
 
       <section id="showcase-lanes" class="showcase-lane-grid" aria-label="Showcase lanes">
-        <article :for={lane <- @lanes} id={"showcase-lane-#{lane.id}"} class="card showcase-lane-card">
+        <article
+          :for={lane <- @lanes}
+          id={"showcase-lane-#{lane.id}"}
+          class={["card", "showcase-lane-card", lane.brand.theme_class]}
+          data-brand={lane.brand.name}
+          data-style={lane.brand.style_identifier}
+        >
+          <div class="showcase-app-brand">
+            <div class="showcase-app-mark" aria-hidden="true"><%= lane.brand.mark %></div>
+            <div class="showcase-app-copy">
+              <p class="showcase-app-category"><%= lane.brand.category %></p>
+              <h2><%= lane.brand.name %></h2>
+              <p class="showcase-app-tagline"><%= lane.brand.tagline %></p>
+            </div>
+          </div>
+
           <p class="text-mono showcase-route"><%= lane.primary_path %></p>
 
           <div class="showcase-card-head">
-            <h2><%= lane.heading %></h2>
+            <p class="showcase-domain-label"><%= lane.heading %></p>
             <a class="btn-secondary showcase-lane-cta" href={lane_href(lane)}>
               <%= lane.primary_cta %>
             </a>
           </div>
 
           <p class="showcase-card-body"><%= lane.body %></p>
+
+          <div class="showcase-fixture-preview" aria-label={"#{lane.brand.name} fixture brief"}>
+            <p class="showcase-fixture-org"><%= lane.brand.fixture_brief.organization %></p>
+            <ul>
+              <li :for={record <- lane.brand.fixture_brief.records}><%= record %></li>
+            </ul>
+            <p><%= fixture_activity(lane.brand.fixture_brief.activity) %></p>
+          </div>
 
           <div class="showcase-badge-row" aria-label={"#{lane.heading} runtime and support labels"}>
             <span
@@ -85,6 +120,8 @@ defmodule CrosswakeExample.Showcase.HubLive do
 
   defp lane_href(%{id: :field_service}), do: "/native/claims"
   defp lane_href(%{primary_path: path}), do: path
+
+  defp fixture_activity(activity), do: Enum.join(activity, " / ")
 
   defp badge_class(label) do
     cond do

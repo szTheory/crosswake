@@ -20,6 +20,13 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 - [x] **SHOW-03**: User can see explicit route-owner/support labels in the showcase so LiveView, offline island, native-pressure, and unsupported-gap surfaces are not blurred together.
 - [x] **SHOW-04**: User can run the existing first-run path and discover the showcase as the product-shaped Crosswake entrypoint.
 
+### Demo App Brand System
+
+- [x] **BRAND-01**: User can recognize the root showcase as Crosswake-owned through Crosswake logo/lockup and parent-brand copy, without confusing Crosswake with demo app brands.
+- [x] **BRAND-02**: User can distinguish AdminPilot, Fieldserv, and LearnLoop as three fictional, category-forward demo app brands with separate visual systems.
+- [x] **BRAND-03**: Maintainer can read fixture briefs that require each lane to ship realistic org/person/record/activity/pressure data instead of blank/demo-only pages.
+- [x] **BRAND-04**: Verification can prove root-hub brand rendering, brand distinctness, fixture-density contracts, mobile containment, focus, and support-label honesty.
+
 ### SaaS/Admin Lane
 
 - [ ] **SAAS-01**: User can click through a SaaS/admin domain with realistic accounts, teams, roles, settings, and operational records.
@@ -109,33 +116,37 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHOW-02 | Phase 147 | Complete |
 | SHOW-03 | Phase 147 | Complete |
 | SHOW-04 | Phase 147 | Complete |
-| SAAS-01 | Phase 148 | Pending |
-| SAAS-02 | Phase 148 | Pending |
-| SAAS-03 | Phase 148 | Pending |
-| SAAS-04 | Phase 148 | Pending |
-| FIELD-01 | Phase 149 | Pending |
-| FIELD-02 | Phase 149 | Pending |
-| FIELD-03 | Phase 149 | Pending |
-| FIELD-04 | Phase 149 | Pending |
-| LEARN-01 | Phase 150 | Pending |
-| LEARN-02 | Phase 150 | Pending |
-| LEARN-03 | Phase 150 | Pending |
-| LEARN-04 | Phase 150 | Pending |
-| CAPMAP-01 | Phase 151 | Pending |
-| CAPMAP-02 | Phase 151 | Pending |
-| CAPMAP-03 | Phase 151 | Pending |
-| CAPMAP-04 | Phase 151 | Pending |
-| PROOF-01 | Phase 151 | Pending |
-| PROOF-02 | Phase 151 | Pending |
-| PROOF-03 | Phase 151 | Pending |
-| PROOF-04 | Phase 151 | Pending |
+| BRAND-01 | Phase 148 | Complete |
+| BRAND-02 | Phase 148 | Complete |
+| BRAND-03 | Phase 148 | Complete |
+| BRAND-04 | Phase 148 | Complete |
+| SAAS-01 | Phase 149 | Pending |
+| SAAS-02 | Phase 149 | Pending |
+| SAAS-03 | Phase 149 | Pending |
+| SAAS-04 | Phase 149 | Pending |
+| FIELD-01 | Phase 150 | Pending |
+| FIELD-02 | Phase 150 | Pending |
+| FIELD-03 | Phase 150 | Pending |
+| FIELD-04 | Phase 150 | Pending |
+| LEARN-01 | Phase 151 | Pending |
+| LEARN-02 | Phase 151 | Pending |
+| LEARN-03 | Phase 151 | Pending |
+| LEARN-04 | Phase 151 | Pending |
+| CAPMAP-01 | Phase 152 | Pending |
+| CAPMAP-02 | Phase 152 | Pending |
+| CAPMAP-03 | Phase 152 | Pending |
+| CAPMAP-04 | Phase 152 | Pending |
+| PROOF-01 | Phase 152 | Pending |
+| PROOF-02 | Phase 152 | Pending |
+| PROOF-03 | Phase 152 | Pending |
+| PROOF-04 | Phase 152 | Pending |
 
 **Coverage:**
 
-- v19.0 requirements: 27 total
-- Mapped to phases: 27
+- v19.0 requirements: 31 total
+- Mapped to phases: 31
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-07-09*
-*Last updated: 2026-07-09 after v19.0 milestone definition*
+*Last updated: 2026-07-09 after completing Phase 148 demo-app brand direction*

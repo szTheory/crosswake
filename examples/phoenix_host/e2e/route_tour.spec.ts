@@ -63,11 +63,45 @@ async function proveShowcaseHub(page: Page) {
     ownerMessage('showcase-hub', 'live_view showcase'),
   ).toBeVisible();
 
-  await expect(page.getByRole('heading', { name: 'SaaS/Admin' }), ownerMessage('showcase-hub', 'saas lane')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Field Service' }), ownerMessage('showcase-hub', 'field-service lane')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Learning/Training' }), ownerMessage('showcase-hub', 'learning lane')).toBeVisible();
+  const logo = page.getByRole('img', { name: 'Crosswake' });
+  await expect(logo, ownerMessage('showcase-hub', 'crosswake logo')).toBeVisible();
+  const logoLoaded = await logo.evaluate((element) => {
+    const image = element as HTMLImageElement;
+    return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
+  });
+  expect(logoLoaded, ownerMessage('showcase-hub', 'crosswake logo asset loaded')).toBe(true);
+
+  await expect(page.getByRole('heading', { name: 'AdminPilot' }), ownerMessage('showcase-hub', 'saas lane brand')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Fieldserv' }), ownerMessage('showcase-hub', 'field-service lane brand')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LearnLoop' }), ownerMessage('showcase-hub', 'learning lane brand')).toBeVisible();
+  await expect(page.getByText('Crosswake example host'), ownerMessage('showcase-hub', 'legacy root copy removed')).toHaveCount(0);
+
+  const brandCards = page.locator('.showcase-lane-card');
+  await expect(brandCards, ownerMessage('showcase-hub', 'three brand cards')).toHaveCount(3);
+  const brandStyles = await brandCards.evaluateAll((cards) =>
+    cards.map((card) => ({
+      brand: card.getAttribute('data-brand'),
+      style: card.getAttribute('data-style'),
+      accent: window.getComputedStyle(card).getPropertyValue('--app-accent').trim(),
+    })),
+  );
+  expect(brandStyles.map(({ brand }) => brand), ownerMessage('showcase-hub', 'brand card order')).toEqual([
+    'AdminPilot',
+    'Fieldserv',
+    'LearnLoop',
+  ]);
+  expect(new Set(brandStyles.map(({ style }) => style)).size, ownerMessage('showcase-hub', 'distinct style identifiers')).toBe(3);
+  expect(new Set(brandStyles.map(({ accent }) => accent)).size, ownerMessage('showcase-hub', 'distinct brand accents')).toBe(3);
 
   const body = page.locator('body');
+  await expect(body, ownerMessage('showcase-hub', 'parent brand copy')).toContainText('Crosswake Showcase');
+  await expect(body, ownerMessage('showcase-hub', 'powered by Crosswake copy')).toContainText('Demo apps powered by Crosswake');
+  await expect(body, ownerMessage('showcase-hub', 'admin fixture preview')).toContainText('Northwind Workspace');
+  await expect(body, ownerMessage('showcase-hub', 'field fixture preview')).toContainText('Ridgeway Mutual Field Ops');
+  await expect(body, ownerMessage('showcase-hub', 'learning fixture preview')).toContainText('Brightpath Academy');
+  await expect(body, ownerMessage('showcase-hub', 'domain label visible')).toContainText('SaaS/Admin');
+  await expect(body, ownerMessage('showcase-hub', 'domain label visible')).toContainText('Field Service');
+  await expect(body, ownerMessage('showcase-hub', 'domain label visible')).toContainText('Learning/Training');
   await expect(body, ownerMessage('showcase-hub', 'cached read-only support label')).toContainText('Cached read-only');
   await expect(body, ownerMessage('showcase-hub', 'demo pressure support label')).toContainText('Demo pressure');
   await expect(body, ownerMessage('showcase-hub', 'future native-control support label')).toContainText('Future native-control candidate');

@@ -2,6 +2,7 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
   use ExUnit.Case, async: true
 
   alias Crosswake.Policy.RouterMetadata
+  alias CrosswakeExample.Showcase.Branding
   alias CrosswakeExample.Showcase.Catalog
 
   @lane_ids [:saas_admin, :field_service, :learning_training]
@@ -28,6 +29,15 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
 
   test "lanes are the three v19 showcase domains in stable order" do
     assert Enum.map(Catalog.lanes(), & &1.id) == @lane_ids
+  end
+
+  test "each lane carries its fixed demo app brand metadata" do
+    for lane <- Catalog.lanes() do
+      assert lane.brand == Branding.brand_for!(lane.id)
+      assert lane.brand.id == lane.id
+      assert lane.brand.name in ["AdminPilot", "Fieldserv", "LearnLoop"]
+      refute lane.brand.name =~ "Crosswake"
+    end
   end
 
   test "every card route id and path exists in compiled Crosswake route metadata" do

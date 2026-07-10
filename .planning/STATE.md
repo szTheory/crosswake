@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 148
+current_phase: 149
 current_phase_name: SaaS/Admin Showcase
 status: ready
-stopped_at: Phase 147 complete; Phase 148 not started
-last_updated: "2026-07-09T21:06:45.000Z"
+stopped_at: Phase 148 complete; Phase 149 not started
+last_updated: "2026-07-09T22:24:00.000Z"
 last_activity: 2026-07-09
-last_activity_desc: Phase 147 complete, transitioned to Phase 148
+last_activity_desc: Phase 148 complete, transitioned to Phase 149
 progress:
-  total_phases: 5
-  completed_phases: 1
+  total_phases: 6
+  completed_phases: 2
   total_plans: 5
   completed_plans: 5
-  percent: 20
+  percent: 33
 ---
 
 # Project State: Crosswake
@@ -24,20 +24,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 148 — SaaS/Admin Showcase
+**Current focus:** Phase 149 — SaaS/Admin Showcase
 
 ## Current Position
 
-Phase: 148 — SaaS/Admin Showcase
+Phase: 149 — SaaS/Admin Showcase
 Plan: Not started
 Status: Not started — ready for discussion/planning
-Last activity: 2026-07-09 — Phase 147 complete, transitioned to Phase 148
+Last activity: 2026-07-09 — Phase 148 complete, transitioned to Phase 149
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
 - Milestone: **v19.0 Showcase Apps & Capability Map**.
 - Goal: make Crosswake feel like a polished, production-ready Phoenix mobile framework through seeded, click-around examples across realistic app domains, then convert the revealed gaps into a v20 Native Controls Pack 1 handoff.
-- Phase ordering: 147 foundation and fixture reset → 148 SaaS/admin lane → 149 field-service lane → 150 subscription learning/training lane → 151 capability map, proof, collateral, and v20 handoff.
+- Phase ordering: 147 foundation and fixture reset → 148 demo app brand and fixture direction → 149 SaaS/admin lane → 150 field-service lane → 151 subscription learning/training lane → 152 capability map, proof, collateral, and v20 handoff.
+- Brand direction: root remains Crosswake-owned; AdminPilot, Fieldserv, and LearnLoop are separate fictional demo app identities inside the single Phoenix example host.
 - Selected GSD seed: **SEED-002** as strategic input for Phoenix-first native capability and commerce breadth. SEED-001 remains historical precedent; SEED-003/004 remain release-infrastructure carryovers, not v19 headline scope.
 - Product arc sequence: v19 showcase evidence → v20 Native Controls Pack 1 → later capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the queue.
 - Domain set: SaaS/admin, field service, subscription learning/training.
@@ -195,7 +196,7 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ### Resolved In Current Phase
 
-*(populated during execution)*
+- Phase 148 Demo App Brand & Fixture Direction completed 2026-07-09: root showcase is Crosswake-branded, AdminPilot/Fieldserv/LearnLoop are fixed as fictional demo-app identities, fixture briefs define realistic density requirements, and route-tour/browser UAT passed.
 
 ### Blockers/Concerns
 
@@ -241,9 +242,9 @@ Full decision log in PROJECT.md (Key Decisions).
 ## Session Continuity
 
 Last session: 2026-07-09T21:06:45.000Z
-Stopped at: Phase 147 complete; Phase 148 not started
+Stopped at: Phase 148 complete; Phase 149 not started
 Resume file: None
 
 ## Operator Next Steps
 
-- Start Phase 148 with `/gsd-discuss-phase 148` (recommended) or `/gsd-plan-phase 148`.
+- Start Phase 149 SaaS/Admin Showcase with `/gsd-discuss-phase 149` (recommended) or `/gsd-plan-phase 149`.

@@ -6,6 +6,8 @@ defmodule CrosswakeExample.Showcase.Catalog do
   remains authoritative through compiled router metadata.
   """
 
+  alias CrosswakeExample.Showcase.Branding
+
   @allowed_support_labels [
     "Available today",
     "Proof-backed example",
@@ -99,10 +101,12 @@ defmodule CrosswakeExample.Showcase.Catalog do
   ]
 
   @spec lanes() :: [map()]
-  def lanes, do: @lanes
+  def lanes do
+    Enum.map(@lanes, &attach_brand/1)
+  end
 
   @spec cards() :: [map()]
-  def cards, do: @lanes
+  def cards, do: lanes()
 
   @spec route_ids() :: [String.t()]
   def route_ids do
@@ -111,4 +115,8 @@ defmodule CrosswakeExample.Showcase.Catalog do
 
   @spec allowed_support_labels() :: [String.t()]
   def allowed_support_labels, do: @allowed_support_labels
+
+  defp attach_brand(%{id: id} = lane) do
+    Map.put(lane, :brand, Branding.brand_for!(id))
+  end
 end

@@ -95,7 +95,8 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 **Status:** ACTIVE — v19.0 starts after v18.0 release integrity made package-family operations trustworthy enough to return to product-shaped DX.
 
 **Objective**
-- Build a polished first-screen showcase hub with deterministic seeded/fixture data across three domains: SaaS/admin, field-service, and subscription learning/training.
+- Build a polished first-screen Crosswake showcase hub with deterministic seeded/fixture data across three domains: SaaS/admin, field-service, and subscription learning/training.
+- Give each domain a distinct fictional demo-app identity, AdminPilot, Fieldserv, and LearnLoop, so examples feel product-real without making Crosswake itself look like one vertical app.
 - Use the examples to make route ownership, LiveView-first flows, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth visible without reading implementation docs first.
 - Produce a capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy and proof-lane posture.
 
@@ -118,7 +119,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `proof-truth`
 
 **Key outputs**
-- Click-around showcase hub and three domain lanes.
+- Crosswake-branded showcase hub and three micro-branded domain lanes.
 - Resettable, deterministic seeded/fixture data.
 - Route-tour and fixture-reset proof.
 - Capability map with v20 Native Controls Pack 1 handoff.
@@ -268,4 +269,4 @@ Every milestone close must update or verify:
 - Whether scanner/document-scan/biometrics/location belong in v20.0 or a later capture/device controls pack.
 
 ---
-*Last updated: 2026-07-09 — v19.0 Showcase Apps & Capability Map selected as active arc; v20.0 Native Controls Pack 1 recorded as the logical follow-on.*
+*Last updated: 2026-07-09 — v19.0 Showcase Apps & Capability Map active; Phase 148 brand/fixture direction completed before lane buildout; v20.0 Native Controls Pack 1 recorded as the logical follow-on.*

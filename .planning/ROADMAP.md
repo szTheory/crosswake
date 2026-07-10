@@ -13,7 +13,7 @@
 - ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
 - ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
 - ✅ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (shipped 2026-07-09)
-- ◆ **v19.0 Showcase Apps & Capability Map** — Phases 147-151 (active)
+- ◆ **v19.0 Showcase Apps & Capability Map** — Phases 147-152 (active)
 
 ## Phases
 
@@ -21,8 +21,8 @@
 
 **Goal:** Turn Crosswake into a product-shaped, click-around DX showcase across realistic app domains, then use that evidence to define v20.0 Native Controls Pack 1.
 
-**Phase count:** 5
-**Requirements covered:** 27/27
+**Phase count:** 6
+**Requirements covered:** 31/31
 **Starting phase:** 147
 
 ### Phase 147: Arc, Fixture, and Showcase Foundation
@@ -56,7 +56,23 @@ Plans:
 
 - [x] 147-05-PLAN.md — Repoint first-run banner/docs and add a narrow hub route-tour smoke.
 
-### Phase 148: SaaS/Admin Showcase
+### Phase 148: Demo App Brand & Fixture Direction
+
+**Goal:** Establish Crosswake-branded showcase framing, three distinct demo-app micro-brands, realistic fixture-density standards, and the root-hub visual upgrade consumed by later lane phases.
+
+**Requirements:** BRAND-01, BRAND-02, BRAND-03, BRAND-04
+
+**Completed:** 2026-07-09
+
+**Success criteria:**
+
+1. Root showcase is clearly Crosswake-branded with the Crosswake logo/lockup and no "example host" product copy.
+2. AdminPilot, Fieldserv, and LearnLoop are fixed as distinct fictional demo-app identities with non-Crosswake visual systems and category-forward names.
+3. Each demo app has a fixture brief defining realistic org/person/record/activity/pressure data requirements for later lane phases.
+4. Root hub renders the three micro-brands as polished product previews while preserving route-owner/support truth.
+5. Tests/UAT guard brand distinctness, fixture density, root logo/copy, mobile overflow, focus, and support-label honesty.
+
+### Phase 149: SaaS/Admin Showcase
 
 **Goal:** Build the LiveView-first SaaS/admin lane that demonstrates Phoenix-native route ownership, auth/admin pressure, diagnostics, and support truth.
 
@@ -69,7 +85,7 @@ Plans:
 3. Diagnostics, support truth, and route policy are reachable from the lane.
 4. A representative admin workflow completes without requiring new native-control APIs.
 
-### Phase 149: Field-Service Showcase
+### Phase 150: Field-Service Showcase
 
 **Goal:** Build the device-pressure field-service lane that demonstrates capture/scanning intent, media/evidence pressure, offline/degraded posture, and explicit future native gaps.
 
@@ -82,7 +98,7 @@ Plans:
 3. Offline or degraded states are represented honestly without claiming local-first mutation unless a real journal/outbox path exists.
 4. Route-owner labels show which flows stay LiveView, become offline islands, or should become future native screens.
 
-### Phase 150: Subscription Learning Showcase
+### Phase 151: Subscription Learning Showcase
 
 **Goal:** Build the subscription learning/training lane that demonstrates content packs, offline study/training, sync/reconciliation visibility, and entitlement/paywall pressure.
 
@@ -95,7 +111,7 @@ Plans:
 3. Sync/reconciliation state is shown honestly and does not imply a generic sync engine.
 4. Entitlement/paywall pressure is represented as backend-owned or mocked state without claiming live storefront support.
 
-### Phase 151: Capability Map, Collateral, and v20 Handoff
+### Phase 152: Capability Map, Collateral, and v20 Handoff
 
 **Goal:** Convert showcase evidence into a durable capability map, proof/collateral surface, and decision-ready v20 Native Controls Pack 1 brief.
 
@@ -298,7 +314,8 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 145. Native Registry & Mirror Parity | v18.0 | 3/3 | Complete    | 2026-07-08 |
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
-| 148. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
-| 149. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
-| 150. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
-| 151. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
+| 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
+| 149. SaaS/Admin Showcase | v19.0 | 0/0 | Pending | — |
+| 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
+| 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
+| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
