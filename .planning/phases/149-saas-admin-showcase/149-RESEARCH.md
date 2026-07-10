@@ -475,20 +475,20 @@ async function proveAdminPilotApproval(page: Page) {
 |---|-------|---------|---------------|
 | A1 | Some pitfall root causes are marked as inferred human/demo failure modes rather than tool-verified facts. | Common Pitfalls | Low; the mitigations are still verified against project constraints and code. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should approval/activity be persisted?**
+1. **RESOLVED: Persist only mutable approval/activity evidence.**
    - What we know: D-08 allows persistence only for mutable approval/activity evidence, and current approval mutation is socket-only. [VERIFIED: .planning/phases/149-saas-admin-showcase/149-CONTEXT.md] [VERIFIED: examples/phoenix_host/lib/crosswake_example/saas_portal/approvals.ex]
-   - What's unclear: Whether refresh-proof mutation evidence is worth adding migrations/schemas in Phase 149. [VERIFIED: .planning/phases/149-saas-admin-showcase/149-CONTEXT.md]
-   - Recommendation: Plan this as an explicit decision task; if Playwright reload proof is required, add minimal Ecto rows and reset integration. [CITED: https://ecto.hexdocs.pm/Ecto.Multi.html]
-2. **Should diagnostics be lane-specific or reusable?**
+   - Decision: Phase 149 plans add minimal Ecto persistence for approval status and activity evidence only, with deterministic reset/digest integration. Static account/team/member/settings breadth stays deterministic fixture data.
+   - Rationale: This gives refresh-proof SAAS-04 mutation evidence without widening into local-first admin mutation or generic sync behavior. [CITED: https://ecto.hexdocs.pm/Ecto.Multi.html]
+2. **RESOLVED: Keep diagnostics lane-local.**
    - What we know: D-19 constrains diagnostics to AdminPilot routes and D-24 forbids a dedicated inspector route. [VERIFIED: .planning/phases/149-saas-admin-showcase/149-CONTEXT.md]
-   - What's unclear: Whether a reusable component will help Phases 150/151 without becoming `crosswake_dashboard`. [ASSUMED]
-   - Recommendation: Use a lane-local module/component first; extract only shared badge/table helpers if Phase 150 repeats the exact need. [VERIFIED: .planning/phases/149-saas-admin-showcase/149-CONTEXT.md]
-3. **Should LiveViewTest infrastructure be formalized?**
+   - Decision: Phase 149 plans add `CrosswakeExample.SaaSPortal.Diagnostics` and AdminPilot-scoped components/panel behavior only. Shared extraction is deferred until a later lane proves the same shape repeats.
+   - Rationale: Lane-local diagnostics satisfy SAAS-03 while avoiding `crosswake_dashboard` scope. [VERIFIED: .planning/phases/149-saas-admin-showcase/149-CONTEXT.md]
+3. **RESOLVED: Add only minimal LiveViewTest support as needed.**
    - What we know: Existing tests use `ExUnit.Case` and direct ConnTest/renderer patterns; no `ConnCase` or LiveViewTest case template exists. [VERIFIED: examples/phoenix_host/test/test_helper.exs] [VERIFIED: examples/phoenix_host/test/crosswake_example]
-   - What's unclear: Whether to add a reusable `ConnCase`/LiveCase now or keep tests local. [ASSUMED]
-   - Recommendation: Add the smallest support needed for focused SaaS LiveView tests; avoid a broad test harness refactor. [VERIFIED: existing test structure]
+   - Decision: Phase 149 plans keep test support local and focused on SaaS LiveView tests plus the existing route-tour pattern, avoiding a broad shared test harness refactor.
+   - Rationale: The phase needs executable proof for the AdminPilot flow, not a new testing framework surface. [VERIFIED: existing test structure]
 
 ## Environment Availability
 
@@ -524,10 +524,10 @@ async function proveAdminPilotApproval(page: Page) {
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|--------------|
-| SAAS-01 | Fixture density includes accounts, teams, roles/members, settings, operational records, and activity | unit/render | `mix test test/crosswake_example/saas_portal/fixtures_test.exs -x` | No - Wave 0 [VERIFIED: filesystem] |
-| SAAS-02 | LiveView route ownership and auth/admin posture badges render on SaaS pages | unit/integration | `mix test test/crosswake_example/saas_portal/diagnostics_test.exs -x` | No - Wave 0 [VERIFIED: filesystem] |
-| SAAS-03 | Diagnostics/support panel derives rows from compiled router metadata | unit | `mix test test/crosswake_example/saas_portal/diagnostics_test.exs -x` | No - Wave 0 [VERIFIED: filesystem] |
-| SAAS-04 | Approval happy path completes server-authoritatively and haptics is optional | unit + browser | `mix test test/crosswake_example/saas_portal/approvals_test.exs test/crosswake_example/saas_portal/approvals_live_test.exs -x` and `npx playwright test e2e/route_tour.spec.ts` | No SaaS tests yet; route tour exists and needs extension. [VERIFIED: filesystem] |
+| SAAS-01 | Fixture density includes accounts, teams, roles/members, settings, operational records, and activity | unit/render | `mix test test/crosswake_example/saas_portal/fixtures_test.exs` | No - Wave 0 [VERIFIED: filesystem] |
+| SAAS-02 | LiveView route ownership and auth/admin posture badges render on SaaS pages | unit/integration | `mix test test/crosswake_example/saas_portal/diagnostics_test.exs` | No - Wave 0 [VERIFIED: filesystem] |
+| SAAS-03 | Diagnostics/support panel derives rows from compiled router metadata | unit | `mix test test/crosswake_example/saas_portal/diagnostics_test.exs` | No - Wave 0 [VERIFIED: filesystem] |
+| SAAS-04 | Approval happy path completes server-authoritatively and haptics is optional | unit + browser | `mix test test/crosswake_example/saas_portal/approvals_test.exs test/crosswake_example/saas_portal/approvals_live_test.exs` and `npx playwright test e2e/route_tour.spec.ts` | No SaaS tests yet; route tour exists and needs extension. [VERIFIED: filesystem] |
 
 ### Sampling Rate
 
