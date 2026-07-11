@@ -56,6 +56,7 @@ defmodule CrosswakeExample.Showcase.ResetTest do
              accounts: 1,
              activity_events: 3,
              admin_pressure: 1,
+             approval_activity_events: 3,
              approval_policies: 3,
              approvals: 3,
              operational_records: 3,
