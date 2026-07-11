@@ -95,7 +95,7 @@ Plans:
 **Wave 1** *(blocked on Wave 0 test contracts)*
 
 - [x] 149-02-PLAN.md — Expand deterministic SaaS/admin fixture breadth and read contexts.
-- [ ] 149-03-PLAN.md — Add lane-local route-policy diagnostics derived from compiled router metadata.
+- [x] 149-03-PLAN.md — Add lane-local route-policy diagnostics derived from compiled router metadata.
 
 **Wave 2** *(blocked on fixture breadth)*
 
@@ -343,7 +343,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
-| 149. SaaS/Admin Showcase | v19.0 | 2/7 | In Progress | — |
+| 149. SaaS/Admin Showcase | v19.0 | 3/7 | In Progress|  |
 | 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |

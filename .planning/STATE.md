@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 149
 current_phase_name: saas-admin-showcase
 status: executing
-stopped_at: Completed 149-02-PLAN.md
-last_updated: "2026-07-11T00:32:20.317Z"
+stopped_at: Completed 149-03-PLAN.md
+last_updated: "2026-07-11T00:43:22.847Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 149 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 12
-  completed_plans: 7
-  percent: 58
+  completed_plans: 8
+  percent: 67
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 149 (saas-admin-showcase) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-07-11 -- Phase 149 execution started
 
@@ -192,6 +192,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: Phase 149 Plan 01 kept AdminPilot work intentionally RED-only: contracts now define fixture density, diagnostics, approval authority, and route-tour proof while implementation remains in later Phase 149 plans.
 - [Phase 149 Plan 02]: AdminPilot static breadth remains deterministic fixture maps; mutable approval/activity persistence remains later-plan work.
 - [Phase 149 Plan 02]: SaaS reset digest delegates static breadth to SaaSPortal.Fixtures.digest_components/0 so reset truth changes with fixture IDs, titles, and roles.
+- [Phase 149 Plan 03]: AdminPilot diagnostics preserve raw compiled router policy fields beside user-facing support labels so diagnostics stay drift-proof and UI-ready.
 
 ### Pending Todos
 
@@ -243,11 +244,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 147 P05 | 10 min | 3 tasks | 8 files |
 | Phase 149 P01 | 7 min | 2 tasks | 5 files |
 | Phase 149 P02 | 8 min | 2 tasks | 6 files |
+| Phase 149 P03 | 6 min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-07-11T00:32:20.313Z
-Stopped at: Completed 149-02-PLAN.md
+Last session: 2026-07-11T00:43:22.842Z
+Stopped at: Completed 149-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
