@@ -4,6 +4,7 @@ defmodule CrosswakeExample.LearnLoop.PackLive do
   alias CrosswakeExample.LearnLoop
   alias CrosswakeExample.LearnLoop.Components
   alias CrosswakeExample.LearnLoop.Diagnostics
+  alias CrosswakeExample.LearnLoop.Entitlement
   alias CrosswakeExample.PageTitle
 
   @impl true
@@ -60,6 +61,13 @@ defmodule CrosswakeExample.LearnLoop.PackLive do
         pack={@context.pack}
         lessons={@context.lessons}
         action_path={@context.study_session.path}
+      />
+
+      <Components.entitlement_pressure
+        copy={Entitlement.state_copy(:pending)}
+        title={"#{@context.pack.title} access review"}
+        subscription_path="/learnloop/subscription"
+        study_path={@context.study_session.path}
       />
 
       <section class="learnloop-panel" aria-labelledby="learnloop-pack-posture-heading">

@@ -245,6 +245,36 @@ defmodule CrosswakeExample.LearnLoop.Components do
     """
   end
 
+  attr(:copy, :map, required: true)
+  attr(:title, :string, required: true)
+  attr(:subscription_path, :string, default: "/learnloop/subscription")
+  attr(:study_path, :string, default: nil)
+
+  def entitlement_pressure(assigns) do
+    ~H"""
+    <section
+      class="learnloop-entitlement"
+      role="status"
+      aria-live="polite"
+      data-entitlement-state={@copy.state}
+    >
+      <div>
+        <p class="learnloop-eyebrow">Gated access</p>
+        <strong>{@title}</strong>
+        <span>{format_atom(@copy.state)}</span>
+        <p>{@copy.title}</p>
+        <p>{@copy.body}</p>
+        <p>{@copy.support}</p>
+      </div>
+      <div class="learnloop-action-footer">
+        <.status_badge label={format_atom(@copy.state)} tone={status_tone(@copy.state)} />
+        <a class="btn-secondary" href={@subscription_path}>Review access</a>
+        <a :if={@study_path} class="btn-primary" href={@study_path}>Open available study</a>
+      </div>
+    </section>
+    """
+  end
+
   attr(:route_id, :string, required: true)
   attr(:rows, :list, default: [])
   attr(:guide_links, :list, default: [])
@@ -309,7 +339,11 @@ defmodule CrosswakeExample.LearnLoop.Components do
       %{label: "Pack", path: "/learnloop/packs/#{pack_id}", route_id: "learnloop-pack"},
       %{label: "Study", path: "/learnloop/study/session", route_id: "learnloop-study-session"},
       %{label: "History", path: "/learnloop/history", route_id: "learnloop-history"},
-      %{label: "Subscription", path: "/learnloop/subscription", route_id: "learnloop-subscription"}
+      %{
+        label: "Subscription",
+        path: "/learnloop/subscription",
+        route_id: "learnloop-subscription"
+      }
     ]
   end
 

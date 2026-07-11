@@ -4,6 +4,7 @@ defmodule CrosswakeExample.LearnLoop.CourseLive do
   alias CrosswakeExample.LearnLoop
   alias CrosswakeExample.LearnLoop.Components
   alias CrosswakeExample.LearnLoop.Diagnostics
+  alias CrosswakeExample.LearnLoop.Entitlement
   alias CrosswakeExample.PageTitle
 
   @impl true
@@ -102,6 +103,12 @@ defmodule CrosswakeExample.LearnLoop.CourseLive do
               <p :if={lesson.access_state in [:pending, :stale]}>
                 Backend projection required
               </p>
+              <Components.entitlement_pressure
+                :if={lesson.access_state in [:pending, :stale, :denied]}
+                copy={Entitlement.state_copy(lesson.access_state)}
+                title={lesson.title}
+                subscription_path={@context.subscription_path}
+              />
             </div>
             <Components.status_badge label={format_atom(lesson.status)} tone={status_tone(lesson.status)} />
           </li>
