@@ -231,6 +231,7 @@ defmodule CrosswakeExample.LearnLoop do
       :support_labels,
       :gate_copy
     ])
+    |> Map.put(:path, path_for_route(lesson.route_id))
     |> Map.put_new(:gate_copy, nil)
   end
 
@@ -263,6 +264,15 @@ defmodule CrosswakeExample.LearnLoop do
   defp support_findings_for(route_ids) do
     Fixtures.support_findings()
     |> Enum.filter(&(&1.route_id in route_ids))
+  end
+
+  defp path_for_route(route_id) do
+    Fixtures.route_postures()
+    |> Enum.find(&(&1.route_id == route_id))
+    |> case do
+      nil -> nil
+      posture -> posture.path
+    end
   end
 
   defp history_events do

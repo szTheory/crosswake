@@ -378,13 +378,8 @@ defmodule CrosswakeExample.LearnLoop.Fixtures do
       id: "support-backend-projection",
       label: "Backend projection",
       route_id: "learnloop-subscription",
-      finding: "Backend entitlement projection is required before gated lessons open."
-    },
-    %{
-      id: "support-mocked-storefront",
-      label: "Mocked storefront evidence",
-      route_id: "learnloop-subscription",
-      finding: "No live StoreKit, Play Billing, or RevenueCat adapter is claimed in this demo."
+      finding:
+        "Backend entitlement projection is required before gated lessons open; mocked storefront evidence never grants access."
     }
   ]
 

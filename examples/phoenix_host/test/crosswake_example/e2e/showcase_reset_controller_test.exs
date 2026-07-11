@@ -46,9 +46,14 @@ defmodule CrosswakeExample.E2E.ShowcaseResetControllerTest do
 
     assert body["counts"]["learning_training"] == %{
              "browser_state_reset" => false,
-             "cards" => 3,
-             "decks" => 1,
-             "progress" => 0,
+             "content_packs" => 2,
+             "courses" => 3,
+             "learners" => 3,
+             "lessons" => 6,
+             "progress_checkpoints" => 3,
+             "route_postures" => 6,
+             "subscription_states" => 4,
+             "support_findings" => 5,
              "synced_reviews" => 0
            }
   end

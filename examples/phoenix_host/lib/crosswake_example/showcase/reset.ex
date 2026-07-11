@@ -6,7 +6,7 @@ defmodule CrosswakeExample.Showcase.Reset do
   and outbox state remain reset by the Playwright helpers that own browser state.
   """
 
-  alias CrosswakeExample.Flashcards
+  alias CrosswakeExample.LearnLoop
   alias CrosswakeExample.Showcase.Fixtures
 
   @browser_state_reset false
@@ -15,7 +15,7 @@ defmodule CrosswakeExample.Showcase.Reset do
     counts = %{
       saas_admin: Fixtures.reset_saas_admin!(),
       field_service: Fixtures.reset_field_service!(),
-      learning_training: Flashcards.reset_seed!()
+      learning_training: LearnLoop.reset_seed!().learning_training
     }
 
     %{
@@ -31,7 +31,7 @@ defmodule CrosswakeExample.Showcase.Reset do
       count_components(counts),
       Fixtures.saas_admin_digest_components(),
       Fixtures.field_service_digest_components(),
-      Flashcards.seed_digest_components()
+      LearnLoop.digest_components()
     ]
     |> List.flatten()
     |> Enum.join("|")
