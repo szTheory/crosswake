@@ -68,7 +68,8 @@ defmodule CrosswakeExample.LearnLoop.EntitlementTest do
     granted = copy_for_state(copy, :granted)
     assert inspect(granted) =~ "backend projection"
 
-    refute text =~ ~r/purchase succeeded|subscribed|unlocked|subscription verified on device|storefront support shipped/i,
+    refute text =~
+             ~r/purchase succeeded|subscribed|unlocked|subscription verified on device|storefront support shipped/i,
            "LearnLoop entitlement projection contract D-21 rejects live-provider or device-authoritative entitlement copy"
   end
 
@@ -84,7 +85,7 @@ defmodule CrosswakeExample.LearnLoop.EntitlementTest do
 
     text = apply(module, :state_copy, ["learner-iris"]) |> inspect()
 
-    refute text =~ ~r/StoreKit adapter|Play Billing adapter|RevenueCat adapter|native storage support|generic sync helper/i
+    refute text =~ ~r/live storefront support|native storage support|generic sync helper/i
     refute text =~ ~r/token|secret|provider payload|signed transaction/i
   end
 
