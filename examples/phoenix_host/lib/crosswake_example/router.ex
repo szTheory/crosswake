@@ -109,6 +109,10 @@ defmodule CrosswakeExample.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :e2e_session do
+    plug(:fetch_session)
+  end
+
   scope "/study", CrosswakeExample.LocalFirst do
     pipe_through([:api])
     post("/sync", SyncController, :sync)
@@ -438,6 +442,11 @@ defmodule CrosswakeExample.Router do
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
       post("/native-claim", NativeClaimController, :create)
       post("/showcase-reset", ShowcaseResetController, :create)
+    end
+
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:api, :e2e_session])
+      post("/saas-session", SaaSSessionController, :create)
     end
   end
 end

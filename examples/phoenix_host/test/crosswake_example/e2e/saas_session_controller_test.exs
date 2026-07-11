@@ -6,7 +6,10 @@ defmodule CrosswakeExample.E2E.SaaSSessionControllerTest do
 
   alias CrosswakeExample.SaaSPortal.Auth
 
-  @source_path Path.expand("../../../lib/crosswake_example/e2e/saas_session_controller.ex", __DIR__)
+  @source_path Path.expand(
+                 "../../../lib/crosswake_example/e2e/saas_session_controller.ex",
+                 __DIR__
+               )
   @router_path Path.expand("../../../lib/crosswake_example/router.ex", __DIR__)
 
   test "create accepts an allowlisted approver fixture and writes the SaaS session" do
@@ -19,6 +22,7 @@ defmodule CrosswakeExample.E2E.SaaSSessionControllerTest do
 
     assert conn.status == 201
     assert get_session(conn, Auth.session_key()) == "approver-1"
+
     assert body == %{
              "account_id" => "acct-north",
              "role" => "approver",
