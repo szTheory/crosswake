@@ -180,7 +180,7 @@ Plans:
 
 **Wave 2** *(blocked on fixture breadth)*
 
-- [ ] 151-03-PLAN.md — Declare product-first LearnLoop routes and compiled-router diagnostics.
+- [x] 151-03-PLAN.md — Declare product-first LearnLoop routes and compiled-router diagnostics.
 
 **Wave 3** *(blocked on routes and diagnostics)*
 
@@ -401,5 +401,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 151. Subscription Learning Showcase | v19.0 | 2/7 | In Progress|  |
+| 151. Subscription Learning Showcase | v19.0 | 3/7 | In Progress|  |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
