@@ -32,7 +32,7 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 - [x] **SAAS-01**: User can click through a SaaS/admin domain with realistic accounts, teams, roles, settings, and operational records.
 - [x] **SAAS-02**: User can see LiveView-first route ownership and auth-sensitive/admin posture represented clearly in the SaaS lane.
 - [x] **SAAS-03**: User can inspect route policy, diagnostics, and support truth from the SaaS lane without leaving ambiguity about native ownership.
-- [ ] **SAAS-04**: User can complete a representative admin workflow that demonstrates Crosswake's Phoenix-first value without requiring new native-control APIs.
+- [x] **SAAS-04**: User can complete a representative admin workflow that demonstrates Crosswake's Phoenix-first value without requiring new native-control APIs.
 
 ### Field-Service Lane
 
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAAS-01 | Phase 149 | Complete |
 | SAAS-02 | Phase 149 | Complete |
 | SAAS-03 | Phase 149 | Complete |
-| SAAS-04 | Phase 149 | Pending |
+| SAAS-04 | Phase 149 | Complete |
 | FIELD-01 | Phase 150 | Pending |
 | FIELD-02 | Phase 150 | Pending |
 | FIELD-03 | Phase 150 | Pending |

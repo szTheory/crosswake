@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 149
 current_phase_name: saas-admin-showcase
 status: executing
-stopped_at: Completed 149-03-PLAN.md
-last_updated: "2026-07-11T00:43:22.847Z"
+stopped_at: Completed 149-04-PLAN.md
+last_updated: "2026-07-11T00:57:49.189Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 149 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 12
-  completed_plans: 8
-  percent: 67
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 149 (saas-admin-showcase) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-07-11 -- Phase 149 execution started
 
@@ -193,6 +193,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 149 Plan 02]: AdminPilot static breadth remains deterministic fixture maps; mutable approval/activity persistence remains later-plan work.
 - [Phase 149 Plan 02]: SaaS reset digest delegates static breadth to SaaSPortal.Fixtures.digest_components/0 so reset truth changes with fixture IDs, titles, and roles.
 - [Phase 149 Plan 03]: AdminPilot diagnostics preserve raw compiled router policy fields beside user-facing support labels so diagnostics stay drift-proof and UI-ready.
+- [Phase 149]: Approval mutation authority lives in SaaSPortal.Approvals with server-owned user/account scope and Ecto.Multi writes; LiveViews remain dispatch/render surfaces. — Satisfies T-149-11/T-149-12 and keeps native haptics secondary to Phoenix-owned approval state.
+- [Phase 149]: Showcase reset digest now includes persisted approval/activity row counts and stable row components. — Keeps reset deterministic and makes mutable approval evidence visible to proof lanes.
+- [Phase 149]: Persisted SaaS state remains limited to approval status and approval activity evidence; accounts, teams, members, roles, settings, and operational records remain deterministic fixture/read-context data. — Preserves D-08/D-10 and avoids widening AdminPilot into static SaaS persistence or a generic admin framework.
 
 ### Pending Todos
 
@@ -245,11 +248,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 149 P01 | 7 min | 2 tasks | 5 files |
 | Phase 149 P02 | 8 min | 2 tasks | 6 files |
 | Phase 149 P03 | 6 min | 2 tasks | 2 files |
+| Phase 149 P04 | 7 min | 2 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-07-11T00:43:22.842Z
-Stopped at: Completed 149-03-PLAN.md
+Last session: 2026-07-11T00:56:31.092Z
+Stopped at: Completed 149-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

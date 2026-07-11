@@ -99,7 +99,7 @@ Plans:
 
 **Wave 2** *(blocked on fixture breadth)*
 
-- [ ] 149-04-PLAN.md — Persist only mutable approval/activity evidence and wire reset/digest truth.
+- [x] 149-04-PLAN.md — Persist only mutable approval/activity evidence and wire reset/digest truth.
 
 **Wave 3** *(blocked on fixture breadth, diagnostics, and approval context)*
 
@@ -343,7 +343,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
-| 149. SaaS/Admin Showcase | v19.0 | 3/7 | In Progress|  |
+| 149. SaaS/Admin Showcase | v19.0 | 4/7 | In Progress|  |
 | 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
