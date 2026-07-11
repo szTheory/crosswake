@@ -8,6 +8,11 @@ defmodule CrosswakeExample.Showcase.ResetTest do
   alias CrosswakeExample.SelectiveNative.Fixtures, as: NativeFixtures
   alias CrosswakeExample.Showcase.Reset
 
+  setup_all do
+    {:ok, _apps} = Application.ensure_all_started(:crosswake_example)
+    :ok
+  end
+
   test "reset is idempotent and returns stable counts plus digest" do
     first = Reset.reset!()
     second = Reset.reset!()
@@ -83,11 +88,17 @@ defmodule CrosswakeExample.Showcase.ResetTest do
 
     assert result.counts.learning_training == %{
              browser_state_reset: false,
-             cards: 3,
-             decks: 1,
-             progress: 0,
+             content_packs: 2,
+             courses: 3,
+             learners: 3,
+             lessons: 6,
+             progress_checkpoints: 3,
+             route_postures: 6,
+             subscription_states: 4,
+             support_findings: 5,
              synced_reviews: 0
-           }
+           },
+           "LearnLoop showcase entry contract D-23/D-29 requires deterministic learning_training reset counts without claiming browser state reset"
   end
 
   defp claim_count do

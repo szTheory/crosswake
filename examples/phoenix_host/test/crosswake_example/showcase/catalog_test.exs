@@ -20,6 +20,8 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
     "Cached read-only",
     "Offline island",
     "Local-first outbox",
+    "Backend projection",
+    "Mocked storefront evidence",
     "Native screen",
     "Requires native runtime",
     "Demo pressure",
@@ -57,12 +59,36 @@ defmodule CrosswakeExample.Showcase.CatalogTest do
     end
   end
 
-  test "learning lane targets the browser-owned offline proof surface" do
+  @tag :learnloop_showcase_entry
+  test "LearnLoop showcase entry contract targets the product-first lane while keeping offline proof secondary" do
     learning_lane = Enum.find(Catalog.lanes(), &(&1.id == :learning_training))
 
-    assert learning_lane.primary_path == "/offline"
-    assert learning_lane.primary_route_id == "offline-study"
-    assert learning_lane.primary_cta == "Open Offline Study Proof"
+    assert learning_lane.primary_path == "/learnloop",
+           "LearnLoop showcase entry contract D-01/D-04/D-05 requires /learnloop as the primary CTA"
+
+    assert learning_lane.primary_route_id == "learnloop-dashboard",
+           "LearnLoop showcase entry contract D-04/D-08 requires primary route id learnloop-dashboard"
+
+    assert learning_lane.primary_cta == "Open LearnLoop",
+           "LearnLoop showcase entry contract D-02 requires LearnLoop product language before proof language"
+
+    for label <- [
+          "LiveView route",
+          "Cached read-only",
+          "Offline island",
+          "Local-first outbox",
+          "Backend projection",
+          "Mocked storefront evidence"
+        ] do
+      assert label in learning_lane.runtime_labels,
+             "LearnLoop showcase entry contract D-13/D-20 requires #{label} visible in the learning lane"
+    end
+
+    assert learning_lane.boundary_note =~ "Server reset does not clear",
+           "LearnLoop showcase entry contract D-11 requires browser-owned state reset honesty"
+
+    refute learning_lane.primary_path == "/offline"
+    refute learning_lane.primary_cta =~ "Proof"
   end
 
   test "card posture matches compiled runtime, offline, security, and capability metadata" do

@@ -29,7 +29,13 @@ defmodule CrosswakeExample.Showcase.HubLiveTest do
 
     assert html =~ "/saas/dashboard"
     assert html =~ "/fieldserv/jobs"
-    assert html =~ ~s(href="/offline")
+    assert html =~ ~s(href="/learnloop"),
+           "LearnLoop showcase entry contract D-01/D-05 requires the root hub CTA to enter /learnloop"
+
+    assert html =~ "Open LearnLoop",
+           "LearnLoop showcase entry contract D-02 requires product-first LearnLoop CTA copy"
+
+    refute html =~ ~s(class="btn-secondary showcase-lane-cta" href="/offline")
     refute html =~ "/study/session"
 
     for lane <- Catalog.lanes() do
