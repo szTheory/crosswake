@@ -9,6 +9,7 @@ defmodule CrosswakeExample.SaaSPortal.Diagnostics do
 
   alias Crosswake.Policy.RouterMetadata
   alias CrosswakeExample.Router
+  alias CrosswakeExample.Showcase.Catalog
 
   @route_ids [
     "saas-dashboard",
@@ -19,8 +20,65 @@ defmodule CrosswakeExample.SaaSPortal.Diagnostics do
     "saas-admin-member-access"
   ]
 
+  @guide_links [
+    %{label: "Route policy guide", path: "guides/route_policy.md"},
+    %{label: "Support matrix", path: "guides/support_matrix.md"},
+    %{label: "Bounded bridge guide", path: "guides/bridge.md"},
+    %{label: "Web-to-mobile migration guide", path: "guides/web_to_mobile_migration.md"}
+  ]
+
+  @row_guide_links %{
+    default: ["guides/route_policy.md", "guides/support_matrix.md"],
+    bridge: ["guides/route_policy.md", "guides/bridge.md", "guides/support_matrix.md"]
+  }
+
+  @support_enrichment %{
+    "saas-dashboard" => %{
+      support_label: "Available today",
+      rough_edge:
+        "Cached read-only dashboard context is a degraded read, not offline admin mutation.",
+      guide_links: @row_guide_links.default
+    },
+    "saas-approvals" => %{
+      support_label: "Available today",
+      rough_edge:
+        "The queue can be inspected as cached read-only state; approval decisions stay online and Phoenix-owned.",
+      guide_links: @row_guide_links.default
+    },
+    "saas-approval" => %{
+      support_label: "Proof-backed example",
+      rough_edge:
+        "Haptics is optional confirmation after server success; it never owns approval authority.",
+      guide_links: @row_guide_links.bridge
+    },
+    "saas-account" => %{
+      support_label: "Available today",
+      rough_edge:
+        "Account, team, role, and activity context is deterministic read data, not a CRUD admin framework.",
+      guide_links: @row_guide_links.default
+    },
+    "saas-profile-settings" => %{
+      support_label: "Demo pressure",
+      rough_edge:
+        "MFA and recent-auth posture are backend-owned example pressure; no native auth UI is claimed.",
+      guide_links: @row_guide_links.default
+    },
+    "saas-admin-member-access" => %{
+      support_label: "Demo pressure",
+      rough_edge:
+        "Persistent shell session state does not grant sensitive member-access authority.",
+      guide_links: @row_guide_links.default
+    }
+  }
+
   @spec route_ids() :: [String.t()]
   def route_ids, do: @route_ids
+
+  @spec allowed_support_labels() :: [String.t()]
+  def allowed_support_labels, do: Catalog.allowed_support_labels()
+
+  @spec guide_links() :: [map()]
+  def guide_links, do: @guide_links
 
   @spec route_policy_rows(module()) :: [map()]
   def route_policy_rows(router \\ Router) do
@@ -63,6 +121,11 @@ defmodule CrosswakeExample.SaaSPortal.Diagnostics do
       capability_labels: capability_labels(policy.capabilities),
       approval_authority: approval_authority(policy.id)
     }
+    |> Map.merge(enrichment!(policy.id))
+  end
+
+  defp enrichment!(route_id) do
+    Map.fetch!(@support_enrichment, route_id)
   end
 
   defp runtime_owner_label(:live_view), do: "LiveView route"
