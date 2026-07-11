@@ -103,7 +103,7 @@ Plans:
 
 **Wave 3** *(blocked on fixture breadth, diagnostics, and approval context)*
 
-- [ ] 149-05-PLAN.md — Build AdminPilot shell, context pages, diagnostics panel, and responsive styling.
+- [x] 149-05-PLAN.md — Build AdminPilot shell, context pages, diagnostics panel, and responsive styling.
 
 **Wave 4** *(blocked on approval context and shared UI)*
 
@@ -343,7 +343,7 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 146. Release Status DX & Docs Truth | v18.0 | 3/3 | Complete    | 2026-07-09 |
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
-| 149. SaaS/Admin Showcase | v19.0 | 4/7 | In Progress|  |
+| 149. SaaS/Admin Showcase | v19.0 | 5/7 | In Progress|  |
 | 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
