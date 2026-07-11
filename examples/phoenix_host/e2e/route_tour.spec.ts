@@ -32,6 +32,8 @@ test.describe('Crosswake route-owner browser tour', () => {
     await proveSaasRoute(page);
     await proveAdminPilotApprovalFlow(page);
     await proveFieldservRoute(page);
+    await proveLearnLoopRoute(page, context);
+    await captureRouteScreenshot(page, 'learnloop-route-tour.png');
 
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
@@ -64,6 +66,9 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     await proveFieldservRoute(page, { captureScreenshots: false });
     await expectNoHorizontalOverflow(page, 'fieldserv-jobs');
+
+    await proveLearnLoopRoute(page, context, { captureScreenshots: false });
+    await expectNoHorizontalOverflow(page, 'learnloop-dashboard');
 
     await captureRouteScreenshot(page, 'showcase-mobile-dark-reduced.png');
   });
@@ -275,6 +280,104 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
   const body = await duplicate.json();
   expect(body.data.accepted_count, ownerMessage('offline-study', 'offline_island')).toBe(0);
   await expectSyncedReview(page.request, mutations[0].client_mutation_id);
+}
+
+async function proveLearnLoopRoute(page: Page, context: BrowserContext, options: AdminPilotFlowOptions = {}) {
+  const captureScreenshots = options.captureScreenshots ?? true;
+  const reset = await page.request.post('/_e2e/showcase-reset');
+  expect(reset.ok(), ownerMessage('showcase-reset', 'deterministic LearnLoop reset')).toBe(true);
+  const resetBody = await reset.json();
+  expect(resetBody.browser_state_reset, ownerMessage('showcase-reset', 'browser-owned state not reset by server')).toBe(false);
+
+  const router = readFileSync(routerPath, 'utf8');
+  expect(router, ownerMessage('learnloop-dashboard', 'live_view route')).toContain('id: "learnloop-dashboard"');
+  expect(router, ownerMessage('learnloop-course', 'live_view route')).toContain('id: "learnloop-course"');
+  expect(router, ownerMessage('learnloop-pack', 'live_view route')).toContain('id: "learnloop-pack"');
+  expect(router, ownerMessage('learnloop-study-session', 'offline_island route')).toContain('id: "learnloop-study-session"');
+  expect(router, ownerMessage('learnloop-study-session', 'offline_island route')).toContain('runtime: :offline_island');
+  expect(router, ownerMessage('learnloop-study-session', 'content pack')).toContain('learnloop_daily_pack');
+  expect(router, ownerMessage('learnloop-history', 'live_view route')).toContain('id: "learnloop-history"');
+  expect(router, ownerMessage('learnloop-subscription', 'live_view route')).toContain('id: "learnloop-subscription"');
+
+  await page.goto('/learnloop');
+  await expect(page, ownerMessage('learnloop-dashboard', 'browser title')).toHaveTitle(/LearnLoop|Crosswake/);
+  await expectLiveViewConnected(page, 'learnloop-dashboard');
+  await expect(page.locator('body'), ownerMessage('learnloop-dashboard', 'learner-first product shell')).toContainText(/Iris Learner|Brightpath Academy|course progress/i);
+  await expect(page.locator('body'), ownerMessage('learnloop-dashboard', 'route support labels')).toContainText(/LiveView route|Cached read-only|Offline island|Local-first outbox/i);
+  await expect(page.locator('body'), ownerMessage('learnloop-dashboard', 'entitlement badge')).toContainText(/Backend projection/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'learnloop-dashboard.png');
+  }
+
+  await page.getByRole('link', { name: /course|continue|Elixir/i }).first().click();
+  await expect(page, ownerMessage('learnloop-course', 'course detail route')).toHaveURL(/\/learnloop\/courses\/course-elixir-routing$/);
+  await expectLiveViewConnected(page, 'learnloop-course');
+  await expect(page.locator('body'), ownerMessage('learnloop-course', 'gated lesson pressure')).toContainText('Backend projection required');
+  await expect(page.locator('body'), ownerMessage('learnloop-course', 'fail-closed access')).toContainText('Access stays closed until backend projection refreshes');
+  await expect(page.locator('body'), ownerMessage('learnloop-course', 'no live provider overclaim')).not.toContainText(/purchase succeeded|subscribed|unlocked/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'learnloop-course.png');
+  }
+
+  await page.goto('/learnloop/packs/learnloop_daily_pack');
+  await expectLiveViewConnected(page, 'learnloop-pack');
+  await expect(page.locator('body'), ownerMessage('learnloop-pack', 'content pack metadata')).toContainText(/learnloop_daily_pack|Daily Elixir Pack|Content pack/i);
+  await expect(page.locator('body'), ownerMessage('learnloop-pack', 'offline handoff labels')).toContainText(/Offline island|Local-first outbox|Queued for replay/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'learnloop-pack.png');
+  }
+
+  await page.goto('/learnloop/subscription');
+  await expectLiveViewConnected(page, 'learnloop-subscription');
+  await expect(page.locator('body'), ownerMessage('learnloop-subscription', 'backend entitlement projection')).toContainText('Backend projection required');
+  await expect(page.locator('body'), ownerMessage('learnloop-subscription', 'mock storefront evidence')).toContainText('Mock storefront evidence received');
+  await expect(page.locator('body'), ownerMessage('learnloop-subscription', 'no live provider')).toContainText('No live StoreKit, Play Billing, or RevenueCat adapter in this demo');
+
+  await page.goto('/learnloop/study/session');
+  expect(await page.evaluate(() => !!window.liveSocket), ownerMessage('learnloop-study-session', 'socketless island')).toBe(false);
+  await expect(page.locator('#flashcard-container'), ownerMessage('learnloop-study-session', 'study cards')).toContainText(/Elixir|Loading flashcards/i);
+
+  await context.setOffline(true);
+  await page.click('#btn-flip');
+  await page.click('#btn-good');
+
+  const mutations = await readQueuedOfflineMutations(page);
+  expect(mutations, ownerMessage('learnloop-study-session', 'one queued IndexedDB mutation')).toHaveLength(1);
+  assertAppGeneratedMutation(mutations[0]);
+
+  await context.setOffline(false);
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await page.waitForResponse(response =>
+    (response.url().includes('/learnloop/sync') || response.url().includes('/study/sync')) &&
+    response.status() === 200,
+  );
+  await expectSyncedReview(page.request, mutations[0].client_mutation_id);
+  await expectOutboxEmpty(page);
+
+  const duplicate = await page.request.post('/learnloop/sync', {
+    data: {
+      events: [{
+        client_mutation_id: mutations[0].client_mutation_id,
+        card_id: mutations[0].card_id,
+        rating: mutations[0].rating,
+      }],
+    },
+  });
+  expect(duplicate.ok(), ownerMessage('learnloop-study-session', 'idempotent duplicate replay')).toBe(true);
+  const duplicateBody = await duplicate.json();
+  expect(duplicateBody.data.accepted_count, ownerMessage('learnloop-study-session', 'duplicate replay creates no second row')).toBe(0);
+  await expectSyncedReview(page.request, mutations[0].client_mutation_id);
+
+  await page.goto('/learnloop/history');
+  await expectLiveViewConnected(page, 'learnloop-history');
+  await expect(page.locator('body'), ownerMessage('learnloop-history', 'server-confirmed progress')).toContainText(/server-confirmed|Cached read-only|Synced/i);
+
+  await page.locator('.learnloop-diagnostics summary').first().click();
+  await expect(page.locator('body'), ownerMessage('learnloop-diagnostics', 'support truth')).toContainText(/Route policy diagnostics|learnloop-study-session|Support truth/i);
+  await expect(page.locator('body'), ownerMessage('learnloop-diagnostics', 'unsupported claims absent')).not.toContainText(/LiveView works offline|native storage shipped|generic sync engine|RevenueCat adapter/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'learnloop-history-diagnostics.png');
+  }
 }
 
 async function proveFieldservRoute(page: Page, options: AdminPilotFlowOptions = {}) {
