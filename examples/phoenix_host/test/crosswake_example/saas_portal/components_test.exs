@@ -112,6 +112,7 @@ defmodule CrosswakeExample.SaaSPortal.ComponentsTest do
 
     assert css =~ "focus-visible"
     assert css =~ "prefers-reduced-motion"
+    assert css =~ "box-sizing: border-box"
     assert css =~ "min-height: 44px"
     assert css =~ "grid-template-columns: 1fr"
     refute css =~ "adminpilot-hero"

@@ -564,6 +564,13 @@ h1, h2, h3, h4, h5, h6 {
   padding: calc(var(--cw-spacing-base) * 5);
 }
 
+.adminpilot-shell,
+.adminpilot-shell *,
+.adminpilot-shell *::before,
+.adminpilot-shell *::after {
+  box-sizing: border-box;
+}
+
 .adminpilot-topbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
