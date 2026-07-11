@@ -1,5 +1,7 @@
 import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
+const DEFAULT_OFFLINE_STUDY_DB = 'crosswake_offline_study';
+
 export type OfflineMutationRecord = {
   id?: number;
   client_mutation_id: string;
@@ -7,16 +9,27 @@ export type OfflineMutationRecord = {
   rating: string;
 };
 
-export async function resetOfflineStudyDatabase(page: Page) {
-  await page.addInitScript(() => {
-    indexedDB.deleteDatabase('crosswake_offline_study');
-  });
+export type OfflineRouteProofOptions = {
+  databaseName?: string;
+};
+
+export async function resetOfflineStudyDatabase(page: Page, options: OfflineRouteProofOptions = {}) {
+  const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
+
+  await page.addInitScript((dbName: string) => {
+    indexedDB.deleteDatabase(dbName);
+  }, databaseName);
 }
 
-export async function readQueuedOfflineMutations(page: Page): Promise<OfflineMutationRecord[]> {
-  return page.evaluate(() => {
+export async function readQueuedOfflineMutations(
+  page: Page,
+  options: OfflineRouteProofOptions = {},
+): Promise<OfflineMutationRecord[]> {
+  const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
+
+  return page.evaluate((dbName: string) => {
     return new Promise((resolve, reject) => {
-      const req = indexedDB.open('crosswake_offline_study', 1);
+      const req = indexedDB.open(dbName, 1);
       req.onsuccess = () => {
         const db = req.result;
         const tx = db.transaction('mutations', 'readonly');
@@ -27,7 +40,7 @@ export async function readQueuedOfflineMutations(page: Page): Promise<OfflineMut
       };
       req.onerror = () => reject(req.error);
     });
-  });
+  }, databaseName);
 }
 
 export async function expectSyncedReview(request: APIRequestContext, clientMutationId: string, expectedCount = 1) {
@@ -40,8 +53,8 @@ export async function expectSyncedReview(request: APIRequestContext, clientMutat
   }).toMatchObject({ synced: true, count: expectedCount });
 }
 
-export async function expectOutboxEmpty(page: Page) {
-  const remaining = await readQueuedOfflineMutations(page);
+export async function expectOutboxEmpty(page: Page, options: OfflineRouteProofOptions = {}) {
+  const remaining = await readQueuedOfflineMutations(page, options);
   expect(remaining).toHaveLength(0);
 }
 
