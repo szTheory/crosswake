@@ -69,6 +69,7 @@ async function proveShowcaseHub(page: Page) {
   await page.goto('/');
 
   await expect(page, ownerMessage('showcase-hub', 'browser title')).toHaveTitle('Showcase · Crosswake');
+  await expectLiveViewConnected(page, 'showcase-hub');
 
   await expect(
     page.getByRole('heading', { name: /Phoenix routes, native where it matters\./ }),
@@ -176,19 +177,26 @@ async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOp
 
   await page.getByRole('link', { name: /Quarterly spend increase|approval-1/i }).click();
   await expect(page, ownerMessage('saas-approval', 'detail route')).toHaveURL(/\/saas\/approvals\/approval-1$/);
+  await expectLiveViewConnected(page, 'saas-approval');
   await page.getByRole('button', { name: 'Approve request' }).click();
 
   const status = page.getByRole('status').first();
   await expect(status, ownerMessage('saas-approval', 'Phoenix/server approval status')).toContainText(/Phoenix|server authority/i);
-  await expect(page.locator('#crosswake-approval-haptics'), ownerMessage('saas-approval', 'post-success haptics payload')).toContainText('haptics.impact');
+  const hapticsPayload = await approvalHapticsPayload(page);
+  expect(hapticsPayload.command, ownerMessage('saas-approval', 'post-success haptics command')).toBe('haptics.impact');
+  expect(hapticsPayload.capability, ownerMessage('saas-approval', 'post-success haptics capability')).toBe('haptics.impact');
+  expect(hapticsPayload.route_id, ownerMessage('saas-approval', 'post-success haptics route')).toBe('saas-approval');
+  expect(hapticsPayload.active_route_id, ownerMessage('saas-approval', 'post-success haptics active route')).toBe('saas-approval');
+  expect(hapticsPayload.protocol, ownerMessage('saas-approval', 'post-success haptics protocol')).toBe('crosswake.bridge');
   await expect(page.locator('body'), ownerMessage('saas-approval', 'haptics degradable support truth')).toContainText(/Optional haptics|secondary|degradable/i);
   if (captureScreenshots) {
     await captureRouteScreenshot(page, 'adminpilot-approval-approved.png');
   }
 
-  await page.getByRole('button', { name: /Route diagnostics|Diagnostics|Support truth/i }).first().click();
+  await page.locator('.adminpilot-diagnostics summary').first().click();
   const body = page.locator('body');
-  await expect(body, ownerMessage('saas-approval', 'AdminPilot diagnostics panel')).toContainText('AdminPilot route diagnostics');
+  await expect(body, ownerMessage('saas-approval', 'AdminPilot diagnostics panel')).toContainText('Route policy diagnostics');
+  await expect(body, ownerMessage('saas-approval', 'AdminPilot diagnostics scope')).toContainText('AdminPilot routes only');
   await expect(body, ownerMessage('saas-dashboard', 'diagnostics row')).toContainText('saas-dashboard');
   await expect(body, ownerMessage('saas-approvals', 'diagnostics row')).toContainText('saas-approvals');
   await expect(body, ownerMessage('saas-approval', 'diagnostics row')).toContainText('saas-approval');
@@ -319,12 +327,28 @@ async function expectVisibleFocus(page: Page, routeId: string, expectedText?: st
   expect(focus.outlineWidth, ownerMessage(routeId, 'keyboard focus outline')).toBeGreaterThan(0);
 }
 
+async function expectLiveViewConnected(page: Page, routeId: string) {
+  await expect(
+    page.locator('[data-phx-main]').first(),
+    ownerMessage(routeId, 'LiveView connected before server event'),
+  ).toHaveClass(/phx-connected/);
+}
+
 async function bridgePayload(page: Page) {
   const payload = page.locator('#crosswake-bridge-payload');
   await expect(payload, ownerMessage('bridge-proof', 'bounded bridge')).toHaveCount(1);
   const text = await payload.textContent();
   expect(text, ownerMessage('bridge-proof', 'bounded bridge')).toBeTruthy();
   return JSON.parse(text!);
+}
+
+async function approvalHapticsPayload(page: Page) {
+  const script = page.locator('#crosswake-approval-haptics');
+  await expect(script, ownerMessage('saas-approval', 'post-success haptics script')).toHaveCount(1);
+  const source = await script.evaluate((element) => element.innerHTML);
+  const match = source.match(/const payload = ("(?:\\.|[^"\\])*");/);
+  expect(match?.[1], ownerMessage('saas-approval', 'post-success haptics payload source')).toBeTruthy();
+  return JSON.parse(JSON.parse(match![1]));
 }
 
 async function createNativeRouteTourClaim(page: Page) {

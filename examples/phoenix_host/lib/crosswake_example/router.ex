@@ -98,6 +98,7 @@ defmodule CrosswakeExample.Router do
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
+    plug(:protect_from_forgery)
     plug(:put_root_layout, html: {CrosswakeExample.Layouts, :root})
   end
 
