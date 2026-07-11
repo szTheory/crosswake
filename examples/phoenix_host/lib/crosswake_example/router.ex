@@ -213,7 +213,7 @@ defmodule CrosswakeExample.Router do
   scope "/learnloop" do
     pipe_through([:browser])
 
-    get("/study/session", CrosswakeExample.OfflineController, :index,
+    get("/study/session", CrosswakeExample.LearnLoop.StudyController, :index,
       crosswake: [
         id: "learnloop-study-session",
         runtime: :offline_island,
