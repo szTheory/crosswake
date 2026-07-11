@@ -4,17 +4,16 @@ milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 149
 current_phase_name: saas-admin-showcase
-status: executing
-stopped_at: Completed 149-06-PLAN.md
-last_updated: "2026-07-11T14:20:19.330Z"
+status: verifying
+stopped_at: Completed 149-07-PLAN.md
+last_updated: "2026-07-11T14:44:29.373Z"
 last_activity: 2026-07-11
-last_activity_desc: Completed 149-06-PLAN.md
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 12
-  completed_plans: 11
-  percent: 17
+  completed_plans: 12
+  percent: 33
 ---
 
 # Project State: Crosswake
@@ -28,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 ## Current Position
 
-Phase: 149 (saas-admin-showcase) — EXECUTING
+Phase: 149 (saas-admin-showcase) — VERIFYING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-11
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
@@ -201,6 +200,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 149]: Approval queue/detail RED contracts remain plan 149-06 scope; plan 149-05 keeps non-approval pages and shared shell complete. — The remaining full-suite failures are already bounded to approval_queue_live and approval_detail_live, which require the approval workflow UI planned next.
 - [Phase 149]: Plan 06 keeps approval mutation authority in SaaSPortal.Approvals; LiveViews only load scoped data, dispatch events, and render outcomes.
 - [Phase 149]: Plan 06 keeps haptics as optional post-success confirmation with route id, active route id, capability, command, and correlation id in the payload.
+- [Phase 149]: The SaaS e2e session helper accepts only fixture user ids and delegates session creation to SaaSPortal.Auth.put_user_session/2; role/account params are ignored. — Preserves Crosswake's test-only e2e helper boundary without creating production auth, provider MFA, native auth UI, or admin-access semantics.
+- [Phase 149]: LiveView browser proof uses standard Phoenix client assets and CSRF-backed sessions so approval clicks exercise real phx-click server events. — The route tour must prove server-owned LiveView behavior rather than bypassing clicks or weakening route-owner assertions.
+- [Phase 149]: Route-tour screenshots remain collateral evidence after route-owner, support-truth, and typed bridge payload assertions pass. — Keeps browser proof semantic-first and aligned with Crosswake's route-policy/runtime-contract thesis.
 
 ### Pending Todos
 
@@ -256,11 +258,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 149 P04 | 7 min | 2 tasks | 8 files |
 | Phase 149 P05 | 13 min | 2 tasks | 10 files |
 | Phase 149 P06 | 5 min | 2 tasks | 2 files |
+| Phase 149 P07 | 18 min | 2 tasks | 7 files |
 
 ## Session Continuity
 
-Last session: 2026-07-11T14:20:01.190Z
-Stopped at: Completed 149-06-PLAN.md
+Last session: 2026-07-11T14:44:29.362Z
+Stopped at: Completed 149-07-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
