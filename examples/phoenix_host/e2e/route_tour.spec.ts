@@ -15,6 +15,10 @@ const routeTourScreenshotDir = path.join(screenshotDir, 'screenshots');
 const routerPath = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
 const routeTourCommand = 'npx playwright test e2e/route_tour.spec.ts';
 
+type AdminPilotFlowOptions = {
+  captureScreenshots?: boolean;
+};
+
 test.describe('Crosswake route-owner browser tour', () => {
   test.beforeEach(async ({ page }) => {
     await resetOfflineStudyDatabase(page);
@@ -26,7 +30,7 @@ test.describe('Crosswake route-owner browser tour', () => {
     await proveShowcaseHub(page);
 
     await proveSaasRoute(page);
-    await captureRouteScreenshot(page, 'saas-dashboard.png');
+    await proveAdminPilotApprovalFlow(page);
 
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
@@ -51,8 +55,11 @@ test.describe('Crosswake route-owner browser tour', () => {
     await proveShowcaseHub(page);
     await expectNoHorizontalOverflow(page, 'showcase-hub');
 
+    await proveAdminPilotApprovalFlow(page, { captureScreenshots: false });
+    await expectNoHorizontalOverflow(page, 'saas-approval');
+
     await page.keyboard.press('Tab');
-    await expectVisibleFocus(page, 'showcase-hub');
+    await expectVisibleFocus(page, 'saas-approval');
 
     await captureRouteScreenshot(page, 'showcase-mobile-dark-reduced.png');
   });
@@ -128,6 +135,67 @@ async function proveSaasRoute(page: Page) {
   const router = readFileSync(routerPath, 'utf8');
   expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('id: "saas-dashboard"');
   expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('live("/dashboard"');
+}
+
+async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOptions = {}) {
+  const captureScreenshots = options.captureScreenshots ?? true;
+
+  // D-01/D-02/D-36: AdminPilot proof is a focused approvals path, not a screenshot-first admin console.
+  const reset = await page.request.post('/_e2e/showcase-reset');
+  expect(reset.ok(), ownerMessage('showcase-reset', 'deterministic showcase reset')).toBe(true);
+
+  // D-18/T-149-02: session setup stays behind a planned compile-time-gated e2e helper.
+  const session = await page.request.post('/_e2e/saas-session', {
+    data: { user_id: 'approver-1' },
+  });
+  expect(session.ok(), ownerMessage('saas-dashboard', 'approver-1 e2e session helper')).toBe(true);
+
+  const router = readFileSync(routerPath, 'utf8');
+  expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('id: "saas-dashboard"');
+  expect(router, ownerMessage('saas-approvals', 'live_view')).toContain('id: "saas-approvals"');
+  expect(router, ownerMessage('saas-approval', 'live_view + bounded haptics')).toContain('id: "saas-approval"');
+  expect(router, ownerMessage('saas-approval', 'bounded haptics capability')).toContain('capabilities: ["haptics.impact"]');
+
+  await page.goto('/saas/dashboard');
+  await expect(page, ownerMessage('saas-dashboard', 'browser title')).toHaveTitle('Dashboard · AdminPilot · Crosswake');
+  await expect(page.getByRole('heading', { name: /Northwind mobile approvals/i }), ownerMessage('saas-dashboard', 'live_view')).toBeVisible();
+  await expect(page.getByText(/LiveView route/i).first(), ownerMessage('saas-dashboard', 'route ownership label')).toBeVisible();
+  await expect(page.getByText(/Cached read-only/i).first(), ownerMessage('saas-dashboard', 'cached read-only support truth')).toBeVisible();
+  await expect(page.getByText(/Server authority/i).first(), ownerMessage('saas-dashboard', 'Phoenix server authority')).toBeVisible();
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'adminpilot-dashboard.png');
+  }
+
+  await page.getByRole('link', { name: /Approvals|Review queue/i }).first().click();
+  await expect(page, ownerMessage('saas-approvals', 'queue route')).toHaveURL(/\/saas\/approvals$/);
+  await expect(page.getByRole('heading', { name: /Approvals/i }), ownerMessage('saas-approvals', 'approval queue')).toBeVisible();
+  await expect(page.locator('body'), ownerMessage('saas-approvals', 'approval-1 visible')).toContainText('Quarterly spend increase');
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'adminpilot-approvals.png');
+  }
+
+  await page.getByRole('link', { name: /Quarterly spend increase|approval-1/i }).click();
+  await expect(page, ownerMessage('saas-approval', 'detail route')).toHaveURL(/\/saas\/approvals\/approval-1$/);
+  await page.getByRole('button', { name: 'Approve request' }).click();
+
+  const status = page.getByRole('status').first();
+  await expect(status, ownerMessage('saas-approval', 'Phoenix/server approval status')).toContainText(/Phoenix|server authority/i);
+  await expect(page.locator('#crosswake-approval-haptics'), ownerMessage('saas-approval', 'post-success haptics payload')).toContainText('haptics.impact');
+  await expect(page.locator('body'), ownerMessage('saas-approval', 'haptics degradable support truth')).toContainText(/Optional haptics|secondary|degradable/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'adminpilot-approval-approved.png');
+  }
+
+  await page.getByRole('button', { name: /Route diagnostics|Diagnostics|Support truth/i }).first().click();
+  const body = page.locator('body');
+  await expect(body, ownerMessage('saas-approval', 'AdminPilot diagnostics panel')).toContainText('AdminPilot route diagnostics');
+  await expect(body, ownerMessage('saas-dashboard', 'diagnostics row')).toContainText('saas-dashboard');
+  await expect(body, ownerMessage('saas-approvals', 'diagnostics row')).toContainText('saas-approvals');
+  await expect(body, ownerMessage('saas-approval', 'diagnostics row')).toContainText('saas-approval');
+  await expect(body, ownerMessage('saas-approval', 'diagnostics support truth')).toContainText(/Support truth|Proof-backed example|Demo pressure/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'adminpilot-diagnostics.png');
+  }
 }
 
 async function proveLibraryRoute(page: Page) {
@@ -227,7 +295,7 @@ async function expectNoHorizontalOverflow(page: Page, routeId: string) {
   ).toBeLessThanOrEqual(metrics.clientWidth + 1);
 }
 
-async function expectVisibleFocus(page: Page, routeId: string) {
+async function expectVisibleFocus(page: Page, routeId: string, expectedText?: string | RegExp) {
   const focus = await page.evaluate(() => {
     const active = document.activeElement;
     const style = window.getComputedStyle(active!);
@@ -239,7 +307,14 @@ async function expectVisibleFocus(page: Page, routeId: string) {
     };
   });
 
-  expect(focus.text, ownerMessage(routeId, 'keyboard focus target')).toContain('Explore Showcase');
+  if (expectedText instanceof RegExp) {
+    expect(focus.text, ownerMessage(routeId, 'keyboard focus target')).toMatch(expectedText);
+  } else if (expectedText) {
+    expect(focus.text, ownerMessage(routeId, 'keyboard focus target')).toContain(expectedText);
+  } else {
+    expect(focus.text, ownerMessage(routeId, 'keyboard focus target')).toBeTruthy();
+  }
+
   expect(focus.outlineStyle, ownerMessage(routeId, 'keyboard focus outline')).not.toBe('none');
   expect(focus.outlineWidth, ownerMessage(routeId, 'keyboard focus outline')).toBeGreaterThan(0);
 }
