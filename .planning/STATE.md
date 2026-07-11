@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 151
+current_phase_name: subscription-learning-showcase
 status: executing
-stopped_at: Phase 151 planned
-last_updated: "2026-07-11T20:05:19Z"
-last_activity: 2026-07-11
-last_activity_desc: Phase 151 planned with 7 plans
+stopped_at: Phase 151 context gathered
+last_updated: "2026-07-11T20:22:31.857Z"
+last_activity: 2026-07-11 -- Phase 151 execution started
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 26
   completed_plans: 19
-  percent: 67
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 151 — subscription learning showcase
+**Current focus:** Phase 151 — subscription-learning-showcase
 
 ## Current Position
 
 Current Phase: 151
-Current Phase Name: Subscription Learning Showcase
-Phase: 151
-Plan: 7 plans ready
-Status: Ready to execute
-Last activity: 2026-07-11 — Phase 151 planned with 7 plans
+Current Phase Name: subscription-learning-showcase
+Phase: 151 (subscription-learning-showcase) — EXECUTING
+Plan: 1 of 7
+Status: Executing Phase 151
+Last activity: 2026-07-11 -- Phase 151 execution started
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
