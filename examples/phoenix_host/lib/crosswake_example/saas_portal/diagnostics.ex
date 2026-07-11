@@ -60,7 +60,7 @@ defmodule CrosswakeExample.SaaSPortal.Diagnostics do
     "saas-profile-settings" => %{
       support_label: "Demo pressure",
       rough_edge:
-        "MFA and recent-auth posture are backend-owned example pressure; no native auth UI is claimed.",
+        "MFA and recent-auth posture are backend-owned example pressure; no shell-owned auth surface is claimed.",
       guide_links: @row_guide_links.default
     },
     "saas-admin-member-access" => %{
