@@ -13,22 +13,19 @@ defmodule CrosswakeExample.Showcase.Fixtures do
 
     %{
       accounts: 1,
+      teams: length(data.teams),
       users: length(data.users),
-      approvals: length(data.approvals)
+      roles: length(data.roles),
+      settings: 1,
+      approvals: length(data.approvals),
+      operational_records: length(data.operational_records),
+      approval_policies: length(data.approval_policies),
+      activity_events: length(data.activity_events),
+      admin_pressure: 1
     }
   end
 
   def saas_admin_digest_components do
-    data = SaaSFixtures.seed()
-
-    [
-      "saas_admin.account:#{data.account.id}:#{data.account.name}:#{data.account.health}",
-      data.users
-      |> Enum.sort_by(& &1.id)
-      |> Enum.map_join("|", &"saas_admin.user:#{&1.id}:#{&1.name}:#{&1.role}"),
-      data.approvals
-      |> Enum.sort_by(& &1.id)
-      |> Enum.map_join("|", &"saas_admin.approval:#{&1.id}:#{&1.title}:#{&1.status}")
-    ]
+    SaaSFixtures.digest_components()
   end
 end

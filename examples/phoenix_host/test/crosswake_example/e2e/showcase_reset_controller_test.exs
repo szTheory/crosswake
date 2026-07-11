@@ -16,8 +16,15 @@ defmodule CrosswakeExample.E2E.ShowcaseResetControllerTest do
 
     assert body["counts"]["saas_admin"] == %{
              "accounts" => 1,
+             "activity_events" => 3,
+             "admin_pressure" => 1,
+             "approval_policies" => 3,
              "approvals" => 3,
-             "users" => 2
+             "operational_records" => 3,
+             "roles" => 3,
+             "settings" => 1,
+             "teams" => 1,
+             "users" => 3
            }
 
     assert body["counts"]["field_service_native_pressure"] == %{

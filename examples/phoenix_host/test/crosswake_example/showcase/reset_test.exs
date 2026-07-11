@@ -52,7 +52,19 @@ defmodule CrosswakeExample.Showcase.ResetTest do
     result = Reset.reset!()
 
     # D-11: Phase 147 proves believable foundation data without modeling every future domain table.
-    assert result.counts.saas_admin == %{accounts: 1, approvals: 3, users: 2}
+    assert result.counts.saas_admin == %{
+             accounts: 1,
+             activity_events: 3,
+             admin_pressure: 1,
+             approval_policies: 3,
+             approvals: 3,
+             operational_records: 3,
+             roles: 3,
+             settings: 1,
+             teams: 1,
+             users: 3
+           }
+
     assert result.counts.field_service_native_pressure == %{claims: 2, submissions: 0}
 
     assert result.counts.learning_training == %{
