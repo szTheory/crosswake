@@ -4,15 +4,15 @@ milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 150
 status: executing
-stopped_at: Phase 150 Plan 05 complete; capture/review next
-last_updated: "2026-07-11T18:03:04Z"
+stopped_at: Phase 150 Plan 06 complete; final proof next
+last_updated: "2026-07-11T18:08:13Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 150 Plan 05 product shell, jobs, detail, and inspection UI complete
+last_activity_desc: Phase 150 Plan 06 native capture handoff and evidence review complete
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 33
 ---
 
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 150
-Plan: 150-06 (Wave 4)
+Plan: 150-07 (Wave 5)
 Status: Executing
-Last activity: 2026-07-11 — Phase 150 Plan 05 product shell, jobs, detail, and inspection UI complete
+Last activity: 2026-07-11 — Phase 150 Plan 06 native capture handoff and evidence review complete
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -82,7 +82,7 @@ Last activity: 2026-07-11 — Phase 150 Plan 05 product shell, jobs, detail, and
 
 **Velocity:**
 
-- Total plans completed: 174 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 5 in Phase 150)
+- Total plans completed: 175 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 6 in Phase 150)
 - Average duration: —
 - Total execution time: —
 
@@ -209,6 +209,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 150 Plan 03]: Field Service now enters through product-first `/fieldserv/jobs` while legacy `/native/claims` remains secondary proof; diagnostics derive Fieldserv route facts from compiled router metadata and classify native/offline pressure without shipped-support claims.
 - [Phase 150 Plan 04]: Fieldserv persistence is limited to append-only evidence events and current technician job state; device evidence is not media availability until backend verification transitions mark it verified.
 - [Phase 150 Plan 05]: Fieldserv UI is lane-local and product-first; jobs/detail/inspection screens surface support truth inline while keeping inspection mutation server-recorded and offline-island behavior future-only.
+- [Phase 150 Plan 06]: Fieldserv capture stays native-screen owned while evidence review keeps backend verification as the only availability authority.
 
 ### Pending Todos
 
@@ -223,6 +224,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 150 Plan 03 completed 2026-07-11: `/fieldserv/*` routes and route-derived diagnostics now expose LiveView jobs/detail/inspection/review, native-screen capture metadata, cached read-only posture, support labels, guide links, and capability-map pressure rows.
 - Phase 150 Plan 04 completed 2026-07-11: narrow Fieldserv Ecto evidence/state persistence, backend-authoritative evidence transitions, and deterministic showcase reset/digest integration are complete.
 - Phase 150 Plan 05 completed 2026-07-11: Fieldserv components, scoped styles, jobs queue, job detail, and inspection workspace now render the product-first lane with cached read-only posture, diagnostics, and a server-recorded inspection event action.
+- Phase 150 Plan 06 completed 2026-07-11: Fieldserv native capture handoff and evidence review now complete the click path while preserving native ownership, permission truth, backend evidence authority, and cached read-only posture.
 
 ### Blockers/Concerns
 
@@ -279,9 +281,9 @@ Full decision log in PROJECT.md (Key Decisions).
 ## Session Continuity
 
 Last session: 2026-07-11T17:51:48Z
-Stopped at: Phase 150 Plan 05 complete; capture/review next
-Resume file: .planning/phases/150-field-service-showcase/150-06-PLAN.md
+Stopped at: Phase 150 Plan 06 complete; final proof next
+Resume file: .planning/phases/150-field-service-showcase/150-07-PLAN.md
 
 ## Operator Next Steps
 
-- Continue Phase 150 Wave 4 with `150-06-PLAN.md`.
+- Continue Phase 150 Wave 5 with `150-07-PLAN.md`.
