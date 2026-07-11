@@ -144,7 +144,7 @@ Plans:
 
 **Wave 3** *(blocked on fixture breadth, route diagnostics, and evidence state)*
 
-- [ ] 150-05-PLAN.md — Build the Fieldserv product shell, responsive styles, jobs list, job detail, and inspection workspace.
+- [x] 150-05-PLAN.md — Build the Fieldserv product shell, responsive styles, jobs list, job detail, and inspection workspace.
 
 **Wave 4** *(blocked on evidence state and Fieldserv UI)*
 
@@ -372,6 +372,6 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 150. Field-Service Showcase | v19.0 | 4/7 | In Progress | — |
+| 150. Field-Service Showcase | v19.0 | 5/7 | In Progress | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
