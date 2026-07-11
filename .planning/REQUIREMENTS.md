@@ -36,10 +36,10 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 
 ### Field-Service Lane
 
-- [ ] **FIELD-01**: User can click through a field-service domain with realistic jobs, assets, inspections, notes, media/evidence, and technician state.
-- [ ] **FIELD-02**: User can see device-pressure flows such as scanning/capture intent, evidence upload, permissions, and native-control gaps represented honestly.
-- [ ] **FIELD-03**: User can see offline/degraded posture in the field-service lane without implying local-first mutation unless a real journal/outbox path is present.
-- [ ] **FIELD-04**: User can trace route ownership and support labels for field-service flows that should remain LiveView, become offline islands, or become future native screens.
+- [x] **FIELD-01**: User can click through a field-service domain with realistic jobs, assets, inspections, notes, media/evidence, and technician state.
+- [x] **FIELD-02**: User can see device-pressure flows such as scanning/capture intent, evidence upload, permissions, and native-control gaps represented honestly.
+- [x] **FIELD-03**: User can see offline/degraded posture in the field-service lane without implying local-first mutation unless a real journal/outbox path is present.
+- [x] **FIELD-04**: User can trace route ownership and support labels for field-service flows that should remain LiveView, become offline islands, or become future native screens.
 
 ### Learning/Training Lane
 
@@ -124,10 +124,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAAS-02 | Phase 149 | Complete |
 | SAAS-03 | Phase 149 | Complete |
 | SAAS-04 | Phase 149 | Complete |
-| FIELD-01 | Phase 150 | Pending |
-| FIELD-02 | Phase 150 | Pending |
-| FIELD-03 | Phase 150 | Pending |
-| FIELD-04 | Phase 150 | Pending |
+| FIELD-01 | Phase 150 | Complete |
+| FIELD-02 | Phase 150 | Complete |
+| FIELD-03 | Phase 150 | Complete |
+| FIELD-04 | Phase 150 | Complete |
 | LEARN-01 | Phase 151 | Pending |
 | LEARN-02 | Phase 151 | Pending |
 | LEARN-03 | Phase 151 | Pending |
@@ -149,4 +149,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-07-09*
-*Last updated: 2026-07-09 after completing Phase 148 demo-app brand direction*
+*Last updated: 2026-07-11 after completing Phase 150 field-service showcase*

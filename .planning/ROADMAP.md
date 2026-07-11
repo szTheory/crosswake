@@ -152,7 +152,7 @@ Plans:
 
 **Wave 5** *(blocked on Fieldserv UI, capture handoff, and evidence review)*
 
-- [ ] 150-07-PLAN.md — Run full ExUnit plus Playwright proof and preserve capability-map evidence for Phase 152.
+- [x] 150-07-PLAN.md — Run full ExUnit plus Playwright proof and preserve capability-map evidence for Phase 152.
 
 ### Phase 151: Subscription Learning Showcase
 
@@ -372,6 +372,6 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 150. Field-Service Showcase | v19.0 | 6/7 | In Progress | — |
+| 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |

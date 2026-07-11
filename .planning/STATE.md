@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 150
+current_phase: 151
 status: executing
-stopped_at: Phase 150 Plan 06 complete; final proof next
-last_updated: "2026-07-11T18:08:13Z"
+stopped_at: Phase 150 complete; Phase 151 next
+last_updated: "2026-07-11T18:14:49Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 150 Plan 06 native capture handoff and evidence review complete
+last_activity_desc: Phase 150 Plan 07 full ExUnit and Playwright proof complete
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 4
   total_plans: 19
-  completed_plans: 18
-  percent: 33
+  completed_plans: 19
+  percent: 67
 ---
 
 # Project State: Crosswake
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 150 — field service showcase
+**Current focus:** Phase 151 — subscription learning showcase
 
 ## Current Position
 
-Phase: 150
-Plan: 150-07 (Wave 5)
-Status: Executing
-Last activity: 2026-07-11 — Phase 150 Plan 06 native capture handoff and evidence review complete
+Phase: 151
+Plan: not planned
+Status: Pending
+Last activity: 2026-07-11 — Phase 150 Plan 07 full ExUnit and Playwright proof complete
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -82,7 +82,7 @@ Last activity: 2026-07-11 — Phase 150 Plan 06 native capture handoff and evide
 
 **Velocity:**
 
-- Total plans completed: 175 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 6 in Phase 150)
+- Total plans completed: 176 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150)
 - Average duration: —
 - Total execution time: —
 
@@ -210,6 +210,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 150 Plan 04]: Fieldserv persistence is limited to append-only evidence events and current technician job state; device evidence is not media availability until backend verification transitions mark it verified.
 - [Phase 150 Plan 05]: Fieldserv UI is lane-local and product-first; jobs/detail/inspection screens surface support truth inline while keeping inspection mutation server-recorded and offline-island behavior future-only.
 - [Phase 150 Plan 06]: Fieldserv capture stays native-screen owned while evidence review keeps backend verification as the only availability authority.
+- [Phase 150 Plan 07]: Fieldserv route-tour proof treats screenshots as collateral after semantic assertions; Fieldserv capability pressure remains capability-map evidence, not shipped runtime support.
 
 ### Pending Todos
 
@@ -225,6 +226,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 150 Plan 04 completed 2026-07-11: narrow Fieldserv Ecto evidence/state persistence, backend-authoritative evidence transitions, and deterministic showcase reset/digest integration are complete.
 - Phase 150 Plan 05 completed 2026-07-11: Fieldserv components, scoped styles, jobs queue, job detail, and inspection workspace now render the product-first lane with cached read-only posture, diagnostics, and a server-recorded inspection event action.
 - Phase 150 Plan 06 completed 2026-07-11: Fieldserv native capture handoff and evidence review now complete the click path while preserving native ownership, permission truth, backend evidence authority, and cached read-only posture.
+- Phase 150 Plan 07 completed 2026-07-11: focused Fieldserv/showcase ExUnit, full warnings-as-errors ExUnit, and Playwright route-tour proof now pass with semantic assertions before screenshots and capability-map evidence preserved.
+- Phase 150 Field-Service Showcase completed 2026-07-11: FIELD-01 through FIELD-04 are verified across realistic jobs/assets/inspection/evidence data, native-screen capture pressure, backend-authoritative evidence review, cached read-only posture, route diagnostics, and browser proof.
 
 ### Blockers/Concerns
 
@@ -281,9 +284,9 @@ Full decision log in PROJECT.md (Key Decisions).
 ## Session Continuity
 
 Last session: 2026-07-11T17:51:48Z
-Stopped at: Phase 150 Plan 06 complete; final proof next
-Resume file: .planning/phases/150-field-service-showcase/150-07-PLAN.md
+Stopped at: Phase 150 complete; Phase 151 next
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Continue Phase 150 Wave 5 with `150-07-PLAN.md`.
+- Begin Phase 151 Subscription Learning Showcase when ready.
