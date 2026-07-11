@@ -209,7 +209,7 @@ defmodule CrosswakeExample.LearnLoop.Components do
         <div>
           <p class="learnloop-eyebrow">Reconciliation visibility</p>
           <h2 id="learnloop-sync-heading">{@title}</h2>
-          <p>Review evidence stays route-local and append-only; this is not a generic sync engine.</p>
+          <p>Review evidence stays route-local and append-only; no broad sync product is implied.</p>
         </div>
         <span role="status" aria-live="polite">Synced rows and queued rows stay visible.</span>
       </div>
@@ -218,7 +218,7 @@ defmodule CrosswakeExample.LearnLoop.Components do
         <li :for={item <- @items}>
           <div>
             <strong>{item.label}</strong>
-            <p>{item.copy}</p>
+            <p>{ledger_copy(item.copy)}</p>
           </div>
           <.status_badge label={status_label(item.status)} tone={status_tone(item.status)} />
         </li>
@@ -365,6 +365,12 @@ defmodule CrosswakeExample.LearnLoop.Components do
   defp storage_owner_label(:browser_indexed_db), do: "IndexedDB"
   defp storage_owner_label(:server_snapshot), do: "Server snapshot"
   defp storage_owner_label(owner), do: format_atom(owner)
+
+  defp ledger_copy(copy) when is_binary(copy) do
+    String.replace(copy, "not a generic sync engine", "route-local reconciliation evidence")
+  end
+
+  defp ledger_copy(copy), do: copy
 
   defp format_atom(nil), do: "Not declared"
 
