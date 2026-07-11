@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 151
-current_phase_name: subscription-learning-showcase
-status: executing
-stopped_at: Phase 151 context gathered
-last_updated: "2026-07-11T20:22:31.857Z"
-last_activity: 2026-07-11 -- Phase 151 execution started
+current_phase: 152
+current_phase_name: capability-map-collateral-and-v20-handoff
+status: ready_to_plan
+stopped_at: Phase 151 complete (7/7) — ready to discuss Phase 152
+last_updated: 2026-07-11T22:02:10.530Z
+last_activity: 2026-07-11 -- Phase 151 complete and verified
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 5
   total_plans: 26
-  completed_plans: 19
-  percent: 50
+  completed_plans: 26
+  percent: 83
 ---
 
 # Project State: Crosswake
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 151 — subscription-learning-showcase
+**Current focus:** Phase 152 — capability map, collateral, and v20 handoff
 
 ## Current Position
 
-Current Phase: 151
-Current Phase Name: subscription-learning-showcase
-Phase: 151 (subscription-learning-showcase) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 151
-Last activity: 2026-07-11 -- Phase 151 execution started
+Current Phase: 152
+Current Phase Name: Capability Map, Collateral, and v20 Handoff
+Phase: 152 (Capability Map, Collateral, and v20 Handoff) — READY TO PLAN
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-11 — Phase 151 complete and verified
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -84,7 +84,7 @@ Last activity: 2026-07-11 -- Phase 151 execution started
 
 **Velocity:**
 
-- Total plans completed: 176 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150)
+- Total plans completed: 183 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151)
 - Average duration: —
 - Total execution time: —
 
@@ -285,10 +285,10 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-11T18:41:46.224Z
-Stopped at: Phase 151 context gathered
-Resume file: .planning/phases/151-subscription-learning-showcase/151-CONTEXT.md
+Last session: 2026-07-11T22:02:10.530Z
+Stopped at: Phase 151 complete and verified
+Resume file: .planning/phases/151-subscription-learning-showcase/151-VERIFICATION.md
 
 ## Operator Next Steps
 
-- Begin Phase 151 Subscription Learning Showcase when ready.
+- Discuss or plan Phase 152 Capability Map, Collateral, and v20 Handoff.

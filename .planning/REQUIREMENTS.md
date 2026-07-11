@@ -43,10 +43,10 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 
 ### Learning/Training Lane
 
-- [ ] **LEARN-01**: User can click through a subscription learning/training domain with realistic courses, lessons, packs, learners, progress, and subscription state.
-- [ ] **LEARN-02**: User can see content-pack and offline-study behavior demonstrated with honest sync/reconciliation visibility.
-- [ ] **LEARN-03**: User can see entitlement/paywall pressure represented as backend-owned or mocked state without claiming live storefront support.
-- [ ] **LEARN-04**: User can complete a representative learning workflow that connects online LiveView, offline island, and support truth.
+- [x] **LEARN-01**: User can click through a subscription learning/training domain with realistic courses, lessons, packs, learners, progress, and subscription state.
+- [x] **LEARN-02**: User can see content-pack and offline-study behavior demonstrated with honest sync/reconciliation visibility.
+- [x] **LEARN-03**: User can see entitlement/paywall pressure represented as backend-owned or mocked state without claiming live storefront support.
+- [x] **LEARN-04**: User can complete a representative learning workflow that connects online LiveView, offline island, and support truth.
 
 ### Capability Map
 
@@ -128,10 +128,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIELD-02 | Phase 150 | Complete |
 | FIELD-03 | Phase 150 | Complete |
 | FIELD-04 | Phase 150 | Complete |
-| LEARN-01 | Phase 151 | Pending |
-| LEARN-02 | Phase 151 | Pending |
-| LEARN-03 | Phase 151 | Pending |
-| LEARN-04 | Phase 151 | Pending |
+| LEARN-01 | Phase 151 | Complete |
+| LEARN-02 | Phase 151 | Complete |
+| LEARN-03 | Phase 151 | Complete |
+| LEARN-04 | Phase 151 | Complete |
 | CAPMAP-01 | Phase 152 | Pending |
 | CAPMAP-02 | Phase 152 | Pending |
 | CAPMAP-03 | Phase 152 | Pending |
