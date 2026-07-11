@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 149
 current_phase_name: saas-admin-showcase
 status: executing
-stopped_at: Completed 149-01-PLAN.md
-last_updated: "2026-07-11T00:18:34.288Z"
+stopped_at: Completed 149-02-PLAN.md
+last_updated: "2026-07-11T00:32:20.317Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 149 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 12
-  completed_plans: 6
-  percent: 17
+  completed_plans: 7
+  percent: 58
 ---
 
 # Project State: Crosswake
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 149 (saas-admin-showcase) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-07-11 -- Phase 149 execution started
 
@@ -190,6 +190,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 144]: Added Phase 144 umbrella IDs without replacing the existing Phase 142/143 scanner IDs. — Future operators and tests may still rely on historical stable IDs, while PREF-03 needs its own consolidated IDs.
 - [Phase 144]: Required clean-room proof jobs to pass package/version as real script arguments, not loose job-block text. — A job-level string search could be satisfied by comments, labels, or env decoys; argument-order matching keeps PREF-03 non-vacuous.
 - [Phase ?]: Phase 149 Plan 01 kept AdminPilot work intentionally RED-only: contracts now define fixture density, diagnostics, approval authority, and route-tour proof while implementation remains in later Phase 149 plans.
+- [Phase 149 Plan 02]: AdminPilot static breadth remains deterministic fixture maps; mutable approval/activity persistence remains later-plan work.
+- [Phase 149 Plan 02]: SaaS reset digest delegates static breadth to SaaSPortal.Fixtures.digest_components/0 so reset truth changes with fixture IDs, titles, and roles.
 
 ### Pending Todos
 
@@ -240,11 +242,12 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 147 P04 | 9 min | 3 tasks | 7 files |
 | Phase 147 P05 | 10 min | 3 tasks | 8 files |
 | Phase 149 P01 | 7 min | 2 tasks | 5 files |
+| Phase 149 P02 | 8 min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-07-11T00:18:23.187Z
-Stopped at: Completed 149-01-PLAN.md
+Last session: 2026-07-11T00:32:20.313Z
+Stopped at: Completed 149-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
