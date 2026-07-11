@@ -24,8 +24,7 @@ defmodule CrosswakeExample.Showcase.ResetTest do
   end
 
   test "selective-native fixture seed is reset-safe and does not accumulate claim rows" do
-    Reset.reset!()
-
+    NativeFixtures.seed()
     initial_count = claim_count()
     NativeFixtures.seed()
     after_first_seed = claim_count()
@@ -66,7 +65,21 @@ defmodule CrosswakeExample.Showcase.ResetTest do
              users: 3
            }
 
-    assert result.counts.field_service_native_pressure == %{claims: 2, submissions: 0}
+    assert result.counts.field_service == %{
+             adjuster: 1,
+             assets: 3,
+             dispatcher: 1,
+             evidence_events: 4,
+             evidence_items: 4,
+             inspection_templates: 1,
+             jobs: 3,
+             notes: 4,
+             permission_pressure: 7,
+             route_postures: 5,
+             support_findings: 4,
+             technician_job_states: 3,
+             technicians: 3
+           }
 
     assert result.counts.learning_training == %{
              browser_state_reset: false,

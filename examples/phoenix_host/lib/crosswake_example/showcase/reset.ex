@@ -7,7 +7,6 @@ defmodule CrosswakeExample.Showcase.Reset do
   """
 
   alias CrosswakeExample.Flashcards
-  alias CrosswakeExample.SelectiveNative.Fixtures, as: NativeFixtures
   alias CrosswakeExample.Showcase.Fixtures
 
   @browser_state_reset false
@@ -15,7 +14,7 @@ defmodule CrosswakeExample.Showcase.Reset do
   def reset! do
     counts = %{
       saas_admin: Fixtures.reset_saas_admin!(),
-      field_service_native_pressure: NativeFixtures.seed(),
+      field_service: Fixtures.reset_field_service!(),
       learning_training: Flashcards.reset_seed!()
     }
 
@@ -31,7 +30,7 @@ defmodule CrosswakeExample.Showcase.Reset do
       "browser_state_reset=#{@browser_state_reset}",
       count_components(counts),
       Fixtures.saas_admin_digest_components(),
-      NativeFixtures.digest_components(),
+      Fixtures.field_service_digest_components(),
       Flashcards.seed_digest_components()
     ]
     |> List.flatten()
