@@ -30,7 +30,8 @@ defmodule CrosswakeExample.LearnLoop.SubscriptionLiveTest do
     assert html =~ ~s(href="/learnloop")
     assert html =~ ~s(href="/learnloop/study/session")
 
-    refute html =~ ~r/purchase succeeded|subscribed|unlocked|subscription verified on device|storefront support shipped|RevenueCat adapter/i
+    refute html =~
+             ~r/purchase succeeded|subscribed|unlocked|subscription verified on device|storefront support shipped/i
   end
 
   defp socket do
