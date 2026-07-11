@@ -2,18 +2,16 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 151
-status: executing
-stopped_at: Phase 150 complete; Phase 151 next
-last_updated: "2026-07-11T18:14:49Z"
-last_activity: 2026-07-11
-last_activity_desc: Phase 150 Plan 07 full ExUnit and Playwright proof complete
+status: Pending
+stopped_at: Phase 151 context gathered
+last_updated: "2026-07-11T18:41:46.228Z"
+last_activity: 2026-07-11 — Phase 150 Plan 07 full ExUnit and Playwright proof complete
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 19
   completed_plans: 19
-  percent: 67
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -283,9 +281,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-11T17:51:48Z
-Stopped at: Phase 150 complete; Phase 151 next
-Resume file: .planning/ROADMAP.md
+Last session: 2026-07-11T18:41:46.224Z
+Stopped at: Phase 151 context gathered
+Resume file: .planning/phases/151-subscription-learning-showcase/151-CONTEXT.md
 
 ## Operator Next Steps
 
