@@ -126,6 +126,34 @@ Plans:
 3. Offline or degraded states are represented honestly without claiming local-first mutation unless a real journal/outbox path exists.
 4. Route-owner labels show which flows stay LiveView, become offline islands, or should become future native screens.
 
+**Plans:** 7 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 150-01-PLAN.md — Create Wave 0 Fieldserv ExUnit, LiveView, route-tour, and evidence-manifest contracts.
+
+**Wave 1** *(blocked on Wave 0 test contracts)*
+
+- [ ] 150-02-PLAN.md — Build deterministic Fieldserv fixture breadth and read contexts.
+- [ ] 150-03-PLAN.md — Declare Fieldserv route ownership and lane-local diagnostics from compiled router metadata.
+
+**Wave 2** *(blocked on Wave 0 test contracts and fixture breadth)*
+
+- [ ] 150-04-PLAN.md — Add narrow Fieldserv evidence/workflow persistence and deterministic reset truth.
+
+**Wave 3** *(blocked on fixture breadth, route diagnostics, and evidence state)*
+
+- [ ] 150-05-PLAN.md — Build the Fieldserv product shell, responsive styles, jobs list, job detail, and inspection workspace.
+
+**Wave 4** *(blocked on evidence state and Fieldserv UI)*
+
+- [ ] 150-06-PLAN.md — Complete native capture handoff and backend-authoritative evidence review.
+
+**Wave 5** *(blocked on Fieldserv UI, capture handoff, and evidence review)*
+
+- [ ] 150-07-PLAN.md — Run full ExUnit plus Playwright proof and preserve capability-map evidence for Phase 152.
+
 ### Phase 151: Subscription Learning Showcase
 
 **Goal:** Build the subscription learning/training lane that demonstrates content packs, offline study/training, sync/reconciliation visibility, and entitlement/paywall pressure.
@@ -344,6 +372,6 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete    | 2026-07-09 |
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 150. Field-Service Showcase | v19.0 | 0/0 | Pending | — |
+| 150. Field-Service Showcase | v19.0 | 0/7 | Planned | — |
 | 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
