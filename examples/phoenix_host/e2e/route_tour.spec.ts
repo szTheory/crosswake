@@ -31,6 +31,7 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     await proveSaasRoute(page);
     await proveAdminPilotApprovalFlow(page);
+    await proveFieldservRoute(page);
 
     await proveLibraryRoute(page);
     await captureRouteScreenshot(page, 'library.png');
@@ -60,6 +61,9 @@ test.describe('Crosswake route-owner browser tour', () => {
 
     await page.keyboard.press('Tab');
     await expectVisibleFocus(page, 'saas-approval');
+
+    await proveFieldservRoute(page, { captureScreenshots: false });
+    await expectNoHorizontalOverflow(page, 'fieldserv-jobs');
 
     await captureRouteScreenshot(page, 'showcase-mobile-dark-reduced.png');
   });
@@ -271,6 +275,82 @@ async function proveOfflineRoute(page: Page, context: BrowserContext) {
   const body = await duplicate.json();
   expect(body.data.accepted_count, ownerMessage('offline-study', 'offline_island')).toBe(0);
   await expectSyncedReview(page.request, mutations[0].client_mutation_id);
+}
+
+async function proveFieldservRoute(page: Page, options: AdminPilotFlowOptions = {}) {
+  const captureScreenshots = options.captureScreenshots ?? true;
+  const reset = await page.request.post('/_e2e/showcase-reset');
+  expect(reset.ok(), ownerMessage('showcase-reset', 'deterministic Fieldserv reset')).toBe(true);
+
+  const router = readFileSync(routerPath, 'utf8');
+  expect(router, ownerMessage('fieldserv-jobs', 'live_view route')).toContain('id: "fieldserv-jobs"');
+  expect(router, ownerMessage('fieldserv-job', 'live_view route')).toContain('id: "fieldserv-job"');
+  expect(router, ownerMessage('fieldserv-inspection', 'live_view route')).toContain('id: "fieldserv-inspection"');
+  expect(router, ownerMessage('fieldserv-job-capture', 'native_screen route')).toContain('id: "fieldserv-job-capture"');
+  expect(router, ownerMessage('fieldserv-job-capture', 'native_screen route')).toContain('runtime: :native_screen');
+  expect(router, ownerMessage('fieldserv-job-capture', 'camera capability')).toContain('capabilities: [:camera]');
+  expect(router, ownerMessage('fieldserv-job-capture', 'upload transfer metadata')).toContain('source: :native_capture');
+  expect(router, ownerMessage('fieldserv-evidence-review', 'backend review route')).toContain('id: "fieldserv-evidence-review"');
+
+  await page.goto('/fieldserv/jobs');
+  await expect(page, ownerMessage('fieldserv-jobs', 'browser title')).toHaveTitle(/Fieldserv|Crosswake/);
+  await expectLiveViewConnected(page, 'fieldserv-jobs');
+  await expect(page.getByRole('heading', { name: /Ridgeway|Fieldserv|job queue/i }), ownerMessage('fieldserv-jobs', 'product lane')).toBeVisible();
+  await expect(page.locator('body'), ownerMessage('fieldserv-jobs', 'field-service fixture')).toContainText('Broken windshield');
+  await expect(page.locator('body'), ownerMessage('fieldserv-jobs', 'route support truth')).toContainText(/LiveView route|Cached read-only/);
+  await expectNoHorizontalOverflow(page, 'fieldserv-jobs');
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'fieldserv-jobs.png');
+  }
+
+  await page.getByRole('link', { name: /Broken windshield|job-1|Open job/i }).first().click();
+  await expect(page, ownerMessage('fieldserv-job', 'job detail route')).toHaveURL(/\/fieldserv\/jobs\/job-1$/);
+  await expectLiveViewConnected(page, 'fieldserv-job');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job', 'asset context')).toContainText(/Asset|Windshield/i);
+  await expect(page.locator('body'), ownerMessage('fieldserv-job', 'cached read-only posture')).toContainText('Cached read-only');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job', 'backend evidence authority')).toContainText(/Backend verification pending|Device evidence/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'fieldserv-job-detail.png');
+  }
+
+  await page.getByRole('link', { name: /Inspection|Open inspection/i }).first().click();
+  await expect(page, ownerMessage('fieldserv-inspection', 'inspection route')).toHaveURL(/\/fieldserv\/jobs\/job-1\/inspection$/);
+  await expect(page.locator('body'), ownerMessage('fieldserv-inspection', 'offline honesty')).toContainText('Future offline island candidate');
+  await expect(page.locator('body'), ownerMessage('fieldserv-inspection', 'offline requirements')).toContainText(/local draft storage|journal\/outbox|reconciliation proof/i);
+  await expect(page.locator('body'), ownerMessage('fieldserv-inspection', 'no shipped local mutation')).not.toContainText(/saved locally|queued for sync/i);
+  await page.keyboard.press('Tab');
+  await expectVisibleFocus(page, 'fieldserv-inspection');
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'fieldserv-inspection.png');
+  }
+
+  await page.getByRole('link', { name: /Capture|Native capture/i }).first().click();
+  await expect(page, ownerMessage('fieldserv-job-capture', 'capture route')).toHaveURL(/\/fieldserv\/jobs\/job-1\/capture$/);
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'native runtime')).toContainText('Camera capture requires the native app runtime.');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'scanner future gap')).toContainText('Scanner support is a future native-control candidate.');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'permission pressure')).toContainText('Permission needed');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'backend authority')).toContainText('Device evidence is pending backend verification.');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'no web capture fallback')).not.toContainText(/Use browser camera|Scan document now/i);
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'fieldserv-capture-handoff.png');
+  }
+
+  await page.getByRole('link', { name: /Evidence review|Review evidence/i }).first().click();
+  await expect(page, ownerMessage('fieldserv-evidence-review', 'evidence review route')).toHaveURL(/\/fieldserv\/jobs\/job-1\/evidence\/evidence-1\/review$/);
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'device evidence state')).toContainText('Device evidence recorded');
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'backend pending state')).toContainText('Backend verification pending');
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'backend verified state')).toContainText('Backend verified');
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'backend rejected state')).toContainText('Backend rejected');
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'availability authority')).not.toContainText(/uploaded successfully|available after device capture/i);
+
+  await page.locator('.fieldserv-diagnostics summary').first().click();
+  await expect(page.locator('body'), ownerMessage('fieldserv-evidence-review', 'diagnostics panel')).toContainText('Route policy diagnostics');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'diagnostics route row')).toContainText('fieldserv-job-capture');
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'diagnostics native owner')).toContainText(/Native screen|Requires native runtime/i);
+  await expect(page.locator('body'), ownerMessage('fieldserv-job-capture', 'diagnostics cached posture')).toContainText('Cached read-only');
+  if (captureScreenshots) {
+    await captureRouteScreenshot(page, 'fieldserv-evidence-review.png');
+  }
 }
 
 async function proveNativeOwnedRoute(page: Page) {

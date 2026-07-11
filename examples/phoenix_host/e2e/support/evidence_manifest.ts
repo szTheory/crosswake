@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 export type EvidenceStatus = 'captured' | 'unavailable';
+export type CapabilityPosture = 'shipped' | 'demo-pressure' | 'future-gap' | 'next-pack-candidate';
 
 export type EvidenceRoute = {
   route_id: string;
@@ -19,6 +20,8 @@ export type EvidenceRoute = {
   known_limitations: string[];
   status: EvidenceStatus;
   unavailable_reason?: string;
+  capability_posture?: CapabilityPosture;
+  package_owner?: string;
 };
 
 export type EvidenceManifest = {
@@ -70,9 +73,20 @@ export function routeTourEntries(command: string): EvidenceRoute[] {
     requiredBrowserRoute('library', 'live_view', command, ['screenshots/library.png']),
     requiredBrowserRoute('bridge-proof', 'bounded_bridge', command, ['screenshots/bridge-proof.png']),
     requiredBrowserRoute('offline-study', 'offline_island', command, ['screenshots/offline-study-replayed.png']),
+    requiredFieldservRoute('fieldserv-jobs', 'live_view', command, ['screenshots/fieldserv-jobs.png'], 'demo-pressure'),
+    requiredFieldservRoute('fieldserv-inspection', 'live_view', command, ['screenshots/fieldserv-inspection.png'], 'future-gap'),
+    requiredFieldservRoute('fieldserv-job-capture', 'native_screen', command, ['screenshots/fieldserv-capture-handoff.png'], 'next-pack-candidate'),
+    requiredFieldservRoute('fieldserv-evidence-review', 'live_view', command, ['screenshots/fieldserv-evidence-review.png'], 'demo-pressure'),
     requiredBrowserRoute('selective-native-claim-capture', 'native_screen', command, [
       'screenshots/selective-native-claim-capture-unavailable.png',
     ]),
+    fieldservCapabilityPressure('fieldserv-capture-pressure', 'capture', command),
+    fieldservCapabilityPressure('fieldserv-scanner-pressure', 'scanner', command),
+    fieldservCapabilityPressure('fieldserv-document-scan-pressure', 'document scan', command),
+    fieldservCapabilityPressure('fieldserv-permissions-pressure', 'permissions', command),
+    fieldservCapabilityPressure('fieldserv-media-upload-pressure', 'media upload', command),
+    fieldservCapabilityPressure('fieldserv-offline-inspection-pressure', 'offline inspection', command),
+    fieldservCapabilityPressure('fieldserv-native-rebuild-pressure', 'native rebuild', command),
   ];
 }
 
@@ -91,6 +105,46 @@ function requiredBrowserRoute(routeId: string, runtimeOwner: string, command: st
       'This browser evidence does not prove native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support.',
     ],
     status: 'captured',
+  };
+}
+
+function requiredFieldservRoute(
+  routeId: string,
+  runtimeOwner: string,
+  command: string,
+  artifacts: string[],
+  posture: CapabilityPosture,
+): EvidenceRoute {
+  return {
+    ...requiredBrowserRoute(routeId, runtimeOwner, command, artifacts),
+    support_label: posture === 'next-pack-candidate' ? 'next-pack candidate' : 'demo pressure',
+    capability_posture: posture,
+    package_owner: 'example/docs-only',
+    known_limitations: [
+      'Fieldserv screenshots are collateral captured after route-owner, support-label, backend-verification, and no-overclaiming assertions pass.',
+      'This evidence shows showcase pressure only; it does not prove production scanner, document scan, camera permission, media upload, local-first mutation, or native rebuild support.',
+    ],
+  };
+}
+
+function fieldservCapabilityPressure(routeId: string, capability: string, command: string): EvidenceRoute {
+  return {
+    route_id: routeId,
+    runtime_owner: capability === 'capture' ? 'native_screen' : 'future_native_control',
+    platform_runtime: 'browser-chromium',
+    command,
+    proof_class: 'capability-map evidence',
+    support_label: 'future gap',
+    coordinate_mode: null,
+    artifacts: [],
+    known_limitations: [
+      `${capability} is represented as Fieldserv pressure for Phase 152 capability mapping, not shipped runtime support.`,
+      'The browser route tour asserts this pressure before screenshots; screenshots alone are not correctness proof.',
+    ],
+    status: 'unavailable',
+    unavailable_reason: 'Future native-control or offline-island candidate; Phase 150 intentionally does not ship this production capability.',
+    capability_posture: capability === 'capture' ? 'next-pack-candidate' : 'future-gap',
+    package_owner: 'deferred',
   };
 }
 
