@@ -518,22 +518,22 @@ end
 | A1 | Browser file inputs are easier to demo than native permission/session ownership. [ASSUMED] | Common Pitfalls | Low implementation risk; this only explains why the pitfall is tempting, not a required plan decision. |
 | A2 | Field inspection domains naturally invite offline-first language. [ASSUMED] | Common Pitfalls | Low implementation risk; no plan should rely on this claim. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should Phase 150 add a new narrow Fieldserv migration or reuse existing `selective_native_*` tables?**
+1. **RESOLVED: Phase 150 adds a new narrow Fieldserv migration rather than reusing existing `selective_native_*` tables.**
    - What we know: Context gives the planner discretion and recommends narrow persistence only for representative workflow/evidence state. [VERIFIED: .planning/phases/150-field-service-showcase/150-CONTEXT.md]
-   - What's unclear: Whether old `SelectiveNative` claim/submission schemas are enough once statuses become backend-verification oriented. [VERIFIED: examples/phoenix_host/lib/crosswake_example/selective_native]
-   - Recommendation: Add a narrow Fieldserv-owned migration only if evidence status must survive refresh independently of old claim/submission semantics; otherwise wrap old persistence behind `CrosswakeExample.FieldService` and hide legacy status copy. [VERIFIED: codebase grep]
+   - Selected plan decision: Add Fieldserv-owned `field_service_evidence_events` and `field_service_technician_job_states` persistence for representative workflow/evidence state, while keeping broad jobs/assets/templates as deterministic fixture/read-context data. [VERIFIED: .planning/phases/150-field-service-showcase/150-04-PLAN.md]
+   - Reason: The planned backend-verification status ladder needs refresh-proof evidence state that is not constrained by old `SelectiveNative` claim/submission semantics. [VERIFIED: examples/phoenix_host/lib/crosswake_example/selective_native]
 
-2. **Should Fieldserv evidence review reuse `CrosswakeExample.Media.*` helpers or only reuse vocabulary?**
+2. **RESOLVED: Fieldserv evidence review reuses media vocabulary and helper patterns only, not shared `CrosswakeExample.Media.*` helpers.**
    - What we know: Media proof modules already model device evidence and backend verification separation. [VERIFIED: examples/phoenix_host/lib/crosswake_example/media]
-   - What's unclear: Whether sharing helpers would blur Rindle/media proof boundaries or save enough implementation work to justify coupling. [VERIFIED: .planning/phases/150-field-service-showcase/150-CONTEXT.md]
-   - Recommendation: Reuse vocabulary and pure helper ideas first; share code only if tests can still assert Fieldserv is a showcase proof, not production Rindle-backed media. [VERIFIED: guides/support_matrix.md]
+   - Selected plan decision: Keep Fieldserv state and review behavior in `CrosswakeExample.FieldService.Evidence` and `CrosswakeExample.FieldService.EvidenceReviewLive`, using the media lesson that device evidence is not available until backend verification. [VERIFIED: .planning/phases/150-field-service-showcase/150-04-PLAN.md] [VERIFIED: .planning/phases/150-field-service-showcase/150-06-PLAN.md]
+   - Reason: Sharing production-ish media helpers would blur the Fieldserv showcase lane with Rindle/media proof boundaries; vocabulary reuse keeps the support truth without widening package or capability scope. [VERIFIED: guides/support_matrix.md]
 
-3. **Where should diagnostics live in the UI?**
+3. **RESOLVED: Diagnostics live as lane-local inline/collapsible Fieldserv panels generated from `FieldService.Diagnostics`.**
    - What we know: Context allows lane-local panel, inline matrix, or reusable component, as long as truth is mechanically testable and not `crosswake_dashboard`. [VERIFIED: .planning/phases/150-field-service-showcase/150-CONTEXT.md]
-   - What's unclear: The final layout that best fits mobile without clutter. [VERIFIED: .planning/phases/150-field-service-showcase/150-CONTEXT.md]
-   - Recommendation: Use compact inline badges on primary cards and a collapsible/support panel per route; keep row generation in `FieldService.Diagnostics`. [VERIFIED: examples/phoenix_host/lib/crosswake_example/saas_portal/diagnostics.ex]
+   - Selected plan decision: Implement lane-local `FieldService.Diagnostics` rows, render compact route/support badges on primary Fieldserv surfaces, and expose route truth through inline `details` panels in `FieldService.Components`. [VERIFIED: .planning/phases/150-field-service-showcase/150-03-PLAN.md] [VERIFIED: .planning/phases/150-field-service-showcase/150-05-PLAN.md]
+   - Reason: This preserves mobile scanability, mechanical route-metadata testing, and the no-`crosswake_dashboard` boundary. [VERIFIED: examples/phoenix_host/lib/crosswake_example/saas_portal/diagnostics.ex]
 
 ## Environment Availability
 
