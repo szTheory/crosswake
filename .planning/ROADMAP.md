@@ -184,8 +184,8 @@ Plans:
 
 **Wave 3** *(blocked on routes and diagnostics)*
 
-- [ ] 151-04-PLAN.md — Convert the proven socketless offline island into `/learnloop/study/session`.
-- [ ] 151-05-PLAN.md — Build the LearnLoop product shell, dashboard, course, pack, and history LiveViews.
+- [x] 151-04-PLAN.md — Convert the proven socketless offline island into `/learnloop/study/session`.
+- [x] 151-05-PLAN.md — Build the LearnLoop product shell, dashboard, course, pack, and history LiveViews.
 
 **Wave 4** *(blocked on LearnLoop UI shell)*
 
@@ -401,5 +401,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 151. Subscription Learning Showcase | v19.0 | 3/7 | In Progress|  |
+| 151. Subscription Learning Showcase | v19.0 | 5/7 | In Progress|  |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
