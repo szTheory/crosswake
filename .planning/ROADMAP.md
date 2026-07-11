@@ -189,7 +189,7 @@ Plans:
 
 **Wave 4** *(blocked on LearnLoop UI shell)*
 
-- [ ] 151-06-PLAN.md — Add backend-owned mocked entitlement pressure and subscription LiveView.
+- [x] 151-06-PLAN.md — Add backend-owned mocked entitlement pressure and subscription LiveView.
 
 **Wave 5** *(blocked on complete LearnLoop workflow)*
 
@@ -401,5 +401,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 151. Subscription Learning Showcase | v19.0 | 5/7 | In Progress|  |
+| 151. Subscription Learning Showcase | v19.0 | 6/7 | In Progress|  |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
