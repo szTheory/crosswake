@@ -32,13 +32,18 @@ defmodule CrosswakeExample.LearnLoop.PackLiveTest do
     assert html =~ "Cached read-only"
     assert html =~ "Offline island"
     assert html =~ "Local-first outbox"
+    assert html =~ "Backend projection required"
+    assert html =~ "Access stays closed until backend projection refreshes"
+    assert html =~ "Mock storefront evidence received"
+    assert html =~ ~s(data-entitlement-state="pending")
     assert html =~ "Saved locally"
     assert html =~ "Queued for replay"
     assert html =~ ~s(href="/learnloop/study/session")
     assert html =~ ~s(href="/learnloop/subscription")
     assert html =~ "role=\"status\""
 
-    refute html =~ ~r/native SQLite|native storage shipped|background sync|generic sync engine|media downloads|LiveView works offline/i
+    refute html =~
+             ~r/native SQLite|native storage shipped|background sync|generic sync engine|media downloads|LiveView works offline/i
   end
 
   defp socket do

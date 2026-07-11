@@ -31,12 +31,15 @@ defmodule CrosswakeExample.LearnLoop.CourseLiveTest do
     assert html =~ "LiveView route"
     assert html =~ "Backend projection required"
     assert html =~ "Access stays closed until backend projection refreshes"
+    assert html =~ "Mock storefront evidence received"
+    assert html =~ ~s(data-entitlement-state="pending")
     assert html =~ ~s(href="/learnloop/study/session")
     assert html =~ ~s(href="/learnloop/subscription")
     assert html =~ "role=\"list\""
     assert html =~ "role=\"status\""
 
-    refute html =~ ~r/edit course|delete course|course marketplace|coach dashboard|saved locally|queued for replay|LiveView works offline/i
+    refute html =~
+             ~r/edit course|delete course|course marketplace|coach dashboard|saved locally|queued for replay|LiveView works offline/i
   end
 
   defp socket do
