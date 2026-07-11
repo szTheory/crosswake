@@ -4,15 +4,15 @@ milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 150
 status: executing
-stopped_at: Phase 150 Plan 02 complete; Wave 1 diagnostics next
-last_updated: "2026-07-11T17:40:44Z"
+stopped_at: Phase 150 Wave 1 complete; evidence persistence next
+last_updated: "2026-07-11T17:45:56Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 150 Plan 02 fixtures and read contexts complete
+last_activity_desc: Phase 150 Plan 03 route ownership and diagnostics complete
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 19
-  completed_plans: 14
+  completed_plans: 15
   percent: 33
 ---
 
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 ## Current Position
 
 Phase: 150
-Plan: 150-03 (Wave 1)
+Plan: 150-04 (Wave 2)
 Status: Executing
-Last activity: 2026-07-11 — Phase 150 Plan 02 fixtures and read contexts complete
+Last activity: 2026-07-11 — Phase 150 Plan 03 route ownership and diagnostics complete
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -82,7 +82,7 @@ Last activity: 2026-07-11 — Phase 150 Plan 02 fixtures and read contexts compl
 
 **Velocity:**
 
-- Total plans completed: 171 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 2 in Phase 150)
+- Total plans completed: 172 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 3 in Phase 150)
 - Average duration: —
 - Total execution time: —
 
@@ -206,6 +206,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 150 Plan 01]: Fieldserv Wave 0 is intentionally RED-only; contracts now define fixture density, read contexts, evidence authority, diagnostics, component/CSS expectations, LiveView click path, route-tour proof, and capability-map pressure while implementation remains in later Phase 150 plans.
 - [Phase 150 Plan 01]: Fieldserv route-tour evidence must prove route IDs, native capture metadata, cached read-only posture, backend verification, diagnostics, and no-overclaiming assertions before screenshots.
 - [Phase 150 Plan 02]: Fieldserv static breadth remains deterministic fixture/read-context data; broad jobs/assets/templates are not persisted, and inspection offline behavior is future requirements text rather than shipped local mutation.
+- [Phase 150 Plan 03]: Field Service now enters through product-first `/fieldserv/jobs` while legacy `/native/claims` remains secondary proof; diagnostics derive Fieldserv route facts from compiled router metadata and classify native/offline pressure without shipped-support claims.
 
 ### Pending Todos
 
@@ -217,6 +218,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 149 SaaS/Admin Showcase completed 2026-07-11: AdminPilot now has realistic fixture/read-context data, inline route-policy diagnostics, server-authoritative approval persistence, styled LiveView pages, gated e2e session proof, and browser route-tour evidence.
 - Phase 150 Plan 01 completed 2026-07-11: Fieldserv RED contracts now define the jobs -> detail -> inspection -> native capture -> evidence review path, backend evidence states, cached-read-only/offline-honesty copy, and capability-map pressure evidence.
 - Phase 150 Plan 02 completed 2026-07-11: deterministic Fieldserv fixtures and read contexts now provide jobs, assets, technicians, inspection checklist data, notes, evidence statuses, route posture, and capability-pressure rows without broad persistence.
+- Phase 150 Plan 03 completed 2026-07-11: `/fieldserv/*` routes and route-derived diagnostics now expose LiveView jobs/detail/inspection/review, native-screen capture metadata, cached read-only posture, support labels, guide links, and capability-map pressure rows.
 
 ### Blockers/Concerns
 
@@ -267,13 +269,14 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 149 P07 | 18 min | 2 tasks | 7 files |
 | Phase 150 P01 | 13 min | 3 tasks | 12 files |
 | Phase 150 P02 | 4 min | 2 tasks | 2 files |
+| Phase 150 P03 | 4 min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-07-11T17:40:44Z
-Stopped at: Phase 150 Plan 02 complete; Wave 1 diagnostics next
-Resume file: .planning/phases/150-field-service-showcase/150-03-PLAN.md
+Last session: 2026-07-11T17:45:56Z
+Stopped at: Phase 150 Wave 1 complete; evidence persistence next
+Resume file: .planning/phases/150-field-service-showcase/150-04-PLAN.md
 
 ## Operator Next Steps
 
-- Continue Phase 150 Wave 1 with `150-03-PLAN.md`.
+- Continue Phase 150 Wave 2 with `150-04-PLAN.md`.
