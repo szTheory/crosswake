@@ -28,9 +28,20 @@ defmodule CrosswakeExample.E2E.ShowcaseResetControllerTest do
              "users" => 3
            }
 
-    assert body["counts"]["field_service_native_pressure"] == %{
-             "claims" => 2,
-             "submissions" => 0
+    assert body["counts"]["field_service"] == %{
+             "adjuster" => 1,
+             "assets" => 3,
+             "dispatcher" => 1,
+             "evidence_events" => 4,
+             "evidence_items" => 4,
+             "inspection_templates" => 1,
+             "jobs" => 3,
+             "notes" => 4,
+             "permission_pressure" => 7,
+             "route_postures" => 5,
+             "support_findings" => 4,
+             "technician_job_states" => 3,
+             "technicians" => 3
            }
 
     assert body["counts"]["learning_training"] == %{
@@ -60,6 +71,6 @@ defmodule CrosswakeExample.E2E.ShowcaseResetControllerTest do
     refute Map.has_key?(body, "table")
     refute Map.has_key?(body, "scope")
     assert body["browser_state_reset"] == false
-    assert body["counts"]["field_service_native_pressure"]["claims"] == 2
+    assert body["counts"]["field_service"]["jobs"] == 3
   end
 end

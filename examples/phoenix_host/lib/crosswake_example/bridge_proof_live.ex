@@ -85,7 +85,7 @@ defmodule CrosswakeExample.BridgeProofLive do
       <script :if={@bridge_request} id={"crosswake-share-#{@bridge_request["correlation_id"]}"}>
         <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
       </script>
-      <pre :if={@bridge_request} id="crosswake-bridge-payload" hidden>
+      <pre :if={@bridge_request} id="crosswake-bridge-payload">
         <%= Jason.encode!(@bridge_request) %>
       </pre>
       <pre :if={!@bridge_request} id="crosswake-bridge-payload" hidden>

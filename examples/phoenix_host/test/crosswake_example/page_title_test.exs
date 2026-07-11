@@ -17,6 +17,11 @@ defmodule CrosswakeExample.PageTitleTest do
     "commerce-paywall-entry" => PageTitle.crosswake("Paywall Proof"),
     "decks-index" => PageTitle.learn("Decks"),
     "decks-show" => PageTitle.learn("Deck"),
+    "fieldserv-evidence-review" => PageTitle.field("Evidence Review"),
+    "fieldserv-inspection" => PageTitle.field("Inspection"),
+    "fieldserv-job" => PageTitle.field("Job"),
+    "fieldserv-job-capture" => PageTitle.field("Capture"),
+    "fieldserv-jobs" => PageTitle.field("Jobs"),
     "gating-beta-feature" => PageTitle.crosswake("Beta Feature Gate"),
     "library" => PageTitle.crosswake("Lesson Library"),
     "local-first-study-history" => PageTitle.learn("Study History"),
@@ -52,6 +57,21 @@ defmodule CrosswakeExample.PageTitleTest do
     assert_title("/saas/dashboard", PageTitle.admin("Dashboard"))
     assert_title("/saas/accounts/acct-north", PageTitle.admin("Northwind Workspace"))
     assert_title("/saas/approvals/approval-1", PageTitle.admin("Quarterly spend increase"))
+    assert_title("/fieldserv/jobs", PageTitle.field("Jobs"))
+    assert_title("/fieldserv/jobs/job-1", PageTitle.field("Broken windshield"))
+
+    assert_title(
+      "/fieldserv/jobs/job-1/inspection",
+      PageTitle.field("Broken windshield Inspection")
+    )
+
+    assert_title("/fieldserv/jobs/job-1/capture", PageTitle.field("Broken windshield Capture"))
+
+    assert_title(
+      "/fieldserv/jobs/job-1/evidence/evidence-1/review",
+      PageTitle.field("Windshield crack overview Review")
+    )
+
     assert_title("/native/claims/#{claim.id}/capture", PageTitle.field("Capture Evidence"))
     assert_title("/decks/#{deck.id}", PageTitle.learn(deck.title))
   end
