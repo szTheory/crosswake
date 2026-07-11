@@ -28,7 +28,7 @@ defmodule CrosswakeExample.Showcase.HubLiveTest do
     assert html =~ "LearnLoop"
 
     assert html =~ "/saas/dashboard"
-    assert html =~ "/native/claims/:id/capture"
+    assert html =~ "/fieldserv/jobs"
     assert html =~ ~s(href="/offline")
     refute html =~ "/study/session"
 

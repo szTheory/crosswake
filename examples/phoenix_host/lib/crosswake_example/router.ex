@@ -91,6 +91,11 @@ defmodule CrosswakeExample.Router do
   import Phoenix.LiveView.Router, only: [live_session: 3]
   import Crosswake.Router
   @compile {:no_warn_undefined, CrosswakeExample.Crosswake.Policy}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.CaptureLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.EvidenceReviewLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.InspectionLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobsLive}
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
   _ = @crosswake_policy_module
   # crosswake:install:end
@@ -291,6 +296,68 @@ defmodule CrosswakeExample.Router do
           id: "sigra-step-up",
           runtime: :live_view,
           offline: :unavailable,
+          security: :sensitive
+        ]
+      )
+    end
+  end
+
+  scope "/fieldserv", CrosswakeExample.FieldService do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/jobs", JobsLive,
+        crosswake: [
+          id: "fieldserv-jobs",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id", JobLive,
+        crosswake: [
+          id: "fieldserv-job",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id/inspection", InspectionLive,
+        crosswake: [
+          id: "fieldserv-inspection",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id/capture", CaptureLive,
+        crosswake: [
+          id: "fieldserv-job-capture",
+          runtime: :native_screen,
+          capabilities: [:camera],
+          packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+          transfers: [
+            [
+              id: :capture_upload,
+              intent: :upload,
+              source: :native_capture,
+              verification: :required,
+              media_types: ["image/*"]
+            ]
+          ],
+          offline: :cached_read_only,
+          security: :sensitive
+        ]
+      )
+
+      live("/jobs/:id/evidence/:evidence_id/review", EvidenceReviewLive,
+        crosswake: [
+          id: "fieldserv-evidence-review",
+          runtime: :live_view,
+          offline: :cached_read_only,
           security: :sensitive
         ]
       )

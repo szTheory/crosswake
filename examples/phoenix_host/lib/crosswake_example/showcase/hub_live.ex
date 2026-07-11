@@ -124,7 +124,6 @@ defmodule CrosswakeExample.Showcase.HubLive do
     """
   end
 
-  defp lane_href(%{id: :field_service}), do: "/native/claims"
   defp lane_href(%{primary_path: path}), do: path
 
   defp fixture_activity(activity), do: Enum.join(activity, " / ")

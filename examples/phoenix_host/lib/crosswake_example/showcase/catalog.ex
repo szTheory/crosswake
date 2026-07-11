@@ -46,25 +46,24 @@ defmodule CrosswakeExample.Showcase.Catalog do
       id: :field_service,
       heading: "Field Service",
       body: "Device-pressure jobs with capture gaps and native-screen candidates named honestly.",
-      primary_path: "/native/claims/:id/capture",
-      primary_route_id: "selective-native-claim-capture",
-      primary_cta: "Preview Field Service",
+      primary_path: "/fieldserv/jobs",
+      primary_route_id: "fieldserv-jobs",
+      primary_cta: "Open Field Service Lane",
       route_posture: %{
-        runtime: :native_screen,
+        runtime: :live_view,
         offline: :cached_read_only,
-        security: :sensitive,
-        capabilities: [:camera]
+        security: :standard,
+        capabilities: []
       },
       runtime_labels: [
-        "Native screen",
-        "Requires native runtime",
+        "LiveView route",
+        "Cached read-only",
         "Demo pressure",
-        "Future native-control candidate",
-        "Sensitive route"
+        "Future native-control candidate"
       ],
       support_labels: ["Demo pressure", "Future gap", "Next-pack candidate"],
       capability_chips: [
-        "Capture upload seam",
+        "Native capture handoff",
         "Permission pressure",
         "Native-control candidate"
       ],
