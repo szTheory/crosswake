@@ -75,27 +75,36 @@ defmodule CrosswakeExample.Showcase.Catalog do
     %{
       id: :learning_training,
       heading: "Learning/Training",
-      body: "Content packs and offline study without pretending every action commits offline.",
-      primary_path: "/offline",
-      primary_route_id: "offline-study",
-      primary_cta: "Open Offline Study Proof",
+      body:
+        "Course progress, content packs, offline study, and entitlement pressure with route ownership visible.",
+      primary_path: "/learnloop",
+      primary_route_id: "learnloop-dashboard",
+      primary_cta: "Open LearnLoop",
       route_posture: %{
-        runtime: :offline_island,
-        offline: :local_first,
+        runtime: :live_view,
+        offline: :cached_read_only,
         security: :standard,
         capabilities: []
       },
-      runtime_labels: ["Offline island", "Local-first outbox"],
-      support_labels: ["Available today", "Proof-backed example"],
+      runtime_labels: [
+        "LiveView route",
+        "Cached read-only",
+        "Offline island",
+        "Local-first outbox",
+        "Backend projection",
+        "Mocked storefront evidence"
+      ],
+      support_labels: ["Proof-backed example", "Demo pressure", "Future gap"],
       capability_chips: [
         "Content pack",
         "IndexedDB outbox",
-        "Replay visibility"
+        "Replay visibility",
+        "Backend entitlement projection"
       ],
       boundary_note:
-        "Offline study state is browser-owned; server reset does not clear IndexedDB.",
+        "Server reset does not clear browser-owned IndexedDB or the local study outbox.",
       v20_pressure_note:
-        "Future native storage and sync helpers should stay explicit about journals, outboxes, and reconciliation."
+        "Future native storage, sync helpers, and storefront adapters need explicit journals, outboxes, backend projection, and reconciliation proof."
     }
   ]
 

@@ -96,6 +96,11 @@ defmodule CrosswakeExample.Router do
   @compile {:no_warn_undefined, CrosswakeExample.FieldService.InspectionLive}
   @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobLive}
   @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobsLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.CourseLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.DashboardLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.HistoryLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.PackLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.SubscriptionLive}
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
   _ = @crosswake_policy_module
   # crosswake:install:end
@@ -124,6 +129,11 @@ defmodule CrosswakeExample.Router do
     post("/sync", SyncController, :sync)
   end
 
+  scope "/learnloop", CrosswakeExample.LocalFirst do
+    pipe_through([:api])
+    post("/sync", SyncController, :sync)
+  end
+
   scope "/study", CrosswakeExample.LocalFirst do
     pipe_through([:browser])
 
@@ -147,6 +157,71 @@ defmodule CrosswakeExample.Router do
         ]
       )
     end
+  end
+
+  scope "/learnloop", CrosswakeExample.LearnLoop do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/", DashboardLive,
+        crosswake: [
+          id: "learnloop-dashboard",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/courses/:id", CourseLive,
+        crosswake: [
+          id: "learnloop-course",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/packs/:id", PackLive,
+        crosswake: [
+          id: "learnloop-pack",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/history", HistoryLive,
+        crosswake: [
+          id: "learnloop-history",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/subscription", SubscriptionLive,
+        crosswake: [
+          id: "learnloop-subscription",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+    end
+  end
+
+  scope "/learnloop" do
+    pipe_through([:browser])
+
+    get("/study/session", CrosswakeExample.OfflineController, :index,
+      crosswake: [
+        id: "learnloop-study-session",
+        runtime: :offline_island,
+        offline: :local_first,
+        packs: [[id: :learnloop_daily_pack, version: "2026.07.11", kind: :content]],
+        security: :standard
+      ]
+    )
   end
 
   scope "/" do
