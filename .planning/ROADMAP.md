@@ -167,6 +167,34 @@ Plans:
 3. Sync/reconciliation state is shown honestly and does not imply a generic sync engine.
 4. Entitlement/paywall pressure is represented as backend-owned or mocked state without claiming live storefront support.
 
+**Plans:** 7 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 151-01-PLAN.md — Create Wave 0 LearnLoop ExUnit, LiveView, reset, entitlement, and Playwright contracts.
+
+**Wave 1** *(blocked on Wave 0 test contracts)*
+
+- [ ] 151-02-PLAN.md — Build deterministic LearnLoop fixture/read-context breadth and reset digest truth.
+
+**Wave 2** *(blocked on fixture breadth)*
+
+- [ ] 151-03-PLAN.md — Declare product-first LearnLoop routes and compiled-router diagnostics.
+
+**Wave 3** *(blocked on routes and diagnostics)*
+
+- [ ] 151-04-PLAN.md — Convert the proven socketless offline island into `/learnloop/study/session`.
+- [ ] 151-05-PLAN.md — Build the LearnLoop product shell, dashboard, course, pack, and history LiveViews.
+
+**Wave 4** *(blocked on LearnLoop UI shell)*
+
+- [ ] 151-06-PLAN.md — Add backend-owned mocked entitlement pressure and subscription LiveView.
+
+**Wave 5** *(blocked on complete LearnLoop workflow)*
+
+- [ ] 151-07-PLAN.md — Run full ExUnit plus semantic-first Playwright proof.
+
 ### Phase 152: Capability Map, Collateral, and v20 Handoff
 
 **Goal:** Convert showcase evidence into a durable capability map, proof/collateral surface, and decision-ready v20 Native Controls Pack 1 brief.
@@ -373,5 +401,5 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 151. Subscription Learning Showcase | v19.0 | 0/0 | Pending | — |
+| 151. Subscription Learning Showcase | v19.0 | 0/7 | Pending | — |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |

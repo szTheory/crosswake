@@ -573,19 +573,22 @@ def access_message(:denied), do: "No active learning access"
 |---|-------|---------|---------------|
 | A1 | Exact module names in the recommended project structure are planner-discretion examples, not locked decisions. [ASSUMED] | Architecture Patterns | Planner may choose different names; risk is low if ownership boundaries remain intact. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should entitlement state get narrow persistence or stay deterministic/mocked?**
+   - RESOLVED: Do not add a new entitlement table in the plan set. Use a deterministic/backend-mocked projection wrapper over the existing commerce helpers unless a later executor proves a narrow non-catalog evidence record is strictly needed inside an owning implementation plan.
    - What we know: Context allows at most a narrow mocked/backend-owned entitlement snapshot or event record if needed. [VERIFIED: .planning/phases/151-subscription-learning-showcase/151-CONTEXT.md]
    - What's unclear: The phase can likely satisfy LEARN-03 with existing commerce projection state and deterministic fixtures, but refresh-proof subscription pressure may benefit from one narrow persisted record. [VERIFIED: examples/phoenix_host/lib/crosswake_example/commerce/entitlement_projection.ex] [ASSUMED]
    - Recommendation: Start with existing commerce projection helpers; add persistence only if tests need state to survive reset/reconnect paths. [VERIFIED: guides/commerce.md] [ASSUMED]
 
 2. **Should `/learnloop/study/session` wrap `/offline` or refactor it into a LearnLoop controller/template?**
+   - RESOLVED: `/learnloop/study/session` uses a LearnLoop controller/template that preserves the existing socketless `/offline` IndexedDB/outbox behavior.
    - What we know: `/offline` is the proven socketless route, and `/study/session` is not acceptable as canonical offline proof while it uses LiveView events. [VERIFIED: examples/phoenix_host/lib/crosswake_example_web/controllers/offline_controller.ex] [VERIFIED: examples/phoenix_host/lib/crosswake_example/local_first/study_session_live.ex]
    - What's unclear: Whether duplicating/adapting the template or routing both paths through one controller best fits current Phoenix host organization. [ASSUMED]
    - Recommendation: Prefer a LearnLoop-named controller/template that reuses the existing JS and proof semantics, leaving `/offline` as a reachable proof route. [VERIFIED: .planning/phases/151-subscription-learning-showcase/151-CONTEXT.md] [ASSUMED]
 
 3. **Should `/learnloop/sync` exist?**
+   - RESOLVED: `/learnloop/sync` is a product-named alias delegating to the existing sync controller and `LocalFirst.Study.sync_events/1` seam.
    - What we know: Context allows reusing `/study/sync` or adding `/learnloop/sync` as a delegating alias. [VERIFIED: .planning/phases/151-subscription-learning-showcase/151-CONTEXT.md]
    - What's unclear: Product copy and route-tour flow may or may not need the product-named endpoint. [ASSUMED]
    - Recommendation: Add the alias only if it improves route-tour coherence; it must delegate to the same controller/path. [VERIFIED: examples/phoenix_host/lib/crosswake_example/local_first/sync_controller.ex]
