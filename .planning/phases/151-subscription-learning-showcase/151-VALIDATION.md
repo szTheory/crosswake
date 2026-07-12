@@ -42,12 +42,12 @@ This closeout refresh file was refreshed during Phase 152.1 on 2026-07-12 to ref
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 151-W0-01 | 01 | 0 | LEARN-01 | T-151-01 | Product routes expose realistic learner/course/pack/progress data without broad LMS persistence | ExUnit/LiveViewTest | `cd examples/phoenix_host && mix test test/crosswake_example/learn_loop_test.exs test/crosswake_example/learn_loop/*_test.exs` | ❌ W0 | ⬜ pending |
-| 151-W0-02 | 01 | 0 | LEARN-02 | T-151-02 | Socketless study island queues browser-owned review events and syncs through idempotent replay | Playwright + ExUnit | `cd examples/phoenix_host && npx playwright test e2e/learnloop_route_tour.spec.ts --grep @learnloop-offline` | ❌ W0 | ⬜ pending |
-| 151-W0-03 | 01 | 0 | LEARN-03 | T-151-03 | Entitlement/paywall copy remains backend-owned or mocked and fail-closed | ExUnit/LiveViewTest | `cd examples/phoenix_host && mix test test/crosswake_example/learn_loop/entitlement_test.exs test/crosswake_example/learn_loop/subscription_live_test.exs` | ❌ W0 | ⬜ pending |
-| 151-W0-04 | 01 | 0 | LEARN-04 | T-151-04 | Route tour connects hub, LiveView shell, offline island, reconnect sync, history, and support truth before screenshots | Playwright | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts --grep @learnloop` | ❌ W0 | ⬜ pending |
+| 151-W0-01 | 01 | 0 | LEARN-01 | T-151-01 | Product routes expose realistic learner/course/pack/progress data without broad LMS persistence | ExUnit/LiveViewTest | `cd examples/phoenix_host && mix test test/crosswake_example/learn_loop_test.exs test/crosswake_example/learn_loop/*_test.exs` | yes | complete |
+| 151-W0-02 | 01 | 0 | LEARN-02 | T-151-02 | Socketless study island queues browser-owned review events and syncs through idempotent replay | Playwright + ExUnit | `cd examples/phoenix_host && npx playwright test e2e/learnloop_route_tour.spec.ts --grep @learnloop-offline` | yes | complete |
+| 151-W0-03 | 01 | 0 | LEARN-03 | T-151-03 | Entitlement/paywall copy remains backend-owned or mocked and fail-closed | ExUnit/LiveViewTest | `cd examples/phoenix_host && mix test test/crosswake_example/learn_loop/entitlement_test.exs test/crosswake_example/learn_loop/subscription_live_test.exs` | yes | complete |
+| 151-W0-04 | 01 | 0 | LEARN-04 | T-151-04 | Route tour connects hub, LiveView shell, offline island, reconnect sync, history, and support truth before screenshots | Playwright | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts --grep @learnloop` | yes | complete |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: complete after closeout refresh; historical row status was pre-execution planning state.*
 
 ---
 
