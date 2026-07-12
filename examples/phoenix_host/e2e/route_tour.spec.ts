@@ -29,6 +29,7 @@ test.describe('Crosswake route-owner browser tour', () => {
     mkdirSync(routeTourScreenshotDir, { recursive: true });
 
     await proveShowcaseHub(page);
+    await captureRouteScreenshot(page, 'showcase-hub.png');
 
     await proveSaasRoute(page);
     await proveAdminPilotApprovalFlow(page);
