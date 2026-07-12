@@ -209,6 +209,22 @@ Plans:
 4. Docs/support checks prevent unsupported native controls from being presented as shipped.
 5. Showcase collateral explains what Crosswake supports today, what is demo pressure, and what is planned for v20+.
 
+**Plans:** 4 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 152-01-PLAN.md — Create RED capability-map, renderer, claim-scanner, and evidence-manifest contracts.
+
+**Wave 1** *(blocked on Wave 0 test contracts)*
+
+- [ ] 152-02-PLAN.md — Implement typed capability-map truth, renderer, generated guide, and ExDoc registration.
+- [ ] 152-03-PLAN.md — Generalize cross-lane route-tour evidence, reset proof, manifest schema, and CI summary.
+
+**Wave 2** *(blocked on capability map and evidence proof)*
+
+- [ ] 152-04-PLAN.md — Add public capability-map entry points and the planning-only v20 Native Controls Pack 1 handoff.
+
 <details>
 <summary>✅ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — SHIPPED 2026-07-09</summary>
 
@@ -402,4 +418,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/0 | Pending | — |
+| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/4 | Pending | — |
