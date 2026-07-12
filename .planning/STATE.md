@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 152
-current_phase_name: capability-map-collateral-and-v20-handoff
+current_phase_name: Capability Map, Collateral, and v20 Handoff
 status: ready_to_plan
-stopped_at: Phase 151 complete (7/7) — ready to discuss Phase 152
-last_updated: 2026-07-11T22:02:10.530Z
-last_activity: 2026-07-11 -- Phase 151 complete and verified
+stopped_at: Phase 152 context gathered
+last_updated: "2026-07-12T14:10:12.343Z"
+last_activity: 2026-07-12 -- Phase 152 context gathered
 progress:
   total_phases: 6
   completed_phases: 5
@@ -285,9 +285,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-11T22:02:10.530Z
-Stopped at: Phase 151 complete and verified
-Resume file: .planning/phases/151-subscription-learning-showcase/151-VERIFICATION.md
+Last session: 2026-07-12T14:10:12.338Z
+Stopped at: Phase 152 context gathered
+Resume file: .planning/phases/152-capability-map-collateral-and-v20-handoff/152-CONTEXT.md
 
 ## Operator Next Steps
 
