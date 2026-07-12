@@ -25,9 +25,20 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
-## Next Milestone Goals
+## Current Milestone: v20.0 Native Controls Pack 1
 
-v20.0 should define and implement Native Controls Pack 1 from the v19 capability map rather than broadening into a generic plugin catalog. Likely candidates are typed alert/confirm controls, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration, with route-owner support truth, proof posture, package ownership, and rebuild requirements explicit from the start.
+**Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
+
+**Target features:**
+- A `Crosswake.Bridge.push/3` control seam where a LiveView invokes a bounded control and receives a typed reply, and where no-shell, old-shell, and undeclared-capability all collapse into one `Crosswake.Shell.Denial` branch.
+- Menu/action-button as the first genuinely-new native control (the reply-path exemplar), with haptics migrated onto the seam as the fire-and-forget exemplar.
+- Host-owned, brand-tokenized fallback components via a `gen.native_controls_ui` verbatim-copy generator — no importable component tier.
+- `share` and `notification_token` promoted from advisory to merge-blocking proof, plus an iPad share-crash guard.
+- A support-truth honesty pass so `permissions.status` never implies request authority and `notification_token` never implies delivery assurance.
+- The catalog line shipped as a merge-blocking structural guard, not prose.
+- SEED-003 (iOS SwiftPM mirror token) fixed first — it gates every future native release.
+
+**Key context:** Research reframed the Phase 152 handoff. `guides/capability_map.md` scores *proof posture*, not plumbing: v3.1 already shipped working native dispatch for haptics/share/app_info/deep_link/permissions.status/notification_token/file_picker. Toast is cut as a category error (iOS has no native toast primitive). Review-prompt is deferred (both stores forbid CTA-triggering it and give no completion signal). Alert/confirm is cut as a bridge family — a branded LiveView modal beats an unbranded OS alert on a Phoenix-owned route — and ships as a generated fallback instead. Controls stay in **core**, not a new companion: they have no external SDK to gate, which is what defines a companion here. Full synthesis in `.planning/research/v20/SUMMARY.md`.
 
 Later milestones can expand into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
 
@@ -241,7 +252,7 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Active
 
-- [ ] **v20.0 Native Controls Pack 1** — implement a narrow first pack from the v19 capability map, likely alert/confirm, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration.
+- [ ] **v20.0 Native Controls Pack 1** — ship the typed control-contract seam (`Bridge.push/3`, one typed denial, generated host-owned fallbacks, closed-vocabulary guard), prove it with menu/action-button as the first genuinely-new native control, migrate haptics onto the seam, promote share/notification_token proof, and land the SEED-003 iOS mirror fix that gates every future native release.
 - [ ] **Native-control support truth** — expose platform, route mode, shell-version, proof-posture, package-ownership, and rebuild-requirement truth for every v20 capability.
 - [ ] **Proof posture for v20 controls** — keep deterministic source/contract tests merge-blocking and reserve simulator/device evidence for advisory lanes unless it becomes repeatable in CI.
 
@@ -259,6 +270,12 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - Notification action registries that bypass route policy — notification actions may carry typed refs, but route activation still flows through manifest-known routes, RouteGate, and backend auth.
 - **(v7.0 Threadline anti-scope)** Threadline as an APM/observability platform, an OpenTelemetry replacement or generic distributed tracer, a logging framework, or a generic plugin/event bus — it emits `:telemetry`, sets Logger metadata, and coexists with OTel; it does not replace them.
 - **(v7.0 Threadline anti-scope)** PII in the audit ledger, library-owned audit tables, async-telemetry-driven durable writes, full-session replay, cross-service thread propagation, actor-identity reverse lookup, and a LiveDashboard UI in v1 (deferred to a separate `crosswake_dashboard` package).
+- **(v20.0 anti-scope)** A native `toast` capability — iOS ships no toast primitive, so a cross-platform native toast overclaims by construction; toasts are LiveView-owned UI.
+- **(v20.0 anti-scope)** A native `alert`/`confirm` bridge family — a branded, focus-trapped, route-tour-provable LiveView modal is better than an unbranded OS alert on a route Phoenix already owns; it ships as a generated host-owned fallback, not a bridge command.
+- **(v20.0 anti-scope)** A review-prompt control — both Apple and Google forbid CTA-triggered prompts and provide no completion signal, so any API reporting success would be a lie. Deferred until it can ship as a `requested`-only reply with no button.
+- **(v20.0 anti-scope)** An importable `Crosswake.UI.*` component tier — fallbacks are generated, host-owned, verbatim-copy files (the `gen.offline_ui` precedent). Crosswake ships no component library.
+- **(v20.0 anti-scope)** A `crosswake_controls` companion package — controls have no external SDK or optional dependency to gate, which is what defines a companion; they stay in core alongside the v3.1 command families.
+- **(v20.0 anti-scope)** Host-registrable, dynamic, or high-frequency bridge commands — the command vocabulary stays closed and named, enforced by a merge-blocking structural guard.
 
 ## Context
 
