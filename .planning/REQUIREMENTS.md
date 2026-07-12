@@ -53,14 +53,14 @@ Requirements for the current milestone. Each maps to exactly one roadmap phase.
 - [x] **CAPMAP-01**: User can read a capability map that classifies each relevant native capability as shipped, demoed, missing, deferred, or next-pack candidate.
 - [x] **CAPMAP-02**: User can see intended package ownership for each capability: core, first-party companion, native shell, example/docs-only, or deferred.
 - [x] **CAPMAP-03**: User can see proof posture for each capability, including merge-blocking, advisory, not-yet-proven, and unsupported states.
-- [ ] **CAPMAP-04**: Maintainer can use the capability map to define v20 Native Controls Pack 1 without re-litigating the whole strategic arc.
+- [x] **CAPMAP-04**: Maintainer can use the capability map to define v20 Native Controls Pack 1 without re-litigating the whole strategic arc.
 
 ### Proof and Collateral
 
 - [x] **PROOF-01**: CI or local verification can reset fixtures and prove deterministic showcase data does not duplicate or drift.
 - [x] **PROOF-02**: Browser route-tour coverage exercises the showcase hub and one happy path per domain lane.
 - [x] **PROOF-03**: Structural docs/support tests prevent unsupported native controls from being presented as shipped.
-- [ ] **PROOF-04**: Showcase collateral and docs describe what Crosswake supports today, what is demo pressure, and what is planned for v20+.
+- [x] **PROOF-04**: Showcase collateral and docs describe what Crosswake supports today, what is demo pressure, and what is planned for v20+.
 
 ## Future Requirements
 
@@ -135,11 +135,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAPMAP-01 | Phase 152 | Complete |
 | CAPMAP-02 | Phase 152 | Complete |
 | CAPMAP-03 | Phase 152 | Complete |
-| CAPMAP-04 | Phase 152 | Pending |
+| CAPMAP-04 | Phase 152 | Complete |
 | PROOF-01 | Phase 152 | Complete |
 | PROOF-02 | Phase 152 | Complete |
 | PROOF-03 | Phase 152 | Complete |
-| PROOF-04 | Phase 152 | Pending |
+| PROOF-04 | Phase 152 | Complete |
 
 **Coverage:**
 

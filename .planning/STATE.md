@@ -4,17 +4,17 @@ milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
 current_phase: 152
 current_phase_name: Capability Map, Collateral, and v20 Handoff
-status: executing
-stopped_at: Completed 152-03-PLAN.md
-last_updated: "2026-07-12T15:44:07Z"
+status: ready_for_milestone_audit
+stopped_at: Completed 152-04-PLAN.md
+last_updated: "2026-07-12T15:49:07Z"
 last_activity: 2026-07-12
-last_activity_desc: Completed Phase 152 Plan 03 generalized evidence manifest and CI proof
+last_activity_desc: Completed Phase 152 Plan 04 public capability-map entry points and v20 handoff
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 30
-  completed_plans: 29
-  percent: 97
+  completed_plans: 30
+  percent: 100
 ---
 
 # Project State: Crosswake
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 Current Phase: 152
 Current Phase Name: Capability Map, Collateral, and v20 Handoff
-Phase: 152 (Capability Map, Collateral, and v20 Handoff) — EXECUTING
+Phase: 152 (Capability Map, Collateral, and v20 Handoff) — COMPLETE
 Plan: 4 of 4
-Status: Executing
-Last activity: 2026-07-12 — Completed Phase 152 Plan 03 generalized evidence manifest and CI proof
+Status: Ready for milestone audit
+Last activity: 2026-07-12 — Completed Phase 152 Plan 04 public capability-map entry points and v20 handoff
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -85,7 +85,7 @@ Last activity: 2026-07-12 — Completed Phase 152 Plan 03 generalized evidence m
 
 **Velocity:**
 
-- Total plans completed: 183 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151)
+- Total plans completed: 187 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152)
 - Average duration: —
 - Total execution time: —
 
@@ -232,6 +232,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 150 Plan 07 completed 2026-07-11: focused Fieldserv/showcase ExUnit, full warnings-as-errors ExUnit, and Playwright route-tour proof now pass with semantic assertions before screenshots and capability-map evidence preserved.
 - Phase 150 Field-Service Showcase completed 2026-07-11: FIELD-01 through FIELD-04 are verified across realistic jobs/assets/inspection/evidence data, native-screen capture pressure, backend-authoritative evidence review, cached read-only posture, route diagnostics, and browser proof.
 - Phase 152 Plan 03 completed 2026-07-12: route-tour evidence now covers 33 manifest rows across the hub, AdminPilot, Fieldserv, LearnLoop, proof routes, native fallback, and capability pressure; reset proof keeps browser-owned state outside server reset; CI requires all captured screenshots and summarizes screenshots as collateral.
+- Phase 152 Plan 04 completed 2026-07-12: README entry points link to the generated capability map, the planning-only v20 Native Controls Pack 1 handoff is written, final support-truth/reset/route-tour proof passed, and Phase 152 is complete.
 
 ### Blockers/Concerns
 
@@ -287,10 +288,10 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-12T15:44:07Z
-Stopped at: Completed 152-03-PLAN.md
+Last session: 2026-07-12T15:49:07Z
+Stopped at: Completed 152-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Continue executing Phase 152 Plan 04: README capability-map entry points and planning-only v20 Native Controls Pack 1 handoff.
+- Run v19.0 milestone audit/closeout before marking the milestone shipped.

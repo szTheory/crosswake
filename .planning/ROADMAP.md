@@ -223,7 +223,7 @@ Plans:
 
 **Wave 2** *(blocked on capability map and evidence proof)*
 
-- [ ] 152-04-PLAN.md — Add public capability-map entry points and the planning-only v20 Native Controls Pack 1 handoff.
+- [x] 152-04-PLAN.md — Add public capability-map entry points and the planning-only v20 Native Controls Pack 1 handoff.
 
 <details>
 <summary>✅ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — SHIPPED 2026-07-09</summary>
@@ -418,4 +418,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 3/4 | In Progress | — |
+| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |

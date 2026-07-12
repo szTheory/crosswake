@@ -1,9 +1,9 @@
 ---
 phase: 152
 slug: capability-map-collateral-and-v20-handoff
-status: draft
+status: validated
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-12
 ---
 
@@ -38,22 +38,22 @@ created: 2026-07-12
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 152-W0-01 | TBD | 0 | CAPMAP-01, CAPMAP-02, CAPMAP-03, CAPMAP-04 | T-152-01 | Capability rows cannot overclaim category, package owner, proof posture, or v20 implication. | unit | `mix test test/crosswake/capability_map/capability_map_test.exs` | no, Wave 0 | pending |
-| 152-W0-02 | TBD | 0 | CAPMAP-04, PROOF-04 | T-152-02 | Rendered guide remains byte-identical to typed capability data. | docs/unit | `mix test test/crosswake/capability_map/renderer_test.exs` | no, Wave 0 | pending |
-| 152-W0-03 | TBD | 0 | PROOF-03 | T-152-03 | Unsupported native controls, screenshots, offline, and commerce claims cannot render as shipped truth. | docs/unit | `mix test test/crosswake/guides/capability_claims_test.exs` | no, Wave 0 | pending |
-| 152-W0-04 | TBD | 0 | PROOF-02, PROOF-04 | T-152-04 | Evidence manifest rows distinguish product-surface proof, advisory evidence, demo pressure, future gap, and next-pack candidate posture. | unit | `mix test test/crosswake/guides/evidence_manifest_test.exs` | partial, expand in Wave 0 | pending |
-| 152-PROOF-01 | TBD | final | PROOF-01 | T-152-05 | Server reset determinism remains separate from browser-owned IndexedDB/local-state reset. | integration | `cd examples/phoenix_host && mix test --warnings-as-errors test/crosswake_example/showcase/reset_test.exs` | yes | pending |
-| 152-PROOF-02 | TBD | final | PROOF-02 | T-152-06 | Route-tour semantic assertions pass before any screenshot/collateral evidence is treated as output. | e2e | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts e2e/learnloop_route_tour.spec.ts` | yes, needs expansion | pending |
+| 152-W0-01 | 152-01/152-02 | 0/1 | CAPMAP-01, CAPMAP-02, CAPMAP-03, CAPMAP-04 | T-152-01 | Capability rows cannot overclaim category, package owner, proof posture, or v20 implication. | unit | `mix test test/crosswake/capability_map/capability_map_test.exs` | yes | passed |
+| 152-W0-02 | 152-01/152-02 | 0/1 | CAPMAP-04, PROOF-04 | T-152-02 | Rendered guide remains byte-identical to typed capability data. | docs/unit | `mix test test/crosswake/capability_map/renderer_test.exs` | yes | passed |
+| 152-W0-03 | 152-01/152-04 | 0/2 | PROOF-03 | T-152-03 | Unsupported native controls, screenshots, offline, and commerce claims cannot render as shipped truth. | docs/unit | `mix test test/crosswake/guides/capability_claims_test.exs` | yes | passed |
+| 152-W0-04 | 152-01/152-03 | 0/1 | PROOF-02, PROOF-04 | T-152-04 | Evidence manifest rows distinguish product-surface proof, advisory evidence, demo pressure, future gap, and next-pack candidate posture. | unit | `mix test test/crosswake/guides/evidence_manifest_test.exs` | yes | passed |
+| 152-PROOF-01 | 152-03/152-04 | final | PROOF-01 | T-152-05 | Server reset determinism remains separate from browser-owned IndexedDB/local-state reset. | integration | `cd examples/phoenix_host && mix test --warnings-as-errors test/crosswake_example/showcase/reset_test.exs` | yes | passed |
+| 152-PROOF-02 | 152-03/152-04 | final | PROOF-02 | T-152-06 | Route-tour semantic assertions pass before any screenshot/collateral evidence is treated as output. | e2e | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts e2e/learnloop_route_tour.spec.ts` | yes | passed |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `test/crosswake/capability_map/capability_map_test.exs` - covers CAPMAP-01, CAPMAP-02, CAPMAP-03, and CAPMAP-04.
-- [ ] `test/crosswake/capability_map/renderer_test.exs` - covers rendered `guides/capability_map.md` parity.
-- [ ] `test/crosswake/guides/capability_claims_test.exs` - covers PROOF-03 forbidden native/offline/commerce/screenshot claims.
-- [ ] `test/crosswake/guides/evidence_manifest_test.exs` - expands expected route IDs and allowed posture labels for the generalized v19 manifest.
-- [ ] `.github/workflows/offline-sync-e2e-gate.yml` - update route-tour evidence checks or summary if manifest generalization changes CI output.
+- [x] `test/crosswake/capability_map/capability_map_test.exs` - covers CAPMAP-01, CAPMAP-02, CAPMAP-03, and CAPMAP-04.
+- [x] `test/crosswake/capability_map/renderer_test.exs` - covers rendered `guides/capability_map.md` parity.
+- [x] `test/crosswake/guides/capability_claims_test.exs` - covers PROOF-03 forbidden native/offline/commerce/screenshot claims.
+- [x] `test/crosswake/guides/evidence_manifest_test.exs` - expands expected route IDs and allowed posture labels for the generalized v19 manifest.
+- [x] `.github/workflows/offline-sync-e2e-gate.yml` - update route-tour evidence checks or summary if manifest generalization changes CI output.
 
 ---
 
@@ -71,6 +71,6 @@ created: 2026-07-12
 - [x] Wave 0 covers currently missing test files.
 - [x] Security/support-truth threat patterns are represented in test targets.
 - [x] No watch-mode flags are used.
-- [ ] Update task IDs after PLAN.md files are generated.
+- [x] Update task IDs after PLAN.md files are generated.
 
-**Approval:** pending execution
+**Approval:** validated 2026-07-12
