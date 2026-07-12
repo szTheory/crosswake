@@ -19,6 +19,10 @@ behavior from future native-control pressure. Showcase screenshots explain the
 product surface; route-tour assertions prove route-owner semantics before
 screenshots are treated as collateral.
 
+**Read Capability Map:** [../../guides/capability_map.md](../../guides/capability_map.md)
+keeps available support, proof-backed examples, demo pressure, future gaps, and
+v20 next-pack candidates separate from the example host boundary.
+
 ## Shared Artifact Rules
 
 - Keep one shared Phoenix host under `examples/phoenix_host`.

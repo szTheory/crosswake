@@ -77,6 +77,11 @@ Support-truth labels in this first run stay narrow: `Available today` and
 Showcase screenshots explain the product surface; route-tour assertions prove
 route-owner semantics.
 
+**Read Capability Map:** [guides/capability_map.md](guides/capability_map.md)
+separates available support, proof-backed examples, demo pressure, future gaps,
+and v20 next-pack candidates. Screenshots remain collateral after route-tour
+assertions, not proof posture.
+
 > **Advisory native collateral.** The iOS Simulator and Android Emulator frames above are
 > `emulator evidence` — advisory, not physical-device proof. A successful simulator or
 > emulator run confirms the dev wiring reaches the local backend, but does not prove
