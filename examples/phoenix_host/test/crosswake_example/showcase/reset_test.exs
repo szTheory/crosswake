@@ -24,6 +24,11 @@ defmodule CrosswakeExample.Showcase.ResetTest do
     assert first.digest == second.digest,
            "D-12 requires the reset digest to be derived from deterministic records"
 
+    assert first.browser_state_reset == false
+    assert second.browser_state_reset == false
+    assert Map.has_key?(first.counts, :saas_admin)
+    assert Map.has_key?(first.counts, :field_service)
+    assert Map.has_key?(first.counts, :learning_training)
     assert is_binary(first.digest)
     assert byte_size(first.digest) == 64
   end
