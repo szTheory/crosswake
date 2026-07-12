@@ -219,7 +219,7 @@ Plans:
 **Wave 1** *(blocked on Wave 0 test contracts)*
 
 - [x] 152-02-PLAN.md — Implement typed capability-map truth, renderer, generated guide, and ExDoc registration.
-- [ ] 152-03-PLAN.md — Generalize cross-lane route-tour evidence, reset proof, manifest schema, and CI summary.
+- [x] 152-03-PLAN.md — Generalize cross-lane route-tour evidence, reset proof, manifest schema, and CI summary.
 
 **Wave 2** *(blocked on capability map and evidence proof)*
 
@@ -418,4 +418,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 2/4 | In Progress | — |
+| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 3/4 | In Progress | — |

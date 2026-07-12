@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 152
 current_phase_name: Capability Map, Collateral, and v20 Handoff
 status: executing
-stopped_at: Completed 152-02-PLAN.md
-last_updated: "2026-07-12T15:35:02.762Z"
+stopped_at: Completed 152-03-PLAN.md
+last_updated: "2026-07-12T15:44:07Z"
 last_activity: 2026-07-12
-last_activity_desc: Phase 152 execution started
+last_activity_desc: Completed Phase 152 Plan 03 generalized evidence manifest and CI proof
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 28
-  percent: 93
+  completed_plans: 29
+  percent: 97
 ---
 
 # Project State: Crosswake
@@ -31,9 +31,9 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 Current Phase: 152
 Current Phase Name: Capability Map, Collateral, and v20 Handoff
 Phase: 152 (Capability Map, Collateral, and v20 Handoff) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Executing
-Last activity: 2026-07-12 — Phase 152 execution started
+Last activity: 2026-07-12 — Completed Phase 152 Plan 03 generalized evidence manifest and CI proof
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -231,6 +231,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 150 Plan 06 completed 2026-07-11: Fieldserv native capture handoff and evidence review now complete the click path while preserving native ownership, permission truth, backend evidence authority, and cached read-only posture.
 - Phase 150 Plan 07 completed 2026-07-11: focused Fieldserv/showcase ExUnit, full warnings-as-errors ExUnit, and Playwright route-tour proof now pass with semantic assertions before screenshots and capability-map evidence preserved.
 - Phase 150 Field-Service Showcase completed 2026-07-11: FIELD-01 through FIELD-04 are verified across realistic jobs/assets/inspection/evidence data, native-screen capture pressure, backend-authoritative evidence review, cached read-only posture, route diagnostics, and browser proof.
+- Phase 152 Plan 03 completed 2026-07-12: route-tour evidence now covers 33 manifest rows across the hub, AdminPilot, Fieldserv, LearnLoop, proof routes, native fallback, and capability pressure; reset proof keeps browser-owned state outside server reset; CI requires all captured screenshots and summarizes screenshots as collateral.
 
 ### Blockers/Concerns
 
@@ -286,10 +287,10 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-12T15:35:02.754Z
-Stopped at: Completed 152-02-PLAN.md
+Last session: 2026-07-12T15:44:07Z
+Stopped at: Completed 152-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Continue executing Phase 152 Plan 03: generalized route-tour evidence, reset proof, manifest schema, and CI summary.
+- Continue executing Phase 152 Plan 04: README capability-map entry points and planning-only v20 Native Controls Pack 1 handoff.
