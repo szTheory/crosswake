@@ -121,7 +121,27 @@ defmodule Crosswake.SupportMatrix.RendererTest do
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
 
     refute String.downcase(guide) =~ "revenuecat"
-    assert guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
+    assert guide =~
+             "| document_scan | native_screen | native_screen | unsupported | unsupported | defer |"
+
+    assert guide =~
+             "| scanner | native_screen | native_screen | unsupported | unsupported | defer |"
+
+    refute guide =~
+             "| document_scan | native_screen | native_screen | supported | supported | defer |"
+
+    refute guide =~ "| scanner | native_screen | native_screen | supported | supported | defer |"
+  end
+
+  test "deferred capture and device families do not render as shipped support by package class alone" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    for family <- ["document_scan", "scanner"] do
+      assert guide =~ "| #{family} | native_screen | native_screen | unsupported | unsupported | defer |"
+
+      refute guide =~ "| #{family} | native_screen | native_screen | supported | supported | defer |",
+             "#{family} must stay unsupported until native runtime and proof posture ship"
+    end
   end
 
   test "generated support output does not present evidence as direct authority grant" do
