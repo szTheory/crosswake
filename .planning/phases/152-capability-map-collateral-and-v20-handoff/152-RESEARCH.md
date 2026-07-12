@@ -483,22 +483,22 @@ end
 |---|-------|---------|---------------|
 | A1 | No assumptions were required for the recommended plan shape; phase scope, constraints, and implementation patterns were verified from local planning artifacts, code, tests, or official docs. | All | n/a |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `Crosswake.CapabilityMap` be public API or internal support data?**
    - What we know: Context recommends `Crosswake.CapabilityMap` or equivalent next to support truth. [VERIFIED: codebase:.planning/phases/152-capability-map-collateral-and-v20-handoff/152-CONTEXT.md]
    - What's unclear: Whether it should be documented as public API or treated as internal docs/proof infrastructure.
-   - Recommendation: Implement an explicit module API but document the rendered guide as the adopter surface; avoid promising the row schema as stable runtime API in this phase.
+   - RESOLVED: Implement an explicit `Crosswake.CapabilityMap` module API for renderer/tests/internal support truth, but document `guides/capability_map.md` as the adopter surface. Do not promise the row schema as stable runtime public API in Phase 152.
 
 2. **Should `capability-map evidence` be a proof class or a separate manifest posture?**
    - What we know: Current TypeScript manifest includes capability pressure entries, while existing ExUnit manifest tests have a narrower proof-label allowlist. [VERIFIED: codebase:examples/phoenix_host/e2e/support/evidence_manifest.ts] [VERIFIED: codebase:test/crosswake/guides/evidence_manifest_test.exs]
    - What's unclear: The exact field split after generalization.
-   - Recommendation: Keep `proof_class` constrained to proof posture and add/separate `capability_posture` or `support_label` for demo pressure, future gap, and next-pack candidate.
+   - RESOLVED: Keep `proof_class` constrained to proof posture (`merge-blocking`, `advisory`, `not-yet-proven`, `unsupported`) and represent capability/support classification separately with `capability_posture` plus `support_label` for demo pressure, future gap, and next-pack candidate rows.
 
 3. **Where should Fieldserv final verification be cited from?**
    - What we know: Phase 150 has context and plan summary files with passing verification commands, but no `150-VERIFICATION.md` file was found during research. [VERIFIED: codebase:.planning/phases/150-field-service-showcase/150-CONTEXT.md] [VERIFIED: codebase:.planning/phases/150-field-service-showcase/150-07-SUMMARY.md]
    - What's unclear: Whether a missing final verifier artifact is intentional.
-   - Recommendation: Cite the code/tests and `150-07-SUMMARY.md` in the handoff; do not block Phase 152 planning on reconstructing a verifier file.
+   - RESOLVED: Cite Fieldserv evidence from code/tests and `.planning/phases/150-field-service-showcase/150-07-SUMMARY.md`; do not block Phase 152 planning on reconstructing a missing `150-VERIFICATION.md` artifact.
 
 ## Environment Availability
 
