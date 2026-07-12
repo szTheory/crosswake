@@ -2,38 +2,44 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 152.1
-current_phase_name: "Close gap: v19 support-truth and verification closeout"
-status: ready_for_milestone_completion
-stopped_at: Completed 152.1-03-PLAN.md
-last_updated: "2026-07-12T20:54:00Z"
+current_phase: 0
+status: Awaiting next milestone
+stopped_at: Milestone v19.0 completed
+last_updated: "2026-07-12T20:59:57.346Z"
 last_activity: 2026-07-12
-last_activity_desc: Completed Phase 152.1 closeout and passed v19 milestone audit rerun
+last_activity_desc: Milestone v19.0 completed and archived
 progress:
   total_phases: 7
   completed_phases: 7
   total_plans: 33
   completed_plans: 33
   percent: 100
+current_phase_name: "Awaiting next milestone"
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
+See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 152.1 — Close gap: v19 support-truth and verification closeout
+**Current focus:** Planning next milestone; v20.0 Native Controls Pack 1 is the recommended next arc from v19 capability-map evidence.
 
 ## Current Position
 
-Current Phase: 152.1
-Current Phase Name: Close gap: v19 support-truth and verification closeout
-Phase: 152.1 (Close gap: v19 support-truth and verification closeout) — COMPLETE
-Plan: 3 of 3
-Status: Ready for milestone completion
-Last activity: 2026-07-12 — Completed Phase 152.1 closeout and passed v19 milestone audit rerun
+Phase: Milestone v19.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-12 — Milestone v19.0 completed and archived
+
+## v19.0 Closed (2026-07-12)
+
+**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED after Phase 152.1 closeout repair (31/31 requirements, integration CLEAN, 6/6 flows); ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v19.0-*`; MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md, and RETROSPECTIVE.md evolved; REQUIREMENTS.md removed for the next milestone.
+
+**Delivered:** Crosswake-owned showcase hub, AdminPilot SaaS/admin lane, Fieldserv field-service lane, LearnLoop subscription learning/training lane, deterministic fixture reset/proof, generalized browser route-tour evidence, public capability-map collateral, structural support-truth claim guards, and v20 Native Controls Pack 1 handoff.
+
+**Accepted debt:** Phase 148 original numbered summaries were never created; the closeout preserves `148-SUMMARY-EXCEPTION.md` plus explicitly retroactive `148-RETRO-SUMMARY.md` rather than fabricating original-looking summaries.
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -299,4 +305,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Run v19.0 milestone audit/closeout before marking the milestone shipped.
+- Start the next milestone with /gsd-new-milestone

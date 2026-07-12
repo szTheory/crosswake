@@ -1,5 +1,28 @@
 # Project Milestones: Crosswake
 
+## v19.0 Showcase Apps & Capability Map (Shipped: 2026-07-12)
+
+**Phases completed:** 7 phases, 33 plans, 83 tasks
+
+**Key accomplishments:**
+
+- Shipped a Crosswake-owned first-screen showcase hub with deterministic reset/reseed truth and visible route-owner/support labels for all lanes.
+- Turned the example host into three realistic demo-app lanes: AdminPilot for SaaS/admin, Fieldserv for field-service/device-pressure workflows, and LearnLoop for subscription learning/training.
+- Kept runtime ownership honest across the showcase: LiveView-first flows, cached read-only/degraded posture, socketless offline study behavior, backend-owned entitlement pressure, native-screen capture handoff, and unsupported native gaps are visibly distinct.
+- Added generalized browser route-tour evidence, reset proof, collateral manifests, and structural docs/support tests so screenshots remain collateral after semantic assertions pass.
+- Published a typed capability map and generated guide that classify shipped, demoed, missing, deferred, and next-pack capabilities with package ownership and proof posture.
+- Closed v19 audit gaps in Phase 152.1 by repairing scanner/document-scan support truth, reconstructing Phase 150/152 verification ledgers from fresh reruns, refreshing validation metadata, and preserving the Phase 148 summary exception honestly.
+
+**Verification:** Milestone audit passed 31/31 requirements, 7/7 phases, 10/10 integration checks, and 6/6 E2E flows. Final closeout evidence included 96 support/capability/docs tests, 23 Fieldserv/showcase tests, Playwright route-tour proof, and `git diff --check`.
+
+**Archive:**
+
+- `.planning/milestones/v19.0-ROADMAP.md`
+- `.planning/milestones/v19.0-REQUIREMENTS.md`
+- `.planning/milestones/v19.0-MILESTONE-AUDIT.md`
+
+---
+
 ## v18.0 Release Integrity & Automated Package Operations (Shipped: 2026-07-09)
 
 **Phases completed:** 5 phases (142-146), 15 plans, 34 tasks

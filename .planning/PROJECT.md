@@ -8,20 +8,32 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
 
-## Current Milestone: v19.0 Showcase Apps & Capability Map
+## Last Shipped Milestone: v19.0 Showcase Apps & Capability Map
+
+**Shipped:** 2026-07-12
 
 **Goal:** Turn Crosswake's proof-backed substrate into a polished, click-around DX showcase across realistic app domains, then use those examples to define the next native-controls milestone.
 
-**Target features:**
+**Delivered:**
 - A Crosswake-branded first-screen showcase hub with deterministic seeded/fixture data for SaaS/admin, field-service, and subscription learning/training domains.
 - Three fictional demo-app micro-brands, AdminPilot, Fieldserv, and LearnLoop, that make the domains feel product-real without confusing them with the Crosswake parent brand.
 - Three domain lanes that demonstrate route ownership, LiveView-first surfaces, offline/degraded behavior, device-pressure flows, entitlement/paywall pressure, diagnostics, and support truth without overclaiming unsupported native breadth.
 - A capability map and v20 handoff that classify current, demoed, missing, and next-pack native controls using Crosswake's route-policy, typed-contract, proof-lane, and package-ownership posture.
 - Seed classification stays explicit: **SEED-002** informs capability breadth and v20 prioritization, while **SEED-003** (iOS mirror token/backfill) and **SEED-004** (clean-room proof harness) remain release-infrastructure carryovers rather than v19 app-showcase scope.
 
-**Strategic through-line:** v19.0 creates the product-shaped proof surface; v20.0 should logically follow with Native Controls Pack 1, informed by gaps exposed in the showcase. Later milestones can expand into capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization.
+**Outcome:** All 31 v19 requirements satisfied; milestone audit passed after the Phase 152.1 closeout repair. The accepted debt is artifact-shape only: Phase 148's original numbered plan summaries did not exist, so the milestone preserves `148-SUMMARY-EXCEPTION.md` and an explicitly retroactive `148-RETRO-SUMMARY.md`.
+
+**Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
+
+## Next Milestone Goals
+
+v20.0 should define and implement Native Controls Pack 1 from the v19 capability map rather than broadening into a generic plugin catalog. Likely candidates are typed alert/confirm controls, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration, with route-owner support truth, proof posture, package ownership, and rebuild requirements explicit from the start.
+
+Later milestones can expand into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
 
 ## Current State
+- **v19.0 Showcase Apps & Capability Map — SHIPPED 2026-07-12.** Crosswake now has a product-shaped showcase hub and three realistic lanes: AdminPilot (SaaS/admin), Fieldserv (field service), and LearnLoop (subscription learning/training). The milestone also shipped deterministic fixture reset/proof, generalized route-tour evidence, public capability-map collateral, and a planning-only v20 Native Controls Pack 1 handoff. Full detail in `.planning/milestones/v19.0-ROADMAP.md`.
+- **v19.0 Phase 152.1 Support-Truth and Verification Closeout — COMPLETE 2026-07-12.** Scanner/document-scan support truth now renders unsupported/deferred across canonical source, generated guides, and tests; Phase 150 and 152 verification ledgers were reconstructed from fresh reruns; Phase 149/150/151 validation metadata is current; Phase 148's missing-summary exception is documented honestly; and the v19 milestone audit rerun passed.
 - **v19.0 Phase 151 Subscription Learning Showcase — COMPLETE 2026-07-11.** LearnLoop is now a product-first subscription learning/training lane with realistic courses, lessons, content packs, learners, progress, subscription states, route-derived diagnostics, a socketless offline study island, visible sync/reconciliation states, backend-owned mocked entitlement pressure, and route-tour screenshots after semantic assertions. LEARN-01 through LEARN-04 verified. Next active work is Phase 152: Capability Map, Collateral, and v20 Handoff.
 - **v19.0 Phase 150 Field-Service Showcase — COMPLETE 2026-07-11.** Fieldserv is now a product-first field-service lane with realistic jobs/assets/technicians/inspection/evidence data, route-derived diagnostics, server-recorded inspection and evidence state, native-screen capture handoff, backend-authoritative evidence review, cached read-only offline posture, and route-tour screenshots after semantic assertions. FIELD-01 through FIELD-04 verified. Phase 151 followed and is now complete.
 - **v19.0 Phase 149 SaaS/Admin Showcase — COMPLETE 2026-07-11.** AdminPilot is now a styled, LiveView-first SaaS/admin lane with realistic account/team/role/settings/operational data, lane-local compiled-router diagnostics, server-authoritative approval persistence/activity evidence, gated browser session proof, and route-tour screenshots after semantic assertions. SAAS-01 through SAAS-04 verified 11/11. Phase 150 Field-Service Showcase followed and is now complete.
@@ -225,11 +237,13 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 - ✓ **v18.0 Release Integrity & Automated Package Operations** (all 15 v1 requirements: RELG-01..03, AUTO-01..03, PREF-01..03, MIRR-01..03, STAT-01..03) — made release infrastructure a first-class product surface: path-specific Release Please gates, non-canceling publish/proof workflow semantics, guarded CI Hex publishing with exact-ref recovery, exact-version published-core clean-room proof, doctor-owned fresh-router loading, iOS mirror-token preflight/backfill guardrails, decoupled native proofs, and text/JSON/live release-status DX. Validated across Phases 142-146; audit passed; full detail in `.planning/milestones/v18.0-REQUIREMENTS.md`.
 - ✓ **Phase 147 Arc, Fixture, and Showcase Foundation** (ARC-01..03, SHOW-01..04) — preserved the v19 showcase → v20 Native Controls Pack 1 → later capture/device, commerce/paywall, operator dashboard, and offline-sync/native-storage thread; classified SEED-002 as strategic capability breadth input and SEED-003/004 as release-infrastructure carryovers; shipped a deterministic reset foundation and first-screen showcase hub with route-owner/support labels and honest offline/native proof boundaries. Validated in Phase 147; full detail in `.planning/phases/147-arc-fixture-and-showcase-foundation/147-VERIFICATION.md`.
 - ✓ **Phase 148 Demo App Brand & Fixture Direction** (BRAND-01..04) — locked Crosswake-owned showcase framing, served the real Crosswake lockup from the example host, fixed AdminPilot/Fieldserv/LearnLoop as distinct fictional app brands, encoded fixture-density briefs, and verified root brand rendering, distinct styling, mobile containment, focus, and support-label honesty. Validated in Phase 148; full detail in `.planning/phases/148-demo-app-brand-fixture-direction/148-VERIFICATION.md`.
+- ✓ **v19.0 Showcase Apps & Capability Map** (all 31 v19 requirements: ARC-01..03, SHOW-01..04, BRAND-01..04, SAAS-01..04, FIELD-01..04, LEARN-01..04, CAPMAP-01..04, PROOF-01..04) — shipped the Crosswake-owned showcase hub, AdminPilot/Fieldserv/LearnLoop product lanes, deterministic reset/proof, generalized route-tour collateral, support-truth claim guards, capability map, and v20 Native Controls Pack 1 handoff. Validated across Phases 147-152.1; audit passed; full detail in `.planning/milestones/v19.0-REQUIREMENTS.md`.
 
 ### Active
 
-- [ ] **v19.0 Showcase Apps & Capability Map** — create a polished, seeded, click-around example surface across SaaS/admin, field-service, and subscription learning/training domains; map capability gaps into the v20 Native Controls Pack 1 handoff.
-- [ ] **Phase 149 SaaS/Admin Showcase** (SAAS-01..04) — build the AdminPilot SaaS/admin lane using the Phase 148 brand and fixture brief while preserving Phoenix-owned route/auth posture.
+- [ ] **v20.0 Native Controls Pack 1** — implement a narrow first pack from the v19 capability map, likely alert/confirm, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration.
+- [ ] **Native-control support truth** — expose platform, route mode, shell-version, proof-posture, package-ownership, and rebuild-requirement truth for every v20 capability.
+- [ ] **Proof posture for v20 controls** — keep deterministic source/contract tests merge-blocking and reserve simulator/device evidence for advisory lanes unless it becomes repeatable in CI.
 
 ### Out of Scope
 
@@ -254,7 +268,7 @@ The maintainer's OSS house style materially constrains the project. Install trut
 
 The strategic source of truth for the current sequence is `.planning/MILESTONE-ARC.md`. `v3.2` activated commerce, `v3.4` proved the mocked commerce archetype, `v3.5` locked the companion pattern, `v3.6` made the surface inspectable by operators, `v3.7` added StoreKit/Play Billing adapter seams, `v3.8` expanded Sigra into auth/session machinery, `v3.9` added the Chimeway notification seam, and `v5.0` shifted the architecture to standalone publishable shell packages to solve the "eject trap".
 
-After v18.0, the next strategic arc shifts from release integrity back to product-shaped DX. v19.0 should make Crosswake obvious to a newcomer through Crosswake-owned showcase framing plus click-around examples with rich, resettable data across multiple app domains. The demo-app identities should be fictional and distinct from Crosswake so the examples feel like realistic products while preserving parent-brand clarity. v20.0 should then ship the first native-controls pack guided by the v19 capability map, with future milestones expanding into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
+After v19.0, Crosswake has a product-shaped proof surface: a Crosswake-owned showcase hub plus AdminPilot, Fieldserv, and LearnLoop lanes with realistic data, route-owner diagnostics, support truth, offline/degraded posture, entitlement pressure, and capability-map evidence. v20.0 should now ship the first native-controls pack guided by that capability map, with future milestones expanding into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
 
 ## Constraints
 
@@ -315,9 +329,9 @@ After v18.0, the next strategic arc shifts from release integrity back to produc
 | Gate release publishing by exact component/path identity, not aggregate Release Please outputs | Companion-only releases must never be able to publish core Hex, iOS mirror, or Android Maven artifacts; aggregate `releases_created` is too broad for a package family | ✓ Validated in v18.0 (RELG-01/PREF-03) — path-specific gates plus scanner fixtures guard the workflow |
 | Keep package publishing CI-owned on the happy path, with exact-ref/idempotent recovery only | Maintainer-run `mix hex.publish` does not scale across six packages and makes recovery state ambiguous; immutable registries require exact refs and already-live handling | ✓ Validated in v18.0 (AUTO-01..03) — guarded helper, package-scoped recovery refs, and already-live preflight shipped |
 | Treat live registry checks and real mirror mutation as optional/advisory external state | Normal CI should stay deterministic and read-only; registry availability and maintainer secret scope are real-world state, not local graph truth | ✓ Validated in v18.0 (MIRR-01..03, STAT-03) — mirror preflight/backfill path exists; release status live probes are explicit warnings |
-| Use v19.0 to build product-shaped showcase apps before v20.0 native-control breadth | The highest-impact DX gap is not only missing controls; Crosswake needs vivid, seeded examples that make route ownership, offline posture, native pressure, diagnostics, and capability gaps obvious before the next controls pack is implemented | Foundation validated in Phase 147; brand/fixture direction in Phase 148; domain lanes and capability map continue through Phases 149-152 |
-| Give each v19 demo app a separate fictional micro-brand inside the Crosswake showcase | Realistic product identities and dense fixtures make the examples feel credible while keeping Crosswake positioned as the parent route-policy/runtime-contract system, not one demo app | Validated in Phase 148; AdminPilot, Fieldserv, and LearnLoop plus root Crosswake branding are locked before lane buildout |
-| Treat SEED-002 as a multi-milestone arc, not a single broad feature dump | Native controls, capture/device flows, and commerce/paywall support should be sequenced from examples and capability-map evidence so Crosswake stays Phoenix-first and does not drift into a generic WebView plugin catalog | Strategic classification validated in Phase 147; v20 control selection remains evidence-driven |
+| Use v19.0 to build product-shaped showcase apps before v20.0 native-control breadth | The highest-impact DX gap is not only missing controls; Crosswake needs vivid, seeded examples that make route ownership, offline posture, native pressure, diagnostics, and capability gaps obvious before the next controls pack is implemented | ✓ Validated in v19.0 — showcase hub, three product lanes, capability map, route-tour proof, and v20 handoff shipped |
+| Give each v19 demo app a separate fictional micro-brand inside the Crosswake showcase | Realistic product identities and dense fixtures make the examples feel credible while keeping Crosswake positioned as the parent route-policy/runtime-contract system, not one demo app | ✓ Validated in v19.0 — AdminPilot, Fieldserv, and LearnLoop are distinct fictional brands under Crosswake-owned framing |
+| Treat SEED-002 as a multi-milestone arc, not a single broad feature dump | Native controls, capture/device flows, and commerce/paywall support should be sequenced from examples and capability-map evidence so Crosswake stays Phoenix-first and does not drift into a generic WebView plugin catalog | ✓ Validated in v19.0 — v20 Native Controls Pack 1 is scoped from capability-map evidence; capture/device and commerce breadth remain later arcs |
 
 ## Evolution
 
@@ -337,4 +351,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-11 — Phase 151 complete; Phase 152 Capability Map, Collateral, and v20 Handoff next.*
+*Last updated: 2026-07-12 after v19.0 milestone completion.*

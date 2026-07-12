@@ -698,10 +698,51 @@
 - **Verification:** Milestone audit passed 15/15 requirements, 5/5 phases, 15/15 integration paths, and 5/5 flows; residual risks are external registry mutation/probe state only.
 - **Residual debt:** no internal v18 tech debt; real iOS mirror mutation remains maintainer-token-gated and live registry probes remain advisory.
 
+## Milestone: v19.0 — Showcase Apps & Capability Map
+
+**Shipped:** 2026-07-12
+**Phases:** 7 (147-152.1) | **Plans:** 33
+
+### What Was Built
+- A Crosswake-owned showcase hub with deterministic reset/reseed truth and route-owner/support labels.
+- Three product-shaped example lanes: AdminPilot for SaaS/admin, Fieldserv for field-service device pressure, and LearnLoop for subscription learning/training.
+- Realistic fixture/read-context breadth, lane-local diagnostics, server-owned mutable evidence where appropriate, and browser route-tour proof for each domain.
+- A typed capability map, generated public guide, README/ExDoc entry points, and a planning-only v20 Native Controls Pack 1 handoff.
+- A Phase 152.1 closeout repair that aligned scanner/document-scan support truth, reconstructed verification ledgers, refreshed validation metadata, and preserved the Phase 148 summary exception honestly.
+
+### What Worked
+- **Product-shaped examples clarified the thesis** — route ownership, offline posture, device pressure, entitlement pressure, and unsupported gaps are easier to evaluate in realistic lanes than in abstract proof pages.
+- **Semantic-first browser proof scaled across lanes** — screenshots became useful collateral after route IDs, support labels, reset truth, and bridge/capability assertions passed.
+- **Capability map before controls reduced scope risk** — v20 can start from classified evidence instead of reopening the entire native-breadth argument.
+- **Closeout phase repaired real audit gaps without rewriting history** — Phase 152.1 fixed support truth and ledgers while keeping the Phase 148 missing-summary exception explicit.
+
+### What Was Inefficient
+- **Phase 148 artifact shape created closeout tax** — the work was verified, but original numbered summaries were missing, forcing an accepted exception and retroactive summary for audit compatibility.
+- **Verification ledgers lagged some implementation work** — Phase 150 and 152 needed reconstruction from fresh reruns at milestone audit time.
+- **Generated milestone accomplishments were too granular** — the closeout helper extracted per-plan bullets, requiring manual curation into milestone-level outcomes.
+
+### Patterns Established
+- **Demo lanes are proof surfaces, not templates** — realistic examples can prove route policy and capability pressure without turning Crosswake into a starter-app framework.
+- **Support truth must be generated and claim-scanned** — unsupported/deferred capability rows need canonical-source, rendered-guide, and docs-claim tests together.
+- **Browser-owned state stays outside server reset claims** — deterministic reset can own server fixtures while explicitly excluding IndexedDB/offline island state.
+- **Capability breadth should be sequenced by evidence** — v19 evidence points v20 at a narrow native-controls pack before capture/device, commerce/paywall, dashboard, or sync productization.
+
+### Key Lessons
+- **Phase closeout artifacts need to land with the work** — verification, validation, and summaries should be complete before milestone audit, not reconstructed afterward.
+- **Unsupported gaps need positive tests** — scanner/document_scan drift proved that deferred rows need regression tests asserting unsupported status, not only absence of implementation.
+- **Realistic UX examples expose better priorities than abstract capability lists** — the v20 pack should follow the workflows that repeatedly surfaced across AdminPilot, Fieldserv, and LearnLoop.
+
+### Cost Observations
+- **Session shape:** 4-day milestone (2026-07-09 → 2026-07-12), 7 phases / 33 plans / 83 tasks.
+- **Verification:** Milestone audit passed 31/31 requirements, 7/7 phases, 10/10 integration checks, and 6/6 flows after the Phase 152.1 repair.
+- **Residual debt:** one accepted artifact-shape exception for Phase 148; no unsatisfied v19 product requirements.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
 |-------|----------|-------------|
+| Product-shaped proof surfaces reveal better capability priorities | v19.0's AdminPilot, Fieldserv, and LearnLoop lanes exposed repeated demand for bounded alerts/actions/haptics/share/permission/token UX while keeping scanner, storefront, and generic sync claims deferred | Use realistic lane evidence to scope native capability packs; avoid broad catalogs until examples show repeated, route-owned demand |
+| Missing closeout artifacts create audit work even when behavior is correct | v19.0 had to insert Phase 152.1 after support-truth drift and missing/reconstructed Phase 150/152/148 ledgers blocked clean closeout | Treat verification, validation, and SUMMARY artifacts as part of phase completion; milestone audit should verify them, not create them |
 | A flaky test on a merge-blocking lane is a release blocker, not noise | v16.0's `File.cd!`/`async:true` race read as a "minor flaky test" in the audit but reddened every broad-`mix test` lane on PR #40's first real run, surfacing as a misattributed parallel-compile error | Treat any non-determinism on a required lane as ship-blocking; tests doing `File.cd!`/CWD-relative IO must be `async:false`, matching their siblings' isolation posture |
 | Establish irreversible patterns on the lowest-risk wedge, with a no-publish dress rehearsal first | v16.0 proved companion extraction on `rulestead` (lowest-risk) then `rindle` (cleanest generalization), with Phase 130 a `path:`-dep dress rehearsal before any `hex.publish` | For irreversible/unrecoverable operations (Hex/Maven publish, branch protection), front-load a non-destructive rehearsal and prove the mechanism on the safest case before generalizing |
 | Deferring all CI signal to the milestone boundary concentrates risk | v11.0's release-checkpoint plan and v16.0's ~64-commit local-main-ahead-of-origin both pushed the first real multi-lane CI signal to close, where v16.0's `File.cd!` race detonated | Periodically sync to origin (or run the broad lanes locally) during a milestone so real-CI failures surface incrementally, not all at once under close deadline |
