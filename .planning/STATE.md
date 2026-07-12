@@ -5,16 +5,16 @@ milestone_name: Showcase Apps & Capability Map
 current_phase: 152
 current_phase_name: Capability Map, Collateral, and v20 Handoff
 status: executing
-stopped_at: Completed 152-01-PLAN.md
-last_updated: "2026-07-12T15:30:16.243Z"
+stopped_at: Completed 152-02-PLAN.md
+last_updated: "2026-07-12T15:35:02.762Z"
 last_activity: 2026-07-12
 last_activity_desc: Phase 152 execution started
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 27
-  percent: 90
+  completed_plans: 28
+  percent: 93
 ---
 
 # Project State: Crosswake
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 Current Phase: 152
 Current Phase Name: Capability Map, Collateral, and v20 Handoff
 Phase: 152 (Capability Map, Collateral, and v20 Handoff) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Executing
 Last activity: 2026-07-12 — Phase 152 execution started
 
@@ -286,10 +286,10 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-12T15:30:16.235Z
-Stopped at: Completed 152-01-PLAN.md
+Last session: 2026-07-12T15:35:02.754Z
+Stopped at: Completed 152-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Discuss or plan Phase 152 Capability Map, Collateral, and v20 Handoff.
+- Continue executing Phase 152 Plan 03: generalized route-tour evidence, reset proof, manifest schema, and CI summary.
