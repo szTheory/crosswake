@@ -21,7 +21,7 @@
 
 **Goal:** Turn Crosswake into a product-shaped, click-around DX showcase across realistic app domains, then use that evidence to define v20.0 Native Controls Pack 1.
 
-**Phase count:** 6
+**Phase count:** 7
 **Requirements covered:** 31/31
 **Starting phase:** 147
 
@@ -419,3 +419,25 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
+| 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
+
+### Phase 152.1: Close gap: v19 support-truth and verification closeout (INSERTED)
+
+**Goal:** Repair the v19 audit gaps by correcting support-truth drift, reconstructing missing verification ledgers, refreshing stale validation metadata, preserving the Phase 148 reconstructed-validation exception honestly, and rerunning the milestone audit.
+**Requirements:** GAP-1521-01, GAP-1521-02, GAP-1521-03, GAP-1521-04, GAP-1521-05, GAP-1521-06
+**Depends on:** Phase 152
+**Plans:** 3/3 plans executed
+
+Plans:
+
+**Wave 1**
+
+- [x] 152.1-01-PLAN.md — Repair canonical scanner/document-scan support-truth parity.
+
+**Wave 2** *(blocked on support-truth parity)*
+
+- [x] 152.1-02-PLAN.md — Reconstruct Phase 150 and Phase 152 verification ledgers from rerun evidence.
+
+**Wave 3** *(blocked on verification ledgers)*
+
+- [x] 152.1-03-PLAN.md — Refresh validation metadata, preserve the Phase 148 exception, and rerun the v19 audit.

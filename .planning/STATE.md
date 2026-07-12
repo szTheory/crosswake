@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v19.0
 milestone_name: Showcase Apps & Capability Map
-current_phase: 152
-current_phase_name: Capability Map, Collateral, and v20 Handoff
-status: ready_for_milestone_audit
-stopped_at: Completed 152-04-PLAN.md
-last_updated: "2026-07-12T15:49:07Z"
+current_phase: 152.1
+current_phase_name: "Close gap: v19 support-truth and verification closeout"
+status: ready_for_milestone_completion
+stopped_at: Completed 152.1-03-PLAN.md
+last_updated: "2026-07-12T20:54:00Z"
 last_activity: 2026-07-12
-last_activity_desc: Completed Phase 152 Plan 04 public capability-map entry points and v20 handoff
+last_activity_desc: Completed Phase 152.1 closeout and passed v19 milestone audit rerun
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 30
-  completed_plans: 30
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 33
+  completed_plans: 33
   percent: 100
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-09 after v19.0 milestone start)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 152 — Capability Map, Collateral, and v20 Handoff
+**Current focus:** Phase 152.1 — Close gap: v19 support-truth and verification closeout
 
 ## Current Position
 
-Current Phase: 152
-Current Phase Name: Capability Map, Collateral, and v20 Handoff
-Phase: 152 (Capability Map, Collateral, and v20 Handoff) — COMPLETE
-Plan: 4 of 4
-Status: Ready for milestone audit
-Last activity: 2026-07-12 — Completed Phase 152 Plan 04 public capability-map entry points and v20 handoff
+Current Phase: 152.1
+Current Phase Name: Close gap: v19 support-truth and verification closeout
+Phase: 152.1 (Close gap: v19 support-truth and verification closeout) — COMPLETE
+Plan: 3 of 3
+Status: Ready for milestone completion
+Last activity: 2026-07-12 — Completed Phase 152.1 closeout and passed v19 milestone audit rerun
 
 ## v19.0 Roadmap Decisions (2026-07-09, locked)
 
@@ -85,7 +85,7 @@ Last activity: 2026-07-12 — Completed Phase 152 Plan 04 public capability-map 
 
 **Velocity:**
 
-- Total plans completed: 187 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152)
+- Total plans completed: 190 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
 - Average duration: —
 - Total execution time: —
 
@@ -233,6 +233,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - Phase 150 Field-Service Showcase completed 2026-07-11: FIELD-01 through FIELD-04 are verified across realistic jobs/assets/inspection/evidence data, native-screen capture pressure, backend-authoritative evidence review, cached read-only posture, route diagnostics, and browser proof.
 - Phase 152 Plan 03 completed 2026-07-12: route-tour evidence now covers 33 manifest rows across the hub, AdminPilot, Fieldserv, LearnLoop, proof routes, native fallback, and capability pressure; reset proof keeps browser-owned state outside server reset; CI requires all captured screenshots and summarizes screenshots as collateral.
 - Phase 152 Plan 04 completed 2026-07-12: README entry points link to the generated capability map, the planning-only v20 Native Controls Pack 1 handoff is written, final support-truth/reset/route-tour proof passed, and Phase 152 is complete.
+- Phase 152.1 completed 2026-07-12: scanner/document_scan support truth now matches deferred capability posture, Phase 150 and 152 verification ledgers were reconstructed from fresh reruns, 149/150/151 validation metadata is refreshed, Phase 148's missing summary history is preserved as an accepted exception, and the v19.0 milestone audit rerun passed.
 
 ### Blockers/Concerns
 
@@ -241,6 +242,10 @@ Full decision log in PROJECT.md (Key Decisions).
 - **Branch-protection toggle (watch).** `register_required_checks.sh` scripts from prior milestones are committed but have not yet been run — maintainer must run to arm branch protection. Scheduled in Phase 140 (FAMILY-04) before new v17.0 lanes land.
 - **Irreversible Hex publish risk (Phases 137/138/139).** Package names `crosswake_sigra`, `crosswake_chimeway`, and `crosswake_threadline` cannot be reclaimed once published. Phase 136 dress-rehearsal and per-phase `--dry-run` gate front-load this risk before any real publish.
 - **`build_reserved_events/0` atomicity risk.** Moving from static module-attribute calls to runtime aggregation must be atomic — if sigra extracts before chimeway, a half-removal breaks the other. Phase 136 must complete the full runtime inversion before either companion is extracted.
+
+### Roadmap Evolution
+
+- Phase 152.1 inserted after Phase 152: Close gap: v19 support-truth and verification closeout (completed 2026-07-12)
 
 ## Deferred Items
 
