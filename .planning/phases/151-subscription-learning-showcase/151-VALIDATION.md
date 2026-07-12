@@ -1,15 +1,19 @@
 ---
 phase: 151
 slug: subscription-learning-showcase
-status: draft
+status: validated
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-11
 ---
 
 # Phase 151 — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
+
+## Closeout Refresh
+
+This closeout refresh file was refreshed during Phase 152.1 on 2026-07-12 to reflect the current verified closeout state from `151-VERIFICATION.md`. The refresh updates stale planning-time Wave 0 and approval metadata after the phase had already passed verification; it does not claim this metadata was historically accurate during every execution step.
 
 ---
 
@@ -49,11 +53,11 @@ created: 2026-07-11
 
 ## Wave 0 Requirements
 
-- [ ] `examples/phoenix_host/test/crosswake_example/learn_loop_test.exs` — fixture density, route posture, reset digest, and support-label contracts for LEARN-01.
-- [ ] `examples/phoenix_host/test/crosswake_example/learn_loop/entitlement_test.exs` — backend-owned mocked entitlement projection and no live storefront-copy contracts for LEARN-03.
-- [ ] `examples/phoenix_host/test/crosswake_example/learn_loop/*_live_test.exs` — LiveView-owned dashboard/course/pack/subscription/history shell contracts for LEARN-01 and LEARN-04.
-- [ ] `examples/phoenix_host/e2e/learnloop_route_tour.spec.ts` or tagged additions to `examples/phoenix_host/e2e/route_tour.spec.ts` — semantic-first LearnLoop route-tour proof for LEARN-02 and LEARN-04.
-- [ ] Existing `examples/phoenix_host/e2e/offline_sync.spec.ts` helpers remain reusable and must not be weakened.
+- [x] `examples/phoenix_host/test/crosswake_example/learn_loop_test.exs` — fixture density, route posture, reset digest, and support-label contracts for LEARN-01.
+- [x] `examples/phoenix_host/test/crosswake_example/learn_loop/entitlement_test.exs` — backend-owned mocked entitlement projection and no live storefront-copy contracts for LEARN-03.
+- [x] `examples/phoenix_host/test/crosswake_example/learn_loop/*_live_test.exs` — LiveView-owned dashboard/course/pack/subscription/history shell contracts for LEARN-01 and LEARN-04.
+- [x] `examples/phoenix_host/e2e/learnloop_route_tour.spec.ts` or tagged additions to `examples/phoenix_host/e2e/route_tour.spec.ts` — semantic-first LearnLoop route-tour proof for LEARN-02 and LEARN-04.
+- [x] Existing `examples/phoenix_host/e2e/offline_sync.spec.ts` helpers remain reusable and must not be weakened.
 
 ---
 
@@ -74,4 +78,4 @@ created: 2026-07-11
 - [x] Feedback latency < 12 minutes
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** approved 2026-07-11
+**Approval: approved**
