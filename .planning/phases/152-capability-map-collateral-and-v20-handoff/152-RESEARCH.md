@@ -530,18 +530,18 @@ end
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|--------------|
-| CAPMAP-01 | Capability rows classify shipped/demoed/missing/deferred/next-pack candidate | unit | `mix test test/crosswake/capability_map/capability_map_test.exs -x` | no, Wave 0 |
-| CAPMAP-02 | Package owner is explicit per row | unit | `mix test test/crosswake/capability_map/capability_map_test.exs -x` | no, Wave 0 |
-| CAPMAP-03 | Proof posture uses merge-blocking/advisory/not-yet-proven/unsupported and excludes screenshots | unit | `mix test test/crosswake/capability_map/capability_map_test.exs -x` | no, Wave 0 |
-| CAPMAP-04 | Capability map renders v20 implications and handoff inputs | unit/docs | `mix test test/crosswake/capability_map/renderer_test.exs -x` | no, Wave 0 |
+| CAPMAP-01 | Capability rows classify shipped/demoed/missing/deferred/next-pack candidate | unit | `mix test test/crosswake/capability_map/capability_map_test.exs` | no, Wave 0 |
+| CAPMAP-02 | Package owner is explicit per row | unit | `mix test test/crosswake/capability_map/capability_map_test.exs` | no, Wave 0 |
+| CAPMAP-03 | Proof posture uses merge-blocking/advisory/not-yet-proven/unsupported and excludes screenshots | unit | `mix test test/crosswake/capability_map/capability_map_test.exs` | no, Wave 0 |
+| CAPMAP-04 | Capability map renders v20 implications and handoff inputs | unit/docs | `mix test test/crosswake/capability_map/renderer_test.exs` | no, Wave 0 |
 | PROOF-01 | Showcase reset is deterministic and browser reset boundary remains explicit | unit/integration | `cd examples/phoenix_host && mix test --warnings-as-errors test/crosswake_example/showcase/reset_test.exs` | yes |
 | PROOF-02 | Route tour covers hub and one happy path per lane | e2e | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts e2e/learnloop_route_tour.spec.ts` | yes, needs expansion |
-| PROOF-03 | Docs/support tests block unsupported native controls as shipped | unit/docs | `mix test test/crosswake/guides/capability_claims_test.exs -x` | no, Wave 0 |
+| PROOF-03 | Docs/support tests block unsupported native controls as shipped | unit/docs | `mix test test/crosswake/guides/capability_claims_test.exs` | no, Wave 0 |
 | PROOF-04 | Collateral/docs distinguish today, demo pressure, and planned v20+ | unit/docs | `mix test test/crosswake/guides/collateral_table_test.exs test/crosswake/capability_map/renderer_test.exs` | partial, Wave 0 gap |
 
 ### Sampling Rate
 
-- **Per task commit:** `mix test test/crosswake/capability_map test/crosswake/guides/evidence_manifest_test.exs -x`
+- **Per task commit:** `mix test test/crosswake/capability_map test/crosswake/guides/evidence_manifest_test.exs`
 - **Per wave merge:** `mix test && (cd examples/phoenix_host && mix test --warnings-as-errors)`
 - **Phase gate:** Root full suite, Phoenix host full suite, route-tour specs, and collateral guards green before `$gsd-verify-work`.
 
