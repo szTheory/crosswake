@@ -1,7 +1,8 @@
 ---
 phase: 152
 slug: capability-map-collateral-and-v20-handoff
-status: draft
+status: approved
+reviewed_at: 2026-07-12T14:34:59Z
 shadcn_initialized: false
 preset: none
 created: 2026-07-12
