@@ -214,7 +214,7 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 152-01-PLAN.md — Create RED capability-map, renderer, claim-scanner, and evidence-manifest contracts.
+- [x] 152-01-PLAN.md — Create RED capability-map, renderer, claim-scanner, and evidence-manifest contracts.
 
 **Wave 1** *(blocked on Wave 0 test contracts)*
 
@@ -418,4 +418,4 @@ Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
 | 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
 | 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete    | 2026-07-11 |
-| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 0/4 | Pending | — |
+| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 1/4 | In Progress | — |
