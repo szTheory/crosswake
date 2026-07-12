@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-status: planning
-last_updated: "2026-07-12T21:41:14.235Z"
+status: roadmapped
+last_updated: "2026-07-12T22:10:00.000Z"
 last_activity: 2026-07-12
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -24,10 +24,24 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-07-12 — Milestone v20.0 started
+Phase: 153 of 157 (iOS Mirror Unblock)
+Plan: — (not yet planned)
+Status: Roadmapped — ready for `/gsd-plan-phase 153`
+Last activity: 2026-07-12 — v20.0 ROADMAP.md created; 5 phases (153-157), 21/21 requirements mapped
+
+Progress: [░░░░░░░░░░] 0%
+
+## v20.0 Roadmap Decisions (2026-07-12, locked)
+
+- Milestone: **v20.0 Native Controls Pack 1**. Phase numbering continues from v19.0 (last phase 152.1) — starts at **Phase 153**, not reset to 1.
+- 5 phases derived from the 7 requirement categories (MIRROR/CTRL/MENU/FALL/HRDN/EVID/PROOF), 21/21 v1 requirements mapped, no orphans:
+  - **153 iOS Mirror Unblock** (MIRROR-01/02) — release-infra prerequisite, landed first because native bridge dispatch is a closed switch compiled into shipped binaries; the SwiftPM mirror stuck at v0.1.2 blocks every future native release from reaching iOS, mirroring the v17 core-first-publish lesson.
+  - **154 The Control-Contract Seam** (CTRL-01..05, PROOF-04, HRDN-01) — the load-bearing machinery (`Bridge.push/3`, one typed `Shell.Denial`, closed-vocabulary guard, rebuild-class labeling) plus its own anti-drift structural test (PROOF-04) plus the cheapest real proof (HRDN-01, migrating already-native haptics onto the seam with zero native-side risk) — bundled together because HRDN-01 and PROOF-04 both validate the seam before any new capability is built on it, per research guidance to place them "with or right after CTRL, before MENU."
+  - **155 Host-Owned Fallback Components** (FALL-01/02, PROOF-01) — the generated, verbatim-copy fallback tier and its route-tour proof, landed immediately after the seam since MENU's fallback path depends on it existing.
+  - **156 Native Menu & Action-Button Control** (MENU-01..03, PROOF-03) — the first genuinely-new native control, the reply-path exemplar; depends on 153 (native release must reach iOS), 154 (seam), and 155 (fallback path).
+  - **157 Harden, Promote & Prove Support Truth** (HRDN-02/03, EVID-01/02, PROOF-02) — haptics accessibility + iPad share-crash guard bundled with promoting share/notification_token to merge-blocking proof and the permissions.status/notification_token honesty pass, since the crash guard and docs honesty are both support-truth concerns for the same capabilities being promoted.
+- Anti-vacuity discipline: every phase's success criteria are observable/falsifiable behaviors (a LiveView call receiving a reply, a denial shape, a CI test that can fail on a bad control, a native menu rendering) — no phase's criteria are satisfiable by a passing-but-vacuous test, per the v12.0 fabricated-proof lesson.
+- Research source: `.planning/research/v20/SUMMARY.md`, `GROUND-TRUTH.md`, `RELEASE-STRATEGY.md` (read in full before roadmapping).
 
 ## v19.0 Closed (2026-07-12)
 

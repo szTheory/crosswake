@@ -14,8 +14,25 @@
 - ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
 - ✅ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (shipped 2026-07-09)
 - ✅ **v19.0 Showcase Apps & Capability Map** — Phases 147-152.1 (shipped 2026-07-12)
+- 🚧 **v20.0 Native Controls Pack 1** — Phases 153-157 (in progress)
 
 ## Phases
+
+**Phase Numbering:**
+- Integer phases (153, 154, ...): Planned milestone work
+- Decimal phases (153.1, 153.2): Urgent insertions (marked with INSERTED)
+
+Decimal phases appear between their surrounding integers in numeric order.
+
+### 🚧 v20.0 Native Controls Pack 1 (In Progress)
+
+**Milestone Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
+
+- [ ] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
+- [ ] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
+- [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
+- [ ] **Phase 156: Native Menu & Action-Button Control** - Ship the first genuinely-new native control on both iOS and Android, proven via committed contract vectors.
+- [ ] **Phase 157: Harden, Promote & Prove Support Truth** - Harden haptics/share footguns, promote share/notification_token to merge-blocking proof, and land the permissions/notification-token honesty pass.
 
 <details>
 <summary>✅ v19.0 Showcase Apps & Capability Map (Phases 147-152.1) — SHIPPED 2026-07-12</summary>
@@ -168,7 +185,68 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
 
 </details>
 
+## Phase Details
+
+### Phase 153: iOS Mirror Unblock
+**Goal**: The iOS SwiftPM shell-core mirror can receive `0.2.0`+ releases again, so this milestone's (and every future) native release can actually reach iOS adopters. Native bridge dispatch is a closed switch compiled into the shipped binaries — until the mirror is current, no new capability can ship to iOS at all.
+**Depends on**: Nothing (first phase; release-infrastructure prerequisite for the whole milestone)
+**Requirements**: MIRROR-01, MIRROR-02
+**Success Criteria** (what must be TRUE):
+  1. The `crosswake-shell-core-ios` mirror repo carries a `v0.2.0` tag matching the live Hex/Maven `0.2.0` core, confirmed via `mix crosswake.release.status --live`.
+  2. A single native shell-core release run publishes Hex, Maven, and the iOS mirror together in one coordinated pass.
+  3. A missing or invalid `MIRROR_PUSH_TOKEN` fails CI with a hard, named error instead of a silent 403.
+**Plans**: TBD
+
+### Phase 154: The Control-Contract Seam
+**Goal**: A LiveView can invoke a bounded native control through one typed seam and get a correlated reply; every shell-absent/old-shell/undeclared failure mode collapses into one denial; the command vocabulary is structurally closed against drift; and the already-shipped haptics capability proves the seam end-to-end with zero native-side risk.
+**Depends on**: Phase 153 (native releases must be able to reach iOS before any control machinery is built against the release pipeline)
+**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, PROOF-04, HRDN-01
+**Success Criteria** (what must be TRUE):
+  1. A LiveView can call `Crosswake.Bridge.push/3` for a declared capability and receive a correlated typed reply.
+  2. No-shell, too-old-shell, and undeclared-capability all produce the identical `Crosswake.Shell.Denial` shape, so an adopter writes one `handle_event` branch, not three.
+  3. Invoking a capability that was never declared in route policy fails loudly and names the missing declaration, instead of silently doing nothing.
+  4. A proposed control that is host-registrable, dynamic, or otherwise violates the catalog line fails a merge-blocking structural CI test, and every control's rebuild class is visible in the changelog, support matrix, and doctor guidance.
+  5. The AdminPilot haptics call runs through `Bridge.push/3` with the old hand-rolled `<script>` IIFE deleted, proving the seam against an already-native, zero-risk capability.
+**Plans**: TBD
+
+### Phase 155: Host-Owned Fallback Components
+**Goal**: Adopters get generated, brand-tokenized fallback UI for bounded controls that they own outright — never an importable component tier — and CI proves those fallbacks actually render and fail closed rather than silently degrading.
+**Depends on**: Phase 154 (the seam and its degradation/denial contract must exist before fallback UI can be proven against it)
+**Requirements**: FALL-01, FALL-02, PROOF-01
+**Success Criteria** (what must be TRUE):
+  1. Running `mix crosswake.gen.native_controls_ui` copies confirm-modal and action-menu fallback files directly into the host app as files the adopter owns and can edit — no importable `Crosswake.UI.*` module exists.
+  2. The generated fallbacks render correctly in both light and dark themes, trap focus, and meet the existing contrast gates.
+  3. A merge-blocking browser route-tour test proves a fallback renders when a control is unavailable, fails closed (an explicit denial, not silent success) when a capability is undeclared, and never silently degrades.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 156: Native Menu & Action-Button Control
+**Goal**: A route can declare a native menu/action-button affordance and get a real native menu with a typed reply on both iOS and Android — the first genuinely-new control, proving the whole seam end-to-end — provable without a simulator or emulator.
+**Depends on**: Phase 153 (native release must reach iOS), Phase 154 (the seam), Phase 155 (the fallback path menu degrades into when undeclared)
+**Requirements**: MENU-01, MENU-02, MENU-03, PROOF-03
+**Success Criteria** (what must be TRUE):
+  1. A route author can declare menu/action-button affordances — allowed actions and fallback behavior — in route policy.
+  2. On both iOS and Android, invoking the control renders a real native menu, and the user's chosen action returns as a typed reply through the seam.
+  3. The native menu carries VoiceOver/TalkBack semantics and responds to native dismiss gestures.
+  4. Committed `bridge_contract_vectors.json` vectors prove menu dispatch and denial behavior on both native platforms in CI, with no simulator or emulator required.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 157: Harden, Promote & Prove Support Truth
+**Goal**: Haptics and share are hardened against their known footguns, `share` and `notification_token` earn merge-blocking proof instead of advisory, and the read-only surfaces (`permissions.status`, `notification_token`) are documented so neither can ever be mistaken for request authority or delivery assurance.
+**Depends on**: Phase 154 (the seam these capabilities run through)
+**Requirements**: HRDN-02, HRDN-03, EVID-01, EVID-02, PROOF-02
+**Success Criteria** (what must be TRUE):
+  1. Haptics silently respects the OS reduce-motion/haptics accessibility setting instead of firing regardless of it.
+  2. Triggering share on an iPad without a valid popover anchor degrades safely instead of crashing.
+  3. `share` and `notification_token` both carry merge-blocking (not advisory) CI proof.
+  4. Reading the `permissions.status` and `notification_token` docs and support-matrix rows, a developer cannot conclude that Crosswake grants permission-request authority or delivery assurance.
+**Plans**: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -179,6 +257,11 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
+| 153. iOS Mirror Unblock | v20.0 | 0/TBD | Not started | - |
+| 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
+| 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
+| 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
+| 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
 
 ---
 

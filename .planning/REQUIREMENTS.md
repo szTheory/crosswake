@@ -85,4 +85,28 @@ must look right on day one, so they are generated and owned by the host, never i
 
 ## Traceability
 
-Filled by the roadmap.
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| MIRROR-01 | Phase 153 | Pending |
+| MIRROR-02 | Phase 153 | Pending |
+| CTRL-01 | Phase 154 | Pending |
+| CTRL-02 | Phase 154 | Pending |
+| CTRL-03 | Phase 154 | Pending |
+| CTRL-04 | Phase 154 | Pending |
+| CTRL-05 | Phase 154 | Pending |
+| PROOF-04 | Phase 154 | Pending |
+| HRDN-01 | Phase 154 | Pending |
+| FALL-01 | Phase 155 | Pending |
+| FALL-02 | Phase 155 | Pending |
+| PROOF-01 | Phase 155 | Pending |
+| MENU-01 | Phase 156 | Pending |
+| MENU-02 | Phase 156 | Pending |
+| MENU-03 | Phase 156 | Pending |
+| PROOF-03 | Phase 156 | Pending |
+| HRDN-02 | Phase 157 | Pending |
+| HRDN-03 | Phase 157 | Pending |
+| EVID-01 | Phase 157 | Pending |
+| EVID-02 | Phase 157 | Pending |
+| PROOF-02 | Phase 157 | Pending |
+
+**Coverage:** 21/21 v1 requirements mapped. No orphans.
