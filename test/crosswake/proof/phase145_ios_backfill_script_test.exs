@@ -25,7 +25,7 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
     assert script =~ ".release-please-manifest.json"
     assert script =~ "packages/crosswake-shell-core-ios"
     assert script =~ "splitsh-lite v1.0.1"
-    assert script =~ "--force-with-lease=refs/heads/main"
+    assert script =~ ~s(--force-with-lease="refs/heads/main:)
   end
 
   @tag :phase145_ios_backfill_script
@@ -40,13 +40,16 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
   end
 
   @tag :phase145_ios_backfill_script
-  test "apply mode requires MIRROR_PUSH_TOKEN before mutation" do
+  test "apply mode fails closed when the mirror write probe cannot succeed" do
     fixture = backfill_fixture()
+    unwritable_mirror = Path.join(fixture.mirror, "does-not-exist.git")
 
-    {output, exit_code} = run_script(fixture, ["--apply"])
+    {output, exit_code} =
+      run_script(fixture, ["--apply"], [{"CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE", unwritable_mirror}])
 
     assert exit_code != 0
-    assert output =~ "[crosswake] FAIL: MIRROR_PUSH_TOKEN is required for --apply."
+    assert output =~ "[crosswake] FAIL: dry-run push to"
+    assert output =~ "MIRROR_DEPLOY_KEY"
     refute tag_exists?(fixture.mirror, "v0.2.0")
   end
 

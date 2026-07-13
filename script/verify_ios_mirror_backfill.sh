@@ -5,8 +5,11 @@
 #   script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0
 #   script/verify_ios_mirror_backfill.sh --version 0.2.0 --ref refs/tags/ios-core-v0.2.0 --apply
 #
-# Verification is the default. Public mirror mutation requires --apply and a
-# MIRROR_PUSH_TOKEN scoped to szTheory/crosswake-shell-core-ios with Contents:write.
+# Verification is the default. Public mirror mutation requires --apply. This
+# script authenticates over SSH using a deploy key (MIRROR_DEPLOY_KEY) with
+# write access to szTheory/crosswake-shell-core-ios; the calling workflow
+# loads the key into an ssh-agent before this script runs, so auth is
+# transparent here - this script never handles key material directly.
 
 set -euo pipefail
 
@@ -20,7 +23,7 @@ UPDATE_MAIN=0
 IOS_PATH="packages/crosswake-shell-core-ios"
 ANDROID_PATH="packages/crosswake-shell-core-android"
 MIRROR_REPO="szTheory/crosswake-shell-core-ios"
-DEFAULT_MIRROR_REMOTE="https://github.com/${MIRROR_REPO}.git"
+DEFAULT_MIRROR_REMOTE="git@github.com:szTheory/crosswake-shell-core-ios.git"
 MIRROR_REMOTE="${CROSSWAKE_IOS_BACKFILL_MIRROR_REMOTE:-$DEFAULT_MIRROR_REMOTE}"
 RELEASE_REPO="${CROSSWAKE_IOS_BACKFILL_RELEASE_REPO:-$REPO_ROOT}"
 SPLIT_SHA="${CROSSWAKE_IOS_BACKFILL_SPLIT_SHA:-}"
@@ -190,11 +193,7 @@ compute_split_sha() {
 }
 
 mirror_push_remote() {
-  if [ "$APPLY" -eq 1 ] && [ -n "${MIRROR_PUSH_TOKEN:-}" ] && [ "$MIRROR_REMOTE" = "$DEFAULT_MIRROR_REMOTE" ]; then
-    printf "https://x-access-token:%s@github.com/%s.git" "$MIRROR_PUSH_TOKEN" "$MIRROR_REPO"
-  else
-    printf "%s" "$MIRROR_REMOTE"
-  fi
+  printf "%s" "$MIRROR_REMOTE"
 }
 
 mirror_tag_sha() {
@@ -219,14 +218,15 @@ verify_or_apply_mirror() {
     fail "SwiftPM mirror refs/tags/v${VERSION} points at ${tag_sha}, expected ${SPLIT_SHA}." "Do not delete or move the public SwiftPM tag automatically. Inspect ${MIRROR_REPO} and decide deliberately."
   fi
 
+  if ! git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null 2>&1; then
+    fail "dry-run push to ${MIRROR_REPO} failed; MIRROR_DEPLOY_KEY may be missing, unauthorized, or lack write access to ${MIRROR_REPO}." "Confirm the MIRROR_DEPLOY_KEY secret is set and registered as a write deploy key on ${MIRROR_REPO}, then retry."
+  fi
+  ok "dry-run push to ${MIRROR_REPO} succeeded; MIRROR_DEPLOY_KEY has WRITE scope."
+
   if [ "$APPLY" -ne 1 ]; then
     ok "SwiftPM mirror refs/tags/v${VERSION} is absent; verification-only mode made no changes."
-    log "Next action: run $0 --version ${VERSION} --ref ${SOURCE_REF} --apply after MIRROR_PUSH_TOKEN is configured."
+    log "Next action: run $0 --version ${VERSION} --ref ${SOURCE_REF} --apply to push the tag using MIRROR_DEPLOY_KEY."
     return
-  fi
-
-  if [ -z "${MIRROR_PUSH_TOKEN:-}" ]; then
-    fail "MIRROR_PUSH_TOKEN is required for --apply." "Store a ${MIRROR_REPO} token with Contents:write and rerun with --apply."
   fi
 
   git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null
@@ -235,11 +235,18 @@ verify_or_apply_mirror() {
 
   if [ "$UPDATE_MAIN" -eq 1 ]; then
     current_main="$(git ls-remote "$push_remote" "refs/heads/main" | awk '{print $1}' | head -1 || true)"
-    if [ -n "$current_main" ] && ! git -C "$RELEASE_REPO" merge-base --is-ancestor "$current_main" "$SPLIT_SHA" 2>/dev/null; then
-      fail "mirror main has commits not reachable from expected split SHA." "Do not realign main until mirror-only commit evidence is reviewed."
+    if [ -n "$current_main" ]; then
+      if ! git -C "$RELEASE_REPO" cat-file -e "${current_main}^{commit}" 2>/dev/null; then
+        log "mirror main (${current_main}) is not a known object in this repository - cannot prove ancestry either way."
+        log "This is expected exactly once, for the one-time re-baseline (D-08). If this is not that operation, stop and investigate."
+      elif ! git -C "$RELEASE_REPO" merge-base --is-ancestor "$current_main" "$SPLIT_SHA" 2>/dev/null; then
+        fail "mirror main has commits not reachable from expected split SHA (both objects are known locally)." "Do not realign main until mirror-only commit evidence is reviewed."
+      fi
     fi
 
-    git -C "$RELEASE_REPO" push --porcelain --force-with-lease=refs/heads/main "$push_remote" "${SPLIT_SHA}:refs/heads/main"
+    git -C "$RELEASE_REPO" push --porcelain \
+      --force-with-lease="refs/heads/main:${current_main}" \
+      "$push_remote" "${SPLIT_SHA}:refs/heads/main"
     ok "updated mirror main to ${SPLIT_SHA} with --force-with-lease."
   fi
 }
