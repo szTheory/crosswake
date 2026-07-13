@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-status: Ready to execute — `/gsd-execute-phase 153`
-stopped_at: Phase 153 planned (4 plans, 4 waves)
-last_updated: "2026-07-13T00:43:11.501Z"
-last_activity: 2026-07-13 — Phase 153 planned; 4 plans in 4 sequential waves; 21/21 decisions covered; plan-checker PASSED
+status: executing
+stopped_at: Phase 153 context gathered
+last_updated: "2026-07-13T17:44:22.986Z"
+last_activity: 2026-07-13
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Planning next milestone; v20.0 Native Controls Pack 1 is the recommended next arc from v19 capability-map evidence.
+**Current focus:** Phase 153 — ios-mirror-unblock
 
 ## Current Position
 
-Phase: 153 of 157 (iOS Mirror Unblock)
-Plan: — (not yet planned)
-Status: Roadmapped — ready for `/gsd-plan-phase 153`
-Last activity: 2026-07-12 — v20.0 ROADMAP.md created; 5 phases (153-157), 21/21 requirements mapped
+Phase: 153 (ios-mirror-unblock) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-07-13
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## v20.0 Roadmap Decisions (2026-07-12, locked)
 
@@ -231,6 +231,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase 150 Plan 05]: Fieldserv UI is lane-local and product-first; jobs/detail/inspection screens surface support truth inline while keeping inspection mutation server-recorded and offline-island behavior future-only.
 - [Phase 150 Plan 06]: Fieldserv capture stays native-screen owned while evidence review keeps backend verification as the only availability authority.
 - [Phase 150 Plan 07]: Fieldserv route-tour proof treats screenshots as collateral after semantic assertions; Fieldserv capability pressure remains capability-map evidence, not shipped runtime support.
+- [Phase ?]: SSH deploy key (MIRROR_DEPLOY_KEY) replaces MIRROR_PUSH_TOKEN entirely in the backfill lane; HTTPS x-access-token branch removed, not deprioritized (153-01)
+- [Phase ?]: Explicit-lease --force-with-lease="refs/heads/main:${current_main}" is the only push form that works in a never-fetched CI checkout; no git fetch was added anywhere (153-01, RESEARCH Q1)
+- [Phase ?]: Ancestry guard distinguishes unknown-object (advisory, proceed) from known-non-ancestor (fail-closed) via cat-file -e before merge-base --is-ancestor (153-01, D-08/Q2)
 
 ### Pending Todos
 
@@ -307,12 +310,13 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 150 P02 | 4 min | 2 tasks | 2 files |
 | Phase 150 P03 | 4 min | 2 tasks | 5 files |
 | Phase 150 P04 | 4 min | 2 tasks | 7 files |
+| Phase 153 P01 | 15min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-07-13T00:43:11.496Z
+Last session: 2026-07-13T17:40:43.791Z
 Stopped at: Phase 153 context gathered
-Resume file: .planning/phases/153-ios-mirror-unblock/153-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

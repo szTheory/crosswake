@@ -204,7 +204,7 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
 Plans:
 **Wave 1**
 
-- [ ] 153-01-PLAN.md — Backfill lane: SSH deploy-key transport, `apply=false` write-scope fire drill, atomic explicit-lease push (defuses the `actions/checkout` credential hijack)
+- [x] 153-01-PLAN.md — Backfill lane: SSH deploy-key transport, `apply=false` write-scope fire drill, atomic explicit-lease push (defuses the `actions/checkout` credential hijack)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -290,7 +290,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
-| 153. iOS Mirror Unblock | v20.0 | 0/TBD | Not started | - |
+| 153. iOS Mirror Unblock | v20.0 | 1/4 | In Progress|  |
 | 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
 | 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
