@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-status: Roadmapped — ready for `/gsd-plan-phase 153`
-stopped_at: Phase 153 context gathered
+status: Ready to execute — `/gsd-execute-phase 153`
+stopped_at: Phase 153 planned (4 plans, 4 waves)
 last_updated: "2026-07-13T00:43:11.501Z"
-last_activity: 2026-07-12 — v20.0 ROADMAP.md created; 5 phases (153-157), 21/21 requirements mapped
+last_activity: 2026-07-13 — Phase 153 planned; 4 plans in 4 sequential waves; 21/21 decisions covered; plan-checker PASSED
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---

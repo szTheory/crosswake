@@ -45,7 +45,7 @@ Release infrastructure only. Two deliverables:
 
   GitHub App rejected as over-built for one maintainer pushing to one repo (register app + install + 2 secrets, and it is still HTTPS so it would *also* need the `persist-credentials: false` fix). It remains the right upgrade **later** if a bot identity is ever needed for more than this push.
 
-- **D-04: Set `persist-credentials: false` on the checkout in BOTH `release-please.yml` (`publish-ios-core`) and `ios-mirror-backfill.yml`.** Belt-and-braces even with SSH — it removes the hijack vector at the source rather than only routing around it.
+- **D-04: Disable checkout credential persistence in BOTH `release-please.yml` (`publish-ios-core`) and `ios-mirror-backfill.yml`** — set `persist-credentials: false` on the checkout step. Belt-and-braces even with SSH — it removes the hijack vector at the source rather than only routing around it.
 
 - **D-05: Maintainer handoff is four CLI commands, no browser, one time, never again.** The exact ritual (agent generates, human executes):
   ```
@@ -125,7 +125,7 @@ Per **D-02**, each mechanism below is chosen for *reach*, not for redness.
 
 - **D-17: `native-release-rollup` exits 1 when `native_core != complete`.** Necessary — it currently computes `native_core=partial`, renders it to the step summary + JSON artifact, and **exits 0**, so MIRROR-02's "hard named failure" is literally unbuilt and a partial release still *claims* success. But per **D-02** this is explicitly **not trusted to reach a human**; it exists to stop the release lying, not to alarm. Write the artifact **before** exiting, and give the upload step `if: always()` or the diagnostic you just failed on is lost. (`always()` on the *job* governs running, not exit code, so the existing `native_rollup_summary` invariant still passes.)
 
-- **D-18: `mix crosswake.release.status --live` returns `:error` on a missing mirror tag, not `:warning`.** Today it reports `:warning` and `exit_code/1` returns 1 only for `:error` — so the project's own release-truth command **exits 0** while every iOS adopter's `.package(from: "0.2.0")` cannot resolve. That is a support-truth lie in the project's own voice and violates the OSS DNA's fail-closed / no-silent-fallback rule.
+- **D-18: `mix crosswake.release.status --live` must fail hard on a missing mirror tag** — it returns `:error`, not `:warning`. Today it reports `:warning` and `exit_code/1` returns 1 only for `:error` — so the project's own release-truth command **exits 0** while every iOS adopter's `.package(from: "0.2.0")` cannot resolve. That is a support-truth lie in the project's own voice and violates the OSS DNA's fail-closed / no-silent-fallback rule.
 
   ⚠️ **Split `:missing` from `:unavailable`** — `live_registry_checks/2` currently lumps them (`reject(&(&1.live.status == :ok))`). `:missing` (registry answered, tag absent) is a **definite negative** → `:error` under `release.live_registry_presence`. `:unavailable` (probe failed) is an **unknown**, not a negative → `:error` after 3 retries under a **distinct** code `release.live_registry_unverifiable`. Both exit 1 (fail-closed on unknowns), but the message must never misreport *which* failure occurred.
 
