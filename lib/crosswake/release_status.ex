@@ -44,8 +44,8 @@ defmodule Crosswake.ReleaseStatus do
     release.workflow.aggregate_gate.behavioral_jobs_absent
     release.workflow.proof_after_publish
     release.workflow.native_proof_decoupled
-    release.workflow.mirror_token_preflight
-    release.mirror_token.write_preflight
+    release.ios.ssh_transport
+    release.ios.atomic_leased_push
     release.workflow.native_rollup_summary
     release.workflow.native_status_artifact
     release.workflow.companion_floors_honest

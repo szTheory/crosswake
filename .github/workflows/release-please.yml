@@ -739,7 +739,7 @@ jobs:
 
       - name: Upload native release status
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() }}
         with:
           name: native-release-status
           path: native-release-status.json

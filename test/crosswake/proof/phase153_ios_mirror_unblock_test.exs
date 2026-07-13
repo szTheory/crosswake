@@ -28,6 +28,12 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     release.ios_backfill.write_probe
     release.ios_backfill.explicit_lease
     release.ios_backfill.ssh_transport
+    release.ios.ssh_transport
+    release.ios.atomic_leased_push
+    release.ios.checkout_ref_pinned
+    release.ios.hex_gated
+    release.workflow.native_rollup_fails_closed
+    release.workflow.release_failure_alert_native
   )
 
   # --- Tests A/B/C: raw git push semantics against disjoint-history bare fixtures ---
@@ -120,7 +126,7 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   # --- decoys: scanner emits the new phase153 ids as :ok (added by task 3) ---
 
   @tag :phase153_ios_mirror_unblock
-  test "scanner reports the phase153 ios_backfill ids as OK" do
+  test "scanner reports the phase153 ios_backfill and release-job ids as OK" do
     {output, exit_code} = run_scanner()
 
     assert exit_code == 0, output
@@ -128,6 +134,61 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     for check_id <- @phase153_ids do
       assert output =~ "[crosswake] OK: #{check_id}"
     end
+  end
+
+  # --- decoys: deliberately-broken release-please.yml fixtures fail the new
+  # publish-ios-core / native-release-rollup / release-failure-alert ids ---
+
+  @tag :phase153_ios_mirror_unblock
+  test "publish-ios-core checkout without the release tag ref fails checkout_ref_pinned id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-ios-core",
+        "ref: ${{ needs.release-please.outputs.tag_name }}",
+        "# ref intentionally omitted by decoy fixture"
+      )
+
+    assert_scanner_failure!("release.ios.checkout_ref_pinned", workflow)
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "publish-ios-core coupled to publish-android-core fails hex_gated id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "publish-ios-core",
+        "needs: [release-please, publish-hex]",
+        "needs: [release-please, publish-hex, publish-android-core]"
+      )
+
+    assert_scanner_failure!("release.ios.hex_gated", workflow)
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "native-release-rollup without the partial-native exit 1 fails native_rollup_fails_closed id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "native-release-rollup",
+        "exit 1",
+        "echo 'decoy: partial native release no longer fails closed'"
+      )
+
+    assert_scanner_failure!("release.workflow.native_rollup_fails_closed", workflow)
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "release-failure-alert missing native-release-rollup from needs fails release_failure_alert_native id" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "release-failure-alert",
+        "      - native-release-rollup\n",
+        ""
+      )
+
+    assert_scanner_failure!("release.workflow.release_failure_alert_native", workflow)
   end
 
   defp backfill_fixture do
@@ -250,6 +311,37 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
 
   defp run_scanner do
     System.cmd("elixir", [@scanner, @workflow], stderr_to_stdout: true)
+  end
+
+  defp real_workflow, do: File.read!(@workflow)
+
+  # Mirrors phase142_release_integrity_test.exs's house decoy-fixture pattern:
+  # mutate one job block's text and confirm the scanner's exit code and the
+  # specific check id it reports FAIL for. An invariant with no decoy proving
+  # it is not vacuous is not trustworthy (D-20).
+  defp replace_in_job(workflow, job, pattern, replacement) do
+    Regex.replace(
+      ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+      workflow,
+      fn block -> String.replace(block, pattern, replacement, global: false) end,
+      global: false
+    )
+  end
+
+  defp assert_scanner_failure!(check_id, workflow) do
+    path =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase153-fixture-#{System.unique_integer([:positive])}.yml"
+      )
+
+    File.write!(path, workflow)
+    on_exit(fn -> File.rm(path) end)
+
+    {output, exit_code} = System.cmd("elixir", [@scanner, path], stderr_to_stdout: true)
+
+    assert exit_code == 1, output
+    assert output =~ "[crosswake] FAIL: #{check_id}"
   end
 
   defp git(args), do: System.cmd("git", args, stderr_to_stdout: true)

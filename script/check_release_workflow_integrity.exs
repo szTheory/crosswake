@@ -85,14 +85,17 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         aggregate_gate_absent(jobs),
         ios_proof_decoupled(jobs),
         android_proof_decoupled(jobs),
-        mirror_token_preflight(jobs),
         workflow_aggregate_gate_absent(jobs),
         workflow_proof_after_publish(jobs),
         workflow_native_proof_decoupled(jobs),
-        workflow_mirror_token_preflight(jobs),
-        mirror_token_write_preflight(jobs),
         native_rollup_summary(jobs),
         native_status_artifact(jobs),
+        release_ios_ssh_transport(jobs),
+        release_ios_atomic_leased_push(jobs),
+        release_ios_checkout_ref_pinned(jobs),
+        release_ios_hex_gated(jobs),
+        native_rollup_fails_closed(jobs),
+        release_failure_alert_native(jobs),
         ios_backfill_verify_first(
           non_comment_ios_backfill_script,
           non_comment_ios_backfill_workflow
@@ -778,37 +781,106 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
-  defp mirror_token_preflight(jobs) do
+  # REWRITE (not rename) of the retired release.mirror_token.preflight and
+  # release.workflow.mirror_token_preflight checks. Both asserted on machinery
+  # (the old HTTPS token secret, the anonymous public-repo read probe) that no
+  # longer exists once SSH transport landed — collapsed into one check
+  # asserting the new SSH-preflight shape (D-03/D-04).
+  defp release_ios_ssh_transport(jobs) do
     block = job_block(jobs, "publish-ios-core")
 
     check(
-      "release.mirror_token.preflight",
-      includes?(block, "MIRROR_PUSH_TOKEN is not configured") and
-        includes?(block, "git ls-remote mirror HEAD"),
-      "iOS mirror job must fail fast when MIRROR_PUSH_TOKEN is absent or unusable; run elixir script/check_release_workflow_integrity.exs"
+      "release.ios.ssh_transport",
+      includes?(block, "persist-credentials: false") and
+        includes?(block, "webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555") and
+        includes?(block, "ssh-keyscan") and
+        includes?(block, "git@github.com:szTheory/crosswake-shell-core-ios.git") and
+        includes?(block, "MIRROR_DEPLOY_KEY is not configured") and
+        not includes?(block, "x-access-token"),
+      "publish-ios-core must authenticate over SSH via MIRROR_DEPLOY_KEY with persist-credentials: false, an ssh-keyscan known_hosts step, and a fail-fast preflight, never an HTTPS URL-embedded token; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 
-  defp workflow_mirror_token_preflight(jobs) do
+  # REWRITE (not rename) of the retired release.mirror_token.write_preflight
+  # check. It asserted the old TWO-refspec dry-run shape from the two-command
+  # push implementation; that shape no longer exists once the push became one
+  # atomic, explicit-lease command (D-13).
+  defp release_ios_atomic_leased_push(jobs) do
     block = job_block(jobs, "publish-ios-core")
 
     check(
-      "release.workflow.mirror_token_preflight",
-      includes?(block, "MIRROR_PUSH_TOKEN is not configured") and
-        includes?(block, "git ls-remote mirror HEAD"),
-      "publish-ios-core in .github/workflows/release-please.yml must fail fast on missing or unusable MIRROR_PUSH_TOKEN; rerun elixir script/check_release_workflow_integrity.exs"
-    )
-  end
-
-  defp mirror_token_write_preflight(jobs) do
-    block = job_block(jobs, "publish-ios-core")
-
-    check(
-      "release.mirror_token.write_preflight",
-      includes?(block, "git push --dry-run --porcelain mirror") and
+      "release.ios.atomic_leased_push",
+      includes?(block, "push --atomic mirror") and
+        includes?(block, ~s(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}")) and
         includes?(block, ~s("${SPLIT_SHA}:refs/heads/main")) and
-        includes?(block, ~s("${SPLIT_SHA}:refs/tags/v${VERSION}")),
-      "publish-ios-core must prove iOS mirror write authority with a non-mutating git push --dry-run --porcelain mirror before real mutation"
+        includes?(block, ~s("${SPLIT_SHA}:refs/tags/v${VERSION}")) and
+        includes?(block, "--dry-run --porcelain") and
+        not includes?(block, ~r/--force-with-lease=refs\/heads\/main(?!:)/),
+      "publish-ios-core must push main and the release tag atomically with an explicit-lease scoped to main alone, probed by a dry-run of the same atomic form; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # New check (D-11/D-20). Both clauses are required: copying
+  # publish-android-core's checkout block verbatim has the ref but drops
+  # fetch-depth: 0, silently handing splitsh-lite a shallow clone.
+  defp release_ios_checkout_ref_pinned(jobs) do
+    block = job_block(jobs, "publish-ios-core")
+
+    check(
+      "release.ios.checkout_ref_pinned",
+      includes?(block, "ref: ${{ needs.release-please.outputs.tag_name }}") and
+        includes?(block, "fetch-depth: 0"),
+      "publish-ios-core must checkout at the release tag with full history, not the retroactive github.sha; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # New check (D-12). Mirrors workflow_native_proof_decoupled/1's shape:
+  # gate on the recoverable registry only, never on the sibling native
+  # platform (which would let an Android flake block a recoverable mirror
+  # push).
+  defp release_ios_hex_gated(jobs) do
+    check(
+      "release.ios.hex_gated",
+      job_needs?(jobs, "publish-ios-core", "release-please") and
+        job_needs?(jobs, "publish-ios-core", "publish-hex") and
+        not job_needs?(jobs, "publish-ios-core", "publish-android-core"),
+      "publish-ios-core must gate on the recoverable registry (release-please, publish-hex) only, never on publish-android-core; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # New check (D-17).
+  defp native_rollup_fails_closed(jobs) do
+    block = job_block(jobs, "native-release-rollup")
+
+    check(
+      "release.workflow.native_rollup_fails_closed",
+      includes?(block, ~s(native_core" != "complete")) and
+        includes?(block, "exit 1") and
+        includes?(block, "if: ${{ always() }}"),
+      "native-release-rollup must exit 1 when a native platform released this run without proving complete, and its artifact upload must still run via if: ${{ always() }}; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # New check (D-15).
+  defp release_failure_alert_native(jobs) do
+    block = job_block(jobs, "release-failure-alert")
+
+    required_needs =
+      Enum.all?(
+        ~w(publish-ios-core clean-room-proof-ios publish-android-core clean-room-proof-android native-release-rollup),
+        &job_needs?(jobs, "release-failure-alert", &1)
+      )
+
+    required_results =
+      Enum.all?(
+        ~w(needs.publish-ios-core.result needs.clean-room-proof-ios.result needs.publish-android-core.result needs.clean-room-proof-android.result needs.native-release-rollup.result),
+        &includes?(block, &1)
+      )
+
+    check(
+      "release.workflow.release_failure_alert_native",
+      required_needs and required_results,
+      "release-failure-alert must need the four native jobs plus native-release-rollup and echo each of their results, so a mirror-push or native proof failure opens a tracking issue; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 
@@ -833,7 +905,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         required_results and includes?(block, "$GITHUB_STEP_SUMMARY") and
         includes?(block, "native_core=\"partial\"") and
         includes?(block, "native_core=${native_core}") and includes?(block, "next_action") and
-        includes?(block, "Fix MIRROR_PUSH_TOKEN or run the iOS mirror backfill workflow."),
+        includes?(block, "Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."),
       "native-release-rollup must always summarize native publish/proof results, expose partial native_core state, and give a next safe action"
     )
   end

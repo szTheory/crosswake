@@ -47,7 +47,6 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     release.workflow.aggregate_gate.behavioral_jobs_absent
     release.workflow.proof_after_publish
     release.workflow.native_proof_decoupled
-    release.workflow.mirror_token_preflight
     release.workflow.concurrency_queue_max
     release.workflow.no_cancel_in_progress_true
     release.cleanroom.package_matrix_complete
@@ -56,7 +55,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   )
 
   @phase145_mirror_ids ~w(
-    release.mirror_token.write_preflight
+    release.ios.atomic_leased_push
   )
 
   @phase145_native_rollup_ids ~w(
@@ -161,34 +160,29 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase145_mirror
-  test "phase 145 read-only mirror preflight fails write-authority id" do
+  test "phase 145 missing dry-run probe fails atomic lease id" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        "git push --dry-run --porcelain mirror",
-        "echo '[crosswake] read-only mirror preflight kept git ls-remote mirror HEAD only'"
+        "--dry-run --porcelain",
+        ""
       )
 
-    assert_failure!("release.mirror_token.write_preflight", workflow)
+    assert_failure!("release.ios.atomic_leased_push", workflow)
   end
 
   @tag :phase145_mirror
-  test "phase 145 comment-only mirror dry-run decoy fails write-authority id" do
+  test "phase 145 bare force-with-lease decoy fails atomic lease id" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        "git push --dry-run --porcelain mirror",
-        "echo '[crosswake] mirror write dry-run omitted'"
-      )
-      |> replace_in_job(
-        "publish-ios-core",
-        "mirror_tag_sha=",
-        "# git push --dry-run --porcelain mirror \"${SPLIT_SHA}:refs/heads/main\" \"${SPLIT_SHA}:refs/tags/v${VERSION}\"\n          mirror_tag_sha="
+        ~s(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}"),
+        "--force-with-lease=refs/heads/main"
       )
 
-    assert_failure!("release.mirror_token.write_preflight", workflow)
+    assert_failure!("release.ios.atomic_leased_push", workflow)
   end
 
   @tag :phase145_mirror
@@ -430,21 +424,21 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   end
 
   @tag :phase144_release_integrity
-  test "phase 144 missing mirror token preflight fails consolidated mirror id" do
+  test "phase 144 missing SSH preflight fails consolidated iOS SSH transport id" do
     workflow =
       real_workflow()
       |> replace_in_job(
         "publish-ios-core",
-        "MIRROR_PUSH_TOKEN is not configured",
-        "mirror token absent"
+        "MIRROR_DEPLOY_KEY is not configured",
+        "deploy key preflight skipped"
       )
       |> replace_in_job(
         "publish-ios-core",
-        "git ls-remote mirror HEAD >/dev/null",
-        "echo mirror preflight skipped"
+        "persist-credentials: false",
+        "persist-credentials: true"
       )
 
-    assert_failure!("release.workflow.mirror_token_preflight", workflow)
+    assert_failure!("release.ios.ssh_transport", workflow)
   end
 
   @tag :phase144_release_integrity
