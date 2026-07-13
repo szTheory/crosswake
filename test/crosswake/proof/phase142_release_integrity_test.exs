@@ -302,8 +302,8 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     script =
       ios_backfill_script()
       |> String.replace(
-        "MIRROR_PUSH_TOKEN is required for --apply",
-        "MIRROR_PUSH_TOKEN is optional"
+        "MIRROR_DEPLOY_KEY has WRITE scope",
+        "deploy key scope is not checked"
       )
 
     assert_failure_with_fixtures!(
@@ -340,7 +340,7 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 iOS backfill does not force mirror main by default" do
     script =
       ios_backfill_script()
-      |> String.replace("--force-with-lease=refs/heads/main", "--force")
+      |> String.replace(~s(--force-with-lease="refs/heads/main:${current_main}"), "--force")
 
     assert_failure_with_fixtures!(
       "release.ios_backfill.no_default_main_force",

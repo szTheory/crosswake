@@ -1,6 +1,7 @@
 # Verify or backfill the SwiftPM mirror tag for an already-published lockstep
 # Crosswake core/native release. Verification is the default; mutation requires
-# apply=true plus MIRROR_PUSH_TOKEN scoped to szTheory/crosswake-shell-core-ios.
+# apply=true. Authenticates over SSH using the MIRROR_DEPLOY_KEY deploy key
+# scoped to szTheory/crosswake-shell-core-ios.
 
 name: iOS mirror backfill
 
@@ -69,6 +70,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
       - name: Install splitsh-lite v1.0.1
         run: |
@@ -78,7 +89,6 @@ jobs:
 
       - name: Verify or backfill SwiftPM mirror
         env:
-          MIRROR_PUSH_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN }}
           VERSION: ${{ inputs.version }}
           RELEASE_REF: ${{ inputs.release_ref }}
           APPLY: ${{ inputs.apply }}

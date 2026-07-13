@@ -106,6 +106,12 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
           non_comment_ios_backfill_script,
           non_comment_ios_backfill_workflow
         ),
+        ios_backfill_write_probe(non_comment_ios_backfill_script),
+        ios_backfill_explicit_lease(non_comment_ios_backfill_script),
+        ios_backfill_ssh_transport(
+          non_comment_ios_backfill_script,
+          non_comment_ios_backfill_workflow
+        ),
         workflow_concurrency_queue_max(non_comment_workflow),
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
@@ -849,7 +855,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.ios_backfill.verify_first",
       includes?(script, "APPLY=0") and includes?(script, "--apply") and
-        includes?(script, "MIRROR_PUSH_TOKEN is required for --apply") and
+        includes?(script, "MIRROR_DEPLOY_KEY has WRITE scope") and
         includes?(script, "verification-only mode made no changes") and
         includes?(workflow, "workflow_dispatch") and
         includes?(workflow, "verify-or-backfill-ios-mirror") and
@@ -889,11 +895,41 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     check(
       "release.ios_backfill.no_default_main_force",
       includes?(script, "--update-main") and
-        includes?(script, "--force-with-lease=refs/heads/main") and
+        includes?(script, ~s(--force-with-lease="refs/heads/main:${current_main}")) and
         includes?(script, "mirror-only commit evidence") and
         includes?(workflow, "update_main") and includes?(workflow, "Update main: ${UPDATE_MAIN}") and
         workflow_input_default?(workflow, "update_main", "false"),
-      "iOS mirror backfill must prefer tag verification/creation and only realign main with explicit update_main plus force-with-lease guardrails"
+      "iOS mirror backfill must prefer tag verification/creation and only realign main with explicit update_main plus explicit-lease guardrails"
+    )
+  end
+
+  defp ios_backfill_write_probe(script) do
+    check(
+      "release.ios_backfill.write_probe",
+      includes?(script, "push --dry-run --porcelain") and
+        includes?(script, "MIRROR_DEPLOY_KEY has WRITE scope"),
+      "iOS mirror backfill verify-only mode (apply=false) must perform a real dry-run write probe, not just anonymous read; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp ios_backfill_explicit_lease(script) do
+    check(
+      "release.ios_backfill.explicit_lease",
+      includes?(script, ~s(--force-with-lease="refs/heads/main:${current_main}")) and
+        not includes?(script, ~r/--force-with-lease=refs\/heads\/main(?!:)/),
+      "iOS mirror backfill --update-main push must use the explicit-lease form (--force-with-lease=<ref>:<expect>), the only form that works in a never-fetched CI checkout; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  defp ios_backfill_ssh_transport(script, workflow) do
+    check(
+      "release.ios_backfill.ssh_transport",
+      includes?(workflow, "persist-credentials: false") and
+        includes?(workflow, "webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555") and
+        includes?(workflow, "ssh-keyscan") and
+        includes?(script, "git@github.com:szTheory/crosswake-shell-core-ios.git") and
+        not includes?(script, "x-access-token"),
+      "iOS mirror backfill must authenticate over SSH via MIRROR_DEPLOY_KEY, never an HTTPS URL-embedded token; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 
