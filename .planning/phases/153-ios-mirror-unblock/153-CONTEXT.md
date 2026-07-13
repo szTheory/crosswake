@@ -63,7 +63,27 @@ Release infrastructure only. Two deliverables:
 
 - **D-07: Teach the script's verify-only branch to run `git push --dry-run --porcelain` BEFORE `--apply` exists.** Today `verify_or_apply_mirror()` returns in verify-only mode *before* reaching the dry-run, so `apply=false` proves **read** scope only — and read succeeds anonymously on a public repo (D-01.2), making verify-only nearly worthless as a permission check. Adding the dry-run probe to the verify branch (~5 lines) turns the already-dispatchable `apply=false` run into **the iOS fire-drill the repo lacks** — with zero new jobs and zero new recurring surface. (The repo has an `android-publish-fire-drill` but no iOS equivalent, on the surface that actually broke.)
 
-- **D-08: Backfill with `apply=true update_main=true` — tag AND main realignment.** Live state verified: mirror `main`, `HEAD`, and `refs/tags/v0.1.2` are **all one SHA (`6417ae6543219f1c35be120766827503eaa8ceea`)** — zero mirror-only commits, zero drift. `--update-main` is the **only code path in the repo that proves** the mirror-main lineage assumption (`git merge-base --is-ancestor`, fail-closed), and the release job silently depends on that assumption. It costs nothing in blast radius: the **tag is irreversible** (and pushed either way), while **main is `--force-with-lease` and reversible** back to `6417ae65`. It also fixes the *shopfront* — GitHub renders `main`'s README, so an adopter's first impression of the package is currently 0.1.2 content for a package that is really 0.2.0.
+- **D-08: ⚠️ SECOND ARMED FUSE — mirror `main` is OFF-LINEAGE, and this would break the next release even after the credential fix.**
+
+  **Evidence (verified 2026-07-12):** the 0.1.2 iOS mirror was completed **out-of-band via `git subtree split`**, not by splitsh-lite — the splitsh v2.0.0 404 killed the job *before* the push step, so the maintainer finished it by hand. Consequences, confirmed by probe:
+  - Mirror `main` == `HEAD` == `refs/tags/v0.1.2` == `6417ae6543219f1c35be120766827503eaa8ceea`, and **that object does not exist in this repo** (`git cat-file -t 6417ae65` → *could not get object info*).
+  - `git subtree split --prefix=packages/crosswake-shell-core-ios ios-core-v0.1.2` run today yields `94fd9c01…` — different again. The mirror's history is **not reproducible from this repo by any tool we have**.
+
+  **Therefore mirror `main` sits on a lineage splitsh-lite did not produce**, and:
+  1. The release job's **non-forced** `git push mirror "$SPLIT_SHA:refs/heads/main"` (`release-please.yml:449`) would be a **non-fast-forward reject**. Under `set -euo pipefail`, with the `--dry-run` spanning *both* refspecs, the job dies **before the tag push** — and reports `MIRROR_PUSH_TOKEN cannot push …`, **misdiagnosing a lineage problem as a credential problem for the second time.** Fixing the credential alone does **not** unbreak the next release.
+  2. `verify_ios_mirror_backfill.sh`'s `--update-main` ancestry guard (`git merge-base --is-ancestor "$current_main" "$SPLIT_SHA"`, line ~238) runs **in the monorepo**, where `6417ae65` is an unknown object → the command errors → the script **fail-closes** with `mirror main has commits not reachable from expected split SHA`. That message is *directionally right but diagnostically wrong* (it conflates "unknown object" with "mirror-only commits would be lost"). **`update_main=true` will NOT simply work.**
+
+  **MIRROR-01 (the tag) is UNAFFECTED** — `SPLIT_SHA:refs/tags/v0.2.0` creates a brand-new ref with no fast-forward constraint. And the existing `v0.1.2` tag stays resolvable for SwiftPM forever even after `main` is re-baselined, because a tag pins its object regardless of branch reachability. So the tag backfill can proceed on its own.
+
+  **Decision: perform a deliberate, one-time RE-BASELINE of mirror `main` onto the splitsh-lite lineage**, rather than trying to satisfy an ancestry proof that is unsatisfiable by construction. This is safe precisely because the mirror is a **pure derived, read-only artifact**: nothing depends on its commit SHAs, only on its **tags** (SwiftPM resolves tags, never branches), and both `v0.1.2` and `v0.2.0` tags are preserved through the operation. Requirements on the re-baseline:
+  - It is an explicit, separately-approved step — **not** silently smuggled inside `--apply`.
+  - The **`v0.1.2` tag is never touched** (it becomes an orphaned-but-resolvable commit; verify it still resolves afterwards).
+  - Push with `--force-with-lease` against the known lease `6417ae65`, so a concurrent third-party change aborts it.
+  - Fix the ancestry guard's message to distinguish *unknown object* from *would-lose-commits* (Claude's discretion whether to add an explicit `--rebaseline` flag that requires the operator to pass the expected current SHA).
+
+  **Also fix the release job so this cannot recur:** push `main` with `--force-with-lease` (not bare, non-forced) as part of the atomic push in **D-13**, so a future lineage divergence can never again swallow the tag.
+
+  Re-baselining also fixes the *shopfront* — GitHub renders `main`'s README, so an adopter's first impression of the package is currently 0.1.2 content for a package that is really 0.2.0.
 
 - **D-09: Verify-first choreography with an explicit go/no-go gate.** Dispatch `apply=false` first; the run MUST print all five OK lines (three-way release-ref agreement; manifest lockstep; live Hex+Maven 200s; computed split SHA — **record it by hand**; mirror tag absent). **No-go on any `FAIL:`, or on `points at <X>, expected <Y>`** (tag exists at a different SHA — a published tag is NEVER moved). Only then dispatch `apply=true update_main=true`. Post-check: `git ls-remote` on the mirror must show one SHA equal to the recorded split SHA.
 
@@ -81,9 +101,11 @@ Release infrastructure only. Two deliverables:
 
   ⚠️ **Do NOT add `needs: publish-android-core`.** `script/check_release_workflow_integrity.exs`'s `native_proof_decoupled` check **deliberately requires the iOS lane to not depend on Android** — coupling them would fight an encoded decision and let an Android flake block a recoverable mirror push. Gate on `publish-hex` **only**. This is safe precisely *because* the linked-versions group is asserted to be exactly `{hex, ios-core, android-core}`, so `publish-hex` cannot silently skip.
 
-- **D-13: Make the mirror push atomic.** Today the `--dry-run` probes both refspecs in one command, but the **real push is two separate commands** (`main`, then the tag) — so a tag-push failure leaves mirror `main` advanced with **no `v0.2.0` tag**: a partial state on the exact surface MIRROR-02 exists to eliminate. Fix: one `git push --atomic mirror "$SPLIT_SHA:refs/heads/main" "$SPLIT_SHA:refs/tags/v$VERSION"`. Apply the same treatment to the script's `--update-main` path.
+- **D-13: Make the mirror push atomic, and force-with-lease on `main`.** Today the `--dry-run` probes both refspecs in one command, but the **real push is two separate commands** (`main`, then the tag) — so a tag-push failure leaves mirror `main` advanced with **no `v0.2.0` tag**: a partial state on the exact surface MIRROR-02 exists to eliminate. Fix: one `git push --atomic mirror --force-with-lease "$SPLIT_SHA:refs/heads/main" "$SPLIT_SHA:refs/tags/v$VERSION"`. Apply the same treatment to the script's `--update-main` path.
 
-  Also fix the **misleading failure message**: a non-fast-forward `main` push currently reports as `MIRROR_PUSH_TOKEN cannot push …`, misattributing a lineage problem to a credential problem. Name it correctly.
+  ⚠️ **`--force-with-lease` on `main` is REQUIRED, not optional** — per **D-08**, a bare non-forced `main` push is exactly what would non-fast-forward-reject and swallow the tag. Atomicity alone does not fix that: an atomic push that *rejects* pushes neither ref, which turns a partial state into a total release failure still misreported as a token error. The tag must be pushed even when `main` diverges. **Planner: verify `--atomic` and `--force-with-lease` compose as expected here; if they do not, push the TAG FIRST and `main` second, never the reverse.**
+
+  Also fix the **misleading failure message**: a non-fast-forward `main` push currently reports as `MIRROR_PUSH_TOKEN cannot push …`, misattributing a lineage problem to a credential problem. This single message has now caused **two** misdiagnoses (D-01 and D-08). Name it correctly, and make it distinguish *auth failure* from *non-fast-forward* from *unknown object*.
 
 - **D-14: `permissions: contents: read` on `publish-ios-core` is CORRECT — do not change it.** It scopes `GITHUB_TOKEN` only; the push authenticates via the deploy key. Raising it would be strictly worse. Recorded so it is not "fixed" by a well-meaning downstream agent.
 
@@ -124,14 +146,20 @@ Per **D-02**, each mechanism below is chosen for *reach*, not for redness.
 
 ### Sequencing (load-bearing — the two halves are NOT independent)
 
-- **D-21: Transport fix (D-03/D-04) MUST land before any backfill attempt (D-06).** Per D-01.3, the backfill workflow shares the hijacked checkout, so attempting `--apply` first would fail and re-present as a token problem. Order:
-  1. Transport fix (deploy key + `persist-credentials: false`) in `release-please.yml`, `ios-mirror-backfill.yml`, and the script.
-  2. Human mints the deploy key (D-05).
-  3. Backfill `apply=false` → now includes the dry-run push probe (D-07) → **proves write scope**. This is the fire drill.
-  4. Backfill `apply=true update_main=true` (D-08) → MIRROR-01 done.
-  5. Durable guards (D-11 … D-20) → MIRROR-02 done.
+- **D-21: Strict order. There are TWO independent armed fuses (D-01 credential, D-08 lineage) and fixing only one still leaves the next release broken.** Per D-01.3 the backfill workflow shares the hijacked checkout, so attempting `--apply` before the transport fix would fail and re-present as a token problem. Per D-08, fixing the credential without re-baselining `main` leaves a non-fast-forward reject that *also* reports as a token problem.
 
-  Steps 1-4 and step 5 can otherwise land in either order — the backfill script already splits from `refs/tags/ios-core-v0.2.0` and already does the right thing, so D-11 only changes *future* releases.
+  1. **Transport fix** (deploy key + `persist-credentials: false`) in `release-please.yml`, `ios-mirror-backfill.yml`, and the script. — *defuses D-01*
+  2. **Human mints the deploy key** (D-05). One time, four commands.
+  3. **Backfill `apply=false`** → now carries the dry-run push probe (D-07) → **proves write scope**. This is the fire drill, and it is the first time the CI push credential has ever been exercised.
+  4. **Backfill `apply=true`** → pushes `refs/tags/v0.2.0`. **MIRROR-01 done.** (Tag push is unconstrained by the lineage problem.)
+  5. **Re-baseline mirror `main`** onto the splitsh-lite lineage, `--force-with-lease` against `6417ae65`, preserving the `v0.1.2` tag and verifying it still resolves. — *defuses D-08*
+  6. **Durable guards** (D-11 … D-20). **MIRROR-02 done.**
+
+  Steps 4 and 5 are **separately approved** — 4 is a one-way door (a public tag), 5 is reversible (leased force-push). Do not bundle them behind a single `--apply`.
+
+  Step 6 is independent of 1-5 and may land in either order: the backfill script already splits from `refs/tags/ios-core-v0.2.0` and already does the right thing, so D-11 only changes *future* releases. **But D-13's `--force-with-lease` fix must land before the next real release, or D-08's fuse re-arms.**
+
+  **Definition of done for the phase:** a `git ls-remote` on the mirror shows `refs/tags/v0.2.0` present and equal to the splitsh-lite split SHA; `v0.1.2` still resolves; `mix crosswake.release.status --live` exits 0; and the parity gate is green and registered as a required check.
 
 ### Claude's Discretion
 
