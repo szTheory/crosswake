@@ -690,7 +690,7 @@ jobs:
           if [ "$native_core" = "complete" ]; then
             next_action="No native recovery action needed."
           elif [ "$ios_released" = "true" ] && [ "$ios_state" != "proven" ]; then
-            next_action="Fix MIRROR_PUSH_TOKEN or run the iOS mirror backfill workflow."
+            next_action="Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."
           elif [ "$android_released" = "true" ] && [ "$android_state" != "proven" ]; then
             next_action="Inspect Android Maven publish/proof before declaring native complete."
           else
@@ -727,8 +727,19 @@ jobs:
             echo "- Next action: ${next_action}"
           } >> "$GITHUB_STEP_SUMMARY"
 
+          # D-17: a partial native release must not claim success. native_core=none (no
+          # native package released this run — the normal companion-only path) stays
+          # exit 0; native_core=partial with at least one native platform released must
+          # fail closed, now that the artifact and step summary above already captured
+          # the diagnostic this exit is about to fail on.
+          if [ "$native_core" != "complete" ] && { [ "$ios_released" = "true" ] || [ "$android_released" = "true" ]; }; then
+            echo "[crosswake] FAIL: native release is partial (native_core=${native_core}) — ${next_action}"
+            exit 1
+          fi
+
       - name: Upload native release status
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: native-release-status
           path: native-release-status.json
@@ -760,7 +771,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
-          MIRROR_PUSH_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN }}
+          MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
           RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
           set -euo pipefail
@@ -771,7 +782,7 @@ jobs:
             ORG_GRADLE_PROJECT_signingInMemoryKey \
             ORG_GRADLE_PROJECT_signingInMemoryKeyId \
             ORG_GRADLE_PROJECT_signingInMemoryKeyPassword \
-            MIRROR_PUSH_TOKEN \
+            MIRROR_DEPLOY_KEY \
             RELEASE_PLEASE_TOKEN; do
             if [ -z "${!var:-}" ]; then
               echo "MISSING SECRET: $var"
@@ -1246,11 +1257,15 @@ jobs:
             --body "Auto-generated (PROOF-03b). A companion's first release tag now exists, so its one-shot \`release-as\` bootstrap pin is stale — left in place it re-targets the same version forever (Pitfall 6). This PR strips \`release-as\` (and any adjacent \`_TODO_release_as\`) from the released component block(s). The release-as-staleness gate stays RED until this merges; safe to merge once CI is green."
 
   release-failure-alert:
-    name: Alert on companion publish/proof failure (PROOF-03c)
-    # Fires ONLY when a downstream companion publish or post-publish clean-room proof job actually
-    # FAILED. Skipped jobs (no companion released this run) are not failures, so this stays dormant
-    # on the happy/no-release path — the post-publish proof needs zero human eyeballing when green.
-    # A human is paged (via an auto-opened issue) only when something is genuinely broken.
+    name: Alert on companion or native publish/proof failure (PROOF-03c, D-15)
+    # Fires ONLY when a downstream companion or native publish job, post-publish clean-room proof
+    # job, or the native release rollup actually FAILED. Skipped jobs (no companion/native package
+    # released this run) are not failures, so this stays dormant on the happy/no-release path — the
+    # post-publish proof needs zero human eyeballing when green. A human is paged (via an
+    # auto-opened issue) only when something is genuinely broken. D-15 extends this to the native
+    # (iOS/Android) lanes: this is the only surface with persistence, and a mirror-push failure
+    # previously opened NOTHING here — the exact gap that let a red release go unnoticed for ~3
+    # months.
     needs:
       - publish-hex-rulestead
       - publish-hex-rindle
@@ -1262,6 +1277,11 @@ jobs:
       - clean-room-proof-chimeway
       - publish-hex-threadline
       - clean-room-proof-threadline
+      - publish-ios-core
+      - clean-room-proof-ios
+      - publish-android-core
+      - clean-room-proof-android
+      - native-release-rollup
     if: ${{ failure() }}
     runs-on: ubuntu-latest
     permissions:
@@ -1276,7 +1296,7 @@ jobs:
           set -euo pipefail
           run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           {
-            echo "A companion publish or post-publish clean-room proof job failed on the Release Please workflow."
+            echo "A companion or native publish job, post-publish clean-room proof job, or the native release rollup failed on the Release Please workflow. This is not necessarily a companion failure — check the job results below."
             echo
             echo "- Run: ${run_url}"
             echo "- Commit: ${{ github.sha }}"
@@ -1292,9 +1312,14 @@ jobs:
             echo "- clean-room-proof-chimeway: ${{ needs.clean-room-proof-chimeway.result }}"
             echo "- publish-hex-threadline: ${{ needs.publish-hex-threadline.result }}"
             echo "- clean-room-proof-threadline: ${{ needs.clean-room-proof-threadline.result }}"
+            echo "- publish-ios-core: ${{ needs.publish-ios-core.result }}"
+            echo "- clean-room-proof-ios: ${{ needs.clean-room-proof-ios.result }}"
+            echo "- publish-android-core: ${{ needs.publish-android-core.result }}"
+            echo "- clean-room-proof-android: ${{ needs.clean-room-proof-android.result }}"
+            echo "- native-release-rollup: ${{ needs.native-release-rollup.result }}"
             echo
-            echo "Opened automatically (PROOF-03c) so the post-publish proof needs no human eyeballing on the success path. Investigate the failed job above, then close."
+            echo "Opened automatically (PROOF-03c/D-15) so the post-publish proof needs no human eyeballing on the success path. Investigate the failed job above, then close."
           } > /tmp/release_alert_body.md
           gh issue create --repo "$REPO" \
-            --title "[release] companion publish/clean-room proof failed — run ${{ github.run_id }}" \
+            --title "[release] companion or native publish/clean-room proof failed — run ${{ github.run_id }}" \
             --body-file /tmp/release_alert_body.md
