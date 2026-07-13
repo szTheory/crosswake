@@ -199,7 +199,7 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
   2. A single native shell-core release run publishes Hex, Maven, and the iOS mirror together in one coordinated pass.
   3. A missing or invalid mirror push credential (`MIRROR_DEPLOY_KEY`) fails CI with a hard, named error instead of a silent 403.
 
-**Plans**: 4 plans
+**Plans**: 2/4 plans executed
 
 Plans:
 **Wave 1**
@@ -212,7 +212,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 153-03-PLAN.md — Release job: tag-pinned checkout, Hex-only gate, atomic leased push, native failure alerting, rollup fails closed
+- [x] 153-03-PLAN.md — Release job: tag-pinned checkout, Hex-only gate, atomic leased push, native failure alerting, rollup fails closed
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -290,7 +290,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
-| 153. iOS Mirror Unblock | v20.0 | 1/4 | In Progress|  |
+| 153. iOS Mirror Unblock | v20.0 | 2/4 | In Progress|  |
 | 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
 | 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |

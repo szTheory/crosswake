@@ -88,7 +88,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | MIRROR-01 | Phase 153 | In Progress (153-01 done; live tag push is 153-02, human-gated) |
-| MIRROR-02 | Phase 153 | In Progress (153-01 done; release-job atomic push + escalation is 153-03/04) |
+| MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
 | CTRL-01 | Phase 154 | Pending |
 | CTRL-02 | Phase 154 | Pending |
 | CTRL-03 | Phase 154 | Pending |

@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
+current_phase: 153
+current_phase_name: ios-mirror-unblock
 status: executing
 stopped_at: Phase 153 context gathered
-last_updated: "2026-07-13T17:44:22.986Z"
+last_updated: "2026-07-13T18:15:35.655Z"
 last_activity: 2026-07-13
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 153 (ios-mirror-unblock) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-07-13
 
-Progress: [███░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 
 ## v20.0 Roadmap Decisions (2026-07-12, locked)
 
@@ -234,6 +236,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: SSH deploy key (MIRROR_DEPLOY_KEY) replaces MIRROR_PUSH_TOKEN entirely in the backfill lane; HTTPS x-access-token branch removed, not deprioritized (153-01)
 - [Phase ?]: Explicit-lease --force-with-lease="refs/heads/main:${current_main}" is the only push form that works in a never-fetched CI checkout; no git fetch was added anywhere (153-01, RESEARCH Q1)
 - [Phase ?]: Ancestry guard distinguishes unknown-object (advisory, proceed) from known-non-ancestor (fail-closed) via cat-file -e before merge-base --is-ancestor (153-01, D-08/Q2)
+- [Phase ?]: publish-ios-core: atomic + explicit-lease mirror push scoped to main alone (D-13), Hex-only gate (D-12), release-tag-pinned checkout (D-11), SSH transport via MIRROR_DEPLOY_KEY (D-03/D-04)
+- [Phase ?]: release-failure-alert.needs extended to the four native jobs plus native-release-rollup (D-15); native-release-rollup exits 1 on partial native release (D-17)
+- [Phase ?]: Six scanner checks rewritten/added in check_release_workflow_integrity.exs for D-11/D-12/D-13/D-15/D-17/D-03/D-04, each with a decoy test (D-20)
 
 ### Pending Todos
 
@@ -311,10 +316,11 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 150 P03 | 4 min | 2 tasks | 5 files |
 | Phase 150 P04 | 4 min | 2 tasks | 7 files |
 | Phase 153 P01 | 15min | 3 tasks | 5 files |
+| Phase 153 P03 | 45min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-07-13T17:40:43.791Z
+Last session: 2026-07-13T18:15:35.650Z
 Stopped at: Phase 153 context gathered
 Resume file: None
 
