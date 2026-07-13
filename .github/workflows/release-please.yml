@@ -385,7 +385,7 @@ jobs:
 
   publish-ios-core:
     name: Mirror iOS core to split repo
-    needs: release-please
+    needs: [release-please, publish-hex]
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
     permissions:
@@ -393,7 +393,29 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Preflight — assert MIRROR_DEPLOY_KEY is configured
+        env:
+          MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MIRROR_DEPLOY_KEY:-}" ]; then
+            echo "[crosswake] FAIL: MIRROR_DEPLOY_KEY is not configured."
+            echo "[crosswake] What to do next: mint an SSH deploy key with write access on szTheory/crosswake-shell-core-ios and store the private half as the MIRROR_DEPLOY_KEY secret (see script/verify_ios_mirror_backfill.sh's D-05 ritual)."
+            exit 1
+          fi
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
       - name: Install splitsh-lite v1.0.1
         run: |
@@ -410,25 +432,14 @@ jobs:
 
       - name: Push split to mirror and tag
         env:
-          MIRROR_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN }}
           # SwiftPM resolves on a bare semver tag (e.g. v0.1.2). The release-please
           # root tag_name is component-prefixed (`hex-v0.1.2`) and would NOT resolve,
           # so the mirror tag is derived from the plain `version` output (PUB-01/SC#1).
           VERSION: ${{ needs.release-please.outputs.version }}
         run: |
           set -euo pipefail
-          if [ -z "${MIRROR_TOKEN:-}" ]; then
-            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN is not configured."
-            echo "[crosswake] What to do next: create a fine-grained PAT or GitHub App token with Contents:write on szTheory/crosswake-shell-core-ios and store it as MIRROR_PUSH_TOKEN."
-            exit 1
-          fi
-          git remote add mirror \
-            "https://x-access-token:${MIRROR_TOKEN}@github.com/szTheory/crosswake-shell-core-ios.git"
-          if ! git ls-remote mirror HEAD >/dev/null; then
-            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN cannot read szTheory/crosswake-shell-core-ios."
-            echo "[crosswake] What to do next: store a fine-grained PAT or GitHub App token with Contents:write on szTheory/crosswake-shell-core-ios as MIRROR_PUSH_TOKEN, then retry this release job or run the Phase 145 iOS mirror backfill route for refs/tags/v${VERSION}."
-            exit 1
-          fi
+          git remote add mirror git@github.com:szTheory/crosswake-shell-core-ios.git
+
           mirror_tag_sha="$(git ls-remote mirror "refs/tags/v${VERSION}" | awk '{print $1}' || true)"
           if [ -n "$mirror_tag_sha" ]; then
             if [ "$mirror_tag_sha" = "$SPLIT_SHA" ]; then
@@ -439,15 +450,39 @@ jobs:
             echo "[crosswake] What to do next: do not delete or move the public SwiftPM tag automatically. Inspect szTheory/crosswake-shell-core-ios and use the Phase 145 iOS mirror backfill route only after confirming the intended release identity."
             exit 1
           fi
-          if ! git push --dry-run --porcelain mirror \
+
+          CURRENT_MAIN_SHA="$(git ls-remote mirror refs/heads/main | awk '{print $1}' | head -1)"
+          if [ -n "$CURRENT_MAIN_SHA" ]; then
+            MIRROR_PUSH_ARGS=(--force-with-lease="refs/heads/main:${CURRENT_MAIN_SHA}")
+          else
+            MIRROR_PUSH_ARGS=()
+          fi
+
+          if ! git push --atomic mirror --dry-run --porcelain "${MIRROR_PUSH_ARGS[@]}" \
             "${SPLIT_SHA}:refs/heads/main" \
-            "${SPLIT_SHA}:refs/tags/v${VERSION}"; then
-            echo "[crosswake] FAIL: MIRROR_PUSH_TOKEN cannot push refs/tags/v${VERSION} to szTheory/crosswake-shell-core-ios."
-            echo "[crosswake] What to do next: configure a mirror-scoped token with Contents:write, then retry this release job or run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION}."
+            "${SPLIT_SHA}:refs/tags/v${VERSION}" > /tmp/mirror_push_dry_run.log 2>&1; then
+            dry_run_output="$(cat /tmp/mirror_push_dry_run.log)"
+            echo "$dry_run_output"
+            case "$dry_run_output" in
+              *"Permission denied"*|*"publickey"*|*"Could not read from remote repository"*)
+                echo "[crosswake] FAIL: MIRROR_DEPLOY_KEY cannot authenticate to szTheory/crosswake-shell-core-ios."
+                echo "[crosswake] What to do next: confirm the SSH deploy key is registered with write access (gh repo deploy-key add ./crosswake_ios_mirror.pub -R szTheory/crosswake-shell-core-ios --allow-write), then retry this release job."
+                ;;
+              *"stale info"*|*"non-fast-forward"*|*"rejected"*)
+                echo "[crosswake] FAIL: mirror push for refs/tags/v${VERSION} was rejected (non-fast-forward or lease mismatch), not a credential problem — every iOS adopter of ${VERSION} stays unresolvable until this lands."
+                echo "[crosswake] What to do next: inspect szTheory/crosswake-shell-core-ios main and run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION} --update-main after reviewing mirror-only commits."
+                ;;
+              *)
+                echo "[crosswake] FAIL: mirror push dry-run for refs/tags/v${VERSION} failed for an unrecognized reason — every iOS adopter of ${VERSION} stays unresolvable until this lands."
+                echo "[crosswake] What to do next: inspect the dry-run output above, then retry this release job or run script/verify_ios_mirror_backfill.sh --version ${VERSION} --ref refs/tags/ios-core-v${VERSION}."
+                ;;
+            esac
             exit 1
           fi
-          git push mirror "${SPLIT_SHA}:refs/heads/main"
-          git push mirror "${SPLIT_SHA}:refs/tags/v${VERSION}"
+
+          git push --atomic mirror "${MIRROR_PUSH_ARGS[@]}" \
+            "${SPLIT_SHA}:refs/heads/main" \
+            "${SPLIT_SHA}:refs/tags/v${VERSION}"
 
   publish-android-core:
     name: Publish Android core to Maven Central
