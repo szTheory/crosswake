@@ -194,8 +194,14 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
 **Success Criteria** (what must be TRUE):
   1. The `crosswake-shell-core-ios` mirror repo carries a `v0.2.0` tag matching the live Hex/Maven `0.2.0` core, confirmed via `mix crosswake.release.status --live`.
   2. A single native shell-core release run publishes Hex, Maven, and the iOS mirror together in one coordinated pass.
-  3. A missing or invalid `MIRROR_PUSH_TOKEN` fails CI with a hard, named error instead of a silent 403.
-**Plans**: TBD
+  3. A missing or invalid mirror push credential (`MIRROR_DEPLOY_KEY`) fails CI with a hard, named error instead of a silent 403.
+**Plans**: 4 plans
+
+Plans:
+- [ ] 153-01-PLAN.md — Backfill lane: SSH deploy-key transport, `apply=false` write-scope fire drill, atomic explicit-lease push (defuses the `actions/checkout` credential hijack)
+- [ ] 153-02-PLAN.md — Human-gated: mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror `main` (MIRROR-01)
+- [ ] 153-03-PLAN.md — Release job: tag-pinned checkout, Hex-only gate, atomic leased push, native failure alerting, rollup fails closed
+- [ ] 153-04-PLAN.md — Durable guards: merge-blocking mirror parity gate + honest `release.status --live` (`:missing` vs `:unavailable`)
 
 ### Phase 154: The Control-Contract Seam
 **Goal**: A LiveView can invoke a bounded native control through one typed seam and get a correlated reply; every shell-absent/old-shell/undeclared failure mode collapses into one denial; the command vocabulary is structurally closed against drift; and the already-shipped haptics capability proves the seam end-to-end with zero native-side risk.
