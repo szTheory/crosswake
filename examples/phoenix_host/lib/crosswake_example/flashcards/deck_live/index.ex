@@ -1,12 +1,13 @@
 defmodule CrosswakeExample.Flashcards.DeckLive.Index do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.Flashcards
 
   @impl true
   def mount(_params, _session, socket) do
     decks = Flashcards.list_decks()
-    {:ok, assign(socket, decks: decks)}
+    {:ok, assign(socket, decks: decks, page_title: PageTitle.learn("Decks"))}
   end
 
   @impl true

@@ -1,6 +1,8 @@
 defmodule CrosswakeExample.PaywallEntryLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   alias Crosswake.Commerce.Contracts
 
   alias CrosswakeExample.Commerce.{
@@ -24,6 +26,7 @@ defmodule CrosswakeExample.PaywallEntryLive do
      assign(socket,
        derived_state: :stale,
        paywall_entry: paywall_entry(),
+       page_title: PageTitle.crosswake("Paywall Proof"),
        dev_mode: @dev_mode
      )}
   end

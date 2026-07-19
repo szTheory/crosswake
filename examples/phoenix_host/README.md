@@ -8,6 +8,21 @@ for adopter-fit framing and
 [guides/support_matrix.md](../../guides/support_matrix.md)
 for the canonical package and support posture.
 
+Open the showcase hub at `http://localhost:4700/` first. It is the
+product-shaped entrypoint for the SaaS/Admin, Field Service, and
+Learning/Training lanes; proof routes stay one click deeper and are secondary to
+the showcase-first path.
+
+Support-truth labels stay literal in this host: `Available today`,
+`Proof-backed example`, `Demo pressure`, and `Future gap` separate proof-backed
+behavior from future native-control pressure. Showcase screenshots explain the
+product surface; route-tour assertions prove route-owner semantics before
+screenshots are treated as collateral.
+
+**Read Capability Map:** [../../guides/capability_map.md](../../guides/capability_map.md)
+keeps available support, proof-backed examples, demo pressure, future gaps, and
+v20 next-pack candidates separate from the example host boundary.
+
 ## Shared Artifact Rules
 
 - Keep one shared Phoenix host under `examples/phoenix_host`.

@@ -2,27 +2,82 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
   use ExUnit.Case, async: true
 
   @example_manifest "examples/phoenix_host/evidence/evidence-manifest.example.json"
-  @support_matrix "guides/support_matrix.md"
   @current_version Application.spec(:crosswake, :vsn) |> to_string()
 
   @root_required_fields ~w(schema_version crosswake_version commit_sha source_job captured_at retention_label routes)
 
-  @route_required_fields ~w(route_id runtime_owner platform_runtime command proof_class support_label coordinate_mode source_job captured_at artifacts retention_label known_limitations status)
+  @route_required_fields ~w(route_id runtime_owner platform_runtime command proof_class support_label coordinate_mode source_job captured_at artifacts retention_label known_limitations status capability_posture package_owner)
 
-  @expected_route_ids ~w(library bridge-proof offline-study selective-native-claim-capture)
+  @expected_route_ids ~w(
+    showcase-hub
+    adminpilot-dashboard
+    adminpilot-approvals
+    adminpilot-approval-approved
+    adminpilot-diagnostics
+    fieldserv-jobs
+    fieldserv-job-detail
+    fieldserv-inspection
+    fieldserv-capture-handoff
+    fieldserv-evidence-review
+    learnloop-dashboard
+    learnloop-course
+    learnloop-subscription
+    learnloop-pack
+    learnloop-history-diagnostics
+    learnloop-route-tour
+    library
+    bridge-proof
+    offline-study
+    selective-native-claim-capture
+    fieldserv-capture-pressure
+    fieldserv-scanner-pressure
+    fieldserv-document-scan-pressure
+    fieldserv-media-upload-pressure
+    fieldserv-offline-inspection-pressure
+    learnloop-native-storage-pressure
+    learnloop-sync-productization-pressure
+    learnloop-commerce-pressure
+    native-controls-alert-confirm
+    native-controls-action-menu
+    native-controls-toast-review
+    permissions-status-evidence
+    notification-token-evidence
+  )
 
-  @allowed_labels [
-    "merge-blocking proof",
-    "advisory evidence",
-    "checked-in public-coordinate proof",
-    "local-dev proof",
-    "generated public-coordinate proof",
-    "JVM hermetic proof",
-    "emulator evidence",
-    "device evidence",
-    "verification-required",
-    "rebuild-required"
+  @allowed_proof_classes [
+    "merge-blocking",
+    "advisory",
+    "not-yet-proven",
+    "unsupported"
   ]
+
+  @allowed_support_labels [
+    "Available today",
+    "Proof-backed example",
+    "Demo pressure",
+    "Advisory evidence",
+    "Future gap",
+    "Next-pack candidate"
+  ]
+
+  @allowed_capability_postures [
+    "shipped",
+    "proof-backed-example",
+    "demo-pressure",
+    "advisory-evidence",
+    "future-gap",
+    "next-pack-candidate"
+  ]
+
+  @allowed_package_owners [
+    "core",
+    "native shell",
+    "first-party companion",
+    "example/docs-only",
+    "deferred"
+  ]
+
+  @allowed_retention_labels ["ci-artifact-14-days"]
 
   test "committed example manifest is complete, bounded, and uses current source truth" do
     manifest = read_manifest!(@example_manifest)
@@ -49,19 +104,22 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
     end
   end
 
-  test "allowed labels are literal support-matrix vocabulary" do
-    support_matrix = File.read!(@support_matrix)
-
-    for label <- @allowed_labels do
-      assert support_matrix =~ label
-    end
-
+  test "allowed labels are literal capability-map and proof-posture vocabulary" do
     manifest = read_manifest!(@example_manifest)
-    labels = manifest_labels(manifest)
 
-    assert Enum.all?(labels, &(&1 in @allowed_labels))
-    assert "merge-blocking proof" in labels
-    assert "advisory evidence" in labels
+    assert Enum.all?(manifest_values(manifest, "proof_class"), &(&1 in @allowed_proof_classes))
+    assert Enum.all?(manifest_values(manifest, "support_label"), &(&1 in @allowed_support_labels))
+
+    assert Enum.all?(
+             manifest_values(manifest, "capability_posture"),
+             &(&1 in @allowed_capability_postures)
+           )
+
+    assert Enum.all?(manifest_values(manifest, "package_owner"), &(&1 in @allowed_package_owners))
+    assert "merge-blocking" in manifest_values(manifest, "proof_class")
+    assert "advisory" in manifest_values(manifest, "proof_class")
+    assert "Demo pressure" in manifest_values(manifest, "support_label")
+    assert "Next-pack candidate" in manifest_values(manifest, "support_label")
   end
 
   test "synthetic regressions reject missing D-08 root and route fields" do
@@ -127,11 +185,13 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
       |> get_in(["routes", Access.at(0)])
       |> Map.merge(%{
         "route_id" => "ios-simulator-route-tour",
-        "proof_class" => "advisory evidence",
-        "support_label" => "emulator evidence",
+        "proof_class" => "advisory",
+        "support_label" => "Advisory evidence",
         "platform_runtime" => "ios-simulator",
         "status" => "unavailable",
-        "artifacts" => []
+        "artifacts" => [],
+        "capability_posture" => "advisory-evidence",
+        "package_owner" => "native shell"
       })
       |> Map.delete("unavailable_reason")
 
@@ -150,6 +210,31 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
              ),
              nil
            ) == :ok
+  end
+
+  test "D-15/D-16 capability-pressure rows distinguish limitations, retention, posture, and owner" do
+    manifest = read_manifest!(@example_manifest)
+
+    for route_id <- [
+          "fieldserv-scanner-pressure",
+          "fieldserv-document-scan-pressure",
+          "fieldserv-media-upload-pressure",
+          "learnloop-native-storage-pressure",
+          "learnloop-commerce-pressure",
+          "native-controls-alert-confirm"
+        ] do
+      route = route!(manifest, route_id)
+
+      assert route["status"] == "unavailable"
+      assert route["proof_class"] in ["not-yet-proven", "unsupported"]
+      assert route["support_label"] in ["Future gap", "Next-pack candidate"]
+      assert route["capability_posture"] in ["future-gap", "next-pack-candidate"]
+      assert route["package_owner"] in @allowed_package_owners
+      assert is_binary(route["unavailable_reason"]) and route["unavailable_reason"] != ""
+      assert route["known_limitations"] != []
+      assert Enum.any?(route["known_limitations"], &String.contains?(&1, "does not prove"))
+      assert route["retention_label"] in @allowed_retention_labels
+    end
   end
 
   defp read_manifest!(path) do
@@ -224,17 +309,20 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
 
   defp label_failures(route, route_id) do
     [
-      label_failure(route, route_id, "proof_class"),
-      label_failure(route, route_id, "support_label"),
+      value_failure(route, route_id, "proof_class", @allowed_proof_classes),
+      value_failure(route, route_id, "support_label", @allowed_support_labels),
+      value_failure(route, route_id, "capability_posture", @allowed_capability_postures),
+      value_failure(route, route_id, "package_owner", @allowed_package_owners),
+      value_failure(route, route_id, "retention_label", @allowed_retention_labels),
       coordinate_mode_failure(route, route_id)
     ]
     |> List.flatten()
   end
 
-  defp label_failure(route, route_id, field) do
+  defp value_failure(route, route_id, field, allowed_values) do
     value = Map.get(route, field)
 
-    if value in @allowed_labels do
+    if value in allowed_values do
       []
     else
       ["route #{route_id} unsupported #{field} #{value}"]
@@ -244,7 +332,7 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
   defp coordinate_mode_failure(route, route_id) do
     value = Map.get(route, "coordinate_mode")
 
-    if is_nil(value) or value in @allowed_labels do
+    if is_nil(value) or value in @allowed_support_labels or value in @allowed_proof_classes do
       []
     else
       ["route #{route_id} unsupported coordinate_mode #{value}"]
@@ -283,11 +371,11 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
       not is_list(artifacts) ->
         ["route #{route_id} missing artifacts"]
 
-      route["proof_class"] == "merge-blocking proof" and route["status"] == "captured" and
+      route["proof_class"] == "merge-blocking" and route["status"] == "captured" and
           artifacts == [] ->
         ["route #{route_id} missing artifacts"]
 
-      route["proof_class"] == "merge-blocking proof" and route["status"] == "captured" and
+      route["proof_class"] == "merge-blocking" and route["status"] == "captured" and
           artifact_root ->
         Enum.flat_map(artifacts, fn artifact ->
           if File.exists?(Path.join(artifact_root, artifact)) do
@@ -304,13 +392,16 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
 
   defp present?(value), do: not (is_nil(value) or value == "")
 
-  defp manifest_labels(manifest) do
+  defp manifest_values(manifest, field) do
     manifest["routes"]
-    |> Enum.flat_map(fn route ->
-      [route["proof_class"], route["support_label"], route["coordinate_mode"]]
-    end)
+    |> Enum.map(&Map.get(&1, field))
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
+  end
+
+  defp route!(manifest, route_id) do
+    Enum.find(manifest["routes"], &(&1["route_id"] == route_id)) ||
+      flunk("expected evidence manifest route #{route_id}")
   end
 
   defp with_artifact_fixture(manifest, fun) do

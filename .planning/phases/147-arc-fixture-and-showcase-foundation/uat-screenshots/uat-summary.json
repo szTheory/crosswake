@@ -1,0 +1,198 @@
+[
+  {
+    "scenario": {
+      "name": "desktop-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "light",
+      "reducedMotion": "no-preference"
+    },
+    "title": "Phoenix routes, native where it matters.",
+    "laneHeadings": [
+      "SaaS/Admin",
+      "Field Service",
+      "Learning/Training"
+    ],
+    "learningHref": "/offline",
+    "visibleLanes": 3,
+    "firstViewportLaneCount": 3,
+    "metrics": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440
+    },
+    "missingLabels": [],
+    "focusInfo": {
+      "tag": "A",
+      "text": "Explore Showcase",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(201, 138, 46)",
+      "rect": {
+        "x": 1113.140625,
+        "y": 80,
+        "width": 166.859375,
+        "height": 44,
+        "top": 80,
+        "right": 1280,
+        "bottom": 124,
+        "left": 1113.140625
+      }
+    },
+    "layout": {
+      "overlaps": [],
+      "count": 0
+    },
+    "screenshot": "/Users/jon/projects/crosswake/.planning/phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/desktop-light.png",
+    "errors": []
+  },
+  {
+    "scenario": {
+      "name": "desktop-dark-reduced",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "colorScheme": "dark",
+      "reducedMotion": "reduce"
+    },
+    "title": "Phoenix routes, native where it matters.",
+    "laneHeadings": [
+      "SaaS/Admin",
+      "Field Service",
+      "Learning/Training"
+    ],
+    "learningHref": "/offline",
+    "visibleLanes": 3,
+    "firstViewportLaneCount": 3,
+    "metrics": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440
+    },
+    "missingLabels": [],
+    "focusInfo": {
+      "tag": "A",
+      "text": "Explore Showcase",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(78, 154, 142)",
+      "rect": {
+        "x": 1113.140625,
+        "y": 80,
+        "width": 166.859375,
+        "height": 44,
+        "top": 80,
+        "right": 1280,
+        "bottom": 124,
+        "left": 1113.140625
+      }
+    },
+    "layout": {
+      "overlaps": [],
+      "count": 0
+    },
+    "screenshot": "/Users/jon/projects/crosswake/.planning/phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/desktop-dark-reduced.png",
+    "errors": []
+  },
+  {
+    "scenario": {
+      "name": "mobile-light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "light",
+      "reducedMotion": "no-preference"
+    },
+    "title": "Phoenix routes, native where it matters.",
+    "laneHeadings": [
+      "SaaS/Admin",
+      "Field Service",
+      "Learning/Training"
+    ],
+    "learningHref": "/offline",
+    "visibleLanes": 3,
+    "firstViewportLaneCount": 2,
+    "metrics": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390
+    },
+    "missingLabels": [],
+    "focusInfo": {
+      "tag": "A",
+      "text": "Explore Showcase",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(201, 138, 46)",
+      "rect": {
+        "x": 16,
+        "y": 216,
+        "width": 358,
+        "height": 44,
+        "top": 216,
+        "right": 374,
+        "bottom": 260,
+        "left": 16
+      }
+    },
+    "layout": {
+      "overlaps": [],
+      "count": 0
+    },
+    "screenshot": "/Users/jon/projects/crosswake/.planning/phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/mobile-light.png",
+    "errors": []
+  },
+  {
+    "scenario": {
+      "name": "mobile-dark-reduced",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "colorScheme": "dark",
+      "reducedMotion": "reduce"
+    },
+    "title": "Phoenix routes, native where it matters.",
+    "laneHeadings": [
+      "SaaS/Admin",
+      "Field Service",
+      "Learning/Training"
+    ],
+    "learningHref": "/offline",
+    "visibleLanes": 3,
+    "firstViewportLaneCount": 2,
+    "metrics": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390
+    },
+    "missingLabels": [],
+    "focusInfo": {
+      "tag": "A",
+      "text": "Explore Showcase",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(78, 154, 142)",
+      "rect": {
+        "x": 16,
+        "y": 216,
+        "width": 358,
+        "height": 44,
+        "top": 216,
+        "right": 374,
+        "bottom": 260,
+        "left": 16
+      }
+    },
+    "layout": {
+      "overlaps": [],
+      "count": 0
+    },
+    "screenshot": "/Users/jon/projects/crosswake/.planning/phases/147-arc-fixture-and-showcase-foundation/uat-screenshots/mobile-dark-reduced.png",
+    "errors": []
+  }
+]

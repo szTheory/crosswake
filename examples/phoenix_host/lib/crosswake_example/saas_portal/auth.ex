@@ -8,7 +8,7 @@ defmodule CrosswakeExample.SaaSPortal.Auth do
   alias CrosswakeExample.SaaSPortal.Accounts
   alias CrosswakeExample.SaaSPortal.Fixtures
 
-  @roles [:member, :approver]
+  @roles [:member, :approver, :owner]
   @session_key "saas_portal_user_id"
 
   def init(action), do: action
@@ -72,6 +72,6 @@ defmodule CrosswakeExample.SaaSPortal.Auth do
     Fixtures.user_by_id(user_id) || Fixtures.user!(:member)
   end
 
-  def approver?(%{role: :approver}), do: true
+  def approver?(%{role: role}) when role in [:approver, :owner], do: true
   def approver?(_user), do: false
 end

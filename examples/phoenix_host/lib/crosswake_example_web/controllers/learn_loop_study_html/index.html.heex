@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{@page_title}</title>
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <style>
+      body {
+        font-family: var(--cw-font-body);
+        background: var(--cw-surface-default);
+        color: var(--cw-text-default);
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      .learnloop-study {
+        box-sizing: border-box;
+        width: min(100%, 72rem);
+        margin: 0 auto;
+        padding: clamp(1rem, 3vw, 2rem);
+      }
+
+      .study-header,
+      .study-grid,
+      .study-panel,
+      .status-list {
+        box-sizing: border-box;
+      }
+
+      .study-header {
+        display: grid;
+        gap: 1rem;
+        padding: 1.25rem 0 1.5rem;
+        border-bottom: 1px solid var(--cw-border-default);
+      }
+
+      .study-kicker,
+      .study-meta,
+      .status-list,
+      .reset-honesty {
+        color: var(--cw-text-muted);
+        font-size: var(--cw-text-scale-sm);
+      }
+
+      .study-kicker {
+        margin: 0;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 48rem;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        line-height: 1.05;
+      }
+
+      .study-meta {
+        margin: 0;
+        max-width: 48rem;
+        line-height: 1.6;
+      }
+
+      .badge-row,
+      #controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .badge {
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-sm);
+        padding: 0.35rem 0.65rem;
+        color: var(--cw-text-default);
+        background: var(--cw-surface-inset);
+        font-size: var(--cw-text-scale-sm);
+        font-weight: 700;
+      }
+
+      .study-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+        gap: 1rem;
+        align-items: start;
+        padding: 1rem 0 0;
+      }
+
+      .study-panel {
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+        background: var(--cw-surface-inset);
+        padding: clamp(1rem, 2vw, 1.5rem);
+      }
+
+      #flashcard-container {
+        min-height: 13rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+        background: var(--cw-surface-default);
+        padding: 2rem;
+        font-size: 1.5rem;
+      }
+
+      .card-front,
+      .card-back {
+        width: 100%;
+      }
+
+      .card-back {
+        display: none;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--cw-border-default);
+        color: var(--cw-text-muted);
+        font-size: 1.25rem;
+      }
+
+      #controls {
+        margin-top: 1rem;
+      }
+
+      button {
+        min-height: 44px;
+        padding: 0.75rem 1.1rem;
+        border-radius: var(--cw-radius-sm);
+        border: 2px solid transparent;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:focus-visible {
+        outline: 3px solid var(--cw-focus-ring);
+        outline-offset: 2px;
+      }
+
+      .btn-primary {
+        background: var(--cw-action-bg);
+        color: var(--cw-action-fg);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--cw-text-default);
+        border-color: var(--cw-border-default);
+      }
+
+      #status {
+        min-height: 1.5rem;
+        margin-top: 1rem;
+        color: var(--cw-text-default);
+        font-size: var(--cw-text-scale-sm);
+      }
+
+      .status-list {
+        display: grid;
+        gap: 0.65rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        line-height: 1.45;
+      }
+
+      .status-list strong {
+        color: var(--cw-text-default);
+      }
+
+      .reset-honesty {
+        margin: 1rem 0 0;
+        padding-top: 1rem;
+        border-top: 1px solid var(--cw-border-default);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 760px) {
+        .study-grid {
+          grid-template-columns: 1fr;
+        }
+
+        #controls button {
+          flex: 1 1 9rem;
+        }
+      }
+    </style>
+  </head>
+  <body
+    data-route-id="learnloop-study-session"
+    data-sync-endpoint="/learnloop/sync"
+    data-pack-id={@pack.id}
+    data-browser-state-owner="device"
+    data-storage-budget={@island.storage_budget}
+    data-reserve-for-journal={@island.reserve_for_journal}
+    data-eviction-policy={@island.eviction}
+  >
+    <main class="learnloop-study">
+      <header class="study-header">
+        <p class="study-kicker">LearnLoop offline island</p>
+        <h1>Review {@pack.title}</h1>
+        <p class="study-meta">
+          Content pack {@pack.id} runs in this browser-owned study route. Answers save to IndexedDB first, then replay through the LearnLoop review sync endpoint.
+        </p>
+        <div class="badge-row" aria-label="Route ownership">
+          <span class="badge">Offline island</span>
+          <span class="badge">Local-first outbox</span>
+          <span class="badge">Content pack</span>
+          <span class="badge">Manual eviction</span>
+        </div>
+      </header>
+
+      <section class="study-grid" aria-label="LearnLoop study session">
+        <div class="study-panel" aria-label="Flashcard review">
+          <div id="flashcard-container">
+            Loading flashcards...
+          </div>
+
+          <div id="controls">
+            <button id="btn-flip" class="btn-primary" type="button">Flip Card</button>
+            <button id="btn-good" class="btn-primary" type="button" style="display: none;">Good</button>
+            <button id="btn-hard" class="btn-secondary" type="button" style="display: none;">Hard</button>
+          </div>
+
+          <div id="status" aria-live="polite" role="status" aria-atomic="true">
+            Saved locally and queued for replay status appears here.
+          </div>
+        </div>
+
+        <aside class="study-panel" aria-label="Reconciliation status">
+          <h2>Sync visibility</h2>
+          <ul class="status-list">
+            <li><strong>Saved locally</strong> means the review event is in this device's IndexedDB outbox.</li>
+            <li><strong>Queued for replay</strong> means the browser will retry through /learnloop/sync.</li>
+            <li><strong>Syncing</strong> means LearnLoop is sending append-only review events to Phoenix.</li>
+            <li><strong>Synced 0 - queued 0</strong> means accepted rows were removed from the browser queue.</li>
+            <li><strong>Rejected by server - review needed</strong> keeps failed rows visible for reconciliation.</li>
+          </ul>
+          <p class="reset-honesty">
+            Server reset does not clear this device's offline state. Browser cleanup stays in Playwright helpers or user-owned browser storage controls.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="/offline_study.js"></script>
+  </body>
+</html>

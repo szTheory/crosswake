@@ -1,7 +1,7 @@
 # Thread: Runtime Contract Confidence
 
 **Opened:** 2026-06-19 (milestone next-step assessment, post-v13.0)
-**Status:** OPEN - recommended next milestone wedge
+**Status:** RESOLVED by v14.0 — historical thread retained for evidence.
 **Lens:** adopter-first production confidence for Phoenix SaaS apps using Crosswake
 
 ## Assessment

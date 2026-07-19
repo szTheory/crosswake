@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.SelectiveNative.SubmissionReviewLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SelectiveNative.Claims
   alias CrosswakeExample.SelectiveNative.Submissions
 
@@ -8,8 +9,13 @@ defmodule CrosswakeExample.SelectiveNative.SubmissionReviewLive do
     # Assuming claim and submission share the same ID for this prototype
     claim = Claims.get_claim!(id)
     submission = Submissions.get_submission!(id)
-    
-    {:ok, assign(socket, claim: claim, submission: submission)}
+
+    {:ok,
+     assign(socket,
+       claim: claim,
+       submission: submission,
+       page_title: PageTitle.field("Review Evidence")
+     )}
   end
 
   def handle_event("prepare_upload", _params, socket) do
@@ -17,7 +23,7 @@ defmodule CrosswakeExample.SelectiveNative.SubmissionReviewLive do
     # Trigger the explicit transfer.upload.prepare seam.
     {:ok, updated_submission} = Submissions.mark_submitted(socket.assigns.submission)
     {:ok, updated_claim} = Claims.mark_uploaded(socket.assigns.claim)
-    
+
     {:noreply, assign(socket, submission: updated_submission, claim: updated_claim)}
   end
 

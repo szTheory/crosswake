@@ -3,6 +3,10 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
 
   @quick_start_path "examples/QUICK_START.md"
   @adoption_path "guides/adoption.md"
+  @readme_path "README.md"
+  @see_it_run_path "guides/see_it_run.md"
+  @hero_command_path "bin/see-it-run.sh"
+  @phoenix_host_readme_path "examples/phoenix_host/README.md"
   @phoenix_config_path "examples/phoenix_host/config/runtime.exs"
   @playwright_config_path "examples/phoenix_host/playwright.config.ts"
   @phoenix_mix_path "examples/phoenix_host/mix.exs"
@@ -39,6 +43,72 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
         scan_adoption({@adoption_path, File.read!(@adoption_path)})
 
     assert_no_drift_failures(failures)
+  end
+
+  test "first-run docs and launcher stay showcase-first with proof-secondary support truth" do
+    docs = [
+      {@hero_command_path, File.read!(@hero_command_path), :launcher},
+      {@readme_path, File.read!(@readme_path), :public_doc},
+      {@see_it_run_path, File.read!(@see_it_run_path), :public_doc},
+      {@quick_start_path, File.read!(@quick_start_path), :proof_reference},
+      {@phoenix_host_readme_path, File.read!(@phoenix_host_readme_path), :example_host}
+    ]
+
+    failures = Enum.flat_map(docs, &scan_showcase_first_run_doc/1)
+
+    assert_no_drift_failures(failures)
+  end
+
+  test "showcase-first scanner names missing categories separately" do
+    port = phoenix_host_port()
+
+    baseline = """
+    Open the showcase hub at http://localhost:#{port}/.
+    Proof routes stay one click deeper after the product-shaped showcase.
+    The support-truth labels include Available today, Proof-backed example, Demo pressure, and Future gap.
+    Showcase screenshots explain the product surface; route-tour assertions prove route-owner semantics.
+    Cached read-only is not offline mutation, and emulator evidence is advisory.
+    """
+
+    assert_failure_category(
+      scan_showcase_first_run_doc(
+        {"synthetic/showcase_missing_first.md",
+         String.replace(baseline, ~r/showcase/i, "starting-page"), :public_doc}
+      ),
+      :missing_showcase_first
+    )
+
+    assert_failure_category(
+      scan_showcase_first_run_doc(
+        {"synthetic/showcase_missing_proof_secondary.md",
+         String.replace(
+           baseline,
+           "Proof routes stay one click deeper",
+           "Proof commands are primary"
+         ), :public_doc}
+      ),
+      :missing_proof_secondary
+    )
+
+    assert_failure_category(
+      scan_showcase_first_run_doc(
+        {"synthetic/showcase_missing_support_truth.md",
+         String.replace(baseline, "support-truth", "support status"), :public_doc}
+      ),
+      :missing_support_truth
+    )
+
+    assert_failure_category(
+      scan_showcase_first_run_doc(
+        {"synthetic/showcase_missing_collateral_boundary.md",
+         String.replace(
+           baseline,
+           "route-tour assertions prove route-owner semantics",
+           "screenshots prove everything"
+         ), :public_doc}
+      ),
+      :missing_collateral_boundary
+    )
   end
 
   test "quick start scanner rejects stale ports, commands, paths, and native labels" do
@@ -270,6 +340,7 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
 
     source_failures ++
       quick_start_failures ++
+      scan_showcase_first_run_doc({path, contents, :proof_reference}) ++
       required_path_doc_failures(path, contents, @quick_start_paths) ++
       documented_path_failures(path, contents) ++
       wrong_port_failures(path, contents, port) ++
@@ -383,6 +454,60 @@ defmodule Crosswake.Guides.QuickStartAdoptionDriftTest do
     |> List.flatten()
     |> Kernel.++(documented_path_failures(path, contents))
     |> Kernel.++(forbidden_language_failures(path, contents))
+  end
+
+  defp scan_showcase_first_run_doc({path, contents, kind}) do
+    port = phoenix_host_port()
+
+    required =
+      [
+        require_regex(
+          path,
+          contents,
+          ~r/\b(?:open|start|visit|served at)\b[\s\S]{0,220}\bshowcase\b|\bshowcase hub\b/i,
+          :missing_showcase_first,
+          "first-run copy must foreground the showcase hub"
+        ),
+        require_contains(
+          path,
+          contents,
+          "http://localhost:#{port}/",
+          :missing_showcase_first,
+          "first-run copy must point at the source-derived root showcase URL"
+        ),
+        require_regex(
+          path,
+          contents,
+          ~r/Proof routes? (?:stay|remain|are|sit)[\s\S]{0,120}(?:one click deeper|secondary)|secondary proof routes?/i,
+          :missing_proof_secondary,
+          "proof routes must be described as secondary to the showcase-first path"
+        )
+      ]
+
+    docs_only =
+      if kind == :launcher do
+        []
+      else
+        [
+          require_regex(
+            path,
+            contents,
+            ~r/support-truth[\s\S]{0,220}(?:Available today|Proof-backed example|Demo pressure|Future gap)|(?:Available today|Proof-backed example|Demo pressure|Future gap)[\s\S]{0,220}support-truth/i,
+            :missing_support_truth,
+            "docs must retain support-truth labels and non-claim posture"
+          ),
+          require_regex(
+            path,
+            contents,
+            ~r/screenshots?[\s\S]{0,260}product surface[\s\S]{0,260}route-tour assertions?[\s\S]{0,260}route-owner semantics|route-tour assertions?[\s\S]{0,260}route-owner semantics[\s\S]{0,260}screenshots?[\s\S]{0,260}product surface/i,
+            :missing_collateral_boundary,
+            "docs must separate product screenshots from route-owner semantics proof"
+          )
+        ]
+      end
+
+    [docs_only, required]
+    |> List.flatten()
   end
 
   defp failure(path, category, opts) do

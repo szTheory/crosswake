@@ -22,7 +22,7 @@ WEB_ONLY=0
 IOS_ONLY=0
 ANDROID_ONLY=0
 DO_BUILD=0
-NO_OPEN=0
+NO_OPEN_REQUESTED=0
 SHOW_HELP=0
 
 while [[ $# -gt 0 ]]; do
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
     --android)    ANDROID_ONLY=1; shift ;;
     --all)        IOS_ONLY=0; ANDROID_ONLY=0; shift ;;  # default: both platforms
     --build)      DO_BUILD=1; shift ;;
-    --no-open)    NO_OPEN=1; shift ;;
+    --no-open)    NO_OPEN_REQUESTED=1; shift ;;
     --help|-h)    SHOW_HELP=1; shift ;;
     *)
       echo "[crosswake] Unknown flag: $1" >&2
@@ -149,22 +149,27 @@ fi
 # ---------------------------------------------------------------------------
 print_banner() {
   printf "${BOLD}================================================================${RESET}\n"
-  printf "${BOLD}  Crosswake demo backend is running${RESET}\n"
+  printf "${BOLD}  Crosswake showcase backend is running${RESET}\n"
   printf "${BOLD}================================================================${RESET}\n"
   printf "\n"
-  printf "  ${ACCENT}${BOLD}%s${RESET}\n" "${BACKEND_URL}"
+  printf "  Open the showcase hub:\n"
+  printf "    ${ACCENT}${BOLD}http://localhost:4700/${RESET}\n"
   printf "\n"
-  printf "  Key route owners:\n"
-  printf "    /              Phoenix-owned home\n"
+  printf "  The root route is the product-shaped showcase for Crosswake:\n"
+  printf "    /              showcase hub (LiveView, cached read-only)\n"
+  printf "\n"
+  printf "  Proof routes stay one click deeper (secondary):\n"
   printf "    /offline       app-owned offline island\n"
   printf "    /bridge-proof  LiveView + bounded Share\n"
+  printf "    /native/claims native-pressure route list\n"
   printf "\n"
   printf '%s\n' "----------------------------------------------------------------"
   printf "  What is proven now (no extra toolchain required)\n"
   printf '%s\n' "----------------------------------------------------------------"
   printf "\n"
   printf "  - Backend boots from Docker (this script) or native mix phx.server\n"
-  printf "  - All three web routes reachable in any browser\n"
+  printf "  - Showcase and proof routes reachable in any browser\n"
+  printf "  - Route-tour assertions prove route-owner semantics; screenshots are collateral\n"
   printf "  - Offline replay proof: npx playwright test (examples/phoenix_host/e2e/)\n"
   printf "  - Bounded bridge proof: script/verify_bounded_bridge_proof.sh\n"
   printf "\n"
@@ -213,7 +218,7 @@ print_banner
 # ---------------------------------------------------------------------------
 # Task 3: Web auto-open (D-19)
 # ---------------------------------------------------------------------------
-if [ "$NO_OPEN" -eq 0 ] && [ -t 1 ] && [ -z "${CI:-}" ] && [ -z "${NO_OPEN:-}" ]; then
+if [ "$NO_OPEN_REQUESTED" -eq 0 ] && [ -t 1 ] && [ -z "${CI:-}" ]; then
   if command -v open >/dev/null 2>&1; then
     open "${BACKEND_URL}/" || true
   elif command -v xdg-open >/dev/null 2>&1; then

@@ -1,33 +1,11 @@
-defmodule CrosswakeExample.PageController do
-  use Phoenix.Controller, formats: [:html]
-
-  def index(conn, _params) do
-    html(conn, """
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Crosswake Phoenix Host</title>
-      </head>
-      <body>
-        <main>
-          <h1>Crosswake Phoenix Host</h1>
-          <p>Route policy for Phoenix apps that go mobile.</p>
-          <ul>
-            <li><a href="/offline">Offline Study Island</a> - app-owned IndexedDB outbox and Phoenix/Ecto replay.</li>
-            <li><a href="/bridge-proof">Bridge Proof</a> - Phoenix-owned LiveView route with one bounded Share affordance.</li>
-            <li><a href="/native/claims">Native claim routes</a> - route policy marks native-owned paths explicitly.</li>
-          </ul>
-        </main>
-      </body>
-    </html>
-    """)
-  end
-end
-
 defmodule CrosswakeExample.LibraryLive do
   use Phoenix.LiveView
+
+  alias CrosswakeExample.PageTitle
+
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, page_title: PageTitle.crosswake("Lesson Library"))}
+  end
 
   def render(assigns) do
     # Brand-voiced demo page consuming the shared tokens.css design system
@@ -113,6 +91,16 @@ defmodule CrosswakeExample.Router do
   import Phoenix.LiveView.Router, only: [live_session: 3]
   import Crosswake.Router
   @compile {:no_warn_undefined, CrosswakeExample.Crosswake.Policy}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.CaptureLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.EvidenceReviewLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.InspectionLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobLive}
+  @compile {:no_warn_undefined, CrosswakeExample.FieldService.JobsLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.CourseLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.DashboardLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.HistoryLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.PackLive}
+  @compile {:no_warn_undefined, CrosswakeExample.LearnLoop.SubscriptionLive}
   @crosswake_policy_module CrosswakeExample.Crosswake.Policy
   _ = @crosswake_policy_module
   # crosswake:install:end
@@ -120,6 +108,8 @@ defmodule CrosswakeExample.Router do
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
+    plug(:protect_from_forgery)
+    plug(:put_root_layout, html: {CrosswakeExample.Layouts, :root})
   end
 
   pipeline :saas_portal do
@@ -130,7 +120,16 @@ defmodule CrosswakeExample.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :e2e_session do
+    plug(:fetch_session)
+  end
+
   scope "/study", CrosswakeExample.LocalFirst do
+    pipe_through([:api])
+    post("/sync", SyncController, :sync)
+  end
+
+  scope "/learnloop", CrosswakeExample.LocalFirst do
     pipe_through([:api])
     post("/sync", SyncController, :sync)
   end
@@ -160,11 +159,83 @@ defmodule CrosswakeExample.Router do
     end
   end
 
+  scope "/learnloop", CrosswakeExample.LearnLoop do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/", DashboardLive,
+        crosswake: [
+          id: "learnloop-dashboard",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/courses/:id", CourseLive,
+        crosswake: [
+          id: "learnloop-course",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/packs/:id", PackLive,
+        crosswake: [
+          id: "learnloop-pack",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/history", HistoryLive,
+        crosswake: [
+          id: "learnloop-history",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/subscription", SubscriptionLive,
+        crosswake: [
+          id: "learnloop-subscription",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+    end
+  end
+
+  scope "/learnloop" do
+    pipe_through([:browser])
+
+    get("/study/session", CrosswakeExample.LearnLoop.StudyController, :index,
+      crosswake: [
+        id: "learnloop-study-session",
+        runtime: :offline_island,
+        offline: :local_first,
+        packs: [[id: :learnloop_daily_pack, version: "2026.07.11", kind: :content]],
+        security: :standard
+      ]
+    )
+  end
+
   scope "/" do
     pipe_through([:browser])
 
     crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
-      get("/", CrosswakeExample.PageController, :index, crosswake: [id: "home"])
+      live("/", CrosswakeExample.Showcase.HubLive,
+        crosswake: [
+          id: "showcase-hub",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
 
       get("/offline", CrosswakeExample.OfflineController, :index,
         crosswake: [
@@ -300,6 +371,68 @@ defmodule CrosswakeExample.Router do
           id: "sigra-step-up",
           runtime: :live_view,
           offline: :unavailable,
+          security: :sensitive
+        ]
+      )
+    end
+  end
+
+  scope "/fieldserv", CrosswakeExample.FieldService do
+    pipe_through([:browser])
+
+    crosswake_defaults runtime: :live_view, offline: :cached_read_only, security: :standard do
+      live("/jobs", JobsLive,
+        crosswake: [
+          id: "fieldserv-jobs",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id", JobLive,
+        crosswake: [
+          id: "fieldserv-job",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id/inspection", InspectionLive,
+        crosswake: [
+          id: "fieldserv-inspection",
+          runtime: :live_view,
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+
+      live("/jobs/:id/capture", CaptureLive,
+        crosswake: [
+          id: "fieldserv-job-capture",
+          runtime: :native_screen,
+          capabilities: [:camera],
+          packs: [[id: :camera_capture_assets, version: "1.0.0", kind: :media]],
+          transfers: [
+            [
+              id: :capture_upload,
+              intent: :upload,
+              source: :native_capture,
+              verification: :required,
+              media_types: ["image/*"]
+            ]
+          ],
+          offline: :cached_read_only,
+          security: :sensitive
+        ]
+      )
+
+      live("/jobs/:id/evidence/:evidence_id/review", EvidenceReviewLive,
+        crosswake: [
+          id: "fieldserv-evidence-review",
+          runtime: :live_view,
+          offline: :cached_read_only,
           security: :sensitive
         ]
       )
@@ -451,6 +584,12 @@ defmodule CrosswakeExample.Router do
       pipe_through([:api])
       get("/sync-state/:client_mutation_id", SyncStateController, :show)
       post("/native-claim", NativeClaimController, :create)
+      post("/showcase-reset", ShowcaseResetController, :create)
+    end
+
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:api, :e2e_session])
+      post("/saas-session", SaaSSessionController, :create)
     end
   end
 end

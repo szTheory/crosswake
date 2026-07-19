@@ -1,6 +1,7 @@
 defmodule CrosswakeExample.Media.MediaLaneLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias Crosswake.Companions.Rindle.Contracts
   alias CrosswakeExample.Media.{MediaProjection, MockCapture, ReconciliationInbox}
 
@@ -13,6 +14,7 @@ defmodule CrosswakeExample.Media.MediaLaneLive do
          grant: grant,
          media_object: queued,
          derived_state: MediaProjection.derived_state(queued),
+         page_title: PageTitle.crosswake("Media Proof"),
          proof_step: :queued,
          network_state: :ready,
          seen_event_keys: [],
@@ -27,6 +29,7 @@ defmodule CrosswakeExample.Media.MediaLaneLive do
            grant: nil,
            media_object: nil,
            derived_state: :rejected,
+           page_title: PageTitle.crosswake("Media Proof"),
            proof_step: :unavailable,
            network_state: :unavailable,
            seen_event_keys: [],
@@ -219,15 +222,27 @@ defmodule CrosswakeExample.Media.MediaLaneLive do
     """
   end
 
-  defp state_copy(:local_capture_recorded, _state), do: "Capture recorded locally; media is not available yet."
-  defp state_copy(:upload_failed, _state), do: "Upload failed during simulated network degradation."
+  defp state_copy(:local_capture_recorded, _state),
+    do: "Capture recorded locally; media is not available yet."
+
+  defp state_copy(:upload_failed, _state),
+    do: "Upload failed during simulated network degradation."
+
   defp state_copy(:network_recovered, _state), do: "Network recovered. Reconciliation can retry."
-  defp state_copy(:device_evidence_recorded, _state), do: "Device evidence recorded; backend verification still required."
-  defp state_copy(:backend_verification_in_progress, _state), do: "Backend verification in progress."
+
+  defp state_copy(:device_evidence_recorded, _state),
+    do: "Device evidence recorded; backend verification still required."
+
+  defp state_copy(:backend_verification_in_progress, _state),
+    do: "Backend verification in progress."
+
   defp state_copy(:backend_verified_available, _state), do: "Backend verified media is available."
   defp state_copy(:backend_rejected, _state), do: "Backend rejected this media object."
   defp state_copy(_step, :queued), do: "Queued capture intent only; media is not committed."
-  defp state_copy(_step, :uploaded), do: "Device upload evidence recorded; media is not available."
+
+  defp state_copy(_step, :uploaded),
+    do: "Device upload evidence recorded; media is not available."
+
   defp state_copy(_step, :scanning), do: "Backend verification is in progress."
   defp state_copy(_step, :available), do: "Backend verified media is available."
   defp state_copy(_step, :rejected), do: "Backend rejected this media object."

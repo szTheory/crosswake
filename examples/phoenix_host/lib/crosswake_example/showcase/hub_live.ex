@@ -1,0 +1,152 @@
+defmodule CrosswakeExample.Showcase.HubLive do
+  use Phoenix.LiveView
+
+  alias CrosswakeExample.PageTitle
+  alias CrosswakeExample.Showcase.Branding
+  alias CrosswakeExample.Showcase.Catalog
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     assign(socket,
+       lanes: Catalog.lanes(),
+       page_title: PageTitle.crosswake("Showcase"),
+       parent_brand: Branding.root()
+     )}
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/app.css" />
+
+    <main class="showcase-shell">
+      <header class="showcase-brandbar" aria-label={@parent_brand.name}>
+        <picture>
+          <source srcset={@parent_brand.logo_dark_path} media="(prefers-color-scheme: dark)" />
+          <img
+            class="showcase-crosswake-logo"
+            src={@parent_brand.logo_path}
+            alt="Crosswake"
+            width="260"
+            height="70"
+          />
+        </picture>
+        <p><%= @parent_brand.eyebrow %></p>
+      </header>
+
+      <section class="showcase-intro" aria-labelledby="showcase-heading">
+        <p class="showcase-kicker"><%= @parent_brand.name %></p>
+        <div class="showcase-intro-copy">
+          <h1 id="showcase-heading"><%= @parent_brand.headline %></h1>
+          <p><%= @parent_brand.deck %></p>
+        </div>
+        <a class="btn-primary showcase-primary-cta" href="#showcase-lanes">Explore Showcase</a>
+      </section>
+
+      <section id="showcase-lanes" class="showcase-lane-grid" aria-label="Showcase lanes">
+        <article
+          :for={lane <- @lanes}
+          id={"showcase-lane-#{lane.id}"}
+          class={["card", "showcase-lane-card", lane.brand.theme_class]}
+          data-brand={lane.brand.name}
+          data-style={lane.brand.style_identifier}
+        >
+          <div class="showcase-app-brand">
+            <div class="showcase-app-mark" aria-hidden="true"><%= lane.brand.mark %></div>
+            <div class="showcase-app-copy">
+              <p class="showcase-app-category"><%= lane.brand.category %></p>
+              <h2><%= lane.brand.name %></h2>
+              <p class="showcase-app-tagline"><%= lane.brand.tagline %></p>
+            </div>
+          </div>
+
+          <p class="text-mono showcase-route"><%= lane.primary_path %></p>
+
+          <div class="showcase-card-head">
+            <p class="showcase-domain-label"><%= lane.heading %></p>
+            <a class="btn-secondary showcase-lane-cta" href={lane_href(lane)}>
+              <%= lane.primary_cta %>
+            </a>
+          </div>
+
+          <p class="showcase-card-body"><%= lane.body %></p>
+
+          <div class="showcase-fixture-preview" aria-label={"#{lane.brand.name} fixture brief"}>
+            <p class="showcase-fixture-org"><%= lane.brand.fixture_brief.organization %></p>
+            <ul>
+              <li :for={record <- lane.brand.fixture_brief.records}><%= record %></li>
+            </ul>
+            <p><%= fixture_activity(lane.brand.fixture_brief.activity) %></p>
+          </div>
+
+          <div class="showcase-badge-row" aria-label={"#{lane.heading} runtime and support labels"}>
+            <span
+              :for={label <- lane.runtime_labels}
+              class={["badge", "showcase-badge", badge_class(label)]}
+            >
+              <%= label %>
+            </span>
+            <span
+              :for={label <- lane.support_labels}
+              class={["badge", "showcase-badge", badge_class(label)]}
+            >
+              <%= label %>
+            </span>
+          </div>
+
+          <ul class="showcase-chip-list" aria-label={"#{lane.heading} capabilities"}>
+            <li :for={chip <- lane.capability_chips}><%= chip %></li>
+          </ul>
+
+          <p class="showcase-boundary-warning"><%= lane.boundary_note %></p>
+          <p class="showcase-v20-note"><%= lane.v20_pressure_note %></p>
+        </article>
+      </section>
+
+      <section class="showcase-proof-strip" aria-labelledby="proof-routes-heading">
+        <div>
+          <h2 id="proof-routes-heading">Proof routes stay one click deeper</h2>
+          <p>
+            Use these routes to inspect route-owner semantics, offline behavior, and bounded
+            bridge proof after the showcase explains the product shape.
+          </p>
+        </div>
+
+        <nav class="showcase-proof-links" aria-label="Proof routes">
+          <a class="btn-secondary" href="/offline">View Offline Study Proof</a>
+          <a class="btn-secondary" href="/bridge-proof">View Bridge Proof</a>
+          <a class="btn-secondary" href="/native/claims">View Native-Pressure Routes</a>
+        </nav>
+      </section>
+    </main>
+    """
+  end
+
+  defp lane_href(%{primary_path: path}), do: path
+
+  defp fixture_activity(activity), do: Enum.join(activity, " / ")
+
+  defp badge_class(label) do
+    cond do
+      label =~ "LiveView" ->
+        "showcase-badge-liveview"
+
+      label =~ "Offline" or label =~ "Local-first" or label =~ "Cached" ->
+        "showcase-badge-offline"
+
+      label =~ "Native" or label =~ "native" ->
+        "showcase-badge-native"
+
+      label =~ "Proof" ->
+        "showcase-badge-bridge"
+
+      label =~ "Future" or label =~ "Demo" or label =~ "Sensitive" ->
+        "showcase-badge-sensitive"
+
+      true ->
+        "showcase-badge-support"
+    end
+  end
+end

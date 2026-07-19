@@ -658,10 +658,91 @@
 - **Model mix:** Opus reserved for planning/debug + discuss phases; Sonnet for execution (per balanced profile and the Opus-budget preference).
 - **Residual debt:** TELEM-04 Side B vacuity (deferred — divergence structurally near-impossible); compat-prose (not-a-bug); one admin ship-gate carried (register the 18 `merge-blocking-*` lanes); `MIRROR_PUSH_TOKEN` scope still unexercised.
 
+## Milestone: v18.0 — Release Integrity & Automated Package Operations
+
+**Shipped:** 2026-07-09
+**Phases:** 5 (142-146) | **Plans:** 15
+
+### What Was Built
+- Path-specific Release Please governance so companion-only releases cannot publish core Hex, iOS mirror, or Android Maven artifacts.
+- Guarded CI Hex publishing on the happy path, with exact already-live preflight and package-scoped manual recovery refs.
+- Companion clean-room proof that installs the exact published companion version, derives the real `crosswake` floor from Hex metadata, verifies `mix.lock`, and lets doctor own fresh-router loading.
+- iOS mirror write-authority preflight, decoupled iOS/Android native clean-room proofs, and a verify-first backfill path for the missing SwiftPM `v0.2.0` tag.
+- `mix crosswake.release.status [--json] [--live]` as a local/JSON/advisory-live operator surface for lockstep, companion floors, release-as pins, workflow guards, and registry presence.
+
+### What Worked
+- **Audit-first closeout paid off** — the milestone audit found and closed the AUTO-03 tag-ref mismatch before archive, leaving 15/15 requirements satisfied and no internal tech debt.
+- **Static scanner plus adversarial fixtures fit release YAML** — workflow invariants are hard to prove by happy-path runs alone; scanner IDs and negative fixtures made path gates, proof cascades, and mirror preflight regression-resistant.
+- **Exact package identity reduced recovery ambiguity** — package-scoped refs (`hex-vX.Y.Z` for core, `crosswake_*‑vX.Y.Z` for companions) keep recovery tied to the selected package/version instead of a loose semver tag.
+- **Local-first status kept CI honest** — release status can give deterministic graph truth without requiring live network access, while still offering explicit live probes when an operator wants registry evidence.
+
+### What Was Inefficient
+- **Closeout still had uncommitted cleanup work** — the audit cleanup modified workflow/test/docs artifacts after the phase summaries, so the final tag needed a careful dirty-tree review rather than a pure archive commit.
+- **Milestone-complete extraction was too verbose again** — the CLI generated 15 raw per-plan accomplishment bullets for MILESTONES.md; the entry needed manual curation into milestone-level outcomes.
+- **STATE schema drift caused helper warnings** — `milestone.complete` could not update legacy "Last Activity" fields and wrote lowercase fallbacks, requiring a manual state pass.
+
+### Patterns Established
+- **Release infrastructure is product surface** — path gates, recovery semantics, mirror preflight, clean-room proof, and status output are adopter-facing truth, not CI plumbing.
+- **Exact-ref recovery is package-scoped** — recovery workflows should accept a full SHA or the package/version's own release tag, never a bare semver tag that can point at the wrong component.
+- **Registry mutation and registry observation are different surfaces** — guarded mutation paths need maintainer secrets and preflight; observation can be local by default with optional advisory live probes.
+- **Native proof lanes should preserve partial truth** — iOS and Android proofs should not depend on each other when only one registry path failed; rollup artifacts should report the partial state explicitly.
+
+### Key Lessons
+- **Aggregate release outputs are unsafe for package families** — once packages version independently, every publish/proof path needs exact component identity or it risks false publish authority.
+- **A green local graph is not the same as live registry presence** — release status should name the distinction instead of hiding live 404s or making live probes mandatory.
+- **Backfill paths should verify before mutating** — missing immutable tags need a dry-run/verify mode first, then an explicit apply path, especially when token scope is the suspected failure.
+- **Milestone archives need a human pass** — the CLI is useful for durable artifacts, but generated milestone prose remains a draft until curated.
+
+### Cost Observations
+- **Session shape:** 3-day milestone (2026-07-07 → 2026-07-09), 5 phases / 15 plans / 34 tasks.
+- **Verification:** Milestone audit passed 15/15 requirements, 5/5 phases, 15/15 integration paths, and 5/5 flows; residual risks are external registry mutation/probe state only.
+- **Residual debt:** no internal v18 tech debt; real iOS mirror mutation remains maintainer-token-gated and live registry probes remain advisory.
+
+## Milestone: v19.0 — Showcase Apps & Capability Map
+
+**Shipped:** 2026-07-12
+**Phases:** 7 (147-152.1) | **Plans:** 33
+
+### What Was Built
+- A Crosswake-owned showcase hub with deterministic reset/reseed truth and route-owner/support labels.
+- Three product-shaped example lanes: AdminPilot for SaaS/admin, Fieldserv for field-service device pressure, and LearnLoop for subscription learning/training.
+- Realistic fixture/read-context breadth, lane-local diagnostics, server-owned mutable evidence where appropriate, and browser route-tour proof for each domain.
+- A typed capability map, generated public guide, README/ExDoc entry points, and a planning-only v20 Native Controls Pack 1 handoff.
+- A Phase 152.1 closeout repair that aligned scanner/document-scan support truth, reconstructed verification ledgers, refreshed validation metadata, and preserved the Phase 148 summary exception honestly.
+
+### What Worked
+- **Product-shaped examples clarified the thesis** — route ownership, offline posture, device pressure, entitlement pressure, and unsupported gaps are easier to evaluate in realistic lanes than in abstract proof pages.
+- **Semantic-first browser proof scaled across lanes** — screenshots became useful collateral after route IDs, support labels, reset truth, and bridge/capability assertions passed.
+- **Capability map before controls reduced scope risk** — v20 can start from classified evidence instead of reopening the entire native-breadth argument.
+- **Closeout phase repaired real audit gaps without rewriting history** — Phase 152.1 fixed support truth and ledgers while keeping the Phase 148 missing-summary exception explicit.
+
+### What Was Inefficient
+- **Phase 148 artifact shape created closeout tax** — the work was verified, but original numbered summaries were missing, forcing an accepted exception and retroactive summary for audit compatibility.
+- **Verification ledgers lagged some implementation work** — Phase 150 and 152 needed reconstruction from fresh reruns at milestone audit time.
+- **Generated milestone accomplishments were too granular** — the closeout helper extracted per-plan bullets, requiring manual curation into milestone-level outcomes.
+
+### Patterns Established
+- **Demo lanes are proof surfaces, not templates** — realistic examples can prove route policy and capability pressure without turning Crosswake into a starter-app framework.
+- **Support truth must be generated and claim-scanned** — unsupported/deferred capability rows need canonical-source, rendered-guide, and docs-claim tests together.
+- **Browser-owned state stays outside server reset claims** — deterministic reset can own server fixtures while explicitly excluding IndexedDB/offline island state.
+- **Capability breadth should be sequenced by evidence** — v19 evidence points v20 at a narrow native-controls pack before capture/device, commerce/paywall, dashboard, or sync productization.
+
+### Key Lessons
+- **Phase closeout artifacts need to land with the work** — verification, validation, and summaries should be complete before milestone audit, not reconstructed afterward.
+- **Unsupported gaps need positive tests** — scanner/document_scan drift proved that deferred rows need regression tests asserting unsupported status, not only absence of implementation.
+- **Realistic UX examples expose better priorities than abstract capability lists** — the v20 pack should follow the workflows that repeatedly surfaced across AdminPilot, Fieldserv, and LearnLoop.
+
+### Cost Observations
+- **Session shape:** 4-day milestone (2026-07-09 → 2026-07-12), 7 phases / 33 plans / 83 tasks.
+- **Verification:** Milestone audit passed 31/31 requirements, 7/7 phases, 10/10 integration checks, and 6/6 flows after the Phase 152.1 repair.
+- **Residual debt:** one accepted artifact-shape exception for Phase 148; no unsatisfied v19 product requirements.
+
 ## Cross-Milestone Trends
 
 | Trend | Evidence | Implication |
 |-------|----------|-------------|
+| Product-shaped proof surfaces reveal better capability priorities | v19.0's AdminPilot, Fieldserv, and LearnLoop lanes exposed repeated demand for bounded alerts/actions/haptics/share/permission/token UX while keeping scanner, storefront, and generic sync claims deferred | Use realistic lane evidence to scope native capability packs; avoid broad catalogs until examples show repeated, route-owned demand |
+| Missing closeout artifacts create audit work even when behavior is correct | v19.0 had to insert Phase 152.1 after support-truth drift and missing/reconstructed Phase 150/152/148 ledgers blocked clean closeout | Treat verification, validation, and SUMMARY artifacts as part of phase completion; milestone audit should verify them, not create them |
 | A flaky test on a merge-blocking lane is a release blocker, not noise | v16.0's `File.cd!`/`async:true` race read as a "minor flaky test" in the audit but reddened every broad-`mix test` lane on PR #40's first real run, surfacing as a misattributed parallel-compile error | Treat any non-determinism on a required lane as ship-blocking; tests doing `File.cd!`/CWD-relative IO must be `async:false`, matching their siblings' isolation posture |
 | Establish irreversible patterns on the lowest-risk wedge, with a no-publish dress rehearsal first | v16.0 proved companion extraction on `rulestead` (lowest-risk) then `rindle` (cleanest generalization), with Phase 130 a `path:`-dep dress rehearsal before any `hex.publish` | For irreversible/unrecoverable operations (Hex/Maven publish, branch protection), front-load a non-destructive rehearsal and prove the mechanism on the safest case before generalizing |
 | Deferring all CI signal to the milestone boundary concentrates risk | v11.0's release-checkpoint plan and v16.0's ~64-commit local-main-ahead-of-origin both pushed the first real multi-lane CI signal to close, where v16.0's `File.cd!` race detonated | Periodically sync to origin (or run the broad lanes locally) during a milestone so real-CI failures surface incrementally, not all at once under close deadline |

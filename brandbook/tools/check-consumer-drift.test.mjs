@@ -171,6 +171,25 @@ test('findHexColors: #id CSS selector is NOT flagged as hex color', () => {
   assert.strictEqual(hits.length, 0, '#id selector must not be flagged as hex color');
 });
 
+// ─── Scoped design-token layer: hex allowed in --custom-property values ──────
+
+test('findHexColors: hex in a --custom-property declaration is NOT flagged', () => {
+  const hits = findHexColors('  --adminpilot-accent: #2f6f73;');
+  assert.strictEqual(hits.length, 0,
+    'a consumer file may define its own scoped --token: #hex design-token layer');
+});
+
+test('findHexColors: hex in a real style value IS still flagged', () => {
+  const hits = findHexColors('  color: #ff0000;');
+  assert.strictEqual(hits.length, 1, 'hex in a style value (color:) must still be flagged');
+});
+
+test('findHexColors: a bad style-value hex after a token def on the same line IS flagged', () => {
+  const hits = findHexColors('  --a: #2f6f73; color: #bad123;');
+  assert.strictEqual(hits.length, 1, 'only the token-def hex is exempt; the style-value hex is flagged');
+  assert.strictEqual(hits[0].text, '#bad123');
+});
+
 // ─── False-positive guard: rgba() shadow ─────────────────────────────────────
 
 test('findHexColors: rgba() shadow is NOT flagged', () => {

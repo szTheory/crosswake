@@ -19,7 +19,7 @@
 > This is `emulator evidence` per the
 > [support-truth label legend](support_matrix.md#support-truth-label-legend).
 
-Three runtimes, one shared backend:
+Three runtimes, one shared backend, starting at the showcase hub:
 
 <img
   src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
@@ -34,6 +34,9 @@ Three runtimes, one shared backend:
   alt="Screen recording: bin/see-it-run.sh boots the backend, prints the banner, and opens the browser — emulator evidence of all three runtimes connecting"
   width="900"
 />
+
+Showcase screenshots explain the product surface; route-tour assertions prove
+route-owner semantics before screenshots are written.
 
 ## Run It Now (Zero Toolchain)
 
@@ -53,8 +56,10 @@ cd examples/phoenix_host
 docker compose up
 ```
 
-Open `http://localhost:4700/` in your browser. The page loads the Crosswake Phoenix
-Host and links to the route owners.
+Open `http://localhost:4700/` in your browser. This is the showcase hub: a
+product-shaped first screen for the SaaS/Admin, Field Service, and
+Learning/Training lanes, with route-owner and support labels visible before you
+inspect proof routes.
 
 If you have Elixir installed locally, `mix crosswake.demo` does the same thing.
 
@@ -67,9 +72,16 @@ Visit these routes while the backend is running at `http://localhost:4700`:
 
 | Route | Owner | What you see |
 |-------|-------|-------------|
-| `/` | Phoenix-owned | Crosswake Phoenix Host home — links to route owner examples |
+| `/` | Phoenix-owned showcase | Showcase hub — three domain lanes with route-owner labels |
 | `/offline` | App-owned offline island | Offline Study Island — app-owned IndexedDB outbox and Phoenix/Ecto replay |
 | `/bridge-proof` | Phoenix-owned LiveView | Bridge Proof — bounded `share` capability with a Share button |
+
+Proof routes stay one click deeper and are secondary to the showcase-first path.
+Use them after the hub explains the product shape.
+
+Support-truth labels stay literal here: `Available today`,
+`Proof-backed example`, `Demo pressure`, and `Future gap` distinguish shipped
+proof from native-control pressure.
 
 ```text
 http://localhost:4700/

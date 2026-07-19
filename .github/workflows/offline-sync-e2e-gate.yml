@@ -173,11 +173,33 @@ jobs:
       - name: Assert route-tour required evidence files
         run: |
           set -euo pipefail
-          test -s examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json
-          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/library.png
-          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/bridge-proof.png
-          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/offline-study-replayed.png
-          test -s examples/phoenix_host/playwright-artifacts/route-tour/screenshots/selective-native-claim-capture-unavailable.png
+          route_tour_root="examples/phoenix_host/playwright-artifacts/route-tour"
+          required_route_tour_files=(
+            "$route_tour_root/evidence-manifest.json"
+            "$route_tour_root/screenshots/showcase-hub.png"
+            "$route_tour_root/screenshots/adminpilot-dashboard.png"
+            "$route_tour_root/screenshots/adminpilot-approvals.png"
+            "$route_tour_root/screenshots/adminpilot-approval-approved.png"
+            "$route_tour_root/screenshots/adminpilot-diagnostics.png"
+            "$route_tour_root/screenshots/fieldserv-jobs.png"
+            "$route_tour_root/screenshots/fieldserv-job-detail.png"
+            "$route_tour_root/screenshots/fieldserv-inspection.png"
+            "$route_tour_root/screenshots/fieldserv-capture-handoff.png"
+            "$route_tour_root/screenshots/fieldserv-evidence-review.png"
+            "$route_tour_root/screenshots/learnloop-dashboard.png"
+            "$route_tour_root/screenshots/learnloop-course.png"
+            "$route_tour_root/screenshots/learnloop-subscription.png"
+            "$route_tour_root/screenshots/learnloop-pack.png"
+            "$route_tour_root/screenshots/learnloop-history-diagnostics.png"
+            "$route_tour_root/screenshots/learnloop-route-tour.png"
+            "$route_tour_root/screenshots/library.png"
+            "$route_tour_root/screenshots/bridge-proof.png"
+            "$route_tour_root/screenshots/offline-study-replayed.png"
+            "$route_tour_root/screenshots/selective-native-claim-capture-unavailable.png"
+          )
+          for evidence_file in "${required_route_tour_files[@]}"; do
+            test -s "$evidence_file"
+          done
       - name: Validate route-tour evidence manifest
         run: |
           set -euo pipefail
@@ -224,10 +246,10 @@ jobs:
           {
             echo "## Crosswake route-tour evidence"
             echo ""
-            echo "Proven: semantic Playwright assertions covered route ids library, bridge-proof, offline-study, and selective-native-claim-capture before screenshots were captured."
-            echo "Captured: evidence-manifest.json, browser screenshots, Playwright HTML report, traces when Playwright produces them, and concise test output in crosswake-route-tour-evidence."
-            echo "Advisory: screenshots are route-tour collateral and support reader inspection."
-            echo "Not claimed: native share sheet execution, physical-device support, camera support, media-upload support, provider authority, or merge-blocking native support."
+            echo "Proven: semantic Playwright assertions covered v19 route ids before screenshots were captured."
+            echo "Captured: evidence-manifest.json, generalized browser screenshots, Playwright HTML report, traces when Playwright produces them, and concise test output in crosswake-route-tour-evidence."
+            echo "Advisory: screenshots are route-tour collateral and support reader inspection only."
+            echo "Not claimed: native/device/provider/offline-mutation/commerce authority."
             echo "Retention: crosswake-route-tour-evidence is retained for 14 days."
           } >> "$GITHUB_STEP_SUMMARY"
 

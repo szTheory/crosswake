@@ -19,7 +19,21 @@ defmodule CrosswakeExample.Endpoint do
     at: "/",
     from: :crosswake_example,
     gzip: false,
-    only: ~w(css offline_study.js storage_budget.test.js storage_logic.js)
+    only: ~w(brand css offline_study.js storage_budget.test.js storage_logic.js)
+  )
+
+  plug(Plug.Static,
+    at: "/phoenix",
+    from: :phoenix,
+    gzip: false,
+    only: ~w(phoenix.mjs)
+  )
+
+  plug(Plug.Static,
+    at: "/phoenix_live_view",
+    from: :phoenix_live_view,
+    gzip: false,
+    only: ~w(phoenix_live_view.esm.js)
   )
 
   plug(Plug.RequestId)

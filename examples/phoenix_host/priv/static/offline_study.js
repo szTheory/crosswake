@@ -9,6 +9,11 @@ let db;
 let currentCardIndex = 0;
 let cards = [];
 
+function configuredSyncEndpoint() {
+  const endpoint = document.body.dataset.syncEndpoint;
+  return endpoint && endpoint.trim() ? endpoint : '/study/sync';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const reserveForJournalStr = document.body.dataset.reserveForJournal;
@@ -169,6 +174,20 @@ function updateStatusClear() {
   }
 }
 
+function updateStatusError() {
+  const statusElement = document.getElementById('status');
+  if (statusElement) {
+    statusElement.style.borderLeft = '3px solid var(--cw-status-error)';
+    statusElement.style.paddingLeft = '0.5rem';
+    statusElement.style.color = 'var(--cw-text-default)';
+  }
+}
+
+async function updateQueuedStatus(prefix = 'Queued for replay') {
+  const queued = await countMutations().catch(() => 0);
+  updateStatus(`${prefix} - ${queued} saved locally`);
+}
+
 let flushing = false;
 
 async function flushOutbox() {
@@ -179,11 +198,11 @@ async function flushOutbox() {
     if (records.length === 0) return;
 
     updateStatusClear();
-    updateStatus('Syncing…');
+    updateStatus('Syncing');
 
     let response;
     try {
-      response = await fetch('/study/sync', {
+      response = await fetch(configuredSyncEndpoint(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -195,14 +214,8 @@ async function flushOutbox() {
         })
       });
     } catch (_networkError) {
-      const q = records.length;
-      const statusElement = document.getElementById('status');
-      if (statusElement) {
-        statusElement.style.borderLeft = '3px solid var(--cw-status-error)';
-        statusElement.style.paddingLeft = '0.5rem';
-        statusElement.style.color = 'var(--cw-text-default)';
-      }
-      updateStatus(`Sync failed — ${q} still saved locally. Retrying on reconnect.`);
+      updateStatusError();
+      updateStatus(`Queued for replay - ${records.length} saved locally. Retrying on reconnect.`);
       return;
     }
 
@@ -218,17 +231,17 @@ async function flushOutbox() {
 
       const remaining = await countMutations();
       const accepted = acceptedIds.length;
-      updateStatusClear();
-      updateStatus(`Synced ${accepted} · queued ${remaining}`);
-    } else {
-      const q = records.length;
-      const statusElement = document.getElementById('status');
-      if (statusElement) {
-        statusElement.style.borderLeft = '3px solid var(--cw-status-error)';
-        statusElement.style.paddingLeft = '0.5rem';
-        statusElement.style.color = 'var(--cw-text-default)';
+
+      if (rejected.length > 0) {
+        updateStatusError();
+        updateStatus(`Rejected by server - review needed. Synced ${accepted} - queued ${remaining}`);
+      } else {
+        updateStatusClear();
+        updateStatus(`Synced ${accepted} - queued ${remaining}`);
       }
-      updateStatus(`Sync failed — ${q} still saved locally. Retrying on reconnect.`);
+    } else {
+      updateStatusError();
+      updateStatus(`Queued for replay - ${records.length} saved locally. Retrying on reconnect.`);
     }
   } finally {
     flushing = false;
@@ -279,9 +292,8 @@ function setupEventListeners() {
 
   window.addEventListener('online', flushOutbox);
   window.addEventListener('offline', async () => {
-    const queued = await getAllMutations().catch(() => []);
     updateStatusClear();
-    updateStatus(`Offline — ${queued.length} saved locally`);
+    await updateQueuedStatus('Queued for replay');
   });
 
   flushOutbox();
@@ -299,10 +311,11 @@ async function handleReview(rating) {
   try {
     await queueMutation(mutation);
     updateStatusClear();
-    updateStatus(`Card ${currentCardIndex + 1} of ${cards.length}`);
+    updateStatus('Saved locally');
 
     currentCardIndex++;
     renderCurrentCard();
+    await updateQueuedStatus('Saved locally - Queued for replay');
 
     if (navigator.onLine) {
       flushOutbox();

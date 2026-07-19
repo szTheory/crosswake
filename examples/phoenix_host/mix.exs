@@ -31,9 +31,40 @@ defmodule CrosswakeExample.MixProject do
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "showcase.reset": [&showcase_reset/1],
       # Provisions the SQLite DB and applies all migrations before running tests.
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
+  end
+
+  defp showcase_reset(_args) do
+    Mix.Task.run("compile")
+    Mix.Task.run("app.config")
+    start_repo!()
+
+    result = CrosswakeExample.Showcase.Reset.reset!()
+
+    Mix.shell().info("Showcase server reset complete.")
+    Mix.shell().info("counts=#{Jason.encode!(result.counts)}")
+    Mix.shell().info("digest=#{result.digest}")
+    Mix.shell().info("browser_state_reset=#{result.browser_state_reset}")
+    Mix.shell().info("Browser offline state remains app-owned and is not reset server-side.")
+  end
+
+  defp start_repo! do
+    [:ecto_sql, :ecto_sqlite3]
+    |> Enum.each(fn app ->
+      case Application.ensure_all_started(app) do
+        {:ok, _started} -> :ok
+        {:error, {:already_started, _app}} -> :ok
+      end
+    end)
+
+    case CrosswakeExample.Repo.start_link() do
+      {:ok, _pid} -> :ok
+      {:error, {:already_started, _pid}} -> :ok
+      {:error, reason} -> raise "could not start CrosswakeExample.Repo: #{inspect(reason)}"
+    end
   end
 
   defp deps do

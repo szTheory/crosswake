@@ -1,11 +1,12 @@
 defmodule CrosswakeExample.LocalFirst.StudyHistoryLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
   alias CrosswakeExample.LocalFirst.Study
 
   def mount(_params, _session, socket) do
     events = Study.list_events()
-    {:ok, assign(socket, events: events)}
+    {:ok, assign(socket, events: events, page_title: PageTitle.learn("Study History"))}
   end
 
   def render(assigns) do

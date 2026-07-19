@@ -1,0 +1,117 @@
+# Verify or backfill the SwiftPM mirror tag for an already-published lockstep
+# Crosswake core/native release. Verification is the default; mutation requires
+# apply=true. Authenticates over SSH using the MIRROR_DEPLOY_KEY deploy key
+# scoped to szTheory/crosswake-shell-core-ios.
+
+name: iOS mirror backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Crosswake lockstep version to verify or backfill.'
+        required: true
+        type: string
+        default: '0.2.0'
+      release_ref:
+        description: 'Exact Release Please iOS component ref.'
+        required: true
+        type: string
+        default: 'refs/tags/ios-core-v0.2.0'
+      apply:
+        description: 'Push the missing SwiftPM mirror tag. False means verify only.'
+        required: true
+        type: boolean
+        default: false
+      update_main:
+        description: 'Also realign mirror main after tag backfill.'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-or-backfill-ios-mirror:
+    name: Verify or backfill iOS SwiftPM mirror
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        env:
+          VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+        run: |
+          set -euo pipefail
+          VERSION_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z._-]+)?$'
+          EXPECTED_REF="refs/tags/ios-core-v${VERSION}"
+
+          case "$RELEASE_REF" in
+            ""|main|master|HEAD|heads/*|refs/heads/*|v*|[0-9]*)
+              echo "[crosswake] FAIL: release_ref '${RELEASE_REF}' is mutable, current-HEAD-shaped, or bare-version-shaped."
+              echo "[crosswake] What to do next: use ${EXPECTED_REF}."
+              exit 1
+              ;;
+          esac
+
+          if ! printf '%s' "$VERSION" | grep -Eq "$VERSION_PATTERN"; then
+            echo "[crosswake] FAIL: version '${VERSION}' is not semver."
+            exit 1
+          fi
+
+          if [ "$RELEASE_REF" != "$EXPECTED_REF" ]; then
+            echo "[crosswake] FAIL: release_ref '${RELEASE_REF}' is not the expected iOS component ref."
+            echo "[crosswake] What to do next: use ${EXPECTED_REF}."
+            exit 1
+          fi
+
+          echo "[crosswake] OK: iOS mirror backfill inputs are exact."
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Add GitHub to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Install splitsh-lite v1.0.1
+        run: |
+          curl -fsSL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz \
+            | tar xz
+          sudo mv splitsh-lite /usr/local/bin/splitsh-lite
+
+      - name: Verify or backfill SwiftPM mirror
+        env:
+          VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ inputs.release_ref }}
+          APPLY: ${{ inputs.apply }}
+          UPDATE_MAIN: ${{ inputs.update_main }}
+        run: |
+          set -euo pipefail
+          args=(--version "$VERSION" --ref "$RELEASE_REF")
+
+          if [ "$APPLY" = "true" ]; then
+            args+=(--apply)
+          fi
+
+          if [ "$UPDATE_MAIN" = "true" ]; then
+            args+=(--update-main)
+          fi
+
+          {
+            echo "## iOS mirror backfill"
+            echo ""
+            echo "- Version: ${VERSION}"
+            echo "- Release ref: ${RELEASE_REF}"
+            echo "- Mode: $([ "$APPLY" = "true" ] && echo "apply" || echo "verify-only")"
+            echo "- Update main: ${UPDATE_MAIN}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          bash script/verify_ios_mirror_backfill.sh "${args[@]}"

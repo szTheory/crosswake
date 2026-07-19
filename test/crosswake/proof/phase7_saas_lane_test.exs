@@ -20,6 +20,16 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
 
   setup_all do
     Crosswake.TestSupport.ExampleHost.load!()
+    Crosswake.TestSupport.ExampleHost.start_saas_repo!()
+    :ok
+  end
+
+  setup do
+    # The SaaS approvals lane is Ecto/SQLite-backed; reseed to a pristine fixture
+    # set before each test so the write-path (approve) test cannot leak state.
+    # Dynamic dispatch avoids compile-time coupling to the example app.
+    approvals = CrosswakeExample.SaaSPortal.Approvals
+    apply(approvals, :reset!, [])
     :ok
   end
 
@@ -75,7 +85,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     fixtures_mod = CrosswakeExample.SaaSPortal.Fixtures
 
     assert apply(auth, :session_key, []) == "saas_portal_user_id"
-    assert Enum.sort(apply(auth, :roles, [])) == [:approver, :member]
+    assert Enum.sort(apply(auth, :roles, [])) == [:approver, :member, :owner]
 
     fixtures = apply(fixtures_mod, :seed, [])
     approver = apply(fixtures_mod, :user!, [:approver])
@@ -115,7 +125,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     fixtures = apply(fixtures_mod, :seed, [])
 
     assert fixtures.account.name == "Northwind Workspace"
-    assert Enum.map(fixtures.users, & &1.role) |> Enum.sort() == [:approver, :member]
+    assert Enum.map(fixtures.users, & &1.role) |> Enum.sort() == [:approver, :member, :owner]
     assert length(fixtures.approvals) == 3
 
     assert Enum.all?(fixtures.approvals, fn approval ->
@@ -140,7 +150,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       render_html(CrosswakeExample.SaaSPortal.DashboardLive, dashboard_socket.assigns)
 
     assert dashboard_html =~ "Northwind mobile approvals"
-    assert dashboard_html =~ "Account health"
+    assert dashboard_html =~ "Account posture"
 
     account_socket =
       base_socket(user, fixtures.account)
@@ -148,8 +158,8 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       |> handle_params!(CrosswakeExample.SaaSPortal.AccountLive, %{"id" => "acct-north"})
 
     account_html = render_html(CrosswakeExample.SaaSPortal.AccountLive, account_socket.assigns)
-    assert account_html =~ "Account health"
-    assert account_html =~ "Pending approvals"
+    assert account_html =~ "Read-only account context"
+    assert account_html =~ "Approval threshold"
 
     approvals_socket =
       base_socket(user, fixtures.account)
@@ -159,7 +169,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
       render_html(CrosswakeExample.SaaSPortal.ApprovalsLive, approvals_socket.assigns)
 
     assert approvals_html =~ "Approvals queue"
-    assert approvals_html =~ "server-authoritative action"
+    assert approvals_html =~ "server-authoritative approval action"
 
     settings_socket =
       base_socket(user, fixtures.account)
@@ -167,7 +177,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
 
     settings_html = render_html(CrosswakeExample.SaaSPortal.SettingsLive, settings_socket.assigns)
     assert settings_html =~ "Profile settings"
-    assert settings_html =~ "Route unavailable remains explicit"
+    assert settings_html =~ "Settings posture"
   end
 
   test "approval detail keeps the write path server-authoritative and emits the bounded haptics request on success" do
@@ -184,13 +194,18 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
 
     assert approver_socket.assigns.approval.status == :approved
     assert approver_socket.assigns.approval.reviewed_by == approver.id
-    assert approver_socket.assigns.approval_notice =~ "Phoenix remains the authority"
+    assert approver_socket.assigns.approval_notice =~ "Phoenix recorded the decision"
     assert approver_socket.assigns.bridge_request["command"] == "haptics.impact"
 
     approval_html = render_html(CrosswakeExample.SaaSPortal.ApprovalLive, approver_socket.assigns)
-    assert approval_html =~ "Approval complete"
+    assert approval_html =~ "Server-authoritative decision"
     assert approval_html =~ "crosswakeBridge"
     assert approval_html =~ "approval-haptics-approval-1"
+
+    # The approver's approval above persisted to the DB; reseed to a pristine
+    # pending approval-1 so the member path tests authorization denial in
+    # isolation (was fixture-per-mount before the SQLite persistence layer).
+    apply(CrosswakeExample.SaaSPortal.Approvals, :reset!, [])
 
     member_socket =
       base_socket(member, fixtures.account)
@@ -201,7 +216,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     assert member_socket.assigns.approval.status == :pending
 
     assert member_socket.assigns.approval_error ==
-             "Approver role required at the action boundary."
+             "Approver role required. Phoenix kept the request unchanged at the server boundary."
 
     assert member_socket.assigns.bridge_request == nil
   end

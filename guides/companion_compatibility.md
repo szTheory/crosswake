@@ -17,19 +17,20 @@ cell drifts from the package source in either direction.
 
 <!-- compat-03 contract: col1=Hex Package, requirement cell = "Requires `crosswake`";
      do not reorder columns without updating phase132_compat_matrix_drift_test.exs -->
-<!-- Current Version: do not hand-edit; update this column post-publish from the confirmed hex.pm release page -->
+<!-- Current Version: do not hand-edit; keep this aligned with package mix.exs / release manifest.
+     Use mix crosswake.release.status --live for public registry presence. -->
 | Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |
 |---|---|---|---|---|---|
-| `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
-| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
-| `crosswake_sigra` | `:sigra` | `unpublished` | `~> 0.2` | `{:sigra, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
-| `crosswake_chimeway` | `:chimeway` | `unpublished` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
-| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `unpublished` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
+| `crosswake_rulestead` | `:rulestead` | `0.1.0` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
+| `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
+| `crosswake_sigra` | `:sigra` | `0.1.1` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
+| `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
+| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `0.1.0` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
-The `Current Version` column reads "unpublished" until each package's first Hex
-release; after that release lands, the human writes the confirmed number back from
-the hex.pm release page (the column is never hand-edited to a guessed value, and the
-live number is always whatever each package's hexdocs link reports).
+The `Current Version` column reflects the repository release graph and package source.
+For public registry truth, run `mix crosswake.release.status --live`; that command is
+allowed to report a package version as configured locally while still warning that Hex,
+Maven Central, or the SwiftPM mirror has not propagated it yet.
 
 ## Threadline wiring
 
@@ -61,6 +62,17 @@ and stops at the next major. `~> 0.2` (`sigra`, `chimeway`, `threadline`) means
 `>= 0.2.0 and < 1.0.0` — it excludes the entire `0.1.x` line, so those companions
 require core `0.2.0` or newer. If a companion ever needs a still tighter floor it will
 name a fuller version, and the drift test will require that exact literal in this doc.
+
+## Release Integrity Boundaries
+
+Release integrity work keeps the train honest without changing these
+compatibility floors: Release Please Release PR merge is the human approval
+boundary, CI owns happy-path Hex publishing, and manual dispatch is exact-ref Hex
+recovery only. Clean-room exactness, SwiftPM/Maven recovery, and iOS mirror
+backfill are separate release-ops evidence surfaces. `mix crosswake.release.status`
+is the current text/JSON status surface for local graph truth and optional live
+registry presence. This guide remains the floor contract; live registry presence
+is a status concern, not a reason to normalize older-compatible companion floors.
 
 ## Engine Dependencies
 

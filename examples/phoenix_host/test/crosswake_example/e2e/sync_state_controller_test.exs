@@ -7,9 +7,6 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
   alias CrosswakeExample.Repo
   alias CrosswakeExample.LocalFirst.ReviewEvent
 
-  # Required by Phoenix.ConnTest; not used for direct controller calls but kept for compatibility
-  @endpoint CrosswakeExample.Endpoint
-
   # Generate unique IDs per test run for deterministic cleanup
   defp unique_id(suffix), do: "test-#{System.unique_integer([:positive])}-#{suffix}"
 
@@ -45,7 +42,10 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
 
     # Exercise the real controller show/2 directly — avoids ConnCase dependency
     conn_a = build_conn()
-    conn_a = CrosswakeExample.E2E.SyncStateController.show(conn_a, %{"client_mutation_id" => id_a})
+
+    conn_a =
+      CrosswakeExample.E2E.SyncStateController.show(conn_a, %{"client_mutation_id" => id_a})
+
     body_a = Jason.decode!(conn_a.resp_body)
 
     # count MUST be 1 — if it were a whole-table aggregate it would be >= 2
@@ -54,7 +54,10 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
 
     # Exercise for id_b independently — also count == 1
     conn_b = build_conn()
-    conn_b = CrosswakeExample.E2E.SyncStateController.show(conn_b, %{"client_mutation_id" => id_b})
+
+    conn_b =
+      CrosswakeExample.E2E.SyncStateController.show(conn_b, %{"client_mutation_id" => id_b})
+
     body_b = Jason.decode!(conn_b.resp_body)
 
     assert body_b["synced"] == true
@@ -64,7 +67,10 @@ defmodule CrosswakeExample.E2E.SyncStateControllerTest do
   test "non-existent client_mutation_id returns synced: false, count: 0" do
     missing_id = unique_id("missing")
     conn = build_conn()
-    conn = CrosswakeExample.E2E.SyncStateController.show(conn, %{"client_mutation_id" => missing_id})
+
+    conn =
+      CrosswakeExample.E2E.SyncStateController.show(conn, %{"client_mutation_id" => missing_id})
+
     body = Jason.decode!(conn.resp_body)
 
     assert body["synced"] == false

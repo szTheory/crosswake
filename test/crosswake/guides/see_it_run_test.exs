@@ -102,6 +102,44 @@ defmodule Crosswake.Guides.SeeItRunTest do
     )
   end
 
+  test "scanner rejects missing showcase-first proof-secondary copy" do
+    guide = File.read!(@target_path)
+
+    missing_showcase = String.replace(guide, ~r/showcase/i, "home")
+
+    missing_proof_secondary =
+      String.replace(guide, "Proof routes stay one click deeper", "Proof commands are primary")
+
+    missing_support_truth = String.replace(guide, ~r/support-truth/i, "support status")
+
+    missing_collateral =
+      String.replace(
+        guide,
+        ~r/route-tour assertions prove\s+route-owner semantics/i,
+        "screenshots prove everything"
+      )
+
+    assert_failure_category(
+      scan_guide({"synthetic/see_it_run_missing_showcase.md", missing_showcase}),
+      :missing_showcase_first
+    )
+
+    assert_failure_category(
+      scan_guide({"synthetic/see_it_run_missing_proof_secondary.md", missing_proof_secondary}),
+      :missing_proof_secondary
+    )
+
+    assert_failure_category(
+      scan_guide({"synthetic/see_it_run_missing_support_truth.md", missing_support_truth}),
+      :missing_support_truth
+    )
+
+    assert_failure_category(
+      scan_guide({"synthetic/see_it_run_missing_collateral_boundary.md", missing_collateral}),
+      :missing_collateral_boundary
+    )
+  end
+
   # ---------------------------------------------------------------------------
   # Structure guard — gameplan blockquote + 7 JTBD sections in order
   # ---------------------------------------------------------------------------
@@ -187,9 +225,43 @@ defmodule Crosswake.Guides.SeeItRunTest do
         :wrong_port,
         "guide must contain the source-derived URL http://localhost:#{port}"
       ),
+      require_regex(
+        path,
+        contents,
+        ~r/\bshowcase hub\b[\s\S]{0,220}http:\/\/localhost:#{port}\/|http:\/\/localhost:#{port}\/[\s\S]{0,220}\bshowcase hub\b/i,
+        :missing_showcase_first,
+        "guide must describe http://localhost:#{port}/ as the showcase hub"
+      ),
+      require_regex(
+        path,
+        contents,
+        ~r/Proof routes? (?:stay|remain|are|sit)[\s\S]{0,120}(?:one click deeper|secondary)|secondary proof routes?/i,
+        :missing_proof_secondary,
+        "guide must keep proof routes secondary to the showcase"
+      ),
+      require_regex(
+        path,
+        contents,
+        ~r/support-truth[\s\S]{0,220}(?:Available today|Proof-backed example|Demo pressure|Future gap)|(?:Available today|Proof-backed example|Demo pressure|Future gap)[\s\S]{0,220}support-truth/i,
+        :missing_support_truth,
+        "guide must retain support-truth labels and non-claim posture"
+      ),
+      require_regex(
+        path,
+        contents,
+        ~r/screenshots?[\s\S]{0,260}product surface[\s\S]{0,260}route-tour assertions?[\s\S]{0,260}route-owner semantics|route-tour assertions?[\s\S]{0,260}route-owner semantics[\s\S]{0,260}screenshots?[\s\S]{0,260}product surface/i,
+        :missing_collateral_boundary,
+        "guide must separate product screenshots from route-owner semantics proof"
+      ),
 
       # Route names from router.ex
-      require_contains(path, contents, "/offline", :missing_route, "guide must name the /offline route"),
+      require_contains(
+        path,
+        contents,
+        "/offline",
+        :missing_route,
+        "guide must name the /offline route"
+      ),
       require_contains(
         path,
         contents,

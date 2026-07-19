@@ -1,5 +1,53 @@
 # Project Milestones: Crosswake
 
+## v19.0 Showcase Apps & Capability Map (Shipped: 2026-07-12)
+
+**Phases completed:** 7 phases, 33 plans, 83 tasks
+
+**Key accomplishments:**
+
+- Shipped a Crosswake-owned first-screen showcase hub with deterministic reset/reseed truth and visible route-owner/support labels for all lanes.
+- Turned the example host into three realistic demo-app lanes: AdminPilot for SaaS/admin, Fieldserv for field-service/device-pressure workflows, and LearnLoop for subscription learning/training.
+- Kept runtime ownership honest across the showcase: LiveView-first flows, cached read-only/degraded posture, socketless offline study behavior, backend-owned entitlement pressure, native-screen capture handoff, and unsupported native gaps are visibly distinct.
+- Added generalized browser route-tour evidence, reset proof, collateral manifests, and structural docs/support tests so screenshots remain collateral after semantic assertions pass.
+- Published a typed capability map and generated guide that classify shipped, demoed, missing, deferred, and next-pack capabilities with package ownership and proof posture.
+- Closed v19 audit gaps in Phase 152.1 by repairing scanner/document-scan support truth, reconstructing Phase 150/152 verification ledgers from fresh reruns, refreshing validation metadata, and preserving the Phase 148 summary exception honestly.
+
+**Verification:** Milestone audit passed 31/31 requirements, 7/7 phases, 10/10 integration checks, and 6/6 E2E flows. Final closeout evidence included 96 support/capability/docs tests, 23 Fieldserv/showcase tests, Playwright route-tour proof, and `git diff --check`.
+
+**Archive:**
+
+- `.planning/milestones/v19.0-ROADMAP.md`
+- `.planning/milestones/v19.0-REQUIREMENTS.md`
+- `.planning/milestones/v19.0-MILESTONE-AUDIT.md`
+
+---
+
+## v18.0 Release Integrity & Automated Package Operations (Shipped: 2026-07-09)
+
+**Phases completed:** 5 phases (142-146), 15 plans, 34 tasks
+**Requirements:** 15/15 v1 satisfied (RELG-01..03, AUTO-01..03, PREF-01..03, MIRR-01..03, STAT-01..03). Audit `passed`; integration CLEAN (0 blockers, 5/5 flows).
+
+**Delivered:** Made Crosswake's package-family release path automated, path-specific, and operator-visible before adding product breadth.
+
+**Key accomplishments:**
+
+- **Path-specific release graph:** Release Please publish/proof jobs now key off exact release identity and component paths, use non-replacing concurrency, and gate `release-as` cleanup on the relevant companion publish/proof success.
+- **Guarded automated Hex publishing:** The happy path publishes from CI via `script/guarded_hex_publish.sh`; manual recovery is package-scoped, exact-ref, and idempotent for already-live versions.
+- **Published-core clean-room proof:** Companion proof derives the required `crosswake` floor from exact Hex metadata, pins the just-published companion version, verifies `mix.lock`, and lets `mix crosswake.doctor --router` own fresh-router loading.
+- **Native registry parity:** iOS mirror publishing now fails fast on missing/invalid `MIRROR_PUSH_TOKEN`; iOS and Android clean-room proofs are decoupled; maintainers have a guarded verify-first path to backfill the missing SwiftPM `v0.2.0` tag.
+- **Release-status operator surface:** `mix crosswake.release.status` reports local package-family truth, workflow guard status, compatibility floors, stale pins, JSON output, stable exit behavior, and optional advisory live probes.
+- **Scope discipline preserved:** DASH-01, SYNCP-01, NTV-01, and SEED-002 remain deferred until the next milestone is intentionally selected.
+
+**Residual external risks:**
+
+- Real iOS mirror mutation still requires a correctly scoped maintainer `MIRROR_PUSH_TOKEN` and the guarded backfill path.
+- Live registry probes remain advisory; normal CI is local/read-only by design.
+
+See `.planning/milestones/v18.0-ROADMAP.md`, `.planning/milestones/v18.0-REQUIREMENTS.md`, and `.planning/milestones/v18.0-MILESTONE-AUDIT.md` for full detail.
+
+---
+
 ## v17.0 Companion Family Completion (Shipped: 2026-07-04)
 
 **Phases completed:** 6 phases (136-141), 29 plans

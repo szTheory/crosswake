@@ -1,70 +1,78 @@
 ---
 gsd_state_version: 1.0
-milestone: v17.0
-milestone_name: Companion Family Completion
-status: shipped
-stopped_at: v17.0 SHIPPED + ARCHIVED + tagged 2026-07-04 — companion family fully published to Hex; milestone closed
-last_updated: "2026-07-04T00:00:00.000Z"
-last_activity: 2026-07-04
+milestone: v20.0
+milestone_name: Native Controls Pack 1
+current_phase: 153
+current_phase_name: ios-mirror-unblock
+status: executing
+stopped_at: Phase 153 context gathered
+last_updated: "2026-07-13T18:15:35.655Z"
+last_activity: 2026-07-13
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 28
-  completed_plans: 28
-  percent: 100
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 2
+  percent: 0
 ---
 
 # Project State: Crosswake
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-30 after v16.0 milestone)
+See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 141 — core-first-publish-family-release
+**Current focus:** Phase 153 — ios-mirror-unblock
 
 ## Current Position
 
-**✅ v17.0 "Companion Family Completion" SHIPPED + ARCHIVED + tagged 2026-07-04.** Milestone closed via `/gsd-complete-milestone` (`override_closeout` — empirical: all four packages proven LIVE on Hex). Phases 136-141 all `complete` (the deferred/superseded publish plans got honest SUMMARYs tracing their work to Phase 141). 20/20 v1 reqs Complete. Archived to `.planning/milestones/v17.0-{ROADMAP,REQUIREMENTS}.md`; `MILESTONES.md` entry added; `REQUIREMENTS.md` removed (fresh for next milestone); ROADMAP collapsed; `git tag v17.0`. Carried follow-ups: SEED-003 (iOS mirror push token), SEED-004 (clean-room harness). NEXT: `/gsd-new-milestone` when ready.
+Phase: 153 (ios-mirror-unblock) — EXECUTING
+Plan: 3 of 4
+Status: Ready to execute
+Last activity: 2026-07-13
 
-Phase: 141 (core-first-publish-family-release) — ✅ COMPLETE 2026-07-04. **The v17.0 Companion Family is FULLY PUBLISHED to Hex.**
+Progress: [█████░░░░░] 50%
 
-**LIVE ON HEX:** `crosswake` 0.2.0 (core; +hexdocs +Android Maven) · `crosswake_sigra` 0.1.1 · `crosswake_chimeway` 0.1.0 · `crosswake_threadline` 0.1.0. Core-first ordering held; companions sequential sigra→chimeway→threadline (never batched). The KeyError-on-unpublished-core blocker (Finding.code) is resolved — companions resolve against published core 0.2.0. Recovery deviations during execution: sigra 0.1.0 first-publish failed (missing ex_doc) → re-cut 0.1.1; threadline 0.1.0 publish failed (dead-default-arg warnings-as-errors) → deleted dud tag, fixed (#70), re-cut clean 0.1.0 (#71); clean-room proof harness bugs fixed (#64 app-name, #67 mkdir) with one OPEN advisory (#SEED-004 doctor-router). Closeout: stale release-as pins stripped (chimeway #67, threadline #74), CHANGELOG dedup, staleness gate green, redundant #59 closed. Follow-ups planted: SEED-003 (iOS mirror push token — core iOS SwiftPM 0.2.0 not mirrored), SEED-004 (clean-room proof harness — advisory, non-blocking). NOTE: phases 137-140 remain "in_progress" in GSD bookkeeping (executed in-tree, publish deferred to 141) — their substantive work shipped via the 141 publish.
+## v20.0 Roadmap Decisions (2026-07-12, locked)
 
---- prior planned/blocked history below (superseded by the completion above) ---
+- Milestone: **v20.0 Native Controls Pack 1**. Phase numbering continues from v19.0 (last phase 152.1) — starts at **Phase 153**, not reset to 1.
+- 5 phases derived from the 7 requirement categories (MIRROR/CTRL/MENU/FALL/HRDN/EVID/PROOF), 21/21 v1 requirements mapped, no orphans:
+  - **153 iOS Mirror Unblock** (MIRROR-01/02) — release-infra prerequisite, landed first because native bridge dispatch is a closed switch compiled into shipped binaries; the SwiftPM mirror stuck at v0.1.2 blocks every future native release from reaching iOS, mirroring the v17 core-first-publish lesson.
+  - **154 The Control-Contract Seam** (CTRL-01..05, PROOF-04, HRDN-01) — the load-bearing machinery (`Bridge.push/3`, one typed `Shell.Denial`, closed-vocabulary guard, rebuild-class labeling) plus its own anti-drift structural test (PROOF-04) plus the cheapest real proof (HRDN-01, migrating already-native haptics onto the seam with zero native-side risk) — bundled together because HRDN-01 and PROOF-04 both validate the seam before any new capability is built on it, per research guidance to place them "with or right after CTRL, before MENU."
+  - **155 Host-Owned Fallback Components** (FALL-01/02, PROOF-01) — the generated, verbatim-copy fallback tier and its route-tour proof, landed immediately after the seam since MENU's fallback path depends on it existing.
+  - **156 Native Menu & Action-Button Control** (MENU-01..03, PROOF-03) — the first genuinely-new native control, the reply-path exemplar; depends on 153 (native release must reach iOS), 154 (seam), and 155 (fallback path).
+  - **157 Harden, Promote & Prove Support Truth** (HRDN-02/03, EVID-01/02, PROOF-02) — haptics accessibility + iPad share-crash guard bundled with promoting share/notification_token to merge-blocking proof and the permissions.status/notification_token honesty pass, since the crash guard and docs honesty are both support-truth concerns for the same capabilities being promoted.
+- Anti-vacuity discipline: every phase's success criteria are observable/falsifiable behaviors (a LiveView call receiving a reply, a denial shape, a CI test that can fail on a bad control, a native menu rendering) — no phase's criteria are satisfiable by a passing-but-vacuous test, per the v12.0 fabricated-proof lesson.
+- Research source: `.planning/research/v20/SUMMARY.md`, `GROUND-TRUTH.md`, `RELEASE-STRATEGY.md` (read in full before roadmapping).
 
-Phase: 141 (core-first-publish-family-release) — EXECUTING
-Plan: 2 of 4
-Wave 1 COMPLETE 2026-07-03 (4/4 green, executed sequentially on main — worktree isolation degraded because local main is 44 commits ahead of origin, #683 base-divergence): 140-01 compat-matrix discipline + O(N)/version-cell drift guards (proof 132 now 6 tests); 140-02 per-package Side-A telemetry contract tests (sigra 4/chimeway 6/threadline 14) + core `>=24` count-assertion removal locked (proof 133 now 9); 140-03 extraction-recipe hardening (Step 0 coupling-audit gate + grep exit-code fix); 140-04 COMPANION-PUBLISH-RUNBOOK.md authored (no publish).
-Wave 2 = 140-05 batched family publish (autonomous:false, IRREVERSIBLE). ATTEMPTED sigra publish 2026-07-03 (user-authorized, canary-first) → **BLOCKED, nothing published.** Boundary sync PR #45 landed first (origin==main, CI green, all 22 required lanes; fixed phase71-proof.yml sigra→chimeway drift). Then merged sigra Release PR #42 → `publish-hex-sigra` FAILED at the COMPILE step (never reached hex.publish): `KeyError key :code not found ... (crosswake 0.1.2) Finding.__struct__`.
-**ROOT CAUSE (systemic, blocks whole family):** companions depend on UNPUBLISHED v17.0 core. sigra evaluator.ex:258 + chimeway resolver.ex:102 build `%Finding{code:}`; the `:code` field was added to core `Finding` in cc87362d (phase 137-01) — unpublished (core is 0.1.2 on Hex). Companion publish seam resolves `{:crosswake, "~> 0.1"}` → Hex serves 0.1.2 (pre-`:code`) → compile fails. All 3 companions share the `~> 0.1` floor → all blocked identically. The 140-05 plan/runbook OMITTED that CORE must publish first.
-**RECOVERY PATH (needs planning — do NOT continue merging Release PRs):** (1) publish core first at a new version (e.g. 0.2.0) with the v17.0 decoupling API — this is what stale root release PR #25 should recompute into over phases 136-140; (2) bump companion `crosswake_dep()` floors `~> 0.1`→`~> 0.2` (honest "Requires crosswake >= 0.2", matches compat-matrix column); (3) re-publish companions (re-cut tags after floor bump — mind release-please manifest state, sigra entry already 0.1.0).
-CLEANUP DONE 2026-07-03: deleted dangling `crosswake_sigra-v0.1.0` release+tag (publish failed so package NOT on Hex — removed false "Latest"), closed auto-opened release-as-cleanup PR #48. main clean 0/0. release-failure-alert fired as designed; Release-As Staleness Gate green (future PRs not blocked). Open Release PRs remain: #47 threadline, #46 chimeway, #39 rulestead, #38 rindle, #25 root (all deferred/unmerged).
-PHASE 141 PLANNED 2026-07-03 (`/gsd-progress` route → user chose "plan core-first fix phase"; decisions locked via AskUserQuestion: core 0.2.0 + 3 v17 companions, rulestead/rindle separate, every hex.publish human-gated). Added Phase 141 "Core-First Publish & Family Release" to ROADMAP + FAMILY-05 requirement + 141-CONTEXT.md (D-141-A..E). gsd-planner produced **4 plans / 3 waves** (commit 85a048bc); gsd-plan-checker PASS (core-first ordering triply enforced; applied its 1 recommended fix — core release-as-cleanup step in 141-03). KEY PLANNER FINDING: release-please would compute core **0.1.3** not 0.2.0 (pre-major patch-bumping: `bump-minor-pre-major:false` + `bump-patch-for-minor-pre-major:true`, 53 feat commits since 0.1.2) → 141-01 adds `release-as: "0.2.0"` pin on `.` (safe/auditable vs fabricating feat!). Waves: W1 (autonomous prep) 141-01 release-as pin + runbook core-first Step 0 / 141-02 bump companion `~> 0.1`→`~> 0.2` floors + compat-matrix cells (phase132 drift test is the gate; rulestead/rindle stay `~> 0.1`); W2 141-03 (human-gated) boundary PR→ship-gate→**publish CORE 0.2.0 first** via root Release PR #25; W3 141-04 (human-gated) sequential sigra→chimeway→threadline, each clean-room-proofed against published 0.2.0. rulestead/rindle confirmed NOT blocked (use only 0.1.2-era Finding fields, no `:code`) → out of scope [[project-crosswake-core-first-publish]].
-NEXT: `/gsd-execute-phase 141` — Wave 1 autonomous prep lands first + boundary-syncs green; Waves 2-3 are human-gated irreversible publishes (core-first). The classifier will (correctly) require explicit per-publish authorization.
-Last activity: 2026-07-03
+## v19.0 Closed (2026-07-12)
 
-> **Decision-coverage gate OVERRIDE (Phase 137 planning):** `check.decision-coverage-plan`
-> false-negatived with `could-not-parse` / `total: 0` on 137-CONTEXT.md's `### D-137-A — …`
-> H3-heading decision format (parser expects `- **D-NN:**` bullets — known brittleness).
-> Overridden after plan-checker Dimension 7 Context-Compliance PASSED, independently confirming
-> all four locked decisions are implemented: D-137-A→Plan 01/02, D-137-B→Plan 01, D-137-C→Plan
-> 04/05, D-137-D→Plan 01/03. No decision was dropped; this is a tooling false-negative only.
+**Done:** all 7 phases verified passed; `/gsd-audit-milestone` PASSED after Phase 152.1 closeout repair (31/31 requirements, integration CLEAN, 6/6 flows); ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v19.0-*`; MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md, and RETROSPECTIVE.md evolved; REQUIREMENTS.md removed for the next milestone.
 
-```
-[x] Phase 136 — Core Decoupling                    (complete, verified 2026-07-01)
-[~] Phase 137 — crosswake_sigra Extraction         (waves 1-4 green; wave 5 = deferred publish gate)
-[P] Phase 138 — crosswake_chimeway Extraction      (planned, checker PASSED; 4 waves; wave 4 = deferred publish gate)
-[ ] Phase 139 — crosswake_threadline Extraction
-[ ] Phase 140 — Family Discipline & Close
-```
+**Delivered:** Crosswake-owned showcase hub, AdminPilot SaaS/admin lane, Fieldserv field-service lane, LearnLoop subscription learning/training lane, deterministic fixture reset/proof, generalized browser route-tour evidence, public capability-map collateral, structural support-truth claim guards, and v20 Native Controls Pack 1 handoff.
 
-Phases: 1 of 5 complete, 1 in progress (137 at 4/5 plans). Plans: 10 of 11 executed.
+**Accepted debt:** Phase 148 original numbered summaries were never created; the closeout preserves `148-SUMMARY-EXCEPTION.md` plus explicitly retroactive `148-RETRO-SUMMARY.md` rather than fabricating original-looking summaries.
 
-```
-[██▓       ] ~30%
-Phase 136 ──────────────────────────────────────────────────────── Phase 140
-```
+## v19.0 Roadmap Decisions (2026-07-09, locked)
+
+- Milestone: **v19.0 Showcase Apps & Capability Map**.
+- Goal: make Crosswake feel like a polished, production-ready Phoenix mobile framework through seeded, click-around examples across realistic app domains, then convert the revealed gaps into a v20 Native Controls Pack 1 handoff.
+- Phase ordering: 147 foundation and fixture reset → 148 demo app brand and fixture direction → 149 SaaS/admin lane → 150 field-service lane → 151 subscription learning/training lane → 152 capability map, proof, collateral, and v20 handoff.
+- Brand direction: root remains Crosswake-owned; AdminPilot, Fieldserv, and LearnLoop are separate fictional demo app identities inside the single Phoenix example host.
+- Selected GSD seed: **SEED-002** as strategic input for Phoenix-first native capability and commerce breadth. SEED-001 remains historical precedent; SEED-003/004 remain release-infrastructure carryovers, not v19 headline scope.
+- Product arc sequence: v19 showcase evidence → v20 Native Controls Pack 1 → later capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the queue.
+- Domain set: SaaS/admin, field service, subscription learning/training.
+- Follow-on milestone: **v20.0 Native Controls Pack 1**, likely alert/confirm, menu/action-button affordances, haptics, share sheet, toast/review prompt, permission status, and notification-token UX integration, finalized by v19 evidence.
+- Anti-scope: do not implement the full native-controls catalog, scanner/document-scan/biometrics/location/NFC production APIs, live commerce/paywall SDK support, `crosswake_dashboard`, or generic sync-engine behavior in v19.
+
+## v18.0 Closed (2026-07-09)
+
+**Done:** all 5 phases verified passed; `/gsd-audit-milestone` PASSED (15/15 requirements, integration CLEAN, 5/5 flows); ROADMAP/REQUIREMENTS/AUDIT archived to `.planning/milestones/v18.0-*`; MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md, and RETROSPECTIVE.md evolved; REQUIREMENTS.md removed for the next milestone.
+
+**Delivered:** path-specific Release Please gates, non-canceling release workflow semantics, guarded CI Hex publishing with exact-ref recovery, exact companion/core-floor clean-room proof, doctor-owned fresh-router loading, iOS mirror credential/backfill guardrails, decoupled native proofs, and `mix crosswake.release.status [--json] [--live]`.
+
+**Residual external risks:** real iOS mirror mutation still requires a correctly scoped maintainer `MIRROR_PUSH_TOKEN`; live registry probes remain advisory and are intentionally outside normal local/CI truth.
 
 ## v16.0 Closed (2026-06-30) — one admin ship-gate carried forward
 
@@ -96,7 +104,7 @@ Phase 136 ───────────────────────�
 
 **Velocity:**
 
-- Total plans completed: 52 (v10.0) + 8 (v11.0) + 13 (v12.0) + 16 (v13.0) + 17 (v14.0) + 12 (v15.0) + 24 (v16.0) = 142 across last seven milestones
+- Total plans completed: 190 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
 - Average duration: —
 - Total execution time: —
 
@@ -199,6 +207,38 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: crosswake_threadline registered as independent elixir release-please component (NOT in linked-versions, one-shot release-as 0.1.0, THREAD-03)
 - [Phase ?]: cleanroom script threadline-correct: companion-behaviour assertions suppressed; three module-shipment canaries (Telemetry/Plug/Ledger) + zero-sibling-dep invariant (T-139-11, THREAD-02)
 - [Phase ?]: clean-room-proof-threadline: no-engine non-companion mode; installs crosswake + crosswake_threadline only (NOT sigra, NOT chimeway — T-139-18 zero-sibling-dep at CI level)
+- [Phase 144]: Kept script/check_release_workflow_integrity.exs plus ExUnit as the authoritative PREF-03 proof instead of introducing a YAML parser or actionlint dependency. — The existing scanner already encodes Crosswake-specific release policy and stable operator-facing IDs, while Phase 144 scope explicitly forbids replacing it with a generic parser.
+- [Phase 144]: Added Phase 144 umbrella IDs without replacing the existing Phase 142/143 scanner IDs. — Future operators and tests may still rely on historical stable IDs, while PREF-03 needs its own consolidated IDs.
+- [Phase 144]: Required clean-room proof jobs to pass package/version as real script arguments, not loose job-block text. — A job-level string search could be satisfied by comments, labels, or env decoys; argument-order matching keeps PREF-03 non-vacuous.
+- [Phase ?]: Phase 149 Plan 01 kept AdminPilot work intentionally RED-only: contracts now define fixture density, diagnostics, approval authority, and route-tour proof while implementation remains in later Phase 149 plans.
+- [Phase 149 Plan 02]: AdminPilot static breadth remains deterministic fixture maps; mutable approval/activity persistence remains later-plan work.
+- [Phase 149 Plan 02]: SaaS reset digest delegates static breadth to SaaSPortal.Fixtures.digest_components/0 so reset truth changes with fixture IDs, titles, and roles.
+- [Phase 149 Plan 03]: AdminPilot diagnostics preserve raw compiled router policy fields beside user-facing support labels so diagnostics stay drift-proof and UI-ready.
+- [Phase 149]: Approval mutation authority lives in SaaSPortal.Approvals with server-owned user/account scope and Ecto.Multi writes; LiveViews remain dispatch/render surfaces. — Satisfies T-149-11/T-149-12 and keeps native haptics secondary to Phoenix-owned approval state.
+- [Phase 149]: Showcase reset digest now includes persisted approval/activity row counts and stable row components. — Keeps reset deterministic and makes mutable approval evidence visible to proof lanes.
+- [Phase 149]: Persisted SaaS state remains limited to approval status and approval activity evidence; accounts, teams, members, roles, settings, and operational records remain deterministic fixture/read-context data. — Preserves D-08/D-10 and avoids widening AdminPilot into static SaaS persistence or a generic admin framework.
+- [Phase 149]: AdminPilot UI shell is lane-local Phoenix.Component code, not a generic admin/resource framework. — Plan 149-05 preserves the Phase 149 scope boundary and keeps reusable admin-framework behavior out of the showcase lane.
+- [Phase 149]: Diagnostics stay inline on AdminPilot pages and consume SaaSPortal.Diagnostics rows derived from compiled router metadata. — This satisfies SAAS-03 without adding a URL-addressable inspector route or crosswake_dashboard surface.
+- [Phase 149]: Approval queue/detail RED contracts remain plan 149-06 scope; plan 149-05 keeps non-approval pages and shared shell complete. — The remaining full-suite failures are already bounded to approval_queue_live and approval_detail_live, which require the approval workflow UI planned next.
+- [Phase 149]: Plan 06 keeps approval mutation authority in SaaSPortal.Approvals; LiveViews only load scoped data, dispatch events, and render outcomes.
+- [Phase 149]: Plan 06 keeps haptics as optional post-success confirmation with route id, active route id, capability, command, and correlation id in the payload.
+- [Phase 149]: The SaaS e2e session helper accepts only fixture user ids and delegates session creation to SaaSPortal.Auth.put_user_session/2; role/account params are ignored. — Preserves Crosswake's test-only e2e helper boundary without creating production auth, provider MFA, native auth UI, or admin-access semantics.
+- [Phase 149]: LiveView browser proof uses standard Phoenix client assets and CSRF-backed sessions so approval clicks exercise real phx-click server events. — The route tour must prove server-owned LiveView behavior rather than bypassing clicks or weakening route-owner assertions.
+- [Phase 149]: Route-tour screenshots remain collateral evidence after route-owner, support-truth, and typed bridge payload assertions pass. — Keeps browser proof semantic-first and aligned with Crosswake's route-policy/runtime-contract thesis.
+- [Phase 150 Plan 01]: Fieldserv Wave 0 is intentionally RED-only; contracts now define fixture density, read contexts, evidence authority, diagnostics, component/CSS expectations, LiveView click path, route-tour proof, and capability-map pressure while implementation remains in later Phase 150 plans.
+- [Phase 150 Plan 01]: Fieldserv route-tour evidence must prove route IDs, native capture metadata, cached read-only posture, backend verification, diagnostics, and no-overclaiming assertions before screenshots.
+- [Phase 150 Plan 02]: Fieldserv static breadth remains deterministic fixture/read-context data; broad jobs/assets/templates are not persisted, and inspection offline behavior is future requirements text rather than shipped local mutation.
+- [Phase 150 Plan 03]: Field Service now enters through product-first `/fieldserv/jobs` while legacy `/native/claims` remains secondary proof; diagnostics derive Fieldserv route facts from compiled router metadata and classify native/offline pressure without shipped-support claims.
+- [Phase 150 Plan 04]: Fieldserv persistence is limited to append-only evidence events and current technician job state; device evidence is not media availability until backend verification transitions mark it verified.
+- [Phase 150 Plan 05]: Fieldserv UI is lane-local and product-first; jobs/detail/inspection screens surface support truth inline while keeping inspection mutation server-recorded and offline-island behavior future-only.
+- [Phase 150 Plan 06]: Fieldserv capture stays native-screen owned while evidence review keeps backend verification as the only availability authority.
+- [Phase 150 Plan 07]: Fieldserv route-tour proof treats screenshots as collateral after semantic assertions; Fieldserv capability pressure remains capability-map evidence, not shipped runtime support.
+- [Phase ?]: SSH deploy key (MIRROR_DEPLOY_KEY) replaces MIRROR_PUSH_TOKEN entirely in the backfill lane; HTTPS x-access-token branch removed, not deprioritized (153-01)
+- [Phase ?]: Explicit-lease --force-with-lease="refs/heads/main:${current_main}" is the only push form that works in a never-fetched CI checkout; no git fetch was added anywhere (153-01, RESEARCH Q1)
+- [Phase ?]: Ancestry guard distinguishes unknown-object (advisory, proceed) from known-non-ancestor (fail-closed) via cat-file -e before merge-base --is-ancestor (153-01, D-08/Q2)
+- [Phase ?]: publish-ios-core: atomic + explicit-lease mirror push scoped to main alone (D-13), Hex-only gate (D-12), release-tag-pinned checkout (D-11), SSH transport via MIRROR_DEPLOY_KEY (D-03/D-04)
+- [Phase ?]: release-failure-alert.needs extended to the four native jobs plus native-release-rollup (D-15); native-release-rollup exits 1 on partial native release (D-17)
+- [Phase ?]: Six scanner checks rewritten/added in check_release_workflow_integrity.exs for D-11/D-12/D-13/D-15/D-17/D-03/D-04, each with a decoy test (D-20)
 
 ### Pending Todos
 
@@ -206,7 +246,19 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ### Resolved In Current Phase
 
-*(populated during execution)*
+- Phase 148 Demo App Brand & Fixture Direction completed 2026-07-09: root showcase is Crosswake-branded, AdminPilot/Fieldserv/LearnLoop are fixed as fictional demo-app identities, fixture briefs define realistic density requirements, and route-tour/browser UAT passed.
+- Phase 149 SaaS/Admin Showcase completed 2026-07-11: AdminPilot now has realistic fixture/read-context data, inline route-policy diagnostics, server-authoritative approval persistence, styled LiveView pages, gated e2e session proof, and browser route-tour evidence.
+- Phase 150 Plan 01 completed 2026-07-11: Fieldserv RED contracts now define the jobs -> detail -> inspection -> native capture -> evidence review path, backend evidence states, cached-read-only/offline-honesty copy, and capability-map pressure evidence.
+- Phase 150 Plan 02 completed 2026-07-11: deterministic Fieldserv fixtures and read contexts now provide jobs, assets, technicians, inspection checklist data, notes, evidence statuses, route posture, and capability-pressure rows without broad persistence.
+- Phase 150 Plan 03 completed 2026-07-11: `/fieldserv/*` routes and route-derived diagnostics now expose LiveView jobs/detail/inspection/review, native-screen capture metadata, cached read-only posture, support labels, guide links, and capability-map pressure rows.
+- Phase 150 Plan 04 completed 2026-07-11: narrow Fieldserv Ecto evidence/state persistence, backend-authoritative evidence transitions, and deterministic showcase reset/digest integration are complete.
+- Phase 150 Plan 05 completed 2026-07-11: Fieldserv components, scoped styles, jobs queue, job detail, and inspection workspace now render the product-first lane with cached read-only posture, diagnostics, and a server-recorded inspection event action.
+- Phase 150 Plan 06 completed 2026-07-11: Fieldserv native capture handoff and evidence review now complete the click path while preserving native ownership, permission truth, backend evidence authority, and cached read-only posture.
+- Phase 150 Plan 07 completed 2026-07-11: focused Fieldserv/showcase ExUnit, full warnings-as-errors ExUnit, and Playwright route-tour proof now pass with semantic assertions before screenshots and capability-map evidence preserved.
+- Phase 150 Field-Service Showcase completed 2026-07-11: FIELD-01 through FIELD-04 are verified across realistic jobs/assets/inspection/evidence data, native-screen capture pressure, backend-authoritative evidence review, cached read-only posture, route diagnostics, and browser proof.
+- Phase 152 Plan 03 completed 2026-07-12: route-tour evidence now covers 33 manifest rows across the hub, AdminPilot, Fieldserv, LearnLoop, proof routes, native fallback, and capability pressure; reset proof keeps browser-owned state outside server reset; CI requires all captured screenshots and summarizes screenshots as collateral.
+- Phase 152 Plan 04 completed 2026-07-12: README entry points link to the generated capability map, the planning-only v20 Native Controls Pack 1 handoff is written, final support-truth/reset/route-tour proof passed, and Phase 152 is complete.
+- Phase 152.1 completed 2026-07-12: scanner/document_scan support truth now matches deferred capability posture, Phase 150 and 152 verification ledgers were reconstructed from fresh reruns, 149/150/151 validation metadata is refreshed, Phase 148's missing summary history is preserved as an accepted exception, and the v19.0 milestone audit rerun passed.
 
 ### Blockers/Concerns
 
@@ -215,6 +267,10 @@ Full decision log in PROJECT.md (Key Decisions).
 - **Branch-protection toggle (watch).** `register_required_checks.sh` scripts from prior milestones are committed but have not yet been run — maintainer must run to arm branch protection. Scheduled in Phase 140 (FAMILY-04) before new v17.0 lanes land.
 - **Irreversible Hex publish risk (Phases 137/138/139).** Package names `crosswake_sigra`, `crosswake_chimeway`, and `crosswake_threadline` cannot be reclaimed once published. Phase 136 dress-rehearsal and per-phase `--dry-run` gate front-load this risk before any real publish.
 - **`build_reserved_events/0` atomicity risk.** Moving from static module-attribute calls to runtime aggregation must be atomic — if sigra extracts before chimeway, a half-removal breaks the other. Phase 136 must complete the full runtime inversion before either companion is extracted.
+
+### Roadmap Evolution
+
+- Phase 152.1 inserted after Phase 152: Close gap: v19 support-truth and verification closeout (completed 2026-07-12)
 
 ## Deferred Items
 
@@ -229,21 +285,45 @@ Full decision log in PROJECT.md (Key Decisions).
 | v16.0 tech-debt | TELEM-04 Side B vacuity (Phase 133) | Assessed: structurally near-impossible divergence; fragile fix; leave | v16.0 close |
 | v16.0 tech-debt | companion_compatibility.md:51-54 prose (Phase 132) | Assessed: not a bug; leave | v16.0 close |
 | v17.0 next | SYNCP-01: offline-sync productization | Deferred behind companion packaging | v17.0 plan |
-| v17.0 next | SEED-002: capability/commerce breadth | Deferred behind companion packaging | v17.0 plan |
+| v17.0 next | SEED-002: capability/commerce breadth | Active strategic input for v19 capability map and v20 Native Controls Pack 1 handoff; implementation breadth remains deferred to v20+ | v17.0 plan |
 | Phase 139 P01 | 9m | 2 tasks | 19 files |
 | Phase 139-crosswake-threadline-extraction P02 | 55min | 5 tasks | 21 files |
 | Phase 139 P03 | 7 min | 3 tasks | 6 files |
+| Phase 142 P02 | 5 min | 3 tasks | 2 files |
+| Phase 144 P01 | 9 min | 2 tasks | 3 files |
+| Phase 144 P02 | 17 min | 2 tasks | 5 files |
+| Phase 144 P03 | 21 min | 2 tasks | 2 files |
+| Phase 145 P01 | 8 min | 2 tasks | 4 files |
+| Phase 145 P02 | 3 min | 2 tasks | 3 files |
+| Phase 145 P03 | 8 min | 3 tasks | 8 files |
+| Phase 146 P01 | 34 min | 2 tasks | 3 files |
+| Phase 146 P02 | 3 min | 2 tasks | 3 files |
+| Phase 146 P03 | 5 min | 2 tasks | 6 files |
+| Phase 147 P01 | 6 min | 2 tasks | 5 files |
+| Phase 147 P02 | 5 min | 2 tasks | 2 files |
+| Phase 147 P03 | 7 min | 3 tasks | 8 files |
+| Phase 147 P04 | 9 min | 3 tasks | 7 files |
+| Phase 147 P05 | 10 min | 3 tasks | 8 files |
+| Phase 149 P01 | 7 min | 2 tasks | 5 files |
+| Phase 149 P02 | 8 min | 2 tasks | 6 files |
+| Phase 149 P03 | 6 min | 2 tasks | 2 files |
+| Phase 149 P04 | 7 min | 2 tasks | 8 files |
+| Phase 149 P05 | 13 min | 2 tasks | 10 files |
+| Phase 149 P06 | 5 min | 2 tasks | 2 files |
+| Phase 149 P07 | 18 min | 2 tasks | 7 files |
+| Phase 150 P01 | 13 min | 3 tasks | 12 files |
+| Phase 150 P02 | 4 min | 2 tasks | 2 files |
+| Phase 150 P03 | 4 min | 2 tasks | 5 files |
+| Phase 150 P04 | 4 min | 2 tasks | 7 files |
+| Phase 153 P01 | 15min | 3 tasks | 5 files |
+| Phase 153 P03 | 45min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-07-02T23:21:52.186Z
-Stopped at: Phase 140 context gathered
-Resume file: .planning/phases/140-family-discipline-close/140-CONTEXT.md
+Last session: 2026-07-13T18:15:35.650Z
+Stopped at: Phase 153 context gathered
+Resume file: None
 
 ## Operator Next Steps
 
-- **Repo-hygiene boundary sync (in progress):** land the accumulated local main onto origin via a `sync/main-*` PR, get CI green, triage open PRs. See `docs/MILESTONE-BOUNDARY-HYGIENE.md`. NO hex publish in this pass.
-- **Phase 137 wave 5 (deferred human gate):** when ready to publish, drive `137-05-PLAN.md` — ① land to origin + CI green → ② register required checks green-first (`DRY_RUN=0 script/register_required_checks.sh`) → ③ merge the `crosswake_sigra 0.1.0` Release PR (irreversible publish) → ④ merge the release-as-cleanup PR.
-- Then continue v17.0: Phase 138 (crosswake_chimeway) → 139 (threadline) → 140 (family discipline + close).
-
-<!-- plan-phase override 2026-07-02: decision-coverage-plan gate returned reason=could-not-parse (0/13) — known parser brittleness on long-bold/embedded-colon D-NN bullets (project_decision_coverage_parser_brittleness). NOT a real gap: gsd-plan-checker Dimension 7 verified all D-01..D-18 covered (all PASS). Proceeded with override. -->
+- Start the next milestone with /gsd-new-milestone

@@ -1,6 +1,8 @@
 defmodule CrosswakeExample.BridgeProofLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.PageTitle
+
   @bridge_capability_version "1.0.0"
   @bridge_protocol "crosswake.bridge"
   @bridge_route_id "bridge-proof"
@@ -8,7 +10,12 @@ defmodule CrosswakeExample.BridgeProofLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, bridge_request: nil, bridge_contract: share_request())}
+    {:ok,
+     assign(socket,
+       bridge_request: nil,
+       bridge_contract: share_request(),
+       page_title: PageTitle.crosswake("Bridge Proof")
+     )}
   end
 
   @impl true
@@ -78,7 +85,7 @@ defmodule CrosswakeExample.BridgeProofLive do
       <script :if={@bridge_request} id={"crosswake-share-#{@bridge_request["correlation_id"]}"}>
         <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
       </script>
-      <pre :if={@bridge_request} id="crosswake-bridge-payload" hidden>
+      <pre :if={@bridge_request} id="crosswake-bridge-payload">
         <%= Jason.encode!(@bridge_request) %>
       </pre>
       <pre :if={!@bridge_request} id="crosswake-bridge-payload" hidden>

@@ -15,44 +15,10 @@
 # priv/static/offline_study.js so the v12 proof exercises IndexedDB,
 # reconnect-triggered flush, and /study/sync honestly.
 
-alias CrosswakeExample.Repo
-alias CrosswakeExample.Flashcards.Deck
-alias CrosswakeExample.Flashcards.Card
-alias CrosswakeExample.Flashcards
+result = CrosswakeExample.Showcase.Reset.reset!()
 
-# Clear existing data for idempotency
-Repo.delete_all(Card)
-Repo.delete_all(Deck)
-
-# Insert "Elixir Basics" deck
-{:ok, deck} =
-  Flashcards.create_deck(%{
-    title: "Elixir Basics",
-    description: "Core concepts of Elixir"
-  })
-
-# Insert Cards for the deck
-{:ok, _card1} =
-  Flashcards.create_card(%{
-    deck_id: deck.id,
-    front_text: "What is OTP?",
-    back_text:
-      "Open Telecom Platform - a collection of middleware, libraries, and tools written in Erlang."
-  })
-
-{:ok, _card2} =
-  Flashcards.create_card(%{
-    deck_id: deck.id,
-    front_text: "What is a GenServer?",
-    back_text:
-      "A generic server behaviour that abstracts client/server interactions in Elixir/Erlang."
-  })
-
-{:ok, _card3} =
-  Flashcards.create_card(%{
-    deck_id: deck.id,
-    front_text: "What is Ecto?",
-    back_text: "A database wrapper and query generator for Elixir."
-  })
-
-IO.puts("Successfully seeded the database with 'Elixir Basics' deck and cards!")
+IO.puts("Showcase server reset complete.")
+IO.puts("counts=#{Jason.encode!(result.counts)}")
+IO.puts("digest=#{result.digest}")
+IO.puts("browser_state_reset=#{result.browser_state_reset}")
+IO.puts("Browser offline state remains app-owned and is not reset server-side.")

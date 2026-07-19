@@ -1082,7 +1082,7 @@ defmodule Crosswake.SupportMatrix do
         family: capability.family,
         owner: capability.owner,
         posture: capability_posture(capability),
-        baseline_status: :supported,
+        baseline_status: capability_baseline_status(capability),
         proof_status: capability_proof_status(capability),
         package_class: capability.package_class,
         proof_class: capability.proof_class,
@@ -1646,6 +1646,10 @@ defmodule Crosswake.SupportMatrix do
 
   defp capability_fallback(%Capability{fallback: fallback}), do: fallback
 
+  defp capability_baseline_status(%Capability{package_class: :defer}), do: :unsupported
+  defp capability_baseline_status(%Capability{}), do: :supported
+
+  defp capability_proof_status(%Capability{package_class: :defer}), do: :unsupported
   defp capability_proof_status(%Capability{id: "notification_token"}), do: :verification_required
   defp capability_proof_status(%Capability{id: "deep_link"}), do: :supported
 

@@ -2,7 +2,6 @@ defmodule CrosswakeExample.BridgeProofLiveTest do
   use ExUnit.Case
 
   alias CrosswakeExample.BridgeProofLive
-  import Phoenix.LiveView.Helpers
 
   test "renders initially without bridge script" do
     assigns = %{bridge_request: nil}
@@ -17,10 +16,10 @@ defmodule CrosswakeExample.BridgeProofLiveTest do
     # test handle_event
     socket = %Phoenix.LiveView.Socket{assigns: %{__changed__: %{}, bridge_request: nil}}
     {:noreply, new_socket} = BridgeProofLive.handle_event("share", %{}, socket)
-    
+
     assert new_socket.assigns.bridge_request["command"] == "share.invoke"
     assert new_socket.assigns.bridge_request["capability"] == "share"
-    
+
     # test render with new assigns
     assigns = %{bridge_request: new_socket.assigns.bridge_request}
     html = Phoenix.HTML.Safe.to_iodata(BridgeProofLive.render(assigns)) |> IO.iodata_to_binary()
