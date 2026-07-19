@@ -97,6 +97,7 @@ For the full proof command reference: [examples/QUICK_START.md](https://github.c
 
 Start with:
 
+- [guides/architecture.md](guides/architecture.md) for the system mental model from route declaration to runtime owner or denial
 - [guides/route_policy.md](guides/route_policy.md) for the start-here route-owner map
 - [guides/web_to_mobile_migration.md](guides/web_to_mobile_migration.md) for an operational Phoenix route inventory pass
 - [guides/user_flows.md](guides/user_flows.md) for the fastest JTBD and user-flow ramp-up
@@ -130,6 +131,7 @@ Your Phoenix host and generated shells are **host-owned** after generation.
 
 Read:
 
+- [guides/code-walkthrough.md](guides/code-walkthrough.md) for a source-level trail through policy, manifests, activation, and the native contract
 - [AGENTS.md](https://github.com/szTheory/crosswake/blob/main/AGENTS.md)
 - [guides/install.md](guides/install.md)
 - [guides/native_shell.md](guides/native_shell.md)
@@ -191,6 +193,8 @@ container.
 
 ## Guide map
 
+- [guides/architecture.md](guides/architecture.md) — outside-in route ownership, manifest, activation, package, and proof model
+- [guides/code-walkthrough.md](guides/code-walkthrough.md) — inside-out reading trail through current Elixir, Swift, and Kotlin contracts
 - [guides/install.md](guides/install.md) — Phoenix install path and native shell generation
 - [guides/route_policy.md](guides/route_policy.md) — start-here route-owner decisions and DSL examples
 - [guides/web_to_mobile_migration.md](guides/web_to_mobile_migration.md) — route inventory pass for existing Phoenix SaaS apps
