@@ -11,7 +11,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Package-family release truth
+### Unpublished support claims
 
 * No new support claims have been cut after `0.2.0` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
 * **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below).
