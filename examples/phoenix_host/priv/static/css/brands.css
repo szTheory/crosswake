@@ -1,0 +1,101 @@
+/*
+ * Demo-brand design tokens (showcase micro-brands: AdminPilot, Fieldserv, LearnLoop).
+ *
+ * These raw color primitives deliberately live OUTSIDE app.css. The brand-structural
+ * drift gate (brandbook/tools/check-consumer-drift.mjs) forbids hex primitives in
+ * consumer files — primitives belong in a tokens layer alongside tokens.css. Consumer
+ * rules in app.css reference these via var(--<brand>-*) / var(--app-*). Loaded via a
+ * <link> next to tokens.css; custom properties resolve at use-time regardless of order.
+ */
+
+/* Showcase hub brand accents (data-driven .showcase-brand-* wrappers) */
+.showcase-brand-adminpilot {
+  --app-accent: #2f6f73;
+  --app-ink: #14213d;
+  --app-highlight: #d6a34a;
+  --app-soft: #eaf3f2;
+}
+
+.showcase-brand-fieldserv {
+  --app-accent: #c96f21;
+  --app-ink: #273136;
+  --app-highlight: #f0c541;
+  --app-soft: #fff1df;
+}
+
+.showcase-brand-learnloop {
+  --app-accent: #6f52c2;
+  --app-ink: #252047;
+  --app-highlight: #2f9e9a;
+  --app-soft: #f0ecff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .showcase-brand-adminpilot {
+    --app-soft: #142629;
+  }
+
+  .showcase-brand-fieldserv {
+    --app-soft: #322417;
+  }
+
+  .showcase-brand-learnloop {
+    --app-soft: #241f3a;
+  }
+}
+
+/* AdminPilot SaaS/admin lane */
+.adminpilot-shell {
+  --adminpilot-accent: #2f6f73;
+  --adminpilot-accent-strong: #194d4f;
+  --adminpilot-highlight: #d6a34a;
+  --adminpilot-soft: #eaf3f2;
+}
+
+@media (prefers-color-scheme: dark) {
+  .adminpilot-shell {
+    --adminpilot-accent: #6fa8a8;
+    --adminpilot-accent-strong: #9fc6c1;
+    --adminpilot-soft: #142629;
+  }
+}
+
+/* Fieldserv field-service lane */
+.fieldserv-shell {
+  --fieldserv-accent: #c96f21;
+  --fieldserv-accent-strong: #8d4516;
+  --fieldserv-highlight: #f0c541;
+  --fieldserv-support: #2f6f73;
+  --fieldserv-soft: #fff1df;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fieldserv-shell {
+    --fieldserv-accent: #f39b43;
+    --fieldserv-accent-strong: #ffbc72;
+    --fieldserv-highlight: #f4d35e;
+    --fieldserv-support: #7db9b0;
+    --fieldserv-soft: #322417;
+  }
+}
+
+/* LearnLoop subscription learning lane */
+.learnloop-shell {
+  --learnloop-violet: #6f52c2;
+  --learnloop-violet-strong: #463184;
+  --learnloop-teal: #2f9e9a;
+  --learnloop-teal-strong: #176965;
+  --learnloop-soft: #f0ecff;
+  --learnloop-status-local: #2f6f73;
+}
+
+@media (prefers-color-scheme: dark) {
+  .learnloop-shell {
+    --learnloop-violet: #9b83e6;
+    --learnloop-violet-strong: #c7bbff;
+    --learnloop-teal: #5fcac3;
+    --learnloop-teal-strong: #9ee4de;
+    --learnloop-soft: #241f3a;
+    --learnloop-status-local: #7db9b0;
+  }
+}
