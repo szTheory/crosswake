@@ -17,7 +17,6 @@ defmodule CrosswakeExample.Layouts do
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="csrf-token" content={Plug.CSRFProtection.get_csrf_token()} />
         <link rel="stylesheet" href="/css/tokens.css" />
-        <link rel="stylesheet" href="/css/brands.css" />
         <link rel="stylesheet" href="/css/app.css" />
         <.live_title default={@page_title}>{@page_title}</.live_title>
       </head>

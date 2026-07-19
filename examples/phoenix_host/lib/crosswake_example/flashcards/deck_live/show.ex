@@ -14,7 +14,6 @@ defmodule CrosswakeExample.Flashcards.DeckLive.Show do
   def render(assigns) do
     ~H"""
     <link rel="stylesheet" href="/css/tokens.css" />
-    <link rel="stylesheet" href="/css/brands.css" />
     <link rel="stylesheet" href="/css/app.css" />
     <div class="page-container">
       <div class="card" id={"deck-#{@deck.id}"}>
