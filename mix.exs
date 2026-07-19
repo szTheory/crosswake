@@ -1,8 +1,7 @@
 defmodule Crosswake.MixProject do
   use Mix.Project
 
-  # x-release-please-version
-  @version "0.2.0"
+  @version "0.2.0" # x-release-please-version
   @source_url "https://github.com/szTheory/crosswake"
 
   def project do
@@ -150,7 +149,7 @@ defmodule Crosswake.MixProject do
           Crosswake.Compatibility.Target,
           Crosswake.Manifest.Types.RouteEntry
         ],
-        Telemetry: [
+        "Telemetry": [
           Crosswake.Telemetry,
           Crosswake.Offline.Telemetry
         ]
@@ -184,7 +183,7 @@ defmodule Crosswake.MixProject do
           "guides/compatibility.md",
           "guides/android_uat.md"
         ],
-        Telemetry: [
+        "Telemetry": [
           "guides/telemetry.md"
         ],
         "Extension Authors": [
