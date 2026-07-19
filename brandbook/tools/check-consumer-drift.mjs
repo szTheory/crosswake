@@ -5,7 +5,9 @@
  *
  * Scans a curated manifest of normalized consumer files and exits non-zero
  * when any file reintroduces a brand-color drift:
- *   1. Hardcoded hex color literal (#RGB / #RRGGBB / #RRGGBBAA)
+ *   1. Hardcoded hex color literal (#RGB / #RRGGBB / #RRGGBBAA) in a style
+ *      value. Hex in a `--custom-property: #hex` declaration is allowed —
+ *      consumer files may define their own scoped design-token layer.
  *   2. var(--cw-primitive-*) reference (semantic-only boundary rule)
  *   3. CSS file with zero var(--cw-*) references (token coverage lost)
  *   4. HEEX/template with retired Tailwind utility in class="..." attribute
@@ -92,6 +94,22 @@ export function findHexColors(content) {
       // appears in the selector head (before the opening '{') is an id
       // selector, not a color literal. A hash after '{' is a real value.
       if (isSelectorLine && braceIdx !== -1 && m.index < braceIdx) {
+        continue;
+      }
+      // Allow hex that is the value of a custom-property (`--x: #hex`)
+      // declaration. A consumer file may define its OWN scoped design tokens
+      // (e.g. a demo micro-brand's `--adminpilot-accent: #2f6f73`); those are a
+      // local token layer, not `var(--cw-primitive-*)` refs (Rule 2 still bans
+      // those). What stays forbidden is hex in a real style VALUE
+      // (`color: #fff`, `background: #fff`). Scope to the current declaration —
+      // the text since the last `;`/`{` before the hex — so a second
+      // declaration on the same line (`--a: #ok; color: #bad`) is still flagged.
+      const declStart = Math.max(
+        line.lastIndexOf(';', m.index),
+        line.lastIndexOf('{', m.index),
+      );
+      const declHead = line.slice(declStart + 1, m.index);
+      if (/^\s*--[\w-]+\s*:/.test(declHead)) {
         continue;
       }
       const fullMatch = m[0]; // e.g. "#2B756A"
