@@ -182,14 +182,18 @@ compute_split_sha() {
     return
   fi
 
-  if ! command -v splitsh-lite >/dev/null 2>&1; then
-    fail "splitsh-lite v1.0.1 is required to compute the iOS split SHA." "Install https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz, then retry."
+  # Compute the subtree split with `git subtree split` (a stock git command),
+  # NOT splitsh-lite. splitsh-lite v1.0.1 SIGSEGVs computing this split, and the
+  # existing mirror v0.1.2 lineage was itself produced by `git subtree split`
+  # after splitsh-lite 404'd during the 0.1.2 cut - so git subtree is both the
+  # working tool and the lineage-consistent one. Every release must use the SAME
+  # split tool or the mirror main lineage forks at each version boundary. This
+  # operates on git objects at ${SOURCE_REF} directly - no worktree checkout.
+  SPLIT_SHA="$(git -C "$RELEASE_REPO" subtree split --prefix="$IOS_PATH" "$SOURCE_REF" 2>/dev/null | tail -1)"
+  if [ -z "$SPLIT_SHA" ]; then
+    fail "git subtree split produced no SHA for ${IOS_PATH} at ${SOURCE_REF}." "Confirm the git-subtree command is available (it ships with stock git) and that ${SOURCE_REF} is fetched with full history (fetch-depth: 0)."
   fi
-
-  WORKTREE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-backfill.XXXXXX")"
-  git -C "$RELEASE_REPO" worktree add --detach "$WORKTREE_DIR" "$SOURCE_REF" >/dev/null
-  SPLIT_SHA="$(cd "$WORKTREE_DIR" && splitsh-lite --prefix="$IOS_PATH")"
-  ok "computed ${IOS_PATH} split with splitsh-lite v1.0.1: ${SPLIT_SHA}."
+  ok "computed ${IOS_PATH} split with git subtree split: ${SPLIT_SHA}."
 }
 
 mirror_push_remote() {

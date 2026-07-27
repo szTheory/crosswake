@@ -417,17 +417,21 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
-      - name: Install splitsh-lite v1.0.1
-        run: |
-          # v2.0.0 exists as a tag but ships NO release assets; only v1.0.x publish
-          # lite_linux_amd64.tar.gz. Pinning v2.0.0 404'd and broke the iOS mirror.
-          curl -fsSL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz \
-            | tar xz
-          sudo mv splitsh-lite /usr/local/bin/splitsh-lite
-
       - name: Split subtree
         run: |
-          SHA=$(splitsh-lite --prefix=packages/crosswake-shell-core-ios)
+          set -euo pipefail
+          # `git subtree split` (stock git), NOT splitsh-lite. splitsh-lite v1.0.1
+          # SIGSEGVs on this split, and the mirror v0.1.2 lineage was itself built
+          # with git subtree (splitsh 404'd during the 0.1.2 cut). Every release
+          # must use the SAME split tool or the mirror main lineage forks at each
+          # version boundary. HEAD is the release tag checked out above with
+          # fetch-depth: 0, so the full history git subtree needs is present.
+          SHA="$(git subtree split --prefix=packages/crosswake-shell-core-ios HEAD | tail -1)"
+          if [ -z "$SHA" ]; then
+            echo "[crosswake] FAIL: git subtree split produced no SHA for packages/crosswake-shell-core-ios."
+            echo "[crosswake] What to do next: confirm git-subtree is available (stock git) and the checkout used fetch-depth: 0."
+            exit 1
+          fi
           echo "SPLIT_SHA=$SHA" >> "$GITHUB_ENV"
 
       - name: Push split to mirror and tag

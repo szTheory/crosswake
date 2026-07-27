@@ -822,7 +822,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
 
   # New check (D-11/D-20). Both clauses are required: copying
   # publish-android-core's checkout block verbatim has the ref but drops
-  # fetch-depth: 0, silently handing splitsh-lite a shallow clone.
+  # fetch-depth: 0, silently handing `git subtree split` a shallow clone.
   defp release_ios_checkout_ref_pinned(jobs) do
     block = job_block(jobs, "publish-ios-core")
 
