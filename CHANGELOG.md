@@ -11,6 +11,10 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Documentation
+
+* Documentation-only: add an architecture guide and source walkthrough with accessible light/dark Mermaid diagrams and the Crosswake docs favicon. This adds no runtime API or support claim.
+
 ### Unpublished support claims
 
 * No new support claims have been cut after `0.2.0` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
