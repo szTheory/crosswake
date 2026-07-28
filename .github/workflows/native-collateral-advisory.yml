@@ -31,7 +31,7 @@ jobs:
           fi
       - name: Upload iOS simulator advisory evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: crosswake-ios-simulator-advisory-evidence
           path: native-collateral/ios/
@@ -73,7 +73,7 @@ jobs:
           fi
       - name: Upload Android emulator advisory evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: crosswake-android-emulator-advisory-evidence
           path: native-collateral/android/
