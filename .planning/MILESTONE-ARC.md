@@ -146,6 +146,38 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `support-truth`
 - `ios-android`
 
+### Later: Native Controls Pack 2 — Themable Web Control Equivalents (v21.0)
+
+**Status:** LATER — planted as [SEED-005](seeds/SEED-005-themable-web-control-equivalents.md). Not scheduled; the web-side generalization of v20's host-owned fallback family, to sequence after v20.0 Native Controls Pack 1 lands the control-contract seam and the fallback generator.
+
+**Objective**
+- For every control Crosswake delegates to native, also ship a brand-themable, host-owned, generator-emitted WEB equivalent — themable across every design dimension, escape-hatchable to fully custom — generalizing v20's FALL-01/02 from a few CUT controls into a first-class tier.
+- Extend the DTCG token system by the five dimensions overlay controls need but the system lacks: elevation/shadow (tint+shadow paired), z-index scale, motion (duration/easing), border-width, and a named padding/gap ramp.
+- Build controls on native platform primitives (`<dialog>`, Popover API, `@starting-style`) with non-negotiable WAI-ARIA accessibility as fixed structure and only tokens themable.
+
+**Why now**
+- v20 builds the load-bearing primitives — `Bridge.push/3`, the one typed `Shell.Denial` fallback branch, and the `mix crosswake.gen.native_controls_ui` host-owned generator — and already CUT toast/alert as native families precisely because iOS can't brand them. The web equivalent is often the ONLY on-brand surface, and adopters currently hand-roll it (the exact gap Capacitor's unthemable `pwa-toast`/`window.confirm` fallbacks leave open).
+- Coherent with the "no importable component tier" brand pillar as long as it stays a generator (host-owned copies) with a versioned, render-agnostic behavior/contract core — not an importable `Crosswake.UI.*`.
+
+**Depends on**
+- v20.0 Native Controls Pack 1 (`Bridge.push/3` control-contract seam + FALL host-owned fallback generator)
+- v9.0/v10.0 brand token system and the `brand-structural` drift gate
+- v19.0 capability map
+
+**Risk tags**
+- `native-capabilities`
+- `dx-ux`
+- `design-tokens`
+- `accessibility`
+- `scope-discipline`
+- `oss-maintenance`
+
+**Key outputs (pre-staged; see SEED-005 for the full research-backed shape)**
+- Five new role-named token dimensions (elevation/z/motion/border-width/padding), light/dark-validated.
+- A contract-core (versioned, imported) + generated-shell (host-owned) split, with a `mix crosswake.ui.diff` / version-stamped upgrade verb — the answer to the shadcn copy-in upgrade problem.
+- The un-brandable trio first — toast, alert/confirm, action-sheet/menu — on platform primitives, APG-accessible, proven in both native-shell and web-fallback paths.
+- A two-typed-denial (`unavailable` vs `unimplemented`) + `canX()` capability-probe degradation contract; honesty invariant (web controls must not impersonate native OS chrome).
+
 ### Shipped: Adoption Evidence Demo App (v5.1 → v6.0)
 
 **Status:** SHIPPED — v5.1 (2026-06-09) transitioned demo hosts onto standalone deps; v6.0 (2026-06-09) shipped the Flashcard offline cohort. The demo-app wedge is closed.
@@ -216,6 +248,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `Threadline Audit Capstone` follows the sensitive event surfaces it will audit.
 - `v19.0 Showcase Apps & Capability Map` precedes `v20.0 Native Controls Pack 1` because examples should expose the real capability gaps before Crosswake widens official native-control APIs.
 - `v20.0 Native Controls Pack 1` precedes capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the sequence.
+- `Native Controls Pack 2 — Themable Web Control Equivalents` (SEED-005) depends on v20's `Bridge.push/3` control-contract seam and the `gen.native_controls_ui` host-owned fallback generator; it is the web-side generalization of v20's FALL family and can sequence after Pack 1 or interleave with capture/device controls as adopter evidence dictates.
 
 ## Decision Notes
 
@@ -267,6 +300,7 @@ Every milestone close must update or verify:
 - Whether the deferred Threadline operator timeline should live in a separate `crosswake_dashboard` package (LiveDashboard plugin) and when the opt-in audit ledger has enough adoption to justify the visual surface.
 - Which exact Native Controls Pack 1 controls v19.0 evidence should promote into v20.0.
 - Whether scanner/document-scan/biometrics/location belong in v20.0 or a later capture/device controls pack.
+- How far "themable out of the box" should extend before the adopter drops to fully custom (the 95%/5% seam), and whether the design-token drift gate should police radius/shadow/z drift, not just color — surfaced by SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents).
 
 ---
-*Last updated: 2026-07-09 — v19.0 Showcase Apps & Capability Map active; Phase 148 brand/fixture direction completed before lane buildout; v20.0 Native Controls Pack 1 recorded as the logical follow-on.*
+*Last updated: 2026-07-27 — recorded SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents) as a `Later:` Strategic Queue candidate + Dependency Graph edge; the web-side generalization of v20's host-owned fallback family, from a deep multi-lens research fan-out. v19.0 Showcase Apps & Capability Map active; v20.0 Native Controls Pack 1 remains the logical follow-on.*
