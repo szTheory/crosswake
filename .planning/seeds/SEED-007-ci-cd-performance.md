@@ -58,9 +58,11 @@ Three reasons, in descending order of severity — note the top one is **correct
    green one wearing the same name. Separately, 20 test files are structurally invisible to CI.
 2. **The spend is mostly waste.** 14 of 18 macOS PR jobs are pure Elixir with a cargo-cult
    `DEVELOPER_DIR`. macOS bills at 10× and queues 75–250× longer than ubuntu.
-3. **It taxes every future milestone.** `strict: true` + 22 required contexts + ~7 h/push means a
-   handful of concurrent PRs serializes into hours. Observed directly: draining 6 PRs took ~2 h of
-   wall-clock for changes that were individually green in minutes.
+3. **It taxes every future milestone, and the tax is uncorrelated with risk.** `strict: true` + 22
+   required contexts + zero path filtering means a **documentation-only PR burns 78 workflow runs
+   and 3 hours** (measured — see Breadcrumbs). Eight concurrent PRs in one session serialized into
+   an afternoon. Every milestone that lands more than a couple of PRs pays this, and the payment
+   buys nothing: the changes were green throughout.
 
 ## When to Surface
 
@@ -93,6 +95,32 @@ Measured 2026-07-28 on `main` (commands included so every number is re-derivable
 `phase43` merge-blocking rulestead proof = **2,230 s queued / 180 s executed** on `macos-15`.
 Ubuntu equivalents queue in **4–8 s**. 18 macOS jobs fire simultaneously into a pool serving ~5.
 **The "slow" workflows are ~90% waiting.**
+
+**The cost, observed end-to-end (2026-07-28 session — the single clearest exhibit)**
+
+A **documentation-only PR** — [#84](https://github.com/szTheory/crosswake/pull/84), four markdown
+files (`.planning/MILESTONES.md`, `PROJECT.md`, `RETROSPECTIVE.md`, `guides/companion_compatibility.md`) —
+consumed:
+
+| | |
+|---|---|
+| Workflow runs | **78** (two full 39-workflow cycles: 16:28, 18:46) |
+| Failures | **0**, at every point |
+| Time from open to merge | **3 h 03 m** (16:28 → 19:31) |
+
+Not one of those 39 workflows can be affected by a markdown edit, because **no `paths:` filtering
+exists**. The second cycle exists purely because `strict: true` invalidated the branch when another
+PR merged. Nothing was wrong; the PR simply waited.
+
+Session totals: **≥200 workflow runs in one day**, and **8 PRs** serialized through the queue. The
+same day surfaced a config regression (#89) that CI structurally could not see. This is the shape
+of the problem — *the spend is uncorrelated with the risk*, and correlating them is the milestone.
+
+Two structural contributors worth naming, both confirmed live:
+- **`allow_update_branch` was `false`**, so GitHub's auto-merge could not update stale branches and
+  the whole queue silently deadlocked with every PR green-but-`BEHIND`. Flipped to `true` on
+  2026-07-28; this removes the *deadlock* but not the *serialization*.
+- With `strict: true`, N queued PRs cost O(N²) rebuild work: each merge re-invalidates the rest.
 
 **Findings**
 
@@ -217,6 +245,11 @@ for iOS the answer is **fewer runs**, not faster ones — the opposite of the El
 - **CONSOL-\*** — a `.github/actions/setup-elixir` composite; collapse 39 files → ~4 preserving
   job names; single `pull_request` trigger (drop the double-firing `push: '**'`); conditional
   `cancel-in-progress` (oban's form — unconditional `true` can itself strand required checks).
+  **Change-detection so a docs-only PR does not run the native/Elixir proof set** — this is the
+  #84 exhibit (78 runs, 3 h, 4 markdown files). Must use the `dorny/paths-filter` → job-level
+  `if:` → always-running aggregating gate shape, **never** a workflow-level `paths:` on a required
+  context. `phase69-proof.yml` already hand-rolls this; generalize it. Acceptance: a
+  markdown-only PR runs a small, named, always-reporting set and merges without the native lanes.
 - **FLAKE-\*** — fix `example_host.ex` (memoize the DB path, *merge* rather than replace repo
   config, gate the ebin prepending); delete the nested `mix test` at `phase135:579,599`; make
   `phase55`/`phase56` `async: false`; move repo-relative `@tmp_dir`s under `System.tmp_dir!()`.
