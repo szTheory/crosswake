@@ -378,6 +378,46 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
   end
 
+  # T-153-09 in the advisory lane. The bootstrap carve-out keys on `:missing` —
+  # "the registry answered, there is no release". An `:unavailable` probe never
+  # got an answer, so reporting it as "the registry has nothing for a package
+  # that was never released" would assert a definite negative from an unknown.
+  # An unreleased package with an UNREACHABLE registry stays unverifiable and
+  # fatal; only a confirmed absence is advisory.
+  test "an unreachable registry is never laundered into the bootstrap carve-out" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            # Same bootstrap-pinned companion as the advisory test above, but the
+            # probe FAILED rather than answering.
+            %{kind: :hex, package: "crosswake_rindle"} ->
+              %{status: :unavailable, evidence: ["probe failed after 3 attempts"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_unverifiable")
+
+    assert message =~ "crosswake_rindle"
+
+    # The lie this guards against: claiming the registry confirmed an absence.
+    refute Enum.any?(
+             status.checks,
+             &(&1.code == "release.live_registry_bootstrap_pending" and
+                 &1.evidence |> Enum.join() |> String.contains?("crosswake_rindle"))
+           )
+  end
+
   test "a RELEASED package missing from its registry is still fatal (bootstrap exemption is not a blanket pass)" do
     status =
       Crosswake.ReleaseStatus.build(

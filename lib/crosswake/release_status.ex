@@ -487,10 +487,15 @@ defmodule Crosswake.ReleaseStatus do
     if entries == [] do
       []
     else
+      # The carve-out applies ONLY to `:missing` — a registry that answered "no
+      # release here". An `:unavailable` probe never got an answer, so claiming
+      # the registry "has nothing" would assert a definite negative from an
+      # unknown: the same misreport this function exists to prevent. A
+      # bootstrap-pending package with a failed probe stays `:unverifiable`.
       {bootstrap_pending, answered} =
         entries
         |> Enum.reject(&(&1.live.status == :ok))
-        |> Enum.split_with(&bootstrap_pending?/1)
+        |> Enum.split_with(&(&1.live.status == :missing and bootstrap_pending?(&1)))
 
       missing = Enum.filter(answered, &(&1.live.status == :missing))
       unavailable = Enum.filter(answered, &(&1.live.status == :unavailable))
