@@ -246,13 +246,29 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
   test "phase 145 missing native status artifact fails artifact id" do
     workflow =
       real_workflow()
+      # Version-agnostic on purpose: the check asserts that SOME upload-artifact step
+      # exists, not which version, so the mutation must remove the action itself.
+      # Pinning `@v4` here coupled the control to a version and broke on a SHA pin.
       |> replace_in_job(
         "native-release-rollup",
-        "actions/upload-artifact@v4",
-        "actions/checkout@v4"
+        "uses: actions/upload-artifact@",
+        "uses: actions/checkout@"
       )
 
     assert_failure!("release.workflow.native_status_artifact", workflow)
+  end
+
+  @tag :phase145_native_rollup
+  test "a second cleanup PR cannot be opened while one is already open" do
+    workflow =
+      real_workflow()
+      |> replace_in_job(
+        "release-as-cleanup",
+        "gh pr list --state open --base main",
+        "gh pr list --state closed --base main # guard defeated"
+      )
+
+    assert_failure!("release.cleanup.deduped", workflow)
   end
 
   @tag :phase145_native_rollup
@@ -1006,13 +1022,37 @@ defmodule Crosswake.Proof.Phase142ReleaseIntegrityTest do
     System.cmd("elixir", [@scanner, path], stderr_to_stdout: true, env: env)
   end
 
+  # Fails loudly when `pattern` is absent from the job block. Without this a mutation
+  # test silently degrades: `String.replace/4` returns the block untouched, the scanner
+  # then passes on an UNMUTATED workflow, and the negative control stops proving
+  # anything about the check it names. Drift in the workflow must break the mutation
+  # test at the mutation site, not somewhere downstream.
   defp replace_in_job(workflow, job, pattern, replacement) do
-    Regex.replace(
-      ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
-      workflow,
-      fn block -> String.replace(block, pattern, replacement, global: false) end,
-      global: false
-    )
+    mutated =
+      Regex.replace(
+        ~r/(?ms)^  #{Regex.escape(job)}:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\z)/,
+        workflow,
+        fn block ->
+          unless String.contains?(block, pattern) do
+            raise """
+            replace_in_job/4 found no #{inspect(pattern)} in job #{inspect(job)}.
+
+            The mutation would be a no-op, so the negative control would assert nothing.
+            The workflow drifted away from the pattern — update the test to the current
+            shape, do not delete the control.
+            """
+          end
+
+          String.replace(block, pattern, replacement, global: false)
+        end,
+        global: false
+      )
+
+    if mutated == workflow do
+      raise "replace_in_job/4 did not locate job #{inspect(job)} — the job was renamed or removed"
+    end
+
+    mutated
   end
 
   defp replace_in_workflow_input(workflow, input, pattern, replacement) do
