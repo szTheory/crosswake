@@ -21,13 +21,18 @@ cell drifts from the package source in either direction.
      Use mix crosswake.release.status --live for public registry presence. -->
 | Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |
 |---|---|---|---|---|---|
-| `crosswake_rulestead` | `:rulestead` | `0.1.0` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
-| `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rindle](https://hexdocs.pm/crosswake_rindle) |
+| `crosswake_rulestead` | `:rulestead` | `unpublished` | `~> 0.1` | `{:rulestead, "~> 0.1", optional: true}` | not yet on hexdocs |
+| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.1` | `{:rindle, "~> 0.1", optional: true}` | not yet on hexdocs |
 | `crosswake_sigra` | `:sigra` | `0.1.1` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
 | `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
 | `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `0.1.0` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
 
-The `Current Version` column reflects the repository release graph and package source.
+The `Current Version` column reflects **published Hex truth**. A cell reading
+`unpublished` means the package is extracted and wired into the release graph in this
+repository but has never been published to hex.pm — it cannot be added to a project yet,
+and it has no hexdocs page. `crosswake_rulestead` and `crosswake_rindle` are in that
+state today; their Release PRs are open and unmerged.
+
 For public registry truth, run `mix crosswake.release.status --live`; that command is
 allowed to report a package version as configured locally while still warning that Hex,
 Maven Central, or the SwiftPM mirror has not propagated it yet.
@@ -48,8 +53,9 @@ modules.
 These are first-party companion packages, each with its own SemVer line — the version
 numbers do not move in lockstep with core or with each other. The `Requires crosswake`
 cell declares a **minimum**, not a ceiling, and that minimum now differs by companion.
-`rulestead` and `rindle` still declare `~> 0.1`, so adding `crosswake_rindle` `0.1.0`
-to a project already on `crosswake` `0.1.2` resolves cleanly without pinning core back.
+`rulestead` and `rindle` still declare `~> 0.1`, so once published they will resolve
+against a project already on `crosswake` `0.1.2` without pinning core back. Both are
+`unpublished` today, so that floor is a declared contract, not yet an installable one.
 The three v17.0 companions (`crosswake_sigra`, `crosswake_chimeway`,
 `crosswake_threadline`) declare `~> 0.2` and will **not** resolve against a `0.1.x`
 core — they require `crosswake` `0.2.0` or later.

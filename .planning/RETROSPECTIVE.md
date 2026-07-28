@@ -654,7 +654,7 @@
 - **Assess-and-deliberately-leave is a valid audit outcome** — TELEM-04 Side B vacuity got a robust analysis (computed event names, no `:telemetry` wildcard, declared set built from the same source emitters use) concluding a fragile test on a green lane is net-negative; documenting *why not* is as valuable as a fix.
 
 ### Cost Observations
-- **Session shape:** ~6-day milestone (2026-06-25 → 2026-06-30), 7 phases / 24 plans; two live Hex publishes (`crosswake_rulestead`, `crosswake_rindle`).
+- **Session shape:** ~6-day milestone (2026-06-25 → 2026-06-30), 7 phases / 24 plans; two companions extracted and wired into the release pipeline (`crosswake_rulestead`, `crosswake_rindle`) — both still **unpublished** on Hex as of 2026-07-28 (Release PRs #39/#38 open and unmerged).
 - **Model mix:** Opus reserved for planning/debug + discuss phases; Sonnet for execution (per balanced profile and the Opus-budget preference).
 - **Residual debt:** TELEM-04 Side B vacuity (deferred — divergence structurally near-impossible); compat-prose (not-a-bug); one admin ship-gate carried (register the 18 `merge-blocking-*` lanes); `MIRROR_PUSH_TOKEN` scope still unexercised.
 
