@@ -123,6 +123,27 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
     assert output =~ "mirror-only commit evidence"
   end
 
+  @tag :phase153_ios_mirror_unblock
+  test "an already-present matching tag still re-baselines main under --update-main (tag short-circuit must not skip step 5)" do
+    fixture = disjoint_mirror_fixture()
+    # Pre-push the correct v0.2.0 tag so the tag path short-circuits with
+    # "already points at ... no push needed" - reproducing the exact state
+    # after D-21 step 4 (the tag push) when step 5 (the main re-baseline) is
+    # dispatched as its own separate run.
+    git!(["-C", fixture.release, "push", fixture.mirror, "#{fixture.split_sha}:refs/tags/v#{@version}"])
+    assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.preexisting_sha
+
+    {output, exit_code} = run_script(fixture, ["--apply", "--update-main"])
+
+    assert exit_code == 0, output
+    assert output =~ "already points at #{fixture.split_sha}; no push needed"
+    assert output =~ "updated mirror main to #{fixture.split_sha}"
+    # main re-baselined; both tags preserved.
+    assert mirror_ref_sha(fixture.mirror, "refs/heads/main") == fixture.split_sha
+    assert mirror_ref_sha(fixture.mirror, "refs/tags/v#{@version}") == fixture.split_sha
+    assert mirror_ref_sha(fixture.mirror, "refs/tags/v0.1.2") == fixture.preexisting_sha
+  end
+
   # --- decoys: scanner emits the new phase153 ids as :ok (added by task 3) ---
 
   @tag :phase153_ios_mirror_unblock
