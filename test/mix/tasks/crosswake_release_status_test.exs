@@ -334,6 +334,94 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert :counters.get(counter, 1) == 1
   end
 
+  # Escalating EVERY definite negative to :error would make the release-truth
+  # command permanently red for packages this repo deliberately never released:
+  # a companion still carrying its one-shot release-as bootstrap pin with no
+  # matching {package}-v{version} tag has no published release, so the registry
+  # correctly has nothing and no adopter was ever promised anything. That is the
+  # same manifest-baseline false positive check_release_as_staleness.sh already
+  # documents, and the same trap D-16 avoids by keying on RELEASED git tags.
+  # A permanently-red truth command is exactly the ignorable red this phase exists
+  # to kill, so these are advisory - and loudly named, never silently dropped.
+  test "an unreleased bootstrap companion is advisory, not fatal" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            %{kind: :hex, package: "crosswake_rindle"} ->
+              %{status: :missing, evidence: ["never released"]}
+
+            %{kind: :hex, package: "crosswake_rulestead"} ->
+              %{status: :missing, evidence: ["never released"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :warning
+    assert Crosswake.ReleaseStatus.exit_code(status) == 0
+
+    assert %{status: :warning, message: message, next_action: next_action} =
+             check!(status, "release.live_registry_bootstrap_pending")
+
+    assert message =~ "crosswake_rindle"
+    assert message =~ "crosswake_rulestead"
+    assert message =~ "never been released"
+    assert is_binary(next_action) and next_action != ""
+
+    # Advisory, but not swallowed into a false all-clear.
+    assert %{status: :ok} = check!(status, "release.live_registry_presence")
+    refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
+  end
+
+  test "a RELEASED package missing from its registry is still fatal (bootstrap exemption is not a blanket pass)" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            %{kind: :hex, package: "crosswake_sigra"} ->
+              %{status: :missing, evidence: ["released but absent"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_presence")
+
+    assert message =~ "crosswake_sigra"
+  end
+
+  test "a missing iOS mirror tag is fatal — core is never bootstrap-exempt (D-18)" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, _context -> %{status: :ok, evidence: ["live"]} end,
+        git_ref_probe: fn _remote, _ref ->
+          %{status: :missing, evidence: ["mirror tag absent"]}
+        end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_presence")
+
+    assert message =~ "ios-core@0.2.0 missing on ios_mirror"
+  end
+
   test "the real probes are the ones wrapped in retry, not the injection seam" do
     source = File.read!("lib/crosswake/release_status.ex")
 

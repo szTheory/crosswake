@@ -14,6 +14,11 @@ defmodule Crosswake.ReleaseStatus do
   @ios_mirror_url "https://github.com/szTheory/crosswake-shell-core-ios.git"
   @workflow_integrity_source "script/check_release_workflow_integrity.exs"
   @workflow_integrity_command "elixir script/check_release_workflow_integrity.exs"
+  # D-18: a live probe only earns the `:unavailable` verdict after this many
+  # failed attempts. A single network hiccup must never be reported as a real
+  # answer of any kind — neither a present release nor a missing one.
+  @probe_attempts 3
+  @probe_retry_sleep_ms 200
   @core_path_gates [
     {"publish-hex", "."},
     {"publish-ios-core", "packages/crosswake-shell-core-ios"},
@@ -459,36 +464,137 @@ defmodule Crosswake.ReleaseStatus do
   defp includes?(text, value) when is_binary(value), do: String.contains?(text, value)
   defp includes?(text, %Regex{} = regex), do: Regex.match?(regex, text)
 
+  # D-18: two failure kinds, two codes, both fatal.
+  #
+  # `:missing` means the registry ANSWERED and the release is not there — a
+  # definite negative. `:unavailable` means the probe itself never got an answer
+  # after retries — an unknown. This used to lump both into one `:warning` under
+  # one code, so `mix crosswake.release.status --live` exited 0 while every iOS
+  # adopter's `.package(from: "0.2.0")` could not resolve. That is a support-truth
+  # lie in the project's own voice, and it violates the fail-closed /
+  # no-silent-fallback rule.
+  #
+  # Both now exit 1. But an unknown must never be reported as a confirmed
+  # absence, so each check names ONLY its own sources.
+  #
+  # One carve-out, under `release.live_registry_bootstrap_pending`: a package
+  # that has never been released cannot have a broken adopter promise. See
+  # `bootstrap_pending?/1` below — it is advisory, still loudly named, and
+  # narrow enough that anything actually released stays fatal.
   defp live_registry_checks(core, companions) do
     entries = Enum.filter(core ++ companions, & &1.live)
 
     if entries == [] do
       []
     else
-      missing = Enum.reject(entries, &(&1.live.status == :ok))
-      evidence = Enum.map(entries, &live_evidence/1)
+      {bootstrap_pending, answered} =
+        entries
+        |> Enum.reject(&(&1.live.status == :ok))
+        |> Enum.split_with(&bootstrap_pending?/1)
 
-      [
-        %{
-          status: if(missing == [], do: :ok, else: :warning),
-          code: "release.live_registry_presence",
-          source: "live registry probes",
-          evidence: evidence,
-          next_action:
-            if(missing == [],
-              do: nil,
-              else: "review live registry state or rerun mix crosswake.release.status --live"
-            ),
-          message:
-            if missing == [] do
-              "all live registry probes found manifest versions"
-            else
-              "live registry probes need attention: #{Enum.map_join(missing, ", ", &live_missing_label/1)}"
-            end
-        }
-      ]
+      missing = Enum.filter(answered, &(&1.live.status == :missing))
+      unavailable = Enum.filter(answered, &(&1.live.status == :unavailable))
+
+      bootstrap_check =
+        if bootstrap_pending == [] do
+          []
+        else
+          [
+            %{
+              status: :warning,
+              code: "release.live_registry_bootstrap_pending",
+              source: "live registry probes",
+              evidence: Enum.map(bootstrap_pending, &live_evidence/1),
+              next_action:
+                "no action needed unless these should now ship; to publish, remove the release-as bootstrap pin in release-please-config.json and let the Release PR cut a real release",
+              message:
+                "live registry has nothing for packages that have never been released (release-as bootstrap pin still set, no release tag): #{Enum.map_join(bootstrap_pending, ", ", &live_missing_label/1)}"
+            }
+          ]
+        end
+
+      presence_check =
+        if missing == [] do
+          []
+        else
+          [
+            %{
+              status: :error,
+              code: "release.live_registry_presence",
+              source: "live registry probes",
+              evidence: Enum.map(missing, &live_evidence/1),
+              next_action:
+                "review live registry state or rerun mix crosswake.release.status --live",
+              message:
+                "live registry probes found no release for: #{Enum.map_join(missing, ", ", &live_missing_label/1)}"
+            }
+          ]
+        end
+
+      unverifiable_check =
+        if unavailable == [] do
+          []
+        else
+          [
+            %{
+              status: :error,
+              code: "release.live_registry_unverifiable",
+              source: "live registry probes",
+              evidence: Enum.map(unavailable, &live_evidence/1),
+              next_action:
+                "the live probe failed after retries; rerun mix crosswake.release.status --live once network access is confirmed",
+              message:
+                "live registry probes could not confirm presence (probe failure, not a confirmed absence) for: #{Enum.map_join(unavailable, ", ", &live_missing_label/1)}"
+            }
+          ]
+        end
+
+      ok_check =
+        if missing == [] and unavailable == [] do
+          [
+            %{
+              status: :ok,
+              code: "release.live_registry_presence",
+              source: "live registry probes",
+              evidence:
+                entries |> Enum.filter(&(&1.live.status == :ok)) |> Enum.map(&live_evidence/1),
+              next_action: nil,
+              message: "all live registry probes found manifest versions"
+            }
+          ]
+        else
+          []
+        end
+
+      presence_check ++ unverifiable_check ++ ok_check ++ bootstrap_check
     end
   end
+
+  # A companion still carrying its ONE-SHOT release-as bootstrap pin, with no
+  # matching `{package}-v{version}` release tag, has never been published. Its
+  # manifest version is a pre-release baseline, not a shipped version — so the
+  # registry correctly has nothing there and no adopter was ever promised it.
+  #
+  # Treating that as a blocking error would make the release-truth command
+  # permanently red for a non-problem, which is precisely the ignorable red this
+  # phase exists to eliminate. It is also the exact manifest-baseline false
+  # positive that check_release_as_staleness.sh already documents, and the same
+  # trap D-16's parity gate avoids by keying on RELEASED git tags rather than on
+  # the release-please manifest.
+  #
+  # The released-tag signal is authoritative in BOTH directions: anything this
+  # repo actually released stays fatal when a registry cannot produce it. Core
+  # and native components carry no release-as pin, so they are never exempt —
+  # a missing iOS mirror tag is always an error.
+  defp bootstrap_pending?(%{
+         release_as: release_as,
+         release_as_tag_exists: false,
+         manifest_version: version
+       })
+       when is_binary(release_as),
+       do: release_as == version
+
+  defp bootstrap_pending?(_entry), do: false
 
   defp live_missing_label(%{component: component, manifest_version: version, live: live}),
     do: "#{component}@#{version} #{live.status} on #{live.source}"
@@ -814,7 +920,44 @@ defmodule Crosswake.ReleaseStatus do
     apply(fun, Enum.take(args, arity))
   end
 
+  @doc """
+  Runs a live probe up to `attempts` times, returning the first REAL answer.
+
+  A real answer is anything other than `:unavailable` — `:ok` and `:missing` are
+  both definite results from the registry, so the first one short-circuits
+  immediately. Only when every attempt fails to get an answer is the result
+  classified `:unavailable`.
+
+  This is what makes the `release.live_registry_presence` /
+  `release.live_registry_unverifiable` split honest: an `:unavailable` that
+  survived three attempts is a real unknown, not a single network hiccup
+  misreported as a missing release.
+
+  It lives on the REAL probes (`git_ref_live_probe/2`, `http_live_probe/2`), not
+  between `build/1` and the `http_probe:`/`git_ref_probe:` injection seam — a
+  fixture-driven test must not retry its own fakes three times.
+  """
+  @spec probe_with_retry((-> map()), pos_integer(), non_neg_integer()) :: map()
+  def probe_with_retry(fun, attempts \\ @probe_attempts, sleep_ms \\ @probe_retry_sleep_ms)
+
+  def probe_with_retry(fun, attempts, sleep_ms) when attempts > 1 do
+    case fun.() do
+      %{status: :unavailable} ->
+        if sleep_ms > 0, do: Process.sleep(sleep_ms)
+        probe_with_retry(fun, attempts - 1, sleep_ms)
+
+      result ->
+        result
+    end
+  end
+
+  def probe_with_retry(fun, _attempts, _sleep_ms), do: fun.()
+
   defp git_ref_live_probe(remote_url, ref) do
+    probe_with_retry(fn -> git_ref_live_probe_once(remote_url, ref) end)
+  end
+
+  defp git_ref_live_probe_once(remote_url, ref) do
     with git when is_binary(git) <- System.find_executable("git") do
       case System.cmd(git, ["-c", "core.askPass=", "ls-remote", "--tags", remote_url, ref],
              env: [{"GIT_TERMINAL_PROMPT", "0"}],
@@ -838,6 +981,10 @@ defmodule Crosswake.ReleaseStatus do
   end
 
   defp http_live_probe(url, context) do
+    probe_with_retry(fn -> http_live_probe_once(url, context) end)
+  end
+
+  defp http_live_probe_once(url, context) do
     with curl when is_binary(curl) <- System.find_executable("curl"),
          {output, 0} <-
            System.cmd(
