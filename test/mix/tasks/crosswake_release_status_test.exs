@@ -160,7 +160,13 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     end
   end
 
-  test "live probes distinguish ok, missing, and unavailable as advisory warnings" do
+  # D-18: a missing mirror tag used to surface as :warning, so
+  # `mix crosswake.release.status --live` exited 0 while every iOS adopter's
+  # `.package(from: "0.2.0")` could not resolve. Both failure kinds are now
+  # fatal, but they are reported under DISTINCT codes: a registry that answered
+  # "no such release" is a definite negative; a probe that never got an answer
+  # is an unknown. Fail closed on both, but never misreport which one happened.
+  test "live probes split definite absence from unverifiable, and both fail closed (D-18)" do
     status =
       Crosswake.ReleaseStatus.build(
         live?: true,
@@ -174,7 +180,7 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
         git_ref_probe: fn _remote, _ref -> %{status: :missing, evidence: ["ios fixture"]} end
       )
 
-    assert status.status == :warning
+    assert status.status == :error
     assert status.live_checked == true
 
     assert %{live: %{status: :ok, source: "hex"}} =
@@ -189,18 +195,281 @@ defmodule Mix.Tasks.Crosswake.Release.StatusTest do
     assert %{live: %{status: :unavailable, source: "hex"}} =
              Enum.find(status.companions, &(&1.package == "crosswake_sigra"))
 
-    assert %{status: :warning, next_action: next_action, evidence: evidence, message: message} =
-             check!(status, "release.live_registry_presence")
+    # Definite negatives: the registry answered, the release is not there.
+    assert %{
+             status: :error,
+             next_action: presence_next,
+             evidence: presence_evidence,
+             message: presence_message
+           } = presence = check!(status, "release.live_registry_presence")
 
-    assert next_action =~ "mix crosswake.release.status --live"
-    assert "android-core@0.2.0=missing" in evidence
-    assert message =~ "ios-core@0.2.0 missing on ios_mirror"
-    assert message =~ "crosswake_sigra@0.1.1 unavailable on hex"
+    assert presence_next =~ "mix crosswake.release.status --live"
+    assert "android-core@0.2.0=missing" in presence_evidence
+    assert presence_message =~ "ios-core@0.2.0 missing on ios_mirror"
+    assert presence_message =~ "found no release"
+    # A source we merely could not reach must NOT be named as a confirmed absence.
+    refute presence_message =~ "crosswake_sigra"
+    refute Enum.any?(presence_evidence, &String.starts_with?(&1, "crosswake_sigra"))
+
+    # Unknowns: the probe itself failed after retries. Still fatal, differently named.
+    assert %{
+             status: :error,
+             next_action: unverifiable_next,
+             evidence: unverifiable_evidence,
+             message: unverifiable_message
+           } = unverifiable = check!(status, "release.live_registry_unverifiable")
+
+    assert unverifiable_next =~ "mix crosswake.release.status --live"
+    assert unverifiable_message =~ "crosswake_sigra@0.1.1 unavailable on hex"
+    assert unverifiable_message =~ "probe failure"
+    refute unverifiable_message =~ "ios-core"
+    refute unverifiable_message =~ "android-core"
+    assert Enum.any?(unverifiable_evidence, &String.starts_with?(&1, "crosswake_sigra"))
+
+    # Both exit 1 — fail closed on unknowns as well as on definite negatives.
+    assert Crosswake.ReleaseStatus.exit_code(presence) == 1
+    assert Crosswake.ReleaseStatus.exit_code(unverifiable) == 1
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
 
     for check <- status.checks, check.status != :ok do
       assert is_binary(check.next_action)
       assert check.next_action != ""
     end
+  end
+
+  test "all-ok live probes produce one ok presence check, no unverifiable check, and exit 0" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, _context -> %{status: :ok, evidence: ["ok fixture"]} end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["ok fixture"]} end
+      )
+
+    assert status.status == :ok
+
+    assert %{status: :ok, next_action: nil, message: message} =
+             check!(status, "release.live_registry_presence")
+
+    assert message =~ "all live registry probes found manifest versions"
+    refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
+    assert Crosswake.ReleaseStatus.exit_code(status) == 0
+  end
+
+  test "injected probes are called exactly once — retries live on the real probes, not the seam" do
+    counter = :counters.new(1, [])
+
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, _context ->
+          :counters.add(counter, 1, 1)
+          %{status: :unavailable, evidence: ["fixture"]}
+        end,
+        git_ref_probe: fn _remote, _ref ->
+          :counters.add(counter, 1, 1)
+          %{status: :unavailable, evidence: ["fixture"]}
+        end
+      )
+
+    live_entries = Enum.count(status.core ++ status.companions, & &1.live)
+
+    assert live_entries > 0
+    assert :counters.get(counter, 1) == live_entries
+  end
+
+  test "a probe that fails twice and then answers is NOT unavailable (retry short-circuits)" do
+    counter = :counters.new(1, [])
+
+    result =
+      Crosswake.ReleaseStatus.probe_with_retry(
+        fn ->
+          attempt = :counters.get(counter, 1) + 1
+          :counters.add(counter, 1, 1)
+
+          if attempt < 3 do
+            %{status: :unavailable, evidence: ["flake #{attempt}"]}
+          else
+            %{status: :missing, evidence: ["registry answered: no such release"]}
+          end
+        end,
+        3,
+        0
+      )
+
+    assert result.status == :missing
+    assert :counters.get(counter, 1) == 3
+  end
+
+  test "a probe is classified unavailable only after all 3 attempts fail" do
+    counter = :counters.new(1, [])
+
+    result =
+      Crosswake.ReleaseStatus.probe_with_retry(
+        fn ->
+          :counters.add(counter, 1, 1)
+          %{status: :unavailable, evidence: ["network down"]}
+        end,
+        3,
+        0
+      )
+
+    assert result.status == :unavailable
+    assert :counters.get(counter, 1) == 3
+  end
+
+  test "a probe that answers on the first attempt is called exactly once" do
+    counter = :counters.new(1, [])
+
+    result =
+      Crosswake.ReleaseStatus.probe_with_retry(
+        fn ->
+          :counters.add(counter, 1, 1)
+          %{status: :ok, evidence: ["first try"]}
+        end,
+        3,
+        0
+      )
+
+    assert result.status == :ok
+    assert :counters.get(counter, 1) == 1
+  end
+
+  # Escalating EVERY definite negative to :error would make the release-truth
+  # command permanently red for packages this repo deliberately never released:
+  # a companion still carrying its one-shot release-as bootstrap pin with no
+  # matching {package}-v{version} tag has no published release, so the registry
+  # correctly has nothing and no adopter was ever promised anything. That is the
+  # same manifest-baseline false positive check_release_as_staleness.sh already
+  # documents, and the same trap D-16 avoids by keying on RELEASED git tags.
+  # A permanently-red truth command is exactly the ignorable red this phase exists
+  # to kill, so these are advisory - and loudly named, never silently dropped.
+  test "an unreleased bootstrap companion is advisory, not fatal" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            %{kind: :hex, package: "crosswake_rindle"} ->
+              %{status: :missing, evidence: ["never released"]}
+
+            %{kind: :hex, package: "crosswake_rulestead"} ->
+              %{status: :missing, evidence: ["never released"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :warning
+    assert Crosswake.ReleaseStatus.exit_code(status) == 0
+
+    assert %{status: :warning, message: message, next_action: next_action} =
+             check!(status, "release.live_registry_bootstrap_pending")
+
+    assert message =~ "crosswake_rindle"
+    assert message =~ "crosswake_rulestead"
+    assert message =~ "never been released"
+    assert is_binary(next_action) and next_action != ""
+
+    # Advisory, but not swallowed into a false all-clear.
+    assert %{status: :ok} = check!(status, "release.live_registry_presence")
+    refute Enum.any?(status.checks, &(&1.code == "release.live_registry_unverifiable"))
+  end
+
+  # T-153-09 in the advisory lane. The bootstrap carve-out keys on `:missing` —
+  # "the registry answered, there is no release". An `:unavailable` probe never
+  # got an answer, so reporting it as "the registry has nothing for a package
+  # that was never released" would assert a definite negative from an unknown.
+  # An unreleased package with an UNREACHABLE registry stays unverifiable and
+  # fatal; only a confirmed absence is advisory.
+  test "an unreachable registry is never laundered into the bootstrap carve-out" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            # Same bootstrap-pinned companion as the advisory test above, but the
+            # probe FAILED rather than answering.
+            %{kind: :hex, package: "crosswake_rindle"} ->
+              %{status: :unavailable, evidence: ["probe failed after 3 attempts"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_unverifiable")
+
+    assert message =~ "crosswake_rindle"
+
+    # The lie this guards against: claiming the registry confirmed an absence.
+    refute Enum.any?(
+             status.checks,
+             &(&1.code == "release.live_registry_bootstrap_pending" and
+                 &1.evidence |> Enum.join() |> String.contains?("crosswake_rindle"))
+           )
+  end
+
+  test "a RELEASED package missing from its registry is still fatal (bootstrap exemption is not a blanket pass)" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, context ->
+          case context do
+            %{kind: :hex, package: "crosswake_sigra"} ->
+              %{status: :missing, evidence: ["released but absent"]}
+
+            _ ->
+              %{status: :ok, evidence: ["live"]}
+          end
+        end,
+        git_ref_probe: fn _remote, _ref -> %{status: :ok, evidence: ["mirror ok"]} end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_presence")
+
+    assert message =~ "crosswake_sigra"
+  end
+
+  test "a missing iOS mirror tag is fatal — core is never bootstrap-exempt (D-18)" do
+    status =
+      Crosswake.ReleaseStatus.build(
+        live?: true,
+        http_probe: fn _url, _context -> %{status: :ok, evidence: ["live"]} end,
+        git_ref_probe: fn _remote, _ref ->
+          %{status: :missing, evidence: ["mirror tag absent"]}
+        end
+      )
+
+    assert status.status == :error
+    assert Crosswake.ReleaseStatus.exit_code(status) == 1
+
+    assert %{status: :error, message: message} =
+             check!(status, "release.live_registry_presence")
+
+    assert message =~ "ios-core@0.2.0 missing on ios_mirror"
+  end
+
+  test "the real probes are the ones wrapped in retry, not the injection seam" do
+    source = File.read!("lib/crosswake/release_status.ex")
+
+    assert source =~ "probe_with_retry(fn -> git_ref_live_probe_once("
+    assert source =~ "probe_with_retry(fn -> http_live_probe_once("
+    # The seam build/1 exposes must keep pointing at the retrying wrappers.
+    assert source =~ "Keyword.get(opts, :http_probe, &http_live_probe/2)"
+    assert source =~ "Keyword.get(opts, :git_ref_probe, &git_ref_live_probe/2)"
   end
 
   test "release status source stays read-only and avoids mutation commands" do

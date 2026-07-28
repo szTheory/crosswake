@@ -119,6 +119,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         workflow_no_cancel_in_progress_true(non_comment_workflow),
         cleanup_after_publish_and_proof(jobs),
         cleanup_pr_only(jobs),
+        cleanup_pr_deduped(jobs),
         hex_publish_already_live_preflight(non_comment_helper),
         hex_publish_no_replace(non_comment_workflow, non_comment_recovery, non_comment_helper),
         hex_publish_shared_helper(jobs, non_comment_workflow),
@@ -913,13 +914,18 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp native_status_artifact(jobs) do
     block = job_block(jobs, "native-release-rollup")
 
+    # Version-agnostic on purpose: the invariant is that the rollup ALWAYS uploads the
+    # status file and fails closed when it is missing — not which action version does it.
+    # Pinning a literal `@v4` here made a routine dependabot bump (#50) red-line four
+    # merge-blocking lanes, and blocked SHA-pinning this step per REL-05.
     check(
       "release.workflow.native_status_artifact",
       includes?(block, "native-release-status.json") and
-        includes?(block, "actions/upload-artifact@v4") and
+        includes?(block, ~r{uses:\s*actions/upload-artifact@\S+}) and
+        includes?(block, "if: ${{ always() }}") and
         includes?(block, "name: native-release-status") and
         includes?(block, "if-no-files-found: error"),
-      "native-release-rollup must write native-release-status.json and upload it as the native-release-status artifact"
+      "native-release-rollup must write native-release-status.json and always upload it as the native-release-status artifact, failing closed if absent"
     )
   end
 
@@ -1061,6 +1067,22 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         includes?(block, "--base main") and
         not direct_main_push?,
       "release-as-cleanup must push a branch and open a PR, never push directly to main; run elixir script/check_release_workflow_integrity.exs"
+    )
+  end
+
+  # The cleanup job's branch name embeds github.run_id, so it never collides, and its
+  # dirty-worktree check runs against a fresh main that still carries the pin — neither
+  # can notice an already-open cleanup PR. Without an explicit guard every release run
+  # opens another duplicate (#65/#68/#72). Assert the guard so it cannot regress.
+  defp cleanup_pr_deduped(jobs) do
+    block = job_block(jobs, "release-as-cleanup")
+
+    check(
+      "release.cleanup.deduped",
+      includes?(block, ~r/gh\s+pr\s+list[^\n]*--state\s+open/) and
+        includes?(block, "chore/release-as-cleanup-") and
+        includes?(block, ~r/already open|not opening a duplicate/),
+      "release-as-cleanup must check for an already-open cleanup PR before gh pr create, and bail instead of opening a duplicate; run elixir script/check_release_workflow_integrity.exs"
     )
   end
 
