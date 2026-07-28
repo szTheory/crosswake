@@ -72,6 +72,7 @@ must look right on day one, so they are generated and owned by the host, never i
 - **Commerce/Paywall productionization** — storefront adapters, entitlement refresh, purchase-evidence ingestion.
 - **Offline Sync / Native Storage productization** (SYNCP-01, NTV-01) — native storage budgets, durable journals, outboxes, retry, conflict handling.
 - **Native Controls Pack 2 — Themable Web Control Equivalents** (THEME-*, WCTRL-*, reuse FALL-*) — a brand-themable, host-owned, generator-emitted WEB equivalent for every delegated native control; extends the token system by elevation/z/motion/border-width/padding and generalizes v20's FALL host-owned fallback family. Planted as SEED-005; the web-side follow-on to this milestone.
+- **Native Navigation Shell** (NAVG-*, SHELL-*, SYNC-*, LIFE-*, A11Y-*) — a real native tab bar + nav stack (à la Hotwire Native) hosting Crosswake routes, nav graph declared once in the manifest and rendered per-platform; native shell fidelity toward consumer-grade "feels-native." Planted as SEED-006; its own milestone (distinct axis from the controls packs) carrying an explicit positioning north-star shift.
 - **`crosswake_dashboard`** (DASH-01) — operator route/support/telemetry/audit/release inspection surface.
 - **SEED-004** — companion clean-room proof harness cosmetics. The real defect was fixed in v18 Phase 144; the harness only runs for companion Hex publishes, a surface v20 does not touch.
 
