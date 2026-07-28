@@ -52,8 +52,8 @@ Boots the shared backend on port 4700 and auto-opens `http://localhost:4700/`,
 the showcase hub for the checked-in example host. Requires Docker.
 
 <img
-  src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
-  alt="Three-runtime Crosswake comparison: web (localhost:4700), iOS Simulator (emulator evidence — advisory native, not a physical device), Android Emulator (emulator evidence — advisory native, not a physical device)"
+  src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/web-home.png"
+  alt="Crosswake showcase hub at localhost:4700 — the SaaS/Admin, Field Service, and Learning/Training lanes with route-owner and support-truth labels"
   width="900"
 />
 
@@ -82,7 +82,7 @@ separates available support, proof-backed examples, demo pressure, future gaps,
 and v20 next-pack candidates. Screenshots remain collateral after route-tour
 assertions, not proof posture.
 
-> **Advisory native collateral.** The iOS Simulator and Android Emulator frames above are
+> **Advisory native collateral.** iOS Simulator and Android Emulator runs are
 > `emulator evidence` — advisory, not physical-device proof. A successful simulator or
 > emulator run confirms the dev wiring reaches the local backend, but does not prove
 > it works on a physical device. See the

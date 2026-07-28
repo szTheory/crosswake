@@ -207,6 +207,7 @@ mirror_tag_sha() {
 verify_or_apply_mirror() {
   local push_remote
   local tag_sha
+  local tag_matches=0
 
   push_remote="$(mirror_push_remote)"
   tag_sha="$(mirror_tag_sha)"
@@ -216,28 +217,40 @@ verify_or_apply_mirror() {
   if [ -n "$tag_sha" ]; then
     if [ "$tag_sha" = "$SPLIT_SHA" ]; then
       ok "SwiftPM mirror refs/tags/v${VERSION} already points at ${SPLIT_SHA}; no push needed."
+      tag_matches=1
+    else
+      fail "SwiftPM mirror refs/tags/v${VERSION} points at ${tag_sha}, expected ${SPLIT_SHA}." "Do not delete or move the public SwiftPM tag automatically. Inspect ${MIRROR_REPO} and decide deliberately."
+    fi
+  fi
+
+  # Tag push. Skipped when the tag already resolves to the expected split SHA -
+  # but crucially we DO NOT return here: the D-08 main re-baseline (D-21 step 5)
+  # is dispatched SEPARATELY, after step 4 already created the tag, so an early
+  # return on the tag-already-present short-circuit would silently no-op
+  # --update-main every time (which it did on the first real run).
+  if [ "$tag_matches" -ne 1 ]; then
+    if ! git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null 2>&1; then
+      fail "dry-run push to ${MIRROR_REPO} failed; MIRROR_DEPLOY_KEY may be missing, unauthorized, or lack write access to ${MIRROR_REPO}." "Confirm the MIRROR_DEPLOY_KEY secret is set and registered as a write deploy key on ${MIRROR_REPO}, then retry."
+    fi
+    ok "dry-run push to ${MIRROR_REPO} succeeded; MIRROR_DEPLOY_KEY has WRITE scope."
+
+    if [ "$APPLY" -ne 1 ]; then
+      ok "SwiftPM mirror refs/tags/v${VERSION} is absent; verification-only mode made no changes."
+      log "Next action: run $0 --version ${VERSION} --ref ${SOURCE_REF} --apply to push the tag using MIRROR_DEPLOY_KEY."
       return
     fi
 
-    fail "SwiftPM mirror refs/tags/v${VERSION} points at ${tag_sha}, expected ${SPLIT_SHA}." "Do not delete or move the public SwiftPM tag automatically. Inspect ${MIRROR_REPO} and decide deliberately."
+    git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null
+    git -C "$RELEASE_REPO" push --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}"
+    ok "pushed SwiftPM mirror refs/tags/v${VERSION} at ${SPLIT_SHA}."
   fi
-
-  if ! git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null 2>&1; then
-    fail "dry-run push to ${MIRROR_REPO} failed; MIRROR_DEPLOY_KEY may be missing, unauthorized, or lack write access to ${MIRROR_REPO}." "Confirm the MIRROR_DEPLOY_KEY secret is set and registered as a write deploy key on ${MIRROR_REPO}, then retry."
-  fi
-  ok "dry-run push to ${MIRROR_REPO} succeeded; MIRROR_DEPLOY_KEY has WRITE scope."
-
-  if [ "$APPLY" -ne 1 ]; then
-    ok "SwiftPM mirror refs/tags/v${VERSION} is absent; verification-only mode made no changes."
-    log "Next action: run $0 --version ${VERSION} --ref ${SOURCE_REF} --apply to push the tag using MIRROR_DEPLOY_KEY."
-    return
-  fi
-
-  git -C "$RELEASE_REPO" push --dry-run --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}" >/dev/null
-  git -C "$RELEASE_REPO" push --porcelain "$push_remote" "${SPLIT_SHA}:refs/tags/v${VERSION}"
-  ok "pushed SwiftPM mirror refs/tags/v${VERSION} at ${SPLIT_SHA}."
 
   if [ "$UPDATE_MAIN" -eq 1 ]; then
+    if [ "$APPLY" -ne 1 ]; then
+      ok "SwiftPM mirror main re-baseline requires --apply; verification-only mode made no changes."
+      return
+    fi
+
     current_main="$(git ls-remote "$push_remote" "refs/heads/main" | awk '{print $1}' | head -1 || true)"
     if [ -n "$current_main" ]; then
       if ! git -C "$RELEASE_REPO" cat-file -e "${current_main}^{commit}" 2>/dev/null; then
