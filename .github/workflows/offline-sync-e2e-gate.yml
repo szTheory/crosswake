@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - name: Install Node dependencies (provides typescript for AST check)
@@ -231,7 +231,7 @@ jobs:
           test -s brandbook/collateral/see-it-run/web-offline.png
           test -s brandbook/collateral/see-it-run/web-bridge-proof.png
       - name: Upload route-tour evidence bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: crosswake-route-tour-evidence
           path: |

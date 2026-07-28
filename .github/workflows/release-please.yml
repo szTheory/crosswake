@@ -742,7 +742,7 @@ jobs:
           fi
 
       - name: Upload native release status
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
           name: native-release-status
@@ -1245,6 +1245,21 @@ jobs:
           fi
           if [ -z "$(git status --porcelain release-please-config.json)" ]; then
             echo "[crosswake] No stale release-as pin to strip — nothing to do."
+            exit 0
+          fi
+          # Idempotency guard. The working-tree check above compares against a freshly
+          # checked-out main, which still carries the pin until an EARLIER cleanup PR is
+          # merged — so it cannot detect one that is already open. Combined with a branch
+          # name that embeds github.run_id (never collides), every release run minted
+          # another duplicate; that is how #65/#68/#72 accumulated. One open cleanup PR
+          # is enough. Uses the REST list endpoint, not `--search`, so a lagging search
+          # index cannot let a duplicate through.
+          existing="$(gh pr list --state open --base main --limit 100 \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("chore/release-as-cleanup-"))] | .[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "[crosswake] Cleanup PR #${existing} is already open — not opening a duplicate."
+            echo "[crosswake] Merge #${existing} to clear the release-as-staleness gate."
             exit 0
           fi
           branch="chore/release-as-cleanup-${{ github.run_id }}"
