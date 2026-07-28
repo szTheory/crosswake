@@ -2,7 +2,7 @@ defmodule Crosswake.Guides.ReadmeSeeItRunTest do
   use ExUnit.Case, async: true
 
   # Guards the README "## See it run" section against drift: the hero command,
-  # the montage image (well-formed straight-quote <img>, not smart quotes), the
+  # the hero image (well-formed straight-quote <img>, not smart quotes), the
   # three route owners, source-derived port, the advisory native label, and the
   # forward links to the guide and QUICK_START. UAT 3 — fully automated.
 
@@ -15,7 +15,7 @@ defmodule Crosswake.Guides.ReadmeSeeItRunTest do
   @prev_heading "## What this is not"
   @next_heading "## Choose your path"
 
-  @montage_url "https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
+  @hero_image_url "https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/web-home.png"
   @legend_anchor "guides/support_matrix.md#support-truth-label-legend"
 
   # Source-of-truth file — never hardcode the port derived from it.
@@ -84,7 +84,7 @@ defmodule Crosswake.Guides.ReadmeSeeItRunTest do
     )
   end
 
-  test "scanner rejects a broken (smart-quote) montage image tag" do
+  test "scanner rejects a broken (smart-quote) hero image tag" do
     # Replace the straight-quote attribute delimiter with a smart quote — the
     # exact regression that silently breaks image rendering in HTML.
     mutated = String.replace(see_it_run_section(), ~s(src="), "src=”")
@@ -126,10 +126,10 @@ defmodule Crosswake.Guides.ReadmeSeeItRunTest do
       require_contains(path, contents, "http://localhost:#{port}", :wrong_port,
         "section must reference the source-derived URL http://localhost:#{port}"),
 
-      # Well-formed montage image — straight-quote src delimiter + canonical URL.
+      # Well-formed hero image — straight-quote src delimiter + canonical URL.
       # A smart-quote src=”...” breaks rendering and fails this check.
-      require_contains(path, contents, ~s(src="#{@montage_url}"), :broken_image,
-        "montage <img> must use a straight-quote src=\"#{@montage_url}\" (no smart quotes)"),
+      require_contains(path, contents, ~s(src="#{@hero_image_url}"), :broken_image,
+        "hero <img> must use a straight-quote src=\"#{@hero_image_url}\" (no smart quotes)"),
 
       # Three route owners from router.ex
       require_contains(path, contents, "`/offline`", :missing_route,
