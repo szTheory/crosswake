@@ -72,7 +72,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: examples/phoenix_host/_build/prod
           key: build-prod-${{ hashFiles('examples/phoenix_host/mix.lock') }}
@@ -103,7 +103,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: examples/phoenix_host/_build/test
           key: build-test-${{ hashFiles('examples/phoenix_host/mix.lock') }}
@@ -140,7 +140,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: examples/phoenix_host/_build/test
           key: build-test-route-tour-${{ hashFiles('examples/phoenix_host/mix.lock') }}

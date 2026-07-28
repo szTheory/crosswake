@@ -58,7 +58,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: _build/test
           key: build-test-${{ hashFiles('mix.lock') }}
@@ -85,7 +85,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: _build/dev
           key: build-dev-${{ hashFiles('mix.lock') }}
