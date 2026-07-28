@@ -81,12 +81,9 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 
-      - name: Install splitsh-lite v1.0.1
-        run: |
-          curl -fsSL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz \
-            | tar xz
-          sudo mv splitsh-lite /usr/local/bin/splitsh-lite
-
+      # No split tool install: verify_ios_mirror_backfill.sh computes the
+      # subtree split with `git subtree split` (stock git). fetch-depth: 0 on the
+      # checkout above gives it the full history it needs.
       - name: Verify or backfill SwiftPM mirror
         env:
           VERSION: ${{ inputs.version }}

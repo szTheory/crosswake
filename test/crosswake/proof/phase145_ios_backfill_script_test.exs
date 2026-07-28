@@ -24,7 +24,7 @@ defmodule Crosswake.Proof.Phase145IosBackfillScriptTest do
     assert script =~ "refs/tags/v${VERSION}"
     assert script =~ ".release-please-manifest.json"
     assert script =~ "packages/crosswake-shell-core-ios"
-    assert script =~ "splitsh-lite v1.0.1"
+    assert script =~ "git subtree split"
     assert script =~ ~s(--force-with-lease="refs/heads/main:)
   end
 
