@@ -1,0 +1,63 @@
+name: iOS Mirror Parity Gate
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+# D-16: fail-closed guard against SwiftPM mirror drift.
+#
+# THE INVARIANT: for every `refs/tags/ios-core-vX` released in this repo,
+# `refs/tags/vX` must exist on szTheory/crosswake-shell-core-ios. A violation
+# means every iOS adopter's `.package(from: "X")` cannot resolve.
+#
+# WHY IT IS A MERGE-BLOCKING LANE AND NOT A RELEASE-TIME CHECK:
+# `publish-ios-core` was ALREADY hard-failing for three months and nobody saw
+# it - a post-merge Actions run has no persistence and no inbox. Redness was
+# never the variable; where red LANDS is. Running on every PR also catches drift
+# a release-time guard structurally cannot see: a manual force-push, a tag
+# deletion, a half-finished backfill.
+#
+# TOPOLOGY: one job that IS the check, delegating to a script. Modeled on
+# release-as-staleness-gate.yml (validate -> exit 1, no auto-commit).
+#
+# HERMETIC: one UNAUTHENTICATED `git ls-remote` against a public repo,
+# sub-second, on ubuntu. No secret is available to this lane, so none can leak.
+# (This is not an Xcode/macOS-runner concern, so the v15 COLL-01 iOS-advisory
+# precedent does not apply.)
+#
+# REGISTRATION (run out-of-band by maintainer after this workflow goes green on main):
+#   1. Merge this PR.
+#   2. Let merge-blocking-ios-mirror-parity go GREEN on main at least once.
+#   3. Register it (parametric, idempotent, green-first):
+#        DRY_RUN=0 script/register_required_checks.sh
+#      Audit which declared lanes are NOT yet required:
+#        script/check_required_checks_registered.sh
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  merge-blocking-ios-mirror-parity:
+    name: merge-blocking-ios-mirror-parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Full history + tags: the LOCAL side of the comparison enumerates
+          # `ios-core-v*` release tags, which a shallow clone will not have.
+          # The remote side needs no fetch and no credential.
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Check iOS SwiftPM mirror parity (D-16)
+        run: ./script/check_ios_mirror_parity.sh
+      - name: Step summary
+        if: always()
+        run: |
+          echo "iOS mirror parity gate: see job log for per-tag results" >> "$GITHUB_STEP_SUMMARY"

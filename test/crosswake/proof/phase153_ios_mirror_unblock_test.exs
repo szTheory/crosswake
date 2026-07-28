@@ -14,6 +14,13 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   git's own semantics (no app code involved). Tests D/E drive the real
   `script/verify_ios_mirror_backfill.sh` via its existing env-var override
   seams, mirroring `phase145_ios_backfill_script_test.exs`'s fixture harness.
+
+  The parity-gate block additionally covers D-16/D-19: the merge-blocking
+  `script/check_ios_mirror_parity.sh` invariant (every released
+  `refs/tags/ios-core-vX` here implies `refs/tags/vX` on the SwiftPM mirror),
+  its one-directional shape, its 2am-maintainer failure microcopy, and the
+  T-153-09 guarantee that an unreachable mirror is NEVER reported as a
+  missing tag.
   """
 
   use ExUnit.Case, async: true
@@ -21,6 +28,9 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
   @script "script/verify_ios_mirror_backfill.sh"
   @scanner "script/check_release_workflow_integrity.exs"
   @workflow ".github/workflows/release-please.yml"
+  @parity_script "script/check_ios_mirror_parity.sh"
+  @parity_workflow ".github/workflows/merge-blocking-ios-mirror-parity.yml"
+  @parity_context "merge-blocking-ios-mirror-parity"
   @version "0.2.0"
   @source_ref "refs/tags/ios-core-v0.2.0"
 
@@ -210,6 +220,149 @@ defmodule Crosswake.Proof.Phase153IosMirrorUnblockTest do
       )
 
     assert_scanner_failure!("release.workflow.release_failure_alert_native", workflow)
+  end
+
+  # --- Parity gate (D-16, D-19): the merge-blocking mirror-vs-released-tags invariant ---
+
+  @tag :phase153_ios_mirror_unblock
+  test "parity holds when every released ios-core tag has a matching mirror tag" do
+    fixture = parity_fixture(["0.1.2", "0.2.0"], ["0.1.2", "0.2.0"])
+
+    {output, exit_code} = run_parity(fixture)
+
+    assert exit_code == 0, output
+    assert output =~ "[crosswake] OK: release.ios_mirror_parity - "
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "a missing mirror tag fails the gate with 2am-maintainer microcopy (D-19)" do
+    fixture = parity_fixture(["0.1.2", "0.2.0"], ["0.1.2"])
+
+    {output, exit_code} = run_parity(fixture)
+
+    assert exit_code == 1, output
+    assert output =~ "[crosswake] FAIL: release.ios_mirror_parity - "
+    assert output =~ "SwiftPM mirror is missing refs/tags/v0.2.0."
+    assert output =~ "released here:  refs/tags/ios-core-v0.2.0"
+    assert output =~ "has no refs/tags/v0.2.0"
+    assert output =~ "CANNOT RESOLVE. Every iOS adopter of 0.2.0 is broken right now."
+    assert output =~ "gh workflow run ios-mirror-backfill.yml -f version=0.2.0"
+    assert output =~ "-f release_ref=refs/tags/ios-core-v0.2.0 -f apply=true"
+    assert output =~ "This gate stays RED and merges stay BLOCKED until the mirror tag exists."
+    # 0.1.2 IS mirrored - it must not be named as broken.
+    refute output =~ "missing refs/tags/v0.1.2"
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "the invariant is one-directional: extra mirror tags are not a violation" do
+    fixture = parity_fixture(["0.1.2", "0.2.0"], ["0.1.2", "0.2.0", "9.9.9"])
+
+    {output, exit_code} = run_parity(fixture)
+
+    assert exit_code == 0, output
+    refute output =~ "9.9.9"
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "an unreachable mirror retries 3 times and reports unreachability, NEVER a missing tag (T-153-09)" do
+    fixture = parity_fixture(["0.2.0"], [])
+    unreachable = Path.join(fixture.root, "not-a-repo.git")
+
+    {output, exit_code} =
+      run_parity(fixture, [{"CROSSWAKE_IOS_PARITY_MIRROR_REMOTE", unreachable}])
+
+    assert exit_code == 1, output
+    assert output =~ "[crosswake] FAIL: release.ios_mirror_parity - "
+    assert output =~ "could not reach"
+    assert output =~ "after 3 attempts"
+    # The whole point of T-153-09: an unknown must never masquerade as a
+    # definite negative. No missing-tag language, no adopter-broken claim.
+    refute output =~ "is missing refs/tags/"
+    refute output =~ "CANNOT RESOLVE"
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "the parity gate keys on released tags, never on the release-please manifest (deadlock trap)" do
+    source = File.read!(@parity_script)
+
+    refute source =~ "release-please-manifest"
+    assert source =~ "ios-core-v"
+    assert source =~ "release.ios_mirror_parity - "
+    assert source =~ "CANNOT RESOLVE"
+    assert source =~ "set -euo pipefail"
+    assert source =~ "core.askPass="
+    assert File.stat!(@parity_script).mode |> Bitwise.band(0o111) != 0
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "the parity workflow satisfies the merge-blocking naming and checkout contract" do
+    workflow = File.read!(@parity_workflow)
+
+    # Job key AND literal name: - both required for auto-discovery + registration.
+    assert workflow =~ "  #{@parity_context}:\n"
+    assert workflow =~ "name: #{@parity_context}\n"
+    # An unresolved expression in `name:` is skipped by list_merge_blocking_checks.py.
+    refute workflow =~ ~r/name:.*\$\{\{/
+    # The LOCAL side enumerates ios-core-v* tags; a shallow clone would not have them.
+    assert workflow =~ "fetch-depth: 0"
+    assert workflow =~ "fetch-tags: true"
+    # This repo's dominant discipline is SHA-pin + version comment.
+    assert workflow =~ "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0"
+    assert workflow =~ "./script/check_ios_mirror_parity.sh"
+  end
+
+  @tag :phase153_ios_mirror_unblock
+  test "list_merge_blocking_checks.py auto-discovers the parity lane as a required-check context" do
+    {output, exit_code} =
+      System.cmd("python3", ["script/list_merge_blocking_checks.py"], stderr_to_stdout: true)
+
+    assert exit_code == 0, output
+    assert @parity_context in String.split(output, "\n", trim: true)
+  end
+
+  defp parity_fixture(local_versions, mirror_versions) do
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-phase153-parity-#{System.unique_integer([:positive])}"
+      )
+
+    release = Path.join(root, "release")
+    mirror = Path.join(root, "mirror.git")
+    File.mkdir_p!(release)
+    File.mkdir_p!(mirror)
+    on_exit(fn -> File.rm_rf(root) end)
+
+    git!(["init", "-q", release])
+    git!(["-C", release, "config", "user.email", "ci@crosswake"])
+    git!(["-C", release, "config", "user.name", "Crosswake CI"])
+    File.write!(Path.join(release, "README.md"), "parity fixture\n")
+    git!(["-C", release, "add", "."])
+    git!(["-C", release, "commit", "-q", "-m", "parity fixture"])
+    sha = git!(["-C", release, "rev-parse", "HEAD"]) |> String.trim()
+
+    for version <- local_versions do
+      git!(["-C", release, "tag", "ios-core-v#{version}", sha])
+    end
+
+    git!(["init", "--bare", "-q", mirror])
+
+    for version <- mirror_versions do
+      git!(["-C", release, "push", mirror, "#{sha}:refs/tags/v#{version}"])
+    end
+
+    %{root: root, release: release, mirror: mirror, sha: sha}
+  end
+
+  defp run_parity(fixture, env \\ []) do
+    base_env = [
+      {"CROSSWAKE_IOS_PARITY_RELEASE_REPO", fixture.release},
+      {"CROSSWAKE_IOS_PARITY_MIRROR_REMOTE", fixture.mirror},
+      # Test-only seam: keeps the 3-attempt retry proof sub-second.
+      {"CROSSWAKE_IOS_PARITY_RETRY_SLEEP", "0"}
+    ]
+
+    System.cmd("bash", [@parity_script], stderr_to_stdout: true, env: base_env ++ env)
   end
 
   defp backfill_fixture do

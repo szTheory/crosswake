@@ -53,7 +53,7 @@ jobs:
         with:
           version-file: .tool-versions
           version-type: strict
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - name: Install Mix + Node deps
@@ -95,7 +95,7 @@ jobs:
         if: always()
         run: kill "$(cat /tmp/phx-server.pid)" 2>/dev/null || true
       - name: Upload web + gif artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: see-it-run-web-gif
           path: |
@@ -117,7 +117,7 @@ jobs:
       MIX_ENV: test
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
@@ -174,7 +174,7 @@ jobs:
         if: always()
         run: kill "$(cat /tmp/phx-server.pid)" 2>/dev/null || true
       - name: Upload native artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: see-it-run-native
           path: |
