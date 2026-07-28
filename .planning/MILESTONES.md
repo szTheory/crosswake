@@ -86,7 +86,7 @@ See `.planning/milestones/v17.0-ROADMAP.md` and `.planning/milestones/v17.0-REQU
 **Git range:** `docs(129)` context (2026-06-25) → `docs(v16.0)` origin-sync (2026-06-30); 2026-06-25 → 2026-06-30
 **Requirements:** 27/27 v1 satisfied (SEAM-01..05, EXTRACT-01..07, COMPAT-01..03, PROOF-01..03, TELEM-01..04, LIFE-01a/01b/02a/02b/02c). Audit `passed`; integration CLEAN (0 blockers, 5/5 E2E flows).
 
-**Delivered:** Turned the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` — and shipped the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires. Module names preserved throughout (`Crosswake.Companions.Rulestead`/`.Rindle`) so extraction is non-breaking.
+**Delivered:** Turned the in-tree companion seams into real, independently-versioned, fail-closed first-party Hex-ready packages — proving the extraction pattern end-to-end on `rulestead` then `rindle` (both extracted and release-wired; neither has published to Hex yet) — and shipped the lifecycle, compatibility-matrix, and telemetry-as-public-API discipline a package family requires. Module names preserved throughout (`Crosswake.Companions.Rulestead`/`.Rindle`) so extraction is non-breaking.
 
 **Key accomplishments:**
 
