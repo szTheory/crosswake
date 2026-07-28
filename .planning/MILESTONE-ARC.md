@@ -178,6 +178,37 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - The un-brandable trio first — toast, alert/confirm, action-sheet/menu — on platform primitives, APG-accessible, proven in both native-shell and web-fallback paths.
 - A two-typed-denial (`unavailable` vs `unimplemented`) + `canX()` capability-probe degradation contract; honesty invariant (web controls must not impersonate native OS chrome).
 
+### Later: Native Navigation Shell (v21.0-or-later)
+
+**Status:** LATER — planted as [SEED-006](seeds/SEED-006-native-navigation-shell.md). Not scheduled; its own milestone (a distinct axis — native app-shell chrome + nav graph, vs the in-page controls of Pack 1/2). Carries an explicit **positioning north-star shift** toward consumer-grade "feels-native."
+
+**Objective**
+- Give Phoenix apps a real native tab bar + navigation stack on iOS/Android that hosts Crosswake routes — the route/nav graph declared ONCE in the manifest, rendered per-platform (native = `UITabBar`+nav stack; web = its own idiom, e.g. hamburger) — so apps feel native at the navigation seams, à la Hotwire Native, with content staying server-driven LiveView.
+- Ship it as an additive `nav_graph` manifest section + route-level `nav:` hint (modeled on `commerce_corridors`), native chrome in the host-owned generated shell, and a web↔native back-stack sync subsystem.
+
+**Why now**
+- Web-rendered nav (esp. hamburger) is the #1 tell that reads as "a website in an app." The native shell today is a thin single-screen host; native nav chrome is the highest-leverage step toward consumer-grade feel. Feasibility is favorable: the library is a pure resolver, rendering is host-owned, and there is zero existing nav container to conflict with — a bounded additive extension.
+- Records an explicit positioning shift: **native shell fidelity, not app parity** — "feels native, ships from Phoenix," earned via a new native-shell-proven support tier (never "indistinguishable").
+
+**Depends on**
+- v20.0 Native Controls Pack 1 (`Bridge.push/3` seam, shell maturity)
+- v9.0/v10.0 manifest + drift-gate machinery
+- the host-owned `gen.shell --diff` upgrade rail
+
+**Risk tags**
+- `native-capabilities`
+- `navigation`
+- `positioning`
+- `web-native-sync`
+- `accessibility`
+- `fidelity-ceiling`
+
+**Key outputs (pre-staged; see SEED-006 for the full research-backed shape)**
+- Additive ordered `nav_graph` manifest section + route-level `nav:` hint + `validate_nav_graph/2` (compiled + drift-gated, not remotely served).
+- Native nav chrome in host-owned generated shell: UIKit `UITabBarController`+per-tab `UINavigationController` (iOS) / single-Activity Jetpack Navigation + `NavigationBarView` (Android); a container-level `ShellNavigation` value alongside the per-screen `ShellPresentation` leaf.
+- The web↔native back-stack sync subsystem (native stack authoritative; `push_patch` = native no-op; `navigateUp`/`popBackStack` correctness; deep-link parent-stack synthesis).
+- A four-tier honest proof strategy (hermetic-proven → bridge-message-boundary-proven → emulator-evidence → device-only-unprovable) + a native-shell-proven support tier; the positioning brand-doc edits ratified at activation.
+
 ### Shipped: Adoption Evidence Demo App (v5.1 → v6.0)
 
 **Status:** SHIPPED — v5.1 (2026-06-09) transitioned demo hosts onto standalone deps; v6.0 (2026-06-09) shipped the Flashcard offline cohort. The demo-app wedge is closed.
@@ -249,6 +280,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `v19.0 Showcase Apps & Capability Map` precedes `v20.0 Native Controls Pack 1` because examples should expose the real capability gaps before Crosswake widens official native-control APIs.
 - `v20.0 Native Controls Pack 1` precedes capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the sequence.
 - `Native Controls Pack 2 — Themable Web Control Equivalents` (SEED-005) depends on v20's `Bridge.push/3` control-contract seam and the `gen.native_controls_ui` host-owned fallback generator; it is the web-side generalization of v20's FALL family and can sequence after Pack 1 or interleave with capture/device controls as adopter evidence dictates.
+- `Native Navigation Shell` (SEED-006) depends on v20 shell maturity + the manifest/drift-gate machinery; it is a DISTINCT axis from the controls packs (native app-shell chrome + `nav_graph`, not in-page controls) and carries an explicit consumer-grade positioning shift. Sequence after v20 Pack 1; independent of SEED-005 (they can proceed in either order).
 
 ## Decision Notes
 
@@ -301,6 +333,8 @@ Every milestone close must update or verify:
 - Which exact Native Controls Pack 1 controls v19.0 evidence should promote into v20.0.
 - Whether scanner/document-scan/biometrics/location belong in v20.0 or a later capture/device controls pack.
 - How far "themable out of the box" should extend before the adopter drops to fully custom (the 95%/5% seam), and whether the design-token drift gate should police radius/shadow/z drift, not just color — surfaced by SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents).
+- **POSITIONING DECISION (ratify at Native Navigation Shell activation):** whether to formally shift Crosswake's stated positioning toward consumer-grade "feels-native" (native shell fidelity, NOT app parity) — implying enumerated edits to `brandbook/BRAND-SPEC.md`, README "What this is not", and PROJECT.md core-value, plus a new native-shell-proven support tier. Surfaced + scoped by SEED-006 (the north-star shift is recorded there; the brand-doc edits are deliberately deferred to activation).
+- **Fidelity ceiling / web↔native back-stack sync** — the acceptable degree of "feels native ~90-95%" and the design of the native-authoritative sync subsystem (the load-bearing OPEN problem in SEED-006).
 
 ---
-*Last updated: 2026-07-27 — recorded SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents) as a `Later:` Strategic Queue candidate + Dependency Graph edge; the web-side generalization of v20's host-owned fallback family, from a deep multi-lens research fan-out. v19.0 Showcase Apps & Capability Map active; v20.0 Native Controls Pack 1 remains the logical follow-on.*
+*Last updated: 2026-07-27 — recorded SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents) and SEED-006 (Native Navigation Shell) as `Later:` Strategic Queue candidates + Dependency Graph edges + Open Research Flags, each from a deep multi-lens research fan-out. SEED-006 carries an explicit consumer-grade positioning north-star shift (brand-doc edits deferred to activation). v19.0 Showcase Apps & Capability Map active; v20.0 Native Controls Pack 1 remains the logical follow-on.*
