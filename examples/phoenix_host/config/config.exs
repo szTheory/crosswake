@@ -20,15 +20,30 @@ config :crosswake_example, CrosswakeExample.Repo,
 config :crosswake_example, CrosswakeExample.Router,
   url: [host: "example.crosswake.invalid", scheme: "https", port: 443]
 
-# Register the Rulestead companion in the Crosswake companion dispatch loop.
-# This is read by Doctor.phase_38_companion_seam_findings/0 and
+# Register the companions in the Crosswake companion dispatch loop. This is read by
+# Doctor.phase_38_companion_seam_findings/0 and
 # RouteGate.prepend_gate_evaluation_findings/3 at runtime.
-config :crosswake, :companions, [Crosswake.Companions.Rulestead]
+#
+# Sigra is the host's auth authority — it is the only module in the tree with
+# `auth_authority?/0 == true`. RouteGate scans this list for one
+# (route_gate.ex:261-283) and, finding none, fails CLOSED with a
+# `dependency_missing` denial, which Compatibility maps to `:step_up_required`.
+# It was omitted when sigra was extracted to its own package in v17.0, which left
+# every auth-predicated route in the example host denied.
+config :crosswake, :companions, [
+  Crosswake.Companions.Rulestead,
+  Crosswake.Companions.Sigra
+]
 
 # Enable the Rulestead companion for this host. This config map is passed to
 # Crosswake.Companions.Rulestead.enabled?/1 — defaults to false (fail-closed)
 # when not configured, so this key must be present to activate the companion.
 config :crosswake, :rulestead, %{enabled: true}
+
+# Sigra reads this map via Sigra.enabled?/1 (sigra.ex:33,52) and, like Rulestead,
+# defaults to false (fail-closed) when absent — so registering the module above is
+# necessary but not sufficient; this key must be present too.
+config :crosswake, :sigra, %{enabled: true}
 
 # Wire the host's flag source: the Rulestead adapter resolves this at runtime via
 # Application.get_env(:crosswake, :rulestead_flag_source) and calls get_flag/1. The
