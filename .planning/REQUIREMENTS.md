@@ -71,6 +71,7 @@ must look right on day one, so they are generated and owned by the host, never i
 - **Capture & Device Controls pack** — camera, scanner, document scan, media upload, permission-request UX, evidence availability.
 - **Commerce/Paywall productionization** — storefront adapters, entitlement refresh, purchase-evidence ingestion.
 - **Offline Sync / Native Storage productization** (SYNCP-01, NTV-01) — native storage budgets, durable journals, outboxes, retry, conflict handling.
+- **Native Controls Pack 2 — Themable Web Control Equivalents** (THEME-*, WCTRL-*, reuse FALL-*) — a brand-themable, host-owned, generator-emitted WEB equivalent for every delegated native control; extends the token system by elevation/z/motion/border-width/padding and generalizes v20's FALL host-owned fallback family. Planted as SEED-005; the web-side follow-on to this milestone.
 - **`crosswake_dashboard`** (DASH-01) — operator route/support/telemetry/audit/release inspection surface.
 - **SEED-004** — companion clean-room proof harness cosmetics. The real defect was fixed in v18 Phase 144; the harness only runs for companion Hex publishes, a surface v20 does not touch.
 
