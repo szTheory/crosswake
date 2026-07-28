@@ -30,6 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
 
 - [ ] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
+- [ ] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
 - [ ] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
 - [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
 - [ ] **Phase 156: Native Menu & Action-Button Control** - Ship the first genuinely-new native control on both iOS and Android, proven via committed contract vectors.
@@ -217,6 +218,52 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [ ] 153-04-PLAN.md — Durable guards: merge-blocking mirror parity gate + honest `release.status --live` (`:missing` vs `:unavailable`)
+
+### Phase 153.1: CI Gate Integrity & Runner Cost *(INSERTED)*
+
+**Goal**: The merge gate cannot report green while something is red, and the CI tax paid per-PR is
+cut before Phase 154 — the milestone's largest phase — starts landing PRs against it. Three required
+check *names* are each emitted by two workflows, and branch protection matches by string, so a red
+run can be masked by a green one; 20 test files are excluded by every CI lane and by no local
+default, so they run only on laptops (this is how a genuinely red gate sat on `main` unnoticed until
+found by hand, fixed in #89). Separately, CI spends ~25,500 runner-seconds (~7 h) per push to run an
+88-second suite, and the spend is mostly macOS *queue* time for jobs that never invoke an Apple
+toolchain.
+**Depends on**: Nothing functionally — this is infrastructure and shares no code with Phase 153.
+Sequenced after it only because seven in-flight PRs are validating against the workflow files this
+phase rewrites. It is **not** blocked on the human-gated `v0.2.0` mirror tag push (153-02).
+**Requirements**: GATE-01, GATE-02, GATE-03, RUNNER-01, RUNNER-02, CACHE-01, CACHE-02
+**Success Criteria** (what must be TRUE):
+
+  1. No two workflow jobs emit the same `merge-blocking` check name, and `check_required_checks_registered.sh` fails if that ever stops being true — asserting uniqueness, not just presence.
+  2. The 20 `:requires_example_host` test files run on a named CI lane, and `mix test` locally excludes the same tag set CI does, so local and CI agree on what "the suite passed" means.
+  3. Every job on `macos-*` is there because it demonstrably invokes an Apple toolchain, justified per job by following each `run:` into the scripts it calls — never by grepping the workflow file.
+  4. Every workflow declares `timeout-minutes`, so a hang cannot hold a scarce macOS runner for the 6-hour default while other jobs queue behind it.
+  5. Elixir lanes restore `deps/` and `_build` from caches keyed on `os|arch|otp|elixir|MIX_ENV|hash(mix.lock)`, and a structural test rejects any key missing a dimension.
+  6. Before/after runner-seconds are measured with re-derivable commands and reported honestly, including what remains attributable to the out-of-scope `CONSOL-*` work.
+
+**Scope note**: A deliberately narrow slice of SEED-007. `CONSOL-*` (39 workflow files → ~4, change
+detection, required-context topology), the merge-queue decision, `FLAKE-*`, and `DX-*` stay planted.
+Test sharding is an explicit **non-goal** — 1,093 tests at ~12 ms each means per-shard setup exceeds
+the execution saved.
+
+**Plans**: 0/3 plans executed
+
+Plans:
+**Wave 1**
+
+- [ ] 153.1-01-PLAN.md — GATE: de-duplicate the three colliding check names, assert uniqueness, give `:requires_example_host` a real lane, correct the stale audit header (GATE-01..03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 153.1-02-PLAN.md — RUNNER: per-job Apple-toolchain audit, move non-Apple jobs to ubuntu, `timeout-minutes` everywhere, structural guard (RUNNER-01, RUNNER-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 153.1-03-PLAN.md — CACHE: repair the dead/unsafe caches, one composite setup action, correct key dimensions, measured hit rate (CACHE-01, CACHE-02)
+
+*Waves are serial by necessity: all three plans edit `.github/workflows/`, so parallel execution
+would conflict and, under `strict: true`, re-invalidate each other's in-flight runs.*
 
 ### Phase 154: The Control-Contract Seam
 
