@@ -19,21 +19,25 @@
 > This is `emulator evidence` per the
 > [support-truth label legend](support_matrix.md#support-truth-label-legend).
 
-Three runtimes, one shared backend, starting at the showcase hub:
+One shared backend, starting at the showcase hub:
 
 <img
-  src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/three-runtime-montage.png"
-  alt="Three-runtime Crosswake comparison: web (localhost:4700), iOS Simulator (emulator evidence — advisory native, not a physical device), Android Emulator (emulator evidence — advisory native, not a physical device)"
+  src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/web-home.png"
+  alt="Crosswake showcase hub at localhost:4700 — the SaaS/Admin, Field Service, and Learning/Training lanes with route-owner and support-truth labels"
   width="900"
 />
 
-*Advisory native evidence — simulator/emulator, not a physical device.*
+Then watch `bin/see-it-run.sh` boot the shared backend and open the browser:
 
 <img
   src="https://raw.githubusercontent.com/szTheory/crosswake/main/brandbook/collateral/see-it-run/see-it-run.gif"
-  alt="Screen recording: bin/see-it-run.sh boots the backend, prints the banner, and opens the browser — emulator evidence of all three runtimes connecting"
+  alt="Screen recording: bin/see-it-run.sh boots the shared backend, prints the banner, and opens the browser at localhost:4700"
   width="900"
 />
+
+The web runtime is proven; iOS Simulator and Android Emulator connect to the same
+backend as advisory `emulator evidence` — compared side by side in the
+[Compare All Three Runtimes](#compare-all-three-runtimes-web-ios-android) table below.
 
 Showcase screenshots explain the product surface; route-tour assertions prove
 route-owner semantics before screenshots are written.
