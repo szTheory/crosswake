@@ -228,6 +228,41 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `dx-ux`
 - `e2e-testing`
 
+### Later: CI/CD Performance & Gate Integrity (v21.0-or-later)
+
+**Status:** LATER — planted as [SEED-007](seeds/SEED-007-ci-cd-performance.md). Not scheduled; infrastructure, not product. The `GATE-*` category is **severable and could be pulled forward on its own** — it is a correctness fix, not an optimization.
+
+**Objective**
+- Cut CI from ~25,500 runner-seconds (~7 h) per push toward ~2,000–3,000 **with the full proof set intact**, and close three gate-integrity holes the waste is currently hiding.
+- Preserve per-phase proof job names, logs, and artifacts — evidence is a product feature here. What consolidates is workflow *files* (39 → ~4) and required *contexts* (22 → few), never the proof jobs themselves.
+
+**Why now**
+- Measured 2026-07-28: 75 checks/PR against a peer-median of 9 (plug ships 2); the entire Elixir suite is 1,093 tests in ~43–88 s, so the spend is setup/compile/native, not testing.
+- **The cost is queue, not compute.** `phase43`'s merge-blocking proof measured **2,230 s queued / 180 s executed** on `macos-15`; ubuntu peers queue in 4–8 s. **14 of 18 macOS PR jobs never touch an Apple toolchain** — moving them to ubuntu is ~82% of the win.
+- Three correctness holes found while measuring: (1) three required check *names* are each emitted by two different workflows, and branch protection matches by string — a red run can be masked by a green one wearing the same name; (2) 20 `:requires_example_host` test files run **only on laptops** (no CI lane runs them), which is how the red gate fixed in #89 sat on `main` unnoticed; (3) leaked `Application.put_env` global state made those same tests pass in a full suite and fail in isolation.
+- `strict: true` + 22 required contexts + ~7 h/push taxes every future milestone: draining 6 individually-green PRs took ~2 h of wall-clock.
+
+**Key outputs (pre-staged; see SEED-007 for the full research-backed shape)**
+- `OBS-*` baseline instrumentation FIRST (queue-vs-exec timing, cache hit rate, runner-class split) so every later claim cites a before/after.
+- `GATE-*` de-duplicate colliding check names; assert **uniqueness** in `check_required_checks_registered.sh`; give `:requires_example_host` a real CI lane and align the local default exclude.
+- `RUNNER-*` non-Apple macOS jobs → ubuntu; `timeout-minutes` everywhere (`phase79` runs `xcodebuild` with none — a hang holds a scarce macOS runner for 6 h).
+- `CACHE-*` `deps`+`_build` keyed `os|arch|otp|elixir|MIX_ENV|hash(mix.lock)`; Gradle/SPM/Xcode caching. Only 6 of 39 workflows cache anything today and **none cache `deps/`**.
+- `CONSOL-*` a `setup-elixir` composite (the setup block is copy-pasted ~40×) + required-check topology.
+- `FLAKE-*` `example_host.ex` global-state isolation; delete the nested `mix test` inside an `async: true` module.
+
+**Explicit non-goals**
+- Do **not** shard the Elixir suite. At ~12 ms/test, per-shard setup exceeds the execution saved; Ecto measured a 31% regression and zero of 15 surveyed Elixir projects partition.
+- Do **not** workflow-level `paths:`-filter a required context — a skipped required check hangs the PR on "Expected — Waiting for status" forever.
+
+**Depends on**
+- Nothing. This is infrastructure, not product, and can run in parallel with any product milestone. `GATE-*` is severable and pullable forward on its own.
+- Soft prerequisite *for* any milestone expected to land many PRs — `strict: true` + 22 required contexts + ~7 h/push serializes concurrent work into hours.
+
+**Risk tags**
+- `ci-ops`
+- `dx-ux`
+- `release-safety`
+
 ### Shipped: Threadline Audit Capstone (v7.0)
 
 **Status:** SHIPPED — 2026-06-09 (Phases 91-98). Cross-boundary `thread_id` propagation (Plug/telemetry, zero new deps), opt-in host-owned PII-free append-only audit ledger with ProvenanceLane (`mix crosswake.gen.audit`), and a text-only operator surface (`mix crosswake.threadline`). LiveDashboard timeline deferred to a future `crosswake_dashboard` package. Canonical definition in `.planning/threads/threadline-audit.md`.
@@ -280,6 +315,7 @@ The current product-DX arc is **showcase first, controls next**. v19.0 should tu
 - `v19.0 Showcase Apps & Capability Map` precedes `v20.0 Native Controls Pack 1` because examples should expose the real capability gaps before Crosswake widens official native-control APIs.
 - `v20.0 Native Controls Pack 1` precedes capture/device controls, commerce/paywall productionization, operator dashboard, and offline-sync/native-storage productization unless v19 evidence reprioritizes the sequence.
 - `Native Controls Pack 2 — Themable Web Control Equivalents` (SEED-005) depends on v20's `Bridge.push/3` control-contract seam and the `gen.native_controls_ui` host-owned fallback generator; it is the web-side generalization of v20's FALL family and can sequence after Pack 1 or interleave with capture/device controls as adopter evidence dictates.
+- `CI/CD Performance & Gate Integrity` (SEED-007) depends on nothing — it is infrastructure and can run in parallel with any product milestone. Its `GATE-*` category is severable and could be pulled forward independently (correctness, not optimization). It is a *soft prerequisite* for any milestone expected to land many PRs, since `strict: true` + 22 required contexts + ~7 h/push serializes concurrent work into hours.
 - `Native Navigation Shell` (SEED-006) depends on v20 shell maturity + the manifest/drift-gate machinery; it is a DISTINCT axis from the controls packs (native app-shell chrome + `nav_graph`, not in-page controls) and carries an explicit consumer-grade positioning shift. Sequence after v20 Pack 1; independent of SEED-005 (they can proceed in either order).
 
 ## Decision Notes
@@ -335,6 +371,7 @@ Every milestone close must update or verify:
 - How far "themable out of the box" should extend before the adopter drops to fully custom (the 95%/5% seam), and whether the design-token drift gate should police radius/shadow/z drift, not just color — surfaced by SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents).
 - **POSITIONING DECISION (ratify at Native Navigation Shell activation):** whether to formally shift Crosswake's stated positioning toward consumer-grade "feels-native" (native shell fidelity, NOT app parity) — implying enumerated edits to `brandbook/BRAND-SPEC.md`, README "What this is not", and PROJECT.md core-value, plus a new native-shell-proven support tier. Surfaced + scoped by SEED-006 (the north-star shift is recorded there; the brand-doc edits are deliberately deferred to activation).
 - **Fidelity ceiling / web↔native back-stack sync** — the acceptable degree of "feels native ~90-95%" and the design of the native-authoritative sync subsystem (the load-bearing OPEN problem in SEED-006).
+- **PROOF-CULTURE vs CI COST (decide at CI/CD milestone activation):** whether to adopt a **merge queue** (`on: merge_group:`) so cheap proofs run per-push and the FULL proof set runs once per merge against the real merge commit. It is the highest-leverage option available and also the biggest semantic change to "every proof runs on every change" — nothing lands unproven either way, but the boundary moves from every push to every merge. Related and narrower: how far to consolidate 22 granular required contexts toward one aggregating gate, given the repo's existing `list_merge_blocking_checks.py` → `register_required_checks.sh` auto-discovery machinery is built around the granular model. Surfaced + scoped by SEED-007.
 
 ---
-*Last updated: 2026-07-27 — recorded SEED-005 (Native Controls Pack 2 — Themable Web Control Equivalents) and SEED-006 (Native Navigation Shell) as `Later:` Strategic Queue candidates + Dependency Graph edges + Open Research Flags, each from a deep multi-lens research fan-out. SEED-006 carries an explicit consumer-grade positioning north-star shift (brand-doc edits deferred to activation). v19.0 Showcase Apps & Capability Map active; v20.0 Native Controls Pack 1 remains the logical follow-on.*
+*Last updated: 2026-07-28 — recorded SEED-007 (CI/CD Performance & Gate Integrity) as a `Later:` Strategic Queue candidate + Dependency Graph edge + Open Research Flag, from a measured baseline plus a three-lens research fan-out (CI topology/cost, test-suite determinism, external Elixir-OSS practice). Key reframe: the ~7 h/push cost is macOS QUEUE time, not compute, and 14 of 18 macOS PR jobs need no Apple toolchain; three gate-integrity holes (duplicate required-check names, CI-invisible `:requires_example_host` tests, leaked global test state) were found while measuring and are severable from the performance work. Prior entry 2026-07-27: SEED-005 (Native Controls Pack 2) and SEED-006 (Native Navigation Shell) recorded as `Later:` candidates; SEED-006 carries an explicit consumer-grade positioning north-star shift (brand-doc edits deferred to activation). v19.0 Showcase Apps & Capability Map active; v20.0 Native Controls Pack 1 remains the logical follow-on.*
