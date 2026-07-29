@@ -1,10 +1,26 @@
 name: Required Checks Audit
 # Scheduled sentinel for the "declared merge-blocking but not actually registered as required" gap
-# (PROOF-03 follow-on). Phase 135's detector found only 2/20 declared merge-blocking lanes are
-# actually registered required checks on main — the other 18 (incl. merge-blocking-native-behavioral-proof)
-# are advisory in practice: they run, can go red, and a PR still merges. This workflow runs the
-# existing fail-closed detector (script/check_required_checks_registered.sh) daily with an admin-
-# scoped PAT (a PR-scoped GITHUB_TOKEN CANNOT read branch protection) and self-pages on drift.
+# (PROOF-03 follow-on).
+#
+# THE INVARIANT THIS ENFORCES (stated as an invariant on purpose — an earlier version of this
+# header quoted a point-in-time count, "only 2/20 lanes are registered", which was Phase 135's
+# finding and went stale the moment the gap was closed):
+#
+#   1. Every job whose name contains "merge-blocking" IS registered as a required status check
+#      on main. A declared-but-unregistered lane is advisory in practice — it runs, it can go
+#      red, and the PR still merges.
+#   2. Every such name is emitted by exactly ONE job. Branch protection matches required contexts
+#      by string, so two jobs sharing a name are indistinguishable to GitHub and a red run can be
+#      masked by a green one. Added in Phase 153.1 (GATE-01/GATE-02) after three collisions were
+#      found surviving a detector that checked presence but not uniqueness.
+#
+# Both are asserted by script/check_required_checks_registered.sh, which this workflow runs daily
+# with an admin-scoped PAT (a PR-scoped GITHUB_TOKEN CANNOT read branch protection) and self-pages
+# on drift. The uniqueness half is a pure local check on the workflow files, so it still holds even
+# when the branch-protection read is UNVERIFIED.
+#
+# Do not restate current counts here. `python3 script/list_merge_blocking_checks.py | wc -l` is the
+# live answer; anything written down goes stale.
 #
 # This is the standing automation that discharges 134-UAT Test #1 claim 3 (registration) with zero
 # recurring human verification: instead of a human re-checking branch protection, CI proves it daily

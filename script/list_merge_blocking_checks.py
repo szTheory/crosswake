@@ -12,7 +12,15 @@ adding a new merge-blocking lane needs no new registration code (PROOF-03 follow
 
 Names containing an unresolved `${{ ... }}` expression are skipped (can't be a literal context).
 
-Usage: list_merge_blocking_checks.py  ->  prints one context per line (sorted, de-duped)
+Usage:
+  list_merge_blocking_checks.py             -> one context per line (sorted, de-duped)
+  list_merge_blocking_checks.py --emitters  -> "<context>\t<workflow path>\t<job id>" per EMITTER,
+                                               sorted, NOT de-duped
+
+`--emitters` exists because the default output de-duplicates, which makes a name emitted by two
+different jobs structurally invisible here — and branch protection matches required contexts by
+STRING, so two jobs sharing a name means a red run can be masked by a green one. The gate fails
+open. check_required_checks_registered.sh consumes `--emitters` to assert uniqueness.
 """
 import glob
 import sys
@@ -46,7 +54,9 @@ except ImportError:
 
 
 def main() -> int:
+    emitters_mode = "--emitters" in sys.argv[1:]
     contexts = []
+    emitters = []
     paths = sorted(glob.glob(".github/workflows/*.yml") + glob.glob(".github/workflows/*.yaml"))
     for path in paths:
         try:
@@ -69,6 +79,12 @@ def main() -> int:
                 continue
             if "merge-blocking" in name.lower():
                 contexts.append(name)
+                emitters.append((name, path, jid))
+
+    if emitters_mode:
+        for name, path, jid in sorted(emitters):
+            print(f"{name}\t{path}\t{jid}")
+        return 0
 
     for c in sorted(set(contexts)):
         print(c)

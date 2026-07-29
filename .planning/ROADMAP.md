@@ -241,6 +241,7 @@ phase rewrites. It is **not** blocked on the human-gated `v0.2.0` mirror tag pus
   4. Every workflow declares `timeout-minutes`, so a hang cannot hold a scarce macOS runner for the 6-hour default while other jobs queue behind it.
   5. Elixir lanes restore `deps/` and `_build` from caches keyed on `os|arch|otp|elixir|MIX_ENV|hash(mix.lock)`, and a structural test rejects any key missing a dimension.
   6. Before/after runner-seconds are measured with re-derivable commands and reported honestly, including what remains attributable to the out-of-scope `CONSOL-*` work.
+  7. **Wall-clock time-to-green for a single push is measured before and after, and is the headline number.** Measured baseline 2026-07-28: **34.9 minutes across 41 workflow runs** for the final commit of docs-only PR #90. Runner-seconds is a billing metric; wall-clock is the one a human waits through, and the two move independently — parallel lanes cut latency without cutting spend, and queue time costs latency while billing nothing. Target for this phase: **under 15 minutes**, achieved by removing macOS queue time rather than by removing proofs.
 
 **Scope note**: A deliberately narrow slice of SEED-007. `CONSOL-*` (39 workflow files → ~4, change
 detection, required-context topology), the merge-queue decision, `FLAKE-*`, and `DX-*` stay planted.

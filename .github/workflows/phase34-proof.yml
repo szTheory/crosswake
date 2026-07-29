@@ -60,7 +60,7 @@ jobs:
     # the weekly `schedule` trigger that drives the advisory lane — re-running
     # the hermetic merge gate weekly was pure cost (the hermetic lane gates
     # merges; periodic re-verification adds no signal).
-    name: merge-blocking commerce support proof (hermetic)
+    name: merge-blocking phase34 commerce support proof (hermetic)
     runs-on: macos-15
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
@@ -105,7 +105,7 @@ jobs:
     # job: keep the Linux-runnable advisory placeholders here, and add a
     # separate macos-15 job for the StoreKit-only step, if:-gated on the
     # presence of the StoreKit adapter (see promotion-path commentary above).
-    name: advisory commerce proof (provider/storefront/simulator/device)
+    name: advisory phase34 commerce proof (provider/storefront/simulator/device)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
