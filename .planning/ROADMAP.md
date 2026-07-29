@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
 
 - [ ] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
-- [ ] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
+- [x] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
 - [ ] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
 - [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
 - [ ] **Phase 156: Native Menu & Action-Button Control** - Ship the first genuinely-new native control on both iOS and Android, proven via committed contract vectors.
@@ -217,7 +217,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 153-04-PLAN.md — Durable guards: merge-blocking mirror parity gate + honest `release.status --live` (`:missing` vs `:unavailable`)
+- [x] 153-04-PLAN.md — Durable guards: merge-blocking mirror parity gate + honest `release.status --live` (`:missing` vs `:unavailable`)
 
 ### Phase 153.1: CI Gate Integrity & Runner Cost *(INSERTED)*
 
@@ -248,20 +248,20 @@ detection, required-context topology), the merge-queue decision, `FLAKE-*`, and 
 Test sharding is an explicit **non-goal** — 1,093 tests at ~12 ms each means per-shard setup exceeds
 the execution saved.
 
-**Plans**: 0/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 153.1-01-PLAN.md — GATE: de-duplicate the three colliding check names, assert uniqueness, give `:requires_example_host` a real lane, correct the stale audit header (GATE-01..03)
+- [x] 153.1-01-PLAN.md — GATE: de-duplicate the three colliding check names, assert uniqueness, give `:requires_example_host` a real lane, correct the stale audit header (GATE-01..03)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 153.1-02-PLAN.md — RUNNER: per-job Apple-toolchain audit, move non-Apple jobs to ubuntu, `timeout-minutes` everywhere, structural guard (RUNNER-01, RUNNER-02)
+- [x] 153.1-02-PLAN.md — RUNNER: per-job Apple-toolchain audit, move non-Apple jobs to ubuntu, `timeout-minutes` everywhere, structural guard (RUNNER-01, RUNNER-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 153.1-03-PLAN.md — CACHE: repair the dead/unsafe caches, one composite setup action, correct key dimensions, measured hit rate (CACHE-01, CACHE-02)
+- [x] 153.1-03-PLAN.md — CACHE: repair the dead/unsafe caches, one composite setup action, correct key dimensions, measured hit rate (CACHE-01, CACHE-02)
 
 *Waves are serial by necessity: all three plans edit `.github/workflows/`, so parallel execution
 would conflict and, under `strict: true`, re-invalidate each other's in-flight runs.*
@@ -338,7 +338,8 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
-| 153. iOS Mirror Unblock | v20.0 | 2/4 | In Progress|  |
+| 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
+| 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
 | 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
 | 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
