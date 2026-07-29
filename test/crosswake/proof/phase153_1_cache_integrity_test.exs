@@ -196,6 +196,85 @@ defmodule Crosswake.Proof.Phase153_1CacheIntegrityTest do
              "miscalibrated and every other assertion here is suspect"
   end
 
+  # True when a shell snippet retries something that must never be retried.
+  # Exposed so the negative control below exercises the same code path the real
+  # assertion uses — a predicate that matches nothing would make the assertion
+  # worthless while looking green.
+  def retries_a_proof?(text) do
+    # Comments must be stripped first. This very file's action.yml explains, in a
+    # comment, that the retry must never wrap `mix test` — and an unstripped match
+    # flagged that explanation as a violation. Prose about a rule is not a breach
+    # of it.
+    code =
+      text
+      |> String.split("\n")
+      |> Enum.reject(&Regex.match?(~r/^\s*#/, &1))
+      |> Enum.join("\n")
+
+    loop = ~r/for\s+\w*attempt\w*\s+in|while\s+\[\s*"?\$?\w*attempt|until\s+mix/i
+    proof = ~r/\bmix\s+(test|closeout\.verify)\b|verify_[a-z_]*\.sh/
+
+    Regex.match?(loop, code) and Regex.match?(proof, code)
+  end
+
+  test "the deps.get retry never wraps a test, proof, or gate invocation" do
+    # A bounded retry around `mix deps.get` is defensible: it wraps a network call
+    # to hex.pm, and a package that genuinely does not exist fails all attempts
+    # identically. The same pattern around `mix test` or a proof script WOULD hide
+    # a real defect behind a second attempt — the failure mode the repo's
+    # no-auto-retry rule exists to prevent. This asserts the pattern stays put.
+    offenders =
+      for f <- workflow_files(),
+          block <- String.split(File.read!(f), ~r/^\s*- /m),
+          retries_a_proof?(block) do
+        "#{f}\n    #{String.trim(String.slice(block, 0, 200))}"
+      end
+
+    assert offenders == [],
+           "A proof/test/gate invocation appears inside a retry construct. Retrying " <>
+             "a dependency fetch hides nothing; retrying a proof hides defects:\n\n" <>
+             Enum.join(offenders, "\n\n")
+  end
+
+  test "negative control — the retry detector fires on a proof wrapped in a loop" do
+    bad = """
+    run: |
+      for attempt in 1 2 3; do
+        if mix test test/crosswake/proof/some_proof_test.exs; then exit 0; fi
+      done
+    """
+
+    assert retries_a_proof?(bad),
+           "the detector missed a `mix test` inside a retry loop, so the assertion " <>
+             "above would pass no matter what anyone added"
+  end
+
+  test "negative control — the retry detector allows the deps.get retry we ship" do
+    ok = """
+    run: |
+      for attempt in 1 2 3; do
+        if mix deps.get; then exit 0; fi
+      done
+    """
+
+    refute retries_a_proof?(ok),
+           "the detector flags the legitimate dependency-fetch retry, so it is " <>
+             "miscalibrated and would block a defensible pattern"
+  end
+
+  test "the hex registry cache is shared, not scoped, and that is deliberate" do
+    action = File.read!("#{@actions_dir}/setup-elixir-cache/action.yml")
+
+    assert action =~ ~r/key: hex-registry-\$\{\{ runner\.os \}\}/,
+           "the ~/.hex cache should be keyed on os/arch only"
+
+    refute action =~ ~r/hex-registry-\$\{\{ steps\.scope/,
+           "~/.hex must NOT carry the workflow+job scope. It holds registry metadata " <>
+             "and tarballs, not compiled artifacts, so sharing one entry across lanes " <>
+             "is safe and keeps storage down. Scoping it would multiply a large cache " <>
+             "across ~19 lanes for no safety benefit."
+  end
+
   test "the exemption list is exactly the two security-sensitive release files" do
     assert Enum.sort(@exempt) == ["hex-publish.yml", "release-please.yml"],
            "Exemptions must stay deliberate. Adding one hides a real cache-safety " <>

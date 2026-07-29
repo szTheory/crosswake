@@ -97,7 +97,51 @@ runs:
         restore-keys: |
           build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
 
+    # ~/.hex is Mix's REGISTRY cache, and it is deliberately NOT scoped per
+    # workflow+job the way deps/_build are.
+    #
+    # Why it exists: `mix deps.get` contacts hex.pm even when deps/ restored
+    # cleanly, so a registry blip fails a job whose packages are already on disk.
+    # Observed on PR #98 — both caches hit, then:
+    #     Failed to fetch record for nimble_options from registry
+    #     :timeout
+    #     ** (Mix) Unknown package nimble_options in lockfile
+    # A docs-only change, red, for a reason entirely outside the repo.
+    #
+    # Why sharing is safe here, unlike deps/_build: this holds downloaded
+    # registry metadata and package tarballs, not compiled artifacts. `deps.get`
+    # only fetches what mix.exs/mix.lock declare, so a lane that caches the
+    # rulestead tarball cannot cause a hermetic absence proof to load rulestead —
+    # nothing from ~/.hex reaches _build unless it was declared. Sharing one
+    # entry across lanes maximises hit rate and minimises storage against the
+    # 10 GB cap.
+    - id: hex-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.hex
+        key: hex-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          hex-registry-${{ runner.os }}-${{ runner.arch }}-
+
     - name: Install Elixir dependencies
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: mix deps.get
+      # Bounded retry, and note carefully what it does NOT cover: this wraps a
+      # dependency FETCH, which is a network call to a third-party service. It is
+      # not a proof, a test, or a gate. The repo rule against auto-retrying flaky
+      # lanes exists so a real defect cannot be papered over by a second attempt;
+      # retrying a socket timeout to hex.pm hides no defect of ours, and a package
+      # that genuinely does not exist fails all three attempts identically.
+      #
+      # Never extend this pattern to a `mix test` or a proof script.
+      run: |
+        set -euo pipefail
+        for attempt in 1 2 3; do
+          if mix deps.get; then exit 0; fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "::warning::mix deps.get failed (attempt ${attempt}/3) — retrying in $((attempt * 10))s. This retries a hex.pm fetch only."
+            sleep $((attempt * 10))
+          fi
+        done
+        echo "::error::mix deps.get failed 3 times. This is not a transient registry blip."
+        exit 1
