@@ -97,7 +97,66 @@ runs:
         restore-keys: |
           build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
 
+    # Hex TARBALL cache, deliberately NOT scoped per workflow+job the way
+    # deps/_build are.
+    #
+    # Why it exists: `mix deps.get` contacts hex.pm even when deps/ restored
+    # cleanly, so a registry blip fails a job whose packages are already on disk.
+    # Observed on PR #98 — both caches hit, then:
+    #     Failed to fetch record for nimble_options from registry
+    #     :timeout
+    #     ** (Mix) Unknown package nimble_options in lockfile
+    # A docs-only change, red, for a reason entirely outside the repo.
+    #
+    # Why sharing is safe here, unlike deps/_build: these are downloaded source
+    # tarballs, not compiled artifacts. `deps.get` only fetches what
+    # mix.exs/mix.lock declare, so a lane that caches the rulestead tarball cannot
+    # cause a hermetic absence proof to load rulestead — nothing here reaches
+    # _build unless it was declared. One shared entry maximises hit rate and keeps
+    # storage down against the 10 GB cap.
+    #
+    # PATH IS ~/.hex/packages, NOT ~/.hex. This is load-bearing and was learned
+    # the hard way: caching all of ~/.hex restores `cache.ets`, Mix's registry
+    # ETS dump, and a restored copy came back unreadable:
+    #
+    #     Error opening ETS file /home/runner/.hex/cache.ets: :badfile
+    #     Request failed (:timeout)
+    #     ** (Mix) Package fetch failed and no cached copy available
+    #        (https://repo.hex.pm/tarballs/phoenix_live_view-1.1.30.tar)
+    #
+    # That is strictly WORSE than no cache. With no registry cache Mix refetches
+    # metadata and moves on; with a corrupt one it cannot read the registry at
+    # all and is forced into exactly the live fetch this step exists to avoid.
+    # ~/.hex/packages holds the downloaded TARBALLS — the expensive part, and the
+    # thing the error above actually wanted — and is inert data with no ETS to
+    # corrupt. cache.ets is small and cheap to rebuild; never cache it.
+    - id: hex-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.hex/packages
+        key: hex-packages-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          hex-packages-${{ runner.os }}-${{ runner.arch }}-
+
     - name: Install Elixir dependencies
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: mix deps.get
+      # Bounded retry, and note carefully what it does NOT cover: this wraps a
+      # dependency FETCH, which is a network call to a third-party service. It is
+      # not a proof, a test, or a gate. The repo rule against auto-retrying flaky
+      # lanes exists so a real defect cannot be papered over by a second attempt;
+      # retrying a socket timeout to hex.pm hides no defect of ours, and a package
+      # that genuinely does not exist fails all three attempts identically.
+      #
+      # Never extend this pattern to a `mix test` or a proof script.
+      run: |
+        set -euo pipefail
+        for attempt in 1 2 3; do
+          if mix deps.get; then exit 0; fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "::warning::mix deps.get failed (attempt ${attempt}/3) — retrying in $((attempt * 10))s. This retries a hex.pm fetch only."
+            sleep $((attempt * 10))
+          fi
+        done
+        echo "::error::mix deps.get failed 3 times. This is not a transient registry blip."
+        exit 1
