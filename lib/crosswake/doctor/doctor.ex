@@ -153,7 +153,7 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
-    phase_154_findings = legacy_capability_id_findings(manifest)
+    phase_154_findings = legacy_capability_id_findings(manifest) ++ capability_rebuild_findings(manifest)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -1990,6 +1990,63 @@ defmodule Crosswake.Doctor do
       |> Enum.filter(&Map.has_key?(family_id_by_legacy_id, &1))
       |> Enum.map(&legacy_capability_id_finding(route, &1, family_id_by_legacy_id))
     end)
+  end
+
+  # D-49: the one genuinely missing CTRL-05 leg — doctor had no capability-level
+  # rebuild finding at all (capability_posture_findings/1 groups by proof_class
+  # only, and native_rebuild_findings/2 is fed exclusively by commerce
+  # corridors). A developer with a rebuild: :native_required or
+  # :companion_required capability declared on a route now gets named rebuild
+  # guidance, mirroring native_rebuild_findings/2's exact
+  # check(:warning, code, subject, message, hint, details) shape (no new
+  # aggregation mechanism).
+  #
+  # Scoped to capabilities that are BOTH non-:none rebuild AND declared on at
+  # least one route in the compiled manifest — a capability the developer has
+  # not actually taken on gets no warning. Ordering is deterministic (sorted by
+  # capability id, then route id) so repeated runs over the same manifest
+  # produce identically ordered findings.
+  defp capability_rebuild_findings(nil), do: []
+
+  defp capability_rebuild_findings(manifest) do
+    routes = Map.values(manifest.routes)
+
+    manifest.capability_registry
+    |> Map.values()
+    |> Enum.filter(&(&1.rebuild != :none))
+    |> Enum.sort_by(& &1.id)
+    |> Enum.flat_map(fn capability ->
+      routes
+      |> Enum.filter(&(capability.id in &1.capabilities))
+      |> Enum.sort_by(& &1.id)
+      |> Enum.map(&capability_rebuild_finding(&1, capability))
+    end)
+  end
+
+  defp capability_rebuild_finding(route, capability) do
+    check(
+      :warning,
+      "bridge.capability.native_rebuild_required",
+      "route:#{route.id}",
+      "route #{route.id} declares capability #{capability.id}, which requires a #{rebuild_shell_label(capability.rebuild)} rebuild before this control ships",
+      capability_rebuild_hint(capability.rebuild),
+      %{
+        route_id: route.id,
+        capability_id: capability.id,
+        rebuild: Atom.to_string(capability.rebuild)
+      }
+    )
+  end
+
+  defp rebuild_shell_label(:native_required), do: "native"
+  defp rebuild_shell_label(:companion_required), do: "companion"
+
+  defp capability_rebuild_hint(:native_required) do
+    "rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild"
+  end
+
+  defp capability_rebuild_hint(:companion_required) do
+    "publish or upgrade the companion package that backs this capability — this does not require a native shell rebuild"
   end
 
   defp legacy_capability_id_finding(route, legacy_id, family_id_by_legacy_id) do

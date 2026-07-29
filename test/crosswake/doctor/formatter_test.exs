@@ -294,6 +294,35 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "details: family_capability_id=haptics, legacy_capability_id=haptics.impact, route_id=saas-approval"
   end
 
+  test "renders the bridge.capability.native_rebuild_required finding without a fall-through (Phase 154, D-49)" do
+    report = %{
+      status: :ok,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "bridge.capability.native_rebuild_required",
+          check: "route:library",
+          message:
+            "route library declares capability file_picker, which requires a native rebuild before this control ships",
+          hint:
+            "rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild",
+          details: %{
+            route_id: "library",
+            capability_id: "file_picker",
+            rebuild: "native_required"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[warning] route:library (bridge.capability.native_rebuild_required)"
+    assert output =~ "file_picker"
+    assert output =~ "hint: rebuild and resubmit the native shell binary"
+    assert output =~ "details: capability_id=file_picker, rebuild=native_required, route_id=library"
+  end
+
   test "formats publish readiness as a concise sidecar section ordered by blocking posture" do
     publish_readiness =
       PublishReadiness.run(

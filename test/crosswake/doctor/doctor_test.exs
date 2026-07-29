@@ -1287,6 +1287,30 @@ defmodule Crosswake.DoctorTest do
     end
   end
 
+  defmodule RebuildRequiredRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/native-rebuild", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "native-rebuild",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["file_picker"]
+        ]
+      )
+
+      get("/companion-rebuild", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "companion-rebuild",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["notification_token"]
+        ]
+      )
+    end
+  end
+
   describe "legacy capability id doctor advisory (D-58, D-59, D-63)" do
     test "a manifest whose route declares only family ids produces zero legacy-id advisory findings",
          %{target: target, install_manifest_path: install_manifest_path} do
@@ -1357,6 +1381,111 @@ defmodule Crosswake.DoctorTest do
 
       assert legacy_findings |> Enum.map(& &1.details.route_id) |> Enum.sort() ==
                ["legacy-one", "legacy-two"]
+    end
+  end
+
+  describe "capability rebuild finding (D-49, CTRL-05)" do
+    test "a manifest whose declared capabilities are all rebuild: :none produces an empty capability-rebuild findings list",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: FamilyOnlyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert Enum.filter(report.findings, &(&1.code == "bridge.capability.native_rebuild_required")) ==
+               []
+    end
+
+    test "a route declaring a rebuild: :native_required capability produces exactly one finding naming the route, capability, and rebuild class",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "bridge.capability.native_rebuild_required" and
+            finding.details.route_id == "native-rebuild"
+        end)
+
+      assert length(matching) == 1
+
+      [finding] = matching
+      assert finding.message =~ "native-rebuild"
+      assert finding.message =~ "file_picker"
+      assert finding.message =~ "native"
+      assert finding.details.capability_id == "file_picker"
+      assert finding.details.rebuild == "native_required"
+      assert finding.severity == :warning
+    end
+
+    test "a rebuild: :companion_required capability produces a finding whose hint points at the companion rebuild path, not the native one",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      [finding] =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "bridge.capability.native_rebuild_required" and
+            finding.details.route_id == "companion-rebuild"
+        end)
+
+      assert finding.details.capability_id == "notification_token"
+      assert finding.details.rebuild == "companion_required"
+      assert finding.hint =~ "companion package"
+      refute finding.hint =~ "rebuild and resubmit the native shell binary"
+    end
+
+    test "a capability with a non-:none rebuild class declared on no active route produces no finding",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      # media_capture is rebuild: :native_required in the catalog but is not
+      # declared on any route in RebuildRequiredRouter — no finding names it.
+      refute Enum.any?(report.findings, fn finding ->
+               finding.code == "bridge.capability.native_rebuild_required" and
+                 finding.details.capability_id == "media_capture"
+             end)
+    end
+
+    test "repeated runs over the same manifest emit capability-rebuild findings in identical order",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report1 =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      report2 =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      extract = fn report ->
+        report.findings
+        |> Enum.filter(&(&1.code == "bridge.capability.native_rebuild_required"))
+        |> Enum.map(&{&1.details.route_id, &1.details.capability_id})
+      end
+
+      assert extract.(report1) == extract.(report2)
+      assert extract.(report1) != []
     end
   end
 end
