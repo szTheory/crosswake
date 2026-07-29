@@ -48,24 +48,11 @@ jobs:
         if: steps.changes.outputs.relevant != 'true'
         run: echo "No v4.0 closeout-relevant files changed; skipping archived closeout proof."
 
-      - name: Setup BEAM
+      - name: Setup BEAM and restore Elixir caches
         if: steps.changes.outputs.relevant == 'true'
-        uses: erlef/setup-beam@v1
+        uses: ./.github/actions/setup-elixir-cache
         with:
-          elixir-version: "1.19.5"
-          otp-version: "27.3"
-
-      - name: Cache dependencies
-        if: steps.changes.outputs.relevant == 'true'
-        uses: actions/cache@v6
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
-
-      - name: Install dependencies
-        if: steps.changes.outputs.relevant == 'true'
-        run: mix deps.get
+          mix-env: dev
 
       - name: Compile and check warnings
         if: steps.changes.outputs.relevant == 'true'
