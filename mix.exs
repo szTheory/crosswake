@@ -50,7 +50,12 @@ defmodule Crosswake.MixProject do
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
       {:telemetry, "~> 1.0"},
-      {:ex_doc, "~> 0.38", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false},
+      # Phase 154: required by Phoenix.LiveViewTest (element/2, render/1 parsing) the
+      # moment core ships a real Phoenix.LiveViewTest round trip (test/support/
+      # bridge_live_view_case.ex) — phoenix_live_view's own installed runtime raises
+      # naming this exact package if it is absent.
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 
