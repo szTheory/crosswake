@@ -97,8 +97,8 @@ runs:
         restore-keys: |
           build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
 
-    # ~/.hex is Mix's REGISTRY cache, and it is deliberately NOT scoped per
-    # workflow+job the way deps/_build are.
+    # Hex TARBALL cache, deliberately NOT scoped per workflow+job the way
+    # deps/_build are.
     #
     # Why it exists: `mix deps.get` contacts hex.pm even when deps/ restored
     # cleanly, so a registry blip fails a job whose packages are already on disk.
@@ -108,20 +108,35 @@ runs:
     #     ** (Mix) Unknown package nimble_options in lockfile
     # A docs-only change, red, for a reason entirely outside the repo.
     #
-    # Why sharing is safe here, unlike deps/_build: this holds downloaded
-    # registry metadata and package tarballs, not compiled artifacts. `deps.get`
-    # only fetches what mix.exs/mix.lock declare, so a lane that caches the
-    # rulestead tarball cannot cause a hermetic absence proof to load rulestead —
-    # nothing from ~/.hex reaches _build unless it was declared. Sharing one
-    # entry across lanes maximises hit rate and minimises storage against the
-    # 10 GB cap.
+    # Why sharing is safe here, unlike deps/_build: these are downloaded source
+    # tarballs, not compiled artifacts. `deps.get` only fetches what
+    # mix.exs/mix.lock declare, so a lane that caches the rulestead tarball cannot
+    # cause a hermetic absence proof to load rulestead — nothing here reaches
+    # _build unless it was declared. One shared entry maximises hit rate and keeps
+    # storage down against the 10 GB cap.
+    #
+    # PATH IS ~/.hex/packages, NOT ~/.hex. This is load-bearing and was learned
+    # the hard way: caching all of ~/.hex restores `cache.ets`, Mix's registry
+    # ETS dump, and a restored copy came back unreadable:
+    #
+    #     Error opening ETS file /home/runner/.hex/cache.ets: :badfile
+    #     Request failed (:timeout)
+    #     ** (Mix) Package fetch failed and no cached copy available
+    #        (https://repo.hex.pm/tarballs/phoenix_live_view-1.1.30.tar)
+    #
+    # That is strictly WORSE than no cache. With no registry cache Mix refetches
+    # metadata and moves on; with a corrupt one it cannot read the registry at
+    # all and is forced into exactly the live fetch this step exists to avoid.
+    # ~/.hex/packages holds the downloaded TARBALLS — the expensive part, and the
+    # thing the error above actually wanted — and is inert data with no ETS to
+    # corrupt. cache.ets is small and cheap to rebuild; never cache it.
     - id: hex-cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.hex
-        key: hex-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        path: ~/.hex/packages
+        key: hex-packages-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
         restore-keys: |
-          hex-registry-${{ runner.os }}-${{ runner.arch }}-
+          hex-packages-${{ runner.os }}-${{ runner.arch }}-
 
     - name: Install Elixir dependencies
       shell: bash

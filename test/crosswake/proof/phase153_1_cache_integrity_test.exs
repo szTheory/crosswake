@@ -262,13 +262,26 @@ defmodule Crosswake.Proof.Phase153_1CacheIntegrityTest do
              "miscalibrated and would block a defensible pattern"
   end
 
-  test "the hex registry cache is shared, not scoped, and that is deliberate" do
+  test "the hex cache covers packages/ only — never cache.ets" do
     action = File.read!("#{@actions_dir}/setup-elixir-cache/action.yml")
 
-    assert action =~ ~r/key: hex-registry-\$\{\{ runner\.os \}\}/,
-           "the ~/.hex cache should be keyed on os/arch only"
+    assert action =~ ~r/path: ~\/\.hex\/packages/,
+           "the hex cache must point at ~/.hex/packages (inert tarballs)"
 
-    refute action =~ ~r/hex-registry-\$\{\{ steps\.scope/,
+    refute action =~ ~r/path: ~\/\.hex\s*$/m,
+           "caching all of ~/.hex restores Mix's cache.ets registry dump, which came " <>
+             "back as `:badfile` and left Mix unable to read its registry at all — " <>
+             "strictly worse than no cache, because it forces the live fetch this " <>
+             "step exists to avoid. Cache the tarballs; let cache.ets rebuild."
+  end
+
+  test "the hex packages cache is shared, not scoped, and that is deliberate" do
+    action = File.read!("#{@actions_dir}/setup-elixir-cache/action.yml")
+
+    assert action =~ ~r/key: hex-packages-\$\{\{ runner\.os \}\}/,
+           "the hex packages cache should be keyed on os/arch only"
+
+    refute action =~ ~r/hex-packages-\$\{\{ steps\.scope/,
            "~/.hex must NOT carry the workflow+job scope. It holds registry metadata " <>
              "and tarballs, not compiled artifacts, so sharing one entry across lanes " <>
              "is safe and keeps storage down. Scoping it would multiply a large cache " <>
