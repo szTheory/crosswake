@@ -241,10 +241,25 @@ final class LiveViewContainerViewController: UIViewController, WKNavigationDeleg
         presenterProvider: { [weak self] in self },
         transferCoordinatorProvider: { [weak self] in self?.shell.coordinator.transferCoordinator }
     )
+    // The bridge reply RETURN leg (D-02).
+    //
+    // `WKScriptMessageHandler` is send-only by design: the page posts into the shell
+    // and nothing carries a reply back. Android has been duplex since day one; on iOS
+    // the only way home is evaluating JavaScript against the hook's landing pad in
+    // `priv/static/crosswake.esm.js`.
+    //
+    // CrosswakeShellCore owns WHAT is evaluated and how the envelope is serialized —
+    // a denial message is host-influenced content and string-concatenating it into
+    // evaluated JavaScript would be a script-injection boundary into this app's own
+    // origin. The host owns only "run this script against my WebView".
     private lazy var bridgeChannel = shell.createBridgeChannel(
         session: session,
         transferCoordinator: shell.coordinator.transferCoordinator,
-        replySink: { _ in }
+        evaluateJavaScript: { [weak self] script in
+            Task { @MainActor in
+                self?.webView.evaluateJavaScript(script, completionHandler: nil)
+            }
+        }
     )
     private lazy var webView: WKWebView = {
         let configuration = WKWebViewConfiguration()

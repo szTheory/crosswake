@@ -101,6 +101,18 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 | scanner | native_screen | native_screen | unsupported | unsupported | defer | advisory | companion-required | scanner-native runtime; policy-heavy proof lane | unavailable_capability | defer scanner support until native and proof posture are explicit | [Guide](capabilities.md#explicit-defers) |
 | share | bounded_bridge | bounded_bridge | supported | supported | core | advisory | none | truthful semantic share contract | undeclared_capability | keep content in the Phoenix-owned route until a share family is declared | [Guide](capabilities.md#bounded-bridge) |
 
+## Bridge Reply Delivery
+
+Reply delivery is stated per path. A bounded-bridge family being `supported` means the route is authorized to dispatch it and the denial contract holds; it does not by itself mean a NATIVE reply travels back on every platform yet.
+
+| Reply path | Baseline | Proof Status | Notes |
+|------------|----------|--------------|-------|
+| server-synthesized denial | supported | merge-blocking | Every platform including a plain browser with no shell at all. No shell, an unwired hook, and a shell refusal each resolve to exactly one typed denial; there is no configuration in which a push resolves to silence (CTRL-02). |
+| Android native reply | supported | JVM hermetic proof | The shipped Android shell core has been duplex since day one — the page receives a reply proxy and the reply travels back as a JSON string. |
+| iOS native reply | verification required | merge-blocking | The return leg lands in-repo in Phase 154: the reply sink evaluates JavaScript against the hook's landing pad, with Swift unit tests and committed contract vectors. It reaches adopters with the **Phase 156** native release, which requires a shell rebuild regardless. Until then an iOS route still receives the server-synthesized denial rather than a native reply. |
+
+Fire-and-forget families do not wait on the iOS leg: `haptics.impact` is already present in the shipped closed command enum of both native cores, so its proof needs no native release.
+
 ## Commerce Corridors
 
 | corridor_role | owner_posture | prerequisite_classes | prerequisites | denial_codes | fallback_behavior | proof_class | rebuild_requirement |
