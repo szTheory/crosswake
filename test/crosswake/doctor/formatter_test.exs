@@ -264,6 +264,36 @@ defmodule Crosswake.Doctor.FormatterTest do
              "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
   end
 
+  test "renders the capability.legacy_capability_id advisory without a fall-through (Phase 154, D-58/D-59)" do
+    report = %{
+      status: :ok,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "capability.legacy_capability_id",
+          check: "route:saas-approval",
+          message:
+            "route saas-approval declares the legacy capability id \"haptics.impact\"; the family id \"haptics\" is the vocabulary Crosswake teaches going forward",
+          hint:
+            "declare capabilities: [\"haptics\"] in route policy instead of \"haptics.impact\" — the legacy id keeps authorizing indefinitely (no compile-time warning, no removal); this finding is advisory only and never fails doctor",
+          details: %{
+            route_id: "saas-approval",
+            legacy_capability_id: "haptics.impact",
+            family_capability_id: "haptics"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[warning] route:saas-approval (capability.legacy_capability_id)"
+    assert output =~ "haptics.impact"
+    assert output =~ "haptics"
+    assert output =~ "hint: declare capabilities:"
+    assert output =~ "details: family_capability_id=haptics, legacy_capability_id=haptics.impact, route_id=saas-approval"
+  end
+
   test "formats publish readiness as a concise sidecar section ordered by blocking posture" do
     publish_readiness =
       PublishReadiness.run(

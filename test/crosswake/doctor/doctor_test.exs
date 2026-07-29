@@ -1246,4 +1246,117 @@ defmodule Crosswake.DoctorTest do
       assert finding.details.authority_source == :host_configured_endpoint
     end
   end
+
+  # Phase 154 — D-58/D-59/D-63: doctor's legacy-capability-id advisory
+  defmodule LegacyCapabilityRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/legacy-one", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "legacy-one",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics.impact"]
+        ]
+      )
+
+      get("/legacy-two", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "legacy-two",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics.impact"]
+        ]
+      )
+    end
+  end
+
+  defmodule FamilyOnlyCapabilityRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/family-only", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "family-only",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics"]
+        ]
+      )
+    end
+  end
+
+  describe "legacy capability id doctor advisory (D-58, D-59, D-63)" do
+    test "a manifest whose route declares only family ids produces zero legacy-id advisory findings",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: FamilyOnlyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id")) == []
+    end
+
+    test "a manifest whose route declares a legacy id produces exactly one advisory finding for that route, naming both ids",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "capability.legacy_capability_id" and
+            finding.details.route_id == "legacy-one"
+        end)
+
+      assert length(matching) == 1
+
+      [finding] = matching
+      assert finding.message =~ "haptics.impact"
+      assert finding.message =~ "haptics"
+      assert finding.details.legacy_capability_id == "haptics.impact"
+      assert finding.details.family_capability_id == "haptics"
+    end
+
+    test "the finding severity is advisory (:warning) — never :error — so a legacy declaration never fails doctor (D-58, D-63)",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      legacy_findings =
+        Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id"))
+
+      assert legacy_findings != []
+      assert Enum.all?(legacy_findings, &(&1.severity != :error))
+      assert Enum.all?(legacy_findings, &(&1.severity == :warning))
+    end
+
+    test "two routes declaring the same legacy id produce two findings, one per route",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      legacy_findings =
+        Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id"))
+
+      assert length(legacy_findings) == 2
+
+      assert legacy_findings |> Enum.map(& &1.details.route_id) |> Enum.sort() ==
+               ["legacy-one", "legacy-two"]
+    end
+  end
 end

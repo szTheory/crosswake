@@ -153,6 +153,7 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
+    phase_154_findings = legacy_capability_id_findings(manifest)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -172,6 +173,7 @@ defmodule Crosswake.Doctor do
         phase_95_findings ++
         phase_65_findings ++
         phase_66_findings ++
+        phase_154_findings ++
         publish_findings
 
     %Report{
@@ -1953,6 +1955,58 @@ defmodule Crosswake.Doctor do
       hint: hint,
       details: details
     }
+  end
+
+  # D-58/D-59/D-63: names every route capability declaration that uses a
+  # legacy (dotted-command) id instead of the family id, at advisory
+  # severity only — the legacy declaration keeps authorizing forever, so
+  # this can never fail doctor's exit code.
+  #
+  # This lives here, not as a compile-time deprecation warning, because a
+  # compile-time warning is mechanically impossible where it would matter:
+  # Crosswake.Router's macros only stash route metadata (no validation runs
+  # at router macro-expansion time), Policy.Validator never runs at router
+  # expansion either, and Compiler.emit_warnings/2 is gated behind a flag
+  # that only test support passes. The compiled manifest, read here, is the
+  # only point in the pipeline where "this route declared a legacy id" is
+  # knowable — so doctor's advisory finding is the only honest surface for
+  # this nudge (D-59). Do not "improve" this into a compile-time warning —
+  # there is no hook to attach one to.
+  defp legacy_capability_id_findings(nil), do: []
+
+  defp legacy_capability_id_findings(manifest) do
+    family_id_by_legacy_id =
+      manifest.capability_registry
+      |> Map.values()
+      |> Enum.flat_map(fn capability ->
+        Enum.map(capability.legacy_ids, &{&1, capability.id})
+      end)
+      |> Map.new()
+
+    manifest.routes
+    |> Map.values()
+    |> Enum.flat_map(fn route ->
+      route.capabilities
+      |> Enum.filter(&Map.has_key?(family_id_by_legacy_id, &1))
+      |> Enum.map(&legacy_capability_id_finding(route, &1, family_id_by_legacy_id))
+    end)
+  end
+
+  defp legacy_capability_id_finding(route, legacy_id, family_id_by_legacy_id) do
+    family_id = Map.fetch!(family_id_by_legacy_id, legacy_id)
+
+    check(
+      :warning,
+      "capability.legacy_capability_id",
+      "route:#{route.id}",
+      "route #{route.id} declares the legacy capability id #{inspect(legacy_id)}; the family id #{inspect(family_id)} is the vocabulary Crosswake teaches going forward",
+      "declare capabilities: [#{inspect(family_id)}] in route policy instead of #{inspect(legacy_id)} — the legacy id keeps authorizing indefinitely (no compile-time warning, no removal); this finding is advisory only and never fails doctor",
+      %{
+        route_id: route.id,
+        legacy_capability_id: legacy_id,
+        family_capability_id: family_id
+      }
+    )
   end
 
   defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []
