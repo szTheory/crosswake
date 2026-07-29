@@ -28,7 +28,8 @@
     "kill_switch_active",
     "step_up_required",
     "notification_open_denied",
-    "dependency_missing"
+    "dependency_missing",
+    "shell_unreachable"
   ],
   "manifest_schema_version": "1.1.0",
   "native_runtime_version": "1.0.0",
