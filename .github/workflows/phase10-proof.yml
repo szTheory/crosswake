@@ -13,7 +13,10 @@ on:
 
 jobs:
   phase10-proof:
-    runs-on: macos-15
+    # ubuntu-latest: all three verify_*.sh are 10-line wrappers around `mix run` +
+    # `mix test` against examples/phoenix_host. No Apple toolchain, no macOS host
+    # assumptions (no uname/brew/Xcode paths) — audited per-script, Phase 153.1 RUNNER-01.
+    runs-on: ubuntu-latest
     timeout-minutes: 35
 
     steps:

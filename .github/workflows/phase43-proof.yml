@@ -57,9 +57,6 @@ on:
     # results is visible in the CI dashboard even when no PR has triggered it.
     - cron: "0 6 * * 1"
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
-
 jobs:
   merge-blocking-rulestead-proof:
     # Required branch check. Runs on every PR and push to main. This job MUST
@@ -79,7 +76,7 @@ jobs:
     # proving validate_dependency() == {:error, [:"Elixir.Rulestead"]} — the
     # canonical fail-closed assertion.
     name: merge-blocking rulestead proof (hermetic)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
 

@@ -30,6 +30,7 @@ jobs:
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     outputs:
       # Manifest mode (config-file + manifest-file) emits the PLURAL aggregate
       # `releases_created` — true if ANY package released. Keep it available for
@@ -98,6 +99,7 @@ jobs:
     needs: release-please
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -141,6 +143,7 @@ jobs:
     # release-please cuts a crosswake_rulestead release PR.
     if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
@@ -191,6 +194,7 @@ jobs:
     # release-please cuts a crosswake_rindle release PR.
     if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     # D-13: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver in
@@ -241,6 +245,7 @@ jobs:
     # release-please cuts a crosswake_sigra release PR.
     if: ${{ needs.release-please.outputs.sigra_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     # D-13 / T-137-15: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
@@ -291,6 +296,7 @@ jobs:
     # release-please cuts a crosswake_chimeway release PR.
     if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     # D-13 / T-138-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
@@ -341,6 +347,7 @@ jobs:
     # release-please cuts a crosswake_threadline release PR (THREAD-03).
     if: ${{ needs.release-please.outputs.threadline_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     # D-13 / T-139-12: CROSSWAKE_RELEASE=1 activates the env-conditional crosswake_dep/0 resolver
@@ -388,6 +395,7 @@ jobs:
     needs: [release-please, publish-hex]
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -493,6 +501,7 @@ jobs:
     needs: release-please
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -522,6 +531,7 @@ jobs:
     needs: [release-please, publish-hex, publish-ios-core]
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
     runs-on: macos-15
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -574,6 +584,7 @@ jobs:
     needs: [release-please, publish-hex, publish-android-core]
     if: ${{ contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -639,6 +650,7 @@ jobs:
       - clean-room-proof-android
     if: ${{ always() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -757,6 +769,7 @@ jobs:
     name: Android publish fire-drill (validated-upload -> drop)
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -927,6 +940,7 @@ jobs:
     name: Assert lockstep version coordinates match
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -974,6 +988,7 @@ jobs:
     # D-07: gate on the per-component output, not the aggregate `releases_created`.
     if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -1007,6 +1022,7 @@ jobs:
     # D-07: gate on the per-component output, not the aggregate `releases_created`.
     if: ${{ needs.release-please.outputs.rindle_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -1045,6 +1061,7 @@ jobs:
     # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
     if: ${{ needs.release-please.outputs.sigra_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -1079,6 +1096,7 @@ jobs:
     # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
     if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -1117,6 +1135,7 @@ jobs:
     # D-8 / D-07: gate on the per-component output, not the aggregate `releases_created`.
     if: ${{ needs.release-please.outputs.threadline_release_created == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -1214,6 +1233,7 @@ jobs:
         )
       }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write
@@ -1303,6 +1323,7 @@ jobs:
       - native-release-rollup
     if: ${{ failure() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       issues: write

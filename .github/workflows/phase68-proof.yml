@@ -14,12 +14,24 @@ on:
 jobs:
   android-emulator-advisory:
     name: Advisory Android Emulator Lane
-    runs-on: macos-15
+    # ubuntu-latest, not macos-15: this lane boots an `arch: x86_64` AVD. macos-15
+    # runners are arm64, so an x86_64 image there falls back to full CPU emulation;
+    # on ubuntu it runs on KVM, which is the path android-emulator-runner documents.
+    # Nothing in this job touches an Apple toolchain (Phase 153.1 RUNNER-01 audit).
+    runs-on: ubuntu-latest
     timeout-minutes: 40
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      # android-emulator-runner needs /dev/kvm readable by the runner user.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Setup BEAM
         uses: erlef/setup-beam@v1
