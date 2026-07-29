@@ -1,1 +1,0 @@
-{"content":"Cargo metadata official docs are a strong JSON CLI precedent: machine-readable JSON is versioned with --format-version, and adding fields or enum-like values within a format version is treated as compatible.","source":"web","provider":"webfetch","confidence":"LOW","fetched_at":"2026-07-08T21:04:57.490Z","ttl":86400000,"kind":"web"}

@@ -56,3 +56,7 @@ erl_crash.dump
 **/playwright-report/
 **/playwright-artifacts/
 **/test-results/
+
+# Research-tool response cache (.planning/research/.cache/) — scratch, not an
+# artifact. Committed by accident in c9b30749 via a broad `git add -A .planning/`.
+.planning/research/.cache/

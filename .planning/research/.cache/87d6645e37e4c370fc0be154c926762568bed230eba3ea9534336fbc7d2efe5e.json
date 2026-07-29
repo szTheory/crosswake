@@ -1,1 +1,0 @@
-{"content":"GitHub Actions official docs support writing human summaries through GITHUB_STEP_SUMMARY and sharing machine evidence between jobs through upload/download artifact actions; artifact digest validation is provided by upload/download artifact.","source":"web","provider":"webfetch","confidence":"LOW","fetched_at":"2026-07-08T21:04:57.525Z","ttl":86400000,"kind":"docs"}
