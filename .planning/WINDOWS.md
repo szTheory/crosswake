@@ -1,0 +1,48 @@
+---
+schema_version: 1
+open_count: 2
+waived_count: 0
+fixed_count: 0
+total_count: 2
+last_updated: 2026-07-29T23:35:11.072Z
+---
+
+# Broken Windows Ledger
+
+> Cross-phase defect register. `/gsd-ship` blocks while `open_count > 0`.
+> Waive with `gsd-tools windows waive <id> "<reason>"` (reason required).
+> Mark fixed with `gsd-tools windows fixed <id>`.
+
+| id | phase | kind | file | line | description | status | reason | recorded_at | resolved_at |
+|----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
+| 1 | 154 | deviation | lib/crosswake/bridge/catalog_guard.ex |  | Cross-native enum drift: iOS carries connection.state.update where Kotlin carries server.state.update for the same outbound fan-out; both exempt as outbound-only so the guard does not fire. Recorded in SEED-008 Breadcrumbs. | open |  | 2026-07-29T23:35:11.008Z |  |
+| 2 | 154 | deviation | lib/crosswake/bridge/catalog_guard.ex |  | Eight-entry out-of-vocabulary native denial allowlist (D-16 option-b): CTRL-02 is 'one typed denial at the adopter boundary', not 'one vocabulary on the wire', until SEED-008 is worked. | open |  | 2026-07-29T23:35:11.072Z |  |
+
+````json
+[
+  {
+    "id": 1,
+    "kind": "deviation",
+    "phase": "154",
+    "file": "lib/crosswake/bridge/catalog_guard.ex",
+    "line": null,
+    "description": "Cross-native enum drift: iOS carries connection.state.update where Kotlin carries server.state.update for the same outbound fan-out; both exempt as outbound-only so the guard does not fire. Recorded in SEED-008 Breadcrumbs.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-07-29T23:35:11.008Z",
+    "resolved_at": null
+  },
+  {
+    "id": 2,
+    "kind": "deviation",
+    "phase": "154",
+    "file": "lib/crosswake/bridge/catalog_guard.ex",
+    "line": null,
+    "description": "Eight-entry out-of-vocabulary native denial allowlist (D-16 option-b): CTRL-02 is 'one typed denial at the adopter boundary', not 'one vocabulary on the wire', until SEED-008 is worked.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-07-29T23:35:11.072Z",
+    "resolved_at": null
+  }
+]
+````

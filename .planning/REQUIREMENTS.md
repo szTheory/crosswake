@@ -44,7 +44,7 @@ The reusable machinery. Once this exists, controls 4..N are cheap, repeatable wo
 - [x] **CTRL-01**: A LiveView can invoke a bounded control via `Crosswake.Bridge.push/3` and receive a typed reply correlated to the invocation.
 - [x] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
 - [x] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
-- [ ] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
+- [x] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
 - [x] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
 
 ### MENU — the first genuinely-new native control
@@ -80,7 +80,7 @@ must look right on day one, so they are generated and owned by the host, never i
 - [ ] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade.
 - [ ] **PROOF-02**: `share` and `notification_token` move from advisory to merge-blocking proof posture.
 - [ ] **PROOF-03**: Menu behavior is proven from the committed `bridge_contract_vectors.json` on both natives without a simulator or emulator.
-- [ ] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
+- [x] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
 
 ## Future Requirements (deferred)
 
@@ -120,9 +120,9 @@ must look right on day one, so they are generated and owned by the host, never i
 | CTRL-01 | Phase 154 | Complete |
 | CTRL-02 | Phase 154 | Complete |
 | CTRL-03 | Phase 154 | Complete |
-| CTRL-04 | Phase 154 | Pending |
+| CTRL-04 | Phase 154 | Complete |
 | CTRL-05 | Phase 154 | Complete |
-| PROOF-04 | Phase 154 | Pending |
+| PROOF-04 | Phase 154 | Complete |
 | HRDN-01 | Phase 154 | Pending |
 | FALL-01 | Phase 155 | Pending |
 | FALL-02 | Phase 155 | Pending |

@@ -5,14 +5,14 @@ milestone_name: Native Controls Pack 1
 current_phase: 154
 current_phase_name: the-control-contract-seam
 status: executing
-stopped_at: Completed 154-04-PLAN.md
-last_updated: "2026-07-29T20:34:13.243Z"
+stopped_at: Completed 154-05-PLAN.md
+last_updated: "2026-07-29T23:34:56.409Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 10
+  completed_plans: 11
   percent: 17
 ---
 
@@ -28,13 +28,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 154 (the-control-contract-seam) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
 Last activity: 2026-07-29
 
-Progress: [███████░░░] 67%
+Progress: [███████░░░] 73%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -150,6 +150,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 154 P02 | 70min | 3 tasks | 33 files |
 | Phase 154 P03 | 80min | 3 tasks | 12 files |
 | Phase 154 P04 | 100min | 3 tasks | 8 files |
+| Phase 154 P05 | 55min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -284,6 +285,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: 154-02: Capability.@enforce_keys widened to [:id,:version,:rebuild,:interaction]; manifest_schema_version bumped 1.0.0->1.1.0; fixed two independently hardcoded schema-version literals (Activation.target_from_request/1, Compatibility.bridge_target/1) discovered mid-execution; doctor gains capability_rebuild_findings/1; capability map/support matrix/changelog surface rebuild+interaction cost
 - [Phase ?]: 154-03: Crosswake.Bridge seam shipped (push/3, attach/1, on_mount/4, reserved-event + wiring-deadline interceptors); UndeclaredCapabilityError/NotMountedError raise loudly; Shell.Denial gains 14th reason :shell_unreachable; first self-contained Phoenix.LiveViewTest harness in core hermetic suite (test/support/bridge_live_view_case.ex)
 - [Phase ?]: 154-04: Bridge exactly-once delivery hardened with per-mount epoch (embedded in correlation_id) + resolve/2 for fallback race + second reply-deadline timer + 5 new [:crosswake, :bridge, ...] telemetry events; Crosswake.Bridge.Test ships for hook-reply simulation without a shell
+- [Phase ?]: D-16 resolved (human, 154-05 Task 1): option-b with amendment — merge-blocking catalog guard with an enumerated EIGHT-string seeded allowlist of out-of-vocabulary native denial reasons; zero native release coupling so D-01 holds; the five bare-String delegate seams named as a separately-labelled NON-MECHANICAL exclusion carried by SEED-008, never pretended into the allowlist
+- [Phase ?]: Crosswake.Bridge.CatalogGuard lives in lib/ and reads Manifest.Builder's existing capability catalog — no second catalog file (D-42/D-43); a second one here would be five-way drift
 
 ### Pending Todos
 
@@ -371,8 +374,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-29T20:34:13.232Z
-Stopped at: Completed 154-04-PLAN.md
+Last session: 2026-07-29T23:34:46.067Z
+Stopped at: Completed 154-05-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
