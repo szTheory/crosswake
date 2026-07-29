@@ -43,7 +43,7 @@ The reusable machinery. Once this exists, controls 4..N are cheap, repeatable wo
 
 - [ ] **CTRL-01**: A LiveView can invoke a bounded control via `Crosswake.Bridge.push/3` and receive a typed reply correlated to the invocation.
 - [ ] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
-- [ ] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
+- [x] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
 - [ ] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
 - [ ] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
 
@@ -119,7 +119,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
 | CTRL-01 | Phase 154 | Pending |
 | CTRL-02 | Phase 154 | Pending |
-| CTRL-03 | Phase 154 | Pending |
+| CTRL-03 | Phase 154 | Complete |
 | CTRL-04 | Phase 154 | Pending |
 | CTRL-05 | Phase 154 | Pending |
 | PROOF-04 | Phase 154 | Pending |

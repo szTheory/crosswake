@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-status: ready_to_execute
-stopped_at: Phase 154 planned (8 plans, 7 waves)
-last_updated: "2026-07-29T20:15:00.000Z"
-last_activity: 2026-07-29 - Phase 154 planned (8 plans, 7 waves)
+current_phase: 154
+current_phase_name: the-control-contract-seam
+status: executing
+stopped_at: Completed 154-01-PLAN.md
+last_updated: "2026-07-29T18:13:11.017Z"
+last_activity: 2026-07-29
+last_activity_desc: Phase 154 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 6
+  completed_plans: 7
   percent: 17
 ---
 
@@ -25,13 +28,14 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 ## Current Position
 
-Phase: 154 (the-control-contract-seam) — **PLANNED**, ready to execute (8 plans, 7 waves)
+Phase: 154 (the-control-contract-seam) — EXECUTING
+Plan: 2 of 8
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Ready to execute Phase 154. The 153-02 human gate remains open but blocks only Phase 156.
-Last activity: 2026-07-29 - Phase 154 planned (8 plans, 7 waves)
+Status: Ready to execute
+Last activity: 2026-07-29 -- Phase 154 execution started
 
-Progress: [██░░░░░░░░] 20% (1 of 5 milestone phases; 153.1 is an insertion)
+Progress: [█████░░░░░] 47% (1 of 5 milestone phases; 153.1 is an insertion)
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -139,6 +143,11 @@ chimeway/sigra, and all of `CONSOL-*`.
 - Total execution time: —
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 154 P01 | 25min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -269,6 +278,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: publish-ios-core: atomic + explicit-lease mirror push scoped to main alone (D-13), Hex-only gate (D-12), release-tag-pinned checkout (D-11), SSH transport via MIRROR_DEPLOY_KEY (D-03/D-04)
 - [Phase ?]: release-failure-alert.needs extended to the four native jobs plus native-release-rollup (D-15); native-release-rollup exits 1 on partial native release (D-17)
 - [Phase ?]: Six scanner checks rewritten/added in check_release_workflow_integrity.exs for D-11/D-12/D-13/D-15/D-17/D-03/D-04, each with a decoy test (D-20)
+- [Phase ?]: 154-01: flipped published haptics vocabulary to family id (route policy declares families, bridge dispatches commands); fixed self-referential legacy_ids bug universally; added doctor legacy-capability-id advisory
 
 ### Pending Todos
 
@@ -356,9 +366,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-29T16:35:34.643Z
-Stopped at: Phase 154 context gathered
-Resume file: .planning/phases/154-the-control-contract-seam/154-CONTEXT.md
+Last session: 2026-07-29T18:13:10.998Z
+Stopped at: Completed 154-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

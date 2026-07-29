@@ -279,12 +279,12 @@ would conflict and, under `strict: true`, re-invalidate each other's in-flight r
   4. A proposed control that is host-registrable, dynamic, or otherwise violates the catalog line fails a merge-blocking structural CI test, and every control's rebuild class is visible in the changelog, support matrix, and doctor guidance.
   5. The AdminPilot haptics call runs through `Bridge.push/3` with the old hand-rolled `<script>` IIFE deleted, proving the seam against an already-native, zero-risk capability.
 
-**Plans**: 8 plans in 7 waves (mapped onto D-76's 3-PR sequencing)
+**Plans**: 1/8 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 154-01-PLAN.md — PR #1: flip the published capability vocabulary to family ids, fix the self-referential `legacy_ids` manifest bug, add the doctor advisory
+- [x] 154-01-PLAN.md — PR #1: flip the published capability vocabulary to family ids, fix the self-referential `legacy_ids` manifest bug, add the doctor advisory
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -370,7 +370,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
-| 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
+| 154. The Control-Contract Seam | v20.0 | 1/8 | In Progress|  |
 | 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
