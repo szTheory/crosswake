@@ -50,6 +50,7 @@ jobs:
   guard-01-contract-drift-test:          # GUARD-01: ExUnit drift test (D-10 isolated red/green dot)
     name: guard-01-contract-drift-test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       MIX_ENV: test
     steps:
@@ -77,6 +78,7 @@ jobs:
   guard-02-generate-and-diff:            # GUARD-02: regenerate + staged diff (byte-exact exhaustive check)
     name: guard-02-generate-and-diff
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       MIX_ENV: dev
     steps:
@@ -119,6 +121,7 @@ jobs:
     if: always()
     needs: [guard-01-contract-drift-test, guard-02-generate-and-diff]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Roll up guard results
         uses: re-actors/alls-green@release/v1

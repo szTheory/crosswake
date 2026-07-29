@@ -59,6 +59,7 @@ jobs:
   audit-required-checks:
     name: audit-required-checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       issues: write

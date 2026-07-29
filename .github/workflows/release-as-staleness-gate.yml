@@ -42,6 +42,7 @@ jobs:
   merge-blocking-release-as-staleness:
     name: merge-blocking-release-as-staleness
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:

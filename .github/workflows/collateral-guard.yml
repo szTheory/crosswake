@@ -31,6 +31,7 @@ jobs:
   collateral-binaries-guard:
     name: collateral-binaries-guard
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       MIX_ENV: test
       COLLATERAL_REQUIRE_NATIVE: '0' # flip to '1' after the first capture PR lands

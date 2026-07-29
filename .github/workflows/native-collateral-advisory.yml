@@ -10,6 +10,7 @@ jobs:
   ios-simulator-advisory:
     name: ios-simulator-advisory
     runs-on: macos-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -52,6 +53,7 @@ jobs:
   android-emulator-advisory:
     name: android-emulator-advisory
     runs-on: macos-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

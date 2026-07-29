@@ -45,6 +45,7 @@ jobs:
   web-and-gif:
     name: web-and-gif
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       MIX_ENV: test
     steps:
@@ -187,6 +188,7 @@ jobs:
   assemble-pr:
     name: assemble-pr
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [web-and-gif, native]
     env:
       MIX_ENV: test
