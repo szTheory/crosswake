@@ -37,9 +37,6 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
-
 jobs:
   merge-blocking-operator-proof:
     # Required branch-check lane for v3.6 operator truth. This lane is the same
@@ -48,7 +45,7 @@ jobs:
     # on merge-driving events and on manual dispatch only when the operator
     # chooses the merge-blocking lane.
     name: merge-blocking operator proof (hermetic)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.lane == 'merge-blocking' || inputs.lane == 'all')) }}
 
