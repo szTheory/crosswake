@@ -279,7 +279,17 @@ would conflict and, under `strict: true`, re-invalidate each other's in-flight r
   4. A proposed control that is host-registrable, dynamic, or otherwise violates the catalog line fails a merge-blocking structural CI test, and every control's rebuild class is visible in the changelog, support matrix, and doctor guidance.
   5. The AdminPilot haptics call runs through `Bridge.push/3` with the old hand-rolled `<script>` IIFE deleted, proving the seam against an already-native, zero-risk capability.
 
-**Plans**: TBD
+**Plans**: 8 plans in 7 waves (mapped onto D-76's 3-PR sequencing)
+
+Plans:
+- [ ] 154-01-PLAN.md — PR #1: flip the published capability vocabulary to family ids, fix the self-referential `legacy_ids` manifest bug, add the doctor advisory
+- [ ] 154-02-PLAN.md — PR #1b: make rebuild + interaction class unconstructable-without, add the doctor rebuild finding, surface rebuild cost in guides and changelog
+- [ ] 154-03-PLAN.md — PR #2a: TRACER — `Bridge.push/3` end-to-end with a typed correlated reply, the loud undeclared-capability raise, and the one-shape denial collapse
+- [ ] 154-04-PLAN.md — PR #2b: opaque ref, per-mount epoch, three-layer exactly-once, `resolve/2`, two timers, bridge telemetry, `Crosswake.Bridge.Test`
+- [ ] 154-05-PLAN.md — PR #2c: `Crosswake.Bridge.CatalogGuard` + the merge-blocking PROOF-04 gate with four kinds of negative control (has a blocking D-16 decision checkpoint)
+- [ ] 154-06-PLAN.md — PR #2d: the library-owned JS hook, the iOS reply return leg, the refuse-and-teach generator, the endpoint patcher, the doctor wiring check
+- [ ] 154-07-PLAN.md — PR #3: HRDN-01 — migrate both showcase LiveViews onto the seam, evolve the evidence panel, delete the dead asset, prove it in the browser lane
+- [ ] 154-08-PLAN.md — PR #3 tail: honest-claims guide sweep and the phase's human verification gate
 
 ### Phase 155: Host-Owned Fallback Components
 
