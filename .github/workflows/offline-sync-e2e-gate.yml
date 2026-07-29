@@ -58,6 +58,14 @@ jobs:
         run: npm ci --prefix examples/phoenix_host
       - name: Run E2E honesty check
         run: node script/check-e2e-honesty.mjs
+      # Phase 154 / CTRL-01+CTRL-02: the library-owned bridge hook's unit suite.
+      # Deliberately a named STEP inside this existing Node-provisioned job rather
+      # than a new workflow or a new required check (D-47): a step name is free, a
+      # check name costs the rename-and-registration ritual. The suite has zero
+      # dependencies — it is Node's built-in runner over a hand-stubbed global, so
+      # no `npm ci` runs here.
+      - name: Run the bridge hook unit tests (priv/static/crosswake.esm.js)
+        run: node --test "test/js/*.mjs"
       - name: Step summary
         run: |
           echo "GUARD-01 e2e-honesty: structural check passed" >> "$GITHUB_STEP_SUMMARY"
