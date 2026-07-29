@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 153
-current_phase_name: ios-mirror-unblock
+current_phase: 153.1
+current_phase_name: ci-gate-integrity-and-runner-cost
 status: executing
-stopped_at: Phase 153 context gathered
-last_updated: "2026-07-13T18:15:35.655Z"
-last_activity: 2026-07-19 - Completed quick task 260719-nxm: Implement architecture and code walkthrough documentation
+stopped_at: Phase 153.1 complete (3/3 plans merged); Phase 153 blocked on human-gated 153-02
+last_updated: "2026-07-29T00:00:00.000Z"
+last_activity: 2026-07-29 - Phase 153.1 complete: CI gate integrity + runner cost. Wall-clock time-to-green 34.9 -> 5.8 min. PRs #91/#93/#94/#95/#96/#97 merged.
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 4
-  completed_plans: 2
-  percent: 0
+  total_plans: 7
+  completed_plans: 6
+  percent: 20
 ---
 
 # Project State: Crosswake
@@ -27,12 +27,43 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 ## Current Position
 
-Phase: 153 (ios-mirror-unblock) — EXECUTING
-Plan: 3 of 4
-Status: Ready to execute
-Last activity: 2026-07-19 - Completed quick task 260719-nxm: Implement architecture and code walkthrough documentation
+Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
+Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
+Status: Awaiting the human-gated 153-02 step, or ready to plan Phase 154
+Last activity: 2026-07-29 - Phase 153.1 complete
 
-Progress: [█████░░░░░] 50%
+Progress: [██░░░░░░░░] 20% (1 of 5 milestone phases; 153.1 is an insertion)
+
+## Blocked: Phase 153-02 (human gate, one-way door)
+
+Mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror
+`main` (MIRROR-01). **The tag push is irreversible and must never be fired automatically —
+it requires Jon's explicit go.**
+
+Blocks Phase 156 (MENU). Everything else in the milestone can proceed without it.
+
+Known state: the mirror is still at v0.1.2. The Phase 153 fire-drill was a NO-GO because
+splitsh-lite v1.0.1 segfaults; the fix is switching `verify_ios_mirror_backfill.sh`
+`compute_split_sha()` to `git subtree split` (verified working, split SHA `658d6025`).
+
+## Phase 153.1 outcome (2026-07-29)
+
+| | before | after |
+|---|---:|---:|
+| Wall-clock time-to-green | 34.9 min | **5.8 min** (target < 15) |
+| Total queued | 21,600 s | 699 s |
+| macOS jobs | 20 | 7 |
+| Required contexts | 23 | 27 |
+| Cache hit rate | — | 93 % |
+
+Full measurements and honest attribution in
+`.planning/phases/153.1-ci-gate-integrity-and-runner-cost/153.1-RESULTS.md`. The wall-clock
+figure is partly confounded by ambient macOS runner availability; the durable attributable
+number is billable-equivalent minutes, 550 -> 259.
+
+Left on the table and recorded: the double compile (likely the largest remaining single
+win), release-path cache keys with no OTP dimension, package-level caches for
+chimeway/sigra, and all of `CONSOL-*`.
 
 ## v20.0 Roadmap Decisions (2026-07-12, locked)
 
