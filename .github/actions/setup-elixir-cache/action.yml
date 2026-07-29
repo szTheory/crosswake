@@ -1,0 +1,103 @@
+name: Setup Elixir with dependency cache
+description: >
+  erlef/setup-beam plus correctly-keyed deps/ and _build caches. Replaces the
+  setup+deps.get+compile block copy-pasted across the phase-proof lanes.
+
+# ---------------------------------------------------------------------------
+# CACHE KEY DESIGN — read before changing a key.
+#
+# A restored `_build` is only safe if the key pins everything that can change
+# the bytes in it. Four dimensions are non-negotiable:
+#
+#   os / arch  A BEAM file built on macOS arm64 is not valid on ubuntu x64.
+#              Omitting these is how a cache silently corrupts a lane after a
+#              runner move (Phase 153.1 moved 13 jobs macos-15 -> ubuntu).
+#   otp/elixir The toolchain comes from .tool-versions. A key without these
+#              restores BEAM files built by a different compiler, and the
+#              failure surfaces far from the cause.
+#   mix-env    dev and test _build trees are not interchangeable.
+#   mix.lock   the actual dependency set.
+#
+# `restore-keys` differs from `key` by EXACTLY the lock hash. Any looser prefix
+# reintroduces the cross-toolchain corruption the dimensions above prevent.
+#
+# scope: THE NON-OBVIOUS ONE. These caches are NOT safe to share repo-wide.
+#   Several lanes are hermetic ABSENCE proofs — phase43 proves rulestead is not
+#   loaded, phase45 the same for rindle — while other lanes install exactly
+#   those optional deps. A shared key would let a dep-present lane populate a
+#   `_build` that a dep-absent lane then restores, so a fail-closed proof would
+#   be evaluating a tree that contains the very thing it claims is missing.
+#   Scoping per workflow+job costs cache entries but keeps each proof hermetic.
+#   Watch the 10 GB repo cap with LRU eviction (CACHE Task 4) — if entries start
+#   evicting each other, reduce what is cached rather than loosen this.
+# ---------------------------------------------------------------------------
+
+inputs:
+  mix-env:
+    description: MIX_ENV whose _build tree is cached. A key dimension.
+    default: "test"
+  working-directory:
+    description: Directory containing mix.exs / mix.lock.
+    default: "."
+  cache-scope:
+    description: >
+      Isolation key. Defaults to workflow+job so hermetic absence proofs never
+      restore a _build populated by a dep-present lane. Override only to share
+      a cache between lanes proven to install an identical dependency set.
+    default: ""
+
+outputs:
+  deps-cache-hit:
+    description: "true when deps/ was restored"
+    value: ${{ steps.deps-cache.outputs.cache-hit }}
+  build-cache-hit:
+    description: "true when _build/<mix-env> was restored"
+    value: ${{ steps.build-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - id: beam
+      uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1
+      with:
+        # .tool-versions is the single source of truth. Hardcoding versions here
+        # would reintroduce drift the moment either is bumped — and because the
+        # cache key is built from this step's OUTPUTS, drift would also mean
+        # restoring a _build compiled by a different compiler.
+        version-file: .tool-versions
+        version-type: strict
+
+    - id: scope
+      shell: bash
+      # Resolved here, not in a default:, because ${{ github.* }} is not
+      # available in an inputs default expression.
+      run: |
+        scope="${{ inputs.cache-scope }}"
+        if [ -z "$scope" ]; then
+          scope="${{ github.workflow }}-${{ github.job }}"
+        fi
+        # Cache keys are matched literally; normalise anything shell- or
+        # path-hostile so a workflow rename cannot produce an unmatchable key.
+        scope="$(printf '%s' "$scope" | tr -c '[:alnum:]._-' '-')"
+        echo "value=${scope}" >> "$GITHUB_OUTPUT"
+
+    - id: deps-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.working-directory }}/deps
+        key: deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          deps-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
+
+    - id: build-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ inputs.working-directory }}/_build/${{ inputs.mix-env }}
+        key: build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-${{ hashFiles(format('{0}/mix.lock', inputs.working-directory)) }}
+        restore-keys: |
+          build-${{ steps.scope.outputs.value }}-${{ runner.os }}-${{ runner.arch }}-otp${{ steps.beam.outputs.otp-version }}-elixir${{ steps.beam.outputs.elixir-version }}-${{ inputs.mix-env }}-
+
+    - name: Install Elixir dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: mix deps.get

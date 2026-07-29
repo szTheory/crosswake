@@ -55,16 +55,9 @@ jobs:
       MIX_ENV: test
     steps:
       - uses: actions/checkout@v7
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+      - uses: ./.github/actions/setup-elixir-cache
         with:
-          version-file: .tool-versions
-          version-type: strict
-      - uses: actions/cache@v6
-        with:
-          path: _build/test
-          key: build-test-${{ hashFiles('mix.lock') }}
-      - name: Install Mix dependencies
-        run: mix deps.get
+          mix-env: test
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
       - name: Run contract drift test (GUARD-01)
@@ -83,16 +76,9 @@ jobs:
       MIX_ENV: dev
     steps:
       - uses: actions/checkout@v7
-      - uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
+      - uses: ./.github/actions/setup-elixir-cache
         with:
-          version-file: .tool-versions
-          version-type: strict
-      - uses: actions/cache@v6
-        with:
-          path: _build/dev
-          key: build-dev-${{ hashFiles('mix.lock') }}
-      - name: Install Mix dependencies
-        run: mix deps.get
+          mix-env: dev
       - name: Compile
         run: mix compile
       - name: Regenerate contract surfaces
