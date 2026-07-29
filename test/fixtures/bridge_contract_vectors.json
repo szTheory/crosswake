@@ -34,6 +34,51 @@
   "manifest_schema_version": "1.1.0",
   "native_runtime_version": "1.0.0",
   "protocol": "crosswake.bridge",
+  "reply_leg_vectors": [
+    {
+      "description": "A shell reply reaches the page through the hook's landing pad, carrying the correlation id the hook is holding.",
+      "id": "vec-reply-001-ok-landing-pad",
+      "landing_pad": "window.crosswakeBridge.__reply",
+      "reply": {
+        "command": "haptics.impact",
+        "correlation_id": "cwbridge-e1-reply-vector-ok",
+        "payload": {
+          "style": "light"
+        },
+        "protocol": "crosswake.bridge",
+        "route_id": "saas-approval",
+        "status": "ok",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "adversarial": true,
+      "description": "A deny reply whose denial message carries quote, backslash, newline, script-tag, and Unicode line/paragraph separator characters is delivered byte-intact and cannot terminate or extend the evaluated script.",
+      "id": "vec-reply-002-adversarial-denial-message",
+      "landing_pad": "window.crosswakeBridge.__reply",
+      "reply": {
+        "command": "haptics.impact",
+        "correlation_id": "cwbridge-e1-reply-vector-deny",
+        "denial": {
+          "command": "haptics.impact",
+          "correlation_id": "cwbridge-e1-reply-vector-deny",
+          "denial": {
+            "code": "unavailable_capability",
+            "hint": "Ship the declared capability version before retrying.",
+            "message": "quote:\" backslash:\\ newline:\n tag:</script> line-sep:  para-sep:  wave:🌊",
+            "reason": "unavailable_capability",
+            "route_id": "saas-approval"
+          },
+          "route_id": "saas-approval"
+        },
+        "payload": {},
+        "protocol": "crosswake.bridge",
+        "route_id": "saas-approval",
+        "status": "deny",
+        "version": "1.1.0"
+      }
+    }
+  ],
   "vectors": [
     {
       "description": "Request with a bridge_protocol_version older than the manifest floor is denied with compatibility_mismatch (Elixir: target.bridge_protocol_version < manifest.bridge_protocol_version). elixir_only: native harnesses check session-provides vs request-demands (opposite direction); vec-009 covers native bridge-version deny.",
