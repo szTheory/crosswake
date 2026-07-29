@@ -31,6 +31,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       support_truth_legend_section(),
       "",
+      interaction_class_legend_section(),
+      "",
       "## Status Legend",
       "",
       "- supported",
@@ -229,6 +231,23 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "Device/provider evidence is not backend/session authority.",
       "Cached read-only is not offline mutation.",
       "Bridge is not high-frequency or mutation authority."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp interaction_class_legend_section do
+    [
+      "## Interaction-Class Legend",
+      "",
+      "`manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.",
+      "",
+      "Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.",
+      "",
+      "| Interaction Class | What it means |",
+      "|--------------------|----------------|",
+      "| fire-and-forget | The bridge dispatches the command and the route continues without waiting on a completion payload. A request-acknowledgement payload (for example `share`'s `%{\"outcome\" => \"requested\"}`) does not change this — fire-and-forget means no completion is claimed, not that no payload is returned. |",
+      "| device-answer | The device autonomously answers with data — a snapshot or metadata read that does not require the user to make a choice. |",
+      "| user-answer | Completing the command requires an explicit user choice or action (for example picking a file) before a result exists. |"
     ]
     |> Enum.join("\n")
   end

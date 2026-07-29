@@ -11,6 +11,12 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Upgrade Impact
+
+**compatibility-bump only**
+
+`manifest_schema_version` moves `1.0.0` -> `1.1.0` (Phase 154, CTRL-05): `Capability` gains a required `interaction` field (`:fire_and_forget | :device_answer | :user_answer`) and `@enforce_keys` now requires both `:rebuild` and `:interaction`, making a control without a declared rebuild and interaction class unconstructable at compile time. This is additive and native-inert — the iOS and Android shells decode neither field — so no native rebuild is required for already-compatible adopters; the compatibility fixtures continue to fail closed on genuine mismatches.
+
 ### Documentation
 
 * Documentation-only: add an architecture guide and source walkthrough with accessible light/dark Mermaid diagrams and the Crosswake docs favicon. This adds no runtime API or support claim.

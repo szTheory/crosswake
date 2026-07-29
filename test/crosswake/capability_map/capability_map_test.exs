@@ -16,6 +16,7 @@ defmodule Crosswake.CapabilityMapTest do
 
   @package_owners [:core, :native_shell, :first_party_companion, :example_docs_only, :deferred]
   @proof_postures [:merge_blocking, :advisory, :not_yet_proven, :unsupported]
+  @rebuild_classes [:none, :native_required, :companion_required]
 
   @route_runtime_owners [
     :live_view,
@@ -36,6 +37,7 @@ defmodule Crosswake.CapabilityMapTest do
     :route_runtime_owner,
     :package_owner,
     :proof_posture,
+    :rebuild,
     :denial_fallback,
     :v20_implication
   ]
@@ -70,6 +72,33 @@ defmodule Crosswake.CapabilityMapTest do
     assert CapabilityMap.package_owners() == @package_owners
     assert CapabilityMap.proof_postures() == @proof_postures
     assert CapabilityMap.route_runtime_owners() == @route_runtime_owners
+  end
+
+  test "D-53 rebuild vocabulary mirrors Crosswake.Manifest.Types.Capability.rebuild/0 exactly (Phase 154, CTRL-05)" do
+    assert CapabilityMap.rebuild_classes() == @rebuild_classes
+  end
+
+  test "D-53 every canonical row declares an explicit rebuild class from the locked vocabulary" do
+    for row <- canonical_rows() do
+      assert row.rebuild in @rebuild_classes,
+             "D-53: #{inspect(row.id)} uses unsupported rebuild class #{inspect(row.rebuild)}"
+    end
+  end
+
+  test "D-53 rows backed by a real manifest capability match its catalog rebuild class" do
+    rows = canonical_rows()
+
+    # These row ids map 1:1 onto Crosswake.Manifest.Builder.capability_catalog/0
+    # entries; the guide must never understate or overstate their real rebuild cost.
+    assert row!(rows, "deep-link-activation").rebuild == :none
+    assert row!(rows, "bounded-bridge-app-info").rebuild == :none
+    assert row!(rows, "bounded-bridge-haptics").rebuild == :none
+    assert row!(rows, "bounded-bridge-share").rebuild == :none
+    assert row!(rows, "permissions-status").rebuild == :none
+    assert row!(rows, "notification-token").rebuild == :companion_required
+    assert row!(rows, "fieldserv-capture-handoff").rebuild == :native_required
+    assert row!(rows, "fieldserv-scanner").rebuild == :companion_required
+    assert row!(rows, "fieldserv-document-scan").rebuild == :companion_required
   end
 
   test "D-03 canonical rows expose every public support-truth axis" do

@@ -119,8 +119,8 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## Detailed Capability Rows",
       "",
-      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Denial/fallback behavior | v20 implication |",
-      "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|--------------------------|-----------------|",
+      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | v20 implication |",
+      "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|---------|--------------------------|-----------------|",
       Enum.map_join(rows, "\n", &table_row/1)
     ]
     |> Enum.join("\n")
@@ -135,7 +135,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
   end
 
   defp table_row(row) do
-    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.v20_implication)} |"
+    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(rebuild_label(row.rebuild))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.v20_implication)} |"
   end
 
   defp normalize_row(%_{} = row), do: Map.from_struct(row)
@@ -160,6 +160,18 @@ defmodule Crosswake.CapabilityMap.Renderer do
     do: value |> Atom.to_string() |> String.replace("_", "-")
 
   defp proof_label(value), do: to_string(value)
+
+  # D-53: spelled out (not just "none"/"native-required") so the word "rebuild"
+  # is visible on every row of the guide adopters read to choose controls —
+  # rebuild cost must never require decoding a bare enum value.
+  defp rebuild_label(:none), do: "No rebuild required"
+  defp rebuild_label(:native_required), do: "Native rebuild required"
+  defp rebuild_label(:companion_required), do: "Companion rebuild required"
+
+  defp rebuild_label(value) when is_atom(value),
+    do: value |> Atom.to_string() |> String.replace("_", " ")
+
+  defp rebuild_label(value), do: to_string(value)
 
   defp escape_inline(value) do
     value
