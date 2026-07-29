@@ -13,6 +13,15 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_rindle-v0.1.0...crosswake_rindle-v0.1.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **companions:** add ex_doc to sigra/chimeway/rulestead/rindle for hex.publish ([eccb49d](https://github.com/szTheory/crosswake/commit/eccb49d584259ee2d16997619b7f1c8619d624b2))
+* **companions:** add ex_doc to sigra/chimeway/rulestead/rindle for hex.publish ([12d39b7](https://github.com/szTheory/crosswake/commit/12d39b7e65f8f894a93a754ee741f4fd07a23719))
+* **companions:** drop runtime:false from ex_doc — trips D-27 guard ([c822db5](https://github.com/szTheory/crosswake/commit/c822db5ae8bebf4f7e129fd27b5cea7b23f5478f))
+
 ## [Unreleased]
 
 ### Added
