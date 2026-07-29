@@ -356,4 +356,222 @@ defmodule Crosswake.Bridge.PushTest do
       assert reply_element(view, "reply-status") =~ ":ok"
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Task 1 — opaque ref, per-mount epoch, three-layer compare-and-delete, resolve/2
+  # (CTRL-01, CTRL-02, D-20..D-25)
+  # ---------------------------------------------------------------------------
+
+  describe "Task 1: epoch, exactly-once delivery, and resolve/2 (D-20..D-25)" do
+    test "twenty concurrent asks, each with a distinct ref, deliver twenty distinct replies matched by ref" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      refs = for n <- 1..20, do: "ref-#{n}"
+
+      correlation_ids =
+        for ref <- refs do
+          {ref, dispatch!(view, %{"ref" => ref})}
+        end
+
+      for {_ref, correlation_id} <- correlation_ids do
+        render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+      end
+
+      assert reply_element(view, "replies-by-ref-count") =~ "20"
+
+      for ref <- refs do
+        # render() HTML-escapes the inspect/1 output, so `"` becomes `&quot;`.
+        assert reply_element(view, "replies-by-ref") =~ "&quot;#{ref}&quot;: :ok"
+      end
+    end
+
+    test "a push with no ref option delivers nothing to handle_info/2, but still resolves its in-flight bookkeeping" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch_fire_and_forget", %{})
+      Process.sleep(100)
+      render_click(view, "unrelated", %{})
+
+      assert reply_element(view, "reply-count") =~ "0"
+      assert reply_element(view, "in-flight-count") =~ "0"
+    end
+
+    test "delivering the same correlation id twice results in exactly one handle_info/2 delivery" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+      assert reply_element(view, "reply-count") =~ "1"
+
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+      assert reply_element(view, "reply-count") =~ "1"
+    end
+
+    test "a reply minted under a previous epoch is dropped as foreign-epoch after a simulated remount" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      stale_correlation_id = dispatch!(view, %{"ref" => "tap"})
+
+      render_click(view, "remount", %{})
+
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(stale_correlation_id))
+
+      assert reply_element(view, "reply-count") =~ "0"
+    end
+
+    test "Crosswake.Bridge.resolve/2 clears the ask; a native reply arriving afterward for that same ask delivers nothing" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "tap"})
+
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+
+      assert reply_element(view, "reply-count") =~ "0"
+    end
+
+    test "calling resolve/2 twice for the same ref is a no-op the second time and does not raise" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      dispatch!(view, %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "tap"})
+
+      assert reply_element(view, "unrelated-hit") =~ "false"
+    end
+
+    test "the adopter's ref never appears in the pushed client-event payload" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "tap"})
+      assert_push_event(view, "crosswake:bridge", envelope)
+
+      refute Enum.any?(Map.values(envelope), fn
+               value when is_binary(value) -> String.contains?(value, "tap")
+               _other -> false
+             end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Task 2 — two timers and the bridge telemetry catalog (D-22)
+  # ---------------------------------------------------------------------------
+
+  describe "Task 2: two timers and telemetry (D-22)" do
+    setup do
+      previous_margin = Application.get_env(:crosswake, :bridge_reply_deadline_margin_ms)
+      Application.put_env(:crosswake, :bridge_reply_deadline_margin_ms, 10)
+
+      on_exit(fn ->
+        case previous_margin do
+          nil -> Application.delete_env(:crosswake, :bridge_reply_deadline_margin_ms)
+          value -> Application.put_env(:crosswake, :bridge_reply_deadline_margin_ms, value)
+        end
+      end)
+
+      :ok
+    end
+
+    test "a push with an explicit short timeout delivers a :shell_unreachable denial with the reply-timeout failing moment" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      # Ack immediately so the wiring-deadline path never fires first — only the
+      # reply-deadline backstop should resolve this ask.
+      correlation_id = dispatch!(view, %{"ref" => "tap", "timeout" => 200})
+      render_hook(view, "crosswake:bridge_ack", %{"correlation_id" => correlation_id})
+
+      Process.sleep(300)
+
+      assert reply_element(view, "reply-status") =~ ":deny"
+      assert reply_element(view, "reply-reason") =~ ":shell_unreachable"
+      assert reply_element(view, "reply-failing-moment") =~ ":reply_timeout"
+    end
+
+    test "a push with an unbounded timeout never fires the server reply backstop" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      correlation_id = dispatch!(view, %{"ref" => "tap", "timeout" => "infinity"})
+      render_hook(view, "crosswake:bridge_ack", %{"correlation_id" => correlation_id})
+
+      Process.sleep(150)
+
+      assert reply_element(view, "reply-count") =~ "0"
+      assert reply_element(view, "in-flight-count") =~ "1"
+    end
+
+    test "each of the five bridge events appears in Crosswake.Telemetry.events/0 with a description, measurements, and metadata" do
+      bridge_events =
+        Crosswake.Telemetry.events()
+        |> Enum.filter(fn e -> match?([:crosswake, :bridge | _], e.event) end)
+
+      expected_suffixes = [:push, :reply, :dropped, :hook_ack, :hook_missing]
+
+      for suffix <- expected_suffixes do
+        entry = Enum.find(bridge_events, fn e -> e.event == [:crosswake, :bridge, suffix] end)
+
+        assert entry, "expected [:crosswake, :bridge, #{inspect(suffix)}] in events/0"
+        assert entry.tier == :active
+        assert is_binary(entry.description) and entry.description != ""
+        assert is_list(entry.measurements) and entry.measurements != []
+        assert is_list(entry.metadata) and entry.metadata != []
+      end
+    end
+
+    test "the reply event's denial-reason metadata is drawn from the bounded 14-atom vocabulary" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :reply, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+
+      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      Process.sleep(100)
+
+      assert_received {[:crosswake, :bridge, :reply, :stop], ^ref, _measurements, metadata}
+      assert metadata.denial_reason in Crosswake.Shell.Denial.reasons()
+    end
+
+    test "the dropped-reply event fires once for a duplicate delivery and once for a foreign-epoch delivery" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :dropped, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+
+      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(correlation_id))
+
+      assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, _m1, %{reason: :duplicate}}
+
+      stale_correlation_id = dispatch!(view, %{"ref" => "tap2"})
+      render_click(view, "remount", %{})
+      render_hook(view, "crosswake:bridge_reply", ok_wire_reply(stale_correlation_id))
+
+      assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, _m2, %{reason: :foreign_epoch}}
+    end
+
+    test "the hook-missing event fires when the wiring deadline expires with no ack" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :hook_missing, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+
+      dispatch!(view, %{"ref" => "tap"})
+      Process.sleep(100)
+
+      assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, _measurements, _metadata}
+    end
+
+    test "the hook-ack event fires when the bridge hook's acknowledgement arrives" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :hook_ack, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+
+      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      render_hook(view, "crosswake:bridge_ack", %{"correlation_id" => correlation_id})
+
+      assert_received {[:crosswake, :bridge, :hook_ack, :stop], ^ref, _measurements, _metadata}
+    end
+  end
+
 end

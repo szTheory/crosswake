@@ -88,6 +88,7 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
         reply: nil,
         reply_ref: nil,
         reply_count: 0,
+        replies_by_ref: %{},
         unrelated_hit: false,
         in_flight_count: 0
       )
@@ -100,8 +101,9 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
     ref = params |> Map.get("ref", "tap") |> String.to_atom()
     family = Map.get(params, "family", "haptics")
     payload = Map.get(params, "payload", %{})
+    push_opts = [ref: ref, payload: payload] |> maybe_put_timeout(params)
 
-    socket = Bridge.push(socket, family, ref: ref, payload: payload)
+    socket = Bridge.push(socket, family, push_opts)
     {:noreply, refresh_in_flight_count(socket)}
   end
 
@@ -116,14 +118,35 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
     {:noreply, refresh_in_flight_count(socket)}
   end
 
+  # Simulates a reconnect: re-attaching mints a fresh epoch and a fresh in-flight table
+  # (D-24) — exactly what a brand-new post-reconnect LiveView process's own mount/3 would
+  # produce, without needing to actually kill and remount the test process.
+  def handle_event("remount", _params, socket) do
+    {:noreply, Bridge.attach(socket)}
+  end
+
+  # Simulates the on-page fallback handler calling Crosswake.Bridge.resolve/2 once it has
+  # already answered the ask itself (D-25) — the native reply path is then deduped
+  # automatically because the ask is already gone.
+  def handle_event("resolve", %{"ref" => ref_str}, socket) do
+    ref = String.to_atom(ref_str)
+    socket = Bridge.resolve(socket, ref)
+    {:noreply, refresh_in_flight_count(socket)}
+  end
+
   def handle_info({:crosswake_bridge, ref, reply}, socket) do
     socket =
       socket
       |> Phoenix.Component.assign(reply: reply, reply_ref: ref)
       |> Phoenix.Component.assign(:reply_count, socket.assigns.reply_count + 1)
+      |> Phoenix.Component.update(:replies_by_ref, &Map.put(&1, ref, reply.status))
 
     {:noreply, refresh_in_flight_count(socket)}
   end
+
+  defp maybe_put_timeout(opts, %{"timeout" => "infinity"}), do: Keyword.put(opts, :timeout, :infinity)
+  defp maybe_put_timeout(opts, %{"timeout" => timeout}) when is_integer(timeout), do: Keyword.put(opts, :timeout, timeout)
+  defp maybe_put_timeout(opts, _params), do: opts
 
   defp refresh_in_flight_count(socket) do
     count =
@@ -147,6 +170,8 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
       {@reply && @reply.denial && inspect(Map.get(@reply.denial.details, :failing_moment))}
     </div>
     <div id="reply-raw-reason">{@reply && @reply.denial && inspect(Map.get(@reply.denial.details, :raw_reason))}</div>
+    <div id="replies-by-ref-count">{map_size(@replies_by_ref)}</div>
+    <div id="replies-by-ref">{inspect(@replies_by_ref)}</div>
     """
   end
 end

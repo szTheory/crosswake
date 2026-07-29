@@ -67,6 +67,39 @@ defmodule Crosswake.Bridge do
       end
 
   Calling `push/3` on a socket that never attached raises `Crosswake.Bridge.NotMountedError`.
+
+  ## Correlation, exactly-once delivery, and reconnects
+
+  `push/3` mints an internal `correlation_id` that embeds a per-mount epoch, minted fresh
+  every time `attach/1` runs. A reply is delivered at most once: a three-layer
+  compare-and-delete (the server in-flight map in `socket.private`, the correlation id
+  itself, and the epoch) drops anything that fails a layer — before adopter code ever
+  runs — and emits a `[:crosswake, :bridge, :dropped]` telemetry event naming the reason
+  (`:duplicate` or `:foreign_epoch`) (D-23).
+
+  An in-flight ask does NOT survive a LiveView reconnect. A fresh `attach/1` call mints a
+  new epoch and a fresh in-flight table, so a reply minted under the previous epoch is
+  dropped as `:foreign_epoch` — resurrecting it would replay a user's answer into a
+  LiveView that never asked for it, which is precisely the "silently wrong" failure this
+  project exists to prevent (D-24). The recovery path is the fallback UI rebuilt from
+  assigns (Phase 155's generated fallback components), not resurrecting the stale ask.
+
+  When two independent answer sources race for the same ask — a native reply and an
+  on-page fallback click — call `Crosswake.Bridge.resolve/2` from the fallback handler.
+  It is an atomic compare-and-delete (safe because a LiveView is one serialized process);
+  whichever answer arrives first wins and the other finds nothing to resolve (D-25). Do
+  NOT route both answer sources into the same event name to "deduplicate" them — that
+  guarantees the same mutation runs twice.
+
+  ## Payload ceiling (forward-compatibility note, D-29)
+
+  Both native shells type the bridge payload as a string-to-string map (`[String: String]`
+  on iOS, `Map<String, String>` on Android). A future control whose payload does not fit
+  that shape (e.g. a structured list, as Phase 156's menu `actions:` will need) requires a
+  wire-only `Crosswake.Bridge.Contract` `@version` bump — not an adopter-API break, because
+  the capability handshake already routes an old native to the `:unavailable_capability`
+  denial, and that future phase is native-rebuild-required regardless. This module does not
+  solve that here; it is recorded so a future maintainer is not surprised by it.
   """
 
   alias Crosswake.Bridge.Contract
@@ -88,6 +121,12 @@ defmodule Crosswake.Bridge do
   @ack_deadline_tag :crosswake_bridge_ack_deadline
   @default_ack_deadline_ms 2_000
 
+  @reply_deadline_tag :crosswake_bridge_reply_deadline
+  @default_reply_timeout_ms 10_000
+  @reply_deadline_margin_ms 2_000
+
+  @correlation_epoch_regex ~r/^cwbridge-e(\d+)-/
+
   @failing_moments ~w(no_transport reply_timeout transport_error hook_not_wired)a
 
   @doc """
@@ -98,6 +137,11 @@ defmodule Crosswake.Bridge do
   wiring-deadline interceptor (`handle_info`) — both halt on Crosswake's own reserved
   messages and `{:cont, socket}` on everything else, so unrelated events and messages
   reach the LiveView's own callbacks unchanged.
+
+  Safe to call more than once on the same socket (e.g. a fresh `mount/3` after a
+  reconnect): any previously attached bridge hooks are detached first, then a fresh
+  epoch and in-flight table are minted (D-24) — a reply minted under the previous epoch
+  is dropped as `:foreign_epoch` rather than delivered into the newly attached state.
   """
   @spec attach(Phoenix.LiveView.Socket.t()) :: Phoenix.LiveView.Socket.t()
   def attach(%Phoenix.LiveView.Socket{} = socket) do
@@ -105,10 +149,13 @@ defmodule Crosswake.Bridge do
     route_id = required_assign!(socket, :crosswake_route_id)
 
     socket
+    |> Phoenix.LiveView.detach_hook(@private_key, :handle_event)
+    |> Phoenix.LiveView.detach_hook(@timer_hook_id, :handle_info)
     |> Phoenix.LiveView.put_private(@private_key, %{
       manifest: manifest,
       route_id: route_id,
-      in_flight: %{}
+      in_flight: %{},
+      epoch: mint_epoch()
     })
     |> Phoenix.LiveView.attach_hook(@private_key, :handle_event, &handle_bridge_event/3)
     |> Phoenix.LiveView.attach_hook(@timer_hook_id, :handle_info, &handle_bridge_info/2)
@@ -139,6 +186,12 @@ defmodule Crosswake.Bridge do
       fire-and-forget push (e.g. haptics) — no reply is delivered to `handle_info/2`
       in that case, matching the "no ref, no reply clause needed" shape.
     * `:payload` — the command payload map. Defaults to `%{}`.
+    * `:timeout` — milliseconds before the server-side reply backstop delivers a
+      `:shell_unreachable` denial (`details.failing_moment: :reply_timeout`) if no reply
+      has arrived. Defaults to `10_000`. Pass `:infinity` to opt a human-in-the-loop
+      control out of the backstop entirely (D-22). The client-side hook timer is primary
+      and dies with the client; this server timer is armed at `timeout + 2_000` ms so it
+      never races ahead of a healthy client-side timeout.
 
   Raises `Crosswake.Bridge.NotMountedError` if the socket never attached, and
   `Crosswake.Bridge.UndeclaredCapabilityError` if the route never declared
@@ -178,6 +231,34 @@ defmodule Crosswake.Bridge do
     end
   end
 
+  @doc """
+  Atomically clears the in-flight ask matching `ref`, returning the socket.
+
+  Safe to call from an on-page fallback UI's click handler because a LiveView is one
+  serialized process — this IS the compare-and-delete (D-25). Call it once: the native
+  reply path is then deduped automatically, because by the time (if ever) it arrives the
+  ask is already gone. A second call for the same `ref` is a no-op — it finds nothing and
+  returns the socket unchanged; it never raises.
+
+  Do NOT route the native reply and the fallback click into the same event name to
+  "deduplicate" them — that guarantees the same mutation runs twice (D-25's rejected
+  `API-DESIGN.md` alternative). `resolve/2` is the only mechanism.
+
+  Phase 155's generated fallback components ship with this call already wired in.
+  """
+  @spec resolve(Phoenix.LiveView.Socket.t(), term()) :: Phoenix.LiveView.Socket.t()
+  def resolve(%Phoenix.LiveView.Socket{} = socket, ref) do
+    state = fetch_state!(socket)
+
+    case Enum.find(state.in_flight, fn {_correlation_id, entry} -> entry.ref == ref end) do
+      nil ->
+        socket
+
+      {correlation_id, _entry} ->
+        put_state(socket, %{state | in_flight: Map.delete(state.in_flight, correlation_id)})
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Dispatch
   # ---------------------------------------------------------------------------
@@ -185,27 +266,46 @@ defmodule Crosswake.Bridge do
   defp dispatch(socket, state, entry, command, capability_family, opts) do
     ref = Keyword.get(opts, :ref)
     payload = Keyword.get(opts, :payload, %{})
-    correlation_id = generate_correlation_id()
+    timeout = Keyword.get(opts, :timeout, @default_reply_timeout_ms)
 
-    request =
-      Contract.new_request(
-        command: command,
-        capability: capability_family,
-        route_id: entry.route_id,
-        active_route_id: entry.route_id,
-        origin: List.first(entry.allowlisted_origins) || "",
-        native_runtime_version: "1.0.0",
-        correlation_id: correlation_id,
-        payload: payload
-      )
+    :telemetry.span(
+      [:crosswake, :bridge, :push],
+      %{route_id: state.route_id, capability: capability_family, command: command},
+      fn ->
+        correlation_id = generate_correlation_id(state.epoch)
 
-    Process.send_after(self(), {@ack_deadline_tag, correlation_id}, ack_deadline_ms())
+        request =
+          Contract.new_request(
+            command: command,
+            capability: capability_family,
+            route_id: entry.route_id,
+            active_route_id: entry.route_id,
+            origin: List.first(entry.allowlisted_origins) || "",
+            native_runtime_version: "1.0.0",
+            correlation_id: correlation_id,
+            payload: payload
+          )
 
-    new_state = track_in_flight(state, correlation_id, ref)
+        Process.send_after(self(), {@ack_deadline_tag, correlation_id}, ack_deadline_ms())
 
-    socket
-    |> put_state(new_state)
-    |> Phoenix.LiveView.push_event(@dispatch_event, Contract.to_map(request))
+        if timeout != :infinity do
+          Process.send_after(
+            self(),
+            {@reply_deadline_tag, correlation_id},
+            timeout + reply_deadline_margin_ms()
+          )
+        end
+
+        new_state = track_in_flight(state, correlation_id, ref, command, entry.route_id)
+
+        socket =
+          socket
+          |> put_state(new_state)
+          |> Phoenix.LiveView.push_event(@dispatch_event, Contract.to_map(request))
+
+        {socket, %{route_id: state.route_id, capability: capability_family, command: command}}
+      end
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -251,6 +351,8 @@ defmodule Crosswake.Bridge do
     socket =
       case Map.fetch(state.in_flight, correlation_id) do
         {:ok, %{acked: false}} ->
+          emit_hook_missing(state.route_id)
+
           resolve_and_deliver(socket, correlation_id, fn ->
             %Reply{
               status: :deny,
@@ -272,14 +374,46 @@ defmodule Crosswake.Bridge do
     {:halt, socket}
   end
 
+  # Server-side reply backstop (D-22): armed at push-time for `timeout + 2s` (never for an
+  # `:infinity` push). By the time this fires, the ask is either already resolved (a real
+  # reply, or the ack-deadline already delivered :hook_not_wired) — in which case the
+  # in-flight lookup below finds nothing and this is a no-op — or it was acked but the
+  # shell never answered, in which case this delivers the :reply_timeout variant.
+  defp handle_bridge_info({@reply_deadline_tag, correlation_id}, socket) do
+    state = fetch_state!(socket)
+
+    socket =
+      case Map.fetch(state.in_flight, correlation_id) do
+        {:ok, _entry} ->
+          resolve_and_deliver(socket, correlation_id, fn ->
+            %Reply{
+              status: :deny,
+              denial:
+                Denial.new(
+                  reason: :shell_unreachable,
+                  code: "shell_unreachable",
+                  message: "No reply arrived from the shell before the reply deadline.",
+                  details: %{failing_moment: :reply_timeout}
+                )
+            }
+          end)
+
+        :error ->
+          socket
+      end
+
+    {:halt, socket}
+  end
+
   defp handle_bridge_info(_msg, socket), do: {:cont, socket}
 
   # ---------------------------------------------------------------------------
   # In-flight bookkeeping
   # ---------------------------------------------------------------------------
 
-  defp track_in_flight(state, correlation_id, ref) do
-    %{state | in_flight: Map.put(state.in_flight, correlation_id, %{ref: ref, acked: false})}
+  defp track_in_flight(state, correlation_id, ref, command, route_id) do
+    entry = %{ref: ref, acked: false, command: command, route_id: route_id}
+    %{state | in_flight: Map.put(state.in_flight, correlation_id, entry)}
   end
 
   defp mark_acked(socket, nil), do: socket
@@ -289,6 +423,7 @@ defmodule Crosswake.Bridge do
 
     case Map.fetch(state.in_flight, correlation_id) do
       {:ok, entry} ->
+        emit_hook_ack(state.route_id)
         new_in_flight = Map.put(state.in_flight, correlation_id, %{entry | acked: true})
         put_state(socket, %{state | in_flight: new_in_flight})
 
@@ -297,29 +432,56 @@ defmodule Crosswake.Bridge do
     end
   end
 
-  # Exactly-once delivery for the reachable paths in this plan: a correlation id is
-  # removed from the in-flight map the first time ANY terminal event resolves it (a
-  # real reply, an unreachable fact, or the ack-deadline firing) — a second event for
-  # the same id finds nothing and is dropped, never delivered twice.
+  # Exactly-once delivery, structural not conventional (D-23). Two independent layers,
+  # checked in order, each gated before adopter code ever runs, each observable via
+  # telemetry when it drops something:
+  #
+  #   1. Epoch match — the correlation id embeds the epoch minted at attach/1 time. An
+  #      in-flight ask does NOT survive a LiveView reconnect (D-24): a fresh attach/1
+  #      mints a new epoch, so a reply minted under a stale epoch is dropped as
+  #      :foreign_epoch regardless of what (if anything) the in-flight map still holds.
+  #   2. The server in-flight map itself (`socket.private`) — a correlation id is removed
+  #      the first time ANY terminal event resolves it (a real reply, an unreachable fact,
+  #      the ack-deadline, or the reply-deadline firing). A second event for the same id
+  #      finds nothing and is dropped as :duplicate.
+  #
+  # (The hook's own client-side in-flight map is the third layer D-23 names; it is
+  # JS-side and out of this plan's scope — Plan 06 owns the hook.)
   defp resolve_and_deliver(socket, nil, _build_reply), do: socket
 
   defp resolve_and_deliver(socket, correlation_id, build_reply) do
     state = fetch_state!(socket)
 
-    case Map.pop(state.in_flight, correlation_id) do
-      {nil, _in_flight} ->
-        socket
+    if epoch_match?(state, correlation_id) do
+      case Map.pop(state.in_flight, correlation_id) do
+        {nil, _in_flight} ->
+          emit_dropped(state.route_id, :duplicate)
+          socket
 
-      {%{ref: ref}, in_flight} ->
-        socket = put_state(socket, %{state | in_flight: in_flight})
+        {%{ref: ref}, in_flight} ->
+          socket = put_state(socket, %{state | in_flight: in_flight})
+          reply = build_reply.()
+          emit_reply(state.route_id, reply)
 
-        # No `ref:` means the adopter opted for fire-and-forget (e.g. haptics) — Crosswake
-        # consumes the reply and delivers nothing to handle_info/2 (D-21).
-        if ref != nil do
-          send(self(), {:crosswake_bridge, ref, build_reply.()})
-        end
+          # No `ref:` means the adopter opted for fire-and-forget (e.g. haptics) —
+          # Crosswake consumes the reply (after emitting telemetry) and delivers nothing
+          # to handle_info/2 (D-21).
+          if ref != nil do
+            send(self(), {:crosswake_bridge, ref, reply})
+          end
 
-        socket
+          socket
+      end
+    else
+      emit_dropped(state.route_id, :foreign_epoch)
+      socket
+    end
+  end
+
+  defp epoch_match?(state, correlation_id) do
+    case Regex.run(@correlation_epoch_regex, correlation_id) do
+      [_full, epoch_str] -> String.to_integer(epoch_str) == state.epoch
+      nil -> false
     end
   end
 
@@ -565,11 +727,65 @@ defmodule Crosswake.Bridge do
 
   defp correlation_id_from(_other), do: nil
 
-  defp generate_correlation_id do
-    "cwbridge-" <> (12 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false))
+  # The epoch is embedded directly in the correlation id (D-23) so a foreign-epoch reply
+  # can be recognized as such independent of whether the in-flight map still happens to
+  # hold a matching key — see epoch_match?/2 above.
+  defp generate_correlation_id(epoch) do
+    random = 12 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false)
+    "cwbridge-e#{epoch}-#{random}"
   end
+
+  defp mint_epoch, do: System.unique_integer([:positive, :monotonic])
 
   defp ack_deadline_ms do
     Application.get_env(:crosswake, :bridge_ack_deadline_ms, @default_ack_deadline_ms)
+  end
+
+  defp reply_deadline_margin_ms do
+    Application.get_env(
+      :crosswake,
+      :bridge_reply_deadline_margin_ms,
+      @reply_deadline_margin_ms
+    )
+  end
+
+  # ---------------------------------------------------------------------------
+  # Telemetry (D-22 timers observability + the 5-event bridge catalog, Task 2)
+  # ---------------------------------------------------------------------------
+
+  # Every bridge event follows the same Keathley span shape as every other entry in
+  # Crosswake.Telemetry.events/0 (a prefix expanding to :start/:stop/:exception) so that
+  # Crosswake.Telemetry.attach_default_logger/1 and the merge-blocking declared<=>emitted
+  # contract test (test/crosswake/proof/phase133_telemetry_contract_test.exs) pick these up
+  # with zero special-casing. Metadata never includes the adopter-supplied `ref` or the
+  # correlation id itself (D-20, T-154-16) — only route_id/capability/command/status/reason,
+  # all low-cardinality.
+
+  defp emit_reply(route_id, %Reply{} = reply) do
+    metadata = %{route_id: route_id, command: reply.command, status: reply.status}
+
+    metadata =
+      if reply.status == :deny and reply.denial do
+        Map.put(metadata, :denial_reason, reply.denial.reason)
+      else
+        metadata
+      end
+
+    :telemetry.span([:crosswake, :bridge, :reply], metadata, fn -> {:ok, metadata} end)
+  end
+
+  defp emit_dropped(route_id, reason) do
+    metadata = %{route_id: route_id, reason: reason}
+    :telemetry.span([:crosswake, :bridge, :dropped], metadata, fn -> {:ok, metadata} end)
+  end
+
+  defp emit_hook_ack(route_id) do
+    metadata = %{route_id: route_id}
+    :telemetry.span([:crosswake, :bridge, :hook_ack], metadata, fn -> {:ok, metadata} end)
+  end
+
+  defp emit_hook_missing(route_id) do
+    metadata = %{route_id: route_id}
+    :telemetry.span([:crosswake, :bridge, :hook_missing], metadata, fn -> {:ok, metadata} end)
   end
 end

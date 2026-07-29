@@ -12,10 +12,19 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
 
   use ExUnit.Case, async: false
 
+  # NOTE: Phoenix.LiveViewTest/Phoenix.ConnTest are NOT imported at module level — their
+  # `live/2` would collide with Crosswake.Router's own `live/3` route macro used by
+  # StubTelemetryRouter below (both would be in scope at that nested module's
+  # definition point). They are imported locally, inside the one test that needs them
+  # (the Side A test), instead.
+
   alias Crosswake.Compatibility.RouteGate
   alias Crosswake.Compatibility.Target
   alias Crosswake.Manifest
+  alias Crosswake.TestSupport.Bridge.Case, as: BridgeCase
   alias Crosswake.TestSupport.ProofAssertions
+
+  @endpoint Crosswake.TestSupport.Bridge.Endpoint
 
   # ---------------------------------------------------------------------------
   # Minimal hermetic router: one gated route wired to :stub_telemetry companion
@@ -109,6 +118,9 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
   # ---------------------------------------------------------------------------
 
   test "TELEM-04 Side A: every :active event in events/0 is emitted when code paths are driven" do
+    import Phoenix.ConnTest
+    import Phoenix.LiveViewTest
+
     Application.put_env(:crosswake, :companions,
       [Crosswake.TestSupport.StubTelemetryCompanion])
     Application.put_env(:crosswake, :stub_telemetry, %{enabled: true})
@@ -162,6 +174,55 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
       %{duration: 0},
       %{kind: :error, reason: :test}
     )
+
+    # --- Drive the Phase 154 Crosswake.Bridge 5-event catalog (push, reply, dropped,
+    # hook_ack, hook_missing) via a real Phoenix.LiveViewTest round trip through the
+    # same self-contained Bridge test harness push_test.exs uses. ---
+    BridgeCase.start_endpoint!()
+    previous_ack_deadline = Application.get_env(:crosswake, :bridge_ack_deadline_ms)
+    Application.put_env(:crosswake, :bridge_ack_deadline_ms, 25)
+
+    on_exit(fn ->
+      case previous_ack_deadline do
+        nil -> Application.delete_env(:crosswake, :bridge_ack_deadline_ms)
+        value -> Application.put_env(:crosswake, :bridge_ack_deadline_ms, value)
+      end
+    end)
+
+    {:ok, bridge_view, _html} = live(build_conn(), "/bridge-tracer")
+
+    # push :start/:stop + hook_ack :start/:stop + reply :start/:stop (ok)
+    render_click(bridge_view, "dispatch", %{"ref" => "tap"})
+    assert_push_event(bridge_view, "crosswake:bridge", bridge_envelope)
+    bridge_correlation_id = bridge_envelope["correlation_id"]
+
+    render_hook(bridge_view, "crosswake:bridge_ack", %{"correlation_id" => bridge_correlation_id})
+
+    render_hook(bridge_view, "crosswake:bridge_reply", %{
+      "protocol" => "crosswake.bridge",
+      "version" => "1.1.0",
+      "command" => "haptics.impact",
+      "route_id" => "bridge-tracer",
+      "correlation_id" => bridge_correlation_id,
+      "status" => "ok",
+      "payload" => %{}
+    })
+
+    # dropped :start/:stop (:duplicate) — same correlation id, already resolved above
+    render_hook(bridge_view, "crosswake:bridge_reply", %{
+      "protocol" => "crosswake.bridge",
+      "version" => "1.1.0",
+      "command" => "haptics.impact",
+      "route_id" => "bridge-tracer",
+      "correlation_id" => bridge_correlation_id,
+      "status" => "ok",
+      "payload" => %{}
+    })
+
+    # hook_missing :start/:stop — a second ask that never acks, waited past the
+    # (test-shortened) wiring deadline
+    render_click(bridge_view, "dispatch", %{"ref" => "no_ack"})
+    Process.sleep(100)
 
     # Assert each :active event with declared measurement/metadata keys present
     # (subset assertion: declared keys are a subset of the emitted maps — D-16 Side A)
@@ -240,6 +301,51 @@ defmodule Crosswake.Proof.Phase133TelemetryContractTest do
     assert Map.has_key?(tl_stop_m, :duration)
     assert Map.has_key?(tl_stop_meta, :thread_id)
     assert Map.has_key?(tl_stop_meta, :source)
+
+    # bridge push :start/:stop — metadata includes route_id, capability, command; never ref (D-20)
+    assert_received {[:crosswake, :bridge, :push, :start], ^ref, push_start_m, push_start_meta}
+    assert Map.has_key?(push_start_m, :system_time)
+    assert Map.has_key?(push_start_meta, :route_id)
+    assert Map.has_key?(push_start_meta, :capability)
+    assert Map.has_key?(push_start_meta, :command)
+
+    assert_received {[:crosswake, :bridge, :push, :stop], ^ref, push_stop_m, _push_stop_meta}
+    assert Map.has_key?(push_stop_m, :duration)
+
+    # bridge hook_ack :start/:stop
+    assert_received {[:crosswake, :bridge, :hook_ack, :start], ^ref, hook_ack_start_m, hook_ack_start_meta}
+    assert Map.has_key?(hook_ack_start_m, :system_time)
+    assert Map.has_key?(hook_ack_start_meta, :route_id)
+
+    assert_received {[:crosswake, :bridge, :hook_ack, :stop], ^ref, hook_ack_stop_m, _hook_ack_stop_meta}
+    assert Map.has_key?(hook_ack_stop_m, :duration)
+
+    # bridge reply :start/:stop — the ok reply resolved above
+    assert_received {[:crosswake, :bridge, :reply, :start], ^ref, reply_start_m, reply_start_meta}
+    assert Map.has_key?(reply_start_m, :system_time)
+    assert Map.has_key?(reply_start_meta, :route_id)
+    assert Map.has_key?(reply_start_meta, :command)
+    assert Map.has_key?(reply_start_meta, :status)
+
+    assert_received {[:crosswake, :bridge, :reply, :stop], ^ref, reply_stop_m, _reply_stop_meta}
+    assert Map.has_key?(reply_stop_m, :duration)
+
+    # bridge dropped :start/:stop — the duplicate delivery of the same correlation id
+    assert_received {[:crosswake, :bridge, :dropped, :start], ^ref, dropped_start_m, dropped_start_meta}
+    assert Map.has_key?(dropped_start_m, :system_time)
+    assert Map.has_key?(dropped_start_meta, :route_id)
+    assert Map.has_key?(dropped_start_meta, :reason)
+
+    assert_received {[:crosswake, :bridge, :dropped, :stop], ^ref, dropped_stop_m, _dropped_stop_meta}
+    assert Map.has_key?(dropped_stop_m, :duration)
+
+    # bridge hook_missing :start/:stop — the second ask that never acked, past the deadline
+    assert_received {[:crosswake, :bridge, :hook_missing, :start], ^ref, hook_missing_start_m, hook_missing_start_meta}
+    assert Map.has_key?(hook_missing_start_m, :system_time)
+    assert Map.has_key?(hook_missing_start_meta, :route_id)
+
+    assert_received {[:crosswake, :bridge, :hook_missing, :stop], ^ref, hook_missing_stop_m, _hook_missing_stop_meta}
+    assert Map.has_key?(hook_missing_stop_m, :duration)
   end
 
   # ---------------------------------------------------------------------------
