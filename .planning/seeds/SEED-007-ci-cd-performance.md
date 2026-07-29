@@ -268,3 +268,47 @@ Target: ~25,500 → ~2,000–3,000 runner-seconds/push with the full proof set i
 - No auto-retry as a flake fix; quarantine + fix root cause.
 - `release-please.yml` is security-sensitive (REL-05 SHA pinning, two prior armed fuses) — treat
   its concurrency (`cancel-in-progress: false`, `queue: max`) as correct and do not "optimize" it.
+
+---
+
+## FLAKE-hex — hex.pm reachability from GitHub runners (observed 2026-07-29)
+
+**Three distinct failures in one afternoon**, all hex.pm reachability from GitHub-hosted
+runners, all on changes that could not possibly have caused them (one was docs-only). Local
+`curl` to `repo.hex.pm` and `builds.hex.pm` returned HTTP 200 in ~90 ms throughout, so this
+is runner-side reachability, not a global outage.
+
+| # | Where it broke | Symptom |
+|---|---|---|
+| 1 | `mix deps.get` registry lookup | `Failed to fetch record for nimble_options from registry` / `:timeout` / `** (Mix) Unknown package nimble_options in lockfile` |
+| 2 | `mix deps.get` tarball fetch | `** (Mix) Package fetch failed and no cached copy available (https://repo.hex.pm/tarballs/phoenix_live_view-1.1.30.tar)` |
+| 3 | `erlef/setup-beam` installing hex | `Action mix hex failed for mirror https://builds.hex.pm` / `Could not mix hex from any hex.pm mirror` |
+
+### What Phase 153.1 mitigated, and what it did not
+
+- **(2) is mitigated** — `.github/actions/setup-elixir-cache` now caches `~/.hex/packages`,
+  plus a bounded 3-attempt retry around `mix deps.get`.
+- **(1) is partially mitigated** — the retry helps; the registry metadata itself is not
+  cached, deliberately (see below).
+- **(3) is NOT mitigated and cannot be by a cache.** It happens inside `setup-beam`, before
+  any cache step exists, while bootstrapping hex itself. Mitigating it needs either a
+  retry wrapper around the setup step or a self-hosted/pre-baked toolchain image.
+
+### The trap to avoid (learned the expensive way)
+
+Caching all of `~/.hex` looks like the obvious fix for (1) and makes things **strictly
+worse**. The restored `cache.ets` came back `Error opening ETS file ... :badfile`, leaving
+Mix unable to read its registry at all and forcing exactly the live fetch the cache was
+meant to avoid — converting an occasional transient into a reliable failure across two
+lanes.
+
+Cache `~/.hex/packages` (inert tarballs). Never `cache.ets`. Asserted by
+`phase153_1_cache_integrity_test.exs`, which fails on a bare `path: ~/.hex` and prints the
+badfile output in the failure message.
+
+### Scoping note for a future FLAKE-* phase
+
+Retry belongs around **dependency fetches and toolchain setup** — network calls to third
+parties. It must never wrap `mix test`, `mix closeout.verify`, or a `verify_*.sh`; a retry
+there hides real defects. `retries_a_proof?/1` in the cache-integrity test enforces this,
+with negative controls proving the detector actually fires.
