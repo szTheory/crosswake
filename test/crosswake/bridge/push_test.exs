@@ -574,4 +574,77 @@ defmodule Crosswake.Bridge.PushTest do
     end
   end
 
+  # ---------------------------------------------------------------------------
+  # Task 3 — Crosswake.Bridge.Test, the render_hook/3 correlation-id fabrication
+  # helper without which the seam is untestable without a shell (D-77)
+  # ---------------------------------------------------------------------------
+
+  describe "Task 3: Crosswake.Bridge.Test (D-77)" do
+    test "produces an ok reply for the sole in-flight ask that, fed through render_hook/3, delivers a %Reply{status: :ok}" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "tap"})
+
+      reply = Crosswake.Bridge.Test.reply(view, status: :ok)
+      render_hook(view, "crosswake:bridge_reply", reply)
+
+      assert reply_element(view, "reply-ref") =~ ":tap"
+      assert reply_element(view, "reply-status") =~ ":ok"
+    end
+
+    test "produces a deny reply carrying a caller-chosen Shell.Denial reason" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "tap"})
+
+      denial =
+        Crosswake.Shell.Denial.new(
+          reason: :origin_denied,
+          code: "origin_denied",
+          message: "origin not allowlisted"
+        )
+
+      reply = Crosswake.Bridge.Test.reply(view, status: :deny, denial: denial)
+      render_hook(view, "crosswake:bridge_reply", reply)
+
+      assert reply_element(view, "reply-status") =~ ":deny"
+      assert reply_element(view, "reply-reason") =~ ":origin_denied"
+    end
+
+    test "calling the helper with nothing in flight raises a named error rather than fabricating a correlation id" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      assert_raise Crosswake.Bridge.NoAskInFlightError, ~r/no_ask_in_flight/, fn ->
+        Crosswake.Bridge.Test.reply(view, status: :ok)
+      end
+    end
+
+    test "with two asks in flight, the helper can select which one to answer" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "first"})
+      render_click(view, "dispatch", %{"ref" => "second"})
+
+      reply =
+        Crosswake.Bridge.Test.reply(view,
+          status: :ok,
+          select: fn asks -> Enum.find(asks, fn {_id, entry} -> entry.ref == :second end) end
+        )
+
+      render_hook(view, "crosswake:bridge_reply", reply)
+
+      assert reply_element(view, "reply-ref") =~ ":second"
+    end
+
+    test "calling the helper with two asks in flight and no :select raises the ambiguity error" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "first"})
+      render_click(view, "dispatch", %{"ref" => "second"})
+
+      assert_raise Crosswake.Bridge.NoAskInFlightError, ~r/ambiguous_ask/, fn ->
+        Crosswake.Bridge.Test.reply(view, status: :ok)
+      end
+    end
+  end
 end
