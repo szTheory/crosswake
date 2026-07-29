@@ -251,6 +251,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :fire_and_forget,
         prerequisites: [
           "bundled or cached manifest",
           "shell activation support",
@@ -268,6 +269,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :device_answer,
         prerequisites: ["declared route capability", "bounded bridge support"],
         denial: "undeclared_capability",
         fallback: "Phoenix route continues without native app metadata",
@@ -281,6 +283,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :fire_and_forget,
         prerequisites: ["declared route capability", "bounded bridge support"],
         denial: "undeclared_capability",
         fallback: "Phoenix route continues without native confirmation feedback",
@@ -294,6 +297,10 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :advisory,
         rebuild: :none,
+        # D-54's honesty-forcing case: share returns %{"outcome" => "requested"} —
+        # a request acknowledgement, not a completion — so it is
+        # :fire_and_forget even though it returns a payload.
+        interaction: :fire_and_forget,
         prerequisites: ["truthful semantic share contract"],
         denial: "undeclared_capability",
         fallback: "keep content in the Phoenix-owned route until a share family is declared",
@@ -306,6 +313,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :none,
+        interaction: :device_answer,
         prerequisites: [
           "declared route capability",
           "bounded bridge support",
@@ -322,6 +330,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :companion,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: [
           "declared route capability",
           "bounded bridge support",
@@ -341,6 +350,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :native_required,
+        interaction: :user_answer,
         prerequisites: [
           "declared transfer_id",
           "bounded bridge support",
@@ -360,6 +370,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :companion,
         proof_class: :merge_blocking,
         rebuild: :native_required,
+        interaction: :user_answer,
         prerequisites: ["native screen route", "capture pack availability"],
         denial: "pack_incompatible",
         fallback: "fail closed instead of degrading into a bounded web upload flow",
@@ -373,6 +384,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :defer,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["scanner-native runtime", "policy-heavy proof lane"],
         denial: "unavailable_capability",
         fallback: "defer scanner support until native and proof posture are explicit",
@@ -385,6 +397,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :defer,
         proof_class: :advisory,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["document-scan runtime", "policy-heavy proof lane"],
         denial: "unavailable_capability",
         fallback: "defer document scan support until native and proof posture are explicit",
@@ -397,6 +410,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :fire_and_forget,
         prerequisites: ["backend entitlement contract", "storefront guidance"],
         denial: "unavailable_capability",
         fallback: "fall back to Phoenix-owned paywall guidance without device authority",
@@ -409,6 +423,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["backend reconciliation", "provider-specific adapter"],
         denial: "unavailable_capability",
         fallback: "treat purchase events as reconciliation inputs, not entitlement truth",
@@ -421,6 +436,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :user_answer,
         prerequisites: ["backend reconciliation", "storefront-aware adapter"],
         denial: "unavailable_capability",
         fallback: "keep restore flow backend-owned until adapter truth is explicit",
@@ -433,6 +449,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: ["backend entitlement authority", "reconciliation hook"],
         denial: "unavailable_capability",
         fallback: "treat device-side state as evidence instead of final entitlement truth",
@@ -445,6 +462,7 @@ defmodule Crosswake.Manifest.Builder do
         package_class: :core,
         proof_class: :merge_blocking,
         rebuild: :companion_required,
+        interaction: :device_answer,
         prerequisites: ["backend reconciliation", "device callback or webhook"],
         denial: "unavailable_capability",
         fallback: "treat evidence as asynchronous payload without blocking route entry",
@@ -462,7 +480,14 @@ defmodule Crosswake.Manifest.Builder do
   defp compatibility_capability_attrs(nil, capability_id) do
     [
       id: capability_id,
-      version: capability_version(capability_id)
+      version: capability_version(capability_id),
+      # Fail-closed / least-claiming defaults for a capability id with no
+      # family-catalog match at all (D-51 for :rebuild, D-54 for
+      # :interaction) — declared explicitly here, not left to
+      # Types.new_capability/1's own defaults, so the value is visible in
+      # this committed literal per D-52.
+      rebuild: :native_required,
+      interaction: :fire_and_forget
     ]
   end
 
@@ -470,7 +495,11 @@ defmodule Crosswake.Manifest.Builder do
     attrs
     |> Keyword.put(:id, capability_id)
     |> Keyword.put(:version, capability_version(capability_id))
-    |> Keyword.put(:family, Keyword.fetch!(attrs, :family))
+    |> Keyword.merge(
+      family: Keyword.fetch!(attrs, :family),
+      rebuild: Keyword.fetch!(attrs, :rebuild),
+      interaction: Keyword.fetch!(attrs, :interaction)
+    )
     |> Keyword.delete(:legacy_ids)
   end
 

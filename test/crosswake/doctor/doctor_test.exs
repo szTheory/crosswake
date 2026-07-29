@@ -92,7 +92,7 @@ defmodule Crosswake.DoctorTest do
     assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
     assert report.support.release_policy.crosswake_version == Mix.Project.config()[:version]
-    assert report.support.release_policy.manifest_schema_version == "1.0.0"
+    assert report.support.release_policy.manifest_schema_version == "1.1.0"
     assert report.support.release_policy.bridge_protocol_version == Crosswake.Bridge.Contract.version()
     assert report.support.release_policy.native_runtime_version == "1.0.0"
     assert report.support.release_policy.package_version_truth =~ "Package versions alone"
@@ -192,7 +192,7 @@ defmodule Crosswake.DoctorTest do
 
     assert human =~ "support posture: supported"
     assert human =~ "release policy:"
-    assert human =~ "manifest_schema_version=1.0.0"
+    assert human =~ "manifest_schema_version=1.1.0"
     assert human =~ "bridge_protocol_version=#{Crosswake.Bridge.Contract.version()}"
     assert human =~ "native_runtime_version=1.0.0"
     assert human =~ "Package versions alone do not determine support truth"
@@ -211,7 +211,7 @@ defmodule Crosswake.DoctorTest do
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
-    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.1.0"
     assert decoded["support"]["release_policy"]["bridge_protocol_version"] == Crosswake.Bridge.Contract.version()
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
 

@@ -107,7 +107,7 @@ defmodule Crosswake.Manifest.Types do
   defmodule Capability do
     @moduledoc false
 
-    @enforce_keys [:id, :version]
+    @enforce_keys [:id, :version, :rebuild, :interaction]
     defstruct [
       :id,
       :version,
@@ -116,6 +116,7 @@ defmodule Crosswake.Manifest.Types do
       :package_class,
       :proof_class,
       :rebuild,
+      :interaction,
       :denial,
       :fallback,
       :guide,
@@ -129,6 +130,7 @@ defmodule Crosswake.Manifest.Types do
     @type package_class :: :core | :companion | :example_docs_only | :defer
     @type proof_class :: :merge_blocking | :advisory
     @type rebuild :: :none | :native_required | :companion_required
+    @type interaction :: :fire_and_forget | :device_answer | :user_answer
 
     @type t :: %__MODULE__{
             id: String.t(),
@@ -139,6 +141,7 @@ defmodule Crosswake.Manifest.Types do
             package_class: package_class(),
             proof_class: proof_class(),
             rebuild: rebuild(),
+            interaction: interaction(),
             prerequisites: [String.t()],
             denial: String.t(),
             fallback: String.t(),
@@ -704,10 +707,22 @@ defmodule Crosswake.Manifest.Types do
           }
   end
 
-  @manifest_schema_version "1.0.0"
+  @manifest_schema_version "1.1.0"
   @bridge_protocol_version Crosswake.Bridge.Contract.version()
   @native_runtime_version "1.0.0"
   @default_origin "https://example.crosswake.invalid"
+
+  @doc """
+  The canonical manifest schema version this running Elixir application
+  declares. This is the single source of truth other modules must read
+  from instead of hand-copying the literal — see the Phase 154 fix that
+  replaced two independently hardcoded `"1.0.0"` synthetic-target literals
+  (`Crosswake.Shell.Activation.target_from_request/1` and
+  `Crosswake.Compatibility.bridge_target/1`) that silently fell out of
+  sync the first time `@manifest_schema_version` was ever bumped.
+  """
+  @spec manifest_schema_version() :: String.t()
+  def manifest_schema_version, do: @manifest_schema_version
 
   @spec new_root(keyword()) :: Root.t()
   def new_root(attrs) when is_list(attrs) do
@@ -763,7 +778,17 @@ defmodule Crosswake.Manifest.Types do
       owner: Keyword.get(attrs, :owner, :defer),
       package_class: Keyword.get(attrs, :package_class, :defer),
       proof_class: Keyword.get(attrs, :proof_class, :advisory),
-      rebuild: Keyword.get(attrs, :rebuild, :none),
+      # Fail-closed default (D-51): an out-of-catalog/legacy capability id
+      # that reaches the compatibility path without an explicit :rebuild
+      # value is assumed to be the MOST demanding rebuild class, never the
+      # most permissive one — a maintainer's silence can never understate
+      # upgrade cost.
+      rebuild: Keyword.get(attrs, :rebuild, :native_required),
+      # Least-claiming default (D-54): the opposite direction from
+      # :rebuild's fail-closed default is correct here — :fire_and_forget
+      # is the interaction value that can never overclaim a completion the
+      # capability does not actually provide.
+      interaction: Keyword.get(attrs, :interaction, :fire_and_forget),
       prerequisites: Keyword.get(attrs, :prerequisites, ["declared route support"]),
       denial: Keyword.get(attrs, :denial, "unavailable_capability"),
       fallback: Keyword.get(attrs, :fallback, "fail_closed"),
@@ -1064,6 +1089,7 @@ defmodule Crosswake.Manifest.Types do
       "package_class" => format_package_class(capability.package_class),
       "proof_class" => format_proof_class(capability.proof_class),
       "rebuild" => format_rebuild(capability.rebuild),
+      "interaction" => format_interaction(capability.interaction),
       "prerequisites" => capability.prerequisites,
       "denial" => capability.denial,
       "fallback" => capability.fallback,
@@ -1339,6 +1365,10 @@ defmodule Crosswake.Manifest.Types do
   defp format_rebuild(:native_required), do: "native-required"
   defp format_rebuild(:companion_required), do: "companion-required"
   defp format_rebuild(rebuild), do: Atom.to_string(rebuild)
+  defp format_interaction(:fire_and_forget), do: "fire-and-forget"
+  defp format_interaction(:device_answer), do: "device-answer"
+  defp format_interaction(:user_answer), do: "user-answer"
+  defp format_interaction(interaction), do: Atom.to_string(interaction)
 
   defp atom_label(value) when is_atom(value), do: Atom.to_string(value)
   defp atom_label(value), do: value

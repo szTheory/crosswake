@@ -3,6 +3,8 @@ defmodule Crosswake.Manifest.BuilderTest do
 
   alias Crosswake.Bridge.Registry
   alias Crosswake.Manifest.Builder
+  alias Crosswake.Manifest.Types
+  alias Crosswake.Manifest.Types.Capability
   alias Crosswake.Offline.ContentPack
   alias Crosswake.Policy.Route
 
@@ -161,8 +163,84 @@ defmodule Crosswake.Manifest.BuilderTest do
 
       manifest = Builder.build([route], [managed_route])
 
-      assert %Crosswake.Manifest.Types.Capability{id: "some.unknown.capability"} =
+      assert %Crosswake.Manifest.Types.Capability{
+               id: "some.unknown.capability",
+               rebuild: :native_required,
+               interaction: :fire_and_forget
+             } =
                manifest.capability_registry["some.unknown.capability"]
+    end
+  end
+
+  describe "Capability rebuild + interaction — structurally unconstructable without both (D-51, D-52, D-54)" do
+    test "constructing a Capability without :rebuild raises ArgumentError naming :rebuild" do
+      error =
+        assert_raise ArgumentError, fn ->
+          struct!(Capability, %{id: "x", version: "1.0.0", interaction: :fire_and_forget})
+        end
+
+      assert Exception.message(error) =~ ":rebuild"
+    end
+
+    test "constructing a Capability without :interaction raises ArgumentError naming :interaction" do
+      error =
+        assert_raise ArgumentError, fn ->
+          struct!(Capability, %{id: "x", version: "1.0.0", rebuild: :none})
+        end
+
+      assert Exception.message(error) =~ ":interaction"
+    end
+
+    test "all 15 public catalog entries build successfully and each declares an explicit interaction value" do
+      registry = Builder.capability_registry([])
+
+      assert map_size(registry) == 15
+
+      assert Enum.all?(Map.values(registry), fn %Capability{interaction: interaction} ->
+               interaction in [:fire_and_forget, :device_answer, :user_answer]
+             end)
+    end
+
+    test "share declares :fire_and_forget — it returns a request acknowledgement, not a completion (D-54)" do
+      registry = Builder.capability_registry([])
+
+      assert %Capability{interaction: :fire_and_forget} = registry["share"]
+    end
+
+    test "app_info, permissions.status, and notification_token declare :device_answer; file_picker declares :user_answer" do
+      registry = Builder.capability_registry([])
+
+      assert %Capability{interaction: :device_answer} = registry["app_info"]
+      assert %Capability{interaction: :device_answer} = registry["permissions.status"]
+      assert %Capability{interaction: :device_answer} = registry["notification_token"]
+      assert %Capability{interaction: :user_answer} = registry["file_picker"]
+    end
+
+    test "haptics declares :fire_and_forget" do
+      registry = Builder.capability_registry([])
+
+      assert %Capability{interaction: :fire_and_forget} = registry["haptics"]
+    end
+
+    test "the compatibility path for a capability id absent from the catalog yields rebuild: :native_required and interaction: :fire_and_forget without raising" do
+      route = %Route{
+        id: "unmatched-route",
+        runtime: :live_view,
+        offline: :cached_read_only,
+        capabilities: ["totally.unknown.capability"]
+      }
+
+      registry = Builder.capability_registry([route])
+
+      assert %Capability{rebuild: :native_required, interaction: :fire_and_forget} =
+               registry["totally.unknown.capability"]
+    end
+
+    test "the built manifest reports manifest_schema_version 1.1.0" do
+      manifest = Builder.build([], [])
+
+      assert manifest.manifest_schema_version == "1.1.0"
+      assert Types.new_compatibility().manifest_schema_version == "1.1.0"
     end
   end
 end
