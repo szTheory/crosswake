@@ -403,7 +403,8 @@ defmodule Crosswake.Bridge.CatalogGuardTest do
 
   describe "extract_native_denial_reasons/1" do
     test "extracts a Swift labelled-argument reason literal" do
-      swift = ~S|completion(deny(request, reason: "origin_denied", message: "Nope.", hint: "Retry."))|
+      swift =
+        ~S|completion(deny(request, reason: "origin_denied", message: "Nope.", hint: "Retry."))|
 
       assert ["origin_denied"] = CatalogGuard.extract_native_denial_reasons(swift)
     end
