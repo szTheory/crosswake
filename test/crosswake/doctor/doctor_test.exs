@@ -116,6 +116,8 @@ defmodule Crosswake.DoctorTest do
                "notification_open_denied",
                "origin_denied",
                "pack_incompatible",
+               # Phase 154, D-12: the 14th closed reason, added by the control-contract seam.
+               "shell_unreachable",
                "step_up_required",
                "undeclared_capability",
                "unavailable_capability"
