@@ -18,6 +18,13 @@ The public families behind that posture are `app_info`, `haptics`, `permissions.
 else is denied. The bridge is not navigation authority, not render synchronization,
 and not a generic plugin bus. `deep_link` remains manifest-first shell activation truth, not route-local bridge or navigation authority.
 
+Route policy declares the family (`"haptics"`); the bridge dispatches the command
+(`"haptics.impact"`). These stay two distinct vocabularies on purpose — one names
+what a route is authorized to do, the other names what goes over the wire. A route
+that still declares the older dotted command id as its capability keeps authorizing
+indefinitely (no compile-time warning, no removal); `mix crosswake.doctor` names
+any route still doing so, alongside the family id to write instead.
+
 ## Request Envelope
 
 Every request carries:

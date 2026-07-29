@@ -48,6 +48,13 @@ Route DSL declarations should use semantic family ids such as `app_info`, `hapti
 commands like `app.info.get`, `haptics.impact`, `share.invoke`, and `files.pick`
 remain protocol details rather than the public route-policy vocabulary.
 
+Route policy declares families; the bridge dispatches commands. A route that still
+declares an older dotted command id (for example `capabilities: ["haptics.impact"]`
+instead of `capabilities: ["haptics"]`) keeps authorizing indefinitely — every
+family's `legacy_ids` list is accepted permanently, and there is no compile-time
+warning for the older form. `mix crosswake.doctor` is the surface that names any
+route still declaring a legacy id, alongside the family id to write instead.
+
 ## Bounded Bridge
 
 `bounded_bridge` families keep the route Phoenix-owned. Crosswake may expose one
