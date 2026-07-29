@@ -2,18 +2,15 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 154
-current_phase_name: the-control-contract-seam
 status: executing
-stopped_at: Completed 154-01-PLAN.md
-last_updated: "2026-07-29T18:13:11.017Z"
+stopped_at: Completed 154-02-PLAN.md
+last_updated: "2026-07-29T18:58:31.414Z"
 last_activity: 2026-07-29
-last_activity_desc: Phase 154 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 7
+  completed_plans: 8
   percent: 17
 ---
 
@@ -29,13 +26,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 154 (the-control-contract-seam) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
-Last activity: 2026-07-29 -- Phase 154 execution started
+Last activity: 2026-07-29
 
-Progress: [█████░░░░░] 47% (1 of 5 milestone phases; 153.1 is an insertion)
+Progress: [█████░░░░░] 53%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -148,6 +145,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 154 P01 | 25min | 3 tasks | 13 files |
+| Phase 154 P02 | 70min | 3 tasks | 33 files |
 
 ## Accumulated Context
 
@@ -279,6 +277,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: release-failure-alert.needs extended to the four native jobs plus native-release-rollup (D-15); native-release-rollup exits 1 on partial native release (D-17)
 - [Phase ?]: Six scanner checks rewritten/added in check_release_workflow_integrity.exs for D-11/D-12/D-13/D-15/D-17/D-03/D-04, each with a decoy test (D-20)
 - [Phase ?]: 154-01: flipped published haptics vocabulary to family id (route policy declares families, bridge dispatches commands); fixed self-referential legacy_ids bug universally; added doctor legacy-capability-id advisory
+- [Phase ?]: 154-02: Capability.@enforce_keys widened to [:id,:version,:rebuild,:interaction]; manifest_schema_version bumped 1.0.0->1.1.0; fixed two independently hardcoded schema-version literals (Activation.target_from_request/1, Compatibility.bridge_target/1) discovered mid-execution; doctor gains capability_rebuild_findings/1; capability map/support matrix/changelog surface rebuild+interaction cost
 
 ### Pending Todos
 
@@ -366,8 +365,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-29T18:13:10.998Z
-Stopped at: Completed 154-01-PLAN.md
+Last session: 2026-07-29T18:58:31.410Z
+Stopped at: Completed 154-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

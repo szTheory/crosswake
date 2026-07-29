@@ -288,7 +288,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 154-02-PLAN.md — PR #1b: make rebuild + interaction class unconstructable-without, add the doctor rebuild finding, surface rebuild cost in guides and changelog
+- [x] 154-02-PLAN.md — PR #1b: make rebuild + interaction class unconstructable-without, add the doctor rebuild finding, surface rebuild cost in guides and changelog
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -370,7 +370,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
-| 154. The Control-Contract Seam | v20.0 | 1/8 | In Progress|  |
+| 154. The Control-Contract Seam | v20.0 | 2/8 | In Progress|  |
 | 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |

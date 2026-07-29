@@ -45,7 +45,7 @@ The reusable machinery. Once this exists, controls 4..N are cheap, repeatable wo
 - [ ] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
 - [x] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
 - [ ] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
-- [ ] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
+- [x] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
 
 ### MENU — the first genuinely-new native control
 
@@ -121,7 +121,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | CTRL-02 | Phase 154 | Pending |
 | CTRL-03 | Phase 154 | Complete |
 | CTRL-04 | Phase 154 | Pending |
-| CTRL-05 | Phase 154 | Pending |
+| CTRL-05 | Phase 154 | Complete |
 | PROOF-04 | Phase 154 | Pending |
 | HRDN-01 | Phase 154 | Pending |
 | FALL-01 | Phase 155 | Pending |
