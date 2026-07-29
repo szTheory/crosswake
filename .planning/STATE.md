@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-status: planning
-stopped_at: Phase 154 context gathered
-last_updated: "2026-07-29T16:35:34.649Z"
-last_activity: 2026-07-29 - Phase 153.1 complete
+status: ready_to_execute
+stopped_at: Phase 154 planned (8 plans, 7 waves)
+last_updated: "2026-07-29T20:15:00.000Z"
+last_activity: 2026-07-29 - Phase 154 planned (8 plans, 7 waves)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 7
+  total_plans: 15
   completed_plans: 6
   percent: 17
 ---
@@ -21,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 153 — ios-mirror-unblock
+**Current focus:** Phase 154 — the-control-contract-seam
 
 ## Current Position
 
+Phase: 154 (the-control-contract-seam) — **PLANNED**, ready to execute (8 plans, 7 waves)
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Awaiting the human-gated 153-02 step, or ready to plan Phase 154
-Last activity: 2026-07-29 - Phase 153.1 complete
+Status: Ready to execute Phase 154. The 153-02 human gate remains open but blocks only Phase 156.
+Last activity: 2026-07-29 - Phase 154 planned (8 plans, 7 waves)
 
 Progress: [██░░░░░░░░] 20% (1 of 5 milestone phases; 153.1 is an insertion)
 
