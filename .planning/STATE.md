@@ -2,18 +2,16 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 153.1
-current_phase_name: ci-gate-integrity-and-runner-cost
-status: executing
-stopped_at: Phase 153.1 complete (3/3 plans merged); Phase 153 blocked on human-gated 153-02
-last_updated: "2026-07-29T00:00:00.000Z"
-last_activity: 2026-07-29 - Phase 153.1 complete: CI gate integrity + runner cost. Wall-clock time-to-green 34.9 -> 5.8 min. PRs #91/#93/#94/#95/#96/#97 merged.
+status: planning
+stopped_at: Phase 154 context gathered
+last_updated: "2026-07-29T16:35:34.649Z"
+last_activity: 2026-07-29 - Phase 153.1 complete
 progress:
-  total_phases: 5
-  completed_phases: 0
+  total_phases: 6
+  completed_phases: 1
   total_plans: 7
   completed_plans: 6
-  percent: 20
+  percent: 17
 ---
 
 # Project State: Crosswake
@@ -357,9 +355,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-13T18:15:35.650Z
-Stopped at: Phase 153 context gathered
-Resume file: None
+Last session: 2026-07-29T16:35:34.643Z
+Stopped at: Phase 154 context gathered
+Resume file: .planning/phases/154-the-control-contract-seam/154-CONTEXT.md
 
 ## Operator Next Steps
 
