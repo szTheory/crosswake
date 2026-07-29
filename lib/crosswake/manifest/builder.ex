@@ -471,6 +471,7 @@ defmodule Crosswake.Manifest.Builder do
     |> Keyword.put(:id, capability_id)
     |> Keyword.put(:version, capability_version(capability_id))
     |> Keyword.put(:family, Keyword.fetch!(attrs, :family))
+    |> Keyword.delete(:legacy_ids)
   end
 
   defp capability_version(_capability), do: "1.0.0"

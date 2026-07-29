@@ -26,7 +26,8 @@ for path <- paths do
   Code.require_file(Path.expand(path, File.cwd!()))
 end
 
-{:ok, %{json: json}} = Crosswake.Manifest.compile(CrosswakeExample.Router)
+{:ok, %{manifest: manifest}} = Crosswake.Manifest.compile(CrosswakeExample.Router)
+json = Crosswake.Manifest.render(manifest)
 
 File.write!("examples/ios_shell_host/Fixtures/crosswake_manifest.json", json)
 File.write!("examples/android_shell_host/app/src/main/assets/crosswake_manifest.json", json)

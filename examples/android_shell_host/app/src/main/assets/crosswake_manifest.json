@@ -26,10 +26,7 @@
       "family": "media_capture",
       "guide": "guides/native_shell.md#native-capture-escape-hatch",
       "id": "camera",
-      "legacy_ids": [
-        "camera",
-        "camera.capture"
-      ],
+      "legacy_ids": [],
       "owner": "native_screen",
       "package_class": "companion",
       "prerequisites": [
@@ -124,26 +121,6 @@
       "family": "haptics",
       "guide": "guides/bridge.md#bounded-bridge",
       "id": "haptics",
-      "legacy_ids": [
-        "haptics.impact"
-      ],
-      "owner": "bounded_bridge",
-      "package_class": "core",
-      "prerequisites": [
-        "declared route capability",
-        "bounded bridge support"
-      ],
-      "proof_class": "merge-blocking",
-      "rebuild": "none",
-      "status": "supported",
-      "version": "1.0.0"
-    },
-    "haptics.impact": {
-      "denial": "undeclared_capability",
-      "fallback": "Phoenix route continues without native confirmation feedback",
-      "family": "haptics",
-      "guide": "guides/bridge.md#bounded-bridge",
-      "id": "haptics.impact",
       "legacy_ids": [
         "haptics.impact"
       ],
@@ -671,7 +648,7 @@
       ],
       "cache_contract": null,
       "capabilities": [
-        "haptics.impact"
+        "haptics"
       ],
       "commerce": null,
       "entry": "external",

@@ -165,7 +165,7 @@ async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOp
   expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('id: "saas-dashboard"');
   expect(router, ownerMessage('saas-approvals', 'live_view')).toContain('id: "saas-approvals"');
   expect(router, ownerMessage('saas-approval', 'live_view + bounded haptics')).toContain('id: "saas-approval"');
-  expect(router, ownerMessage('saas-approval', 'bounded haptics capability')).toContain('capabilities: ["haptics.impact"]');
+  expect(router, ownerMessage('saas-approval', 'bounded haptics capability')).toContain('capabilities: ["haptics"]');
 
   await page.goto('/saas/dashboard');
   await expect(page, ownerMessage('saas-dashboard', 'browser title')).toHaveTitle('Dashboard · AdminPilot · Crosswake');
