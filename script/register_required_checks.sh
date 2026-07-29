@@ -37,7 +37,13 @@ ACTIONS_APP_ID="${ACTIONS_APP_ID:-15368}"
 DRY_RUN="${DRY_RUN:-1}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
 
-mapfile -t ALL_DECLARED < <(python3 script/list_merge_blocking_checks.py)
+# NOT `mapfile` — that is bash 4.0+, and macOS ships bash 3.2.57. See the same note in
+# check_required_checks_registered.sh: this is run by maintainers on Macs, where `mapfile` fails
+# with "command not found" and the script exits 127 before registering anything.
+ALL_DECLARED=()
+while IFS= read -r _line; do
+  [ -n "$_line" ] && ALL_DECLARED+=("$_line")
+done < <(python3 script/list_merge_blocking_checks.py)
 if [ "${#ALL_DECLARED[@]}" -eq 0 ]; then
   echo "[crosswake] No merge-blocking checks declared in .github/workflows — nothing to register."
   exit 0

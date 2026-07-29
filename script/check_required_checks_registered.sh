@@ -24,7 +24,14 @@ REPO="${REPO:-szTheory/crosswake}"
 BRANCH="${BRANCH:-main}"
 EP="repos/${REPO}/branches/${BRANCH}/protection/required_status_checks"
 
-mapfile -t DECLARED < <(python3 script/list_merge_blocking_checks.py)
+# NOT `mapfile` — that is bash 4.0+, and macOS ships bash 3.2.57 (frozen at the last GPLv2
+# release). This script is run by maintainers on Macs and by macOS CI runners, where `mapfile`
+# fails with "command not found" and the script exits 127 before checking anything. A gate script
+# that cannot run is indistinguishable from a gate that passes.
+DECLARED=()
+while IFS= read -r _line; do
+  [ -n "$_line" ] && DECLARED+=("$_line")
+done < <(python3 script/list_merge_blocking_checks.py)
 if [ "${#DECLARED[@]}" -eq 0 ]; then
   echo "[crosswake] No merge-blocking checks declared — nothing to verify."
   exit 0

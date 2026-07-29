@@ -92,6 +92,29 @@ defmodule Crosswake.Proof.Phase153_1GateIntegrityTest do
     assert out =~ "b.yml"
   end
 
+  test "the gate scripts are bash 3.2 compatible (macOS ships 3.2.57)" do
+    # Caught in CI on the first run of this file: check_required_checks_registered.sh used
+    # `mapfile`, which is bash 4.0+. macOS is frozen at bash 3.2.57 (the last GPLv2 release), so on
+    # every macOS runner the script died with "mapfile: command not found" and exit 127 BEFORE
+    # checking anything. A gate script that cannot run is indistinguishable from one that passes.
+    #
+    # Guard the constructs that actually bit, not a general lint: mapfile/readarray (4.0),
+    # associative arrays (4.0), and case-conversion expansions (4.0).
+    for script <- [@checker, "script/register_required_checks.sh"] do
+      src = File.read!(script)
+
+      for {pattern, feature} <- [
+            {~r/^\s*(mapfile|readarray)\b/m, "mapfile/readarray"},
+            {~r/declare\s+-A\b/, "associative arrays (declare -A)"},
+            {~r/\$\{[a-zA-Z_][a-zA-Z0-9_]*(,,|\^\^)\}/, "case-conversion expansion"}
+          ] do
+        refute Regex.match?(pattern, src),
+               "#{script} uses #{feature}, which is bash 4.0+. macOS ships bash 3.2.57, " <>
+                 "so this script would exit 127 there without checking anything."
+      end
+    end
+  end
+
   @tag :tmp_dir
   test "negative control: a unique-name tree passes the uniqueness assertion", %{tmp_dir: tmp} do
     # Guards the other direction: a check that always fails is as useless as one that never does.
