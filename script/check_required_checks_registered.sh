@@ -30,6 +30,30 @@ if [ "${#DECLARED[@]}" -eq 0 ]; then
   exit 0
 fi
 
+# --- Uniqueness (GATE-01) -----------------------------------------------------------------
+# Asserting only that a name is REGISTERED is not enough. Branch protection matches required
+# contexts by STRING, so if two jobs emit the same name, GitHub cannot tell them apart and a red
+# run can be masked by a green one — the gate fails open while looking fully registered. Three
+# such collisions survived in this repo precisely because this script checked presence, not
+# uniqueness.
+#
+# This runs BEFORE the branch-protection read on purpose: it is a pure local check on the
+# workflow files, so it stays meaningful in CI where no repo-admin token exists and the
+# registration half exits 3 UNVERIFIED.
+dupes="$(python3 script/list_merge_blocking_checks.py --emitters \
+           | awk -F'\t' '{c[$1]++; src[$1]=src[$1]"\n      - "$2" ("$3")"} END{for(n in c) if(c[n]>1) printf "%s%s\n", n, src[n]}')"
+
+if [ -n "$dupes" ]; then
+  echo "[crosswake] FAIL: duplicate-merge-blocking-name - one check name is emitted by more than one job."
+  echo "$dupes" | sed 's/^\([^ ]\)/  - \1/'
+  echo "[crosswake]   Branch protection matches required contexts by string, so these are"
+  echo "[crosswake]   indistinguishable: a red run can be masked by a green one and the gate"
+  echo "[crosswake]   fails open while still reporting as registered."
+  echo "[crosswake]   What to do next: rename the later-phase emitter, keeping the"
+  echo "[crosswake]   'merge-blocking' substring so auto-discovery still finds it."
+  exit 1
+fi
+
 if ! current="$(gh api "${EP}" 2>/dev/null)"; then
   echo "[crosswake] UNVERIFIED (exit 3): cannot read branch protection for ${REPO}@${BRANCH}."
   echo "[crosswake]   Needs gh CLI authenticated with repo-admin scope. This is NOT a pass —"
