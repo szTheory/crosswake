@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: packages/crosswake-shell-core-android/.gradle
           key: gradle-${{ hashFiles('packages/crosswake-shell-core-android/build.gradle.kts') }}
@@ -76,7 +76,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: packages/crosswake-shell-core-ios/.build
           key: spm-${{ hashFiles('packages/crosswake-shell-core-ios/Package.swift') }}
