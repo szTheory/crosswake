@@ -1,0 +1,1 @@
+{"content":"Phoenix contexts centralize domain boundaries and data access; plan Fieldserv as a lane-local context wrapping fixture breadth and narrow workflow persistence instead of scattering query or state logic in LiveViews.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-07-11T15:44:36.686Z","ttl":86400000,"kind":"docs"}
