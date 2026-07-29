@@ -1,1 +1,0 @@
-{"content":"Mix.Task official docs say a public Mix task module uses Mix.Tasks.*, use Mix.Task, implements run/1, and can expose @shortdoc/@moduledoc for mix help; @requirements app.config/loadpaths/app.start define task setup levels.","source":"web","provider":"webfetch","confidence":"LOW","fetched_at":"2026-07-08T21:04:57.417Z","ttl":86400000,"kind":"docs"}

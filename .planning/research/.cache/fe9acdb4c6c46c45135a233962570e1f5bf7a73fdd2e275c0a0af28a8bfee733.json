@@ -1,1 +1,0 @@
-{"content":"Elixir OptionParser official docs show strict boolean parsing returns parsed opts, argv, and invalid entries; parse!/2 raises on invalid options, while parse/2 lets the task decide how to raise.","source":"web","provider":"webfetch","confidence":"LOW","fetched_at":"2026-07-08T21:04:57.454Z","ttl":86400000,"kind":"docs"}
