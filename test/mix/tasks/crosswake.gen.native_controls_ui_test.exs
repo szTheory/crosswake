@@ -122,6 +122,17 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUiTest do
              "If you can offer undo instead of asking \"are you sure?\", offer undo instead of this modal."
   end
 
+  test "the printed next-steps output also covers action_menu/1: trigger markup and the select handler" do
+    run(["--dir", @tmp_dir, "--app", "Demo"])
+    messages = Enum.join(drain_shell_messages(), "\n")
+
+    assert messages =~ "DemoWeb.CrosswakeFallbacks.action_menu"
+    assert messages =~ ~s|aria-expanded={@menu_open}|
+    assert messages =~ ~s|aria-controls="my-actions-menu"|
+    assert messages =~ ~s|trigger_id="my-actions-trigger"|
+    assert messages =~ ~s|handle_event("crosswake_fallback_answer", %{"id" => id}, socket)|
+  end
+
   test "a destination directory that cannot be written raises via Mix.raise carrying a formatted reason, not a bare File.Error" do
     blocked_dir = Path.join(@tmp_dir, "blocked")
     File.mkdir_p!(blocked_dir)

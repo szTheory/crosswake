@@ -6,7 +6,8 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
   Phoenix host:
 
     * `lib/<app>_web/components/crosswake_fallbacks.ex` — a `Phoenix.Component`
-      module carrying `confirm_modal/1`
+      module carrying `confirm_modal/1` (two tones: neutral and destructive),
+      `action_menu/1`, and `fallback_alert/1`
     * `priv/static/assets/crosswake_fallback.css` — its stylesheet, a scoped
       `--cwfb-*` alias layer over the library's `--cw-*` tokens
 
@@ -59,7 +60,7 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
   @component_template "crosswake_fallbacks.ex.eex"
   @stylesheet_template "crosswake_fallback.css.eex"
 
-  @template_version 1
+  @template_version 2
 
   @stamp_slug "crosswake:native-controls-ui"
 
@@ -263,6 +264,46 @@ defmodule Mix.Tasks.Crosswake.Gen.NativeControlsUi do
     no native alert/confirm bridge family; see REQUIREMENTS.md).
 
     If you can offer undo instead of asking "are you sure?", offer undo instead of this modal.
+
+    4. Render the action menu next to your own trigger button, referencing
+       this component's `id` for `aria-controls` and pairing `trigger_id`
+       back to the trigger's own `id` (this component never renders a
+       trigger itself):
+
+           <button
+             type="button"
+             id="my-actions-trigger"
+             aria-expanded={@menu_open}
+             aria-controls="my-actions-menu"
+             phx-click="open_action_menu"
+           >
+             Actions
+           </button>
+
+           <#{app_module}Web.CrosswakeFallbacks.action_menu
+             id="my-actions-menu"
+             trigger_id="my-actions-trigger"
+             open={@menu_open}
+             actions={[
+               %{id: "reassign", label: "Reassign job", destructive: false, icon: nil},
+               %{id: "delete", label: "Delete job", destructive: true, icon: nil}
+             ]}
+           />
+
+    5. Paste this handle_event clause for menu row selection, and merge the
+       menu's open assign into the crosswake_fallback_dismiss clause you
+       already pasted in step 3:
+
+           def handle_event("crosswake_fallback_answer", %{"id" => id}, socket) do
+             # TODO: look up the action for `id` and run its mutation. Route
+             # a destructive selection through your own confirm_modal first —
+             # never straight to the mutation.
+             {:noreply, assign(socket, menu_open: false)}
+           end
+
+    Do not add a `role="menu"` attribute if you customize this markup — the
+    component deliberately does not claim that ARIA contract (see the
+    module's docs for why).
     """)
   end
 

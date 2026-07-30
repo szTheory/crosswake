@@ -88,7 +88,7 @@ test.describe('Phase 155 native-controls fallback — tracer proof', () => {
     expect(source, 'the committed component must carry the FALL-01 provenance stamp').toContain(
       'crosswake:native-controls-ui',
     );
-    expect(source).toContain('template_version=1');
+    expect(source).toContain('template_version=2');
   });
 });
 

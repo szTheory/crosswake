@@ -18,6 +18,17 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   @haptics_family "haptics"
   @haptics_ref :approval_haptics
 
+  # Phase 155 Plan 06 (FALL-01) — the frozen `actions` shape (D-53):
+  # [%{id, label, destructive, icon}], `icon` reserved and never rendered.
+  # Deliberately three rows: one selectable neutral action, one disabled row
+  # carrying its reason inline (id: nil, per action_menu/1's docs), and one
+  # destructive row that always routes through the destructive confirm tone.
+  @native_controls_menu_actions [
+    %{id: "flag", label: "Flag for review", destructive: false, icon: nil},
+    %{id: nil, label: "Reassign job — needs a supervisor", destructive: false, icon: nil},
+    %{id: "delete", label: "Delete job", destructive: true, icon: nil}
+  ]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
@@ -35,8 +46,11 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
         diagnostics_rows: Diagnostics.route_policy_rows(),
         diagnostics_links: Diagnostics.guide_links(),
         confirm_open: false,
+        destructive_confirm_open: false,
         confirm_demo_notice: nil,
-        confirm_error: nil
+        confirm_error: nil,
+        menu_open: false,
+        menu_actions: @native_controls_menu_actions
       )
       |> Bridge.attach()
 
@@ -94,27 +108,69 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   end
 
   # ---------------------------------------------------------------------------
-  # Native-controls fallback (Phase 155 FALL-01/PROOF-01) — a generated,
-  # host-owned confirm modal. This is additive: it demonstrates the generated
-  # confirm_modal/1 on its own trigger and does not alter the "approve"
-  # handle_event above, which Phase 154's evidence-panel proof is pinned to.
+  # Native-controls fallback (Phase 155 FALL-01/PROOF-01) — generated,
+  # host-owned components. This is additive: it demonstrates the generated
+  # confirm_modal/1 (both tones), action_menu/1, and fallback_alert/1 on
+  # their own triggers and does not alter the "approve" handle_event above,
+  # which Phase 154's evidence-panel proof is pinned to.
+  #
+  # Event names are fixed and shared across both surfaces (D-06):
+  # crosswake_fallback_answer disambiguates by payload shape — %{"answer" =>
+  # "confirm"} for either confirm_modal instance (dispatched below by which
+  # `_open` assign is currently true, since only one is ever open at a time),
+  # %{"id" => id} for an action_menu row selection. crosswake_fallback_dismiss
+  # is shared verbatim and closes whichever surface is open.
   # ---------------------------------------------------------------------------
 
   def handle_event("open_confirm_demo", _params, socket) do
     {:noreply, assign(socket, confirm_open: true, confirm_demo_notice: nil, confirm_error: nil)}
   end
 
+  def handle_event("open_action_menu", _params, socket) do
+    {:noreply, assign(socket, menu_open: true, confirm_demo_notice: nil, confirm_error: nil)}
+  end
+
+  def handle_event("crosswake_fallback_answer", %{"id" => id}, socket) do
+    case Enum.find(socket.assigns.menu_actions, &(&1.id == id)) do
+      %{destructive: true} ->
+        # The destructive row never emits a mutation directly — it opens the
+        # destructive confirm tone, which is the only path to the mutation.
+        {:noreply, assign(socket, menu_open: false, destructive_confirm_open: true)}
+
+      %{destructive: false} ->
+        {:noreply,
+         assign(socket,
+           menu_open: false,
+           confirm_demo_notice: "Flagged for review.",
+           confirm_error: nil
+         )}
+
+      nil ->
+        {:noreply, assign(socket, menu_open: false)}
+    end
+  end
+
   def handle_event("crosswake_fallback_answer", %{"answer" => "confirm"}, socket) do
-    {:noreply,
-     assign(socket,
-       confirm_open: false,
-       confirm_demo_notice: "Approved. The requester was notified.",
-       confirm_error: nil
-     )}
+    if socket.assigns.destructive_confirm_open do
+      {:noreply,
+       assign(socket,
+         destructive_confirm_open: false,
+         confirm_demo_notice: "Deleted. The job and its photos are gone.",
+         confirm_error: nil
+       )}
+    else
+      {:noreply,
+       assign(socket,
+         confirm_open: false,
+         confirm_demo_notice: "Approved. The requester was notified.",
+         confirm_error: nil
+       )}
+    end
   end
 
   def handle_event("crosswake_fallback_dismiss", _params, socket) do
-    {:noreply, assign(socket, confirm_open: false)}
+    {:noreply,
+     assign(socket, confirm_open: false, destructive_confirm_open: false, menu_open: false)}
   end
 
   def handle_event("crosswake_fallback_answer", _params, socket) do
@@ -253,6 +309,40 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
           title="Approve this request?"
           body="The requester is notified and the decision is recorded."
           confirm_label="Approve request"
+          error={@confirm_error}
+        />
+
+        <p>
+          The action menu below is a real fallback, but it pushes nothing in this phase — the
+          destructive row always routes through the destructive confirm tone first, never
+          straight to a mutation.
+        </p>
+
+        <button
+          type="button"
+          id="native-controls-menu-trigger"
+          class="btn-secondary"
+          aria-expanded={@menu_open}
+          aria-controls="native-controls-menu-demo"
+          phx-click="open_action_menu"
+        >
+          Job actions
+        </button>
+
+        <CrosswakeFallbacks.action_menu
+          id="native-controls-menu-demo"
+          trigger_id="native-controls-menu-trigger"
+          open={@menu_open}
+          actions={@menu_actions}
+        />
+
+        <CrosswakeFallbacks.confirm_modal
+          id="native-controls-destructive-demo"
+          tone={:destructive}
+          open={@destructive_confirm_open}
+          title="Delete this job?"
+          body="This removes the job and its 3 photos. It cannot be undone."
+          confirm_label="Delete job"
           error={@confirm_error}
         />
       </section>

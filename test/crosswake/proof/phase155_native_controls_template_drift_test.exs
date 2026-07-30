@@ -33,7 +33,7 @@ defmodule Crosswake.Proof.Phase155NativeControlsTemplateDriftTest do
 
   @template_dir Path.join([File.cwd!(), "priv", "templates", "crosswake", "native_controls_ui"])
 
-  @checked_in_hash "cdddee8843f28bdf47f4e1d0cddc49c5df7ba825b2f2dfb8a420d4a9f8198c6a"
+  @checked_in_hash "4f440d1e806a86ad9d1ae12465aed374fe2414385f8192dd43f5ee81dbd2d68c"
 
   test "template hash matches checked-in hash (drift guard)" do
     live = live_template_hash()
