@@ -120,6 +120,48 @@ Use this when Phoenix owns the route and the shell can help with one low-frequen
 semantic action. Read [guides/bridge.md](bridge.md) for the request/reply bridge
 contract and denial reasons.
 
+#### Migrating an existing hand-rolled bridge call
+
+If your app already talks to a shell, you almost certainly do it by rendering a
+server-built payload into an inline `<script>` tag. That is how everyone starts, including
+this project's own showcase, and Crosswake's reference host walked exactly this migration.
+It is worth doing for one reason above all the others: **it is CSP hardening**. A payload
+interpolated into inline script is a script-injection surface that a strict
+`script-src` policy cannot cover, and every server value you interpolate is a value you
+now have to prove is safe to interpolate.
+
+Before — the server builds markup that builds a message:
+
+```elixir
+# Do not do this any more.
+~s(<script type="module">window.webkit?.messageHandlers?.crosswake?.postMessage\(#{Jason.encode!(payload)}\)</script>)
+```
+
+After — the server calls the seam and the library-owned hook does the talking:
+
+```elixir
+socket = Crosswake.Bridge.push(socket, "haptics", payload: %{"style" => "light"})
+```
+
+The migration is four steps:
+
+1. Wire the library-owned hook once. `mix crosswake.install` patches your endpoint's static
+   plug and prints the layout fragments; `mix crosswake.gen.bridge_hook` prints them on
+   demand. See [guides/install.md](install.md#step-1b-wire-the-bridge-hook).
+2. Call `Crosswake.Bridge.attach/1` at `mount/3` on every route that will push. The first
+   push on a socket that never attached raises a named error, so you find this immediately
+   rather than in a shell build.
+3. Replace each hand-rolled dispatch with one `Crosswake.Bridge.push/3` call. Delete the
+   payload-building code — the envelope is built from the manifest the route already
+   declares, and `Crosswake.Bridge.dispatched/2` reads it back if you need to render it.
+4. If the control expects an answer, add one `handle_info/2` clause. Fire-and-forget
+   controls such as haptics need no clause at all.
+
+What you gain beyond the CSP win: the hand-rolled version had no answer for "what happens
+in a desktop browser with no shell". The seam does — exactly one typed denial, in the same
+clause that handles success. What you should not do is keep the old path as a fallback
+around the new one; that reintroduces the branch the seam exists to collapse.
+
 ### cached read-only
 
 Use this when a stale snapshot is useful but mutation would be dishonest. Read

@@ -21,6 +21,47 @@ for the canonical support-status surface.
 | Selective Native Flow | Mostly Phoenix-owned app with one narrow device-heavy route | `:live_view` surrounding routes plus one `:native_screen` route | One route moves into explicit native ownership while surrounding routes stay manifest-driven | Required packs, route-local transfer seams, native capture handoff, route-local sensitivity | Fail-closed native ownership, pack availability, transfer preparation, route-local security posture | Billing systems, entitlement platforms, multiple native-screen categories, generic upload fallback, broad permission brokers |
 | Local-First Study Flow | Study or training flow with meaningful offline work | Cached `:live_view` neighbors plus one `:offline_island` | One route owns local-first work while nearby reads stay explicitly cached and server-authoritative | Journal and outbox durability, replay outcomes, cached read-only route posture, route-local offline states | Cached-versus-local-first truth, replay vocabulary, conflict handling, rough-edge honesty for offline work | Broad CRUD sync, collaborative sync, background-sync guarantees, media-heavy offline transfer, multiple offline-island stories |
 
+## The Attach Requirement
+
+Read this before picking a profile. It is the one install-time failure every adopter who
+uses the bounded bridge hits exactly once, on their first push, in whichever profile they
+chose.
+
+Any LiveView that calls `Crosswake.Bridge.push/3` must first have called
+`Crosswake.Bridge.attach/1` on its socket, with `:crosswake_manifest` and
+`:crosswake_route_id` already assigned. A socket that never attached raises a named
+`Crosswake.Bridge.NotMountedError` on the first push — loudly, in every environment,
+rather than silently doing nothing. Crosswake never guesses a route id, so the alternative
+would be a no-op that looks like a working bridge until someone runs the app in a real
+shell.
+
+Fix it once at `mount/3` and it stays fixed:
+
+```elixir
+socket
+|> assign(crosswake_manifest: MyAppWeb.Crosswake.Policy.manifest(), crosswake_route_id: "saas-approval")
+|> Crosswake.Bridge.attach()
+```
+
+`on_mount: Crosswake.Bridge` works too, provided it runs after whatever hook assigns those
+two — `on_mount` hooks in a `live_session` run in declared order. Full contract in
+[guides/bridge.md](bridge.md#attach-first--push3-raises-on-a-socket-that-never-did).
+
+Per profile:
+
+- **Phoenix SaaS Portal** — attach on the one approval-detail route that requests haptics.
+  The surrounding dashboard, accounts, and settings routes push nothing and need nothing.
+- **Selective Native Flow** — attach on every `:live_view` route that dispatches a
+  transfer-backed seam such as `transfer.upload.prepare`. The `:native_screen` capture
+  route does not use the LiveView bridge at all, so it has no attach step.
+- **Local-First Study Flow** — no attach step today; this profile declares no bounded
+  bridge capability. If you later add one to the cached-read neighbor, the requirement
+  applies to that route and to no other.
+
+Do not attach defensively on routes that push nothing. Attach is a declaration that this
+route participates in the seam, and a route that declares participation it does not use is
+one more thing a reader has to disprove.
+
 ## Phoenix SaaS Portal
 
 This profile fits a Phoenix-backed product where most authenticated routes remain
@@ -42,6 +83,7 @@ Required seams:
 - manifest-first activation and deep-link normalization
 - explicit denial UI when activation fails closed
 - one bounded bridge capability on the approval-detail route
+- `Crosswake.Bridge.attach/1` at `mount/3` on that one route
 
 Primary failure vocabulary focus:
 
@@ -62,6 +104,9 @@ Degraded behavior:
   the request
 - when the shell cannot satisfy the haptics request, the approval remains
   server-authoritative and the route still completes on the Phoenix side
+- in a desktop browser with no shell at all, the push still resolves: the route receives
+  exactly one typed `shell_unreachable` denial rather than silence, and the approval
+  itself stands
 - the approval-detail route declares the same `haptics.impact` capability that the
   exercised shell request path uses
 
@@ -115,6 +160,7 @@ Required seams:
 - route-local packs for native capture assets when required
 - route-local explicit `:camera` capability
 - route-local transfer seams such as `transfer.upload.prepare`
+- `Crosswake.Bridge.attach/1` on each `:live_view` route that dispatches one of those seams
 - explicit sensitivity and fail-closed native activation
 
 Primary failure vocabulary focus:

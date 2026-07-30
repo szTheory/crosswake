@@ -67,9 +67,27 @@ Options are `:ref`, `:payload`, and `:timeout` (default `10_000` ms; pass `:infi
 opt a human-in-the-loop control out of the server-side backstop). `push/3` returns the
 socket immediately and is chainable; the reply always arrives later.
 
-There is deliberately no `available?/2` or `connected?/1`. A pre-check invites
-`if available?, do: push, else: fallback` — a three-way branch by the back door that
-reintroduces exactly the branching this contract exists to collapse.
+There is deliberately no shell-presence predicate on this API — nothing you can ask
+before pushing. A pre-check invites `if shell_there?, do: push, else: fallback`: a
+three-way branch by the back door that reintroduces exactly the branching this contract
+exists to collapse. Push unconditionally; the reply tells you what happened.
+
+### `dispatched/2` — read back the envelope, do not rebuild it
+
+`Crosswake.Bridge.dispatched/2` returns the wire envelope `push/3` actually built for a
+`ref` (or `nil` when no ask carrying that `ref` is in flight). Use it when a route needs
+to render evidence of what was dispatched:
+
+```elixir
+socket = Crosswake.Bridge.push(socket, "haptics", ref: :tap, payload: %{"style" => "light"})
+assign(socket, dispatch: Crosswake.Bridge.dispatched(socket, :tap))
+```
+
+This exists so you never hand-assemble a second copy of the envelope to display; a
+hand-copied summary is free to drift from the manifest the seam actually resolved
+against. It is not a shell-presence predicate. It reports what *this* LiveView asked for
+and has not yet resolved, says nothing about whether a shell exists, and branching on it
+cannot skip the reply — `push/3` resolves to exactly one typed reply regardless.
 
 ### `handle_info/2` — where every reply lands
 
@@ -115,10 +133,25 @@ endpoint's static plug and prints the rest; `mix crosswake.gen.bridge_hook` prin
 three fragments on demand. See
 [guides/install.md](install.md#step-1b-wire-the-bridge-hook).
 
-An in-flight ask does not survive a LiveView reconnect: a fresh `attach/1` mints a new
-epoch, so a reply minted under the previous epoch is dropped rather than replayed into a
-LiveView that never asked for it. The recovery path is the fallback UI rebuilt from
-assigns, not resurrecting the stale ask.
+### Reconnects — an in-flight ask does NOT survive one
+
+Say this plainly to yourself before designing any ask-shaped UI: **an in-flight ask does
+not survive a LiveView reconnect.** There is no durability here and none is promised.
+
+A LiveView reconnect is a fresh `mount/3`, which means a fresh `attach/1`, which mints a
+new epoch. Correlation state lives in the socket, so the previous epoch's in-flight table
+is gone with the old process. A reply minted under the previous epoch is dropped as
+foreign-epoch rather than replayed into a LiveView that never asked for it — delivering it
+would hand a new page a stale answer to a question it never posed, which is precisely the
+silently-wrong outcome this project exists to prevent.
+
+The consequence for your UI: **rebuild from assigns, do not resurrect the ask.** If a user
+was mid-answer when the socket dropped, the recovery path is the on-page fallback UI
+rendered from server-held assigns, and the user answers again there. Phase 155 ships the
+generated fallback components for this, with `resolve/2` already wired in. Until then,
+render your own fallback from assigns and call `resolve/2` from its handler.
+
+Do not build a UI that assumes an answer will come back after a reconnect. It will not.
 
 ## Request Envelope
 
@@ -184,6 +217,30 @@ Bridge denials reuse the shared shell denial vocabulary:
 - `origin_denied`
 - `inactive_route`
 - `pack_incompatible`
+- `shell_unreachable`
+
+`shell_unreachable` is minted only by Crosswake core, on the server, when no shell answer
+could be obtained. It has no companion `Finding` axis and a companion must never return it
+— see [guides/compatibility.md](compatibility.md#the-shell_unreachable-boundary). Its
+`details.failing_moment` names which of `:no_transport`, `:hook_not_wired`,
+`:reply_timeout`, or `:transport_error` happened. One reason, four moments: adopter code
+branches on the reason, an operator reads the moment.
+
+## Guarantee Strength: What Is Structural And What Is CI-Caught
+
+Two of this seam's guarantees have a strong form and a weaker true form. The weaker one is
+the true one. Written here rather than buried in a guard's moduledoc, because the
+difference changes what you should still review for.
+
+| Guarantee | True strength | What that actually means |
+|-----------|---------------|--------------------------|
+| Every capability declares an interaction class | **Structurally impossible to violate** | `Crosswake.Manifest.Capability` lists `:rebuild` and `:interaction` in `@enforce_keys`. A capability missing either does not compile. No reviewer, no CI job, no discipline is involved. |
+| The bounded bridge stays bounded (route-local, low-frequency, zero external SDK, semantically bounded, fails closed, backend-authoritative) | **CI-caught, not structural** | `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test. It proves no dynamic-registration function exists, no streaming seam exists, no external SDK is aliased into the bridge tree, and the native command enums match in both directions. It does **not** stop a maintainer adding forty controls one honest string at a time. A gate that is caught in CI is a gate a maintainer can still walk through deliberately. |
+| Every push resolves to exactly one typed reply at the adopter boundary | **CI-caught** | Asserted across no-shell, unwired-hook, timeout, and refusal. It is a claim about the shape your `handle_info/2` sees, not a claim that one vocabulary travels on the wire — shipped native binaries still emit strings outside the closed reason set, which the server normalizes on arrival. See [guides/compatibility.md](compatibility.md#the-shell_unreachable-boundary). |
+
+The guard also labels its own six criteria honestly, including the two it can only prove in
+the negative and the one it inherits rather than re-derives. Read
+`Crosswake.Bridge.CatalogGuard`'s moduledoc before you assume a criterion is airtight.
 
 ## Reply Shape
 

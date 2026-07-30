@@ -38,6 +38,8 @@ Bridge is not high-frequency or mutation authority.
 
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
+**Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.
+
 | Interaction Class | What it means |
 |--------------------|----------------|
 | fire-and-forget | The bridge dispatches the command and the route continues without waiting on a completion payload. A request-acknowledgement payload (for example `share`'s `%{"outcome" => "requested"}`) does not change this — fire-and-forget means no completion is claimed, not that no payload is returned. |
