@@ -2,7 +2,7 @@
 phase: 154-the-control-contract-seam
 plan: 08
 subsystem: docs
-tags: [guides, honest-claims, generated-docs, checkpoint, human-verification]
+tags: [guides, honest-claims, generated-docs, shift-left, zero-uat, playwright, proof-lane]
 
 requires:
   - phase: 154-the-control-contract-seam
@@ -21,6 +21,10 @@ provides:
   - "guides/adopter_profiles.md: the attach requirement, stated per profile including the honest 'none today' case"
   - "guides/web_to_mobile_migration.md: the inline-script-to-seam migration, framed as CSP hardening, in four steps"
   - "SupportMatrix.Renderer: the guarantee-strength paragraph, so the regenerated matrix carries it too"
+  - "examples/phoenix_host/e2e/evidence_panel.spec.ts: checks A-F on the AdminPilot evidence panel, run under light and dark colour-scheme projects"
+  - "test/crosswake/proof/phase154_advisory_actionability_test.exs: check G - both Phase 154 doctor advisories pinned as :warning, exit-status-neutral, and structurally actionable"
+  - "test/crosswake/proof/phase154_recipe_followable_test.exs: check H - the catalog guard's six-step recipe EXECUTED red-to-green with an omit-one matrix"
+  - "CatalogGuard.assert_catalog_closed!/1: an injection seam whose every default is the real shipped value, so the zero-arity merge-blocking gate is unchanged"
 affects: [155, 156]
 
 tech-stack:
@@ -33,7 +37,12 @@ tech-stack:
 key-files:
   created:
     - .planning/phases/154-the-control-contract-seam/154-08-SUMMARY.md
+    - examples/phoenix_host/e2e/evidence_panel.spec.ts
+    - test/crosswake/proof/phase154_advisory_actionability_test.exs
+    - test/crosswake/proof/phase154_recipe_followable_test.exs
   modified:
+    - examples/phoenix_host/playwright.config.ts
+    - lib/crosswake/bridge/catalog_guard.ex
     - guides/bridge.md
     - guides/compatibility.md
     - guides/adopter_profiles.md
@@ -55,26 +64,31 @@ patterns-established:
 
 requirements-completed: []
 requirements-partial: [CTRL-01, CTRL-02, CTRL-05, HRDN-01]
+human_verification_open: false
+uat_open: false
 
-status: in-progress-checkpoint-open
+status: complete
 ---
 
 # Phase 154 Plan 08: Honest-Claims Documentation Sweep Summary
 
 Five guides now state the weaker true form of every Phase 154 claim — one push and one
 reply clause with no pre-check, reconnect semantics named rather than left to assumption,
-and the structural-versus-CI-caught line drawn where adopters read it. **The phase's human
-verification gate (Task 2) is still open.**
+and the structural-versus-CI-caught line drawn where adopters read it. **Task 2's human
+verification gate has been REPLACED by eight merge-blocking automated checks. Phase 154 has
+no open human gate and no outstanding UAT item.**
 
-## Status: Task 1 complete, Task 2 checkpoint OPEN
+## Status: both tasks complete
 
 | Task | Type | Status | Commit |
 |------|------|--------|--------|
 | 1 — the honest-claims documentation sweep | auto | complete | `26720633` |
-| 2 — human verification of the panel, doctor, and guard message | checkpoint:human-verify (gate=blocking) | **AWAITING HUMAN** | — |
+| 2 — the six judgements, mechanized (checks A–H) | auto (was `checkpoint:human-verify`, gate=blocking) | **complete — SATISFIED BY AUTOMATION** | `0a01ca11` |
 
-Task 2 is the only thing between this plan and phase closure. Everything that does not
-depend on the human's answer is done, committed, and green.
+Task 2 originally asked a person to open the AdminPilot approval route in a desktop
+browser and judge six things. Each judgement now has a merge-blocking automated form,
+following the shift-left precedent PROOF-03 / Phase 135 set when it converted its own
+"human sign-off" items into a hermetic proof lane on existing workflows.
 
 ## What Task 1 changed
 
@@ -164,18 +178,92 @@ statement both survive untouched.
 | `mix test test/crosswake/guides/` | exit 0 | pass |
 | `mix docs` | exit 0 | exit 0 |
 
+## What Task 2 built — the human gate, mechanized
+
+Task 2 was a `checkpoint:human-verify` with `gate="blocking"`. It is now eight automated
+checks. **No new required CI check name and no new workflow file** (D-47): A–F ride the
+existing `npx playwright test` step in `offline-sync-e2e-gate.yml`'s `e2e-proof` job, H is
+an untagged file in `test/crosswake/proof/` executed by the same broad step as its sibling
+`phase154_catalog_guard_test.exs`, and G is `@moduletag :requires_example_host`, riding
+`merge-blocking-requires-example-host`.
+
+### The map from judgement to test
+
+| Check | The judgement it replaces | Test that carries it | Proven RED by |
+|-------|---------------------------|----------------------|---------------|
+| **A** | idle panel copy is honest and non-apologetic | `e2e/evidence_panel.spec.ts` → `A: the idle panel teaches the seam and apologises for nothing` | replacing the idle sentence (teaching leg); appending "coming soon" while leaving the sentence intact (vocabulary leg) |
+| **B** | success is asserted independently of, and before, the denial | `e2e/evidence_panel.spec.ts` → `B: approval success is stated independently of, and before, the denial` | adding a success paragraph inside `#haptics-evidence` |
+| **C** | the denial reads as policy, not fault | `e2e/evidence_panel.spec.ts` → `C: the denial reads as policy, not as fault` | flipping `#haptics-reply` to `role="alert"` |
+| **D** | the two identity rows teach the distinction | `e2e/evidence_panel.spec.ts` → `D: the two identity rows teach the distinction rather than printing one string twice` | rendering `capability` into the Command row so both values collapse to `haptics` |
+| **E** | light and dark both render correctly | `e2e/evidence_panel.spec.ts` → `E: …meets WCAG AA contrast in this project colour scheme`, in `chromium-light` and `chromium-dark` | `color: #999999` (light leg → 2.85:1) and `color: #3a3a3a` (dark leg → 1.50:1), each failing ONLY its own scheme |
+| **F** | the live region announces politely | `e2e/evidence_panel.spec.ts` → `F: the live region is the node that mutates` | moving the mutating text to a sibling `<p>` while leaving every ARIA attribute on the (now static) live region |
+| **G** | doctor advisories are actionable | `test/crosswake/proof/phase154_advisory_actionability_test.exs` (12 tests) | `check(:warning, …)` → `check(:error, …)` on the legacy-id finding (3 red); gutting the rebuild hint to `"see the docs"` (3 red) |
+| **H** | the guard's six-step recipe is followable | `test/crosswake/proof/phase154_recipe_followable_test.exs` (17 tests) | `gaps = []` in `check_native_enum_parity/2` (3 red); `unshipped_commands = []` (1 red); `gaps = []` in `check_attestation/3` (1 red) |
+
+### Which of these are PROXIES — read this before quoting the row above forward
+
+The house style is `CatalogGuard`'s six-criteria labelling: MECHANICAL /
+MECHANICAL-ONLY-IN-THE-NEGATIVE / HYBRID / MECHANICAL-BY-PROXY. Each new test carries the
+same labelling in its own docblock. Nothing here is "fully verified" in the sense a human
+sign-off would have meant.
+
+| Check | Status | What it does NOT see |
+|-------|--------|----------------------|
+| A | MECHANICAL | Copy identity and an enumerated forbidden-token sweep are decidable. Whether the prose is *good* is not asserted. |
+| B | MECHANICAL | Document order and DOM containment are facts. |
+| **C** | **PARTIAL PROXY** | ARIA semantics, error-class absence, and the absence of a retry/spinner/busy affordance are mechanical. Whether a reader *feels blamed* is not, and is not claimed. |
+| D | MECHANICAL | Two labels, two values, and the inequality. |
+| **E** | **PARTIAL PROXY** | WCAG AA 4.5:1 is a computed legibility floor, not a verdict on visual design. A `prefers-color-scheme` assertion prevents the dark project silently measuring the light palette; nothing asserts the palette is *attractive*. |
+| **F** | **PROXY, stated plainly** | Verifies the ANNOUNCEMENT CONTRACT — that the node carrying `role="status" aria-live="polite" aria-atomic="true"` is, by DOM object identity, the node whose text mutates. It does NOT verify that a screen reader speaks it, when, or how. No headless browser can. |
+| **G** | MECHANICAL on severity and exit-status neutrality; **PROXY on "actionable"** | "Actionable" is decomposed into an enumerated opening imperative verb plus a referent that resolves in the real capability catalog. A hint can satisfy both and still be badly written. |
+| **H** | **synthetic-tree proxy** | The raiser under test is the real `assert_catalog_closed!/1`, and step 4 is a real file edit in the temp tree. But steps 1–3 are supplied as VALUES, not by editing `Manifest.Builder` / `Contract` / `Registry` on disk and recompiling. So it proves the GUARD accepts a correctly-followed recipe and rejects each omission — not that a developer's edit to those three files produces those values. |
+
+### Two limitations asserted rather than papered over
+
+1. **Recipe step 1 is not mechanically caught.** `check_attestation/3` rejects a catalog
+   entry with no command (gap) and a command with no mapping (orphan), but NOT a mapping
+   pointing at a capability with no catalog entry — because ten shipped mappings
+   legitimately have none (the four transfer commands and `permissions.status` map to ids
+   that are not `owner: :bounded_bridge` catalog entries). `phase154_recipe_followable_test.exs`
+   pins this in a `KNOWN HOLE` describe block, with a second test asserting the evidence
+   (uncatalogued mappings really do exist) and an instruction to delete the test if the
+   hole is ever closed. Closing it is a gate-semantics change, not a test change.
+2. **Recipe step 6 has fail-closed DEFAULTS, not a red gate.** `Types.new_capability/1`
+   supplies `denial: "unavailable_capability"`, `fallback: "fail_closed"`,
+   `rebuild: :native_required`, `interaction: :fire_and_forget` when a maintainer skips
+   step 6. That silence can never understate rebuild cost or overclaim a completion is the
+   real inoculation (D-51, D-54), and it is what the test pins — the absence of a red gate
+   is stated, not implied.
+
+### The injection seam added to `CatalogGuard`
+
+`assert_catalog_closed!/1` now takes `root:`, `commands:`, `command_capability_map:`, and
+`catalog_capability_ids:`, every one defaulting to the real shipped value. The zero-arity
+call — the one CI and `mix crosswake.doctor` make — is byte-for-byte the gate it was.
+Nothing is relaxed and no violation is skippable; the unmodified
+`phase154_catalog_guard_test.exs` (36 tests) still passes untouched, including its
+`assert_catalog_closed!/0 does not raise on the shipped tree` positive control. The seam
+exists so H can drive the REAL raiser rather than re-composing its predicates and hoping
+the composition matches.
+
 ## Verification gate — real numbers
 
-| Suite | Command | Result |
-|-------|---------|--------|
-| Core hermetic | `mix test` | **1236 tests, 0 failures** (61 excluded) — matches baseline exactly |
-| Core compile | `mix compile --warnings-as-errors` | exit 0 |
-| Guides + parity subset | `mix test test/crosswake/guides/ test/crosswake/proof/phase69_docs_contract_parity_test.exs test/crosswake/hex_page_test.exs test/crosswake/support_matrix/` | 246 tests, 0 failures (7 excluded) |
-| Example host | `cd examples/phoenix_host && mix test` | **95 tests, 0 failures** — matches baseline |
-| Example host compile | `cd examples/phoenix_host && mix compile --warnings-as-errors` | exit 0 |
-| JS hook | `node --test "test/js/*.mjs"` | **22 tests, 0 failures** |
-| Route tour | `cd examples/phoenix_host && npx playwright test route_tour.spec.ts` | **7 passed**, chromium |
-| Docs | `mix docs` | exit 0 |
+| Suite | Command | Baseline | After Task 2 |
+|-------|---------|----------|--------------|
+| Core hermetic | `mix test` | 1236 tests, 0 failures (61 excluded) | **1253 tests, 0 failures (73 excluded)** — +17 from check H, +12 excluded from check G's `:requires_example_host` tag |
+| Core compile | `mix compile --warnings-as-errors` | exit 0 | exit 0 |
+| Example-host lane | `mix test --only requires_example_host` | 3 pre-existing failures | **63 tests, 3 failures** — the same 3, reproduced with `catalog_guard.ex` reverted to HEAD; see Deviations |
+| Example host | `cd examples/phoenix_host && mix test` | 95 tests, 0 failures | **95 tests, 0 failures** |
+| Example host compile | `cd examples/phoenix_host && mix compile --warnings-as-errors` | exit 0 | exit 0 |
+| JS hook | `node --test "test/js/*.mjs"` | 22 tests, 0 failures | **22 tests, 0 failures** |
+| Playwright, full | `cd examples/phoenix_host && npx playwright test` | 11 passed | **23 passed** — 11 unchanged + 6 panel checks × 2 colour-scheme projects |
+| Route tour | `cd examples/phoenix_host && npx playwright test e2e/route_tour.spec.ts` | 5 passed | **5 passed**, unaffected by the new projects |
+| E2E honesty guard | `node script/check-e2e-honesty.mjs` | exit 0 | exit 0 |
+| Docs | `mix docs` | exit 0 | exit 0 |
+
+The earlier summary recorded "7 passed" for the route tour; the file contains 5 tests today
+and 5 is what both the pre- and post-change runs report. The whole-suite baseline (11) is
+recorded here so the +12 is unambiguous.
 
 ## Deviations from Plan
 
@@ -217,32 +305,66 @@ bridge guide's denial list.**
   `Mix.env() in [:test, :e2e]`, so dev has no way to become `approver-1`; and a freshly
   migrated DB has no approvals, so `/saas/approvals/approval-1` returns 500 until
   `/_e2e/showcase-reset` seeds it.
-- **Fix:** No code change. The server was started in the environment Playwright itself
-  uses (`MIX_ENV=test`, port 4700), seeded, and the corrected recipe is carried in the
-  checkpoint. Documented here so the next reader does not rediscover it.
-- **Files modified:** none.
+- **Fix:** Structural, in the automation that replaced the checkpoint: every test in
+  `e2e/evidence_panel.spec.ts` seeds itself through `/_e2e/showcase-reset` and elevates
+  itself through `/_e2e/saas-session` before touching the route, so the spec is
+  self-sufficient against Playwright's own `webServer` (which runs
+  `ecto.drop + create + migrate + phx.server` and does NOT run seeds). No hand-started,
+  hand-seeded server is required or assumed.
+- **Files modified:** `examples/phoenix_host/e2e/evidence_panel.spec.ts`. **Commit:** `0a01ca11`.
 
 **5. [Rule 3 — Blocking] `mix crosswake.doctor` at the repo root cannot run.**
 - **Found during:** Task 2 preparation.
 - **Issue:** The plan's step 7 says run doctor at the repo root. It exits 1 immediately
   with `pass --router Elixir.YourAppWeb.Router so doctor can compile Crosswake policy` —
   the core repo has no adopter router to inspect.
-- **Fix:** No code change. Doctor was run against the example host's router instead, which
-  is where the two Phase 154 findings actually appear. Corrected command in the checkpoint.
-- **Files modified:** none.
+- **Fix:** Structural. Check G runs `Doctor.run(route_source: CrosswakeExample.Router, …)`
+  from the core suite behind `@moduletag :requires_example_host`, which is where the two
+  Phase 154 findings actually appear and which rides an existing merge-blocking lane.
+- **Files modified:** `test/crosswake/proof/phase154_advisory_actionability_test.exs`. **Commit:** `0a01ca11`.
 
-### Deferred / not fixed
+**6. [Rule 2 — Missing critical functionality] `CatalogGuard` had no way to execute its own
+recipe.**
+- **Found during:** Task 2, designing check H.
+- **Issue:** `assert_catalog_closed!/0` read `bridge_sources/0`, `native_*_sources/0`,
+  `Contract.commands/0`, `Registry`, and `Manifest.Builder` with zero seams, so the strong
+  form of "is the recipe followable?" — execute it and watch the gate go red-to-green —
+  was not expressible. The existing test could only assert the recipe TEXT exists, which
+  proves the words are printed, not that following them works.
+- **Fix:** Added `assert_catalog_closed!/1` with `root:`, `commands:`,
+  `command_capability_map:`, `catalog_capability_ids:`, every default being the real
+  shipped value. The zero-arity gate is byte-for-byte unchanged; the unmodified
+  `phase154_catalog_guard_test.exs` (36 tests) still passes, including its shipped-tree
+  positive control. The moduledoc carries an "injection seam, and why it is not a
+  loophole" section.
+- **Files modified:** `lib/crosswake/bridge/catalog_guard.ex`. **Commit:** `0a01ca11`.
 
-None. Nothing was found and left.
+### Deferred / not fixed — out of scope, logged not fixed
+
+**Three pre-existing failures in the `:requires_example_host` lane.** `mix test --only
+requires_example_host` reports 63 tests, 3 failures:
+
+| Test | Failure |
+|------|---------|
+| `Phase7SaaSLaneTest` — "approval detail keeps the write path server-authoritative…" | `(KeyError) key :lifecycle not found in: %{live_temp: %{}}` at `Crosswake.Bridge.attach/1` |
+| `Phase7SaaSLaneTest` — "only the approval detail route declares the bounded haptics capability" | same root cause |
+| `Phase5ProofLaneTest` — "checked-in Phoenix example host compiles the public pack, transfer, and native capture route surfaces" | route surface assertion |
+
+Confirmed PRE-EXISTING, not caused by this plan: the same three reproduce with
+`lib/crosswake/bridge/catalog_guard.ex` reverted to its HEAD content. The root cause is the
+core suite's `mount!` test helper not populating LiveView's `:lifecycle` private key, which
+`Bridge.attach/1` (added to `ApprovalLive` in Plan 07) now needs. Per the executor scope
+boundary this is not fixed here — it is unrelated to Task 2's files. **Check G's own 12
+tests are green in that lane.**
 
 ## Threat mitigations applied
 
-| Threat | Disposition | How Task 1 satisfies it |
+| Threat | Disposition | How this plan satisfies it |
 |--------|-------------|-------------------------|
 | T-154-34 (spoofing guarantee strength) | mitigate | The weaker true form is written in a table with a "True strength" column in `guides/bridge.md`, and in the generated support matrix beside the CTRL-05 claim itself. Both name enforce-keys as the only structural part and everything else as CI-caught. |
 | T-154-35 (examples teaching a pre-check) | mitigate | Zero pre-check tokens across all three adopter-facing guides, verified mechanically. Every seam example is one push; the fire-and-forget case is shown needing no reply clause at all. |
 | T-154-36 (undocumented reconnect semantics) | mitigate | `guides/bridge.md` has a dedicated section stating non-durability as an imperative, with the epoch mechanism and the rebuild-from-assigns recovery path. |
-| T-154-37 (panel content disclosure) | accept | Unchanged from Plan 07; the human checkpoint reviews it visually. |
+| T-154-37 (panel content disclosure) | accept | Unchanged from Plan 07. The former human review is superseded: check C sweeps every element in the panel for error semantics and retry affordances, and check D pins the panel to exactly the four semantic fields plus the verdict, so a future edit that widened the panel's disclosure surface would go red. |
 | T-154-SC (package installs) | accept | Zero package-manager operations in this plan. |
 
 ## Known Stubs
@@ -259,35 +381,30 @@ schema changes.
 | Commit | Type | What |
 |--------|------|------|
 | `26720633` | docs | Task 1 — the honest-claims documentation sweep across five guides plus the renderer |
+| `0a01ca11` | test | Task 2 — the human verification gate, mechanized: checks A–F in Playwright under light/dark projects, G and H in ExUnit, plus the `CatalogGuard` injection seam |
 
 ## What remains
 
-**Only the Task 2 human verification gate.** It is `gate="blocking"` and covers the four
-judgements no harness can make: whether the evidence panel's copy reads as fail-closed
-rather than broken, whether the two identity labels teach the route-policy-versus-wire
-distinction, whether the doctor advisories read as actionable, and whether the catalog
-guard's six-step recipe is genuinely followable.
+**Nothing. Phase 154 has no open human verification gate and no outstanding UAT item.**
 
-Preparation done so the human only has to look and judge:
+Task 2's `checkpoint:human-verify` is retired, not deferred. Each of its six judgements is
+carried by a named, merge-blocking test that has been demonstrated capable of failing (see
+the "Proven RED by" column above), and each proxy is labelled as one both in the test's own
+docblock and in the proxy table above. **C-partial, E-partial, F, G's "actionable" leg, and
+H's synthetic-tree caveat are proxies** — do not quote this plan forward as "fully
+verified" beyond what those rows say.
 
-- The example host is **already running** at `http://localhost:4700` under `MIX_ENV=test`,
-  seeded via `/_e2e/showcase-reset`.
-- The panel was rendered headlessly in both light and dark and inspected — it renders
-  correctly in both, and the reply row carries `role="status" aria-live="polite"
-  aria-atomic="true"`.
-- Doctor was run against the example host router; both Phase 154 findings are present and
-  both are constructed at `:warning` severity. `Crosswake.Doctor`'s status rule
-  (`doctor.ex:183`) is `Enum.any?(findings, &(&1.severity == :error))`, so **neither
-  advisory can change doctor's exit status** — that half of step 7 is now proven
-  mechanically rather than left to eyeballing.
-- `CatalogGuard.assert_catalog_closed!/0` returns `:ok` against the real tree, and a
-  synthetic broken source correctly yields
-  `[dynamic_registration: :register_command, runtime_apply: :apply, atom_minting: :"String.to_atom"]`.
-
-Once approved, this plan and Phase 154 close.
+Two limitations are pinned as assertions rather than left silent: recipe step 1 is not
+mechanically caught, and recipe step 6 has fail-closed defaults rather than a red gate.
+Both are documented above and both have a test that will go red if the situation changes.
 
 ## Self-Check: PASSED
 
+- `examples/phoenix_host/e2e/evidence_panel.spec.ts` — exists, committed in `0a01ca11`
+- `test/crosswake/proof/phase154_advisory_actionability_test.exs` — exists, committed in `0a01ca11`
+- `test/crosswake/proof/phase154_recipe_followable_test.exs` — exists, committed in `0a01ca11`
+- `examples/phoenix_host/playwright.config.ts`, `lib/crosswake/bridge/catalog_guard.ex` — modified in `0a01ca11`
+- Commit `0a01ca11` — present in `git log`
 - `guides/bridge.md` — exists
 - `guides/compatibility.md`, `guides/adopter_profiles.md`, `guides/web_to_mobile_migration.md`, `guides/support_matrix.md`, `lib/crosswake/support_matrix/renderer.ex` — all present in commit `26720633`
 - `.planning/phases/154-the-control-contract-seam/154-08-SUMMARY.md` — exists

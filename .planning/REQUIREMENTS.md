@@ -47,6 +47,21 @@ The reusable machinery. Once this exists, controls 4..N are cheap, repeatable wo
 - [x] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
 - [x] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
 
+**Verification posture — Phase 154 has NO open human gate and NO outstanding UAT item.**
+The phase's closing `checkpoint:human-verify` (154-08 Task 2) was REPLACED by eight
+merge-blocking automated checks, not deferred — the shift-left pattern PROOF-03 / Phase 135
+established. `examples/phoenix_host/e2e/evidence_panel.spec.ts` carries A–F (idle copy
+honesty, success-before-denial document order, policy-not-fault denial semantics, the two
+identity rows, computed WCAG AA contrast in light and dark, and the live-region
+announcement contract); `test/crosswake/proof/phase154_advisory_actionability_test.exs`
+carries G (doctor advisory severity, exit-status neutrality, actionability);
+`test/crosswake/proof/phase154_recipe_followable_test.exs` carries H (the catalog guard's
+six-step recipe, EXECUTED red-to-green with an omit-one matrix). Every check was
+demonstrated capable of failing under a deliberate mutation. **C-partial, E-partial, F,
+G's "actionable" leg and H's synthetic-tree caveat are labelled PROXIES** in their own
+docblocks and in `154-08-SUMMARY.md` — do not read "no human gate" as "fully verified"
+beyond what those labels say.
+
 ### MENU — the first genuinely-new native control
 
 The reply-path exemplar. Unanimous across research lenses as the strongest new control:
@@ -117,13 +132,13 @@ must look right on day one, so they are generated and owned by the host, never i
 | CACHE-02 | Phase 153.1 | Pending |
 | MIRROR-01 | Phase 153 | In Progress (153-01 done; live tag push is 153-02, human-gated) |
 | MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
-| CTRL-01 | Phase 154 | Complete |
-| CTRL-02 | Phase 154 | Complete |
-| CTRL-03 | Phase 154 | Complete |
-| CTRL-04 | Phase 154 | Complete |
-| CTRL-05 | Phase 154 | Complete |
-| PROOF-04 | Phase 154 | Complete |
-| HRDN-01 | Phase 154 | Complete |
+| CTRL-01 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
+| CTRL-02 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
+| CTRL-03 | Phase 154 | Complete — no human gate |
+| CTRL-04 | Phase 154 | Complete — no human gate; recipe followability executed by 154-08 check H |
+| CTRL-05 | Phase 154 | Complete — no human gate; doctor advisory actionability pinned by 154-08 check G |
+| PROOF-04 | Phase 154 | Complete — no human gate; check H drives the real raiser through the six-step recipe |
+| HRDN-01 | Phase 154 | Complete — no human gate; evidence panel asserted by 154-08 checks A–F in light and dark |
 | FALL-01 | Phase 155 | Pending |
 | FALL-02 | Phase 155 | Pending |
 | PROOF-01 | Phase 155 | Pending |

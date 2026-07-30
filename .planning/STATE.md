@@ -4,16 +4,16 @@ milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 154
 current_phase_name: the-control-contract-seam
-status: executing
-stopped_at: "154-08 Task 1 complete (26720633); Task 2 human-verify checkpoint OPEN — example host running at localhost:4700 (MIX_ENV=test), seeded"
-last_updated: "2026-07-30T01:11:10.506Z"
+status: phase-complete
+stopped_at: "154-08 COMPLETE (26720633, 0a01ca11). Task 2's human-verify checkpoint REPLACED by merge-blocking automation (checks A–H). Phase 154 has zero human verification and zero UAT."
+last_updated: "2026-07-30T02:20:00.000Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 15
-  completed_plans: 14
-  percent: 33
+  completed_plans: 15
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -27,14 +27,14 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 ## Current Position
 
-Phase: 154 (the-control-contract-seam) — EXECUTING
-Plan: 8 of 8
+Phase: 154 (the-control-contract-seam) — **COMPLETE** (8/8 plans)
+Plan: 8 of 8 — complete, no open human gate
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
 Last activity: 2026-07-29
 
-Progress: [█████████░] 87%
+Progress: [██████████] 100% of Phase 154
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -153,6 +153,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 154 P05 | 55min | 3 tasks | 7 files |
 | Phase 154 P06 | 34min | 3 tasks | 24 files |
 | Phase 154 P07 | 27min | 3 tasks | 22 files |
+| Phase 154 P08 | 95min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -290,6 +291,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: D-16 resolved (human, 154-05 Task 1): option-b with amendment — merge-blocking catalog guard with an enumerated EIGHT-string seeded allowlist of out-of-vocabulary native denial reasons; zero native release coupling so D-01 holds; the five bare-String delegate seams named as a separately-labelled NON-MECHANICAL exclusion carried by SEED-008, never pretended into the allowlist
 - [Phase ?]: Crosswake.Bridge.CatalogGuard lives in lib/ and reads Manifest.Builder's existing capability catalog — no second catalog file (D-42/D-43); a second one here would be five-way drift
 - [Phase ?]: The hook ships from priv/static/crosswake.esm.js at the literal D-30 path — nesting under priv/static/crosswake/ would double the URL segment
+- [Phase ?]: 154-08 Task 2: the phase's `checkpoint:human-verify` was REPLACED by merge-blocking automation, not deferred — shift-left per PROOF-03/Phase 135. Checks A–F ride the existing `npx playwright test` step (two scheme-scoped projects, `testMatch`/`testIgnore` so no lane's wall clock triples), G rides `merge-blocking-requires-example-host`, H is untagged in `test/crosswake/proof/`. No new required check name, no new workflow file (D-47). Proxies are labelled in each test's own docblock: C-partial, E-partial, F, G's "actionable" leg, H's synthetic-tree caveat.
+- [Phase ?]: 154-08: `CatalogGuard.assert_catalog_closed!/1` gained an injection seam (`root:`, `commands:`, `command_capability_map:`, `catalog_capability_ids:`) with every default the real shipped value, so check H drives the REAL raiser through the six-step recipe rather than re-composing its predicates. Zero-arity gate unchanged.
+- [Phase ?]: 154-08 KNOWN HOLE, pinned as an assertion: recipe step 1 (the catalog entry) is NOT mechanically caught — `check_attestation/3` has no mapping-to-catalog direction because ten shipped mappings legitimately have none. Recipe step 6 has fail-closed defaults rather than a red gate. Both stated in `phase154_recipe_followable_test.exs`, not papered over.
 - [Phase ?]: reply_leg_vectors is its own top-level array, not an entry in vectors (which is a request-evaluation corpus both native harnesses feed through BridgeChannel.evaluate)
 - [Phase ?]: D-03's iOS-reply-ships-with-Phase-156 statement lands as a generated Bridge Reply Delivery table, because guides/support_matrix.md is byte-generated from the renderer
 - [Phase ?]: The doctor bridge-hook wiring finding is :advisory so the best-effort grep can never fail doctor's exit code (D-37)
@@ -383,9 +387,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T01:11:10.493Z
-Stopped at: 154-08 Task 1 complete (26720633); Task 2 human-verify checkpoint OPEN — example host running at localhost:4700 (MIX_ENV=test), seeded
-Resume file: .planning/phases/154-the-control-contract-seam/154-08-PLAN.md
+Last session: 2026-07-30T02:20:00.000Z
+Stopped at: 154-08 COMPLETE (26720633, 0a01ca11) — Phase 154 closed with zero human verification and zero UAT
+Resume file: None
 
 ## Operator Next Steps
 
