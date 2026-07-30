@@ -30,23 +30,59 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 Phase: 156
 Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
-Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
+Phase 153 (ios-mirror-unblock) — 3/4; the one-way-door tag push is DONE (mirror `v0.2.0` live,
+verified 2026-07-30). Remaining: the `main` re-baseline dispatch (Jon) and plan 153-04.
 Status: Ready to plan
 Last activity: 2026-07-30
 
 Progress: [█████████░] 91%
 
-## Blocked: Phase 153-02 (human gate, one-way door)
+## Phase 153-02: the one-way door is DONE — Phase 156 is UNBLOCKED
 
-Mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror
-`main` (MIRROR-01). **The tag push is irreversible and must never be fired automatically —
-it requires Jon's explicit go.**
+The `v0.2.0` mirror tag push happened on 2026-07-28 via three `ios-mirror-backfill.yml`
+dispatches, in the prescribed order: `30316715897` (`apply=false` fire-drill, all six checks
+OK, dry-run push probe confirmed WRITE scope) → `30316962777` (`apply=true update_main=false`,
+**pushed the tag**) → `30317622546` (`apply=true update_main=true`).
 
-Blocks Phase 156 (MENU). Everything else in the milestone can proceed without it.
+Verified 2026-07-30 directly against the mirror rather than from the workflow's self-report:
 
-Known state: the mirror is still at v0.1.2. The Phase 153 fire-drill was a NO-GO because
-splitsh-lite v1.0.1 segfaults; the fix is switching `verify_ios_mirror_backfill.sh`
-`compute_split_sha()` to `git subtree split` (verified working, split SHA `658d6025`).
+```
+6417ae65…  refs/tags/v0.1.2
+658d6025…  refs/tags/v0.2.0   ← matches the git-subtree split SHA exactly
+```
+
+PR #79 (splitsh-lite → `git subtree split`) is merged. **SEED-003 is satisfied; Phase 156 no
+longer waits on the mirror.**
+
+### Still open: mirror `main` was never re-baselined
+
+Mirror `main` sits at `6417ae65` — the **v0.1.2** commit. The 07-28 `update_main=true` run
+silently no-opped: it ran the pre-fix script, whose early return on the tag-already-present
+short-circuit skipped the D-08 realign. Fixed by `2e46105c`, which landed *after* that run.
+
+Remedy is one dispatch with the now-fixed script:
+
+```bash
+gh workflow run ios-mirror-backfill.yml \
+  -f version=0.2.0 -f release_ref=refs/tags/ios-core-v0.2.0 \
+  -f apply=true -f update_main=true
+```
+
+**Jon must run this** — Claude's auto-mode classifier blocks it as a mutating public
+force-push.
+
+Safe to proceed: the lineages genuinely forked (`6417ae65` is *not* an ancestor of
+`658d6025` — 1 commit on `main` unreachable from the split, 19 in the split absent from
+`main`), but that fork is expected. The two subtree splits were computed at different times
+from different refs, and this is exactly the one-time D-08 re-baseline the script's own log
+message anticipates. Nothing is orphaned: tag `v0.1.2` still pins `6417ae65`. Only
+branch-resolving consumers see stale code; SwiftPM version resolution uses the tag and is
+already correct.
+
+Note the ancestry guard (`verify_ios_mirror_backfill.sh:256-261`) is advisory-and-proceed in
+CI **by design** (D-08/Q2 — see the Decisions section: unknown-object advisory, known-non-
+ancestor fail-closed, and no `git fetch` anywhere). Do not "harden" it into a fetch-and-verify;
+that was decided against. Evaluate ancestry by fetching the mirror by hand locally.
 
 ## Phase 153.1 outcome (2026-07-29)
 
