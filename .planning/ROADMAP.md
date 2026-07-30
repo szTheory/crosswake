@@ -333,7 +333,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
+- [x] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
 - [ ] 155-04-PLAN.md — One served `tokens.css`, the generated-layout 404 fix, endpoint marker-content reconciliation, and two doctor findings (wave 2)
 - [ ] 155-05-PLAN.md — `Crosswake.ComponentTierGuard`: six rules including the anti-vacuity twin, plus four controls (wave 2)
 
@@ -393,7 +393,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
 | 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
-| 155. Host-Owned Fallback Components | v20.0 | 2/7 | In Progress|  |
+| 155. Host-Owned Fallback Components | v20.0 | 3/7 | In Progress|  |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
 

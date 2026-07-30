@@ -2,18 +2,15 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 155
-current_phase_name: host-owned-fallback-components
 status: executing
-stopped_at: Completed 155-02-PLAN.md
-last_updated: "2026-07-30T15:08:19.347Z"
+stopped_at: Completed 155-03-PLAN.md
+last_updated: "2026-07-30T15:19:29.672Z"
 last_activity: 2026-07-30
-last_activity_desc: Phase 155 execution started
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 16
+  completed_plans: 17
   percent: 33
 ---
 
@@ -29,13 +26,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 155 (host-owned-fallback-components) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
-Last activity: 2026-07-30 -- Phase 155 execution started
+Last activity: 2026-07-30
 
-Progress: [███████░░░] 73% of Phase 154
+Progress: [████████░░] 77%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -157,6 +154,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 154 P08 | 95min | 2 tasks | 11 files |
 | Phase 155 P01 | 130min | 2 tasks | 22 files |
 | Phase 155 P02 | 20min | 2 tasks | 4 files |
+| Phase 155 P03 | 25min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -309,6 +307,7 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: 155-01: patcher.ex's endpoint only: list uses literal 'crosswake.esm.js tokens.css' text (not #{@hook_asset}/#{@tokens_asset} interpolation) to keep the line grep-able verbatim
 - [Phase ?]: 155-02: widened Crosswake.Bridge.resolve/2 to a true no-op on an unattached socket via maybe_fetch_state/1 (D-50); push/3 and dispatched/2 stay strict
 - [Phase ?]: 155-02: split push/3's vocabulary-miss raise into a distinct Crosswake.Bridge.UnknownCapabilityFamilyError (D-51), separate from UndeclaredCapabilityError, whose remediation never suggests declaring the family on a route
+- [Phase ?]: 155-03: --cw-status-error-fg added (pure white alias) and --cw-action-focus-ring light value corrected brass-500->wake-700 (D-27/D-32/D-33); contrast.test.mjs gained its first non-text SC 1.4.11 assertion class + compile-tokens.test.mjs gained a semantic-token count cap (29/30) and group-exhaustiveness assertion, both mutation controls observed red and restored via git checkout --
 
 ### Pending Todos
 
@@ -396,8 +395,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T15:08:19.338Z
-Stopped at: Completed 155-02-PLAN.md
+Last session: 2026-07-30T15:19:29.666Z
+Stopped at: Completed 155-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

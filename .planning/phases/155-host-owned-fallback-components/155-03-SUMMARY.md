@@ -41,7 +41,7 @@ key-decisions:
 patterns-established:
   - "resolveTokenHex(path, dark) in contrast.test.mjs: the canonical way any future contrast assertion resolves a semantic token's real hex through its alias chain instead of hardcoding an answer"
 
-requirements-completed: [FALL-02]
+requirements-completed: []  # FALL-02 deliberately deferred, per 155-01/155-02 precedent — FALL-02 spans "renders correctly in light/dark, traps focus, meets the existing contrast gates, AND no importable Crosswake.UI.* module exists" across all 7 plans. This plan closes the contrast-gate half (token fix + widened non-text assertion class); focus-trap/render and ComponentTierGuard land in other plans. Marking deferred to the phase-closing plan.
 
 coverage:
   - id: D1
@@ -144,3 +144,16 @@ None - no external service configuration required.
 ---
 *Phase: 155-host-owned-fallback-components*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: `brandbook/tokens/crosswake.tokens.json`
+- FOUND: `brandbook/tokens/tokens.css`
+- FOUND: `priv/static/crosswake/tokens.css`
+- FOUND: `priv/static/tokens.css`
+- FOUND: `brandbook/AUDIT.md`
+- FOUND: `brandbook/tools/contrast.test.mjs`
+- FOUND: `brandbook/tools/compile-tokens.test.mjs`
+- FOUND: commit `1a151307` (Task 1)
+- FOUND: commit `c98ee4a0` (Task 2)
+- FOUND: commit `ecb75689` (docs: plan summary)
