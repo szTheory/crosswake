@@ -29,6 +29,27 @@ defmodule Crosswake.Bridge.UndeclaredCapabilityError do
   defexception [:message]
 end
 
+defmodule Crosswake.Bridge.UnknownCapabilityFamilyError do
+  @moduledoc """
+  Raised by `Crosswake.Bridge.push/3` when the requested capability family is not a
+  member of the bridge's closed vocabulary at all — a different problem from
+  `Crosswake.Bridge.UndeclaredCapabilityError`, which fires for a family the bridge DOES
+  know about that this route's policy simply never declared.
+
+  The known vocabulary is defined in two places: `Crosswake.Bridge.Contract.commands/0`
+  (the wire command list) and `Crosswake.Manifest.Builder.capability_catalog/0` (the
+  manifest-facing capability catalog). This error's remediation deliberately does NOT
+  suggest declaring the family on a route — `Crosswake.Policy.Validator` rejects any
+  declaration outside the known vocabulary, so that "fix" would turn this click-time
+  crash into a mount-time crash for every route in the app (D-51).
+
+  Defined at the top level for the same reason as `Crosswake.Bridge.NotMountedError`
+  and `Crosswake.Bridge.UndeclaredCapabilityError` above — nesting would double the
+  module prefix.
+  """
+  defexception [:message]
+end
+
 defmodule Crosswake.Bridge do
   @moduledoc """
   The typed control-contract seam every future native-controls pack rides on.
@@ -107,6 +128,7 @@ defmodule Crosswake.Bridge do
   alias Crosswake.Bridge.Registry
   alias Crosswake.Bridge.Reply
   alias Crosswake.Bridge.UndeclaredCapabilityError
+  alias Crosswake.Bridge.UnknownCapabilityFamilyError
   alias Crosswake.Policy.RouterMetadata
   alias Crosswake.Shell.Denial
 
@@ -193,9 +215,11 @@ defmodule Crosswake.Bridge do
       and dies with the client; this server timer is armed at `timeout + 2_000` ms so it
       never races ahead of a healthy client-side timeout.
 
-  Raises `Crosswake.Bridge.NotMountedError` if the socket never attached, and
+  Raises `Crosswake.Bridge.NotMountedError` if the socket never attached,
   `Crosswake.Bridge.UndeclaredCapabilityError` if the route never declared
-  `capability_family` (unconditionally, in every environment).
+  `capability_family`, and `Crosswake.Bridge.UnknownCapabilityFamilyError` if
+  `capability_family` is not in the bridge's known vocabulary at all (D-51) — all three
+  unconditionally, in every environment.
   """
   @spec push(Phoenix.LiveView.Socket.t(), String.t(), keyword()) :: Phoenix.LiveView.Socket.t()
   def push(%Phoenix.LiveView.Socket{} = socket, capability_family, opts \\ [])
@@ -204,7 +228,7 @@ defmodule Crosswake.Bridge do
 
     case Registry.capability_command(capability_family) do
       nil ->
-        raise_undeclared_capability!(state, socket, capability_family)
+        raise_unknown_capability_family!(socket, capability_family)
 
       command ->
         case Registry.lookup(state.manifest, state.route_id, command) do
@@ -220,12 +244,6 @@ defmodule Crosswake.Bridge do
             active route in the compiled manifest. Confirm the route id assigned via \
             :crosswake_route_id matches a route declared in the router, and that the \
             manifest passed to Crosswake.Bridge.attach/1 was compiled from that same router.
-            """
-
-          {:error, :unsupported_command} ->
-            raise ArgumentError, """
-            [crosswake.bridge.unsupported_command] #{inspect(command)} is not a command in \
-            the bounded bridge command vocabulary (Crosswake.Bridge.Contract.commands/0).
             """
         end
     end
@@ -601,6 +619,38 @@ defmodule Crosswake.Bridge do
     """
 
     raise UndeclaredCapabilityError, message: message
+  end
+
+  # The vocabulary-miss moment (moment C, D-51): capability_family isn't a member of the
+  # bridge's known families at all, distinct from raise_undeclared_capability!/3 above
+  # (moment B: a KNOWN family this route's policy simply never declared). Modeled on that
+  # raiser's message-building shape, but the remediation is deliberately different — it
+  # must NOT suggest declaring capability_family on a route, because
+  # Crosswake.Policy.Validator rejects any declaration outside the known vocabulary,
+  # which would turn this click-time crash into a mount-time crash for every route in
+  # the app.
+  defp raise_unknown_capability_family!(socket, capability_family) do
+    known = Registry.known_capability_families()
+
+    message = """
+    [crosswake.bridge.unknown_capability_family] #{inspect(capability_family)} is not a \
+    member of Crosswake.Bridge's known capability vocabulary at all — a different \
+    problem from a known family this route's policy simply never declared.
+
+    LiveView module: #{inspect(socket.view)}
+
+    The known vocabulary is defined in two places: Crosswake.Bridge.Contract.commands/0 \
+    (the wire command list) and Crosswake.Manifest.Builder.capability_catalog/0 (the \
+    manifest-facing capability catalog). Currently-known families: #{inspect(known)}
+
+    Do NOT declare #{inspect(capability_family)} on this or any route's policy to "fix" \
+    this — Crosswake.Policy.Validator rejects any capability declaration outside the \
+    known vocabulary, so that would turn this click-time crash into a mount-time crash \
+    for every route in the app. If this is meant to be a real Crosswake capability, it \
+    must be added to the bridge's own command vocabulary first, not declared on a route.
+    """
+
+    raise UnknownCapabilityFamilyError, message: message
   end
 
   # `Phoenix.Router.routes/1` (== `router.__routes__/0`) deliberately strips `:line`

@@ -48,6 +48,7 @@ defmodule Crosswake.Bridge.PushTest do
     |> Plug.Test.init_test_session(session)
   end
 
+
   defp dispatch!(view, params) do
     render_click(view, "dispatch", params)
     assert_push_event(view, "crosswake:bridge", envelope)
@@ -215,17 +216,20 @@ defmodule Crosswake.Bridge.PushTest do
     test "pushing a capability the route never declared raises UndeclaredCapabilityError naming route, family, declared, view, router location, fix line, and why (D-10)" do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
+      # "share" is a known capability family (in Registry.known_capability_families/0) that
+      # this route simply never declared — moment B. A family absent from the known
+      # vocabulary entirely (moment C) is covered separately below (D-51).
       message =
         BridgeCase.exits_with(view, UndeclaredCapabilityError, fn ->
-          render_click(view, "dispatch", %{"family" => "camera"})
+          render_click(view, "dispatch", %{"family" => "share"})
         end)
 
       assert message =~ ~s(route "bridge-tracer")
-      assert message =~ ~s("camera")
+      assert message =~ ~s("share")
       assert message =~ ~s(["haptics"])
       assert message =~ "Crosswake.TestSupport.Bridge.TracerLive"
       assert message =~ "bridge_live_view_case.ex"
-      assert message =~ ~s(capabilities: ["haptics", "camera"])
+      assert message =~ ~s(capabilities: ["haptics", "share"])
       assert message =~ "server-authoring bug"
     end
 
@@ -256,12 +260,16 @@ defmodule Crosswake.Bridge.PushTest do
     test "a capability id differing only by case does not authorize and raises (exact string match)" do
       {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
 
+      # "Haptics" (capital H) is an exact-string miss against the known vocabulary itself
+      # (Registry.capability_command/1's reverse lookup is case-sensitive), so this is
+      # moment C (D-51) — Crosswake.Bridge.UnknownCapabilityFamilyError, not moment B.
       message =
-        BridgeCase.exits_with(view, UndeclaredCapabilityError, fn ->
+        BridgeCase.exits_with(view, Crosswake.Bridge.UnknownCapabilityFamilyError, fn ->
           render_click(view, "dispatch", %{"family" => "Haptics"})
         end)
 
       assert message =~ ~s("Haptics")
+      refute message =~ "capabilities: ["
     end
 
     test "pushing on a route id absent from the compiled manifest raises a distinct inactive-route error" do
@@ -280,6 +288,51 @@ defmodule Crosswake.Bridge.PushTest do
       refute function_exported?(Crosswake.Bridge, :available?, 2)
       refute function_exported?(Crosswake.Bridge, :connected?, 1)
       refute function_exported?(Crosswake.Bridge, :connected?, 2)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # A distinct UnknownCapabilityFamilyError for the vocabulary-miss moment (D-51).
+  # Moment C (this describe block) — capability_family is not in the bridge's known
+  # vocabulary at all — is now distinct from moment B (a known family this route's
+  # policy simply never declared, still Crosswake.Bridge.UndeclaredCapabilityError,
+  # exercised as the negative control below and by the loud-preflight tests above).
+  # ---------------------------------------------------------------------------
+
+  describe "unknown capability family (D-51)" do
+    test "a family outside the bridge's known vocabulary raises UnknownCapabilityFamilyError, not UndeclaredCapabilityError" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      message =
+        BridgeCase.exits_with(view, Crosswake.Bridge.UnknownCapabilityFamilyError, fn ->
+          render_click(view, "dispatch", %{"family" => "not_a_real_family"})
+        end)
+
+      assert message =~ ~s("not_a_real_family")
+    end
+
+    test "the message begins with the bracketed id and omits the capabilities: remediation line" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      message =
+        BridgeCase.exits_with(view, Crosswake.Bridge.UnknownCapabilityFamilyError, fn ->
+          render_click(view, "dispatch", %{"family" => "not_a_real_family"})
+        end)
+
+      assert String.starts_with?(message, "[crosswake.bridge.unknown_capability_family]")
+      refute message =~ "capabilities: ["
+    end
+
+    test "a known-but-undeclared family (moment B) still raises UndeclaredCapabilityError carrying the capabilities: remediation line — the negative control proving the split is real" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      message =
+        BridgeCase.exits_with(view, UndeclaredCapabilityError, fn ->
+          render_click(view, "dispatch", %{"family" => "share"})
+        end)
+
+      assert message =~ "capabilities: ["
+      refute message =~ "crosswake.bridge.unknown_capability_family"
     end
   end
 

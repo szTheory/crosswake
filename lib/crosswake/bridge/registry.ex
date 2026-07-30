@@ -72,6 +72,18 @@ defmodule Crosswake.Bridge.Registry do
     end)
   end
 
+  @doc """
+  Returns the closed vocabulary of capability families `capability_command/1` (and, by
+  extension, `Crosswake.Bridge.push/3`) recognizes at all — the domain of the reverse
+  lookup above. A family absent from this list can never be authorized by any route's
+  declaration; it fails the vocabulary check (moment C, D-51), not the per-route
+  declaration check (moment B, `Crosswake.Bridge.UndeclaredCapabilityError`).
+  """
+  @spec known_capability_families() :: [String.t()]
+  def known_capability_families do
+    @capability_commands |> Map.values() |> Enum.uniq() |> Enum.sort()
+  end
+
   @spec lookup(Root.t(), String.t(), String.t()) ::
           {:ok, Entry.t()}
           | {:error, :inactive_route | :unsupported_command | :undeclared_capability}
