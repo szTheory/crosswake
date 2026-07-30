@@ -83,6 +83,23 @@ defmodule Crosswake.Bridge.CatalogGuard do
   `Code.string_to_quoted/2` + `Macro.prewalk/3` only — stdlib, no new dependency,
   no cross-reference tooling. Mirrors `Crosswake.CompanionGuard` exactly, including
   its documented child-module prefix-match pitfall when matching alias node parts.
+
+  ## The injection seam, and why it is not a loophole
+
+  `assert_catalog_closed!/1` accepts an optional `root:` plus the three compiled
+  inputs it would otherwise read from `Contract`, `Registry`, and
+  `Manifest.Builder`. Every default is the real shipped value, so the zero-argument
+  call — the one CI and `mix crosswake.doctor` make — is byte-for-byte the gate it
+  was before the seam existed. Nothing is relaxed and no violation is skippable.
+
+  The seam exists so
+  `test/crosswake/proof/phase154_recipe_followable_test.exs` can EXECUTE the
+  six-step recipe this module's failure message prints, against a synthetic control
+  in a temp tree, and prove the gate goes red-to-green across the steps and red
+  again when any single step is omitted. Before the seam, that test could only
+  re-compose the individual predicates and hope the composition matched the
+  raiser's; now it drives the raiser itself. A gate whose documented path to yes is
+  never executed is a gate nobody has checked the exit door on.
   """
 
   alias Crosswake.Bridge.Contract
@@ -201,13 +218,14 @@ defmodule Crosswake.Bridge.CatalogGuard do
 
   @doc """
   The `lib/` sources the catalog line is enforced over.
-  """
-  @spec bridge_sources() :: [String.t()]
-  def bridge_sources do
-    cwd = File.cwd!()
 
-    Path.wildcard(Path.join(cwd, "lib/crosswake/bridge/**/*.ex")) ++
-      [Path.join(cwd, "lib/crosswake/bridge.ex")]
+  `root` defaults to `File.cwd!()` — the shipped tree. It is parameterised only so
+  the recipe-followability proof can point the same walk at a temp fixture tree.
+  """
+  @spec bridge_sources(String.t()) :: [String.t()]
+  def bridge_sources(root \\ File.cwd!()) do
+    Path.wildcard(Path.join(root, "lib/crosswake/bridge/**/*.ex")) ++
+      [Path.join(root, "lib/crosswake/bridge.ex")]
   end
 
   @doc """
@@ -215,10 +233,8 @@ defmodule Crosswake.Bridge.CatalogGuard do
   closed vocabulary. Enumerated, not globbed: a source that has moved must be
   noticed, not silently skipped.
   """
-  @spec native_denial_sources() :: [String.t()]
-  def native_denial_sources do
-    cwd = File.cwd!()
-
+  @spec native_denial_sources(String.t()) :: [String.t()]
+  def native_denial_sources(root \\ File.cwd!()) do
     Enum.map(
       [
         "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/BridgeChannel.swift",
@@ -226,23 +242,21 @@ defmodule Crosswake.Bridge.CatalogGuard do
         "examples/ios_shell_host/CrosswakeShell/CrosswakeShellApp.swift",
         "examples/ios_shell_host/CrosswakeShell/LiveViewContainerViewController.swift"
       ],
-      &Path.join(cwd, &1)
+      &Path.join(root, &1)
     )
   end
 
   @doc """
   The two native command-enum sources checked for bidirectional parity.
   """
-  @spec native_command_enum_sources() :: [String.t()]
-  def native_command_enum_sources do
-    cwd = File.cwd!()
-
+  @spec native_command_enum_sources(String.t()) :: [String.t()]
+  def native_command_enum_sources(root \\ File.cwd!()) do
     Enum.map(
       [
         "packages/crosswake-shell-core-ios/Sources/CrosswakeShellCore/BridgeChannel.swift",
         "packages/crosswake-shell-core-android/src/main/java/dev/crosswake/shell/core/BridgeChannel.kt"
       ],
-      &Path.join(cwd, &1)
+      &Path.join(root, &1)
     )
   end
 
@@ -487,15 +501,15 @@ defmodule Crosswake.Bridge.CatalogGuard do
   sites. An entry whose string has been fixed or deleted is rot: it makes the
   allowlist look larger than the real debt and quietly widens the gate.
   """
-  @spec check_denial_allowlist_liveness() :: :ok | {:violation, list()}
-  def check_denial_allowlist_liveness do
-    sources = Map.new(native_denial_sources(), &{&1, read_or_nil(&1)})
+  @spec check_denial_allowlist_liveness(String.t()) :: :ok | {:violation, list()}
+  def check_denial_allowlist_liveness(root \\ File.cwd!()) do
+    sources = Map.new(native_denial_sources(root), &{&1, read_or_nil(&1)})
 
     @out_of_vocabulary_denial_allowlist
     |> Enum.flat_map(fn entry ->
       live? =
         Enum.any?(entry.sites, fn site ->
-          path = Path.join(File.cwd!(), site |> String.split(":") |> hd())
+          path = Path.join(root, site |> String.split(":") |> hd())
 
           case Map.get(sources, path) do
             nil -> false
@@ -554,11 +568,31 @@ defmodule Crosswake.Bridge.CatalogGuard do
   with the six-step recipe for legitimately adding the next control.
 
   Returns `:ok` when the catalog line holds.
+
+  ## Options — all defaulting to the real shipped values
+
+    * `:root` — the tree the source, native-enum, and native-denial walks read
+      from. Defaults to `File.cwd!()`.
+    * `:commands` — defaults to `Crosswake.Bridge.Contract.commands/0`.
+    * `:command_capability_map` — defaults to `shipped_command_capability_map/0`.
+    * `:catalog_capability_ids` — defaults to `bounded_bridge_capability_ids/0`.
+
+  `assert_catalog_closed!()` with no options is the merge-blocking gate, unchanged.
+  See the moduledoc's "injection seam" section for why the options exist.
   """
-  @spec assert_catalog_closed!() :: :ok
-  def assert_catalog_closed! do
+  @spec assert_catalog_closed!(keyword()) :: :ok
+  def assert_catalog_closed!(opts \\ []) do
+    root = Keyword.get(opts, :root, File.cwd!())
+    commands = Keyword.get(opts, :commands, Contract.commands())
+
+    command_capability_map =
+      Keyword.get_lazy(opts, :command_capability_map, &shipped_command_capability_map/0)
+
+    catalog_capability_ids =
+      Keyword.get_lazy(opts, :catalog_capability_ids, &bounded_bridge_capability_ids/0)
+
     source_violations =
-      Enum.flat_map(bridge_sources(), fn path ->
+      Enum.flat_map(bridge_sources(root), fn path ->
         case check_source(File.read!(path)) do
           :ok -> []
           {:violation, list} -> Enum.map(list, fn v -> {path, v} end)
@@ -566,15 +600,15 @@ defmodule Crosswake.Bridge.CatalogGuard do
       end)
 
     parity_violations =
-      Enum.flat_map(native_command_enum_sources(), fn path ->
-        case check_native_enum_parity(read_or_missing(path), Contract.commands()) do
+      Enum.flat_map(native_command_enum_sources(root), fn path ->
+        case check_native_enum_parity(read_or_missing(path), commands) do
           :ok -> []
           {:violation, list} -> Enum.map(list, fn v -> {path, v} end)
         end
       end)
 
     denial_violations =
-      Enum.flat_map(native_denial_sources(), fn path ->
+      Enum.flat_map(native_denial_sources(root), fn path ->
         case check_native_denial_reasons(read_or_missing(path)) do
           :ok -> []
           {:violation, list} -> Enum.map(list, fn v -> {path, v} end)
@@ -582,17 +616,13 @@ defmodule Crosswake.Bridge.CatalogGuard do
       end)
 
     liveness_violations =
-      case check_denial_allowlist_liveness() do
+      case check_denial_allowlist_liveness(root) do
         :ok -> []
         {:violation, list} -> Enum.map(list, fn v -> {"(allowlist)", v} end)
       end
 
     attestation_violations =
-      case check_attestation(
-             Contract.commands(),
-             shipped_command_capability_map(),
-             bounded_bridge_capability_ids()
-           ) do
+      case check_attestation(commands, command_capability_map, catalog_capability_ids) do
         :ok -> []
         {:violation, list} -> Enum.map(list, fn v -> {"(attestation)", v} end)
       end
