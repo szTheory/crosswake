@@ -349,4 +349,45 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "diag.provider.adapter_shipped_seams"
     assert output =~ "blocking=false"
   end
+
+  test "renders the bridge hook wiring findings with their severity, hint, and details" do
+    output =
+      Formatter.render(%{
+        status: :ok,
+        findings: [
+          %Check{
+            severity: :advisory,
+            code: "bridge.hook.not_wired",
+            check: "bridge_hook",
+            message:
+              "no \"CrosswakeBridge\" hook reference was found in this host's assets tree or its HEEx templates",
+            hint:
+              "import the hook from /crosswake/crosswake.esm.js — this check is a best-effort grep and is never authoritative; the runtime ack deadline is.",
+            details: %{searched_assets: 0, searched_templates: 3, authoritative: false}
+          },
+          %Check{
+            severity: :warning,
+            code: "bridge.hook.ejected_protocol_drift",
+            check: "bridge_hook",
+            message:
+              "the ejected bridge hook at priv/static/crosswake.esm.js is stamped protocol 0.9.0, but this Crosswake speaks 1.1.0",
+            hint: "re-eject the hook or drop the host-owned copy",
+            details: %{
+              path: "priv/static/crosswake.esm.js",
+              stamped_protocol_version: "0.9.0",
+              contract_version: "1.1.0"
+            }
+          }
+        ]
+      })
+
+    assert output =~ "[advisory] bridge_hook (bridge.hook.not_wired)"
+    assert output =~ "no \"CrosswakeBridge\" hook reference was found"
+    assert output =~ "never authoritative"
+    assert output =~ "authoritative=false"
+
+    assert output =~ "[warning] bridge_hook (bridge.hook.ejected_protocol_drift)"
+    assert output =~ "stamped protocol 0.9.0"
+    assert output =~ "stamped_protocol_version=0.9.0"
+  end
 end

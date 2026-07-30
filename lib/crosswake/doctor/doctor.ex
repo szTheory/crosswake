@@ -153,7 +153,10 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
-    phase_154_findings = legacy_capability_id_findings(manifest) ++ capability_rebuild_findings(manifest)
+    phase_154_findings =
+      legacy_capability_id_findings(manifest) ++
+        capability_rebuild_findings(manifest) ++
+        bridge_hook_wiring_findings(cwd, opts)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -2064,6 +2067,100 @@ defmodule Crosswake.Doctor do
         family_capability_id: family_id
       }
     )
+  end
+
+  # D-37: the bridge hook's install-time wiring check.
+  #
+  # BEST-EFFORT AND ADVISORY, ALWAYS. This is a host-file grep, mirroring
+  # `phase_66_generator_drift_findings/3`'s technique, and it must NEVER be treated as
+  # authoritative: it cannot see a hook registered through a bundler alias, a hook
+  # element rendered by a dependency, or a layout assembled at runtime. The
+  # authoritative detector is the runtime ack deadline in `Crosswake.Bridge` — the
+  # server arms it on every push and it fires `:hook_not_wired` when no ack arrives.
+  # This finding exists only so an adopter learns about the mistake at `mix
+  # crosswake.doctor` time instead of at first-push time. Do not raise its severity,
+  # and do not make anything depend on its absence.
+  #
+  # It searches BOTH the host's assets tree AND its HEEx templates. An assets-only
+  # grep would false-negative against this repository's own reference host, which has
+  # no bundler at all: its layout imports the hook from a bare `<script type="module">`
+  # and carries the hook element inline in a `.heex`-shaped template.
+  @bridge_hook_asset_globs ["assets/**/*.js", "assets/**/*.mjs", "assets/**/*.ts"]
+  @bridge_hook_template_globs ["lib/**/*.heex", "lib/**/*.ex", "lib/**/*.eex"]
+  @bridge_hook_ejected_globs ["priv/static/**/crosswake.esm.js", "assets/**/crosswake.esm.js"]
+  @bridge_hook_stamp_regex ~r/crosswake:bridge-hook:ejected\s+protocol=(\d+\.\d+\.\d+)/
+
+  @spec bridge_hook_wiring_findings(String.t(), keyword()) :: [Check.t()]
+  def bridge_hook_wiring_findings(cwd, opts \\ []) do
+    hook_name = Crosswake.Install.Patcher.hook_name()
+
+    assets = expand_globs(cwd, @bridge_hook_asset_globs)
+    templates = expand_globs(cwd, @bridge_hook_template_globs)
+
+    wired? =
+      Enum.any?(assets ++ templates, fn path ->
+        case File.read(path) do
+          {:ok, contents} -> String.contains?(contents, hook_name)
+          _unreadable -> false
+        end
+      end)
+
+    wiring =
+      if wired? or Keyword.get(opts, :skip_bridge_hook_wiring_check?) == true do
+        []
+      else
+        [
+          check(
+            :advisory,
+            "bridge.hook.not_wired",
+            "bridge_hook",
+            "no #{inspect(hook_name)} hook reference was found in this host's assets tree or its HEEx templates",
+            "import the hook from #{Crosswake.Install.Patcher.hook_url()}, register it in your socket's hooks map, and put one `phx-hook=\"#{hook_name}\"` element on the page — run `mix crosswake.gen.bridge_hook` for the exact fragments. This check is a best-effort grep and is never authoritative; the runtime ack deadline is.",
+            %{
+              searched_assets: length(assets),
+              searched_templates: length(templates),
+              authoritative: false
+            }
+          )
+        ]
+      end
+
+    wiring ++ ejected_hook_stamp_findings(cwd)
+  end
+
+  # T-154-26: an ejected host-owned copy silently ages out of the protocol it speaks.
+  # The stamp is the only thing that makes that drift detectable.
+  defp ejected_hook_stamp_findings(cwd) do
+    current = Contract.version()
+
+    cwd
+    |> expand_globs(@bridge_hook_ejected_globs)
+    |> Enum.flat_map(fn path ->
+      with {:ok, contents} <- File.read(path),
+           [_full, stamped] <- Regex.run(@bridge_hook_stamp_regex, contents),
+           true <- stamped != current do
+        [
+          check(
+            :warning,
+            "bridge.hook.ejected_protocol_drift",
+            "bridge_hook",
+            "the ejected bridge hook at #{Path.relative_to(path, cwd)} is stamped protocol #{stamped}, but this Crosswake speaks #{current}",
+            "re-eject the hook (delete the file, then `mix crosswake.gen.bridge_hook --eject`) or drop the host-owned copy and use the library-owned file — an ejected copy that has fallen behind the protocol drifts silently",
+            %{
+              path: Path.relative_to(path, cwd),
+              stamped_protocol_version: stamped,
+              contract_version: current
+            }
+          )
+        ]
+      else
+        _no_drift -> []
+      end
+    end)
+  end
+
+  defp expand_globs(cwd, globs) do
+    Enum.flat_map(globs, fn glob -> Path.wildcard(Path.join(cwd, glob)) end)
   end
 
   defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []

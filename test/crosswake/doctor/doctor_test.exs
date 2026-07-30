@@ -1490,4 +1490,104 @@ defmodule Crosswake.DoctorTest do
       assert extract.(report1) != []
     end
   end
+
+  # D-37: the bridge hook wiring check is a BEST-EFFORT host-file grep. The
+  # authoritative detector is the runtime ack deadline in Crosswake.Bridge; these
+  # tests assert the advisory nudge, and that it never escalates past advisory.
+  describe "bridge hook wiring findings" do
+    setup do
+      host =
+        Path.join(System.tmp_dir!(), "crosswake-bridge-hook-#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(host)
+      on_exit(fn -> File.rm_rf!(host) end)
+
+      %{host: host}
+    end
+
+    test "reports a finding when no hook reference exists in either tree", %{host: host} do
+      File.mkdir_p!(Path.join(host, "lib/demo_web"))
+      File.write!(Path.join(host, "lib/demo_web/layouts.ex"), "defmodule DemoWeb.Layouts do\nend\n")
+
+      findings = Doctor.bridge_hook_wiring_findings(host)
+
+      assert [%Check{} = finding] = findings
+      assert finding.code == "bridge.hook.not_wired"
+      assert finding.severity == :advisory
+      assert finding.message =~ "CrosswakeBridge"
+      assert finding.hint =~ "never authoritative"
+      assert finding.details.authoritative == false
+    end
+
+    test "reports nothing when the hook is found in a HEEx-only host with no assets directory",
+         %{host: host} do
+      # This is the shape of this repository's own reference host: NO bundler, no
+      # assets tree at all, the hook element inline in a template. An assets-only
+      # grep would false-negative here — which is exactly why D-37 requires both.
+      File.mkdir_p!(Path.join(host, "lib/demo_web/components"))
+
+      File.write!(
+        Path.join(host, "lib/demo_web/components/layouts.ex"),
+        ~s|<div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>|
+      )
+
+      refute File.exists?(Path.join(host, "assets"))
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "reports nothing when the hook is found in the assets tree only", %{host: host} do
+      File.mkdir_p!(Path.join(host, "assets/js"))
+
+      File.write!(
+        Path.join(host, "assets/js/app.js"),
+        ~s|import {CrosswakeBridge} from "crosswake";\n|
+      )
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "warns when an ejected copy's stamped protocol version is behind the contract", %{
+      host: host
+    } do
+      File.mkdir_p!(Path.join(host, "priv/static"))
+      File.mkdir_p!(Path.join(host, "assets/js"))
+      File.write!(Path.join(host, "assets/js/app.js"), "CrosswakeBridge")
+
+      File.write!(
+        Path.join(host, "priv/static/crosswake.esm.js"),
+        "/* crosswake:bridge-hook:ejected protocol=0.9.0 */\nexport const CrosswakeBridge = {};\n"
+      )
+
+      assert [%Check{} = finding] = Doctor.bridge_hook_wiring_findings(host)
+      assert finding.code == "bridge.hook.ejected_protocol_drift"
+      assert finding.severity == :warning
+      assert finding.details.stamped_protocol_version == "0.9.0"
+      assert finding.details.contract_version == Crosswake.Bridge.Contract.version()
+    end
+
+    test "an ejected copy stamped at the current protocol produces no drift finding", %{
+      host: host
+    } do
+      File.mkdir_p!(Path.join(host, "priv/static"))
+      File.mkdir_p!(Path.join(host, "assets/js"))
+      File.write!(Path.join(host, "assets/js/app.js"), "CrosswakeBridge")
+
+      File.write!(
+        Path.join(host, "priv/static/crosswake.esm.js"),
+        "/* crosswake:bridge-hook:ejected protocol=#{Crosswake.Bridge.Contract.version()} */\n"
+      )
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "the wiring grep never fails doctor on its own", %{host: host} do
+      File.mkdir_p!(Path.join(host, "lib"))
+
+      findings = Doctor.bridge_hook_wiring_findings(host)
+
+      refute Enum.any?(findings, &(&1.severity == :error)),
+             "the best-effort grep must never produce an error-severity finding (D-37)"
+    end
+  end
 end
