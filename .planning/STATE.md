@@ -2,18 +2,16 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 154
-current_phase_name: the-control-contract-seam
-status: ready_to_plan
-stopped_at: Phase 154 complete (8/8) — ready to discuss Phase 155
-last_updated: 2026-07-30T02:38:13.832Z
-last_activity: 2026-07-29
+status: planning
+stopped_at: Phase 155 context gathered
+last_updated: "2026-07-30T03:49:15.647Z"
+last_activity: 2026-07-30
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 15
-  completed_plans: 48
-  percent: 50
+  completed_plans: 14
+  percent: 33
 ---
 
 # Project State: Crosswake
@@ -387,9 +385,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T02:20:00.000Z
-Stopped at: 154-08 COMPLETE (26720633, 0a01ca11) — Phase 154 closed with zero human verification and zero UAT
-Resume file: None
+Last session: 2026-07-30T03:49:15.640Z
+Stopped at: Phase 155 context gathered
+Resume file: .planning/phases/155-host-owned-fallback-components/155-CONTEXT.md
 
 ## Operator Next Steps
 
