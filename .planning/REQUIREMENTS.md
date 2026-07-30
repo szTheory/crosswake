@@ -17,8 +17,8 @@ shell-core binaries, so any new control requires a new native release. The
 at `0.2.0` — until that is fixed, a new shell-core release cannot reach iOS adopters at
 all. This category must land before MENU.
 
-- [ ] **MIRROR-01**: The `crosswake-shell-core-ios` SwiftPM mirror carries a `v0.2.0` tag matching the live Hex and Maven `0.2.0` core, so iOS adopters can resolve the current shell core.
-- [ ] **MIRROR-02**: A native shell-core release publishes to Hex, Maven, and the iOS mirror in one run, and a mirror-push failure surfaces as a hard, named CI failure instead of a silent 403.
+- [x] **MIRROR-01**: The `crosswake-shell-core-ios` SwiftPM mirror carries a `v0.2.0` tag matching the live Hex and Maven `0.2.0` core, so iOS adopters can resolve the current shell core.
+- [x] **MIRROR-02**: A native shell-core release publishes to Hex, Maven, and the iOS mirror in one run, and a mirror-push failure surfaces as a hard, named CI failure instead of a silent 403.
 
 ### GATE / RUNNER / CACHE — CI gate integrity and runner cost (inserted)
 
@@ -130,8 +130,8 @@ must look right on day one, so they are generated and owned by the host, never i
 | RUNNER-02 | Phase 153.1 | Pending |
 | CACHE-01 | Phase 153.1 | Pending |
 | CACHE-02 | Phase 153.1 | Pending |
-| MIRROR-01 | Phase 153 | In Progress (153-01 done; live tag push is 153-02, human-gated) |
-| MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
+| MIRROR-01 | Phase 153 | Complete — 153-02 verified mirror `refs/tags/v0.2.0` at `658d60253c58b7e0aedb576f16f40766fa677f23`, preserved `v0.1.2`, and re-baselined mirror `main` |
+| MIRROR-02 | Phase 153 | Complete — 153-01/153-03/153-04 landed SSH transport, atomic leased release push, native failure escalation, mirror parity gate, and release-truth live-status split; 153-04 carries required-check registration as a post-merge operator step |
 | CTRL-01 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
 | CTRL-02 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
 | CTRL-03 | Phase 154 | Complete — no human gate |

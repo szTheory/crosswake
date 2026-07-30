@@ -2,18 +2,19 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 155
-current_phase_name: host-owned-fallback-components
+current_phase: 156
+current_phase_name: native-menu-action-button-control
 status: ready_to_plan
 stopped_at: Phase 155 complete (7/7) — ready to discuss Phase 156
-last_updated: 2026-07-30T19:26:20.361Z
+last_updated: "2026-07-30T21:10:00Z"
 last_activity: 2026-07-30
+last_activity_desc: Phase 153-02 summary reconciled; Phase 156 remains unblocked
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 22
-  completed_plans: 55
-  percent: 50
+  completed_plans: 22
+  percent: 67
 ---
 
 # Project State: Crosswake
@@ -30,13 +31,14 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 Phase: 156
 Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
-Phase 153 (ios-mirror-unblock) — 3/4; **153-02 / MIRROR-01 COMPLETE** (tag `v0.2.0` pushed
-2026-07-28, mirror `main` re-baselined 2026-07-30, both verified against the mirror).
-Remaining: plan 153-04 (parity gate + release-status CLI). Phase 156 is unblocked.
-Status: Ready to plan
-Last activity: 2026-07-30
+Phase 153 (ios-mirror-unblock) — **COMPLETE** (4/4 plans); **153-02 / MIRROR-01 COMPLETE** (tag `v0.2.0` pushed
+2026-07-28, mirror `main` re-baselined 2026-07-30, both verified against the mirror). Phase 153-03 and 153-04
+landed the MIRROR-02 release-lane and release-truth guards; 153-04 still records the post-merge required-check
+registration as an operator carry.
+Status: Ready to plan Phase 156
+Last activity: 2026-07-30 — Phase 153-02 summary reconciled; Phase 156 remains unblocked
 
-Progress: [█████████░] 91%
+Progress: [███████░░░] 67%
 
 ## Phase 153-02: the one-way door is DONE — Phase 156 is UNBLOCKED
 
@@ -443,6 +445,7 @@ Full decision log in PROJECT.md (Key Decisions).
 | Phase 150 P03 | 4 min | 2 tasks | 5 files |
 | Phase 150 P04 | 4 min | 2 tasks | 7 files |
 | Phase 153 P01 | 15min | 3 tasks | 5 files |
+| Phase 153 P02 | reconciled | 3 external tasks | 1 file |
 | Phase 153 P03 | 45min | 3 tasks | 5 files |
 
 ## Session Continuity

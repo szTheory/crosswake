@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
 
-- [ ] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
+- [x] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
 - [x] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
 - [x] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
 - [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
@@ -200,7 +200,7 @@ Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
   2. A single native shell-core release run publishes Hex, Maven, and the iOS mirror together in one coordinated pass.
   3. A missing or invalid mirror push credential (`MIRROR_DEPLOY_KEY`) fails CI with a hard, named error instead of a silent 403.
 
-**Plans**: 2/4 plans executed
+**Plans**: 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -209,7 +209,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 153-02-PLAN.md — Human-gated: mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror `main` (MIRROR-01)
+- [x] 153-02-PLAN.md — Human-gated: mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror `main` (MIRROR-01)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -393,7 +393,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
 | 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
-| 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
+| 153. iOS Mirror Unblock | v20.0 | 4/4 | Complete | MIRROR-01 live refs verified; MIRROR-02 guards landed, with parity required-check registration carried post-merge |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
 | 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
 | 155. Host-Owned Fallback Components | v20.0 | 7/7 | Complete    | 2026-07-30 |
