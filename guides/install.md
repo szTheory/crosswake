@@ -92,7 +92,7 @@ plug(Plug.Static,
   at: "/crosswake",
   from: :crosswake,
   gzip: false,
-  only: ~w(crosswake.esm.js)
+  only: ~w(crosswake.esm.js tokens.css)
 )
 # crosswake:install:end
 ```

@@ -102,7 +102,7 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     assert endpoint_contents =~ "plug(Plug.Static,"
     assert endpoint_contents =~ "at: \"/crosswake\""
     assert endpoint_contents =~ "from: :crosswake"
-    assert endpoint_contents =~ "only: ~w(crosswake.esm.js)"
+    assert endpoint_contents =~ "only: ~w(crosswake.esm.js tokens.css)"
     assert endpoint_contents =~ "# crosswake:install:end"
 
     # The host's own existing static plug is untouched — this is additive.

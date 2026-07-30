@@ -13,6 +13,10 @@
       "800": {
         "$value": "#162B35",
         "$description": "Raised dark surfaces, inset on dark"
+      },
+      "950a72": {
+        "$value": "#09141AB8",
+        "$description": "current-950 at 72% alpha, pre-composited as an 8-digit hex. Deliberately NOT a color-mix() function — color-mix has an iOS 16.2 floor and this project's floor is iOS 15.0 (Package.swift:9). Full-viewport modal scrim use only."
       }
     },
     "harbor": {
@@ -218,6 +222,14 @@
       "$value": "{primitive.harbor.700}",
       "$dark": "{primitive.mist.200}",
       "$description": "Informational indicators"
+    }
+  },
+
+  "overlay": {
+    "$type": "color",
+    "scrim": {
+      "$value": "{primitive.current.950a72}",
+      "$description": "Full-viewport backdrop behind a host-owned fallback modal/menu panel. Deliberately no $dark key — the scrim sits above page content regardless of theme, so it does not participate in light/dark resolution the way surface/text/action tokens do (D-27)."
     }
   },
 

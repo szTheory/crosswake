@@ -8,6 +8,7 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   alias CrosswakeExample.SaaSPortal.Approvals
   alias CrosswakeExample.SaaSPortal.Components
   alias CrosswakeExample.SaaSPortal.Diagnostics
+  alias CrosswakeExampleWeb.CrosswakeFallbacks
 
   @bridge_route_id "saas-approval"
 
@@ -32,7 +33,10 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
         crosswake_manifest: Policy.manifest(),
         crosswake_route_id: @bridge_route_id,
         diagnostics_rows: Diagnostics.route_policy_rows(),
-        diagnostics_links: Diagnostics.guide_links()
+        diagnostics_links: Diagnostics.guide_links(),
+        confirm_open: false,
+        confirm_demo_notice: nil,
+        confirm_error: nil
       )
       |> Bridge.attach()
 
@@ -87,6 +91,34 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
            bridge_reply: nil
          )}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Native-controls fallback (Phase 155 FALL-01/PROOF-01) — a generated,
+  # host-owned confirm modal. This is additive: it demonstrates the generated
+  # confirm_modal/1 on its own trigger and does not alter the "approve"
+  # handle_event above, which Phase 154's evidence-panel proof is pinned to.
+  # ---------------------------------------------------------------------------
+
+  def handle_event("open_confirm_demo", _params, socket) do
+    {:noreply, assign(socket, confirm_open: true, confirm_demo_notice: nil, confirm_error: nil)}
+  end
+
+  def handle_event("crosswake_fallback_answer", %{"answer" => "confirm"}, socket) do
+    {:noreply,
+     assign(socket,
+       confirm_open: false,
+       confirm_demo_notice: "Approved. The requester was notified.",
+       confirm_error: nil
+     )}
+  end
+
+  def handle_event("crosswake_fallback_dismiss", _params, socket) do
+    {:noreply, assign(socket, confirm_open: false)}
+  end
+
+  def handle_event("crosswake_fallback_answer", _params, socket) do
+    {:noreply, socket}
   end
 
   @impl true
@@ -197,6 +229,32 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
           <strong>{reply_verdict(@bridge_reply)}</strong>
           {reply_detail(@bridge_reply)}
         </p>
+      </section>
+
+      <section :if={@approval} class="adminpilot-panel" id="native-controls-fallback">
+        <h2>Native controls fallback</h2>
+        <p>
+          Crosswake has no native alert/confirm bridge command. This generated, host-owned
+          confirm modal (<code>mix crosswake.gen.native_controls_ui</code>) is the permanent
+          surface for that job on every platform.
+        </p>
+
+        <button type="button" class="btn-secondary" phx-click="open_confirm_demo">
+          Preview the confirm fallback
+        </button>
+
+        <p :if={@confirm_demo_notice} role="status">
+          <strong>{@confirm_demo_notice}</strong>
+        </p>
+
+        <CrosswakeFallbacks.confirm_modal
+          id="native-controls-confirm-demo"
+          open={@confirm_open}
+          title="Approve this request?"
+          body="The requester is notified and the decision is recorded."
+          confirm_label="Approve request"
+          error={@confirm_error}
+        />
       </section>
 
       <Components.diagnostics_panel

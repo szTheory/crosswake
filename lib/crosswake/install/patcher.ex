@@ -61,13 +61,24 @@ defmodule Crosswake.Install.Patcher do
   @spec hook_url() :: String.t()
   def hook_url, do: "#{@static_at}/#{@hook_asset}"
 
+  @tokens_asset "tokens.css"
+
+  @doc """
+  The public URL the endpoint's static plug serves the library's compiled
+  `tokens.css` from (Phase 155 D-26). One served copy — hosts never carry their
+  own `tokens.css`.
+  """
+  @spec tokens_url() :: String.t()
+  def tokens_url, do: "#{@static_at}/#{@tokens_asset}"
+
   @doc """
   The canonical endpoint static plug block — the part of the wiring that IS
   mechanical and therefore gets patched (D-41).
 
   It mirrors the shape of the `:phoenix` and `:phoenix_live_view` blocks a Phoenix
-  host already carries, serving the hook from the `:crosswake` application's own
-  `priv/static` directory at the `/crosswake` prefix.
+  host already carries, serving the hook AND the library's compiled `tokens.css`
+  from the `:crosswake` application's own `priv/static` directory at the
+  `/crosswake` prefix (Phase 155 D-26 — one served copy, no host-side duplicate).
   """
   @spec endpoint_static_plug_block(String.t()) :: String.t()
   def endpoint_static_plug_block(indentation \\ "  ") do
@@ -77,7 +88,11 @@ defmodule Crosswake.Install.Patcher do
       "#{indentation}  at: \"#{@static_at}\",",
       "#{indentation}  from: :crosswake,",
       "#{indentation}  gzip: false,",
-      "#{indentation}  only: ~w(#{@hook_asset})",
+      # Literal `only: ~w(crosswake.esm.js tokens.css)`, not interpolated — the
+      # exact two asset names stay grep-able verbatim on this line, even though
+      # @hook_asset/@tokens_asset name the same strings for hook_url/0 and
+      # tokens_url/0 above.
+      "#{indentation}  only: ~w(crosswake.esm.js tokens.css)",
       "#{indentation})",
       "#{indentation}#{@marker_end}"
     ]

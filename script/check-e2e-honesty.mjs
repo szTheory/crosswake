@@ -57,6 +57,7 @@ const FILES = [
   'examples/phoenix_host/e2e/offline_sync.spec.ts',
   'examples/phoenix_host/e2e/route_tour.spec.ts',
   'examples/phoenix_host/e2e/support/offline_route_proof.ts',
+  'examples/phoenix_host/e2e/native_controls_fallback.spec.ts',
 ];
 
 /** Violations accumulated: [lineNumber, ruleId, message] */

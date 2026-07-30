@@ -8,6 +8,7 @@
   --cw-primitive-current-800: #162B35;
   --cw-primitive-current-900: #0F1E26;
   --cw-primitive-current-950: #09141A;
+  --cw-primitive-current-950a72: #09141AB8;
   --cw-primitive-foam-100: #EFE6D6;
   --cw-primitive-foam-50: #F7F1E6;
   --cw-primitive-harbor-700: #254855;
@@ -33,6 +34,7 @@
   --cw-border-default: var(--cw-primitive-mist-200);
   --cw-border-strong: var(--cw-primitive-wake-700);
   --cw-border-subtle: var(--cw-primitive-foam-100);
+  --cw-overlay-scrim: var(--cw-primitive-current-950a72);
   --cw-runtime-bridge: var(--cw-primitive-plum-700);
   --cw-runtime-liveview: var(--cw-primitive-harbor-700);
   --cw-runtime-native: var(--cw-primitive-brass-500);
@@ -65,6 +67,7 @@
     --cw-border-default: var(--cw-primitive-harbor-700);
     --cw-border-strong: var(--cw-primitive-mist-200);
     --cw-border-subtle: var(--cw-primitive-current-800);
+    --cw-overlay-scrim: var(--cw-primitive-current-950a72);
     --cw-runtime-bridge: var(--cw-primitive-foam-50);
     --cw-runtime-liveview: var(--cw-primitive-mist-200);
     --cw-runtime-native: var(--cw-primitive-brass-500);
@@ -96,6 +99,7 @@
   --cw-border-default: var(--cw-primitive-harbor-700);
   --cw-border-strong: var(--cw-primitive-mist-200);
   --cw-border-subtle: var(--cw-primitive-current-800);
+  --cw-overlay-scrim: var(--cw-primitive-current-950a72);
   --cw-runtime-bridge: var(--cw-primitive-foam-50);
   --cw-runtime-liveview: var(--cw-primitive-mist-200);
   --cw-runtime-native: var(--cw-primitive-brass-500);

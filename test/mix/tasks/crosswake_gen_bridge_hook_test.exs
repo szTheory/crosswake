@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Crosswake.Gen.BridgeHookTest do
       assert output =~ "plug(Plug.Static,"
       assert output =~ "at: \"/crosswake\""
       assert output =~ "from: :crosswake"
-      assert output =~ "only: ~w(crosswake.esm.js)"
+      assert output =~ "only: ~w(crosswake.esm.js tokens.css)"
 
       # 2. the layout import line and the hooks-map entry
       assert output =~ "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";"

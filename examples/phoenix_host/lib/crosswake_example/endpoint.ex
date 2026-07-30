@@ -19,7 +19,7 @@ defmodule CrosswakeExample.Endpoint do
     at: "/",
     from: :crosswake_example,
     gzip: false,
-    only: ~w(brand css offline_study.js storage_budget.test.js storage_logic.js)
+    only: ~w(brand css offline_study.js storage_budget.test.js storage_logic.js assets)
   )
 
   plug(Plug.Static,
@@ -41,7 +41,7 @@ defmodule CrosswakeExample.Endpoint do
     at: "/crosswake",
     from: :crosswake,
     gzip: false,
-    only: ~w(crosswake.esm.js)
+    only: ~w(crosswake.esm.js tokens.css)
   )
   # crosswake:install:end
 
