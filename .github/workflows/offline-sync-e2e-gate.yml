@@ -64,8 +64,12 @@ jobs:
       # check name costs the rename-and-registration ritual. The suite has zero
       # dependencies — it is Node's built-in runner over a hand-stubbed global, so
       # no `npm ci` runs here.
+      # The glob is UNQUOTED so the shell expands it. `node --test` only learned to
+      # expand glob patterns itself in Node 21, and this job pins Node 20 — quoting
+      # it hands node a literal pattern it cannot resolve ("Could not find
+      # .../test/js/*.mjs"). Shell expansion is version-independent.
       - name: Run the bridge hook unit tests (priv/static/crosswake.esm.js)
-        run: node --test "test/js/*.mjs"
+        run: node --test test/js/*.mjs
       - name: Step summary
         run: |
           echo "GUARD-01 e2e-honesty: structural check passed" >> "$GITHUB_STEP_SUMMARY"
