@@ -13,7 +13,7 @@ defmodule CrosswakeExample.Flashcards.DeckLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <link rel="stylesheet" href="/css/app.css" />
     <div class="page-container">
       <div class="card" id={"deck-#{@deck.id}"}>

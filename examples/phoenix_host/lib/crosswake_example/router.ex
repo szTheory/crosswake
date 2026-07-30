@@ -13,7 +13,7 @@ defmodule CrosswakeExample.LibraryLive do
     # CSS only — the DOM text stays exactly "lesson library" so the route-tour
     # owner assertion (toContainText('lesson library')) holds without change.
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <style>
       body {
         font-family: var(--cw-font-body);

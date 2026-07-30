@@ -51,7 +51,7 @@ defmodule CrosswakeExample.BridgeProofLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <style>
       body {
         font-family: var(--cw-font-body);
