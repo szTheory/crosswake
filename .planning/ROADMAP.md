@@ -326,12 +326,23 @@ Plans:
 **Plans**: 7 plans in 4 waves
 
 Plans:
+**Wave 1**
+
 - [ ] 155-01-PLAN.md — Tracer: a generated confirm modal, end-to-end from token to browser (wave 1)
 - [ ] 155-02-PLAN.md — Bridge shipped-code defects: tolerant `resolve/2` (D-50) and a distinct `UnknownCapabilityFamilyError` (D-51) (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
 - [ ] 155-04-PLAN.md — One served `tokens.css`, the generated-layout 404 fix, endpoint marker-content reconciliation, and two doctor findings (wave 2)
 - [ ] 155-05-PLAN.md — `Crosswake.ComponentTierGuard`: six rules including the anti-vacuity twin, plus four controls (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
 
 **UI hint**: yes
