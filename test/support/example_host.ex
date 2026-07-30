@@ -1,6 +1,10 @@
 defmodule Crosswake.TestSupport.ExampleHost do
   @app_root Path.expand("../../examples/phoenix_host", __DIR__)
 
+  # Private to the proof harness — deliberately NOT CrosswakeExample.PubSub. See
+  # start_endpoint!/0.
+  @pubsub Crosswake.TestSupport.ExampleHostPubSub
+
   def load! do
     @app_root
     |> Path.join("_build/dev/lib/*/ebin")
@@ -65,25 +69,32 @@ defmodule Crosswake.TestSupport.ExampleHost do
   """
   def start_endpoint! do
     endpoint = CrosswakeExample.Endpoint
-    pubsub = CrosswakeExample.PubSub
 
     # The example app's own config/*.exs is never loaded in this repo's test env, so
     # the endpoint's configuration has to be supplied here. It mirrors
-    # examples/phoenix_host/config/config.exs with one deliberate divergence:
-    # `server: false`. A LiveViewTest round trip needs no listening socket, and
+    # examples/phoenix_host/config/config.exs with two deliberate divergences.
+    #
+    # `server: false` — a LiveViewTest round trip needs no listening socket, and
     # binding the example's port (4700) would collide with a showcase server a
     # developer may already have running.
+    #
+    # `pubsub_server: @pubsub` rather than the app's own CrosswakeExample.PubSub —
+    # phase35_paywall_live_test.exs `start_supervised!`s that globally-named broker
+    # per test, deliberately, to get a fresh one each time. A long-lived broker under
+    # the same name squats it and fails that lane with `:already_started` whenever it
+    # runs second. Nothing reachable from these round trips broadcasts, so the
+    # endpoint gets a private broker and the app-owned name stays unclaimed.
     Application.put_env(:crosswake_example, endpoint,
       url: [host: "localhost"],
       server: false,
       secret_key_base: String.duplicate("a", 64),
       live_view: [signing_salt: "crosswake"],
-      pubsub_server: pubsub
+      pubsub_server: @pubsub
     )
 
     {:ok, _} = Application.ensure_all_started(:phoenix)
 
-    start_detached!({Phoenix.PubSub, name: pubsub})
+    start_detached!({Phoenix.PubSub, name: @pubsub})
     start_detached!(endpoint)
 
     :ok
