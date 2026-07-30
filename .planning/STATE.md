@@ -5,15 +5,15 @@ milestone_name: Native Controls Pack 1
 current_phase: 154
 current_phase_name: the-control-contract-seam
 status: executing
-stopped_at: Completed 154-07-PLAN.md
-last_updated: "2026-07-30T00:55:08.336Z"
+stopped_at: "154-08 Task 1 complete (26720633); Task 2 human-verify checkpoint OPEN — example host running at localhost:4700 (MIX_ENV=test), seeded"
+last_updated: "2026-07-30T01:11:10.506Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 15
-  completed_plans: 13
-  percent: 17
+  completed_plans: 14
+  percent: 33
 ---
 
 # Project State: Crosswake
@@ -383,9 +383,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T00:54:59.555Z
-Stopped at: Completed 154-07-PLAN.md
-Resume file: None
+Last session: 2026-07-30T01:11:10.493Z
+Stopped at: 154-08 Task 1 complete (26720633); Task 2 human-verify checkpoint OPEN — example host running at localhost:4700 (MIX_ENV=test), seeded
+Resume file: .planning/phases/154-the-control-contract-seam/154-08-PLAN.md
 
 ## Operator Next Steps
 
