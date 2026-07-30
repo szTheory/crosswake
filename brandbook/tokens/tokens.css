@@ -29,7 +29,7 @@
   --cw-action-bg-dark: var(--cw-primitive-brass-500);
   --cw-action-fg: var(--cw-primitive-white);
   --cw-action-fg-dark: var(--cw-primitive-current-950);
-  --cw-action-focus-ring: var(--cw-primitive-brass-500);
+  --cw-action-focus-ring: var(--cw-primitive-wake-700);
   --cw-action-hover: var(--cw-primitive-current-950);
   --cw-border-default: var(--cw-primitive-mist-200);
   --cw-border-strong: var(--cw-primitive-wake-700);
@@ -41,6 +41,7 @@
   --cw-runtime-offline: var(--cw-primitive-kelp-800);
   --cw-runtime-sensitive: var(--cw-primitive-rust-600);
   --cw-status-error: var(--cw-primitive-rust-600);
+  --cw-status-error-fg: var(--cw-primitive-white);
   --cw-status-info: var(--cw-primitive-harbor-700);
   --cw-status-success: var(--cw-primitive-kelp-800);
   --cw-status-warning: var(--cw-primitive-brass-700);
@@ -74,6 +75,7 @@
     --cw-runtime-offline: var(--cw-primitive-wake-500);
     --cw-runtime-sensitive: var(--cw-primitive-rust-600);
     --cw-status-error: var(--cw-primitive-rust-600);
+    --cw-status-error-fg: var(--cw-primitive-white);
     --cw-status-info: var(--cw-primitive-mist-200);
     --cw-status-success: var(--cw-primitive-wake-500);
     --cw-status-warning: var(--cw-primitive-brass-500);
@@ -106,6 +108,7 @@
   --cw-runtime-offline: var(--cw-primitive-wake-500);
   --cw-runtime-sensitive: var(--cw-primitive-rust-600);
   --cw-status-error: var(--cw-primitive-rust-600);
+  --cw-status-error-fg: var(--cw-primitive-white);
   --cw-status-info: var(--cw-primitive-mist-200);
   --cw-status-success: var(--cw-primitive-wake-500);
   --cw-status-warning: var(--cw-primitive-brass-500);

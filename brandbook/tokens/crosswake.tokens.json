@@ -176,9 +176,9 @@
       "$description": "Hover state overlay — apply as background on interactive elements"
     },
     "focus-ring": {
-      "$value": "{primitive.brass.500}",
+      "$value": "{primitive.wake.700}",
       "$dark": "{primitive.wake.500}",
-      "$description": "2px focus outline ring (WCAG 2.4.11 focus appearance)"
+      "$description": "2px focus outline ring. Light value corrected from brass-500 (2.93:1 on white / 2.61:1 on foam-50 — below WCAG SC 1.4.11's 3:1 non-text floor) to wake-700 (5.45:1 on white / 4.85:1 on foam-50). Dark value stays wake-500 (4.43:1 on the dark inset surface) — already passing (D-33)."
     }
   },
 
@@ -217,6 +217,10 @@
       "$value": "{primitive.rust.600}",
       "$dark": "{primitive.rust.600}",
       "$description": "Error state, danger indicators"
+    },
+    "error-fg": {
+      "$value": "{primitive.white}",
+      "$description": "Foreground for a filled error/danger surface (e.g. the destructive confirm button). 6.02:1 on status.error in both themes — status.error itself is only 2.44:1 as text on the dark inset surface, so a filled destructive control needs this pairing to keep a colour danger signal on dark (D-27, D-32)."
     },
     "info": {
       "$value": "{primitive.harbor.700}",

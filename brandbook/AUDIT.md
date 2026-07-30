@@ -389,7 +389,7 @@ Primitives are emitted in `:root` as raw hex values. They must not be referenced
 
 ---
 
-### Tier 2: Semantic Tokens (27 total — within D-06 hard cap of 30)
+### Tier 2: Semantic Tokens (29 total — within D-06 hard cap of 30; exactly 1 slot remains)
 
 #### surface (4 tokens)
 
@@ -419,7 +419,7 @@ Primitives are emitted in `:root` as raw hex values. They must not be referenced
 | `--cw-action-bg-dark` | `var(--cw-primitive-brass-500)` | `var(--cw-primitive-wake-700)` |
 | `--cw-action-fg-dark` | `var(--cw-primitive-current-950)` | `var(--cw-primitive-white)` |
 | `--cw-action-hover` | `var(--cw-primitive-current-950)` | `var(--cw-primitive-foam-100)` |
-| `--cw-action-focus-ring` | `var(--cw-primitive-brass-500)` | `var(--cw-primitive-wake-500)` |
+| `--cw-action-focus-ring` | `var(--cw-primitive-wake-700)` | `var(--cw-primitive-wake-500)` | Corrected from brass-500 (2.93:1 on white — fails WCAG SC 1.4.11's 3:1 non-text floor) to wake-700 (5.45:1 on white / 4.85:1 on foam-50) — Phase 155 D-33. |
 
 #### border (3 tokens)
 
@@ -429,7 +429,7 @@ Primitives are emitted in `:root` as raw hex values. They must not be referenced
 | `--cw-border-subtle` | `var(--cw-primitive-foam-100)` | `var(--cw-primitive-current-800)` |
 | `--cw-border-strong` | `var(--cw-primitive-wake-700)` | `var(--cw-primitive-mist-200)` |
 
-#### status (4 tokens)
+#### status (5 tokens)
 
 | Token | Light value | Dark value |
 |-------|-------------|------------|
@@ -437,6 +437,7 @@ Primitives are emitted in `:root` as raw hex values. They must not be referenced
 | `--cw-status-warning` | `var(--cw-primitive-brass-700)` | `var(--cw-primitive-brass-500)` |
 | `--cw-status-error` | `var(--cw-primitive-rust-600)` | `var(--cw-primitive-rust-600)` |
 | `--cw-status-info` | `var(--cw-primitive-harbor-700)` | `var(--cw-primitive-mist-200)` |
+| `--cw-status-error-fg` | `var(--cw-primitive-white)` | (no `$dark` — pure alias) | Foreground for a filled error/danger surface. 6.02:1 on `--cw-status-error` in both themes — Phase 155 D-27/D-32. |
 
 #### runtime (5 tokens — Crosswake-unique tier)
 
@@ -449,6 +450,12 @@ The `runtime.*` tier is the single most important differentiator in this token s
 | `--cw-runtime-native` | `var(--cw-primitive-brass-500)` | `var(--cw-primitive-brass-500)` | Native screen ownership |
 | `--cw-runtime-sensitive` | `var(--cw-primitive-rust-600)` | `var(--cw-primitive-rust-600)` | Sensitive / cache-never routes |
 | `--cw-runtime-bridge` | `var(--cw-primitive-plum-700)` | `var(--cw-primitive-foam-50)` | Bridge contract surface |
+
+#### overlay (1 token — Phase 155 D-27)
+
+| Token | Light value | Dark value | Notes |
+|-------|-------------|------------|-------|
+| `--cw-overlay-scrim` | `var(--cw-primitive-current-950a72)` | (no `$dark` — deliberate) | 8-digit hex primitive (`#09141AB8`), not `color-mix()` (iOS 15.0 floor). Full-viewport backdrop behind a host-owned fallback modal/menu panel only. |
 
 ---
 
@@ -1049,7 +1056,7 @@ The coastal-muted palette (Current/Foam/Wake/Brass/Rust families) is frozen. A c
 The display font is frozen (D-12). Market saturation concerns are acknowledged and mitigated by the mandatory D-11 letter cuts. Swapping fonts would invalidate the letterform-cut brief, all Phase 103 tournament work, and every specimen that uses the wordmark. The only exit from Space Grotesk is if the custom letter cuts prove impossible in Phase 103 — in which case the Phase 103 executor surfaces a checkpoint, not a unilateral swap.
 
 **13. Component-level design tokens**
-The token system deliberately stops at the semantic tier (27 tokens, hard cap 30). Adding component-level tokens (button.bg, card.border, etc.) creates naming churn and fragments the public contract without measurable benefit at the library boundary. This is an explicit anti-feature per the D-06 decision.
+The token system deliberately stops at the semantic tier (29 tokens, hard cap 30 — exactly 1 slot remains as of Phase 155). Adding component-level tokens (button.bg, card.border, etc.) creates naming churn and fragments the public contract without measurable benefit at the library boundary. This is an explicit anti-feature per the D-06 decision.
 
 **14. Animated hero or motion design this milestone**
 Motion guidance exists in the brand book (§18). Motion assets are not a Phase 102–106 deliverable. Do not invest in animated hero sequences or wave-line animations until the static identity is complete and verified.
