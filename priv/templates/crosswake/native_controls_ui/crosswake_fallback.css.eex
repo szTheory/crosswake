@@ -13,8 +13,12 @@
  * your own design system instead of deleting the tokens.css link. Sizing
  * below (spacing/type-scale/radius) is intentionally literal, not
  * token-aliased — the alias contract here is color, font, and radius only,
- * matching the fixed 15-entry table this template ships with. */
-.cw-fallback {
+ * matching the fixed 15-entry table this template ships with.
+ * Shared with .cw-fallback-inline-alert: that region renders OUTSIDE the
+ * .cw-fallback subtree entirely (in normal document flow, never inside a
+ * modal), so it needs the same alias block to resolve its own colors. */
+.cw-fallback,
+.cw-fallback-inline-alert {
   --cwfb-surface:       var(--cw-surface-inset);
   --cwfb-scrim:         var(--cw-overlay-scrim);
   --cwfb-ink:           var(--cw-text-default);
@@ -172,8 +176,44 @@
   opacity: 0.7;
 }
 
+/* ─── Destructive action button (D-32) ──────────────────────────────────── *
+ * A filled danger surface + danger text PLUS a left-border shape cue —
+ * colour and shape both carry the signal, never colour alone. The error
+ * token as TEXT is only 2.44:1 on dark and is not safe on its own; the
+ * filled variant is what makes the destructive confirm have a colour
+ * channel at all on dark. Declared after .cw-fallback-action so its
+ * background wins at equal specificity, including on :hover below. */
+.cw-fallback-action-danger {
+  background-color: var(--cwfb-danger-bg);
+  color: var(--cwfb-danger-fg);
+  border-left: 3px solid var(--cwfb-border-strong);
+}
+
+.cw-fallback-action-danger:hover:not(:disabled) {
+  background-color: var(--cwfb-danger-bg);
+}
+
 .cw-fallback-cancel:focus-visible,
 .cw-fallback-action:focus-visible {
   outline: 2px solid var(--cwfb-focus-ring);
   outline-offset: 2px;
+}
+
+/* ─── Inline fail-closed alert (D-59, E4) ───────────────────────────────── *
+ * Rendered in normal document flow, entirely OUTSIDE .cw-fallback — this
+ * selector was added to the alias block above so its --cwfb-* references
+ * resolve without needing to live inside the modal subtree. No fixed
+ * height, no overflow rule of any kind: a clipped denial would read as
+ * silent degradation, which PROOF-01 forbids. Same left-border shape cue as
+ * the modal's own role="alert" region, for the same reason (D-31: the error
+ * token is not safe as text/border alone on dark). */
+.cw-fallback-inline-alert {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--cwfb-border-strong);
+  font-family: var(--cwfb-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--cwfb-ink);
 }

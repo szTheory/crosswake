@@ -20,8 +20,7 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
   `Map.take([:conn_session, :root_view])` — `Crosswake.Bridge.resolve/2` would
   raise `Crosswake.Bridge.NotMountedError` inside one. This module stays a
   plain `Phoenix.Component`, never a `LiveComponent`, so any future bridge-
-  aware sibling component in this same file (an `action_menu/1`, for example)
-  never trips that trap either.
+  aware sibling component in this same file never trips that trap either.
 
   ## Why not `<dialog>` / `showModal()` or the Popover API
 
@@ -29,6 +28,15 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
   `<script>` — regressing this project's CSP posture — and both are ahead of
   this project's browser floor (`<dialog>` needs iOS 15.4, the Popover API
   needs iOS 17; the floor is iOS 15.0).
+
+  ## `aria-modal` + VoiceOver — a recorded, unproven limitation
+
+  `aria-modal="true"` is unreliable in Safari combined with VoiceOver (the
+  reason React Aria ships `ariaHideOutside`). The server-rendered `inert`
+  attribute LiveView's focus trap relies on is *believed* to mitigate the gap
+  for free, but that belief is explicitly **not proven** by this phase's proof
+  lane. Treat it as a manual-check limitation, never as a passing assertion,
+  until someone verifies it by hand with a screen reader.
 
   ## Ownership
 
@@ -51,35 +59,71 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
 
   `title` and `confirm_label` are required with no default — a missing value
   is a compile error, not a habituating "OK"/"Confirm".
+
+  ## Tones
+
+  `tone: :neutral` (the default) renders `role="dialog"`, allows click-away
+  dismissal, and sets initial focus on the action button.
+
+  `tone: :destructive` renders `role="alertdialog"`, allows **no** click-away
+  dismissal (the Radix Dialog/AlertDialog split shadcn also inherits), and
+  sets initial focus on Cancel instead — the one tone branch this component
+  makes. Destructive tone also **requires** `body`: the component DSL has no
+  way to express a conditionally-required attr, so a destructive confirm with
+  a blank `body` raises at render instead of silently shipping a missing
+  consequence sentence.
+
+      <.confirm_modal
+        id="delete-job-confirm"
+        tone={:destructive}
+        title="Delete this job?"
+        body="This removes the job and its 3 photos. It cannot be undone."
+        confirm_label="Delete job"
+        open={@delete_confirm_open}
+      />
   """
   attr :id, :string, required: true
   attr :title, :string, required: true
   attr :confirm_label, :string, required: true
   attr :body, :string, default: nil
+  attr :tone, :atom, values: [:neutral, :destructive], default: :neutral
   attr :open, :boolean, default: false
   attr :pending, :boolean, default: false
   attr :error, :string, default: nil
 
   def confirm_modal(assigns) do
+    if assigns.tone == :destructive and blank?(assigns[:body]) do
+      raise ArgumentError, """
+      confirm_modal/1: tone=:destructive requires the `body` attr.
+
+      The destructive confirm's consequence sentence can never be missing —
+      pass `body="..."` naming exactly what will happen and that it cannot be
+      undone.
+      """
+    end
+
     ~H"""
     <div
       :if={@open}
       id={@id}
       class="cw-fallback"
       data-cw-fallback
-      data-cw-fallback-tone="neutral"
-      role="dialog"
+      data-cw-fallback-tone={@tone}
+      data-cw-fallback-surface="confirm"
+      role={if @tone == :destructive, do: "alertdialog", else: "dialog"}
       aria-modal="true"
       aria-labelledby={"#{@id}-title"}
       phx-window-keydown={JS.push("crosswake_fallback_dismiss")}
       phx-key="escape"
-      phx-mounted={JS.focus(to: "##{@id}-action")}
+      phx-mounted={
+        JS.focus(to: if(@tone == :destructive, do: "##{@id}-cancel", else: "##{@id}-action"))
+      }
       phx-remove={JS.pop_focus()}
     >
       <.focus_wrap
         id={"#{@id}-trap"}
         class="cw-fallback-panel"
-        phx-click-away={JS.push("crosswake_fallback_dismiss")}
+        phx-click-away={if @tone == :neutral, do: JS.push("crosswake_fallback_dismiss")}
       >
         <h2 id={"#{@id}-title"} class="cw-fallback-title">{@title}</h2>
 
@@ -91,6 +135,7 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
         <div class="cw-fallback-actions">
           <button
             type="button"
+            id={"#{@id}-cancel"}
             class="cw-fallback-cancel"
             phx-click={JS.push("crosswake_fallback_dismiss")}
           >
@@ -99,16 +144,68 @@ defmodule <%= app_module %>Web.CrosswakeFallbacks do
           <button
             type="button"
             id={"#{@id}-action"}
-            class="cw-fallback-action"
+            class={["cw-fallback-action", @tone == :destructive && "cw-fallback-action-danger"]}
             phx-click={JS.push("crosswake_fallback_answer")}
             phx-value-answer="confirm"
             disabled={@pending}
           >
-            {if @pending, do: "Approving…", else: @confirm_label}
+            {confirm_action_label(@tone, @pending, @confirm_label)}
           </button>
         </div>
       </.focus_wrap>
     </div>
     """
   end
+
+  @doc """
+  The inline fail-closed alert — renders when a control this phase covers is
+  unavailable, WITHOUT ever opening a modal.
+
+  Rendered in normal document flow (not inside `.cw-fallback`), `role="alert"`,
+  no fixed height, never scrolling or clipping — a clipped denial would read
+  as silent degradation.
+
+  `kind: :stale_binary` and `kind: :undeclared` render one of two fixed,
+  literal strings with no interpolated values — maximum length is known at
+  author time. `kind: :shell_unreachable` renders nothing at all: there is no
+  honest string for "no shell is present at all" (precedent: the haptics
+  `:shell_unreachable` branch in `approval_live.ex`).
+
+      <.fallback_alert :if={@fallback_denied} kind={@fallback_denial_kind} />
+  """
+  attr :kind, :atom, required: true, values: [:stale_binary, :undeclared, :shell_unreachable]
+
+  def fallback_alert(assigns) do
+    ~H"""
+    <p
+      :if={@kind != :shell_unreachable}
+      role="alert"
+      class="cw-fallback-inline-alert"
+      data-cw-fallback-alert={@kind}
+    >
+      {fallback_alert_message(@kind)}
+    </p>
+    """
+  end
+
+  # ---------------------------------------------------------------------------
+  # Copy (D-09 — no internal vocabulary reaches any of these strings)
+  # ---------------------------------------------------------------------------
+
+  defp confirm_action_label(:destructive, true, _confirm_label), do: "Deleting…"
+  defp confirm_action_label(:destructive, false, confirm_label), do: confirm_label
+  defp confirm_action_label(:neutral, true, _confirm_label), do: "Approving…"
+  defp confirm_action_label(:neutral, false, confirm_label), do: confirm_label
+
+  defp fallback_alert_message(:stale_binary) do
+    "This action needs a newer version of the app. Update the app, then try again."
+  end
+
+  defp fallback_alert_message(:undeclared) do
+    "This action isn't available here. Nothing was changed."
+  end
+
+  defp blank?(nil), do: true
+  defp blank?(""), do: true
+  defp blank?(_value), do: false
 end
