@@ -129,6 +129,30 @@ jobs:
       - name: Run Playwright tests
         working-directory: examples/phoenix_host
         run: npx playwright test
+      # Phase 155 Plan 07 (PROOF-01, D-49): the unfiltered step above already runs
+      # this spec — this named step is ADDITIVE, purely for failure legibility. A
+      # step name is free; it costs nothing and makes a PROOF-01 failure readable
+      # at a glance instead of buried in the unfiltered run's full output. This
+      # step is never the authoritative one and must never gain a test-path
+      # filter that the unfiltered step doesn't also cover.
+      - name: Run native-controls fallback proof
+        working-directory: examples/phoenix_host
+        run: npx playwright test e2e/native_controls_fallback.spec.ts
+      # D-49: e2e-proof previously uploaded nothing on failure — a required
+      # browser assertion could fail with zero diagnostic output. Modeled on
+      # route-tour-proof's evidence-bundle step, scoped to failure only so a
+      # green run costs nothing. No continue-on-error anywhere in this job: a
+      # quarantined fail-closed proof is a fail-open gate (v12.0 GATE-01).
+      - name: Upload e2e-proof failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-e2e-proof-failure-evidence
+          path: |
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Step summary
         run: |
           echo "E2E: offline-sync IndexedDB-outbox → reconnect-flush → one Ecto row proven" >> "$GITHUB_STEP_SUMMARY"

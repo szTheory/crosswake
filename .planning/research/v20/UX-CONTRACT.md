@@ -12,7 +12,7 @@ This document does not decide implementation files, bridge wire formats, or pack
 
 Crosswake's brand pillar is **"no hidden bridge magic"** and its design pillar is **"Crosswake must not ship an opinionated visual component library."** But four of the seven candidates (alert/confirm, menu, toast, and the LiveView-modal fallback for all of them) require *some* rendered UI to exist in the Phoenix-owned fallback path, and that UI has to look right, in both themes, at 44px tap targets, with focus traps — i.e. it has to look like a **product**, not a stub.
 
-The tension: the moment Crosswake ships a good-looking confirm modal or action-menu component, adopters will use *that* even on routes that never touch the native bridge, because it's the best available styled primitive in the box. That is exactly the "Crosswake becomes a UI kit" mission creep the brand pillars warn against ("No component tier — deliberate anti-feature," BRAND-SPEC §7).
+The tension: the moment Crosswake ships a good-looking confirm modal or action-menu component, adopters will use *that* even on routes that never touch the native bridge, because it's the best available styled primitive in the box. That is exactly the "Crosswake becomes a UI kit" mission creep the brand pillars warn against — the no-importable-module-tier rule (FALL-02; Phase 154's D-31; `prompts/crosswake-elixir-oss-dna.md:119-124`'s "Use generators when adopters need editable app code"). **(D-57 correction: BRAND-SPEC's visual-identity section (section seven) is the design-TOKEN tier rule — primitive vs. semantic tokens — not this module-level rule; the citation above is the correct authority.)**
 
 The resolution used throughout this document (detailed in §3) is: ship the fallback surfaces as **verbatim-copy, host-owned generator output** (the same contract as `mix crosswake.gen.offline_ui`), never as an importable runtime component module. The generator produces files the adopter owns and can diverge from on line one. This keeps the "no component tier" promise literally true (nothing is `import`-able from `:crosswake` at runtime) while still giving adopters a correct-by-default, token-wired starting point instead of a blank page. It is the same trick Crosswake already plays with `offline.css` — a real answer already exists in this codebase, it just hasn't been generalized past offline UI yet.
 
@@ -117,7 +117,7 @@ Principle stated in the brief and matched to brand voice: **never show USER B a 
 
 ## 3. Consistency / design-system resolution
 
-**Constraint:** Crosswake must not ship an opinionated, importable component library (BRAND-SPEC §7: "No component tier — deliberate anti-feature"). **Requirement:** the fallback surfaces (confirm modal, action-menu sheet, toast) still have to look right, in both themes, at brand-token fidelity, on day one.
+**Constraint:** Crosswake must not ship an opinionated, importable component library (FALL-02; Phase 154's D-31; `prompts/crosswake-elixir-oss-dna.md:119-124`'s "Use generators when adopters need editable app code" — **not** BRAND-SPEC's visual-identity section seven, which is the design-token tier rule, per D-57's correction). **Requirement:** the fallback surfaces (confirm modal, action-menu sheet, toast) still have to look right, in both themes, at brand-token fidelity, on day one.
 
 **Resolution: extend the existing `mix crosswake.gen.offline_ui` precedent to a `mix crosswake.gen.native_controls_ui` generator.** This is not a new pattern — it is the same contract, already proven:
 

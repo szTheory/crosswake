@@ -320,8 +320,9 @@ Plans:
 
   1. Running `mix crosswake.gen.native_controls_ui` copies confirm-modal and action-menu fallback files directly into the host app as files the adopter owns and can edit — no importable `Crosswake.UI.*` module exists.
   2. The generated fallbacks render correctly in both light and dark themes, trap focus, and meet the existing contrast gates.
-  3. A merge-blocking browser route-tour test proves a fallback renders when a control is unavailable, fails closed (an explicit denial, not silent success) when a capability is undeclared, and never silently degrades.
-     <!-- Criterion 3 is superseded by D-44's corrected wording; Plan 155-07 Task 3 replaces this line. "Undeclared" is three distinct moments and only the shell-side rejection is browser-observable. -->
+  3. **(D-44's corrected wording — replaces the original criterion 3, which conflated three distinct undeclared moments into one browser-observable claim.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID.
+
+     **Non-claims (D-48, stated explicitly, not a footnote):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
 
 **Plans**: 6/7 plans executed
 
@@ -358,6 +359,8 @@ Plans:
   2. On both iOS and Android, invoking the control renders a real native menu, and the user's chosen action returns as a typed reply through the seam.
   3. The native menu carries VoiceOver/TalkBack semantics and responds to native dismiss gestures.
   4. Committed `bridge_contract_vectors.json` vectors prove menu dispatch and denial behavior on both native platforms in CI, with no simulator or emulator required.
+
+**Record correction (D-56, Phase 155 Plan 07):** Phase 154's D-29 payload-ceiling note asserts, as a parenthetical justification, that "the capability handshake already routes old natives to `unavailable_capability`." Verified factually wrong: the closed-enum miss fires first and both natives return `undeclared_capability` instead — exactly the two-remediation collapse D-13 forbade. This phase must re-derive the real premise rather than plan against the stated one.
 
 **Plans**: TBD
 **UI hint**: yes
