@@ -49,4 +49,61 @@ defmodule Crosswake.TestSupport.ExampleHost do
 
     :ok
   end
+
+  @doc """
+  Boot the checked-in example app's Endpoint so proof tests can drive its LiveViews
+  through a real `Phoenix.LiveViewTest` round trip. Idempotent.
+
+  Why this exists: `Crosswake.Bridge.attach/1` registers `Phoenix.LiveView` lifecycle
+  hooks, and `Crosswake.Bridge.push/3` dispatches through them. A hand-built
+  `%Phoenix.LiveView.Socket{}` has no `:lifecycle` private key and never runs hooks at
+  all, so calling `mount/3` and `handle_event/3` directly on a module cannot exercise
+  a bridge-bearing route — it raises, and even if it did not, it would be asserting on
+  a socket the framework would never produce. Mount the route for real instead.
+
+  Call `start_saas_repo!/0` first: this only supplies the web layer.
+  """
+  def start_endpoint! do
+    endpoint = CrosswakeExample.Endpoint
+    pubsub = CrosswakeExample.PubSub
+
+    # The example app's own config/*.exs is never loaded in this repo's test env, so
+    # the endpoint's configuration has to be supplied here. It mirrors
+    # examples/phoenix_host/config/config.exs with one deliberate divergence:
+    # `server: false`. A LiveViewTest round trip needs no listening socket, and
+    # binding the example's port (4700) would collide with a showcase server a
+    # developer may already have running.
+    Application.put_env(:crosswake_example, endpoint,
+      url: [host: "localhost"],
+      server: false,
+      secret_key_base: String.duplicate("a", 64),
+      live_view: [signing_salt: "crosswake"],
+      pubsub_server: pubsub
+    )
+
+    {:ok, _} = Application.ensure_all_started(:phoenix)
+
+    start_detached!({Phoenix.PubSub, name: pubsub})
+    start_detached!(endpoint)
+
+    :ok
+  end
+
+  # Both the PubSub tree and the Endpoint are supervisors, which shut down when their
+  # starting process exits. Started from a `setup_all` block that would be exactly the
+  # module's lifetime, so unlink and let them outlive any single test module — that is
+  # what makes the `{:error, {:already_started, _}}` branch reachable and this function
+  # genuinely idempotent across proof modules.
+  defp start_detached!(child_spec) do
+    {mod, fun, args} = Supervisor.child_spec(child_spec, []).start
+
+    case apply(mod, fun, args) do
+      {:ok, pid} ->
+        Process.unlink(pid)
+        :ok
+
+      {:error, {:already_started, _pid}} ->
+        :ok
+    end
+  end
 end
