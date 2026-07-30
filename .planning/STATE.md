@@ -4,15 +4,15 @@ milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 155
 current_phase_name: host-owned-fallback-components
-status: verifying
-stopped_at: Completed 155-07-PLAN.md — Phase 155 (Host-Owned Fallback Components) 7/7 plans executed
-last_updated: "2026-07-30T19:10:30.002Z"
+status: ready_to_plan
+stopped_at: Phase 155 complete (7/7) — ready to discuss Phase 156
+last_updated: 2026-07-30T19:26:20.361Z
 last_activity: 2026-07-30
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 55
   percent: 50
 ---
 
@@ -23,15 +23,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 155 — host-owned-fallback-components
+**Current focus:** Phase 156 — native menu & action button control
 
 ## Current Position
 
-Phase: 155 (host-owned-fallback-components) — EXECUTING
-Plan: 7 of 7
+Phase: 156
+Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Phase complete — ready for verification
+Status: Ready to plan
 Last activity: 2026-07-30
 
 Progress: [█████████░] 91%
@@ -137,7 +137,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 
 **Velocity:**
 
-- Total plans completed: 198 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
+- Total plans completed: 205 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
 - Average duration: —
 - Total execution time: —
 
