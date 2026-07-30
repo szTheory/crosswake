@@ -96,12 +96,36 @@ defmodule Mix.Tasks.Crosswake.Install do
   defp patch_endpoint(endpoint_path, target) do
     case Patcher.patch_endpoint(endpoint_path) do
       {:ok, result} ->
-        {"#{Path.relative_to(endpoint_path, target)} (#{format_router_actions(result.actions)})",
-         [Path.relative_to(endpoint_path, target)]}
+        summary =
+          "#{Path.relative_to(endpoint_path, target)} (#{format_router_actions(result.actions)})"
+
+        summary =
+          if :marker_stale in result.actions do
+            summary <> "\n" <> stale_endpoint_block_notice()
+          else
+            summary
+          end
+
+        {summary, [Path.relative_to(endpoint_path, target)]}
 
       {:error, reason} ->
         {"#{Path.relative_to(endpoint_path, target)} (skipped — #{reason})", []}
     end
+  end
+
+  # Printed, never auto-applied (D-52/T-155-13) — the marker block sits inside a
+  # file the adopter owns, so a stale body is reported with the canonical
+  # replacement text, not silently rewritten.
+  defp stale_endpoint_block_notice do
+    """
+
+      Your endpoint's Crosswake static plug block is stale — it no longer matches
+      the current canonical block (Crosswake never rewrites a marker block it does
+      not fully control). Replace the body between the
+      `# crosswake:install:start` / `# crosswake:install:end` markers with:
+
+      #{Patcher.endpoint_static_plug_block()}
+    """
   end
 
   defp infer_endpoint_path(target) do

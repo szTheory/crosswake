@@ -19,10 +19,18 @@ defmodule Crosswake.Install.Patcher do
   @static_at "/crosswake"
   @hook_asset "crosswake.esm.js"
 
+  @type patch_action ::
+          :marker_reused
+          | :marker_stale
+          | :marker_inserted
+          | :endpoint_static_plug_added
+          | :live_view_import_replaced
+          | :crosswake_import_added
+
   @type patch_result :: %{
           router_file: String.t(),
           changed?: boolean(),
-          actions: [atom()]
+          actions: [patch_action()]
         }
 
   @spec patch_router(String.t(), String.t()) :: {:ok, patch_result()} | {:error, String.t()}
@@ -140,10 +148,35 @@ defmodule Crosswake.Install.Patcher do
     end
   end
 
+  # Content reconciliation (D-52). Markers existing is not sufficient on its own —
+  # a Phase 154 adopter's marker body still reads the pre-155 `only:` list, so the
+  # widened tokens.css entry never reaches them unless the CONTENT inside the
+  # markers is diffed against the current canonical block.
+  #
+  # Byte-equal (modulo trailing whitespace) -> the existing reuse action, file
+  # unchanged. Different -> a distinct `:marker_stale` action, file STILL
+  # unchanged — this reconciler reports, it never rewrites a block that sits
+  # inside a file the adopter owns (T-155-13).
   defp ensure_endpoint_block(contents) do
     cond do
       String.contains?(contents, @marker_start) and String.contains?(contents, @marker_end) ->
-        {:ok, contents, [:marker_reused]}
+        case extract_marker_block(contents) do
+          {:ok, existing_block, indentation} ->
+            canonical_block = endpoint_static_plug_block(indentation)
+
+            if normalize_block(existing_block) == normalize_block(canonical_block) do
+              {:ok, contents, [:marker_reused]}
+            else
+              {:ok, contents, [:marker_stale]}
+            end
+
+          :error ->
+            # Markers are present but not in the well-formed shape this
+            # reconciler can parse (e.g. hand-edited past recognition) —
+            # fall back to the historical presence-only behavior rather
+            # than raising.
+            {:ok, contents, [:marker_reused]}
+        end
 
       regex_match = Regex.run(~r/^(\s*)use\s+Phoenix\.Endpoint.*$/m, contents) ->
         indentation = List.last(regex_match)
@@ -162,6 +195,26 @@ defmodule Crosswake.Install.Patcher do
         {:error,
          "could not find a Phoenix endpoint declaration to patch; add the Crosswake static plug block manually"}
     end
+  end
+
+  # Extracts the substring from the marker-start line through the marker-end
+  # line (inclusive, so indentation comparison is meaningful) plus the detected
+  # leading indentation of the marker-start line.
+  defp extract_marker_block(contents) do
+    regex =
+      ~r/^([ \t]*)#{Regex.escape(@marker_start)}.*?^[ \t]*#{Regex.escape(@marker_end)}[ \t]*$/ms
+
+    case Regex.run(regex, contents) do
+      [full_match, indentation] -> {:ok, full_match, indentation}
+      nil -> :error
+    end
+  end
+
+  defp normalize_block(text) do
+    text
+    |> String.split("\n")
+    |> Enum.map(&String.trim_trailing/1)
+    |> Enum.join("\n")
   end
 
   defp ensure_install_block(contents, policy_module) do

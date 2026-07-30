@@ -3,6 +3,8 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
 
   import ExUnit.CaptureIO
 
+  alias Crosswake.Install.Patcher
+
   @task "crosswake.install"
 
   setup do
@@ -145,6 +147,111 @@ defmodule Mix.Tasks.Crosswake.InstallTest do
     assert output =~ "endpoint: not found"
     assert output =~ "mix crosswake.gen.bridge_hook"
     assert output =~ "Crosswake install complete"
+  end
+
+  # D-52/T-155-13: markers existing is not sufficient — a Phase 154 adopter's
+  # marker body still reads the pre-155 `only:` list, so the widened
+  # tokens.css entry never reaches them unless the CONTENT inside the markers
+  # is diffed against the current canonical block. A stale block is reported,
+  # never rewritten.
+  describe "endpoint marker content reconciliation (D-52)" do
+    test "a marker body byte-equal to the current canonical block returns :marker_reused and changes nothing",
+         %{endpoint_path: endpoint_path} do
+      # Built by concatenation, not heredoc interpolation — the canonical
+      # block already carries its own per-line indentation, and splicing it
+      # into an indented heredoc would double-indent everything but its
+      # first line, which is not what a real host file looks like.
+      contents =
+        "defmodule DemoWeb.Endpoint do\n" <>
+          "  use Phoenix.Endpoint, otp_app: :demo\n" <>
+          "\n" <>
+          Patcher.endpoint_static_plug_block() <>
+          "\n" <>
+          "end\n"
+
+      File.write!(endpoint_path, contents)
+
+      assert {:ok, result} = Patcher.patch_endpoint(endpoint_path)
+
+      assert result.actions == [:marker_reused]
+      refute result.changed?
+      assert File.read!(endpoint_path) == contents
+    end
+
+    test "a marker body carrying the pre-155 narrow only: list is detected stale, and the file is left byte-equal to the input",
+         %{endpoint_path: endpoint_path} do
+      contents = """
+      defmodule DemoWeb.Endpoint do
+        use Phoenix.Endpoint, otp_app: :demo
+
+        # crosswake:install:start
+        plug(Plug.Static,
+          at: "/crosswake",
+          from: :crosswake,
+          gzip: false,
+          only: ~w(crosswake.esm.js)
+        )
+        # crosswake:install:end
+      end
+      """
+
+      File.write!(endpoint_path, contents)
+
+      assert {:ok, result} = Patcher.patch_endpoint(endpoint_path)
+
+      assert result.actions == [:marker_stale]
+      refute result.changed?
+      # The reconciler reports, it never rewrites a block inside a file the
+      # adopter owns — the returned/on-disk contents stay byte-equal to input.
+      assert File.read!(endpoint_path) == contents
+    end
+
+    test "an endpoint with no markers is patched exactly as today", %{
+      endpoint_path: endpoint_path
+    } do
+      original = File.read!(endpoint_path)
+
+      assert {:ok, result} = Patcher.patch_endpoint(endpoint_path)
+
+      assert :marker_inserted in result.actions
+      assert :endpoint_static_plug_added in result.actions
+      assert result.changed?
+
+      patched = File.read!(endpoint_path)
+      assert patched != original
+      assert patched =~ "only: ~w(crosswake.esm.js tokens.css)"
+    end
+
+    test "mix crosswake.install reports the stale marker block and prints the canonical replacement, without touching the file",
+         %{target: target, endpoint_path: endpoint_path} do
+      contents = """
+      defmodule DemoWeb.Endpoint do
+        use Phoenix.Endpoint, otp_app: :demo
+
+        # crosswake:install:start
+        plug(Plug.Static,
+          at: "/crosswake",
+          from: :crosswake,
+          gzip: false,
+          only: ~w(crosswake.esm.js)
+        )
+        # crosswake:install:end
+      end
+      """
+
+      File.write!(endpoint_path, contents)
+
+      output =
+        capture_io(fn ->
+          Mix.Task.reenable(@task)
+          Mix.Task.run(@task, ["--target", target])
+        end)
+
+      assert output =~ "marker_stale"
+      assert output =~ "stale"
+      assert output =~ "only: ~w(crosswake.esm.js tokens.css)"
+      assert File.read!(endpoint_path) == contents
+    end
   end
 
   defp tmp_dir!(prefix) do

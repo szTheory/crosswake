@@ -157,6 +157,8 @@ defmodule Crosswake.Doctor do
       legacy_capability_id_findings(manifest) ++
         capability_rebuild_findings(manifest) ++
         bridge_hook_wiring_findings(cwd, opts)
+
+    phase_155_findings = native_controls_ui_findings(cwd)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -177,6 +179,7 @@ defmodule Crosswake.Doctor do
         phase_65_findings ++
         phase_66_findings ++
         phase_154_findings ++
+        phase_155_findings ++
         publish_findings
 
     %Report{
@@ -2161,6 +2164,108 @@ defmodule Crosswake.Doctor do
 
   defp expand_globs(cwd, globs) do
     Enum.flat_map(globs, fn glob -> Path.wildcard(Path.join(cwd, glob)) end)
+  end
+
+  # Phase 155 D-40: two findings for `mix crosswake.gen.native_controls_ui`'s
+  # generated, host-owned files, neither of which may overclaim what it
+  # inspected.
+  #
+  # Finding 1 — stamp drift (`native_controls_ui.stamp_drift`, :warning). This
+  # is a pure version-integer comparison, directly modeled on
+  # `ejected_hook_stamp_findings/1`: it reads the `template_version=` integer
+  # out of the file's own stamp header and compares it against the
+  # generator's current `template_version/0`. It inspects NOTHING about the
+  # body of the file below the stamp — it cannot and must not assert that the
+  # adopter's edits are still correct. There is no `--force` and never will
+  # be, so the remediation never suggests regenerating over the adopter's
+  # changes.
+  @native_controls_ui_component_globs ["lib/**/components/crosswake_fallbacks.ex"]
+  @native_controls_ui_stylesheet_globs ["priv/static/assets/crosswake_fallback.css"]
+  @native_controls_ui_stamp_regex ~r/crosswake:native-controls-ui\s+template_version=(\d+)/
+  @native_controls_ui_module_regex ~r/defmodule\s+([\w.]+)\s+do/
+
+  @spec native_controls_ui_findings(String.t()) :: [Check.t()]
+  def native_controls_ui_findings(cwd) do
+    native_controls_ui_stamp_findings(cwd) ++ native_controls_ui_wiring_findings(cwd)
+  end
+
+  defp native_controls_ui_stamp_findings(cwd) do
+    current = Mix.Tasks.Crosswake.Gen.NativeControlsUi.template_version()
+
+    cwd
+    |> expand_globs(@native_controls_ui_component_globs ++ @native_controls_ui_stylesheet_globs)
+    |> Enum.flat_map(fn path ->
+      with {:ok, contents} <- File.read(path),
+           [_full, stamped_str] <- Regex.run(@native_controls_ui_stamp_regex, contents),
+           {stamped, ""} <- Integer.parse(stamped_str),
+           true <- stamped < current do
+        [
+          check(
+            :warning,
+            "native_controls_ui.stamp_drift",
+            "native_controls_ui",
+            "#{Path.relative_to(path, cwd)} is stamped template_version=#{stamped}, but this Crosswake ships template_version=#{current}",
+            "this finding compares a version integer only — it reads no content and cannot know whether your edits to #{Path.relative_to(path, cwd)} are still correct. There is no --force and never will be: read the template changes between version #{stamped} and #{current}, apply by hand the ones you want, then update the `template_version=` integer in the file's own stamp header.",
+            %{
+              path: Path.relative_to(path, cwd),
+              stamped_template_version: stamped,
+              current_template_version: current
+            }
+          )
+        ]
+      else
+        _no_drift -> []
+      end
+    end)
+  end
+
+  # Finding 2 — fallback wiring (`native_controls_ui.wiring`, :advisory). A
+  # best-effort grep over the host's `lib/**/*.ex` for a reference to the
+  # generated module name, mirroring `bridge_hook_wiring_findings/2`'s
+  # technique and its advisory discipline: this is a grep, it can be wrong
+  # (a reference through an alias, a macro-injected import, or a template
+  # compiled elsewhere would all false-negative), so it can NEVER change
+  # doctor's exit code. The message says "could not find", never "is not
+  # wired" — it does not claim to have proven absence.
+  defp native_controls_ui_wiring_findings(cwd) do
+    cwd
+    |> expand_globs(@native_controls_ui_component_globs)
+    |> Enum.flat_map(fn component_path ->
+      with {:ok, contents} <- File.read(component_path),
+           [_full, module_name] <- Regex.run(@native_controls_ui_module_regex, contents) do
+        native_controls_ui_wiring_finding(cwd, component_path, module_name)
+      else
+        _unparseable -> []
+      end
+    end)
+  end
+
+  defp native_controls_ui_wiring_finding(cwd, component_path, module_name) do
+    referenced? =
+      cwd
+      |> expand_globs(["lib/**/*.ex"])
+      |> Enum.reject(&(&1 == component_path))
+      |> Enum.any?(fn path ->
+        case File.read(path) do
+          {:ok, source} -> String.contains?(source, module_name)
+          _unreadable -> false
+        end
+      end)
+
+    if referenced? do
+      []
+    else
+      [
+        check(
+          :advisory,
+          "native_controls_ui.wiring",
+          "native_controls_ui",
+          "could not find a reference to #{module_name} anywhere else in this host's lib/**/*.ex",
+          "wire the generated component into a LiveView (for example `<.confirm_modal .../>` from #{module_name}) — this check is a best-effort grep over source text and is never authoritative; it cannot see a reference through an alias, a macro-injected import, or a module used only from a template compiled elsewhere.",
+          %{path: Path.relative_to(component_path, cwd), module: module_name, authoritative: false}
+        )
+      ]
+    end
   end
 
   defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []
