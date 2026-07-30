@@ -321,8 +321,19 @@ Plans:
   1. Running `mix crosswake.gen.native_controls_ui` copies confirm-modal and action-menu fallback files directly into the host app as files the adopter owns and can edit — no importable `Crosswake.UI.*` module exists.
   2. The generated fallbacks render correctly in both light and dark themes, trap focus, and meet the existing contrast gates.
   3. A merge-blocking browser route-tour test proves a fallback renders when a control is unavailable, fails closed (an explicit denial, not silent success) when a capability is undeclared, and never silently degrades.
+     <!-- Criterion 3 is superseded by D-44's corrected wording; Plan 155-07 Task 3 replaces this line. "Undeclared" is three distinct moments and only the shell-side rejection is browser-observable. -->
 
-**Plans**: TBD
+**Plans**: 7 plans in 4 waves
+
+Plans:
+- [ ] 155-01-PLAN.md — Tracer: a generated confirm modal, end-to-end from token to browser (wave 1)
+- [ ] 155-02-PLAN.md — Bridge shipped-code defects: tolerant `resolve/2` (D-50) and a distinct `UnknownCapabilityFamilyError` (D-51) (wave 1)
+- [ ] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
+- [ ] 155-04-PLAN.md — One served `tokens.css`, the generated-layout 404 fix, endpoint marker-content reconciliation, and two doctor findings (wave 2)
+- [ ] 155-05-PLAN.md — `Crosswake.ComponentTierGuard`: six rules including the anti-vacuity twin, plus four controls (wave 2)
+- [ ] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
+- [ ] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
+
 **UI hint**: yes
 
 ### Phase 156: Native Menu & Action-Button Control
