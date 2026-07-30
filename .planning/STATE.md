@@ -5,14 +5,14 @@ milestone_name: Native Controls Pack 1
 current_phase: 154
 current_phase_name: the-control-contract-seam
 status: executing
-stopped_at: Completed 154-06-PLAN.md
-last_updated: "2026-07-30T00:05:06.289Z"
+stopped_at: Completed 154-07-PLAN.md
+last_updated: "2026-07-30T00:55:08.336Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
   percent: 17
 ---
 
@@ -28,13 +28,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 154 (the-control-contract-seam) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
 Last activity: 2026-07-29
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 87%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -152,6 +152,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 154 P04 | 100min | 3 tasks | 8 files |
 | Phase 154 P05 | 55min | 3 tasks | 7 files |
 | Phase 154 P06 | 34min | 3 tasks | 24 files |
+| Phase 154 P07 | 27min | 3 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -292,6 +293,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: reply_leg_vectors is its own top-level array, not an entry in vectors (which is a request-evaluation corpus both native harnesses feed through BridgeChannel.evaluate)
 - [Phase ?]: D-03's iOS-reply-ships-with-Phase-156 statement lands as a generated Bridge Reply Delivery table, because guides/support_matrix.md is byte-generated from the renderer
 - [Phase ?]: The doctor bridge-hook wiring finding is :advisory so the best-effort grep can never fail doctor's exit code (D-37)
+- [Phase ?]: HRDN-01: the evidence panel renders from the envelope Bridge.push/3 actually built (Bridge.dispatched/2), never a hand-assembled second copy
+- [Phase ?]: The HRDN-01 sweep asserts absence AND presence — no inline dispatch, plus >=2 seam call sites — so deleting the capability cannot satisfy the gate
+- [Phase ?]: phase52_publish_readiness.json regenerated for the new CHANGELOG Unreleased subsections rather than watering down the entry or weakening the assertion
 
 ### Pending Todos
 
@@ -379,8 +383,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T00:04:53.455Z
-Stopped at: Completed 154-06-PLAN.md
+Last session: 2026-07-30T00:54:59.555Z
+Stopped at: Completed 154-07-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

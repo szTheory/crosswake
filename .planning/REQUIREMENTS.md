@@ -66,7 +66,7 @@ must look right on day one, so they are generated and owned by the host, never i
 
 ### HRDN — harden what already shipped
 
-- [ ] **HRDN-01**: The AdminPilot haptics call runs through `Bridge.push/3`; the hand-rolled `<script>` IIFE with no reply path is gone.
+- [x] **HRDN-01**: The AdminPilot haptics call runs through `Bridge.push/3`; the hand-rolled `<script>` IIFE with no reply path is gone.
 - [ ] **HRDN-02**: Haptics respects the operating system's reduce-motion and haptics accessibility settings.
 - [ ] **HRDN-03**: The iOS share sheet cannot crash on iPad — a missing popover anchor is guarded rather than left to the OS.
 
@@ -123,7 +123,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | CTRL-04 | Phase 154 | Complete |
 | CTRL-05 | Phase 154 | Complete |
 | PROOF-04 | Phase 154 | Complete |
-| HRDN-01 | Phase 154 | Pending |
+| HRDN-01 | Phase 154 | Complete |
 | FALL-01 | Phase 155 | Pending |
 | FALL-02 | Phase 155 | Pending |
 | PROOF-01 | Phase 155 | Pending |
