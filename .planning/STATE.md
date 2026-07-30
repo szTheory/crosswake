@@ -4,16 +4,16 @@ milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 155
 current_phase_name: host-owned-fallback-components
-status: executing
-stopped_at: Completed 155-06-PLAN.md
-last_updated: "2026-07-30T18:22:27.078Z"
+status: verifying
+stopped_at: Completed 155-07-PLAN.md — Phase 155 (Host-Owned Fallback Components) 7/7 plans executed
+last_updated: "2026-07-30T19:10:30.002Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 22
-  completed_plans: 20
-  percent: 33
+  completed_plans: 21
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -31,7 +31,7 @@ Phase: 155 (host-owned-fallback-components) — EXECUTING
 Plan: 7 of 7
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-30
 
 Progress: [█████████░] 91%
@@ -160,6 +160,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 155 P04 | ~2h (paused/resumed) | 2 tasks | 5 files |
 | Phase 155 P05 | 55min | 2 tasks | 2 files |
 | Phase 155 P06 | 130min | 2 tasks | 9 files |
+| Phase 155 P07 | 70min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -318,6 +319,9 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: 155-05: mix.exs required no edit — ComponentTierGuard is an internal support module like CompanionGuard, not listed in groups_for_modules until FALL-02 retirement makes something actually importable
 - [Phase ?]: Checkpoint (155-06 Task 1) froze the action_menu actions attr shape exactly as D-53 records: [%{id, label, destructive, icon}], select-with-id/dismiss, icon reserved and unrendered
 - [Phase ?]: 155-06: disabled/not-permitted menu rows are signaled by id: nil rather than adding a 5th key to the frozen actions shape
+- [Phase ?]: 155-07: A2 route reuses already-declared 'haptics' family (D-43) so CatalogGuard's six-step recipe is untouched; injected wire denial carries reason: undeclared_capability, the shell-side moment only
+- [Phase ?]: 155-07: fixed a genuine LiveView focus-timing race (JS.focus/JS.pop_focus's two-animation-frame re-confirmation could stomp a keyboard Tab) with a real double-rAF wait, never a sleep
+- [Phase ?]: 155-07: confirm_modal's trigger button was missing JS.push_focus() — phx-remove's JS.pop_focus() was a no-op against an empty stack, so focus never actually returned to the trigger; fixed in approval_live.ex
 
 ### Pending Todos
 
@@ -405,8 +409,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T18:22:27.068Z
-Stopped at: Completed 155-06-PLAN.md
+Last session: 2026-07-30T19:10:29.986Z
+Stopped at: Completed 155-07-PLAN.md — Phase 155 (Host-Owned Fallback Components) 7/7 plans executed
 Resume file: None
 
 ## Operator Next Steps

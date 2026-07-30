@@ -92,7 +92,7 @@ must look right on day one, so they are generated and owned by the host, never i
 
 ### PROOF — the lanes
 
-- [ ] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade. **(D-44's corrected wording.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID. **Non-claims (D-48):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
+- [x] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade. **(D-44's corrected wording.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID. **Non-claims (D-48):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
 - [ ] **PROOF-02**: `share` and `notification_token` move from advisory to merge-blocking proof posture.
 - [ ] **PROOF-03**: Menu behavior is proven from the committed `bridge_contract_vectors.json` on both natives without a simulator or emulator.
 - [x] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
@@ -141,7 +141,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | HRDN-01 | Phase 154 | Complete — no human gate; evidence panel asserted by 154-08 checks A–F in light and dark |
 | FALL-01 | Phase 155 | Complete |
 | FALL-02 | Phase 155 | Complete |
-| PROOF-01 | Phase 155 | Pending |
+| PROOF-01 | Phase 155 | Complete |
 | MENU-01 | Phase 156 | Pending |
 | MENU-02 | Phase 156 | Pending |
 | MENU-03 | Phase 156 | Pending |

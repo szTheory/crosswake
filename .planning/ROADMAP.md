@@ -324,7 +324,7 @@ Plans:
 
      **Non-claims (D-48, stated explicitly, not a footnote):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
 
-**Plans**: 6/7 plans executed
+**Plans**: 7/7 plans executed
 
 Plans:
 **Wave 1**
@@ -344,7 +344,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
+- [x] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
 
 **UI hint**: yes
 
@@ -396,7 +396,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
 | 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
-| 155. Host-Owned Fallback Components | v20.0 | 6/7 | In Progress|  |
+| 155. Host-Owned Fallback Components | v20.0 | 7/7 | In Progress|  |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
 
