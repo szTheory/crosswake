@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 2
+open_count: 3
 waived_count: 0
 fixed_count: 0
-total_count: 2
-last_updated: 2026-07-29T23:35:11.072Z
+total_count: 3
+last_updated: 2026-07-30T18:21:22.547Z
 ---
 
 # Broken Windows Ledger
@@ -17,6 +17,7 @@ last_updated: 2026-07-29T23:35:11.072Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 154 | deviation | lib/crosswake/bridge/catalog_guard.ex |  | Cross-native enum drift: iOS carries connection.state.update where Kotlin carries server.state.update for the same outbound fan-out; both exempt as outbound-only so the guard does not fire. Recorded in SEED-008 Breadcrumbs. | open |  | 2026-07-29T23:35:11.008Z |  |
 | 2 | 154 | deviation | lib/crosswake/bridge/catalog_guard.ex |  | Eight-entry out-of-vocabulary native denial allowlist (D-16 option-b): CTRL-02 is 'one typed denial at the adopter boundary', not 'one vocabulary on the wire', until SEED-008 is worked. | open |  | 2026-07-29T23:35:11.072Z |  |
+| 3 | 155 | deviation | examples/phoenix_host/e2e/native_controls_fallback.spec.ts |  | Auto-fixed (Rule 1): hardcoded template_version=1 assertion updated to template_version=2 to match the 155-06 stamp bump | open |  | 2026-07-30T18:21:22.547Z |  |
 
 ````json
 [
@@ -42,6 +43,18 @@ last_updated: 2026-07-29T23:35:11.072Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-07-29T23:35:11.072Z",
+    "resolved_at": null
+  },
+  {
+    "id": 3,
+    "kind": "deviation",
+    "phase": "155",
+    "file": "examples/phoenix_host/e2e/native_controls_fallback.spec.ts",
+    "line": null,
+    "description": "Auto-fixed (Rule 1): hardcoded template_version=1 assertion updated to template_version=2 to match the 155-06 stamp bump",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-07-30T18:21:22.547Z",
     "resolved_at": null
   }
 ]

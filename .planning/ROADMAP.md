@@ -323,7 +323,7 @@ Plans:
   3. A merge-blocking browser route-tour test proves a fallback renders when a control is unavailable, fails closed (an explicit denial, not silent success) when a capability is undeclared, and never silently degrades.
      <!-- Criterion 3 is superseded by D-44's corrected wording; Plan 155-07 Task 3 replaces this line. "Undeclared" is three distinct moments and only the shell-side rejection is browser-observable. -->
 
-**Plans**: 4/7 plans executed
+**Plans**: 6/7 plans executed
 
 Plans:
 **Wave 1**
@@ -339,7 +339,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
+- [x] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -393,7 +393,7 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
 | 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
-| 155. Host-Owned Fallback Components | v20.0 | 5/7 | In Progress|  |
+| 155. Host-Owned Fallback Components | v20.0 | 6/7 | In Progress|  |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
 

@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
+current_phase: 155
+current_phase_name: host-owned-fallback-components
 status: executing
-stopped_at: Completed 155-05-PLAN.md
-last_updated: "2026-07-30T17:45:05.565Z"
+stopped_at: Completed 155-06-PLAN.md
+last_updated: "2026-07-30T18:22:27.078Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 19
+  completed_plans: 20
   percent: 33
 ---
 
@@ -26,13 +28,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 155 (host-owned-fallback-components) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
 Last activity: 2026-07-30
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 91%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -157,6 +159,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 155 P03 | 25min | 2 tasks | 7 files |
 | Phase 155 P04 | ~2h (paused/resumed) | 2 tasks | 5 files |
 | Phase 155 P05 | 55min | 2 tasks | 2 files |
+| Phase 155 P06 | 130min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -313,6 +316,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: 155-04: extended real test files (crosswake_install_test.exs, doctor/doctor_test.exs) instead of the plan's phantom paths test/crosswake/install/patcher_test.exs and test/crosswake/doctor_test.exs — same deviation class as 155-02
 - [Phase ?]: 155-04: widened native_controls_ui_findings/1 from private to public to give it a direct test seam, mirroring the established bridge_hook_wiring_findings/2 pattern
 - [Phase ?]: 155-05: mix.exs required no edit — ComponentTierGuard is an internal support module like CompanionGuard, not listed in groups_for_modules until FALL-02 retirement makes something actually importable
+- [Phase ?]: Checkpoint (155-06 Task 1) froze the action_menu actions attr shape exactly as D-53 records: [%{id, label, destructive, icon}], select-with-id/dismiss, icon reserved and unrendered
+- [Phase ?]: 155-06: disabled/not-permitted menu rows are signaled by id: nil rather than adding a 5th key to the frozen actions shape
 
 ### Pending Todos
 
@@ -400,8 +405,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T17:45:05.558Z
-Stopped at: Completed 155-05-PLAN.md
+Last session: 2026-07-30T18:22:27.068Z
+Stopped at: Completed 155-06-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
