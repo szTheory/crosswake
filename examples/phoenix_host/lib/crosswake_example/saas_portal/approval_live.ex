@@ -9,6 +9,7 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   alias CrosswakeExample.SaaSPortal.Components
   alias CrosswakeExample.SaaSPortal.Diagnostics
   alias CrosswakeExampleWeb.CrosswakeFallbacks
+  alias Phoenix.LiveView.JS
 
   @bridge_route_id "saas-approval"
 
@@ -123,7 +124,17 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   # ---------------------------------------------------------------------------
 
   def handle_event("open_confirm_demo", _params, socket) do
-    {:noreply, assign(socket, confirm_open: true, confirm_demo_notice: nil, confirm_error: nil)}
+    # Phase 155 Plan 07 (D-47) — PROOF-01's mutation control. When set, ONLY the
+    # visibility assign is forced false; nothing else changes (no exception, no
+    # altered copy, no altered denial-vocabulary enumeration). This is the control
+    # that proves A1 can go red while A3 stays green — without it, "A1 passes"
+    # carries no information. Example-host only; never referenced under lib/.
+    {:noreply,
+     assign(socket,
+       confirm_open: not proof_break_fallback?(),
+       confirm_demo_notice: nil,
+       confirm_error: nil
+     )}
   end
 
   def handle_event("open_action_menu", _params, socket) do
@@ -289,13 +300,18 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
 
       <section :if={@approval} class="adminpilot-panel" id="native-controls-fallback">
         <h2>Native controls fallback</h2>
-        <p>
-          Crosswake has no native alert/confirm bridge command. This generated, host-owned
+        <p id="native-controls-fallback-catalog-sentence">
+          {catalog_sentence()} This generated, host-owned
           confirm modal (<code>mix crosswake.gen.native_controls_ui</code>) is the permanent
           surface for that job on every platform.
         </p>
 
-        <button type="button" class="btn-secondary" phx-click="open_confirm_demo">
+        <button
+          type="button"
+          id="native-controls-confirm-trigger"
+          class="btn-secondary"
+          phx-click={JS.push("open_confirm_demo") |> JS.push_focus()}
+        >
           Preview the confirm fallback
         </button>
 
@@ -356,6 +372,24 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
       <Layouts.crosswake_bridge />
     </Components.admin_shell>
     """
+  end
+
+  # Phase 155 Plan 07 (D-46) — the A1 catalog sentence, in ONE place, read by the
+  # browser proof spec via a source-file regex (the same discipline
+  # `route_tour.spec.ts:19-23` uses to read the bridge protocol version from
+  # `contract.ex`) rather than duplicated as a spec literal that could silently
+  # drift from what the page actually renders.
+  defp catalog_sentence, do: "Crosswake has no native alert/confirm bridge command."
+
+  # PROOF-01's mutation control (D-47) — see the "open_confirm_demo" handler above.
+  # Runtime System.get_env/1, never a module attribute, so one build can be driven
+  # both ways.
+  defp proof_break_fallback? do
+    case System.get_env("CROSSWAKE_PROOF_BREAK_FALLBACK") do
+      nil -> false
+      "" -> false
+      _value -> true
+    end
   end
 
   defp approval_scope(socket) do

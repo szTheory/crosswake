@@ -591,5 +591,24 @@ defmodule CrosswakeExample.Router do
       pipe_through([:api, :e2e_session])
       post("/saas-session", SaaSSessionController, :create)
     end
+
+    # Phase 155 Plan 07 (PROOF-01, D-45) — the A2 route. A LiveView, so it needs
+    # the :browser pipeline (CSRF, session), not :api like the controllers above.
+    # Still inside the SAME compile-time guard as every other /_e2e scope — a
+    # second `if Mix.env()` block would risk drifting from guard-02's assumption
+    # that ALL /_e2e routes live under one grep-able guard.
+    scope "/_e2e", CrosswakeExample.E2E do
+      pipe_through([:browser])
+
+      live("/undeclared-control", UndeclaredControlLive,
+        crosswake: [
+          id: "e2e-a2-shell-denial",
+          runtime: :live_view,
+          capabilities: ["haptics"],
+          offline: :cached_read_only,
+          security: :standard
+        ]
+      )
+    end
   end
 end
