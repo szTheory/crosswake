@@ -287,12 +287,31 @@ async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOp
 
   const status = page.getByRole('status').first();
   await expect(status, ownerMessage('saas-approval', 'Phoenix/server approval status')).toContainText(/Phoenix|server authority/i);
-  const hapticsPayload = await approvalHapticsPayload(page);
-  expect(hapticsPayload.command, ownerMessage('saas-approval', 'post-success haptics command')).toBe('haptics.impact');
-  expect(hapticsPayload.capability, ownerMessage('saas-approval', 'post-success haptics capability')).toBe('haptics.impact');
-  expect(hapticsPayload.route_id, ownerMessage('saas-approval', 'post-success haptics route')).toBe('saas-approval');
-  expect(hapticsPayload.active_route_id, ownerMessage('saas-approval', 'post-success haptics active route')).toBe('saas-approval');
-  expect(hapticsPayload.protocol, ownerMessage('saas-approval', 'post-success haptics protocol')).toBe('crosswake.bridge');
+  // The two vocabularies, side by side and deliberately NOT interchangeable: the wire
+  // command keeps its dotted form permanently, while the route-policy capability id is
+  // the family form. Asserting both here is what would catch a future edit that
+  // quietly collapsed them back into one string.
+  const haptics = await approvalHapticsEvidence(page);
+  expect(haptics.command, ownerMessage('saas-approval', 'post-success haptics wire command')).toBe('haptics.impact');
+  expect(haptics.capability, ownerMessage('saas-approval', 'post-success haptics route-policy capability')).toBe('haptics');
+  expect(haptics.route_id, ownerMessage('saas-approval', 'post-success haptics route')).toBe('saas-approval');
+  expect(haptics.style, ownerMessage('saas-approval', 'post-success haptics payload reached the wire')).toBe('light');
+
+  // D-75: a reply ARRIVED. A denial counts — what must not pass is the waiting state,
+  // which looks entirely plausible and is exactly what an unconnected socket leaves behind.
+  expect(haptics.reply, ownerMessage('saas-approval', 'a reply always arrives — deny counts')).not.toBeNull();
+  expect(['ok', 'deny'], ownerMessage('saas-approval', 'typed reply verdict')).toContain(haptics.reply.status);
+
+  // In a desktop browser there is no shell, so this is the DEFAULT post-approval state:
+  // the fail-closed thesis rendering itself (D-65).
+  expect(haptics.reply.status, ownerMessage('saas-approval', 'desktop browser has no shell')).toBe('deny');
+  expect(haptics.reply.reason, ownerMessage('saas-approval', 'fail-closed denial reason')).toBe('shell_unreachable');
+  await expect(page.locator('#haptics-reply'), ownerMessage('saas-approval', 'server authority survives the refusal')).toContainText(
+    'The approval stands',
+  );
+  await expect(page.locator('#haptics-reply'), ownerMessage('saas-approval', 'no faked browser substitute')).toContainText(
+    'rather than fake one',
+  );
   await expect(page.locator('body'), ownerMessage('saas-approval', 'haptics degradable support truth')).toContainText(/Optional haptics|secondary|degradable/i);
   if (captureScreenshots) {
     await captureRouteScreenshot(page, 'adminpilot-approval-approved.png');
@@ -551,13 +570,30 @@ async function bridgePayload(page: Page) {
   return JSON.parse(text!);
 }
 
-async function approvalHapticsPayload(page: Page) {
-  const script = page.locator('#crosswake-approval-haptics');
-  await expect(script, ownerMessage('saas-approval', 'post-success haptics script')).toHaveCount(1);
-  const source = await script.evaluate((element) => element.innerHTML);
-  const match = source.match(/const payload = ("(?:\\.|[^"\\])*");/);
-  expect(match?.[1], ownerMessage('saas-approval', 'post-success haptics payload source')).toBeTruthy();
-  return JSON.parse(JSON.parse(match![1]));
+/*
+ * Reads the AdminPilot evidence panel's machine-readable projection of the envelope
+ * Crosswake.Bridge.push/3 built, plus the verdict.
+ *
+ * One attribute read and one parse. The predecessor located a <script> element by id
+ * and regex-scraped a payload literal out of its innerHTML — a required check wired
+ * directly to markup this phase deletes. Reading an attribute instead also frees the
+ * human-readable <dl> above it to change without breaking CI (D-74).
+ *
+ * The wait is on the verdict landing in the attribute, which is the positive
+ * reply-arrival gate (D-75).
+ */
+async function approvalHapticsEvidence(page: Page) {
+  const panel = page.locator('#haptics-evidence');
+  await expect(panel, ownerMessage('saas-approval', 'evidence panel present')).toHaveCount(1);
+  await expect(panel, ownerMessage('saas-approval', 'a reply always arrives — deny counts')).toHaveAttribute(
+    'data-cw-envelope',
+    /"reply":\{/,
+    { timeout: 20000 },
+  );
+
+  const envelope = await panel.getAttribute('data-cw-envelope');
+  expect(envelope, ownerMessage('saas-approval', 'machine-readable envelope attribute')).toBeTruthy();
+  return JSON.parse(envelope!);
 }
 
 async function createNativeRouteTourClaim(page: Page) {

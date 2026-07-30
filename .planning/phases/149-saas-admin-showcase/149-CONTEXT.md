@@ -25,11 +25,13 @@ This phase does not build a generic admin framework, a broad CRUD console, a sta
 ### Representative Admin Workflow
 - **D-06:** Use approval review/approval as the representative admin workflow. It is the strongest existing fit for Phoenix-owned server authority plus one low-frequency bounded native confirmation signal.
 - **D-07:** The approval action must remain server-authoritative. Haptics, if present, is a secondary confirmation after a successful Phoenix-owned action, never mutation authority.
+- **D-07 amendment (Phase 154, HRDN-01):** Still true, and now enforced by the seam rather than by convention. The dispatch moved to `Crosswake.Bridge.push/3` inside the `{:ok, approved}` branch, after the AdminPilot context commits.
 - **D-08:** If Phase 149 needs refresh-proof mutation evidence, persist only the mutable approval/activity trail. Keep broader account/team/member/settings fixture records deterministic unless planner finds existing persistence that makes this cheaper.
 - **D-09:** Prefer an idiomatic Phoenix context boundary for SaaS operations, such as enriching `CrosswakeExample.SaaSPortal` with functions that accept current user/account or an explicit scope-like struct. Do not scatter authorization or mutation logic into LiveView templates.
 - **D-10:** If persistence is added, use Ecto only where it proves real mutation/audit behavior. Static showcase breadth can remain deterministic fixture maps.
 - **D-11:** The workflow should include normal LiveView loading/disabled/success states and be testable with LiveViewTest and Playwright route-tour coverage.
 - **D-12:** The approval happy path should still complete without native haptics. Missing haptics must be shown as degradable support truth, not a failed approval.
+- **D-12 amendment (Phase 154, HRDN-01):** Still true, and strengthened. The missing shell is now a rendered typed denial reading `shell_unreachable`, not an implied absence, and the panel says the approval stands.
 
 ### Auth and Admin Posture
 - **D-13:** Show auth/admin posture as a guided story: normal authenticated SaaS work first, then adjacent admin/security pressure that explains why fresh backend authority matters.
