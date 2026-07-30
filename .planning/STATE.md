@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
+current_phase: 155
+current_phase_name: host-owned-fallback-components
 status: executing
-stopped_at: Completed 155-03-PLAN.md
-last_updated: "2026-07-30T15:19:29.672Z"
+stopped_at: Completed 155-04-PLAN.md
+last_updated: "2026-07-30T17:19:52.267Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 17
+  completed_plans: 18
   percent: 33
 ---
 
@@ -26,13 +28,13 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 ## Current Position
 
 Phase: 155 (host-owned-fallback-components) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
 Last activity: 2026-07-30
 
-Progress: [████████░░] 77%
+Progress: [████████░░] 82%
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -155,6 +157,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 155 P01 | 130min | 2 tasks | 22 files |
 | Phase 155 P02 | 20min | 2 tasks | 4 files |
 | Phase 155 P03 | 25min | 2 tasks | 7 files |
+| Phase 155 P04 | ~2h (paused/resumed) | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -308,6 +311,8 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: 155-02: widened Crosswake.Bridge.resolve/2 to a true no-op on an unattached socket via maybe_fetch_state/1 (D-50); push/3 and dispatched/2 stay strict
 - [Phase ?]: 155-02: split push/3's vocabulary-miss raise into a distinct Crosswake.Bridge.UnknownCapabilityFamilyError (D-51), separate from UndeclaredCapabilityError, whose remediation never suggests declaring the family on a route
 - [Phase ?]: 155-03: --cw-status-error-fg added (pure white alias) and --cw-action-focus-ring light value corrected brass-500->wake-700 (D-27/D-32/D-33); contrast.test.mjs gained its first non-text SC 1.4.11 assertion class + compile-tokens.test.mjs gained a semantic-token count cap (29/30) and group-exhaustiveness assertion, both mutation controls observed red and restored via git checkout --
+- [Phase ?]: 155-04: extended real test files (crosswake_install_test.exs, doctor/doctor_test.exs) instead of the plan's phantom paths test/crosswake/install/patcher_test.exs and test/crosswake/doctor_test.exs — same deviation class as 155-02
+- [Phase ?]: 155-04: widened native_controls_ui_findings/1 from private to public to give it a direct test seam, mirroring the established bridge_hook_wiring_findings/2 pattern
 
 ### Pending Todos
 
@@ -395,8 +400,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T15:19:29.666Z
-Stopped at: Completed 155-03-PLAN.md
+Last session: 2026-07-30T17:19:52.255Z
+Stopped at: Completed 155-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
