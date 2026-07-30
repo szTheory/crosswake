@@ -253,22 +253,89 @@ offer undo instead of this modal.*
 
 ## UI Considerations
 
-Applicable state considerations resolved: 9 covered, 2 backstop, 1 unresolved.
+Produced by the `ui-consideration-probe` state-coverage pass over the five surfaces this phase
+renders. **33 applicable considerations: 29 covered, 3 backstop, 1 dismissed.** Copy is NOT restated
+here — every copy-bearing row references `## Copywriting Contract` above as the single source.
+
+**Surfaces probed.** E1 neutral confirm modal · E2 destructive confirm modal · E3 action menu ·
+E4 inline fail-closed alert · E5 `mix crosswake.gen.native_controls_ui` terminal output.
+
+**Kind-classification override (recorded for audit).** The probe's prose classifier under-detected
+two surfaces; both were corrected before resolution, so the categories below reflect the union of
+detected + confirmed kinds, not the raw cue match:
+- **E2** += `form` — the destructive confirm IS a submission surface (identical in shape to E1,
+  which did classify as `form`); the cue tripped only on E1's wording. Raised 6 → 7 considerations.
+- **E4** += `static-content` — it is a message region, not solely an interactive control. Raised
+  1 → 2 considerations. E4 stays deliberately thin: it is a two-literal region with no data of its
+  own, so most state categories genuinely do not apply to it.
+
+### E1 — Neutral confirm modal
+
+| Category | Status | Resolution |
+|----------|--------|------------|
+| empty | ✅ covered | Cannot render empty by construction: `title` and `confirm_label` are required attrs with **no default** (D-58) — a missing value is a compile error, not an empty panel |
+| loading | ✅ covered | Pending state on the action button only, using the neutral pending string in `## Copywriting Contract`; the panel closes on server confirmation, never on click |
+| error | ✅ covered | Inline `role="alert"` inside the still-open panel, using the answer-didn't-land row in `## Copywriting Contract`. Never swaps the panel for an error screen |
+| populated | ✅ covered | Centred dialog ≥768px / bottom sheet below; `role="dialog"`; title + body + DOM-order `[Cancel, Action]` button row (`column-reverse` narrow, `row`+`flex-end` wide); initial focus on Action |
+| partial | ✅ covered | `body` is the one optional attr (D-58 makes only `title`/`confirm_label` required). Omitted `body` renders title + button row with the title's bottom margin collapsing to the `md` (16px) button-row gap — no placeholder, no empty `<p>` |
+| overflow | ✅ covered | Same chassis rule as the action menu: panel body scrolls inside `max-height: min(60vh, 420px)`; title and button row sit **outside** the scroll container so the confirm action is never scrolled out of reach. Scroll-shadow treatment is delegated to implementation (CONTEXT.md "Claude's Discretion") |
+| zero-one-many | ✅ covered | Fixed arity — exactly one action button plus Cancel. A multi-action confirm is out of scope for this phase; adding one is an `action_menu` job, not a `confirm_modal` variant |
+| long-text | 🧪 backstop | **Statement:** long title/body copy wraps and reflows rather than truncating — no `ellipsis`, no clamp, since the body is the entire informed-consent payload. **Verification:** backstop — visual check at 320px in the browser proof lane |
+
+### E2 — Destructive confirm modal
+
+| Category | Status | Resolution |
+|----------|--------|------------|
+| empty | ✅ covered | Strictly stronger than E1: `title`, `confirm_label` **and** `body` are all required with no default (D-58 + D-59) — an empty destructive panel is a compile error |
+| loading | ✅ covered | Pending state on the destructive action button, using the destructive pending string in `## Copywriting Contract` |
+| error | ✅ covered | Identical to E1 — inline `role="alert"`, panel stays open, nothing mutated. Critical for this surface: a failed destructive answer must read as "nothing happened", not ambiguity |
+| populated | ✅ covered | `role="alertdialog"`, **no click-away dismissal**, initial focus on Cancel (D-19), filled `--cwfb-danger-bg` / `--cwfb-danger-fg` action button (6.02:1 both themes) **plus** a border-left shape cue — never shape alone (D-32) |
+| partial | ✅ covered | Not reachable — required-no-default `body` means the consequence sentence can never be missing. This is the whole point of D-58 on this surface |
+| overflow | ✅ covered | Same chassis rule as E1; the Cancel/Delete row stays outside the scroll container, so the escape route is never scrolled away |
+| long-text | 🧪 backstop | **Statement:** the required consequence body wraps to as many lines as it needs; the bottom sheet grows and scrolls rather than clipping. **Verification:** backstop — visual check of the 320px bottom-sheet layout (the pre-existing long-text concern, retained) |
+
+### E3 — Action menu
+
+| Category | Status | Resolution |
+|----------|--------|------------|
+| empty | ✅ covered | Zero actions renders the menu empty-state row in `## Copywriting Contract` inside the normal chassis — heading and Cancel still present, so the surface is never a bare box |
+| loading | ✅ covered | Pending state on the **trigger only**, never per-row (D-20 rationale: a per-row spinner would need the icons this phase bans) |
+| error | ✅ covered | The menu itself has no submit step — it emits select-with-id or dismiss. A selection that cannot proceed surfaces as E4's inline `role="alert"`; a destructive selection routes to E2 first. No error state renders inside the menu |
+| populated | ✅ covered | Centred modal at every viewport (not trigger-anchored — deferred to SEED-005, D-22); mandatory `<h2>`; `<ul>`/`<li>`/`<button>`; no icons; destructive row last behind a 4px gap band with a 3px left bar |
+| partial | ✅ covered | An action present but not currently permitted renders as a **disabled row carrying its reason inline** (see the disabled-row string in `## Copywriting Contract`) — never a silently greyed control, never omitted |
+| overflow | ✅ covered | `max-height: min(60vh, 420px)` scroll container; heading and Cancel remain outside it so both stay reachable at any row count |
+| zero-one-many | ✅ covered | Zero → empty-state row; one through seven → no scroll; eight or more → the scroll container engages. Row copy is authored per-action, so no singular/plural interpolation exists to get wrong |
+| long-text | 🧪 backstop | **Statement:** a long row label wraps to a second line and the row grows — **never truncates or ellipsizes**, because D-20 bans icons, making the label the row's only signal; a clipped label would erase what the action does. **Verification:** backstop — visual check of a wrapped multi-line row at 320px |
+
+### E4 — Inline fail-closed alert
+
+| Category | Status | Resolution |
+|----------|--------|------------|
+| overflow | ✅ covered | The `role="alert"` region has no fixed height and never scrolls or clips — copy wraps within the host surface's content width. A clipped denial would read as silent degradation, which PROOF-01 explicitly forbids |
+| long-text | ✅ covered | Both variants (stale-binary, undeclared) are **fixed literal strings** from `## Copywriting Contract` with no interpolated values, so maximum length is known at author time and cannot grow at runtime |
+
+### E5 — Generator terminal output
+
+| Category | Status | Resolution |
+|----------|--------|------------|
+| empty | ✅ covered | Second run with both files already present prints the no-clobber report (files skipped, nothing written) — never silent, never a zero-line run |
+| loading | ⊘ dismissed | **Reason:** a synchronous Mix task has no async state to render. There is no progress affordance to design |
+| error | ✅ covered | Inherits `crosswake.gen.bridge_hook`'s existing `Mix.raise` path for a non-Phoenix or malformed target app (D-35 adopts that generator's pattern wholesale) |
+| populated | ✅ covered | First-run output lists the two copied files, prints the three `handle_event` clauses verbatim for pasting, and carries the D-08 framing prose plus NN/g's *offer undo instead* guidance |
+| partial | ✅ covered | No-clobber is evaluated **per file**: an existing file is reported as skipped while a missing sibling is still copied. A half-generated tree resolves on the next run without `--force` |
+| overflow | ✅ covered | Plain sequential stdout — no pager, no cursor addressing, no column alignment. The terminal owns wrapping; the task never truncates its own output |
+| zero-one-many | ✅ covered | Fixed set of two artifacts (component module + stylesheet); the count is a constant, not data-driven |
+| long-text | ✅ covered | The only variable-length values are the host app's module/path names inside the printed clauses. Output is unaligned plain text, so a long app name reflows without breaking the paste-ability of the snippet |
+
+### Retained non-probe considerations
+
+Outside the probe's state axis but load-bearing for this phase, carried forward verbatim:
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty | action menu | ✅ covered | Empty-actions renders the documented "No actions are available for this record." copy row |
-| loading/pending | confirm action button | ✅ covered | Trigger-only pending copy ("Approving…"/"Deleting…"); no per-row pending state on the menu |
-| error (answer didn't land) | confirm modal | ✅ covered | Inline `role="alert"`, panel stays open, copy: "That didn't save. Nothing was changed — try again." |
-| error (fail-closed: undeclared) | any surface invoking an unavailable capability | ✅ covered | Inline `role="alert"`, never a modal: "This action isn't available here. Nothing was changed." |
-| error (fail-closed: stale shell) | any surface invoking a too-old shell | ✅ covered | Inline `role="alert"`, never a modal: "This action needs a newer version of the app. Update the app, then try again." |
-| zero-one-many | action menu rows | ✅ covered | Zero → empty-state copy; one-to-seven → no scroll; eight+ → `max-height` scroll container excluding heading/Cancel |
-| overflow | action menu (>7 rows) | ✅ covered | `max-height: min(60vh, 420px)` scroll container; heading and Cancel remain outside it |
-| disabled | action menu row | ✅ covered | Disabled row carries reason inline: "Reassign job — needs a supervisor" (never a silent disabled control) |
-| destructive confirmation | both surfaces | ✅ covered | Destructive rows always route through the destructive confirm modal first; no direct-to-mutation path |
-| long-text | destructive confirm body | 🧪 backstop | Required body copy can exceed one line on narrow viewports; wrapping behavior not pinned to a specific max-width in CONTEXT — verify visually against the bottom-sheet layout at 320px |
-| focus-ring visibility | all interactive elements | 🧪 backstop | `--cw-action-focus-ring` contrast fix (D-33) must be verified ≥3:1 in both themes by the browser proof lane before this state is truly closed — currently the one known-failing assertion until the fix lands |
-| `aria-modal` + VoiceOver | both surfaces | ⚠ unresolved | D-23: `aria-modal="true"` is unreliable in Safari+VoiceOver; the `inert` mitigation is believed sufficient but is explicitly NOT proven — record as a manual-check limitation, not a passing assertion |
+| destructive confirmation | both surfaces | ✅ covered | Destructive menu rows always route through E2 first; no direct-to-mutation path exists |
+| focus-ring visibility | all interactive elements | 🧪 backstop | **Statement:** `--cw-action-focus-ring` meets ≥3:1 in both themes. **Verification:** backstop — the D-33 contrast fix is the one known-failing assertion in the browser proof lane until it lands |
+| `aria-modal` + VoiceOver | both surfaces | ⚠ unresolved — planner must treat as assumption | D-23: `aria-modal="true"` is unreliable in Safari + VoiceOver. The `inert` background mitigation is *believed* sufficient but is explicitly **not proven** — record as a manual-check limitation, never as a passing assertion |
 
 ---
 
