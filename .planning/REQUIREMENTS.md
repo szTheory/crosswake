@@ -77,7 +77,7 @@ Crosswake ships no component library — that is a deliberate anti-feature. But 
 must look right on day one, so they are generated and owned by the host, never imported.
 
 - [x] **FALL-01**: `mix crosswake.gen.native_controls_ui` scaffolds host-owned, brand-tokenized fallback components (confirm modal, action menu) as verbatim-copy files the adopter owns outright.
-- [ ] **FALL-02**: Generated fallbacks render correctly in light and dark, trap focus, and meet the existing contrast gates; no importable `Crosswake.UI.*` module exists.
+- [x] **FALL-02**: Generated fallbacks render correctly in light and dark, trap focus, and meet the existing contrast gates; no importable `Crosswake.UI.*` module exists.
 
 ### HRDN — harden what already shipped
 
@@ -140,7 +140,7 @@ must look right on day one, so they are generated and owned by the host, never i
 | PROOF-04 | Phase 154 | Complete — no human gate; check H drives the real raiser through the six-step recipe |
 | HRDN-01 | Phase 154 | Complete — no human gate; evidence panel asserted by 154-08 checks A–F in light and dark |
 | FALL-01 | Phase 155 | Complete |
-| FALL-02 | Phase 155 | Pending |
+| FALL-02 | Phase 155 | Complete |
 | PROOF-01 | Phase 155 | Pending |
 | MENU-01 | Phase 156 | Pending |
 | MENU-02 | Phase 156 | Pending |
