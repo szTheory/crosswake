@@ -30,8 +30,9 @@ See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 Phase: 156
 Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
-Phase 153 (ios-mirror-unblock) — 3/4; the one-way-door tag push is DONE (mirror `v0.2.0` live,
-verified 2026-07-30). Remaining: the `main` re-baseline dispatch (Jon) and plan 153-04.
+Phase 153 (ios-mirror-unblock) — 3/4; **153-02 / MIRROR-01 COMPLETE** (tag `v0.2.0` pushed
+2026-07-28, mirror `main` re-baselined 2026-07-30, both verified against the mirror).
+Remaining: plan 153-04 (parity gate + release-status CLI). Phase 156 is unblocked.
 Status: Ready to plan
 Last activity: 2026-07-30
 
@@ -54,30 +55,31 @@ Verified 2026-07-30 directly against the mirror rather than from the workflow's 
 PR #79 (splitsh-lite → `git subtree split`) is merged. **SEED-003 is satisfied; Phase 156 no
 longer waits on the mirror.**
 
-### Still open: mirror `main` was never re-baselined
+### Mirror `main` re-baselined 2026-07-30 — MIRROR-01 COMPLETE
 
-Mirror `main` sits at `6417ae65` — the **v0.1.2** commit. The 07-28 `update_main=true` run
-silently no-opped: it ran the pre-fix script, whose early return on the tag-already-present
-short-circuit skipped the D-08 realign. Fixed by `2e46105c`, which landed *after* that run.
+The 07-28 `update_main=true` run had silently no-opped: it executed the pre-fix script, whose
+early return on the tag-already-present short-circuit skipped the D-08 realign. `2e46105c`
+fixed that but landed after the run, and only reached `origin/main` with boundary-sync PR #101
+(merge `932b4f32`). Re-dispatched on the corrected script as run `30578674382`:
 
-Remedy is one dispatch with the now-fixed script:
-
-```bash
-gh workflow run ios-mirror-backfill.yml \
-  -f version=0.2.0 -f release_ref=refs/tags/ios-core-v0.2.0 \
-  -f apply=true -f update_main=true
+```
+[crosswake] mirror main (6417ae65…) is not a known object in this repository - cannot prove ancestry either way.
+[crosswake] This is expected exactly once, for the one-time re-baseline (D-08).
+[crosswake] OK: updated mirror main to 658d6025… with --force-with-lease.
 ```
 
-**Jon must run this** — Claude's auto-mode classifier blocks it as a mutating public
-force-push.
+Verified against the mirror directly:
 
-Safe to proceed: the lineages genuinely forked (`6417ae65` is *not* an ancestor of
-`658d6025` — 1 commit on `main` unreachable from the split, 19 in the split absent from
-`main`), but that fork is expected. The two subtree splits were computed at different times
-from different refs, and this is exactly the one-time D-08 re-baseline the script's own log
-message anticipates. Nothing is orphaned: tag `v0.1.2` still pins `6417ae65`. Only
-branch-resolving consumers see stale code; SwiftPM version resolution uses the tag and is
-already correct.
+```
+658d6025…  refs/heads/main    ← re-baselined
+6417ae65…  refs/tags/v0.1.2   ← preserved, nothing orphaned
+658d6025…  refs/tags/v0.2.0
+```
+
+The guard hit its advisory "unknown object, proceed" branch exactly as designed (D-08/Q2). The
+lineages had genuinely forked — `6417ae65` was not an ancestor of `658d6025` — which is the
+expected outcome of two subtree splits computed at different times from different refs, and
+precisely the one-time re-baseline the script anticipates.
 
 Note the ancestry guard (`verify_ios_mirror_backfill.sh:256-261`) is advisory-and-proceed in
 CI **by design** (D-08/Q2 — see the Decisions section: unknown-object advisory, known-non-
