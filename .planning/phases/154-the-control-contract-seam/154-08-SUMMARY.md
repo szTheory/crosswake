@@ -409,3 +409,95 @@ Both are documented above and both have a test that will go red if the situation
 - `guides/compatibility.md`, `guides/adopter_profiles.md`, `guides/web_to_mobile_migration.md`, `guides/support_matrix.md`, `lib/crosswake/support_matrix/renderer.ex` — all present in commit `26720633`
 - `.planning/phases/154-the-control-contract-seam/154-08-SUMMARY.md` — exists
 - Commit `26720633` — present in `git log`
+
+---
+
+## Follow-up (post-phase): the `requires_example_host` lane closed
+
+Logged out-of-scope during 154-08 and closed afterwards, in place on `main`. Commits
+`3f540333`, `7e1ffb38`, `fd161aaa`.
+
+### What was red
+
+`mix test --only requires_example_host` had 3 failures. This lane is excluded from every
+default `mix test` (its CI home is `requires-example-host-gate.yml`), which is the single
+reason both causes below survived the changes that created them.
+
+**Cause 1 — stale capability vocabulary (2 failures, `Phase5ProofLaneTest`,
+`Phase7SaaSLaneTest`).** 154-01 (`94151bd5`) deliberately flipped the router's
+`saas-approval` declaration from the dotted wire command `"haptics.impact"` to the
+capability family `"haptics"` (D-61/D-62) and updated the coupled Playwright assertion in
+the same commit. The two proof-lane copies of that assertion were missed, so they still
+asserted the vocabulary D-61 removed. Fixed deliberately, not weakened: the route declares
+a family, the library resolves the command, so `["haptics"]` is correct. The Phase 7 copy
+gained a guard that no declared capability contains a dot, so re-inlining a wire command
+id fails there rather than drifting silently.
+
+**Cause 2 — synthetic sockets cannot host the bridge (1 failure).** 154-07 added
+`Crosswake.Bridge.attach/1` to `ApprovalLive`. `attach/1` registers LiveView lifecycle
+hooks; a hand-built `%Phoenix.LiveView.Socket{}` has no `:lifecycle` private key, giving
+`(KeyError) key :lifecycle not found in: %{live_temp: %{}}`.
+
+### Approach chosen, and why
+
+Mounted the route for real rather than patching the synthetic socket. `attach/1` raising
+on a malformed socket is the fail-closed behaviour this phase deliberately built and was
+left untouched.
+
+Patching `:lifecycle` in would have bought a passing test that proves nothing: calling
+`module.handle_event/3` directly bypasses attached hooks entirely, so the dispatch, the
+reply and the wiring deadline — the whole seam — stay invisible, and the helper would
+depend on `phoenix_live_view` private internals. This mirrors the migration Phase 154
+already made for the example host's own copy of this test (`approvals_live_test.exs`,
+HRDN-01).
+
+`Crosswake.TestSupport.ExampleHost.start_endpoint!/0` now boots the example Endpoint for
+`Phoenix.LiveViewTest` round trips in the proof lane. `phase7_saas_lane_test.exs` lost
+`base_socket`/`mount!`/`handle_params!`/`handle_event!`/`render_html` entirely — the defect
+class, not one instance of it.
+
+Every prior assertion is preserved or strengthened. The envelope is now observed crossing
+the seam via `assert_push_event` (command, capability and route id, where the old test read
+one field off a hand-built assign); server authority is confirmed against persisted state;
+the member path additionally proves via `refute_push_event` that no request reaches the seam
+at all. Two assertions had no honest like-for-like translation and were replaced rather than
+dropped: `bridge_request["command"]` (that assign no longer exists — HRDN-01 replaced the
+hand-built envelope with `Bridge.push/3`) and the DOM correlation id
+`"approval-haptics-approval-1"` (correlation ids are library-internal per D-20, and the
+inline dispatch script it lived in was deleted). Their intent is carried by
+`assert_push_event` plus the evidence panel's idle-to-populated transition (D-74).
+
+### A regression this caught in itself
+
+The first version of `start_endpoint!/0` started a long-lived `Phoenix.PubSub` under
+`CrosswakeExample.PubSub`. `Phase35PaywallLiveTest` `start_supervised!`s that same
+globally-named broker per test, on purpose, to get a fresh one each time — so whenever the
+SaaS lane ran first, all 12 paywall tests failed with `:already_started`. Order-dependent,
+so the first lane run passed and a full `mix test` beforehand exposed it. The endpoint now
+uses a private broker (`Crosswake.TestSupport.ExampleHostPubSub`) and leaves the app-owned
+name unclaimed. Verified across seeds 0, 1, 42, 702648, 999, 123456.
+
+### GUARD-01 pin (`7e1ffb38`)
+
+`examples/phoenix_host/e2e/evidence_panel.spec.ts` — 154-08's mechanized replacement for the
+retired human verification gate — was absent from `check-e2e-honesty.mjs`'s `FILES` list, so
+the guard's anti-rename/delete arm did not cover the one spec whose deletion nothing else
+would notice. Now pinned; the spec is clean against all three banned fabrication shapes.
+Proven live: renaming it makes the script exit 1 with the GUARD-01 missing-file error,
+restoring it returns exit 0.
+
+### Verification (all re-run at final state)
+
+| Gate | Result |
+| --- | --- |
+| `mix test` | 1253 tests, 0 failures (73 excluded) |
+| `mix test --only requires_example_host` | **63 tests, 0 failures** (was 3 failures) |
+| `mix compile --warnings-as-errors` | exit 0 |
+| `cd examples/phoenix_host && mix test` | 95 tests, 0 failures |
+| `cd examples/phoenix_host && mix compile --warnings-as-errors` | exit 0 |
+| `node --test "test/js/*.mjs"` | 22 tests, 22 pass, 0 fail |
+| `cd examples/phoenix_host && npx playwright test` | 23 passed |
+| `node script/check-e2e-honesty.mjs` | exit 0 |
+
+The `validator_test.exs` `$TMPDIR` flake did not reproduce. Nothing was listening on port
+4700 during any run; the proof endpoint runs `server: false` and binds nothing.
