@@ -43,6 +43,7 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 Later milestones can expand into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
 
 ## Current State
+- **v20.0 Phase 153 iOS Mirror Unblock — COMPLETE 2026-07-30.** The SwiftPM mirror now carries `v0.2.0` at the reproducible split SHA while preserving `v0.1.2`; mirror `main` is re-baselined; the release and backfill lanes use the deploy-key path with hard failure surfacing; and the live parity gate is registered as required. MIRROR-01 and MIRROR-02 verified 31/31. Phase 156 remains the active planning position.
 - **v19.0 Showcase Apps & Capability Map — SHIPPED 2026-07-12.** Crosswake now has a product-shaped showcase hub and three realistic lanes: AdminPilot (SaaS/admin), Fieldserv (field service), and LearnLoop (subscription learning/training). The milestone also shipped deterministic fixture reset/proof, generalized route-tour evidence, public capability-map collateral, and a planning-only v20 Native Controls Pack 1 handoff. Full detail in `.planning/milestones/v19.0-ROADMAP.md`.
 - **v19.0 Phase 152.1 Support-Truth and Verification Closeout — COMPLETE 2026-07-12.** Scanner/document-scan support truth now renders unsupported/deferred across canonical source, generated guides, and tests; Phase 150 and 152 verification ledgers were reconstructed from fresh reruns; Phase 149/150/151 validation metadata is current; Phase 148's missing-summary exception is documented honestly; and the v19 milestone audit rerun passed.
 - **v19.0 Phase 151 Subscription Learning Showcase — COMPLETE 2026-07-11.** LearnLoop is now a product-first subscription learning/training lane with realistic courses, lessons, content packs, learners, progress, subscription states, route-derived diagnostics, a socketless offline study island, visible sync/reconciliation states, backend-owned mocked entitlement pressure, and route-tour screenshots after semantic assertions. LEARN-01 through LEARN-04 verified. Next active work is Phase 152: Capability Map, Collateral, and v20 Handoff.
@@ -168,6 +169,8 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 
 ### Validated
 
+- [x] **MIRROR-01** The `crosswake-shell-core-ios` SwiftPM mirror carries `v0.2.0` at the verified split SHA while preserving `v0.1.2`. Validated in Phase 153: iOS Mirror Unblock.
+- [x] **MIRROR-02** Native shell-core releases coordinate Hex, Maven, and the iOS mirror, with mirror failures surfaced as hard named CI failures. Validated in Phase 153: iOS Mirror Unblock.
 - [x] Provide a Phoenix-native route policy DSL that declares runtime mode, offline policy, required capabilities, pack needs, sync seams, and security sensitivity per route. Validated in Phase 1: Route Policy Foundation.
 - [x] Provide additive generators/installers for host Phoenix setup and native shell bootstrap that keep ownership boundaries explicit. Validated in Phase 1: Route Policy Foundation.
 - [x] Generate and validate a runtime manifest and compatibility contract that native shells, bridges, and host Phoenix apps can trust. Validated in Phase 2: Manifest Truth And Compatibility.
@@ -368,4 +371,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-12 after v19.0 milestone completion.*
+*Last updated: 2026-07-30 after Phase 153 verification.*
