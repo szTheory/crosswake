@@ -4,15 +4,15 @@ milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 154
 current_phase_name: the-control-contract-seam
-status: phase-complete
-stopped_at: "154-08 COMPLETE (26720633, 0a01ca11). Task 2's human-verify checkpoint REPLACED by merge-blocking automation (checks A–H). Phase 154 has zero human verification and zero UAT."
-last_updated: "2026-07-30T02:20:00.000Z"
+status: ready_to_plan
+stopped_at: Phase 154 complete (8/8) — ready to discuss Phase 155
+last_updated: 2026-07-30T02:38:13.832Z
 last_activity: 2026-07-29
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 15
-  completed_plans: 15
+  completed_plans: 48
   percent: 50
 ---
 
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 154 — the-control-contract-seam
+**Current focus:** Phase 155 — host owned fallback components
 
 ## Current Position
 
-Phase: 154 (the-control-contract-seam) — **COMPLETE** (8/8 plans)
-Plan: 8 of 8 — complete, no open human gate
+Phase: 155
+Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Ready to execute
-Last activity: 2026-07-29
+Status: Ready to plan
+Last activity: 2026-07-30
 
 Progress: [██████████] 100% of Phase 154
 
@@ -137,7 +137,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 
 **Velocity:**
 
-- Total plans completed: 190 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
+- Total plans completed: 198 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
 - Average duration: —
 - Total execution time: —
 
