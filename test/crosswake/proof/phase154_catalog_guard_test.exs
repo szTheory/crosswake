@@ -744,6 +744,173 @@ defmodule Crosswake.Proof.Phase154CatalogGuardTest do
   end
 
   # ---------------------------------------------------------------------------
+  # HRDN-01 — "the hand-rolled script IIFE is gone" as a merge-blocking fact
+  #
+  # A grep in a summary is not a gate. HRDN-01's wording in REQUIREMENTS.md is a
+  # claim about the reference host as a whole, so it is asserted over the whole
+  # tree rather than over the two files Plan 07 happened to edit — a third copy
+  # appearing tomorrow in a route nobody was thinking about is exactly the failure
+  # a two-file claim cannot catch.
+  #
+  # The showcase is the template adopters copy (T-154-33). A pattern left standing
+  # there propagates into hosts this repository will never see.
+  # ---------------------------------------------------------------------------
+
+  describe "HRDN-01 — no inline-script bridge dispatch survives in the reference host" do
+    test "no module under examples/phoenix_host/lib renders raw HTML into a script element for dispatch" do
+      offenders =
+        example_host_sources()
+        |> Enum.filter(&inline_script_dispatch?(File.read!(&1)))
+        |> Enum.map(&Path.relative_to(&1, File.cwd!()))
+
+      assert offenders == [],
+             ProofAssertions.stable_id_message(
+               "proof.hrdn_01.inline_script_dispatch.absent",
+               "no reference-host module may hand-roll a bridge dispatch into a script element",
+               "raw-HTML-script and shell-postMessage scan over examples/phoenix_host/lib/**/*.ex",
+               "offenders=#{inspect(offenders)}",
+               "examples/phoenix_host/lib/",
+               "dispatch through Crosswake.Bridge.push/3 — the shipped hook is an external " <>
+                 "module file, so the page needs neither script-src 'unsafe-inline' nor a " <>
+                 "per-render nonce for the bridge (D-40, HRDN-01)",
+               :merge_blocking
+             )
+    end
+
+    test "the seam has at least two call sites in the reference host — the positive counterpart" do
+      call_sites =
+        example_host_sources()
+        |> Enum.filter(&seam_call_site?(File.read!(&1)))
+        |> Enum.map(&Path.relative_to(&1, File.cwd!()))
+
+      assert length(call_sites) >= 2,
+             ProofAssertions.stable_id_message(
+               "proof.hrdn_01.seam_call_sites.present",
+               "both migrated showcase LiveViews must dispatch through the seam",
+               "Crosswake.Bridge.push/3 call-site scan over examples/phoenix_host/lib/**/*.ex",
+               "call_sites=#{inspect(call_sites)}",
+               "lib/crosswake/bridge.ex",
+               "deleting the inline script without routing the call through push/3 would satisfy " <>
+                 "the absence assertion while removing the capability entirely — HRDN-01 is a " <>
+                 "migration, not a deletion (D-70)",
+               :merge_blocking
+             )
+    end
+
+    test "non-vacuity: a synthetic module reintroducing the raw-HTML script element is flagged" do
+      synthetic = """
+      defmodule Reintroduced do
+        def render(assigns) do
+          ~H\"\"\"
+          <script :if={@bridge_request} id="crosswake-approval-haptics">
+            <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
+          </script>
+          \"\"\"
+        end
+      end
+      """
+
+      assert inline_script_dispatch?(synthetic),
+             ProofAssertions.stable_id_message(
+               "proof.hrdn_01.non_vacuity.raw_html_script",
+               "the sweep must detect the exact pattern this phase deleted",
+               "inline_script_dispatch?/1 over a synthetic reintroduction",
+               "the deleted <script> + Phoenix.HTML.raw pattern was accepted",
+               "test/crosswake/proof/phase154_catalog_guard_test.exs",
+               "a sweep that finds nothing because it matches nothing is not a gate",
+               :merge_blocking
+             )
+    end
+
+    test "non-vacuity: a synthetic module hand-rolling the shell postMessage probe is flagged" do
+      synthetic = ~S|
+      defmodule Reintroduced do
+        defp bridge_script(request) do
+          """
+          if (window.webkit?.messageHandlers?.crosswakeBridge) {
+            window.webkit.messageHandlers.crosswakeBridge.postMessage(payload);
+          }
+          """
+        end
+      end
+      |
+
+      assert inline_script_dispatch?(synthetic),
+             ProofAssertions.stable_id_message(
+               "proof.hrdn_01.non_vacuity.hand_rolled_postmessage",
+               "hand-rolled shell detection is the same violation wearing different markup",
+               "inline_script_dispatch?/1 over a synthetic script builder",
+               "a module hand-rolling the webkit messageHandlers probe was accepted",
+               "test/crosswake/proof/phase154_catalog_guard_test.exs",
+               "the builder function is the payload; moving it out of the ~H sigil does not " <>
+                 "make it the seam",
+               :merge_blocking
+             )
+    end
+
+    test "the scanned source list is non-empty — job not found is a FAILURE, not a pass" do
+      sources = example_host_sources()
+
+      refute sources == [],
+             ProofAssertions.stable_id_message(
+               "proof.hrdn_01.subject_exists",
+               "the HRDN-01 sweep must have a subject tree to scan",
+               "Path.wildcard over examples/phoenix_host/lib/**/*.ex",
+               "the reference-host source tree resolved to zero files",
+               "examples/phoenix_host/lib/",
+               "a sweep over an empty file list is green for the wrong reason — the same " <>
+                 "unlocatable-is-failure rule the native enum extractor follows (D-46)",
+               :merge_blocking
+             )
+    end
+  end
+
+  # The reference-host tree, read-only. Untagged and hermetic: this reads checked-in
+  # source, it never boots the example host, so it carries no :requires_example_host.
+  @example_host_lib "examples/phoenix_host/lib"
+
+  # The two independent signals of a hand-rolled dispatch. The first is the markup
+  # this phase deleted; the second is its payload builder, because moving the string
+  # out of the ~H sigil into a defp does not make it the seam.
+  @raw_html_script_dispatch ~r/<script[^>]*>(?:(?!<\/script>)[\s\S])*?Phoenix\.HTML\.raw\(/
+  @hand_rolled_shell_probe ~r/crosswakeBridge\??\.postMessage|messageHandlers\.crosswakeBridge/
+
+  @seam_call ~r/(?<![\w.])(?:Crosswake\.)?Bridge\.push\(/
+
+  defp example_host_sources do
+    [File.cwd!(), @example_host_lib, "**/*.ex"]
+    |> Path.join()
+    |> Path.wildcard()
+    |> Enum.sort()
+  end
+
+  # Comments are stripped before every predicate so that PROSE ABOUT the deleted
+  # pattern — of which this phase deliberately left a great deal, because the
+  # reasoning is the artifact — can never be mistaken for the pattern itself, in
+  # either direction.
+  defp strip_comments(source) do
+    source
+    |> String.split("\n")
+    |> Enum.reject(&(&1 |> String.trim_leading() |> String.starts_with?("#")))
+    |> Enum.join("\n")
+  end
+
+  defp inline_script_dispatch?(source) do
+    code = strip_comments(source)
+
+    Regex.match?(@raw_html_script_dispatch, code) or
+      Regex.match?(@hand_rolled_shell_probe, code)
+  end
+
+  defp seam_call_site?(source) do
+    code = strip_comments(source)
+
+    Regex.match?(@seam_call, code) and
+      (String.contains?(code, "Crosswake.Bridge.push(") or
+         String.contains?(code, "alias Crosswake.Bridge"))
+  end
+
+  # ---------------------------------------------------------------------------
   # Hermetic lane self-assertion (bottom of file — must always be last)
   # This proof file must carry no @moduletag (runs untagged, D-47).
   # ---------------------------------------------------------------------------
