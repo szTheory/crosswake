@@ -13,4 +13,17 @@ defmodule <%= @policy_module %> do
   def compile(opts \\ []) do
     Crosswake.Policy.Compiler.compile(@router, opts)
   end
+
+  @doc """
+  The compiled Crosswake manifest for this host's router.
+
+  Assign this (with a route id) before calling `Crosswake.Bridge.attach/1` — the
+  bridge never guesses a manifest or a route id. It recompiles from the router on
+  every call rather than caching, so a code-reloaded route policy is picked up
+  immediately; compiling a router's policy is sub-millisecond work.
+  """
+  def manifest(opts \\ []) do
+    {:ok, %{manifest: manifest}} = Crosswake.Manifest.compile(@router, opts)
+    manifest
+  end
 end

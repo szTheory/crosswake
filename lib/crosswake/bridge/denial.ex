@@ -1,6 +1,16 @@
 defmodule Crosswake.Bridge.Denial do
   @moduledoc """
-  Typed denial reply payload for bounded bridge requests.
+  Internal wire-decode envelope for bounded bridge deny replies (demoted, Phase 154,
+  D-28).
+
+  This struct exists only to model the doubly-nested shape shipped natives already
+  put on the wire (`reply["denial"]["denial"]["reason"]`) — every shell binary
+  already in the field emits it, and the wire is frozen until a
+  `Crosswake.Bridge.Contract.@version` major, so this module is NOT "cleaned up" here.
+  Adopters should never match on this struct directly: `Crosswake.Bridge.push/3`
+  flattens it into a plain `Crosswake.Shell.Denial` before delivering
+  `{:crosswake_bridge, ref, %Crosswake.Bridge.Reply{}}` to `handle_info/2` — match on
+  `Crosswake.Shell.Denial` instead.
   """
 
   alias Crosswake.Bridge.Contract

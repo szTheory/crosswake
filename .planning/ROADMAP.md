@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
 - [x] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
-- [ ] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
+- [x] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
 - [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
 - [ ] **Phase 156: Native Menu & Action-Button Control** - Ship the first genuinely-new native control on both iOS and Android, proven via committed contract vectors.
 - [ ] **Phase 157: Harden, Promote & Prove Support Truth** - Harden haptics/share footguns, promote share/notification_token to merge-blocking proof, and land the permissions/notification-token honesty pass.
@@ -279,7 +279,37 @@ would conflict and, under `strict: true`, re-invalidate each other's in-flight r
   4. A proposed control that is host-registrable, dynamic, or otherwise violates the catalog line fails a merge-blocking structural CI test, and every control's rebuild class is visible in the changelog, support matrix, and doctor guidance.
   5. The AdminPilot haptics call runs through `Bridge.push/3` with the old hand-rolled `<script>` IIFE deleted, proving the seam against an already-native, zero-risk capability.
 
-**Plans**: TBD
+**Plans**: 8/8 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 154-01-PLAN.md — PR #1: flip the published capability vocabulary to family ids, fix the self-referential `legacy_ids` manifest bug, add the doctor advisory
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 154-02-PLAN.md — PR #1b: make rebuild + interaction class unconstructable-without, add the doctor rebuild finding, surface rebuild cost in guides and changelog
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 154-03-PLAN.md — PR #2a: TRACER — `Bridge.push/3` end-to-end with a typed correlated reply, the loud undeclared-capability raise, and the one-shape denial collapse
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 154-04-PLAN.md — PR #2b: opaque ref, per-mount epoch, three-layer exactly-once, `resolve/2`, two timers, bridge telemetry, `Crosswake.Bridge.Test`
+- [x] 154-05-PLAN.md — PR #2c: `Crosswake.Bridge.CatalogGuard` + the merge-blocking PROOF-04 gate with four kinds of negative control (has a blocking D-16 decision checkpoint)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 154-06-PLAN.md — PR #2d: the library-owned JS hook, the iOS reply return leg, the refuse-and-teach generator, the endpoint patcher, the doctor wiring check
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 154-07-PLAN.md — PR #3: HRDN-01 — migrate both showcase LiveViews onto the seam, evolve the evidence panel, delete the dead asset, prove it in the browser lane
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [x] 154-08-PLAN.md — PR #3 tail: honest-claims guide sweep, and the phase's former human verification gate REPLACED by merge-blocking automation (checks A–H) — Phase 154 has zero human verification and zero UAT
 
 ### Phase 155: Host-Owned Fallback Components
 
@@ -290,9 +320,32 @@ would conflict and, under `strict: true`, re-invalidate each other's in-flight r
 
   1. Running `mix crosswake.gen.native_controls_ui` copies confirm-modal and action-menu fallback files directly into the host app as files the adopter owns and can edit — no importable `Crosswake.UI.*` module exists.
   2. The generated fallbacks render correctly in both light and dark themes, trap focus, and meet the existing contrast gates.
-  3. A merge-blocking browser route-tour test proves a fallback renders when a control is unavailable, fails closed (an explicit denial, not silent success) when a capability is undeclared, and never silently degrades.
+  3. **(D-44's corrected wording — replaces the original criterion 3, which conflated three distinct undeclared moments into one browser-observable claim.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID.
 
-**Plans**: TBD
+     **Non-claims (D-48, stated explicitly, not a footnote):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
+
+**Plans**: 7/7 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] 155-01-PLAN.md — Tracer: a generated confirm modal, end-to-end from token to browser (wave 1)
+- [x] 155-02-PLAN.md — Bridge shipped-code defects: tolerant `resolve/2` (D-50) and a distinct `UnknownCapabilityFamilyError` (D-51) (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
+- [x] 155-04-PLAN.md — One served `tokens.css`, the generated-layout 404 fix, endpoint marker-content reconciliation, and two doctor findings (wave 2)
+- [x] 155-05-PLAN.md — `Crosswake.ComponentTierGuard`: six rules including the anti-vacuity twin, plus four controls (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
+
 **UI hint**: yes
 
 ### Phase 156: Native Menu & Action-Button Control
@@ -306,6 +359,8 @@ would conflict and, under `strict: true`, re-invalidate each other's in-flight r
   2. On both iOS and Android, invoking the control renders a real native menu, and the user's chosen action returns as a typed reply through the seam.
   3. The native menu carries VoiceOver/TalkBack semantics and responds to native dismiss gestures.
   4. Committed `bridge_contract_vectors.json` vectors prove menu dispatch and denial behavior on both native platforms in CI, with no simulator or emulator required.
+
+**Record correction (D-56, Phase 155 Plan 07):** Phase 154's D-29 payload-ceiling note asserts, as a parenthetical justification, that "the capability handshake already routes old natives to `unavailable_capability`." Verified factually wrong: the closed-enum miss fires first and both natives return `undeclared_capability` instead — exactly the two-remediation collapse D-13 forbade. This phase must re-derive the real premise rather than plan against the stated one.
 
 **Plans**: TBD
 **UI hint**: yes
@@ -340,8 +395,8 @@ Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
 | 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
 | 153. iOS Mirror Unblock | v20.0 | 3/4 | In Progress| 153-02 human-gated (one-way-door v0.2.0 mirror tag push) |
 | 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
-| 154. The Control-Contract Seam | v20.0 | 0/TBD | Not started | - |
-| 155. Host-Owned Fallback Components | v20.0 | 0/TBD | Not started | - |
+| 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
+| 155. Host-Owned Fallback Components | v20.0 | 7/7 | Complete    | 2026-07-30 |
 | 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
 | 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
 

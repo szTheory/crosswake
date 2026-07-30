@@ -58,6 +58,18 @@ jobs:
         run: npm ci --prefix examples/phoenix_host
       - name: Run E2E honesty check
         run: node script/check-e2e-honesty.mjs
+      # Phase 154 / CTRL-01+CTRL-02: the library-owned bridge hook's unit suite.
+      # Deliberately a named STEP inside this existing Node-provisioned job rather
+      # than a new workflow or a new required check (D-47): a step name is free, a
+      # check name costs the rename-and-registration ritual. The suite has zero
+      # dependencies — it is Node's built-in runner over a hand-stubbed global, so
+      # no `npm ci` runs here.
+      # The glob is UNQUOTED so the shell expands it. `node --test` only learned to
+      # expand glob patterns itself in Node 21, and this job pins Node 20 — quoting
+      # it hands node a literal pattern it cannot resolve ("Could not find
+      # .../test/js/*.mjs"). Shell expansion is version-independent.
+      - name: Run the bridge hook unit tests (priv/static/crosswake.esm.js)
+        run: node --test test/js/*.mjs
       - name: Step summary
         run: |
           echo "GUARD-01 e2e-honesty: structural check passed" >> "$GITHUB_STEP_SUMMARY"
@@ -121,6 +133,30 @@ jobs:
       - name: Run Playwright tests
         working-directory: examples/phoenix_host
         run: npx playwright test
+      # Phase 155 Plan 07 (PROOF-01, D-49): the unfiltered step above already runs
+      # this spec — this named step is ADDITIVE, purely for failure legibility. A
+      # step name is free; it costs nothing and makes a PROOF-01 failure readable
+      # at a glance instead of buried in the unfiltered run's full output. This
+      # step is never the authoritative one and must never gain a test-path
+      # filter that the unfiltered step doesn't also cover.
+      - name: Run native-controls fallback proof
+        working-directory: examples/phoenix_host
+        run: npx playwright test e2e/native_controls_fallback.spec.ts
+      # D-49: e2e-proof previously uploaded nothing on failure — a required
+      # browser assertion could fail with zero diagnostic output. Modeled on
+      # route-tour-proof's evidence-bundle step, scoped to failure only so a
+      # green run costs nothing. No continue-on-error anywhere in this job: a
+      # quarantined fail-closed proof is a fail-open gate (v12.0 GATE-01).
+      - name: Upload e2e-proof failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: crosswake-e2e-proof-failure-evidence
+          path: |
+            examples/phoenix_host/playwright-report/
+            examples/phoenix_host/test-results/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Step summary
         run: |
           echo "E2E: offline-sync IndexedDB-outbox → reconnect-flush → one Ecto row proven" >> "$GITHUB_STEP_SUMMARY"

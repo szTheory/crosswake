@@ -41,11 +41,26 @@ milestone's largest phase and would otherwise pay the per-PR tax across all of i
 
 The reusable machinery. Once this exists, controls 4..N are cheap, repeatable work.
 
-- [ ] **CTRL-01**: A LiveView can invoke a bounded control via `Crosswake.Bridge.push/3` and receive a typed reply correlated to the invocation.
-- [ ] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
-- [ ] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
-- [ ] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
-- [ ] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
+- [x] **CTRL-01**: A LiveView can invoke a bounded control via `Crosswake.Bridge.push/3` and receive a typed reply correlated to the invocation.
+- [x] **CTRL-02**: No-shell, too-old-shell, and undeclared-capability all resolve to one typed `Crosswake.Shell.Denial` reply, so an adopter writes one `handle_event` branch rather than three.
+- [x] **CTRL-03**: A route invoking a capability it never declared in route policy fails loudly and names the missing declaration, rather than silently doing nothing.
+- [x] **CTRL-04**: The bridge command vocabulary stays closed and named — host-registrable or dynamic command registration is structurally impossible.
+- [x] **CTRL-05**: Every control declares its rebuild class, and a native-rebuild-required release is labeled as such in the changelog, the support matrix, and doctor guidance.
+
+**Verification posture — Phase 154 has NO open human gate and NO outstanding UAT item.**
+The phase's closing `checkpoint:human-verify` (154-08 Task 2) was REPLACED by eight
+merge-blocking automated checks, not deferred — the shift-left pattern PROOF-03 / Phase 135
+established. `examples/phoenix_host/e2e/evidence_panel.spec.ts` carries A–F (idle copy
+honesty, success-before-denial document order, policy-not-fault denial semantics, the two
+identity rows, computed WCAG AA contrast in light and dark, and the live-region
+announcement contract); `test/crosswake/proof/phase154_advisory_actionability_test.exs`
+carries G (doctor advisory severity, exit-status neutrality, actionability);
+`test/crosswake/proof/phase154_recipe_followable_test.exs` carries H (the catalog guard's
+six-step recipe, EXECUTED red-to-green with an omit-one matrix). Every check was
+demonstrated capable of failing under a deliberate mutation. **C-partial, E-partial, F,
+G's "actionable" leg and H's synthetic-tree caveat are labelled PROXIES** in their own
+docblocks and in `154-08-SUMMARY.md` — do not read "no human gate" as "fully verified"
+beyond what those labels say.
 
 ### MENU — the first genuinely-new native control
 
@@ -61,12 +76,12 @@ the literal "feels wrong in a webview" moment, zero platform-policy risk, clean 
 Crosswake ships no component library — that is a deliberate anti-feature. But fallbacks
 must look right on day one, so they are generated and owned by the host, never imported.
 
-- [ ] **FALL-01**: `mix crosswake.gen.native_controls_ui` scaffolds host-owned, brand-tokenized fallback components (confirm modal, action menu) as verbatim-copy files the adopter owns outright.
-- [ ] **FALL-02**: Generated fallbacks render correctly in light and dark, trap focus, and meet the existing contrast gates; no importable `Crosswake.UI.*` module exists.
+- [x] **FALL-01**: `mix crosswake.gen.native_controls_ui` scaffolds host-owned, brand-tokenized fallback components (confirm modal, action menu) as verbatim-copy files the adopter owns outright.
+- [x] **FALL-02**: Generated fallbacks render correctly in light and dark, trap focus, and meet the existing contrast gates; no importable `Crosswake.UI.*` module exists.
 
 ### HRDN — harden what already shipped
 
-- [ ] **HRDN-01**: The AdminPilot haptics call runs through `Bridge.push/3`; the hand-rolled `<script>` IIFE with no reply path is gone.
+- [x] **HRDN-01**: The AdminPilot haptics call runs through `Bridge.push/3`; the hand-rolled `<script>` IIFE with no reply path is gone.
 - [ ] **HRDN-02**: Haptics respects the operating system's reduce-motion and haptics accessibility settings.
 - [ ] **HRDN-03**: The iOS share sheet cannot crash on iPad — a missing popover anchor is guarded rather than left to the OS.
 
@@ -77,10 +92,10 @@ must look right on day one, so they are generated and owned by the host, never i
 
 ### PROOF — the lanes
 
-- [ ] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade.
+- [x] **PROOF-01**: A merge-blocking browser route-tour lane proves fallbacks render, fail closed when undeclared, and never silently degrade. **(D-44's corrected wording.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID. **Non-claims (D-48):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
 - [ ] **PROOF-02**: `share` and `notification_token` move from advisory to merge-blocking proof posture.
 - [ ] **PROOF-03**: Menu behavior is proven from the committed `bridge_contract_vectors.json` on both natives without a simulator or emulator.
-- [ ] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
+- [x] **PROOF-04**: The catalog line ships as a merge-blocking structural test — a proposed control failing any of its six criteria fails CI.
 
 ## Future Requirements (deferred)
 
@@ -117,16 +132,16 @@ must look right on day one, so they are generated and owned by the host, never i
 | CACHE-02 | Phase 153.1 | Pending |
 | MIRROR-01 | Phase 153 | In Progress (153-01 done; live tag push is 153-02, human-gated) |
 | MIRROR-02 | Phase 153 | In Progress (153-01/153-03 done: transport, atomic push, and escalation land; merge-blocking parity gate + release-truth CLI split are 153-04) |
-| CTRL-01 | Phase 154 | Pending |
-| CTRL-02 | Phase 154 | Pending |
-| CTRL-03 | Phase 154 | Pending |
-| CTRL-04 | Phase 154 | Pending |
-| CTRL-05 | Phase 154 | Pending |
-| PROOF-04 | Phase 154 | Pending |
-| HRDN-01 | Phase 154 | Pending |
-| FALL-01 | Phase 155 | Pending |
-| FALL-02 | Phase 155 | Pending |
-| PROOF-01 | Phase 155 | Pending |
+| CTRL-01 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
+| CTRL-02 | Phase 154 | Complete — no human gate; closing checkpoint mechanized as 154-08 checks A–H |
+| CTRL-03 | Phase 154 | Complete — no human gate |
+| CTRL-04 | Phase 154 | Complete — no human gate; recipe followability executed by 154-08 check H |
+| CTRL-05 | Phase 154 | Complete — no human gate; doctor advisory actionability pinned by 154-08 check G |
+| PROOF-04 | Phase 154 | Complete — no human gate; check H drives the real raiser through the six-step recipe |
+| HRDN-01 | Phase 154 | Complete — no human gate; evidence panel asserted by 154-08 checks A–F in light and dark |
+| FALL-01 | Phase 155 | Complete |
+| FALL-02 | Phase 155 | Complete |
+| PROOF-01 | Phase 155 | Complete |
 | MENU-01 | Phase 156 | Pending |
 | MENU-02 | Phase 156 | Pending |
 | MENU-03 | Phase 156 | Pending |

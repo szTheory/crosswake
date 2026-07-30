@@ -60,9 +60,26 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
 
   @tag :rline_01
   test "classify/2 returns correct verdict for capability-axis change classes" do
-    native_cap = %Types.Capability{id: "test.native", version: "1.0", rebuild: :native_required}
-    companion_cap = %Types.Capability{id: "test.companion", version: "1.0", rebuild: :companion_required}
-    ota_cap = %Types.Capability{id: "test.ota", version: "1.0", rebuild: :none}
+    native_cap = %Types.Capability{
+      id: "test.native",
+      version: "1.0",
+      rebuild: :native_required,
+      interaction: :fire_and_forget
+    }
+
+    companion_cap = %Types.Capability{
+      id: "test.companion",
+      version: "1.0",
+      rebuild: :companion_required,
+      interaction: :fire_and_forget
+    }
+
+    ota_cap = %Types.Capability{
+      id: "test.ota",
+      version: "1.0",
+      rebuild: :none,
+      interaction: :fire_and_forget
+    }
 
     capability_axis_classes = [
       :capability_family_add,
@@ -140,18 +157,23 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
   end
 
   @tag :rline_02
-  test "canonical manifest compatibility.manifest_schema_version is 1.0.0" do
+  test "canonical manifest compatibility.manifest_schema_version is 1.1.0 (Phase 154 bump, D-55)" do
     # SupportMatrix.canonical/0 returns a %SupportMatrix{} (no :compatibility field).
     # The canonical compatibility record is Types.new_compatibility/0 — the same
     # source Manifest.Builder.build/3 uses when constructing the full manifest root.
+    #
+    # Bumped 1.0.0 -> 1.1.0 in Phase 154 (D-55): additive Capability.rebuild
+    # enforce-keys hardening plus the new Capability.interaction field. Native
+    # shells decode neither field, so this bump is compatibility-bump only,
+    # not rebuild-required.
     compat = Types.new_compatibility()
 
-    assert compat.manifest_schema_version == "1.0.0",
+    assert compat.manifest_schema_version == "1.1.0",
            ProofAssertions.stable_id_message(
              "proof.rline_02.manifest_schema_version",
              "manifest_schema_version",
              "Crosswake.Manifest.Types.new_compatibility/0 → manifest_schema_version",
-             "manifest_schema_version value differs from locked \"1.0.0\"",
+             "manifest_schema_version value differs from locked \"1.1.0\"",
              "lib/crosswake/manifest/types.ex",
              "bump manifest_schema_version only through a phase — NOT by editing the field value",
              :merge_blocking
@@ -172,14 +194,26 @@ defmodule Crosswake.Proof.Phase64RuntimeLinePolicyTest do
         # rebuild_required: true → classify must return {:rebuild_required, _}
         # Use a native_required capability as the representative — it always maps
         # to {:rebuild_required, :native_shell}, which satisfies rebuild_required: true.
-        native_cap = %Types.Capability{id: "test.native", version: "1.0", rebuild: :native_required}
+        native_cap = %Types.Capability{
+          id: "test.native",
+          version: "1.0",
+          rebuild: :native_required,
+          interaction: :fire_and_forget
+        }
+
         result = RebuildPolicy.classify(:capability_family_add, native_cap)
 
         assert match?({:rebuild_required, _}, result),
                "action_class #{entry.action_class} has rebuild_required: true but classify/2 returned #{inspect(result)} for a :native_required capability"
       else
         # rebuild_required: false → OTA-safe capability must map to :ota_safe
-        ota_cap = %Types.Capability{id: "test.ota", version: "1.0", rebuild: :none}
+        ota_cap = %Types.Capability{
+          id: "test.ota",
+          version: "1.0",
+          rebuild: :none,
+          interaction: :fire_and_forget
+        }
+
         result = RebuildPolicy.classify(:capability_family_add, ota_cap)
 
         assert result == :ota_safe,

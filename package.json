@@ -1,0 +1,14 @@
+{
+  "name": "crosswake",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Private, dependency-free repo-root manifest. It exists ONLY so bare-specifier and local-path resolution work for the Node built-in test runner (and for adopters wiring priv/static/crosswake.esm.js through a bundler). Nothing here is published: publishing the hook to a second package registry would open a second version axis and reproduce the documented client/native drift failure the library-owned choice exists to avoid (D-30, D-31). It is deliberately NOT in mix.exs's hex files allowlist.",
+  "license": "MIT",
+  "exports": {
+    "./bridge-hook": "./priv/static/crosswake.esm.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/js/*.mjs\""
+  }
+}

@@ -327,4 +327,33 @@ defmodule Crosswake.TelemetryTest do
       assert :ip in baseline
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Phase 154 Plan 04: the 5-event bridge catalog (D-22, Task 2)
+  #
+  # events/0 derives its :active tier at runtime with zero hardcoded catalogs
+  # elsewhere (D-05) — this test proves the auto-derivation mechanism scales to a
+  # brand-new subsystem (Crosswake.Bridge) without any special-casing in
+  # attach_default_logger/1 or the merge-blocking phase133 contract test, both of
+  # which already derive their event name lists from events/0 at call time.
+  # ---------------------------------------------------------------------------
+
+  describe "Phase 154 bridge telemetry catalog (D-22)" do
+    test "events/0's :active tier includes exactly the 5 bridge events (push, reply, dropped, hook_ack, hook_missing)" do
+      bridge_events =
+        Crosswake.Telemetry.events()
+        |> Enum.filter(fn e -> match?([:crosswake, :bridge | _], e.event) and e.tier == :active end)
+
+      bridge_suffixes = Enum.map(bridge_events, fn %{event: [:crosswake, :bridge, suffix]} -> suffix end)
+
+      assert Enum.sort(bridge_suffixes) == Enum.sort([:push, :reply, :dropped, :hook_ack, :hook_missing]),
+             "expected exactly the 5 Phase 154 bridge events in events/0; got #{inspect(bridge_suffixes)}"
+
+      for entry <- bridge_events do
+        assert is_binary(entry.description) and entry.description != ""
+        assert is_list(entry.measurements) and entry.measurements != []
+        assert is_list(entry.metadata) and entry.metadata != []
+      end
+    end
+  end
 end

@@ -47,14 +47,12 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     page_content = EEx.eval_file(page_template, web_module: web_module)
     js_content = EEx.eval_file(js_template, web_module: web_module)
 
-    tokens_css_dest = Path.join([dir, "priv", "static", "assets", "tokens.css"])
     offline_css_dest = Path.join([dir, "priv", "static", "assets", "offline.css"])
 
     ensure_file(controller_dest, controller_content)
     ensure_file(root_layout_dest, root_layout_content)
     ensure_file(page_dest, page_content)
     ensure_file(js_dest, js_content)
-    ensure_file(tokens_css_dest, File.read!(get_tokens_css_path()))
     ensure_file(offline_css_dest, File.read!(get_offline_css_path()))
 
     Mix.shell().info("""
@@ -64,10 +62,14 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
     1. Mount the OfflineController in your router (typically in your main browser pipeline):
        get "/offline", #{app_module}Web.OfflineController, :index
 
-    2. The generator has copied tokens.css and offline.css into priv/static/assets/.
-       These files are host-owned and editable. Re-running the generator will NOT
-       update them (no-clobber). To pick up upstream token or style changes,
-       delete the files and re-run: mix crosswake.gen.offline_ui
+    2. The generator has copied offline.css into priv/static/assets/. This file is
+       host-owned and editable. Re-running the generator will NOT update it
+       (no-clobber). To pick up upstream style changes, delete the file and
+       re-run: mix crosswake.gen.offline_ui
+
+       tokens.css is NOT copied — it is served directly by Crosswake at
+       /crosswake/tokens.css once `mix crosswake.install` has patched your
+       endpoint. The generated layout already links that URL.
 
     3. If your host bundles JavaScript, configure esbuild to include offline.js
        as a separate entry point:
@@ -82,15 +84,6 @@ defmodule Mix.Tasks.Crosswake.Gen.OfflineUi do
       path
     else
       Path.join(File.cwd!(), "priv/templates/crosswake/offline_ui/#{filename}")
-    end
-  end
-
-  defp get_tokens_css_path do
-    path = Application.app_dir(:crosswake, "priv/static/crosswake/tokens.css")
-    if File.exists?(path) do
-      path
-    else
-      Path.join(File.cwd!(), "priv/static/crosswake/tokens.css")
     end
   end
 

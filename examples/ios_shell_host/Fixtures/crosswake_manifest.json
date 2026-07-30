@@ -6,6 +6,7 @@
       "family": "app_info",
       "guide": "guides/bridge.md#bounded-bridge",
       "id": "app_info",
+      "interaction": "device-answer",
       "legacy_ids": [
         "app.info.get"
       ],
@@ -26,10 +27,8 @@
       "family": "media_capture",
       "guide": "guides/native_shell.md#native-capture-escape-hatch",
       "id": "camera",
-      "legacy_ids": [
-        "camera",
-        "camera.capture"
-      ],
+      "interaction": "user-answer",
+      "legacy_ids": [],
       "owner": "native_screen",
       "package_class": "companion",
       "prerequisites": [
@@ -47,6 +46,7 @@
       "family": "deep_link",
       "guide": "guides/native_shell.md#manifest-first-activation",
       "id": "deep_link",
+      "interaction": "fire-and-forget",
       "legacy_ids": [],
       "owner": "activation",
       "package_class": "core",
@@ -66,6 +66,7 @@
       "family": "document_scan",
       "guide": "guides/capabilities.md#explicit-defers",
       "id": "document_scan",
+      "interaction": "user-answer",
       "legacy_ids": [],
       "owner": "native_screen",
       "package_class": "defer",
@@ -84,6 +85,7 @@
       "family": "entitlement_snapshot",
       "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
       "id": "entitlement_snapshot",
+      "interaction": "device-answer",
       "legacy_ids": [],
       "owner": "backend_seam",
       "package_class": "core",
@@ -102,6 +104,7 @@
       "family": "file_picker",
       "guide": "guides/capabilities.md#bounded-bridge",
       "id": "file_picker",
+      "interaction": "user-answer",
       "legacy_ids": [
         "files.pick"
       ],
@@ -124,26 +127,7 @@
       "family": "haptics",
       "guide": "guides/bridge.md#bounded-bridge",
       "id": "haptics",
-      "legacy_ids": [
-        "haptics.impact"
-      ],
-      "owner": "bounded_bridge",
-      "package_class": "core",
-      "prerequisites": [
-        "declared route capability",
-        "bounded bridge support"
-      ],
-      "proof_class": "merge-blocking",
-      "rebuild": "none",
-      "status": "supported",
-      "version": "1.0.0"
-    },
-    "haptics.impact": {
-      "denial": "undeclared_capability",
-      "fallback": "Phoenix route continues without native confirmation feedback",
-      "family": "haptics",
-      "guide": "guides/bridge.md#bounded-bridge",
-      "id": "haptics.impact",
+      "interaction": "fire-and-forget",
       "legacy_ids": [
         "haptics.impact"
       ],
@@ -164,6 +148,7 @@
       "family": "media_capture",
       "guide": "guides/native_shell.md#native-capture-escape-hatch",
       "id": "media_capture",
+      "interaction": "user-answer",
       "legacy_ids": [
         "camera",
         "camera.capture"
@@ -185,6 +170,7 @@
       "family": "notification_token",
       "guide": "guides/capabilities.md#bounded-bridge",
       "id": "notification_token",
+      "interaction": "device-answer",
       "legacy_ids": [
         "push.notifications"
       ],
@@ -207,6 +193,7 @@
       "family": "paywall_entry",
       "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
       "id": "paywall_entry",
+      "interaction": "fire-and-forget",
       "legacy_ids": [],
       "owner": "backend_seam",
       "package_class": "core",
@@ -225,6 +212,7 @@
       "family": "permissions.status",
       "guide": "guides/capabilities.md#bounded-bridge",
       "id": "permissions.status",
+      "interaction": "device-answer",
       "legacy_ids": [],
       "owner": "bounded_bridge",
       "package_class": "core",
@@ -244,6 +232,7 @@
       "family": "purchase_intent",
       "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
       "id": "purchase_intent",
+      "interaction": "user-answer",
       "legacy_ids": [],
       "owner": "backend_seam",
       "package_class": "core",
@@ -262,6 +251,7 @@
       "family": "reconciliation_evidence",
       "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
       "id": "reconciliation_evidence",
+      "interaction": "device-answer",
       "legacy_ids": [],
       "owner": "backend_seam",
       "package_class": "core",
@@ -280,6 +270,7 @@
       "family": "restore_intent",
       "guide": "guides/capabilities.md#backend-seams-and-deferred-surfaces",
       "id": "restore_intent",
+      "interaction": "user-answer",
       "legacy_ids": [],
       "owner": "backend_seam",
       "package_class": "core",
@@ -298,6 +289,7 @@
       "family": "scanner",
       "guide": "guides/capabilities.md#explicit-defers",
       "id": "scanner",
+      "interaction": "user-answer",
       "legacy_ids": [],
       "owner": "native_screen",
       "package_class": "defer",
@@ -316,6 +308,7 @@
       "family": "share",
       "guide": "guides/capabilities.md#bounded-bridge",
       "id": "share",
+      "interaction": "fire-and-forget",
       "legacy_ids": [],
       "owner": "bounded_bridge",
       "package_class": "core",
@@ -348,7 +341,7 @@
   },
   "compatibility": {
     "bridge_protocol_version": "1.1.0",
-    "manifest_schema_version": "1.0.0",
+    "manifest_schema_version": "1.1.0",
     "native_runtime_version": "1.0.0",
     "remote_updates": [
       "versioned_replacement",
@@ -372,7 +365,7 @@
     "origin": "https://example.crosswake.invalid",
     "phoenix_version": "~> 1.8"
   },
-  "manifest_schema_version": "1.0.0",
+  "manifest_schema_version": "1.1.0",
   "pack_registry": {
     "camera_capture_assets@1.0.0": {
       "id": "camera_capture_assets",
@@ -671,7 +664,7 @@
       ],
       "cache_contract": null,
       "capabilities": [
-        "haptics.impact"
+        "haptics"
       ],
       "commerce": null,
       "entry": "external",

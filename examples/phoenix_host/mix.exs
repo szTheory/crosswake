@@ -90,7 +90,14 @@ defmodule CrosswakeExample.MixProject do
       {:jason, "~> 1.4"},
       {:ecto_sql, "~> 3.10"},
       {:ecto_sqlite3, "~> 0.16"},
-      {:bandit, "~> 1.0"}
+      {:bandit, "~> 1.0"},
+      # Phase 154 (HRDN-01): the showcase LiveView tests became real
+      # Phoenix.LiveViewTest round trips, because Crosswake.Bridge.push/3 has a mount
+      # contract a hand-built %Phoenix.LiveView.Socket{} cannot satisfy. This is
+      # phoenix_live_view's own optional dependency — its installed runtime raises
+      # naming this exact package when it is absent. Root mix.exs carries it for the
+      # same reason.
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 end

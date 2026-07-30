@@ -153,6 +153,12 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
+    phase_154_findings =
+      legacy_capability_id_findings(manifest) ++
+        capability_rebuild_findings(manifest) ++
+        bridge_hook_wiring_findings(cwd, opts)
+
+    phase_155_findings = native_controls_ui_findings(cwd)
     publish_readiness = publish_readiness(manifest, opts, cwd)
 
     publish_findings =
@@ -172,6 +178,8 @@ defmodule Crosswake.Doctor do
         phase_95_findings ++
         phase_65_findings ++
         phase_66_findings ++
+        phase_154_findings ++
+        phase_155_findings ++
         publish_findings
 
     %Report{
@@ -1953,6 +1961,311 @@ defmodule Crosswake.Doctor do
       hint: hint,
       details: details
     }
+  end
+
+  # D-58/D-59/D-63: names every route capability declaration that uses a
+  # legacy (dotted-command) id instead of the family id, at advisory
+  # severity only — the legacy declaration keeps authorizing forever, so
+  # this can never fail doctor's exit code.
+  #
+  # This lives here, not as a compile-time deprecation warning, because a
+  # compile-time warning is mechanically impossible where it would matter:
+  # Crosswake.Router's macros only stash route metadata (no validation runs
+  # at router macro-expansion time), Policy.Validator never runs at router
+  # expansion either, and Compiler.emit_warnings/2 is gated behind a flag
+  # that only test support passes. The compiled manifest, read here, is the
+  # only point in the pipeline where "this route declared a legacy id" is
+  # knowable — so doctor's advisory finding is the only honest surface for
+  # this nudge (D-59). Do not "improve" this into a compile-time warning —
+  # there is no hook to attach one to.
+  defp legacy_capability_id_findings(nil), do: []
+
+  defp legacy_capability_id_findings(manifest) do
+    family_id_by_legacy_id =
+      manifest.capability_registry
+      |> Map.values()
+      |> Enum.flat_map(fn capability ->
+        Enum.map(capability.legacy_ids, &{&1, capability.id})
+      end)
+      |> Map.new()
+
+    manifest.routes
+    |> Map.values()
+    |> Enum.flat_map(fn route ->
+      route.capabilities
+      |> Enum.filter(&Map.has_key?(family_id_by_legacy_id, &1))
+      |> Enum.map(&legacy_capability_id_finding(route, &1, family_id_by_legacy_id))
+    end)
+  end
+
+  # D-49: the one genuinely missing CTRL-05 leg — doctor had no capability-level
+  # rebuild finding at all (capability_posture_findings/1 groups by proof_class
+  # only, and native_rebuild_findings/2 is fed exclusively by commerce
+  # corridors). A developer with a rebuild: :native_required or
+  # :companion_required capability declared on a route now gets named rebuild
+  # guidance, mirroring native_rebuild_findings/2's exact
+  # check(:warning, code, subject, message, hint, details) shape (no new
+  # aggregation mechanism).
+  #
+  # Scoped to capabilities that are BOTH non-:none rebuild AND declared on at
+  # least one route in the compiled manifest — a capability the developer has
+  # not actually taken on gets no warning. Ordering is deterministic (sorted by
+  # capability id, then route id) so repeated runs over the same manifest
+  # produce identically ordered findings.
+  defp capability_rebuild_findings(nil), do: []
+
+  defp capability_rebuild_findings(manifest) do
+    routes = Map.values(manifest.routes)
+
+    manifest.capability_registry
+    |> Map.values()
+    |> Enum.filter(&(&1.rebuild != :none))
+    |> Enum.sort_by(& &1.id)
+    |> Enum.flat_map(fn capability ->
+      routes
+      |> Enum.filter(&(capability.id in &1.capabilities))
+      |> Enum.sort_by(& &1.id)
+      |> Enum.map(&capability_rebuild_finding(&1, capability))
+    end)
+  end
+
+  defp capability_rebuild_finding(route, capability) do
+    check(
+      :warning,
+      "bridge.capability.native_rebuild_required",
+      "route:#{route.id}",
+      "route #{route.id} declares capability #{capability.id}, which requires a #{rebuild_shell_label(capability.rebuild)} rebuild before this control ships",
+      capability_rebuild_hint(capability.rebuild),
+      %{
+        route_id: route.id,
+        capability_id: capability.id,
+        rebuild: Atom.to_string(capability.rebuild)
+      }
+    )
+  end
+
+  defp rebuild_shell_label(:native_required), do: "native"
+  defp rebuild_shell_label(:companion_required), do: "companion"
+
+  defp capability_rebuild_hint(:native_required) do
+    "rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild"
+  end
+
+  defp capability_rebuild_hint(:companion_required) do
+    "publish or upgrade the companion package that backs this capability — this does not require a native shell rebuild"
+  end
+
+  defp legacy_capability_id_finding(route, legacy_id, family_id_by_legacy_id) do
+    family_id = Map.fetch!(family_id_by_legacy_id, legacy_id)
+
+    check(
+      :warning,
+      "capability.legacy_capability_id",
+      "route:#{route.id}",
+      "route #{route.id} declares the legacy capability id #{inspect(legacy_id)}; the family id #{inspect(family_id)} is the vocabulary Crosswake teaches going forward",
+      "declare capabilities: [#{inspect(family_id)}] in route policy instead of #{inspect(legacy_id)} — the legacy id keeps authorizing indefinitely (no compile-time warning, no removal); this finding is advisory only and never fails doctor",
+      %{
+        route_id: route.id,
+        legacy_capability_id: legacy_id,
+        family_capability_id: family_id
+      }
+    )
+  end
+
+  # D-37: the bridge hook's install-time wiring check.
+  #
+  # BEST-EFFORT AND ADVISORY, ALWAYS. This is a host-file grep, mirroring
+  # `phase_66_generator_drift_findings/3`'s technique, and it must NEVER be treated as
+  # authoritative: it cannot see a hook registered through a bundler alias, a hook
+  # element rendered by a dependency, or a layout assembled at runtime. The
+  # authoritative detector is the runtime ack deadline in `Crosswake.Bridge` — the
+  # server arms it on every push and it fires `:hook_not_wired` when no ack arrives.
+  # This finding exists only so an adopter learns about the mistake at `mix
+  # crosswake.doctor` time instead of at first-push time. Do not raise its severity,
+  # and do not make anything depend on its absence.
+  #
+  # It searches BOTH the host's assets tree AND its HEEx templates. An assets-only
+  # grep would false-negative against this repository's own reference host, which has
+  # no bundler at all: its layout imports the hook from a bare `<script type="module">`
+  # and carries the hook element inline in a `.heex`-shaped template.
+  @bridge_hook_asset_globs ["assets/**/*.js", "assets/**/*.mjs", "assets/**/*.ts"]
+  @bridge_hook_template_globs ["lib/**/*.heex", "lib/**/*.ex", "lib/**/*.eex"]
+  @bridge_hook_ejected_globs ["priv/static/**/crosswake.esm.js", "assets/**/crosswake.esm.js"]
+  @bridge_hook_stamp_regex ~r/crosswake:bridge-hook:ejected\s+protocol=(\d+\.\d+\.\d+)/
+
+  @spec bridge_hook_wiring_findings(String.t(), keyword()) :: [Check.t()]
+  def bridge_hook_wiring_findings(cwd, opts \\ []) do
+    hook_name = Crosswake.Install.Patcher.hook_name()
+
+    assets = expand_globs(cwd, @bridge_hook_asset_globs)
+    templates = expand_globs(cwd, @bridge_hook_template_globs)
+
+    wired? =
+      Enum.any?(assets ++ templates, fn path ->
+        case File.read(path) do
+          {:ok, contents} -> String.contains?(contents, hook_name)
+          _unreadable -> false
+        end
+      end)
+
+    wiring =
+      if wired? or Keyword.get(opts, :skip_bridge_hook_wiring_check?) == true do
+        []
+      else
+        [
+          check(
+            :advisory,
+            "bridge.hook.not_wired",
+            "bridge_hook",
+            "no #{inspect(hook_name)} hook reference was found in this host's assets tree or its HEEx templates",
+            "import the hook from #{Crosswake.Install.Patcher.hook_url()}, register it in your socket's hooks map, and put one `phx-hook=\"#{hook_name}\"` element on the page — run `mix crosswake.gen.bridge_hook` for the exact fragments. This check is a best-effort grep and is never authoritative; the runtime ack deadline is.",
+            %{
+              searched_assets: length(assets),
+              searched_templates: length(templates),
+              authoritative: false
+            }
+          )
+        ]
+      end
+
+    wiring ++ ejected_hook_stamp_findings(cwd)
+  end
+
+  # T-154-26: an ejected host-owned copy silently ages out of the protocol it speaks.
+  # The stamp is the only thing that makes that drift detectable.
+  defp ejected_hook_stamp_findings(cwd) do
+    current = Contract.version()
+
+    cwd
+    |> expand_globs(@bridge_hook_ejected_globs)
+    |> Enum.flat_map(fn path ->
+      with {:ok, contents} <- File.read(path),
+           [_full, stamped] <- Regex.run(@bridge_hook_stamp_regex, contents),
+           true <- stamped != current do
+        [
+          check(
+            :warning,
+            "bridge.hook.ejected_protocol_drift",
+            "bridge_hook",
+            "the ejected bridge hook at #{Path.relative_to(path, cwd)} is stamped protocol #{stamped}, but this Crosswake speaks #{current}",
+            "re-eject the hook (delete the file, then `mix crosswake.gen.bridge_hook --eject`) or drop the host-owned copy and use the library-owned file — an ejected copy that has fallen behind the protocol drifts silently",
+            %{
+              path: Path.relative_to(path, cwd),
+              stamped_protocol_version: stamped,
+              contract_version: current
+            }
+          )
+        ]
+      else
+        _no_drift -> []
+      end
+    end)
+  end
+
+  defp expand_globs(cwd, globs) do
+    Enum.flat_map(globs, fn glob -> Path.wildcard(Path.join(cwd, glob)) end)
+  end
+
+  # Phase 155 D-40: two findings for `mix crosswake.gen.native_controls_ui`'s
+  # generated, host-owned files, neither of which may overclaim what it
+  # inspected.
+  #
+  # Finding 1 — stamp drift (`native_controls_ui.stamp_drift`, :warning). This
+  # is a pure version-integer comparison, directly modeled on
+  # `ejected_hook_stamp_findings/1`: it reads the `template_version=` integer
+  # out of the file's own stamp header and compares it against the
+  # generator's current `template_version/0`. It inspects NOTHING about the
+  # body of the file below the stamp — it cannot and must not assert that the
+  # adopter's edits are still correct. There is no `--force` and never will
+  # be, so the remediation never suggests regenerating over the adopter's
+  # changes.
+  @native_controls_ui_component_globs ["lib/**/components/crosswake_fallbacks.ex"]
+  @native_controls_ui_stylesheet_globs ["priv/static/assets/crosswake_fallback.css"]
+  @native_controls_ui_stamp_regex ~r/crosswake:native-controls-ui\s+template_version=(\d+)/
+  @native_controls_ui_module_regex ~r/defmodule\s+([\w.]+)\s+do/
+
+  @spec native_controls_ui_findings(String.t()) :: [Check.t()]
+  def native_controls_ui_findings(cwd) do
+    native_controls_ui_stamp_findings(cwd) ++ native_controls_ui_wiring_findings(cwd)
+  end
+
+  defp native_controls_ui_stamp_findings(cwd) do
+    current = Mix.Tasks.Crosswake.Gen.NativeControlsUi.template_version()
+
+    cwd
+    |> expand_globs(@native_controls_ui_component_globs ++ @native_controls_ui_stylesheet_globs)
+    |> Enum.flat_map(fn path ->
+      with {:ok, contents} <- File.read(path),
+           [_full, stamped_str] <- Regex.run(@native_controls_ui_stamp_regex, contents),
+           {stamped, ""} <- Integer.parse(stamped_str),
+           true <- stamped < current do
+        [
+          check(
+            :warning,
+            "native_controls_ui.stamp_drift",
+            "native_controls_ui",
+            "#{Path.relative_to(path, cwd)} is stamped template_version=#{stamped}, but this Crosswake ships template_version=#{current}",
+            "this finding compares a version integer only — it reads no content and cannot know whether your edits to #{Path.relative_to(path, cwd)} are still correct. There is no --force and never will be: read the template changes between version #{stamped} and #{current}, apply by hand the ones you want, then update the `template_version=` integer in the file's own stamp header.",
+            %{
+              path: Path.relative_to(path, cwd),
+              stamped_template_version: stamped,
+              current_template_version: current
+            }
+          )
+        ]
+      else
+        _no_drift -> []
+      end
+    end)
+  end
+
+  # Finding 2 — fallback wiring (`native_controls_ui.wiring`, :advisory). A
+  # best-effort grep over the host's `lib/**/*.ex` for a reference to the
+  # generated module name, mirroring `bridge_hook_wiring_findings/2`'s
+  # technique and its advisory discipline: this is a grep, it can be wrong
+  # (a reference through an alias, a macro-injected import, or a template
+  # compiled elsewhere would all false-negative), so it can NEVER change
+  # doctor's exit code. The message says "could not find", never "is not
+  # wired" — it does not claim to have proven absence.
+  defp native_controls_ui_wiring_findings(cwd) do
+    cwd
+    |> expand_globs(@native_controls_ui_component_globs)
+    |> Enum.flat_map(fn component_path ->
+      with {:ok, contents} <- File.read(component_path),
+           [_full, module_name] <- Regex.run(@native_controls_ui_module_regex, contents) do
+        native_controls_ui_wiring_finding(cwd, component_path, module_name)
+      else
+        _unparseable -> []
+      end
+    end)
+  end
+
+  defp native_controls_ui_wiring_finding(cwd, component_path, module_name) do
+    referenced? =
+      cwd
+      |> expand_globs(["lib/**/*.ex"])
+      |> Enum.reject(&(&1 == component_path))
+      |> Enum.any?(fn path ->
+        case File.read(path) do
+          {:ok, source} -> String.contains?(source, module_name)
+          _unreadable -> false
+        end
+      end)
+
+    if referenced? do
+      []
+    else
+      [
+        check(
+          :advisory,
+          "native_controls_ui.wiring",
+          "native_controls_ui",
+          "could not find a reference to #{module_name} anywhere else in this host's lib/**/*.ex",
+          "wire the generated component into a LiveView (for example `<.confirm_modal .../>` from #{module_name}) — this check is a best-effort grep over source text and is never authoritative; it cannot see a reference through an alias, a macro-injected import, or a module used only from a template compiled elsewhere.",
+          %{path: Path.relative_to(component_path, cwd), module: module_name, authoritative: false}
+        )
+      ]
+    end
   end
 
   defp phase_66_generator_drift_findings(nil, _cwd, _opts), do: []

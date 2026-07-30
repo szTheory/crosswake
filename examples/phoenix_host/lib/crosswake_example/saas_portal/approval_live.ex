@@ -1,29 +1,61 @@
 defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   use Phoenix.LiveView
 
+  alias Crosswake.Bridge
+  alias CrosswakeExample.Crosswake.Policy
+  alias CrosswakeExample.Layouts
   alias CrosswakeExample.PageTitle
   alias CrosswakeExample.SaaSPortal.Approvals
   alias CrosswakeExample.SaaSPortal.Components
   alias CrosswakeExample.SaaSPortal.Diagnostics
+  alias CrosswakeExampleWeb.CrosswakeFallbacks
+  alias Phoenix.LiveView.JS
 
-  @bridge_capability_version "1.0.0"
-  @bridge_protocol "crosswake.bridge"
   @bridge_route_id "saas-approval"
-  @shell_origin "https://example.crosswake.invalid"
+
+  # The capability family as this route DECLARES it in router policy. The wire command
+  # it resolves to (`haptics.impact`) is the library's business, never restated here —
+  # restating it is how a hand-built envelope drifts from the manifest.
+  @haptics_family "haptics"
+  @haptics_ref :approval_haptics
+
+  # Phase 155 Plan 06 (FALL-01) — the frozen `actions` shape (D-53):
+  # [%{id, label, destructive, icon}], `icon` reserved and never rendered.
+  # Deliberately three rows: one selectable neutral action, one disabled row
+  # carrying its reason inline (id: nil, per action_menu/1's docs), and one
+  # destructive row that always routes through the destructive confirm tone.
+  @native_controls_menu_actions [
+    %{id: "flag", label: "Flag for review", destructive: false, icon: nil},
+    %{id: nil, label: "Reassign job — needs a supervisor", destructive: false, icon: nil},
+    %{id: "delete", label: "Delete job", destructive: true, icon: nil}
+  ]
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     assign(socket,
-       page_title: PageTitle.admin("Approval Detail"),
-       approval: nil,
-       activity_events: [],
-       approval_notice: nil,
-       approval_error: nil,
-       bridge_request: nil,
-       diagnostics_rows: Diagnostics.route_policy_rows(),
-       diagnostics_links: Diagnostics.guide_links()
-     )}
+    socket =
+      socket
+      |> assign(
+        page_title: PageTitle.admin("Approval Detail"),
+        approval: nil,
+        activity_events: [],
+        approval_notice: nil,
+        approval_error: nil,
+        bridge_dispatch: nil,
+        bridge_reply: nil,
+        crosswake_manifest: Policy.manifest(),
+        crosswake_route_id: @bridge_route_id,
+        diagnostics_rows: Diagnostics.route_policy_rows(),
+        diagnostics_links: Diagnostics.guide_links(),
+        confirm_open: false,
+        destructive_confirm_open: false,
+        confirm_demo_notice: nil,
+        confirm_error: nil,
+        menu_open: false,
+        menu_actions: @native_controls_menu_actions
+      )
+      |> Bridge.attach()
+
+    {:ok, socket}
   end
 
   @impl true
@@ -46,15 +78,23 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
            haptics: "post_success_optional"
          }) do
       {:ok, approved} ->
-        {:noreply,
-         assign(socket,
-           approval: approved,
-           activity_events: activity_for_display(approved.id),
-           approval_notice:
-             "Phoenix recorded the decision for #{approved.title}. Haptics is optional confirmation only.",
-           approval_error: nil,
-           bridge_request: haptics_request(approved.id)
-         )}
+        # Phase 149 D-07/D-12 hold unchanged: the dispatch happens INSIDE the committed
+        # branch, after the AdminPilot context has already recorded the decision, and it
+        # is confirmation only. What changed is that the shell's answer — including a
+        # refusal — is now rendered instead of merely implied.
+        socket =
+          socket
+          |> assign(
+            approval: approved,
+            activity_events: activity_for_display(approved.id),
+            approval_notice:
+              "Phoenix recorded the decision for #{approved.title}. Haptics is optional confirmation only.",
+            approval_error: nil,
+            bridge_reply: nil
+          )
+          |> Bridge.push(@haptics_family, ref: @haptics_ref, payload: %{"style" => "light"})
+
+        {:noreply, assign(socket, bridge_dispatch: Bridge.dispatched(socket, @haptics_ref))}
 
       {:error, :forbidden} ->
         {:noreply,
@@ -62,9 +102,95 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
            approval_notice: nil,
            approval_error:
              "Approver role required. Phoenix kept the request unchanged at the server boundary.",
-           bridge_request: nil
+           bridge_dispatch: nil,
+           bridge_reply: nil
          )}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Native-controls fallback (Phase 155 FALL-01/PROOF-01) — generated,
+  # host-owned components. This is additive: it demonstrates the generated
+  # confirm_modal/1 (both tones), action_menu/1, and fallback_alert/1 on
+  # their own triggers and does not alter the "approve" handle_event above,
+  # which Phase 154's evidence-panel proof is pinned to.
+  #
+  # Event names are fixed and shared across both surfaces (D-06):
+  # crosswake_fallback_answer disambiguates by payload shape — %{"answer" =>
+  # "confirm"} for either confirm_modal instance (dispatched below by which
+  # `_open` assign is currently true, since only one is ever open at a time),
+  # %{"id" => id} for an action_menu row selection. crosswake_fallback_dismiss
+  # is shared verbatim and closes whichever surface is open.
+  # ---------------------------------------------------------------------------
+
+  def handle_event("open_confirm_demo", _params, socket) do
+    # Phase 155 Plan 07 (D-47) — PROOF-01's mutation control. When set, ONLY the
+    # visibility assign is forced false; nothing else changes (no exception, no
+    # altered copy, no altered denial-vocabulary enumeration). This is the control
+    # that proves A1 can go red while A3 stays green — without it, "A1 passes"
+    # carries no information. Example-host only; never referenced under lib/.
+    {:noreply,
+     assign(socket,
+       confirm_open: not proof_break_fallback?(),
+       confirm_demo_notice: nil,
+       confirm_error: nil
+     )}
+  end
+
+  def handle_event("open_action_menu", _params, socket) do
+    {:noreply, assign(socket, menu_open: true, confirm_demo_notice: nil, confirm_error: nil)}
+  end
+
+  def handle_event("crosswake_fallback_answer", %{"id" => id}, socket) do
+    case Enum.find(socket.assigns.menu_actions, &(&1.id == id)) do
+      %{destructive: true} ->
+        # The destructive row never emits a mutation directly — it opens the
+        # destructive confirm tone, which is the only path to the mutation.
+        {:noreply, assign(socket, menu_open: false, destructive_confirm_open: true)}
+
+      %{destructive: false} ->
+        {:noreply,
+         assign(socket,
+           menu_open: false,
+           confirm_demo_notice: "Flagged for review.",
+           confirm_error: nil
+         )}
+
+      nil ->
+        {:noreply, assign(socket, menu_open: false)}
+    end
+  end
+
+  def handle_event("crosswake_fallback_answer", %{"answer" => "confirm"}, socket) do
+    if socket.assigns.destructive_confirm_open do
+      {:noreply,
+       assign(socket,
+         destructive_confirm_open: false,
+         confirm_demo_notice: "Deleted. The job and its photos are gone.",
+         confirm_error: nil
+       )}
+    else
+      {:noreply,
+       assign(socket,
+         confirm_open: false,
+         confirm_demo_notice: "Approved. The requester was notified.",
+         confirm_error: nil
+       )}
+    end
+  end
+
+  def handle_event("crosswake_fallback_dismiss", _params, socket) do
+    {:noreply,
+     assign(socket, confirm_open: false, destructive_confirm_open: false, menu_open: false)}
+  end
+
+  def handle_event("crosswake_fallback_answer", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:crosswake_bridge, @haptics_ref, %Bridge.Reply{} = reply}, socket) do
+    {:noreply, assign(socket, bridge_reply: reply)}
   end
 
   @impl true
@@ -138,23 +264,103 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
         <Components.activity_feed activities={@activity_events} />
       </section>
 
-      <section :if={@approval} class="adminpilot-panel">
+      <section
+        :if={@approval}
+        class="adminpilot-panel"
+        id="haptics-evidence"
+        data-cw-envelope={Jason.encode!(haptics_evidence(@bridge_dispatch, @bridge_reply))}
+      >
         <h2>Optional haptics</h2>
         <p>
-          The route declares <code>haptics.impact</code> as a bounded, low-frequency confirmation.
+          The route declares <code>haptics</code> as a bounded, low-frequency confirmation.
           Approval success does not depend on <code>window.webkit</code> or
           <code>window.crosswakeBridge</code>.
         </p>
-        <dl :if={@bridge_request}>
-          <dt>Command</dt>
-          <dd>{@bridge_request["command"]}</dd>
-          <dt>Capability</dt>
-          <dd>{@bridge_request["capability"]}</dd>
+
+        <p :if={@bridge_dispatch == nil}>
+          No haptics request sent. Phoenix sends one only after an approval commits.
+        </p>
+
+        <dl :if={@bridge_dispatch}>
+          <dt>Capability (route policy)</dt>
+          <dd>{@bridge_dispatch["capability"]}</dd>
+          <dt>Command (wire protocol)</dt>
+          <dd>{@bridge_dispatch["command"]}</dd>
           <dt>Route</dt>
-          <dd>{@bridge_request["route_id"]}</dd>
-          <dt>Correlation</dt>
-          <dd>{@bridge_request["correlation_id"]}</dd>
+          <dd>{@bridge_dispatch["route_id"]}</dd>
+          <dt>Impact style</dt>
+          <dd>{get_in(@bridge_dispatch, ["payload", "style"])}</dd>
         </dl>
+
+        <p :if={@bridge_dispatch} id="haptics-reply" role="status" aria-live="polite" aria-atomic="true">
+          <strong>{reply_verdict(@bridge_reply)}</strong>
+          {reply_detail(@bridge_reply)}
+        </p>
+      </section>
+
+      <section :if={@approval} class="adminpilot-panel" id="native-controls-fallback">
+        <h2>Native controls fallback</h2>
+        <p id="native-controls-fallback-catalog-sentence">
+          {catalog_sentence()} This generated, host-owned
+          confirm modal (<code>mix crosswake.gen.native_controls_ui</code>) is the permanent
+          surface for that job on every platform.
+        </p>
+
+        <button
+          type="button"
+          id="native-controls-confirm-trigger"
+          class="btn-secondary"
+          phx-click={JS.push("open_confirm_demo") |> JS.push_focus()}
+        >
+          Preview the confirm fallback
+        </button>
+
+        <p :if={@confirm_demo_notice} role="status">
+          <strong>{@confirm_demo_notice}</strong>
+        </p>
+
+        <CrosswakeFallbacks.confirm_modal
+          id="native-controls-confirm-demo"
+          open={@confirm_open}
+          title="Approve this request?"
+          body="The requester is notified and the decision is recorded."
+          confirm_label="Approve request"
+          error={@confirm_error}
+        />
+
+        <p>
+          The action menu below is a real fallback, but it pushes nothing in this phase — the
+          destructive row always routes through the destructive confirm tone first, never
+          straight to a mutation.
+        </p>
+
+        <button
+          type="button"
+          id="native-controls-menu-trigger"
+          class="btn-secondary"
+          aria-expanded={@menu_open}
+          aria-controls="native-controls-menu-demo"
+          phx-click="open_action_menu"
+        >
+          Job actions
+        </button>
+
+        <CrosswakeFallbacks.action_menu
+          id="native-controls-menu-demo"
+          trigger_id="native-controls-menu-trigger"
+          open={@menu_open}
+          actions={@menu_actions}
+        />
+
+        <CrosswakeFallbacks.confirm_modal
+          id="native-controls-destructive-demo"
+          tone={:destructive}
+          open={@destructive_confirm_open}
+          title="Delete this job?"
+          body="This removes the job and its 3 photos. It cannot be undone."
+          confirm_label="Delete job"
+          error={@confirm_error}
+        />
       </section>
 
       <Components.diagnostics_panel
@@ -163,11 +369,27 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
         guide_links={@diagnostics_links}
       />
 
-      <script :if={@bridge_request} id="crosswake-approval-haptics">
-        <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
-      </script>
+      <Layouts.crosswake_bridge />
     </Components.admin_shell>
     """
+  end
+
+  # Phase 155 Plan 07 (D-46) — the A1 catalog sentence, in ONE place, read by the
+  # browser proof spec via a source-file regex (the same discipline
+  # `route_tour.spec.ts:19-23` uses to read the bridge protocol version from
+  # `contract.ex`) rather than duplicated as a spec literal that could silently
+  # drift from what the page actually renders.
+  defp catalog_sentence, do: "Crosswake has no native alert/confirm bridge command."
+
+  # PROOF-01's mutation control (D-47) — see the "open_confirm_demo" handler above.
+  # Runtime System.get_env/1, never a module attribute, so one build can be driven
+  # both ways.
+  defp proof_break_fallback? do
+    case System.get_env("CROSSWAKE_PROOF_BREAK_FALLBACK") do
+      nil -> false
+      "" -> false
+      _value -> true
+    end
   end
 
   defp approval_scope(socket) do
@@ -204,35 +426,59 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalLive do
   defp status_tone(:approved), do: :success
   defp status_tone(_status), do: :default
 
-  defp haptics_request(approval_id) do
+  # The machine-readable half of the panel (D-74). Every value is projected out of the
+  # envelope Crosswake.Bridge.push/3 actually built — nothing is restated — so CI reads
+  # one attribute and parses it once, and the human-readable <dl> above stays free to
+  # change without breaking the browser lane.
+  #
+  # Deliberately curated rather than a raw dump (D-68, T-154-30): four semantic fields
+  # plus the verdict, and no correlation-internal state. The correlation id stays
+  # library-internal (D-20); adopters correlate with their own opaque `ref:`.
+  defp haptics_evidence(nil, _reply) do
+    %{"capability" => nil, "command" => nil, "route_id" => nil, "style" => nil, "reply" => nil}
+  end
+
+  defp haptics_evidence(dispatch, reply) do
     %{
-      "protocol" => @bridge_protocol,
-      "version" => @bridge_capability_version,
-      "command" => "haptics.impact",
-      "capability" => "haptics.impact",
-      "route_id" => @bridge_route_id,
-      "active_route_id" => @bridge_route_id,
-      "origin" => @shell_origin,
-      "native_runtime_version" => "1.0.0",
-      "correlation_id" => "approval-haptics-#{approval_id}",
-      "capabilities" => %{"haptics.impact" => @bridge_capability_version},
-      "installed_packs" => %{},
-      "payload" => %{"style" => "light"}
+      "capability" => dispatch["capability"],
+      "command" => dispatch["command"],
+      "route_id" => dispatch["route_id"],
+      "style" => get_in(dispatch, ["payload", "style"]),
+      "reply" => reply_evidence(reply)
     }
   end
 
-  defp bridge_script(request) do
-    payload = Jason.encode!(request)
+  defp reply_evidence(nil), do: nil
+  defp reply_evidence(%Bridge.Reply{status: :ok}), do: %{"status" => "ok", "reason" => nil}
 
-    """
-    (() => {
-      const payload = #{Jason.encode!(payload)};
-      if (window.webkit?.messageHandlers?.crosswakeBridge) {
-        window.webkit.messageHandlers.crosswakeBridge.postMessage(payload);
-      } else if (window.crosswakeBridge?.postMessage) {
-        window.crosswakeBridge.postMessage(payload);
-      }
-    })();
-    """
+  defp reply_evidence(%Bridge.Reply{status: :deny, denial: denial}) do
+    %{"status" => "deny", "reason" => denial && to_string(denial.reason)}
+  end
+
+  defp reply_verdict(nil), do: "Waiting for the shell."
+  defp reply_verdict(%Bridge.Reply{status: :ok}), do: "Shell confirmed."
+
+  defp reply_verdict(%Bridge.Reply{status: :deny, denial: denial}) do
+    "Shell declined — #{denial.reason}."
+  end
+
+  defp reply_detail(nil) do
+    "Phoenix dispatched the request and armed a deadline. A typed reply always arrives, " <>
+      "even when nothing is listening."
+  end
+
+  defp reply_detail(%Bridge.Reply{status: :ok}) do
+    "The device produced the tap. Phoenix had already recorded the decision before this reply arrived."
+  end
+
+  # The default desktop experience, and the strongest thing this route demonstrates: a
+  # browser has no shell, so there is no honest way to produce a physical tap.
+  defp reply_detail(%Bridge.Reply{status: :deny, denial: %{reason: :shell_unreachable}}) do
+    "There is no browser substitute for a physical tap, so Crosswake does nothing rather " <>
+      "than fake one. The approval stands."
+  end
+
+  defp reply_detail(%Bridge.Reply{status: :deny, denial: denial}) do
+    "#{denial.message} The approval stands."
   end
 end

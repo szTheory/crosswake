@@ -1,6 +1,11 @@
 defmodule CrosswakeExample.SaaSPortal.ApprovalsLiveTest do
   use ExUnit.Case, async: false
 
+  import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
+
+  @endpoint CrosswakeExample.Endpoint
+
   @approvals_live Module.concat([CrosswakeExample, SaaSPortal, ApprovalsLive])
   @approval_live Module.concat([CrosswakeExample, SaaSPortal, ApprovalLive])
   @approver %{
@@ -47,35 +52,31 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalsLiveTest do
            "AdminPilot approval queue LiveView contract D-12 forbids offline mutation, outbox, journal, or local-first approval claims"
   end
 
+  # A real LiveViewTest round trip since Phase 154 (HRDN-01): the haptics dispatch runs
+  # through Crosswake.Bridge.push/3, which raises on a socket that never attached, so a
+  # hand-constructed %Phoenix.LiveView.Socket{} can no longer stand in for a mounted one.
   @tag :approval_detail_live
-  test "AdminPilot approval detail LiveView contract handles success, forbidden, and bridge-absent render states" do
-    module =
-      assert_exported!(
-        @approval_live,
-        :handle_event,
-        3,
-        "AdminPilot approval detail LiveView contract D-07/D-11/D-12/D-17 requires #{@approval_live}.handle_event/3"
-      )
+  test "AdminPilot approval detail LiveView contract handles success, bridge-absent, and typed-denial render states" do
+    assert_exported!(
+      @approval_live,
+      :handle_event,
+      3,
+      "AdminPilot approval detail LiveView contract D-07/D-11/D-12/D-17 requires #{@approval_live}.handle_event/3"
+    )
 
-    socket = %Phoenix.LiveView.Socket{
-      assigns: %{
-        __changed__: %{},
-        current_saas_account: @account,
-        current_saas_user: @approver,
-        saas_role: :approver
-      }
-    }
+    previous = Application.get_env(:crosswake, :bridge_ack_deadline_ms)
+    Application.put_env(:crosswake, :bridge_ack_deadline_ms, 25)
 
-    {:ok, mounted} = apply(module, :mount, [%{}, %{}, socket])
+    on_exit(fn ->
+      case previous do
+        nil -> Application.delete_env(:crosswake, :bridge_ack_deadline_ms)
+        value -> Application.put_env(:crosswake, :bridge_ack_deadline_ms, value)
+      end
+    end)
 
-    {:noreply, loaded} =
-      apply(module, :handle_params, [
-        %{"id" => "approval-1"},
-        "/saas/approvals/approval-1",
-        mounted
-      ])
+    CrosswakeExample.Showcase.Reset.reset!()
 
-    initial_html = render_to_string(module, loaded.assigns)
+    {:ok, view, initial_html} = live(approver_conn(), "/saas/approvals/approval-1")
 
     assert initial_html =~ "Server authority",
            "AdminPilot approval detail LiveView contract D-07/D-11 requires visible server-authoritative action copy for saas-approval"
@@ -83,8 +84,21 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalsLiveTest do
     assert initial_html =~ "Optional haptics",
            "AdminPilot approval detail LiveView contract D-12 requires bridge-absent haptics to be framed as optional support truth"
 
-    {:noreply, approved} = apply(module, :handle_event, ["approve", %{}, loaded])
-    success_html = render_to_string(module, approved.assigns)
+    assert initial_html =~ "No haptics request sent",
+           "AdminPilot approval detail LiveView contract D-12 requires an honest idle state before any approval commits"
+
+    render_click(view, "approve")
+
+    # The dispatch is the one the seam built, and it happened INSIDE the committed
+    # branch — D-07 and D-12 hold, now enforced by the seam rather than by convention.
+    assert_push_event(view, "crosswake:bridge", envelope)
+    assert envelope["command"] == "haptics.impact",
+           "AdminPilot approval detail LiveView contract D-07/D-12 allows only post-success haptics.impact as a secondary signal"
+
+    assert envelope["capability"] == "haptics",
+           "the route-policy capability id is the family form; only the wire command keeps the dotted form"
+
+    success_html = render(view)
 
     assert success_html =~ "role=\"status\"",
            "AdminPilot approval detail LiveView contract D-11 requires success state to be announced with role=\"status\""
@@ -92,8 +106,25 @@ defmodule CrosswakeExample.SaaSPortal.ApprovalsLiveTest do
     assert success_html =~ "Phoenix recorded the decision",
            "AdminPilot approval detail LiveView contract D-07 requires approval success text to name Phoenix/server authority before haptics"
 
-    assert approved.assigns.bridge_request["command"] == "haptics.impact",
-           "AdminPilot approval detail LiveView contract D-07/D-12 allows only post-success haptics.impact as a secondary signal"
+    assert success_html =~ "Capability (route policy)" and success_html =~ "Command (wire protocol)",
+           "the evidence panel must label the two identity rows distinctly (D-66)"
+
+    refute success_html =~ "crosswakeBridge.postMessage",
+           "HRDN-01 deletes the hand-rolled inline-script dispatch from this route"
+
+    # No shell is listening in a test process, exactly as in a desktop browser: the
+    # server-armed wiring deadline turns that into a rendered typed denial (D-65).
+    Process.sleep(120)
+    denied_html = render(view)
+
+    assert denied_html =~ "Shell declined — shell_unreachable"
+    assert denied_html =~ "The approval stands"
+  end
+
+  defp approver_conn do
+    Plug.Test.init_test_session(build_conn(), %{
+      CrosswakeExample.SaaSPortal.Auth.session_key() => @approver.id
+    })
   end
 
   defp assert_exported!(module, function, arity, message) do

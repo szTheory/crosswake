@@ -18,7 +18,7 @@ defmodule CrosswakeExample.Showcase.HubLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/crosswake/tokens.css" />
     <link rel="stylesheet" href="/css/app.css" />
 
     <main class="showcase-shell">

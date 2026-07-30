@@ -21,6 +21,7 @@ defmodule Crosswake.DoctorTest do
   alias Crosswake.Offline.Status
   alias Crosswake.Offline.Telemetry
   alias Crosswake.SupportMatrix
+  alias Mix.Tasks.Crosswake.Gen.NativeControlsUi
 
   setup do
     target =
@@ -92,7 +93,7 @@ defmodule Crosswake.DoctorTest do
     assert report.bridge.allowed_commands == @allowed_bridge_commands
     assert report.offline.status == :supported
     assert report.support.release_policy.crosswake_version == Mix.Project.config()[:version]
-    assert report.support.release_policy.manifest_schema_version == "1.0.0"
+    assert report.support.release_policy.manifest_schema_version == "1.1.0"
     assert report.support.release_policy.bridge_protocol_version == Crosswake.Bridge.Contract.version()
     assert report.support.release_policy.native_runtime_version == "1.0.0"
     assert report.support.release_policy.package_version_truth =~ "Package versions alone"
@@ -116,6 +117,8 @@ defmodule Crosswake.DoctorTest do
                "notification_open_denied",
                "origin_denied",
                "pack_incompatible",
+               # Phase 154, D-12: the 14th closed reason, added by the control-contract seam.
+               "shell_unreachable",
                "step_up_required",
                "undeclared_capability",
                "unavailable_capability"
@@ -192,7 +195,7 @@ defmodule Crosswake.DoctorTest do
 
     assert human =~ "support posture: supported"
     assert human =~ "release policy:"
-    assert human =~ "manifest_schema_version=1.0.0"
+    assert human =~ "manifest_schema_version=1.1.0"
     assert human =~ "bridge_protocol_version=#{Crosswake.Bridge.Contract.version()}"
     assert human =~ "native_runtime_version=1.0.0"
     assert human =~ "Package versions alone do not determine support truth"
@@ -211,7 +214,7 @@ defmodule Crosswake.DoctorTest do
 
     assert decoded["status"] == "ok"
     assert decoded["support"]["status"] == "supported"
-    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.0.0"
+    assert decoded["support"]["release_policy"]["manifest_schema_version"] == "1.1.0"
     assert decoded["support"]["release_policy"]["bridge_protocol_version"] == Crosswake.Bridge.Contract.version()
     assert decoded["support"]["release_policy"]["native_runtime_version"] == "1.0.0"
 
@@ -1244,6 +1247,487 @@ defmodule Crosswake.DoctorTest do
 
       assert finding != nil
       assert finding.details.authority_source == :host_configured_endpoint
+    end
+  end
+
+  # Phase 154 — D-58/D-59/D-63: doctor's legacy-capability-id advisory
+  defmodule LegacyCapabilityRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/legacy-one", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "legacy-one",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics.impact"]
+        ]
+      )
+
+      get("/legacy-two", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "legacy-two",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics.impact"]
+        ]
+      )
+    end
+  end
+
+  defmodule FamilyOnlyCapabilityRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/family-only", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "family-only",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["haptics"]
+        ]
+      )
+    end
+  end
+
+  defmodule RebuildRequiredRouter do
+    use Crosswake.Router
+
+    scope "/" do
+      get("/native-rebuild", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "native-rebuild",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["file_picker"]
+        ]
+      )
+
+      get("/companion-rebuild", Crosswake.TestSupport.PageController, :index,
+        crosswake: [
+          id: "companion-rebuild",
+          runtime: :live_view,
+          security: :standard,
+          capabilities: ["notification_token"]
+        ]
+      )
+    end
+  end
+
+  describe "legacy capability id doctor advisory (D-58, D-59, D-63)" do
+    test "a manifest whose route declares only family ids produces zero legacy-id advisory findings",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: FamilyOnlyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id")) == []
+    end
+
+    test "a manifest whose route declares a legacy id produces exactly one advisory finding for that route, naming both ids",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "capability.legacy_capability_id" and
+            finding.details.route_id == "legacy-one"
+        end)
+
+      assert length(matching) == 1
+
+      [finding] = matching
+      assert finding.message =~ "haptics.impact"
+      assert finding.message =~ "haptics"
+      assert finding.details.legacy_capability_id == "haptics.impact"
+      assert finding.details.family_capability_id == "haptics"
+    end
+
+    test "the finding severity is advisory (:warning) — never :error — so a legacy declaration never fails doctor (D-58, D-63)",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      legacy_findings =
+        Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id"))
+
+      assert legacy_findings != []
+      assert Enum.all?(legacy_findings, &(&1.severity != :error))
+      assert Enum.all?(legacy_findings, &(&1.severity == :warning))
+    end
+
+    test "two routes declaring the same legacy id produce two findings, one per route",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: LegacyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      legacy_findings =
+        Enum.filter(report.findings, &(&1.code == "capability.legacy_capability_id"))
+
+      assert length(legacy_findings) == 2
+
+      assert legacy_findings |> Enum.map(& &1.details.route_id) |> Enum.sort() ==
+               ["legacy-one", "legacy-two"]
+    end
+  end
+
+  describe "capability rebuild finding (D-49, CTRL-05)" do
+    test "a manifest whose declared capabilities are all rebuild: :none produces an empty capability-rebuild findings list",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: FamilyOnlyCapabilityRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      assert Enum.filter(report.findings, &(&1.code == "bridge.capability.native_rebuild_required")) ==
+               []
+    end
+
+    test "a route declaring a rebuild: :native_required capability produces exactly one finding naming the route, capability, and rebuild class",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      matching =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "bridge.capability.native_rebuild_required" and
+            finding.details.route_id == "native-rebuild"
+        end)
+
+      assert length(matching) == 1
+
+      [finding] = matching
+      assert finding.message =~ "native-rebuild"
+      assert finding.message =~ "file_picker"
+      assert finding.message =~ "native"
+      assert finding.details.capability_id == "file_picker"
+      assert finding.details.rebuild == "native_required"
+      assert finding.severity == :warning
+    end
+
+    test "a rebuild: :companion_required capability produces a finding whose hint points at the companion rebuild path, not the native one",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      [finding] =
+        Enum.filter(report.findings, fn finding ->
+          finding.code == "bridge.capability.native_rebuild_required" and
+            finding.details.route_id == "companion-rebuild"
+        end)
+
+      assert finding.details.capability_id == "notification_token"
+      assert finding.details.rebuild == "companion_required"
+      assert finding.hint =~ "companion package"
+      refute finding.hint =~ "rebuild and resubmit the native shell binary"
+    end
+
+    test "a capability with a non-:none rebuild class declared on no active route produces no finding",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      # media_capture is rebuild: :native_required in the catalog but is not
+      # declared on any route in RebuildRequiredRouter — no finding names it.
+      refute Enum.any?(report.findings, fn finding ->
+               finding.code == "bridge.capability.native_rebuild_required" and
+                 finding.details.capability_id == "media_capture"
+             end)
+    end
+
+    test "repeated runs over the same manifest emit capability-rebuild findings in identical order",
+         %{target: target, install_manifest_path: install_manifest_path} do
+      report1 =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      report2 =
+        Doctor.run(
+          route_source: RebuildRequiredRouter,
+          install_manifest_path: install_manifest_path,
+          cwd: target
+        )
+
+      extract = fn report ->
+        report.findings
+        |> Enum.filter(&(&1.code == "bridge.capability.native_rebuild_required"))
+        |> Enum.map(&{&1.details.route_id, &1.details.capability_id})
+      end
+
+      assert extract.(report1) == extract.(report2)
+      assert extract.(report1) != []
+    end
+  end
+
+  # D-37: the bridge hook wiring check is a BEST-EFFORT host-file grep. The
+  # authoritative detector is the runtime ack deadline in Crosswake.Bridge; these
+  # tests assert the advisory nudge, and that it never escalates past advisory.
+  describe "bridge hook wiring findings" do
+    setup do
+      host =
+        Path.join(System.tmp_dir!(), "crosswake-bridge-hook-#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(host)
+      on_exit(fn -> File.rm_rf!(host) end)
+
+      %{host: host}
+    end
+
+    test "reports a finding when no hook reference exists in either tree", %{host: host} do
+      File.mkdir_p!(Path.join(host, "lib/demo_web"))
+      File.write!(Path.join(host, "lib/demo_web/layouts.ex"), "defmodule DemoWeb.Layouts do\nend\n")
+
+      findings = Doctor.bridge_hook_wiring_findings(host)
+
+      assert [%Check{} = finding] = findings
+      assert finding.code == "bridge.hook.not_wired"
+      assert finding.severity == :advisory
+      assert finding.message =~ "CrosswakeBridge"
+      assert finding.hint =~ "never authoritative"
+      assert finding.details.authoritative == false
+    end
+
+    test "reports nothing when the hook is found in a HEEx-only host with no assets directory",
+         %{host: host} do
+      # This is the shape of this repository's own reference host: NO bundler, no
+      # assets tree at all, the hook element inline in a template. An assets-only
+      # grep would false-negative here — which is exactly why D-37 requires both.
+      File.mkdir_p!(Path.join(host, "lib/demo_web/components"))
+
+      File.write!(
+        Path.join(host, "lib/demo_web/components/layouts.ex"),
+        ~s|<div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>|
+      )
+
+      refute File.exists?(Path.join(host, "assets"))
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "reports nothing when the hook is found in the assets tree only", %{host: host} do
+      File.mkdir_p!(Path.join(host, "assets/js"))
+
+      File.write!(
+        Path.join(host, "assets/js/app.js"),
+        ~s|import {CrosswakeBridge} from "crosswake";\n|
+      )
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "warns when an ejected copy's stamped protocol version is behind the contract", %{
+      host: host
+    } do
+      File.mkdir_p!(Path.join(host, "priv/static"))
+      File.mkdir_p!(Path.join(host, "assets/js"))
+      File.write!(Path.join(host, "assets/js/app.js"), "CrosswakeBridge")
+
+      File.write!(
+        Path.join(host, "priv/static/crosswake.esm.js"),
+        "/* crosswake:bridge-hook:ejected protocol=0.9.0 */\nexport const CrosswakeBridge = {};\n"
+      )
+
+      assert [%Check{} = finding] = Doctor.bridge_hook_wiring_findings(host)
+      assert finding.code == "bridge.hook.ejected_protocol_drift"
+      assert finding.severity == :warning
+      assert finding.details.stamped_protocol_version == "0.9.0"
+      assert finding.details.contract_version == Crosswake.Bridge.Contract.version()
+    end
+
+    test "an ejected copy stamped at the current protocol produces no drift finding", %{
+      host: host
+    } do
+      File.mkdir_p!(Path.join(host, "priv/static"))
+      File.mkdir_p!(Path.join(host, "assets/js"))
+      File.write!(Path.join(host, "assets/js/app.js"), "CrosswakeBridge")
+
+      File.write!(
+        Path.join(host, "priv/static/crosswake.esm.js"),
+        "/* crosswake:bridge-hook:ejected protocol=#{Crosswake.Bridge.Contract.version()} */\n"
+      )
+
+      assert Doctor.bridge_hook_wiring_findings(host) == []
+    end
+
+    test "the wiring grep never fails doctor on its own", %{host: host} do
+      File.mkdir_p!(Path.join(host, "lib"))
+
+      findings = Doctor.bridge_hook_wiring_findings(host)
+
+      refute Enum.any?(findings, &(&1.severity == :error)),
+             "the best-effort grep must never produce an error-severity finding (D-37)"
+    end
+  end
+
+  # Phase 155 D-40: two findings for `mix crosswake.gen.native_controls_ui`'s
+  # generated, host-owned files. Neither may overclaim what it inspected — the
+  # stamp finding is a version-integer comparison, the wiring finding is a
+  # best-effort grep that can never fail doctor's exit code.
+  describe "native controls ui findings" do
+    setup do
+      host =
+        Path.join(
+          System.tmp_dir!(),
+          "crosswake-native-controls-ui-#{System.unique_integer([:positive])}"
+        )
+
+      File.mkdir_p!(Path.join(host, "lib/demo_web/components"))
+      File.mkdir_p!(Path.join(host, "priv/static/assets"))
+      on_exit(fn -> File.rm_rf!(host) end)
+
+      %{
+        host: host,
+        component_path: Path.join(host, "lib/demo_web/components/crosswake_fallbacks.ex"),
+        stylesheet_path: Path.join(host, "priv/static/assets/crosswake_fallback.css")
+      }
+    end
+
+    defp component_fixture(version) do
+      """
+      # crosswake:native-controls-ui template_version=#{version}
+      #
+      # Host-owned copy generated by `mix crosswake.gen.native_controls_ui`.
+
+      defmodule DemoWeb.CrosswakeFallbacks do
+        use Phoenix.Component
+      end
+      """
+    end
+
+    defp stylesheet_fixture(version) do
+      """
+      /* crosswake:native-controls-ui template_version=#{version}
+       *
+       * Host-owned copy generated by `mix crosswake.gen.native_controls_ui`.
+       */
+
+      .cwfb-modal { display: block; }
+      """
+    end
+
+    test "a stamp matching the current template_version produces no drift finding (negative control)",
+         %{host: host, component_path: component_path, stylesheet_path: stylesheet_path} do
+      current = NativeControlsUi.template_version()
+
+      File.write!(component_path, component_fixture(current))
+      File.write!(stylesheet_path, stylesheet_fixture(current))
+
+      # Referenced elsewhere so this test isolates the stamp check from the
+      # wiring check.
+      File.write!(
+        Path.join(host, "lib/demo_web/some_live.ex"),
+        "defmodule DemoWeb.SomeLive do\n  DemoWeb.CrosswakeFallbacks\nend\n"
+      )
+
+      findings = Doctor.native_controls_ui_findings(host)
+
+      refute Enum.any?(findings, &(&1.code == "native_controls_ui.stamp_drift")),
+             "a stamp matching the current template_version must not produce a drift finding"
+    end
+
+    test "a stamp behind the current template_version produces a stamp-drift warning naming the file and both versions",
+         %{host: host, component_path: component_path} do
+      current = NativeControlsUi.template_version()
+      stamped = current - 1
+
+      File.write!(component_path, component_fixture(stamped))
+
+      File.write!(
+        Path.join(host, "lib/demo_web/some_live.ex"),
+        "defmodule DemoWeb.SomeLive do\n  DemoWeb.CrosswakeFallbacks\nend\n"
+      )
+
+      assert [%Check{} = finding] =
+               Doctor.native_controls_ui_findings(host)
+               |> Enum.filter(&(&1.code == "native_controls_ui.stamp_drift"))
+
+      assert finding.severity == :warning
+      assert finding.message =~ "crosswake_fallbacks.ex"
+      assert finding.message =~ "template_version=#{stamped}"
+      assert finding.message =~ "template_version=#{current}"
+      assert finding.details.stamped_template_version == stamped
+      assert finding.details.current_template_version == current
+
+      # The remediation must not tell the adopter to regenerate over their
+      # edits — there is no --force and never will be (D-40).
+      assert finding.hint =~ "no --force"
+      assert finding.hint =~ "apply by hand"
+      refute finding.hint =~ "regenerate the file"
+    end
+
+    test "a stylesheet stamp behind the current template_version also produces a drift finding",
+         %{host: host, stylesheet_path: stylesheet_path} do
+      current = NativeControlsUi.template_version()
+      stamped = current - 1
+
+      File.write!(stylesheet_path, stylesheet_fixture(stamped))
+
+      assert Enum.any?(
+               Doctor.native_controls_ui_findings(host),
+               &(&1.code == "native_controls_ui.stamp_drift" and
+                   &1.details.path =~ "crosswake_fallback.css")
+             )
+    end
+
+    test "an advisory wiring finding fires when the generated component has no host reference, and it says 'could not find' rather than 'is not wired'",
+         %{host: host, component_path: component_path} do
+      current = NativeControlsUi.template_version()
+      File.write!(component_path, component_fixture(current))
+
+      assert [%Check{} = finding] =
+               Doctor.native_controls_ui_findings(host)
+               |> Enum.filter(&(&1.code == "native_controls_ui.wiring"))
+
+      assert finding.severity == :advisory
+      assert finding.message =~ "could not find"
+      refute finding.message =~ "is not wired"
+      assert finding.details.authoritative == false
+    end
+
+    test "the wiring finding never fails doctor on its own", %{
+      host: host,
+      component_path: component_path
+    } do
+      current = NativeControlsUi.template_version()
+      File.write!(component_path, component_fixture(current))
+
+      findings = Doctor.native_controls_ui_findings(host)
+
+      refute Enum.any?(findings, &(&1.severity == :error)),
+             "the best-effort wiring grep must never produce an error-severity finding (D-40)"
     end
   end
 end

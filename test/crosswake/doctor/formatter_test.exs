@@ -264,6 +264,65 @@ defmodule Crosswake.Doctor.FormatterTest do
              "[merge-blocking] commerce_summary (commerce.corridor.native_rebuild_required)"
   end
 
+  test "renders the capability.legacy_capability_id advisory without a fall-through (Phase 154, D-58/D-59)" do
+    report = %{
+      status: :ok,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "capability.legacy_capability_id",
+          check: "route:saas-approval",
+          message:
+            "route saas-approval declares the legacy capability id \"haptics.impact\"; the family id \"haptics\" is the vocabulary Crosswake teaches going forward",
+          hint:
+            "declare capabilities: [\"haptics\"] in route policy instead of \"haptics.impact\" — the legacy id keeps authorizing indefinitely (no compile-time warning, no removal); this finding is advisory only and never fails doctor",
+          details: %{
+            route_id: "saas-approval",
+            legacy_capability_id: "haptics.impact",
+            family_capability_id: "haptics"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[warning] route:saas-approval (capability.legacy_capability_id)"
+    assert output =~ "haptics.impact"
+    assert output =~ "haptics"
+    assert output =~ "hint: declare capabilities:"
+    assert output =~ "details: family_capability_id=haptics, legacy_capability_id=haptics.impact, route_id=saas-approval"
+  end
+
+  test "renders the bridge.capability.native_rebuild_required finding without a fall-through (Phase 154, D-49)" do
+    report = %{
+      status: :ok,
+      findings: [
+        %Check{
+          severity: :warning,
+          code: "bridge.capability.native_rebuild_required",
+          check: "route:library",
+          message:
+            "route library declares capability file_picker, which requires a native rebuild before this control ships",
+          hint:
+            "rebuild and resubmit the native shell binary before this control can ship — OTA/remote manifest updates cannot satisfy a native rebuild",
+          details: %{
+            route_id: "library",
+            capability_id: "file_picker",
+            rebuild: "native_required"
+          }
+        }
+      ]
+    }
+
+    output = Formatter.render(report)
+
+    assert output =~ "[warning] route:library (bridge.capability.native_rebuild_required)"
+    assert output =~ "file_picker"
+    assert output =~ "hint: rebuild and resubmit the native shell binary"
+    assert output =~ "details: capability_id=file_picker, rebuild=native_required, route_id=library"
+  end
+
   test "formats publish readiness as a concise sidecar section ordered by blocking posture" do
     publish_readiness =
       PublishReadiness.run(
@@ -289,5 +348,46 @@ defmodule Crosswake.Doctor.FormatterTest do
     assert output =~ "remediation=Keep package metadata"
     assert output =~ "diag.provider.adapter_shipped_seams"
     assert output =~ "blocking=false"
+  end
+
+  test "renders the bridge hook wiring findings with their severity, hint, and details" do
+    output =
+      Formatter.render(%{
+        status: :ok,
+        findings: [
+          %Check{
+            severity: :advisory,
+            code: "bridge.hook.not_wired",
+            check: "bridge_hook",
+            message:
+              "no \"CrosswakeBridge\" hook reference was found in this host's assets tree or its HEEx templates",
+            hint:
+              "import the hook from /crosswake/crosswake.esm.js — this check is a best-effort grep and is never authoritative; the runtime ack deadline is.",
+            details: %{searched_assets: 0, searched_templates: 3, authoritative: false}
+          },
+          %Check{
+            severity: :warning,
+            code: "bridge.hook.ejected_protocol_drift",
+            check: "bridge_hook",
+            message:
+              "the ejected bridge hook at priv/static/crosswake.esm.js is stamped protocol 0.9.0, but this Crosswake speaks 1.1.0",
+            hint: "re-eject the hook or drop the host-owned copy",
+            details: %{
+              path: "priv/static/crosswake.esm.js",
+              stamped_protocol_version: "0.9.0",
+              contract_version: "1.1.0"
+            }
+          }
+        ]
+      })
+
+    assert output =~ "[advisory] bridge_hook (bridge.hook.not_wired)"
+    assert output =~ "no \"CrosswakeBridge\" hook reference was found"
+    assert output =~ "never authoritative"
+    assert output =~ "authoritative=false"
+
+    assert output =~ "[warning] bridge_hook (bridge.hook.ejected_protocol_drift)"
+    assert output =~ "stamped protocol 0.9.0"
+    assert output =~ "stamped_protocol_version=0.9.0"
   end
 end

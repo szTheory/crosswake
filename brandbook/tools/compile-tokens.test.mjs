@@ -225,3 +225,71 @@ test('priv/static/crosswake/tokens.css is byte-identical to brandbook/tokens/tok
   const priv  = readFileSync(PRIV_TOKENS_CSS, 'utf8');
   assert.strictEqual(brand, priv, 'both outputs must be byte-identical');
 });
+
+// ─── Phase 155 D-27 / T-155-11: semantic-token count cap ────────────────────
+// AUDIT.md:392 documents a hard cap of 30 semantic tokens. No mechanical test
+// existed before this phase — this pins the count so uncapped growth turns the
+// gate red instead of silently exhausting the documented budget.
+
+function semanticTierBlock(css) {
+  const start = css.indexOf('/* ─── Semantic tier (public contract) ─── */');
+  const end = css.indexOf('/* ─── Dark mode ─── */');
+  assert.ok(start !== -1 && end !== -1 && end > start,
+    'tokens.css must contain a delimited Semantic tier block between the ' +
+    '"Semantic tier" and "Dark mode" comment markers');
+  return css.slice(start, end);
+}
+
+function countSemanticProps(css) {
+  const block = semanticTierBlock(css);
+  const matches = block.match(/^\s*--cw-[a-z0-9-]+:/gm) || [];
+  return matches.length;
+}
+
+test('compiled tokens.css semantic tier is at most 30 --cw- custom properties (AUDIT.md:392 hard cap)', () => {
+  execSync(`node ${COMPILE_SCRIPT}`, { cwd: ROOT });
+  const css = readFileSync(TOKENS_CSS, 'utf8');
+  const count = countSemanticProps(css);
+  assert.ok(count <= 30,
+    `AUDIT.md:392 documents a hard cap of 30 semantic tokens; compiled tokens.css ` +
+    `has ${count}. Do not invent tokens beyond the documented spec.`);
+});
+
+test('compiled tokens.css semantic tier is exactly 29 --cw- custom properties today (Phase 155 D-27: 1 slot remains)', () => {
+  execSync(`node ${COMPILE_SCRIPT}`, { cwd: ROOT });
+  const css = readFileSync(TOKENS_CSS, 'utf8');
+  const count = countSemanticProps(css);
+  assert.strictEqual(count, 29,
+    `expected exactly 29 semantic tokens (AUDIT.md:392 cap of 30, 1 slot remaining ` +
+    `after Phase 155's --cw-status-error-fg addition), got ${count}. A silent ` +
+    `addition must be caught immediately, not only at the ceiling.`);
+});
+
+// ─── Phase 155 T-155-10 / RESEARCH Pitfall 2: group exhaustiveness ──────────
+// compile-tokens.js:76's `groups` array is a curated filter; a colour-typed
+// top-level group added to crosswake.tokens.json without also being added to
+// that array compiles valid, green-passing CSS with the token silently
+// dropped (D-29's scrim-goes-transparent failure mode). This assertion makes
+// that silent drop impossible: every colour-typed top-level group in the JSON
+// must produce at least one compiled --cw-<group>-* custom property.
+
+test('every color-typed top-level token group emits at least one compiled --cw-<group>-* custom property', () => {
+  execSync(`node ${COMPILE_SCRIPT}`, { cwd: ROOT });
+  const tokensJson = JSON.parse(readFileSync(TOKENS_JSON, 'utf8'));
+  const css = readFileSync(TOKENS_CSS, 'utf8');
+  const block = semanticTierBlock(css);
+
+  const colorGroups = Object.entries(tokensJson)
+    .filter(([key, value]) => key !== 'primitive' && value && value['$type'] === 'color')
+    .map(([key]) => key);
+
+  assert.ok(colorGroups.length > 0, 'expected at least one non-primitive color-typed group in crosswake.tokens.json');
+
+  for (const group of colorGroups) {
+    const pattern = new RegExp(`--cw-${group}-[a-z0-9-]+:`);
+    assert.ok(pattern.test(block),
+      `color-typed group "${group}" in crosswake.tokens.json must emit at least one ` +
+      `--cw-${group}-* custom property in the compiled semantic tier — if this fails, ` +
+      `the group is missing from compile-tokens.js's \`groups\` array (RESEARCH Pitfall 2)`);
+  }
+});

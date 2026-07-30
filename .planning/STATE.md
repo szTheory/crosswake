@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
-current_phase: 153.1
-current_phase_name: ci-gate-integrity-and-runner-cost
-status: executing
-stopped_at: Phase 153.1 complete (3/3 plans merged); Phase 153 blocked on human-gated 153-02
-last_updated: "2026-07-29T00:00:00.000Z"
-last_activity: 2026-07-29 - Phase 153.1 complete: CI gate integrity + runner cost. Wall-clock time-to-green 34.9 -> 5.8 min. PRs #91/#93/#94/#95/#96/#97 merged.
+current_phase: 155
+current_phase_name: host-owned-fallback-components
+status: ready_to_plan
+stopped_at: Phase 155 complete (7/7) — ready to discuss Phase 156
+last_updated: 2026-07-30T19:26:20.361Z
+last_activity: 2026-07-30
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 7
-  completed_plans: 6
-  percent: 20
+  total_phases: 6
+  completed_phases: 3
+  total_plans: 22
+  completed_plans: 55
+  percent: 50
 ---
 
 # Project State: Crosswake
@@ -23,28 +23,66 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 153 — ios-mirror-unblock
+**Current focus:** Phase 156 — native menu & action button control
 
 ## Current Position
 
+Phase: 156
+Plan: Not started
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
-Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
-Status: Awaiting the human-gated 153-02 step, or ready to plan Phase 154
-Last activity: 2026-07-29 - Phase 153.1 complete
+Phase 153 (ios-mirror-unblock) — 3/4; the one-way-door tag push is DONE (mirror `v0.2.0` live,
+verified 2026-07-30). Remaining: the `main` re-baseline dispatch (Jon) and plan 153-04.
+Status: Ready to plan
+Last activity: 2026-07-30
 
-Progress: [██░░░░░░░░] 20% (1 of 5 milestone phases; 153.1 is an insertion)
+Progress: [█████████░] 91%
 
-## Blocked: Phase 153-02 (human gate, one-way door)
+## Phase 153-02: the one-way door is DONE — Phase 156 is UNBLOCKED
 
-Mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror
-`main` (MIRROR-01). **The tag push is irreversible and must never be fired automatically —
-it requires Jon's explicit go.**
+The `v0.2.0` mirror tag push happened on 2026-07-28 via three `ios-mirror-backfill.yml`
+dispatches, in the prescribed order: `30316715897` (`apply=false` fire-drill, all six checks
+OK, dry-run push probe confirmed WRITE scope) → `30316962777` (`apply=true update_main=false`,
+**pushed the tag**) → `30317622546` (`apply=true update_main=true`).
 
-Blocks Phase 156 (MENU). Everything else in the milestone can proceed without it.
+Verified 2026-07-30 directly against the mirror rather than from the workflow's self-report:
 
-Known state: the mirror is still at v0.1.2. The Phase 153 fire-drill was a NO-GO because
-splitsh-lite v1.0.1 segfaults; the fix is switching `verify_ios_mirror_backfill.sh`
-`compute_split_sha()` to `git subtree split` (verified working, split SHA `658d6025`).
+```
+6417ae65…  refs/tags/v0.1.2
+658d6025…  refs/tags/v0.2.0   ← matches the git-subtree split SHA exactly
+```
+
+PR #79 (splitsh-lite → `git subtree split`) is merged. **SEED-003 is satisfied; Phase 156 no
+longer waits on the mirror.**
+
+### Still open: mirror `main` was never re-baselined
+
+Mirror `main` sits at `6417ae65` — the **v0.1.2** commit. The 07-28 `update_main=true` run
+silently no-opped: it ran the pre-fix script, whose early return on the tag-already-present
+short-circuit skipped the D-08 realign. Fixed by `2e46105c`, which landed *after* that run.
+
+Remedy is one dispatch with the now-fixed script:
+
+```bash
+gh workflow run ios-mirror-backfill.yml \
+  -f version=0.2.0 -f release_ref=refs/tags/ios-core-v0.2.0 \
+  -f apply=true -f update_main=true
+```
+
+**Jon must run this** — Claude's auto-mode classifier blocks it as a mutating public
+force-push.
+
+Safe to proceed: the lineages genuinely forked (`6417ae65` is *not* an ancestor of
+`658d6025` — 1 commit on `main` unreachable from the split, 19 in the split absent from
+`main`), but that fork is expected. The two subtree splits were computed at different times
+from different refs, and this is exactly the one-time D-08 re-baseline the script's own log
+message anticipates. Nothing is orphaned: tag `v0.1.2` still pins `6417ae65`. Only
+branch-resolving consumers see stale code; SwiftPM version resolution uses the tag and is
+already correct.
+
+Note the ancestry guard (`verify_ios_mirror_backfill.sh:256-261`) is advisory-and-proceed in
+CI **by design** (D-08/Q2 — see the Decisions section: unknown-object advisory, known-non-
+ancestor fail-closed, and no `git fetch` anywhere). Do not "harden" it into a fetch-and-verify;
+that was decided against. Evaluate ancestry by fetching the mirror by hand locally.
 
 ## Phase 153.1 outcome (2026-07-29)
 
@@ -135,11 +173,30 @@ chimeway/sigra, and all of `CONSOL-*`.
 
 **Velocity:**
 
-- Total plans completed: 190 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
+- Total plans completed: 205 (142 across v10.0-v17.0 + 15 in v18.0 Phases 142-146 + 5 in Phase 147 + 7 in Phase 149 + 7 in Phase 150 + 7 in Phase 151 + 4 in Phase 152 + 3 in Phase 152.1)
 - Average duration: —
 - Total execution time: —
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 154 P01 | 25min | 3 tasks | 13 files |
+| Phase 154 P02 | 70min | 3 tasks | 33 files |
+| Phase 154 P03 | 80min | 3 tasks | 12 files |
+| Phase 154 P04 | 100min | 3 tasks | 8 files |
+| Phase 154 P05 | 55min | 3 tasks | 7 files |
+| Phase 154 P06 | 34min | 3 tasks | 24 files |
+| Phase 154 P07 | 27min | 3 tasks | 22 files |
+| Phase 154 P08 | 95min | 2 tasks | 11 files |
+| Phase 155 P01 | 130min | 2 tasks | 22 files |
+| Phase 155 P02 | 20min | 2 tasks | 4 files |
+| Phase 155 P03 | 25min | 2 tasks | 7 files |
+| Phase 155 P04 | ~2h (paused/resumed) | 2 tasks | 5 files |
+| Phase 155 P05 | 55min | 2 tasks | 2 files |
+| Phase 155 P06 | 130min | 2 tasks | 9 files |
+| Phase 155 P07 | 70min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -270,6 +327,37 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: publish-ios-core: atomic + explicit-lease mirror push scoped to main alone (D-13), Hex-only gate (D-12), release-tag-pinned checkout (D-11), SSH transport via MIRROR_DEPLOY_KEY (D-03/D-04)
 - [Phase ?]: release-failure-alert.needs extended to the four native jobs plus native-release-rollup (D-15); native-release-rollup exits 1 on partial native release (D-17)
 - [Phase ?]: Six scanner checks rewritten/added in check_release_workflow_integrity.exs for D-11/D-12/D-13/D-15/D-17/D-03/D-04, each with a decoy test (D-20)
+- [Phase ?]: 154-01: flipped published haptics vocabulary to family id (route policy declares families, bridge dispatches commands); fixed self-referential legacy_ids bug universally; added doctor legacy-capability-id advisory
+- [Phase ?]: 154-02: Capability.@enforce_keys widened to [:id,:version,:rebuild,:interaction]; manifest_schema_version bumped 1.0.0->1.1.0; fixed two independently hardcoded schema-version literals (Activation.target_from_request/1, Compatibility.bridge_target/1) discovered mid-execution; doctor gains capability_rebuild_findings/1; capability map/support matrix/changelog surface rebuild+interaction cost
+- [Phase ?]: 154-03: Crosswake.Bridge seam shipped (push/3, attach/1, on_mount/4, reserved-event + wiring-deadline interceptors); UndeclaredCapabilityError/NotMountedError raise loudly; Shell.Denial gains 14th reason :shell_unreachable; first self-contained Phoenix.LiveViewTest harness in core hermetic suite (test/support/bridge_live_view_case.ex)
+- [Phase ?]: 154-04: Bridge exactly-once delivery hardened with per-mount epoch (embedded in correlation_id) + resolve/2 for fallback race + second reply-deadline timer + 5 new [:crosswake, :bridge, ...] telemetry events; Crosswake.Bridge.Test ships for hook-reply simulation without a shell
+- [Phase ?]: D-16 resolved (human, 154-05 Task 1): option-b with amendment — merge-blocking catalog guard with an enumerated EIGHT-string seeded allowlist of out-of-vocabulary native denial reasons; zero native release coupling so D-01 holds; the five bare-String delegate seams named as a separately-labelled NON-MECHANICAL exclusion carried by SEED-008, never pretended into the allowlist
+- [Phase ?]: Crosswake.Bridge.CatalogGuard lives in lib/ and reads Manifest.Builder's existing capability catalog — no second catalog file (D-42/D-43); a second one here would be five-way drift
+- [Phase ?]: The hook ships from priv/static/crosswake.esm.js at the literal D-30 path — nesting under priv/static/crosswake/ would double the URL segment
+- [Phase ?]: 154-08 Task 2: the phase's `checkpoint:human-verify` was REPLACED by merge-blocking automation, not deferred — shift-left per PROOF-03/Phase 135. Checks A–F ride the existing `npx playwright test` step (two scheme-scoped projects, `testMatch`/`testIgnore` so no lane's wall clock triples), G rides `merge-blocking-requires-example-host`, H is untagged in `test/crosswake/proof/`. No new required check name, no new workflow file (D-47). Proxies are labelled in each test's own docblock: C-partial, E-partial, F, G's "actionable" leg, H's synthetic-tree caveat.
+- [Phase ?]: 154-08: `CatalogGuard.assert_catalog_closed!/1` gained an injection seam (`root:`, `commands:`, `command_capability_map:`, `catalog_capability_ids:`) with every default the real shipped value, so check H drives the REAL raiser through the six-step recipe rather than re-composing its predicates. Zero-arity gate unchanged.
+- [Phase ?]: 154-08 KNOWN HOLE, pinned as an assertion: recipe step 1 (the catalog entry) is NOT mechanically caught — `check_attestation/3` has no mapping-to-catalog direction because ten shipped mappings legitimately have none. Recipe step 6 has fail-closed defaults rather than a red gate. Both stated in `phase154_recipe_followable_test.exs`, not papered over.
+- [Phase ?]: reply_leg_vectors is its own top-level array, not an entry in vectors (which is a request-evaluation corpus both native harnesses feed through BridgeChannel.evaluate)
+- [Phase ?]: D-03's iOS-reply-ships-with-Phase-156 statement lands as a generated Bridge Reply Delivery table, because guides/support_matrix.md is byte-generated from the renderer
+- [Phase ?]: The doctor bridge-hook wiring finding is :advisory so the best-effort grep can never fail doctor's exit code (D-37)
+- [Phase ?]: HRDN-01: the evidence panel renders from the envelope Bridge.push/3 actually built (Bridge.dispatched/2), never a hand-assembled second copy
+- [Phase ?]: The HRDN-01 sweep asserts absence AND presence — no inline dispatch, plus >=2 seam call sites — so deleting the capability cannot satisfy the gate
+- [Phase ?]: phase52_publish_readiness.json regenerated for the new CHANGELOG Unreleased subsections rather than watering down the entry or weakening the assertion
+- [Phase ?]: 155-01: tokens.css gains a served sibling copy at priv/static/tokens.css (compile-tokens.js) since Plug.Static's only: resolves names relative to from:'s root, not the nested priv/static/crosswake/ packaged-mirror path
+- [Phase ?]: 155-01: crosswake_fallback.css.eex uses literal px values for spacing/type-scale/radius outside the --cwfb-* alias block (not var(--cw-*)) to hold D-24's 15-alias-only discipline
+- [Phase ?]: 155-01: confirm_modal demo wired to a new 'Preview the confirm fallback' trigger in ApprovalLive, not the existing 'Approve request' button, so Phase 154's pinned evidence-panel.spec.ts flow is untouched
+- [Phase ?]: 155-01: patcher.ex's endpoint only: list uses literal 'crosswake.esm.js tokens.css' text (not #{@hook_asset}/#{@tokens_asset} interpolation) to keep the line grep-able verbatim
+- [Phase ?]: 155-02: widened Crosswake.Bridge.resolve/2 to a true no-op on an unattached socket via maybe_fetch_state/1 (D-50); push/3 and dispatched/2 stay strict
+- [Phase ?]: 155-02: split push/3's vocabulary-miss raise into a distinct Crosswake.Bridge.UnknownCapabilityFamilyError (D-51), separate from UndeclaredCapabilityError, whose remediation never suggests declaring the family on a route
+- [Phase ?]: 155-03: --cw-status-error-fg added (pure white alias) and --cw-action-focus-ring light value corrected brass-500->wake-700 (D-27/D-32/D-33); contrast.test.mjs gained its first non-text SC 1.4.11 assertion class + compile-tokens.test.mjs gained a semantic-token count cap (29/30) and group-exhaustiveness assertion, both mutation controls observed red and restored via git checkout --
+- [Phase ?]: 155-04: extended real test files (crosswake_install_test.exs, doctor/doctor_test.exs) instead of the plan's phantom paths test/crosswake/install/patcher_test.exs and test/crosswake/doctor_test.exs — same deviation class as 155-02
+- [Phase ?]: 155-04: widened native_controls_ui_findings/1 from private to public to give it a direct test seam, mirroring the established bridge_hook_wiring_findings/2 pattern
+- [Phase ?]: 155-05: mix.exs required no edit — ComponentTierGuard is an internal support module like CompanionGuard, not listed in groups_for_modules until FALL-02 retirement makes something actually importable
+- [Phase ?]: Checkpoint (155-06 Task 1) froze the action_menu actions attr shape exactly as D-53 records: [%{id, label, destructive, icon}], select-with-id/dismiss, icon reserved and unrendered
+- [Phase ?]: 155-06: disabled/not-permitted menu rows are signaled by id: nil rather than adding a 5th key to the frozen actions shape
+- [Phase ?]: 155-07: A2 route reuses already-declared 'haptics' family (D-43) so CatalogGuard's six-step recipe is untouched; injected wire denial carries reason: undeclared_capability, the shell-side moment only
+- [Phase ?]: 155-07: fixed a genuine LiveView focus-timing race (JS.focus/JS.pop_focus's two-animation-frame re-confirmation could stomp a keyboard Tab) with a real double-rAF wait, never a sleep
+- [Phase ?]: 155-07: confirm_modal's trigger button was missing JS.push_focus() — phx-remove's JS.pop_focus() was a no-op against an empty stack, so focus never actually returned to the trigger; fixed in approval_live.ex
 
 ### Pending Todos
 
@@ -357,8 +445,8 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-13T18:15:35.650Z
-Stopped at: Phase 153 context gathered
+Last session: 2026-07-30T19:10:29.986Z
+Stopped at: Completed 155-07-PLAN.md — Phase 155 (Host-Owned Fallback Components) 7/7 plans executed
 Resume file: None
 
 ## Operator Next Steps

@@ -59,7 +59,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     rendered = Renderer.render()
 
     assert rendered =~
-             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Denial/fallback behavior | v20 implication |"
+             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | v20 implication |"
 
     for label <- CapabilityMap.display_labels() do
       assert rendered =~ label
@@ -67,6 +67,14 @@ defmodule Crosswake.CapabilityMap.RendererTest do
 
     for posture <- ["merge-blocking", "advisory", "not-yet-proven", "unsupported"] do
       assert rendered =~ posture
+    end
+
+    for rebuild_label <- [
+          "No rebuild required",
+          "Native rebuild required",
+          "Companion rebuild required"
+        ] do
+      assert rendered =~ rebuild_label
     end
 
     assert rendered =~ "Screenshots are collateral after route-tour assertions"
@@ -84,6 +92,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
       route_runtime_owner: :live_view,
       package_owner: :example_docs_only,
       proof_posture: :advisory,
+      rebuild: :native_required,
       denial_fallback: "alpha | beta",
       v20_implication: "gamma\ndelta"
     }

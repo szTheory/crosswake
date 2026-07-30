@@ -4,6 +4,9 @@
 // RED phase: these tests verify behavior before implementation exists.
 
 import { strict as assert } from 'assert';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Import the module under test
 let mod;
@@ -15,6 +18,31 @@ try {
 }
 
 const { linearize, luminance, parseHex, contrast } = mod;
+
+// ─── Token resolution (Phase 155 D-33 — read from crosswake.tokens.json at test
+// time, never paste hex literals) ────────────────────────────────────────────
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(__dirname, '../..');
+const TOKENS_JSON = resolve(ROOT, 'brandbook/tokens/crosswake.tokens.json');
+
+const { flattenTokens } = await import('./compile-tokens.js');
+const tokensData = JSON.parse(readFileSync(TOKENS_JSON, 'utf8'));
+const flatTokens = flattenTokens(tokensData);
+
+// Resolve a dot-path token (e.g. "action.focus-ring") to a real hex string,
+// following the `{alias.path}` chain to a primitive, for a given theme.
+function resolveTokenHex(path, dark = false) {
+  const token = flatTokens[path];
+  if (!token) throw new Error(`resolveTokenHex: unknown token path "${path}"`);
+  let raw = dark ? (token.$dark || token.$value) : token.$value;
+  while (typeof raw === 'string' && raw.startsWith('{') && raw.endsWith('}')) {
+    const aliasPath = raw.slice(1, -1);
+    const aliasToken = flatTokens[aliasPath];
+    if (!aliasToken) throw new Error(`resolveTokenHex: unresolved alias "${aliasPath}"`);
+    raw = dark ? (aliasToken.$dark || aliasToken.$value) : aliasToken.$value;
+  }
+  return raw;
+}
 
 let passed = 0;
 let failed = 0;
@@ -119,6 +147,55 @@ test('contrast(wake-500, foam-50) ≈ 2.95 (FAIL AA)', () => {
 test('contrast(mist-200, current-950) ≈ 12.25 (PASS AA)', () => {
   const ratio = contrast('#C9D4CF', '#09141A');
   assert.ok(Math.abs(ratio - 12.25) < 0.2, `expected ~12.25 got ${ratio.toFixed(2)}`);
+});
+
+// ─── Non-text UI component contrast (WCAG SC 1.4.11, 3:1) ───────────────────
+// Phase 155 D-33: the suite above has only ever tested TEXT pairs (>= 4.5
+// threshold). That hole is exactly why a focus ring measuring 2.93:1 shipped
+// and stayed green. These assertions resolve their hex from
+// crosswake.tokens.json at test time — never a pasted literal — so changing
+// the token without re-running this gate turns it red.
+console.log('\nnon-text UI component contrast (WCAG SC 1.4.11, must be >= 3.0)\n');
+
+test('WCAG SC 1.4.11: action.focus-ring (light) vs white >= 3.0 (non-text, 3:1 floor)', () => {
+  const fg = resolveTokenHex('action.focus-ring', false);
+  const ratio = contrast(fg, '#FFFFFF');
+  assert.ok(ratio >= 3.0,
+    `focus-ring (light, ${fg}) vs white must pass SC 1.4.11's 3:1 non-text floor, got ${ratio.toFixed(2)}`);
+});
+
+test('WCAG SC 1.4.11: action.focus-ring (light) vs foam-50 >= 3.0 (non-text, 3:1 floor)', () => {
+  const fg = resolveTokenHex('action.focus-ring', false);
+  const ratio = contrast(fg, '#F7F1E6');
+  assert.ok(ratio >= 3.0,
+    `focus-ring (light, ${fg}) vs foam-50 must pass SC 1.4.11's 3:1 non-text floor, got ${ratio.toFixed(2)}`);
+});
+
+test('WCAG SC 1.4.11: action.focus-ring (dark) vs the dark inset surface >= 3.0 (non-text, 3:1 floor)', () => {
+  const fg = resolveTokenHex('action.focus-ring', true);
+  const bg = resolveTokenHex('surface.inset', true);
+  const ratio = contrast(fg, bg);
+  assert.ok(ratio >= 3.0,
+    `focus-ring (dark, ${fg}) vs the dark inset surface (${bg}) must pass SC 1.4.11's 3:1 non-text floor, got ${ratio.toFixed(2)}`);
+});
+
+// ─── Destructive-pair contrast (status.error-fg on status.error, D-27/D-32) ──
+console.log('\ndestructive-pair contrast (status.error-fg on status.error, must be >= 4.5)\n');
+
+test('contrast(status.error-fg, status.error) (light) >= 4.5 (PASS AA — filled destructive button)', () => {
+  const fg = resolveTokenHex('status.error-fg', false);
+  const bg = resolveTokenHex('status.error', false);
+  const ratio = contrast(fg, bg);
+  assert.ok(ratio >= 4.5,
+    `status.error-fg (light, ${fg}) on status.error (${bg}) must pass AA (>= 4.5), got ${ratio.toFixed(2)}`);
+});
+
+test('contrast(status.error-fg, status.error) (dark) >= 4.5 (PASS AA — filled destructive button)', () => {
+  const fg = resolveTokenHex('status.error-fg', true);
+  const bg = resolveTokenHex('status.error', true);
+  const ratio = contrast(fg, bg);
+  assert.ok(ratio >= 4.5,
+    `status.error-fg (dark, ${fg}) on status.error (${bg}) must pass AA (>= 4.5), got ${ratio.toFixed(2)}`);
 });
 
 console.log(`\nResults: ${passed} passed, ${failed} failed`);

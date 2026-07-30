@@ -593,6 +593,47 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     end
   end
 
+  test "D-50 (Phase 154, CTRL-05): every RebuildPolicy verdict maps onto one of the four locked Upgrade Impact strings" do
+    # This is a derivability assertion, not a new release gate — RebuildPolicy.diff/2's own
+    # moduledoc warns it is tooling/doctor input, not a release-gate oracle without published
+    # version history (D-50). classify/2's full verdict domain is exactly these three shapes
+    # (:ota_safe plus the two {:rebuild_required, _} arities); asserting each maps into the
+    # locked 4-string set proves the vocabulary is total over that domain, not merely that
+    # some CHANGELOG entries happen to use locked strings.
+    verdicts = [
+      :ota_safe,
+      {:rebuild_required, :native_shell},
+      {:rebuild_required, :companion_shell}
+    ]
+
+    for verdict <- verdicts do
+      label = upgrade_impact_label_for_rebuild_policy_verdict(verdict)
+
+      assert label in @upgrade_impact_change_classes,
+             "RebuildPolicy verdict #{inspect(verdict)} maps to #{inspect(label)}, which is " <>
+               "not in the locked 4-string Upgrade Impact vocabulary: #{inspect(@upgrade_impact_change_classes)}"
+    end
+  end
+
+  # The derivability mapping asserted above. :ota_safe means no native or companion
+  # rebuild is required, but a compatibility-axis change classification still ran to
+  # reach that verdict — that is exactly "compatibility-bump only"'s definition. Both
+  # {:rebuild_required, _} shapes collapse onto the single "native or companion rebuild
+  # required" string, matching that class's own signal text ("native_runtime_version,
+  # bridge_protocol_version, manifest_schema_version, and capability required-version
+  # shifts"). "docs-only" and "core-only/no native rebuild" are not reachable from
+  # RebuildPolicy.classify/2 at all — they describe changes that never touch a
+  # compatibility axis or capability, so classify/2 is never invoked for them. A total
+  # mapping does not require using every locked string, only that every verdict maps to
+  # a member of the set.
+  defp upgrade_impact_label_for_rebuild_policy_verdict(:ota_safe), do: "compatibility-bump only"
+
+  defp upgrade_impact_label_for_rebuild_policy_verdict({:rebuild_required, :native_shell}),
+    do: "native or companion rebuild required"
+
+  defp upgrade_impact_label_for_rebuild_policy_verdict({:rebuild_required, :companion_shell}),
+    do: "native or companion rebuild required"
+
   # Splits CHANGELOG.md lines into a list of {heading, section_lines} pairs,
   # one per ## [x.y.z] release section (excluding ## [Unreleased] and prose headings).
   # Uses historical_changelog_line?/1 to identify versioned release heading lines.

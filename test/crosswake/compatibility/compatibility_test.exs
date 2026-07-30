@@ -18,7 +18,7 @@ defmodule Crosswake.CompatibilityTest do
         manifest,
         "camera",
         %Target{
-          manifest_schema_version: "1.0.0",
+          manifest_schema_version: Types.manifest_schema_version(),
           bridge_protocol_version: Contract.version(),
           native_runtime_version: "0.9.0",
           manifest_source: :bundled,
@@ -43,7 +43,7 @@ defmodule Crosswake.CompatibilityTest do
         manifest,
         "camera",
         %Target{
-          manifest_schema_version: "1.0.0",
+          manifest_schema_version: Types.manifest_schema_version(),
           bridge_protocol_version: Contract.version(),
           native_runtime_version: "1.0.0",
           manifest_source: :bundled,
@@ -115,7 +115,7 @@ defmodule Crosswake.CompatibilityTest do
         manifest,
         "external_route",
         %Target{
-          manifest_schema_version: "1.0.0",
+          manifest_schema_version: Types.manifest_schema_version(),
           bridge_protocol_version: Contract.version(),
           native_runtime_version: "1.0.0",
           manifest_source: :bundled,

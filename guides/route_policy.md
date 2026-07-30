@@ -79,7 +79,7 @@ live("/approvals/:id", ApprovalLive,
     id: "saas-approval",
     runtime: :live_view,
     entry: :external,
-    capabilities: ["haptics.impact"],
+    capabilities: ["haptics"],
     offline: :cached_read_only,
     cache_contract: :approval_snapshot_v1,
     security: :standard
@@ -98,6 +98,17 @@ live("/approvals/:id", ApprovalLive,
   approval still owns the product action.
 - **Rough edge:** if a flow needs continuous client authority, it is not a bounded
   bridge flow. Move it toward an offline island or native screen.
+
+Route policy declares the capability **family** (`"haptics"`); the bridge dispatches
+the wire **command** (`"haptics.impact"`). These are two vocabularies on purpose, not
+a naming inconsistency — see [guides/bridge.md](bridge.md) for the full
+family-versus-command split.
+
+If a route still declares the older dotted form (`capabilities: ["haptics.impact"]`),
+it keeps authorizing indefinitely — the dotted form is accepted permanently and is
+not going away. No compile-time warning is emitted. Run `mix crosswake.doctor` to
+find any route still declaring a legacy id; it names the route and the family id to
+write instead.
 
 ## cached read-only
 

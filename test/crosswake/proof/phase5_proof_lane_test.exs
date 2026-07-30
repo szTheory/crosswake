@@ -37,7 +37,9 @@ defmodule Crosswake.Proof.Phase5ProofLaneTest do
 
     assert manifest.routes["saas-dashboard"].runtime == :live_view
     assert manifest.routes["saas-approval"].runtime == :live_view
-    assert manifest.routes["saas-approval"].capabilities == ["haptics.impact"]
+    # Family form, not the dotted wire command id (D-61/D-62, Phase 154). The router
+    # flipped in 94151bd5; this gated lane's copy of the assertion was not re-run.
+    assert manifest.routes["saas-approval"].capabilities == ["haptics"]
     assert manifest.routes["local-first-study-session"].path == "/study/session"
     assert manifest.routes["local-first-study-history"].path == "/study/history"
   end

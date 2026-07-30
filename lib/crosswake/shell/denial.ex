@@ -25,7 +25,11 @@ defmodule Crosswake.Shell.Denial do
     :step_up_required,
     :notification_open_denied,
     # Phase 130: COMPAT-01 RouteGate fail-closed enforcement
-    :dependency_missing
+    :dependency_missing,
+    # Phase 154: CTRL-02 — the bridge seam's single "we could not deliver a shell
+    # answer" reason. Four failing moments (details.failing_moment), one reason,
+    # never :unavailable_capability (D-12, D-13).
+    :shell_unreachable
   ]
 
   @enforce_keys [:reason, :code, :message]
@@ -45,6 +49,24 @@ defmodule Crosswake.Shell.Denial do
           | :step_up_required
           | :notification_open_denied
           | :dependency_missing
+          | :shell_unreachable
+
+  @typedoc """
+  The four ways `Bridge.push/3` can fail to deliver a shell answer, carried in
+  `details.failing_moment` for the `:shell_unreachable` reason (D-12). One reason,
+  four variants — never four reasons.
+
+    * `:no_transport` — the bridge hook is wired and acked, but no native transport
+      (`window.webkit.messageHandlers.crosswakeBridge` / the Android WebMessage
+      listener) is reachable.
+    * `:reply_timeout` — the shell received the request but never answered before
+      the reply deadline elapsed.
+    * `:transport_error` — the hook found a transport but the call into it itself
+      failed.
+    * `:hook_not_wired` — no acknowledgement arrived before the server-armed wiring
+      deadline; the bridge hook is not wired up on this page at all.
+  """
+  @type failing_moment :: :no_transport | :reply_timeout | :transport_error | :hook_not_wired
 
   @type t :: %__MODULE__{
           reason: reason(),
@@ -108,6 +130,17 @@ defmodule Crosswake.Shell.Denial do
         }
       else
         recovery
+      end
+
+    {details, recovery}
+  end
+
+  defp ensure_commerce_corridor_payload(:shell_unreachable, details, recovery) do
+    details =
+      if Map.has_key?(details, :failing_moment) do
+        details
+      else
+        Map.put(details, :failing_moment, :hook_not_wired)
       end
 
     {details, recovery}

@@ -182,7 +182,7 @@ defmodule Crosswake.Shell.Activation do
 
   defp target_from_request(%Request{} = request) do
     %Target{
-      manifest_schema_version: "1.0.0",
+      manifest_schema_version: Types.manifest_schema_version(),
       bridge_protocol_version: request.bridge_protocol_version,
       native_runtime_version: request.native_runtime_version,
       origin: request.origin,

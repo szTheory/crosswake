@@ -19,6 +19,7 @@ defmodule Crosswake.CapabilityMap do
       :route_runtime_owner,
       :package_owner,
       :proof_posture,
+      :rebuild,
       :denial_fallback,
       :v20_implication
     ]
@@ -34,6 +35,7 @@ defmodule Crosswake.CapabilityMap do
             route_runtime_owner: Crosswake.CapabilityMap.route_runtime_owner(),
             package_owner: Crosswake.CapabilityMap.package_owner(),
             proof_posture: Crosswake.CapabilityMap.proof_posture(),
+            rebuild: Crosswake.CapabilityMap.rebuild(),
             denial_fallback: String.t(),
             v20_implication: String.t()
           }
@@ -53,6 +55,13 @@ defmodule Crosswake.CapabilityMap do
   @package_owners [:core, :native_shell, :first_party_companion, :example_docs_only, :deferred]
   @proof_postures [:merge_blocking, :advisory, :not_yet_proven, :unsupported]
 
+  # D-53 (Phase 154, CTRL-05): mirrors Crosswake.Manifest.Types.Capability.rebuild/0's
+  # three-value vocabulary — the guide adopters read to CHOOSE controls must show
+  # rebuild cost, not just support posture. Rows without a live manifest capability
+  # entry still declare an explicit value (never a placeholder), per the same
+  # honesty discipline D-52 applies to the catalog itself.
+  @rebuild_classes [:none, :native_required, :companion_required]
+
   @route_runtime_owners [
     :live_view,
     :bounded_bridge,
@@ -69,6 +78,8 @@ defmodule Crosswake.CapabilityMap do
           :core | :native_shell | :first_party_companion | :example_docs_only | :deferred
 
   @type proof_posture :: :merge_blocking | :advisory | :not_yet_proven | :unsupported
+
+  @type rebuild :: :none | :native_required | :companion_required
 
   @type route_runtime_owner ::
           :live_view
@@ -91,6 +102,9 @@ defmodule Crosswake.CapabilityMap do
   @spec proof_postures() :: [proof_posture()]
   def proof_postures, do: @proof_postures
 
+  @spec rebuild_classes() :: [rebuild()]
+  def rebuild_classes, do: @rebuild_classes
+
   @spec route_runtime_owners() :: [route_runtime_owner()]
   def route_runtime_owners, do: @route_runtime_owners
 
@@ -102,6 +116,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Route policy DSL and runtime ownership",
         route_or_evidence_source: "guides/route_policy.md and compiled router metadata",
         category: :shipped,
+        rebuild: :none,
         display_label: "Available today",
         route_runtime_owner: :live_view,
         package_owner: :core,
@@ -115,6 +130,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Deep link and native shell activation",
         route_or_evidence_source: "guides/native_shell.md and bridge/native behavioral proof",
         category: :shipped,
+        rebuild: :none,
         display_label: "Available today",
         route_runtime_owner: :native_shell,
         package_owner: :native_shell,
@@ -129,6 +145,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Bounded bridge app info",
         route_or_evidence_source: "guides/bridge.md and manifest capability catalog",
         category: :shipped,
+        rebuild: :none,
         display_label: "Available today",
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
@@ -143,6 +160,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Bounded bridge haptics",
         route_or_evidence_source: "AdminPilot approval route and guides/bridge.md",
         category: :shipped,
+        rebuild: :none,
         display_label: "Available today",
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
@@ -156,6 +174,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Bounded bridge share",
         route_or_evidence_source: "bridge-proof route and guides/capabilities.md",
         category: :demoed,
+        rebuild: :none,
         display_label: "Advisory evidence",
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
@@ -170,6 +189,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Read-only permission status",
         route_or_evidence_source: "permissions.status capability family",
         category: :shipped,
+        rebuild: :none,
         display_label: "Available today",
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
@@ -185,6 +205,7 @@ defmodule Crosswake.CapabilityMap do
         route_or_evidence_source:
           "notification_token capability family and Chimeway support truth",
         category: :demoed,
+        rebuild: :companion_required,
         display_label: "Advisory evidence",
         route_runtime_owner: :bounded_bridge,
         package_owner: :first_party_companion,
@@ -199,6 +220,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "AdminPilot approval haptics pressure",
         route_or_evidence_source: "/saas/approvals/approval-1 route-tour proof",
         category: :demoed,
+        rebuild: :none,
         display_label: "Proof-backed example",
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
@@ -212,6 +234,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Fieldserv native capture handoff",
         route_or_evidence_source: "/fieldserv/jobs/:id/capture handoff evidence",
         category: :next_pack_candidate,
+        rebuild: :native_required,
         display_label: "Next-pack candidate",
         route_runtime_owner: :native_screen,
         package_owner: :native_shell,
@@ -225,6 +248,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Scanner and QR scan",
         route_or_evidence_source: "Fieldserv capability pressure rows",
         category: :missing,
+        rebuild: :companion_required,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -238,6 +262,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Document scan",
         route_or_evidence_source: "Fieldserv capability pressure rows",
         category: :missing,
+        rebuild: :companion_required,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -251,6 +276,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Media upload and evidence availability",
         route_or_evidence_source: "Fieldserv evidence review route",
         category: :missing,
+        rebuild: :native_required,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -264,6 +290,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Offline field inspection mutation",
         route_or_evidence_source: "Fieldserv cached read-only posture",
         category: :deferred,
+        rebuild: :none,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -277,6 +304,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "LearnLoop socketless offline study island",
         route_or_evidence_source: "/learnloop/study/session and offline route-tour proof",
         category: :demoed,
+        rebuild: :none,
         display_label: "Proof-backed example",
         route_runtime_owner: :offline_island,
         package_owner: :example_docs_only,
@@ -291,6 +319,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Native storage for content packs",
         route_or_evidence_source: "LearnLoop content-pack pressure",
         category: :deferred,
+        rebuild: :native_required,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -304,6 +333,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Reusable sync helpers",
         route_or_evidence_source: "LearnLoop replay and history diagnostics",
         category: :deferred,
+        rebuild: :none,
         display_label: "Future gap",
         route_runtime_owner: :future_native_control,
         package_owner: :deferred,
@@ -317,6 +347,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Backend-owned mocked entitlement projection",
         route_or_evidence_source: "/learnloop/subscription and commerce guide",
         category: :demoed,
+        rebuild: :companion_required,
         display_label: "Demo pressure",
         route_runtime_owner: :backend_projection,
         package_owner: :example_docs_only,
@@ -330,6 +361,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "StoreKit, Play Billing, and RevenueCat production integration",
         route_or_evidence_source: "guides/commerce.md and LearnLoop pressure",
         category: :deferred,
+        rebuild: :native_required,
         display_label: "Future gap",
         route_runtime_owner: :backend_projection,
         package_owner: :deferred,
@@ -343,6 +375,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Native alert and confirm affordances",
         route_or_evidence_source: "v20 Pack 1 candidate from v19 evidence",
         category: :next_pack_candidate,
+        rebuild: :native_required,
         display_label: "Next-pack candidate",
         route_runtime_owner: :future_native_control,
         package_owner: :core,
@@ -356,6 +389,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Native menu and action-button affordances",
         route_or_evidence_source: "v20 Pack 1 candidate from AdminPilot and Fieldserv pressure",
         category: :next_pack_candidate,
+        rebuild: :native_required,
         display_label: "Next-pack candidate",
         route_runtime_owner: :future_native_control,
         package_owner: :core,
@@ -369,6 +403,7 @@ defmodule Crosswake.CapabilityMap do
         surface: "Native toast and review prompt",
         route_or_evidence_source: "v20 Pack 1 candidate from showcase feedback pressure",
         category: :next_pack_candidate,
+        rebuild: :native_required,
         display_label: "Next-pack candidate",
         route_runtime_owner: :future_native_control,
         package_owner: :core,

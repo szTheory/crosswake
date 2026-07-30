@@ -6,9 +6,12 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   # excluded from the hermetic hex-page-proof full-suite run via --exclude.
   @moduletag :requires_example_host
 
+  import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
+
   alias Crosswake.Manifest
-  alias Phoenix.Component
-  alias Phoenix.LiveViewTest
+
+  @endpoint CrosswakeExample.Endpoint
 
   @saas_routes %{
     "saas-dashboard" => "/saas/dashboard",
@@ -21,6 +24,7 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   setup_all do
     Crosswake.TestSupport.ExampleHost.load!()
     Crosswake.TestSupport.ExampleHost.start_saas_repo!()
+    Crosswake.TestSupport.ExampleHost.start_endpoint!()
     :ok
   end
 
@@ -70,10 +74,20 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     end
   end
 
+  # D-61/D-62 (Phase 154): a route DECLARES a capability family ("haptics"); the dotted
+  # form ("haptics.impact") is the wire command that family resolves to, and it is the
+  # library's business, never a router literal. This assertion carried the pre-D-61
+  # vocabulary until now — the router flipped in 94151bd5 and this gated lane, which no
+  # local `mix test` runs by default, was not re-run against it.
   test "only the approval detail route declares the bounded haptics capability" do
     assert {:ok, %{manifest: manifest}} = Manifest.compile(CrosswakeExample.Router)
 
-    assert manifest.routes["saas-approval"].capabilities == ["haptics.impact"]
+    assert manifest.routes["saas-approval"].capabilities == ["haptics"]
+
+    # Guard the decision, not just the string: the declaration must stay in family form,
+    # so a future edit that re-inlines a wire command id fails here rather than silently
+    # reintroducing the drift D-61 removed.
+    refute Enum.any?(manifest.routes["saas-approval"].capabilities, &String.contains?(&1, "."))
 
     for route_id <- Map.keys(@saas_routes) -- ["saas-approval"] do
       assert manifest.routes[route_id].capabilities == []
@@ -138,87 +152,83 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
   end
 
   test "the five LiveViews render one coherent approvals-led SaaS companion lane" do
-    fixtures_mod = CrosswakeExample.SaaSPortal.Fixtures
-    fixtures = apply(fixtures_mod, :seed, [])
-    user = apply(fixtures_mod, :user!, [:approver])
+    conn = conn_for(:approver)
 
-    dashboard_socket =
-      base_socket(user, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.DashboardLive)
-
-    dashboard_html =
-      render_html(CrosswakeExample.SaaSPortal.DashboardLive, dashboard_socket.assigns)
-
+    {:ok, _view, dashboard_html} = live(conn, "/saas/dashboard")
     assert dashboard_html =~ "Northwind mobile approvals"
     assert dashboard_html =~ "Account posture"
 
-    account_socket =
-      base_socket(user, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.AccountLive)
-      |> handle_params!(CrosswakeExample.SaaSPortal.AccountLive, %{"id" => "acct-north"})
-
-    account_html = render_html(CrosswakeExample.SaaSPortal.AccountLive, account_socket.assigns)
+    {:ok, _view, account_html} = live(conn, "/saas/accounts/acct-north")
     assert account_html =~ "Read-only account context"
     assert account_html =~ "Approval threshold"
 
-    approvals_socket =
-      base_socket(user, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.ApprovalsLive)
-
-    approvals_html =
-      render_html(CrosswakeExample.SaaSPortal.ApprovalsLive, approvals_socket.assigns)
-
+    {:ok, _view, approvals_html} = live(conn, "/saas/approvals")
     assert approvals_html =~ "Approvals queue"
     assert approvals_html =~ "server-authoritative approval action"
 
-    settings_socket =
-      base_socket(user, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.SettingsLive)
-
-    settings_html = render_html(CrosswakeExample.SaaSPortal.SettingsLive, settings_socket.assigns)
+    {:ok, _view, settings_html} = live(conn, "/saas/settings/profile")
     assert settings_html =~ "Profile settings"
     assert settings_html =~ "Settings posture"
   end
 
+  # A real Phoenix.LiveViewTest round trip since Phase 154. This route attaches
+  # Crosswake.Bridge in mount/3, and the dispatch runs through the LiveView lifecycle
+  # hooks attach/1 registers — machinery a hand-built %Phoenix.LiveView.Socket{} does
+  # not have (no :lifecycle private key) and that calling module.handle_event/3
+  # directly bypasses entirely. Driving the mounted route is the only way this lane
+  # can observe the seam rather than a socket the framework would never produce.
+  # Mirrors the same migration made for the example host's own copy of this test.
   test "approval detail keeps the write path server-authoritative and emits the bounded haptics request on success" do
-    fixtures_mod = CrosswakeExample.SaaSPortal.Fixtures
-    fixtures = apply(fixtures_mod, :seed, [])
-    approver = apply(fixtures_mod, :user!, [:approver])
-    member = apply(fixtures_mod, :user!, [:member])
+    approvals = CrosswakeExample.SaaSPortal.Approvals
+    approver = apply(CrosswakeExample.SaaSPortal.Fixtures, :user!, [:approver])
 
-    approver_socket =
-      base_socket(approver, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.ApprovalLive)
-      |> handle_params!(CrosswakeExample.SaaSPortal.ApprovalLive, %{"id" => "approval-1"})
-      |> handle_event!(CrosswakeExample.SaaSPortal.ApprovalLive, "approve", %{})
+    {:ok, approver_view, initial_html} = live(conn_for(:approver), "/saas/approvals/approval-1")
 
-    assert approver_socket.assigns.approval.status == :approved
-    assert approver_socket.assigns.approval.reviewed_by == approver.id
-    assert approver_socket.assigns.approval_notice =~ "Phoenix recorded the decision"
-    assert approver_socket.assigns.bridge_request["command"] == "haptics.impact"
+    # The page carries the bridge element itself, so a shell-side hook has something to
+    # bind to. Before Phase 154 this route hand-rolled an inline dispatch script instead.
+    assert initial_html =~ ~s(id="crosswake-bridge")
+    assert initial_html =~ ~s(phx-hook="CrosswakeBridge")
+    assert initial_html =~ "No haptics request sent"
+    refute initial_html =~ "Command (wire protocol)"
 
-    approval_html = render_html(CrosswakeExample.SaaSPortal.ApprovalLive, approver_socket.assigns)
-    assert approval_html =~ "Server-authoritative decision"
-    assert approval_html =~ "crosswakeBridge"
-    assert approval_html =~ "approval-haptics-approval-1"
+    approved_html = render_click(approver_view, "approve")
+
+    # The envelope the seam actually built, observed as it crosses the seam. This is the
+    # post-154 replacement for the old assertion on a hand-built `bridge_request` assign
+    # and its correlation id in the DOM — correlation ids are library-internal now (D-20).
+    assert_push_event(approver_view, "crosswake:bridge", envelope)
+    assert envelope["command"] == "haptics.impact"
+    assert envelope["capability"] == "haptics"
+    assert envelope["route_id"] == "saas-approval"
+
+    # Server authority: the decision is committed by Phoenix, independent of any shell.
+    approved = apply(approvals, :get_approval!, ["approval-1"])
+    assert approved.status == :approved
+    assert approved.reviewed_by == approver.id
+
+    assert approved_html =~ "Server-authoritative decision"
+    assert approved_html =~ "Phoenix recorded the decision"
+
+    # The evidence panel left its idle state and is projecting a real dispatch (D-74).
+    refute approved_html =~ "No haptics request sent"
+    assert approved_html =~ "Capability (route policy)"
+    assert approved_html =~ "Command (wire protocol)"
 
     # The approver's approval above persisted to the DB; reseed to a pristine
     # pending approval-1 so the member path tests authorization denial in
     # isolation (was fixture-per-mount before the SQLite persistence layer).
-    apply(CrosswakeExample.SaaSPortal.Approvals, :reset!, [])
+    apply(approvals, :reset!, [])
 
-    member_socket =
-      base_socket(member, fixtures.account)
-      |> mount!(CrosswakeExample.SaaSPortal.ApprovalLive)
-      |> handle_params!(CrosswakeExample.SaaSPortal.ApprovalLive, %{"id" => "approval-1"})
-      |> handle_event!(CrosswakeExample.SaaSPortal.ApprovalLive, "approve", %{})
+    {:ok, member_view, _member_html} = live(conn_for(:member), "/saas/approvals/approval-1")
+    denied_html = render_click(member_view, "approve")
 
-    assert member_socket.assigns.approval.status == :pending
-
-    assert member_socket.assigns.approval_error ==
+    assert denied_html =~
              "Approver role required. Phoenix kept the request unchanged at the server boundary."
 
-    assert member_socket.assigns.bridge_request == nil
+    assert apply(approvals, :get_approval!, ["approval-1"]).status == :pending
+
+    # No server authority, no shell request: the refusal happens before the seam.
+    refute_push_event(member_view, "crosswake:bridge", %{})
   end
 
   test "the base checked-in proof entrypoint layers in the SaaS lane" do
@@ -229,31 +239,12 @@ defmodule Crosswake.Proof.Phase7SaaSLaneTest do
     assert example_host_script =~ "test/crosswake/proof/phase5_proof_lane_test.exs"
   end
 
-  defp base_socket(user, account) do
-    %Phoenix.LiveView.Socket{}
-    |> Component.assign(:current_saas_user, user)
-    |> Component.assign(:current_saas_account, account)
-    |> Component.assign(:saas_role, user.role)
-  end
+  # Signs in through the host's own session boundary rather than assigning around it, so
+  # the route's live_session on_mount hook runs for real.
+  defp conn_for(role) do
+    user = apply(CrosswakeExample.SaaSPortal.Fixtures, :user!, [role])
+    session_key = apply(CrosswakeExample.SaaSPortal.Auth, :session_key, [])
 
-  defp mount!(socket, module) do
-    assert {:ok, mounted_socket} = module.mount(%{}, %{}, socket)
-    mounted_socket
-  end
-
-  defp handle_params!(socket, module, params) do
-    assert {:noreply, updated_socket} = module.handle_params(params, nil, socket)
-    updated_socket
-  end
-
-  defp handle_event!(socket, module, event, params) do
-    assert {:noreply, updated_socket} = module.handle_event(event, params, socket)
-    updated_socket
-  end
-
-  defp render_html(module, assigns) do
-    assigns
-    |> module.render()
-    |> LiveViewTest.rendered_to_string()
+    Plug.Test.init_test_session(build_conn(), %{session_key => user.id})
   end
 end

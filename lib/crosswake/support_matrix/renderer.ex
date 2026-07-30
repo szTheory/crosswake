@@ -31,6 +31,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "",
       support_truth_legend_section(),
       "",
+      interaction_class_legend_section(),
+      "",
       "## Status Legend",
       "",
       "- supported",
@@ -48,6 +50,8 @@ defmodule Crosswake.SupportMatrix.Renderer do
       section("Shell Artifacts", support_matrix.shells),
       "",
       capability_family_section(support_matrix.capability_families),
+      "",
+      bridge_reply_delivery_section(),
       "",
       commerce_corridor_section(Crosswake.SupportMatrix.commerce_corridors()),
       "",
@@ -229,6 +233,48 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "Device/provider evidence is not backend/session authority.",
       "Cached read-only is not offline mutation.",
       "Bridge is not high-frequency or mutation authority."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp interaction_class_legend_section do
+    [
+      "## Interaction-Class Legend",
+      "",
+      "`manifest_schema_version` moved `1.0.0` -> `1.1.0` (Phase 154, CTRL-05/D-55): additive, native-inert — the iOS and Android shells decode neither the new `interaction` field nor the widened `Capability` enforce-keys, so this is `compatibility-bump only`, not rebuild-required.",
+      "",
+      "Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.",
+      "",
+      "**Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.",
+      "",
+      "| Interaction Class | What it means |",
+      "|--------------------|----------------|",
+      "| fire-and-forget | The bridge dispatches the command and the route continues without waiting on a completion payload. A request-acknowledgement payload (for example `share`'s `%{\"outcome\" => \"requested\"}`) does not change this — fire-and-forget means no completion is claimed, not that no payload is returned. |",
+      "| device-answer | The device autonomously answers with data — a snapshot or metadata read that does not require the user to make a choice. |",
+      "| user-answer | Completing the command requires an explicit user choice or action (for example picking a file) before a result exists. |"
+    ]
+    |> Enum.join("\n")
+  end
+
+  # D-03: CTRL-01's reply half is NOT uniform across platforms in Phase 154, and the
+  # matrix says so per reply path rather than folding a pending leg into a supported
+  # capability cell. A capability row answers "is this family authorized and proven";
+  # it has no column that could carry "the reply comes back on this platform in a
+  # later release", and widening the capability cell to imply completeness is exactly
+  # the claim D-03 prohibits.
+  defp bridge_reply_delivery_section do
+    [
+      "## Bridge Reply Delivery",
+      "",
+      "Reply delivery is stated per path. A bounded-bridge family being `supported` means the route is authorized to dispatch it and the denial contract holds; it does not by itself mean a NATIVE reply travels back on every platform yet.",
+      "",
+      "| Reply path | Baseline | Proof Status | Notes |",
+      "|------------|----------|--------------|-------|",
+      "| server-synthesized denial | supported | merge-blocking | Every platform including a plain browser with no shell at all. No shell, an unwired hook, and a shell refusal each resolve to exactly one typed denial; there is no configuration in which a push resolves to silence (CTRL-02). |",
+      "| Android native reply | supported | JVM hermetic proof | The shipped Android shell core has been duplex since day one — the page receives a reply proxy and the reply travels back as a JSON string. |",
+      "| iOS native reply | verification required | merge-blocking | The return leg lands in-repo in Phase 154: the reply sink evaluates JavaScript against the hook's landing pad, with Swift unit tests and committed contract vectors. It reaches adopters with the **Phase 156** native release, which requires a shell rebuild regardless. Until then an iOS route still receives the server-synthesized denial rather than a native reply. |",
+      "",
+      "Fire-and-forget families do not wait on the iOS leg: `haptics.impact` is already present in the shipped closed command enum of both native cores, so its proof needs no native release."
     ]
     |> Enum.join("\n")
   end

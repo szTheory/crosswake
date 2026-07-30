@@ -16,6 +16,14 @@ const routeTourScreenshotDir = path.join(screenshotDir, 'screenshots');
 const routerPath = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
 const routeTourCommand = 'npx playwright test e2e/route_tour.spec.ts';
 
+// Read from the library's own contract rather than hardcoded, so a protocol version
+// bump can never leave this spec asserting a stale number the way the deleted
+// hand-built envelope did.
+const contractPath = path.join(process.cwd(), '..', '..', 'lib', 'crosswake', 'bridge', 'contract.ex');
+const BRIDGE_PROTOCOL_VERSION = /@version\s+"([^"]+)"/.exec(readFileSync(contractPath, 'utf8'))![1];
+
+const bridgeReplySelector = '#crosswake-bridge-reply';
+
 type AdminPilotFlowOptions = {
   captureScreenshots?: boolean;
 };
@@ -72,6 +80,93 @@ test.describe('Crosswake route-owner browser tour', () => {
     await expectNoHorizontalOverflow(page, 'learnloop-dashboard');
 
     await captureRouteScreenshot(page, 'showcase-mobile-dark-reduced.png');
+  });
+});
+
+/*
+ * D-38's three browser-only cases for the typed control-contract seam. No simulator
+ * and no device is involved, honoring the COLL-01 wall — a desktop browser is a real,
+ * shipped runtime for this seam, not a stand-in for one.
+ *
+ * Each case asserts POSITIVELY that a reply arrived, then which reply it was. The
+ * third case is the one that earns its keep: without it the server-armed wiring
+ * deadline is untested infrastructure, and an adopter who registers the hooks map but
+ * omits the element from a route's tree would discover that only in production.
+ */
+test.describe('Crosswake bounded bridge — shell absent, shell present, hook unwired', () => {
+  test('@bridge renders a typed denial when the browser has no shell at all', async ({ page }) => {
+    await page.goto('/bridge-proof');
+    await expectLiveViewConnected(page, 'bridge-proof');
+
+    const reply = await shareAndAwaitReply(page);
+
+    await expect(reply, ownerMessage('bridge-proof', 'no-shell denial')).toHaveAttribute('data-cw-reply-status', 'deny');
+    await expect(reply, ownerMessage('bridge-proof', 'no-shell denial reason')).toContainText('shell_unreachable');
+    await expect(reply, ownerMessage('bridge-proof', 'no-shell denial names the transport fact')).toContainText(
+      'could not reach a native transport',
+    );
+  });
+
+  test('@bridge renders an ok reply when a shell is injected at document start', async ({ page }) => {
+    // page.addInitScript runs at document start — the exact injection point both real
+    // shells use for window.crosswakeBridge — so this is a faithful stand-in for a
+    // shell rather than a hand-wave. The reply is deferred by one macrotask because
+    // the hook records the correlation id only AFTER postMessage returns; answering
+    // synchronously would be dropped by the hook's own in-flight gate, correctly.
+    await page.addInitScript(() => {
+      const shell: Record<string, unknown> = {
+        postMessage(raw: string) {
+          const request = JSON.parse(raw);
+          setTimeout(() => {
+            (shell.__reply as (reply: unknown) => void)({
+              protocol: request.protocol,
+              version: request.version,
+              status: 'ok',
+              command: request.command,
+              route_id: request.route_id,
+              correlation_id: request.correlation_id,
+              payload: {},
+            });
+          }, 0);
+        },
+      };
+
+      (window as unknown as Record<string, unknown>).crosswakeBridge = shell;
+    });
+
+    await page.goto('/bridge-proof');
+    await expectLiveViewConnected(page, 'bridge-proof');
+
+    const reply = await shareAndAwaitReply(page);
+
+    await expect(reply, ownerMessage('bridge-proof', 'simulated-shell ok reply')).toHaveAttribute('data-cw-reply-status', 'ok');
+    await expect(reply, ownerMessage('bridge-proof', 'simulated-shell ok copy')).toContainText('Shell accepted');
+  });
+
+  test('@bridge renders the server-side wiring-deadline denial when the hook is deliberately unwired', async ({ page }) => {
+    // Serve an inert module in place of the real hook: the layout still registers a
+    // hook named CrosswakeBridge and the element still mounts, but nothing ever
+    // acknowledges the dispatch. This is the adopter-misconfiguration shape the
+    // server-armed deadline exists to catch, and it is what makes that deadline a
+    // tested safety net rather than untested infrastructure (D-36, D-38).
+    await page.route('**/crosswake/crosswake.esm.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/javascript',
+        body: 'export const CrosswakeBridge = {};\nexport default CrosswakeBridge;\n',
+      }),
+    );
+
+    await page.goto('/bridge-proof');
+    await expectLiveViewConnected(page, 'bridge-proof');
+
+    const reply = await shareAndAwaitReply(page);
+
+    await expect(reply, ownerMessage('bridge-proof', 'unwired-hook denial')).toHaveAttribute('data-cw-reply-status', 'deny');
+    await expect(reply, ownerMessage('bridge-proof', 'unwired-hook denial reason')).toContainText('shell_unreachable');
+    await expect(reply, ownerMessage('bridge-proof', 'server-armed wiring deadline, not a transport fact')).toContainText(
+      'before the wiring deadline',
+    );
   });
 });
 
@@ -165,7 +260,7 @@ async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOp
   expect(router, ownerMessage('saas-dashboard', 'live_view')).toContain('id: "saas-dashboard"');
   expect(router, ownerMessage('saas-approvals', 'live_view')).toContain('id: "saas-approvals"');
   expect(router, ownerMessage('saas-approval', 'live_view + bounded haptics')).toContain('id: "saas-approval"');
-  expect(router, ownerMessage('saas-approval', 'bounded haptics capability')).toContain('capabilities: ["haptics.impact"]');
+  expect(router, ownerMessage('saas-approval', 'bounded haptics capability')).toContain('capabilities: ["haptics"]');
 
   await page.goto('/saas/dashboard');
   await expect(page, ownerMessage('saas-dashboard', 'browser title')).toHaveTitle('Dashboard · AdminPilot · Crosswake');
@@ -192,12 +287,31 @@ async function proveAdminPilotApprovalFlow(page: Page, options: AdminPilotFlowOp
 
   const status = page.getByRole('status').first();
   await expect(status, ownerMessage('saas-approval', 'Phoenix/server approval status')).toContainText(/Phoenix|server authority/i);
-  const hapticsPayload = await approvalHapticsPayload(page);
-  expect(hapticsPayload.command, ownerMessage('saas-approval', 'post-success haptics command')).toBe('haptics.impact');
-  expect(hapticsPayload.capability, ownerMessage('saas-approval', 'post-success haptics capability')).toBe('haptics.impact');
-  expect(hapticsPayload.route_id, ownerMessage('saas-approval', 'post-success haptics route')).toBe('saas-approval');
-  expect(hapticsPayload.active_route_id, ownerMessage('saas-approval', 'post-success haptics active route')).toBe('saas-approval');
-  expect(hapticsPayload.protocol, ownerMessage('saas-approval', 'post-success haptics protocol')).toBe('crosswake.bridge');
+  // The two vocabularies, side by side and deliberately NOT interchangeable: the wire
+  // command keeps its dotted form permanently, while the route-policy capability id is
+  // the family form. Asserting both here is what would catch a future edit that
+  // quietly collapsed them back into one string.
+  const haptics = await approvalHapticsEvidence(page);
+  expect(haptics.command, ownerMessage('saas-approval', 'post-success haptics wire command')).toBe('haptics.impact');
+  expect(haptics.capability, ownerMessage('saas-approval', 'post-success haptics route-policy capability')).toBe('haptics');
+  expect(haptics.route_id, ownerMessage('saas-approval', 'post-success haptics route')).toBe('saas-approval');
+  expect(haptics.style, ownerMessage('saas-approval', 'post-success haptics payload reached the wire')).toBe('light');
+
+  // D-75: a reply ARRIVED. A denial counts — what must not pass is the waiting state,
+  // which looks entirely plausible and is exactly what an unconnected socket leaves behind.
+  expect(haptics.reply, ownerMessage('saas-approval', 'a reply always arrives — deny counts')).not.toBeNull();
+  expect(['ok', 'deny'], ownerMessage('saas-approval', 'typed reply verdict')).toContain(haptics.reply.status);
+
+  // In a desktop browser there is no shell, so this is the DEFAULT post-approval state:
+  // the fail-closed thesis rendering itself (D-65).
+  expect(haptics.reply.status, ownerMessage('saas-approval', 'desktop browser has no shell')).toBe('deny');
+  expect(haptics.reply.reason, ownerMessage('saas-approval', 'fail-closed denial reason')).toBe('shell_unreachable');
+  await expect(page.locator('#haptics-reply'), ownerMessage('saas-approval', 'server authority survives the refusal')).toContainText(
+    'The approval stands',
+  );
+  await expect(page.locator('#haptics-reply'), ownerMessage('saas-approval', 'no faked browser substitute')).toContainText(
+    'rather than fake one',
+  );
   await expect(page.locator('body'), ownerMessage('saas-approval', 'haptics degradable support truth')).toContainText(/Optional haptics|secondary|degradable/i);
   if (captureScreenshots) {
     await captureRouteScreenshot(page, 'adminpilot-approval-approved.png');
@@ -231,18 +345,24 @@ async function proveBridgeRoute(page: Page) {
   await page.goto('/bridge-proof');
 
   await expect(page.getByRole('heading', { name: 'Bridge Proof' }), ownerMessage('bridge-proof', 'live_view + bounded bridge')).toBeVisible();
-  await page.getByRole('button', { name: 'Share' }).click();
+  await expectLiveViewConnected(page, 'bridge-proof');
+  await shareAndAwaitReply(page);
   await expect(page.locator('#crosswake-bridge-payload'), ownerMessage('bridge-proof', 'bounded bridge')).not.toHaveAttribute('hidden', '');
 
+  // The raw dump is now the envelope Crosswake.Bridge.push/3 actually built, not a
+  // hand-assembled copy of it — so these assertions read the wire truth directly
+  // (D-67, D-70). The hand-built envelope this replaces claimed protocol version
+  // "1.0.0" while the shipped contract had already moved to "1.1.0": exactly the
+  // drift that made a second, hand-maintained envelope worth deleting.
   const payload = await bridgePayload(page);
   expect(payload.command, ownerMessage('bridge-proof', 'bounded bridge')).toBe('share.invoke');
   expect(payload.capability, ownerMessage('bridge-proof', 'bounded bridge')).toBe('share');
   expect(payload.route_id, ownerMessage('bridge-proof', 'bounded bridge')).toBe('bridge-proof');
   expect(payload.active_route_id, ownerMessage('bridge-proof', 'bounded bridge')).toBe('bridge-proof');
   expect(payload.protocol, ownerMessage('bridge-proof', 'bounded bridge')).toBe('crosswake.bridge');
-  expect(payload.version, ownerMessage('bridge-proof', 'bounded bridge')).toBe('1.0.0');
+  expect(payload.version, ownerMessage('bridge-proof', 'bounded bridge')).toBe(BRIDGE_PROTOCOL_VERSION);
   expect(payload.origin, ownerMessage('bridge-proof', 'bounded bridge')).toBe('https://example.crosswake.invalid');
-  expect(payload.correlation_id, ownerMessage('bridge-proof', 'bounded bridge')).toMatch(/^share-\d+$/);
+  expect(payload.correlation_id, ownerMessage('bridge-proof', 'library-minted correlation id')).toMatch(/^cwbridge-e\d+-/);
 }
 
 async function proveOfflineRoute(page: Page, context: BrowserContext) {
@@ -420,6 +540,28 @@ async function expectLiveViewConnected(page: Page, routeId: string) {
   ).toHaveClass(/phx-connected/);
 }
 
+/*
+ * Presses Share and waits for a reply to ARRIVE (D-75).
+ *
+ * The wait is on the verdict attribute leaving "pending", never on the absence of an
+ * error: a socket that never connected, or a hook that was never registered, leaves
+ * this panel sitting in a waiting state that looks entirely plausible on a screenshot
+ * and would pass a careless assertion. A denial counts as arrival — the point of
+ * CTRL-02 is that there is no configuration in which a push resolves to silence.
+ */
+async function shareAndAwaitReply(page: Page) {
+  await page.getByRole('button', { name: 'Share' }).click();
+
+  const reply = page.locator(bridgeReplySelector);
+  await expect(reply, ownerMessage('bridge-proof', 'a reply always arrives — deny counts')).not.toHaveAttribute(
+    'data-cw-reply-status',
+    'pending',
+    { timeout: 20000 },
+  );
+
+  return reply;
+}
+
 async function bridgePayload(page: Page) {
   const payload = page.locator('#crosswake-bridge-payload');
   await expect(payload, ownerMessage('bridge-proof', 'bounded bridge')).toHaveCount(1);
@@ -428,13 +570,30 @@ async function bridgePayload(page: Page) {
   return JSON.parse(text!);
 }
 
-async function approvalHapticsPayload(page: Page) {
-  const script = page.locator('#crosswake-approval-haptics');
-  await expect(script, ownerMessage('saas-approval', 'post-success haptics script')).toHaveCount(1);
-  const source = await script.evaluate((element) => element.innerHTML);
-  const match = source.match(/const payload = ("(?:\\.|[^"\\])*");/);
-  expect(match?.[1], ownerMessage('saas-approval', 'post-success haptics payload source')).toBeTruthy();
-  return JSON.parse(JSON.parse(match![1]));
+/*
+ * Reads the AdminPilot evidence panel's machine-readable projection of the envelope
+ * Crosswake.Bridge.push/3 built, plus the verdict.
+ *
+ * One attribute read and one parse. The predecessor located a <script> element by id
+ * and regex-scraped a payload literal out of its innerHTML — a required check wired
+ * directly to markup this phase deletes. Reading an attribute instead also frees the
+ * human-readable <dl> above it to change without breaking CI (D-74).
+ *
+ * The wait is on the verdict landing in the attribute, which is the positive
+ * reply-arrival gate (D-75).
+ */
+async function approvalHapticsEvidence(page: Page) {
+  const panel = page.locator('#haptics-evidence');
+  await expect(panel, ownerMessage('saas-approval', 'evidence panel present')).toHaveCount(1);
+  await expect(panel, ownerMessage('saas-approval', 'a reply always arrives — deny counts')).toHaveAttribute(
+    'data-cw-envelope',
+    /"reply":\{/,
+    { timeout: 20000 },
+  );
+
+  const envelope = await panel.getAttribute('data-cw-envelope');
+  expect(envelope, ownerMessage('saas-approval', 'machine-readable envelope attribute')).toBeTruthy();
+  return JSON.parse(envelope!);
 }
 
 async function createNativeRouteTourClaim(page: Page) {
