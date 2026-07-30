@@ -190,7 +190,9 @@ end
 
 defmodule Crosswake.TestSupport.Bridge.NotMountedLive do
   # Deliberately never calls Crosswake.Bridge.attach/1 — proves push/3 raises
-  # Crosswake.Bridge.NotMountedError rather than guessing a route id.
+  # Crosswake.Bridge.NotMountedError rather than guessing a route id, and (D-50) that
+  # resolve/2 does NOT — dispatched/2 stays strict alongside push/3, resolve/2 alone
+  # widens.
   @moduledoc false
 
   use Phoenix.LiveView
@@ -201,6 +203,19 @@ defmodule Crosswake.TestSupport.Bridge.NotMountedLive do
 
   def handle_event("dispatch", _params, socket) do
     {:noreply, Bridge.push(socket, "haptics")}
+  end
+
+  # D-50: resolve/2 on an unattached socket must return the socket unchanged and raise
+  # nothing — this handler only proves the call doesn't crash the LiveView process.
+  def handle_event("resolve", %{"ref" => ref_str}, socket) do
+    ref = String.to_atom(ref_str)
+    {:noreply, Bridge.resolve(socket, ref)}
+  end
+
+  # D-50 negative control: dispatched/2 stays strict on an unattached socket.
+  def handle_event("read_dispatched", %{"ref" => ref_str}, socket) do
+    ref = String.to_atom(ref_str)
+    {:noreply, Phoenix.Component.assign(socket, :dispatched, Bridge.dispatched(socket, ref))}
   end
 
   def render(assigns) do

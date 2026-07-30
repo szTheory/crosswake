@@ -275,17 +275,27 @@ defmodule Crosswake.Bridge do
   `API-DESIGN.md` alternative). `resolve/2` is the only mechanism.
 
   Phase 155's generated fallback components ship with this call already wired in.
+
+  A socket that never called `attach/1` has nothing in flight, so `resolve/2` returns it
+  unchanged here too (D-50) — this is what makes the "it never raises" promise above
+  literally true rather than aspirational. Phase 155's generated fallback ships inside
+  adopter code that may run before any capability motivates calling `attach/1`, so the
+  first fallback click must never 500 the LiveView process.
   """
   @spec resolve(Phoenix.LiveView.Socket.t(), term()) :: Phoenix.LiveView.Socket.t()
   def resolve(%Phoenix.LiveView.Socket{} = socket, ref) do
-    state = fetch_state!(socket)
-
-    case Enum.find(state.in_flight, fn {_correlation_id, entry} -> entry.ref == ref end) do
+    case maybe_fetch_state(socket) do
       nil ->
         socket
 
-      {correlation_id, _entry} ->
-        put_state(socket, %{state | in_flight: Map.delete(state.in_flight, correlation_id)})
+      state ->
+        case Enum.find(state.in_flight, fn {_correlation_id, entry} -> entry.ref == ref end) do
+          nil ->
+            socket
+
+          {correlation_id, _entry} ->
+            put_state(socket, %{state | in_flight: Map.delete(state.in_flight, correlation_id)})
+        end
     end
   end
 
@@ -522,6 +532,11 @@ defmodule Crosswake.Bridge do
   end
 
   defp put_state(socket, state), do: Phoenix.LiveView.put_private(socket, @private_key, state)
+
+  # The tolerant sibling of fetch_state!/1 (D-50): returns nil instead of raising when the
+  # socket never called attach/1. resolve/2 is the only caller — dispatched/2 and push/3
+  # stay on the strict fetch_state!/1 path below.
+  defp maybe_fetch_state(socket), do: socket.private[@private_key]
 
   defp fetch_state!(socket) do
     case socket.private[@private_key] do

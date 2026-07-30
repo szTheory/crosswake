@@ -11,7 +11,6 @@ defmodule Crosswake.Bridge.PushTest do
   import Phoenix.LiveViewTest
   import Phoenix.ConnTest
 
-  alias Crosswake.Bridge
   alias Crosswake.Bridge.Contract
   alias Crosswake.Bridge.NotMountedError
   alias Crosswake.Bridge.UndeclaredCapabilityError
@@ -49,7 +48,7 @@ defmodule Crosswake.Bridge.PushTest do
     |> Plug.Test.init_test_session(session)
   end
 
-  defp dispatch!(view, params \\ %{"ref" => "tap"}) do
+  defp dispatch!(view, params) do
     render_click(view, "dispatch", params)
     assert_push_event(view, "crosswake:bridge", envelope)
     envelope["correlation_id"]
@@ -495,6 +494,75 @@ defmodule Crosswake.Bridge.PushTest do
   end
 
   # ---------------------------------------------------------------------------
+  # resolve/2 on an unattached socket (D-50) — the fallback must never be the thing
+  # that crashes. resolve/2 alone widens; dispatched/2 and push/3 stay strict, proven
+  # here as the two negative controls without which the widening could silently spread.
+  # ---------------------------------------------------------------------------
+
+  describe "resolve/2 on an unattached socket (D-50)" do
+    test "resolve/2 on a socket that never attached returns the socket unchanged and raises nothing" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-not-mounted")
+
+      render_click(view, "resolve", %{"ref" => "tap"})
+
+      # The LiveView process is still alive and rendering normally — a raise here would
+      # have exited the process, which render/1 below would surface as a crash.
+      assert render(view) =~ "not-mounted-fixture"
+    end
+
+    test "resolve/2 on an attached socket with an unknown ref returns the socket unchanged (existing behavior preserved)" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      dispatch!(view, %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "never_dispatched"})
+
+      assert reply_element(view, "in-flight-count") =~ "1"
+    end
+
+    test "resolve/2 on an attached socket with a live ref deletes exactly the matching in-flight entry" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      dispatch!(view, %{"ref" => "keep"})
+      dispatch!(view, %{"ref" => "clear"})
+      render_click(view, "resolve", %{"ref" => "clear"})
+
+      assert reply_element(view, "in-flight-count") =~ "1"
+    end
+
+    test "calling resolve/2 twice for the same ref is a no-op the second time (D-50 companion to the existing coverage above)" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      dispatch!(view, %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "tap"})
+      render_click(view, "resolve", %{"ref" => "tap"})
+
+      assert reply_element(view, "in-flight-count") =~ "0"
+    end
+
+    test "negative control 1: dispatched/2 on a socket that never attached still raises NotMountedError" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-not-mounted")
+
+      message =
+        BridgeCase.exits_with(view, NotMountedError, fn ->
+          render_click(view, "read_dispatched", %{"ref" => "tap"})
+        end)
+
+      assert message =~ "not_mounted"
+    end
+
+    test "negative control 2: push/3 on a socket that never attached still raises NotMountedError" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-not-mounted")
+
+      message =
+        BridgeCase.exits_with(view, NotMountedError, fn ->
+          render_click(view, "dispatch", %{})
+        end)
+
+      assert message =~ "not_mounted"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Task 2 — two timers and the bridge telemetry catalog (D-22)
   # ---------------------------------------------------------------------------
 
@@ -564,7 +632,7 @@ defmodule Crosswake.Bridge.PushTest do
       ref = :telemetry_test.attach_event_handlers(self(), [[:crosswake, :bridge, :reply, :stop]])
       on_exit(fn -> :telemetry.detach(ref) end)
 
-      correlation_id = dispatch!(view, %{"ref" => "tap"})
+      _correlation_id = dispatch!(view, %{"ref" => "tap"})
       Process.sleep(100)
 
       assert_received {[:crosswake, :bridge, :reply, :stop], ^ref, _measurements, metadata}
