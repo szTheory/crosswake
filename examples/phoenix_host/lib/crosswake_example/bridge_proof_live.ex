@@ -1,32 +1,55 @@
 defmodule CrosswakeExample.BridgeProofLive do
   use Phoenix.LiveView
 
+  alias CrosswakeExample.Crosswake.Policy
+  alias CrosswakeExample.Layouts
   alias CrosswakeExample.PageTitle
 
-  @bridge_capability_version "1.0.0"
-  @bridge_protocol "crosswake.bridge"
   @bridge_route_id "bridge-proof"
-  @shell_origin "https://example.crosswake.invalid"
+  @share_ref :share
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     assign(socket,
-       bridge_request: nil,
-       bridge_contract: share_request(),
-       page_title: PageTitle.crosswake("Bridge Proof")
-     )}
+    socket =
+      socket
+      |> assign(
+        crosswake_manifest: Policy.manifest(),
+        crosswake_route_id: @bridge_route_id,
+        bridge_request: nil,
+        bridge_reply: nil,
+        page_title: PageTitle.crosswake("Bridge Proof")
+      )
+      |> Crosswake.Bridge.attach()
+
+    {:ok, socket}
   end
 
   @impl true
   def handle_event("share", _params, socket) do
-    {:noreply, assign(socket, bridge_request: share_request())}
+    socket =
+      Crosswake.Bridge.push(socket, "share",
+        ref: @share_ref,
+        payload: %{
+          "title" => "Crosswake Bridge Proof",
+          "text" => "Testing the native share dialog from Phoenix LiveView!",
+          "url" => "https://crosswake.com"
+        }
+      )
+
+    {:noreply,
+     assign(socket,
+       bridge_request: Crosswake.Bridge.dispatched(socket, @share_ref),
+       bridge_reply: nil
+     )}
+  end
+
+  @impl true
+  def handle_info({:crosswake_bridge, @share_ref, %Crosswake.Bridge.Reply{} = reply}, socket) do
+    {:noreply, assign(socket, bridge_reply: reply)}
   end
 
   @impl true
   def render(assigns) do
-    assigns = Map.put_new(assigns, :bridge_contract, share_request())
-
     ~H"""
     <link rel="stylesheet" href="/css/tokens.css" />
     <style>
@@ -52,6 +75,14 @@ defmodule CrosswakeExample.BridgeProofLive do
         background: var(--cw-action-bg);
         color: var(--cw-action-fg);
       }
+      #crosswake-bridge-reply {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border: 1px solid var(--cw-border-default);
+        border-radius: var(--cw-radius-md);
+        background: var(--cw-surface-inset);
+      }
+      #crosswake-bridge-reply strong { color: var(--cw-text-default); }
       /* Wrap the bounded-bridge payload so the page does not stretch to the
          width of the single-line JSON. white-space: pre-wrap is visual only —
          the element's textContent is unchanged, so the route-tour payload
@@ -71,63 +102,51 @@ defmodule CrosswakeExample.BridgeProofLive do
       }
     </style>
     <section class="cw-bridge">
+      <Layouts.crosswake_bridge />
+
       <h1>Bridge Proof</h1>
       <p>Demonstrating bounded bridge capability integration.</p>
 
-      <button
-        type="button"
-        phx-click="share"
-        onclick="document.getElementById('crosswake-bridge-payload')?.removeAttribute('hidden')"
-      >
+      <button type="button" phx-click="share">
         Share
       </button>
 
-      <script :if={@bridge_request} id={"crosswake-share-#{@bridge_request["correlation_id"]}"}>
-        <%= Phoenix.HTML.raw(bridge_script(@bridge_request)) %>
-      </script>
-      <pre :if={@bridge_request} id="crosswake-bridge-payload">
-        <%= Jason.encode!(@bridge_request) %>
-      </pre>
-      <pre :if={!@bridge_request} id="crosswake-bridge-payload" hidden>
-        <%= Jason.encode!(@bridge_contract) %>
-      </pre>
+      <p
+        id="crosswake-bridge-reply"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-cw-reply-status={reply_status(@bridge_reply)}
+      >
+        {reply_sentence(@bridge_request, @bridge_reply)}
+      </p>
+
+      <pre id="crosswake-bridge-payload" hidden={@bridge_request == nil}>{@bridge_request && Jason.encode!(@bridge_request)}</pre>
     </section>
     """
   end
 
-  defp share_request do
-    %{
-      "protocol" => @bridge_protocol,
-      "version" => @bridge_capability_version,
-      "command" => "share.invoke",
-      "capability" => "share",
-      "route_id" => @bridge_route_id,
-      "active_route_id" => @bridge_route_id,
-      "origin" => @shell_origin,
-      "native_runtime_version" => "1.0.0",
-      "correlation_id" => "share-#{System.unique_integer([:positive])}",
-      "capabilities" => %{"share" => @bridge_capability_version},
-      "installed_packs" => %{},
-      "payload" => %{
-        "title" => "Crosswake Bridge Proof",
-        "text" => "Testing the native share dialog from Phoenix LiveView!",
-        "url" => "https://crosswake.com"
-      }
-    }
+  # The raw protocol surface is deliberate here (D-68): this is the protocol-proof
+  # route, so it dumps the whole envelope Crosswake.Bridge.push/3 actually built. The
+  # product-shaped AdminPilot route shows curated evidence instead.
+
+  defp reply_status(nil), do: "pending"
+  defp reply_status(%Crosswake.Bridge.Reply{status: :ok}), do: "ok"
+  defp reply_status(%Crosswake.Bridge.Reply{status: :deny}), do: "deny"
+
+  defp reply_sentence(nil, _reply) do
+    "No share request sent. Phoenix sends one when you press Share."
   end
 
-  defp bridge_script(request) do
-    payload_json = Jason.encode!(request)
+  defp reply_sentence(_request, nil) do
+    "Share request dispatched. Waiting for the shell to answer."
+  end
 
-    """
-    (() => {
-      const payload = #{payload_json};
-      if (window.webkit?.messageHandlers?.crosswakeBridge) {
-        window.webkit.messageHandlers.crosswakeBridge.postMessage(payload);
-      } else if (window.crosswakeBridge?.postMessage) {
-        window.crosswakeBridge.postMessage(payload);
-      }
-    })();
-    """
+  defp reply_sentence(_request, %Crosswake.Bridge.Reply{status: :ok}) do
+    "Shell accepted the share request."
+  end
+
+  defp reply_sentence(_request, %Crosswake.Bridge.Reply{status: :deny, denial: denial}) do
+    "Shell declined: #{denial.reason}. #{denial.message}"
   end
 end

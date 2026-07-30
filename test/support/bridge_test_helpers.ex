@@ -44,8 +44,9 @@ defmodule Crosswake.Bridge.Test do
   ## Multiple in-flight asks
 
   With more than one ask in flight, pass `:select` — a 1-arity function receiving the list
-  of `{correlation_id, entry}` tuples (`entry` carries `:ref`, `:acked`, `:command`, and
-  `:route_id`) and returning the one to answer:
+  of `{correlation_id, entry}` tuples (`entry` carries `:ref`, `:acked`, `:command`,
+  `:route_id`, and `:request` — the exact envelope pushed to the hook) and returning the
+  one to answer:
 
       reply =
         Crosswake.Bridge.Test.reply(view,
@@ -88,7 +89,7 @@ defmodule Crosswake.Bridge.Test do
 
   @doc """
   Returns `view`'s current in-flight bridge asks as a map of
-  `correlation_id => %{ref:, acked:, command:, route_id:}`.
+  `correlation_id => %{ref:, acked:, command:, route_id:, request:}`.
 
   Reads the real `Crosswake.Bridge` private state directly out of the running LiveView
   process (via `view.pid`, the actual LiveView pid — not the `Phoenix.LiveViewTest` proxy).

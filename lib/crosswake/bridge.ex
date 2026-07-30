@@ -232,6 +232,36 @@ defmodule Crosswake.Bridge do
   end
 
   @doc """
+  Returns the wire envelope `push/3` actually built for `ref`, as a plain map — the
+  same map that was pushed to the hook — or `nil` when no ask carrying that `ref` is
+  in flight.
+
+  Read it immediately after `push/3` when you need to render evidence of what was
+  dispatched (the showcase's AdminPilot approval panel does exactly this):
+
+      socket = Crosswake.Bridge.push(socket, "haptics", ref: :tap, payload: %{"style" => "light"})
+      assign(socket, dispatch: Crosswake.Bridge.dispatched(socket, :tap))
+
+  This exists so an adopter never hand-assembles a second copy of the envelope to
+  display. A hand-copied summary is free to drift from the manifest the seam
+  actually resolved against — which is the exact failure the typed seam exists to
+  remove — so the envelope is read back from the seam rather than re-declared.
+
+  This is NOT an availability predicate (D-09). It reports what THIS LiveView asked
+  for and has not yet resolved; it says nothing about whether a shell is present,
+  and branching on it cannot skip the reply, because `push/3` always resolves to
+  exactly one typed reply regardless of what this returns.
+  """
+  @spec dispatched(Phoenix.LiveView.Socket.t(), term()) :: map() | nil
+  def dispatched(%Phoenix.LiveView.Socket{} = socket, ref) do
+    state = fetch_state!(socket)
+
+    Enum.find_value(state.in_flight, fn {_correlation_id, entry} ->
+      if entry.ref == ref, do: entry.request
+    end)
+  end
+
+  @doc """
   Atomically clears the in-flight ask matching `ref`, returning the socket.
 
   Safe to call from an on-page fallback UI's click handler because a LiveView is one
@@ -296,12 +326,15 @@ defmodule Crosswake.Bridge do
           )
         end
 
-        new_state = track_in_flight(state, correlation_id, ref, command, entry.route_id)
+        request_map = Contract.to_map(request)
+
+        new_state =
+          track_in_flight(state, correlation_id, ref, command, entry.route_id, request_map)
 
         socket =
           socket
           |> put_state(new_state)
-          |> Phoenix.LiveView.push_event(@dispatch_event, Contract.to_map(request))
+          |> Phoenix.LiveView.push_event(@dispatch_event, request_map)
 
         {socket, %{route_id: state.route_id, capability: capability_family, command: command}}
       end
@@ -411,8 +444,11 @@ defmodule Crosswake.Bridge do
   # In-flight bookkeeping
   # ---------------------------------------------------------------------------
 
-  defp track_in_flight(state, correlation_id, ref, command, route_id) do
-    entry = %{ref: ref, acked: false, command: command, route_id: route_id}
+  # `request` is the exact map pushed to the hook, retained so `dispatched/2` can hand
+  # back the envelope the seam built rather than making an adopter hand-assemble a
+  # second copy that is free to drift from it.
+  defp track_in_flight(state, correlation_id, ref, command, route_id, request) do
+    entry = %{ref: ref, acked: false, command: command, route_id: route_id, request: request}
     %{state | in_flight: Map.put(state.in_flight, correlation_id, entry)}
   end
 

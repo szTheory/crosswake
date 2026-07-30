@@ -94,6 +94,21 @@ defmodule Crosswake.Bridge.PushTest do
 
   defp reply_element(view, id), do: view |> element("##{id}") |> render()
 
+  # Pulls the JSON body back out of a rendered <div> — HEEx escapes the quotes, so the
+  # entity forms have to be reversed before Jason can decode it (&amp; last, or the
+  # earlier replacements would be double-decoded).
+  defp extract_json!(rendered) do
+    rendered
+    |> String.replace(~r/<[^>]*>/, "")
+    |> String.trim()
+    |> String.replace("&quot;", "\"")
+    |> String.replace("&#39;", "'")
+    |> String.replace("&lt;", "<")
+    |> String.replace("&gt;", ">")
+    |> String.replace("&amp;", "&")
+    |> Jason.decode!()
+  end
+
   # ---------------------------------------------------------------------------
   # Task 1 — the tracer: one declared capability travels the whole seam (CTRL-01)
   # ---------------------------------------------------------------------------
@@ -164,6 +179,32 @@ defmodule Crosswake.Bridge.PushTest do
 
       assert reply_element(view, "reply-status") =~ ""
       assert reply_element(view, "reply-count") =~ "0"
+    end
+
+    test "dispatched/2 hands back the SAME envelope that was pushed to the hook (D-67)" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      render_click(view, "dispatch", %{"ref" => "tap"})
+      assert_push_event(view, "crosswake:bridge", pushed_envelope)
+
+      read_back = view |> reply_element("dispatched-envelope") |> extract_json!()
+
+      # Byte-for-byte the same envelope, not a re-derived summary: an evidence panel
+      # rendering this can never drift from what the seam actually dispatched.
+      assert read_back == pushed_envelope
+      assert read_back["command"] == "haptics.impact"
+      assert read_back["capability"] == "haptics"
+    end
+
+    test "dispatched/2 returns nil for a ref with nothing in flight" do
+      {:ok, view, _html} = live(tracer_conn(), "/bridge-tracer")
+
+      dispatch!(view, %{"ref" => "tap"})
+      assert reply_element(view, "dispatched-envelope") =~ "haptics.impact"
+
+      render_click(view, "read_dispatched", %{"ref" => "never_pushed"})
+
+      assert reply_element(view, "dispatched-envelope") == "<div id=\"dispatched-envelope\"></div>"
     end
   end
 

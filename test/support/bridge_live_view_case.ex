@@ -87,6 +87,7 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
         crosswake_route_id: route_id,
         reply: nil,
         reply_ref: nil,
+        dispatched: nil,
         reply_count: 0,
         replies_by_ref: %{},
         unrelated_hit: false,
@@ -104,6 +105,9 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
     push_opts = [ref: ref, payload: payload] |> maybe_put_timeout(params)
 
     socket = Bridge.push(socket, family, push_opts)
+
+    socket = Phoenix.Component.assign(socket, :dispatched, Bridge.dispatched(socket, ref))
+
     {:noreply, refresh_in_flight_count(socket)}
   end
 
@@ -111,6 +115,13 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
     family = Map.get(params, "family", "haptics")
     socket = Bridge.push(socket, family)
     {:noreply, refresh_in_flight_count(socket)}
+  end
+
+  # Re-reads Crosswake.Bridge.dispatched/2 for an arbitrary ref, so a test can observe
+  # both the hit (an in-flight ask's envelope) and the miss (nil) through the same seam.
+  def handle_event("read_dispatched", %{"ref" => ref_str}, socket) do
+    ref = String.to_atom(ref_str)
+    {:noreply, Phoenix.Component.assign(socket, :dispatched, Bridge.dispatched(socket, ref))}
   end
 
   def handle_event("unrelated", _params, socket) do
@@ -170,6 +181,7 @@ defmodule Crosswake.TestSupport.Bridge.TracerLive do
       {@reply && @reply.denial && inspect(Map.get(@reply.denial.details, :failing_moment))}
     </div>
     <div id="reply-raw-reason">{@reply && @reply.denial && inspect(Map.get(@reply.denial.details, :raw_reason))}</div>
+    <div id="dispatched-envelope">{@dispatched && Jason.encode!(@dispatched)}</div>
     <div id="replies-by-ref-count">{map_size(@replies_by_ref)}</div>
     <div id="replies-by-ref">{inspect(@replies_by_ref)}</div>
     """

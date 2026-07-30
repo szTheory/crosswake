@@ -36,6 +36,15 @@ defmodule CrosswakeExample.Endpoint do
     only: ~w(phoenix_live_view.esm.js)
   )
 
+  # crosswake:install:start
+  plug(Plug.Static,
+    at: "/crosswake",
+    from: :crosswake,
+    gzip: false,
+    only: ~w(crosswake.esm.js)
+  )
+  # crosswake:install:end
+
   plug(Plug.RequestId)
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
 
