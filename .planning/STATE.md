@@ -3,16 +3,17 @@ gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 155
+current_phase_name: host-owned-fallback-components
 status: executing
-stopped_at: Phase 155 UI-SPEC approved
-last_updated: "2026-07-30T05:06:00.834Z"
+stopped_at: Completed 155-01-PLAN.md
+last_updated: "2026-07-30T14:46:46.976Z"
 last_activity: 2026-07-30
-last_activity_desc: Phase 155 planning complete
+last_activity_desc: Phase 155 execution started
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 14
+  completed_plans: 15
   percent: 33
 ---
 
@@ -23,18 +24,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-12 after v19.0 milestone completion)
 
 **Core value:** Replace host-owned generated shell code with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
-**Current focus:** Phase 155 — host owned fallback components
+**Current focus:** Phase 155 — host-owned-fallback-components
 
 ## Current Position
 
-Phase: 155
-Plan: Not started
+Phase: 155 (host-owned-fallback-components) — EXECUTING
+Plan: 2 of 7
 Phase: 153.1 (ci-gate-integrity-and-runner-cost) — **COMPLETE** (3/3 plans)
 Phase 153 (ios-mirror-unblock) — 3/4, **BLOCKED on a human gate**
 Status: Ready to execute
-Last activity: 2026-07-30 — Phase 155 planning complete
+Last activity: 2026-07-30 -- Phase 155 execution started
 
-Progress: [██████████] 100% of Phase 154
+Progress: [██████░░░░] 64% of Phase 154
 
 ## Blocked: Phase 153-02 (human gate, one-way door)
 
@@ -154,6 +155,7 @@ chimeway/sigra, and all of `CONSOL-*`.
 | Phase 154 P06 | 34min | 3 tasks | 24 files |
 | Phase 154 P07 | 27min | 3 tasks | 22 files |
 | Phase 154 P08 | 95min | 2 tasks | 11 files |
+| Phase 155 P01 | 130min | 2 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -300,6 +302,10 @@ Full decision log in PROJECT.md (Key Decisions).
 - [Phase ?]: HRDN-01: the evidence panel renders from the envelope Bridge.push/3 actually built (Bridge.dispatched/2), never a hand-assembled second copy
 - [Phase ?]: The HRDN-01 sweep asserts absence AND presence — no inline dispatch, plus >=2 seam call sites — so deleting the capability cannot satisfy the gate
 - [Phase ?]: phase52_publish_readiness.json regenerated for the new CHANGELOG Unreleased subsections rather than watering down the entry or weakening the assertion
+- [Phase ?]: 155-01: tokens.css gains a served sibling copy at priv/static/tokens.css (compile-tokens.js) since Plug.Static's only: resolves names relative to from:'s root, not the nested priv/static/crosswake/ packaged-mirror path
+- [Phase ?]: 155-01: crosswake_fallback.css.eex uses literal px values for spacing/type-scale/radius outside the --cwfb-* alias block (not var(--cw-*)) to hold D-24's 15-alias-only discipline
+- [Phase ?]: 155-01: confirm_modal demo wired to a new 'Preview the confirm fallback' trigger in ApprovalLive, not the existing 'Approve request' button, so Phase 154's pinned evidence-panel.spec.ts flow is untouched
+- [Phase ?]: 155-01: patcher.ex's endpoint only: list uses literal 'crosswake.esm.js tokens.css' text (not #{@hook_asset}/#{@tokens_asset} interpolation) to keep the line grep-able verbatim
 
 ### Pending Todos
 
@@ -387,9 +393,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T04:06:47.968Z
-Stopped at: Phase 155 UI-SPEC approved
-Resume file: .planning/phases/155-host-owned-fallback-components/155-UI-SPEC.md
+Last session: 2026-07-30T14:46:46.966Z
+Stopped at: Completed 155-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
