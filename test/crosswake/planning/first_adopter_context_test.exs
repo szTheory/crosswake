@@ -181,24 +181,28 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
       "evidence/capture.bin"
     ]
 
-    with_temporary_repository(scanned_paths ++ excluded_paths, "prefix #{private_term} suffix", fn root ->
-      assert Enum.sort(scanned_paths) == FirstAdopterContext.discover_paths(root)
+    with_temporary_repository(
+      scanned_paths ++ excluded_paths,
+      "prefix #{private_term} suffix",
+      fn root ->
+        assert Enum.sort(scanned_paths) == FirstAdopterContext.discover_paths(root)
 
-      assert scanned_paths
-             |> Enum.map(&%{rule_id: "privacy.private_term", path: &1})
-             |> Enum.sort_by(& &1.path) ==
-               FirstAdopterContext.scan_filesystem(root, [private_term])
+        assert scanned_paths
+               |> Enum.map(&%{rule_id: "privacy.private_term", path: &1})
+               |> Enum.sort_by(& &1.path) ==
+                 FirstAdopterContext.scan_filesystem(root, [private_term])
 
-      results = FirstAdopterContext.scan_filesystem(root, [private_term])
-      refute inspect(results) =~ private_term
-      refute inspect(results) =~ "prefix"
-    end)
+        results = FirstAdopterContext.scan_filesystem(root, [private_term])
+        refute inspect(results) =~ private_term
+        refute inspect(results) =~ "prefix"
+      end
+    )
   end
 
   test "filesystem discovery fails closed for repository enumeration and unclassified text paths" do
-    with_temporary_repository(["notes/unclassified.txt"], "safe", fn root ->
+    with_temporary_repository(["notes/unclassified.opaque"], "safe", fn root ->
       assert [
-               %{rule_id: "routing.unclassified_path", path: "notes/unclassified.txt"}
+               %{rule_id: "routing.unclassified_path", path: "notes/unclassified.opaque"}
              ] = FirstAdopterContext.scan_filesystem(root, [])
     end)
 

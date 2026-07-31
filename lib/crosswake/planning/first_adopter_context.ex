@@ -51,8 +51,11 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     %{glob: "guides/support_matrix.md", destination: :public}
   ]
 
-  @scannable_extensions ~w(.css .ex .exs .html .js .json .md .mjs .sh .swift .toml .ts .tsx .yml .yaml)
-  @binary_extensions ~w(.a .app .beam .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .svg .webp .zip)
+  @scannable_extensions ~w(
+    .bak .bat .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
+    .orig .pbxproj .plist .properties .py .sh .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
+  )
+  @binary_extensions ~w(.a .app .beam .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .svg .webp .zip)
 
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]
@@ -101,8 +104,10 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   @doc "Checks generic public/durable privacy boundaries without reading the filesystem."
   @spec scan(%{required(String.t()) => String.t()}) :: [map()]
   def scan(contents_by_path) when is_map(contents_by_path) do
-    routing_matrix()
-    |> Enum.filter(& &1.scan?)
+    File.cwd!()
+    |> classification_result()
+    |> elem(0)
+    |> Enum.filter(&(&1.scan? and &1.policy_scan?))
     |> Enum.flat_map(fn %{path: path, destination: destination} ->
       contents = Map.get(contents_by_path, path, "")
       generic_violations(path, contents) ++ destination_violations(destination, path, contents)
@@ -248,11 +253,23 @@ defmodule Crosswake.Planning.FirstAdopterContext do
       case classify_repository_path(path) do
         {:scan, destination} ->
           {:entry,
-           %{path: path, absolute_path: absolute_path, destination: destination, scan?: true}}
+           %{
+             path: path,
+             absolute_path: absolute_path,
+             destination: destination,
+             scan?: true,
+             policy_scan?: policy_scan_path?(path)
+           }}
 
         {:excluded, destination} ->
           {:entry,
-           %{path: path, absolute_path: absolute_path, destination: destination, scan?: false}}
+           %{
+             path: path,
+             absolute_path: absolute_path,
+             destination: destination,
+             scan?: false,
+             policy_scan?: false
+           }}
 
         :unclassified ->
           {:violation, %{rule_id: "routing.unclassified_path", path: path}}
@@ -266,9 +283,9 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     cond do
       ignored_build_or_dependency_path?(path) -> {:excluded, :forbidden}
       destination = named_destination(path) -> {:scan, destination}
-      phase_artifact_path?(path) -> {:scan, :durable}
       explicit_exclusion_path?(path) -> {:excluded, :forbidden}
       binary_path?(path) -> {:excluded, :forbidden}
+      phase_artifact_path?(path) -> {:scan, :durable}
       scannable_text_path?(path) -> {:scan, :durable}
       true -> :unclassified
     end
@@ -281,27 +298,20 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     end)
   end
 
+  defp policy_scan_path?(path) do
+    named_destination(path) ||
+      String.starts_with?(path, ".planning/phases/158-adoption-reset-and-route-map/")
+  end
+
   defp phase_artifact_path?(path) do
-    String.match?(
-      path,
-      ~r/^\.planning\/phases\/(?:158-adoption-reset-and-route-map|15[9]-[^\/]+|16[0-2]-[^\/]+)\/.+\.md$/
-    )
+    scannable_text_path?(path) and
+      String.match?(path, ~r/^\.planning\/phases\/[0-9]+(?:\.[0-9]+)?-[^\/]+\/.+$/)
   end
 
   defp scannable_text_path?(path) do
-    basename = Path.basename(path)
     extension = Path.extname(path)
 
-    (extension in @scannable_extensions and
-       String.starts_with?(path, [
-         "guides/",
-         ".github/",
-         "lib/",
-         "test/",
-         "docs/",
-         "script/",
-         "config/"
-       ])) or
+    extension in @scannable_extensions or
       path in [
         "README.md",
         "CHANGELOG.md",
@@ -314,54 +324,24 @@ defmodule Crosswake.Planning.FirstAdopterContext do
         ".gitignore",
         ".tool-versions"
       ] or
-      (basename == "AGENTS.md" and path == "AGENTS.md")
+      Path.basename(path) in [
+        ".dockerignore",
+        ".env",
+        ".gitkeep",
+        "Dockerfile",
+        "gradlew",
+        "LICENSE"
+      ]
   end
 
   defp explicit_exclusion_path?(path) do
     String.starts_with?(path, [
-      ".github/actions/",
-      ".planning/",
-      "artifacts/",
-      "bin/",
-      "brandbook/",
       "evidence/",
-      "examples/",
-      "packages/",
-      "priv/",
-      "prompts/",
-      "script/",
-      ".planning/milestones/",
-      ".planning/phases/",
-      ".planning/prompt",
-      ".planning/evidence/",
+      "artifacts/raw/",
       "test/fixtures/",
       "test/support/fixtures/",
       "priv/fixtures/"
-    ]) or
-      path in [
-        ".dockerignore",
-        ".git-check.sh",
-        ".gitignore",
-        ".release-please-manifest.json",
-        ".tmp-init.txt",
-        ".tool-versions",
-        "CONTRIBUTING.md",
-        "LICENSE",
-        "SETUP.md",
-        "crosswake-checkpoint-24c8389.bundle",
-        "fix_bridge_tests.swift",
-        "fix_generator_test.py",
-        "fix_pbxproj.py",
-        "fix_public.py",
-        "fix_public2.py",
-        "fix_published.py",
-        "patch_activation_coordinator_tests.py",
-        "release-please-config.json",
-        "test_subclass.swift",
-        "update_main_activity.sh",
-        "update_pbxproj_for_spm.py",
-        "update_swift_access.py"
-      ]
+    ])
   end
 
   defp ignored_build_or_dependency_path?(path),
@@ -404,11 +384,10 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     entries
     |> Enum.filter(& &1.scan?)
     |> Enum.uniq_by(& &1.path)
-    |> Enum.flat_map(fn %{path: path, absolute_path: absolute_path, destination: destination} ->
+    |> Enum.flat_map(fn %{path: path, absolute_path: absolute_path} = entry ->
       case File.read(absolute_path) do
         {:ok, contents} ->
-          generic_violations(path, contents) ++
-            destination_violations(destination, path, contents) ++
+          policy_violations(entry, contents) ++
             private_term_violations(path, contents, normalized_terms)
 
         {:error, _reason} ->
@@ -416,6 +395,11 @@ defmodule Crosswake.Planning.FirstAdopterContext do
       end
     end)
   end
+
+  defp policy_violations(%{policy_scan?: true, path: path, destination: destination}, contents),
+    do: generic_violations(path, contents) ++ destination_violations(destination, path, contents)
+
+  defp policy_violations(_entry, _contents), do: []
 
   defp normalize_private_terms(terms) do
     terms
