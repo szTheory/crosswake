@@ -3,6 +3,12 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
   alias Crosswake.Planning.FirstAdopterContext
 
+  @v20_paths [
+    ".planning/MILESTONES.md",
+    ".planning/milestones/v20.0-ROADMAP.md",
+    ".planning/milestones/v20.0-REQUIREMENTS.md"
+  ]
+
   test "routing matrix classifies every active path once with non-empty required destinations" do
     matrix = FirstAdopterContext.routing_matrix()
     paths = FirstAdopterContext.active_paths()
@@ -84,6 +90,47 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
       |> Enum.reject(&(&1 == ""))
 
     assert FirstAdopterContext.scan_private_terms(contents_by_path(), private_terms) == []
+  end
+
+  test "governing documents keep GET-6, the Alpha split, reversal conditions, stop list, and execution state discoverable" do
+    assert File.read!("AGENTS.md") =~ ".planning/ADR-FIRST-B2C-ADOPTER.md"
+
+    adr = File.read!(".planning/ADR-FIRST-B2C-ADOPTER.md")
+    assert adr =~ "GET-6"
+    assert adr =~ "Two independent active adopters"
+    assert adr =~ "separately funded business-line mandate"
+    assert adr =~ "web-only"
+    assert adr =~ "Android"
+
+    roadmap = File.read!(".planning/ROADMAP.md")
+    assert roadmap =~ "Physical-iPhone Adoption Proof"
+    assert roadmap =~ "2026-08-18"
+
+    state = File.read!(".planning/STATE.md")
+    assert state =~ "current_phase: 158"
+    assert state =~ "$gsd-execute-phase 158"
+  end
+
+  test "v20 remains stopped and partial while phases 156 and 157 stay outside active v21 scope" do
+    v20_contents = Enum.map_join(@v20_paths, "\n", &File.read!/1)
+
+    assert v20_contents =~ ~r/stopped\s*\/\s*partial|stopped\/partial/i
+    assert v20_contents =~ "Phases 156-157"
+    assert v20_contents =~ "not a shipped release"
+    assert v20_contents =~ "no completion tag"
+
+    active_v21 =
+      File.read!(".planning/ROADMAP.md")
+      |> String.split("## Frozen and stopped work", parts: 2)
+      |> hd()
+
+    refute active_v21 =~ ~r/Phase 156|Phase 157/
+  end
+
+  test "TODO-002 remains open until sanitized route rows are supplied" do
+    todo = File.read!(".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md")
+    assert todo =~ ~r/status:\s*open/i
+    assert todo =~ "sanitized"
   end
 
   defp contents_by_path do
