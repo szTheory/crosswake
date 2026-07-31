@@ -61,6 +61,26 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "workflow runs the protected scan only for trusted provenance and blocks fork bypasses" do
+    workflow = File.read!(".github/workflows/hex-page-proof.yml")
+
+    trusted_condition =
+      "github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository"
+
+    fork_condition =
+      "github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository"
+
+    assert workflow =~ "name: Enforce protected first-adopter private-term gate"
+    assert workflow =~ "if: #{trusted_condition}"
+    assert workflow =~ "CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}"
+    assert workflow =~ "mix crosswake.adoption_context.scan --require-private-terms"
+
+    assert workflow =~ "name: Block untrusted fork protected-check bypass"
+    assert workflow =~ "if: #{fork_condition}"
+    assert workflow =~ "privacy.private_terms_trusted_maintainer_required"
+    refute workflow =~ "pull_request_target"
+  end
+
   defp with_temporary_root(fun) do
     root = Path.join(System.tmp_dir!(), "crosswake-scan-#{System.unique_integer([:positive])}")
     File.mkdir_p!(root)
