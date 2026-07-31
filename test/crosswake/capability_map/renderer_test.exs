@@ -26,7 +26,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
       CapabilityMap.canonical()
       |> Enum.map(&normalize_row/1)
       |> Enum.map(fn
-        %{id: "route-policy"} = row -> %{row | v20_implication: "temporary update"}
+        %{id: "route-policy"} = row -> %{row | adoption_implication: "temporary update"}
         row -> row
       end)
 
@@ -94,7 +94,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
       proof_posture: :advisory,
       rebuild: :native_required,
       denial_fallback: "alpha | beta",
-      v20_implication: "gamma\ndelta"
+      adoption_implication: "gamma\ndelta"
     }
 
     rendered = Renderer.render([risky_row])
@@ -106,6 +106,30 @@ defmodule Crosswake.CapabilityMap.RendererTest do
 
     refute rendered =~ "Risky | Surface"
     refute rendered =~ "alpha | beta |"
+  end
+
+  test "D-11/D-12 normalizes canonical and legacy implication inputs through one compatibility window" do
+    canonical = renderer_row(%{adoption_implication: "canonical implication"})
+    legacy_atom = renderer_row(%{v20_implication: "legacy implication"}) |> Map.delete(:adoption_implication)
+
+    legacy_string =
+      renderer_row(%{})
+      |> stringify_keys()
+      |> Map.delete("adoption_implication")
+      |> Map.put("v20_implication", "legacy implication")
+
+    equal_dual = renderer_row(%{v20_implication: "canonical implication"})
+
+    assert Renderer.render([canonical]) =~ "canonical implication"
+    assert Renderer.render([legacy_atom]) =~ "legacy implication"
+    assert Renderer.render([legacy_string]) =~ "legacy implication"
+    assert Renderer.render([equal_dual]) =~ "canonical implication"
+  end
+
+  test "D-12 conflicting implication aliases fail closed without echoing row content" do
+    assert_raise ArgumentError, "conflicting adoption_implication and v20_implication", fn ->
+      Renderer.render([renderer_row(%{v20_implication: "legacy secret"})])
+    end
   end
 
   defp section_index(rendered, heading) do
@@ -120,4 +144,27 @@ defmodule Crosswake.CapabilityMap.RendererTest do
 
   defp normalize_row(%_{} = row), do: Map.from_struct(row)
   defp normalize_row(row) when is_map(row), do: row
+
+  defp renderer_row(overrides) do
+    Map.merge(
+      %{
+        id: "synthetic-row",
+        surface: "Synthetic surface",
+        route_or_evidence_source: "synthetic evidence",
+        category: :demoed,
+        display_label: "Demo pressure",
+        route_runtime_owner: :bounded_bridge,
+        package_owner: :core,
+        proof_posture: :advisory,
+        rebuild: :none,
+        denial_fallback: "Explicit fallback",
+        adoption_implication: "canonical implication"
+      },
+      overrides
+    )
+  end
+
+  defp stringify_keys(row) do
+    Map.new(row, fn {key, value} -> {Atom.to_string(key), value} end)
+  end
 end

@@ -39,7 +39,7 @@ defmodule Crosswake.CapabilityMapTest do
     :proof_posture,
     :rebuild,
     :denial_fallback,
-    :v20_implication
+    :adoption_implication
   ]
 
   @required_ids [
@@ -139,8 +139,8 @@ defmodule Crosswake.CapabilityMapTest do
       assert non_empty?(row.denial_fallback),
              "D-03: #{inspect(row.id)} must name denial or fallback behavior"
 
-      assert non_empty?(row.v20_implication),
-             "D-03/D-13: #{inspect(row.id)} must name v20 implication or exclusion"
+      assert non_empty?(row.adoption_implication),
+             "D-03/D-13: #{inspect(row.id)} must name an adoption implication or exclusion"
     end
   end
 
@@ -172,7 +172,7 @@ defmodule Crosswake.CapabilityMapTest do
 
     commerce = row!(rows, "commerce-provider-integration")
     assert commerce.package_owner == :deferred
-    assert commerce.v20_implication =~ ~r/Commerce\/Paywall Productionization|later/i
+    assert commerce.adoption_implication =~ ~r/Commerce\/Paywall Productionization|later/i
 
     for id <- [
           "native-controls-alert-confirm",
@@ -213,7 +213,7 @@ defmodule Crosswake.CapabilityMapTest do
     assert offline.denial_fallback =~ ~r/outbox|browser-owned|offline island|reconciliation/i
 
     storage = row!(rows, "learnloop-native-storage")
-    assert storage.v20_implication =~ ~r/host-supplied|generic native pack storage/i
+    assert storage.adoption_implication =~ ~r/host-supplied|generic native pack storage/i
     refute storage.display_label == "Available today"
 
     paywall = row!(rows, "learnloop-paywall-projection")
@@ -221,7 +221,7 @@ defmodule Crosswake.CapabilityMapTest do
     refute paywall.denial_fallback =~ ~r/device grants|storefront grants|subscriber truth/i
 
     provider = row!(rows, "commerce-provider-integration")
-    assert provider.v20_implication =~ ~r/Commerce\/Paywall Productionization|later/i
+    assert provider.adoption_implication =~ ~r/Commerce\/Paywall Productionization|later/i
     refute provider.display_label == "Available today"
   end
 
