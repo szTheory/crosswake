@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 18/20 plans executed
+**Plans:** 19/20 plans executed
 **Verification:** Gaps found (3/4 roadmap must-haves); tracked text under `.github/actions/`,
 `script/`, and future planning phases can bypass protected private-term scanning.
 
@@ -117,7 +117,7 @@ Plans:
 
 **Wave 15** *(gap closure; blocked on Wave 14 completion)*
 
-- [ ] 158-19-PLAN.md — Close repository-wide generic privacy enforcement and malformed route-map input gaps.
+- [x] 158-19-PLAN.md — Close repository-wide generic privacy enforcement and malformed route-map input gaps.
 
 **Wave 16** *(blocked on Wave 15 completion)*
 

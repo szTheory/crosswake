@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: planned
-stopped_at: Planned Phase 158 gap closure through 158-20-PLAN.md
-last_updated: "2026-07-31T18:21:41Z"
+status: executing
+stopped_at: Completed 158-19-PLAN.md
+last_updated: "2026-07-31T18:46:29.134Z"
 last_activity: 2026-07-31
-last_activity_desc: Planned final Phase 158 verification gap closure
+last_activity_desc: Completed Plan 158-19 generic privacy and route-map hardening
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 20
-  completed_plans: 18
-  percent: 20
+  completed_plans: 19
+  percent: 0
 current_plan: null
 ---
 
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 19 of 20
-Status: Ready to execute Plan 158-19
-Last activity: 2026-07-31 — Planned final Phase 158 verification gap closure
+Plan: 20 of 20
+Status: Ready to execute Plan 158-20
+Last activity: 2026-07-31 — Completed Plan 158-19 generic privacy and route-map hardening
 
 ## Active Objective
 
@@ -44,14 +44,10 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158` to close the repository-wide generic privacy and malformed route-map
-input gaps before Phase 159.
+Run `$gsd-execute-phase 158` to complete Plan 158-20's final reconciliation before Phase 159.
 TODO-002 remains the bounded adopter-input gate.
 
 ## Blockers
-
-- The privacy/context scanner excludes tracked text under `.github/actions/`, `script/`, and
-  planning phases beyond its fixed range; configured private terms can bypass protected CI.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -95,9 +91,10 @@ TODO-002 remains the bounded adopter-input gate.
 - [Phase ?]: Unsafe, unreadable, unclassified, and enumeration-failure paths fail closed with rule/path-only diagnostics.
 - [Phase ?]: Phase 158 final gate closes only on fresh Git-backed repository-classification and post-write scan evidence; TODO-002 remains unknown_blocking.
 - [Phase ?]: Recognized textual repository candidates scan for private terms regardless of subtree; raw evidence and binary exclusions remain explicit.
-- [Phase ?]: Generic policy rules stay limited to designated policy artifacts while private-term enforcement covers every classified textual candidate.
+- [Phase ?]: Generic privacy rules cover every scan?: true textual artifact while destination wording checks remain scoped.
 - [Phase ?]: RESET-04 closes only after fresh final-tree direct, production Mix-task, and post-write scan evidence.
 - [Phase ?]: TODO-002 remains open and adopter-instance completeness remains unknown_blocking; no later-phase or platform claim changed.
+- [Phase ?]: RouteInventory rejects non-atom map keys before Keyword normalization with a fixed non-echoing error.
 
 ## Deferred Items
 
@@ -126,8 +123,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T17:58:25.391Z
-**Stopped at:** Completed 158-18-PLAN.md
+**Last session:** 2026-07-31T18:46:29.129Z
+**Stopped at:** Completed 158-19-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -152,3 +149,4 @@ this milestone reset.
 | Phase 158 P16 | 8m | 1 tasks | 3 files |
 | Phase 158 P17 | 18m | 2 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P18 | 6m | 1 tasks | 3 files |
+| Phase 158-adoption-reset-and-route-map P19 | 20m | 2 tasks | 10 files |
