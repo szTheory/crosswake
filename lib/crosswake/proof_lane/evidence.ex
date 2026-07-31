@@ -25,6 +25,7 @@ defmodule Crosswake.ProofLane.Evidence do
   @device_classes [:ios, :simulator, :unknown]
   @artifact_name "proof-lane-evidence.json"
   @approved_kinds [:evidence_json]
+  @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite)
 
   @sensitive_terms ~w(
     answer selected payload account customer credential password secret token transcript media
@@ -48,16 +49,8 @@ defmodule Crosswake.ProofLane.Evidence do
     with :ok <- atom_keys(input),
          :ok <- exact_keys(input),
          :ok <- no_sensitive_value(input),
-         :ok <- valid_versions(input),
-         :ok <- valid_route(input[:route_id]),
-         :ok <- valid_assertions(input[:assertion_ids]),
-         :ok <- enum(input[:status], @outcomes, "status"),
-         :ok <- enum(input[:outcome], @outcomes, "outcome"),
-         :ok <- utc(input[:captured_at]),
-         :ok <- enum(input[:retention_label], @retention_labels, "retention_label"),
-         :ok <- enum(input[:device_class], @device_classes, "device_class"),
-         :ok <- valid_hashes(input[:approved_hashes]) do
-      {:ok, struct!(__MODULE__, input)}
+         {:ok, hashes} <- source_hashes(input[:approved_hashes]) do
+      validate_fields(Map.put(input, :approved_hashes, hashes))
     end
   end
 
@@ -92,8 +85,27 @@ defmodule Crosswake.ProofLane.Evidence do
     do: error("PL-EVIDENCE-HASH-KIND", "artifact", "use an approved sanitized artifact")
 
   @spec check(Path.t()) :: :ok | {:error, Error.t()}
-  def check(path) when is_binary(path), do: scan_stage(path)
+  def check(path) when is_binary(path) do
+    with :ok <- scan_stage(path),
+         {:ok, evidence} <- read_evidence(path),
+         :ok <- require_sources(evidence.approved_hashes) do
+      :ok
+    end
+  end
+
   def check(_), do: error("PL-EVIDENCE-PATH", "artifact", "use a safe evidence directory")
+
+  @spec check(Path.t(), list()) :: :ok | {:error, Error.t()}
+  def check(path, sources) when is_binary(path) and is_list(sources) do
+    with :ok <- scan_stage(path),
+         {:ok, evidence} <- read_evidence(path),
+         :ok <- verify_sources(evidence.approved_hashes, sources) do
+      :ok
+    end
+  end
+
+  def check(_, _),
+    do: error("PL-EVIDENCE-HASH-SOURCE", "approved_hashes", "supply approved canonical sources")
 
   @spec scan_stage(Path.t()) :: :ok | {:error, Error.t()}
   def scan_stage(stage) when is_binary(stage) do
@@ -185,15 +197,43 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   defp valid_versions(input) do
-    fields = [:schema_version, :crosswake_version, :template_version, :commit_ref]
+    with :ok <- decimal_version(input[:schema_version], "schema_version"),
+         :ok <- semver(input[:crosswake_version]),
+         :ok <- decimal_version(input[:template_version], "template_version"),
+         :ok <- git_ref(input[:commit_ref]) do
+      :ok
+    end
+  end
 
-    if Enum.all?(
-         fields,
-         &(is_binary(input[&1]) and String.match?(input[&1], ~r/^[A-Za-z0-9._-]{1,64}$/))
+  defp decimal_version(value, path) when is_binary(value) and byte_size(value) in 1..8 do
+    if String.match?(value, ~r/^[0-9]+$/),
+      do: :ok,
+      else: error("PL-EVIDENCE-VERSION", path, "use a bounded decimal version")
+  end
+
+  defp decimal_version(_, path),
+    do: error("PL-EVIDENCE-VERSION", path, "use a bounded decimal version")
+
+  defp semver(value) when is_binary(value) and byte_size(value) <= 32 do
+    if String.match?(
+         value,
+         ~r/^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
        ),
        do: :ok,
-       else: error("PL-EVIDENCE-VERSION", "version", "use bounded version and commit references")
+       else: error("PL-EVIDENCE-VERSION", "crosswake_version", "use a bounded semantic version")
   end
+
+  defp semver(_),
+    do: error("PL-EVIDENCE-VERSION", "crosswake_version", "use a bounded semantic version")
+
+  defp git_ref(value) when is_binary(value) do
+    if String.match?(value, ~r/^git-(?:[0-9a-f]{40}|[0-9a-f]{64})$/),
+      do: :ok,
+      else: error("PL-EVIDENCE-COMMIT", "commit_ref", "use a full opaque Git reference")
+  end
+
+  defp git_ref(_),
+    do: error("PL-EVIDENCE-COMMIT", "commit_ref", "use a full opaque Git reference")
 
   defp valid_route(value) do
     if is_binary(value) and String.match?(value, ~r/^route-[0-9a-f]{16}$/),
@@ -203,8 +243,8 @@ defmodule Crosswake.ProofLane.Evidence do
 
   defp valid_assertions(values) do
     valid? =
-      is_list(values) and values != [] and length(values) <= 32 and
-        Enum.all?(values, &(is_binary(&1) and String.match?(&1, ~r/^[a-z][a-z0-9_]{0,63}$/)))
+      is_list(values) and values != [] and length(values) <= length(@assertion_ids) and
+        Enum.uniq(values) == values and Enum.all?(values, &(&1 in @assertion_ids))
 
     if valid?,
       do: :ok,
@@ -225,6 +265,31 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   defp utc(_), do: error("PL-EVIDENCE-TIME", "captured_at", "use a UTC ISO-8601 capture time")
+
+  defp source_hashes(values) when is_list(values) do
+    Enum.reduce_while(values, {:ok, []}, fn
+      %{kind: kind, canonical_bytes: bytes} = source, {:ok, hashes}
+      when map_size(source) == 2 and kind in @approved_kinds and is_binary(bytes) ->
+        case approved_hash(kind, bytes) do
+          {:ok, digest} ->
+            {:cont, {:ok, [%{kind: kind, digest: digest} | hashes]}}
+
+          _ ->
+            {:halt,
+             error("PL-EVIDENCE-HASH", "approved_hashes", "use approved canonical sources")}
+        end
+
+      _, _ ->
+        {:halt, error("PL-EVIDENCE-HASH", "approved_hashes", "use approved canonical sources")}
+    end)
+    |> then(fn
+      {:ok, hashes} -> {:ok, Enum.reverse(hashes)}
+      error -> error
+    end)
+  end
+
+  defp source_hashes(_),
+    do: error("PL-EVIDENCE-HASH", "approved_hashes", "use approved canonical sources")
 
   defp valid_hashes(values) when is_list(values),
     do:
@@ -288,6 +353,16 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
+  defp read_evidence(stage) do
+    with {:ok, bytes} <- File.read(Path.join(stage, @artifact_name)),
+         {:ok, decoded} <- Jason.decode(bytes),
+         {:ok, evidence} <- string_map_to_evidence(decoded) do
+      {:ok, evidence}
+    else
+      _ -> error("PL-EVIDENCE-SCAN", @artifact_name, "use canonical approved evidence")
+    end
+  end
+
   defp scan_bytes(bytes, path) do
     with {:ok, decoded} <- Jason.decode(bytes),
          :ok <- no_sensitive_value(decoded, path),
@@ -316,7 +391,7 @@ defmodule Crosswake.ProofLane.Evidence do
 
     case atomized do
       :invalid -> error("PL-EVIDENCE-SCAN", @artifact_name, "use declared evidence keys")
-      attrs -> build(attrs)
+      attrs -> validate_fields(attrs)
     end
   end
 
@@ -363,6 +438,40 @@ defmodule Crosswake.ProofLane.Evidence do
   end
 
   defp decode_enum(_, _), do: :error
+
+  defp validate_fields(input) do
+    with :ok <- exact_keys(input),
+         :ok <- no_sensitive_value(input),
+         :ok <- valid_versions(input),
+         :ok <- valid_route(input[:route_id]),
+         :ok <- valid_assertions(input[:assertion_ids]),
+         :ok <- enum(input[:status], @outcomes, "status"),
+         :ok <- enum(input[:outcome], @outcomes, "outcome"),
+         :ok <- utc(input[:captured_at]),
+         :ok <- enum(input[:retention_label], @retention_labels, "retention_label"),
+         :ok <- enum(input[:device_class], @device_classes, "device_class"),
+         :ok <- valid_hashes(input[:approved_hashes]) do
+      {:ok, struct!(__MODULE__, input)}
+    end
+  end
+
+  defp require_sources([]), do: :ok
+
+  defp require_sources(_),
+    do: error("PL-EVIDENCE-HASH-SOURCE", "approved_hashes", "supply approved canonical sources")
+
+  defp verify_sources(hashes, sources) do
+    with {:ok, source_hashes} <- source_hashes(sources), true <- source_hashes == hashes do
+      :ok
+    else
+      _ ->
+        error(
+          "PL-EVIDENCE-HASH-SOURCE",
+          "approved_hashes",
+          "supply matching approved canonical sources"
+        )
+    end
+  end
 
   defp safe_destination(path),
     do:

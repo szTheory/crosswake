@@ -82,14 +82,22 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     assert {:error, supplied_digest} =
              Evidence.build(
                Map.put(@valid, :approved_hashes, [
-                 %{kind: :evidence_json, canonical_bytes: canonical_bytes, digest: String.duplicate("a", 64)}
+                 %{
+                   kind: :evidence_json,
+                   canonical_bytes: canonical_bytes,
+                   digest: String.duplicate("a", 64)
+                 }
                ])
              )
 
     assert supplied_digest.rule_id == "PL-EVIDENCE-HASH"
 
     assert {:error, arbitrary_digest} =
-             Evidence.build(Map.put(@valid, :approved_hashes, [%{kind: :evidence_json, digest: String.duplicate("b", 64)}]))
+             Evidence.build(
+               Map.put(@valid, :approved_hashes, [
+                 %{kind: :evidence_json, digest: String.duplicate("b", 64)}
+               ])
+             )
 
     assert arbitrary_digest.rule_id == "PL-EVIDENCE-HASH"
   end
@@ -97,14 +105,31 @@ defmodule Crosswake.ProofLane.EvidenceTest do
   test "checks retained non-empty hashes only against matching canonical sources" do
     assert {:ok, base} = Evidence.build(@valid)
     canonical_bytes = Jason.encode!(Evidence.to_map(base))
-    assert {:ok, evidence} = Evidence.build(Map.put(@valid, :approved_hashes, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}]))
+
+    assert {:ok, evidence} =
+             Evidence.build(
+               Map.put(@valid, :approved_hashes, [
+                 %{kind: :evidence_json, canonical_bytes: canonical_bytes}
+               ])
+             )
 
     with_stage(fn stage ->
-      File.write!(Path.join(stage, "proof-lane-evidence.json"), Jason.encode!(Evidence.to_map(evidence)))
+      File.write!(
+        Path.join(stage, "proof-lane-evidence.json"),
+        Jason.encode!(Evidence.to_map(evidence))
+      )
+
       assert {:error, missing} = Evidence.check(stage)
       assert missing.rule_id == "PL-EVIDENCE-HASH-SOURCE"
-      assert :ok = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
-      assert {:error, mismatch} = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes <> " "}])
+
+      assert :ok =
+               Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+
+      assert {:error, mismatch} =
+               Evidence.check(stage, [
+                 %{kind: :evidence_json, canonical_bytes: canonical_bytes <> " "}
+               ])
+
       assert mismatch.rule_id == "PL-EVIDENCE-HASH-SOURCE"
     end)
   end

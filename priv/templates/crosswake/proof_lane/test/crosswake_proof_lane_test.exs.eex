@@ -13,7 +13,7 @@ defmodule CrosswakeProofLaneContractTest do
       schema_version: "1",
       crosswake_version: "1.0.0",
       template_version: "<%= @template_version %>",
-      commit_ref: "host-proof-contract",
+      commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
       route_id: "<%= @config.route_id %>",
       assertion_ids: ["replay_prerequisite", "pack_audio_prerequisite"],
       status: :blocked,
