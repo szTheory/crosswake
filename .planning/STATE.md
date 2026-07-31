@@ -4,15 +4,15 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-18-PLAN.md
-last_updated: "2026-07-31T17:58:25.398Z"
+status: planned
+stopped_at: Planned Phase 158 gap closure through 158-20-PLAN.md
+last_updated: "2026-07-31T18:21:41Z"
 last_activity: 2026-07-31
-last_activity_desc: Completed tracked-text privacy gap closure
+last_activity_desc: Planned final Phase 158 verification gap closure
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 18
+  total_plans: 20
   completed_plans: 18
   percent: 20
 current_plan: null
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 18 of 18
-Status: Ready to execute Plan 158-18
-Last activity: 2026-07-31 — Completed tracked-text privacy gap closure
+Plan: 19 of 20
+Status: Ready to execute Plan 158-19
+Last activity: 2026-07-31 — Planned final Phase 158 verification gap closure
 
 ## Active Objective
 
@@ -44,7 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158` to close the tracked-text privacy bypass before Phase 159.
+Run `$gsd-execute-phase 158` to close the repository-wide generic privacy and malformed route-map
+input gaps before Phase 159.
 TODO-002 remains the bounded adopter-input gate.
 
 ## Blockers
