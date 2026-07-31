@@ -23,7 +23,12 @@ defmodule Crosswake.ProofLane.ConfigTest do
   end
 
   test "accepts only a normalized non-root native/ios shell root" do
-    root = Path.join(System.tmp_dir!(), "crosswake-proof-lane-config-#{System.unique_integer([:positive])}")
+    root =
+      Path.join(
+        System.tmp_dir!(),
+        "crosswake-proof-lane-config-#{System.unique_integer([:positive])}"
+      )
+
     ios_shell_root = Path.join(root, "native/ios")
 
     assert {:ok, config} = Config.normalize(Map.put(@valid, :ios_shell_root, ios_shell_root))

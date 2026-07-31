@@ -58,6 +58,17 @@ defmodule Crosswake.ProofLane.Config do
 
   def normalize(_), do: error("PL-CONFIG-TYPE", "config", "use config :crosswake, :proof_lane")
 
+  @spec host_root(t()) :: {:ok, String.t()} | {:error, Error.t()}
+  def host_root(%__MODULE__{ios_shell_root: ios_shell_root}) do
+    case derive_host_root(ios_shell_root) do
+      {:ok, host_root} ->
+        {:ok, host_root}
+
+      :error ->
+        error("PL-CONFIG-VALUE", "ios_shell_root", "use the documented local proof-lane shape")
+    end
+  end
+
   defp atom_keys(entries) do
     if Enum.all?(entries, fn {key, _} -> key in @keys end) do
       :ok
@@ -100,7 +111,7 @@ defmodule Crosswake.ProofLane.Config do
       {:sync_path, &host_local_path?/1},
       {:evidence_path, &host_local_path?/1},
       {:router, &valid_router?/1},
-      {:ios_shell_root, &safe_absolute_path?/1}
+      {:ios_shell_root, &valid_ios_shell_root?/1}
     ]
 
     case Enum.find(validators, fn {key, validator} -> not validator.(Map.fetch!(config, key)) end) do
@@ -134,9 +145,22 @@ defmodule Crosswake.ProofLane.Config do
 
   defp valid_router?(value), do: is_atom(value) and value not in [nil, true, false]
 
-  defp safe_absolute_path?(value) do
-    is_binary(value) and Path.type(value) == :absolute and host_local_path?(value) and
-      Path.expand(value) == value
+  defp valid_ios_shell_root?(value), do: match?({:ok, _}, derive_host_root(value))
+
+  defp derive_host_root(value) do
+    with true <- is_binary(value),
+         true <- Path.type(value) == :absolute,
+         true <- host_local_path?(value),
+         true <- Path.expand(value) == value,
+         components <- Path.split(value),
+         ["native", "ios"] <- Enum.take(components, -2),
+         host_components <- Enum.drop(components, -2),
+         host_root <- Path.join(host_components),
+         true <- host_root not in ["", "/"] do
+      {:ok, host_root}
+    else
+      _ -> :error
+    end
   end
 
   defp error(rule_id, key, remediation),
