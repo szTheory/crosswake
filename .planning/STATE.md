@@ -4,15 +4,15 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Phase 158 verification gaps found
-last_updated: "2026-07-31T15:16:07Z"
+status: ready_to_execute
+stopped_at: Phase 158 gap-closure plans verified
+last_updated: "2026-07-31T15:33:00Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 re-verification found three remaining blockers
+last_activity_desc: Phase 158 gap-closure plans 08-10 created and verified
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 7
+  total_plans: 10
   completed_plans: 7
   percent: 20
 current_plan: null
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 7 of 7
-Status: Gaps found — plan closure work
-Last activity: 2026-07-31 — Phase 158 re-verification found three remaining blockers
+Phase: 158 (adoption-reset-and-route-map) — PLANNED
+Plan: 7 of 10 executed; 3 gap-closure plans ready
+Status: Ready to execute Plans 158-08 through 158-10
+Last activity: 2026-07-31 — Phase 158 gap-closure plans created and independently verified
 
 ## Active Objective
 
@@ -44,10 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 158 --gaps`. Re-verification closed the route-promotion gaps but found three
-remaining blockers: protected private-term scanning is absent from pull-request merge gates, the
-public capability guide contains forbidden hyphenated wording, and two validation-ledger commands
-do not reproduce.
+Run `$gsd-execute-phase 158`. Plans 158-08 through 158-10 close the remaining protected pull-request
+privacy gate, public capability wording, and reproducible validation-ledger gaps before Phase 158
+is re-verified.
 
 ## Blockers
 
