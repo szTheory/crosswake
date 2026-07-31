@@ -51,7 +51,8 @@ separately funded business-line mandate.
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
 **Plans:** 14/14 plans executed
-**Verification:** Gaps found (41/46 must-haves); four blockers require another gap-closure cycle
+**Verification:** Gaps found (57/58 must-haves); repository-facing private-term enforcement must
+fail closed for unregistered guides, workflows, source/tests, and later-phase artifacts
 
 Plans:
 **Wave 1**

@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-14-PLAN.md
-last_updated: "2026-07-31T16:38:04.678Z"
+status: gaps_found
+stopped_at: Phase 158 verification confirmed one privacy-routing blocker after 14 plans
+last_updated: "2026-07-31T16:45:32Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 execution started
+last_activity_desc: Phase 158 verification found incomplete repository-wide privacy scanning
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 14
   completed_plans: 14
-  percent: 20
+  percent: 0
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Phase: 158 (adoption-reset-and-route-map) — GAPS FOUND
 Plan: 14 of 14 executed
-Status: Ready to execute Plan 14
-Last activity: 2026-07-31 — Phase 158 execution started
+Status: Verification scored 57/58 must-haves; one privacy-routing blocker remains
+Last activity: 2026-07-31 — Independent verification confirmed incomplete scan coverage
 
 ## Active Objective
 
@@ -44,9 +44,13 @@ framework launch.
 
 ## Next Action
 
-Execute Plan 14 to rerun the complete gate and reconcile Phase 158 validation and verification.
+Run `$gsd-plan-phase 158 --gaps` to make private-term enforcement fail closed across every active
+repository-facing artifact and add unregistered-guide/later-phase regressions.
 
 ## Blockers
+
+- The privacy/context scanner uses a fixed allowlist and silently skips unregistered guides,
+  workflows, source/tests, and later-phase artifacts; configured private terms can bypass CI.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
