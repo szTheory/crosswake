@@ -315,7 +315,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end
   end
 
-  test "governing documents keep GET-6, the Alpha split, reversal conditions, stop list, and execution state discoverable" do
+  test "governing documents keep GET-6, the Alpha split, reversal conditions, stop list, and current execution state discoverable" do
     assert File.read!("AGENTS.md") =~ ".planning/ADR-FIRST-B2C-ADOPTER.md"
 
     adr = File.read!(".planning/ADR-FIRST-B2C-ADOPTER.md")
@@ -328,10 +328,11 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     roadmap = File.read!(".planning/ROADMAP.md")
     assert roadmap =~ "Physical-iPhone Adoption Proof"
     assert roadmap =~ "2026-08-18"
+    assert roadmap =~ "[x] **Phase 158: Adoption Reset and Route Map**"
 
     state = File.read!(".planning/STATE.md")
-    assert state =~ "current_phase: 158"
-    assert state =~ "Phase: 158 (adoption-reset-and-route-map)"
+    [_, current_phase] = Regex.run(~r/^current_phase:\s*(\d+)$/m, state)
+    assert state =~ "Phase: #{current_phase}"
   end
 
   test "v20 remains stopped and partial while phases 156 and 157 stay outside active v21 scope" do
