@@ -92,6 +92,46 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert FirstAdopterContext.scan_private_terms(contents_by_path(), private_terms) == []
   end
 
+  test "filesystem discovery scans future planning artifacts without echoing private canaries" do
+    root = Path.join(System.tmp_dir!(), "crosswake-context-#{System.unique_integer([:positive])}")
+    private_term = Enum.join(["synthetic", "private", "canary"], "-")
+
+    paths = [
+      ".planning/phases/158-adoption-reset-and-route-map/158-88-PLAN.md",
+      ".planning/phases/158-adoption-reset-and-route-map/158-88-SUMMARY.md",
+      ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+    ]
+
+    on_exit(fn -> File.rm_rf(root) end)
+
+    Enum.each(paths, fn path ->
+      root
+      |> Path.join(path)
+      |> Path.dirname()
+      |> File.mkdir_p!()
+
+      File.write!(Path.join(root, path), "safe prefix #{private_term} safe suffix")
+    end)
+
+    assert Enum.sort(paths) == FirstAdopterContext.discover_paths(root)
+
+    assert Enum.map(paths, &%{rule_id: "privacy.private_term", path: &1}) ==
+             FirstAdopterContext.scan_filesystem(root, [private_term])
+
+    refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+  end
+
+  test "filesystem discovery includes current Phase 158 planning artifacts" do
+    discovered = FirstAdopterContext.discover_paths(File.cwd!())
+
+    assert ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md" in discovered
+
+    for path <- Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-PLAN.md") ++
+                  Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-SUMMARY.md") do
+      assert path in discovered
+    end
+  end
+
   test "governing documents keep GET-6, the Alpha split, reversal conditions, stop list, and execution state discoverable" do
     assert File.read!("AGENTS.md") =~ ".planning/ADR-FIRST-B2C-ADOPTER.md"
 
