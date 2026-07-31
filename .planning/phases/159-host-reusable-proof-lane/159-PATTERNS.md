@@ -1,7 +1,7 @@
 # Phase 159: Host-Reusable Proof Lane - Pattern Map
 
-**Mapped:** 2026-07-31  
-**Files analyzed:** 13 planned file groups  
+**Mapped:** 2026-07-31
+**Files analyzed:** 13 planned file groups
 **Analogs found:** 13 / 13
 
 ## File Classification
@@ -189,6 +189,6 @@ Playwright remains the primary proof of UI mutation, IndexedDB observation, app-
 
 ## Metadata
 
-**Analog search scope:** `lib/mix/tasks`, `lib/crosswake`, `test`, `examples/phoenix_host/e2e`, `priv/templates/crosswake/shell/ios`, `script`  
-**Files scanned:** 15  
+**Analog search scope:** `lib/mix/tasks`, `lib/crosswake`, `test`, `examples/phoenix_host/e2e`, `priv/templates/crosswake/shell/ios`, `script`
+**Files scanned:** 15
 **Pattern extraction date:** 2026-07-31
