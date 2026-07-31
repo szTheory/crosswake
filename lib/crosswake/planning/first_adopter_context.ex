@@ -53,9 +53,9 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   @scannable_extensions ~w(
     .bak .bat .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
-    .orig .pbxproj .plist .properties .py .sh .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
+    .orig .pbxproj .plist .properties .py .sh .svg .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
-  @binary_extensions ~w(.a .app .beam .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .svg .webp .zip)
+  @binary_extensions ~w(.a .app .beam .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .webp .zip)
 
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]

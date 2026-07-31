@@ -237,6 +237,18 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end)
   end
 
+  test "filesystem scanning treats textual SVG artifacts as scannable without echoing private terms" do
+    private_term = Enum.join(["svg", "private", "canary"], "-")
+    path = "guides/route-ownership.svg"
+
+    with_temporary_repository([path], "<svg><text>#{private_term}</text></svg>", fn root ->
+      assert [%{rule_id: "privacy.private_term", path: ^path}] =
+               FirstAdopterContext.scan_filesystem(root, [private_term])
+
+      refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+    end)
+  end
+
   test "filesystem discovery fails closed for repository enumeration and unclassified text paths" do
     with_temporary_repository(["notes/unclassified.opaque"], "safe", fn root ->
       assert [

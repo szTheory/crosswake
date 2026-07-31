@@ -94,6 +94,22 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "scans textual SVG artifacts without echoing secret-backed content" do
+    with_temporary_root(fn root ->
+      path = "guides/route-ownership.svg"
+      term = Enum.join(["svg", "private", "canary"], "-")
+      write_file(root, path, "<svg><text>#{term}</text></svg>")
+
+      with_private_terms(term, fn ->
+        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+        assert error.message == "privacy.private_term #{path}"
+        refute error.message =~ term
+        refute error.message =~ "<svg>"
+      end)
+    end)
+  end
+
   test "raises sorted private-term paths for action, script, and future-phase candidates" do
     with_temporary_root(fn root ->
       term = Enum.join(["process", "only", "private", "term"], "-")
