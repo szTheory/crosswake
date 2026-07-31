@@ -42,10 +42,12 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     assert rendered == Renderer.render()
   end
 
-  test "D-11/D-13 public guide uses first-adopter framing without active native-control breadth" do
+  test "D-11/D-13/D-14/D-16/D-19 complete public guide uses approved first adopter framing" do
     rendered = Renderer.render()
+    disallowed_public_phrase = "first" <> "-adopter"
 
     assert rendered =~ "first adopter"
+    refute rendered =~ disallowed_public_phrase
     refute rendered =~ "First B2C Adopter"
     refute rendered =~ "Native Controls Pack 1"
   end
