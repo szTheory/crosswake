@@ -1,5 +1,7 @@
 defmodule Crosswake.ProofLane.ConfigTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+
+  import ExUnit.CaptureIO
 
   alias Crosswake.ProofLane.Config
 
@@ -26,7 +28,7 @@ defmodule Crosswake.ProofLane.ConfigTest do
     for input <- [
           Map.put(@valid, :unexpected, secret),
           Map.delete(@valid, :route_id),
-          Keyword.merge(Map.to_list(@valid), route_id: "route-fedcba9876543210"),
+          Map.to_list(@valid) ++ [route_id: "route-fedcba9876543210"],
           Map.put(@valid, "route_id", secret)
         ] do
       assert {:error, error} = Config.normalize(input)
@@ -60,7 +62,58 @@ defmodule Crosswake.ProofLane.ConfigTest do
   end
 
   test "accepts only declarative safe mutation field segments" do
-    assert {:ok, _} = Config.normalize(Map.put(@valid, :mutation_id_path, "record.client_mutation_id"))
-    assert {:error, _} = Config.normalize(Map.put(@valid, :mutation_id_path, "record[mutation_id]"))
+    assert {:ok, _} =
+             Config.normalize(Map.put(@valid, :mutation_id_path, "record.client_mutation_id"))
+
+    assert {:error, _} =
+             Config.normalize(Map.put(@valid, :mutation_id_path, "record[mutation_id]"))
+  end
+
+  test "selected Phoenix config reaches the same normalizer as application config" do
+    root = Path.join(System.tmp_dir!(), "crosswake-config-#{System.unique_integer([:positive])}")
+    config_path = Path.join(root, "proof_lane.exs")
+    ios_root = Path.join(root, "native/ios")
+    previous = Application.get_env(:crosswake, :proof_lane)
+
+    File.mkdir_p!(root)
+
+    File.write!(config_path, """
+    import Config
+
+    config :crosswake, :proof_lane,
+      route_id: \"route-0123456789abcdef\",
+      route_path: \"/study/:id\",
+      indexed_db_database: \"proof_lane\",
+      indexed_db_store: \"mutations\",
+      mutation_id_path: \"client_mutation_id\",
+      sync_path: \"/study/sync\",
+      evidence_path: \"/_proof/evidence\",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: \"#{ios_root}\"
+    """)
+
+    Application.put_env(:crosswake, :proof_lane, Map.put(@valid, :ios_shell_root, ios_root))
+
+    try do
+      assert {:ok, expected} = Config.normalize(Application.get_env(:crosswake, :proof_lane))
+
+      assert capture_io(fn ->
+               Mix.Task.rerun("crosswake.gen.proof_lane", [
+                 "ios",
+                 "--config",
+                 config_path,
+                 "--diff"
+               ])
+             end) =~ "missing"
+
+      {selected_config, _imports} = Elixir.Config.Reader.read_imports!(config_path)
+      assert {:ok, ^expected} = Config.normalize(selected_config[:crosswake][:proof_lane])
+    after
+      if previous,
+        do: Application.put_env(:crosswake, :proof_lane, previous),
+        else: Application.delete_env(:crosswake, :proof_lane)
+
+      File.rm_rf!(root)
+    end
   end
 end

@@ -1,7 +1,7 @@
 defmodule Crosswake.ProofLane.Config do
   @moduledoc "Closed, non-echoing configuration for a host-owned proof lane."
 
-  @enforce_keys [
+  @keys [
     :route_id,
     :route_path,
     :indexed_db_database,
@@ -12,6 +12,8 @@ defmodule Crosswake.ProofLane.Config do
     :router,
     :ios_shell_root
   ]
+
+  @enforce_keys @keys
   defstruct @enforce_keys
 
   @type t :: %__MODULE__{
@@ -27,58 +29,64 @@ defmodule Crosswake.ProofLane.Config do
         }
 
   defmodule Error do
-    @enforce_keys [:rule_id, :key, :remediation]
-    defstruct @enforce_keys
+    @moduledoc false
+    defexception [:rule_id, :key, :remediation]
+
     @type t :: %__MODULE__{rule_id: String.t(), key: String.t(), remediation: String.t()}
-  end
 
-  @keys [
-    :route_id,
-    :route_path,
-    :indexed_db_database,
-    :indexed_db_store,
-    :mutation_id_path,
-    :sync_path,
-    :evidence_path,
-    :router,
-    :ios_shell_root
-  ]
-
-  @spec normalize(keyword() | map()) :: {:ok, t()} | {:error, Error.t()}
-  def normalize(input) when is_list(input), do: normalize(Map.new(input))
-
-  def normalize(input) when is_map(input) do
-    normalized = Map.new(input, fn {key, value} -> {normalize_key(key), value} end)
-
-    with :ok <- exact_keys(normalized),
-         :ok <- validate(normalized) do
-      {:ok, struct!(__MODULE__, normalized)}
+    @impl true
+    def message(%__MODULE__{rule_id: rule_id, key: key, remediation: remediation}) do
+      "#{rule_id}: #{key}; #{remediation}"
     end
   end
 
-  def normalize(_),
-    do: error("proof_lane.invalid_config", "config", "use config :crosswake, :proof_lane")
+  @spec normalize(keyword() | map()) :: {:ok, t()} | {:error, Error.t()}
+  def normalize(input) when is_list(input) do
+    with :ok <- atom_keys(input),
+         :ok <- no_duplicates(input) do
+      normalize(Map.new(input))
+    end
+  end
 
-  defp normalize_key(key) when is_atom(key), do: key
+  def normalize(input) when is_map(input) do
+    with :ok <- atom_keys(Map.to_list(input)),
+         :ok <- exact_keys(input),
+         :ok <- validate(input) do
+      {:ok, struct!(__MODULE__, input)}
+    end
+  end
 
-  defp normalize_key(key) when is_binary(key),
-    do: Enum.find(@keys, &(Atom.to_string(&1) == key)) || :unknown
+  def normalize(_), do: error("PL-CONFIG-TYPE", "config", "use config :crosswake, :proof_lane")
 
-  defp normalize_key(_), do: :unknown
+  defp atom_keys(entries) do
+    if Enum.all?(entries, fn {key, _} -> key in @keys end) do
+      :ok
+    else
+      error("PL-CONFIG-KEY", "config", "use only documented atom keys")
+    end
+  end
+
+  defp no_duplicates(entries) do
+    if entries |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> length() == length(entries) do
+      :ok
+    else
+      error("PL-CONFIG-DUPLICATE", "config", "declare each proof_lane key once")
+    end
+  end
 
   defp exact_keys(config) do
-    keys = Map.keys(config) |> MapSet.new()
+    keys = config |> Map.keys() |> MapSet.new()
     expected = MapSet.new(@keys)
 
     cond do
       MapSet.equal?(keys, expected) ->
         :ok
 
-      MapSet.member?(keys, :unknown) ->
-        error("proof_lane.unknown_key", "config", "remove unsupported keys")
+      not MapSet.subset?(keys, expected) ->
+        error("PL-CONFIG-KEY", "config", "remove unsupported keys")
 
       true ->
-        error("proof_lane.missing_key", "config", "supply every proof_lane key")
+        error("PL-CONFIG-MISSING", "config", "supply every documented proof_lane key")
     end
   end
 
@@ -89,9 +97,9 @@ defmodule Crosswake.ProofLane.Config do
       {:indexed_db_database, &simple_name?/1},
       {:indexed_db_store, &simple_name?/1},
       {:mutation_id_path, &valid_field_path?/1},
-      {:sync_path, &local_path?/1},
-      {:evidence_path, &local_path?/1},
-      {:router, &is_atom/1},
+      {:sync_path, &host_local_path?/1},
+      {:evidence_path, &host_local_path?/1},
+      {:router, &valid_router?/1},
       {:ios_shell_root, &safe_absolute_path?/1}
     ]
 
@@ -100,34 +108,36 @@ defmodule Crosswake.ProofLane.Config do
         :ok
 
       {key, _} ->
-        error(
-          "proof_lane.invalid_value",
-          Atom.to_string(key),
-          "use the documented local proof-lane shape"
-        )
+        error("PL-CONFIG-VALUE", Atom.to_string(key), "use the documented local proof-lane shape")
     end
   end
 
   defp valid_route_id?(value),
     do: is_binary(value) and String.match?(value, ~r/^route-[0-9a-f]{16}$/)
 
-  defp valid_route_path?(value),
-    do:
-      local_path?(value) and
-        Regex.match?(~r/^\/(?:[a-z0-9_-]+|:id)(?:\/(?:[a-z0-9_-]+|:id))*$/, value)
+  defp valid_route_path?(value) do
+    host_local_path?(value) and
+      Regex.match?(~r/^\/(?:[a-z0-9_-]+|:id)(?:\/(?:[a-z0-9_-]+|:id))*$/, value)
+  end
 
   defp simple_name?(value),
     do: is_binary(value) and String.match?(value, ~r/^[A-Za-z][A-Za-z0-9_-]*$/)
 
-  defp valid_field_path?(value),
-    do: is_binary(value) and String.match?(value, ~r/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/)
+  defp valid_field_path?(value) do
+    is_binary(value) and String.match?(value, ~r/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/)
+  end
 
-  defp local_path?(value),
-    do:
-      is_binary(value) and String.starts_with?(value, "/") and
-        not String.contains?(value, ["//", "..", "://", "?"])
+  defp host_local_path?(value) do
+    is_binary(value) and String.starts_with?(value, "/") and
+      not String.contains?(value, ["//", "..", "://", "?", "#", "@", "\0", "\r", "\n"])
+  end
 
-  defp safe_absolute_path?(value), do: local_path?(value) and Path.type(value) == :absolute
+  defp valid_router?(value), do: is_atom(value) and value not in [nil, true, false]
+
+  defp safe_absolute_path?(value) do
+    is_binary(value) and Path.type(value) == :absolute and host_local_path?(value) and
+      Path.expand(value) == value
+  end
 
   defp error(rule_id, key, remediation),
     do: {:error, %Error{rule_id: rule_id, key: key, remediation: remediation}}
