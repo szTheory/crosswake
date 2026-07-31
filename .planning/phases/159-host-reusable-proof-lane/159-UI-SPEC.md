@@ -1,7 +1,7 @@
 ---
 phase: 159
 slug: host-reusable-proof-lane
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-31
@@ -42,7 +42,7 @@ Render one vertically centered, leading-aligned diagnostic group with 16px gaps 
 1. Heading: `Proof lane` (`proof-lane-title`).
 2. Backend authority posture: `Backend authority required` (`proof-lane-auth-posture`). This is an informative statement, never an auth success claim.
 3. Closed outcome line (`proof-lane-outcome`), sourced from the host adapter/test driver, not a fixed literal. The visible state must be exactly one of `Passed`, `Blocked`, or `Unavailable`, followed by a safe prerequisite label where relevant.
-4. Reconnect control (`proof-lane-reconnect`) only when the host adapter exposes a real retry/reconnect action. Activating it calls that adapter action and refreshes the observable outcome. It must not be a no-op. When no actionable adapter is installed, omit the control rather than rendering a disabled success-looking affordance.
+4. Retry control (`proof-lane-reconnect`) labeled `Retry proof check`, only when the host adapter exposes a real retry/reconnect action. Activating it calls that adapter action and refreshes the observable outcome. It must not be a no-op. When no actionable adapter is installed, omit the control rather than rendering a disabled success-looking affordance.
 
 `Passed` is permitted only after the shared Xcode test scheme has executed the host-backed XCTest/XCUITest assertion for the named boundary. A compiled target, launch, static label, or missing adapter must render `Blocked` or `Unavailable`, never `Passed`.
 
@@ -90,10 +90,10 @@ This test probe is intentionally not a branded 60/30/10 marketing composition. U
 |------|-------|-------|
 | Dominant (60%) | system background (adaptive; light fallback `#F7F1E6`) | Screen background and ordinary text surface |
 | Secondary (30%) | system secondary background (adaptive; light fallback `#EFE6D6`) | Optional single outcome container; omit the container if it adds no clarity |
-| Accent (10%) | Wake 700 `#2B756A` | Enabled `Reconnect` control and keyboard/focus indication only |
+| Accent (10%) | Wake 700 `#2B756A` | Enabled `Retry proof check` control and keyboard/focus indication only |
 | Destructive | Rust 600 `#9A4D35` | Not used: this phase has no destructive action |
 
-Accent reserved for: the enabled, host-backed `Reconnect` action and its focus state. Never use accent or a green-like treatment to imply `Passed`; every outcome is conveyed by its text label. `Blocked` and `Unavailable` may use the platform's semantic warning/error treatment only alongside their literal labels; color alone is insufficient.
+Accent reserved for: the enabled, host-backed `Retry proof check` action and its focus state. Never use accent or a green-like treatment to imply `Passed`; every outcome is conveyed by its text label. `Blocked` and `Unavailable` may use the platform's semantic warning/error treatment only alongside their literal labels; color alone is insufficient.
 
 ---
 
@@ -103,7 +103,7 @@ All strings are short, status-oriented, and contain only a stable rule ID or saf
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | `Reconnect` — render only for a real host adapter retry action |
+| Primary CTA | `Retry proof check` — render only for a real host adapter retry action |
 | Ready / shell heading | `Proof lane` |
 | Auth posture | `Backend authority required` |
 | Passed state | `Passed — host assertion completed` — allowed only after an executed host-backed test action |
@@ -122,7 +122,7 @@ The `{safe prerequisite}`, `{safe next command}`, and `{stable rule ID}` placeho
 
 - The probe is usable with VoiceOver: outcome text, posture text, and the reconnect control have their visible labels as accessibility labels; no hidden test-only success text exists.
 - Preserve these stable identifiers: `proof-lane-title`, `proof-lane-auth-posture`, `proof-lane-outcome`, and, when rendered, `proof-lane-reconnect`. Bind them to real adapter state/action, not fixed literals.
-- XCUITest must launch, observe the initial outcome, terminate, relaunch, invoke `Reconnect` when available, and observe the adapter-derived resulting outcome. The shared scheme must execute this UI test plus the XCTest driver contract before the verifier may emit `passed`.
+- XCUITest must launch, observe the initial outcome, terminate, relaunch, invoke `Retry proof check` when available, and observe the adapter-derived resulting outcome. The shared scheme must execute this UI test plus the XCTest driver contract before the verifier may emit `passed`.
 - The interface exposes no loading spinner. While adapter evaluation is in flight, retain the prior non-passing outcome with an accessible `Checking proof prerequisites` status; do not clear the outcome or optimistically show `Passed`.
 - There is no consumer navigation, browser-like DOM inspection, credential entry, account selection, media player, or pack-management UI in this phase.
 
@@ -130,15 +130,14 @@ The `{safe prerequisite}`, `{safe next command}`, and `{stable rule ID}` placeho
 
 ## UI Considerations
 
-Applicable state considerations resolved: 2 covered, 1 backstop, 0 unresolved.
+Applicable state considerations resolved: 1 covered, 1 backstop, 0 unresolved. The confirmed element kinds are `static-content` for the heading, authority posture, and outcome line, plus `interactive-control` for the retry control.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| populated | Outcome line / optional outcome container | ✅ covered | Exactly one adapter-derived closed outcome (`Passed`, `Blocked`, `Unavailable`) is visible with a text label; static placeholder values are forbidden. |
-| loading | Outcome line | ✅ covered | During a real reconnect/check, retain the previous non-passing result and announce `Checking proof prerequisites`; never render optimistic success. |
-| long-text | Outcome, safe rule, remediation copy, `Reconnect` label | 🧪 backstop | XCUITest at an accessibility text size verifies wrapping within the 24px inset, the 44×44pt control target, and no clipping/ellipsis/horizontal scroll. |
+| overflow | Heading, authority posture, outcome, and safe remediation text | ✅ covered | Every text surface reflows within the 24px horizontal insets, wraps to additional lines, and never clips, ellipsizes, horizontally scrolls, or shrinks below its declared text role. |
+| long-text | Heading, authority posture, outcome, safe rule/remediation copy, and `Retry proof check` | 🧪 backstop | `{ statement: "XCUITest at an accessibility text size verifies wrapping and reflow within the 24px insets, the retry control's 44×44pt target, and no clipping, ellipsis, or horizontal scroll.", verification: backstop }` |
 
-`empty`, `error`, `partial`, `overflow`, and `zero-one-many` are dismissed: the probe has no data collection, list, form, media surface, navigation structure, or user-entered content. Error copy is instead represented by the required closed `Blocked`/`Unavailable` outcome line above.
+The closed probe did not raise `empty`, `loading`, `error`, `populated`, `partial`, or `zero-one-many` for the confirmed static-content and interactive-control kinds. The explicit in-flight, empty-configuration, and blocked/unavailable copy contracts remain required above; their omission from this closed taxonomy is not permission to remove them.
 
 ---
 
@@ -153,14 +152,14 @@ Applicable state considerations resolved: 2 covered, 1 backstop, 0 unresolved.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved by `gsd-ui-checker`; the single non-blocking CTA recommendation is incorporated as `Retry proof check`.
 
 ## Sources Applied
 
