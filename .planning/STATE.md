@@ -4,15 +4,15 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: verifying
-stopped_at: Completed 158-04-PLAN.md
-last_updated: "2026-07-31T14:11:26.782Z"
+status: executing
+stopped_at: Planned Phase 158 verification gap closure
+last_updated: "2026-07-31T14:46:26.639Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 execution started
+last_activity_desc: Planned three Phase 158 verification gap-closure plans
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 4
+  total_plans: 7
   completed_plans: 4
   percent: 20
 current_plan: null
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-07-31 — Phase 158 execution started
+Plan: 4 of 7
+Status: Ready to execute
+Last activity: 2026-07-31 — Planned three Phase 158 verification gap-closure plans
 
 ## Active Objective
 
@@ -44,9 +44,10 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158`. Execution follows the annotated three-wave plan in
-`.planning/ROADMAP.md`; the tracer plan is
-`.planning/phases/158-adoption-reset-and-route-map/158-01-PLAN.md`.
+Run `$gsd-execute-phase 158`. Gap closure starts with parallel Wave 4 plans
+`.planning/phases/158-adoption-reset-and-route-map/158-05-PLAN.md` and
+`.planning/phases/158-adoption-reset-and-route-map/158-06-PLAN.md`, then completes with the Wave 5
+validation reconciliation in `158-07-PLAN.md`.
 
 ## Blockers
 

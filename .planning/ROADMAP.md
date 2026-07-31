@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 4/4 plans executed
+**Plans:** 4/7 plans executed
 
 Plans:
 **Wave 1**
@@ -65,6 +65,15 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 158-04-PLAN.md — Reconcile public support truth and complete the Nyquist phase gate.
+
+**Wave 4** *(gap closure; blocked on Wave 3 completion)*
+
+- [ ] 158-05-PLAN.md — Make concrete-route safety and cross-field promotion invariants fail closed.
+- [ ] 158-06-PLAN.md — Enforce non-echoing first-adopter privacy scans over filesystem and CI surfaces.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 158-07-PLAN.md — Reconcile Phase 158 validation only after every gap-closure gate passes.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
