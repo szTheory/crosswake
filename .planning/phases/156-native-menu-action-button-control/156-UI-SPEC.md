@@ -1,7 +1,7 @@
 ---
 phase: 156
 slug: native-menu-action-button-control
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-31
@@ -177,7 +177,7 @@ Hard copy rules:
 
 ## UI Considerations
 
-Applicable state considerations resolved: 28 covered, 2 backstop, 0 unresolved.
+Applicable state considerations resolved: 26 covered, 2 backstop, 0 unresolved.
 
 **Surfaces probed:** E1 Phoenix-owned trigger, E2 fallback action menu, E3 native iOS/Android menu,
 E4 inline fail-closed alert, E5 destructive confirmation follow-on.
@@ -186,54 +186,58 @@ E4 inline fail-closed alert, E5 destructive confirmation follow-on.
 
 | Category | Status | Resolution / Reason |
 |----------|--------|---------------------|
-| loading | covered | Trigger-level pending affordance only; no per-row pending state |
-| error | covered | Anchor validation failure resolves as denial and leaves fallback usable |
-| overflow | covered | Trigger label is short (`Job actions`, `Actions`, or `More actions`) and uses the existing 48px button contract |
-| long-text | covered | Trigger copy is fixed and not data-driven |
+| loading | covered | Use only the trigger-level pending affordance; do not add per-row spinners |
+| error | covered | Anchor validation or dispatch failure resolves as a typed denial while the fallback remains usable |
+| overflow | covered | Fixed trigger labels use the existing 48px button contract and may reflow without clipping |
+| long-text | covered | Trigger copy is fixed to `Job actions`, `Actions`, or `More actions` and is not data-driven |
 
 ### E2 - Fallback Action Menu
 
 | Category | Status | Resolution / Reason |
 |----------|--------|---------------------|
-| empty | covered | Zero actions render `No actions are available for this record.` under the normal heading with Cancel still present |
-| loading | covered | Pending disables rows and Cancel; the trigger carries pending copy |
-| error | covered | Selection errors render through the inline alert or destructive confirm path, not inside a separate menu error view |
-| populated | covered | Mandatory heading, list of button rows, Cancel outside scroll, no icons, destructive row last |
-| partial | covered | Disabled explanatory rows remain visible with `id: nil` and reason in the label |
-| overflow | covered | Scroll container remains `max-height: min(60vh, 420px)` with heading and Cancel outside it |
-| zero-one-many | covered | Zero -> empty copy; one to eight -> visible rows; more than eight -> validation failure before dispatch |
-| long-text | backstop | Row labels wrap and row height grows; planner must preserve a visual/browser check at 320px |
+| empty | covered | Zero actions render the normal heading plus `No actions are available for this record.`, with Cancel still present |
+| loading | covered | Pending disables action rows and Cancel while the trigger carries the pending affordance |
+| error | covered | Selection failures use the inline fail-closed alert or destructive-confirmation path rather than a separate menu error view |
+| populated | covered | Render the mandatory heading, one to eight action rows, Cancel outside the scroll region, no icons, and any destructive row last |
+| partial | covered | Disabled explanatory rows remain visible with `id: nil` and the reason included in the label |
+| overflow | covered | Keep the row list within `max-height: min(60vh, 420px)`, with heading and Cancel outside the scroll container |
+| zero-one-many | covered | Zero uses the empty-state copy, one to eight show rows, and more than eight fails validation before dispatch |
+| long-text | backstop | `{ statement: "Preserve a visual or browser check at 320px proving labels wrap, row height grows, and controls remain reachable.", verification: backstop }` |
 
 ### E3 - Native iOS/Android Menu
 
 | Category | Status | Resolution / Reason |
 |----------|--------|---------------------|
-| empty | covered | Empty action list does not present native chrome |
-| loading | covered | No native loading state; native presentation is requested only after server projection validation |
-| error | covered | Native presenter construction/anchor failure returns a typed denial before UI is shown |
-| populated | covered | Native displays the same validated action projection; platform owns chrome and motion |
-| partial | covered | Disabled explanatory rows are present and disabled; omission is a contract failure |
-| overflow | covered | Item count ceiling of 8 keeps the menu short; platform handles row layout within native bounds |
-| zero-one-many | covered | Zero denies/no native presentation; one to eight present; above eight fails validation |
-| long-text | backstop | 80-grapheme ceiling plus platform text scaling must avoid clipped unreadable labels; native harness proves model, optional device evidence remains advisory |
+| empty | covered | An empty action list does not present native chrome and resolves through the typed denial or fallback path |
+| loading | covered | There is no native loading view; presentation begins only after runtime projection and anchor validation |
+| error | covered | Presenter construction or anchor failure returns a typed denial before native UI is shown |
+| populated | covered | Native UI displays the same validated action projection while the platform owns chrome and motion |
+| partial | covered | Disabled explanatory actions remain present and disabled; silently omitting one is a contract failure |
+| overflow | covered | The eight-item ceiling bounds menu length and platform-native layout handles rows within native bounds |
+| zero-one-many | covered | Zero does not present, one to eight present, and more than eight fails validation before dispatch |
+| long-text | backstop | `{ statement: "Use the 80-grapheme ceiling and retain native-harness plus advisory device evidence for readable scaled labels.", verification: backstop }` |
 
 ### E4 - Inline Fail-Closed Alert
 
 | Category | Status | Resolution / Reason |
 |----------|--------|---------------------|
-| error | covered | Stale-binary and undeclared/unavailable cases use fixed `role="alert"` copy from `## Copywriting Contract`; shell-unreachable renders no copy |
-| overflow | covered | Alert has no fixed height and wraps in normal document flow |
-| long-text | covered | Strings are fixed literals with no interpolated values |
+| overflow | covered | The alert has no fixed height and wraps in normal document flow |
+| long-text | covered | Alert strings are fixed literals with no interpolated data and must wrap without clipping |
+
+Additional invariant outside the probe taxonomy for static content: stale-binary and
+undeclared/unavailable cases use the fixed `role="alert"` copy from `## Copywriting Contract`;
+shell-unreachable renders no end-user error copy.
 
 ### E5 - Destructive Confirmation Follow-On
 
 | Category | Status | Resolution / Reason |
 |----------|--------|---------------------|
-| loading | covered | Existing destructive confirm pending label remains `Deleting…` |
-| error | covered | Confirm failure leaves the panel open with `role="alert"` and no mutation ambiguity |
-| populated | covered | `role="alertdialog"`, no click-away dismissal, initial focus on Cancel, destructive button styling plus shape cue |
-| partial | covered | Destructive body is required; no missing consequence sentence |
-| overflow | covered | Existing scroll-container contract keeps buttons reachable |
+| empty | covered | Do not render destructive confirmation when its required consequence body is absent; fail validation closed |
+| loading | covered | The existing pending label remains `Deleting…` and controls prevent duplicate mutation |
+| error | covered | Confirmation failure leaves the panel open with `role="alert"` and no mutation ambiguity |
+| partial | covered | The destructive body and consequence sentence are required; incomplete content fails closed rather than rendering |
+| overflow | covered | Use the existing confirmation scroll-container contract so Cancel and the destructive action remain reachable |
+| long-text | covered | Required confirmation copy wraps and reflows without fixed-height clipping while controls remain reachable |
 
 ---
 
@@ -264,11 +268,11 @@ no new external UI packages.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved
