@@ -112,6 +112,26 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     refute Exception.message(error) =~ secret
   end
 
+  test "rejects arbitrary non-atom map keys before keyword validation without echoing input" do
+    cases = [
+      {Enum.join(["untrusted", "string", "key"], "-"),
+       Enum.join(["untrusted", "string", "value"], "-")},
+      {42, %{payload: Enum.join(["numeric", "key", "value"], "-")}},
+      {{:tuple, :key}, [Enum.join(["tuple", "key", "value"], "-")]}
+    ]
+
+    for {key, value} <- cases do
+      input = Map.put(Map.new(valid_row()), key, value)
+
+      assert {:error, error} = RouteInventory.validate(input)
+      assert_safe_error(error, "RI-INVALID", "route_row")
+
+      message = Exception.message(error)
+      refute message =~ inspect(key)
+      refute message =~ inspect(value)
+    end
+  end
+
   test "rejects duplicate route IDs and path patterns without merging adjacent rows" do
     assert {:error, error} =
              RouteInventory.validate_inventory([
