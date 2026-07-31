@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: gaps_found
-stopped_at: Phase 158 verification found four blockers after all 10 plans executed
-last_updated: "2026-07-31T16:03:07Z"
+status: executing
+stopped_at: Completed 158-11-PLAN.md
+last_updated: "2026-07-31T16:21:32.782Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 re-verification found privacy and reproducibility gaps
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 10
-  completed_plans: 10
-  percent: 20
+  completed_phases: 0
+  total_plans: 14
+  completed_plans: 11
+  percent: 0
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — GAPS FOUND
-Plan: 10 of 10 executed; verification scored 41/46 must-haves
-Status: Gap planning required before Phase 158 can complete
-Last activity: 2026-07-31 — Re-verification found four blockers
+Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Plan: 2 of 14
+Status: Ready to execute
+Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
 
@@ -81,6 +81,8 @@ enforcement, the registered-artifact scan false positive, and formatting-ledger 
 - [Phase ?]: Protected private-term scans run only for trusted same-repository PRs, main pushes, and manual dispatches; fork PRs fail closed without secret exposure.
 - [Phase ?]: Public capability prose uses first adopter throughout rendered output; stable row IDs remain unchanged.
 - [Phase ?]: Final validation records a protected test input only as runtime-assembled neutral fragments and preserves adopter-instance unknown_blocking.
+- [Phase ?]: Durable route IDs use exactly route- plus 16 lowercase hexadecimal characters.
+- [Phase ?]: Phoenix path templates allow only generic static segments and the :id parameter token.
 
 ## Deferred Items
 
@@ -109,8 +111,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T15:50:07.871Z
-**Stopped at:** Completed 158-10-PLAN.md
+**Last session:** 2026-07-31T16:21:32.776Z
+**Stopped at:** Completed 158-11-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -127,3 +129,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P08 | 5m | 1 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P09 | 6m | 1 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P10 | 8m | 1 tasks | 1 files |
+| Phase 158-adoption-reset-and-route-map P11 | 12m | 1 tasks | 2 files |
