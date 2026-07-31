@@ -42,6 +42,28 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     assert rendered == Renderer.render()
   end
 
+  test "D-11/D-13 public guide uses first-adopter framing without active native-control breadth" do
+    rendered = Renderer.render()
+
+    assert rendered =~ "first adopter"
+    refute rendered =~ "First B2C Adopter"
+    refute rendered =~ "Native Controls Pack 1"
+  end
+
+  test "RESET-01 equal implications preserve canonical row adjacency in deterministic rendering" do
+    rows = [
+      renderer_row(%{id: "first-equal", surface: "First equal", adoption_implication: "same"}),
+      renderer_row(%{id: "second-equal", surface: "Second equal", adoption_implication: "same"})
+    ]
+
+    rendered_once = Renderer.render(rows)
+    rendered_twice = Renderer.render(rows)
+
+    assert rendered_once == rendered_twice
+    assert elem(:binary.match(rendered_once, "First equal"), 0) <
+             elem(:binary.match(rendered_once, "Second equal"), 0)
+  end
+
   test "D-26 guide starts with reader-first sections before detailed rows" do
     rendered = Renderer.render()
 

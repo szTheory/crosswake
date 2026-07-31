@@ -123,7 +123,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Routes fail closed through explicit runtime policy, manifest validation, and support-matrix diagnostics.",
-        adoption_implication: "Use as the policy gate for every Native Controls Pack 1 affordance."
+        adoption_implication:
+          "Use as the explicit route-policy gate for the first adopter's proven mobile path."
       ),
       row(
         id: "deep-link-activation",
@@ -138,7 +139,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Inactive or unsupported route entry falls back to route-unavailable guidance instead of hidden WebView navigation authority.",
         adoption_implication:
-          "Keep activation truth as the shell boundary for any new control entry points."
+          "Keep activation truth at the shell boundary; do not infer route ownership from a wrapper."
       ),
       row(
         id: "bounded-bridge-app-info",
@@ -153,7 +154,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Phoenix route continues without native app metadata when the route has not declared the capability.",
         adoption_implication:
-          "Model low-frequency request/reply controls on this route-local contract."
+          "Retain only low-frequency request/reply contracts with explicit route-local ownership."
       ),
       row(
         id: "bounded-bridge-haptics",
@@ -167,7 +168,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Approval state remains Phoenix/server authoritative; haptics is optional confirmation feedback.",
-        adoption_implication: "Promote into Native Controls Pack 1 as a hardened route-local control."
+        adoption_implication:
+          "Keep as optional route-local feedback; it does not expand the first adopter's native breadth."
       ),
       row(
         id: "bounded-bridge-share",
@@ -182,7 +184,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Content stays in the Phoenix-owned route when a share family is undeclared or unavailable.",
         adoption_implication:
-          "Candidate for Native Controls Pack 1 only with explicit platform support truth."
+          "Keep advisory until a first-adopter route supplies explicit platform support truth."
       ),
       row(
         id: "permissions-status",
@@ -197,7 +199,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Route continues without native notification permission snapshot authority when undeclared.",
         adoption_implication:
-          "Pack 1 may include read-only snapshots only; permission requests remain out of scope."
+          "Read-only snapshots may inform a route; permission requests remain outside the first-adopter scope."
       ),
       row(
         id: "notification-token",
@@ -213,7 +215,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Token replies are provider-tagged evidence, not backend registration truth or delivery proof.",
         adoption_implication:
-          "Pack 1 may reference provider snapshots, but APNs/FCM delivery and universal notification handling stay outside core."
+          "Provider snapshots remain advisory; delivery and universal notification handling stay outside core."
       ),
       row(
         id: "adminpilot-approval-haptics",
@@ -227,7 +229,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Phoenix approval mutation commits server state first; native haptics can fail without changing approval authority.",
-        adoption_implication: "Use as the reference route-local success-feedback control for Pack 1."
+        adoption_implication:
+          "Use only as route-local success-feedback evidence, not as a new control-program recommendation."
       ),
       row(
         id: "fieldserv-capture-handoff",
@@ -312,7 +315,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Browser-owned IndexedDB outbox and reconciliation visibility are local to the offline island; server reset does not clear browser-owned state.",
         adoption_implication:
-          "Use as evidence for later Offline Sync/Native Storage Productization, not Pack 1."
+          "Use as evidence for one route-local offline island, not a generic sync or storage claim."
       ),
       row(
         id: "learnloop-native-storage",
@@ -355,7 +358,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :advisory,
         denial_fallback:
           "Backend projection remains entitlement authority; device or storefront evidence never grants access.",
-        adoption_implication: "Keep commerce/provider support out of Native Controls Pack 1."
+        adoption_implication:
+          "Keep commerce and provider support outside the first adopter's current infrastructure path."
       ),
       row(
         id: "commerce-provider-integration",
@@ -384,7 +388,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Example-host proof remains valid, but no support claim transfers to an external host until that host can configure and run the lane.",
         adoption_implication:
-          "Build the iOS host-owned proof scaffold before adding native capability breadth."
+          "Build host-reusable iOS proof before adding any native capability breadth."
       ),
       row(
         id: "first-adopter-scoped-replay",
@@ -399,7 +403,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Replay stops on missing or mismatched scope, logout, account switch, failed authorization, or a disabled route; raw payload never becomes diagnostic evidence.",
         adoption_implication:
-          "Add an opaque scope reference and redaction contract without teaching core the host payload schema."
+          "Require opaque scope references and redaction before any replay claim; keep payload semantics host-owned."
       ),
       row(
         id: "first-adopter-physical-iphone",
@@ -414,7 +418,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Simulator, generated-shell, browser, and unit evidence remain explicitly narrower than physical-device proof.",
         adoption_implication:
-          "Block the first-adopter support claim until one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
+          "Block the first adopter support claim until one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
       ),
       row(
         id: "native-controls-alert-confirm",
