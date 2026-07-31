@@ -165,7 +165,10 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   defp generic_violations(path, contents) do
     [
       {"privacy.commercial_detail", ~r/\$\s*\d+/},
-      {"privacy.identifying_field", ~r/customer[-_ ]?(email|name|address)|legal[-_ ]?name/i}
+      {
+        "privacy.identifying_field",
+        ~r/\b(?:customer[-_ ]?(?:email|name|address)|legal[-_ ]?name)\b[ \t]*(?::|=>|=)/i
+      }
     ]
     |> Enum.flat_map(fn {rule_id, pattern} ->
       if Regex.match?(pattern, contents), do: [%{rule_id: rule_id, path: path}], else: []

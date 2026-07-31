@@ -201,7 +201,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
     state = File.read!(".planning/STATE.md")
     assert state =~ "current_phase: 158"
-    assert state =~ "$gsd-verify-work 158"
+    assert state =~ "Phase: 158 (adoption-reset-and-route-map)"
   end
 
   test "v20 remains stopped and partial while phases 156 and 157 stay outside active v21 scope" do
