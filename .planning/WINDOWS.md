@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 5
+open_count: 6
 waived_count: 0
 fixed_count: 0
-total_count: 5
-last_updated: 2026-07-31T20:45:02.500Z
+total_count: 6
+last_updated: 2026-07-31T20:46:49.899Z
 ---
 
 # Broken Windows Ledger
@@ -20,6 +20,7 @@ last_updated: 2026-07-31T20:45:02.500Z
 | 3 | 155 | deviation | examples/phoenix_host/e2e/native_controls_fallback.spec.ts |  | Auto-fixed (Rule 1): hardcoded template_version=1 assertion updated to template_version=2 to match the 155-06 stamp bump | open |  | 2026-07-30T18:21:22.547Z |  |
 | 4 | 158 | unrun-verify | test/crosswake/planning/first_adopter_context_test.exs |  | Broader Task 2 planning-context verification is blocked by the executor-start STATE.md transition. | open |  | 2026-07-31T13:45:25.123Z |  |
 | 5 | 159 | stub | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Focused native XCTest/XCUITest source expansion is intentionally deferred to Plan 159-03. | open |  | 2026-07-31T20:45:02.500Z |  |
+| 6 | 159 | deviation | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Auto-fixed incomplete PBX project skeleton so Xcode enumerates the proof-owned targets. | open |  | 2026-07-31T20:46:49.899Z |  |
 
 ````json
 [
@@ -81,6 +82,18 @@ last_updated: 2026-07-31T20:45:02.500Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-07-31T20:45:02.500Z",
+    "resolved_at": null
+  },
+  {
+    "id": 6,
+    "kind": "deviation",
+    "phase": "159",
+    "file": "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex",
+    "line": null,
+    "description": "Auto-fixed incomplete PBX project skeleton so Xcode enumerates the proof-owned targets.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-07-31T20:46:49.899Z",
     "resolved_at": null
   }
 ]

@@ -43,11 +43,16 @@ An iOS-only Mix generator creates an isolated, host-owned ExUnit, Playwright, Sw
 
 - `mix test test/mix/tasks/crosswake_gen_proof_lane_test.exs` — passed.
 - `mix format --check-formatted lib/crosswake/proof_lane/config.ex lib/crosswake/proof_lane/generator.ex lib/crosswake/proof_lane/evidence.ex lib/mix/tasks/crosswake.gen.proof_lane.ex test/mix/tasks/crosswake_gen_proof_lane_test.exs` — passed.
-- `xcodebuild -version` — available (Xcode 26.6); device/simulator execution remains advisory and was not promoted as device proof.
+- `xcodebuild -list -project <generated>/CrosswakeProofLane.xcodeproj` — enumerated the proof, XCTest, and XCUITest targets. The local simulator runtime is out of date, so simulator execution remains advisory and was not promoted as device proof.
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Replaced an incomplete PBX project skeleton with a valid enumerable target graph.**
+- **Found during:** Task 1 final Xcode inspection.
+- **Fix:** Added complete project, group, build phase, configuration, and product declarations for the proof, XCTest, and XCUITest targets.
+- **Commit:** `f3023aa7`
 
 ## Known Stubs
 
