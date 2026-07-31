@@ -77,7 +77,7 @@ Plans:
 
 **Wave 6** *(gap closure; blocked on Wave 5 completion)*
 
-- [ ] 158-08-PLAN.md — Enforce protected private-term checks across trusted PR and fail-closed fork paths.
+- [x] 158-08-PLAN.md — Enforce protected private-term checks across trusted PR and fail-closed fork paths.
 - [ ] 158-09-PLAN.md — Repair canonical public capability wording and regenerate the guide.
 
 **Wave 7** *(blocked on Wave 6 completion)*

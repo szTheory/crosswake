@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: ready_to_execute
-stopped_at: Phase 158 gap-closure plans verified
-last_updated: "2026-07-31T15:33:00Z"
+status: executing
+stopped_at: Completed 158-08-PLAN.md
+last_updated: "2026-07-31T15:41:10.301Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 gap-closure plans 08-10 created and verified
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 10
   completed_plans: 7
-  percent: 20
+  percent: 0
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — PLANNED
-Plan: 7 of 10 executed; 3 gap-closure plans ready
-Status: Ready to execute Plans 158-08 through 158-10
-Last activity: 2026-07-31 — Phase 158 gap-closure plans created and independently verified
+Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Plan: 8 of 10 executed; 2 gap-closure plans remaining
+Status: Executing Phase 158
+Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
 
@@ -79,6 +79,7 @@ is re-verified.
 - [Phase ?]: Local-first promotion requires explicit coherent ownership, mutation, scope, fallback, disablement, retention, and recent-auth authority.
 - [Phase ?]: Approved first-adopter artifacts are discovered through destination-tagged globs, with private-term failures limited to stable rule/path pairs.
 - [Phase ?]: Phase 158 post-gap validation closes defaults-only/incoherent route promotion and unscanned planning-artifact gaps, while adopter-instance input remains unknown_blocking.
+- [Phase ?]: Protected private-term scans run only for trusted same-repository PRs, main pushes, and manual dispatches; fork PRs fail closed without secret exposure.
 
 ## Deferred Items
 
@@ -107,8 +108,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T15:08:55.273Z
-**Stopped at:** Completed 158-07-PLAN.md
+**Last session:** 2026-07-31T15:41:10.293Z
+**Stopped at:** Completed 158-08-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -122,3 +123,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P05 | 9m | 2 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P06 | 14m | 2 tasks | 5 files |
 | Phase 158-adoption-reset-and-route-map P07 | 5m | 1 tasks | 2 files |
+| Phase 158-adoption-reset-and-route-map P08 | 5m | 1 tasks | 2 files |
