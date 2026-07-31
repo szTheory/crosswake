@@ -7,12 +7,12 @@ requires:
   - phase: 158-19
     provides: Generic scanner enforcement and pre-Keyword route-map validation
 provides:
-  - Fresh final-tree and post-write evidence for scanner privacy enforcement
-  - Fresh stable-error evidence for malformed route-map input
+  - Review-fixed final-tree and post-write evidence for scanner privacy enforcement
+  - Review-fixed stable-error evidence for malformed route-map input
 affects: [phase-158-completion, phase-159-proof-lane, adoption-context-scan]
 tech-stack:
   added: []
-  patterns: [fresh-evidence-only reconciliation, non-echoing validation evidence]
+  patterns: [fresh-evidence-only reconciliation, non-echoing validation evidence, protected-fork fail-closed boundary]
 key-files:
   created:
     - .planning/phases/158-adoption-reset-and-route-map/158-20-SUMMARY.md
@@ -45,33 +45,34 @@ coverage:
         ref: "mix test test/crosswake/adoption/route_inventory_test.exs"
         status: pass
     human_judgment: false
-duration: 6min
+duration: 8min
 completed: 2026-07-31
 status: complete
 ---
 
 # Phase 158 Plan 20: Final Reconciliation Summary
 
-**Fresh scanner and route-map evidence closes Phase 158’s two demonstrated safety blockers without promoting adopter-instance scope.**
+**Review-fixed scanner and route-map evidence closes Phase 158’s two demonstrated safety blockers without promoting adopter-instance scope.**
 
 ## Performance
 
-- **Duration:** 6 min
-- **Started:** 2026-07-31T18:49:55Z
-- **Completed:** 2026-07-31T18:52:57Z
+- **Duration:** 8 min
+- **Started:** 2026-07-31T19:10:35Z
+- **Completed:** 2026-07-31T19:11:00Z
 - **Tasks:** 1/1
 - **Files modified:** 3
 
 ## Accomplishments
 
-- Replaced stale Plan-17 evidence with final Plan-19-tree scanner, validator, format, compile, full-suite, and post-write evidence.
+- Replaced prior Plan-19-tree evidence with review-fixed final-tree scanner, validator, format, compile, full-suite, and post-write evidence.
 - Recorded separate direct and production Mix-task coverage for generic privacy checks across guide, source, action, script, and later-phase paths.
 - Re-verified non-atom and mixed route-map input returns the stable `RI-INVALID` / `unresolved` / `route_row` error without input echo or a `Keyword` exception.
+- Included CR-01 contextual prose amount detection, CR-02 textual SVG scanning, and WR-01 duplicate route-field validation in the final-tree evidence; WR-02 remains intentionally fail closed for untrusted forks.
 - Closed only the two demonstrated verification gaps; TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
 
 ## Task Commit
 
-1. **Task 1: Re-run the final scanner and validator paths, then reconcile both ledgers** — `5d999eb9` (docs)
+1. **Task 1: Re-run the final scanner and validator paths, then reconcile both ledgers** — `5d999eb9` (initial docs); current review-fixed reconciliation committed with this summary update.
 
 ## Files Created/Modified
 
@@ -83,6 +84,7 @@ status: complete
 
 - Fresh execution from the final implementation tree, rather than a prior summary or selective output, is the sole evidence used to close the two blockers.
 - Evidence stores only stable commands, counts, references, and outcomes; no runtime canary, matched content, malformed input, or sensitive payload is retained.
+- The protected private-term gate remains fail closed for untrusted forks; review feedback did not authorize a bypass or weakened boundary.
 
 ## Deviations from Plan
 

@@ -31,8 +31,8 @@ supplied. This ledger retains only commands, stable references, counts, and outc
 | Gate | Exact command | Observed result |
 | --- | --- | --- |
 | Plan-19 ordering check | `test -f .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md && rg -q 'first_adopter_context_test\|crosswake_adoption_context_scan_test' .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md && rg -q 'route_inventory_test' .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md` | Passed; the summary records both focused scanner/Mix-task and route-inventory verification. It is not behavioral proof. |
-| Direct scanner and production-task suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` | Passed: 25 tests, 0 failures. |
-| Route-map validator suite | `mix test test/crosswake/adoption/route_inventory_test.exs` | Passed: 16 tests, 0 failures. |
+| Direct scanner and production-task suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` | Passed: 31 tests, 0 failures. |
+| Route-map validator suite | `mix test test/crosswake/adoption/route_inventory_test.exs` | Passed: 17 tests, 0 failures. |
 | Capability and support suites | `mix test test/crosswake/capability_map test/crosswake/support_matrix` | Passed: 86 tests, 0 failures. |
 | Production scanner | `mix crosswake.adoption_context.scan` | Passed. |
 | Formatter | `mix format --check-formatted lib/crosswake/planning/first_adopter_context.ex test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs lib/crosswake/adoption/route_inventory.ex test/crosswake/adoption/route_inventory_test.exs` | Passed. |
@@ -58,6 +58,18 @@ binary exclusions remain narrow.
 | Raw/binary exclusions | Focused direct suite | Production caller delegates to the same scanner | Exclusions stay explicit and classified rather than creating a textual bypass. |
 | Diagnostics | Direct and production-task suites | Direct and production-task suites | Outcomes use stable rule/path references; configured terms and matched content are not rendered. |
 
+## Review-Fix Evidence
+
+The final-tree run includes three reviewed corrections. Contextual one-digit whole-number commercial
+amounts are detected in prose-oriented textual artifacts while source and script positional forms
+remain accepted; textual SVG is classified and scanned; and duplicate keyword route fields return a
+stable validator error before `NimbleOptions`. Direct and production scanner coverage, plus the
+route suite, passed these review regressions without persisting test inputs.
+
+The reviewed fork-path concern remains intentionally adjudicated as fail closed: untrusted fork
+pull requests do not receive protected private-term input and cannot bypass the trusted gate. This
+does not weaken the protected scanner policy.
+
 ## Route-Map Boundary Evidence
 
 The focused route suite exercises non-atom and mixed-key map boundaries before any `Keyword`
@@ -78,7 +90,7 @@ After both ledgers were written, the final artifact gates were rerun against the
 | Gate | Exact command | Observed result |
 | --- | --- | --- |
 | Production scanner | `mix crosswake.adoption_context.scan` | Passed. |
-| Scanner, Mix-task, and route suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/adoption/route_inventory_test.exs` | Passed: 41 tests, 0 failures. |
+| Scanner, Mix-task, and route suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/adoption/route_inventory_test.exs` | Passed: 48 tests, 0 failures. |
 | Whitespace | `git diff --check` | Passed. |
 
 ## Validation Sign-Off

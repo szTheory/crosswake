@@ -1,6 +1,6 @@
 ---
 phase: 158-adoption-reset-and-route-map
-verified: 2026-07-31T18:51:00Z
+verified: 2026-07-31T19:11:00Z
 status: complete
 score: 5/5 must-haves verified
 behavior_unverified: 0
@@ -27,8 +27,8 @@ blockers. TODO-002 remains open and adopter-instance completeness remains `unkno
 
 | Prior gap | Fresh evidence | Verdict |
 | --- | --- | --- |
-| Generic privacy rules were not applied to every scanned textual artifact. | The focused direct and production Mix-task suites passed (25 tests, 0 failures), covering unregistered guide, source, action, script, and later-phase paths; the live production scan passed before and after ledger writes. | CLOSED |
-| `RouteInventory.validate/1` crashed on non-atom map keys. | The focused route suite passed (16 tests, 0 failures), including non-atom and mixed-key map cases returning the fixed `RI-INVALID` / `unresolved` / `route_row` `%ValidationError{}` without input echo. | CLOSED |
+| Generic privacy rules were not applied to every scanned textual artifact. | The focused direct and production Mix-task suites passed (31 tests, 0 failures), covering unregistered guide, source, action, script, and later-phase paths; the live production scan passed before and after ledger writes. | CLOSED |
+| `RouteInventory.validate/1` crashed on non-atom map keys. | The focused route suite passed (17 tests, 0 failures), including non-atom and mixed-key map cases returning the fixed `RI-INVALID` / `unresolved` / `route_row` `%ValidationError{}` without input echo. | CLOSED |
 
 ## Goal Achievement
 
@@ -55,12 +55,12 @@ blockers. TODO-002 remains open and adopter-instance completeness remains `unkno
 
 | Gate | Result |
 | --- | --- |
-| Focused scanner/Mix-task suites | 25 tests, 0 failures |
-| Focused route-inventory suite | 16 tests, 0 failures |
+| Focused scanner/Mix-task suites | 31 tests, 0 failures |
+| Focused route-inventory suite | 17 tests, 0 failures |
 | Capability/support suites | 86 tests, 0 failures |
 | Production scanner, formatter, warnings-as-errors compile, hermetic suite, whitespace | Passed |
 | Post-write production scanner | Passed |
-| Post-write scanner/Mix-task/route suites | 41 tests, 0 failures |
+| Post-write scanner/Mix-task/route suites | 48 tests, 0 failures |
 | Post-write whitespace | Passed |
 
 ## Requirement Coverage
@@ -79,5 +79,8 @@ blockers. TODO-002 remains open and adopter-instance completeness remains `unkno
   payload is persisted in this report.
 - Android remains frozen; later-phase, UI, API, schema, generic sync, and generic storage claims are
   unchanged.
+- Review fixes are included in this final-tree proof: contextual prose amount detection, textual SVG
+  scanning, and duplicate route-field safe validation. The reviewed fork finding is intentionally
+  retained as a fail-closed protected-private-term trust boundary, not a relaxed fork policy.
 
 _Verified from fresh final-tree and post-write automated evidence on 2026-07-31._
