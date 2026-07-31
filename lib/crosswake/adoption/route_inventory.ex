@@ -358,7 +358,8 @@ defmodule Crosswake.Adoption.RouteInventory do
     end
   end
 
-  defp posture_status(postures, field), do: postures |> Keyword.fetch!(field) |> Map.fetch!(:status)
+  defp posture_status(postures, field),
+    do: postures |> Keyword.fetch!(field) |> Map.fetch!(:status)
 
   defp validate_rows([], acc), do: {:ok, Enum.reverse(acc)}
 
