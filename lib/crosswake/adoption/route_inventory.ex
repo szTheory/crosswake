@@ -198,7 +198,10 @@ defmodule Crosswake.Adoption.RouteInventory do
       :not_applicable ->
         {:ok, %{status: status}}
 
-      _confirmed ->
+      :known_default ->
+        {:error, error("RI-SAFETY_STATUS", route_ref, field)}
+
+      :confirmed_sanitized ->
         with {:ok, value} <- fetch_value(posture, route_ref, field),
              :ok <- validate_value(field, value, route_ref) do
           {:ok, %{status: status, value: value}}
