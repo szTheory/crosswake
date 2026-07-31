@@ -1,6 +1,6 @@
 ---
 phase: 158-adoption-reset-and-route-map
-reviewed: 2026-07-31T15:12:32Z
+reviewed: 2026-07-31T15:57:17Z
 depth: standard
 files_reviewed: 16
 files_reviewed_list:
@@ -22,43 +22,79 @@ files_reviewed_list:
   - test/mix/tasks/crosswake_adoption_context_scan_test.exs
 findings:
   critical: 2
-  warning: 0
+  warning: 1
   info: 0
-  total: 2
+  total: 3
 status: issues_found
 ---
 
 # Phase 158: Code Review Report
 
-**Reviewed:** 2026-07-31T15:12:32Z
+**Reviewed:** 2026-07-31T15:57:17Z
 **Depth:** standard
 **Files Reviewed:** 16
 **Status:** issues_found
 
 ## Summary
 
-The route-inventory validator and generated-guide parity checks are well covered by the focused suite, but the newly added privacy gate does not reliably prevent private adopter context from being merged into the repository. The gate both omits most repository files from its scan and withholds secret-backed matching from pull requests.
+The focused tests and generic scan pass, but the new privacy controls do not enforce two stated boundaries: public renderings can use the prohibited hyphenated wording, and purportedly opaque route references can contain identifying/customer values. Both paths can persist sensitive adoption context while passing the new gates.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Private-term scan excludes most repository files
+### CR-01: Public privacy gate accepts prohibited public wording
 
-**File:** `lib/crosswake/planning/first_adopter_context.ex:29`
-**Issue:** `scan_filesystem/2` only discovers paths matched by the small `@artifact_globs` allowlist (lines 29-51). It therefore never examines source files such as `lib/crosswake/adoption/route_inventory.ex`, CI workflows, tests, or any newly added public guide outside the two listed guides. A configured protected term can be committed to one of those unscanned files and `mix crosswake.adoption_context.scan --require-private-terms` will still pass. This violates the stated prohibition on recording the adopter's identifying/private context in repository content, and creates a direct bypass for the merge privacy gate.
+**File:** `/Users/jon/projects/crosswake/lib/crosswake/planning/first_adopter_context.ex:175-182`
 
-**Fix:** Scan all tracked, non-ignored repository text files (or maintain a denylist only for generated/binary/private paths), then apply destination-specific phrase checks to the routed artifact subset. Add a regression test that places a private canary in an otherwise unlisted source file and asserts `scan_filesystem/2` reports `privacy.private_term` without echoing its content.
+**Classification:** BLOCKER
 
-### CR-02: Secret-backed privacy enforcement runs only after PR merge
+**Issue:** The public-destination check treats both `first adopter` and `first-adopter` as compliant. AGENTS.md explicitly requires public guides to say `first adopter`; the phase renderer tests also reject the hyphenated form. Consequently, a future public capability/support artifact containing only the prohibited spelling passes `mix crosswake.adoption_context.scan`. Direct verification of `FirstAdopterContext.scan/1` with `"first-adopter"` returns `[]`, so CI cannot enforce the privacy/naming boundary it is intended to protect.
 
-**File:** `.github/workflows/hex-page-proof.yml:55`
-**Issue:** The only invocation that requires `CROSSWAKE_PRIVATE_ADOPTER_TERMS` is explicitly skipped for every `pull_request` (line 56). The ordinary PR scan at line 53 consequently runs with no protected terms, while the required scan runs only on `push` to `main`—after a PR's content can already have been merged and exposed. GitHub makes repository secrets available to same-repository PR workflows; skipping the protected scan for all PRs leaves the normal merge path unprotected.
+**Fix:** Require the exact approved public phrase and add a separate violation for the hyphenated form (case-insensitive), with regression tests for both conditions.
 
-**Fix:** Run `mix crosswake.adoption_context.scan --require-private-terms` for trusted, same-repository PRs as well as protected pushes, for example gate it on a non-fork PR. For fork PRs, keep secrets unavailable but require a maintainer-owned trusted workflow/merge queue check before merging (or fail closed when the required term set cannot be supplied). Add workflow-level coverage/documentation that the protected check is a required PR status check.
+```elixir
+public_phrase = Regex.match?(~r/first adopter/i, contents)
+hyphenated_phrase = Regex.match?(~r/first-adopter/i, contents)
+
+[]
+|> maybe_add(not public_phrase, "privacy.public_phrase", path)
+|> maybe_add(hyphenated_phrase, "privacy.public_hyphenated_phrase", path)
+|> maybe_add(codename, "privacy.public_codename", path)
+```
+
+### CR-02: Route inventory permits identifying values despite claiming opaque references
+
+**File:** `/Users/jon/projects/crosswake/lib/crosswake/adoption/route_inventory.ex:159-175`
+
+**Classification:** BLOCKER
+
+**Issue:** `route_id` and `path_pattern` accept arbitrary human-readable slugs and static path segments. For example, the validator accepts `route_id: "acme-customer"` and `path_pattern: "/customer/acme-customer"`. Those fields are then retained in the validated struct and may be recorded in planning/proof output. This violates the module's stated sanitized/opaque contract and the project's prohibition on customer information and proprietary taxonomy. The closed posture vocabularies do not mitigate this bypass because the identifying data is carried in the two unbounded string fields.
+
+**Fix:** Make route references mechanically opaque and constrain path patterns to non-identifying, schema-defined route templates. For example, use generated opaque IDs and allow only approved static namespaces plus parameter placeholders; reject arbitrary literal segments. Add negative tests using customer-name and taxonomy-like slugs.
+
+```elixir
+defp validate_route_id(value) when is_binary(value) do
+  if Regex.match?(~r/^route-[a-f0-9]{16}$/i, value),
+    do: {:ok, value},
+    else: {:error, error("RI-INVALID", "unresolved", "route_id")}
+end
+```
+
+## Warnings
+
+### WR-01: Checked-in renderer is not formatted by the repository formatter
+
+**File:** `/Users/jon/projects/crosswake/lib/crosswake/capability_map/renderer.ex:184-190`
+
+**Classification:** WARNING
+
+**Issue:** `mix format --check-formatted` fails on this changed file, which creates a divergent local/CI quality result even though the focused tests pass.
+
+**Fix:** Run `mix format lib/crosswake/capability_map/renderer.ex` and retain the formatted multi-line match clauses.
 
 ---
 
-_Reviewed: 2026-07-31T15:12:32Z_
+_Reviewed: 2026-07-31T15:57:17Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
