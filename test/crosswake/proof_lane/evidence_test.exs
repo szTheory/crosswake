@@ -7,9 +7,9 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     schema_version: "1",
     crosswake_version: "1.0.0",
     template_version: "1",
-    commit_ref: "commit-abc123",
+    commit_ref: "git-0123456789abcdef0123456789abcdef01234567",
     route_id: "route-0123456789abcdef",
-    assertion_ids: ["offline_island"],
+    assertion_ids: ["browser_offline_island"],
     status: :blocked,
     outcome: :blocked,
     captured_at: "2026-07-31T12:00:00Z",
@@ -49,6 +49,64 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     assert {:ok, digest} = Evidence.approved_hash(:evidence_json, bytes)
     assert digest =~ ~r/^[a-f0-9]{64}$/
     assert {:error, _} = Evidence.approved_hash(:unreviewed_binary, "CANARY-TOKEN")
+  end
+
+  test "accepts only closed retained identifiers without echoing caller labels" do
+    for {field, value, rule_id} <- [
+          {:commit_ref, "alice_123", "PL-EVIDENCE-COMMIT"},
+          {:commit_ref, "git-0123456789abcdef", "PL-EVIDENCE-COMMIT"},
+          {:assertion_ids, ["unreviewed_identifier"], "PL-EVIDENCE-ASSERTION"},
+          {:assertion_ids, ["browser_offline_island", "browser_offline_island"],
+           "PL-EVIDENCE-ASSERTION"}
+        ] do
+      assert {:error, error} = Evidence.build(Map.put(@valid, field, value))
+      assert error.rule_id == rule_id
+      refute inspect(error) =~ "alice_123"
+      refute inspect(error) =~ "unreviewed_identifier"
+    end
+  end
+
+  test "derives retained digests only from approved canonical bytes" do
+    assert {:ok, base} = Evidence.build(@valid)
+    canonical_bytes = Jason.encode!(Evidence.to_map(base))
+
+    attrs =
+      Map.put(@valid, :approved_hashes, [
+        %{kind: :evidence_json, canonical_bytes: canonical_bytes}
+      ])
+
+    assert {:ok, evidence} = Evidence.build(attrs)
+    [hash] = Evidence.to_map(evidence)["approved_hashes"]
+    assert hash["digest"] == Base.encode16(:crypto.hash(:sha256, canonical_bytes), case: :lower)
+
+    assert {:error, supplied_digest} =
+             Evidence.build(
+               Map.put(@valid, :approved_hashes, [
+                 %{kind: :evidence_json, canonical_bytes: canonical_bytes, digest: String.duplicate("a", 64)}
+               ])
+             )
+
+    assert supplied_digest.rule_id == "PL-EVIDENCE-HASH"
+
+    assert {:error, arbitrary_digest} =
+             Evidence.build(Map.put(@valid, :approved_hashes, [%{kind: :evidence_json, digest: String.duplicate("b", 64)}]))
+
+    assert arbitrary_digest.rule_id == "PL-EVIDENCE-HASH"
+  end
+
+  test "checks retained non-empty hashes only against matching canonical sources" do
+    assert {:ok, base} = Evidence.build(@valid)
+    canonical_bytes = Jason.encode!(Evidence.to_map(base))
+    assert {:ok, evidence} = Evidence.build(Map.put(@valid, :approved_hashes, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}]))
+
+    with_stage(fn stage ->
+      File.write!(Path.join(stage, "proof-lane-evidence.json"), Jason.encode!(Evidence.to_map(evidence)))
+      assert {:error, missing} = Evidence.check(stage)
+      assert missing.rule_id == "PL-EVIDENCE-HASH-SOURCE"
+      assert :ok = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+      assert {:error, mismatch} = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes <> " "}])
+      assert mismatch.rule_id == "PL-EVIDENCE-HASH-SOURCE"
+    end)
   end
 
   test "recursively rejects an unexpected staged path after canonical evidence is serialized" do
