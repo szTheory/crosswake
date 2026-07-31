@@ -1,43 +1,57 @@
 ---
 phase: 158-adoption-reset-and-route-map
-verified: 2026-07-31T14:18:54Z
+verified: 2026-07-31T15:16:07Z
 status: gaps_found
-score: 18/22 must-haves verified
+score: 8/11 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  previous_score: 18/22
+  gaps_closed:
+    - "Concrete route safety posture rejects known_default and local-mutation/recent-auth incoherence before promotion."
+    - "Phase 158 planning artifacts are now dynamically discovered and scanned; PLAN files no longer have a private-term exemption."
+  gaps_remaining:
+    - "Protected private-term enforcement is not a pull-request merge gate."
+  regressions:
+    - "The documented synthetic protected-term test now fails against Phase 158's own scanned artifacts."
+    - "The ledger claims mix format --check-formatted exits zero, but that exact command exits non-zero."
 gaps:
-  - truth: "Concrete route safety posture cannot inherit from product-surface defaults and promotion is fail-closed."
+  - truth: "Automated scans reject the prohibited real adopter name from planning, agent, and public-guide surfaces before a pull request can merge."
     status: failed
-    reason: "Every safety field accepts status :known_default and promotion_status/1 blocks only :unknown_blocking, so a route whose safety contract is entirely defaults is eligible."
+    reason: "The pull_request workflow runs only the generic scan. The secret-backed --require-private-terms scan is skipped for every pull request and runs only after a push to main or manual dispatch."
     artifacts:
-      - path: "lib/crosswake/adoption/route_inventory.ex"
-        issue: "validate_posture/3 accepts :known_default for all safety fields (lines 192-205); promotion_status/1 returns eligible whenever unknown_fields/1 is empty (lines 109-113)."
+      - path: ".github/workflows/hex-page-proof.yml"
+        issue: "The protected scan is guarded by if: github.event_name != 'pull_request', so same-repository PRs can merge without the real-term check."
     missing:
-      - "Reject :known_default for safety fields, or make promotion block it, with a regression test."
-  - truth: "A concrete local-mutation route has a coherent, explicit authority, scope, fallback, disablement, retention, and recent-auth posture before it is eligible."
+      - "Run the protected scan for trusted same-repository PRs, and make fork handling fail closed or require a trusted maintainer/merge-queue check before merge."
+  - truth: "The capability guide uses only the public phrase first adopter."
     status: failed
-    reason: "The validator accepts :not_applicable without a value for every safety field and has no cross-field invariant validation. Contradictory or absent local-mutation safety posture is eligible."
+    reason: "The generated public guide still contains four instances of the forbidden hyphenated variant first-adopter."
     artifacts:
-      - path: "lib/crosswake/adoption/route_inventory.ex"
-        issue: "validate_posture/3 accepts :not_applicable unconditionally (lines 198-199); no call validates relationships such as local_first→offline_island/scope/fallback/disablement or recent_auth→recent_auth required."
+      - path: "guides/capability_map.md"
+        issue: "Lines 13, 21, 59, and 69 use first-adopter."
     missing:
-      - "Add route-state invariants and negative tests before promotion can return eligible."
-  - truth: "Automated scans reject prohibited adopter identity or personal information across planning, agent, and public-guide surfaces."
+      - "Update the canonical capability implication strings, regenerate the guide, and add a regression that rejects the hyphenated public wording."
+  - truth: "The post-gap validation ledger records only gates that actually pass."
     status: failed
-    reason: "The privacy scanner has no production or CI caller, its static matrix omits current phase artifacts, and private-term scanning intentionally skips every PLAN file."
+    reason: "Two commands claimed as green in 158-VALIDATION.md fail in the current codebase: the exact no-argument formatter command and the documented synthetic protected-term test."
     artifacts:
-      - path: "lib/crosswake/planning/first_adopter_context.ex"
-        issue: "routing_matrix omits 158-03-SUMMARY, 158-04 PLAN/SUMMARY, and VALIDATION; private_term_scanned?/1 excludes *-PLAN.md (lines 191-198)."
+      - path: ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+        issue: "It asserts formatting passed and that the protected canary command passed, despite contrary current results."
+      - path: "test/crosswake/planning/first_adopter_context_test.exs"
+        issue: "With the documented protected-test value, its caller-seam assertion fails because scanned Phase 158 artifacts contain that literal."
     missing:
-      - "Wire a merge-blocking filesystem scan over approved planning/agent/public artifact globs and add plan, summary, and validation canaries."
+      - "Use a runnable formatter invocation with explicit inputs or configure .formatter.exs; remove/rework the literal synthetic term from scanned durable artifacts; then rerun and record the actual gate chain."
 ---
 
 # Phase 158: Adoption Reset and Route Map Verification Report
 
-**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify first-adopter routes, update support truth, and install privacy-safe context routing, while keeping every known first-adopter surface explicitly owned and avoiding prohibited adopter identity data.
-**Verified:** 2026-07-31T14:18:54Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify adopter routes, update support truth, and install privacy-safe context routing, while keeping adopter-instance completeness fail-closed.
+
+**Verified:** 2026-07-31T15:16:07Z  
+**Status:** gaps_found  
+**Re-verification:** Yes — after gap closure
 
 ## Goal Achievement
 
@@ -45,101 +59,92 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Sanitized concrete route patterns validate without resource-instance facts. | ✓ VERIFIED | `RouteInventory.validate/1` validates closed opaque rows; focused test passed. |
-| 2 | Missing/blank/nil safety input is explicit or rejected without echoing it. | ✓ VERIFIED | Required-field and non-echoing error checks in `route_inventory_test.exs:31-49` passed. |
-| 3 | Duplicate IDs/paths reject and declaration order remains stable. | ✓ VERIFIED | `validate_inventory/1` collision checks plus focused tests at lines 51-87 passed. |
-| 4 | Empty inventory blocks promotion. | ✓ VERIFIED | `promotion_status([])` returns `{:blocked, %{reason: :empty_inventory}}` at lines 107-113; tested. |
-| 5 | Confirmed values can be eligible and `unknown_blocking` blocks. | ✓ VERIFIED | `unknown_fields/1` and the focused blocked-media test provide this narrow behavior. |
-| 6 | Closed size/codec values reject exact private fields. | ✓ VERIFIED | Closed validators and forbidden-field test passed; no raw value is echoed. |
-| 7 | Safety posture never silently inherits from defaults. | ✗ FAILED | `:known_default` is accepted for every safety field and a directly executed all-default row returned `{:eligible, row}`. |
-| 8 | Local mutation/recent-auth safety combinations are coherent before promotion. | ✗ FAILED | A directly executed `:local_first` row with absent scope/fallback/disablement/retention and contradictory recent-auth posture returned `{:eligible, row}`. |
-| 9 | Capability rows use canonical `adoption_implication` with a bounded legacy alias. | ✓ VERIFIED | Renderer has one `normalize_implication/1`; focused compatibility/conflict tests passed. |
-| 10 | Capability rendering is deterministic and public wording is narrow. | ✓ VERIFIED | Capability guide renderer parity is true; focused test suite passed. |
-| 11 | Every active first-adopter artifact is centrally classified once. | ✗ FAILED | The hard-coded matrix omits current phase artifacts including `158-03-SUMMARY.md`, `158-04-PLAN.md`, `158-04-SUMMARY.md`, and `158-VALIDATION.md`; its drift check cannot see omitted filesystem paths. |
-| 12 | Empty/duplicate/unclassified matrix entries fail and matrix iteration is stable. | ✓ VERIFIED | `validate_routing_matrix/1` and its focused synthetic duplicate/empty tests pass for entries supplied to it. |
-| 13 | v20 is stopped/partial without a shipped claim; 156-157 are outside active v21 scope. | ✓ VERIFIED | Archive declares `STOPPED / PARTIAL`, no tag, and phases 156-157 stopped; focused test passed. |
-| 14 | Generic plus configured private-term scans are safe and non-echoing. | ✗ FAILED | Scanner is only invoked by its tests (`rg` found no non-test caller); therefore no CI or production boundary enforces the scan. |
-| 15 | Durable/public codename split is mechanically enforced across scope. | ✗ FAILED | The registered scope is incomplete and PLAN files are excluded from private-term scanning, so the claimed repository-wide enforcement does not hold. |
-| 16 | Support guide separates policy completion from adopter/host/device proof. | ✓ VERIFIED | Guide explicitly retains `unknown_blocking` and `verification required`; renderer output equals checked-in guide. |
-| 17 | Guide preserves explicit known-surface ownership and narrow iOS/Android/authority boundaries. | ✓ VERIFIED | Route-policy map and support renderer state owner, fallback, Android freeze, one-island, and host-owned `gated_by` boundaries. |
-| 18 | Support guide is public-safe and byte-identical to canonical renderer output. | ✓ VERIFIED | Direct `mix run` parity check printed `support guide parity: true`; generic pattern scan found no matches in registered files. |
-| 19 | All focused Phase 158 tests pass inside the stated sampling budget. | ✓ VERIFIED | Quick command passed: 100 tests, 0 failures; privileged canary passed: 7 tests, 0 failures (2.0 seconds total). |
-| 20 | GET-6 framing, Alpha/v1 split, stop list, and current phase are discoverable. | ✓ VERIFIED | ADR, adoption brief, route map, AGENTS.md, roadmap, and state contain the required documented contract; focused discoverability test passed. |
-| 21 | Every known product surface has one stated owner and authority/fallback story. | ✓ VERIFIED | Route-policy map’s default ownership table enumerates study, read-only neighbors, auth/settings/billing, audio, deferred capture, and disablement. |
-| 22 | Public planning and guide surfaces reject prohibited identity/personal data. | ✗ FAILED | Same incomplete, unwired scanner defect as truths 11/14/15; an omitted planning artifact can be committed without a scan. |
+| 1 | A new session can discover the infrastructure framing, Alpha/v1 split, stop list, and current phase. | ✓ VERIFIED | `AGENTS.md`, ADR, brief, route map, roadmap, and state contain the framing; `FirstAdopterContextTest` exercises those files. |
+| 2 | Every known surface has explicit owner, offline, authority/fallback, and disablement posture; missing concrete inputs remain fail-closed. | ✓ VERIFIED | Route map and generated support guide distinguish defaults from concrete inventory; `RouteInventory` rejects `known_default`, blocks `unknown_blocking`, and its negative/positive promotion tests passed. |
+| 3 | v20 is retained as stopped/partial, without shipping Phases 156–157. | ✓ VERIFIED | v20 roadmap and milestones explicitly say stopped/partial, no completion tag, and 156–157 incomplete; focused context test passed. |
+| 4 | Automated scans reject prohibited private terms before merge on planning, agent, and public-guide surfaces. | ✗ FAILED | The protected private-term workflow step is skipped on every `pull_request`; only generic checks run before merge. |
+| 5 | Sanitized route rows are closed, collision-safe, ordered, privacy-safe, and block empty/unknown inventory promotion. | ✓ VERIFIED | `RouteInventory` and 12 focused tests cover validation, non-echoing errors, collisions, order, empty inventory, and `unknown_blocking`. |
+| 6 | Concrete route promotion cannot inherit defaults or admit incoherent local-mutation/recent-auth state. | ✓ VERIFIED | `validate_posture/3` rejects `:known_default`; invariant checks require offline-island/actionable mutation and reject contradictory auth state. Executed route tests pass. |
+| 7 | Capability truth has one canonical implication field with bounded legacy compatibility and deterministic generated output. | ✓ VERIFIED | `CapabilityMap.Row` enforces `adoption_implication`; renderer's `normalize_implication/1` handles legacy/equal/conflicting inputs; focused renderer tests passed. |
+| 8 | The public capability guide uses only `first adopter`. | ✗ FAILED | `guides/capability_map.md` still renders `first-adopter` at lines 13, 21, 59, and 69. |
+| 9 | The filesystem scanner discovers current/future approved Phase 158 planning artifacts and emits only rule/path evidence. | ✓ VERIFIED | Destination globs include `158-*.md`; temporary PLAN/SUMMARY/VALIDATION canaries are tested, and `mix crosswake.adoption_context.scan` passed. |
+| 10 | The generic scanner is wired into the merge-blocking workflow and protected runs fail closed without secret input. | ✓ VERIFIED | Workflow invokes the Mix task on PRs and protected events; direct `--require-private-terms` without the variable exits with `privacy.private_terms_required secret.input`. |
+| 11 | The validation ledger is reconciled only from passing post-gap gates. | ✗ FAILED | `mix format --check-formatted` exits non-zero without formatter inputs; the documented synthetic protected-term command fails on scanned Phase 158 files, contrary to the ledger. |
 
-**Score:** 18/22 truths verified (0 present, behavior-unverified)
+**Score:** 8/11 truths verified (0 present, behavior-unverified)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `lib/crosswake/adoption/route_inventory.ex` | Closed validator and promotion boundary | ⚠️ HOLLOW | Exists (337 lines) and is tested, but unsafe/default and incoherent rows can promote. |
-| `test/crosswake/adoption/route_inventory_test.exs` | Route/privacy/promotion proof | ⚠️ INCOMPLETE | Exists and runs, but contains no default-safety or cross-field-invariant regression. |
-| `FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Route ownership and route contract | ✓ VERIFIED | Substantive table and contract; code contradicts its `known_default` safety rule. |
-| `lib/crosswake/capability_map.ex` / `renderer.ex` | Canonical implication + compatibility renderer | ✓ VERIFIED | Substantive, wired, and parity-tested. |
-| `guides/capability_map.md` | Generated public capability guide | ✓ VERIFIED | Direct renderer byte-parity check passed. |
-| `lib/crosswake/planning/first_adopter_context.ex` | Central privacy/context routing | ⚠️ HOLLOW | Substantive library/test seam, but incomplete scope and no enforcing caller. |
-| `lib/crosswake/support_matrix/renderer.ex` / `guides/support_matrix.md` | Canonical support truth | ✓ VERIFIED | Renderer is invoked in tests; direct checked-in byte parity passed. |
-| `158-VALIDATION.md` | Validation ledger | ⚠️ STALE CLAIM | Exists and is substantive, but its “no unresolved high-severity threat” sign-off is contradicted by the three reproducible blockers above. |
+| `lib/crosswake/adoption/route_inventory.ex` | Closed route contract and promotion evaluation | ✓ VERIFIED | Substantive validator with closed fields/statuses, invariants, collision checking, and public API tests. |
+| `test/crosswake/adoption/route_inventory_test.exs` | Route fail-closed regressions | ✓ VERIFIED | 12 behavioral tests executed successfully as part of the 111-test focused command. |
+| `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Layered contract and unresolved-input boundary | ✓ VERIFIED | Documents route-local fields, no concrete adopter row, `unknown_blocking`, and TODO-002's open state. |
+| `lib/crosswake/capability_map.ex` + `renderer.ex` | Canonical implication migration and deterministic renderer | ✓ VERIFIED | Canonical field and one normalizer are implemented and exercised. |
+| `guides/capability_map.md` | Generated public capability guide | ⚠️ PARTIAL | Renderer parity is wired, but its public wording violates the plan truth. |
+| `lib/crosswake/planning/first_adopter_context.ex` | Dynamic privacy-context discovery/scanning | ✓ VERIFIED | Globs, discovery, rule/path-only result shape, and non-echoing private-term logic are substantive and exercised. |
+| `lib/mix/tasks/crosswake.adoption_context.scan.ex` | Repository privacy gate | ✓ VERIFIED | Delegates to the scanner; normal run passed and missing protected input fails closed. |
+| `.github/workflows/hex-page-proof.yml` | Merge-blocking privacy enforcement | ⚠️ PARTIAL | Generic gate is wired on PRs, but the protected term gate is not. |
+| `lib/crosswake/support_matrix/renderer.ex` + `guides/support_matrix.md` | Honest policy-versus-proof support truth | ✓ VERIFIED | Focused support tests passed; guide retains `verification required` for host/device proof while inputs are unknown. |
+| `158-VALIDATION.md` | Honest post-gap Nyquist evidence | ✗ STUBBED EVIDENCE | Ledger exists and is detailed, but its stated successful formatter and synthetic protected-term results are not reproducible. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| Route-policy map | RouteInventory | closed vocabulary | ⚠️ PARTIAL | Shared `unknown_blocking` vocabulary exists, but runtime promotion does not enforce the map’s known-default restriction. |
-| RouteInventory | Route inventory tests | focused ExUnit | ⚠️ PARTIAL | Imported/exercised tests exist; critical default and cross-field paths are untested. |
-| Capability map | capability renderer | `adoption_implication` | ✓ WIRED | Renderer normalizes canonical/legacy inputs and tests exercise it. |
-| Capability renderer | capability guide | renderer write/parity | ✓ WIRED | Direct byte-parity check passed. |
-| Context scanner | CI/repository filesystem | privacy enforcement | ✗ NOT WIRED | No non-test caller was found. |
-| Support renderer | support guide | renderer output/parity | ✓ WIRED | `First Adopter Readiness` exists with space spelling; tool pattern’s hyphen mismatch was false-negative, direct parity proves link. |
+| Route policy map | `RouteInventory` | Shared closed status/field vocabulary | WIRED | Route test reads the map and asserts vocabulary/invariant terms. |
+| `RouteInventory` | Route tests | Public validate-to-promotion path | WIRED | Negative status/invariant paths and eligible state executed. |
+| Capability map | Capability guide | Renderer write/parity path | WIRED | Focused capability tests pass; wording content is still wrong. |
+| Context scanner | Mix task | `scan_filesystem/2` delegation | WIRED | Task invokes scanner and tests assert exit/error behavior. |
+| Workflow | Mix task | CI `run: mix crosswake.adoption_context.scan` | PARTIAL | The generic link is wired, but secret-backed enforcement is absent from PRs. |
+| Support renderer | Support guide | Renderer parity test | WIRED | Included in passing focused suite. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| Capability guide | canonical capability rows | `CapabilityMap.canonical/0` → renderer | Yes | ✓ FLOWING |
-| Support guide | canonical support matrix | `SupportMatrix.canonical/0` → renderer | Yes | ✓ FLOWING |
-| Context scan | `contents_by_path` | Caller-provided map only | No filesystem/CI producer | ✗ DISCONNECTED |
+| `RouteInventory` | route postures | caller input → closed validation → promotion state | Synthetic, validated route values | ✓ FLOWING |
+| Context scanner | discovered entries and protected terms | filesystem glob discovery; environment at task boundary | Approved artifact files; terms remain in memory | ✓ FLOWING |
+| Support/capability renderers | canonical rows | canonical modules → renderer → checked-in guide | Canonical row data, byte-parity tests | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Focused phase contract | `mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | 100 tests, 0 failures | ✓ PASS |
-| Private-term canary | `CROSSWAKE_PRIVATE_ADOPTER_TERMS=synthetic-private-term mix test test/crosswake/planning/first_adopter_context_test.exs` | 7 tests, 0 failures | ✓ PASS |
-| Unsafe default promotion | `mix run --no-start -e ...` with all safety values `:known_default` | Returned `{:eligible, row}` | ✗ FAIL |
-| Incoherent local mutation promotion | `mix run --no-start -e ...` with `:not_applicable` scope/fallback/disablement/retention and contradictory recent-auth | Returned `{:eligible, row}` | ✗ FAIL |
-| Generated-guide parity | `mix run --no-start -e ...` | support and capability parity both `true` | ✓ PASS |
+| Phase route/context/capability/support behaviors | `mix test test/crosswake/adoption/route_inventory_test.exs test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | 111 tests, 0 failures | ✓ PASS |
+| Generic filesystem scan | `mix crosswake.adoption_context.scan` | `adoption context scan passed` | ✓ PASS |
+| Missing protected input fails closed | `mix crosswake.adoption_context.scan --require-private-terms` | `privacy.private_terms_required secret.input` | ✓ PASS |
+| Documented synthetic protected-term path | `CROSSWAKE_PRIVATE_ADOPTER_TERMS=<documented test value> mix test test/crosswake/planning/first_adopter_context_test.exs` | 9 tests, 1 failure; seven Phase 158 artifacts match | ✗ FAIL |
+| Hermetic suite | `mix test --exclude requires_example_host --exclude advisory_only` | Exit 0; pre-existing compiler warnings emitted | ✓ PASS |
+| Claimed formatter gate | `mix format --check-formatted` | Exit non-zero: no inputs configured | ✗ FAIL |
+| Whitespace | `git diff --check` | Exit 0 | ✓ PASS |
 
 ### Requirements Coverage
 
-| Requirement | Source Plan | Description | Status | Evidence |
-| --- | --- | --- | --- |
-| RESET-01 | 02, 03, 04 | Durable GET-6 decision, scope audit, non-goals, stop list | ✓ SATISFIED | Discoverability docs and capability/support truth are present and focused tests pass. |
-| RESET-02 | 01, 04 | Explicit owner, offline, authority, fallback, disablement posture | ✗ BLOCKED | Static default ownership table is present, but executable route promotion accepts inherited and incoherent safety posture. |
-| RESET-03 | 03, 04 | v20 stopped/partial; 156-157 absent from active scope | ✓ SATISFIED | Archive and active-roadmap assertions are explicit and test-backed. |
-| RESET-04 | 01, 02, 03, 04 | No prohibited adopter identity/personal information | ✗ BLOCKED | Privacy scanner has incomplete coverage and no CI/production enforcement path. |
+| Requirement | Source Plans | Description | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| RESET-01 | 02, 03, 04 | Durable infrastructure decision, scope audit, non-goals, stop list | ✓ SATISFIED | Governing documents, capability/support truth, and focused context/capability/support tests. |
+| RESET-02 | 01, 04, 05, 07 | Explicit owner/offline/authority/fallback/disablement posture | ✓ SATISFIED | Route validator's known-default and cross-field promotion tests pass; unknown input remains blocked. |
+| RESET-03 | 03, 04 | Honest stopped/partial v20 and inactive 156–157 scope | ✓ SATISFIED | v20 archive wording and focused regression test. |
+| RESET-04 | 01, 02, 03, 04, 06, 07 | No prohibited adopter identity or personal information in planning/public artifacts | ✗ BLOCKED | Scanner implementation exists but protected-term check is absent on PRs; public guide wording truth and claimed validation evidence also fail. |
 
-All requirement IDs declared across Plan frontmatter are present in `REQUIREMENTS.md`; no orphaned Phase 158 requirements were found.
+All four IDs declared by Plan frontmatter (`RESET-01` through `RESET-04`) are present in `REQUIREMENTS.md`. No Phase 158 requirement is orphaned.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `route_inventory.ex` | 192-205 | All statuses accepted for safety fields | 🛑 BLOCKER | Defaults may become concrete route authority. |
-| `route_inventory.ex` | 198-199 | Unconditional `not_applicable` | 🛑 BLOCKER | A local-mutation route can promote without scope/fallback/disablement/retention. |
-| `first_adopter_context.ex` | 19-86, 191-198 | Static incomplete scope and blanket plan exclusion | 🛑 BLOCKER | Prohibited term can enter unscanned planning surfaces. |
-| `capability_map/renderer.ex` | 184-191 | Formatting drift | ⚠️ WARNING | `mix format --check-formatted` failed. |
-| `renderer_test.exs` | 63, 135-139 | Formatting drift | ⚠️ WARNING | `mix format --check-formatted` failed. |
+| `.github/workflows/hex-page-proof.yml` | 55–58 | Protected privacy scan skipped on every PR | 🛑 BLOCKER | A same-repository PR can merge private-term content before the check runs on `main`. |
+| `guides/capability_map.md` | 13, 21, 59, 69 | `first-adopter` public wording | 🛑 BLOCKER | Violates the explicit public-phrase must-have. |
+| `158-VALIDATION.md` | Observed post-gap gate table | Claims non-reproducible green gates | 🛑 BLOCKER | Completion evidence is not auditable. |
 
 ### Gaps Summary
 
-The review’s three critical findings are genuine. The phase produces useful documentation and generated-guide truth, and the focused suite is green, but the fail-closed executable boundary required by RESET-02 is not achieved: unsafe default or semantically incomplete route rows can become eligible. RESET-04 is also not achieved: the privacy scanner is a test-only library seam with an incomplete hard-coded file list and plan exclusion, not an automated repository gate.
+The original route-promotion gaps are closed: the validator now rejects inherited safety status and incoherent local-mutation/recent-auth posture through tested public APIs. The dynamic scanner also covers current and future approved Phase 158 artifacts without emitting matched content.
 
-Later phases do not explicitly schedule correction of this route-validator or Phase 158 planning-scan enforcement. These gaps are not deferred.
+However, the phase goal is not achieved. RESET-04 remains fail-open at the merge boundary because PRs do not receive secret-backed protected-term enforcement. The generated capability guide violates its public-phrase contract, and the validation ledger claims two gates that do not reproduce. These are Phase 158 concerns, not items explicitly deferred to later roadmap phases.
 
 ---
 
-_Verified: 2026-07-31T14:18:54Z_
+_Verified: 2026-07-31T15:16:07Z_  
 _Verifier: the agent (gsd-verifier)_
