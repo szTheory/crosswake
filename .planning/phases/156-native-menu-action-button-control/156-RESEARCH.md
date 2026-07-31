@@ -317,17 +317,15 @@ typealias BridgePayload = Map<String, JsonElement>
 | A1 | Android `PopupMenu` can be anchored to a bounded synthetic/adapter view created from WebView-coordinate rect without adding Material. [ASSUMED] | Standard Stack / Architecture | If platform behavior is worse than expected, Android may need a different bounded adapter while still avoiding a new dependency. |
 | A2 | Swift hostless XCTest can fake presenter callbacks without importing UIKit-only code on non-iOS platforms. [ASSUMED] | Validation Architecture | If not, iOS proof may need UIKit-conditional source checks plus macOS-compatible model tests. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact action and label ceilings**
+1. **RESOLVED — Exact action and label ceilings**
    - What we know: phase context permits a conservative ceiling and says short/scannable menus only. [VERIFIED: `.planning/phases/156-native-menu-action-button-control/156-CONTEXT.md`]
-   - What's unclear: exact max item count and label length.
-   - Recommendation: planner should choose small documented limits, for example 8 selectable actions and 80 characters per label, and make violations loud before dispatch. [ASSUMED]
+   - Resolution: the approved UI-SPEC and plans set a maximum of 8 total rows, including disabled explanatory rows, and 80 Unicode graphemes per label. Violations fail loudly before dispatch. This is the delegated planner choice permitted by CONTEXT D-15 and the agent's Discretion.
 
-2. **Android anchor adapter shape**
+2. **RESOLVED — Android anchor adapter shape**
    - What we know: Android `PopupMenu` takes an anchor `View` and dismisses on selection/outside tap. [CITED: https://developer.android.com/develop/ui/views/components/menus]
-   - What's unclear: exact existing shell host view hierarchy available for mapping WebView coordinates.
-   - Recommendation: keep adapter private and test the decoded presentation model plus source/structural adapter presence in JVM proof. [VERIFIED: `.planning/phases/156-native-menu-action-button-control/156-CONTEXT.md`]
+   - Resolution: use one private, bounded anchor adapter/view owned by the action-menu presenter, derived from the validated WebView-coordinate rectangle. If it cannot construct a safe anchor, deny and keep the Phoenix fallback. JVM proof tests the decoded model and adapter wiring; device behavior remains advisory. This implements CONTEXT D-17/D-18 without creating a public adapter contract.
 
 ## Environment Availability
 

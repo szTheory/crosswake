@@ -362,7 +362,7 @@ Plans:
 
 **Record correction (D-56, Phase 155 Plan 07):** Phase 154's D-29 payload-ceiling note asserts, as a parenthetical justification, that "the capability handshake already routes old natives to `unavailable_capability`." Verified factually wrong: the closed-enum miss fires first and both natives return `undeclared_capability` instead — exactly the two-remediation collapse D-13 forbade. This phase must re-derive the real premise rather than plan against the stated one.
 
-**Plans**: 7 plans
+**Plans**: 8 plans
 
 Plans:
 
@@ -383,7 +383,11 @@ Plans:
 **Wave 4** *(blocked on Wave 3; plans 06-07 are file-disjoint)*
 
 - [ ] 156-06-PLAN.md — AdminPilot route/trigger integration and complete approved UI-state/browser proof
-- [ ] 156-07-PLAN.md — Canonical dual-native vector proof, anti-vacuity guard, and support/rebuild truth
+- [ ] 156-07-PLAN.md — Canonical dual-native vector proof and anti-vacuity guard
+
+**Wave 5** *(blocked on Wave 4)*
+
+- [ ] 156-08-PLAN.md — Support/rebuild classification and honest evidence-limit guards
 
 **UI hint**: yes
 
