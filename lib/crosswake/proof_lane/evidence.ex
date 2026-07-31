@@ -124,6 +124,7 @@ defmodule Crosswake.ProofLane.Evidence do
   @spec promote(map() | t(), Path.t(), keyword()) :: :ok | {:error, Error.t()}
   def promote(candidate, destination, opts) when is_binary(destination) and is_list(opts) do
     with {:ok, evidence} <- normalize(candidate),
+         {:ok, sources} <- promotion_sources(candidate),
          :ok <- safe_destination(destination) do
       stage = destination <> ".stage-" <> Integer.to_string(System.unique_integer([:positive]))
 
@@ -131,6 +132,7 @@ defmodule Crosswake.ProofLane.Evidence do
         with :ok <- File.mkdir(stage),
              :ok <- write_evidence(stage, evidence),
              :ok <- scan_stage(stage),
+             :ok <- check(stage, sources),
              :ok <- run_hook(Keyword.get(opts, :before_promote)),
              :ok <- Crosswake.ProofLane.NativePromotion.rename_noreplace(stage, destination) do
           :ok
@@ -152,6 +154,17 @@ defmodule Crosswake.ProofLane.Evidence do
 
   defp normalize(%__MODULE__{} = evidence), do: {:ok, evidence}
   defp normalize(input), do: build(input)
+
+  defp promotion_sources(%__MODULE__{approved_hashes: []}), do: {:ok, []}
+
+  defp promotion_sources(%__MODULE__{}),
+    do: error("PL-EVIDENCE-HASH-SOURCE", "approved_hashes", "supply approved canonical sources")
+
+  defp promotion_sources(input) when is_map(input),
+    do: {:ok, Map.get(input, :approved_hashes, [])}
+
+  defp promotion_sources(_),
+    do: error("PL-EVIDENCE-HASH-SOURCE", "approved_hashes", "supply approved canonical sources")
 
   defp atom_keys(map) do
     if Enum.all?(Map.keys(map), &is_atom/1),
