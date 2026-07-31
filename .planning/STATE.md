@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-15-PLAN.md
-last_updated: "2026-07-31T17:16:17.590Z"
+status: complete
+stopped_at: Completed 158-16-PLAN.md
+last_updated: "2026-07-31T17:21:31.883Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 16
-  completed_plans: 15
-  percent: 0
+  completed_plans: 16
+  percent: 20
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 2 of 16
-Status: Ready to execute
-Last activity: 2026-07-31 — Phase 158 execution started
+Phase: 158 (adoption-reset-and-route-map) — COMPLETE
+Plan: 16 of 16
+Status: Complete
+Last activity: 2026-07-31 — Plan 158-16 reconciled fresh repository-classification evidence
 
 ## Active Objective
 
@@ -44,9 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158` to make private-term enforcement fail closed across every active
-repository-facing artifact, add unregistered-guide/later-phase regressions, and reconcile fresh
-validation and verification evidence.
+Begin Phase 159 discussion only when the adopter's public-v1 mobile path is active; Phase 158 is
+complete, while TODO-002 remains the bounded adopter-input gate.
 
 ## Blockers
 
@@ -93,6 +92,7 @@ validation and verification evidence.
 - [Phase ?]: Phase 158 final gate closes only on fresh observed evidence; TODO-002 remains unknown_blocking.
 - [Phase ?]: Repository privacy candidates are enumerated from cached and non-ignored Git paths; artifact globs are compatibility metadata, not the scanner boundary.
 - [Phase ?]: Unsafe, unreadable, unclassified, and enumeration-failure paths fail closed with rule/path-only diagnostics.
+- [Phase ?]: Phase 158 final gate closes only on fresh Git-backed repository-classification and post-write scan evidence; TODO-002 remains unknown_blocking.
 
 ## Deferred Items
 
@@ -121,8 +121,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T17:16:17.584Z
-**Stopped at:** Completed 158-15-PLAN.md
+**Last session:** 2026-07-31T17:21:31.878Z
+**Stopped at:** Completed 158-16-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -144,3 +144,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P13 | 3m | 1 tasks | 1 files |
 | Phase 158-adoption-reset-and-route-map P14 | 5m | 1 tasks | 3 files |
 | Phase 158 P15 | 18m | 2 tasks | 5 files |
+| Phase 158 P16 | 8m | 1 tasks | 3 files |

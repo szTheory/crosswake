@@ -25,7 +25,7 @@ Crosswake until the public-v1 mobile path is active.
 162 evidence. Reconsider broader investment only after two independent active adopters or a
 separately funded business-line mandate.
 
-- [ ] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the
+- [x] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
@@ -50,9 +50,9 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 15/16 plans executed
-**Verification:** Gaps found (57/58 must-haves); repository-facing private-term enforcement must
-fail closed for unregistered guides, workflows, source/tests, and later-phase artifacts
+**Plans:** 16/16 plans executed
+**Verification:** Complete (58/58 must-haves); fresh repository classification fails closed for
+unregistered guides, workflows, source/tests, and later-phase artifacts.
 
 Plans:
 **Wave 1**
@@ -105,7 +105,7 @@ Plans:
 
 **Wave 12** *(blocked on Wave 11 completion)*
 
-- [ ] 158-16-PLAN.md — Reconcile validation and verification from fresh repository-wide privacy evidence.
+- [x] 158-16-PLAN.md — Reconcile validation and verification from fresh repository-wide privacy evidence.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
