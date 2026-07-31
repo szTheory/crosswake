@@ -1,8 +1,8 @@
 ---
 phase: 158-adoption-reset-and-route-map
-reviewed: 2026-07-31T15:57:17Z
+reviewed: 2026-07-31T16:41:00Z
 depth: standard
-files_reviewed: 16
+files_reviewed: 15
 files_reviewed_list:
   - .github/workflows/hex-page-proof.yml
   - guides/capability_map.md
@@ -12,7 +12,6 @@ files_reviewed_list:
   - lib/crosswake/capability_map/renderer.ex
   - lib/crosswake/planning/first_adopter_context.ex
   - lib/crosswake/support_matrix/renderer.ex
-  - lib/crosswake/support_matrix/support_matrix.ex
   - lib/mix/tasks/crosswake.adoption_context.scan.ex
   - test/crosswake/adoption/route_inventory_test.exs
   - test/crosswake/capability_map/capability_map_test.exs
@@ -21,80 +20,53 @@ files_reviewed_list:
   - test/crosswake/support_matrix/renderer_test.exs
   - test/mix/tasks/crosswake_adoption_context_scan_test.exs
 findings:
-  critical: 2
-  warning: 1
+  critical: 1
+  warning: 0
   info: 0
-  total: 3
+  total: 1
 status: issues_found
 ---
 
 # Phase 158: Code Review Report
 
-**Reviewed:** 2026-07-31T15:57:17Z
+**Reviewed:** 2026-07-31T16:41:00Z
 **Depth:** standard
-**Files Reviewed:** 16
+**Files Reviewed:** 15
 **Status:** issues_found
 
 ## Summary
 
-The focused tests and generic scan pass, but the new privacy controls do not enforce two stated boundaries: public renderings can use the prohibited hyphenated wording, and purportedly opaque route references can contain identifying/customer values. Both paths can persist sensitive adoption context while passing the new gates.
+The selected tests pass, but the protected privacy scan covers only an allowlist of a few files. New repository-facing source, guide, workflow, or later-phase artifact paths fall outside that allowlist and can carry a configured private adopter term without being inspected.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Public privacy gate accepts prohibited public wording
+### CR-01: Privacy gate silently skips unregistered repository artifacts
 
-**File:** `/Users/jon/projects/crosswake/lib/crosswake/planning/first_adopter_context.ex:175-182`
-
-**Classification:** BLOCKER
-
-**Issue:** The public-destination check treats both `first adopter` and `first-adopter` as compliant. AGENTS.md explicitly requires public guides to say `first adopter`; the phase renderer tests also reject the hyphenated form. Consequently, a future public capability/support artifact containing only the prohibited spelling passes `mix crosswake.adoption_context.scan`. Direct verification of `FirstAdopterContext.scan/1` with `"first-adopter"` returns `[]`, so CI cannot enforce the privacy/naming boundary it is intended to protect.
-
-**Fix:** Require the exact approved public phrase and add a separate violation for the hyphenated form (case-insensitive), with regression tests for both conditions.
-
-```elixir
-public_phrase = Regex.match?(~r/first adopter/i, contents)
-hyphenated_phrase = Regex.match?(~r/first-adopter/i, contents)
-
-[]
-|> maybe_add(not public_phrase, "privacy.public_phrase", path)
-|> maybe_add(hyphenated_phrase, "privacy.public_hyphenated_phrase", path)
-|> maybe_add(codename, "privacy.public_codename", path)
-```
-
-### CR-02: Route inventory permits identifying values despite claiming opaque references
-
-**File:** `/Users/jon/projects/crosswake/lib/crosswake/adoption/route_inventory.ex:159-175`
+**File:** `/Users/jon/projects/crosswake/lib/crosswake/planning/first_adopter_context.ex:29-51`
 
 **Classification:** BLOCKER
 
-**Issue:** `route_id` and `path_pattern` accept arbitrary human-readable slugs and static path segments. For example, the validator accepts `route_id: "acme-customer"` and `path_pattern: "/customer/acme-customer"`. Those fields are then retained in the validated struct and may be recorded in planning/proof output. This violates the module's stated sanitized/opaque contract and the project's prohibition on customer information and proprietary taxonomy. The closed posture vocabularies do not mitigate this bypass because the identifying data is carried in the two unbounded string fields.
+**Issue:** `scan_filesystem/2` discovers files only through this fixed, narrow `@artifact_globs` list. It does not scan new guides, workflows, most library modules, test files, or any phase other than 158. For example, a future `.planning/phases/159-*/` artifact or a new guide can contain a value from `CROSSWAKE_PRIVATE_ADOPTER_TERMS` and the CI task reports success because `discovered_entries/1` never returns that path. This violates the fail-closed privacy boundary: sensitive adopter data can be committed to a repository-facing artifact while the "protected" scan passes.
 
-**Fix:** Make route references mechanically opaque and constrain path patterns to non-identifying, schema-defined route templates. For example, use generated opaque IDs and allow only approved static namespaces plus parameter placeholders; reject arbitrary literal segments. Add negative tests using customer-name and taxonomy-like slugs.
+**Fix:** Make repository-facing artifacts exhaustive by deriving the scan set from tracked, non-ignored files and classifying every path, or expand the registered glob policy to cover every permitted source/documentation/phase directory and fail when a tracked file has no destination. Add a regression test that places a configured private term in an unregistered future-phase or guide file and asserts `privacy.private_term`.
 
 ```elixir
-defp validate_route_id(value) when is_binary(value) do
-  if Regex.match?(~r/^route-[a-f0-9]{16}$/i, value),
-    do: {:ok, value},
-    else: {:error, error("RI-INVALID", "unresolved", "route_id")}
+# Require every repository-facing path to be classified before its contents are read.
+unclassified =
+  tracked_repository_paths(root)
+  |> Enum.reject(&classified_by_artifact_glob?/1)
+
+if unclassified != [] do
+  Enum.map(unclassified, &%{rule_id: "routing.unclassified_path", path: &1})
+else
+  filesystem_content_violations(discovered_entries(root), terms)
 end
 ```
 
-## Warnings
-
-### WR-01: Checked-in renderer is not formatted by the repository formatter
-
-**File:** `/Users/jon/projects/crosswake/lib/crosswake/capability_map/renderer.ex:184-190`
-
-**Classification:** WARNING
-
-**Issue:** `mix format --check-formatted` fails on this changed file, which creates a divergent local/CI quality result even though the focused tests pass.
-
-**Fix:** Run `mix format lib/crosswake/capability_map/renderer.ex` and retain the formatted multi-line match clauses.
-
 ---
 
-_Reviewed: 2026-07-31T15:57:17Z_
+_Reviewed: 2026-07-31T16:41:00Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
