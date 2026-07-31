@@ -1,20 +1,10 @@
 defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   use ExUnit.Case, async: false
 
-  import ExUnit.CaptureIO
+  alias Crosswake.ProofLane.{Config, Generator}
 
-  @task "crosswake.gen.proof_lane"
-
-  test "generates an isolated iOS proof lane, retains opaque evidence, and never clobbers host edits" do
-    root =
-      Path.join(System.tmp_dir!(), "crosswake_proof_lane_#{System.unique_integer([:positive])}")
-
-    ios_root = Path.join(root, "native/ios")
-    evidence_path = Path.join(root, "retained-evidence")
-
-    previous = Application.get_env(:crosswake, :proof_lane)
-
-    Application.put_env(:crosswake, :proof_lane,
+  defp config(root) do
+    %Config{
       route_id: "route-0123456789abcdef",
       route_path: "/study/:id",
       indexed_db_database: "proof_lane",
@@ -23,59 +13,97 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       sync_path: "/study/sync",
       evidence_path: "/_proof/evidence",
       router: CrosswakeWeb.Router,
-      ios_shell_root: ios_root
-    )
+      ios_shell_root: Path.join(root, "native/ios")
+    }
+  end
+
+  defp temporary_root do
+    Path.join(System.tmp_dir!(), "crosswake-proof-lane-#{System.unique_integer([:positive])}")
+  end
+
+  defp snapshot(root) do
+    root
+    |> Path.join("**")
+    |> Path.wildcard()
+    |> Enum.map(fn path ->
+      {Path.relative_to(path, root), if(File.dir?(path), do: :dir, else: File.read!(path))}
+    end)
+    |> Map.new()
+  end
+
+  defp with_root(fun) do
+    root = temporary_root()
+    File.mkdir_p!(root)
 
     try do
-      capture_io(fn -> Mix.Task.rerun(@task, ["ios"]) end)
-
-      expected = [
-        Path.join(root, "test/crosswake_proof_lane/crosswake_proof_lane_test.exs"),
-        Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts"),
-        Path.join(ios_root, "CrosswakeProofLane/ProofLaneDriver.swift"),
-        Path.join(ios_root, "CrosswakeProofLane.xcodeproj/project.pbxproj"),
-        Path.join(root, ".crosswake/proof_lane.json")
-      ]
-
-      Enum.each(expected, &assert(File.regular?(&1)))
-
-      test_source = File.read!(Enum.at(expected, 0))
-      assert {:ok, _} = Code.string_to_quoted(test_source)
-      assert File.read!(Enum.at(expected, 1)) =~ "runOfflineIslandProof"
-
-      driver = File.read!(Enum.at(expected, 2))
-      assert driver =~ "case passed, blocked, unavailable"
-      assert driver =~ "return .blocked"
-      assert driver =~ "return .unavailable"
-
-      assert File.read!(Enum.at(expected, 3)) =~ "CrosswakeProofLaneUITests"
-      assert {:ok, manifest} = Jason.decode(File.read!(Enum.at(expected, 4)))
-      assert manifest["template_version"] == 1
-
-      assert {:ok, evidence} =
-               Crosswake.ProofLane.Evidence.build(%{
-                 assertion_id: "shell_boot",
-                 outcome: "blocked"
-               })
-
-      assert :ok = Crosswake.ProofLane.Evidence.promote(evidence, evidence_path)
-      assert File.regular?(Path.join(evidence_path, "evidence.json"))
-      refute File.read!(Path.join(evidence_path, "evidence.json")) =~ "/study/sync"
-
-      Enum.each(expected, fn path -> File.write!(path, "host edit: #{Path.basename(path)}\n") end)
-      output = capture_io(fn -> Mix.Task.rerun(@task, ["ios"]) end)
-
-      Enum.each(expected, fn path ->
-        assert File.read!(path) == "host edit: #{Path.basename(path)}\n"
-      end)
-
-      assert output =~ "reused"
+      fun.(root, config(root))
     after
-      if previous,
-        do: Application.put_env(:crosswake, :proof_lane, previous),
-        else: Application.delete_env(:crosswake, :proof_lane)
-
       File.rm_rf!(root)
     end
+  end
+
+  test "reruns create only missing scaffold and preserve host bytes" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      host_file = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      host_bytes = "// host-owned change\n"
+      File.write!(host_file, host_bytes)
+      missing_file = Path.join(root, "test/crosswake_proof_lane/crosswake_proof_lane_test.exs")
+      File.rm!(missing_file)
+
+      assert {:ok, results} = Generator.generate(config)
+
+      assert %{path: "test/crosswake_proof_lane/crosswake_proof_lane_test.exs", status: :created} in results
+
+      assert File.read!(host_file) == host_bytes
+    end)
+  end
+
+  test "check is satisfied by edited host-owned files but fails missing or unsafe desired state" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+      host_file = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      File.write!(host_file, "// host-owned edit\n")
+      assert :ok = Generator.check(config)
+
+      File.rm!(Path.join(root, "test/crosswake_proof_lane/crosswake_proof_lane_test.exs"))
+
+      assert {:error,
+              [
+                %{
+                  rule_id: "PL-GENERATE-MISSING",
+                  path: "test/crosswake_proof_lane/crosswake_proof_lane_test.exs"
+                }
+              ]} = Generator.check(config)
+    end)
+  end
+
+  test "check and diff are byte-for-byte read-only and diff reports only safe sorted statuses" do
+    with_root(fn root, config ->
+      assert {:ok, _} = Generator.generate(config)
+
+      File.write!(
+        Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts"),
+        "// host-owned edit\n"
+      )
+
+      before = snapshot(root)
+      assert :ok = Generator.check(config)
+      diff = Generator.diff(config)
+      assert before == snapshot(root)
+      assert diff == Enum.sort_by(diff, & &1.path)
+      assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :different} in diff
+      assert Enum.all?(diff, &(&1.status in [:missing, :different, :current]))
+      refute Enum.any?(diff, &(inspect(&1) =~ "study/sync"))
+    end)
+  end
+
+  test "interrupted generation never promotes an incomplete manifest" do
+    with_root(fn root, config ->
+      Process.put(:crosswake_proof_lane_interrupt_before_manifest, true)
+      assert {:error, {"PL-GENERATE-INTERRUPTED", "manifest"}} = Generator.generate(config)
+      refute File.exists?(Path.join(root, ".crosswake/proof_lane.json"))
+      Process.delete(:crosswake_proof_lane_interrupt_before_manifest)
+    end)
   end
 end
