@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 10/10 plans executed
+**Plans:** 10/14 plans executed; 4 gap-closure plans ready
 **Verification:** Gaps found (41/46 must-haves); four blockers require another gap-closure cycle
 
 Plans:
@@ -84,6 +84,19 @@ Plans:
 **Wave 7** *(blocked on Wave 6 completion)*
 
 - [x] 158-10-PLAN.md — Reconcile Phase 158 validation from a freshly passing, privacy-safe gate chain.
+
+**Wave 8** *(gap closure; blocked on Wave 7 completion)*
+
+- [ ] 158-11-PLAN.md — Enforce opaque route IDs and a closed sanitized Phoenix path grammar.
+- [ ] 158-12-PLAN.md — Enforce exact public spelling and precise live identifying-field scans.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
+- [ ] 158-13-PLAN.md — Format the capability renderer and prove all changed Elixir sources.
+
+**Wave 10** *(blocked on Waves 8-9 completion)*
+
+- [ ] 158-14-PLAN.md — Rerun the complete gate and reconcile validation plus verification.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
