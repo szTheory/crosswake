@@ -5,14 +5,14 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: Adoption Reset and Route Map
 status: planning
-stopped_at: Phase 158 context gathered
-last_updated: "2026-07-31T03:28:05.503Z"
-last_activity: 2026-07-30
-last_activity_desc: v20 stopped/partial; v21 adopter-readiness artifacts created
+stopped_at: Phase 158 planned — ready to execute
+last_updated: "2026-07-31T00:06:07-04:00"
+last_activity: 2026-07-31
+last_activity_desc: Phase 158 planning complete — 4 plans ready
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 current_plan: null
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 158 of 162 — Adoption Reset and Route Map
-Plan: Not yet planned
-Status: Milestone reset in progress
-Last activity: 2026-07-30 — v20 stopped/partial; v21 adopter-readiness artifacts created
+Plan: 4 plans in 3 waves
+Status: Ready to execute
+Last activity: 2026-07-31 — Phase 158 planning complete
 
 ## Active Objective
 
@@ -44,13 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-discuss-phase 158`, using:
-
-- `.planning/ADR-FIRST-B2C-ADOPTER.md`
-- `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`
-- `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md`
-- `.planning/REQUIREMENTS.md`
-- `.planning/ROADMAP.md`
+Run `$gsd-execute-phase 158`. Execution follows the annotated three-wave plan in
+`.planning/ROADMAP.md`; the tracer plan is
+`.planning/phases/158-adoption-reset-and-route-map/158-01-PLAN.md`.
 
 ## Blockers
 
@@ -100,5 +96,5 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-07-31T03:28:05.496Z
-**Stopped at:** Phase 158 context gathered
-**Resume file:** .planning/phases/158-adoption-reset-and-route-map/158-CONTEXT.md
+**Stopped at:** Phase 158 planned — ready to execute
+**Resume file:** .planning/phases/158-adoption-reset-and-route-map/158-01-PLAN.md
