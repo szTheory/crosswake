@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-17-PLAN.md
-last_updated: "2026-07-31T17:53:32.605Z"
+stopped_at: Completed 158-18-PLAN.md
+last_updated: "2026-07-31T17:57:59.002Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 execution started
+last_activity_desc: Completed tracked-text privacy gap closure
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 18
-  completed_plans: 17
-  percent: 0
+  completed_plans: 18
+  percent: 20
 current_plan: null
 ---
 
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 17 of 18
+Plan: 18 of 18
 Status: Ready to execute Plan 158-18
 Last activity: 2026-07-31 — Completed tracked-text privacy gap closure
 
@@ -95,6 +95,8 @@ TODO-002 remains the bounded adopter-input gate.
 - [Phase ?]: Phase 158 final gate closes only on fresh Git-backed repository-classification and post-write scan evidence; TODO-002 remains unknown_blocking.
 - [Phase ?]: Recognized textual repository candidates scan for private terms regardless of subtree; raw evidence and binary exclusions remain explicit.
 - [Phase ?]: Generic policy rules stay limited to designated policy artifacts while private-term enforcement covers every classified textual candidate.
+- [Phase ?]: RESET-04 closes only after fresh final-tree direct, production Mix-task, and post-write scan evidence.
+- [Phase ?]: TODO-002 remains open and adopter-instance completeness remains unknown_blocking; no later-phase or platform claim changed.
 
 ## Deferred Items
 
@@ -123,8 +125,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T17:53:32.599Z
-**Stopped at:** Completed 158-17-PLAN.md
+**Last session:** 2026-07-31T17:57:58.996Z
+**Stopped at:** Completed 158-18-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -148,3 +150,4 @@ this milestone reset.
 | Phase 158 P15 | 18m | 2 tasks | 5 files |
 | Phase 158 P16 | 8m | 1 tasks | 3 files |
 | Phase 158 P17 | 18m | 2 tasks | 3 files |
+| Phase 158-adoption-reset-and-route-map P18 | 6m | 1 tasks | 3 files |

@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 17/18 plans executed
+**Plans:** 18/18 plans executed
 **Verification:** Gaps found (3/4 roadmap must-haves); tracked text under `.github/actions/`,
 `script/`, and future planning phases can bypass protected private-term scanning.
 
@@ -113,7 +113,7 @@ Plans:
 
 **Wave 14** *(blocked on Wave 13 completion)*
 
-- [ ] 158-18-PLAN.md — Reconcile validation and verification from fresh final-tree and post-write evidence.
+- [x] 158-18-PLAN.md — Reconcile validation and verification from fresh final-tree and post-write evidence.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
