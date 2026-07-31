@@ -1,86 +1,112 @@
 ---
 phase: 158-adoption-reset-and-route-map
-verified: 2026-07-31T19:11:00Z
-status: complete
-score: 5/5 must-haves verified
+verified: 2026-07-31T19:14:35Z
+status: passed
+score: 6/6 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-re_verification:
-  previous_status: gaps_found
-  previous_score: 3/5
-  gaps_closed:
-    - "Generic privacy rules now evaluate every recognized textual repository candidate."
-    - "RouteInventory.validate/1 now rejects arbitrary non-atom map keys before Keyword processing."
-  gaps_remaining: []
-  regressions: []
 ---
 
 # Phase 158: Adoption Reset and Route Map Verification Report
 
-**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify adopter
-routes, update support truth, and install privacy-safe context routing.
+**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify adopter routes, update support truth, and install privacy-safe context routing.
 
-**Status:** complete — fresh final-tree and post-write evidence closes exactly the two prior
-blockers. TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
-
-## Re-verified Blockers
-
-| Prior gap | Fresh evidence | Verdict |
-| --- | --- | --- |
-| Generic privacy rules were not applied to every scanned textual artifact. | The focused direct and production Mix-task suites passed (31 tests, 0 failures), covering unregistered guide, source, action, script, and later-phase paths; the live production scan passed before and after ledger writes. | CLOSED |
-| `RouteInventory.validate/1` crashed on non-atom map keys. | The focused route suite passed (17 tests, 0 failures), including non-atom and mixed-key map cases returning the fixed `RI-INVALID` / `unresolved` / `route_row` `%ValidationError{}` without input echo. | CLOSED |
+**Verified:** 2026-07-31T19:14:35Z
+**Status:** passed
+**Re-verification:** No — the prior report used unsupported `complete` status and had no structured `gaps:` section, so this is an independent current-tree verification.
 
 ## Goal Achievement
 
+### Observable Truths
+
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Infrastructure framing, Alpha/v1 split, stop list, and active phase remain discoverable. | VERIFIED | Governing planning artifacts remain unchanged; focused context checks pass. |
-| 2 | Known adopter surfaces retain explicit runtime owner, posture, authority, fallback, and blocked unknown route facts. | VERIFIED | Route policy and route-inventory suite pass; concrete adopter input remains blocked. |
-| 3 | v20 remains stopped/partial and Phases 156–157 are not represented as shipped. | VERIFIED | Existing milestone, roadmap, and support truth remain unchanged. |
-| 4 | Generic privacy scanning protects recognized textual planning and public artifacts. | VERIFIED | Git enumeration → classification → generic evaluation → `scan_filesystem/2` → production Mix task is covered by fresh focused and live scans. |
-| 5 | Invalid route-row map input returns a stable safe validator error. | VERIFIED | Caller map → atom-key normalization → pre-`Keyword` validation → `%ValidationError{}` is covered by fresh route tests. |
+| 1 | A new session can discover the GET-6 infrastructure framing, Alpha/v1 split, reversal conditions, stop list, and current phase without re-deriving them. | ✓ VERIFIED | The ADR, adoption brief, `AGENTS.md`, roadmap, and state retain the governing decision; `first_adopter_context_test.exs` exercises these documents and passed in the focused run. |
+| 2 | Known first-adopter surfaces have explicit runtime ownership, offline posture, authority/fallback, and remote-disable story; concrete unknown facts cannot be promoted. | ✓ VERIFIED | The route-policy map supplies the surface table and closed route-local contract. `RouteInventory` rejects inferred/default safety posture and returns explicit `unknown_blocking`/empty-inventory promotion blocks; route tests passed. |
+| 3 | Support truth is canonical, public, deterministic, and honest about frozen/deferred scope. | ✓ VERIFIED | `CapabilityMap` canonical rows use `adoption_implication`; its renderer and generated guide use public `first adopter` wording. Support-matrix tests prove policy completion stays separate from host/device proof, Android remains frozen, and v20 carries no shipped claim. |
+| 4 | v20 is preserved as stopped/partial without a shipped claim or tag, and Phases 156–157 are outside active scope. | ✓ VERIFIED | `ROADMAP.md`, `STATE.md`, and the v20 archive state stopped/partial/no completion tag. The context test checks the same archive and refutes 156/157 in active v21 content. |
+| 5 | Privacy-safe context routing scans all recognized textual repository candidates and returns stable rule/path diagnostics without private content. | ✓ VERIFIED | Git-backed enumeration feeds classification, generic checks, and `scan_filesystem/2`; the production Mix task calls that scanner. Direct and Mix-task tests cover unregistered guide/source/action/script/future-phase paths, non-echoing output, fail-closed unclassified/enumeration cases, and all passed. |
+| 6 | The review fixes close the detected bypasses without relaxing the protected trust boundary. | ✓ VERIFIED | `.svg` is textual/scannable; context-aware one-digit, multi-digit, and decimal commercial values are tested; duplicate keyword fields fail as `RI-DUPLICATE_FIELD` before NimbleOptions. The workflow deliberately blocks fork bypasses while protected scanning only runs with trusted provenance; its contract test passed. |
 
-**Score:** 5/5 truths verified.
+**Score:** 6/6 truths verified (0 present-but-behavior-unverified).
 
-## Artifact and Key-Link Verification
+### Required Artifacts
 
-| Link | Status | Evidence |
-| --- | --- | --- |
-| Repository candidate enumeration → classification → generic evaluation | WIRED | Every recognized textual `scan?: true` entry receives generic privacy evaluation; destination wording stays destination-scoped. |
-| `scan_filesystem/2` → production `mix crosswake.adoption_context.scan` | WIRED | Direct and production suites cover the same five path classes; the live task passed pre- and post-write. |
-| Caller map → pre-`Keyword` atom-key normalization → `%ValidationError{}` | WIRED | Non-atom and mixed-key inputs return `RI-INVALID` / `unresolved` / `route_row`, not an exception. |
-| Route policy map → route inventory → promotion boundary | WIRED | Closed vocabulary and `unknown_blocking` promotion block remain covered by the route suite. |
+| Artifact | Expected | Status | Details |
+| --- | --- | --- | --- |
+| `lib/crosswake/adoption/route_inventory.ex` | Closed, sanitized route-row validation and promotion boundary | ✓ VERIFIED | 444 substantive lines; public validation/promotion APIs are called by the 17 route-inventory tests. Map-key normalization, duplicate-field rejection, collision checks, and blocked promotion are implemented before unsafe Keyword/NimbleOptions behavior. |
+| `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Route ownership/defaults and honest concrete-row contract | ✓ VERIFIED | Explicit surface owner/fallback table, route-local safety fields, status vocabulary, and `unknown_blocking` external-input boundary. |
+| `lib/crosswake/planning/first_adopter_context.ex` | Repository context classification and safe privacy scan | ✓ VERIFIED | 300+ substantive lines of Git candidate enumeration, path classification, generic/destination checks, stable diagnostics, and raw/binary exclusions. Invoked by the production Mix task and direct tests. |
+| `lib/mix/tasks/crosswake.adoption_context.scan.ex` | Production enforcement entry point | ✓ VERIFIED | Reads only configured terms, fail-closes `--require-private-terms` without them, calls `scan_filesystem/2`, and formats only rule/path output. |
+| `lib/crosswake/capability_map.ex`, `lib/crosswake/capability_map/renderer.ex`, `guides/capability_map.md` | Canonical and rendered public capability truth | ✓ VERIFIED | Canonical field, single conflict-safe legacy normalizer, renderer, byte-identical guide, and tests are wired. |
+| `lib/crosswake/support_matrix/support_matrix.ex`, `lib/crosswake/support_matrix/renderer.ex`, `guides/support_matrix.md` | Honest support posture | ✓ VERIFIED | Rendered support guide distinguishes policy contracts from future host/device proof and freezes Android posture. |
+| `.github/workflows/hex-page-proof.yml` | CI privacy gate and protected-secret boundary | ✓ VERIFIED | Generic scan always runs; trusted same-repository PRs/main/manual dispatch run the secret-required scan; untrusted forks fail closed instead of bypassing it. |
 
-## Fresh Gate Evidence
+### Key Link Verification
 
-| Gate | Result |
-| --- | --- |
-| Focused scanner/Mix-task suites | 31 tests, 0 failures |
-| Focused route-inventory suite | 17 tests, 0 failures |
-| Capability/support suites | 86 tests, 0 failures |
-| Production scanner, formatter, warnings-as-errors compile, hermetic suite, whitespace | Passed |
-| Post-write production scanner | Passed |
-| Post-write scanner/Mix-task/route suites | 48 tests, 0 failures |
-| Post-write whitespace | Passed |
+| From | To | Via | Status | Details |
+| --- | --- | --- | --- |
+| Route-policy map | `RouteInventory` | Shared statuses and promotion contract | WIRED | Plan artifact/key-link verifier found all declared Plan-01 links; focused route tests exercise the public APIs. |
+| Git candidate enumeration | Context privacy checks | `repository_candidates` → classification → `filesystem_content_violations` | WIRED | Recognized text has `scan?: true`; generic checks run before destination-specific checks. Direct tests cover five unregistered path classes. |
+| Context scanner | Production Mix task | `Scan.run/1` → `scan_filesystem/2` | WIRED | Production task tests and `mix crosswake.adoption_context.scan` passed. |
+| Capability canonical rows | Renderer and guide | `adoption_implication` normalizer → `Renderer.render/write` | WIRED | Renderer tests cover canonical/legacy equal/conflicting forms and generated guide parity. |
+| Protected workflow | Secret-required scanner | trusted-provenance condition + `--require-private-terms` | WIRED | Workflow contract test proves the trusted branch and explicit fork-block boundary. |
 
-## Requirement Coverage
+### Data-Flow Trace (Level 4)
 
-| Requirement | Status | Evidence |
-| --- | --- | --- |
-| RESET-01 | SATISFIED | Durable infrastructure decision and non-goals remain unchanged. |
-| RESET-02 | SATISFIED | Route-local ownership and malformed-map safety boundary are executable and fail closed. |
-| RESET-03 | SATISFIED | v20 stopped/partial truth remains unchanged. |
-| RESET-04 | SATISFIED | Generic privacy evaluation covers the demonstrated textual path classes through direct and production seams. |
+| Artifact | Data variable/source | Produces real data | Status |
+| --- | --- | --- | --- |
+| Route inventory | Caller rows → normalization → closed struct → promotion status | Synthetic sanitized rows and malformed boundary inputs; no hardcoded eligible inventory | ✓ FLOWING |
+| Context scanner | Git cached/non-ignored candidates → classified regular files → content checks | Live repository scan completed successfully; temporary Git repositories prove reject paths | ✓ FLOWING |
+| Capability/support guides | Canonical maps → renderer output | Generated guide parity is exercised by renderer tests | ✓ FLOWING |
 
-## Scope and Privacy Integrity
+### Behavioral Spot-Checks
 
-- TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
-- No adopter-instance fact, malformed input, runtime canary, matched content, Git output, or sensitive
-  payload is persisted in this report.
-- Android remains frozen; later-phase, UI, API, schema, generic sync, and generic storage claims are
-  unchanged.
-- Review fixes are included in this final-tree proof: contextual prose amount detection, textual SVG
-  scanning, and duplicate route-field safe validation. The reviewed fork finding is intentionally
-  retained as a fail-closed protected-private-term trust boundary, not a relaxed fork policy.
+| Behavior | Command | Result | Status |
+| --- | --- | --- | --- |
+| Route validation, promotion, duplicate-field, and map-key failure contracts | `mix test test/crosswake/adoption/route_inventory_test.exs` (within focused run) | Passing | ✓ PASS |
+| Direct and production privacy enforcement, including SVG and contextual one-digit currency | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` (within focused run) | Passing | ✓ PASS |
+| Capability/support truth and generated rendering | `mix test test/crosswake/capability_map/capability_map_test.exs test/crosswake/capability_map/renderer_test.exs test/crosswake/support_matrix/renderer_test.exs` (within focused run) | Passing | ✓ PASS |
+| Current-tree production privacy scan | `mix crosswake.adoption_context.scan` | `adoption context scan passed` | ✓ PASS |
+| Changed Elixir source quality | `mix format --check-formatted … && mix compile --warnings-as-errors && git diff --check` | Exit 0 | ✓ PASS |
 
-_Verified from fresh final-tree and post-write automated evidence on 2026-07-31._
+**Focused combined run:** 80 tests, 0 failures (6.0s).
+
+### Probe Execution
+
+Step 7c: SKIPPED — no Phase-158 `scripts/*/tests/probe-*.sh` or phase-declared probe was present. The production Mix task above is the runnable enforcement seam and was executed directly.
+
+### Requirements Coverage
+
+| Requirement | Source Plans | Description | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| RESET-01 | 01, 02, 03 and reconciliation plans | Durable infrastructure decision, reversal condition, scope audit, non-goals, and stop list are discoverable. | ✓ SATISFIED | ADR/brief/agent guide/context tests and canonical capability truth preserve the framing. |
+| RESET-02 | 01, 04, 05, 11, 19, 20 | Known surfaces have explicit owner/posture/authority/fallback/disablement; unknown concrete inputs do not promote. | ✓ SATISFIED | Route map, closed validator, promotion invariants, and focused route tests. TODO-002 remains the documented external-input gate. |
+| RESET-03 | 03, 04 and reconciliation plans | v20 is stopped/partial and Phases 156–157 are absent from active scope. | ✓ SATISFIED | Archived roadmap/state text plus automated context assertion. |
+| RESET-04 | 01, 03, 06, 12, 15, 17, 19, 20 | Planning/public adoption artifacts reject prohibited identity and personal/commercial data. | ✓ SATISFIED | Repository-wide candidate scan, generic privacy rules, non-echoing output, current production scan, and regression coverage for SVG/one-digit prices. |
+
+No orphaned Phase-158 requirements were found: all four IDs mapped to the phase are declared by its plans.
+
+### Anti-Patterns Found
+
+| File | Line | Pattern | Severity | Impact |
+| --- | --- | --- | --- | --- |
+| `lib/crosswake/capability_map.ex` | 61 | Comment contains “placeholder” | ℹ️ Info | It explicitly prohibits placeholders; no user-visible stub or incomplete implementation. |
+| `lib/crosswake/support_matrix/renderer.ex` | 463 | Comment contains “placeholder” | ℹ️ Info | Existing renderer fallback description; no Phase-158 debt marker or hollow data flow. |
+
+No `TBD`, `FIXME`, or `XXX` debt marker was found in the verified Phase-158 implementation files.
+
+## Scope and External-Input Boundary
+
+`TODO-002` remains `status: open`, and the route-policy map continues to state that adopter-instance completeness is `unknown_blocking`. This is an intentional, executable fail-closed boundary awaiting sanitized adopter input—not a missing Phase-158 implementation. No Android, generic sync/storage, device-proof, UI/API/schema, or later-phase support claim was promoted.
+
+The user-owned `.planning/config.json` modification was present before verification and was not changed.
+
+## Gaps Summary
+
+None. All roadmap success criteria and the requested post-review regressions have current-tree automated evidence. Phase goal achieved.
+
+---
+
+_Verified: 2026-07-31T19:14:35Z_
+_Verifier: the agent (gsd-verifier)_

@@ -29,7 +29,7 @@ assertions. Add CI only for recurring contract value.
 162 evidence. Reconsider broader investment only after two independent active adopters or a
 separately funded business-line mandate.
 
-- [ ] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the
+- [x] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the (completed 2026-07-31)
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
@@ -54,7 +54,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 20/20 plans executed
+**Plans:** 20/20 plans complete
 **Verification:** Complete (4/4 roadmap must-haves); fresh final-tree direct, production, and
 post-write evidence confirms generic textual privacy enforcement and stable route-map validation.
 
