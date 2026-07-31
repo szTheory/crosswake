@@ -1,9 +1,9 @@
 ---
 phase: 156
 slug: native-menu-action-button-control
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-30
 ---
 
@@ -38,12 +38,20 @@ created: 2026-07-30
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 156-01-01 | 01 | 1 | MENU-01 | T-156-01 | Route policy is the only action allowlist and cross-field mismatches fail closed. | unit | `mix test test/crosswake/policy/route_test.exs test/crosswake/manifest/builder_test.exs -x` | ✅ extend | ⬜ pending |
-| 156-02-01 | 02 | 1 | MENU-01, MENU-02 | T-156-01, T-156-04 | Runtime projections and anchor facts reject unauthorized, stale, or unbounded inputs before native dispatch. | unit + JS | `mix test test/crosswake/bridge/action_menu_test.exs -x && node --test test/js/` | ❌ W0 | ⬜ pending |
-| 156-03-01 | 03 | 2 | MENU-02, MENU-03 | T-156-03 | iOS returns exactly one selected or dismissed reply and rejects unknown/disabled ids. | native contract | `swift test --package-path packages/crosswake-shell-core-ios` | ✅ extend | ⬜ pending |
-| 156-04-01 | 04 | 2 | MENU-02, MENU-03 | T-156-03 | Android returns exactly one selected or dismissed reply and rejects unknown/disabled ids. | native contract | `./gradlew -p packages/crosswake-shell-core-android test` | ✅ extend | ⬜ pending |
-| 156-05-01 | 05 | 3 | PROOF-03 | T-156-02, T-156-03 | One committed vector corpus proves dispatch, denial, selection, and dismissal on both native harnesses without simulator/emulator claims. | vector + drift | `mix test test/crosswake/contract/contract_drift_test.exs -x && swift test --package-path packages/crosswake-shell-core-ios && ./gradlew -p packages/crosswake-shell-core-android test` | ✅ extend | ⬜ pending |
-| 156-06-01 | 06 | 3 | MENU-01, MENU-03 | — | The host fallback remains usable and accessible when native presentation is unavailable or denied. | browser + source | `mix test && npm --prefix examples/phoenix_host run test:e2e` | ✅ extend | ⬜ pending |
+| 156-01-01 | 01 | 1 | MENU-01 | T-156-01 | The D-09/D-26/D-31 one-way publication gate resolves before implementation. | context gate | `rg -n 'D-09:|D-26:|D-31:' .planning/phases/156-native-menu-action-button-control/156-CONTEXT.md` | ✅ exists | ⬜ pending |
+| 156-02-01 | 02 | 2 | MENU-01 | T-156-01, T-156-04 | Route policy is the only allowlist and the shared projection enforces all bounds. | unit | `mix test test/crosswake/policy/route_test.exs test/crosswake/manifest/builder_test.exs test/crosswake/bridge/action_menu_test.exs -x` | ❌ created by task | ⬜ pending |
+| 156-02-02 | 02 | 2 | MENU-02 | T-156-01, T-156-03 | Contract 1.2.0 returns typed selected/dismissed replies and preserves truthful failure layers. | unit | `mix test test/crosswake/bridge/action_menu_test.exs test/crosswake/bridge/push_test.exs test/crosswake/bridge/registry_test.exs -x` | ❌ created by task | ⬜ pending |
+| 156-02-03 | 02 | 2 | MENU-01, MENU-02 | T-156-02 | Explicit anchors and stale-shell facts fail before native posting. | JS + unit | `node --test test/js/crosswake_esm_test.mjs && mix test test/crosswake/bridge/action_menu_test.exs -x` | ✅ extend | ⬜ pending |
+| 156-03-01 | 03 | 3 | MENU-02, MENU-03 | T-156-I1, T-156-I3 | Swift fake presenter records semantics and completes exactly once. | native contract | `swift test --package-path packages/crosswake-shell-core-ios --filter 'ActionMenuPresenterTests|BridgeConformanceTests'` | ❌ created by task | ⬜ pending |
+| 156-03-02 | 03 | 3 | MENU-02, MENU-03 | T-156-I2 | UIKit action sheet is real and iPad anchoring fails closed. | native source + unit | `swift test --package-path packages/crosswake-shell-core-ios` | ❌ created by task | ⬜ pending |
+| 156-04-01 | 04 | 3 | MENU-02, MENU-03 | T-156-A1, T-156-A3 | Kotlin fake presenter records semantics and completes exactly once. | native contract | `./gradlew -p packages/crosswake-shell-core-android test --tests '*ActionMenuPresenterTest' --tests '*BridgeConformanceTest'` | ❌ created by task | ⬜ pending |
+| 156-04-02 | 04 | 3 | MENU-02, MENU-03 | T-156-A2 | Android PopupMenu uses a bounded anchor and fails closed. | JVM + source | `./gradlew -p packages/crosswake-shell-core-android test` | ❌ created by task | ⬜ pending |
+| 156-05-01 | 05 | 3 | MENU-02, MENU-03 | T-156-R1, T-156-R2 | Fallback/native races resolve once and cancel stale chrome. | unit + JS | `mix test test/crosswake/bridge/action_menu_test.exs test/crosswake/bridge/push_test.exs -x && node --test test/js/crosswake_esm_test.mjs` | ❌ created by plan 02 | ⬜ pending |
+| 156-05-02 | 05 | 3 | MENU-02 | T-156-R3 | Lifecycle telemetry is complete and excludes sensitive/high-cardinality values. | unit | `mix test test/crosswake/bridge/action_menu_test.exs test/crosswake/telemetry_test.exs test/crosswake/proof/phase133_telemetry_contract_test.exs -x` | ✅ extend | ⬜ pending |
+| 156-06-01 | 06 | 4 | MENU-01, MENU-02, MENU-03 | T-156-U1, T-156-U2 | Phoenix trigger/fallback/native outcome path reauthorizes before mutation. | LiveView | `mix test examples/phoenix_host/test/crosswake_example/saas_portal/approval_live_test.exs -x` | ✅ extend | ⬜ pending |
+| 156-06-02 | 06 | 4 | MENU-01, MENU-03 | T-156-U3 | All UI states plus 320px wrap/reachability backstop stay usable. | browser | `npm --prefix examples/phoenix_host run test:e2e -- --grep 'native controls|action menu'` | ✅ extend | ⬜ pending |
+| 156-07-01 | 07 | 4 | MENU-02, MENU-03, PROOF-03 | T-156-P1, T-156-P2 | One corpus drives both real evaluators/fake presenters and a negative control proves non-vacuity. | vector + drift | `mix test test/crosswake/contract/contract_drift_test.exs test/crosswake/proof/phase156_action_menu_proof_test.exs -x && swift test --package-path packages/crosswake-shell-core-ios && ./gradlew -p packages/crosswake-shell-core-android test` | ❌ proof file created by task | ⬜ pending |
+| 156-07-02 | 07 | 4 | MENU-01, MENU-03, PROOF-03 | T-156-P5 | Support/rebuild truth and accessibility non-claims are structurally guarded. | unit + source | `mix test test/crosswake/doctor/doctor_test.exs test/crosswake/support_matrix/support_matrix_test.exs test/crosswake/proof/phase156_action_menu_proof_test.exs -x` | ❌ proof file created by task | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,11 +59,11 @@ created: 2026-07-30
 
 ## Wave 0 Requirements
 
-- [ ] Add `test/crosswake/bridge/action_menu_test.exs` for runtime projection validation, anchor option enforcement, typed selected/dismissed replies, and fallback/native race cancellation.
-- [ ] Extend policy and manifest tests for the `action_menu` schema, route serialization, and capability/contract cross-field errors.
-- [ ] Extend `test/js/crosswake_esm_test.mjs` for explicit-anchor measurement, invalid-anchor denial facts, stale-binary capability preflight, and cancellation.
-- [ ] Extend the Swift and Kotlin vector harnesses with fake action-menu presenters.
-- [ ] Provide Java runtime setup before local Android Gradle proof; CI remains the fallback lane until local Java is available.
+- [x] Plan 156-02 creates `test/crosswake/bridge/action_menu_test.exs` before production behavior and extends policy/manifest/hook tests.
+- [x] Plans 156-03 and 156-04 create fake-presenter tests before real presenter adapters.
+- [x] Plan 156-07 creates the Phase 156 proof guard and fail-first negative control before claiming PROOF-03.
+- [x] Every later task depends on the plan that creates its missing test file.
+- [x] Android proof uses local Java when available; the same Gradle command remains the CI fallback without weakening the gate.
 
 ---
 
@@ -69,11 +77,11 @@ created: 2026-07-30
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verification or Wave 0 dependencies.
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verification.
-- [ ] Wave 0 covers all missing references.
-- [ ] No watch-mode flags.
-- [ ] Feedback latency is below 15 minutes.
-- [ ] `nyquist_compliant: true` is set in frontmatter.
+- [x] All tasks have `<automated>` verification or Wave 0 dependencies.
+- [x] Sampling continuity: no 3 consecutive tasks without automated verification.
+- [x] Wave 0 covers all missing references.
+- [x] No watch-mode flags.
+- [x] Feedback latency is below 15 minutes.
+- [x] `nyquist_compliant: true` is set in frontmatter.
 
-**Approval:** pending
+**Approval:** approved for the seven-plan decomposition

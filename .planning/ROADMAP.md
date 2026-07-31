@@ -362,7 +362,29 @@ Plans:
 
 **Record correction (D-56, Phase 155 Plan 07):** Phase 154's D-29 payload-ceiling note asserts, as a parenthetical justification, that "the capability handshake already routes old natives to `unavailable_capability`." Verified factually wrong: the closed-enum miss fires first and both natives return `undeclared_capability` instead — exactly the two-remediation collapse D-13 forbade. This phase must re-derive the real premise rather than plan against the stated one.
 
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 156-01-PLAN.md — Blocking one-way publication gate for D-09, D-26, and D-31
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 156-02-PLAN.md — Production tracer: route declaration through shared projection, explicit anchor/preflight, and exactly-once typed reply
+
+**Wave 3** *(blocked on Wave 2; plans 03-05 are file-disjoint)*
+
+- [ ] 156-03-PLAN.md — iOS structured decoder, fake presenter, and real anchored UIKit action sheet
+- [ ] 156-04-PLAN.md — Android structured decoder, fake presenter, and real anchored PopupMenu
+- [ ] 156-05-PLAN.md — Fallback/native race cancellation and bounded lifecycle telemetry
+
+**Wave 4** *(blocked on Wave 3; plans 06-07 are file-disjoint)*
+
+- [ ] 156-06-PLAN.md — AdminPilot route/trigger integration and complete approved UI-state/browser proof
+- [ ] 156-07-PLAN.md — Canonical dual-native vector proof, anti-vacuity guard, and support/rebuild truth
+
 **UI hint**: yes
 
 ### Phase 157: Harden, Promote & Prove Support Truth
