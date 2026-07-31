@@ -54,9 +54,9 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 19/20 plans executed
-**Verification:** Gaps found (3/4 roadmap must-haves); tracked text under `.github/actions/`,
-`script/`, and future planning phases can bypass protected private-term scanning.
+**Plans:** 20/20 plans executed
+**Verification:** Complete (4/4 roadmap must-haves); fresh final-tree direct, production, and
+post-write evidence confirms generic textual privacy enforcement and stable route-map validation.
 
 Plans:
 **Wave 1**
@@ -125,7 +125,7 @@ Plans:
 
 **Wave 16** *(blocked on Wave 15 completion)*
 
-- [ ] 158-20-PLAN.md — Reconcile both remaining blockers from fresh final-tree and post-write evidence.
+- [x] 158-20-PLAN.md — Reconcile both remaining blockers from fresh final-tree and post-write evidence.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support

@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-19-PLAN.md
-last_updated: "2026-07-31T18:46:29.134Z"
+status: completed
+stopped_at: Completed 158-20-PLAN.md
+last_updated: "2026-07-31T18:53:34.564Z"
 last_activity: 2026-07-31
-last_activity_desc: Completed Plan 158-19 generic privacy and route-map hardening
+last_activity_desc: Completed Plan 158-20 final validation reconciliation
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 20
-  completed_plans: 19
-  percent: 0
+  completed_plans: 20
+  percent: 20
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Phase: 158 (adoption-reset-and-route-map) — COMPLETE
 Plan: 20 of 20
-Status: Ready to execute Plan 158-20
-Last activity: 2026-07-31 — Completed Plan 158-19 generic privacy and route-map hardening
+Status: Fresh final-tree verification passed
+Last activity: 2026-07-31 — Completed Plan 158-20 final validation reconciliation
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158` to complete Plan 158-20's final reconciliation before Phase 159.
-TODO-002 remains the bounded adopter-input gate.
+Begin Phase 159 discussion when ready. TODO-002 remains the bounded adopter-input gate and
+adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -68,6 +68,7 @@ TODO-002 remains the bounded adopter-input gate.
 - Generic sync and generic native storage non-goals remain in force.
 - Automatable acceptance requires executable proof, not conversational verification or manual UAT;
   CI promotion is reserved for recurring contract value.
+
 - [Phase ?]: Route-local safety posture is represented as a closed status/value pair and never inherits from surface defaults.
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
 - [Phase ?]: Canonical capability rows use adoption_implication; v20_implication remains a renderer input alias for one documented compatibility window.
@@ -97,6 +98,8 @@ TODO-002 remains the bounded adopter-input gate.
 - [Phase ?]: RESET-04 closes only after fresh final-tree direct, production Mix-task, and post-write scan evidence.
 - [Phase ?]: TODO-002 remains open and adopter-instance completeness remains unknown_blocking; no later-phase or platform claim changed.
 - [Phase ?]: RouteInventory rejects non-atom map keys before Keyword normalization with a fixed non-echoing error.
+- [Phase ?]: Only fresh final-tree and post-write execution can close demonstrated scanner or validator blockers.
+- [Phase ?]: TODO-002 remains open and adopter-instance completeness remains unknown_blocking after phase verification.
 
 ## Deferred Items
 
@@ -125,8 +128,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T18:46:29.129Z
-**Stopped at:** Completed 158-19-PLAN.md
+**Last session:** 2026-07-31T18:53:34.558Z
+**Stopped at:** Completed 158-20-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -152,3 +155,4 @@ this milestone reset.
 | Phase 158 P17 | 18m | 2 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P18 | 6m | 1 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P19 | 20m | 2 tasks | 10 files |
+| Phase 158-adoption-reset-and-route-map P20 | 6m | 1 tasks | 3 files |
