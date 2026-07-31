@@ -35,5 +35,8 @@ defmodule Crosswake.Proof.Phase54SigraSupportTruthTest do
     assert :auth_return_boundaries not in row.deferred
     assert row.posture =~ "OAuth/passkey/native auth-return boundary contracts"
     assert String.downcase(row.posture) =~ "refresh-token"
+    assert row.posture =~ "Promotion requires an executable host reference proof"
+    assert row.posture =~ "backend reauthorization before replay"
+    assert row.posture =~ "documentation alone cannot promote a deferred item"
   end
 end
