@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-09-PLAN.md
-last_updated: "2026-07-31T15:44:54.254Z"
+stopped_at: Completed 158-10-PLAN.md
+last_updated: "2026-07-31T15:50:07.880Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 10
-  completed_plans: 9
-  percent: 0
+  completed_plans: 10
+  percent: 20
 current_plan: null
 ---
 
@@ -23,8 +23,8 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 9 of 10 executed; 2 gap-closure plans remaining
-Status: Ready to execute
+Plan: 10 of 10 executed; no gap-closure plans remaining
+Status: Ready for phase re-verification
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -44,9 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-execute-phase 158`. Plans 158-08 through 158-10 close the remaining protected pull-request
-privacy gate, public capability wording, and reproducible validation-ledger gaps before Phase 158
-is re-verified.
+Run `$gsd-verify-work 158` to re-verify Phase 158 after the repaired protected pull-request
+privacy gate, public capability wording, and reproducible validation-ledger evidence.
 
 ## Blockers
 
@@ -81,6 +80,7 @@ is re-verified.
 - [Phase ?]: Phase 158 post-gap validation closes defaults-only/incoherent route promotion and unscanned planning-artifact gaps, while adopter-instance input remains unknown_blocking.
 - [Phase ?]: Protected private-term scans run only for trusted same-repository PRs, main pushes, and manual dispatches; fork PRs fail closed without secret exposure.
 - [Phase ?]: Public capability prose uses first adopter throughout rendered output; stable row IDs remain unchanged.
+- [Phase ?]: Final validation records a protected test input only as runtime-assembled neutral fragments and preserves adopter-instance unknown_blocking.
 
 ## Deferred Items
 
@@ -109,8 +109,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T15:44:54.246Z
-**Stopped at:** Completed 158-09-PLAN.md
+**Last session:** 2026-07-31T15:50:07.871Z
+**Stopped at:** Completed 158-10-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -126,3 +126,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P07 | 5m | 1 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P08 | 5m | 1 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P09 | 6m | 1 tasks | 3 files |
+| Phase 158-adoption-reset-and-route-map P10 | 8m | 1 tasks | 1 files |

@@ -54,7 +54,16 @@ Phase 158 now has a reproducible, privacy-safe validation ledger based only on a
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 3 - Tracking] Reconciled requirement status after the state handler could not recognize wrapped requirement text**
+- **Found during:** Plan closeout.
+- **Issue:** `requirements.mark-complete` returned all four RESET IDs as not found despite their presence in the requirements document.
+- **Fix:** Updated the four requirement checkboxes and traceability rows directly, matching the completed plan and freshly passing validation evidence.
+- **Files modified:** `.planning/REQUIREMENTS.md`
+
+**Total deviations:** 1 auto-fixed (Rule 3: 1).
+**Impact:** Tracking-only; no product, privacy, route, or support behavior changed.
 
 ## Known Stubs
 

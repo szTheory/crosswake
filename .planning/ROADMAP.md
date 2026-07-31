@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 9/10 plans executed
+**Plans:** 10/10 plans executed
 
 Plans:
 **Wave 1**
@@ -82,7 +82,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 158-10-PLAN.md — Reconcile Phase 158 validation from a freshly passing, privacy-safe gate chain.
+- [x] 158-10-PLAN.md — Reconcile Phase 158 validation from a freshly passing, privacy-safe gate chain.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
