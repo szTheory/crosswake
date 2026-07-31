@@ -181,9 +181,14 @@ defmodule Crosswake.CapabilityMap.Renderer do
         when canonical_value != legacy_value ->
           raise ArgumentError, "conflicting adoption_implication and v20_implication"
 
-        {{:present, value}, _} -> value
-        {:missing, {:present, value}} -> value
-        {:missing, :missing} -> nil
+        {{:present, value}, _} ->
+          value
+
+        {:missing, {:present, value}} ->
+          value
+
+        {:missing, :missing} ->
+          nil
       end
 
     row
