@@ -5,6 +5,7 @@
 - ✅ **v19.0 Showcase Apps & Capability Map** — Phases 147-152.1 (shipped 2026-07-12)
 - ⏹ **v20.0 Native Controls Pack 1** — Phases 153-157 (stopped/partial 2026-07-30; no
   shipped claim or tag)
+
 - 🚧 **v21.0 First B2C Adopter Readiness** — Phases 158-162 (active)
 
 Older shipped milestones remain indexed in `.planning/MILESTONES.md`.
@@ -27,12 +28,16 @@ separately funded business-line mandate.
 - [ ] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
+
 - [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
+
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
   redaction, backend reauthorization, auth continuity, and server-side disablement.
+
 - [ ] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
   host-supplied foreground iOS install path that verifies and atomically installs real bytes.
+
 - [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
   kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
   disablement on a physical iPhone.
@@ -48,9 +53,17 @@ separately funded business-line mandate.
 **Plans:** 4 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 158-01-PLAN.md — Trace one sanitized route through closed validation and blocked promotion.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 158-02-PLAN.md — Canonicalize adoption implications and regenerate capability truth.
 - [ ] 158-03-PLAN.md — Centralize privacy/context routing and lock stopped-v20 discoverability.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 158-04-PLAN.md — Reconcile public support truth and complete the Nyquist phase gate.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
@@ -61,6 +74,7 @@ truth, and codename-only Linear drafts.
 
 1. A new session can discover the infrastructure framing, Alpha/v1 split, stop list, and current
    phase without re-deriving them.
+
 2. Every known adopter surface has one runtime owner and one authority/fallback story.
 3. v20 is preserved as partial work without representing Phases 156-157 as shipped.
 4. Automated scans reject the prohibited real adopter name from planning, agent, and public-guide
@@ -159,6 +173,7 @@ test in the adopter route-policy map.
 - New companion packages.
 - Capture/device-control packs, commerce/paywall productionization, operator dashboard, and generic
   sync/native-storage productization.
+
 - New support-truth labels unless the existing taxonomy cannot state a physical-device fact
   honestly.
 
