@@ -19,4 +19,45 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute template =~ "LearnLoop"
     refute template =~ "EvidenceManifest"
   end
+
+  test "proof project declares concrete separate XCTest and XCUITest source membership" do
+    project =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"
+      )
+
+    for token <- [
+          "ProofLaneDriver.swift in Sources",
+          "ProofLaneContractTests.swift in Sources",
+          "ProofLaneUITests.swift in Sources",
+          "CrosswakeProofLaneTests",
+          "CrosswakeProofLaneUITests",
+          "TestTargetID"
+        ] do
+      assert project =~ token
+    end
+  end
+
+  test "native test templates use deterministic and accessibility-only boundaries" do
+    contract =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"
+      )
+
+    ui =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"
+      )
+
+    assert contract =~ "XCTestCase"
+    assert contract =~ ".blocked(.replayAuthorization)"
+    assert contract =~ ".unavailable(.packAudio)"
+    refute contract =~ "XCTSkip"
+    assert ui =~ "XCUIApplication"
+    assert ui =~ "terminate()"
+    assert ui =~ "launch()"
+    assert ui =~ "accessibilityIdentifier"
+    refute ui =~ "resetContentAndSettings"
+    refute ui =~ "XCTSkip"
+  end
 end
