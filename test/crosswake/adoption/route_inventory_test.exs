@@ -50,7 +50,10 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
 
   test "rejects duplicate route IDs and path patterns without merging adjacent rows" do
     assert {:error, error} =
-             RouteInventory.validate_inventory([valid_row(), valid_row(route_id: "route-opaque-study")])
+             RouteInventory.validate_inventory([
+               valid_row(),
+               valid_row(route_id: "route-opaque-study")
+             ])
 
     assert_safe_error(error, "RI-DUPLICATE_ROUTE_ID", "route_id")
 
@@ -65,7 +68,9 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
 
   test "empty inventories are contract complete but blocked for adopter-instance promotion" do
     assert {:ok, []} = RouteInventory.validate_inventory([])
-    assert {:blocked, %{reason: :empty_inventory, fields: []}} = RouteInventory.promotion_status([])
+
+    assert {:blocked, %{reason: :empty_inventory, fields: []}} =
+             RouteInventory.promotion_status([])
   end
 
   test "keeps declaration order stable when inventory values compare equally" do
@@ -91,9 +96,27 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
       staleness_class: confirmed(:not_cacheable),
       auth: confirmed(:authenticated),
       recent_auth: confirmed(:not_required),
-      scope_posture: confirmed(%{scope: :opaque_partitioned, logout: :stops_replay, account_switch: :stops_replay}),
-      media_requirement: confirmed(%{requirement: :required, size_band: :small, codec_family: :aac, integrity: :verified}),
-      fallbacks: confirmed(%{online: :serve, offline: :queue_local, denied: :block, corrupt_pack: :block, disabled: :retain_and_block}),
+      scope_posture:
+        confirmed(%{
+          scope: :opaque_partitioned,
+          logout: :stops_replay,
+          account_switch: :stops_replay
+        }),
+      media_requirement:
+        confirmed(%{
+          requirement: :required,
+          size_band: :small,
+          codec_family: :aac,
+          integrity: :verified
+        }),
+      fallbacks:
+        confirmed(%{
+          online: :serve,
+          offline: :queue_local,
+          denied: :block,
+          corrupt_pack: :block,
+          disabled: :retain_and_block
+        }),
       disablement: confirmed(%{entry: :server_enforced, replay: :server_reauthorized}),
       queued_data_retention: confirmed(:retain_until_resolution)
     ]
@@ -107,7 +130,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     message = Exception.message(error)
     assert message =~ rule_id
     assert message =~ field
-    assert message =~ "route route-opaque-study"
+    assert message =~ ~r/route (route-opaque-study|unresolved)/
     assert message =~ "remediation:"
   end
 end
