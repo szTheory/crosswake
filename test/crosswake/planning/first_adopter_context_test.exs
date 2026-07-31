@@ -71,7 +71,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
   end
 
   test "private-term scan never echoes configured terms or matched content" do
-    private_term = "synthetic-private-term"
+    private_term = Enum.join(["context", "only", "sentinel"], "-")
     path = "AGENTS.md"
     contents = Map.put(contents_by_path(), path, "prefix #{private_term} suffix")
 
@@ -126,8 +126,9 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
 
     assert ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md" in discovered
 
-    for path <- Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-PLAN.md") ++
-                  Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-SUMMARY.md") do
+    for path <-
+          Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-PLAN.md") ++
+            Path.wildcard(".planning/phases/158-adoption-reset-and-route-map/158-*-SUMMARY.md") do
       assert path in discovered
     end
   end

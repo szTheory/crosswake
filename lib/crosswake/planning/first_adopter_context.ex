@@ -86,6 +86,31 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     %{path: "raw fixtures and evidence", destination: :forbidden, scan?: false}
   ]
 
+  @artifact_globs [
+    %{glob: "AGENTS.md", destination: :durable},
+    %{glob: ".planning/ADR-FIRST-B2C-ADOPTER.md", destination: :durable},
+    %{glob: ".planning/DECISIONS.md", destination: :durable},
+    %{glob: ".planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md", destination: :durable},
+    %{glob: ".planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md", destination: :durable},
+    %{glob: ".planning/MILESTONES.md", destination: :durable},
+    %{glob: ".planning/PROJECT.md", destination: :durable},
+    %{glob: ".planning/REQUIREMENTS.md", destination: :durable},
+    %{glob: ".planning/ROADMAP.md", destination: :durable},
+    %{glob: ".planning/STATE.md", destination: :durable},
+    %{glob: ".planning/milestones/v20.0-REQUIREMENTS.md", destination: :durable},
+    %{glob: ".planning/milestones/v20.0-ROADMAP.md", destination: :durable},
+    %{glob: ".planning/phases/158-adoption-reset-and-route-map/158-*.md", destination: :durable},
+    %{
+      glob: ".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md",
+      destination: :fast_changing
+    },
+    %{glob: ".planning/FIRST-B2C-ADOPTER-LINEAR-ISSUE-DRAFTS.md", destination: :fast_changing},
+    %{glob: "lib/crosswake/capability_map.ex", destination: :public},
+    %{glob: "lib/crosswake/support_matrix/support_matrix.ex", destination: :public},
+    %{glob: "guides/capability_map.md", destination: :public},
+    %{glob: "guides/support_matrix.md", destination: :public}
+  ]
+
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]
   def routing_matrix, do: Enum.sort_by(@routing_matrix, & &1.path)
@@ -96,6 +121,29 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     routing_matrix()
     |> Enum.filter(& &1.scan?)
     |> Enum.map(& &1.path)
+  end
+
+  @doc "Returns destination-tagged globs for repository artifacts that must be scanned."
+  @spec artifact_globs() :: [map()]
+  def artifact_globs, do: Enum.sort_by(@artifact_globs, & &1.glob)
+
+  @doc "Discovers approved regular files below a repository root in deterministic path order."
+  @spec discover_paths(Path.t()) :: [String.t()]
+  def discover_paths(root) when is_binary(root) do
+    root
+    |> discovered_entries()
+    |> Enum.map(& &1.path)
+  end
+
+  @doc "Scans approved repository files without returning private terms or file contents."
+  @spec scan_filesystem(Path.t(), [String.t()]) :: [map()]
+  def scan_filesystem(root, terms) when is_binary(root) and is_list(terms) do
+    entries = discovered_entries(root)
+
+    entries
+    |> filesystem_routing_violations()
+    |> Kernel.++(filesystem_content_violations(entries, terms))
+    |> sort_violations()
   end
 
   @doc "Checks generic public/durable privacy boundaries without reading the filesystem."
@@ -188,12 +236,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp destination_violations(_destination, _path, _contents), do: []
 
-  # Planning commands may deliberately name the secret-input environment variable and
-  # a synthetic canary. They receive generic phrase scans, while the privileged term
-  # comparison remains limited to repository-facing context rather than self-matching
-  # the validation instruction.
-  defp private_term_scanned?(%{scan?: true, path: path}),
-    do: not String.ends_with?(path, "-PLAN.md")
+  defp private_term_scanned?(%{scan?: true}), do: true
 
   defp private_term_scanned?(_entry), do: false
 
@@ -203,4 +246,73 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   defp maybe_add(violations, false, _rule_id, _path), do: violations
 
   defp sort_violations(violations), do: Enum.sort_by(violations, &{&1.rule_id, &1.path})
+
+  defp discovered_entries(root) do
+    expanded_root = Path.expand(root)
+
+    artifact_globs()
+    |> Enum.flat_map(fn %{glob: glob, destination: destination} ->
+      expanded_root
+      |> Path.join(glob)
+      |> Path.wildcard()
+      |> Enum.filter(&File.regular?/1)
+      |> Enum.map(fn absolute_path ->
+        %{
+          path: Path.relative_to(absolute_path, expanded_root),
+          absolute_path: absolute_path,
+          destination: destination
+        }
+      end)
+    end)
+    |> Enum.sort_by(& &1.path)
+  end
+
+  defp filesystem_routing_violations(entries) do
+    duplicate_violations =
+      entries
+      |> Enum.group_by(& &1.path)
+      |> Enum.flat_map(fn {path, matches} ->
+        if length(matches) == 1, do: [], else: [%{rule_id: "routing.duplicate_path", path: path}]
+      end)
+
+    unclassified_violations =
+      entries
+      |> Enum.reject(&(&1.destination in @required_destinations))
+      |> Enum.map(&%{rule_id: "routing.unclassified_path", path: &1.path})
+
+    duplicate_violations ++ unclassified_violations
+  end
+
+  defp filesystem_content_violations(entries, terms) do
+    normalized_terms = normalize_private_terms(terms)
+
+    entries
+    |> Enum.uniq_by(& &1.path)
+    |> Enum.flat_map(fn %{path: path, absolute_path: absolute_path, destination: destination} ->
+      contents = File.read!(absolute_path)
+
+      generic_violations(path, contents) ++
+        destination_violations(destination, path, contents) ++
+        private_term_violations(path, contents, normalized_terms)
+    end)
+  end
+
+  defp normalize_private_terms(terms) do
+    terms
+    |> Enum.filter(&is_binary/1)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&String.downcase/1)
+    |> Enum.uniq()
+  end
+
+  defp private_term_violations(_path, _contents, []), do: []
+
+  defp private_term_violations(path, contents, terms) do
+    if Enum.any?(terms, &String.contains?(String.downcase(contents), &1)) do
+      [%{rule_id: "privacy.private_term", path: path}]
+    else
+      []
+    end
+  end
 end
