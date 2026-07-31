@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-02-PLAN.md
-last_updated: "2026-07-31T13:55:31.213Z"
+stopped_at: Completed 158-03-PLAN.md
+last_updated: "2026-07-31T14:01:22.619Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 current_plan: null
 ---
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-31 — Phase 158 execution started
 
@@ -71,6 +71,8 @@ Run `$gsd-execute-phase 158`. Execution follows the annotated three-wave plan in
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
 - [Phase ?]: Canonical capability rows use adoption_implication; v20_implication remains a renderer input alias for one documented compatibility window.
 - [Phase ?]: Conflicting canonical and legacy implication values fail closed without echoing supplied row content.
+- [Phase ?]: Private-term scans omit plan files that intentionally document the secret-input seam and synthetic canary.
+- [Phase ?]: Executor-state discoverability asserts the active execute command rather than the pre-execution discuss command.
 
 ## Deferred Items
 
@@ -99,8 +101,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T13:55:31.206Z
-**Stopped at:** Completed 158-02-PLAN.md
+**Last session:** 2026-07-31T14:01:22.612Z
+**Stopped at:** Completed 158-03-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -109,3 +111,4 @@ this milestone reset.
 |------|----------|-------|-------|
 | Phase 158-adoption-reset-and-route-map P01 | 6m | 2 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P02 | 10m | 2 tasks | 5 files |
+| Phase 158-adoption-reset-and-route-map P03 | 1m | 2 tasks | 2 files |

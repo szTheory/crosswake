@@ -117,7 +117,7 @@ work.
 | --- | --- | --- |
 | RESET-01 | Phase 158 | Complete |
 | RESET-02 | Phase 158 | Complete |
-| RESET-03 | Phase 158 | Pending |
+| RESET-03 | Phase 158 | Complete |
 | RESET-04 | Phase 158 | Complete |
 | PROOF-01 | Phase 159 | Pending |
 | PROOF-02 | Phase 159 | Pending |
