@@ -24,20 +24,63 @@ pricing, geography, founder details, proprietary lesson taxonomies, or revealing
 | Microphone capture or pronunciation scoring | Deferred | Not claimed | Revisit only after playback and study replay pass on a physical iPhone |
 | Emergency native-path disablement | Route policy plus host flag source | Evaluated at entry and replay | Existing `gated_by`; retain queued data and show blocked state |
 
-## Inventory fields
+## Layered inventory contract
 
-The adopter supplies one row per concrete route with:
+The default table above is a compact discovery aid. It is not permission for a product-surface
+default to supply route-local safety posture. A concrete route enters host proof only after one
+sanitized row validates through `Crosswake.Adoption.RouteInventory`.
 
-- route ID and path;
-- current product owner;
-- proposed runtime owner;
-- mutation actions and payload shape;
-- cache staleness tolerance;
-- authentication and recent-auth requirements;
-- account-switch and logout behavior;
-- required media packs, expected compressed size, and codec;
-- online, offline, denied, and corrupt-pack fallback;
-- whether the route can be disabled server-side without shipping a binary.
+### Closed row status vocabulary
+
+Every route-local posture uses exactly one of these statuses:
+
+| Status | Meaning | Promotion effect |
+| --- | --- | --- |
+| `confirmed_sanitized` | A supplied value is represented by a closed, non-identifying vocabulary. | Eligible when every required field is explicit. |
+| `known_default` | A non-sensitive discovery default is recorded explicitly on the row. | Eligible only when it is not standing in for a safety field. |
+| `unknown_blocking` | The adopter has not supplied the required value. | Blocks host-proof and physical-device promotion. |
+| `not_applicable` | The closed contract proves the field does not apply to this route. | Does not create an optimistic fallback. |
+
+Blank, nil, omitted, or inferred values are not confirmation. The validator rejects them with a
+field-specific safe error. `unknown_blocking` is the only honest representation of missing
+adopter-supplied safety posture.
+
+### Concrete-route allowlist
+
+Each sanitized row contains only an opaque route ID, a sanitized Phoenix path pattern, and these
+explicit route-local fields:
+
+- runtime owner and offline posture;
+- low-cardinality mutation categories and staleness class;
+- auth level and recent-auth requirement;
+- opaque scope, logout, and account-switch posture;
+- media requirement, closed size band, codec family, and integrity posture;
+- online, offline, denied, corrupt-pack, and disabled fallback classes;
+- entry and replay disablement posture; and
+- queued-data retention posture.
+
+Auth, recent-auth, scope, mutation, media, every fallback, disablement, and queued-data retention
+are route-local. They never inherit silently from a product-surface default.
+
+The durable row excludes raw answers, media, transcripts, credentials, account or device
+identifiers, tokens, proprietary taxonomy, exact byte counts, digests, archive names, URLs,
+endpoints, and host flag names. Those host-private values belong in host configuration or secret
+storage when integration begins, never in this inventory.
+
+### Concrete-route inventory state
+
+No sanitized adopter-supplied concrete route rows are available in this repository. The contract is
+policy-contract complete, while adopter-instance completeness is blocked. TODO-002 remains open
+until sanitized rows arrive; no guessed row, route path, mutation, media value, fallback, or
+authority fact may be added here.
+
+`Crosswake.Adoption.RouteInventory.validate/1`, `validate!/1`, and `validate_inventory/1` reject
+unknown or forbidden fields and route-ID/path collisions. `promotion_status/1` blocks any row with
+`unknown_blocking`, and it also blocks an empty inventory. This D-03 boundary prevents host-proof
+or physical-device promotion until all required rows validate.
+
+If customer Alpha is web-only, complete this bounded contract and pause Crosswake work until the
+public-v1 mobile path is active.
 
 ## Study-island invariants
 
@@ -90,4 +133,3 @@ The route map takes one focused day once the adopter provides the inventory fiel
 
 If the customer Alpha is web-only, stop Crosswake work after this inventory until the public v1
 path becomes active.
-
