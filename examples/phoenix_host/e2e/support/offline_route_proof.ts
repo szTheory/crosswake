@@ -42,17 +42,25 @@ export async function runOfflineIslandProof(
   context: BrowserContext,
   adapter: OfflineIslandProofAdapter,
   config: OfflineIslandProofConfig,
-) {
+): Promise<string> {
   await adapter.navigate();
   await context.setOffline(true);
-  await adapter.performMutation();
-  const record = await adapter.readQueuedRecord();
-  const mutationId = extractMutationId(record, config.mutationIdPath);
-  await context.setOffline(false);
+  let record: unknown;
+  let mutationId: string;
+
+  try {
+    await adapter.performMutation();
+    record = await adapter.readQueuedRecord();
+    mutationId = extractMutationId(record, config.mutationIdPath);
+  } finally {
+    await context.setOffline(false);
+  }
+
   await adapter.reconnect();
-  await adapter.assertBackendConfirmation(mutationId);
+  await adapter.assertBackendConfirmation(mutationId!);
   await adapter.assertOutboxEmpty();
-  await adapter.assertDuplicateIdempotency(mutationId, record);
+  await adapter.assertDuplicateIdempotency(mutationId!, record!);
+  return mutationId!;
 }
 
 export function extractMutationId(record: unknown, fieldPath: string): string {
@@ -198,7 +206,7 @@ export async function proveLearnLoopRoute(
     "Server reset does not clear this device's offline state",
   );
 
-  await runOfflineIslandProof(page, context, {
+  const capturedId = await runOfflineIslandProof(page, context, {
     navigate: async () => undefined,
     performMutation: async () => {
       await page.click('#btn-flip');

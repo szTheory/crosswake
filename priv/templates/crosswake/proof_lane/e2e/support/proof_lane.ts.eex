@@ -28,17 +28,25 @@ export function extractMutationId(record: unknown, fieldPath: string): string {
   return value as string;
 }
 
-export async function runOfflineIslandProof(page: Page, context: BrowserContext, adapter: ProofLaneAdapter, config: ProofLaneConfig) {
+export async function runOfflineIslandProof(page: Page, context: BrowserContext, adapter: ProofLaneAdapter, config: ProofLaneConfig): Promise<string> {
   await adapter.navigate(page, config);
   await context.setOffline(true);
-  await adapter.performMutation(page);
-  const record = await adapter.readQueuedRecord(page, config);
-  const mutationId = extractMutationId(record, config.mutationIdPath);
-  await context.setOffline(false);
+  let record: unknown;
+  let mutationId: string;
+
+  try {
+    await adapter.performMutation(page);
+    record = await adapter.readQueuedRecord(page, config);
+    mutationId = extractMutationId(record, config.mutationIdPath);
+  } finally {
+    await context.setOffline(false);
+  }
+
   await adapter.reconnect(page, config);
-  await adapter.assertBackendConfirmation(mutationId, config);
+  await adapter.assertBackendConfirmation(mutationId!, config);
   await adapter.assertOutboxEmpty(page, config);
-  await adapter.assertDuplicateIdempotency(mutationId, record, config);
+  await adapter.assertDuplicateIdempotency(mutationId!, record!, config);
+  return mutationId!;
 }
 
 export const proofLaneConfig: ProofLaneConfig = {
