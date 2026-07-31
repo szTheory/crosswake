@@ -1,8 +1,8 @@
 ---
 phase: 158-adoption-reset-and-route-map
-reviewed: 2026-07-31T16:41:00Z
+reviewed: 2026-07-31T17:25:34Z
 depth: standard
-files_reviewed: 15
+files_reviewed: 16
 files_reviewed_list:
   - .github/workflows/hex-page-proof.yml
   - guides/capability_map.md
@@ -12,6 +12,7 @@ files_reviewed_list:
   - lib/crosswake/capability_map/renderer.ex
   - lib/crosswake/planning/first_adopter_context.ex
   - lib/crosswake/support_matrix/renderer.ex
+  - lib/crosswake/support_matrix/support_matrix.ex
   - lib/mix/tasks/crosswake.adoption_context.scan.ex
   - test/crosswake/adoption/route_inventory_test.exs
   - test/crosswake/capability_map/capability_map_test.exs
@@ -29,44 +30,29 @@ status: issues_found
 
 # Phase 158: Code Review Report
 
-**Reviewed:** 2026-07-31T16:41:00Z
+**Reviewed:** 2026-07-31T17:25:34Z
 **Depth:** standard
-**Files Reviewed:** 15
+**Files Reviewed:** 16
 **Status:** issues_found
 
 ## Summary
 
-The selected tests pass, but the protected privacy scan covers only an allowlist of a few files. New repository-facing source, guide, workflow, or later-phase artifact paths fall outside that allowlist and can carry a configured private adopter term without being inspected.
+The route-inventory, canonical map/rendering contracts, and focused test suite were reviewed. The privacy gate is not repository-wide as claimed: its classifier silently excludes executable CI/action/script files and all phase artifacts outside a fixed 158–162 range. A private term in those tracked, non-ignored files passes the protected scan and can ship.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Privacy gate silently skips unregistered repository artifacts
+### CR-01: Private-term scanner has permanent unscanned repository paths
 
-**File:** `/Users/jon/projects/crosswake/lib/crosswake/planning/first_adopter_context.ex:29-51`
+**File:** `lib/crosswake/planning/first_adopter_context.ex:265-273,284-288,320-340,401-412`
 
-**Classification:** BLOCKER
+**Issue:** `classify_repository_path/1` returns `{:excluded, :forbidden}` for every `.github/actions/` and `script/` file, and for all `.planning/` content after the narrowly hard-coded phase regex. Excluded entries have `scan?: false`, so `filesystem_content_violations/2` drops them before generic or private-term checks. Consequently a tracked, non-ignored `.github/actions/*.yml`, `script/*.sh`, or `.planning/phases/163-.../*.md` file containing a protected adopter term returns no `privacy.private_term` violation. This contradicts the claimed Git-backed, repository-facing protected scan and creates a direct privacy-leak bypass; the fixed regex also means the protection expires for every future phase.
 
-**Issue:** `scan_filesystem/2` discovers files only through this fixed, narrow `@artifact_globs` list. It does not scan new guides, workflows, most library modules, test files, or any phase other than 158. For example, a future `.planning/phases/159-*/` artifact or a new guide can contain a value from `CROSSWAKE_PRIVATE_ADOPTER_TERMS` and the CI task reports success because `discovered_entries/1` never returns that path. This violates the fail-closed privacy boundary: sensitive adopter data can be committed to a repository-facing artifact while the "protected" scan passes.
-
-**Fix:** Make repository-facing artifacts exhaustive by deriving the scan set from tracked, non-ignored files and classifying every path, or expand the registered glob policy to cover every permitted source/documentation/phase directory and fail when a tracked file has no destination. Add a regression test that places a configured private term in an unregistered future-phase or guide file and asserts `privacy.private_term`.
-
-```elixir
-# Require every repository-facing path to be classified before its contents are read.
-unclassified =
-  tracked_repository_paths(root)
-  |> Enum.reject(&classified_by_artifact_glob?/1)
-
-if unclassified != [] do
-  Enum.map(unclassified, &%{rule_id: "routing.unclassified_path", path: &1})
-else
-  filesystem_content_violations(discovered_entries(root), terms)
-end
-```
+**Fix:** Classify all tracked, non-ignored textual repository artifacts as scan candidates by default, retaining exclusions only for explicitly approved raw/binary evidence. In particular, remove `.github/actions/` and `script/` from `explicit_exclusion_path?/1`, and replace the finite phase allowlist with a future-safe active-phase rule (or scan all non-archival `.planning/phases/**/*.md`). Add production-seam regressions that place a canary in each formerly excluded path and assert `scan_filesystem/2` and the Mix task emit only `privacy.private_term <relative-path>`.
 
 ---
 
-_Reviewed: 2026-07-31T16:41:00Z_
+_Reviewed: 2026-07-31T17:25:34Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
