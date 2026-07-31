@@ -45,6 +45,13 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
+**Plans:** 4 plans
+
+Plans:
+- [ ] 158-01-PLAN.md — Trace one sanitized route through closed validation and blocked promotion.
+- [ ] 158-02-PLAN.md — Canonicalize adoption implications and regenerate capability truth.
+- [ ] 158-03-PLAN.md — Centralize privacy/context routing and lock stopped-v20 discoverability.
+- [ ] 158-04-PLAN.md — Reconcile public support truth and complete the Nyquist phase gate.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
