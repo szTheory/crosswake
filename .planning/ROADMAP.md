@@ -147,6 +147,14 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
+**Plans:** 4 plans
+
+Plans:
+
+- [ ] 159-01-PLAN.md — Trace one Phoenix config through host-owned browser, ExUnit, iOS, and safe-evidence scaffolding.
+- [ ] 159-02-PLAN.md — Complete closed config plus collision-safe generate/check/diff lifecycle behavior.
+- [ ] 159-03-PLAN.md — Preserve the primary browser corpus and compile explicit XCTest/XCUITest boundaries.
+- [ ] 159-04-PLAN.md — Enforce typed allowlist evidence, final staged scanning, and atomic promotion.
 
 **Smallest shippable version:** `mix crosswake.gen.proof_lane ios` copies a host-owned scaffold
 configured by explicit route, storage, mutation, endpoint, router, and shell-root values. It reuses
