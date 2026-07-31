@@ -51,6 +51,47 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     refute Exception.message(error) =~ "synthetic_default"
   end
 
+  test "rejects incoherent local-mutation posture by invariant axis" do
+    cases = [
+      runtime_owner: confirmed(:live_view),
+      mutation_categories: confirmed([:none]),
+      scope_posture: %{status: :not_applicable},
+      fallbacks: %{status: :not_applicable},
+      disablement: %{status: :not_applicable},
+      queued_data_retention: %{status: :not_applicable}
+    ]
+
+    for {field, posture} <- cases do
+      assert {:error, error} = RouteInventory.validate(Keyword.put(valid_row(), field, posture))
+      assert_safe_error(error, "RI-ROUTE_INVARIANT", Atom.to_string(field))
+    end
+  end
+
+  test "rejects contradictory recent-auth authority in either direction" do
+    assert {:error, error} =
+             RouteInventory.validate(
+               valid_row(auth: confirmed(:recent_auth), recent_auth: confirmed(:not_required))
+             )
+
+    assert_safe_error(error, "RI-ROUTE_INVARIANT", "recent_auth")
+
+    assert {:error, error} =
+             RouteInventory.validate(
+               valid_row(auth: confirmed(:authenticated), recent_auth: confirmed(:required))
+             )
+
+    assert_safe_error(error, "RI-ROUTE_INVARIANT", "auth")
+  end
+
+  test "promotes a coherent recent-auth local-mutation row" do
+    assert {:ok, row} =
+             RouteInventory.validate(
+               valid_row(auth: confirmed(:recent_auth), recent_auth: confirmed(:required))
+             )
+
+    assert {:eligible, ^row} = RouteInventory.promotion_status(row)
+  end
+
   test "rejects missing, blank, nil, unknown, and forbidden fields without echoing rejected input" do
     assert {:error, error} = RouteInventory.validate(Keyword.delete(valid_row(), :auth))
     assert_safe_error(error, "RI-REQUIRED", "auth")
