@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: ready_to_execute
-stopped_at: Phase 158 gap-closure planning complete; Plans 15-16 are ready to execute
-last_updated: "2026-07-31T17:05:33Z"
+status: executing
+stopped_at: Completed 158-15-PLAN.md
+last_updated: "2026-07-31T17:16:17.590Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 gap-closure planning complete — 16 plans total, 2 ready
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
   percent: 0
 current_plan: null
 ---
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — READY TO EXECUTE
-Plan: 14 of 16 executed
-Status: Plans 158-15 and 158-16 are ready to close the 57/58 privacy-routing gap
-Last activity: 2026-07-31 — Gap-closure plans created and verified
+Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Plan: 2 of 16
+Status: Ready to execute
+Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
 
@@ -91,6 +91,8 @@ validation and verification evidence.
 - [Phase ?]: Sensitive identity vocabulary requires a key-plus-assignment shape so safe review terminology remains scannable.
 - [Phase ?]: Final formatter ledger enumerates all seven Elixir sources and tests changed by Plans 158-11 through 158-13, including lib/crosswake/capability_map.ex.
 - [Phase ?]: Phase 158 final gate closes only on fresh observed evidence; TODO-002 remains unknown_blocking.
+- [Phase ?]: Repository privacy candidates are enumerated from cached and non-ignored Git paths; artifact globs are compatibility metadata, not the scanner boundary.
+- [Phase ?]: Unsafe, unreadable, unclassified, and enumeration-failure paths fail closed with rule/path-only diagnostics.
 
 ## Deferred Items
 
@@ -119,8 +121,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T16:38:04.671Z
-**Stopped at:** Completed 158-14-PLAN.md
+**Last session:** 2026-07-31T17:16:17.584Z
+**Stopped at:** Completed 158-15-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -141,3 +143,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P12 | 5min | 2 tasks | 4 files |
 | Phase 158-adoption-reset-and-route-map P13 | 3m | 1 tasks | 1 files |
 | Phase 158-adoption-reset-and-route-map P14 | 5m | 1 tasks | 3 files |
+| Phase 158 P15 | 18m | 2 tasks | 5 files |

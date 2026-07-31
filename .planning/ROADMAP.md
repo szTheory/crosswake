@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 14/16 plans executed
+**Plans:** 15/16 plans executed
 **Verification:** Gaps found (57/58 must-haves); repository-facing private-term enforcement must
 fail closed for unregistered guides, workflows, source/tests, and later-phase artifacts
 
@@ -101,7 +101,7 @@ Plans:
 
 **Wave 11** *(gap closure; blocked on Wave 10 completion)*
 
-- [ ] 158-15-PLAN.md — Replace the fixed privacy allowlist with fail-closed repository candidate classification and unregistered-artifact regressions.
+- [x] 158-15-PLAN.md — Replace the fixed privacy allowlist with fail-closed repository candidate classification and unregistered-artifact regressions.
 
 **Wave 12** *(blocked on Wave 11 completion)*
 
