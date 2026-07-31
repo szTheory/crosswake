@@ -1,5 +1,7 @@
 defmodule Crosswake.ProofLane.TemplateContractTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+
+  alias Crosswake.ProofLane.{Config, Generator}
 
   @root Path.expand("../../..", __DIR__)
 
@@ -59,5 +61,41 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert ui =~ "matching(identifier:"
     refute ui =~ "resetContentAndSettings"
     refute ui =~ "XCTSkip"
+  end
+
+  test "generator reruns preserve edited browser and native proof sources" do
+    root =
+      Path.join(System.tmp_dir!(), "proof-lane-contract-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(root)
+
+    config = %Config{
+      route_id: "route-0123456789abcdef",
+      route_path: "/study/:id",
+      indexed_db_database: "proof_lane",
+      indexed_db_store: "mutations",
+      mutation_id_path: "client_mutation_id",
+      sync_path: "/study/sync",
+      evidence_path: "/_proof/evidence",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: Path.join(root, "native/ios")
+    }
+
+    try do
+      assert {:ok, _} = Generator.generate(config)
+
+      for relative <- [
+            "e2e/crosswake_proof_lane/support/proof_lane.ts",
+            "native/ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift",
+            "native/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift"
+          ] do
+        path = Path.join(root, relative)
+        File.write!(path, "// host-owned proof edit\n")
+        assert {:ok, _} = Generator.generate(config)
+        assert File.read!(path) == "// host-owned proof edit\n"
+      end
+    after
+      File.rm_rf!(root)
+    end
   end
 end
