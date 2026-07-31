@@ -119,17 +119,20 @@ defmodule Crosswake.ProofLane.Evidence do
   def scan_stage(_), do: error("PL-EVIDENCE-PATH", "artifact", "use a safe evidence directory")
 
   @spec promote(map() | t(), Path.t()) :: :ok | {:error, Error.t()}
-  def promote(candidate, destination) when is_binary(destination) do
+  def promote(candidate, destination), do: promote(candidate, destination, [])
+
+  @spec promote(map() | t(), Path.t(), keyword()) :: :ok | {:error, Error.t()}
+  def promote(candidate, destination, opts) when is_binary(destination) and is_list(opts) do
     with {:ok, evidence} <- normalize(candidate),
-         :ok <- safe_destination(destination),
-         :ok <- absent(destination) do
+         :ok <- safe_destination(destination) do
       stage = destination <> ".stage-" <> Integer.to_string(System.unique_integer([:positive]))
 
       try do
         with :ok <- File.mkdir(stage),
              :ok <- write_evidence(stage, evidence),
              :ok <- scan_stage(stage),
-             :ok <- promote_stage(stage, destination) do
+             :ok <- run_hook(Keyword.get(opts, :before_promote)),
+             :ok <- Crosswake.ProofLane.NativePromotion.rename_noreplace(stage, destination) do
           :ok
         else
           {:error, %Error{} = error} ->
@@ -145,7 +148,7 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
-  def promote(_, _), do: error("PL-EVIDENCE-PATH", "artifact", "use a safe evidence directory")
+  def promote(_, _, _), do: error("PL-EVIDENCE-PATH", "artifact", "use a safe evidence directory")
 
   defp normalize(%__MODULE__{} = evidence), do: {:ok, evidence}
   defp normalize(input), do: build(input)
@@ -480,25 +483,14 @@ defmodule Crosswake.ProofLane.Evidence do
         else: error("PL-EVIDENCE-PATH", "artifact", "use an absolute safe destination")
       )
 
-  defp absent(path),
-    do:
-      if(File.exists?(path),
-        do: error("PL-EVIDENCE-COLLISION", "artifact", "choose an unused evidence destination"),
-        else: :ok
-      )
-
   defp write_evidence(stage, evidence),
     do: File.write(Path.join(stage, @artifact_name), Jason.encode!(to_map(evidence)), [:binary])
 
-  defp promote_stage(stage, destination) do
-    case File.rename(stage, destination) do
-      :ok ->
-        :ok
+  defp run_hook(nil), do: :ok
+  defp run_hook(fun) when is_function(fun, 0), do: fun.()
 
-      {:error, _} ->
-        error("PL-EVIDENCE-COLLISION", "artifact", "choose an unused evidence destination")
-    end
-  end
+  defp run_hook(_),
+    do: error("PL-EVIDENCE-PROMOTE", "artifact", "inspect the safe evidence inputs")
 
   defp error(rule_id, path, remediation),
     do: {:error, %Error{rule_id: rule_id, path: path, remediation: remediation}}

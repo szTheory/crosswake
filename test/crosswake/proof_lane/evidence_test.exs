@@ -230,10 +230,14 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       stage = destination <> ".stage-test"
       File.mkdir_p!(stage)
 
-      assert {:error, unsupported} = NativePromotion.rename_noreplace(stage, destination, os_type: {:win32, :nt})
+      assert {:error, unsupported} =
+               NativePromotion.rename_noreplace(stage, destination, os_type: {:win32, :nt})
+
       assert unsupported.rule_id == "PL-EVIDENCE-PROMOTION-UNAVAILABLE"
 
-      assert {:error, compiler} = NativePromotion.rename_noreplace(stage, destination, compiler: "missing-compiler")
+      assert {:error, compiler} =
+               NativePromotion.rename_noreplace(stage, destination, compiler: "missing-compiler")
+
       assert compiler.rule_id == "PL-EVIDENCE-PROMOTION-UNAVAILABLE"
     end)
   end
