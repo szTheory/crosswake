@@ -1,0 +1,8 @@
+# crosswake-proof-lane template_version=<%= @template_version %>
+defmodule CrosswakeProofLaneContractTest do
+  use ExUnit.Case, async: true
+
+  test "declares a host-owned proof lane" do
+    assert "<%= @config.route_id %>" =~ "route-"
+  end
+end

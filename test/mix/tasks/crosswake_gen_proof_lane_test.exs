@@ -6,7 +6,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   @task "crosswake.gen.proof_lane"
 
   test "generates an isolated iOS proof lane, retains opaque evidence, and never clobbers host edits" do
-    root = Path.join(System.tmp_dir!(), "crosswake_proof_lane_#{System.unique_integer([:positive])}")
+    root =
+      Path.join(System.tmp_dir!(), "crosswake_proof_lane_#{System.unique_integer([:positive])}")
+
     ios_root = Path.join(root, "native/ios")
     evidence_path = Path.join(root, "retained-evidence")
 
@@ -35,16 +37,16 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
         Path.join(root, ".crosswake/proof_lane.json")
       ]
 
-      Enum.each(expected, &assert File.regular?(&1))
+      Enum.each(expected, &assert(File.regular?(&1)))
 
       test_source = File.read!(Enum.at(expected, 0))
       assert {:ok, _} = Code.string_to_quoted(test_source)
       assert File.read!(Enum.at(expected, 1)) =~ "runOfflineIslandProof"
 
       driver = File.read!(Enum.at(expected, 2))
-      assert driver =~ "case passed"
-      assert driver =~ "case blocked"
-      assert driver =~ "case unavailable"
+      assert driver =~ "case passed, blocked, unavailable"
+      assert driver =~ "return .blocked"
+      assert driver =~ "return .unavailable"
 
       assert File.read!(Enum.at(expected, 3)) =~ "CrosswakeProofLaneUITests"
       assert {:ok, manifest} = Jason.decode(File.read!(Enum.at(expected, 4)))
@@ -69,7 +71,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
       assert output =~ "reused"
     after
-      if previous, do: Application.put_env(:crosswake, :proof_lane, previous), else: Application.delete_env(:crosswake, :proof_lane)
+      if previous,
+        do: Application.put_env(:crosswake, :proof_lane, previous),
+        else: Application.delete_env(:crosswake, :proof_lane)
+
       File.rm_rf!(root)
     end
   end

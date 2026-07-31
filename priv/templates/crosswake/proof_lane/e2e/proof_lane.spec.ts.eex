@@ -1,0 +1,8 @@
+// crosswake-proof-lane template_version=<%= @template_version %>
+export type ProofLaneConfig = { routePath: string; syncPath: string };
+
+export async function runOfflineIslandProof(config: ProofLaneConfig, adapter: { run(config: ProofLaneConfig): Promise<void> }) {
+  await adapter.run(config);
+}
+
+export const proofLaneConfig: ProofLaneConfig = { routePath: "<%= @config.route_path %>", syncPath: "<%= @config.sync_path %>" };
