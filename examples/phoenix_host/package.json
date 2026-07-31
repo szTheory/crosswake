@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "E2E tests for Crosswake Phoenix Host",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "typecheck:offline-route-proof": "tsc --project tsconfig.offline_route_proof.json"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
