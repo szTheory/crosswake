@@ -16,67 +16,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     :forbidden
   ]
 
-  @routing_matrix [
-    %{path: ".planning/ADR-FIRST-B2C-ADOPTER.md", destination: :durable, scan?: true},
-    %{path: ".planning/DECISIONS.md", destination: :durable, scan?: true},
-    %{path: ".planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md", destination: :durable, scan?: true},
-    %{
-      path: ".planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{path: ".planning/PROJECT.md", destination: :durable, scan?: true},
-    %{path: ".planning/REQUIREMENTS.md", destination: :durable, scan?: true},
-    %{path: ".planning/ROADMAP.md", destination: :durable, scan?: true},
-    %{path: ".planning/STATE.md", destination: :durable, scan?: true},
-    %{path: ".planning/MILESTONES.md", destination: :durable, scan?: true},
-    %{path: ".planning/milestones/v20.0-ROADMAP.md", destination: :durable, scan?: true},
-    %{path: ".planning/milestones/v20.0-REQUIREMENTS.md", destination: :durable, scan?: true},
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-CONTEXT.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-01-PLAN.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-01-SUMMARY.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-02-PLAN.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-02-SUMMARY.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/phases/158-adoption-reset-and-route-map/158-03-PLAN.md",
-      destination: :durable,
-      scan?: true
-    },
-    %{
-      path: ".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md",
-      destination: :fast_changing,
-      scan?: true
-    },
-    %{
-      path: ".planning/FIRST-B2C-ADOPTER-LINEAR-ISSUE-DRAFTS.md",
-      destination: :fast_changing,
-      scan?: true
-    },
-    %{path: "AGENTS.md", destination: :durable, scan?: true},
-    %{path: "lib/crosswake/capability_map.ex", destination: :public, scan?: true},
-    %{path: "guides/capability_map.md", destination: :public, scan?: true},
-    %{path: "lib/crosswake/support_matrix/support_matrix.ex", destination: :public, scan?: true},
-    %{path: "guides/support_matrix.md", destination: :public, scan?: true},
+  @non_file_routes [
     %{path: "host-supplied route rows", destination: :host_private, scan?: false},
     %{path: "CROSSWAKE_PRIVATE_ADOPTER_TERMS", destination: :secret_only, scan?: false},
     %{path: "git history", destination: :forbidden, scan?: false},
@@ -113,7 +53,14 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]
-  def routing_matrix, do: Enum.sort_by(@routing_matrix, & &1.path)
+  def routing_matrix do
+    File.cwd!()
+    |> discovered_entries()
+    |> Enum.map(&Map.take(&1, [:path, :destination]))
+    |> Enum.map(&Map.put(&1, :scan?, true))
+    |> Kernel.++(@non_file_routes)
+    |> Enum.sort_by(& &1.path)
+  end
 
   @doc "Returns repository paths that are eligible for the generic public scan."
   @spec active_paths() :: [String.t()]

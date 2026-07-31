@@ -23,16 +23,25 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
-  test "raises stable private rule and path without echoing secret-backed content" do
+  test "raises stable private rule and path for future planning artifacts without echoing secret-backed content" do
     with_temporary_root(fn root ->
       term = Enum.join(["task", "private", "canary"], "-")
-      path = ".planning/phases/158-adoption-reset-and-route-map/158-90-PLAN.md"
-      write_file(root, path, "prefix #{term} suffix")
+
+      paths = [
+        ".planning/phases/158-adoption-reset-and-route-map/158-90-PLAN.md",
+        ".planning/phases/158-adoption-reset-and-route-map/158-90-SUMMARY.md",
+        ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+      ]
+
+      Enum.each(paths, &write_file(root, &1, "prefix #{term} suffix"))
 
       with_private_terms(term, fn ->
         error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
-        assert error.message =~ "privacy.private_term #{path}"
+        for path <- paths do
+          assert error.message =~ "privacy.private_term #{path}"
+        end
+
         refute error.message =~ term
         refute error.message =~ "prefix"
       end)

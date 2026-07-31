@@ -49,6 +49,15 @@ jobs:
       - name: Compile (warnings as errors)
         run: mix compile --warnings-as-errors
 
+      - name: Enforce first-adopter privacy gate
+        run: mix crosswake.adoption_context.scan
+
+      - name: Enforce protected first-adopter private-term gate
+        if: github.event_name != 'pull_request'
+        env:
+          CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}
+        run: mix crosswake.adoption_context.scan --require-private-terms
+
       - name: Run library test suite (hermetic)
         # Runs the full suite EXCEPT tests tagged :requires_example_host — those
         # need the checked-in example Phoenix app compiled and are already run on
