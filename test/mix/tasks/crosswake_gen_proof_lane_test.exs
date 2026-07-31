@@ -123,4 +123,19 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       assert :ok = Generator.check(config)
     end)
   end
+
+  test "direct unsafe configs fail closed before check or diff can inspect destinations" do
+    with_root(fn root, config ->
+      unsafe_config = %{config | ios_shell_root: Path.join(root, "not-the-native-ios-root")}
+      before = snapshot(root)
+
+      for action <- [&Generator.check/1, &Generator.diff/1] do
+        assert_raise Config.Error,
+                     "PL-CONFIG-VALUE: ios_shell_root; use the documented local proof-lane shape",
+                     fn -> action.(unsafe_config) end
+      end
+
+      assert before == snapshot(root)
+    end)
+  end
 end
