@@ -88,6 +88,7 @@ defmodule Crosswake.Adoption.RouteInventory do
   @spec validate(keyword() | map()) :: {:ok, t()} | {:error, ValidationError.t()}
   def validate(input) do
     with {:ok, options} <- normalize_input(input),
+         :ok <- reject_duplicate_fields(options),
          :ok <- reject_forbidden_fields(options),
          :ok <- reject_unknown_fields(options),
          :ok <- require_fields(options),
@@ -152,6 +153,13 @@ defmodule Crosswake.Adoption.RouteInventory do
   end
 
   defp normalize_input(_input), do: {:error, error("RI-INVALID", "unresolved", "route_row")}
+
+  defp reject_duplicate_fields(options) do
+    case Enum.find(Keyword.keys(options), &(length(Keyword.get_values(options, &1)) > 1)) do
+      nil -> :ok
+      field -> {:error, error("RI-DUPLICATE_FIELD", route_ref(options), field)}
+    end
+  end
 
   defp reject_forbidden_fields(options) do
     case Enum.find(Keyword.keys(options), &(&1 in @forbidden_fields)) do

@@ -112,6 +112,35 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     refute Exception.message(error) =~ secret
   end
 
+  test "rejects duplicate route fields with the stable validation error contract" do
+    duplicate_required = valid_row() ++ [auth: confirmed(:authenticated)]
+
+    assert {:error, %RouteInventory.ValidationError{} = error} =
+             RouteInventory.validate(duplicate_required)
+
+    assert_safe_error(error, "RI-DUPLICATE_FIELD", "auth")
+
+    duplicate_forbidden =
+      valid_row() ++ [raw_answer: "private-secret-one", raw_answer: "private-secret-two"]
+
+    assert {:error, %RouteInventory.ValidationError{} = error} =
+             RouteInventory.validate(duplicate_forbidden)
+
+    assert_safe_error(error, "RI-DUPLICATE_FIELD", "raw_answer")
+    refute Exception.message(error) =~ "private-secret-one"
+    refute Exception.message(error) =~ "private-secret-two"
+
+    duplicate_unknown =
+      valid_row() ++ [unrecognized: "private-secret-one", unrecognized: "private-secret-two"]
+
+    assert {:error, %RouteInventory.ValidationError{} = error} =
+             RouteInventory.validate(duplicate_unknown)
+
+    assert_safe_error(error, "RI-DUPLICATE_FIELD", "unrecognized")
+    refute Exception.message(error) =~ "private-secret-one"
+    refute Exception.message(error) =~ "private-secret-two"
+  end
+
   test "rejects arbitrary non-atom map keys before keyword validation without echoing input" do
     cases = [
       {Enum.join(["untrusted", "string", "key"], "-"),
