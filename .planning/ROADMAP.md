@@ -150,11 +150,21 @@ truth, and codename-only Linear drafts.
 **Plans:** 4 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 159-01-PLAN.md — Trace one Phoenix config through host-owned browser, ExUnit, iOS, and safe-evidence scaffolding.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 159-02-PLAN.md — Complete closed config plus collision-safe generate/check/diff lifecycle behavior.
 - [ ] 159-03-PLAN.md — Preserve the primary browser corpus and compile explicit XCTest/XCUITest boundaries.
 - [ ] 159-04-PLAN.md — Enforce typed allowlist evidence, final staged scanning, and atomic promotion.
+
+**Cross-cutting constraints:**
+
+- Generation and evidence promotion use collision-safe staged writes; interruption or a concurrent writer cannot overwrite host files or expose a partial retained artifact.
+- Running generation twice with the same normalized configuration creates only missing scaffold and preserves every existing host-owned byte.
+- Concurrent or interrupted generation fails closed on destination collisions and leaves existing host-owned files unchanged.
 
 **Smallest shippable version:** `mix crosswake.gen.proof_lane ios` copies a host-owned scaffold
 configured by explicit route, storage, mutation, endpoint, router, and shell-root values. It reuses
