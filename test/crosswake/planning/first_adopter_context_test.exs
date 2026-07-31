@@ -1,75 +1,93 @@
 defmodule Crosswake.Planning.FirstAdopterContextTest do
   use ExUnit.Case, async: true
 
-  @durable_paths [
-    ".planning/ADR-FIRST-B2C-ADOPTER.md",
-    ".planning/DECISIONS.md",
-    ".planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md",
-    ".planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md",
-    ".planning/FIRST-B2C-ADOPTER-LINEAR-ISSUE-DRAFTS.md",
-    ".planning/PROJECT.md",
-    ".planning/REQUIREMENTS.md",
-    ".planning/ROADMAP.md",
-    ".planning/STATE.md",
-    ".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md",
-    "AGENTS.md"
-  ]
+  alias Crosswake.Planning.FirstAdopterContext
 
-  @public_guide_paths [
-    "guides/capability_map.md",
-    "guides/support_matrix.md"
-  ]
+  test "routing matrix classifies every active path once with non-empty required destinations" do
+    matrix = FirstAdopterContext.routing_matrix()
+    paths = FirstAdopterContext.active_paths()
 
-  test "adopter-readiness context is durable and discoverable" do
-    for path <- @durable_paths do
-      assert File.exists?(path), "missing adopter-readiness context: #{path}"
+    assert paths ==
+             matrix
+             |> Enum.filter(& &1.scan?)
+             |> Enum.map(& &1.path)
+
+    assert paths == Enum.sort(paths)
+    assert Enum.all?(paths, &File.exists?/1)
+    assert FirstAdopterContext.validate_routing_matrix(matrix) == []
+
+    for destination <- [
+          :durable,
+          :public,
+          :fast_changing,
+          :host_private,
+          :secret_only,
+          :forbidden
+        ] do
+      assert Enum.any?(matrix, &(&1.destination == destination)),
+             "routing matrix must retain a #{destination} destination"
     end
 
-    assert File.read!("AGENTS.md") =~ ".planning/ADR-FIRST-B2C-ADOPTER.md"
-    assert File.read!("AGENTS.md") =~ ".planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md"
-    assert File.read!(".planning/STATE.md") =~ "$gsd-discuss-phase 158"
-    assert File.read!(".planning/ROADMAP.md") =~ "Physical-iPhone Adoption Proof"
+    duplicate = [%{path: "AGENTS.md", destination: :durable} | matrix]
 
-    brief = File.read!(".planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md")
-    assert brief =~ "## Surface-area audit"
-    assert brief =~ "## Stakeholder lens summary"
-    assert brief =~ "## Non-goal defense"
-    assert brief =~ "## Physical-iPhone milestone"
+    assert [%{rule_id: "routing.duplicate_path", path: "AGENTS.md"}] =
+             FirstAdopterContext.validate_routing_matrix(duplicate)
+
+    missing_destination = Enum.map(matrix, &Map.put(&1, :destination, nil))
+
+    assert Enum.any?(
+             FirstAdopterContext.validate_routing_matrix(missing_destination),
+             fn violation ->
+               violation.rule_id == "routing.unclassified_path"
+             end
+           )
+
+    empty_public = Enum.reject(matrix, &(&1.destination == :public))
+
+    assert [%{rule_id: "routing.required_destination_empty", path: "public"}] =
+             FirstAdopterContext.validate_routing_matrix(empty_public)
   end
 
-  test "durable context uses the codename and public guides use the generic phrase" do
-    for path <- @durable_paths do
-      assert File.read!(path) =~ ~r/First B2C Adopter|first-adopter|first adopter/i,
-             "#{path} does not preserve adopter-priority context"
-    end
+  test "public and durable scans enforce the phrase split with stable rule and path violations" do
+    contents = contents_by_path()
 
-    for path <- @public_guide_paths do
-      contents = File.read!(path)
-      assert contents =~ ~r/first adopter|first-adopter/i
-      refute contents =~ "First B2C Adopter"
-    end
+    assert FirstAdopterContext.scan(contents) == []
+
+    public_path = "guides/capability_map.md"
+
+    assert [%{rule_id: "privacy.public_phrase", path: ^public_path}] =
+             FirstAdopterContext.scan(Map.put(contents, public_path, "route ownership"))
+
+    assert [%{rule_id: "privacy.public_codename", path: ^public_path}] =
+             FirstAdopterContext.scan(
+               Map.put(contents, public_path, "First B2C Adopter first adopter route ownership")
+             )
   end
 
-  test "active adopter artifacts reject identifying or commercial details" do
-    contents =
-      (@durable_paths ++ @public_guide_paths)
-      |> Enum.map_join("\n", &File.read!/1)
+  test "private-term scan never echoes configured terms or matched content" do
+    private_term = "synthetic-private-term"
+    path = "AGENTS.md"
+    contents = Map.put(contents_by_path(), path, "prefix #{private_term} suffix")
 
-    refute contents =~ ~r/\$\s*\d+/,
-           "active adopter artifacts must not contain pricing"
+    assert [%{rule_id: "privacy.private_term", path: ^path}] =
+             FirstAdopterContext.scan_private_terms(contents, [private_term])
 
-    refute contents =~ ~r/customer[-_ ]?(email|name|address)|legal[-_ ]?name/i,
-           "active adopter artifacts must not contain customer or legal identity fields"
+    refute inspect(FirstAdopterContext.scan_private_terms(contents, [private_term])) =~
+             private_term
+  end
 
+  test "configured private terms are parsed case-insensitively at the caller seam" do
     private_terms =
       System.get_env("CROSSWAKE_PRIVATE_ADOPTER_TERMS", "")
       |> String.split(",", trim: true)
       |> Enum.map(&String.trim/1)
       |> Enum.reject(&(&1 == ""))
 
-    for term <- private_terms do
-      refute String.contains?(String.downcase(contents), String.downcase(term)),
-             "active adopter artifacts contain a configured private adopter term"
-    end
+    assert FirstAdopterContext.scan_private_terms(contents_by_path(), private_terms) == []
+  end
+
+  defp contents_by_path do
+    FirstAdopterContext.active_paths()
+    |> Map.new(&{&1, File.read!(&1)})
   end
 end
