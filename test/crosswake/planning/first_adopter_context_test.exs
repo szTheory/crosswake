@@ -144,33 +144,39 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert FirstAdopterContext.scan_private_terms(contents_by_path(), private_terms) == []
   end
 
-  test "filesystem discovery scans future planning artifacts without echoing private canaries" do
-    root = Path.join(System.tmp_dir!(), "crosswake-context-#{System.unique_integer([:positive])}")
+  test "filesystem discovery scans unregistered repository artifacts without echoing private canaries" do
     private_term = Enum.join(["synthetic", "private", "canary"], "-")
 
     paths = [
-      ".planning/phases/158-adoption-reset-and-route-map/158-88-PLAN.md",
-      ".planning/phases/158-adoption-reset-and-route-map/158-88-SUMMARY.md",
-      ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+      "guides/unregistered-adoption-note.md",
+      ".planning/phases/159-host-reusable-proof-lane/159-NOTES.md",
+      ".github/workflows/unregistered-scan.yml",
+      "lib/crosswake/unregistered_scan.ex",
+      "test/crosswake/unregistered_scan_test.exs"
     ]
 
-    on_exit(fn -> File.rm_rf(root) end)
+    with_temporary_repository(paths, "safe prefix #{private_term} safe suffix", fn root ->
+      assert paths == FirstAdopterContext.discover_paths(root)
 
-    Enum.each(paths, fn path ->
-      root
-      |> Path.join(path)
-      |> Path.dirname()
-      |> File.mkdir_p!()
+      assert Enum.map(paths, &%{rule_id: "privacy.private_term", path: &1}) ==
+               FirstAdopterContext.scan_filesystem(root, [private_term])
 
-      File.write!(Path.join(root, path), "safe prefix #{private_term} safe suffix")
+      refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+    end)
+  end
+
+  test "filesystem discovery fails closed for repository enumeration and unclassified text paths" do
+    with_temporary_repository(["notes/unclassified.txt"], "safe", fn root ->
+      assert [
+               %{rule_id: "routing.unclassified_path", path: "notes/unclassified.txt"}
+             ] = FirstAdopterContext.scan_filesystem(root, [])
     end)
 
-    assert Enum.sort(paths) == FirstAdopterContext.discover_paths(root)
+    missing_root = Path.join(System.tmp_dir!(), "crosswake-missing-#{System.unique_integer([:positive])}")
 
-    assert Enum.map(paths, &%{rule_id: "privacy.private_term", path: &1}) ==
-             FirstAdopterContext.scan_filesystem(root, [private_term])
-
-    refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+    assert [
+             %{rule_id: "routing.repository_enumeration_failed", path: "repository"}
+           ] = FirstAdopterContext.scan_filesystem(missing_root, [])
   end
 
   test "filesystem discovery includes current Phase 158 planning artifacts" do
@@ -229,5 +235,24 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
   defp contents_by_path do
     FirstAdopterContext.active_paths()
     |> Map.new(&{&1, File.read!(&1)})
+  end
+
+  defp with_temporary_repository(paths, contents, fun) do
+    root = Path.join(System.tmp_dir!(), "crosswake-context-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
+
+    try do
+      Enum.each(paths, fn path ->
+        absolute_path = Path.join(root, path)
+        File.mkdir_p!(Path.dirname(absolute_path))
+        File.write!(absolute_path, contents)
+      end)
+
+      {_, 0} = System.cmd("git", ["init", "-q", root])
+      {_, 0} = System.cmd("git", ["-C", root, "add", "-A"])
+      fun.(root)
+    after
+      File.rm_rf!(root)
+    end
   end
 end
