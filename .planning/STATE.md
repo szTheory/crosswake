@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-07-PLAN.md
-last_updated: "2026-07-31T23:15:58.782Z"
+status: gaps_found
+stopped_at: Phase 159 verification found blocking gaps
+last_updated: "2026-07-31T23:26:55.000Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 159 execution started
+last_activity_desc: Phase 159 verification found blocking gaps
 progress:
   total_phases: 5
   completed_phases: 2
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 4 of 7
-Status: Ready to execute
-Last activity: 2026-07-31 — Phase 159 execution started
+Plan: 7 of 7 complete
+Status: Verification gaps found (16/23 must-haves verified)
+Last activity: 2026-07-31 — Phase 159 verification found blocking gaps
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Begin Phase 159 discussion when ready. TODO-002 remains the bounded adopter-input gate and
-adopter-instance completeness remains `unknown_blocking`.
+Plan Phase 159 gap closure from the current verification report. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -55,6 +55,11 @@ adopter-instance completeness remains `unknown_blocking`.
 - Phase 162 ultimately needs a runnable adopter host, backend replay endpoint, and physical iPhone.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
+- Phase 159 generation can escape the declared host root through a symlinked destination ancestor.
+- Phase 159 native verification can report `passed` after build-only placeholder checks without
+  executing host-integrated XCTest/XCUITest behavior.
+- Phase 159 browser semantics are type-checked but still require an automated run against a
+  runnable host.
 
 ## Decisions
 
