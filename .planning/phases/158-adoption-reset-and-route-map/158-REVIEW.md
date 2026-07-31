@@ -1,65 +1,64 @@
 ---
 phase: 158-adoption-reset-and-route-map
-reviewed: 2026-07-31T00:00:00Z
+reviewed: 2026-07-31T15:12:32Z
 depth: standard
-files_reviewed: 13
+files_reviewed: 16
 files_reviewed_list:
+  - .github/workflows/hex-page-proof.yml
+  - guides/capability_map.md
+  - guides/support_matrix.md
   - lib/crosswake/adoption/route_inventory.ex
-  - test/crosswake/adoption/route_inventory_test.exs
   - lib/crosswake/capability_map.ex
   - lib/crosswake/capability_map/renderer.ex
+  - lib/crosswake/planning/first_adopter_context.ex
+  - lib/crosswake/support_matrix/renderer.ex
+  - lib/crosswake/support_matrix/support_matrix.ex
+  - lib/mix/tasks/crosswake.adoption_context.scan.ex
+  - test/crosswake/adoption/route_inventory_test.exs
   - test/crosswake/capability_map/capability_map_test.exs
   - test/crosswake/capability_map/renderer_test.exs
-  - guides/capability_map.md
-  - lib/crosswake/planning/first_adopter_context.ex
   - test/crosswake/planning/first_adopter_context_test.exs
-  - lib/crosswake/support_matrix/support_matrix.ex
-  - lib/crosswake/support_matrix/renderer.ex
   - test/crosswake/support_matrix/renderer_test.exs
-  - guides/support_matrix.md
+  - test/mix/tasks/crosswake_adoption_context_scan_test.exs
 findings:
-  critical: 3
+  critical: 2
   warning: 0
   info: 0
-  total: 3
+  total: 2
 status: issues_found
 ---
 
 # Phase 158: Code Review Report
 
-**Reviewed:** 2026-07-31T00:00:00Z
+**Reviewed:** 2026-07-31T15:12:32Z
 **Depth:** standard
-**Files Reviewed:** 13
+**Files Reviewed:** 16
 **Status:** issues_found
 
 ## Summary
 
-The route-inventory and public-guide renderers are deterministic and the scoped tests pass, but the new gate can promote an unsafe or incomplete concrete route. The privacy checker is also only a library/test seam, so it does not enforce the required repository boundary. These defects undermine the phase's fail-closed route and privacy claims.
+The route-inventory validator and generated-guide parity checks are well covered by the focused suite, but the newly added privacy gate does not reliably prevent private adopter context from being merged into the repository. The gate both omits most repository files from its scan and withholds secret-backed matching from pull requests.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Safety fields marked `known_default` can be promoted
+### CR-01: Private-term scan excludes most repository files
 
-**File:** `lib/crosswake/adoption/route_inventory.ex:192-206,109-113`
-**Issue:** `validate_posture/3` accepts `:known_default` for every route-local safety field and preserves its supplied value. `promotion_status/1` blocks only `:unknown_blocking`, so an inventory whose runtime owner, offline posture, auth, scope, fallback, disablement, and retention facts all come from defaults is eligible. This directly defeats the route-map contract that a `known_default` is eligible only when it is not standing in for a safety field, and it permits a surface default to silently become route authority.
-**Fix:** Reject `:known_default` for `@safety_fields` (or remove it from their vocabulary), and add a regression test asserting that such a row returns a field-specific error or `{:blocked, ...}`. Only explicitly confirmed, sanitized route-local values should satisfy the promotion gate.
+**File:** `lib/crosswake/planning/first_adopter_context.ex:29`
+**Issue:** `scan_filesystem/2` only discovers paths matched by the small `@artifact_globs` allowlist (lines 29-51). It therefore never examines source files such as `lib/crosswake/adoption/route_inventory.ex`, CI workflows, tests, or any newly added public guide outside the two listed guides. A configured protected term can be committed to one of those unscanned files and `mix crosswake.adoption_context.scan --require-private-terms` will still pass. This violates the stated prohibition on recording the adopter's identifying/private context in repository content, and creates a direct bypass for the merge privacy gate.
 
-### CR-02: Semantically contradictory or absent safety posture is eligible
+**Fix:** Scan all tracked, non-ignored repository text files (or maintain a denylist only for generated/binary/private paths), then apply destination-specific phrase checks to the routed artifact subset. Add a regression test that places a private canary in an otherwise unlisted source file and asserts `scan_filesystem/2` reports `privacy.private_term` without echoing its content.
 
-**File:** `lib/crosswake/adoption/route_inventory.ex:192-205,109-113`
-**Issue:** `:not_applicable` is accepted without a value for every safety field, and no cross-field validation runs before promotion. For example, a `:local_first` route with `scope_posture`, fallbacks, disablement, and queued-data retention all `:not_applicable` is eligible; so is `auth: :recent_auth` together with `recent_auth: :not_required`. This lets host/device proof promotion proceed without the required replay isolation, server-side disablement, or coherent auth contract.
-**Fix:** Define and enforce route-state invariants before returning `{:eligible, ...}`. At minimum, local mutation must require an offline-island owner, confirmed opaque scope/logout/account-switch values, `:queue_local` offline fallback, retained queued data, and entry/replay enforcement; `:recent_auth` must require `recent_auth: :required`; required media must require verified integrity. Permit `:not_applicable` only for fields demonstrably irrelevant to the selected route state, and test each invalid combination.
+### CR-02: Secret-backed privacy enforcement runs only after PR merge
 
-### CR-03: Privacy checks are neither enforced nor complete for planning artifacts
+**File:** `.github/workflows/hex-page-proof.yml:55`
+**Issue:** The only invocation that requires `CROSSWAKE_PRIVATE_ADOPTER_TERMS` is explicitly skipped for every `pull_request` (line 56). The ordinary PR scan at line 53 consequently runs with no protected terms, while the required scan runs only on `push` to `main`—after a PR's content can already have been merged and exposed. GitHub makes repository secrets available to same-repository PR workflows; skipping the protected scan for all PRs leaves the normal merge path unprotected.
 
-**File:** `lib/crosswake/planning/first_adopter_context.ex:19-86,102-137,195-196`
-**Issue:** The scanner has no production/CI caller: repository search finds only its own tests invoking `scan/1` or `scan_private_terms/2`. Even if a caller is added, the static matrix omits current phase artifacts such as `158-03-SUMMARY.md`, `158-04-PLAN.md`, `158-04-SUMMARY.md`, and `158-VALIDATION.md`, while `private_term_scanned?/1` deliberately skips every `*-PLAN.md`. A prohibited adopter term can therefore be committed to those planning documents without any automated rejection, violating RESET-04 and the project's no-identity rule.
-**Fix:** Add a merge-blocking Mix task or test helper that reads every repository-facing durable/public/fast-changing artifact and invokes both scanners with the configured private terms. Derive the in-scope artifact set from approved directories/globs (with explicit narrow exclusions), include all phase documents, and do not blanket-exclude plans from private-term matching; exclude only known non-secret instruction tokens if necessary. Add canary tests for a summary, validation file, and plan file.
+**Fix:** Run `mix crosswake.adoption_context.scan --require-private-terms` for trusted, same-repository PRs as well as protected pushes, for example gate it on a non-fork PR. For fork PRs, keep secrets unavailable but require a maintainer-owned trusted workflow/merge queue check before merging (or fail closed when the required term set cannot be supplied). Add workflow-level coverage/documentation that the protected check is a required PR status check.
 
 ---
 
-_Reviewed: 2026-07-31T00:00:00Z_
+_Reviewed: 2026-07-31T15:12:32Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
