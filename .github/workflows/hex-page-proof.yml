@@ -53,10 +53,17 @@ jobs:
         run: mix crosswake.adoption_context.scan
 
       - name: Enforce protected first-adopter private-term gate
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}
         run: mix crosswake.adoption_context.scan --require-private-terms
+
+      - name: Block untrusted fork protected-check bypass
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "privacy.private_terms_trusted_maintainer_required"
+          echo "A trusted maintainer-controlled branch or merge-queue check must run the protected privacy scan before merge."
+          exit 1
 
       - name: Run library test suite (hermetic)
         # Runs the full suite EXCEPT tests tagged :requires_example_host — those

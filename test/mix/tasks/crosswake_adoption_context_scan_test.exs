@@ -72,7 +72,10 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
 
     assert workflow =~ "name: Enforce protected first-adopter private-term gate"
     assert workflow =~ "if: #{trusted_condition}"
-    assert workflow =~ "CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}"
+
+    assert workflow =~
+             "CROSSWAKE_PRIVATE_ADOPTER_TERMS: ${{ secrets.CROSSWAKE_PRIVATE_ADOPTER_TERMS }}"
+
     assert workflow =~ "mix crosswake.adoption_context.scan --require-private-terms"
 
     assert workflow =~ "name: Block untrusted fork protected-check bypass"
