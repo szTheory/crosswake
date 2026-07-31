@@ -145,7 +145,12 @@ defmodule Crosswake.Adoption.RouteInventory do
       else: {:error, error("RI-INVALID", "unresolved", "route_row")}
   end
 
-  defp normalize_input(input) when is_map(input), do: {:ok, Map.to_list(input)}
+  defp normalize_input(input) when is_map(input) do
+    if Enum.all?(Map.keys(input), &is_atom/1),
+      do: {:ok, Map.to_list(input)},
+      else: {:error, error("RI-INVALID", "unresolved", "route_row")}
+  end
+
   defp normalize_input(_input), do: {:error, error("RI-INVALID", "unresolved", "route_row")}
 
   defp reject_forbidden_fields(options) do
