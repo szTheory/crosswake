@@ -450,17 +450,15 @@ end
 |---|-------|---------|---------------|
 | A1 | A small `Crosswake.Adoption.RouteInventory` module is the best boundary if route-row validation becomes code-backed. [ASSUMED] | Recommended Project Structure | Planner could instead keep validation under `Crosswake.Planning`; either is acceptable if the closed-schema behavior and tests hold. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the route inventory be code-rendered or Markdown-only with a validation helper?**
    - What we know: D-10 requires closed structured validation, and existing docs use code-rendered truth. [VERIFIED: `158-CONTEXT.md` D-10; `lib/crosswake/capability_map/renderer.ex:18`]
-   - What's unclear: Whether Phase 158 should fully code-render route rows now or only validate a YAML/Elixir fixture consumed by the Markdown.
-   - Recommendation: Prefer code-backed validation if any route rows are added; otherwise document the contract and keep TODO-002 open.
+   - Resolution: Phase 158 selects a small code-backed route-inventory validator using the existing `Crosswake.Policy.Schema` / `Crosswake.Policy.Route` closed-validation discipline, with deterministic Markdown as its planning output.
 
 2. **What concrete route rows can be confirmed in Phase 158?**
    - What we know: Missing adopter-supplied values must be `unknown_blocking`. [VERIFIED: `158-CONTEXT.md` D-02]
-   - What's unclear: Whether sanitized concrete route patterns are available in this repo/session.
-   - Recommendation: Do not fabricate rows; keep known surface defaults and TODO-002 open until supplied.
+   - Resolution: No sanitized adopter-supplied concrete route rows are available in this repository. Only synthetic fixtures may be added, `unknown_blocking` remains the real-instance state, and TODO-002 stays open.
 
 ## Environment Availability
 
