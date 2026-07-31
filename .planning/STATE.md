@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Planned Phase 158 verification gap closure
-last_updated: "2026-07-31T14:46:26.639Z"
+stopped_at: Completed 158-05-PLAN.md
+last_updated: "2026-07-31T14:55:36.308Z"
 last_activity: 2026-07-31
-last_activity_desc: Planned three Phase 158 verification gap-closure plans
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 7
-  completed_plans: 4
-  percent: 20
+  completed_plans: 5
+  percent: 0
 current_plan: null
 ---
 
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 4 of 7
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-07-31 — Planned three Phase 158 verification gap-closure plans
+Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
 
@@ -76,6 +76,8 @@ validation reconciliation in `158-07-PLAN.md`.
 - [Phase ?]: Executor-state discoverability asserts the active execute command rather than the pre-execution discuss command.
 - [Phase ?]: Policy-contract completion and surface defaults never promote external-host or physical-device support while route inputs are unknown_blocking.
 - [Phase ?]: Public support wording uses first adopter, retains the existing vocabulary, and keeps Android at its frozen generator/Maven/JVM/vector posture.
+- [Phase ?]: Concrete-route safety fields reject known_default before promotion while preserving the closed discovery vocabulary.
+- [Phase ?]: Local-first promotion requires explicit coherent ownership, mutation, scope, fallback, disablement, retention, and recent-auth authority.
 
 ## Deferred Items
 
@@ -104,8 +106,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T14:11:26.775Z
-**Stopped at:** Completed 158-04-PLAN.md
+**Last session:** 2026-07-31T14:55:36.300Z
+**Stopped at:** Completed 158-05-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -116,3 +118,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P02 | 10m | 2 tasks | 5 files |
 | Phase 158-adoption-reset-and-route-map P03 | 1m | 2 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P04 | 12m | 2 tasks | 5 files |
+| Phase 158-adoption-reset-and-route-map P05 | 9m | 2 tasks | 3 files |

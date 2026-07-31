@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 
 Plans:
 **Wave 1**
@@ -68,7 +68,7 @@ Plans:
 
 **Wave 4** *(gap closure; blocked on Wave 3 completion)*
 
-- [ ] 158-05-PLAN.md — Make concrete-route safety and cross-field promotion invariants fail closed.
+- [x] 158-05-PLAN.md — Make concrete-route safety and cross-field promotion invariants fail closed.
 - [ ] 158-06-PLAN.md — Enforce non-echoing first-adopter privacy scans over filesystem and CI surfaces.
 
 **Wave 5** *(blocked on Wave 4 completion)*
