@@ -48,6 +48,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
 
     assert rendered =~ "first adopter"
     refute rendered =~ disallowed_public_phrase
+    refute rendered =~ String.capitalize(disallowed_public_phrase)
     refute rendered =~ "First B2C Adopter"
     refute rendered =~ "Native Controls Pack 1"
   end
@@ -62,6 +63,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     rendered_twice = Renderer.render(rows)
 
     assert rendered_once == rendered_twice
+
     assert elem(:binary.match(rendered_once, "First equal"), 0) <
              elem(:binary.match(rendered_once, "Second equal"), 0)
   end
@@ -134,7 +136,9 @@ defmodule Crosswake.CapabilityMap.RendererTest do
 
   test "D-11/D-12 normalizes canonical and legacy implication inputs through one compatibility window" do
     canonical = renderer_row(%{adoption_implication: "canonical implication"})
-    legacy_atom = renderer_row(%{v20_implication: "legacy implication"}) |> Map.delete(:adoption_implication)
+
+    legacy_atom =
+      renderer_row(%{v20_implication: "legacy implication"}) |> Map.delete(:adoption_implication)
 
     legacy_string =
       renderer_row(%{})

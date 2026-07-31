@@ -184,7 +184,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Content stays in the Phoenix-owned route when a share family is undeclared or unavailable.",
         adoption_implication:
-          "Keep advisory until a first-adopter route supplies explicit platform support truth."
+          "Keep advisory until a first adopter route supplies explicit platform support truth."
       ),
       row(
         id: "permissions-status",
@@ -199,7 +199,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Route continues without native notification permission snapshot authority when undeclared.",
         adoption_implication:
-          "Read-only snapshots may inform a route; permission requests remain outside the first-adopter scope."
+          "Read-only snapshots may inform a route; permission requests remain outside the first adopter scope."
       ),
       row(
         id: "notification-token",
@@ -320,7 +320,7 @@ defmodule Crosswake.CapabilityMap do
       row(
         id: "learnloop-native-storage",
         surface: "Production iOS storage for offline pronunciation media",
-        route_or_evidence_source: "First-adopter offline pronunciation pressure",
+        route_or_evidence_source: "First adopter offline pronunciation pressure",
         category: :deferred,
         rebuild: :native_required,
         display_label: "Future gap",
@@ -378,7 +378,7 @@ defmodule Crosswake.CapabilityMap do
       row(
         id: "first-adopter-host-proof",
         surface: "Host-reusable offline-island and shell proof scaffold",
-        route_or_evidence_source: "Current example-host proof lane and first-adopter test corpus",
+        route_or_evidence_source: "Current example-host proof lane and first adopter test corpus",
         category: :missing,
         rebuild: :none,
         display_label: "Demo pressure",
@@ -393,7 +393,7 @@ defmodule Crosswake.CapabilityMap do
       row(
         id: "first-adopter-scoped-replay",
         surface: "Privacy-safe scope-bound journal and replay",
-        route_or_evidence_source: "First-adopter free-form offline mutation pressure",
+        route_or_evidence_source: "First adopter free-form offline mutation pressure",
         category: :missing,
         rebuild: :none,
         display_label: "Demo pressure",
@@ -408,7 +408,7 @@ defmodule Crosswake.CapabilityMap do
       row(
         id: "first-adopter-physical-iphone",
         surface: "Physical-iPhone offline study and replay evidence",
-        route_or_evidence_source: "First-adopter public-release exit test",
+        route_or_evidence_source: "First adopter public-release exit test",
         category: :missing,
         rebuild: :native_required,
         display_label: "Future gap",
