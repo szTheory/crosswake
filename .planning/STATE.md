@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-05-PLAN.md
-last_updated: "2026-07-31T23:04:47.081Z"
+stopped_at: Completed 159-06-PLAN.md
+last_updated: "2026-07-31T23:09:57.455Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 27
-  completed_plans: 25
+  completed_plans: 26
   percent: 20
 current_plan: null
 ---
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-07-31 — Phase 159 execution started
 
@@ -109,6 +109,8 @@ adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Retained proof evidence uses an exact twelve-field allowlist and final-byte scanning before promotion.
 - [Phase ?]: Proof-lane host roots are derived only from a normalized non-root native/ios shell path.
 - [Phase ?]: Generator actions revalidate direct Config structs before filesystem destination derivation.
+- [Phase ?]: Browser proof cleanup restores online state in finally before reconnect or later assertions.
+- [Phase ?]: Generated iOS proof outcomes are JSON-only passed, blocked, or unavailable; only a successful target build exits zero.
 
 ## Deferred Items
 
@@ -137,8 +139,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T23:04:47.074Z
-**Stopped at:** Completed 159-05-PLAN.md
+**Last session:** 2026-07-31T23:09:57.449Z
+**Stopped at:** Completed 159-06-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -170,3 +172,4 @@ this milestone reset.
 | Phase 159 P03 | 10m | 2 tasks | 10 files |
 | Phase 159 P04 | 18m | 2 tasks | 3 files |
 | Phase 159 P05 | 14m | 2 tasks | 4 files |
+| Phase 159 P06 | 14m | 3 tasks | 10 files |
