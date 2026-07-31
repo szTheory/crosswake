@@ -1,0 +1,51 @@
+// crosswake-proof-lane template_version=<%= @template_version %>
+import { expect, type BrowserContext, type Page } from '@playwright/test';
+
+export type ProofLaneConfig = {
+  routePath: string;
+  databaseName: string;
+  storeName: string;
+  mutationIdPath: string;
+  syncPath: string;
+  evidencePath: string;
+};
+
+export type ProofLaneAdapter = {
+  navigate(page: Page, config: ProofLaneConfig): Promise<void>;
+  performMutation(page: Page): Promise<void>;
+  readQueuedRecord(page: Page, config: ProofLaneConfig): Promise<unknown>;
+  reconnect(page: Page, config: ProofLaneConfig): Promise<void>;
+  assertBackendConfirmation(mutationId: string, config: ProofLaneConfig): Promise<void>;
+  assertOutboxEmpty(page: Page, config: ProofLaneConfig): Promise<void>;
+  assertDuplicateIdempotency(mutationId: string, record: unknown, config: ProofLaneConfig): Promise<void>;
+};
+
+export function extractMutationId(record: unknown, fieldPath: string): string {
+  const value = fieldPath.split('.').reduce<unknown>((current, field) =>
+    current && typeof current === 'object' ? (current as Record<string, unknown>)[field] : undefined,
+  record);
+  expect(typeof value).toBe('string');
+  return value as string;
+}
+
+export async function runOfflineIslandProof(page: Page, context: BrowserContext, adapter: ProofLaneAdapter, config: ProofLaneConfig) {
+  await adapter.navigate(page, config);
+  await context.setOffline(true);
+  await adapter.performMutation(page);
+  const record = await adapter.readQueuedRecord(page, config);
+  const mutationId = extractMutationId(record, config.mutationIdPath);
+  await context.setOffline(false);
+  await adapter.reconnect(page, config);
+  await adapter.assertBackendConfirmation(mutationId, config);
+  await adapter.assertOutboxEmpty(page, config);
+  await adapter.assertDuplicateIdempotency(mutationId, record, config);
+}
+
+export const proofLaneConfig: ProofLaneConfig = {
+  routePath: "<%= @config.route_path %>",
+  databaseName: "<%= @config.indexed_db_database %>",
+  storeName: "<%= @config.indexed_db_store %>",
+  mutationIdPath: "<%= @config.mutation_id_path %>",
+  syncPath: "<%= @config.sync_path %>",
+  evidencePath: "<%= @config.evidence_path %>",
+};

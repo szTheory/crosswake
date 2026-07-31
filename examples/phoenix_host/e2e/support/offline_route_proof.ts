@@ -21,6 +21,54 @@ export type LearnLoopRouteProofOptions = OfflineRouteProofOptions & {
   screenshotDir?: string;
 };
 
+export type OfflineIslandProofConfig = {
+  databaseName: string;
+  storeName: string;
+  mutationIdPath: string;
+};
+
+export type OfflineIslandProofAdapter = {
+  navigate(): Promise<void>;
+  performMutation(): Promise<void>;
+  readQueuedRecord(): Promise<unknown>;
+  reconnect(): Promise<void>;
+  assertBackendConfirmation(mutationId: string): Promise<void>;
+  assertOutboxEmpty(): Promise<void>;
+  assertDuplicateIdempotency(mutationId: string, record: unknown): Promise<void>;
+};
+
+export async function runOfflineIslandProof(
+  _page: Page,
+  context: BrowserContext,
+  adapter: OfflineIslandProofAdapter,
+  config: OfflineIslandProofConfig,
+) {
+  await adapter.navigate();
+  await context.setOffline(true);
+  await adapter.performMutation();
+  const record = await adapter.readQueuedRecord();
+  const mutationId = extractMutationId(record, config.mutationIdPath);
+  await context.setOffline(false);
+  await adapter.reconnect();
+  await adapter.assertBackendConfirmation(mutationId);
+  await adapter.assertOutboxEmpty();
+  await adapter.assertDuplicateIdempotency(mutationId, record);
+}
+
+export function extractMutationId(record: unknown, fieldPath: string): string {
+  const value = fieldPath.split('.').reduce<unknown>((current, field) => {
+    if (current && typeof current === 'object' && field in current) {
+      return (current as Record<string, unknown>)[field];
+    }
+
+    return undefined;
+  }, record);
+
+  expect(typeof value).toBe('string');
+  expect(value).toMatch(/^[0-9a-f-]{36}$/);
+  return value as string;
+}
+
 export async function proveLearnLoopRoute(
   page: Page,
   context: BrowserContext,
@@ -150,42 +198,43 @@ export async function proveLearnLoopRoute(
     "Server reset does not clear this device's offline state",
   );
 
-  await context.setOffline(true);
-  await page.click('#btn-flip');
-  await page.click('#btn-good');
-  await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'queued status copy')).toContainText(
-    /Saved locally|Queued for replay/i,
-  );
-
-  const mutations = await readQueuedOfflineMutations(page, options);
-  expect(mutations, learnloopProofMessage('learnloop-study-session', 'one queued IndexedDB mutation')).toHaveLength(1);
-  const { client_mutation_id: capturedId, card_id, rating } = mutations[0];
-  assertAppGeneratedMutation(mutations[0]);
-
-  await context.setOffline(false);
-  const syncResponse = page.waitForResponse(response =>
-    response.url().includes('/learnloop/sync') &&
-    response.status() === 200,
-  );
-  await page.evaluate(() => window.dispatchEvent(new Event('online')));
-  await syncResponse;
-
-  await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'synced status copy')).toContainText(
-    /Synced \d+ - queued 0/i,
-  );
-  await expectSyncedReview(page.request, capturedId, 1);
-  await expectOutboxEmpty(page, options);
-
-  const duplicate = await page.request.post('/learnloop/sync', {
-    data: {
-      events: [{ client_mutation_id: capturedId, card_id, rating }],
+  await runOfflineIslandProof(page, context, {
+    navigate: async () => undefined,
+    performMutation: async () => {
+      await page.click('#btn-flip');
+      await page.click('#btn-good');
+      await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'queued status copy')).toContainText(
+        /Saved locally|Queued for replay/i,
+      );
     },
+    readQueuedRecord: async () => {
+      const mutations = await readQueuedOfflineMutations(page, options);
+      expect(mutations, learnloopProofMessage('learnloop-study-session', 'one queued IndexedDB mutation')).toHaveLength(1);
+      assertAppGeneratedMutation(mutations[0]);
+      return mutations[0];
+    },
+    reconnect: async () => {
+      const syncResponse = page.waitForResponse(response => response.url().includes('/learnloop/sync') && response.status() === 200);
+      await page.evaluate(() => window.dispatchEvent(new Event('online')));
+      await syncResponse;
+      await expect(page.locator('#status'), learnloopProofMessage('learnloop-study-session', 'synced status copy')).toContainText(/Synced \d+ - queued 0/i);
+    },
+    assertBackendConfirmation: mutationId => expectSyncedReview(page.request, mutationId, 1),
+    assertOutboxEmpty: () => expectOutboxEmpty(page, options),
+    assertDuplicateIdempotency: async (mutationId, record) => {
+      const mutation = record as OfflineMutationRecord;
+      const duplicate = await page.request.post('/learnloop/sync', { data: { events: [{ client_mutation_id: mutationId, card_id: mutation.card_id, rating: mutation.rating }] } });
+      expect(duplicate.ok(), learnloopProofMessage('learnloop-study-session', 'duplicate replay accepted as idempotent request')).toBe(true);
+      const duplicateBody = await duplicate.json();
+      expect(duplicateBody.data.accepted_count, learnloopProofMessage('learnloop-study-session', 'duplicate replay creates no second row')).toBe(0);
+      await expectSyncedReview(page.request, mutationId, 1);
+      await expectOutboxEmpty(page, options);
+    },
+  }, {
+    databaseName: options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB,
+    storeName: 'mutations',
+    mutationIdPath: 'client_mutation_id',
   });
-  expect(duplicate.ok(), learnloopProofMessage('learnloop-study-session', 'duplicate replay accepted as idempotent request')).toBe(true);
-  const duplicateBody = await duplicate.json();
-  expect(duplicateBody.data.accepted_count, learnloopProofMessage('learnloop-study-session', 'duplicate replay creates no second row')).toBe(0);
-  await expectSyncedReview(page.request, capturedId, 1);
-  await expectOutboxEmpty(page, options);
 
   await page.goto('/learnloop/history');
   await expectLiveViewConnected(page, 'learnloop-history');
