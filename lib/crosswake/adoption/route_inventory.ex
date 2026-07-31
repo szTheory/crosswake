@@ -29,6 +29,19 @@ defmodule Crosswake.Adoption.RouteInventory do
     :queued_data_retention
   ]
   @safety_fields @fields -- [:route_id, :path_pattern]
+  @route_id_pattern ~r/^route-[0-9a-f]{16}$/
+  @static_path_segments MapSet.new([
+                          "study",
+                          "session",
+                          "learning",
+                          "path",
+                          "dashboard",
+                          "history",
+                          "auth",
+                          "settings",
+                          "billing"
+                        ])
+  @dynamic_path_segment ":id"
   @forbidden_fields [
     :raw_answer,
     :answer,
@@ -157,25 +170,42 @@ defmodule Crosswake.Adoption.RouteInventory do
   end
 
   defp validate_route_id(value) when is_binary(value) do
-    if Regex.match?(~r/^[a-z][a-z0-9-]*$/, value) do
+    if opaque_route_id?(value) do
       {:ok, value}
     else
-      {:error, error("RI-INVALID", "unresolved", "route_id")}
+      {:error, error("RI-OPAQUE_ROUTE_ID", "unresolved", "route_id")}
     end
   end
 
-  defp validate_route_id(_value), do: {:error, error("RI-INVALID", "unresolved", "route_id")}
+  defp validate_route_id(_value),
+    do: {:error, error("RI-OPAQUE_ROUTE_ID", "unresolved", "route_id")}
 
   defp validate_path_pattern(value, route_ref) when is_binary(value) do
-    if Regex.match?(~r|^/[a-z0-9_/:.-]*$|, value) and value != "/" do
+    if sanitized_path_pattern?(value) do
       {:ok, value}
     else
-      {:error, error("RI-INVALID", route_ref, "path_pattern")}
+      {:error, error("RI-SANITIZED_PATH_PATTERN", route_ref, "path_pattern")}
     end
   end
 
   defp validate_path_pattern(_value, route_ref),
-    do: {:error, error("RI-INVALID", route_ref, "path_pattern")}
+    do: {:error, error("RI-SANITIZED_PATH_PATTERN", route_ref, "path_pattern")}
+
+  defp opaque_route_id?(value), do: Regex.match?(@route_id_pattern, value)
+
+  defp sanitized_path_pattern?(value) do
+    case String.split(value, "/", trim: false) do
+      ["", first_segment | remaining_segments] when first_segment != "" ->
+        Enum.all?([first_segment | remaining_segments], &sanitized_path_segment?/1)
+
+      _other ->
+        false
+    end
+  end
+
+  defp sanitized_path_segment?(segment) do
+    segment == @dynamic_path_segment or MapSet.member?(@static_path_segments, segment)
+  end
 
   defp validate_postures(validated, route_ref) do
     Enum.reduce_while(@safety_fields, {:ok, []}, fn field, {:ok, acc} ->
@@ -393,7 +423,7 @@ defmodule Crosswake.Adoption.RouteInventory do
   defp route_ref(options) do
     case Keyword.get(options, :route_id) do
       value when is_binary(value) ->
-        if Regex.match?(~r/^[a-z][a-z0-9-]*$/, value), do: value, else: "unresolved"
+        if opaque_route_id?(value), do: value, else: "unresolved"
 
       _other ->
         "unresolved"

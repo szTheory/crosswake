@@ -221,7 +221,10 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
         ] do
       assert {:error, error} = RouteInventory.validate(valid_row(path_pattern: path_pattern))
       assert_safe_error(error, "RI-SANITIZED_PATH_PATTERN", "path_pattern")
-      refute Exception.message(error) =~ path_pattern
+
+      if path_pattern != "" do
+        refute Exception.message(error) =~ path_pattern
+      end
     end
   end
 
