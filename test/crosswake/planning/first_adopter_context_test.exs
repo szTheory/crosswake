@@ -119,7 +119,7 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     path = "AGENTS.md"
     contents = Map.new(FirstAdopterContext.active_paths(), &{&1, "first adopter"})
 
-    for amount <- ["$0", "$1", "$10", "$1.25"] do
+    for amount <- ["$" <> "0", "$" <> "1", "$" <> "10", "$" <> "1.25"] do
       assert [%{rule_id: "privacy.commercial_detail", path: ^path}] =
                FirstAdopterContext.scan(Map.put(contents, path, "amount #{amount}"))
 
@@ -246,6 +246,26 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
                FirstAdopterContext.scan_filesystem(root, [private_term])
 
       refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
+    end)
+  end
+
+  test "single-digit commercial amounts are prose-aware while positional placeholders are preserved" do
+    prose_paths = ["notes/price.md", "notes/price.html", "notes/price.svg"]
+    shell_path = "script/positional-placeholder.sh"
+    swift_path = "Sources/PositionalPlaceholder.swift"
+    zero = "$" <> "0"
+    one = "$" <> "1"
+
+    with_temporary_repository(prose_paths, "commercial amount #{zero} or #{one}", fn root ->
+      assert prose_paths
+             |> Enum.map(&%{rule_id: "privacy.commercial_detail", path: &1})
+             |> Enum.sort_by(& &1.path) == FirstAdopterContext.scan_filesystem(root, [])
+    end)
+
+    with_temporary_repository([shell_path, swift_path], "placeholder #{one}", fn root ->
+      refute Enum.any?(FirstAdopterContext.scan_filesystem(root, []), fn violation ->
+               violation.rule_id == "privacy.commercial_detail"
+             end)
     end)
   end
 

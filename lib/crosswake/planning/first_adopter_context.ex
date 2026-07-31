@@ -53,9 +53,13 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   @scannable_extensions ~w(
     .bak .bat .css .eex .ex .exs .gradle .heex .html .java .js .json .kt .kts .lock .md .mjs
-    .orig .pbxproj .plist .properties .py .sh .svg .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
+    .orig .pbxproj .plist .properties .py .sh .svg .swift .tape .toml .ts .tsx .txt .xcscheme .xml .yaml .yml
   )
   @binary_extensions ~w(.a .app .beam .bundle .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .webp .zip)
+  @prose_extensions ~w(.html .md .svg .txt .xml)
+  @commercial_context ~r/\b(?:amount|cost|dollar|fee|payment|price|revenue|subscription|usd)\b/i
+  @commercial_amount ~r/\$\s*\d+(?:\.\d{1,2})?\b/
+  @multi_digit_or_decimal_commercial_amount ~r/\$\s*(?:\d{2,}|\d+\.\d{1,2})\b/
 
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]
@@ -174,15 +178,36 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp generic_violations(path, contents) do
     [
-      {"privacy.commercial_detail", ~r/\$\s*\d+(?:\.\d{1,2})?\b/},
       {
         "privacy.identifying_field",
         ~r/\b(?:customer[-_ ]?(?:email|name|address)|legal[-_ ]?name)\b[ \t]*(?::|=>|=)/i
       }
     ]
+    |> maybe_add_commercial_detail(path, contents)
     |> Enum.flat_map(fn {rule_id, pattern} ->
       if Regex.match?(pattern, contents), do: [%{rule_id: rule_id, path: path}], else: []
     end)
+  end
+
+  defp maybe_add_commercial_detail(patterns, path, contents) do
+    if commercial_detail?(path, contents) do
+      [{"privacy.commercial_detail", @commercial_amount} | patterns]
+    else
+      patterns
+    end
+  end
+
+  defp commercial_detail?(path, contents) do
+    if Path.extname(path) in @prose_extensions do
+      Regex.match?(@multi_digit_or_decimal_commercial_amount, contents) or
+        Enum.any?(String.split(contents, "\n"), &single_digit_commercial_line?/1)
+    else
+      Regex.match?(@multi_digit_or_decimal_commercial_amount, contents)
+    end
+  end
+
+  defp single_digit_commercial_line?(line) do
+    Regex.match?(~r/\$\s*\d\b/, line) and Regex.match?(@commercial_context, line)
   end
 
   defp destination_violations(:public, path, contents) do

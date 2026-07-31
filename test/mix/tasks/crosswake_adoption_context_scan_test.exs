@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     with_temporary_root(fn root ->
       path = "guides/capability_map.md"
 
-      for amount <- ["$0", "$1", "$10", "$1.25"] do
+      for amount <- ["$" <> "0", "$" <> "1", "$" <> "10", "$" <> "1.25"] do
         write_file(root, path, "first adopter amount #{amount}")
 
         error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
@@ -36,6 +36,28 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
         refute error.message =~ amount
         refute error.message =~ "amount"
       end
+    end)
+  end
+
+  test "detects single-digit commercial prose but accepts shell positional placeholders" do
+    zero = "$" <> "0"
+    one = "$" <> "1"
+
+    for path <- ["notes/price.md", "notes/price.html", "notes/price.svg"] do
+      with_temporary_root(fn root ->
+        write_file(root, path, "commercial amount #{zero} or #{one}")
+
+        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+        assert error.message == "privacy.commercial_detail #{path}"
+        refute error.message =~ zero
+        refute error.message =~ one
+      end)
+    end
+
+    with_temporary_root(fn root ->
+      write_file(root, "script/positional-placeholder.sh", "printf '%s' \"#{one}\"\n")
+      assert capture_io(fn -> Scan.run(["--root", root]) end) =~ "adoption context scan passed"
     end)
   end
 
