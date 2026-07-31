@@ -21,7 +21,7 @@ defmodule Crosswake.CapabilityMap do
       :proof_posture,
       :rebuild,
       :denial_fallback,
-      :v20_implication
+      :adoption_implication
     ]
 
     defstruct @enforce_keys
@@ -37,7 +37,7 @@ defmodule Crosswake.CapabilityMap do
             proof_posture: Crosswake.CapabilityMap.proof_posture(),
             rebuild: Crosswake.CapabilityMap.rebuild(),
             denial_fallback: String.t(),
-            v20_implication: String.t()
+            adoption_implication: String.t()
           }
   end
 
@@ -123,7 +123,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Routes fail closed through explicit runtime policy, manifest validation, and support-matrix diagnostics.",
-        v20_implication: "Use as the policy gate for every Native Controls Pack 1 affordance."
+        adoption_implication: "Use as the policy gate for every Native Controls Pack 1 affordance."
       ),
       row(
         id: "deep-link-activation",
@@ -137,7 +137,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Inactive or unsupported route entry falls back to route-unavailable guidance instead of hidden WebView navigation authority.",
-        v20_implication:
+        adoption_implication:
           "Keep activation truth as the shell boundary for any new control entry points."
       ),
       row(
@@ -152,7 +152,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Phoenix route continues without native app metadata when the route has not declared the capability.",
-        v20_implication:
+        adoption_implication:
           "Model low-frequency request/reply controls on this route-local contract."
       ),
       row(
@@ -167,7 +167,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Approval state remains Phoenix/server authoritative; haptics is optional confirmation feedback.",
-        v20_implication: "Promote into Native Controls Pack 1 as a hardened route-local control."
+        adoption_implication: "Promote into Native Controls Pack 1 as a hardened route-local control."
       ),
       row(
         id: "bounded-bridge-share",
@@ -181,7 +181,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :advisory,
         denial_fallback:
           "Content stays in the Phoenix-owned route when a share family is undeclared or unavailable.",
-        v20_implication:
+        adoption_implication:
           "Candidate for Native Controls Pack 1 only with explicit platform support truth."
       ),
       row(
@@ -196,7 +196,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Route continues without native notification permission snapshot authority when undeclared.",
-        v20_implication:
+        adoption_implication:
           "Pack 1 may include read-only snapshots only; permission requests remain out of scope."
       ),
       row(
@@ -212,7 +212,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :advisory,
         denial_fallback:
           "Token replies are provider-tagged evidence, not backend registration truth or delivery proof.",
-        v20_implication:
+        adoption_implication:
           "Pack 1 may reference provider snapshots, but APNs/FCM delivery and universal notification handling stay outside core."
       ),
       row(
@@ -227,7 +227,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Phoenix approval mutation commits server state first; native haptics can fail without changing approval authority.",
-        v20_implication: "Use as the reference route-local success-feedback control for Pack 1."
+        adoption_implication: "Use as the reference route-local success-feedback control for Pack 1."
       ),
       row(
         id: "fieldserv-capture-handoff",
@@ -241,7 +241,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "The host app owns this native screen; browser evidence review remains backend-verification truth.",
-        v20_implication: "Promote only after Capture & Device Controls proof exists."
+        adoption_implication: "Promote only after Capture & Device Controls proof exists."
       ),
       row(
         id: "fieldserv-scanner",
@@ -255,7 +255,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :unsupported,
         denial_fallback:
           "Scanner requests remain unavailable instead of falling through to generic plugin support.",
-        v20_implication: "Defer to Capture & Device Controls."
+        adoption_implication: "Defer to Capture & Device Controls."
       ),
       row(
         id: "fieldserv-document-scan",
@@ -269,7 +269,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :unsupported,
         denial_fallback:
           "Document scan stays unavailable until native session ownership and proof posture are explicit.",
-        v20_implication: "Defer to Capture & Device Controls."
+        adoption_implication: "Defer to Capture & Device Controls."
       ),
       row(
         id: "fieldserv-media-upload",
@@ -283,7 +283,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :unsupported,
         denial_fallback:
           "Backend verification, not device evidence, determines whether media evidence is available.",
-        v20_implication: "Defer to Capture & Device Controls."
+        adoption_implication: "Defer to Capture & Device Controls."
       ),
       row(
         id: "fieldserv-offline-inspection",
@@ -297,7 +297,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Cached read-only remains explicit; local mutation needs a journal, outbox, retry, and reconciliation path.",
-        v20_implication: "Defer to Offline Sync/Native Storage Productization."
+        adoption_implication: "Defer to Offline Sync/Native Storage Productization."
       ),
       row(
         id: "learnloop-offline-study",
@@ -311,7 +311,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :merge_blocking,
         denial_fallback:
           "Browser-owned IndexedDB outbox and reconciliation visibility are local to the offline island; server reset does not clear browser-owned state.",
-        v20_implication:
+        adoption_implication:
           "Use as evidence for later Offline Sync/Native Storage Productization, not Pack 1."
       ),
       row(
@@ -326,7 +326,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Current native pack stores simulate lifecycle transitions; a pack must remain unavailable until a host provider verifies real bytes and installs them atomically.",
-        v20_implication:
+        adoption_implication:
           "v21 permits one host-supplied foreground iOS adapter. Generic native pack storage remains unclaimed."
       ),
       row(
@@ -341,7 +341,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "The example outbox proves one route-local flow, not a universal sync engine.",
-        v20_implication: "Defer to Offline Sync/Native Storage Productization."
+        adoption_implication: "Defer to Offline Sync/Native Storage Productization."
       ),
       row(
         id: "learnloop-paywall-projection",
@@ -355,7 +355,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :advisory,
         denial_fallback:
           "Backend projection remains entitlement authority; device or storefront evidence never grants access.",
-        v20_implication: "Keep commerce/provider support out of Native Controls Pack 1."
+        adoption_implication: "Keep commerce/provider support out of Native Controls Pack 1."
       ),
       row(
         id: "commerce-provider-integration",
@@ -369,7 +369,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Provider events are reconciliation evidence until backend projection grants entitlement authority.",
-        v20_implication: "Defer to Commerce/Paywall Productionization later."
+        adoption_implication: "Defer to Commerce/Paywall Productionization later."
       ),
       row(
         id: "first-adopter-host-proof",
@@ -383,7 +383,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Example-host proof remains valid, but no support claim transfers to an external host until that host can configure and run the lane.",
-        v20_implication:
+        adoption_implication:
           "Build the iOS host-owned proof scaffold before adding native capability breadth."
       ),
       row(
@@ -398,7 +398,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Replay stops on missing or mismatched scope, logout, account switch, failed authorization, or a disabled route; raw payload never becomes diagnostic evidence.",
-        v20_implication:
+        adoption_implication:
           "Add an opaque scope reference and redaction contract without teaching core the host payload schema."
       ),
       row(
@@ -413,7 +413,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Simulator, generated-shell, browser, and unit evidence remain explicitly narrower than physical-device proof.",
-        v20_implication:
+        adoption_implication:
           "Block the first-adopter support claim until one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
       ),
       row(
@@ -428,7 +428,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Until declared and proven, routes must keep Phoenix-owned confirmation surfaces.",
-        v20_implication:
+        adoption_implication:
           "Stopped for now; keep the Phoenix-owned fallback unless an adopter route proves a blocker."
       ),
       row(
@@ -443,7 +443,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Actions remain Phoenix-owned until route policy, allowlists, and fallback behavior are explicit.",
-        v20_implication:
+        adoption_implication:
           "Stopped for now; native menu breadth does not unblock the first adopter."
       ),
       row(
@@ -458,7 +458,7 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Routes must treat toast/review prompts as optional UX evidence, not navigation or backend authority.",
-        v20_implication:
+        adoption_implication:
           "Stopped for now; optional UX breadth follows physical-device adoption proof."
       )
     ]
