@@ -34,6 +34,28 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     assert guide =~ "unsupported"
   end
 
+  test "first adopter readiness keeps policy completion separate from host and device proof" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "policy-contract complete"
+    assert guide =~ "adopter-instance input remains `unknown_blocking`"
+    assert guide =~ "unknown_blocking` blocks host-proof and physical-device promotion"
+    assert guide =~ "Route-local safety fields do not inherit from surface defaults."
+    assert guide =~ "host-owned `gated_by` seam"
+    assert guide =~ "v20 is stopped/partial; it has no shipped support claim."
+    assert guide =~ "one offline island"
+    assert guide =~ "Generic sync is not claimed."
+  end
+
+  test "first adopter readiness preserves Android freeze and makes no unsupported proof claim" do
+    guide = Renderer.render(SupportMatrix.canonical())
+
+    assert guide =~ "Android is frozen at its existing generator, Maven, JVM, and shared-vector posture."
+    assert guide =~ "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device."
+    refute guide =~ "First B2C Adopter"
+    refute guide =~ "first-adopter"
+  end
+
   test "generated guide renders support-truth labels with proof and non-proof meanings" do
     guide = Renderer.render(SupportMatrix.canonical())
 
