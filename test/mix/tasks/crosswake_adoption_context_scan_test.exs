@@ -78,6 +78,33 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "raises sorted private-term paths for action, script, and future-phase candidates" do
+    with_temporary_root(fn root ->
+      term = Enum.join(["process", "only", "private", "term"], "-")
+
+      paths = [
+        ".github/actions/private-check.yml",
+        "script/private-check.sh",
+        ".planning/phases/999-future-proof/999-NOTES.md"
+      ]
+
+      Enum.each(paths, &write_file(root, &1, "prefix #{term} suffix"))
+
+      with_private_terms(term, fn ->
+        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+        assert error.message ==
+                 paths
+                 |> Enum.map(&"privacy.private_term #{&1}")
+                 |> Enum.sort()
+                 |> Enum.join("\n")
+
+        refute error.message =~ term
+        refute error.message =~ "prefix"
+      end)
+    end)
+  end
+
   test "fails closed when private terms are required but unavailable" do
     with_temporary_root(fn root ->
       with_private_terms(nil, fn ->

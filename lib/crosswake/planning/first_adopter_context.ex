@@ -299,7 +299,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   end
 
   defp policy_scan_path?(path) do
-    named_destination(path) ||
+    not is_nil(named_destination(path)) or
       String.starts_with?(path, ".planning/phases/158-adoption-reset-and-route-map/")
   end
 
