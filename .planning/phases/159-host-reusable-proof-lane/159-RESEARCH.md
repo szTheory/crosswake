@@ -271,17 +271,15 @@ end
 |---|---|---|---|
 | A1 | A static proof-owned Xcode target/project fragment can be added under the configured shell root without a project-manager dependency. | Architecture Patterns | If host Xcode layouts defeat the bounded fragment, invoke D-23 and copy the smallest adopter-specific slice. [ASSUMED] |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact non-destructive Xcode wiring mechanism**
    - What we know: the current generated project template already has a unit-test target and project file baseline. [VERIFIED: codebase grep]
-   - What's unclear: whether a proof-owned companion `.xcodeproj` is sufficient for the target host or a host-local copied project fragment is required. [ASSUMED]
-   - Recommendation: spike only the current example-host layout first; if safe reusable wiring is not executable within the three-day limit, take D-23's adopter-specific slice. [VERIFIED: 159-CONTEXT.md]
+   - Phase 159 resolution: validate the static current-host seam first; if that wiring is not executable without destructive host-project changes, immediately invoke D-23 and copy the smallest adopter-specific proof slice rather than adding project-management machinery. [VERIFIED: 159-CONTEXT.md]
 
 2. **Sanitized adopter configuration values**
    - What we know: TODO-002 remains open and adopter-instance completeness is `unknown_blocking`. [VERIFIED: STATE.md]
-   - What's unclear: real route/storage/endpoint/selector values. [VERIFIED: FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md]
-   - Recommendation: ship only configuration validation/scaffold capability; do not promote external-host or physical-device support. [VERIFIED: 159-CONTEXT.md]
+   - Phase 159 resolution: sanitized adopter values are intentionally not required for configurable scaffold delivery. TODO-002 remains `unknown_blocking` only for external-host/device support promotion, which this phase must not claim. [VERIFIED: 159-CONTEXT.md; STATE.md]
 
 ## Environment Availability
 
