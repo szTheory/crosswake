@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-12-PLAN.md
-last_updated: "2026-07-31T16:29:54.646Z"
+stopped_at: Completed 158-13-PLAN.md
+last_updated: "2026-07-31T16:33:03.594Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 0
 current_plan: null
 ---
@@ -23,8 +23,8 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 12 of 14 executed
-Status: Ready to execute Plan 13
+Plan: 13 of 14 executed
+Status: Ready to execute Plan 14
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -44,8 +44,7 @@ framework launch.
 
 ## Next Action
 
-Execute Plan 13 to format the capability renderer and prove all changed Elixir sources before the
-final Phase 158 reconciliation.
+Execute Plan 14 to rerun the complete gate and reconcile Phase 158 validation and verification.
 
 ## Blockers
 
@@ -85,6 +84,7 @@ final Phase 158 reconciliation.
 - [Phase ?]: Phoenix path templates allow only generic static segments and the :id parameter token.
 - [Phase ?]: Public prose accepts only the standalone two-word phrase; standalone hyphenated wording has a dedicated stable rule ID.
 - [Phase ?]: Sensitive identity vocabulary requires a key-plus-assignment shape so safe review terminology remains scannable.
+- [Phase ?]: Final formatter ledger enumerates all seven Elixir sources and tests changed by Plans 158-11 through 158-13, including lib/crosswake/capability_map.ex.
 
 ## Deferred Items
 
@@ -113,8 +113,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T16:29:54.636Z
-**Stopped at:** Completed 158-12-PLAN.md
+**Last session:** 2026-07-31T16:33:03.588Z
+**Stopped at:** Completed 158-13-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -133,3 +133,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P10 | 8m | 1 tasks | 1 files |
 | Phase 158-adoption-reset-and-route-map P11 | 12m | 1 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P12 | 5min | 2 tasks | 4 files |
+| Phase 158-adoption-reset-and-route-map P13 | 3m | 1 tasks | 1 files |
