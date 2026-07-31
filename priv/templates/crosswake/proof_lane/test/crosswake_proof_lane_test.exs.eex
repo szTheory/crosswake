@@ -2,7 +2,29 @@
 defmodule CrosswakeProofLaneContractTest do
   use ExUnit.Case, async: true
 
+  alias Crosswake.ProofLane.Evidence
+
   test "declares a host-owned proof lane" do
     assert "<%= @config.route_id %>" =~ "route-"
+  end
+
+  test "records only opaque low-cardinality blocked prerequisites" do
+    attrs = %{
+      schema_version: "1",
+      crosswake_version: "1.0.0",
+      template_version: "<%= @template_version %>",
+      commit_ref: "host-proof-contract",
+      route_id: "<%= @config.route_id %>",
+      assertion_ids: ["replay_prerequisite", "pack_audio_prerequisite"],
+      status: :blocked,
+      outcome: :blocked,
+      captured_at: "2026-01-01T00:00:00Z",
+      retention_label: :brief,
+      device_class: :ios,
+      approved_hashes: []
+    }
+
+    assert {:ok, evidence} = Evidence.build(attrs)
+    refute Evidence.to_map(evidence)["outcome"] == "passed"
   end
 end
