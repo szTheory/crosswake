@@ -50,4 +50,89 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     assert digest =~ ~r/^[a-f0-9]{64}$/
     assert {:error, _} = Evidence.approved_hash(:unreviewed_binary, "CANARY-TOKEN")
   end
+
+  test "recursively rejects an unexpected staged path after canonical evidence is serialized" do
+    with_stage(fn stage ->
+      write_canonical!(stage)
+      File.mkdir_p!(Path.join(stage, "nested"))
+      File.write!(Path.join(stage, "nested/extra.txt"), "safe-looking but unapproved")
+
+      assert {:error, error} = Evidence.scan_stage(stage)
+      assert error.rule_id == "PL-EVIDENCE-ARTIFACT"
+      refute inspect(error) =~ "safe-looking"
+    end)
+  end
+
+  test "final scanning rejects malformed closed values without raising or echoing bytes" do
+    with_stage(fn stage ->
+      write_canonical!(stage)
+      path = Path.join(stage, "proof-lane-evidence.json")
+      File.write!(path, String.replace(File.read!(path), "\"blocked\"", "\"CANARY-UNKNOWN\""))
+
+      assert {:error, error} = Evidence.scan_stage(stage)
+      assert error.rule_id == "PL-EVIDENCE-SCAN"
+      refute inspect(error) =~ "CANARY"
+    end)
+  end
+
+  test "promotion and read-only check retain exactly one canonical artifact" do
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(@valid, destination)
+      assert :ok = Evidence.check(destination)
+      assert File.exists?(Path.join(destination, "proof-lane-evidence.json"))
+
+      assert {:error, error} = Evidence.promote(@valid, destination)
+      assert error.rule_id == "PL-EVIDENCE-COLLISION"
+      assert :ok = Evidence.check(destination)
+    end)
+  end
+
+  test "concurrent promoters preserve one winner and return a stable loser result" do
+    with_destination(fn destination ->
+      results =
+        1..2
+        |> Task.async_stream(fn _ -> Evidence.promote(@valid, destination) end, ordered: false)
+        |> Enum.map(fn {:ok, result} -> result end)
+
+      assert Enum.count(results, &(&1 == :ok)) == 1
+      assert Enum.any?(results, &match?({:error, %{rule_id: "PL-EVIDENCE-COLLISION"}}, &1))
+      assert :ok = Evidence.check(destination)
+    end)
+  end
+
+  defp write_canonical!(stage) do
+    assert {:ok, evidence} = Evidence.build(@valid)
+
+    File.write!(
+      Path.join(stage, "proof-lane-evidence.json"),
+      Jason.encode!(Evidence.to_map(evidence))
+    )
+  end
+
+  defp with_stage(fun) do
+    root =
+      Path.join(System.tmp_dir!(), "crosswake-evidence-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(root)
+
+    try do
+      fun.(root)
+    after
+      File.rm_rf(root)
+    end
+  end
+
+  defp with_destination(fun) do
+    root =
+      Path.join(System.tmp_dir!(), "crosswake-evidence-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(root)
+    destination = Path.join(root, "final")
+
+    try do
+      fun.(destination)
+    after
+      File.rm_rf(root)
+    end
+  end
 end
