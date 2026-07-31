@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 7 plans (4 executed, 3 gap-closure planned)
+**Plans:** 5/7 plans executed
 
 Plans:
 **Wave 1**
@@ -162,7 +162,7 @@ Plans:
 
 **Wave 3** *(gap closure; independently blocked on the relevant executed Wave 2 plan)*
 
-- [ ] 159-05-PLAN.md — Confine every generator action to a normalized non-root host `native/ios` layout.
+- [x] 159-05-PLAN.md — Confine every generator action to a normalized non-root host `native/ios` layout.
 - [ ] 159-06-PLAN.md — Restore type-checked browser proof and make unavailable iOS verification non-passing.
 - [ ] 159-07-PLAN.md — Bind retained identifiers and hashes to safe canonical sources and close promotion TOCTOU.
 

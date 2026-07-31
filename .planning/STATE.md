@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Planned 159-05 through 159-07 gap closure
-last_updated: "2026-07-31T21:51:04.502Z"
+stopped_at: Completed 159-05-PLAN.md
+last_updated: "2026-07-31T23:04:47.081Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 159 gap-closure planning completed
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 27
-  completed_plans: 24
-  percent: 40
+  completed_plans: 25
+  percent: 20
 current_plan: null
 ---
 
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 4 of 7 complete; 3 gap-closure plans ready
-Status: Ready to execute gap-closure plans
-Last activity: 2026-07-31 — Phase 159 gap-closure planning completed
+Plan: 2 of 7
+Status: Ready to execute
+Last activity: 2026-07-31 — Phase 159 execution started
 
 ## Active Objective
 
@@ -107,6 +107,8 @@ adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: The original browser corpus remains primary while host callbacks supply the reusable offline-island proof sequence.
 - [Phase ?]: Native proof exposes only closed blocked or unavailable prerequisites until later host auth/replay and pack/audio adapters exist.
 - [Phase ?]: Retained proof evidence uses an exact twelve-field allowlist and final-byte scanning before promotion.
+- [Phase ?]: Proof-lane host roots are derived only from a normalized non-root native/ios shell path.
+- [Phase ?]: Generator actions revalidate direct Config structs before filesystem destination derivation.
 
 ## Deferred Items
 
@@ -135,8 +137,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T21:08:03.505Z
-**Stopped at:** Completed 159-04-PLAN.md
+**Last session:** 2026-07-31T23:04:47.074Z
+**Stopped at:** Completed 159-05-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -167,3 +169,4 @@ this milestone reset.
 | Phase 159 P02 | 15m | 2 tasks | 5 files |
 | Phase 159 P03 | 10m | 2 tasks | 10 files |
 | Phase 159 P04 | 18m | 2 tasks | 3 files |
+| Phase 159 P05 | 14m | 2 tasks | 4 files |
