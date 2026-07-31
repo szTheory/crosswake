@@ -19,13 +19,16 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
           finish(Generator.check(config))
 
         opts[:diff] ->
-          Generator.diff(config) |> Enum.each(&Mix.shell().info("missing #{&1}"))
+          Generator.diff(config)
+          |> Enum.each(fn %{path: path, status: status} ->
+            Mix.shell().info("#{status} #{path}")
+          end)
 
         true ->
           case Generator.generate(config) do
             {:ok, results} ->
-              Enum.each(results, fn {state, path} ->
-                Mix.shell().info("#{state} #{Path.basename(path)}")
+              Enum.each(results, fn %{path: path, status: status} ->
+                Mix.shell().info("#{status} #{path}")
               end)
 
             error ->
@@ -39,6 +42,15 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLane do
 
   defp finish(:ok), do: :ok
   defp finish({:error, {rule_id, key}}), do: Mix.raise("#{rule_id}: #{key}")
+
+  defp finish({:error, findings}) when is_list(findings) do
+    Mix.raise(
+      findings
+      |> Enum.map_join("\n", fn %{rule_id: rule_id, path: path, remediation: remediation} ->
+        "#{rule_id}: #{path}; #{remediation}"
+      end)
+    )
+  end
 
   defp load_config(opts) do
     config =

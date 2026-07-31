@@ -106,4 +106,21 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       Process.delete(:crosswake_proof_lane_interrupt_before_manifest)
     end)
   end
+
+  test "concurrent generators preserve host-owned destinations" do
+    with_root(fn root, config ->
+      outcomes =
+        1..2
+        |> Task.async_stream(fn _ -> Generator.generate(config) end,
+          max_concurrency: 2,
+          ordered: false,
+          timeout: 5_000
+        )
+        |> Enum.map(fn {:ok, result} -> result end)
+
+      assert Enum.all?(outcomes, &match?({:ok, _}, &1))
+      assert File.regular?(Path.join(root, ".crosswake/proof_lane.json"))
+      assert :ok = Generator.check(config)
+    end)
+  end
 end
