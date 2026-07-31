@@ -107,7 +107,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     File.cwd!()
     |> classification_result()
     |> elem(0)
-    |> Enum.filter(&(&1.scan? and &1.policy_scan?))
+    |> Enum.filter(& &1.scan?)
     |> Enum.flat_map(fn %{path: path, destination: destination} ->
       contents = Map.get(contents_by_path, path, "")
       generic_violations(path, contents) ++ destination_violations(destination, path, contents)
@@ -257,8 +257,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
              path: path,
              absolute_path: absolute_path,
              destination: destination,
-             scan?: true,
-             policy_scan?: policy_scan_path?(path)
+             scan?: true
            }}
 
         {:excluded, destination} ->
@@ -267,8 +266,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
              path: path,
              absolute_path: absolute_path,
              destination: destination,
-             scan?: false,
-             policy_scan?: false
+             scan?: false
            }}
 
         :unclassified ->
@@ -296,11 +294,6 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     |> Enum.find_value(fn %{glob: glob, destination: destination} ->
       if glob == path, do: destination
     end)
-  end
-
-  defp policy_scan_path?(path) do
-    not is_nil(named_destination(path)) or
-      String.starts_with?(path, ".planning/phases/158-adoption-reset-and-route-map/")
   end
 
   defp phase_artifact_path?(path) do
@@ -396,10 +389,8 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     end)
   end
 
-  defp policy_violations(%{policy_scan?: true, path: path, destination: destination}, contents),
+  defp policy_violations(%{path: path, destination: destination}, contents),
     do: generic_violations(path, contents) ++ destination_violations(destination, path, contents)
-
-  defp policy_violations(_entry, _contents), do: []
 
   defp normalize_private_terms(terms) do
     terms
