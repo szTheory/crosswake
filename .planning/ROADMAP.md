@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 4/4 plans executed
+**Plans:** 7 plans (4 executed, 3 gap-closure planned)
 
 Plans:
 **Wave 1**
@@ -159,6 +159,12 @@ Plans:
 - [x] 159-02-PLAN.md — Complete closed config plus collision-safe generate/check/diff lifecycle behavior.
 - [x] 159-03-PLAN.md — Preserve the primary browser corpus and compile explicit XCTest/XCUITest boundaries.
 - [x] 159-04-PLAN.md — Enforce typed allowlist evidence, final staged scanning, and atomic promotion.
+
+**Wave 3** *(gap closure; independently blocked on the relevant executed Wave 2 plan)*
+
+- [ ] 159-05-PLAN.md — Confine every generator action to a normalized non-root host `native/ios` layout.
+- [ ] 159-06-PLAN.md — Restore type-checked browser proof and make unavailable iOS verification non-passing.
+- [ ] 159-07-PLAN.md — Bind retained identifiers and hashes to safe canonical sources and close promotion TOCTOU.
 
 **Cross-cutting constraints:**
 
