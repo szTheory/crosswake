@@ -3,10 +3,9 @@ gsd_state_version: 1.0
 milestone: v20.0
 milestone_name: Native Controls Pack 1
 current_phase: 156
-current_phase_name: native-menu-action-button-control
 status: ready_to_plan
-stopped_at: Phase 155 complete (7/7) — ready to discuss Phase 156
-last_updated: "2026-07-30T21:10:00Z"
+stopped_at: Phase 156 context gathered
+last_updated: "2026-07-31T01:12:38.926Z"
 last_activity: 2026-07-30
 last_activity_desc: Phase 153-02 summary reconciled; Phase 156 remains unblocked
 progress:
@@ -15,6 +14,7 @@ progress:
   total_plans: 22
   completed_plans: 22
   percent: 67
+current_phase_name: native-menu-action-button-control
 ---
 
 # Project State: Crosswake
@@ -450,9 +450,9 @@ Full decision log in PROJECT.md (Key Decisions).
 
 ## Session Continuity
 
-Last session: 2026-07-30T19:10:29.986Z
-Stopped at: Completed 155-07-PLAN.md — Phase 155 (Host-Owned Fallback Components) 7/7 plans executed
-Resume file: None
+Last session: 2026-07-31T01:12:38.911Z
+Stopped at: Phase 156 context gathered
+Resume file: .planning/phases/156-native-menu-action-button-control/156-CONTEXT.md
 
 ## Operator Next Steps
 
