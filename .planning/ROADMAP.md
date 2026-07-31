@@ -147,12 +147,12 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 159-01-PLAN.md — Trace one Phoenix config through host-owned browser, ExUnit, iOS, and safe-evidence scaffolding.
+- [x] 159-01-PLAN.md — Trace one Phoenix config through host-owned browser, ExUnit, iOS, and safe-evidence scaffolding.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

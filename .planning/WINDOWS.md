@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 4
+open_count: 5
 waived_count: 0
 fixed_count: 0
-total_count: 4
-last_updated: 2026-07-31T13:45:25.123Z
+total_count: 5
+last_updated: 2026-07-31T20:45:02.500Z
 ---
 
 # Broken Windows Ledger
@@ -19,6 +19,7 @@ last_updated: 2026-07-31T13:45:25.123Z
 | 2 | 154 | deviation | lib/crosswake/bridge/catalog_guard.ex |  | Eight-entry out-of-vocabulary native denial allowlist (D-16 option-b): CTRL-02 is 'one typed denial at the adopter boundary', not 'one vocabulary on the wire', until SEED-008 is worked. | open |  | 2026-07-29T23:35:11.072Z |  |
 | 3 | 155 | deviation | examples/phoenix_host/e2e/native_controls_fallback.spec.ts |  | Auto-fixed (Rule 1): hardcoded template_version=1 assertion updated to template_version=2 to match the 155-06 stamp bump | open |  | 2026-07-30T18:21:22.547Z |  |
 | 4 | 158 | unrun-verify | test/crosswake/planning/first_adopter_context_test.exs |  | Broader Task 2 planning-context verification is blocked by the executor-start STATE.md transition. | open |  | 2026-07-31T13:45:25.123Z |  |
+| 5 | 159 | stub | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Focused native XCTest/XCUITest source expansion is intentionally deferred to Plan 159-03. | open |  | 2026-07-31T20:45:02.500Z |  |
 
 ````json
 [
@@ -68,6 +69,18 @@ last_updated: 2026-07-31T13:45:25.123Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-07-31T13:45:25.123Z",
+    "resolved_at": null
+  },
+  {
+    "id": 5,
+    "kind": "stub",
+    "phase": "159",
+    "file": "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex",
+    "line": null,
+    "description": "Focused native XCTest/XCUITest source expansion is intentionally deferred to Plan 159-03.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-07-31T20:45:02.500Z",
     "resolved_at": null
   }
 ]
