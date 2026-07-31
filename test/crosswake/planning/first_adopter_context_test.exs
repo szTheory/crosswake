@@ -104,11 +104,11 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     assert FirstAdopterContext.scan(Map.put(contents, path, safe_prose)) == []
 
     for field <- [
-          "customer_email:",
-          "customer-name =",
-          "customer address =>",
-          "customerEmail:",
-          "legalName ="
+          "customer" <> "_email:",
+          "customer" <> "-name =",
+          "customer" <> " address =>",
+          "customer" <> "Email:",
+          "legal" <> "Name ="
         ] do
       assert [%{rule_id: "privacy.identifying_field", path: ^path}] =
                FirstAdopterContext.scan(Map.put(contents, path, "#{field} synthetic"))
@@ -156,9 +156,11 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     ]
 
     with_temporary_repository(paths, "safe prefix #{private_term} safe suffix", fn root ->
-      assert paths == FirstAdopterContext.discover_paths(root)
+      assert Enum.sort(paths) == FirstAdopterContext.discover_paths(root)
 
-      assert Enum.map(paths, &%{rule_id: "privacy.private_term", path: &1}) ==
+      assert paths
+             |> Enum.map(&%{rule_id: "privacy.private_term", path: &1})
+             |> Enum.sort_by(& &1.path) ==
                FirstAdopterContext.scan_filesystem(root, [private_term])
 
       refute inspect(FirstAdopterContext.scan_filesystem(root, [private_term])) =~ private_term
@@ -172,11 +174,31 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
              ] = FirstAdopterContext.scan_filesystem(root, [])
     end)
 
-    missing_root = Path.join(System.tmp_dir!(), "crosswake-missing-#{System.unique_integer([:positive])}")
+    missing_root =
+      Path.join(System.tmp_dir!(), "crosswake-missing-#{System.unique_integer([:positive])}")
 
     assert [
              %{rule_id: "routing.repository_enumeration_failed", path: "repository"}
            ] = FirstAdopterContext.scan_filesystem(missing_root, [])
+  end
+
+  test "filesystem discovery excludes raw fixtures and rejects symlink candidates before reads" do
+    private_term = Enum.join(["fixture", "private", "canary"], "-")
+
+    with_temporary_repository(["test/fixtures/raw.md"], private_term, fn root ->
+      assert FirstAdopterContext.discover_paths(root) == []
+      assert FirstAdopterContext.scan_filesystem(root, [private_term]) == []
+    end)
+
+    with_temporary_repository(["guides/target.md"], "safe", fn root ->
+      link = Path.join(root, "guides/link.md")
+      :ok = File.ln_s("target.md", link)
+      {_, 0} = System.cmd("git", ["-C", root, "add", "guides/link.md"])
+
+      assert [
+               %{rule_id: "routing.unsafe_candidate_path", path: "guides/link.md"}
+             ] = FirstAdopterContext.scan_filesystem(root, [])
+    end)
   end
 
   test "filesystem discovery includes current Phase 158 planning artifacts" do

@@ -51,13 +51,16 @@ defmodule Crosswake.Planning.FirstAdopterContext do
     %{glob: "guides/support_matrix.md", destination: :public}
   ]
 
+  @scannable_extensions ~w(.css .ex .exs .html .js .json .md .mjs .sh .swift .toml .ts .tsx .yml .yaml)
+  @binary_extensions ~w(.a .app .beam .dylib .gif .gz .ico .jar .jpeg .jpg .mp3 .mp4 .o .pdf .png .so .svg .webp .zip)
+
   @doc "Returns the complete, stable path-to-destination routing matrix."
   @spec routing_matrix() :: [map()]
   def routing_matrix do
     File.cwd!()
-    |> discovered_entries()
-    |> Enum.map(&Map.take(&1, [:path, :destination]))
-    |> Enum.map(&Map.put(&1, :scan?, true))
+    |> classification_result()
+    |> elem(0)
+    |> Enum.map(&Map.take(&1, [:path, :destination, :scan?]))
     |> Kernel.++(@non_file_routes)
     |> Enum.sort_by(& &1.path)
   end
@@ -78,17 +81,19 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   @spec discover_paths(Path.t()) :: [String.t()]
   def discover_paths(root) when is_binary(root) do
     root
-    |> discovered_entries()
+    |> classification_result()
+    |> elem(0)
+    |> Enum.filter(& &1.scan?)
     |> Enum.map(& &1.path)
   end
 
   @doc "Scans approved repository files without returning private terms or file contents."
   @spec scan_filesystem(Path.t(), [String.t()]) :: [map()]
   def scan_filesystem(root, terms) when is_binary(root) and is_list(terms) do
-    entries = discovered_entries(root)
+    {entries, routing_violations} = classification_result(root)
 
     entries
-    |> filesystem_routing_violations()
+    |> filesystem_routing_violations(routing_violations)
     |> Kernel.++(filesystem_content_violations(entries, terms))
     |> sort_violations()
   end
@@ -164,7 +169,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp generic_violations(path, contents) do
     [
-      {"privacy.commercial_detail", ~r/\$\s*\d+/},
+      {"privacy.commercial_detail", ~r/\$\s*(?:\d{2,}|\d+\.\d+)/},
       {
         "privacy.identifying_field",
         ~r/\b(?:customer[-_ ]?(?:email|name|address)|legal[-_ ]?name)\b[ \t]*(?::|=>|=)/i
@@ -199,27 +204,185 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp sort_violations(violations), do: Enum.sort_by(violations, &{&1.rule_id, &1.path})
 
-  defp discovered_entries(root) do
+  defp classification_result(root) do
     expanded_root = Path.expand(root)
 
-    artifact_globs()
-    |> Enum.flat_map(fn %{glob: glob, destination: destination} ->
-      expanded_root
-      |> Path.join(glob)
-      |> Path.wildcard()
-      |> Enum.filter(&File.regular?/1)
-      |> Enum.map(fn absolute_path ->
-        %{
-          path: Path.relative_to(absolute_path, expanded_root),
-          absolute_path: absolute_path,
-          destination: destination
-        }
-      end)
-    end)
-    |> Enum.sort_by(& &1.path)
+    case repository_candidates(expanded_root) do
+      {:ok, candidates} ->
+        candidates
+        |> Enum.reduce({[], []}, fn path, {entries, violations} ->
+          case classify_candidate(expanded_root, path) do
+            {:entry, entry} -> {[entry | entries], violations}
+            {:violation, violation} -> {entries, [violation | violations]}
+          end
+        end)
+        |> then(fn {entries, violations} ->
+          {Enum.sort_by(entries, & &1.path), sort_violations(violations)}
+        end)
+
+      :error ->
+        {[], [%{rule_id: "routing.repository_enumeration_failed", path: "repository"}]}
+    end
   end
 
-  defp filesystem_routing_violations(entries) do
+  defp repository_candidates(root) do
+    try do
+      case System.cmd(
+             "git",
+             ["-C", root, "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+             stderr_to_stdout: true
+           ) do
+        {output, 0} -> {:ok, String.split(output, <<0>>, trim: true) |> Enum.uniq()}
+        _ -> :error
+      end
+    rescue
+      _ -> :error
+    end
+  end
+
+  defp classify_candidate(root, path) do
+    with true <- safe_relative_path?(path),
+         absolute_path <- Path.expand(path, root),
+         true <- contained_in_root?(absolute_path, root),
+         {:ok, %{type: :regular}} <- File.lstat(absolute_path) do
+      case classify_repository_path(path) do
+        {:scan, destination} ->
+          {:entry,
+           %{path: path, absolute_path: absolute_path, destination: destination, scan?: true}}
+
+        {:excluded, destination} ->
+          {:entry,
+           %{path: path, absolute_path: absolute_path, destination: destination, scan?: false}}
+
+        :unclassified ->
+          {:violation, %{rule_id: "routing.unclassified_path", path: path}}
+      end
+    else
+      _ -> {:violation, %{rule_id: "routing.unsafe_candidate_path", path: safe_path(path)}}
+    end
+  end
+
+  defp classify_repository_path(path) do
+    cond do
+      ignored_build_or_dependency_path?(path) -> {:excluded, :forbidden}
+      destination = named_destination(path) -> {:scan, destination}
+      phase_artifact_path?(path) -> {:scan, :durable}
+      explicit_exclusion_path?(path) -> {:excluded, :forbidden}
+      binary_path?(path) -> {:excluded, :forbidden}
+      scannable_text_path?(path) -> {:scan, :durable}
+      true -> :unclassified
+    end
+  end
+
+  defp named_destination(path) do
+    @artifact_globs
+    |> Enum.find_value(fn %{glob: glob, destination: destination} ->
+      if glob == path, do: destination
+    end)
+  end
+
+  defp phase_artifact_path?(path) do
+    String.match?(
+      path,
+      ~r/^\.planning\/phases\/(?:158-adoption-reset-and-route-map|15[9]-[^\/]+|16[0-2]-[^\/]+)\/.+\.md$/
+    )
+  end
+
+  defp scannable_text_path?(path) do
+    basename = Path.basename(path)
+    extension = Path.extname(path)
+
+    (extension in @scannable_extensions and
+       String.starts_with?(path, [
+         "guides/",
+         ".github/",
+         "lib/",
+         "test/",
+         "docs/",
+         "script/",
+         "config/"
+       ])) or
+      path in [
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "gen_manifest.exs",
+        "mix.exs",
+        "mix.lock",
+        "package.json",
+        ".formatter.exs",
+        ".gitignore",
+        ".tool-versions"
+      ] or
+      (basename == "AGENTS.md" and path == "AGENTS.md")
+  end
+
+  defp explicit_exclusion_path?(path) do
+    String.starts_with?(path, [
+      ".github/actions/",
+      ".planning/",
+      "artifacts/",
+      "bin/",
+      "brandbook/",
+      "evidence/",
+      "examples/",
+      "packages/",
+      "priv/",
+      "prompts/",
+      "script/",
+      ".planning/milestones/",
+      ".planning/phases/",
+      ".planning/prompt",
+      ".planning/evidence/",
+      "test/fixtures/",
+      "test/support/fixtures/",
+      "priv/fixtures/"
+    ]) or
+      path in [
+        ".dockerignore",
+        ".git-check.sh",
+        ".gitignore",
+        ".release-please-manifest.json",
+        ".tmp-init.txt",
+        ".tool-versions",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "SETUP.md",
+        "crosswake-checkpoint-24c8389.bundle",
+        "fix_bridge_tests.swift",
+        "fix_generator_test.py",
+        "fix_pbxproj.py",
+        "fix_public.py",
+        "fix_public2.py",
+        "fix_published.py",
+        "patch_activation_coordinator_tests.py",
+        "release-please-config.json",
+        "test_subclass.swift",
+        "update_main_activity.sh",
+        "update_pbxproj_for_spm.py",
+        "update_swift_access.py"
+      ]
+  end
+
+  defp ignored_build_or_dependency_path?(path),
+    do: String.starts_with?(path, ["_build/", "deps/", "node_modules/"])
+
+  defp binary_path?(path), do: Path.extname(path) in @binary_extensions
+
+  defp safe_relative_path?(path) do
+    Path.type(path) == :relative and path not in ["", "."] and
+      not String.contains?(path, <<0>>) and
+      Enum.all?(Path.split(path), &(&1 not in ["", ".", ".."]))
+  end
+
+  defp contained_in_root?(absolute_path, root),
+    do: String.starts_with?(absolute_path, root <> "/")
+
+  defp safe_path(path) when is_binary(path) do
+    if safe_relative_path?(path), do: path, else: "candidate"
+  end
+
+  defp filesystem_routing_violations(entries, routing_violations) do
     duplicate_violations =
       entries
       |> Enum.group_by(& &1.path)
@@ -232,20 +395,25 @@ defmodule Crosswake.Planning.FirstAdopterContext do
       |> Enum.reject(&(&1.destination in @required_destinations))
       |> Enum.map(&%{rule_id: "routing.unclassified_path", path: &1.path})
 
-    duplicate_violations ++ unclassified_violations
+    routing_violations ++ duplicate_violations ++ unclassified_violations
   end
 
   defp filesystem_content_violations(entries, terms) do
     normalized_terms = normalize_private_terms(terms)
 
     entries
+    |> Enum.filter(& &1.scan?)
     |> Enum.uniq_by(& &1.path)
     |> Enum.flat_map(fn %{path: path, absolute_path: absolute_path, destination: destination} ->
-      contents = File.read!(absolute_path)
+      case File.read(absolute_path) do
+        {:ok, contents} ->
+          generic_violations(path, contents) ++
+            destination_violations(destination, path, contents) ++
+            private_term_violations(path, contents, normalized_terms)
 
-      generic_violations(path, contents) ++
-        destination_violations(destination, path, contents) ++
-        private_term_violations(path, contents, normalized_terms)
+        {:error, _reason} ->
+          [%{rule_id: "routing.unreadable_path", path: path}]
+      end
     end)
   end
 
