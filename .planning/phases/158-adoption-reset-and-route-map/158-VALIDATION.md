@@ -63,40 +63,56 @@ explicitly blocked by `unknown_blocking` and TODO-002 rather than being treated 
 
 ---
 
-## Observed Phase Gate
+## Post-Gap Task and Threat Map
 
-- Passed quick gate: `mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs test/crosswake/capability_map test/crosswake/support_matrix` — 100 tests, 0 failures.
-- Passed privileged synthetic canary: `CROSSWAKE_PRIVATE_ADOPTER_TERMS=synthetic-private-term mix test test/crosswake/planning/first_adopter_context_test.exs` — 7 tests, 0 failures. The scan reports stable rule IDs and paths only; it does not echo the supplied term.
-- Passed hermetic full suite: `mix test --exclude requires_example_host --exclude advisory_only` — 1307 tests, 0 failures. Existing compiler warnings are unrelated to Phase 158 changes.
-- Passed whitespace gate: `git diff --check`.
-- All commands are deterministic, browser-free, service-free, and completed within the 120-second sampling budget.
+| Plan / task | Requirement | Threat reference | Post-gap enforcement |
+|-------------|-------------|------------------|----------------------|
+| 158-05 Task 1 | RESET-02 | T-158-G07-01, T-158-G07-03 | Concrete-route safety status rejects `known_default` before promotion. |
+| 158-05 Task 2 | RESET-02 | T-158-G07-01, T-158-G07-03 | Local-mutation and recent-auth invariants reject incoherent authority, scope, fallback, disablement, and retention posture. |
+| 158-06 Tasks 1-2 | RESET-04 | T-158-G07-02 | Approved filesystem discovery and the Mix/CI scan report stable rule/path pairs without matched content. |
+| 158-07 Task 1 | RESET-02, RESET-04 | T-158-G07-01 through T-158-G07-04 | This ledger is updated only after the complete focused, filesystem, quick, hermetic, format, and diff gate succeeds. |
 
-## Edge Accounting
+## Observed Post-Gap Phase Gate
 
-Ten applicable edge items are accounted for: eight explicit criteria plus two flagged verifier judgments.
+All commands below ran in this execution after Plans 158-05 and 158-06 landed.
 
-| Item | Disposition | Evidence |
-|------|-------------|----------|
-| RESET-01 scope, stop list, and public support truth | explicit criterion | Context, capability, and support focused tests |
-| RESET-02 route owner, posture, authority, fallback, and disablement | explicit criterion | Route inventory plus support non-promotion tests |
-| RESET-03 stopped/partial v20 and inactive 156-157 scope | explicit criterion | First-adopter context and support truth tests |
-| RESET-04 public/private routing and non-echoing scan | explicit criterion | Privileged synthetic canary |
-| T-158-01 public-guide disclosure boundary | explicit criterion | Phrase scan and byte-parity assertions |
-| T-158-02 unsupported readiness promotion | explicit criterion | `unknown_blocking` and verification-required assertions |
-| T-158-03 route ownership inheritance | explicit criterion | Route-local support prose and route inventory tests |
-| T-158-04 public codename split | explicit criterion | Public phrase assertions |
-| RESET-03 archive wording edges | flagged verifier judgment | Passed; no hidden shipped-v20 claim found |
-| RESET-04 unclassified routing edges | flagged verifier judgment | Passed; matrix drift checks found no unclassified path |
+| Gate | Observed result |
+|------|-----------------|
+| Focused route/privacy/task tests | `mix test test/crosswake/adoption/route_inventory_test.exs test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` — 25 tests, 0 failures. |
+| Real filesystem gate | `mix crosswake.adoption_context.scan` — passed. |
+| Phase 158 quick suite | `mix test test/crosswake/planning/first_adopter_context_test.exs test/crosswake/adoption/route_inventory_test.exs test/crosswake/capability_map test/crosswake/support_matrix` — 107 tests, 0 failures. |
+| Hermetic suite | `mix test --exclude requires_example_host --exclude advisory_only` — passed with only pre-existing compiler warnings. |
+| Formatting | `mix format --check-formatted` — passed. |
+| Whitespace | `git diff --check` — passed. |
 
-No adopter-instance input is treated as a manual pass. `unknown_blocking` remains an explicit promotion blocker.
+The gates are deterministic, browser-free, and service-free. The warnings observed in the hermetic suite are outside this plan's changed ledger and did not cause a test failure.
+
+## Ten-Edge No-Silent-Drop Accounting
+
+Exactly ten source probes are accounted for: three RESET-01, five RESET-02, one RESET-03, and one RESET-04.
+
+| # | Source probe | Disposition | Current evidence |
+|---|--------------|-------------|------------------|
+| 1 | RESET-01 adjacency | satisfied by Plan 01 | Duplicate route IDs and path patterns remain rejected by `route_inventory_test.exs`. |
+| 2 | RESET-01 empty inventory | satisfied by Plan 01 | An empty inventory remains contract-valid but promotion-blocked. |
+| 3 | RESET-01 ordering | satisfied by Plan 01 | Equal-comparison rows retain declaration order. |
+| 4 | RESET-02 precision | preserved regression | Required, invalid, unknown, and forbidden route fields reject without echoing supplied input. |
+| 5 | RESET-02 known-default boundary | repaired by Plan 05 | Every concrete-route safety field rejects `known_default`. |
+| 6 | RESET-02 local-mutation coherence | repaired by Plan 05 | Local-first ownership, mutation, scope, fallback, disablement, and retention contradictions reject. |
+| 7 | RESET-02 recent-auth coherence | repaired by Plan 05 | Contradictory recent-auth authority rejects in either direction. |
+| 8 | RESET-02 positive promotion | preserved regression | A coherent explicit local-mutation row remains eligible. |
+| 9 | RESET-03 stopped-v20 verifier judgment | satisfied by Plan 03 | The focused context proof retains stopped/partial v20 and inactive 156-157 scope. |
+| 10 | RESET-04 unclassified filesystem edge | repaired by Plan 06 | Approved glob discovery includes PLAN, SUMMARY, and VALIDATION artifacts; filesystem and Mix-task canaries cover the scan. |
+
+No source probe is silently dropped or promoted beyond its evidence. The policy-contract enforcement above is closed; adopter-instance values remain `unknown_blocking`, and TODO-002 remains open. No concrete adopter input is treated as a manual pass.
 
 ## Validation Sign-Off
 
-- [x] All tasks have `<automated>` verification or Wave 0 dependencies
-- [x] Sampling continuity: no 3 consecutive tasks without automated verification
-- [x] Wave 0 covers all missing references
-- [x] No watch-mode flags
-- [x] Feedback latency < 120 seconds
-- [x] `nyquist_compliant: true` set in frontmatter
+- [x] The complete post-gap automated gate passed in this execution.
+- [x] RESET-02 defaults-only and incoherent-route promotion paths are fail-closed.
+- [x] RESET-04 scans include approved planning artifacts and preserve non-echoing output.
+- [x] All ten source probes are explicitly accounted for.
+- [x] Formatting and whitespace gates passed.
+- [x] `nyquist_compliant: true` remains set in frontmatter.
 
-**Approval:** complete — no unresolved high-severity Phase 158 threat.
+**Approval:** policy-contract validation is complete based on current post-gap evidence. The stale pre-gap high-severity sign-off is replaced; defaults-only/incoherent route promotion and unscanned planning artifacts are closed. Adopter-instance completeness remains `unknown_blocking` until sanitized input closes TODO-002.
