@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 **Wave 1**
@@ -59,7 +59,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 158-02-PLAN.md — Canonicalize adoption implications and regenerate capability truth.
+- [x] 158-02-PLAN.md — Canonicalize adoption implications and regenerate capability truth.
 - [ ] 158-03-PLAN.md — Centralize privacy/context routing and lock stopped-v20 discoverability.
 
 **Wave 3** *(blocked on Wave 2 completion)*

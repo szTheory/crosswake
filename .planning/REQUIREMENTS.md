@@ -115,7 +115,7 @@ work.
 
 | Requirement | Phase | Status |
 | --- | --- | --- |
-| RESET-01 | Phase 158 | Pending |
+| RESET-01 | Phase 158 | Complete |
 | RESET-02 | Phase 158 | Complete |
 | RESET-03 | Phase 158 | Pending |
 | RESET-04 | Phase 158 | Complete |
