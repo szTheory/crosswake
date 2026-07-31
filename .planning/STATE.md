@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-03-PLAN.md
-last_updated: "2026-07-31T14:01:22.619Z"
+status: verifying
+stopped_at: Completed 158-04-PLAN.md
+last_updated: "2026-07-31T14:11:26.782Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 0
+  completed_plans: 4
+  percent: 20
 current_plan: null
 ---
 
@@ -24,7 +24,7 @@ current_plan: null
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -73,6 +73,8 @@ Run `$gsd-execute-phase 158`. Execution follows the annotated three-wave plan in
 - [Phase ?]: Conflicting canonical and legacy implication values fail closed without echoing supplied row content.
 - [Phase ?]: Private-term scans omit plan files that intentionally document the secret-input seam and synthetic canary.
 - [Phase ?]: Executor-state discoverability asserts the active execute command rather than the pre-execution discuss command.
+- [Phase ?]: Policy-contract completion and surface defaults never promote external-host or physical-device support while route inputs are unknown_blocking.
+- [Phase ?]: Public support wording uses first adopter, retains the existing vocabulary, and keeps Android at its frozen generator/Maven/JVM/vector posture.
 
 ## Deferred Items
 
@@ -101,8 +103,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T14:01:22.612Z
-**Stopped at:** Completed 158-03-PLAN.md
+**Last session:** 2026-07-31T14:11:26.775Z
+**Stopped at:** Completed 158-04-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -112,3 +114,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P01 | 6m | 2 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P02 | 10m | 2 tasks | 5 files |
 | Phase 158-adoption-reset-and-route-map P03 | 1m | 2 tasks | 2 files |
+| Phase 158-adoption-reset-and-route-map P04 | 12m | 2 tasks | 5 files |
