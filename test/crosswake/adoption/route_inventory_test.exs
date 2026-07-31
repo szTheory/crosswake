@@ -86,6 +86,32 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
            ]
   end
 
+  test "route-policy map shares the closed vocabulary and keeps the concrete inventory blocked" do
+    map = File.read!(".planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md")
+    todo = File.read!(".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md")
+
+    for status <- RouteInventory.status_values() do
+      assert map =~ Atom.to_string(status)
+    end
+
+    for field <- [
+          "auth",
+          "recent-auth",
+          "scope",
+          "mutation",
+          "media",
+          "fallback",
+          "disablement",
+          "queued-data retention"
+        ] do
+      assert map =~ field
+    end
+
+    assert map =~ "adopter-instance completeness is blocked"
+    assert map =~ "web-only"
+    assert todo =~ "status: open"
+  end
+
   defp valid_row(overrides \\ []) do
     base = [
       route_id: "route-opaque-study",
