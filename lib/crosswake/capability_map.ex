@@ -1,9 +1,9 @@
 defmodule Crosswake.CapabilityMap do
   @moduledoc """
-  Canonical capability-map truth for support posture, proof posture, and first-adopter pressure.
+  Canonical capability-map truth for support posture, proof posture, and first adopter pressure.
 
   This module is intentionally small and data-oriented. It classifies current support,
-  proof-backed evidence, first-adopter pressure, and future gaps without
+  proof-backed evidence, first adopter pressure, and future gaps without
   adding native controls, provider adapters, storage/sync productization, or dashboard UI.
   """
 

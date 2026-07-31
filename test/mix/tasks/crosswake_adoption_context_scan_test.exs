@@ -31,7 +31,8 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
 
       error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
-      assert error.message == "privacy.public_phrase_hyphenated #{path}"
+      assert error.message =~ "privacy.public_phrase #{path}"
+      assert error.message =~ "privacy.public_phrase_hyphenated #{path}"
       refute error.message =~ hyphenated_phrase
       refute error.message =~ "route ownership"
     end)

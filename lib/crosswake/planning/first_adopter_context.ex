@@ -173,11 +173,13 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   end
 
   defp destination_violations(:public, path, contents) do
-    public_phrase = Regex.match?(~r/first adopter|first-adopter/i, contents)
+    public_phrase = Regex.match?(~r/\bfirst[[:space:]]+adopter\b/i, contents)
+    hyphenated_phrase = Regex.match?(~r/\bfirst-adopter(?!-)\b/i, contents)
     codename = String.contains?(contents, "First B2C Adopter")
 
     []
     |> maybe_add(not public_phrase, "privacy.public_phrase", path)
+    |> maybe_add(hyphenated_phrase, "privacy.public_phrase_hyphenated", path)
     |> maybe_add(codename, "privacy.public_codename", path)
   end
 
