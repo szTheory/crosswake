@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: executing
-stopped_at: Completed 158-10-PLAN.md
-last_updated: "2026-07-31T15:50:07.880Z"
+status: gaps_found
+stopped_at: Phase 158 verification found four blockers after all 10 plans executed
+last_updated: "2026-07-31T16:03:07Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 execution started
+last_activity_desc: Phase 158 re-verification found privacy and reproducibility gaps
 progress:
   total_phases: 5
   completed_phases: 1
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 10 of 10 executed; no gap-closure plans remaining
-Status: Ready for phase re-verification
-Last activity: 2026-07-31 — Phase 158 execution started
+Phase: 158 (adoption-reset-and-route-map) — GAPS FOUND
+Plan: 10 of 10 executed; verification scored 41/46 must-haves
+Status: Gap planning required before Phase 158 can complete
+Last activity: 2026-07-31 — Re-verification found four blockers
 
 ## Active Objective
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-verify-work 158` to re-verify Phase 158 after the repaired protected pull-request
-privacy gate, public capability wording, and reproducible validation-ledger evidence.
+Run `$gsd-plan-phase 158 --gaps` to close opaque route-reference validation, exact public-phrase
+enforcement, the registered-artifact scan false positive, and formatting-ledger reproducibility.
 
 ## Blockers
 

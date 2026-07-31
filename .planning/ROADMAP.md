@@ -51,6 +51,7 @@ separately funded business-line mandate.
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
 **Plans:** 10/10 plans executed
+**Verification:** Gaps found (41/46 must-haves); four blockers require another gap-closure cycle
 
 Plans:
 **Wave 1**
