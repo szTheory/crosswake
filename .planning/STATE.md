@@ -23,8 +23,8 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 2 of 14
-Status: Ready to execute
+Plan: 11 of 14 executed
+Status: Ready to execute Plan 12
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 158 --gaps` to close opaque route-reference validation, exact public-phrase
-enforcement, the registered-artifact scan false positive, and formatting-ledger reproducibility.
+Execute Plan 12 to close exact public-phrase enforcement and the registered-artifact scan false
+positive; retain the final reconciliation work for the formatting-ledger evidence.
 
 ## Blockers
 
