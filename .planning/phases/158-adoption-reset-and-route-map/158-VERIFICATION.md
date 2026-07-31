@@ -1,56 +1,68 @@
 ---
 phase: 158-adoption-reset-and-route-map
-verified: 2026-07-31T15:16:07Z
+verified: 2026-07-31T16:00:59Z
 status: gaps_found
-score: 8/11 must-haves verified
+score: 41/46 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 18/22
+  previous_score: 8/11
   gaps_closed:
-    - "Concrete route safety posture rejects known_default and local-mutation/recent-auth incoherence before promotion."
-    - "Phase 158 planning artifacts are now dynamically discovered and scanned; PLAN files no longer have a private-term exemption."
+    - "Trusted same-repository pull requests now run the protected private-term scan; forks fail closed without repository-secret exposure."
+    - "The generated capability guide now uses the approved public phrase and remains byte-identical to its renderer."
+    - "The ledger uses explicit formatter inputs and a runtime-assembled protected canary."
   gaps_remaining:
-    - "Protected private-term enforcement is not a pull-request merge gate."
+    - "The route inventory accepts customer-like identifiers and path segments despite its opaque/sanitized contract."
+    - "The privacy scanner treats the prohibited hyphenated public spelling as compliant."
+    - "The current Phase 158 scan and focused context test fail because the scanned review artifact trips the generic identifying-field pattern."
   regressions:
-    - "The documented synthetic protected-term test now fails against Phase 158's own scanned artifacts."
-    - "The ledger claims mix format --check-formatted exits zero, but that exact command exits non-zero."
+    - "lib/crosswake/capability_map/renderer.ex fails mix format --check-formatted."
 gaps:
-  - truth: "Automated scans reject the prohibited real adopter name from planning, agent, and public-guide surfaces before a pull request can merge."
+  - truth: "A sanitized concrete Phoenix route pattern can be validated without recording an adopter-specific fact."
     status: failed
-    reason: "The pull_request workflow runs only the generic scan. The secret-backed --require-private-terms scan is skipped for every pull request and runs only after a push to main or manual dispatch."
+    reason: "RouteInventory accepts arbitrary human-readable route_id and path_pattern strings, including customer-like values, and retains them in its validated struct."
     artifacts:
-      - path: ".github/workflows/hex-page-proof.yml"
-        issue: "The protected scan is guarded by if: github.event_name != 'pull_request', so same-repository PRs can merge without the real-term check."
+      - path: "lib/crosswake/adoption/route_inventory.ex"
+        issue: "validate_route_id/1 permits any lowercase slug and validate_path_pattern/2 permits arbitrary static path segments."
     missing:
-      - "Run the protected scan for trusted same-repository PRs, and make fork handling fail closed or require a trusted maintainer/merge-queue check before merge."
-  - truth: "The capability guide uses only the public phrase first adopter."
+      - "Constrain route references to mechanically opaque IDs and an allowlisted non-identifying route-template grammar; add negative regressions."
+  - truth: "The durable codename/public phrase split is mechanically enforced across the registered public scope."
     status: failed
-    reason: "The generated public guide still contains four instances of the forbidden hyphenated variant first-adopter."
+    reason: "destination_violations/3 accepts both the approved phrase and the prohibited hyphenated variant, so the scanner emits no violation for a public artifact containing only that variant."
     artifacts:
-      - path: "guides/capability_map.md"
-        issue: "Lines 13, 21, 59, and 69 use first-adopter."
+      - path: "lib/crosswake/planning/first_adopter_context.ex"
+        issue: "The public_phrase regex at line 176 is /first adopter|first-adopter/i."
     missing:
-      - "Update the canonical capability implication strings, regenerate the guide, and add a regression that rejects the hyphenated public wording."
-  - truth: "The post-gap validation ledger records only gates that actually pass."
+      - "Require only the approved phrase, reject the hyphenated spelling with a stable rule ID, and add scanner-path regression coverage."
+  - truth: "The unmodified repository passes the enforcing filesystem privacy gate and the focused RESET-04 suite."
     status: failed
-    reason: "Two commands claimed as green in 158-VALIDATION.md fail in the current codebase: the exact no-argument formatter command and the documented synthetic protected-term test."
+    reason: "The scanner's own Phase-158 glob includes 158-REVIEW.md; that report contains the generic customer-name phrase and causes both the real Mix gate and the context test to fail."
     artifacts:
-      - path: ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
-        issue: "It asserts formatting passed and that the protected canary command passed, despite contrary current results."
+      - path: ".planning/phases/158-adoption-reset-and-route-map/158-REVIEW.md"
+        issue: "Line 74 matches privacy.identifying_field."
       - path: "test/crosswake/planning/first_adopter_context_test.exs"
-        issue: "With the documented protected-test value, its caller-seam assertion fails because scanned Phase 158 artifacts contain that literal."
+        issue: "The clean-repository assertion fails with the live scan result."
     missing:
-      - "Use a runnable formatter invocation with explicit inputs or configure .formatter.exs; remove/rework the literal synthetic term from scanned durable artifacts; then rerun and record the actual gate chain."
+      - "Make the generic identifying-field rule precise enough to avoid safe review terminology, or revise the reviewed artifact without weakening detection of actual sensitive fields; then prove the real gate passes."
+  - truth: "The Phase 158 validation ledger's formatting evidence remains reproducible."
+    status: failed
+    reason: "The changed capability renderer currently fails the repository formatter, while the final ledger does not include that changed file in its explicit formatting command."
+    artifacts:
+      - path: "lib/crosswake/capability_map/renderer.ex"
+        issue: "mix format --check-formatted reports unformatted match clauses at lines 184-190."
+      - path: ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+        issue: "Its explicit formatter list omits the changed renderer."
+    missing:
+      - "Format the renderer and record a fresh phase gate that includes all changed Elixir sources."
 ---
 
 # Phase 158: Adoption Reset and Route Map Verification Report
 
-**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify adopter routes, update support truth, and install privacy-safe context routing, while keeping adopter-instance completeness fail-closed.
+**Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify first-adopter routes, update support truth, and install privacy-safe context routing without widening scope.
 
-**Verified:** 2026-07-31T15:16:07Z  
-**Status:** gaps_found  
+**Verified:** 2026-07-31T16:00:59Z
+**Status:** gaps_found
 **Re-verification:** Yes — after gap closure
 
 ## Goal Achievement
@@ -59,92 +71,88 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | A new session can discover the infrastructure framing, Alpha/v1 split, stop list, and current phase. | ✓ VERIFIED | `AGENTS.md`, ADR, brief, route map, roadmap, and state contain the framing; `FirstAdopterContextTest` exercises those files. |
-| 2 | Every known surface has explicit owner, offline, authority/fallback, and disablement posture; missing concrete inputs remain fail-closed. | ✓ VERIFIED | Route map and generated support guide distinguish defaults from concrete inventory; `RouteInventory` rejects `known_default`, blocks `unknown_blocking`, and its negative/positive promotion tests passed. |
-| 3 | v20 is retained as stopped/partial, without shipping Phases 156–157. | ✓ VERIFIED | v20 roadmap and milestones explicitly say stopped/partial, no completion tag, and 156–157 incomplete; focused context test passed. |
-| 4 | Automated scans reject prohibited private terms before merge on planning, agent, and public-guide surfaces. | ✗ FAILED | The protected private-term workflow step is skipped on every `pull_request`; only generic checks run before merge. |
-| 5 | Sanitized route rows are closed, collision-safe, ordered, privacy-safe, and block empty/unknown inventory promotion. | ✓ VERIFIED | `RouteInventory` and 12 focused tests cover validation, non-echoing errors, collisions, order, empty inventory, and `unknown_blocking`. |
-| 6 | Concrete route promotion cannot inherit defaults or admit incoherent local-mutation/recent-auth state. | ✓ VERIFIED | `validate_posture/3` rejects `:known_default`; invariant checks require offline-island/actionable mutation and reject contradictory auth state. Executed route tests pass. |
-| 7 | Capability truth has one canonical implication field with bounded legacy compatibility and deterministic generated output. | ✓ VERIFIED | `CapabilityMap.Row` enforces `adoption_implication`; renderer's `normalize_implication/1` handles legacy/equal/conflicting inputs; focused renderer tests passed. |
-| 8 | The public capability guide uses only `first adopter`. | ✗ FAILED | `guides/capability_map.md` still renders `first-adopter` at lines 13, 21, 59, and 69. |
-| 9 | The filesystem scanner discovers current/future approved Phase 158 planning artifacts and emits only rule/path evidence. | ✓ VERIFIED | Destination globs include `158-*.md`; temporary PLAN/SUMMARY/VALIDATION canaries are tested, and `mix crosswake.adoption_context.scan` passed. |
-| 10 | The generic scanner is wired into the merge-blocking workflow and protected runs fail closed without secret input. | ✓ VERIFIED | Workflow invokes the Mix task on PRs and protected events; direct `--require-private-terms` without the variable exits with `privacy.private_terms_required secret.input`. |
-| 11 | The validation ledger is reconciled only from passing post-gap gates. | ✗ FAILED | `mix format --check-formatted` exits non-zero without formatter inputs; the documented synthetic protected-term command fails on scanned Phase 158 files, contrary to the ledger. |
+| 1 | A new session can discover GET-6 framing, the Alpha/v1 split, stop list, and current phase. | ✓ VERIFIED | `AGENTS.md`, ADR, brief, roadmap, state, and the context regression expose the required framing. |
+| 2 | Known first-adopter surfaces have explicit owner, offline posture, authority/fallback, and disablement stories, while unsupplied inputs remain blocked. | ✓ VERIFIED | Route map/support guide state the layered policy contract; `RouteInventory` blocks empty and `unknown_blocking` promotion and rejects inherited safety defaults. |
+| 3 | v20 is preserved as stopped/partial, without shipping 156–157. | ✓ VERIFIED | v20 archive, milestones, roadmap, and context test retain stopped/partial, no-tag, inactive-scope truth. |
+| 4 | Protected private-term enforcement runs before trusted PR merge and forks cannot consume the secret. | ✓ VERIFIED | Workflow lines 55–66 use same-repository provenance, secret-backed protected scan, and a secret-free fork failure path. |
+| 5 | Sanitized route rows cannot persist identifying/adopter-specific references. | ✗ FAILED | A direct public API call accepts `route_id: "acme-customer"` and `path_pattern: "/customer/acme-customer"`. |
+| 6 | Canonical capability/support renderers produce deterministic checked-in guides with the public phrase. | ✓ VERIFIED | 103 targeted tests passed; capability and support byte parity each evaluated `true`; guide scan found no prohibited public spelling. |
+| 7 | Privacy/context routing is a passing, non-echoing filesystem gate over registered Phase-158 artifacts. | ✗ FAILED | `mix crosswake.adoption_context.scan` fails with only `privacy.identifying_field .planning/phases/158-adoption-reset-and-route-map/158-REVIEW.md`; it does not echo matched content. |
+| 8 | The public phrase split is mechanically enforced by the scanner, not only by renderer-specific tests. | ✗ FAILED | Direct `FirstAdopterContext.scan/1` with the public guide changed to `first-adopter` returns no guide violation. |
+| 9 | Phase closeout evidence is current and formatting-clean. | ✗ FAILED | The live focused context test is red and `mix format --check-formatted lib/crosswake/capability_map/renderer.ex` is red. |
 
-**Score:** 8/11 truths verified (0 present, behavior-unverified)
+**Score:** 41/46 PLAN must-haves verified (0 present, behavior-unverified). The five failed plan-level truths are the four grouped blockers below plus the Plan 06 clean-repository claim, which fails for the same live scanner defect.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `lib/crosswake/adoption/route_inventory.ex` | Closed route contract and promotion evaluation | ✓ VERIFIED | Substantive validator with closed fields/statuses, invariants, collision checking, and public API tests. |
-| `test/crosswake/adoption/route_inventory_test.exs` | Route fail-closed regressions | ✓ VERIFIED | 12 behavioral tests executed successfully as part of the 111-test focused command. |
-| `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Layered contract and unresolved-input boundary | ✓ VERIFIED | Documents route-local fields, no concrete adopter row, `unknown_blocking`, and TODO-002's open state. |
-| `lib/crosswake/capability_map.ex` + `renderer.ex` | Canonical implication migration and deterministic renderer | ✓ VERIFIED | Canonical field and one normalizer are implemented and exercised. |
-| `guides/capability_map.md` | Generated public capability guide | ⚠️ PARTIAL | Renderer parity is wired, but its public wording violates the plan truth. |
-| `lib/crosswake/planning/first_adopter_context.ex` | Dynamic privacy-context discovery/scanning | ✓ VERIFIED | Globs, discovery, rule/path-only result shape, and non-echoing private-term logic are substantive and exercised. |
-| `lib/mix/tasks/crosswake.adoption_context.scan.ex` | Repository privacy gate | ✓ VERIFIED | Delegates to the scanner; normal run passed and missing protected input fails closed. |
-| `.github/workflows/hex-page-proof.yml` | Merge-blocking privacy enforcement | ⚠️ PARTIAL | Generic gate is wired on PRs, but the protected term gate is not. |
-| `lib/crosswake/support_matrix/renderer.ex` + `guides/support_matrix.md` | Honest policy-versus-proof support truth | ✓ VERIFIED | Focused support tests passed; guide retains `verification required` for host/device proof while inputs are unknown. |
-| `158-VALIDATION.md` | Honest post-gap Nyquist evidence | ✗ STUBBED EVIDENCE | Ledger exists and is detailed, but its stated successful formatter and synthetic protected-term results are not reproducible. |
+| `lib/crosswake/adoption/route_inventory.ex` | Closed route contract and promotion evaluation | ✗ PARTIAL | Substantive and tested for statuses/invariants, but the two supposedly opaque reference fields accept identifying values. |
+| `test/crosswake/adoption/route_inventory_test.exs` | Route fail-closed regressions | ⚠️ PARTIAL | 12 route tests are included in the passing 103-test run, but no regression rejects customer/taxonomy-like route references. |
+| `FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Layered inventory and unresolved-input boundary | ✓ VERIFIED | Documents explicit route-local fields, `unknown_blocking`, and open TODO-002. |
+| Capability map, renderer, and generated guide | Canonical implication / deterministic public output | ⚠️ PARTIAL | Data flow and byte parity work, but the renderer is unformatted. |
+| Context scanner, Mix task, and workflow | Privacy routing and merge gate | ✗ PARTIAL | Wiring and secret boundary exist; public-phrase rule is incomplete and the real scan is currently red. |
+| Support renderer and guide | Honest policy-versus-proof support truth | ✓ VERIFIED | Renderer feeds the generated guide; physical/device claims remain `verification required`. |
+| `158-VALIDATION.md` | Reproducible Phase-158 gate evidence | ✗ PARTIAL | It is substantive and records prior evidence, but its formatting list omits a changed unformatted file and the live focused context gate is red. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| Route policy map | `RouteInventory` | Shared closed status/field vocabulary | WIRED | Route test reads the map and asserts vocabulary/invariant terms. |
-| `RouteInventory` | Route tests | Public validate-to-promotion path | WIRED | Negative status/invariant paths and eligible state executed. |
-| Capability map | Capability guide | Renderer write/parity path | WIRED | Focused capability tests pass; wording content is still wrong. |
-| Context scanner | Mix task | `scan_filesystem/2` delegation | WIRED | Task invokes scanner and tests assert exit/error behavior. |
-| Workflow | Mix task | CI `run: mix crosswake.adoption_context.scan` | PARTIAL | The generic link is wired, but secret-backed enforcement is absent from PRs. |
-| Support renderer | Support guide | Renderer parity test | WIRED | Included in passing focused suite. |
+| Route policy map | `RouteInventory` | Shared closed vocabulary / promotion path | WIRED | Tests exercise `validate` and `promotion_status`; the privacy constraint within that path is incomplete. |
+| Capability canonical data | renderer → capability guide | `Renderer.render/write` plus parity | WIRED | Direct byte-parity spot-check passed. |
+| Support canonical matrix | renderer → support guide | `SupportMatrix.canonical` → `Renderer.render` | WIRED | Direct byte-parity spot-check passed. |
+| Context scanner | Mix task → workflow | `scan_filesystem/2` / CI commands | WIRED BUT FAILING | The workflow calls the task correctly, but the task presently exits non-zero. |
+| Context globs | current/future Phase-158 records | `.planning/phases/.../158-*.md` | WIRED | The review report is discovered, demonstrating the link and the false-positive failure. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| `RouteInventory` | route postures | caller input → closed validation → promotion state | Synthetic, validated route values | ✓ FLOWING |
-| Context scanner | discovered entries and protected terms | filesystem glob discovery; environment at task boundary | Approved artifact files; terms remain in memory | ✓ FLOWING |
-| Support/capability renderers | canonical rows | canonical modules → renderer → checked-in guide | Canonical row data, byte-parity tests | ✓ FLOWING |
+| Route inventory | route ID / path / postures | caller input → validator → promotion status | ⚠️ UNSAFE | Values flow and are retained, including arbitrary customer-like strings. |
+| Context scanner | discovered entries / private terms | destination globs + process-only environment input | ⚠️ PARTIAL | Real files are scanned with non-echoing rule/path output, but public-wording detection is incomplete and a safe review term makes the gate red. |
+| Renderers | canonical rows/matrix | canonical modules → Markdown guides | ✓ FLOWING | Both current guides equal renderer output. |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Phase route/context/capability/support behaviors | `mix test test/crosswake/adoption/route_inventory_test.exs test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | 111 tests, 0 failures | ✓ PASS |
-| Generic filesystem scan | `mix crosswake.adoption_context.scan` | `adoption context scan passed` | ✓ PASS |
-| Missing protected input fails closed | `mix crosswake.adoption_context.scan --require-private-terms` | `privacy.private_terms_required secret.input` | ✓ PASS |
-| Documented synthetic protected-term path | `CROSSWAKE_PRIVATE_ADOPTER_TERMS=<documented test value> mix test test/crosswake/planning/first_adopter_context_test.exs` | 9 tests, 1 failure; seven Phase 158 artifacts match | ✗ FAIL |
-| Hermetic suite | `mix test --exclude requires_example_host --exclude advisory_only` | Exit 0; pre-existing compiler warnings emitted | ✓ PASS |
-| Claimed formatter gate | `mix format --check-formatted` | Exit non-zero: no inputs configured | ✗ FAIL |
-| Whitespace | `git diff --check` | Exit 0 | ✓ PASS |
+| Route, task, capability, and support focused regressions | `mix test test/crosswake/adoption/route_inventory_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | 103 tests, 0 failures | ✓ PASS |
+| Full current focused Phase-158 suite | `mix test ... first_adopter_context_test.exs ...` | 112 tests, 1 failure: clean scan assertion | ✗ FAIL |
+| Real filesystem privacy gate | `mix crosswake.adoption_context.scan` | `privacy.identifying_field .../158-REVIEW.md` | ✗ FAIL |
+| Public phrase scanner | `mix run -e` invoking `FirstAdopterContext.scan/1` on `first-adopter` guide content | No guide violation | ✗ FAIL |
+| Route-reference sanitization | `mix run -e` invoking public `RouteInventory.validate/1` | Returned `{:ok, %RouteInventory{route_id: "acme-customer", path_pattern: "/customer/acme-customer"}}` | ✗ FAIL |
+| Changed renderer formatting | `mix format --check-formatted lib/crosswake/capability_map/renderer.ex` | Exit non-zero; lines 184–190 differ | ✗ FAIL |
+| Compile / full test suite | Fresh gate evidence supplied with this verification: `mix compile --warnings-as-errors` and 1321 tests / 0 failures after `77bd46a4` | Does not exercise the privacy bypasses above | ℹ️ NOT OVERRIDING |
 
 ### Requirements Coverage
 
 | Requirement | Source Plans | Description | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| RESET-01 | 02, 03, 04 | Durable infrastructure decision, scope audit, non-goals, stop list | ✓ SATISFIED | Governing documents, capability/support truth, and focused context/capability/support tests. |
-| RESET-02 | 01, 04, 05, 07 | Explicit owner/offline/authority/fallback/disablement posture | ✓ SATISFIED | Route validator's known-default and cross-field promotion tests pass; unknown input remains blocked. |
-| RESET-03 | 03, 04 | Honest stopped/partial v20 and inactive 156–157 scope | ✓ SATISFIED | v20 archive wording and focused regression test. |
-| RESET-04 | 01, 02, 03, 04, 06, 07 | No prohibited adopter identity or personal information in planning/public artifacts | ✗ BLOCKED | Scanner implementation exists but protected-term check is absent on PRs; public guide wording truth and claimed validation evidence also fail. |
+| RESET-01 | 02, 03, 04, 09, 10 | Durable infrastructure framing, reversal, audit, non-goals, stop list | ✓ SATISFIED | Governing artifacts and generated truth are present, wired, and tested. |
+| RESET-02 | 01, 04, 05, 07, 10 | Explicit owner/offline/authority/fallback/disablement posture | ✓ SATISFIED | Layered map and public route-validation/promotion regressions demonstrate closed safety posture; concrete input stays blocked. |
+| RESET-03 | 03, 04, 10 | Honest stopped/partial v20, 156–157 outside active scope | ✓ SATISFIED | Archive and regression evidence are consistent. |
+| RESET-04 | 01, 02, 03, 04, 06, 07, 08, 09, 10 | Planning/public artifacts contain no prohibited identity or personal information | ✗ BLOCKED | Opaque route input is not mechanically protected; scanner accepts forbidden public spelling and its live registered-artifact run is red. |
 
-All four IDs declared by Plan frontmatter (`RESET-01` through `RESET-04`) are present in `REQUIREMENTS.md`. No Phase 158 requirement is orphaned.
+All four IDs declared in Plan frontmatter occur in `REQUIREMENTS.md`. No Phase 158 requirement is orphaned.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `.github/workflows/hex-page-proof.yml` | 55–58 | Protected privacy scan skipped on every PR | 🛑 BLOCKER | A same-repository PR can merge private-term content before the check runs on `main`. |
-| `guides/capability_map.md` | 13, 21, 59, 69 | `first-adopter` public wording | 🛑 BLOCKER | Violates the explicit public-phrase must-have. |
-| `158-VALIDATION.md` | Observed post-gap gate table | Claims non-reproducible green gates | 🛑 BLOCKER | Completion evidence is not auditable. |
+| `route_inventory.ex` | 159–175 | Unbounded opaque reference inputs | 🛑 BLOCKER | Customer/proprietary values can enter a durable validated inventory. |
+| `first_adopter_context.ex` | 175–182 | Forbidden hyphenated wording treated as compliant | 🛑 BLOCKER | Public scanner cannot enforce the required wording/privacy boundary. |
+| `158-REVIEW.md` / scanner test | 74 / 57–60 | Registered artifact makes the gate fail | 🛑 BLOCKER | The actual merge-gate command and full focused suite are not green. |
+| `capability_map/renderer.ex` | 184–190 | Formatter drift | ⚠️ WARNING | Phase validation evidence is not fully reproducible. |
+| Phase source/test set | — | No untracked TODO/FIXME/XXX stub marker found | ℹ️ INFO | The only TODO-002 references are intentional open-adopter-input tracking. |
 
 ### Gaps Summary
 
-The original route-promotion gaps are closed: the validator now rejects inherited safety status and incoherent local-mutation/recent-auth posture through tested public APIs. The dynamic scanner also covers current and future approved Phase 158 artifacts without emitting matched content.
+The prior gap-closure work genuinely fixed trusted-PR protected scanning, public-guide wording, and the original ledger command shapes. It did not establish the broader privacy-safe context-routing outcome: the route-inventory boundary is bypassable, the generic scanner does not reject the prohibited public spelling, and the live scan/test gate fails on a registered review artifact. These are Phase 158 requirements, not later-phase work, so nothing is deferred.
 
-However, the phase goal is not achieved. RESET-04 remains fail-open at the merge boundary because PRs do not receive secret-backed protected-term enforcement. The generated capability guide violates its public-phrase contract, and the validation ledger claims two gates that do not reproduce. These are Phase 158 concerns, not items explicitly deferred to later roadmap phases.
+**Exact next action:** return Phase 158 to gap closure. First tighten `RouteInventory` route-reference validation and the public phrase scanner, then resolve the scanner false positive without suppressing real sensitive-field detection; format the capability renderer; finally rerun the real filesystem scan, the full Phase-158 focused suite, and the supplied compile/full-suite gate before replacing this report.
 
 ---
 
-_Verified: 2026-07-31T15:16:07Z_  
+_Verified: 2026-07-31T16:00:59Z_
 _Verifier: the agent (gsd-verifier)_
