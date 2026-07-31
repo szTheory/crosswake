@@ -21,6 +21,10 @@ resisting framework generalization.
 web-only, the Crosswake Alpha list is empty. Complete the one-day route inventory, then pause
 Crosswake until the public-v1 mobile path is active.
 
+**Verification rule:** Automate every automatable acceptance claim. Human action is reserved for
+credentials, external approvals, or irreversible trust steps; it does not replace executable
+assertions. Add CI only for recurring contract value.
+
 **Stop date:** After 2026-08-18, do no further Crosswake work except defects demonstrated by Phase
 162 evidence. Reconsider broader investment only after two independent active adopters or a
 separately funded business-line mandate.

@@ -69,6 +69,15 @@ inventory, then pause Crosswake until the public-v1 mobile path is active.
 - Read the current phase from `.planning/STATE.md`; do not use a hard-coded phase number.
 - Start it with `$gsd-discuss-phase <current-phase>`.
 - Use `$gsd-plan-phase <current-phase>` only when discussion is intentionally skipped.
+- Default to zero-human verification and UAT. If a claim can be checked by unit, integration, E2E,
+  device automation, or artifact inspection, the agent runs that check and treats its result as the
+  gate; do not emit `checkpoint:human-verify` or create a UAT handoff for it.
+- Reserve human action for unavoidable credentials, external approvals, or irreversible trust
+  actions. A physical-device connection may require human setup, but the assertions and evidence
+  evaluation remain automated.
+- Promote checks into CI only when they protect a recurring contract and provide stable,
+  actionable feedback. Keep one-time reconciliation commands in phase evidence rather than
+  creating permanent workflow lanes.
 - Update requirements, roadmap, state, ADRs, capability/support truth, and guide renderings together
   when a decision changes.
 - Keep settled code-local truth in git. Keep fast-changing adopter execution in the codename-only

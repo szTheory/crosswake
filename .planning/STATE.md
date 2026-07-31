@@ -66,6 +66,8 @@ TODO-002 remains the bounded adopter-input gate.
 - Pronunciation media uses one host-supplied foreground iOS pack adapter.
 - Feature flags remain host-owned through existing `gated_by`.
 - Generic sync and generic native storage non-goals remain in force.
+- Automatable acceptance requires executable proof, not conversational verification or manual UAT;
+  CI promotion is reserved for recurring contract value.
 - [Phase ?]: Route-local safety posture is represented as a closed status/value pair and never inherits from surface defaults.
 - [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
 - [Phase ?]: Canonical capability rows use adoption_implication; v20_implication remains a renderer input alias for one documented compatibility window.

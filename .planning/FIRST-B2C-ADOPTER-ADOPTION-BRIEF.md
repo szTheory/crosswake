@@ -192,6 +192,12 @@ Add only three native flows:
 Playwright remains the browser and offline-island web proof. XCTest/XCUITest plus a physical-device
 artifact covers the shell and device-only boundaries. Simulator evidence remains advisory.
 
+Acceptance is automation-first and requires no conversational verification or manual UAT for
+automatable behavior. A device connection, credential, or external approval may require a bounded
+human action, but XCTest/XCUITest, shell commands, server assertions, and redacted artifact checks
+must evaluate the result. Promote those checks into CI only when they provide recurring, stable
+contract protection; keep one-time milestone reconciliation in dated evidence.
+
 This is worth building because discarding an existing test corpus during the LiveView/mobile
 transition would recreate a known rewrite failure mode.
 
@@ -381,4 +387,3 @@ Run `$gsd-discuss-phase 158`.
 Use the route-policy map to collect sanitized route IDs, mutation categories, staleness, auth
 posture, media budgets, fallbacks, and disablement behavior. Then plan only Phase 158. Do not jump
 to Phase 159 implementation until the route inventory is frozen.
-

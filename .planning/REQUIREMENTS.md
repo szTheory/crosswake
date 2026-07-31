@@ -11,6 +11,10 @@ adopter**. Never store identifying business or personal information.
 is a bounded public-v1 design input and must not delay the adopter's monolith, billing, or customer
 work.
 
+**Verification posture:** Automatable acceptance uses executable unit, integration, E2E, device,
+or artifact checks rather than conversational verification or manual UAT. Checks enter CI only
+when they protect a recurring contract; one-time reconciliation remains phase evidence.
+
 ## v1 Requirements
 
 ### RESET — Adoption boundary and route ownership

@@ -298,6 +298,46 @@ High
 
 Accepted
 
+## Verification is executable by default
+
+**Decision**
+
+Require unit, integration, E2E, device automation, or machine-readable artifact inspection for
+acceptance whenever the claim is automatable. Do not use conversational approval or manual UAT as
+evidence for an automatable claim. Promote a check into CI only when it protects a recurring
+contract; keep one-time reconciliation in phase evidence. Human action is limited to unavoidable
+credentials, external approvals, and irreversible trust actions.
+
+**Why**
+
+Manual verification does not scale for a solo maintainer, is difficult to reproduce, and cannot
+protect future changes. Crosswake already treats deterministic proof and CI honesty as product
+surface. The physical-iPhone milestone therefore needs an automated device harness and redacted
+machine-readable artifact, not a conversational sign-off.
+
+**Alternatives considered**
+
+- Keep manual UAT as the default closeout path.
+- Add every phase acceptance command to CI regardless of recurrence or stability.
+- Enable automatic phase chaining and treat skipped checkpoints as proof.
+
+**What would change my mind**
+
+Only a genuinely non-automatable external trust action may require human participation. That action
+does not replace automated assertions for the resulting product behavior.
+
+**Date**
+
+2026-07-31
+
+**Confidence**
+
+High
+
+**Status**
+
+Accepted
+
 ## Proxy audit for the unavailable historical failure taxonomy
 
 The canonical names from the adopter's earlier product history are intentionally not stored here.
@@ -310,4 +350,3 @@ risks:
 4. A rewrite discards valuable automated tests and fixtures.
 5. Offline support is claimed more broadly than the proven island.
 6. App Store latency leaves a broken binary path without server-side disablement.
-

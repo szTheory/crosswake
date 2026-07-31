@@ -326,6 +326,7 @@ After v19.0, Crosswake has a product-shaped proof surface: a Crosswake-owned sho
 | Keep offline claims route-local, typed, and narrow | Cached read-only degradation and local-first mutation need visibly different contracts and proof posture | Validated in Phase 4 via cache/island contracts, replay outcomes, doctor posture, and the hermetic offline proof lane |
 | Keep deep desktop packaging and broad adapters out of v1 core | Early scope should validate the contract surface before expanding platform breadth | — Pending |
 | Make diagnostics, proof lanes, and docs part of the public contract | This matches the maintainer's proven OSS style and reduces support ambiguity | Further validated in Phase 2 |
+| Require executable verification instead of manual UAT for automatable claims | Reproducible unit, integration, E2E, device, and artifact checks scale to a solo maintainer and protect future changes; CI is reserved for recurring contract value | Adopted for all active work on 2026-07-31 |
 | Treat checked-in example hosts as the public proof artifact class | Proof-backed support needed a stable adopter-facing install path | Validated in Phase 5 |
 | Treat exemplars as proof artifacts, not product templates | The milestone should validate architectural fit without turning Crosswake into a starter-app bundle | Validated in Milestone v2.0 |
 | Adopt hermetic-vs-advisory CI split as the default pattern for environment-sensitive proof surfaces | Keeps PRs fast and required without dishonest claims about environment-sensitive proof | Validated in v3.3+ |

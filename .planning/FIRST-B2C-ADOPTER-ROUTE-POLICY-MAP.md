@@ -136,6 +136,11 @@ The public v1 adoption milestone is complete only when one physical iPhone can:
 9. honor a server-side disablement at route entry and replay without losing queued data; and
 10. produce a redacted artifact containing versions, device class, outcomes, and hashes only.
 
+The ten-step result must be driven and evaluated by an executable device harness. Human assistance
+may connect the device or satisfy an external credential gate, but conversational approval and
+manual UAT are not completion evidence. The harness owns assertions, failure reporting, and the
+redacted artifact.
+
 Passing this test proves one adopter flow on one iOS runtime line. It does not prove generic sync,
 background sync, generic pack storage, multiple islands, Android, or all-device support.
 
