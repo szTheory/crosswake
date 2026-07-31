@@ -199,6 +199,31 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     )
   end
 
+  test "filesystem scanning applies generic privacy rules to every recognized textual artifact" do
+    paths = [
+      "guides/unregistered-commercial-note.md",
+      "lib/crosswake/unregistered_commercial_scan.ex",
+      ".github/actions/unregistered-commercial-scan.yml",
+      "script/unregistered-commercial-scan.sh",
+      ".planning/phases/999-future-proof/999-COMMERCIAL-NOTES.md"
+    ]
+
+    commercial_detail = "amount " <> "$" <> "10"
+
+    with_temporary_repository(paths, commercial_detail, fn root ->
+      expected =
+        paths
+        |> Enum.map(&%{rule_id: "privacy.commercial_detail", path: &1})
+        |> Enum.sort_by(& &1.path)
+
+      assert FirstAdopterContext.scan_filesystem(root, []) == expected
+
+      results = inspect(FirstAdopterContext.scan_filesystem(root, []))
+      refute results =~ commercial_detail
+      refute results =~ "amount"
+    end)
+  end
+
   test "filesystem discovery fails closed for repository enumeration and unclassified text paths" do
     with_temporary_repository(["notes/unclassified.opaque"], "safe", fn root ->
       assert [

@@ -105,6 +105,32 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "raises generic privacy violations for every recognized unregistered text class" do
+    with_temporary_root(fn root ->
+      paths = [
+        "guides/unregistered-commercial-note.md",
+        "lib/crosswake/unregistered_commercial_scan.ex",
+        ".github/actions/unregistered-commercial-scan.yml",
+        "script/unregistered-commercial-scan.sh",
+        ".planning/phases/999-future-proof/999-COMMERCIAL-NOTES.md"
+      ]
+
+      commercial_detail = "amount " <> "$" <> "10"
+      Enum.each(paths, &write_file(root, &1, commercial_detail))
+
+      error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+      assert error.message ==
+               paths
+               |> Enum.map(&"privacy.commercial_detail #{&1}")
+               |> Enum.sort()
+               |> Enum.join("\n")
+
+      refute error.message =~ commercial_detail
+      refute error.message =~ "amount"
+    end)
+  end
+
   test "fails closed when private terms are required but unavailable" do
     with_temporary_root(fn root ->
       with_private_terms(nil, fn ->
