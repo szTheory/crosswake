@@ -94,6 +94,34 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
              hyphenated_phrase
   end
 
+  test "identifying-field scans require assignment context while retaining supported key shapes" do
+    path = "AGENTS.md"
+    contents = Map.new(FirstAdopterContext.active_paths(), &{&1, "first adopter"})
+
+    safe_prose =
+      "A customer-name-like validation concept is safe review prose without a field assignment."
+
+    assert FirstAdopterContext.scan(Map.put(contents, path, safe_prose)) == []
+
+    for field <- [
+          "customer_email:",
+          "customer-name =",
+          "customer address =>",
+          "customerEmail:",
+          "legalName ="
+        ] do
+      assert [%{rule_id: "privacy.identifying_field", path: ^path}] =
+               FirstAdopterContext.scan(Map.put(contents, path, "#{field} synthetic"))
+    end
+  end
+
+  test "live registered artifacts scan clean while the Phase 158 review remains discovered" do
+    review_path = ".planning/phases/158-adoption-reset-and-route-map/158-REVIEW.md"
+
+    assert review_path in FirstAdopterContext.discover_paths(File.cwd!())
+    assert FirstAdopterContext.scan(contents_by_path()) == []
+  end
+
   test "private-term scan never echoes configured terms or matched content" do
     private_term = Enum.join(["context", "only", "sentinel"], "-")
     path = "AGENTS.md"

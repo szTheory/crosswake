@@ -38,6 +38,20 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "raises the identifying-field rule and path without echoing a synthetic value" do
+    with_temporary_root(fn root ->
+      path = "guides/capability_map.md"
+      synthetic_value = Enum.join(["synthetic", "value"], "-")
+      write_file(root, path, "first adopter customerEmail: #{synthetic_value}")
+
+      error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+      assert error.message == "privacy.identifying_field #{path}"
+      refute error.message =~ synthetic_value
+      refute error.message =~ "customerEmail"
+    end)
+  end
+
   test "raises stable private rule and path for future planning artifacts without echoing secret-backed content" do
     with_temporary_root(fn root ->
       term = Enum.join(["task", "private", "canary"], "-")
