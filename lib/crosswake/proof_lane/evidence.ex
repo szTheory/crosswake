@@ -303,8 +303,14 @@ defmodule Crosswake.ProofLane.Evidence do
     atomized =
       Enum.reduce_while(map, %{}, fn {key, value}, acc ->
         case Enum.find(@schema_keys, &(Atom.to_string(&1) == key)) do
-          nil -> {:halt, :invalid}
-          field -> {:cont, Map.put(acc, field, decode_value(field, value))}
+          nil ->
+            {:halt, :invalid}
+
+          field ->
+            case decode_value(field, value) do
+              {:ok, decoded} -> {:cont, Map.put(acc, field, decoded)}
+              :error -> {:halt, :invalid}
+            end
         end
       end)
 
@@ -317,21 +323,46 @@ defmodule Crosswake.ProofLane.Evidence do
   defp string_map_to_evidence(_),
     do: error("PL-EVIDENCE-SCAN", @artifact_name, "use canonical evidence JSON")
 
-  defp decode_value(field, value)
-       when field in [:status, :outcome, :retention_label, :device_class] and is_binary(value),
-       do: String.to_existing_atom(value)
+  defp decode_value(field, value) when field in [:status, :outcome],
+    do: decode_enum(value, @outcomes)
+
+  defp decode_value(:retention_label, value), do: decode_enum(value, @retention_labels)
+  defp decode_value(:device_class, value), do: decode_enum(value, @device_classes)
 
   defp decode_value(:approved_hashes, values) when is_list(values),
-    do:
-      Enum.map(values, fn
-        %{"kind" => kind, "digest" => digest} ->
-          %{kind: String.to_existing_atom(kind), digest: digest}
+    do: decode_hashes(values)
 
-        _ ->
-          %{}
-      end)
+  defp decode_value(:approved_hashes, _), do: :error
+  defp decode_value(_, value), do: {:ok, value}
 
-  defp decode_value(_, value), do: value
+  defp decode_hashes(values) do
+    Enum.reduce_while(values, {:ok, []}, fn
+      %{"kind" => kind, "digest" => digest}, {:ok, hashes} ->
+        case decode_enum(kind, @approved_kinds) do
+          {:ok, approved_kind} ->
+            {:cont, {:ok, [%{kind: approved_kind, digest: digest} | hashes]}}
+
+          :error ->
+            {:halt, :error}
+        end
+
+      _, _ ->
+        {:halt, :error}
+    end)
+    |> then(fn
+      {:ok, hashes} -> {:ok, Enum.reverse(hashes)}
+      :error -> :error
+    end)
+  end
+
+  defp decode_enum(value, allowed) when is_binary(value) do
+    case Enum.find(allowed, &(Atom.to_string(&1) == value)) do
+      nil -> :error
+      atom -> {:ok, atom}
+    end
+  end
+
+  defp decode_enum(_, _), do: :error
 
   defp safe_destination(path),
     do:

@@ -87,6 +87,28 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "failed promotion leaves no destination and check writes nothing" do
+    with_destination(fn destination ->
+      before = File.ls!(Path.dirname(destination))
+
+      assert {:error, error} =
+               Evidence.promote(Map.put(@valid, :token, "CANARY-TOKEN"), destination)
+
+      assert error.rule_id == "PL-EVIDENCE-KEY"
+      refute File.exists?(destination)
+
+      stage = destination <> ".check"
+      File.mkdir_p!(stage)
+      write_canonical!(stage)
+      snapshot = File.read!(Path.join(stage, "proof-lane-evidence.json"))
+      assert :ok = Evidence.check(stage)
+      assert snapshot == File.read!(Path.join(stage, "proof-lane-evidence.json"))
+
+      assert before ==
+               File.ls!(Path.dirname(destination)) |> Enum.reject(&(&1 == Path.basename(stage)))
+    end)
+  end
+
   test "concurrent promoters preserve one winner and return a stable loser result" do
     with_destination(fn destination ->
       results =
