@@ -12,7 +12,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
            ]
 
     assert {:ok, row} = RouteInventory.validate(valid_row())
-    assert row.route_id == "route-opaque-study"
+    assert row.route_id == "route-0123456789abcdef"
     assert row.path_pattern == "/study/session/:id"
     assert row.runtime_owner.value == :offline_island
     assert row.media_requirement.value.codec_family == :aac
@@ -24,7 +24,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
 
     assert {:ok, validated} = RouteInventory.validate(row)
 
-    assert {:blocked, %{route_ref: "route-opaque-study", fields: [:media_requirement]}} =
+    assert {:blocked, %{route_ref: "route-0123456789abcdef", fields: [:media_requirement]}} =
              RouteInventory.promotion_status(validated)
   end
 
@@ -97,7 +97,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     assert_safe_error(error, "RI-REQUIRED", "auth")
 
     assert {:error, error} = RouteInventory.validate(Keyword.put(valid_row(), :route_id, ""))
-    assert_safe_error(error, "RI-INVALID", "route_id")
+    assert_safe_error(error, "RI-OPAQUE_ROUTE_ID", "route_id")
 
     assert {:error, error} = RouteInventory.validate(Keyword.put(valid_row(), :auth, nil))
     assert_safe_error(error, "RI-INVALID", "auth")
@@ -116,7 +116,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     assert {:error, error} =
              RouteInventory.validate_inventory([
                valid_row(),
-               valid_row(route_id: "route-opaque-study")
+               valid_row(route_id: "route-0123456789abcdef")
              ])
 
     assert_safe_error(error, "RI-DUPLICATE_ROUTE_ID", "route_id")
@@ -124,7 +124,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     assert {:error, error} =
              RouteInventory.validate_inventory([
                valid_row(),
-               valid_row(route_id: "route-opaque-other", path_pattern: "/study/session/:id")
+               valid_row(route_id: "route-fedcba9876543210", path_pattern: "/study/session/:id")
              ])
 
     assert_safe_error(error, "RI-DUPLICATE_PATH_PATTERN", "path_pattern")
@@ -138,15 +138,15 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
   end
 
   test "keeps declaration order stable when inventory values compare equally" do
-    first = valid_row(route_id: "route-opaque-first", path_pattern: "/study/first/:id")
-    second = valid_row(route_id: "route-opaque-second", path_pattern: "/study/second/:id")
+    first = valid_row(route_id: "route-1111111111111111", path_pattern: "/study/path/:id")
+    second = valid_row(route_id: "route-2222222222222222", path_pattern: "/study/history/:id")
 
     assert {:ok, [first_validated, second_validated]} =
              RouteInventory.validate_inventory([first, second])
 
     assert [first_validated.route_id, second_validated.route_id] == [
-             "route-opaque-first",
-             "route-opaque-second"
+             "route-1111111111111111",
+             "route-2222222222222222"
            ]
   end
 
@@ -181,9 +181,53 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     assert todo =~ "status: open"
   end
 
+  test "accepts only closed generic route templates for opaque route IDs" do
+    for path_pattern <- [
+          "/study/session/:id",
+          "/learning/path/:id",
+          "/dashboard/history/:id",
+          "/auth/settings/billing"
+        ] do
+      assert {:ok, row} = RouteInventory.validate(valid_row(path_pattern: path_pattern))
+      assert row.path_pattern == path_pattern
+    end
+  end
+
+  test "rejects identifying and malformed route IDs without echoing supplied content" do
+    for route_id <- [
+          "customer-acme",
+          "route-0123456789abcde",
+          "route-0123456789abcdef0",
+          "route-0123456789abcdeg",
+          "Route-0123456789abcdef",
+          "route-0123456789abcdef-curriculum"
+        ] do
+      assert {:error, error} = RouteInventory.validate(valid_row(route_id: route_id))
+      assert_safe_error(error, "RI-OPAQUE_ROUTE_ID", "route_id")
+      refute Exception.message(error) =~ route_id
+    end
+  end
+
+  test "rejects non-sanitized route templates without echoing supplied content" do
+    for path_pattern <- [
+          "/",
+          "",
+          "/study//session",
+          "/study/*",
+          "/study/session.json",
+          "/study/session/42",
+          "/customer/session/:id",
+          "/study/session/:record_id"
+        ] do
+      assert {:error, error} = RouteInventory.validate(valid_row(path_pattern: path_pattern))
+      assert_safe_error(error, "RI-SANITIZED_PATH_PATTERN", "path_pattern")
+      refute Exception.message(error) =~ path_pattern
+    end
+  end
+
   defp valid_row(overrides \\ []) do
     base = [
-      route_id: "route-opaque-study",
+      route_id: "route-0123456789abcdef",
       path_pattern: "/study/session/:id",
       runtime_owner: confirmed(:offline_island),
       offline_posture: confirmed(:local_first),
@@ -241,7 +285,7 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
     message = Exception.message(error)
     assert message =~ rule_id
     assert message =~ field
-    assert message =~ ~r/route (route-opaque-study|unresolved)/
+    assert message =~ ~r/route (route-0123456789abcdef|unresolved)/
     assert message =~ "remediation:"
   end
 end
