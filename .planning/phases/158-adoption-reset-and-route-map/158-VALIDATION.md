@@ -3,70 +3,89 @@ phase: 158
 slug: adoption-reset-and-route-map
 status: complete
 nyquist_compliant: true
-wave_14_complete: true
+wave_16_complete: true
 created: 2026-07-31
 updated: 2026-07-31
 ---
 
 # Phase 158 — Validation Strategy
 
-Phase 158 reconciliation is based only on final Plan-17-tree evidence collected during Plan 158-18. TODO-002 remains open, and adopter-instance completeness remains `unknown_blocking`.
+Phase 158 final reconciliation uses fresh executable evidence from the final Plan-19 tree. The
+Plan-19 summary is ordering evidence only; it does not substitute for a fresh behavioral run.
+TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
 
 ## Test Infrastructure
 
 | Property | Value |
 | --- | --- |
 | Framework | ExUnit with Mix 1.19.5 |
-| Focused gate | route inventory, context, Mix-task, capability-map, and support-matrix suites |
-| Full gate | `mix test --exclude requires_example_host --exclude advisory_only` |
+| Focused gates | scanner/context, production Mix-task, route inventory, capability map, and support matrix |
+| Complete gate | `mix test --exclude requires_example_host --exclude advisory_only` |
 | Boundary | Browser-free, service-free, and no adopter-instance input required |
 
 ## Fresh Final-Tree Evidence
 
-Every pre-write command below exited zero from the final Plan-17 tree. The protected input was assembled only in the process from neutral fragments; this ledger records commands, stable rule/path cases, counts, and outcomes only.
+All pre-write commands exited zero from the final Plan-19 tree. No private-term configuration was
+supplied. This ledger retains only commands, stable references, counts, and outcomes.
 
 | Gate | Exact command | Observed result |
 | --- | --- | --- |
-| Plan-17 ordering check | `test -f .planning/phases/158-adoption-reset-and-route-map/158-17-SUMMARY.md && rg -q 'mix crosswake\\.adoption_context\\.scan|check-formatted' .planning/phases/158-adoption-reset-and-route-map/158-17-SUMMARY.md` | Passed; ordering summary exists and records focused direct, Mix-task, live-scan, and formatter gates. It is not behavioral proof. |
-| Protected direct scanner seam | `CROSSWAKE_PRIVATE_ADOPTER_TERMS="$(printf '%s-%s-%s' repository privacy sentinel)" mix test test/crosswake/planning/first_adopter_context_test.exs` | Passed: 15 tests, 0 failures. |
-| Focused route/context/Mix/support gate | `mix test test/crosswake/adoption/route_inventory_test.exs test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | Passed: 124 tests, 0 failures. |
-| Production caller | `mix crosswake.adoption_context.scan` | Passed. |
-| Plan-17 formatter gate | `mix format --check-formatted lib/crosswake/planning/first_adopter_context.ex test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` | Passed. |
-| Warnings-as-errors compile | `mix compile --warnings-as-errors` | Passed. |
-| Hermetic full suite | `mix test --exclude requires_example_host --exclude advisory_only` | Passed. Existing unrelated warnings remained non-fatal and outside this plan's changes. |
+| Plan-19 ordering check | `test -f .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md && rg -q 'first_adopter_context_test\|crosswake_adoption_context_scan_test' .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md && rg -q 'route_inventory_test' .planning/phases/158-adoption-reset-and-route-map/158-19-SUMMARY.md` | Passed; the summary records both focused scanner/Mix-task and route-inventory verification. It is not behavioral proof. |
+| Direct scanner and production-task suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` | Passed: 25 tests, 0 failures. |
+| Route-map validator suite | `mix test test/crosswake/adoption/route_inventory_test.exs` | Passed: 16 tests, 0 failures. |
+| Capability and support suites | `mix test test/crosswake/capability_map test/crosswake/support_matrix` | Passed: 86 tests, 0 failures. |
+| Production scanner | `mix crosswake.adoption_context.scan` | Passed. |
+| Formatter | `mix format --check-formatted lib/crosswake/planning/first_adopter_context.ex test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs lib/crosswake/adoption/route_inventory.ex test/crosswake/adoption/route_inventory_test.exs` | Passed. |
+| Warnings-as-errors compilation | `mix compile --warnings-as-errors` | Passed. |
+| Hermetic complete suite | `mix test --exclude requires_example_host --exclude advisory_only` | Passed. Existing unrelated warnings remained outside this plan’s files. |
 | Whitespace | `git diff --check` | Passed. |
 
-## Repository-Classification Evidence
+## Generic Privacy Evidence
 
-`scan_filesystem/2` enumerates cached and non-ignored candidates, sends each through `classify_repository_path/1` before a file read, and then applies private-term checks to recognized textual candidates. Explicit raw-evidence and binary exclusions remain narrow. Enumeration, unreadable, symlink, and unknown candidates return stable rule/path routing violations instead of a clean result.
+`scan_filesystem/2` enumerates Git repository candidates, classifies each candidate before a file
+read, applies generic privacy evaluation to every recognized textual candidate, and returns stable
+rule/path diagnostics. Destination-specific public wording checks remain scoped. Explicit raw and
+binary exclusions remain narrow.
 
-| Case | Direct scanner evidence | Production Mix-task evidence | Result |
+| Path class | Direct scanner evidence | Production Mix-task evidence | Stable outcome |
 | --- | --- | --- | --- |
-| Action candidate | Focused temporary-repository regression covers `.github/actions/`. | Focused task regression invokes `Mix.Tasks.Crosswake.AdoptionContext.Scan.run/1` for the same class. | Classified text is read and rejected by the private-term rule. |
-| Script candidate | Focused temporary-repository regression covers `script/`. | Focused task regression invokes the production task for the same class. | Classified text is read and rejected by the private-term rule. |
-| Arbitrary future planning candidate | Focused temporary-repository regression covers a future phase path outside the historic finite range. | Focused task regression invokes the production task for the same class. | Classified text is read and rejected by the private-term rule. |
-| Recognized text default | Direct regression proves recognized tracked text is scanned by default. | Production task regression proves the caller preserves that classification. | No subtree-specific text bypass exists. |
-| Raw/binary evidence | Direct regression covers raw fixture exclusion and binary classification. | Production scanner remains limited to readable classified text. | Only explicit raw/binary evidence is excluded. |
-| Unknown candidate | Direct regression uses an unsupported candidate shape. | Focused scanner suite preserves caller failure behavior. | Fails closed with a stable routing rule/path violation. |
-| Diagnostics | Direct and Mix-task regressions inspect errors. | Production task surfaces scanner violations. | Rule IDs and relative paths only; no configured input or matched content is emitted. |
+| Unregistered guide | `first_adopter_context_test` regression | `crosswake_adoption_context_scan_test` regression | Generic privacy violation rejected. |
+| Unregistered source | `first_adopter_context_test` regression | `crosswake_adoption_context_scan_test` regression | Generic privacy violation rejected. |
+| Action | `first_adopter_context_test` regression | `crosswake_adoption_context_scan_test` regression | Generic privacy violation rejected. |
+| Script | `first_adopter_context_test` regression | `crosswake_adoption_context_scan_test` regression | Generic privacy violation rejected. |
+| Later-phase planning path | `first_adopter_context_test` regression | `crosswake_adoption_context_scan_test` regression | Generic privacy violation rejected. |
+| Generic scan default | Focused direct suite | Focused production-task suite | Every `scan?: true` recognized textual candidate receives generic evaluation. |
+| Raw/binary exclusions | Focused direct suite | Production caller delegates to the same scanner | Exclusions stay explicit and classified rather than creating a textual bypass. |
+| Diagnostics | Direct and production-task suites | Direct and production-task suites | Outcomes use stable rule/path references; configured terms and matched content are not rendered. |
 
-## Post-Write Privacy Evidence
+## Route-Map Boundary Evidence
 
-After both reconciliation ledgers were written, the following final-artifact gate passed against the modified working tree:
+The focused route suite exercises non-atom and mixed-key map boundaries before any `Keyword`
+processing. The validator returns `%ValidationError{}` with the fixed `RI-INVALID` rule,
+`unresolved` reference, and `route_row` field; it does not raise `ArgumentError` and does not echo
+the supplied key or value.
+
+| Case family | Evidence | Stable outcome |
+| --- | --- | --- |
+| Non-atom arbitrary map key | `route_inventory_test` focused regression | `%ValidationError{}` with `RI-INVALID` / `unresolved` / `route_row`. |
+| Mixed map key and nested value | `route_inventory_test` focused regression | Same fixed error contract; no input echo. |
+| Keyword-safe valid row | `route_inventory_test` focused regression | Valid route-local ownership/posture contract remains accepted. |
+
+## Post-Write Evidence
+
+After both ledgers were written, the final artifact gates were rerun against the modified tree.
 
 | Gate | Exact command | Observed result |
 | --- | --- | --- |
-| Final-artifact scan | `mix crosswake.adoption_context.scan` | Passed. |
-| Final context and Mix-task suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs` | Passed. |
-| Final whitespace check | `git diff --check` | Passed. |
+| Production scanner | `mix crosswake.adoption_context.scan` | Passed. |
+| Scanner, Mix-task, and route suites | `mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/adoption/route_inventory_test.exs` | Passed: 41 tests, 0 failures. |
+| Whitespace | `git diff --check` | Passed. |
 
 ## Validation Sign-Off
 
-- [x] Fresh protected, focused, production, formatter, compile, hermetic, and whitespace gates passed.
-- [x] Fresh direct and Mix-task evidence rejects action, script, and arbitrary future planning text.
-- [x] Recognized text scans by default; explicit raw/binary exclusions remain narrow; unknown candidates fail closed.
-- [x] Final Markdown ledgers pass the post-write production scan and focused scanner suites.
-- [x] TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
-- [x] RESET-01 through RESET-03, Android freeze, generic sync/storage, device proof, and later-phase support claims are unchanged.
-
-**Approval:** RESET-04 reconciliation is complete on fresh final-tree and post-write evidence. Concrete first-adopter inputs remain blocked until TODO-002 is resolved.
+- [x] Fresh focused, production, formatting, compilation, complete-suite, and whitespace gates passed.
+- [x] Direct and production Mix-task evidence covers guide, source, action, script, and later-phase textual path classes.
+- [x] Generic checks are scan-by-default; destination-specific checks and raw/binary exclusions remain scoped.
+- [x] Non-atom and mixed-key map input returns the stable, non-echoing validator error before `Keyword` APIs.
+- [x] Post-write scanner, focused suites, and whitespace gates passed.
+- [x] TODO-002 remains open; adopter-instance completeness remains `unknown_blocking`; RESET-01, RESET-03, Android freeze, and later-phase/non-goal claims are unchanged.
