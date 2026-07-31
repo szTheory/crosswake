@@ -58,6 +58,10 @@ separately funded business-line mandate. Durable reasoning is in
   host-reusable proof, then closes privacy/auth, real offline pronunciation media, and
   physical-iPhone evidence. Work stops after the dated device proof except for defects that proof
   demonstrates.
+- **v21.0 Phase 158 Adoption Reset and Route Map — COMPLETE 2026-07-31.** GET-6, the Alpha/public-v1
+  split, stopped-v20 truth, route-local ownership contract, repository-wide privacy scanning, and
+  automated verification posture are durable and verified. Phase 159 host-reusable proof is next;
+  TODO-002 remains the fail-closed sanitized adopter-input gate.
 - **v20.0 Native Controls Pack 1 — STOPPED/PARTIAL 2026-07-30.** Phases 153-155 delivered useful
   release, CI, bridge, and fallback substrate. Phases 156-157 are dropped from active scope because
   native menu breadth does not unblock the first adopter. No v20.0 shipped claim or completion tag.
@@ -390,4 +394,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-30 after v21 adopter-priority reset.*
+*Last updated: 2026-07-31 after Phase 158 completion.*
