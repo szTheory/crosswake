@@ -22,6 +22,36 @@ defmodule Crosswake.ProofLane.ConfigTest do
     assert Map.keys(Map.from_struct(config)) |> Enum.sort() == Map.keys(@valid) |> Enum.sort()
   end
 
+  test "accepts only a normalized non-root native/ios shell root" do
+    root = Path.join(System.tmp_dir!(), "crosswake-proof-lane-config-#{System.unique_integer([:positive])}")
+    ios_shell_root = Path.join(root, "native/ios")
+
+    assert {:ok, config} = Config.normalize(Map.put(@valid, :ios_shell_root, ios_shell_root))
+    assert {:ok, ^root} = Config.host_root(config)
+
+    unsafe_roots = [
+      "/tmp/not-the-native-ios-root",
+      "/native/ios",
+      Path.join(ios_shell_root, "generated"),
+      Path.join(root, "not-native/ios"),
+      Path.join(root, "native/ios/.."),
+      Path.join(root, "native//ios"),
+      ios_shell_root <> "/",
+      "native/ios"
+    ]
+
+    Enum.each(unsafe_roots, fn unsafe_root ->
+      assert {:error, %{rule_id: "PL-CONFIG-VALUE", key: "ios_shell_root"} = error} =
+               Config.normalize(Map.put(@valid, :ios_shell_root, unsafe_root))
+
+      assert Exception.message(error) ==
+               "PL-CONFIG-VALUE: ios_shell_root; use the documented local proof-lane shape"
+
+      refute Exception.message(error) =~ unsafe_root
+      refute inspect(error) =~ unsafe_root
+    end)
+  end
+
   test "rejects unknown, missing, duplicate, and non-atom keys without echoing input" do
     secret = "credential-bearing-value-must-not-echo"
 
