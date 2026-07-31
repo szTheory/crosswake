@@ -27,8 +27,8 @@ defmodule Crosswake.ProofLane.Generator do
           {:ok, [%{path: String.t(), status: :created | :reused}]}
           | {:error, {String.t(), String.t()}}
   def generate(%Config{} = config) do
-    root = host_root(config)
-    desired = desired(config)
+    root = host_root!(config)
+    desired = desired(config, root)
 
     with :ok <- validate_destinations(root, desired),
          {:ok, results} <- ensure_files(desired),
@@ -40,8 +40,8 @@ defmodule Crosswake.ProofLane.Generator do
 
   @spec check(Config.t()) :: :ok | {:error, [finding()]}
   def check(%Config{} = config) do
-    root = host_root(config)
-    desired = desired(config)
+    root = host_root!(config)
+    desired = desired(config, root)
 
     findings =
       validate_destinations_findings(root, desired) ++
@@ -55,10 +55,11 @@ defmodule Crosswake.ProofLane.Generator do
 
   @spec diff(Config.t()) :: [diff_entry()]
   def diff(%Config{} = config) do
-    root = host_root(config)
+    root = host_root!(config)
+    desired = desired(config, root)
 
-    desired(config)
-    |> Kernel.++([manifest_desired(root, desired(config))])
+    desired
+    |> Kernel.++([manifest_desired(root, desired)])
     |> Enum.map(fn %{path: path, destination: destination, contents: contents} ->
       status =
         case File.read(destination) do
@@ -72,9 +73,7 @@ defmodule Crosswake.ProofLane.Generator do
     |> Enum.sort_by(& &1.path)
   end
 
-  defp desired(config) do
-    root = host_root(config)
-
+  defp desired(config, root) do
     Enum.map(@templates, fn {relative, template} ->
       %{
         path: relative,
@@ -229,7 +228,12 @@ defmodule Crosswake.ProofLane.Generator do
   defp finding(rule_id, path, remediation),
     do: %{rule_id: rule_id, path: path, remediation: remediation}
 
-  defp host_root(config), do: config.ios_shell_root |> Path.dirname() |> Path.dirname()
+  defp host_root!(config) do
+    case Config.host_root(config) do
+      {:ok, root} -> root
+      {:error, error} -> raise error
+    end
+  end
 
   defp destination(root, relative) do
     if String.starts_with?(relative, "CrosswakeProofLane") do
