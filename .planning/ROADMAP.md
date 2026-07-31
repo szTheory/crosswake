@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 16/16 plans executed
+**Plans:** 18 plans (16 executed, 2 gap-closure plans pending)
 **Verification:** Gaps found (3/4 roadmap must-haves); tracked text under `.github/actions/`,
 `script/`, and future planning phases can bypass protected private-term scanning.
 
@@ -106,6 +106,14 @@ Plans:
 **Wave 12** *(blocked on Wave 11 completion)*
 
 - [x] 158-16-PLAN.md — Reconcile validation and verification from fresh repository-wide privacy evidence.
+
+**Wave 13** *(gap closure; blocked on Wave 12 completion)*
+
+- [ ] 158-17-PLAN.md — Make tracked textual action, script, and arbitrary future-phase artifacts scan by default and prove both scanner seams.
+
+**Wave 14** *(blocked on Wave 13 completion)*
+
+- [ ] 158-18-PLAN.md — Reconcile validation and verification from fresh final-tree and post-write evidence.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
