@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 14/14 plans executed
+**Plans:** 14/16 plans executed
 **Verification:** Gaps found (57/58 must-haves); repository-facing private-term enforcement must
 fail closed for unregistered guides, workflows, source/tests, and later-phase artifacts
 
@@ -98,6 +98,14 @@ Plans:
 **Wave 10** *(blocked on Waves 8-9 completion)*
 
 - [x] 158-14-PLAN.md — Rerun the complete gate and reconcile validation plus verification.
+
+**Wave 11** *(gap closure; blocked on Wave 10 completion)*
+
+- [ ] 158-15-PLAN.md — Replace the fixed privacy allowlist with fail-closed repository candidate classification and unregistered-artifact regressions.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+
+- [ ] 158-16-PLAN.md — Reconcile validation and verification from fresh repository-wide privacy evidence.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
