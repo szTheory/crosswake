@@ -61,6 +61,9 @@ defmodule Crosswake.CapabilityMapTest do
     "learnloop-sync-productization",
     "learnloop-paywall-projection",
     "commerce-provider-integration",
+    "first-adopter-host-proof",
+    "first-adopter-scoped-replay",
+    "first-adopter-physical-iphone",
     "native-controls-alert-confirm",
     "native-controls-action-menu",
     "native-controls-toast-review"
@@ -141,7 +144,7 @@ defmodule Crosswake.CapabilityMapTest do
     end
   end
 
-  test "D-08 through D-12 and D-33/D-34 canonical rows cover v19 evidence and v20 pressure" do
+  test "canonical rows preserve historical evidence and name first-adopter pressure" do
     rows = canonical_rows()
 
     ids = MapSet.new(Enum.map(rows, & &1.id))
@@ -159,6 +162,9 @@ defmodule Crosswake.CapabilityMapTest do
     assert row!(rows, "learnloop-offline-study").route_runtime_owner == :offline_island
     assert row!(rows, "learnloop-native-storage").package_owner == :deferred
     assert row!(rows, "learnloop-sync-productization").package_owner == :deferred
+    assert row!(rows, "first-adopter-host-proof").proof_posture == :not_yet_proven
+    assert row!(rows, "first-adopter-scoped-replay").route_runtime_owner == :offline_island
+    assert row!(rows, "first-adopter-physical-iphone").rebuild == :native_required
 
     paywall = row!(rows, "learnloop-paywall-projection")
     assert paywall.route_runtime_owner == :backend_projection
@@ -207,7 +213,7 @@ defmodule Crosswake.CapabilityMapTest do
     assert offline.denial_fallback =~ ~r/outbox|browser-owned|offline island|reconciliation/i
 
     storage = row!(rows, "learnloop-native-storage")
-    assert storage.v20_implication =~ ~r/Offline Sync\/Native Storage Productization|later/i
+    assert storage.v20_implication =~ ~r/host-supplied|generic native pack storage/i
     refute storage.display_label == "Available today"
 
     paywall = row!(rows, "learnloop-paywall-projection")

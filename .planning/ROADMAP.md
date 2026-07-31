@@ -2,430 +2,170 @@
 
 ## Milestones
 
-- ✅ **v8.0 Offline Sync Hardening and UI Polish** — Phases 99-101 (shipped 2026-06-11)
-- ✅ **v9.0 Brand System & Visual Identity** — Phases 102-106 (shipped 2026-06-13)
-- ✅ **v10.0 Brand Normalization** — Phases 107-109 (shipped 2026-06-14)
-- ✅ **v11.0 Release & Distribution Truth** — Phases 110-111 (shipped 2026-06-17)
-- ✅ **v12.0 CI Honesty & Real-E2E Sweep** — Phases 112-115 (shipped 2026-06-18)
-- ✅ **v13.0 Adopter Confidence & Native Evidence** — Phases 116-120 (shipped 2026-06-19)
-- ✅ **v14.0 Runtime Contract Confidence** — Phases 121-124 (shipped 2026-06-21)
-- ✅ **v15.0 See It Run — Experiential First-Run DX** — Phases 125-128 (shipped 2026-06-24)
-- ✅ **v16.0 Companion Extraction & Package-Family Discipline** — Phases 129-135 (shipped 2026-06-30)
-- ✅ **v17.0 Companion Family Completion** — Phases 136-141 (shipped 2026-07-04)
-- ✅ **v18.0 Release Integrity & Automated Package Operations** — Phases 142-146 (shipped 2026-07-09)
 - ✅ **v19.0 Showcase Apps & Capability Map** — Phases 147-152.1 (shipped 2026-07-12)
-- 🚧 **v20.0 Native Controls Pack 1** — Phases 153-157 (in progress)
+- ⏹ **v20.0 Native Controls Pack 1** — Phases 153-157 (stopped/partial 2026-07-30; no
+  shipped claim or tag)
+- 🚧 **v21.0 First B2C Adopter Readiness** — Phases 158-162 (active)
 
-## Phases
+Older shipped milestones remain indexed in `.planning/MILESTONES.md`.
 
-**Phase Numbering:**
+## v21.0 First B2C Adopter Readiness
 
-- Integer phases (153, 154, ...): Planned milestone work
-- Decimal phases (153.1, 153.2): Urgent insertions (marked with INSERTED)
+**Goal:** Prove one real Phoenix application's offline study flow on one physical iPhone while
+resisting framework generalization.
 
-Decimal phases appear between their surrounding integers in numeric order.
+**Strategy source:** `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`
 
-### 🚧 v20.0 Native Controls Pack 1 (In Progress)
+**Operating rule:** Crosswake is infrastructure for the First B2C Adopter. If customer Alpha is
+web-only, the Crosswake Alpha list is empty. Complete the one-day route inventory, then pause
+Crosswake until the public-v1 mobile path is active.
 
-**Milestone Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
+**Stop date:** After 2026-08-18, do no further Crosswake work except defects demonstrated by Phase
+162 evidence. Reconsider broader investment only after two independent active adopters or a
+separately funded business-line mandate.
 
-- [x] **Phase 153: iOS Mirror Unblock** - Fix the stale iOS SwiftPM shell-core mirror so a native release can reach iOS adopters again.
-- [x] **Phase 153.1: CI Gate Integrity & Runner Cost** *(INSERTED)* - Close three gate-integrity holes that let a red check report green, and cut the per-PR CI tax before the milestone's largest phase starts landing PRs.
-- [x] **Phase 154: The Control-Contract Seam** - Ship `Bridge.push/3`, the single typed `Shell.Denial`, the closed-vocabulary structural guard, and migrate haptics onto it as proof.
-- [ ] **Phase 155: Host-Owned Fallback Components** - Generate brand-tokenized, host-owned confirm-modal/action-menu fallbacks with route-tour proof that they render and fail closed.
-- [ ] **Phase 156: Native Menu & Action-Button Control** - Ship the first genuinely-new native control on both iOS and Android, proven via committed contract vectors.
-- [ ] **Phase 157: Harden, Promote & Prove Support Truth** - Harden haptics/share footguns, promote share/notification_token to merge-blocking proof, and land the permissions/notification-token honesty pass.
-
-<details>
-<summary>✅ v19.0 Showcase Apps & Capability Map (Phases 147-152.1) — SHIPPED 2026-07-12</summary>
-
-- [x] Phase 147: Arc, Fixture, and Showcase Foundation (5/5 plans) — completed 2026-07-09
-- [x] Phase 148: Demo App Brand & Fixture Direction (0/0 plans; retroactive summary exception accepted) — completed 2026-07-09
-- [x] Phase 149: SaaS/Admin Showcase (7/7 plans) — completed 2026-07-11
-- [x] Phase 150: Field-Service Showcase (7/7 plans) — completed 2026-07-11
-- [x] Phase 151: Subscription Learning Showcase (7/7 plans) — completed 2026-07-11
-- [x] Phase 152: Capability Map, Collateral, and v20 Handoff (4/4 plans) — completed 2026-07-12
-- [x] Phase 152.1: Close gap: v19 support-truth and verification closeout (3/3 plans) — completed 2026-07-12
-
-Full phase detail archived in `.planning/milestones/v19.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v18.0 Release Integrity & Automated Package Operations (Phases 142-146) — SHIPPED 2026-07-09</summary>
-
-- [x] Phase 142: Release Graph & Governance Contract (3/3 plans) — completed 2026-07-07
-- [x] Phase 143: Guarded Auto-Publish Train (3/3 plans) — completed 2026-07-07
-- [x] Phase 144: Published-Core Compatibility & Clean-Room Proof (3/3 plans) — completed 2026-07-08
-- [x] Phase 145: Native Registry & Mirror Parity (3/3 plans) — completed 2026-07-08
-- [x] Phase 146: Release Status DX & Docs Truth (3/3 plans) — completed 2026-07-09
-
-Full phase detail archived in `.planning/milestones/v18.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v17.0 Companion Family Completion (Phases 136-141) — SHIPPED 2026-07-04</summary>
-
-- [x] Phase 136: Core Decoupling (6/6 plans) — completed 2026-07-01
-- [x] Phase 137: crosswake_sigra Extraction (5/5 plans) — completed 2026-07-04
-- [x] Phase 138: crosswake_chimeway Extraction (4/4 plans) — completed 2026-07-04
-- [x] Phase 139: crosswake_threadline Extraction (4/4 plans) — completed 2026-07-04
-- [x] Phase 140: Family Discipline & Close (5/5 plans) — completed 2026-07-04
-- [x] Phase 141: Core-First Publish & Family Release (5/5 plans) — completed 2026-07-04
-
-Full phase detail archived in `.planning/milestones/v17.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v16.0 Companion Extraction & Package-Family Discipline (Phases 129-135) — SHIPPED 2026-06-30</summary>
-
-- [x] Phase 129: Stable Companion Contract Surface (2/2 plans) — completed 2026-06-25
-- [x] Phase 130: Extraction Mechanics & Footgun Guards (5/5 plans) — completed 2026-06-26
-- [x] Phase 131: Publish Pipeline & Clean-Room Lane (rulestead) (3/3 plans) — completed 2026-06-26
-- [x] Phase 132: Generalization Proof (rindle) + Compat Matrix (4/4 plans) — completed 2026-06-26
-- [x] Phase 133: Telemetry Public API (4/4 plans) — completed 2026-06-28
-- [x] Phase 134: Shell Lifecycle + Native UAT Promotion (5/5 plans) — completed 2026-06-29
-- [x] Phase 135: CI-Ops Hardening — Release-As Automation (1/1 plan) — completed 2026-06-28
-
-Full phase detail archived in `.planning/milestones/v16.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v15.0 See It Run — Experiential First-Run DX (Phases 125-128) — SHIPPED 2026-06-24</summary>
-
-- [x] Phase 125: Containerized Shared Backend + Port Convention (3/3 plans) — completed 2026-06-21
-- [x] Phase 126: Additive Native Dev Wiring (4/4 plans) — completed 2026-06-22
-- [x] Phase 127: Launch Orchestration + Banner (2/2 plans) — completed 2026-06-22
-- [x] Phase 128: Collateral + "See It Run" Guide (3/3 plans) — completed 2026-06-22
-
-Full phase detail archived in `.planning/milestones/v15.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v14.0 Runtime Contract Confidence (Phases 121-124) — SHIPPED 2026-06-21</summary>
-
-- [x] Phase 121: Canonical Contract Source (4/4 plans) — completed 2026-06-20
-- [x] Phase 122: Drift Guards (3/3 plans) — completed 2026-06-20
-- [x] Phase 123: Native Package Behavioral Proof (4/4 plans) — completed 2026-06-20
-- [x] Phase 124: Compatibility Semantics & Adopter Truth (6/6 plans) — completed 2026-06-21
-
-Full phase detail archived in `.planning/milestones/v14.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v13.0 Adopter Confidence & Native Evidence (Phases 116-120) — SHIPPED 2026-06-19</summary>
-
-- [x] Phase 116: Proof Debt And Release Truth (3/3 plans) — completed 2026-06-18
-- [x] Phase 117: Route-Policy And Support-Truth Guide Foundation (3/3 plans) — completed 2026-06-19
-- [x] Phase 118: Runnable Quick Start And Real Adoption Proof (3/3 plans) — completed 2026-06-19
-- [x] Phase 119: Native Evidence Classification (3/3 plans) — completed 2026-06-19
-- [x] Phase 120: Collateral, Artifact CI, And Troubleshooting (4/4 plans) — completed 2026-06-19
-
-Full phase detail archived in `.planning/milestones/v13.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v12.0 CI Honesty & Real-E2E Sweep (Phases 112-115) — SHIPPED 2026-06-18</summary>
-
-- [x] Phase 112: Real Offline Outbox Flush (2/2 plans) — completed 2026-06-17
-- [x] Phase 113: Honest E2E Rewrite + Compile Gate (3/3 plans) — completed 2026-06-18
-- [x] Phase 114: Merge-Blocking CI Gate + Permanent Honesty Guard (5/5 plans) — completed 2026-06-18
-- [x] Phase 115: Closeout-Verifier Honesty + Ledger Backlog + Doc Truth (3/3 plans) — completed 2026-06-18
-
-Full phase detail archived in `.planning/milestones/v12.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v11.0 Release & Distribution Truth (Phases 110-111) — SHIPPED 2026-06-17</summary>
-
-- [x] Phase 110: Native Publish & Lockstep Infrastructure (3/3 plans) — completed 2026-06-14
-- [x] Phase 111: Generator Rewire, Clean-Room Proof & Release (5/5 plans) — completed 2026-06-17
-
-Full phase detail archived in `.planning/milestones/v11.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v10.0 Brand Normalization (Phases 107-109) — SHIPPED 2026-06-14</summary>
-
-- [x] Phase 107: Token Source & Distribution (3/3 plans) — completed 2026-06-13
-- [x] Phase 108: Consumer Normalization (4/4 plans) — completed 2026-06-14
-- [x] Phase 109: Drift-Prevention Gate (3/3 plans) — completed 2026-06-14
-
-Full phase detail archived in `.planning/milestones/v10.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v9.0 Brand System & Visual Identity (Phases 102-106) — SHIPPED 2026-06-13</summary>
-
-- [x] Phase 102: Brand Audit & Token Foundation (4/4 plans) — completed 2026-06-12
-- [x] Phase 103: Logo Tournament (4/4 plans) — completed 2026-06-12
-- [x] Phase 104: Logo Refinement & Production Suite (3/3 plans) — completed 2026-06-12
-- [x] Phase 105: HTML Brand Book (3/3 plans) — completed 2026-06-12
-- [x] Phase 106: Collateral, Integration & Closeout (2/2 plans) — completed 2026-06-13
-
-Full phase detail archived in `.planning/milestones/v9.0-ROADMAP.md`.
-
-</details>
-
-<details>
-<summary>✅ v8.0 Offline Sync Hardening and UI Polish (Phases 99-101) — SHIPPED 2026-06-11</summary>
-
-- [x] Phase 99: Real Network-Toggling E2E Tests (2/2 plans) — completed 2026-06-11
-- [x] Phase 100: Storage Budget Enforcement (2/2 plans) — completed 2026-06-11
-- [x] Phase 101: Offline UI Consolidation & Polish (2/2 plans) — completed 2026-06-11
-
-Full phase detail archived in `.planning/milestones/v8.0-ROADMAP.md`.
-
-</details>
+- [ ] **Phase 158: Adoption Reset and Route Map** — close GET-6, archive v20 honestly, freeze the
+  surface-area audit, classify adopter routes, update support truth, and install privacy-safe
+  context routing.
+- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+  shell, offline-island, and physical-device proof scaffolding.
+- [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
+  redaction, backend reauthorization, auth continuity, and server-side disablement.
+- [ ] **Phase 161: iOS Pronunciation Pack Seam** — replace simulated availability with one
+  host-supplied foreground iOS install path that verifies and atomically installs real bytes.
+- [ ] **Phase 162: Physical-iPhone Adoption Proof** — prove offline answers, offline audio,
+  kill/relaunch persistence, exactly-once replay, conflict recovery, account isolation, and remote
+  disablement on a physical iPhone.
 
 ## Phase Details
 
-### Phase 153: iOS Mirror Unblock
+### Phase 158: Adoption Reset and Route Map
 
-**Goal**: The iOS SwiftPM shell-core mirror can receive `0.2.0`+ releases again, so this milestone's (and every future) native release can actually reach iOS adopters. Native bridge dispatch is a closed switch compiled into the shipped binaries — until the mirror is current, no new capability can ship to iOS at all.
-**Depends on**: Nothing (first phase; release-infrastructure prerequisite for the whole milestone)
-**Requirements**: MIRROR-01, MIRROR-02
-**Success Criteria** (what must be TRUE):
+**Target:** 2026-07-31
+**Effort:** 1 focused day
+**Depends on:** Nothing
+**Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
 
-  1. The `crosswake-shell-core-ios` mirror repo carries a `v0.2.0` tag matching the live Hex/Maven `0.2.0` core, confirmed via `mix crosswake.release.status --live`.
-  2. A single native shell-core release run publishes Hex, Maven, and the iOS mirror together in one coordinated pass.
-  3. A missing or invalid mirror push credential (`MIRROR_DEPLOY_KEY`) fails CI with a hard, named error instead of a silent 403.
+**Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
+v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
+truth, and codename-only Linear drafts.
 
-**Plans**: 4/4 plans executed
+**Success criteria:**
 
-Plans:
-**Wave 1**
+1. A new session can discover the infrastructure framing, Alpha/v1 split, stop list, and current
+   phase without re-deriving them.
+2. Every known adopter surface has one runtime owner and one authority/fallback story.
+3. v20 is preserved as partial work without representing Phases 156-157 as shipped.
+4. Automated scans reject the prohibited real adopter name from planning, agent, and public-guide
+   surfaces.
 
-- [x] 153-01-PLAN.md — Backfill lane: SSH deploy-key transport, `apply=false` write-scope fire drill, atomic explicit-lease push (defuses the `actions/checkout` credential hijack)
+### Phase 159: Host-Reusable Proof Lane
 
-**Wave 2** *(blocked on Wave 1 completion)*
+**Target:** 2026-08-03 through 2026-08-05
+**Effort:** 3 focused days
+**Depends on:** Phase 158
+**Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 
-- [x] 153-02-PLAN.md — Human-gated: mint the deploy key, fire-drill CI's push credential, backfill `v0.2.0`, re-baseline mirror `main` (MIRROR-01)
+**Smallest shippable version:** `mix crosswake.gen.proof_lane ios` copies a host-owned scaffold
+configured by explicit route, storage, mutation, endpoint, router, and shell-root values. It reuses
+the current browser offline proof instead of inventing a second test system.
 
-**Wave 3** *(blocked on Wave 2 completion)*
+**Time-box:** If the scaffold cannot reuse existing host tests in three days, stop generalizing and
+copy the smallest adopter-specific test slice.
 
-- [x] 153-03-PLAN.md — Release job: tag-pinned checkout, Hex-only gate, atomic leased push, native failure alerting, rollup fails closed
+**Success criteria:**
 
-**Wave 4** *(blocked on Wave 3 completion)*
+1. Generation is non-destructive and supports a diff/check mode.
+2. Existing browser tests and fixtures remain the primary web/island coverage.
+3. Native proof is limited to shell boot/auth, kill/relaunch replay, and offline pack audio.
+4. Evidence generation fails when sensitive payload or identity fields appear.
 
-- [x] 153-04-PLAN.md — Durable guards: merge-blocking mirror parity gate + honest `release.status --live` (`:missing` vs `:unavailable`)
+### Phase 160: Scoped Replay and Auth Safety
 
-### Phase 153.1: CI Gate Integrity & Runner Cost *(INSERTED)*
+**Target:** 2026-08-06 through 2026-08-07
+**Effort:** 2 focused days
+**Depends on:** Phase 159
+**Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
 
-**Goal**: The merge gate cannot report green while something is red, and the CI tax paid per-PR is
-cut before Phase 154 — the milestone's largest phase — starts landing PRs against it. Three required
-check *names* are each emitted by two workflows, and branch protection matches by string, so a red
-run can be masked by a green one; 20 test files are excluded by every CI lane and by no local
-default, so they run only on laptops (this is how a genuinely red gate sat on `main` unnoticed until
-found by hand, fixed in #89). Separately, CI spends ~25,500 runner-seconds (~7 h) per push to run an
-88-second suite, and the spend is mostly macOS *queue* time for jobs that never invoke an Apple
-toolchain.
-**Depends on**: Nothing functionally — this is infrastructure and shares no code with Phase 153.
-Sequenced after it only because seven in-flight PRs are validating against the workflow files this
-phase rewrites. It is **not** blocked on the human-gated `v0.2.0` mirror tag push (153-02).
-**Requirements**: GATE-01, GATE-02, GATE-03, RUNNER-01, RUNNER-02, CACHE-01, CACHE-02
-**Success Criteria** (what must be TRUE):
+**Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
+logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
+checks at entry and replay.
 
-  1. No two workflow jobs emit the same `merge-blocking` check name, and `check_required_checks_registered.sh` fails if that ever stops being true — asserting uniqueness, not just presence.
-  2. The 20 `:requires_example_host` test files run on a named CI lane, and `mix test` locally excludes the same tag set CI does, so local and CI agree on what "the suite passed" means.
-  3. Every job on `macos-*` is there because it demonstrably invokes an Apple toolchain, justified per job by following each `run:` into the scripts it calls — never by grepping the workflow file.
-  4. Every workflow declares `timeout-minutes`, so a hang cannot hold a scarce macOS runner for the 6-hour default while other jobs queue behind it.
-  5. Elixir lanes restore `deps/` and `_build` from caches keyed on `os|arch|otp|elixir|MIX_ENV|hash(mix.lock)`, and a structural test rejects any key missing a dimension.
-  6. Before/after runner-seconds are measured with re-derivable commands and reported honestly, including what remains attributable to the out-of-scope `CONSOL-*` work.
-  7. **Wall-clock time-to-green for a single push is measured before and after, and is the headline number.** Measured baseline 2026-07-28: **34.9 minutes across 41 workflow runs** for the final commit of docs-only PR #90. Runner-seconds is a billing metric; wall-clock is the one a human waits through, and the two move independently — parallel lanes cut latency without cutting spend, and queue time costs latency while billing nothing. Target for this phase: **under 15 minutes**, achieved by removing macOS queue time rather than by removing proofs.
+**Success criteria:**
 
-**Scope note**: A deliberately narrow slice of SEED-007. `CONSOL-*` (39 workflow files → ~4, change
-detection, required-context topology), the merge-queue decision, `FLAKE-*`, and `DX-*` stay planted.
-Test sharding is an explicit **non-goal** — 1,093 tests at ~12 ms each means per-shard setup exceeds
-the execution saved.
+1. Cross-scope replay is impossible under tests.
+2. Raw answers never enter telemetry, doctor output, inspection, or evidence.
+3. `crosswake_sigra` adapts backend authority without making the WebView or shell a token authority.
+4. A disabled path preserves queued data and visibly fails closed.
 
-**Plans**: 3/3 plans executed
+### Phase 161: iOS Pronunciation Pack Seam
 
-Plans:
-**Wave 1**
+**Target:** 2026-08-10 through 2026-08-13
+**Effort:** 4 Crosswake days; expect 3-5 adopter integration days outside this repo
+**Depends on:** Phase 160
+**Requirements:** PACK-01, PACK-02, PACK-03, PACK-04, PACK-05
 
-- [x] 153.1-01-PLAN.md — GATE: de-duplicate the three colliding check names, assert uniqueness, give `:requires_example_host` a real lane, correct the stale audit header (GATE-01..03)
+**Smallest shippable version:** One iOS `PackProvider` protocol with foreground status, install, and
+invalidate; no provider means unavailable; availability follows verified size, SHA-256, and atomic
+rename only.
 
-**Wave 2** *(blocked on Wave 1 completion)*
+**Success criteria:**
 
-- [x] 153.1-02-PLAN.md — RUNNER: per-job Apple-toolchain audit, move non-Apple jobs to ubuntu, `timeout-minutes` everywhere, structural guard (RUNNER-01, RUNNER-02)
+1. Simulated timed transitions can no longer imply real pack availability.
+2. All corrupt, interrupted, missing, stale, or unconfigured paths fail closed.
+3. Host and Crosswake ownership is explicit and tested.
+4. Generic native content-pack storage remains a non-claim.
 
-**Wave 3** *(blocked on Wave 2 completion)*
+### Phase 162: Physical-iPhone Adoption Proof
 
-- [x] 153.1-03-PLAN.md — CACHE: repair the dead/unsafe caches, one composite setup action, correct key dimensions, measured hit rate (CACHE-01, CACHE-02)
+**Target:** 2026-08-14 through 2026-08-18
+**Effort:** 2-3 focused days plus adopter/backend availability
+**Depends on:** Phase 161 and a runnable adopter host
+**Requirements:** DEVICE-01, DEVICE-02, DEVICE-03, DEVICE-04, DEVICE-05, DEVICE-06, DEVICE-07
 
-*Waves are serial by necessity: all three plans edit `.github/workflows/`, so parallel execution
-would conflict and, under `strict: true`, re-invalidate each other's in-flight runs.*
+**Smallest shippable version:** A dated, redacted physical-iPhone artifact proving the ten-step exit
+test in the adopter route-policy map.
 
-### Phase 154: The Control-Contract Seam
+**Success criteria:**
 
-**Goal**: A LiveView can invoke a bounded native control through one typed seam and get a correlated reply; every shell-absent/old-shell/undeclared failure mode collapses into one denial; the command vocabulary is structurally closed against drift; and the already-shipped haptics capability proves the seam end-to-end with zero native-side risk.
-**Depends on**: Phase 153 (native releases must be able to reach iOS before any control machinery is built against the release pipeline)
-**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, PROOF-04, HRDN-01
-**Success Criteria** (what must be TRUE):
+1. Verified pronunciation audio plays offline.
+2. Selected and free-form answers survive offline use and kill/relaunch.
+3. Reconnect applies accepted events exactly once and exposes rejection/conflict recovery.
+4. Account switching, logout, and server disablement fail closed without losing or crossing data.
+5. The support claim remains one adopter flow on one iOS runtime line.
 
-  1. A LiveView can call `Crosswake.Bridge.push/3` for a declared capability and receive a correlated typed reply.
-  2. No-shell, too-old-shell, and undeclared-capability all produce the identical `Crosswake.Shell.Denial` shape, so an adopter writes one `handle_event` branch, not three.
-  3. Invoking a capability that was never declared in route policy fails loudly and names the missing declaration, instead of silently doing nothing.
-  4. A proposed control that is host-registrable, dynamic, or otherwise violates the catalog line fails a merge-blocking structural CI test, and every control's rebuild class is visible in the changelog, support matrix, and doctor guidance.
-  5. The AdminPilot haptics call runs through `Bridge.push/3` with the old hand-rolled `<script>` IIFE deleted, proving the seam against an already-native, zero-risk capability.
+## Frozen and stopped work
 
-**Plans**: 8/8 plans executed
+### Cheap to keep, frozen
 
-Plans:
-**Wave 1**
-
-- [x] 154-01-PLAN.md — PR #1: flip the published capability vocabulary to family ids, fix the self-referential `legacy_ids` manifest bug, add the doctor advisory
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 154-02-PLAN.md — PR #1b: make rebuild + interaction class unconstructable-without, add the doctor rebuild finding, surface rebuild cost in guides and changelog
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 154-03-PLAN.md — PR #2a: TRACER — `Bridge.push/3` end-to-end with a typed correlated reply, the loud undeclared-capability raise, and the one-shape denial collapse
-
-**Wave 4** *(blocked on Wave 3 completion)*
-
-- [x] 154-04-PLAN.md — PR #2b: opaque ref, per-mount epoch, three-layer exactly-once, `resolve/2`, two timers, bridge telemetry, `Crosswake.Bridge.Test`
-- [x] 154-05-PLAN.md — PR #2c: `Crosswake.Bridge.CatalogGuard` + the merge-blocking PROOF-04 gate with four kinds of negative control (has a blocking D-16 decision checkpoint)
-
-**Wave 5** *(blocked on Wave 4 completion)*
-
-- [x] 154-06-PLAN.md — PR #2d: the library-owned JS hook, the iOS reply return leg, the refuse-and-teach generator, the endpoint patcher, the doctor wiring check
-
-**Wave 6** *(blocked on Wave 5 completion)*
-
-- [x] 154-07-PLAN.md — PR #3: HRDN-01 — migrate both showcase LiveViews onto the seam, evolve the evidence panel, delete the dead asset, prove it in the browser lane
-
-**Wave 7** *(blocked on Wave 6 completion)*
-
-- [x] 154-08-PLAN.md — PR #3 tail: honest-claims guide sweep, and the phase's former human verification gate REPLACED by merge-blocking automation (checks A–H) — Phase 154 has zero human verification and zero UAT
-
-### Phase 155: Host-Owned Fallback Components
-
-**Goal**: Adopters get generated, brand-tokenized fallback UI for bounded controls that they own outright — never an importable component tier — and CI proves those fallbacks actually render and fail closed rather than silently degrading.
-**Depends on**: Phase 154 (the seam and its degradation/denial contract must exist before fallback UI can be proven against it)
-**Requirements**: FALL-01, FALL-02, PROOF-01
-**Success Criteria** (what must be TRUE):
-
-  1. Running `mix crosswake.gen.native_controls_ui` copies confirm-modal and action-menu fallback files directly into the host app as files the adopter owns and can edit — no importable `Crosswake.UI.*` module exists.
-  2. The generated fallbacks render correctly in both light and dark themes, trap focus, and meet the existing contrast gates.
-  3. **(D-44's corrected wording — replaces the original criterion 3, which conflated three distinct undeclared moments into one browser-observable claim.)** An undeclared capability raises and names the missing declaration; an unavailable capability renders an explicit denial; a merge-blocking browser route-tour proves that the surface renders, that a shell-side denial renders and the mutation does not proceed, and that no failure path resolves to silence. The outbound raise is deliberately excluded from the browser lane because a browser cannot observe a server-side raise, and is asserted server-side in ExUnit instead. This split is labelled HYBRID.
-
-     **Non-claims (D-48, stated explicitly, not a footnote):** not "never" as a universal — only the enumerated current vocabulary, excluding SEED-008's five unbounded string seams; not native behavior; not the adopter's edited copy; not that the UI is good; not reachability on every route; not screenshots.
-
-**Plans**: 7/7 plans executed
-
-Plans:
-**Wave 1**
-
-- [x] 155-01-PLAN.md — Tracer: a generated confirm modal, end-to-end from token to browser (wave 1)
-- [x] 155-02-PLAN.md — Bridge shipped-code defects: tolerant `resolve/2` (D-50) and a distinct `UnknownCapabilityFamilyError` (D-51) (wave 1)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 155-03-PLAN.md — Tokens and contrast gates: `--cw-status-error-fg`, the focus-ring fix, and the non-text contrast assertion class that closes the gate hole (wave 2)
-- [x] 155-04-PLAN.md — One served `tokens.css`, the generated-layout 404 fix, endpoint marker-content reconciliation, and two doctor findings (wave 2)
-- [x] 155-05-PLAN.md — `Crosswake.ComponentTierGuard`: six rules including the anti-vacuity twin, plus four controls (wave 2)
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 155-06-PLAN.md — Expansion: destructive tone, action menu, inline fail-closed alerts, and the frozen `actions` shape (wave 3, has a decision checkpoint)
-
-**Wave 4** *(blocked on Wave 3 completion)*
-
-- [x] 155-07-PLAN.md — PROOF-01: the three-condition merge-blocking browser lane, plus the record corrections (wave 4)
-
-**UI hint**: yes
-
-### Phase 156: Native Menu & Action-Button Control
-
-**Goal**: A route can declare a native menu/action-button affordance and get a real native menu with a typed reply on both iOS and Android — the first genuinely-new control, proving the whole seam end-to-end — provable without a simulator or emulator.
-**Depends on**: Phase 153 (native release must reach iOS), Phase 154 (the seam), Phase 155 (the fallback path menu degrades into when undeclared)
-**Requirements**: MENU-01, MENU-02, MENU-03, PROOF-03
-**Success Criteria** (what must be TRUE):
-
-  1. A route author can declare menu/action-button affordances — allowed actions and fallback behavior — in route policy.
-  2. On both iOS and Android, invoking the control renders a real native menu, and the user's chosen action returns as a typed reply through the seam.
-  3. The native menu carries VoiceOver/TalkBack semantics and responds to native dismiss gestures.
-  4. Committed `bridge_contract_vectors.json` vectors prove menu dispatch and denial behavior on both native platforms in CI, with no simulator or emulator required.
-
-**Record correction (D-56, Phase 155 Plan 07):** Phase 154's D-29 payload-ceiling note asserts, as a parenthetical justification, that "the capability handshake already routes old natives to `unavailable_capability`." Verified factually wrong: the closed-enum miss fires first and both natives return `undeclared_capability` instead — exactly the two-remediation collapse D-13 forbade. This phase must re-derive the real premise rather than plan against the stated one.
-
-**Plans**: 8 plans
-
-Plans:
-
-**Wave 1**
-
-- [ ] 156-01-PLAN.md — Blocking one-way publication gate for D-09, D-26, and D-31
-
-**Wave 2** *(blocked on Wave 1)*
-
-- [ ] 156-02-PLAN.md — Production tracer: route declaration through shared projection, explicit anchor/preflight, and exactly-once typed reply
-
-**Wave 3** *(blocked on Wave 2; plans 03-05 are file-disjoint)*
-
-- [ ] 156-03-PLAN.md — iOS structured decoder, fake presenter, and real anchored UIKit action sheet
-- [ ] 156-04-PLAN.md — Android structured decoder, fake presenter, and real anchored PopupMenu
-- [ ] 156-05-PLAN.md — Fallback/native race cancellation and bounded lifecycle telemetry
-
-**Wave 4** *(blocked on Wave 3; plans 06-07 are file-disjoint)*
-
-- [ ] 156-06-PLAN.md — AdminPilot route/trigger integration and complete approved UI-state/browser proof
-- [ ] 156-07-PLAN.md — Canonical dual-native vector proof and anti-vacuity guard
-
-**Wave 5** *(blocked on Wave 4)*
-
-- [ ] 156-08-PLAN.md — Support/rebuild classification and honest evidence-limit guards
-
-**UI hint**: yes
-
-### Phase 157: Harden, Promote & Prove Support Truth
-
-**Goal**: Haptics and share are hardened against their known footguns, `share` and `notification_token` earn merge-blocking proof instead of advisory, and the read-only surfaces (`permissions.status`, `notification_token`) are documented so neither can ever be mistaken for request authority or delivery assurance.
-**Depends on**: Phase 154 (the seam these capabilities run through)
-**Requirements**: HRDN-02, HRDN-03, EVID-01, EVID-02, PROOF-02
-**Success Criteria** (what must be TRUE):
-
-  1. Haptics silently respects the OS reduce-motion/haptics accessibility setting instead of firing regardless of it.
-  2. Triggering share on an iPad without a valid popover anchor degrades safely instead of crashing.
-  3. `share` and `notification_token` both carry merge-blocking (not advisory) CI proof.
-  4. Reading the `permissions.status` and `notification_token` docs and support-matrix rows, a developer cannot conclude that Crosswake grants permission-request authority or delivery assurance.
-
-**Plans**: TBD
-
-## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 153 → 154 → 155 → 156 → 157
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 147. Arc, Fixture, and Showcase Foundation | v19.0 | 5/5 | Complete | 2026-07-09 |
-| 148. Demo App Brand & Fixture Direction | v19.0 | 0/0 | Complete | 2026-07-09 |
-| 149. SaaS/Admin Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 150. Field-Service Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 151. Subscription Learning Showcase | v19.0 | 7/7 | Complete | 2026-07-11 |
-| 152. Capability Map, Collateral, and v20 Handoff | v19.0 | 4/4 | Complete | 2026-07-12 |
-| 152.1. Close gap: v19 support-truth and verification closeout | v19.0 | 3/3 | Complete | 2026-07-12 |
-| 153. iOS Mirror Unblock | v20.0 | 4/4 | Complete | MIRROR-01 live refs verified; MIRROR-02 guards landed, with parity required-check registration carried post-merge |
-| 153.1 CI Gate Integrity & Runner Cost *(INSERTED)* | v20.0 | 3/3 | Complete | 34.9 -> 5.8 min time-to-green; see 153.1-RESULTS.md |
-| 154. The Control-Contract Seam | v20.0 | 8/8 | Complete    | 2026-07-30 |
-| 155. Host-Owned Fallback Components | v20.0 | 7/7 | Complete    | 2026-07-30 |
-| 156. Native Menu & Action-Button Control | v20.0 | 0/TBD | Not started | - |
-| 157. Harden, Promote & Prove Support Truth | v20.0 | 0/TBD | Not started | - |
+- Brand tokens and existing brand assets.
+- Current capability/support taxonomy.
+- Existing Android generator, Maven artifact, JVM tests, and shared contract vectors.
+- Existing showcase fixtures and proof hosts.
+
+### Stop paying for now
+
+- Brandbook, showcase hub, and adopter-profile polish.
+- General launch, positioning, and framework marketing collateral.
+- Native menu/action-button and broader native-control catalog work.
+- Android feature parity, emulator/device proof, template expansion, and release requirements.
+- New companion packages.
+- Capture/device-control packs, commerce/paywall productionization, operator dashboard, and generic
+  sync/native-storage productization.
+- New support-truth labels unless the existing taxonomy cannot state a physical-device fact
+  honestly.
+
+## Non-goals that remain defended
+
+- Generic app-wide sync.
+- Background sync.
+- Silent last-write-wins.
+- Multiple proven offline-island workflows.
+- Productionized generic native content-pack storage.
+- Broad reusable runtime sync helpers.
+
+The only boundary movement allowed in v21 is privacy-safe envelope constraints, reusable test
+scaffolding, and one host-supplied foreground iOS pack adapter.
 
 ---
-
-For older detailed phase history, see `.planning/milestones/`.
+*Roadmap reset: 2026-07-30*

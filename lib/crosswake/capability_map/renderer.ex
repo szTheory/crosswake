@@ -21,13 +21,13 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "# Crosswake Capability Map",
       "",
-      "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what the v19 showcase proves, what is demo pressure, what remains a future gap, and what v20 Native Controls Pack 1 should consider next.",
+      "This guide is rendered from `Crosswake.CapabilityMap`. It classifies what Crosswake supports today, what existing proof demonstrates, what the first adopter pressures, and what remains a future gap.",
       "",
       what_works_today_section(rows),
       "",
       what_evidence_exists_section(rows),
       "",
-      what_v20_will_do_section(rows),
+      adoption_priority_section(rows),
       "",
       detailed_rows_section(rows),
       ""
@@ -86,7 +86,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## What evidence exists",
       "",
-      "The v19 showcase gives proof-backed examples and demo pressure across AdminPilot, Fieldserv, LearnLoop, bridge, offline study, native fallback, and capability-pressure rows. Screenshots are collateral after route-tour assertions; screenshots are not proof posture.",
+      "Existing examples give proof-backed evidence and demo pressure across bounded bridge, offline study, native fallback, and capability-pressure rows. Screenshots are collateral after route-tour assertions; screenshots are not proof posture.",
       "",
       "Cached read-only is not offline mutation. Backend projection required means provider or storefront evidence is reconciliation input until the backend grants authority.",
       "",
@@ -95,20 +95,20 @@ defmodule Crosswake.CapabilityMap.Renderer do
     |> Enum.join("\n")
   end
 
-  defp what_v20_will_do_section(rows) do
+  defp adoption_priority_section(rows) do
     candidate_rows = Enum.filter(rows, &(&1.category == :next_pack_candidate))
     deferred_rows = Enum.filter(rows, &(&1.category == :deferred))
 
     [
-      "## What v20 will do",
+      "## What the first adopter changes",
       "",
-      "v20 Native Controls Pack 1 should stay route-local, typed, versioned, low-frequency, and fail-closed. It should prioritize bounded controls and keep capture/device, commerce/paywall productionization, offline sync/native storage, and operator dashboard work as named later packs.",
+      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. Android parity and native-control breadth are frozen.",
       "",
-      "### Next-pack candidates",
+      "### Frozen candidates",
       "",
       bullet_rows(candidate_rows),
       "",
-      "### Deferred later packs",
+      "### Deferred surfaces",
       "",
       bullet_rows(deferred_rows)
     ]
@@ -119,7 +119,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## Detailed Capability Rows",
       "",
-      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | v20 implication |",
+      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | Adoption implication |",
       "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|---------|--------------------------|-----------------|",
       Enum.map_join(rows, "\n", &table_row/1)
     ]

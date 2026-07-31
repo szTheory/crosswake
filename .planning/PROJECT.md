@@ -6,7 +6,9 @@ Crosswake is a Phoenix-native open-source library for shipping iOS and Android a
 
 ## Core Value
 
-Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel`) with standalone SPM/Maven dependencies, enforcing strict delegate-based customization to eliminate the "eject trap" and boilerplate for adopters.
+Get one real Phoenix application onto one physical iPhone with explicit per-route ownership, one
+honest offline mutation island, bounded native affordances, and enough self-service proof to keep a
+team of one out of framework-debugging purgatory.
 
 ## Last Shipped Milestone: v19.0 Showcase Apps & Capability Map
 
@@ -25,25 +27,41 @@ Replace host-owned generated shell code (`ActivationCoordinator`, `BridgeChannel
 
 **Archive:** `.planning/milestones/v19.0-ROADMAP.md`, `.planning/milestones/v19.0-REQUIREMENTS.md`, and `.planning/milestones/v19.0-MILESTONE-AUDIT.md`.
 
-## Current Milestone: v20.0 Native Controls Pack 1
+## Current Milestone: v21.0 First B2C Adopter Readiness
 
-**Goal:** Ship the typed control-contract seam that every native-controls pack rides on, and prove it with the one control that genuinely needs to be native — replacing the ad-hoc `<script>` escape hatch adopters use today with a bounded, fail-closed, route-declared affordance.
+**Goal:** Prove one real Phoenix application's offline study flow on one physical iPhone without
+widening Crosswake into a generic sync, storage, native-control, or multi-platform framework.
 
 **Target features:**
-- A `Crosswake.Bridge.push/3` control seam where a LiveView invokes a bounded control and receives a typed reply, and where no-shell, old-shell, and undeclared-capability all collapse into one `Crosswake.Shell.Denial` branch.
-- Menu/action-button as the first genuinely-new native control (the reply-path exemplar), with haptics migrated onto the seam as the fire-and-forget exemplar.
-- Host-owned, brand-tokenized fallback components via a `gen.native_controls_ui` verbatim-copy generator — no importable component tier.
-- `share` and `notification_token` promoted from advisory to merge-blocking proof, plus an iPad share-crash guard.
-- A support-truth honesty pass so `permissions.status` never implies request authority and `notification_token` never implies delivery assurance.
-- The catalog line shipped as a merge-blocking structural guard, not prose.
-- SEED-003 (iOS SwiftPM mirror token) fixed first — it gates every future native release.
 
-**Key context:** Research reframed the Phase 152 handoff. `guides/capability_map.md` scores *proof posture*, not plumbing: v3.1 already shipped working native dispatch for haptics/share/app_info/deep_link/permissions.status/notification_token/file_picker. Toast is cut as a category error (iOS has no native toast primitive). Review-prompt is deferred (both stores forbid CTA-triggering it and give no completion signal). Alert/confirm is cut as a bridge family — a branded LiveView modal beats an unbranded OS alert on a Phoenix-owned route — and ships as a generated fallback instead. Controls stay in **core**, not a new companion: they have no external SDK to gate, which is what defines a companion here. Full synthesis in `.planning/research/v20/SUMMARY.md`.
+- A one-day adopter route inventory with explicit runtime owners, auth posture, offline semantics,
+  fallbacks, media requirements, and server-side disablement.
+- A host-reusable proof-lane generator that preserves existing browser tests and adds the three
+  device flows browser automation cannot cover.
+- Privacy-safe scoped replay that prevents cross-account leakage and excludes raw mutation payloads
+  from diagnostics and evidence.
+- A host-supplied foreground iOS pack adapter that installs one real pronunciation archive only
+  after size/hash verification and atomic placement.
+- A dated, redacted physical-iPhone proof of offline answers, offline audio, kill/relaunch
+  persistence, exactly-once replay, conflict recovery, account isolation, and remote disablement.
 
-Later milestones can expand into capture/device controls, commerce/paywall productionization, `crosswake_dashboard`, and offline-sync/native-storage productization.
+**Key context:** Crosswake is infrastructure for the **First B2C Adopter**, not a separate business
+line. A web-only customer Alpha has no Crosswake deliverable; mobile work serves public v1.
+Android, native-menu breadth, new companion packages, brand/showcase polish, and generic
+sync/storage productization are frozen. Reversal requires two independent active adopters or a
+separately funded business-line mandate. Durable reasoning is in
+`.planning/ADR-FIRST-B2C-ADOPTER.md`; the complete retrieval-oriented game plan is in
+`.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md`.
 
 ## Current State
-- **v20.0 Phase 153 iOS Mirror Unblock — COMPLETE 2026-07-30.** The SwiftPM mirror now carries `v0.2.0` at the reproducible split SHA while preserving `v0.1.2`; mirror `main` is re-baselined; the release and backfill lanes use the deploy-key path with hard failure surfacing; and the live parity gate is registered as required. MIRROR-01 and MIRROR-02 verified 31/31. Phase 156 remains the active planning position.
+- **v21.0 Adopter Readiness — ACTIVE 2026-07-30.** The roadmap now begins with route ownership and
+  host-reusable proof, then closes privacy/auth, real offline pronunciation media, and
+  physical-iPhone evidence. Work stops after the dated device proof except for defects that proof
+  demonstrates.
+- **v20.0 Native Controls Pack 1 — STOPPED/PARTIAL 2026-07-30.** Phases 153-155 delivered useful
+  release, CI, bridge, and fallback substrate. Phases 156-157 are dropped from active scope because
+  native menu breadth does not unblock the first adopter. No v20.0 shipped claim or completion tag.
+- **v20.0 Phase 153 iOS Mirror Unblock — COMPLETE 2026-07-30.** The SwiftPM mirror now carries `v0.2.0` at the reproducible split SHA while preserving `v0.1.2`; mirror `main` is re-baselined; the release and backfill lanes use the deploy-key path with hard failure surfacing; and the live parity gate is registered as required. MIRROR-01 and MIRROR-02 verified 31/31. This substrate carries into v21.
 - **v19.0 Showcase Apps & Capability Map — SHIPPED 2026-07-12.** Crosswake now has a product-shaped showcase hub and three realistic lanes: AdminPilot (SaaS/admin), Fieldserv (field service), and LearnLoop (subscription learning/training). The milestone also shipped deterministic fixture reset/proof, generalized route-tour evidence, public capability-map collateral, and a planning-only v20 Native Controls Pack 1 handoff. Full detail in `.planning/milestones/v19.0-ROADMAP.md`.
 - **v19.0 Phase 152.1 Support-Truth and Verification Closeout — COMPLETE 2026-07-12.** Scanner/document-scan support truth now renders unsupported/deferred across canonical source, generated guides, and tests; Phase 150 and 152 verification ledgers were reconstructed from fresh reruns; Phase 149/150/151 validation metadata is current; Phase 148's missing-summary exception is documented honestly; and the v19 milestone audit rerun passed.
 - **v19.0 Phase 151 Subscription Learning Showcase — COMPLETE 2026-07-11.** LearnLoop is now a product-first subscription learning/training lane with realistic courses, lessons, content packs, learners, progress, subscription states, route-derived diagnostics, a socketless offline study island, visible sync/reconciliation states, backend-owned mocked entitlement pressure, and route-tour screenshots after semantic assertions. LEARN-01 through LEARN-04 verified. Next active work is Phase 152: Capability Map, Collateral, and v20 Handoff.
@@ -371,4 +389,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-30 after Phase 153 verification.*
+*Last updated: 2026-07-30 after v21 adopter-priority reset.*

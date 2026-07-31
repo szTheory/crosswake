@@ -49,9 +49,9 @@ defmodule Crosswake.CapabilityMap.RendererTest do
              section_index(rendered, "## What evidence exists")
 
     assert section_index(rendered, "## What evidence exists") <
-             section_index(rendered, "## What v20 will do")
+             section_index(rendered, "## What the first adopter changes")
 
-    assert section_index(rendered, "## What v20 will do") <
+    assert section_index(rendered, "## What the first adopter changes") <
              section_index(rendered, "## Detailed Capability Rows")
   end
 
@@ -59,7 +59,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     rendered = Renderer.render()
 
     assert rendered =~
-             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | v20 implication |"
+             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | Adoption implication |"
 
     for label <- CapabilityMap.display_labels() do
       assert rendered =~ label

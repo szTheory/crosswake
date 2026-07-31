@@ -1,9 +1,9 @@
 defmodule Crosswake.CapabilityMap do
   @moduledoc """
-  Canonical v19 capability-map truth for support posture, proof posture, and v20 handoff.
+  Canonical capability-map truth for support posture, proof posture, and first-adopter pressure.
 
   This module is intentionally small and data-oriented. It classifies current support,
-  proof-backed showcase evidence, demo pressure, future gaps, and v20 candidates without
+  proof-backed evidence, first-adopter pressure, and future gaps without
   adding native controls, provider adapters, storage/sync productization, or dashboard UI.
   """
 
@@ -316,8 +316,8 @@ defmodule Crosswake.CapabilityMap do
       ),
       row(
         id: "learnloop-native-storage",
-        surface: "Native storage for content packs",
-        route_or_evidence_source: "LearnLoop content-pack pressure",
+        surface: "Production iOS storage for offline pronunciation media",
+        route_or_evidence_source: "First-adopter offline pronunciation pressure",
         category: :deferred,
         rebuild: :native_required,
         display_label: "Future gap",
@@ -325,8 +325,9 @@ defmodule Crosswake.CapabilityMap do
         package_owner: :deferred,
         proof_posture: :not_yet_proven,
         denial_fallback:
-          "Content packs remain browser/example evidence until native storage budgets and eviction behavior are explicit.",
-        v20_implication: "Defer to Offline Sync/Native Storage Productization."
+          "Current native pack stores simulate lifecycle transitions; a pack must remain unavailable until a host provider verifies real bytes and installs them atomically.",
+        v20_implication:
+          "v21 permits one host-supplied foreground iOS adapter. Generic native pack storage remains unclaimed."
       ),
       row(
         id: "learnloop-sync-productization",
@@ -371,6 +372,51 @@ defmodule Crosswake.CapabilityMap do
         v20_implication: "Defer to Commerce/Paywall Productionization later."
       ),
       row(
+        id: "first-adopter-host-proof",
+        surface: "Host-reusable offline-island and shell proof scaffold",
+        route_or_evidence_source: "Current example-host proof lane and first-adopter test corpus",
+        category: :missing,
+        rebuild: :none,
+        display_label: "Demo pressure",
+        route_runtime_owner: :offline_island,
+        package_owner: :core,
+        proof_posture: :not_yet_proven,
+        denial_fallback:
+          "Example-host proof remains valid, but no support claim transfers to an external host until that host can configure and run the lane.",
+        v20_implication:
+          "Build the iOS host-owned proof scaffold before adding native capability breadth."
+      ),
+      row(
+        id: "first-adopter-scoped-replay",
+        surface: "Privacy-safe scope-bound journal and replay",
+        route_or_evidence_source: "First-adopter free-form offline mutation pressure",
+        category: :missing,
+        rebuild: :none,
+        display_label: "Demo pressure",
+        route_runtime_owner: :offline_island,
+        package_owner: :core,
+        proof_posture: :not_yet_proven,
+        denial_fallback:
+          "Replay stops on missing or mismatched scope, logout, account switch, failed authorization, or a disabled route; raw payload never becomes diagnostic evidence.",
+        v20_implication:
+          "Add an opaque scope reference and redaction contract without teaching core the host payload schema."
+      ),
+      row(
+        id: "first-adopter-physical-iphone",
+        surface: "Physical-iPhone offline study and replay evidence",
+        route_or_evidence_source: "First-adopter public-release exit test",
+        category: :missing,
+        rebuild: :native_required,
+        display_label: "Future gap",
+        route_runtime_owner: :offline_island,
+        package_owner: :native_shell,
+        proof_posture: :not_yet_proven,
+        denial_fallback:
+          "Simulator, generated-shell, browser, and unit evidence remain explicitly narrower than physical-device proof.",
+        v20_implication:
+          "Block the first-adopter support claim until one physical iPhone proves offline answers, audio, relaunch, replay, account isolation, and remote disablement."
+      ),
+      row(
         id: "native-controls-alert-confirm",
         surface: "Native alert and confirm affordances",
         route_or_evidence_source: "v20 Pack 1 candidate from v19 evidence",
@@ -382,7 +428,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Until declared and proven, routes must keep Phoenix-owned confirmation surfaces.",
-        v20_implication: "Candidate for v20 Native Controls Pack 1."
+        v20_implication:
+          "Stopped for now; keep the Phoenix-owned fallback unless an adopter route proves a blocker."
       ),
       row(
         id: "native-controls-action-menu",
@@ -396,7 +443,8 @@ defmodule Crosswake.CapabilityMap do
         proof_posture: :not_yet_proven,
         denial_fallback:
           "Actions remain Phoenix-owned until route policy, allowlists, and fallback behavior are explicit.",
-        v20_implication: "Candidate for v20 Native Controls Pack 1."
+        v20_implication:
+          "Stopped for now; native menu breadth does not unblock the first adopter."
       ),
       row(
         id: "native-controls-toast-review",
@@ -411,7 +459,7 @@ defmodule Crosswake.CapabilityMap do
         denial_fallback:
           "Routes must treat toast/review prompts as optional UX evidence, not navigation or backend authority.",
         v20_implication:
-          "Candidate for v20 Native Controls Pack 1 with strict platform policy truth."
+          "Stopped for now; optional UX breadth follows physical-device adoption proof."
       )
     ]
   end
