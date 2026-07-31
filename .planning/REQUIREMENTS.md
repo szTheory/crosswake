@@ -15,16 +15,16 @@ work.
 
 ### RESET — Adoption boundary and route ownership
 
-- [x] **RESET-01:** The infrastructure-versus-business-line decision, reversal condition, scope
+- [ ] **RESET-01:** The infrastructure-versus-business-line decision, reversal condition, scope
   audit, non-goals, and stop list are durable and discoverable.
 
-- [x] **RESET-02:** Every known first-adopter surface has an explicit runtime owner, offline
+- [ ] **RESET-02:** Every known first-adopter surface has an explicit runtime owner, offline
   posture, authority boundary, fallback, and remote-disable posture.
 
-- [x] **RESET-03:** v20 is recorded as stopped/partial without a shipped claim or release tag, and
+- [ ] **RESET-03:** v20 is recorded as stopped/partial without a shipped claim or release tag, and
   Phases 156-157 are absent from active scope.
 
-- [x] **RESET-04:** Planning and public adoption artifacts contain no prohibited adopter identity
+- [ ] **RESET-04:** Planning and public adoption artifacts contain no prohibited adopter identity
   or personal information.
 
 ### PROOF — Host-reusable proof lane

@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: complete
-stopped_at: Completed 158-16-PLAN.md
-last_updated: "2026-07-31T17:21:31.883Z"
+status: gaps_found
+stopped_at: Phase 158 verification found a repository privacy-classification gap
+last_updated: "2026-07-31T17:30:00Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 16
   completed_plans: 16
-  percent: 20
+  percent: 0
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — COMPLETE
+Phase: 158 (adoption-reset-and-route-map) — GAPS FOUND
 Plan: 16 of 16
-Status: Complete
-Last activity: 2026-07-31 — Plan 158-16 reconciled fresh repository-classification evidence
+Status: Verification found a blocking RESET-04 privacy-classification gap
+Last activity: 2026-07-31 — Independent verification reproduced excluded tracked-text bypasses
 
 ## Active Objective
 
@@ -44,13 +44,13 @@ framework launch.
 
 ## Next Action
 
-Begin Phase 159 discussion only when the adopter's public-v1 mobile path is active; Phase 158 is
-complete, while TODO-002 remains the bounded adopter-input gate.
+Run `$gsd-plan-phase 158 --gaps` to close the tracked-text privacy bypass before Phase 159.
+TODO-002 remains the bounded adopter-input gate.
 
 ## Blockers
 
-- The privacy/context scanner uses a fixed allowlist and silently skips unregistered guides,
-  workflows, source/tests, and later-phase artifacts; configured private terms can bypass CI.
+- The privacy/context scanner excludes tracked text under `.github/actions/`, `script/`, and
+  planning phases beyond its fixed range; configured private terms can bypass protected CI.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
