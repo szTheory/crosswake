@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 11/14 plans executed
+**Plans:** 12/14 plans executed
 **Verification:** Gaps found (41/46 must-haves); four blockers require another gap-closure cycle
 
 Plans:
@@ -88,7 +88,7 @@ Plans:
 **Wave 8** *(gap closure; blocked on Wave 7 completion)*
 
 - [x] 158-11-PLAN.md — Enforce opaque route IDs and a closed sanitized Phoenix path grammar.
-- [ ] 158-12-PLAN.md — Enforce exact public spelling and precise live identifying-field scans.
+- [x] 158-12-PLAN.md — Enforce exact public spelling and precise live identifying-field scans.
 
 **Wave 9** *(blocked on Wave 8 completion)*
 

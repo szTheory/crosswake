@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-11-PLAN.md
-last_updated: "2026-07-31T16:21:32.782Z"
+stopped_at: Completed 158-12-PLAN.md
+last_updated: "2026-07-31T16:29:54.646Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 current_plan: null
 ---
@@ -23,8 +23,8 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 11 of 14 executed
-Status: Ready to execute Plan 12
+Plan: 12 of 14 executed
+Status: Ready to execute Plan 13
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Execute Plan 12 to close exact public-phrase enforcement and the registered-artifact scan false
-positive; retain the final reconciliation work for the formatting-ledger evidence.
+Execute Plan 13 to format the capability renderer and prove all changed Elixir sources before the
+final Phase 158 reconciliation.
 
 ## Blockers
 
@@ -83,6 +83,8 @@ positive; retain the final reconciliation work for the formatting-ledger evidenc
 - [Phase ?]: Final validation records a protected test input only as runtime-assembled neutral fragments and preserves adopter-instance unknown_blocking.
 - [Phase ?]: Durable route IDs use exactly route- plus 16 lowercase hexadecimal characters.
 - [Phase ?]: Phoenix path templates allow only generic static segments and the :id parameter token.
+- [Phase ?]: Public prose accepts only the standalone two-word phrase; standalone hyphenated wording has a dedicated stable rule ID.
+- [Phase ?]: Sensitive identity vocabulary requires a key-plus-assignment shape so safe review terminology remains scannable.
 
 ## Deferred Items
 
@@ -111,8 +113,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T16:21:32.776Z
-**Stopped at:** Completed 158-11-PLAN.md
+**Last session:** 2026-07-31T16:29:54.636Z
+**Stopped at:** Completed 158-12-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -130,3 +132,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P09 | 6m | 1 tasks | 3 files |
 | Phase 158-adoption-reset-and-route-map P10 | 8m | 1 tasks | 1 files |
 | Phase 158-adoption-reset-and-route-map P11 | 12m | 1 tasks | 2 files |
+| Phase 158-adoption-reset-and-route-map P12 | 5min | 2 tasks | 4 files |
