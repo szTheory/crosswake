@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
-current_phase_name: Adoption Reset and Route Map
-status: planning
-stopped_at: Phase 158 planned — ready to execute
-last_updated: "2026-07-31T00:06:07-04:00"
+current_phase_name: adoption-reset-and-route-map
+status: executing
+stopped_at: Completed 158-01-PLAN.md
+last_updated: "2026-07-31T13:45:25.674Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 planning complete — 4 plans ready
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 current_plan: null
 ---
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 of 162 — Adoption Reset and Route Map
-Plan: 4 plans in 3 waves
+Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-07-31 — Phase 158 planning complete
+Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
 
@@ -67,6 +67,8 @@ Run `$gsd-execute-phase 158`. Execution follows the annotated three-wave plan in
 - Pronunciation media uses one host-supplied foreground iOS pack adapter.
 - Feature flags remain host-owned through existing `gated_by`.
 - Generic sync and generic native storage non-goals remain in force.
+- [Phase ?]: Route-local safety posture is represented as a closed status/value pair and never inherits from surface defaults.
+- [Phase ?]: Empty or unknown-blocking inventories are explicitly blocked from promotion.
 
 ## Deferred Items
 
@@ -95,6 +97,12 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T03:28:05.496Z
-**Stopped at:** Phase 158 planned — ready to execute
-**Resume file:** .planning/phases/158-adoption-reset-and-route-map/158-01-PLAN.md
+**Last session:** 2026-07-31T13:45:25.667Z
+**Stopped at:** Completed 158-01-PLAN.md
+**Resume file:** None
+
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 158-adoption-reset-and-route-map P01 | 6m | 2 tasks | 3 files |

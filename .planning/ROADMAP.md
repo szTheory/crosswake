@@ -50,12 +50,12 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 158-01-PLAN.md — Trace one sanitized route through closed validation and blocked promotion.
+- [x] 158-01-PLAN.md — Trace one sanitized route through closed validation and blocked promotion.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
