@@ -28,6 +28,29 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
              RouteInventory.promotion_status(validated)
   end
 
+  test "rejects known defaults for every concrete-route safety field before promotion" do
+    for field <- safety_fields() do
+      supplied_posture = %{status: :known_default, value: :supplied_posture_canary}
+
+      assert {:error, error} =
+               RouteInventory.validate(Keyword.put(valid_row(), field, supplied_posture))
+
+      assert_safe_error(error, "RI-SAFETY_STATUS", Atom.to_string(field))
+      refute Exception.message(error) =~ "supplied_posture_canary"
+    end
+  end
+
+  test "defaults-only concrete rows cannot become eligible" do
+    defaults_only_row =
+      Enum.reduce(safety_fields(), valid_row(), fn field, row ->
+        Keyword.put(row, field, %{status: :known_default, value: :synthetic_default})
+      end)
+
+    assert {:error, error} = RouteInventory.validate(defaults_only_row)
+    assert_safe_error(error, "RI-SAFETY_STATUS", "runtime_owner")
+    refute Exception.message(error) =~ "synthetic_default"
+  end
+
   test "rejects missing, blank, nil, unknown, and forbidden fields without echoing rejected input" do
     assert {:error, error} = RouteInventory.validate(Keyword.delete(valid_row(), :auth))
     assert_safe_error(error, "RI-REQUIRED", "auth")
@@ -151,6 +174,22 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
   end
 
   defp confirmed(value), do: %{status: :confirmed_sanitized, value: value}
+
+  defp safety_fields do
+    [
+      :runtime_owner,
+      :offline_posture,
+      :mutation_categories,
+      :staleness_class,
+      :auth,
+      :recent_auth,
+      :scope_posture,
+      :media_requirement,
+      :fallbacks,
+      :disablement,
+      :queued_data_retention
+    ]
+  end
 
   defp assert_safe_error(error, rule_id, field) do
     message = Exception.message(error)
