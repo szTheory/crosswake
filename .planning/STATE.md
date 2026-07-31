@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-02-PLAN.md
-last_updated: "2026-07-31T20:54:23.140Z"
+stopped_at: Completed 159-03-PLAN.md
+last_updated: "2026-07-31T21:01:33.573Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 20
 current_plan: null
 ---
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-31 — Phase 159 execution started
 
@@ -104,6 +104,8 @@ adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Proof driver outcomes are closed to passed, blocked, and unavailable; later-phase prerequisites remain non-passing.
 - [Phase ?]: Proof-lane configuration accepts exactly nine atom-keyed Phoenix values and returns non-echoing PL-CONFIG errors.
 - [Phase ?]: Generated files remain host-owned; only missing paths are exclusively created and the manifest is promoted from a sibling staging file without replacement.
+- [Phase ?]: The original browser corpus remains primary while host callbacks supply the reusable offline-island proof sequence.
+- [Phase ?]: Native proof exposes only closed blocked or unavailable prerequisites until later host auth/replay and pack/audio adapters exist.
 
 ## Deferred Items
 
@@ -132,8 +134,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T20:54:23.134Z
-**Stopped at:** Completed 159-02-PLAN.md
+**Last session:** 2026-07-31T21:01:33.566Z
+**Stopped at:** Completed 159-03-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -162,3 +164,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P20 | 6m | 1 tasks | 3 files |
 | Phase 159 P01 | 11m | 1 tasks | 9 files |
 | Phase 159 P02 | 15m | 2 tasks | 5 files |
+| Phase 159 P03 | 10m | 2 tasks | 10 files |
