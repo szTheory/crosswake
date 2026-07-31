@@ -50,8 +50,12 @@ defmodule Crosswake.SupportMatrix.RendererTest do
   test "first adopter readiness preserves Android freeze and makes no unsupported proof claim" do
     guide = Renderer.render(SupportMatrix.canonical())
 
-    assert guide =~ "Android is frozen at its existing generator, Maven, JVM, and shared-vector posture."
-    assert guide =~ "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device."
+    assert guide =~
+             "Android is frozen at its existing generator, Maven, JVM, and shared-vector posture."
+
+    assert guide =~
+             "Example-host, simulator, package-version, and policy-contract evidence do not prove an external host or physical device."
+
     refute guide =~ "First B2C Adopter"
     refute guide =~ "first-adopter"
   end
@@ -61,7 +65,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
 
     assert guide =~ "## Support-Truth Label Legend"
 
-      for label <- [
+    for label <- [
           "merge-blocking proof",
           "advisory evidence",
           "checked-in public-coordinate proof",
@@ -143,6 +147,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
              "StoreKit and Play Billing provider adapter seams are shipped, but provider/storefront proof remains advisory until promotion criteria pass"
 
     refute String.downcase(guide) =~ "revenuecat"
+
     assert guide =~
              "| document_scan | native_screen | native_screen | unsupported | unsupported | defer |"
 
@@ -159,9 +164,11 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     for family <- ["document_scan", "scanner"] do
-      assert guide =~ "| #{family} | native_screen | native_screen | unsupported | unsupported | defer |"
+      assert guide =~
+               "| #{family} | native_screen | native_screen | unsupported | unsupported | defer |"
 
-      refute guide =~ "| #{family} | native_screen | native_screen | supported | supported | defer |",
+      refute guide =~
+               "| #{family} | native_screen | native_screen | supported | supported | defer |",
              "#{family} must stay unsupported until native runtime and proof posture ship"
     end
   end

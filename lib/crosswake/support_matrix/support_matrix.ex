@@ -443,7 +443,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first-adopter iOS readiness: no new feature, parity, device, template, or release claim.",
+            "Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android is frozen during first adopter iOS readiness: no new feature, parity, device, template, or release claim.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -470,7 +470,7 @@ defmodule Crosswake.SupportMatrix do
           proof:
             "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first-adopter iOS readiness.",
+            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. This existing posture is frozen during first adopter iOS readiness.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
