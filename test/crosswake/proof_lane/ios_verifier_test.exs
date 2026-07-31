@@ -48,6 +48,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         stderr_to_stdout: true,
         env: [
           {"PATH", "/usr/bin:/bin"},
+          {"CROSSWAKE_IOS_XCODEBUILD_BIN", "crosswake-missing-xcodebuild"},
           {"CROSSWAKE_IOS_PROJECT_ROOT", project}
         ]
       )

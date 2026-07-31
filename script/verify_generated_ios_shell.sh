@@ -7,6 +7,7 @@ PROJECT_ROOT=""
 TMPDIR_ROOT=""
 DERIVED_DATA_ROOT=""
 SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
+XCODEBUILD="${CROSSWAKE_IOS_XCODEBUILD_BIN:-xcodebuild}"
 BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
 LAUNCH_SIMULATOR="${CROSSWAKE_IOS_LAUNCH_SIMULATOR:-1}"
 BUNDLE_ID=""
@@ -17,10 +18,17 @@ if [[ "${1:-}" == "--proof-lane" ]]; then
   shift
 fi
 
-if ! command -v xcodebuild >/dev/null 2>&1; then
+emit_proof_outcome() {
+  local outcome="$1"
+  local rule_id="$2"
+  local scope="$3"
+  printf '{"outcome":"%s","rule_id":"%s","scope":"%s"}\n' "$outcome" "$rule_id" "$scope"
+}
+
+if ! command -v "$XCODEBUILD" >/dev/null 2>&1; then
   if [[ "$PROOF_LANE" == "1" ]]; then
-    echo "advisory: xcodebuild unavailable; generated proof targets were not built"
-    exit 0
+    emit_proof_outcome "unavailable" "PL-IOS-XCODEBUILD" "generated-proof-targets"
+    exit 3
   fi
   echo "error: xcodebuild is required for iOS shell verification" >&2
   exit 1
@@ -121,10 +129,10 @@ fi
 # under `set -u` on macOS bash 3.2.
 IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
 
-project_check="$(xcodebuild -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
+project_check="$("$XCODEBUILD" -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
   if [[ "$PROOF_LANE" == "1" ]]; then
-    echo "advisory: generated proof target graph could not be enumerated"
-    exit 0
+    emit_proof_outcome "unavailable" "PL-IOS-TARGET-ENUMERATION" "generated-target-graph"
+    exit 3
   fi
   echo "error: generated scheme is not buildable via xcodebuild -list" >&2
   printf '%s\n' "$project_check" >&2
@@ -134,17 +142,17 @@ project_check="$(xcodebuild -list -project "$project" -clonedSourcePackagesDirPa
 if [[ "$PROOF_LANE" == "1" ]]; then
   for target in CrosswakeProofLaneTests CrosswakeProofLaneUITests; do
     if ! printf '%s\n' "$project_check" | grep -q "$target"; then
-      echo "error: generated proof target missing: $target" >&2
-      exit 1
+      emit_proof_outcome "blocked" "PL-IOS-REQUIRED-TARGET" "generated-target-graph"
+      exit 2
     fi
   done
 
-  if ! xcodebuild -project "$project" -scheme "$scheme" -destination 'generic/platform=iOS Simulator' -derivedDataPath "$DERIVED_DATA_ROOT" build-for-testing >/dev/null 2>&1; then
-    echo "advisory: generated proof targets were not built for the local simulator/signing setup"
-    exit 0
+  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination 'generic/platform=iOS Simulator' -derivedDataPath "$DERIVED_DATA_ROOT" build-for-testing >/dev/null 2>&1; then
+    emit_proof_outcome "blocked" "PL-IOS-BUILD-FOR-TESTING" "generated-proof-targets"
+    exit 2
   fi
 
-  echo "advisory: generated XCTest and XCUITest targets built for testing; no simulator or device claim was promoted"
+  emit_proof_outcome "passed" "PL-IOS-BUILD-FOR-TESTING" "generated-proof-targets"
   exit 0
 fi
 
@@ -152,7 +160,7 @@ if [[ "$BUILD_FOR_TESTING" != "1" ]]; then
   exit 0
 fi
 
-destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 
 if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
   if command -v xcrun >/dev/null 2>&1; then
@@ -169,7 +177,7 @@ if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q
       xcrun simctl create "Crosswake CI iPhone" \
         "com.apple.CoreSimulator.SimDeviceType.iPhone-16" \
         "$runtime_id" >/dev/null 2>&1 || true
-      destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+      destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
     fi
   fi
 fi
@@ -179,7 +187,7 @@ if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q
   xcodebuild -downloadPlatform iOS || {
     echo "warning: iOS simulator platform download failed; retrying with currently available destinations" >&2
   }
-  destinations="$(xcodebuild -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
+  destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
 fi
 
 destination_name="$(printf '%s\n' "$destinations" | awk '
@@ -252,7 +260,7 @@ app_path="${DERIVED_DATA_ROOT}/Build/Products/Debug-iphonesimulator/${scheme}.ap
 # fail before test execution starts on hosts where pseudo-terminal setup is unavailable.
 # Phase 5's proof goal is the public install path, so this lane proves the built shell
 # can be produced, installed, and launched in a real simulator.
-xcodebuild \
+"$XCODEBUILD" \
   -project "$project" \
   -scheme "$scheme" \
   -destination "$destination" \
