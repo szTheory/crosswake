@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 7/10 plans executed
+**Plans:** 9/10 plans executed
 
 Plans:
 **Wave 1**
@@ -78,7 +78,7 @@ Plans:
 **Wave 6** *(gap closure; blocked on Wave 5 completion)*
 
 - [x] 158-08-PLAN.md — Enforce protected private-term checks across trusted PR and fail-closed fork paths.
-- [ ] 158-09-PLAN.md — Repair canonical public capability wording and regenerate the guide.
+- [x] 158-09-PLAN.md — Repair canonical public capability wording and regenerate the guide.
 
 **Wave 7** *(blocked on Wave 6 completion)*
 

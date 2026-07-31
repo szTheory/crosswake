@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
 status: executing
-stopped_at: Completed 158-08-PLAN.md
-last_updated: "2026-07-31T15:41:10.301Z"
+stopped_at: Completed 158-09-PLAN.md
+last_updated: "2026-07-31T15:44:54.254Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 9
   percent: 0
 current_plan: null
 ---
@@ -23,8 +23,8 @@ current_plan: null
 ## Current Position
 
 Phase: 158 (adoption-reset-and-route-map) — EXECUTING
-Plan: 8 of 10 executed; 2 gap-closure plans remaining
-Status: Executing Phase 158
+Plan: 9 of 10 executed; 2 gap-closure plans remaining
+Status: Ready to execute
 Last activity: 2026-07-31 — Phase 158 execution started
 
 ## Active Objective
@@ -80,6 +80,7 @@ is re-verified.
 - [Phase ?]: Approved first-adopter artifacts are discovered through destination-tagged globs, with private-term failures limited to stable rule/path pairs.
 - [Phase ?]: Phase 158 post-gap validation closes defaults-only/incoherent route promotion and unscanned planning-artifact gaps, while adopter-instance input remains unknown_blocking.
 - [Phase ?]: Protected private-term scans run only for trusted same-repository PRs, main pushes, and manual dispatches; fork PRs fail closed without secret exposure.
+- [Phase ?]: Public capability prose uses first adopter throughout rendered output; stable row IDs remain unchanged.
 
 ## Deferred Items
 
@@ -108,8 +109,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T15:41:10.293Z
-**Stopped at:** Completed 158-08-PLAN.md
+**Last session:** 2026-07-31T15:44:54.246Z
+**Stopped at:** Completed 158-09-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -124,3 +125,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P06 | 14m | 2 tasks | 5 files |
 | Phase 158-adoption-reset-and-route-map P07 | 5m | 1 tasks | 2 files |
 | Phase 158-adoption-reset-and-route-map P08 | 5m | 1 tasks | 2 files |
+| Phase 158-adoption-reset-and-route-map P09 | 6m | 1 tasks | 3 files |
