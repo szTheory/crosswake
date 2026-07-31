@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 18 plans (16 executed, 2 gap-closure plans pending)
+**Plans:** 17/18 plans executed
 **Verification:** Gaps found (3/4 roadmap must-haves); tracked text under `.github/actions/`,
 `script/`, and future planning phases can bypass protected private-term scanning.
 
@@ -109,7 +109,7 @@ Plans:
 
 **Wave 13** *(gap closure; blocked on Wave 12 completion)*
 
-- [ ] 158-17-PLAN.md — Make tracked textual action, script, and arbitrary future-phase artifacts scan by default and prove both scanner seams.
+- [x] 158-17-PLAN.md — Make tracked textual action, script, and arbitrary future-phase artifacts scan by default and prove both scanner seams.
 
 **Wave 14** *(blocked on Wave 13 completion)*
 

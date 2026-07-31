@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: ready_to_execute
-stopped_at: Phase 158 gap-closure plans 17-18 ready to execute
-last_updated: "2026-07-31T17:45:00Z"
+status: executing
+stopped_at: Completed 158-17-PLAN.md
+last_updated: "2026-07-31T17:53:32.605Z"
 last_activity: 2026-07-31
-last_activity_desc: Planned Phase 158 tracked-text privacy gap closure
+last_activity_desc: Phase 158 execution started
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 0
 current_plan: null
 ---
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — READY TO EXECUTE GAP CLOSURE
-Plan: 16 of 18
-Status: Ready to execute Plans 158-17 and 158-18
-Last activity: 2026-07-31 — Planned and verified tracked-text privacy gap closure
+Phase: 158 (adoption-reset-and-route-map) — EXECUTING
+Plan: 17 of 18
+Status: Ready to execute Plan 158-18
+Last activity: 2026-07-31 — Completed tracked-text privacy gap closure
 
 ## Active Objective
 
@@ -93,6 +93,8 @@ TODO-002 remains the bounded adopter-input gate.
 - [Phase ?]: Repository privacy candidates are enumerated from cached and non-ignored Git paths; artifact globs are compatibility metadata, not the scanner boundary.
 - [Phase ?]: Unsafe, unreadable, unclassified, and enumeration-failure paths fail closed with rule/path-only diagnostics.
 - [Phase ?]: Phase 158 final gate closes only on fresh Git-backed repository-classification and post-write scan evidence; TODO-002 remains unknown_blocking.
+- [Phase ?]: Recognized textual repository candidates scan for private terms regardless of subtree; raw evidence and binary exclusions remain explicit.
+- [Phase ?]: Generic policy rules stay limited to designated policy artifacts while private-term enforcement covers every classified textual candidate.
 
 ## Deferred Items
 
@@ -121,8 +123,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T17:21:31.878Z
-**Stopped at:** Completed 158-16-PLAN.md
+**Last session:** 2026-07-31T17:53:32.599Z
+**Stopped at:** Completed 158-17-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -145,3 +147,4 @@ this milestone reset.
 | Phase 158-adoption-reset-and-route-map P14 | 5m | 1 tasks | 3 files |
 | Phase 158 P15 | 18m | 2 tasks | 5 files |
 | Phase 158 P16 | 8m | 1 tasks | 3 files |
+| Phase 158 P17 | 18m | 2 tasks | 3 files |
