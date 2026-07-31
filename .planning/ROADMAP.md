@@ -50,7 +50,7 @@ separately funded business-line mandate.
 **Effort:** 1 focused day
 **Depends on:** Nothing
 **Requirements:** RESET-01, RESET-02, RESET-03, RESET-04
-**Plans:** 13/14 plans executed
+**Plans:** 14/14 plans executed
 **Verification:** Gaps found (41/46 must-haves); four blockers require another gap-closure cycle
 
 Plans:
@@ -96,7 +96,7 @@ Plans:
 
 **Wave 10** *(blocked on Waves 8-9 completion)*
 
-- [ ] 158-14-PLAN.md — Rerun the complete gate and reconcile validation plus verification.
+- [x] 158-14-PLAN.md — Rerun the complete gate and reconcile validation plus verification.
 
 **Smallest shippable version:** Durable ADR, updated agent guide, one-day route-policy map, honest
 v20 stopped/partial archive, refreshed requirements/roadmap/state, canonical capability/support
