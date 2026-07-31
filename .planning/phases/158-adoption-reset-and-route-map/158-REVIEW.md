@@ -1,6 +1,6 @@
 ---
 phase: 158-adoption-reset-and-route-map
-reviewed: 2026-07-31T17:25:34Z
+reviewed: 2026-07-31T18:02:01Z
 depth: standard
 files_reviewed: 16
 files_reviewed_list:
@@ -21,38 +21,56 @@ files_reviewed_list:
   - test/crosswake/support_matrix/renderer_test.exs
   - test/mix/tasks/crosswake_adoption_context_scan_test.exs
 findings:
-  critical: 1
-  warning: 0
+  critical: 2
+  warning: 1
   info: 0
-  total: 1
+  total: 3
 status: issues_found
 ---
 
 # Phase 158: Code Review Report
 
-**Reviewed:** 2026-07-31T17:25:34Z
+**Reviewed:** 2026-07-31T18:02:01Z
 **Depth:** standard
 **Files Reviewed:** 16
 **Status:** issues_found
 
 ## Summary
 
-The route-inventory, canonical map/rendering contracts, and focused test suite were reviewed. The privacy gate is not repository-wide as claimed: its classifier silently excludes executable CI/action/script files and all phase artifacts outside a fixed 158–162 range. A private term in those tracked, non-ignored files passes the protected scan and can ship.
+The route-inventory validation and generated-guide parity checks are largely well covered. The new repository privacy scan, however, leaves important repository-facing content outside its non-secret rules and can echo attacker-controlled map keys in validation errors. The focused suite passed, but it does not exercise either boundary.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Private-term scanner has permanent unscanned repository paths
+### CR-01: Generic privacy rules do not cover newly added repository artifacts
 
-**File:** `lib/crosswake/planning/first_adopter_context.ex:265-273,284-288,320-340,401-412`
+**File:** `lib/crosswake/planning/first_adopter_context.ex:301-304, 399-400`
 
-**Issue:** `classify_repository_path/1` returns `{:excluded, :forbidden}` for every `.github/actions/` and `script/` file, and for all `.planning/` content after the narrowly hard-coded phase regex. Excluded entries have `scan?: false`, so `filesystem_content_violations/2` drops them before generic or private-term checks. Consequently a tracked, non-ignored `.github/actions/*.yml`, `script/*.sh`, or `.planning/phases/163-.../*.md` file containing a protected adopter term returns no `privacy.private_term` violation. This contradicts the claimed Git-backed, repository-facing protected scan and creates a direct privacy-leak bypass; the fixed regex also means the protection expires for every future phase.
+**Issue:** `policy_scan_path?/1` limits commercial-detail, identifying-field, and public-wording checks to the small named-artifact list plus this phase directory. Every other scannable repository file is still discovered and read, but `policy_violations/2` returns no generic violations for it. Consequently, an unregistered guide, workflow, source file, script, or later phase artifact can contain prohibited public-facing detail and the normal CI scan passes whenever no configured private term happens to match it. This violates the required fail-closed repository privacy boundary.
 
-**Fix:** Classify all tracked, non-ignored textual repository artifacts as scan candidates by default, retaining exclusions only for explicitly approved raw/binary evidence. In particular, remove `.github/actions/` and `script/` from `explicit_exclusion_path?/1`, and replace the finite phase allowlist with a future-safe active-phase rule (or scan all non-archival `.planning/phases/**/*.md`). Add production-seam regressions that place a canary in each formerly excluded path and assert `scan_filesystem/2` and the Mix task emit only `privacy.private_term <relative-path>`.
+**Fix:** Apply `generic_violations/2` to every `scan?: true` entry. Classify all public guide paths as `:public` (or equivalently apply the public wording checks to all public renderings), then retain only the destination-specific rules behind the destination check. Add filesystem tests using unregistered guide and source paths with sanitized synthetic prohibited patterns and an empty private-term list.
+
+### CR-02: Route validation error messages can disclose caller-controlled map keys
+
+**File:** `lib/crosswake/adoption/route_inventory.ex:148, 158-162, 433-440`
+
+**Issue:** Map input is converted directly with `Map.to_list/1`; non-atom keys then reach `reject_unknown_fields/1`. The selected key is interpolated into `ValidationError.message` as the field name. A caller can therefore put sensitive text in a string key and cause it to be emitted to logs or diagnostics, despite this module's explicit no-echo privacy contract. Existing tests only prove that rejected *values* are omitted.
+
+**Fix:** Reject any non-atom input key before building a field-specific error, using a stable generic field label such as `"route_row"`; do not interpolate untrusted keys. Add a test that passes a map with a synthetic sensitive string key and asserts neither the key nor its value appears in `Exception.message/1`.
+
+## Warnings
+
+### WR-01: CI executes third-party actions from mutable version tags
+
+**File:** `.github/workflows/hex-page-proof.yml:38, 41`
+
+**Issue:** The workflow executes third-party actions by movable `@v7` and `@v1` tags. A retagged or compromised upstream release changes CI code without a repository review, including jobs that access repository checkout and secrets on trusted runs.
+
+**Fix:** Pin each `uses:` reference to a reviewed full commit SHA and annotate it with the intended release version; update pins through a controlled dependency-update process.
 
 ---
 
-_Reviewed: 2026-07-31T17:25:34Z_
+_Reviewed: 2026-07-31T18:02:01Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
