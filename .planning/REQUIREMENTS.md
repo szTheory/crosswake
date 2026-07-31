@@ -115,10 +115,10 @@ work.
 
 | Requirement | Phase | Status |
 | --- | --- | --- |
-| RESET-01 | Phase 158 | Complete |
-| RESET-02 | Phase 158 | Complete |
-| RESET-03 | Phase 158 | Complete |
-| RESET-04 | Phase 158 | Complete |
+| RESET-01 | Phase 158 | Gaps Found |
+| RESET-02 | Phase 158 | Gaps Found |
+| RESET-03 | Phase 158 | Gaps Found |
+| RESET-04 | Phase 158 | Gaps Found |
 | PROOF-01 | Phase 159 | Pending |
 | PROOF-02 | Phase 159 | Pending |
 | PROOF-03 | Phase 159 | Pending |

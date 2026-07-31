@@ -1,26 +1,41 @@
 ---
 phase: 158-adoption-reset-and-route-map
-verified: 2026-07-31T00:00:00-04:00
-status: complete
-score: 58/58 must-haves verified
+verified: 2026-07-31T17:28:24Z
+status: gaps_found
+score: 3/4 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 57/58
-  gaps_closed:
-    - "Repository-facing private-term enforcement classifies cached and non-ignored candidates before scanning, including unregistered guides and later-phase artifacts."
-  gaps_remaining: []
-  regressions: []
-gaps: []
+  previous_status: complete
+  previous_score: 58/58
+  gaps_closed: []
+  gaps_remaining:
+    - "Repository-facing private-term enforcement scans every relevant tracked, non-ignored planning and CI artifact."
+  regressions:
+    - "The prior report's claimed Git-backed repository-wide scanner omits tracked .github/actions/, script/, and future .planning phase artifacts."
+gaps:
+  - truth: "Automated scans reject prohibited adopter identity or personal information from planning and public adoption artifacts."
+    status: failed
+    reason: "The protected filesystem scanner excludes some tracked, non-ignored repository paths before private-term checks, including future planning artifacts. A synthetic temporary-repository probe returned zero violations for three excluded candidate classes."
+    artifacts:
+      - path: "lib/crosswake/planning/first_adopter_context.ex"
+        issue: "classify_repository_path/1 routes explicit exclusions to scan?: false; phase_artifact_path?/1 has a fixed Phase 158-162 range."
+      - path: "test/crosswake/planning/first_adopter_context_test.exs"
+        issue: "Regression coverage proves an unregistered workflow path but not .github/actions/, script/, or future-phase planning candidates."
+      - path: "test/mix/tasks/crosswake_adoption_context_scan_test.exs"
+        issue: "Production task regression covers an unregistered guide and Phase 159 only, not the excluded classes."
+    missing:
+      - "Classify all tracked, non-ignored textual repository artifacts as scan candidates by default; retain only explicit raw/binary evidence exclusions."
+      - "Remove action/script exclusions and replace the finite phase range with a future-safe planning classification."
+      - "Add direct and Mix-task regressions for the formerly excluded candidate classes with rule/path-only assertions."
 ---
 
 # Phase 158: Adoption Reset and Route Map Verification Report
 
 **Phase Goal:** Close GET-6, archive v20 honestly, freeze the surface-area audit, classify adopter routes, update support truth, and install privacy-safe context routing.
-**Verified:** 2026-07-31T00:00:00-04:00
-**Status:** complete
-**Re-verification:** Yes — the sole 57/58 privacy-boundary blocker was re-evaluated from fresh Plan-16 execution evidence.
+**Verified:** 2026-07-31T17:28:24Z
+**Status:** gaps_found
+**Re-verification:** Yes — previous closeout report independently re-evaluated.
 
 ## Goal Achievement
 
@@ -28,80 +43,79 @@ gaps: []
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | A session can discover GET-6 framing, Alpha/v1 split, stop list, and current phase. | ✓ VERIFIED | Governing artifacts remain linked from `AGENTS.md`; fresh focused context coverage passed. |
-| 2 | Known adopter surfaces have one runtime owner and one authority/fallback story. | ✓ VERIFIED | Route map and fail-closed `RouteInventory` remain unchanged; fresh focused route/context/Mix-task/capability/support suite passed 122 tests. |
-| 3 | v20 is preserved as partial work and Phases 156–157 are not represented as shipped active scope. | ✓ VERIFIED | Existing durable stopped/partial evidence remains in place; fresh context coverage passed. |
-| 4 | Automated scans reject prohibited private terms from planning, agent, and public-guide surfaces. | ✓ VERIFIED | Fresh Git-backed classification regressions cover unregistered guide, Phase 159, workflow, source, and test candidates; production Mix scan and post-write scan passed. |
+| 1 | A new session can discover infrastructure framing, Alpha/v1 split, stop list, and current phase. | ✓ VERIFIED | `AGENTS.md` links governing artifacts; ADR records GET-6 and reversal conditions; ROADMAP/STATE name Phase 158 and the stop date. Focused context test passed. |
+| 2 | Every known adopter surface has one runtime owner and one authority/fallback story. | ✓ VERIFIED | Route-policy map supplies owner/offline/authority-fallback rows; `RouteInventory` rejects missing/unknown safety posture and blocked promotion. Focused route tests passed. |
+| 3 | v20 is preserved as partial work without representing Phases 156-157 as shipped active scope. | ✓ VERIFIED | ROADMAP and MILESTONES identify v20 as stopped/partial, not shipped/no completion tag; focused context test passed. |
+| 4 | Automated scans reject prohibited adopter identity or personal information from planning and public adoption artifacts. | ✗ FAILED — BLOCKER | The scanner is wired into CI but deliberately sets `scan?: false` for some tracked textual candidates. A fresh synthetic temporary-repository probe covering an action, script, and future planning artifact returned `violations=0`; future planning artifacts therefore bypass protected-term enforcement. |
 
-**Score:** 58/58 PLAN must-haves verified. The previous privacy-boundary blocker is closed by fresh executable evidence, not by copied historical status.
-
-### Plan Must-Haves Matrix
-
-| Plan | Truths | Status | Evidence |
-| --- | ---: | --- | --- |
-| 158-01 through 158-14 | 57 | ✓ 57/57 | Previously satisfied policy-contract evidence was preserved; this plan added no new work to RESET-01 through RESET-03. |
-| 158-15 | 0 | ✓ IMPLEMENTED | Git candidate enumeration, closed classification, non-echoing diagnostics, and Mix-task regressions are present in the final tree. |
-| 158-16 | 1 | ✓ 1/1 | Fresh protected, focused, live-scan, formatter, compile, full-suite, whitespace, and post-write gates all passed. |
+**Score:** 3/4 roadmap must-haves verified.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `lib/crosswake/planning/first_adopter_context.ex` | Privacy/context routing | ✓ VERIFIED | `git ls-files` candidate enumeration reaches safe classification, content scanning, and stable non-echoing violations. |
-| `test/crosswake/planning/first_adopter_context_test.exs` | Repository-boundary tracer | ✓ VERIFIED | Exercises unregistered guide, Phase 159, workflow, source, test, unsafe/symlink, unknown-path, and enumeration-failure cases. |
-| `lib/mix/tasks/crosswake.adoption_context.scan.ex` and protected workflow | Merge gate | ✓ VERIFIED | Production task delegates to `scan_filesystem/2`; protected workflow invokes it and fork bypass remains blocked. |
-| `158-VALIDATION.md` and this report | Fresh evidence ledgers | ✓ VERIFIED | Final Markdown artifacts passed the post-write production scan and focused scanner suites. |
+| `lib/crosswake/adoption/route_inventory.ex` | Closed sanitized route contract and promotion boundary | ✓ VERIFIED | Substantive public validator functions; exercised by focused route tests. |
+| `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md` | Surface ownership and route-local posture | ✓ VERIFIED | Documents each owner/authority/fallback and `unknown_blocking`; matches validator vocabulary. |
+| `lib/crosswake/capability_map.ex` and `lib/crosswake/capability_map/renderer.ex` | Canonical adoption implication and generated support truth | ✓ VERIFIED | Renderer write paths exist; focused parity/compatibility tests passed. |
+| `lib/crosswake/support_matrix/renderer.ex` and `guides/support_matrix.md` | Generated narrow support claim | ✓ VERIFIED | Renderer has write path; parity assertion at `renderer_test.exs:346` was exercised in the focused suite. |
+| `lib/crosswake/planning/first_adopter_context.ex` | Privacy-safe repository context routing | ✗ HOLLOW — BLOCKER | Substantive and called by the Mix task, but data flow discards excluded textual candidates before content/private-term checks. |
+| `lib/mix/tasks/crosswake.adoption_context.scan.ex` and `.github/workflows/hex-page-proof.yml` | Protected CI enforcement | ⚠️ PARTIAL | Workflow invokes the Mix task, including protected-term mode, but inherits the scanner bypass. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| --- | --- | --- | --- |
-| Git index and non-ignored worktree | candidate classification | `git -C ROOT ls-files --cached --others --exclude-standard -z` | WIRED | Candidate enumeration is deterministic and failure returns `routing.repository_enumeration_failed`. |
-| candidate classification | file content scan | `scan_filesystem/2` | WIRED | Safe regular files use ordered classifications; unclassified/unsafe/unreadable paths fail closed. |
-| file content scan | Mix task | `Mix.Tasks.Crosswake.AdoptionContext.Scan.run/1` | WIRED | Production regression proves unregistered guide and Phase 159 candidates return rule/path-only private-term violations. |
-| Mix task | protected workflow | `mix crosswake.adoption_context.scan --require-private-terms` | WIRED | Trusted provenance runs the protected gate; forks receive a fail-closed bypass block without secret exposure. |
-
-`@artifact_globs` remains public compatibility metadata for named destinations; it is not the discovery authority. No historical archive, ignored raw evidence, Git history, remote, or external source is used as a candidate source.
+| --- | --- | --- | --- | --- |
+| Route-policy map | `RouteInventory` | Closed status/field vocabulary and focused route tests | WIRED | `unknown_blocking`, `known_default`, empty inventory, and promotion cases are exercised. |
+| Capability/support renderers | Checked-in guides | renderer write paths and byte-parity tests | WIRED | Focused suite: 122 tests, 0 failures. |
+| Git-backed candidates | Context scanner content checks | `repository_candidates` → classification → `filesystem_content_violations` | NOT_WIRED FOR ALL CANDIDATES | Explicit exclusions result in `scan?: false`, so private-term checks never receive those candidate contents. |
+| Context scanner | Mix task | `scan_filesystem/2` | PARTIAL | Delegation is present, but it propagates the exclusion bypass. |
+| Mix task | protected workflow | `mix crosswake.adoption_context.scan --require-private-terms` | PARTIAL | The command is present for trusted provenance; its candidate coverage is incomplete. |
 
 ### Data-Flow Trace (Level 4)
 
-| Artifact | Data variable | Source | Produces real data | Status |
+| Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| Privacy scanner | candidate paths | cached and non-ignored Git paths | classified repository-relative entries | ✓ FLOWING |
-| Privacy scanner | classified entries | path rules → `scan_filesystem/2` | generic, destination, and protected private-term checks | ✓ FLOWING |
-| Mix task | scan result | `scan_filesystem/2` → `run/1` | deterministic success or stable rule/path failure | ✓ FLOWING |
-| Protected workflow | trusted-gate status | workflow → production Mix task | merge-blocking protected result without term disclosure | ✓ FLOWING |
+| Route inventory | validated row/posture | public validator input | Closed structured values with blocked promotion for unknowns | ✓ FLOWING |
+| Generated guides | canonical map/matrix rows | Elixir canonical sources | Deterministic rendered Markdown with parity tests | ✓ FLOWING |
+| Privacy scanner | candidate entries | cached and non-ignored Git paths | Some textual candidates are explicitly marked non-scanned before read/check | ✗ DISCONNECTED FOR EXCLUDED CLASSES |
+| Protected Mix task | scanner violations | `scan_filesystem/2` | Stable rule/path output for scanned candidates only | ⚠️ STATIC BOUNDARY |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Protected caller seam | `CROSSWAKE_PRIVATE_ADOPTER_TERMS="$(printf '%s-%s-%s' repository privacy sentinel)" mix test test/crosswake/planning/first_adopter_context_test.exs` | 14 tests, 0 failures | ✓ PASS |
-| Route/context/Mix-task/capability/support behavior | `mix test test/crosswake/adoption/route_inventory_test.exs test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs test/crosswake/capability_map test/crosswake/support_matrix` | 122 tests, 0 failures | ✓ PASS |
-| Live repository scan | `mix crosswake.adoption_context.scan` | passed | ✓ PASS |
-| Full hermetic gate | `mix compile --warnings-as-errors && mix test --exclude requires_example_host --exclude advisory_only && git diff --check` | passed | ✓ PASS |
-| Post-write evidence scan | `mix crosswake.adoption_context.scan && mix test test/crosswake/planning/first_adopter_context_test.exs test/mix/tasks/crosswake_adoption_context_scan_test.exs && git diff --check` | passed | ✓ PASS |
+| Route, context, Mix-task, capability, and support behavior | Focused `mix test` across the six phase test targets | 122 tests, 0 failures | ✓ PASS |
+| Generic live repository scan | `mix crosswake.adoption_context.scan` | `adoption context scan passed` | ✓ PASS — insufficient for protected-term scope |
+| Formatting of Phase 158 sources/tests | Explicit `mix format --check-formatted` list | Exit 0 | ✓ PASS |
+| Excluded candidate private-term enforcement | Fresh temporary Git repository, synthetic non-sensitive canary assembled at runtime | 3 candidate paths; 0 violations | ✗ FAIL |
+
+The passing scanner tests are misleading for this truth: they cover an unregistered workflow under `.github/workflows/` and Phase 159, but not the explicitly excluded action/script paths or phases beyond the fixed range.
 
 ### Requirements Coverage
 
-| Requirement | Source plan(s) | Status | Evidence |
-| --- | --- | --- | --- |
-| RESET-01 | 01–04, 09–10, 13–14 | ✓ SATISFIED | No change: durable GET-6 framing, support truth, and stop list remain discoverable. |
-| RESET-02 | 01, 04–05, 07, 11, 14 | ✓ SATISFIED | No change: closed route/safety/promotion contract remains tested; TODO-002 is `unknown_blocking`. |
-| RESET-03 | 03–04, 07, 10, 14 | ✓ SATISFIED | No change: v20 remains stopped/partial without a shipped claim; 156–157 remain outside active v21. |
-| RESET-04 | 01–16 | ✓ SATISFIED | Fresh repository-wide candidate classification and non-echoing protected-scan evidence close the former fixed-allowlist bypass. |
+| Requirement | Source Plan(s) | Description | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| RESET-01 | 01–04, 09–10, 13–14 | Durable infrastructure decision, scope audit, non-goals, stop list | ✓ SATISFIED | ADR, adoption brief, route map, AGENTS, ROADMAP, and STATE are discoverable and focused context test passes. |
+| RESET-02 | 01, 04–05, 07, 11, 14 | Explicit runtime ownership/offline/authority/fallback/disablement posture | ✓ SATISFIED | Route map and closed `RouteInventory` implementation; focused route tests pass. |
+| RESET-03 | 03–04, 07, 10, 14 | Honest v20 stopped/partial archive; 156–157 absent from active scope | ✓ SATISFIED | MILESTONES/ROADMAP text and focused archive assertion pass. |
+| RESET-04 | 01–16 | No prohibited identity or personal information in planning/public adoption artifacts | ✗ BLOCKED | Future planning artifacts and other tracked textual classes can bypass configured private-term enforcement. |
 
 ### Anti-Patterns Found
 
-None. The prior fixed-allowlist discovery boundary was removed by Plan 158-15 and Plan 158-16 confirmed its replacement from fresh executable evidence.
+| File | Line | Pattern | Severity | Impact |
+| --- | --- | --- | --- | --- |
+| `lib/crosswake/planning/first_adopter_context.ex` | 284–288 | Finite phase artifact classification | 🛑 Blocker | Future planning artifacts become excluded from private-term scanning. |
+| `lib/crosswake/planning/first_adopter_context.ex` | 320–340 | Explicit action/script exclusions preceding general text classification | 🛑 Blocker | Tracked textual CI/script candidates are dropped before protected-term checks. |
 
-## Scope Boundaries Preserved
+No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in the inspected Phase 158 implementation files.
 
-- TODO-002 remains open; concrete adopter-route inputs and adopter-instance completeness remain `unknown_blocking`.
-- Phase 159 proof lane, Phase 160 replay, Phase 161 pack installation, and Phase 162 physical-device proof are not implemented or promoted here.
-- Android remains frozen. Generic sync, generic storage, new UI/control breadth, identity discovery, and business-line expansion remain out of scope.
+### Gaps Summary
+
+Phase 158 does achieve its adoption framing, route-policy, support-truth, and v20 archive outcomes. It does not achieve the required privacy-safe context-routing outcome: the protected scan is not repository-wide despite the prior report’s claim. This is an **Escalation Gate**: privacy coverage must be repaired and re-verified before Phase 159 proceeds.
+
+Recommended next action: create a narrow gap-closure plan for RESET-04 that makes tracked, non-ignored textual artifacts scan-by-default, preserves explicit raw/binary exclusions and non-echoing diagnostics, and adds production-seam regressions for the three bypass classes.
 
 ---
 
-_Verified: 2026-07-31T00:00:00-04:00_
-_Verifier: Plan 158-16 execution gate_
+_Verified: 2026-07-31T17:28:24Z_
+_Verifier: the agent (gsd-verifier)_
