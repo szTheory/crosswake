@@ -44,6 +44,7 @@ Proof-lane evidence now accepts only closed opaque identifiers, derives retained
 2. Task 1 GREEN — `11e09492` feat(159-07): bind evidence to closed sources
 3. Task 2 RED — `cd14385e` test(159-07): add failing no-replace promotion controls
 4. Task 2 GREEN — `3ae5474c` feat(159-07): atomically no-replace proof evidence
+5. Task 2 follow-up — `29c2b6ae` fix(159-07): verify promotion hash sources
 
 ## Verification
 
@@ -61,6 +62,12 @@ Proof-lane evidence now accepts only closed opaque identifiers, derives retained
 - **Fix:** Included the platform header; this preserves the required `renameatx_np(..., RENAME_EXCL)` primitive.
 - **Files modified:** `priv/native/crosswake_evidence_promote.c`
 - **Commit:** `3ae5474c`
+
+2. [Rule 1 - Security bug] Promotion initially scanned the staged artifact without rechecking its non-empty hash sources.
+- **Found during:** Task 2 final review.
+- **Fix:** Promotion now invokes source-aware `check/2` after the final scan and before atomic promotion.
+- **Files modified:** `lib/crosswake/proof_lane/evidence.ex`
+- **Commit:** `29c2b6ae`
 
 ## Known Stubs
 
