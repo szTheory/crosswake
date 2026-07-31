@@ -115,6 +115,19 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
     end
   end
 
+  test "generic scans reject whole and decimal dollar amounts without echoing them" do
+    path = "AGENTS.md"
+    contents = Map.new(FirstAdopterContext.active_paths(), &{&1, "first adopter"})
+
+    for amount <- ["$0", "$1", "$10", "$1.25"] do
+      assert [%{rule_id: "privacy.commercial_detail", path: ^path}] =
+               FirstAdopterContext.scan(Map.put(contents, path, "amount #{amount}"))
+
+      refute inspect(FirstAdopterContext.scan(Map.put(contents, path, "amount #{amount}"))) =~
+               amount
+    end
+  end
+
   test "live registered artifacts scan clean while the Phase 158 review remains discovered" do
     review_path = ".planning/phases/158-adoption-reset-and-route-map/158-REVIEW.md"
 

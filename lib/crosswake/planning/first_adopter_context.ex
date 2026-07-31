@@ -174,7 +174,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
 
   defp generic_violations(path, contents) do
     [
-      {"privacy.commercial_detail", ~r/\$\s*(?:\d{2,}|\d+\.\d+)/},
+      {"privacy.commercial_detail", ~r/\$\s*\d+(?:\.\d{1,2})?\b/},
       {
         "privacy.identifying_field",
         ~r/\b(?:customer[-_ ]?(?:email|name|address)|legal[-_ ]?name)\b[ \t]*(?::|=>|=)/i

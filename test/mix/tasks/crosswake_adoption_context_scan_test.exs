@@ -23,6 +23,22 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "rejects zero, one-digit, two-digit, and decimal dollar amounts without echoing matches" do
+    with_temporary_root(fn root ->
+      path = "guides/capability_map.md"
+
+      for amount <- ["$0", "$1", "$10", "$1.25"] do
+        write_file(root, path, "first adopter amount #{amount}")
+
+        error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+        assert error.message == "privacy.commercial_detail #{path}"
+        refute error.message =~ amount
+        refute error.message =~ "amount"
+      end
+    end)
+  end
+
   test "raises the hyphenated public phrase rule and path without echoing matched text" do
     with_temporary_root(fn root ->
       path = "guides/capability_map.md"
