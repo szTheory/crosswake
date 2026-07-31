@@ -50,13 +50,13 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert contract =~ "XCTestCase"
-    assert contract =~ ".blocked(.replayAuthorization)"
-    assert contract =~ ".unavailable(.packAudio)"
+    assert contract =~ ".replayAuthorization), .blocked"
+    assert contract =~ ".packAudio), .unavailable"
     refute contract =~ "XCTSkip"
     assert ui =~ "XCUIApplication"
     assert ui =~ "terminate()"
     assert ui =~ "launch()"
-    assert ui =~ "accessibilityIdentifier"
+    assert ui =~ "matching(identifier:"
     refute ui =~ "resetContentAndSettings"
     refute ui =~ "XCTSkip"
   end

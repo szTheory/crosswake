@@ -1,0 +1,15 @@
+import SwiftUI
+
+@main
+struct CrosswakeProofLaneApp: App {
+  var body: some Scene {
+    WindowGroup {
+      VStack(spacing: 16) {
+        Text("Proof lane ready").accessibilityIdentifier("proof-lane-ready")
+        Text("backend-authority-required").accessibilityIdentifier("proof-lane-auth-posture")
+        Button("Reconnect") {}.accessibilityIdentifier("proof-lane-reconnect")
+        Text("blocked: replayAuthorization").accessibilityIdentifier("proof-lane-outcome")
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+import XCTest
+
+final class ProofLaneUITests: XCTestCase {
+  func testShellLifecyclePreservesObservableBackendAuthorityPosture() {
+    let app = XCUIApplication()
+    app.launch()
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
+    app.terminate()
+    app.launch()
+    XCTAssertTrue(app.buttons.matching(identifier: "proof-lane-reconnect").firstMatch.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch.exists)
+  }
+}

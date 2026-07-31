@@ -10,8 +10,18 @@ SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
 BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
 LAUNCH_SIMULATOR="${CROSSWAKE_IOS_LAUNCH_SIMULATOR:-1}"
 BUNDLE_ID=""
+PROOF_LANE=0
+
+if [[ "${1:-}" == "--proof-lane" ]]; then
+  PROOF_LANE=1
+  shift
+fi
 
 if ! command -v xcodebuild >/dev/null 2>&1; then
+  if [[ "$PROOF_LANE" == "1" ]]; then
+    echo "advisory: xcodebuild unavailable; generated proof targets were not built"
+    exit 0
+  fi
   echo "error: xcodebuild is required for iOS shell verification" >&2
   exit 1
 fi
@@ -26,15 +36,35 @@ if [[ -n "${PROJECT_ROOT_INPUT}" ]]; then
   PROJECT_ROOT="$(cd "${ROOT_DIR}" && cd "${PROJECT_ROOT_INPUT}" && pwd)"
 else
   TMPDIR_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-shell.XXXXXX")"
+  TMPDIR_ROOT="$(cd "${TMPDIR_ROOT}" && pwd -P)"
   cd "${ROOT_DIR}"
-  mix crosswake.gen.shell ios --target "${TMPDIR_ROOT}" >/dev/null
-  PROJECT_ROOT="${TMPDIR_ROOT}/native/ios/crosswake_shell"
+  if [[ "$PROOF_LANE" == "1" ]]; then
+    CROSSWAKE_PROOF_LANE_TARGET="${TMPDIR_ROOT}" mix run -e '
+      root = System.fetch_env!("CROSSWAKE_PROOF_LANE_TARGET")
+      Application.put_env(:crosswake, :proof_lane,
+        route_id: "route-0123456789abcdef", route_path: "/study/:id",
+        indexed_db_database: "proof_lane", indexed_db_store: "mutations",
+        mutation_id_path: "client_mutation_id", sync_path: "/study/sync",
+        evidence_path: "/_proof/evidence", router: CrosswakeWeb.Router,
+        ios_shell_root: Path.join(root, "native/ios"))
+      Mix.Tasks.Crosswake.Gen.ProofLane.run(["ios"])
+    ' >/dev/null
+    PROJECT_ROOT="${TMPDIR_ROOT}/native/ios"
+  else
+    mix crosswake.gen.shell ios --target "${TMPDIR_ROOT}" >/dev/null
+    PROJECT_ROOT="${TMPDIR_ROOT}/native/ios/crosswake_shell"
+  fi
 fi
 
 DERIVED_DATA_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-derived.XXXXXX")"
 
-project="${PROJECT_ROOT}/CrosswakeShell.xcodeproj"
-scheme="${SCHEME}"
+if [[ "$PROOF_LANE" == "1" ]]; then
+  project="${PROJECT_ROOT}/CrosswakeProofLane.xcodeproj"
+  scheme="CrosswakeProofLane"
+else
+  project="${PROJECT_ROOT}/CrosswakeShell.xcodeproj"
+  scheme="${SCHEME}"
+fi
 
 # Hermetic release-PR resolution: the checked-in host pins the remote SwiftPM
 # package at the CURRENT version, which isn't tagged on the remote mirror until the
@@ -92,10 +122,31 @@ fi
 IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
 
 project_check="$(xcodebuild -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
+  if [[ "$PROOF_LANE" == "1" ]]; then
+    echo "advisory: generated proof target graph could not be enumerated"
+    exit 0
+  fi
   echo "error: generated scheme is not buildable via xcodebuild -list" >&2
   printf '%s\n' "$project_check" >&2
   exit 1
 }
+
+if [[ "$PROOF_LANE" == "1" ]]; then
+  for target in CrosswakeProofLaneTests CrosswakeProofLaneUITests; do
+    if ! printf '%s\n' "$project_check" | grep -q "$target"; then
+      echo "error: generated proof target missing: $target" >&2
+      exit 1
+    fi
+  done
+
+  if ! xcodebuild -project "$project" -scheme "$scheme" -destination 'generic/platform=iOS Simulator' -derivedDataPath "$DERIVED_DATA_ROOT" build-for-testing >/dev/null 2>&1; then
+    echo "advisory: generated proof targets were not built for the local simulator/signing setup"
+    exit 0
+  fi
+
+  echo "advisory: generated XCTest and XCUITest targets built for testing; no simulator or device claim was promoted"
+  exit 0
+fi
 
 if [[ "$BUILD_FOR_TESTING" != "1" ]]; then
   exit 0

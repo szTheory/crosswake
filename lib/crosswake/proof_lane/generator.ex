@@ -11,6 +11,11 @@ defmodule Crosswake.ProofLane.Generator do
     {"e2e/crosswake_proof_lane/proof_lane.spec.ts", "e2e/proof_lane.spec.ts.eex"},
     {"e2e/crosswake_proof_lane/support/proof_lane.ts", "e2e/support/proof_lane.ts.eex"},
     {"CrosswakeProofLane/ProofLaneDriver.swift", "ios/ProofLaneDriver.swift.eex"},
+    {"CrosswakeProofLane/ProofLaneApp.swift", "ios/ProofLaneApp.swift.eex"},
+    {"CrosswakeProofLaneTests/ProofLaneContractTests.swift",
+     "ios/CrosswakeProofLaneTests/ProofLaneContractTests.swift.eex"},
+    {"CrosswakeProofLaneUITests/ProofLaneUITests.swift",
+     "ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"},
     {"CrosswakeProofLane.xcodeproj/project.pbxproj",
      "ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"}
   ]

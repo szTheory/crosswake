@@ -4,7 +4,11 @@ import Foundation
 enum ProofLaneOutcome: String { case passed, blocked, unavailable }
 enum ProofLanePrerequisite: String { case replayAuthorization, packAudio }
 
-struct ProofLaneDriver {
+protocol ProofLaneDriver {
+  func outcome(for prerequisite: ProofLanePrerequisite) -> ProofLaneOutcome
+}
+
+struct ProofLanePrerequisiteDriver: ProofLaneDriver {
   func outcome(for prerequisite: ProofLanePrerequisite) -> ProofLaneOutcome {
     switch prerequisite {
     case .replayAuthorization: return .blocked
