@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -158,7 +158,7 @@ Plans:
 
 - [x] 159-02-PLAN.md — Complete closed config plus collision-safe generate/check/diff lifecycle behavior.
 - [x] 159-03-PLAN.md — Preserve the primary browser corpus and compile explicit XCTest/XCUITest boundaries.
-- [ ] 159-04-PLAN.md — Enforce typed allowlist evidence, final staged scanning, and atomic promotion.
+- [x] 159-04-PLAN.md — Enforce typed allowlist evidence, final staged scanning, and atomic promotion.
 
 **Cross-cutting constraints:**
 

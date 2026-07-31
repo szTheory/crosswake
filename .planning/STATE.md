@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-03-PLAN.md
-last_updated: "2026-07-31T21:01:33.573Z"
+status: verifying
+stopped_at: Completed 159-04-PLAN.md
+last_updated: "2026-07-31T21:08:03.511Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 24
-  completed_plans: 23
-  percent: 20
+  completed_plans: 24
+  percent: 40
 current_plan: null
 ---
 
@@ -24,7 +24,7 @@ current_plan: null
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-31 — Phase 159 execution started
 
 ## Active Objective
@@ -106,6 +106,7 @@ adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated files remain host-owned; only missing paths are exclusively created and the manifest is promoted from a sibling staging file without replacement.
 - [Phase ?]: The original browser corpus remains primary while host callbacks supply the reusable offline-island proof sequence.
 - [Phase ?]: Native proof exposes only closed blocked or unavailable prerequisites until later host auth/replay and pack/audio adapters exist.
+- [Phase ?]: Retained proof evidence uses an exact twelve-field allowlist and final-byte scanning before promotion.
 
 ## Deferred Items
 
@@ -134,8 +135,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T21:01:33.566Z
-**Stopped at:** Completed 159-03-PLAN.md
+**Last session:** 2026-07-31T21:08:03.505Z
+**Stopped at:** Completed 159-04-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -165,3 +166,4 @@ this milestone reset.
 | Phase 159 P01 | 11m | 1 tasks | 9 files |
 | Phase 159 P02 | 15m | 2 tasks | 5 files |
 | Phase 159 P03 | 10m | 2 tasks | 10 files |
+| Phase 159 P04 | 18m | 2 tasks | 3 files |
