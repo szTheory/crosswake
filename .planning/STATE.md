@@ -4,15 +4,15 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 158
 current_phase_name: adoption-reset-and-route-map
-status: gaps_found
-stopped_at: Phase 158 verification confirmed one privacy-routing blocker after 14 plans
-last_updated: "2026-07-31T16:45:32Z"
+status: ready_to_execute
+stopped_at: Phase 158 gap-closure planning complete; Plans 15-16 are ready to execute
+last_updated: "2026-07-31T17:05:33Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 158 verification found incomplete repository-wide privacy scanning
+last_activity_desc: Phase 158 gap-closure planning complete — 16 plans total, 2 ready
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 14
+  total_plans: 16
   completed_plans: 14
   percent: 0
 current_plan: null
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 158 (adoption-reset-and-route-map) — GAPS FOUND
-Plan: 14 of 14 executed
-Status: Verification scored 57/58 must-haves; one privacy-routing blocker remains
-Last activity: 2026-07-31 — Independent verification confirmed incomplete scan coverage
+Phase: 158 (adoption-reset-and-route-map) — READY TO EXECUTE
+Plan: 14 of 16 executed
+Status: Plans 158-15 and 158-16 are ready to close the 57/58 privacy-routing gap
+Last activity: 2026-07-31 — Gap-closure plans created and verified
 
 ## Active Objective
 
@@ -44,8 +44,9 @@ framework launch.
 
 ## Next Action
 
-Run `$gsd-plan-phase 158 --gaps` to make private-term enforcement fail closed across every active
-repository-facing artifact and add unregistered-guide/later-phase regressions.
+Run `$gsd-execute-phase 158` to make private-term enforcement fail closed across every active
+repository-facing artifact, add unregistered-guide/later-phase regressions, and reconcile fresh
+validation and verification evidence.
 
 ## Blockers
 
