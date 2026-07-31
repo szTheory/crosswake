@@ -205,6 +205,39 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "post-scan collision preserves a concurrent destination byte-for-byte" do
+    with_destination(fn destination ->
+      sentinel = Path.join(destination, "winner.txt")
+
+      assert {:error, error} =
+               Evidence.promote(@valid, destination,
+                 before_promote: fn ->
+                   File.mkdir_p!(destination)
+                   File.write!(sentinel, "concurrent winner")
+                 end
+               )
+
+      assert error.rule_id == "PL-EVIDENCE-COLLISION"
+      assert File.read!(sentinel) == "concurrent winner"
+      assert [] == Path.wildcard(destination <> ".stage-*")
+    end)
+  end
+
+  test "native promotion fails closed for unsupported platforms and compiler seams" do
+    alias Crosswake.ProofLane.NativePromotion
+
+    with_destination(fn destination ->
+      stage = destination <> ".stage-test"
+      File.mkdir_p!(stage)
+
+      assert {:error, unsupported} = NativePromotion.rename_noreplace(stage, destination, os_type: {:win32, :nt})
+      assert unsupported.rule_id == "PL-EVIDENCE-PROMOTION-UNAVAILABLE"
+
+      assert {:error, compiler} = NativePromotion.rename_noreplace(stage, destination, compiler: "missing-compiler")
+      assert compiler.rule_id == "PL-EVIDENCE-PROMOTION-UNAVAILABLE"
+    end)
+  end
+
   defp write_canonical!(stage) do
     assert {:ok, evidence} = Evidence.build(@valid)
 
