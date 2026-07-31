@@ -7,6 +7,27 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
 
   defp source(path), do: File.read!(Path.join(@root, path))
 
+  test "generated browser adapter fixture is byte-identical to the fixed safe render" do
+    config = %Config{
+      route_id: "route-0123456789abcdef",
+      route_path: "/study/:id",
+      indexed_db_database: "proof_lane",
+      indexed_db_store: "mutations",
+      mutation_id_path: "client_mutation_id",
+      sync_path: "/study/sync",
+      evidence_path: "/_proof/evidence",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: "/tmp/crosswake-proof-lane/native/ios"
+    }
+
+    rendered =
+      EEx.eval_file(Path.join(@root, "priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex"),
+        assigns: [config: config, template_version: 1]
+      )
+
+    assert rendered == source("examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts")
+  end
+
   test "generated browser adapter retains the closed offline-island semantic sequence" do
     template = source("priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex")
 
