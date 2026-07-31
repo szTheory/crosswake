@@ -173,6 +173,11 @@ defmodule Crosswake.Adoption.RouteInventoryTest do
 
     assert map =~ "adopter-instance completeness is blocked"
     assert map =~ "web-only"
+    assert map =~ "Concrete-route promotion invariants"
+    assert map =~ "never supplies a concrete-route safety field"
+    assert map =~ "offline_island"
+    assert map =~ "retain_until_resolution"
+    assert map =~ "auth: recent_auth"
     assert todo =~ "status: open"
   end
 

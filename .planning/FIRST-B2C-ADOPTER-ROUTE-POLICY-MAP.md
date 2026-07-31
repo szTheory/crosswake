@@ -82,6 +82,22 @@ or physical-device promotion until all required rows validate.
 If customer Alpha is web-only, complete this bounded contract and pause Crosswake work until the
 public-v1 mobile path is active.
 
+### Concrete-route promotion invariants
+
+`known_default` never supplies a concrete-route safety field. A row can be eligible only after
+every safety posture is `confirmed_sanitized`; `unknown_blocking` remains blocked, and
+`not_applicable` is valid only where the normalized route semantics prove the field irrelevant.
+
+| Route condition | Required coherent posture before eligibility | Fail-closed result |
+| --- | --- | --- |
+| `local_first` offline posture | `offline_island` owner; a non-`none` mutation category; opaque partitioned scope with logout and account-switch replay stops | Reject a contradictory or `not_applicable` route-local posture. |
+| `local_first` failure handling | `queue_local` offline fallback; `retain_and_block` disabled fallback; server-enforced entry and replay reauthorization; `retain_until_resolution` queued-data posture | Reject incomplete scope, fallback, disablement, or retention authority. |
+| Recent-auth authority | `auth: recent_auth` exactly when `recent_auth: required` | Reject either direction of disagreement. |
+
+These rules are executable in `Crosswake.Adoption.RouteInventory` before promotion. They do not
+add a concrete adopter row or infer host-private scope, fallback, retention, mutation, or auth
+facts; TODO-002 stays open.
+
 ## Study-island invariants
 
 - Every journal and replay envelope carries an opaque `scope_ref`.

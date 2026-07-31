@@ -81,7 +81,8 @@ defmodule Crosswake.Adoption.RouteInventory do
          {:ok, validated} <- NimbleOptions.validate(options, @schema),
          {:ok, route_id} <- validate_route_id(validated[:route_id]),
          {:ok, path_pattern} <- validate_path_pattern(validated[:path_pattern], route_id),
-         {:ok, postures} <- validate_postures(validated, route_id) do
+         {:ok, postures} <- validate_postures(validated, route_id),
+         :ok <- validate_route_invariants(postures, route_id) do
       {:ok, struct!(__MODULE__, [route_id: route_id, path_pattern: path_pattern] ++ postures)}
     end
   end
@@ -288,6 +289,76 @@ defmodule Crosswake.Adoption.RouteInventory do
 
   defp validate_closed_map(_value, _required),
     do: {:error, error("RI-INVALID", "unresolved", "posture")}
+
+  defp validate_route_invariants(postures, route_ref) do
+    with :ok <- validate_local_mutation_invariants(postures, route_ref),
+         :ok <- validate_recent_auth_invariants(postures, route_ref) do
+      :ok
+    end
+  end
+
+  defp validate_local_mutation_invariants(postures, route_ref) do
+    if posture_value(postures, :offline_posture) == :local_first do
+      with :ok <- require_posture_value(postures, :runtime_owner, :offline_island, route_ref),
+           :ok <- require_actionable_mutation(postures, route_ref),
+           :ok <- reject_not_applicable(postures, :scope_posture, route_ref),
+           :ok <- reject_not_applicable(postures, :fallbacks, route_ref),
+           :ok <- reject_not_applicable(postures, :disablement, route_ref),
+           :ok <- reject_not_applicable(postures, :queued_data_retention, route_ref) do
+        :ok
+      end
+    else
+      :ok
+    end
+  end
+
+  defp validate_recent_auth_invariants(postures, route_ref) do
+    cond do
+      posture_value(postures, :auth) == :recent_auth and
+          posture_value(postures, :recent_auth) != :required ->
+        {:error, error("RI-ROUTE_INVARIANT", route_ref, "recent_auth")}
+
+      posture_value(postures, :recent_auth) == :required and
+          posture_value(postures, :auth) != :recent_auth ->
+        {:error, error("RI-ROUTE_INVARIANT", route_ref, "auth")}
+
+      true ->
+        :ok
+    end
+  end
+
+  defp require_posture_value(postures, field, expected, route_ref) do
+    if posture_value(postures, field) == expected,
+      do: :ok,
+      else: {:error, error("RI-ROUTE_INVARIANT", route_ref, Atom.to_string(field))}
+  end
+
+  defp require_actionable_mutation(postures, route_ref) do
+    case posture_value(postures, :mutation_categories) do
+      categories when is_list(categories) ->
+        if Enum.any?(categories, &(&1 != :none)),
+          do: :ok,
+          else: {:error, error("RI-ROUTE_INVARIANT", route_ref, "mutation_categories")}
+
+      _other ->
+        {:error, error("RI-ROUTE_INVARIANT", route_ref, "mutation_categories")}
+    end
+  end
+
+  defp reject_not_applicable(postures, field, route_ref) do
+    if posture_status(postures, field) == :not_applicable,
+      do: {:error, error("RI-ROUTE_INVARIANT", route_ref, Atom.to_string(field))},
+      else: :ok
+  end
+
+  defp posture_value(postures, field) do
+    case Keyword.fetch!(postures, field) do
+      %{status: :confirmed_sanitized, value: value} -> value
+      _posture -> nil
+    end
+  end
+
+  defp posture_status(postures, field), do: postures |> Keyword.fetch!(field) |> Map.fetch!(:status)
 
   defp validate_rows([], acc), do: {:ok, Enum.reverse(acc)}
 
