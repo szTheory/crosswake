@@ -23,6 +23,20 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
+  test "raises the hyphenated public phrase rule and path without echoing matched text" do
+    with_temporary_root(fn root ->
+      path = "guides/capability_map.md"
+      hyphenated_phrase = Enum.join(["first", "adopter"], "-")
+      write_file(root, path, "#{hyphenated_phrase} route ownership")
+
+      error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
+
+      assert error.message == "privacy.public_phrase_hyphenated #{path}"
+      refute error.message =~ hyphenated_phrase
+      refute error.message =~ "route ownership"
+    end)
+  end
+
   test "raises stable private rule and path for future planning artifacts without echoing secret-backed content" do
     with_temporary_root(fn root ->
       term = Enum.join(["task", "private", "canary"], "-")

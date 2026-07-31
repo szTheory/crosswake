@@ -70,6 +70,26 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
              )
   end
 
+  test "public scans reject the hyphenated spelling with stable rule and path violations" do
+    contents = contents_by_path()
+    public_path = "guides/capability_map.md"
+    hyphenated_phrase = Enum.join(["first", "adopter"], "-")
+
+    assert [%{rule_id: "privacy.public_phrase_hyphenated", path: ^public_path}] =
+             FirstAdopterContext.scan(
+               Map.put(contents, public_path, "#{hyphenated_phrase} route ownership")
+             )
+
+    assert [
+             %{rule_id: "privacy.public_phrase", path: ^public_path},
+             %{rule_id: "privacy.public_phrase_hyphenated", path: ^public_path}
+           ] =
+             FirstAdopterContext.scan(Map.put(contents, public_path, hyphenated_phrase))
+
+    refute inspect(FirstAdopterContext.scan(Map.put(contents, public_path, hyphenated_phrase))) =~
+             hyphenated_phrase
+  end
+
   test "private-term scan never echoes configured terms or matched content" do
     private_term = Enum.join(["context", "only", "sentinel"], "-")
     path = "AGENTS.md"
