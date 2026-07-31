@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
   test "raises stable generic rule and relative path without file content" do
     with_temporary_root(fn root ->
       path = "guides/capability_map.md"
-      write_file(root, path, "amount $10")
+      write_file(root, path, "amount " <> "$" <> "10")
 
       error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     with_temporary_root(fn root ->
       path = "guides/capability_map.md"
       synthetic_value = Enum.join(["synthetic", "value"], "-")
-      write_file(root, path, "first adopter customerEmail: #{synthetic_value}")
+      write_file(root, path, "first adopter " <> "customer" <> "Email: #{synthetic_value}")
 
       error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
@@ -52,14 +52,13 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
     end)
   end
 
-  test "raises stable private rule and path for future planning artifacts without echoing secret-backed content" do
+  test "raises stable private rule and path for unregistered guide and later-phase artifacts without echoing secret-backed content" do
     with_temporary_root(fn root ->
       term = Enum.join(["task", "private", "canary"], "-")
 
       paths = [
-        ".planning/phases/158-adoption-reset-and-route-map/158-90-PLAN.md",
-        ".planning/phases/158-adoption-reset-and-route-map/158-90-SUMMARY.md",
-        ".planning/phases/158-adoption-reset-and-route-map/158-VALIDATION.md"
+        "guides/unregistered-adoption-note.md",
+        ".planning/phases/159-host-reusable-proof-lane/159-NOTES.md"
       ]
 
       Enum.each(paths, &write_file(root, &1, "prefix #{term} suffix"))
@@ -67,9 +66,11 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
       with_private_terms(term, fn ->
         error = assert_raise Mix.Error, fn -> Scan.run(["--root", root]) end
 
-        for path <- paths do
-          assert error.message =~ "privacy.private_term #{path}"
-        end
+        assert error.message ==
+                 paths
+                 |> Enum.map(&"privacy.private_term #{&1}")
+                 |> Enum.sort()
+                 |> Enum.join("\n")
 
         refute error.message =~ term
         refute error.message =~ "prefix"
@@ -116,6 +117,7 @@ defmodule Mix.Tasks.Crosswake.AdoptionContext.ScanTest do
   defp with_temporary_root(fun) do
     root = Path.join(System.tmp_dir!(), "crosswake-scan-#{System.unique_integer([:positive])}")
     File.mkdir_p!(root)
+    {_, 0} = System.cmd("git", ["init", "-q", root])
 
     try do
       fun.(root)
