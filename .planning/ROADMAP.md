@@ -33,8 +33,8 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
-  shell, offline-island, and physical-device proof scaffolding (completed 2026-08-01).
+- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+  shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
   redaction, backend reauthorization, auth continuity, and server-side disablement.
@@ -148,11 +148,11 @@ truth, and codename-only Linear drafts.
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 **Plans:** 14/14 plans executed
-**Verification:** Complete (23/23 must-haves verified) — a fresh final-tree gate separately passed
-post-create read/write/fsync cleanup, focused generator/config/template/iOS/evidence checks, the
-real Phoenix-host browser corpus, generated shared XCTest/XCUITest execution, shell syntax, and
-formatting. PROOF-01 through PROOF-04 are complete; TODO-002 remains open and adopter-instance
-completeness remains `unknown_blocking`.
+**Verification:** Gaps Found (21/23 must-haves verified) — independent review and verification
+reproduced two fail-closed contract defects after the fresh final-tree gate: an unwired generated
+iOS adapter can be reported as passed, and accepted endpoint values can render invalid TypeScript.
+PROOF-01 through PROOF-04 remain open pending gap closure; TODO-002 remains open and
+adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**

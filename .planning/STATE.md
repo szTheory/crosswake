@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: ready
-stopped_at: Completed 159-14-PLAN.md
-last_updated: "2026-08-01T02:10:51Z"
+current_phase: 159
+current_phase_name: host-reusable-proof-lane
+status: gaps_found
+stopped_at: Independent verification found two Phase 159 contract gaps
+last_updated: "2026-08-01T02:21:09Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 Plan 13 cleanup repair completed
+last_activity_desc: Phase 159 independent review and verification reproduced two blocking gaps
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 34
   completed_plans: 34
   percent: 40
-current_plan: 0
+current_plan: 14
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY
-Plan: Phase 159 complete (14 of 14 plans)
-Status: Fresh final-tree proof gate passed; ready to discuss Phase 160 when bounded adopter inputs are available
-Last activity: 2026-08-01 — Plan 159-14 complete gate reconciled PROOF-01 through PROOF-04
+Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
+Plan: 14 of 14 executed; gap-closure planning required
+Status: Independent verification reproduced 2 blocking contract gaps (21/23 must-haves verified)
+Last activity: 2026-08-01 — code review and verifier reproduced false-passing iOS proof and unsafe endpoint rendering
 
 ## Active Objective
 
@@ -44,7 +44,8 @@ framework launch.
 
 ## Next Action
 
-Begin Phase 160 discussion when its bounded replay/auth inputs are available. TODO-002 remains the bounded
+Plan Phase 159 gap closure for the false-passing unwired iOS adapter and TypeScript-unsafe endpoint
+rendering, then rerun execution and independent verification. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
@@ -59,6 +60,9 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
+
+- Generated iOS proof can report `passed` while the host-adapter factory remains unwired.
+- Accepted quote or backslash endpoint input can render invalid generated TypeScript.
 
 ## Decisions
 
