@@ -147,12 +147,12 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 19/20 plans executed
-**Verification:** Gaps found (21/23 must-haves verified) — the configured Phoenix-host proof omits
-the generated host proof and its typecheck scope, and a single backslash remains accepted in
-TypeScript-interpolated endpoint configuration. Plans 159-18 through 159-20 close and reconcile
-these reproduced gaps. The generated accessibility runtime remains an advisory `not_run` backstop;
-TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
+**Plans:** 20/20 plans executed
+**Verification:** Passed (23/23 must-haves verified) — one fresh same-tree gate confirms the
+generated Phoenix-host proof is typechecked and executed alongside the primary corpus, and exactly
+one backslash is rejected across every endpoint-config seam before render or write. The generated
+accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
+adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
@@ -209,7 +209,7 @@ Plans:
 
 **Wave 12** *(blocked on both Wave 11 repairs)*
 
-- [ ] 159-20-PLAN.md — Run one fresh same-tree gate and reconcile both current verification gaps without overclaiming advisory evidence.
+- [x] 159-20-PLAN.md — Run one fresh same-tree gate and reconcile both current verification gaps without overclaiming advisory evidence.
 
 **Cross-cutting constraints:**
 

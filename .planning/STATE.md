@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-19-PLAN.md
-last_updated: "2026-08-01T23:06:52.959Z"
+status: complete
+stopped_at: Completed 159-20-PLAN.md
+last_updated: "2026-08-01T23:09:10Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 execution started
+last_activity_desc: Phase 159 host-reusable proof lane completed from fresh same-tree evidence
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 40
-  completed_plans: 39
-  percent: 20
-current_plan: 18
+  completed_plans: 40
+  percent: 40
+current_plan: 20
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 3 of 20
-Status: Ready to execute
-Last activity: 2026-08-01 — Phase 159 execution started
+Phase: 159 (host-reusable-proof-lane) — COMPLETE
+Plan: 20 of 20
+Status: Complete — fresh same-tree deterministic gate passed
+Last activity: 2026-08-01 — Phase 159 host-reusable proof lane completed
 
 ## Active Objective
 
@@ -44,10 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plans 159-18 through 159-20, then require fresh same-tree verification before
-restoring completion. Do not start Phase 160 until Phase 159 passes and the first adopter supplies
-TODO-002 route inputs while the public-v1 mobile path is active. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
+Phase 159 is complete. Do not start Phase 160 until the first adopter supplies TODO-002 route
+inputs while the public-v1 mobile path is active. TODO-002 remains the bounded adopter-input gate
+and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -138,6 +137,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Deterministic generated-contract fixtures close Phase 159; native accessibility runtime remains advisory and non-promoting.
 - [Phase ?]: Generated Phoenix host proof is required, typed, and selected within the existing primary browser corpus.
 - [Phase ?]: Proof-lane endpoint paths reject every backslash byte at canonical normalization before raw EEx rendering or generator filesystem authority.
+- [Phase 159]: The final same-tree gate typechecks and executes the generated Phoenix-host proof with backend confirmation, empty-outbox, and duplicate-idempotency assertions; endpoint one-backslash rejection is verified at every config seam.
 
 ## Deferred Items
 
@@ -212,3 +212,4 @@ this milestone reset.
 | Phase 159 P17 | 8m | 1 tasks | 5 files |
 | Phase 159 P18 | 8m | 1 tasks | 5 files |
 | Phase 159 P19 | 7m | 1 tasks | 3 files |
+| Phase 159 P20 | 1m | 1 task | 6 files |
