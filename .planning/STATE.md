@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: discussing
-stopped_at: Completed 159-12-PLAN.md
-last_updated: "2026-08-01T01:25:20.597Z"
+current_phase: 159
+current_phase_name: host-reusable-proof-lane
+status: gaps_found
+stopped_at: Phase 159 verification found blocking generator cleanup gaps
+last_updated: "2026-08-01T01:35:52Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 final-tree proof gate passed
+last_activity_desc: Phase 159 independent verification found blocking generator cleanup gaps
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — DISCUSSING
-Plan: Not started
-Status: Ready for discussion
-Last activity: 2026-08-01 — Phase 159 final-tree proof gate passed
+Phase: 159 (host-reusable-proof-lane) — EXECUTED, GAPS FOUND
+Plan: 12 of 12 complete
+Status: Verification gaps found (20/23 must-haves verified)
+Last activity: 2026-08-01 — Independent verification reproduced two generator cleanup gaps
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Discuss Phase 160 scoped replay and auth safety. TODO-002 remains the bounded adopter-input gate
-and adopter-instance completeness remains `unknown_blocking`; Phase 159 scaffolding does not
-promote adopter-instance or physical-device support.
+Plan and execute Phase 159 gap closure for post-create failure cleanup and manifest-collision
+staging cleanup, then rerun the complete final-tree gate. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -60,6 +60,9 @@ promote adopter-instance or physical-device support.
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
+
+- Phase 159 generation can retain a partial destination after a post-create write/fsync failure.
+- Phase 159 manifest publication can report a collision as reused while leaking its staging file.
 
 ## Decisions
 
@@ -124,7 +127,7 @@ promote adopter-instance or physical-device support.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
-- [Phase 159]: Fresh final-tree evidence closes descriptor-safe generation, live Phoenix browser proof, executed shared-scheme XCTest/XCUITest, opaque mutation IDs, and fail-closed evidence hooks without promoting physical-device support.
+- [Phase 159]: Independent review and verification reproduced post-create partial-file retention and manifest-collision staging leakage; PROOF-01 remains blocked pending bounded cleanup fixes.
 - [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
 
 ## Deferred Items
@@ -154,9 +157,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T01:25:20.588Z
-**Stopped at:** Completed 159-12-PLAN.md
-**Resume file:** None
+**Last session:** 2026-08-01T01:35:52Z
+**Stopped at:** Phase 159 verification found blocking generator cleanup gaps
+**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-VERIFICATION.md
 
 ## Performance Metrics
 
