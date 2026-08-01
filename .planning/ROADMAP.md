@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 10/12 plans executed
+**Plans:** 11/12 plans executed
 
 Plans:
 **Wave 1**
@@ -174,7 +174,7 @@ Plans:
 
 **Wave 5** *(native gap closure; blocked on filesystem confinement)*
 
-- [ ] 159-09-PLAN.md — Execute host-adapter-backed XCTest/XCUITest through a shared scheme without persistent global mutation.
+- [x] 159-09-PLAN.md — Execute host-adapter-backed XCTest/XCUITest through a shared scheme without persistent global mutation.
 
 **Wave 6** *(blocked on all prior gap plans)*
 

@@ -5,8 +5,8 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: "Blocked 159-09 native proof gate: install an iPhone simulator"
-last_updated: "2026-08-01T01:05:34.102Z"
+stopped_at: Completed 159-09-PLAN.md
+last_updated: "2026-08-01T01:15:41.312Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 4 of 12
+Plan: 5 of 12
 Status: Ready to execute
 Last activity: 2026-07-31 — Phase 159 execution started
 
@@ -62,8 +62,6 @@ and adopter-instance completeness remains `unknown_blocking`.
 
 - Phase 159 browser semantics are type-checked but still require an automated run against a
   runnable host.
-
-- 159-09 native proof gate reaches the installed simulator but the freshly generated Xcode project still fails build-for-testing with an app-product collision (PL-IOS-BUILD-FOR-TESTING); XCTest and XCUITest have not executed.
 
 ## Decisions
 
@@ -127,6 +125,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: The existing Playwright webServer remains the sole owner of Phoenix test-database setup and server lifecycle.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
+- [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
 
 ## Deferred Items
 
@@ -155,9 +154,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T00:45:52.858Z
-**Stopped at:** Blocked 159-09 native proof gate: install an iPhone simulator
-**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-09-SUMMARY.md
+**Last session:** 2026-08-01T01:15:37.042Z
+**Stopped at:** Completed 159-09-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -193,3 +192,4 @@ this milestone reset.
 | Phase 159 P08 | 22m | 2 tasks | 4 files |
 | Phase 159 P10 | 14m | 2 tasks | 7 files |
 | Phase 159 P11 | 2m | 1 tasks | 2 files |
+| Phase 159 P09 | ongoing continuation | 2 tasks | 10 files |
