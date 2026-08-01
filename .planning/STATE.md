@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-16-PLAN.md
-last_updated: "2026-08-01T22:18:33.297Z"
+status: completed
+stopped_at: Completed 159-17-PLAN.md
+last_updated: "2026-08-01T23:00:00Z"
 last_activity: 2026-08-01
 last_activity_desc: completed deterministic host-adapter evidence gate
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 37
-  completed_plans: 36
-  percent: 20
-current_plan: 15
+  completed_plans: 37
+  percent: 40
+current_plan: 17
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 16 of 17 executed; Plan 159-16 is ready, then Plan 159-17 reconciles both repairs
-Status: Native proof false-pass repair completed; endpoint safety repair remains
-Last activity: 2026-08-01 — completed deterministic host-adapter evidence gate
+Phase: 159 (host-reusable-proof-lane) — COMPLETE
+Plan: 17 of 17 complete
+Status: Fresh final-tree gate closed both reproduced proof-lane defects
+Last activity: 2026-08-01 — reconciled all deterministic proof-lane evidence
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plan 159-16, then run Plan 159-17's fresh final-tree reconciliation. TODO-002
-remains the bounded adopter-input gate and adopter-instance completeness remains
-`unknown_blocking`.
+Do not start Phase 160 until the first adopter supplies TODO-002 route inputs and the public-v1
+mobile path is active. TODO-002 remains the bounded adopter-input gate and adopter-instance
+completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -61,7 +61,6 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
 
-- Accepted quote or backslash endpoint input can render invalid generated TypeScript.
 
 ## Decisions
 
@@ -134,6 +133,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Nil host adapters remain deterministic blocked outcomes; unavailable and blocked are never proof success.
 - [Phase ?]: Proof-lane endpoint paths reject quote and backslash characters at the canonical normalizer before rendering or filesystem activity.
 - [Phase ?]: Direct Config structs are normalized before generator root derivation so direct, application, and selected config seams fail identically.
+- [Phase 159]: Fresh final-tree proof closes only on deterministic fixture evidence; generated accessibility-size runtime execution is advisory and cannot promote or block the phase.
+- [Phase 159]: Quote and backslash endpoint values reject before rendering or filesystem activity, while untouched generated iOS lanes remain deterministically blocked until exact host-adapter evidence exists.
 
 ## Deferred Items
 
@@ -205,3 +206,4 @@ this milestone reset.
 | Phase 159 P13 | 12m | 2 tasks | 3 files |
 | Phase 159-host-reusable-proof-lane P15 | 10m | 1 tasks | 5 files |
 | Phase 159 P16 | 6 min | 1 tasks | 4 files |
+| Phase 159 P17 | 8m | 1 task | 5 files |

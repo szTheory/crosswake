@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -147,12 +147,11 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 16/17 plans executed
-**Verification:** Gaps Found (21/23 must-haves verified) — independent review and verification
-reproduced two fail-closed contract defects after the fresh final-tree gate: an unwired generated
-iOS adapter can be reported as passed, and accepted endpoint values can render invalid TypeScript.
-PROOF-01 through PROOF-04 remain open pending gap closure; TODO-002 remains open and
-adopter-instance completeness remains `unknown_blocking`.
+**Plans:** 17/17 plans complete
+**Verification:** Complete (23/23 must-haves verified) — one fresh post-repair final-tree gate
+passed all deterministic generator/config/template/iOS/evidence, Phoenix-host browser, syntax, and
+formatting controls. The generated accessibility runtime remains an advisory `not_run` backstop;
+TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
@@ -200,7 +199,7 @@ Plans:
 
 **Wave 10** *(blocked on both Wave 9 repairs)*
 
-- [ ] 159-17-PLAN.md — Run the fresh final-tree gate and reconcile both reproduced contract gaps.
+- [x] 159-17-PLAN.md — Run the fresh final-tree gate and reconcile both reproduced contract gaps.
 
 **Cross-cutting constraints:**
 

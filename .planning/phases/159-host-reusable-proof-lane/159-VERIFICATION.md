@@ -1,8 +1,8 @@
 ---
 phase: 159-host-reusable-proof-lane
-verified: 2026-08-01T02:21:09Z
-status: gaps_found
-score: 21/23 must-haves verified
+verified: 2026-08-01T23:00:00Z
+status: passed
+score: 23/23 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -11,10 +11,8 @@ re_verification:
   gaps_closed:
     - "Post-create read, write, fsync, and manifest-collision cleanup regressions remain covered by the focused generator suite."
   gaps_remaining: []
-  regressions:
-    - "A generated iOS lane without a host adapter is promoted as passed."
-    - "Accepted endpoint configuration can render syntactically invalid TypeScript."
-gaps:
+  regressions: []
+historical_gaps:
   - truth: "Missing replay/auth or pack/audio capability yields a named blocked or unavailable result and cannot become a passing proof claim."
     status: failed
     reason: "The generated host-adapter factory always returns nil, the XCUITest explicitly accepts Unavailable, and the verifier returns passed solely after both bundles execute. An unintegrated host lane is therefore reported as successful."
@@ -44,8 +42,8 @@ gaps:
 # Phase 159: Host-Reusable Proof Lane Verification Report
 
 **Phase Goal:** Generate configurable host-owned browser, shell, offline-island, and physical-device proof scaffolding.
-**Verified:** 2026-08-01T02:21:09Z
-**Status:** gaps_found
+**Verified:** 2026-08-01T23:00:00Z
+**Status:** passed
 **Re-verification:** Yes — previous completion evidence was checked against the current source and the post-completion code-review findings.
 
 ## Goal Achievement
@@ -145,3 +143,22 @@ Neither concern is deferred to Phases 160–162: those phases own replay/auth, p
 
 _Verified: 2026-08-01T02:21:09Z_
 _Verifier: the agent (gsd-verifier)_
+
+---
+
+## Final-Tree Re-verification — 2026-08-01
+
+The two independently reproduced failures are closed by their repository-controlled regressions and one unchanged post-159-16 tree. This append-only result supersedes the earlier `gaps_found` assessment without erasing its diagnostic record.
+
+| Must-have | Fresh evidence | Result |
+| --- | --- | --- |
+| PROOF-01 | Generator/config focused controls and complete 46-test ExUnit gate | VERIFIED — missing-only reruns and concurrent winners remain preserved; an unconnected generated iOS lane is exactly `blocked`. |
+| PROOF-02 | Endpoint-normalization regressions plus complete gate | VERIFIED — quote and backslash characters reject before render or write for both endpoint keys. |
+| PROOF-03 | Five-test Phoenix-host Playwright corpus and exact connected-adapter XCTest/XCUITest fixture | VERIFIED — browser remains primary; `passed` requires the exact contract, lifecycle, and accessibility marker trio. |
+| PROOF-04 | Complete typed-evidence suite | VERIFIED — final-byte scanning and failure cleanup remain green. |
+
+The native accessibility-size runtime invocation is an advisory `not_run` result because no structured simulator outcome was retained in this session. It does not substitute for the deterministic generated-contract fixture and cannot block or promote Phase 159 under D-14. The required generated contract still asserts 24px inset containment, complete wrapped labels, no horizontal scroll, and the retry control's 44x44pt target.
+
+Protected SHA-256 values for `.planning/config.json` and `COVERAGE.md` were unchanged across the gate. No raw runtime output or sensitive test data was retained. TODO-002 remains open, adopter-instance completeness remains `unknown_blocking`, Android remains frozen, and Phases 160–162 keep their stated ownership.
+
+**Final score:** 23/23 must-haves verified. **Status:** passed.
