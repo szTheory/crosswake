@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: ready_to_execute
-stopped_at: Phase 159 gap-closure plans 13-14 verified and ready to execute
-last_updated: "2026-08-01T01:54:44Z"
+status: executing
+stopped_at: Completed 159-13-PLAN.md
+last_updated: "2026-08-01T02:06:57.522Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 gap-closure plans 13-14 created and plan-checked
+last_activity_desc: Phase 159 Plan 13 cleanup repair completed
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 34
-  completed_plans: 32
-  percent: 40
-current_plan: 13
+  completed_plans: 33
+  percent: 20
+current_plan: 14
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE READY TO EXECUTE
-Plan: 12 of 14 complete
-Status: Plans 159-13 and 159-14 verified and ready to execute
-Last activity: 2026-08-01 — Gap-closure plans created and plan-checked
+Phase: 159 (host-reusable-proof-lane) — EXECUTING
+Plan: 13 of 14 complete
+Status: Plan 159-14 ready to execute the fresh final-tree gate
+Last activity: 2026-08-01 — Plan 159-13 cleanup repair completed
 
 ## Active Objective
 
@@ -44,8 +44,7 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plans 159-13 and 159-14 for post-create failure cleanup and manifest-collision
-staging cleanup, then rerun the complete final-tree gate. TODO-002 remains the bounded
+Execute Phase 159 Plan 159-14 to rerun the complete fresh final-tree gate. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
@@ -60,9 +59,6 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
-
-- Phase 159 generation can retain a partial destination after a post-create write/fsync failure.
-- Phase 159 manifest publication can report a collision as reused while leaking its staging file.
 
 ## Decisions
 
@@ -129,6 +125,8 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
 - [Phase 159]: Independent review and verification reproduced post-create partial-file retention and manifest-collision staging leakage; PROOF-01 remains blocked pending bounded cleanup fixes.
 - [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
+- [Phase ?]: Failed exclusive proof writes remove only their newly created destination before returning the original write failure.
+- [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.
 
 ## Deferred Items
 
@@ -157,9 +155,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T01:35:52Z
-**Stopped at:** Phase 159 gap-closure plans 13-14 verified and ready to execute
-**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-13-PLAN.md
+**Last session:** 2026-08-01T02:06:57.515Z
+**Stopped at:** Completed 159-13-PLAN.md
+**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-14-PLAN.md
 
 ## Performance Metrics
 
@@ -197,3 +195,4 @@ this milestone reset.
 | Phase 159 P11 | 2m | 1 tasks | 2 files |
 | Phase 159 P09 | ongoing continuation | 2 tasks | 10 files |
 | Phase 159 P12 | 15m | 2 tasks | 7 files |
+| Phase 159 P13 | 12m | 2 tasks | 3 files |
