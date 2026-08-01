@@ -1,0 +1,15 @@
+// crosswake-proof-lane template_version=<%= @template_version %>
+import { type ProofLaneAdapter } from './proof_lane';
+
+const HOST_ADAPTER_ERROR = 'PL-BROWSER-HOST-ADAPTER';
+const hostAdapterUnavailable = (): Promise<never> => Promise.reject(new Error(HOST_ADAPTER_ERROR));
+
+export const proofLaneHostAdapter = {
+  navigate: async () => hostAdapterUnavailable(),
+  performMutation: async () => hostAdapterUnavailable(),
+  readQueuedRecord: async () => hostAdapterUnavailable(),
+  reconnect: async () => hostAdapterUnavailable(),
+  assertBackendConfirmation: async () => hostAdapterUnavailable(),
+  assertOutboxEmpty: async () => hostAdapterUnavailable(),
+  assertDuplicateIdempotency: async () => hostAdapterUnavailable(),
+} satisfies ProofLaneAdapter;

@@ -4,12 +4,14 @@ defmodule Crosswake.ProofLane.Generator do
   alias Crosswake.ProofLane.{Config, GeneratorFS}
 
   @schema_version 1
-  @template_version 1
+  @template_version 2
   @templates [
     {"test/crosswake_proof_lane/crosswake_proof_lane_test.exs",
      "test/crosswake_proof_lane_test.exs.eex"},
     {"e2e/crosswake_proof_lane/proof_lane.spec.ts", "e2e/proof_lane.spec.ts.eex"},
     {"e2e/crosswake_proof_lane/support/proof_lane.ts", "e2e/support/proof_lane.ts.eex"},
+    {"e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts",
+     "e2e/support/proof_lane_host_adapter.ts.eex"},
     {"CrosswakeProofLane/ProofLaneDriver.swift", "ios/ProofLaneDriver.swift.eex"},
     {"CrosswakeProofLane/ProofLaneApp.swift", "ios/ProofLaneApp.swift.eex"},
     {"CrosswakeProofLaneTests/ProofLaneContractTests.swift",
