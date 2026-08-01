@@ -123,10 +123,10 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | RESET-02 | Phase 158 | Complete |
 | RESET-03 | Phase 158 | Complete |
 | RESET-04 | Phase 158 | Complete |
-| PROOF-01 | Phase 159 | Complete |
-| PROOF-02 | Phase 159 | Complete |
-| PROOF-03 | Phase 159 | Complete |
-| PROOF-04 | Phase 159 | Complete |
+| PROOF-01 | Phase 159 | Gaps Found |
+| PROOF-02 | Phase 159 | Gaps Found |
+| PROOF-03 | Phase 159 | Gaps Found |
+| PROOF-04 | Phase 159 | Gaps Found |
 | SCOPE-01 | Phase 160 | Pending |
 | SCOPE-02 | Phase 160 | Pending |
 | SCOPE-03 | Phase 160 | Pending |
