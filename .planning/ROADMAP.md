@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 9/12 plans executed
+**Plans:** 10/12 plans executed
 
 Plans:
 **Wave 1**
@@ -170,7 +170,7 @@ Plans:
 
 - [x] 159-08-PLAN.md — Confine every generator filesystem action against symlink ancestors and ancestor-swap races.
 - [x] 159-10-PLAN.md — Run the primary Phoenix-host browser corpus and enforce opaque mutation IDs.
-- [ ] 159-11-PLAN.md — Make malformed evidence lifecycle hooks fail closed without retained state.
+- [x] 159-11-PLAN.md — Make malformed evidence lifecycle hooks fail closed without retained state.
 
 **Wave 5** *(native gap closure; blocked on filesystem confinement)*
 
