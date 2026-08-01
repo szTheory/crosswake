@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Independent verification found two Phase 159 contract gaps
-last_updated: "2026-08-01T02:21:09Z"
+status: ready_to_execute
+stopped_at: Phase 159 gap-closure plans verified and ready to execute
+last_updated: "2026-08-01T02:48:28Z"
 last_activity: 2026-08-01
 last_activity_desc: Phase 159 independent review and verification reproduced two blocking gaps
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 34
+  total_plans: 37
   completed_plans: 34
   percent: 40
-current_plan: 14
+current_plan: 15
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 14 of 14 executed; gap-closure planning required
-Status: Independent verification reproduced 2 blocking contract gaps (21/23 must-haves verified)
-Last activity: 2026-08-01 — code review and verifier reproduced false-passing iOS proof and unsafe endpoint rendering
+Phase: 159 (host-reusable-proof-lane) — READY TO EXECUTE GAP CLOSURE
+Plan: 14 of 17 executed; Plans 159-15 and 159-16 are ready in parallel
+Status: Three gap-closure plans verified; deterministic repairs precede fresh final-tree reconciliation
+Last activity: 2026-07-31 — planned and verified false-passing iOS proof and unsafe endpoint rendering repairs
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Plan Phase 159 gap closure for the false-passing unwired iOS adapter and TypeScript-unsafe endpoint
-rendering, then rerun execution and independent verification. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
+Execute Phase 159 Plans 159-15 and 159-16 in parallel, then run Plan 159-17's fresh final-tree
+reconciliation. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
+remains `unknown_blocking`.
 
 ## Blockers
 
