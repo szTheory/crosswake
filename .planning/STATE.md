@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 159
-current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-09-PLAN.md
-last_updated: "2026-08-01T01:15:41.312Z"
+current_phase: 160
+current_phase_name: scoped-replay-and-auth-safety
+status: discussing
+stopped_at: Completed 159-12-PLAN.md
+last_updated: "2026-08-01T01:22:00Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 32
-  completed_plans: 31
-  percent: 20
+  completed_plans: 32
+  percent: 40
 current_plan: null
 ---
 
@@ -22,10 +22,10 @@ current_plan: null
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 5 of 12
-Status: Ready to execute
-Last activity: 2026-07-31 — Phase 159 execution started
+Phase: 160 (scoped-replay-and-auth-safety) — DISCUSSING
+Plan: Not started
+Status: Ready for discussion
+Last activity: 2026-08-01 — Phase 159 final-tree proof gate passed
 
 ## Active Objective
 
@@ -44,8 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 gap plans 159-08 through 159-12. TODO-002 remains the bounded adopter-input gate
-and adopter-instance completeness remains `unknown_blocking`.
+Discuss Phase 160 scoped replay and auth safety. TODO-002 remains the bounded adopter-input gate
+and adopter-instance completeness remains `unknown_blocking`; Phase 159 scaffolding does not
+promote adopter-instance or physical-device support.
 
 ## Blockers
 
@@ -56,12 +57,9 @@ and adopter-instance completeness remains `unknown_blocking`.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
 
-- Phase 159 generation can escape the declared host root through a symlinked destination ancestor.
-- Phase 159 native verification can report `passed` after build-only placeholder checks without
-  executing host-integrated XCTest/XCUITest behavior.
-
-- Phase 159 browser semantics are type-checked but still require an automated run against a
-  runnable host.
+- TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
+  mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
+  fallbacks before adopter-instance promotion.
 
 ## Decisions
 
@@ -126,6 +124,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
+- [Phase 159]: Fresh final-tree evidence closes descriptor-safe generation, live Phoenix browser proof, executed shared-scheme XCTest/XCUITest, opaque mutation IDs, and fail-closed evidence hooks without promoting physical-device support.
 
 ## Deferred Items
 
@@ -154,8 +153,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T01:15:37.042Z
-**Stopped at:** Completed 159-09-PLAN.md
+**Last session:** 2026-08-01T01:22:00Z
+**Stopped at:** Completed 159-12-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics

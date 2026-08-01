@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -147,7 +147,10 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 11/12 plans executed
+**Plans:** 12/12 plans complete
+**Verification:** Complete (23/23 final-tree truths); fresh ExUnit, Phoenix-host Playwright, and
+generated shared-scheme XCTest/XCUITest evidence closes the proof lane without promoting
+physical-device support.
 
 Plans:
 **Wave 1**
@@ -178,7 +181,7 @@ Plans:
 
 **Wave 6** *(blocked on all prior gap plans)*
 
-- [ ] 159-12-PLAN.md — Reconcile Phase 159 only from a fresh complete automated proof gate.
+- [x] 159-12-PLAN.md — Reconcile Phase 159 only from a fresh complete automated proof gate.
 
 **Cross-cutting constraints:**
 
