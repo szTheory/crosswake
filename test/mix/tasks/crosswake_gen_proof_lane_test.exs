@@ -195,6 +195,42 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end
   end
 
+  test "manifest publication collision removes helper staging and preserves the winner" do
+    with_root(fn root, _config ->
+      staging = ".crosswake/proof_lane.json.staging-collision"
+      destination = ".crosswake/proof_lane.json"
+      winner_bytes = "host-owned winner\n"
+
+      File.mkdir_p!(Path.join(root, ".crosswake"))
+      File.write!(Path.join(root, staging), "helper-owned staging\n")
+      File.write!(Path.join(root, destination), winner_bytes)
+
+      assert {:ok, :reused} = GeneratorFS.publish(root, staging, destination)
+      assert File.read!(Path.join(root, destination)) == winner_bytes
+      refute File.exists?(Path.join(root, staging))
+    end)
+  end
+
+  test "manifest publication collision cleanup failure is not reported as reuse" do
+    with_root(fn root, _config ->
+      staging = ".crosswake/proof_lane.json.staging-cleanup-failure"
+      destination = ".crosswake/proof_lane.json"
+      winner_bytes = "host-owned winner\n"
+
+      File.mkdir_p!(Path.join(root, ".crosswake"))
+      File.write!(Path.join(root, staging), "helper-owned staging\n")
+      File.write!(Path.join(root, destination), winner_bytes)
+
+      with_env("CROSSWAKE_PROOF_LANE_FS_TEST_COLLISION_CLEANUP_FAILURE", "1", fn ->
+        assert {:error, {"PL-GENERATE-WRITE", ^destination}} =
+                 GeneratorFS.publish(root, staging, destination)
+      end)
+
+      assert File.read!(Path.join(root, destination)) == winner_bytes
+      assert File.exists?(Path.join(root, staging))
+    end)
+  end
+
   test "generator actions reject generated namespace and manifest symlinks without writes outside root" do
     with_root(fn root, config ->
       outside = temporary_root()
@@ -244,6 +280,17 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     else
       Process.sleep(10)
       wait_for_file(path, attempts - 1)
+    end
+  end
+
+  defp with_env(key, value, fun) do
+    previous = System.get_env(key)
+    System.put_env(key, value)
+
+    try do
+      fun.()
+    after
+      if previous, do: System.put_env(key, previous), else: System.delete_env(key)
     end
   end
 end
