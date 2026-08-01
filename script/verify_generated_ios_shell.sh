@@ -154,8 +154,14 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     exit 2
   fi
 
-  for bundle in CrosswakeProofLaneTests CrosswakeProofLaneUITests; do
-    if ! grep -Fq "Test Case '-[$bundle." "$TEST_TRANSCRIPT"; then
+  required_test_evidence=(
+    "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testInstalledHostAdapterProducesPassedOutcome]' passed."
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAdapterDerivedPassedLifecycle]' passed."
+    "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
+  )
+
+  for evidence in "${required_test_evidence[@]}"; do
+    if ! grep -Fq "$evidence" "$TEST_TRANSCRIPT"; then
       emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "generated-proof-targets"
       exit 2
     fi

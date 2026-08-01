@@ -1,30 +1,65 @@
 import XCTest
 
 final class ProofLaneUITests: XCTestCase {
-  func testLifecycleRefresh() {
+  func testAdapterDerivedPassedLifecycle() {
     let app = XCUIApplication()
     app.launchEnvironment["UIPreferredContentSizeCategoryName"] = "UIContentSizeCategoryAccessibilityXXXL"
     app.launch()
-    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
-    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
-    let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
-    XCTAssertTrue(outcome.exists)
-    XCTAssertTrue(outcome.label.contains("Unavailable"))
-    XCTAssertGreaterThanOrEqual(app.windows.firstMatch.frame.minX, 0)
+    assertAdapterDerivedPassedOutcome(in: app)
     app.terminate()
     app.launch()
-    XCTAssertTrue(outcome.waitForExistence(timeout: 5))
+    assertAdapterDerivedPassedOutcome(in: app)
   }
 
-  func testRetryControlIsConditionalAndAccessibleWhenHostProvidesIt() {
+  func testAccessibilityReflowContract() {
     let app = XCUIApplication()
+    app.launchEnvironment["UIPreferredContentSizeCategoryName"] = "UIContentSizeCategoryAccessibilityXXXL"
     app.launch()
+
+    let window = app.windows.firstMatch
+    XCTAssertTrue(window.waitForExistence(timeout: 5))
+    let horizontalInsets = window.frame.insetBy(dx: 24, dy: 0)
+
+    assertFullLabel(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch, equals: "Proof lane")
+    assertFullLabel(
+      app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch,
+      equals: "Backend authority required"
+    )
+
+    let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
+    XCTAssertTrue(outcome.waitForExistence(timeout: 5))
+    XCTAssertFalse(outcome.label.contains("…"))
+    assertContainedHorizontally(outcome, within: horizontalInsets)
+    XCTAssertEqual(app.scrollViews.count, 0)
+
     let retry = app.buttons.matching(identifier: "proof-lane-reconnect").firstMatch
 
     if retry.exists {
+      assertFullLabel(retry, equals: "Retry proof check")
       XCTAssertGreaterThanOrEqual(retry.frame.width, 44)
       XCTAssertGreaterThanOrEqual(retry.frame.height, 44)
       XCTAssertTrue(retry.isHittable)
+      assertContainedHorizontally(retry, within: horizontalInsets)
     }
+  }
+
+  private func assertAdapterDerivedPassedOutcome(in app: XCUIApplication) {
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
+
+    let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
+    XCTAssertTrue(outcome.waitForExistence(timeout: 5))
+    XCTAssertTrue(outcome.label.hasPrefix("Passed: "))
+  }
+
+  private func assertFullLabel(_ element: XCUIElement, equals label: String) {
+    XCTAssertTrue(element.waitForExistence(timeout: 5))
+    XCTAssertEqual(element.label, label)
+    XCTAssertFalse(element.label.contains("…"))
+  }
+
+  private func assertContainedHorizontally(_ element: XCUIElement, within frame: CGRect) {
+    XCTAssertGreaterThanOrEqual(element.frame.minX, frame.minX)
+    XCTAssertLessThanOrEqual(element.frame.maxX, frame.maxX)
   }
 }

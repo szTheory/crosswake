@@ -2,33 +2,11 @@ import XCTest
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
-  func testHostAdapterContract() {
-    let adapter = FixtureAdapter()
-    XCTAssertEqual(adapter.observe().outcome, .blocked)
-    XCTAssertEqual(adapter.observe().prerequisite, .replayAuthorization)
-    XCTAssertNotNil(adapter.retry)
-    adapter.retry?()
-    XCTAssertEqual(adapter.observe().outcome, .unavailable)
-    XCTAssertEqual(adapter.observe().prerequisite, .packAudio)
-  }
+  func testInstalledHostAdapterProducesPassedOutcome() throws {
+    let adapter = try XCTUnwrap(ProofLaneHostAdapterFactory.make())
+    let snapshot = adapter.observe()
 
-  func testMissingAdapterRemainsUnavailable() {
-    XCTAssertNil(ProofLaneHostAdapterFactory.make())
-  }
-
-  private final class FixtureAdapter: ProofLaneHostAdapter {
-    private var snapshot = ProofLaneSnapshot(
-      outcome: .blocked, prerequisite: .replayAuthorization, shellBooted: true
-    )
-
-    func observe() -> ProofLaneSnapshot { snapshot }
-
-    var retry: (() -> Void)? {
-      { [weak self] in
-        self?.snapshot = ProofLaneSnapshot(
-          outcome: .unavailable, prerequisite: .packAudio, shellBooted: true
-        )
-      }
-    }
+    XCTAssertTrue(snapshot.shellBooted)
+    XCTAssertEqual(snapshot.outcome, .passed)
   }
 }
