@@ -6,14 +6,14 @@ current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
 stopped_at: "Blocked 159-09 native proof gate: install an iPhone simulator"
-last_updated: "2026-08-01T00:45:52.865Z"
+last_updated: "2026-08-01T01:05:34.102Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 32
-  completed_plans: 30
+  completed_plans: 31
   percent: 20
 current_plan: null
 ---
@@ -63,7 +63,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - Phase 159 browser semantics are type-checked but still require an automated run against a
   runnable host.
 
-- 159-09 native proof gate remains unavailable: no installed concrete iPhone simulator is available; verifier correctly returns PL-IOS-SIMULATOR without downloading a platform.
+- 159-09 native proof gate reaches the installed simulator but the freshly generated Xcode project still fails build-for-testing with an app-product collision (PL-IOS-BUILD-FOR-TESTING); XCTest and XCUITest have not executed.
 
 ## Decisions
 
