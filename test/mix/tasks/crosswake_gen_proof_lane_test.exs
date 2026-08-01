@@ -178,6 +178,23 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  for fault <- [:read, :write, :fsync] do
+    @tag post_create_fault: fault
+    test "post-create #{fault} failure removes destination and permits full-byte rerun" do
+      with_root(fn root, _config ->
+        relative = "e2e/post-create-#{unquote(fault)}.txt"
+        expected = "complete generated output\n"
+
+        assert {:error, {"PL-GENERATE-WRITE", ^relative}} =
+                 GeneratorFS.write(root, relative, expected, post_create_fault: unquote(fault))
+
+        refute File.exists?(Path.join(root, relative))
+        assert {:ok, :created} = GeneratorFS.write(root, relative, expected)
+        assert File.read!(Path.join(root, relative)) == expected
+      end)
+    end
+  end
+
   test "generator actions reject generated namespace and manifest symlinks without writes outside root" do
     with_root(fn root, config ->
       outside = temporary_root()
