@@ -59,6 +59,39 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "version-1 manifests remain host-owned but fail the version-2 provenance check" do
+    with_root(fn root, config ->
+      old_spec = "// host-owned inert spec\n"
+
+      old_manifest =
+        Jason.encode!(%{
+          "schema_version" => 1,
+          "template_version" => 1,
+          "paths" => ["e2e/crosswake_proof_lane/proof_lane.spec.ts"],
+          "provenance" => "crosswake:proof-lane"
+        })
+
+      spec_path = Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts")
+      manifest_path = Path.join(root, ".crosswake/proof_lane.json")
+      File.mkdir_p!(Path.dirname(spec_path))
+      File.mkdir_p!(Path.dirname(manifest_path))
+      File.write!(spec_path, old_spec)
+      File.write!(manifest_path, old_manifest)
+
+      assert {:ok, results} = Generator.generate(config)
+
+      assert %{
+               path: "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts",
+               status: :created
+             } in results
+
+      assert File.read!(spec_path) == old_spec
+      assert File.read!(manifest_path) == old_manifest
+      assert {:error, findings} = Generator.check(config)
+      assert Enum.any?(findings, &(&1.rule_id == "PL-GENERATE-PROVENANCE"))
+    end)
+  end
+
   test "check is satisfied by edited host-owned files but fails missing or unsafe desired state" do
     with_root(fn root, config ->
       assert {:ok, _} = Generator.generate(config)

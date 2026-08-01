@@ -48,6 +48,44 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute template =~ "EvidenceManifest"
   end
 
+  test "fresh generator output is an executable version-2 Playwright spec with a fail-closed host adapter" do
+    root = Path.join(System.tmp_dir!(), "proof-lane-render-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
+
+    config = %Config{
+      route_id: "route-0123456789abcdef",
+      route_path: "/study/:id",
+      indexed_db_database: "proof_lane",
+      indexed_db_store: "mutations",
+      mutation_id_path: "client_mutation_id",
+      sync_path: "/study/sync",
+      evidence_path: "/_proof/evidence",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: Path.join(root, "native/ios")
+    }
+
+    try do
+      assert {:ok, _} = Generator.generate(config)
+      spec = File.read!(Path.join(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts"))
+
+      adapter =
+        File.read!(Path.join(root, "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"))
+
+      manifest = File.read!(Path.join(root, ".crosswake/proof_lane.json"))
+
+      assert spec =~ "import { test } from '@playwright/test'"
+      assert spec =~ "proofLaneHostAdapter"
+      assert spec =~ "runOfflineIslandProof(page, context, proofLaneHostAdapter, proofLaneConfig)"
+      assert adapter =~ "export const proofLaneHostAdapter"
+      assert adapter =~ "satisfies ProofLaneAdapter"
+      assert adapter =~ "PL-BROWSER-HOST-ADAPTER"
+      assert manifest =~ "\"template_version\":2"
+      assert manifest =~ "e2e/crosswake_proof_lane/support/proof_lane_host_adapter.ts"
+    after
+      File.rm_rf!(root)
+    end
+  end
+
   test "Phoenix-host proof command requires, typechecks, and selects the generated browser proof" do
     spec_path = "examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts"
     support_path = "examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts"
