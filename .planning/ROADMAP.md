@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 17/17 plans complete
+**Plans:** 17/17 plans executed
 **Verification:** Complete (23/23 must-haves verified) — one fresh post-repair final-tree gate
 passed all deterministic generator/config/template/iOS/evidence, Phoenix-host browser, syntax, and
 formatting controls. The generated accessibility runtime remains an advisory `not_run` backstop;

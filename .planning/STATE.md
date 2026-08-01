@@ -6,9 +6,9 @@ current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: completed
 stopped_at: Completed 159-17-PLAN.md
-last_updated: "2026-08-01T23:00:00Z"
+last_updated: "2026-08-01T22:26:25.164Z"
 last_activity: 2026-08-01
-last_activity_desc: completed deterministic host-adapter evidence gate
+last_activity_desc: reconciled all deterministic proof-lane evidence
 progress:
   total_phases: 5
   completed_phases: 2
@@ -60,7 +60,6 @@ completeness remains `unknown_blocking`.
 - TODO-002 remains open: the route inventory still needs adopter-supplied concrete route IDs/paths,
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
-
 
 ## Decisions
 
@@ -135,6 +134,7 @@ completeness remains `unknown_blocking`.
 - [Phase ?]: Direct Config structs are normalized before generator root derivation so direct, application, and selected config seams fail identically.
 - [Phase 159]: Fresh final-tree proof closes only on deterministic fixture evidence; generated accessibility-size runtime execution is advisory and cannot promote or block the phase.
 - [Phase 159]: Quote and backslash endpoint values reject before rendering or filesystem activity, while untouched generated iOS lanes remain deterministically blocked until exact host-adapter evidence exists.
+- [Phase ?]: Deterministic generated-contract fixtures close Phase 159; native accessibility runtime remains advisory and non-promoting.
 
 ## Deferred Items
 
@@ -163,8 +163,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T22:18:33.290Z
-**Stopped at:** Completed 159-16-PLAN.md
+**Last session:** 2026-08-01T22:26:25.156Z
+**Stopped at:** Completed 159-17-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -206,4 +206,4 @@ this milestone reset.
 | Phase 159 P13 | 12m | 2 tasks | 3 files |
 | Phase 159-host-reusable-proof-lane P15 | 10m | 1 tasks | 5 files |
 | Phase 159 P16 | 6 min | 1 tasks | 4 files |
-| Phase 159 P17 | 8m | 1 task | 5 files |
+| Phase 159 P17 | 8m | 1 tasks | 5 files |
