@@ -64,6 +64,25 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     end
   end
 
+  test "proof project gives each target an independent build configuration" do
+    project =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"
+      )
+
+    for configuration <- [
+          "A10000000000000000000070",
+          "A10000000000000000000072",
+          "A10000000000000000000074",
+          "A10000000000000000000076"
+        ] do
+      assert project =~ configuration
+    end
+
+    assert project =~ "PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.prooflane.tests"
+    assert project =~ "PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.prooflane.uitests"
+  end
+
   test "native test templates use deterministic and accessibility-only boundaries" do
     contract =
       source(
