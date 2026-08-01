@@ -224,21 +224,26 @@ defmodule Crosswake.ProofLane.EvidenceTest do
   end
 
   test "promotion accepts only an :ok lifecycle-hook result and cleans malformed hook failures" do
-    for {_label, value} <- [
-          {:nil, nil},
-          {:true, true},
-          {:false, false},
-          {:tuple, {:error, "CANARY-TUPLE"}},
-          {:map, %{canary: "CANARY-MAP"}},
-          {:integer, 42}
-        ] do
-      with_destination(fn destination ->
+    with_destination(fn destination ->
+      for value <- [
+            nil,
+            true,
+            false,
+            {:error, "CANARY-TUPLE"},
+            %{canary: "CANARY-MAP"},
+            {:error, %{raw_output: "CANARY-NATIVE"}},
+            @valid,
+            destination,
+            42
+          ] do
         assert {:error, error} =
                  Evidence.promote(@valid, destination, before_promote: fn -> value end)
 
         assert_promotion_hook_failure!(error, destination, "CANARY")
-      end)
-    end
+        refute inspect(error) =~ @valid.route_id
+        refute inspect(error) =~ destination
+      end
+    end)
 
     with_destination(fn destination ->
       assert :ok = Evidence.promote(@valid, destination, before_promote: fn -> :ok end)

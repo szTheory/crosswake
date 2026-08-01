@@ -500,7 +500,22 @@ defmodule Crosswake.ProofLane.Evidence do
     do: File.write(Path.join(stage, @artifact_name), Jason.encode!(to_map(evidence)), [:binary])
 
   defp run_hook(nil), do: :ok
-  defp run_hook(fun) when is_function(fun, 0), do: fun.()
+
+  defp run_hook(fun) when is_function(fun, 0) do
+    result =
+      try do
+        {:hook_return, fun.()}
+      rescue
+        _ -> :hook_failure
+      catch
+        _, _ -> :hook_failure
+      end
+
+    case result do
+      {:hook_return, :ok} -> :ok
+      _ -> error("PL-EVIDENCE-PROMOTE", "artifact", "inspect the safe evidence inputs")
+    end
+  end
 
   defp run_hook(_),
     do: error("PL-EVIDENCE-PROMOTE", "artifact", "inspect the safe evidence inputs")
