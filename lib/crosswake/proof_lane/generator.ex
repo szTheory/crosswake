@@ -29,6 +29,7 @@ defmodule Crosswake.ProofLane.Generator do
           {:ok, [%{path: String.t(), status: :created | :reused}]}
           | {:error, {String.t(), String.t()}}
   def generate(%Config{} = config) do
+    config = normalize!(config)
     root = host_root!(config)
     desired = desired(config)
 
@@ -41,6 +42,7 @@ defmodule Crosswake.ProofLane.Generator do
 
   @spec check(Config.t()) :: :ok | {:error, [finding()]}
   def check(%Config{} = config) do
+    config = normalize!(config)
     root = host_root!(config)
     desired = desired(config)
 
@@ -55,6 +57,7 @@ defmodule Crosswake.ProofLane.Generator do
 
   @spec diff(Config.t()) :: [diff_entry()]
   def diff(%Config{} = config) do
+    config = normalize!(config)
     root = host_root!(config)
     desired = desired(config)
 
@@ -188,6 +191,13 @@ defmodule Crosswake.ProofLane.Generator do
   defp host_root!(config) do
     case Config.host_root(config) do
       {:ok, root} -> root
+      {:error, error} -> raise error
+    end
+  end
+
+  defp normalize!(%Config{} = config) do
+    case Config.normalize(Map.from_struct(config)) do
+      {:ok, normalized} -> normalized
       {:error, error} -> raise error
     end
   end

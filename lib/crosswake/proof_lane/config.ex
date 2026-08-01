@@ -140,7 +140,19 @@ defmodule Crosswake.ProofLane.Config do
 
   defp host_local_path?(value) do
     is_binary(value) and String.starts_with?(value, "/") and
-      not String.contains?(value, ["//", "..", "://", "?", "#", "@", "\0", "\r", "\n"])
+      not String.contains?(value, [
+        "//",
+        "..",
+        "://",
+        "?",
+        "#",
+        "@",
+        "\"",
+        "\\\\",
+        "\0",
+        "\r",
+        "\n"
+      ])
   end
 
   defp valid_router?(value), do: is_atom(value) and value not in [nil, true, false]
