@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 7/7 plans executed
+**Plans:** 7/12 plans executed
 
 Plans:
 **Wave 1**
@@ -165,6 +165,20 @@ Plans:
 - [x] 159-05-PLAN.md — Confine every generator action to a normalized non-root host `native/ios` layout.
 - [x] 159-06-PLAN.md — Restore type-checked browser proof and make unavailable iOS verification non-passing.
 - [x] 159-07-PLAN.md — Bind retained identifiers and hashes to safe canonical sources and close promotion TOCTOU.
+
+**Wave 4** *(gap closure; independently blocked on the relevant executed Wave 3 plan)*
+
+- [ ] 159-08-PLAN.md — Confine every generator filesystem action against symlink ancestors and ancestor-swap races.
+- [ ] 159-10-PLAN.md — Run the primary Phoenix-host browser corpus and enforce opaque mutation IDs.
+- [ ] 159-11-PLAN.md — Make malformed evidence lifecycle hooks fail closed without retained state.
+
+**Wave 5** *(native gap closure; blocked on filesystem confinement)*
+
+- [ ] 159-09-PLAN.md — Execute host-adapter-backed XCTest/XCUITest through a shared scheme without persistent global mutation.
+
+**Wave 6** *(blocked on all prior gap plans)*
+
+- [ ] 159-12-PLAN.md — Reconcile Phase 159 only from a fresh complete automated proof gate.
 
 **Cross-cutting constraints:**
 

@@ -5,14 +5,14 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: gaps_found
-stopped_at: Phase 159 verification found blocking gaps
-last_updated: "2026-07-31T23:26:55.000Z"
+stopped_at: Phase 159 UI-SPEC approved
+last_updated: "2026-07-31T23:52:37.098Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 verification found blocking gaps
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 27
+  total_plans: 32
   completed_plans: 27
   percent: 40
 current_plan: null
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 7 of 7 complete
+Plan: 7 of 12 complete
 Status: Verification gaps found (16/23 must-haves verified)
 Last activity: 2026-07-31 — Phase 159 verification found blocking gaps
 
@@ -44,8 +44,8 @@ framework launch.
 
 ## Next Action
 
-Plan Phase 159 gap closure from the current verification report. TODO-002 remains the bounded
-adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
+Execute Phase 159 gap plans 159-08 through 159-12. TODO-002 remains the bounded adopter-input gate
+and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -55,9 +55,11 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - Phase 162 ultimately needs a runnable adopter host, backend replay endpoint, and physical iPhone.
 - The canonical historical six product-failure labels were not stored because only a privacy-safe
   proxy audit was authorized.
+
 - Phase 159 generation can escape the declared host root through a symlinked destination ancestor.
 - Phase 159 native verification can report `passed` after build-only placeholder checks without
   executing host-integrated XCTest/XCUITest behavior.
+
 - Phase 159 browser semantics are type-checked but still require an automated run against a
   runnable host.
 
@@ -146,9 +148,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T23:15:58.776Z
-**Stopped at:** Completed 159-07-PLAN.md
-**Resume file:** None
+**Last session:** 2026-07-31T23:52:37.087Z
+**Stopped at:** Phase 159 UI-SPEC approved
+**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-UI-SPEC.md
 
 ## Performance Metrics
 
