@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: completed
-stopped_at: Completed 159-17-PLAN.md
-last_updated: "2026-08-01T22:26:25.164Z"
+status: planned
+stopped_at: Planned Phase 159 gap closure through 159-20-PLAN.md
+last_updated: "2026-08-01T22:54:04.000Z"
 last_activity: 2026-08-01
 last_activity_desc: reconciled all deterministic proof-lane evidence
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 37
+  total_plans: 40
   completed_plans: 37
   percent: 40
-current_plan: 17
+current_plan: 18
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — COMPLETE
-Plan: 17 of 17 complete
-Status: Fresh final-tree gate closed both reproduced proof-lane defects
-Last activity: 2026-08-01 — reconciled all deterministic proof-lane evidence
+Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE PLANNED
+Plan: 17 of 20 complete
+Status: Plans 159-18 through 159-20 cover two reproduced current-tree proof gaps
+Last activity: 2026-08-01 — planned generated-browser and one-backslash gap closure
 
 ## Active Objective
 
@@ -44,9 +44,10 @@ framework launch.
 
 ## Next Action
 
-Do not start Phase 160 until the first adopter supplies TODO-002 route inputs and the public-v1
-mobile path is active. TODO-002 remains the bounded adopter-input gate and adopter-instance
-completeness remains `unknown_blocking`.
+Execute Phase 159 Plans 159-18 through 159-20, then require fresh same-tree verification before
+restoring completion. Do not start Phase 160 until Phase 159 passes and the first adopter supplies
+TODO-002 route inputs while the public-v1 mobile path is active. TODO-002 remains the bounded
+adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
@@ -163,8 +164,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T22:26:25.156Z
-**Stopped at:** Completed 159-17-PLAN.md
+**Last session:** 2026-08-01T22:54:04.000Z
+**Stopped at:** Planned Phase 159 gap closure through 159-20-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics

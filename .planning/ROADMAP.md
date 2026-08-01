@@ -147,10 +147,11 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 17/17 plans executed
-**Verification:** Complete (23/23 must-haves verified) — one fresh post-repair final-tree gate
-passed all deterministic generator/config/template/iOS/evidence, Phoenix-host browser, syntax, and
-formatting controls. The generated accessibility runtime remains an advisory `not_run` backstop;
+**Plans:** 17/20 plans executed
+**Verification:** Gaps found (21/23 must-haves verified) — the configured Phoenix-host proof omits
+the generated host proof and its typecheck scope, and a single backslash remains accepted in
+TypeScript-interpolated endpoint configuration. Plans 159-18 through 159-20 close and reconcile
+these reproduced gaps. The generated accessibility runtime remains an advisory `not_run` backstop;
 TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
@@ -201,11 +202,22 @@ Plans:
 
 - [x] 159-17-PLAN.md — Run the fresh final-tree gate and reconcile both reproduced contract gaps.
 
+**Wave 11** *(gap closure; independently blocked on the executed Wave 10 plan)*
+
+- [ ] 159-18-PLAN.md — Require, typecheck, and execute the generated real-host browser proof inside the primary Phoenix corpus.
+- [ ] 159-19-PLAN.md — Reject exactly one backslash across every endpoint-configuration seam before render or write authority.
+
+**Wave 12** *(blocked on both Wave 11 repairs)*
+
+- [ ] 159-20-PLAN.md — Run one fresh same-tree gate and reconcile both current verification gaps without overclaiming advisory evidence.
+
 **Cross-cutting constraints:**
 
 - Generation and evidence promotion use collision-safe staged writes; interruption or a concurrent writer cannot overwrite host files or expose a partial retained artifact.
 - Running generation twice with the same normalized configuration creates only missing scaffold and preserves every existing host-owned byte.
 - Concurrent or interrupted generation fails closed on destination collisions and leaves existing host-owned files unchanged.
+- The primary Phoenix proof command fails closed when its generated host spec or support adapter is absent and typechecks every executed proof surface.
+- Endpoint configuration rejects a single backslash with stable non-echoing errors before rendering or any generator filesystem action.
 
 **Smallest shippable version:** `mix crosswake.gen.proof_lane ios` copies a host-owned scaffold
 configured by explicit route, storage, mutation, endpoint, router, and shell-root values. It reuses
