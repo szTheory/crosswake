@@ -4,7 +4,8 @@
   "description": "E2E tests for Crosswake Phoenix Host",
   "scripts": {
     "test": "playwright test",
-    "typecheck:offline-route-proof": "tsc --project tsconfig.offline_route_proof.json"
+    "typecheck:offline-route-proof": "tsc --project tsconfig.offline_route_proof.json",
+    "proof:offline-island": "playwright test e2e/offline_sync.spec.ts e2e/crosswake_proof_lane/browser_online_restore.spec.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
