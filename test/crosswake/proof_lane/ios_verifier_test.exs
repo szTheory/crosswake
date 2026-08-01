@@ -20,6 +20,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           {"list-fail", "unavailable", 3},
           {"missing-target", "blocked", 2},
           {"build-fail", "blocked", 2},
+          {"test-fail", "blocked", 2},
           {"success", "passed", 0}
         ] do
       write_xcodebuild(bin)
@@ -81,10 +82,31 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         echo "sensitive build output"
         exit 1
         ;;
+      test-fail)
+        if [[ " $* " == *" -list "* ]]; then
+          echo "CrosswakeProofLaneTests"
+          echo "CrosswakeProofLaneUITests"
+          exit 0
+        fi
+        if [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+          exit 0
+        fi
+        if [[ " $* " == *" test-without-building "* ]]; then
+          echo "sensitive test failure"
+          exit 1
+        fi
+        exit 0
+        ;;
       success)
         if [[ " $* " == *" -list "* ]]; then
           echo "CrosswakeProofLaneTests"
           echo "CrosswakeProofLaneUITests"
+        elif [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+        elif [[ " $* " == *" test-without-building "* ]]; then
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testHostAdapterContract]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testLifecycleRefresh]' passed."
         fi
         exit 0
         ;;
