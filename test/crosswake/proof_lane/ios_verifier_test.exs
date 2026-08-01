@@ -1,6 +1,8 @@
 defmodule Crosswake.ProofLane.IosVerifierTest do
   use ExUnit.Case, async: false
 
+  alias Crosswake.ProofLane.{Config, Generator}
+
   @script Path.expand("../../../script/verify_generated_ios_shell.sh", __DIR__)
 
   setup do
@@ -15,7 +17,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     %{root: root, bin: bin, project: project}
   end
 
-  test "proof lane reports closed unavailable, blocked, and passed outcomes", %{
+  test "proof lane requires exact adapter-backed test evidence before passing", %{
     bin: bin,
     project: project
   } do
@@ -24,7 +26,8 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           {"missing-target", "blocked", 2},
           {"build-fail", "blocked", 2},
           {"test-fail", "blocked", 2},
-          {"success", "passed", 0}
+          {"generic-success", "blocked", 2},
+          {"adapter-evidence", "passed", 0}
         ] do
       write_xcodebuild(bin)
 
@@ -70,6 +73,54 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
              Jason.decode(String.trim(output))
   end
 
+  test "untouched generated lane with a nil host factory is blocked rather than passed", %{
+    bin: bin,
+    root: root
+  } do
+    target = Path.join(root, "generated")
+    File.mkdir_p!(target)
+
+    config = %Config{
+      route_id: "route-0123456789abcdef",
+      route_path: "/study/:id",
+      indexed_db_database: "proof_lane",
+      indexed_db_store: "mutations",
+      mutation_id_path: "client_mutation_id",
+      sync_path: "/study/sync",
+      evidence_path: "/_proof/evidence",
+      router: CrosswakeWeb.Router,
+      ios_shell_root: Path.join(target, "native/ios")
+    }
+
+    assert {:ok, _} = Generator.generate(config)
+
+    assert File.read!(
+             Path.join(config.ios_shell_root, "CrosswakeProofLane/ProofLaneDriver.swift")
+           ) =~
+             "nil"
+
+    write_xcodebuild(bin)
+
+    {output, status} =
+      System.cmd("bash", [@script, "--proof-lane"],
+        stderr_to_stdout: true,
+        env: [
+          {"PATH", bin <> ":" <> System.get_env("PATH")},
+          {"CROSSWAKE_IOS_PROJECT_ROOT", config.ios_shell_root},
+          {"CROSSWAKE_IOS_SHIM_MODE", "generic-success"}
+        ]
+      )
+
+    assert status == 2
+
+    assert {:ok,
+            %{
+              "outcome" => "blocked",
+              "rule_id" => "PL-IOS-TEST-EVIDENCE",
+              "scope" => "generated-proof-targets"
+            }} = Jason.decode(String.trim(output))
+  end
+
   test "proof lane leaves configured global git and swiftpm files byte-identical", %{
     bin: bin,
     project: project,
@@ -92,7 +143,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           {"HOME", home},
           {"PATH", bin <> ":" <> System.get_env("PATH")},
           {"CROSSWAKE_IOS_PROJECT_ROOT", project},
-          {"CROSSWAKE_IOS_SHIM_MODE", "success"},
+          {"CROSSWAKE_IOS_SHIM_MODE", "adapter-evidence"},
           {"CROSSWAKE_IOS_USE_LOCAL_CORE", "1"}
         ]
       )
@@ -146,7 +197,7 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         fi
         exit 0
         ;;
-      success)
+      generic-success)
         if [[ " $* " == *" -list "* ]]; then
           echo "CrosswakeProofLaneTests"
           echo "CrosswakeProofLaneUITests"
@@ -155,6 +206,19 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         elif [[ " $* " == *" test-without-building "* ]]; then
           echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testHostAdapterContract]' passed."
           echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testLifecycleRefresh]' passed."
+        fi
+        exit 0
+        ;;
+      adapter-evidence)
+        if [[ " $* " == *" -list "* ]]; then
+          echo "CrosswakeProofLaneTests"
+          echo "CrosswakeProofLaneUITests"
+        elif [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+        elif [[ " $* " == *" test-without-building "* ]]; then
+          echo "Test Case '-[CrosswakeProofLaneTests.ProofLaneContractTests testInstalledHostAdapterProducesPassedOutcome]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAdapterDerivedPassedLifecycle]' passed."
+          echo "Test Case '-[CrosswakeProofLaneUITests.ProofLaneUITests testAccessibilityReflowContract]' passed."
         fi
         exit 0
         ;;
