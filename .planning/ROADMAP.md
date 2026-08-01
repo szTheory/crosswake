@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 18/20 plans executed
+**Plans:** 19/20 plans executed
 **Verification:** Gaps found (21/23 must-haves verified) — the configured Phoenix-host proof omits
 the generated host proof and its typecheck scope, and a single backslash remains accepted in
 TypeScript-interpolated endpoint configuration. Plans 159-18 through 159-20 close and reconcile
@@ -205,7 +205,7 @@ Plans:
 **Wave 11** *(gap closure; independently blocked on the executed Wave 10 plan)*
 
 - [x] 159-18-PLAN.md — Require, typecheck, and execute the generated real-host browser proof inside the primary Phoenix corpus.
-- [ ] 159-19-PLAN.md — Reject exactly one backslash across every endpoint-configuration seam before render or write authority.
+- [x] 159-19-PLAN.md — Reject exactly one backslash across every endpoint-configuration seam before render or write authority.
 
 **Wave 12** *(blocked on both Wave 11 repairs)*
 
