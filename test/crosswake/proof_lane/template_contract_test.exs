@@ -76,15 +76,30 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
       )
 
     assert contract =~ "XCTestCase"
-    assert contract =~ ".replayAuthorization), .blocked"
-    assert contract =~ ".packAudio), .unavailable"
+    assert contract =~ "ProofLaneHostAdapter"
+    assert contract =~ "testHostAdapterContract"
+    assert contract =~ "testMissingAdapterRemainsUnavailable"
     refute contract =~ "XCTSkip"
     assert ui =~ "XCUIApplication"
     assert ui =~ "terminate()"
     assert ui =~ "launch()"
     assert ui =~ "matching(identifier:"
+    assert ui =~ "proof-lane-outcome"
+    assert ui =~ "proof-lane-reconnect"
+    assert ui =~ "UIContentSizeCategoryAccessibility"
+    assert ui =~ "44"
     refute ui =~ "resetContentAndSettings"
     refute ui =~ "XCTSkip"
+  end
+
+  test "native verifier keeps package and git configuration operation-scoped" do
+    verifier = source("script/verify_generated_ios_shell.sh")
+
+    assert verifier =~ "GIT_CONFIG_COUNT"
+    assert verifier =~ "-clonedSourcePackagesDirPath"
+    refute verifier =~ "git config --global"
+    refute verifier =~ "${HOME}/.swiftpm"
+    refute verifier =~ "-downloadPlatform"
   end
 
   test "generator reruns preserve edited browser and native proof sources" do
