@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Phase 159 UI-SPEC approved
-last_updated: "2026-07-31T23:52:37.098Z"
+status: executing
+stopped_at: Completed 159-08-PLAN.md
+last_updated: "2026-08-01T00:28:45.074Z"
 last_activity: 2026-07-31
-last_activity_desc: Phase 159 verification found blocking gaps
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 32
-  completed_plans: 27
-  percent: 40
+  completed_plans: 28
+  percent: 20
 current_plan: null
 ---
 
@@ -23,9 +23,9 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 7 of 12 complete
-Status: Verification gaps found (16/23 must-haves verified)
-Last activity: 2026-07-31 — Phase 159 verification found blocking gaps
+Plan: 2 of 12
+Status: Ready to execute
+Last activity: 2026-07-31 — Phase 159 execution started
 
 ## Active Objective
 
@@ -120,6 +120,8 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated iOS proof outcomes are JSON-only passed, blocked, or unavailable; only a successful target build exits zero.
 - [Phase ?]: Retained proof evidence accepts only closed opaque identifiers and SHA-256 values derived from approved canonical bytes.
 - [Phase ?]: Evidence promotion uses OS no-replace directory primitives and preserves concurrent destination winners.
+- [Phase ?]: Generator filesystem authority is confined to GeneratorFS using root-relative paths only.
+- [Phase ?]: Unsafe topology and native-helper failures fail closed with stable relative-path rules.
 
 ## Deferred Items
 
@@ -148,9 +150,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-07-31T23:52:37.087Z
-**Stopped at:** Phase 159 UI-SPEC approved
-**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-UI-SPEC.md
+**Last session:** 2026-08-01T00:28:45.067Z
+**Stopped at:** Completed 159-08-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -183,3 +185,4 @@ this milestone reset.
 | Phase 159 P05 | 14m | 2 tasks | 4 files |
 | Phase 159 P06 | 14m | 3 tasks | 10 files |
 | Phase 159 P07 | 13m | 2 tasks | 5 files |
+| Phase 159 P08 | 22m | 2 tasks | 4 files |
