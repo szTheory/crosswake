@@ -4,17 +4,17 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: planned
-stopped_at: Planned Phase 159 gap closure through 159-20-PLAN.md
-last_updated: "2026-08-01T22:54:04.000Z"
+status: executing
+stopped_at: Completed 159-18-PLAN.md
+last_updated: "2026-08-01T23:02:29.824Z"
 last_activity: 2026-08-01
-last_activity_desc: reconciled all deterministic proof-lane evidence
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 40
-  completed_plans: 37
-  percent: 40
+  completed_plans: 38
+  percent: 20
 current_plan: 18
 ---
 
@@ -22,10 +22,10 @@ current_plan: 18
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE PLANNED
-Plan: 17 of 20 complete
-Status: Plans 159-18 through 159-20 cover two reproduced current-tree proof gaps
-Last activity: 2026-08-01 — planned generated-browser and one-backslash gap closure
+Phase: 159 (host-reusable-proof-lane) — EXECUTING
+Plan: 2 of 20
+Status: Ready to execute
+Last activity: 2026-08-01 — Phase 159 execution started
 
 ## Active Objective
 
@@ -136,6 +136,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase 159]: Fresh final-tree proof closes only on deterministic fixture evidence; generated accessibility-size runtime execution is advisory and cannot promote or block the phase.
 - [Phase 159]: Quote and backslash endpoint values reject before rendering or filesystem activity, while untouched generated iOS lanes remain deterministically blocked until exact host-adapter evidence exists.
 - [Phase ?]: Deterministic generated-contract fixtures close Phase 159; native accessibility runtime remains advisory and non-promoting.
+- [Phase ?]: Generated Phoenix host proof is required, typed, and selected within the existing primary browser corpus.
 
 ## Deferred Items
 
@@ -164,8 +165,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T22:54:04.000Z
-**Stopped at:** Planned Phase 159 gap closure through 159-20-PLAN.md
+**Last session:** 2026-08-01T23:02:29.816Z
+**Stopped at:** Completed 159-18-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -208,3 +209,4 @@ this milestone reset.
 | Phase 159-host-reusable-proof-lane P15 | 10m | 1 tasks | 5 files |
 | Phase 159 P16 | 6 min | 1 tasks | 4 files |
 | Phase 159 P17 | 8m | 1 tasks | 5 files |
+| Phase 159 P18 | 8m | 1 tasks | 5 files |
