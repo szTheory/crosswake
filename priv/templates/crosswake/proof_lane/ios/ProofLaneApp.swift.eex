@@ -4,12 +4,38 @@ import SwiftUI
 struct CrosswakeProofLaneApp: App {
   var body: some Scene {
     WindowGroup {
-      VStack(spacing: 16) {
-        Text("Proof lane ready").accessibilityIdentifier("proof-lane-ready")
-        Text("backend-authority-required").accessibilityIdentifier("proof-lane-auth-posture")
-        Button("Reconnect") {}.accessibilityIdentifier("proof-lane-reconnect")
-        Text("blocked: replayAuthorization").accessibilityIdentifier("proof-lane-outcome")
+      ProofLaneView(adapter: ProofLaneHostAdapterFactory.make())
+    }
+  }
+}
+
+private struct ProofLaneView: View {
+  let adapter: ProofLaneHostAdapter?
+  @State private var snapshot = ProofLaneSnapshot(
+    outcome: .unavailable, prerequisite: .replayAuthorization, shellBooted: false
+  )
+
+  var body: some View {
+    VStack(spacing: 16) {
+      Text("Proof lane")
+        .accessibilityIdentifier("proof-lane-ready")
+      Text("Backend authority required")
+        .accessibilityIdentifier("proof-lane-auth-posture")
+      Text("\(snapshot.outcome.rawValue.capitalized): \(snapshot.prerequisite.rawValue)")
+        .accessibilityIdentifier("proof-lane-outcome")
+      if let retry = adapter?.retry {
+        Button("Retry proof check") {
+          retry()
+          refresh()
+        }
+        .accessibilityIdentifier("proof-lane-reconnect")
       }
     }
+    .onAppear(perform: refresh)
+  }
+
+  private func refresh() {
+    guard let adapter else { return }
+    snapshot = adapter.observe()
   }
 }

@@ -4,15 +4,19 @@ import Foundation
 enum ProofLaneOutcome: String { case passed, blocked, unavailable }
 enum ProofLanePrerequisite: String { case replayAuthorization, packAudio }
 
-protocol ProofLaneDriver {
-  func outcome(for prerequisite: ProofLanePrerequisite) -> ProofLaneOutcome
+struct ProofLaneSnapshot {
+  let outcome: ProofLaneOutcome
+  let prerequisite: ProofLanePrerequisite
+  let shellBooted: Bool
 }
 
-struct ProofLanePrerequisiteDriver: ProofLaneDriver {
-  func outcome(for prerequisite: ProofLanePrerequisite) -> ProofLaneOutcome {
-    switch prerequisite {
-    case .replayAuthorization: return .blocked
-    case .packAudio: return .unavailable
-    }
+protocol ProofLaneHostAdapter {
+  func observe() -> ProofLaneSnapshot
+  var retry: (() -> Void)? { get }
+}
+
+enum ProofLaneHostAdapterFactory {
+  static func make() -> ProofLaneHostAdapter? {
+    nil
   }
 }

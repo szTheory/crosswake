@@ -6,6 +6,8 @@ PROJECT_ROOT_INPUT="${CROSSWAKE_IOS_PROJECT_ROOT:-}"
 PROJECT_ROOT=""
 TMPDIR_ROOT=""
 DERIVED_DATA_ROOT=""
+IOS_SPM_CACHE=""
+TEST_TRANSCRIPT=""
 SCHEME="${CROSSWAKE_IOS_SCHEME:-CrosswakeShell}"
 XCODEBUILD="${CROSSWAKE_IOS_XCODEBUILD_BIN:-xcodebuild}"
 BUILD_FOR_TESTING="${CROSSWAKE_IOS_BUILD_FOR_TESTING:-1}"
@@ -37,6 +39,9 @@ fi
 cleanup() {
   [[ -n "${TMPDIR_ROOT}" ]] && rm -rf "${TMPDIR_ROOT}"
   [[ -n "${DERIVED_DATA_ROOT}" ]] && rm -rf "${DERIVED_DATA_ROOT}"
+  [[ -n "${IOS_SPM_CACHE}" ]] && rm -rf "${IOS_SPM_CACHE}"
+  [[ -n "${TEST_TRANSCRIPT}" ]] && rm -f "${TEST_TRANSCRIPT}"
+  return 0
 }
 trap cleanup EXIT
 
@@ -147,12 +152,50 @@ if [[ "$PROOF_LANE" == "1" ]]; then
     fi
   done
 
-  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination 'generic/platform=iOS Simulator' -derivedDataPath "$DERIVED_DATA_ROOT" build-for-testing >/dev/null 2>&1; then
+  destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)" || {
+    emit_proof_outcome "unavailable" "PL-IOS-SIMULATOR" "generated-proof-targets"
+    exit 3
+  }
+
+  destination_id="$(printf '%s\n' "$destinations" | awk '
+    /platform:iOS Simulator/ && /name:iPhone/ {
+      line = $0
+      if (match(line, /id:[^,}]+/)) {
+        id = substr(line, RSTART + 3, RLENGTH - 3)
+        gsub(/^ +| +$/, "", id)
+        print id
+        exit
+      }
+    }
+  ')"
+
+  if [[ -z "$destination_id" ]]; then
+    emit_proof_outcome "unavailable" "PL-IOS-SIMULATOR" "generated-proof-targets"
+    exit 3
+  fi
+
+  destination="platform=iOS Simulator,id=$destination_id"
+
+  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" build-for-testing >/dev/null 2>&1; then
     emit_proof_outcome "blocked" "PL-IOS-BUILD-FOR-TESTING" "generated-proof-targets"
     exit 2
   fi
 
-  emit_proof_outcome "passed" "PL-IOS-BUILD-FOR-TESTING" "generated-proof-targets"
+  TEST_TRANSCRIPT="$(mktemp "${TMPDIR:-/tmp}/crosswake-ios-test-transcript.XXXXXX")"
+
+  if ! "$XCODEBUILD" -project "$project" -scheme "$scheme" -destination "$destination" -derivedDataPath "$DERIVED_DATA_ROOT" -clonedSourcePackagesDirPath "$IOS_SPM_CACHE" test-without-building >"$TEST_TRANSCRIPT" 2>&1; then
+    emit_proof_outcome "blocked" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
+    exit 2
+  fi
+
+  for bundle in CrosswakeProofLaneTests CrosswakeProofLaneUITests; do
+    if ! grep -Fq "Test Case '-[$bundle." "$TEST_TRANSCRIPT"; then
+      emit_proof_outcome "blocked" "PL-IOS-TEST-EVIDENCE" "generated-proof-targets"
+      exit 2
+    fi
+  done
+
+  emit_proof_outcome "passed" "PL-IOS-TEST-EXECUTION" "generated-proof-targets"
   exit 0
 fi
 

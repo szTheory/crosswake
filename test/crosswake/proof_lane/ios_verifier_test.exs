@@ -79,6 +79,10 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
           echo "CrosswakeProofLaneUITests"
           exit 0
         fi
+        if [[ " $* " == *" -showdestinations "* ]]; then
+          echo "{ platform:iOS Simulator, id:FAKE-IPHONE-ID, OS:18.0, name:iPhone 16 }"
+          exit 0
+        fi
         echo "sensitive build output"
         exit 1
         ;;

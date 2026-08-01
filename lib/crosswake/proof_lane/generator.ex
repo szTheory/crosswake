@@ -17,7 +17,9 @@ defmodule Crosswake.ProofLane.Generator do
     {"CrosswakeProofLaneUITests/ProofLaneUITests.swift",
      "ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex"},
     {"CrosswakeProofLane.xcodeproj/project.pbxproj",
-     "ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"}
+     "ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"},
+    {"CrosswakeProofLane.xcodeproj/xcshareddata/xcschemes/CrosswakeProofLane.xcscheme",
+     "ios/CrosswakeProofLane.xcodeproj/xcshareddata/xcschemes/CrosswakeProofLane.xcscheme.eex"}
   ]
 
   @type finding :: %{rule_id: String.t(), path: String.t(), remediation: String.t()}
