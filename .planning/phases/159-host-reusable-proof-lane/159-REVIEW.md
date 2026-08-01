@@ -1,6 +1,6 @@
 ---
 phase: 159-host-reusable-proof-lane
-reviewed: 2026-08-01T01:30:03Z
+reviewed: 2026-08-01T02:17:11Z
 depth: standard
 files_reviewed: 29
 files_reviewed_list:
@@ -43,41 +43,33 @@ status: issues_found
 
 # Phase 159: Code Review Report
 
-**Reviewed:** 2026-08-01T01:30:03Z
+**Reviewed:** 2026-08-01T02:17:11Z
 **Depth:** standard
 **Files Reviewed:** 29
 **Status:** issues_found
 
 ## Summary
 
-Reviewed all supplied Phoenix-host, generator, evidence, native-helper, template, shell-script, and test files. The reviewed checks pass, including the targeted ExUnit suite and the Phoenix-host typecheck/browser gate. However, the generator's native filesystem helper violates the phase's missing-only, non-destructive host-ownership guarantee in two failure/concurrency paths.
+The generator and evidence code have strong no-clobber and containment intent, and the focused ExUnit suite passes. However, the iOS verifier promotes a test run of the unconnected placeholder app as a passed proof, and configuration accepted by the closed normalizer can produce syntactically invalid generated TypeScript. Both defects undermine the lane's fail-closed contract.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Failed writes leave a partial file at the generated host destination
+### CR-01: Unwired proof lane is promoted as a passing result
 
-**Classification:** BLOCKER
+**File:** `priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:18-21`; `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:10-17`; `script/verify_generated_ios_shell.sh:164`
+**Issue:** The generated adapter factory always returns `nil`, so the app has no host probe, no auth/replay capability, and remains in the default `.unavailable` state. The UI test explicitly accepts `Unavailable`, and the verification script emits `{"outcome":"passed"}` whenever the XCTest/XCUITest bundles execute. Consequently, a newly generated, completely unintegrated lane passes the command that is supposed to communicate whether the real host crossing worked. This violates the required explicit blocking prerequisite and creates false proof evidence.
+**Fix:** Make a missing or placeholder host adapter a deterministic blocked result. For example, expose a stable `adapterInstalled`/`probeConfigured` condition in the app and require the UI test and verifier to observe a non-placeholder adapter before returning `passed`; otherwise emit a `blocked` outcome with a stable prerequisite rule. Keep the unavailable state only for genuinely unavailable tool/device capabilities, not an unimplemented host integration.
 
-**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_proof_lane_fs.c:120-129`
+### CR-02: Accepted endpoint configuration is emitted into TypeScript without escaping
 
-**Issue:** `write_file` creates the final host-owned pathname with `O_CREAT | O_EXCL` and streams the input directly into it. If `read`, `write`, or `fsync` fails, every failure return closes descriptors but never unlinks that new destination. A short write, full filesystem, I/O error, or failed sync therefore leaves a partial generated file in the host tree. On the next run, `O_EXCL` returns `EXISTS`, which the Elixir layer reports as `:reused`; the generator will preserve the corrupted partial file indefinitely. This breaks the explicit collision-safe/no-partial-write proof-lane contract and can leave an apparently generated but unusable iOS or browser scaffold.
-
-**Fix:** Track successful completion and, on every post-create failure path, call `unlinkat(parent, leaf(relative), 0)` before closing `parent`. Preserve the original failure code even if cleanup fails. Add a deterministic native-helper seam/test that forces a post-create write or `fsync` failure and asserts the final relative path does not exist and a rerun can create it.
-
-### CR-02: Manifest collision leaks a staging artifact into the host-owned tree
-
-**Classification:** BLOCKER
-
-**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_proof_lane_fs.c:165-168`
-
-**Issue:** On a destination collision, `publish_file` returns `EXISTS` immediately after `linkat` fails and does not remove its staging file. `GeneratorFS.publish/3` translates that status to `{:ok, :reused}` ([`generator_fs.ex`](/Users/jon/projects/crosswake/lib/crosswake/proof_lane/generator_fs.ex:59)), and `Generator.promote_manifest/4` treats it as a successful run ([`generator.ex`](/Users/jon/projects/crosswake/lib/crosswake/proof_lane/generator.ex:110)). Thus concurrent generators leave `.crosswake/proof_lane.json.staging-*` files in the host project despite reporting success. I reproduced this directly: after a winner manifest existed, `publish` returned `{:ok, :reused}` while the staging path still existed. This violates the promise that generation creates only missing scaffold and leaves host-owned files untouched; it also accumulates untracked files on every manifest race.
-
-**Fix:** When `linkat` fails with `EEXIST`, remove only the helper's own staged source via the already-open `stage_parent` descriptor, then return `EXISTS`; handle cleanup failure as a fail-closed error rather than reporting reuse. Add a concurrent/collision regression assertion that no `proof_lane.json.staging-*` paths remain after either successful or reused manifest promotion.
+**File:** `lib/crosswake/proof_lane/config.ex:141-144`; `priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex:63-64`
+**Issue:** `host_local_path?/1` allows double quotes and backslashes. Those values are interpolated directly between TypeScript double quotes. For example, `sync_path: "/proof\""` normalizes successfully, then renders an unterminated `syncPath` string and prevents the generated browser lane from compiling. More complex accepted characters can alter the generated source. This breaks the promised closed configuration boundary and fails after files have been generated.
+**Fix:** Validate endpoint values against a strict path-segment grammar that excludes JavaScript string delimiters/control characters, and render all string values with a real TypeScript/JSON string encoder rather than raw EEx interpolation. Add generation/typecheck coverage for quote and backslash inputs, asserting they are rejected before any output is written.
 
 ---
 
-_Reviewed: 2026-08-01T01:30:03Z_
+_Reviewed: 2026-08-01T02:17:11Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
