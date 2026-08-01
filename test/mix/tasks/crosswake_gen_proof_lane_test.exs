@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   use ExUnit.Case, async: false
 
-  alias Crosswake.ProofLane.{Config, Generator}
+  alias Crosswake.ProofLane.{Config, Generator, GeneratorFS}
 
   defp config(root) do
     %Config{
@@ -137,5 +137,56 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
       assert before == snapshot(root)
     end)
+  end
+
+  test "descriptor-relative writes reject a symlinked generated ancestor" do
+    with_root(fn root, _config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      File.mkdir_p!(Path.join(root, "e2e"))
+      File.rm_rf!(Path.join(root, "e2e"))
+      File.ln_s!(outside, Path.join(root, "e2e"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/crosswake_proof_lane/proof_lane.spec.ts"}} =
+               GeneratorFS.write(root, "e2e/crosswake_proof_lane/proof_lane.spec.ts", "safe")
+
+      refute File.exists?(Path.join(outside, "crosswake_proof_lane/proof_lane.spec.ts"))
+    end)
+  end
+
+  test "descriptor-relative writes reject an ancestor swap before final create" do
+    with_root(fn root, _config ->
+      outside = temporary_root()
+      hook = Path.join(root, "before-final-open")
+      File.mkdir_p!(outside)
+      File.mkdir_p!(Path.join(root, "e2e"))
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      task =
+        Task.async(fn ->
+          GeneratorFS.write(root, "e2e/race.txt", "safe", before_final_open_hook: hook)
+        end)
+
+      wait_for_file(hook)
+      File.rm_rf!(Path.join(root, "e2e"))
+      File.ln_s!(outside, Path.join(root, "e2e"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/race.txt"}} = Task.await(task)
+      refute File.exists?(Path.join(outside, "race.txt"))
+    end)
+  end
+
+  defp wait_for_file(path, attempts \\ 100)
+  defp wait_for_file(_path, 0), do: flunk("native final-create hook was not reached")
+
+  defp wait_for_file(path, attempts) do
+    if File.exists?(path) do
+      :ok
+    else
+      Process.sleep(10)
+      wait_for_file(path, attempts - 1)
+    end
   end
 end
