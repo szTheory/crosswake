@@ -147,12 +147,11 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 21 plans (20 executed, 1 planned gap closure)
-**Verification:** Gaps found (22/23 must-haves verified) — independent current-tree review and
-verification found that the generated browser spec template is inert while the passing Phoenix
-command exercises a hand-maintained example-host fixture. PROOF-01 and PROOF-03 remain blocked;
-PROOF-02 and PROOF-04 have current-tree evidence. The generated accessibility runtime remains an
-advisory `not_run` backstop; TODO-002 remains open and adopter-instance completeness remains
+**Plans:** 21/21 plans executed
+**Verification:** Final same-tree verification pending — Plan 159-21 now executes isolated
+version-2 generated browser output through the existing Phoenix lifecycle, but requirements remain
+unpromoted until the complete Phase 159 gate is rerun. The generated accessibility runtime remains
+an advisory `not_run` backstop; TODO-002 remains open and adopter-instance completeness remains
 `unknown_blocking`.
 
 Plans:
@@ -214,7 +213,7 @@ Plans:
 
 **Wave 13** *(gap closure; blocked on Wave 12 completion)*
 
-- [ ] 159-21-PLAN.md — Execute the generated Playwright spec through a fail-closed host adapter and prove isolated rendered output cannot be masked by the hand-maintained fixture.
+- [x] 159-21-PLAN.md — Execute the generated Playwright spec through a fail-closed host adapter and prove isolated rendered output cannot be masked by the hand-maintained fixture.
 
 **Cross-cutting constraints:**
 

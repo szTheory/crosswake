@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: ready_to_execute
-stopped_at: Phase 159 gap-closure Plan 159-21 ready to execute
-last_updated: "2026-08-01T23:44:20Z"
+status: executing
+stopped_at: Completed 159-21-PLAN.md
+last_updated: "2026-08-01T23:57:00.098Z"
 last_activity: 2026-08-01
-last_activity_desc: Planned executable generated-browser-spec gap closure as 159-21
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 41
-  completed_plans: 40
+  completed_plans: 41
   percent: 40
 current_plan: 21
 ---
@@ -22,10 +22,10 @@ current_plan: 21
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — READY TO EXECUTE GAP CLOSURE
-Plan: 21 of 21 (planned)
-Status: Plan 159-21 will make the generated browser spec executable and prove rendered output
-Last activity: 2026-08-01 — gap-closure plan passed independent plan verification
+Phase: 159 (host-reusable-proof-lane) — FINAL VERIFICATION PENDING
+Plan: 21 of 21 executed
+Status: Re-run the Phase 159 same-tree verification before promoting phase requirements.
+Last activity: 2026-08-01 — Plan 159-21 made the generated Phoenix browser proof executable and isolated.
 
 ## Active Objective
 
@@ -140,6 +140,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Generated Phoenix host proof is required, typed, and selected within the existing primary browser corpus.
 - [Phase ?]: Proof-lane endpoint paths reject every backslash byte at canonical normalization before raw EEx rendering or generator filesystem authority.
 - [Phase 159]: The final same-tree gate typechecks and executes the generated Phoenix-host proof with backend confirmation, empty-outbox, and duplicate-idempotency assertions; endpoint one-backslash rejection is verified at every config seam.
+- [Phase ?]: Generated browser specs use one typed host adapter that defaults to stable PL-BROWSER-HOST-ADAPTER denial.
+- [Phase ?]: Phoenix proof pre-seeds the host adapter and executes only isolated version-2 generated Playwright output.
 
 ## Deferred Items
 
@@ -168,8 +170,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T23:06:52.950Z
-**Stopped at:** Completed 159-19-PLAN.md
+**Last session:** 2026-08-01T23:57:00.080Z
+**Stopped at:** Completed 159-21-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -215,3 +217,4 @@ this milestone reset.
 | Phase 159 P18 | 8m | 1 tasks | 5 files |
 | Phase 159 P19 | 7m | 1 tasks | 3 files |
 | Phase 159 P20 | 1m | 1 task | 6 files |
+| Phase 159 P21 | 20m | 2 tasks | 7 files |
