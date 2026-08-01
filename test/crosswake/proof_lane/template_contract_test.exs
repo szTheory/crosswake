@@ -83,6 +83,24 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert project =~ "PRODUCT_BUNDLE_IDENTIFIER = dev.crosswake.prooflane.uitests"
   end
 
+  test "proof project gives every generated target a concrete product and module output name" do
+    project =
+      source(
+        "priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex"
+      )
+
+    for target <- ["CrosswakeProofLane", "CrosswakeProofLaneTests", "CrosswakeProofLaneUITests"] do
+      assert project =~ "PRODUCT_NAME = #{target}"
+      assert project =~ "PRODUCT_MODULE_NAME = #{target}"
+    end
+
+    assert project =~ "path = CrosswakeProofLane.app"
+    assert project =~ "explicitFileType = wrapper.application"
+    assert project =~ "ENABLE_TESTABILITY = YES"
+    assert project =~ "TEST_HOST = \"$(BUILT_PRODUCTS_DIR)/CrosswakeProofLane.app/CrosswakeProofLane\""
+    assert project =~ "BUNDLE_LOADER = \"$(TEST_HOST)\""
+  end
+
   test "native test templates use deterministic and accessibility-only boundaries" do
     contract =
       source(
