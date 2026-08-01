@@ -1,5 +1,8 @@
 // crosswake-proof-lane template_version=1
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { type BrowserContext, type Page } from '@playwright/test';
+
+const OPAQUE_MUTATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const MUTATION_ID_ERROR = 'PL-BROWSER-MUTATION-ID';
 
 export type ProofLaneConfig = {
   routePath: string;
@@ -24,8 +27,11 @@ export function extractMutationId(record: unknown, fieldPath: string): string {
   const value = fieldPath.split('.').reduce<unknown>((current, field) =>
     current && typeof current === 'object' ? (current as Record<string, unknown>)[field] : undefined,
   record);
-  expect(typeof value).toBe('string');
-  return value as string;
+  if (typeof value !== 'string' || !OPAQUE_MUTATION_ID.test(value)) {
+    throw new Error(MUTATION_ID_ERROR);
+  }
+
+  return value;
 }
 
 export async function runOfflineIslandProof(page: Page, context: BrowserContext, adapter: ProofLaneAdapter, config: ProofLaneConfig): Promise<string> {

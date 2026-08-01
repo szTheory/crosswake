@@ -4,6 +4,8 @@ import path from 'node:path';
 
 const DEFAULT_OFFLINE_STUDY_DB = 'crosswake_offline_study';
 const ROUTER_PATH = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
+const OPAQUE_MUTATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const MUTATION_ID_ERROR = 'PL-BROWSER-MUTATION-ID';
 
 export type OfflineMutationRecord = {
   id?: number;
@@ -72,9 +74,11 @@ export function extractMutationId(record: unknown, fieldPath: string): string {
     return undefined;
   }, record);
 
-  expect(typeof value).toBe('string');
-  expect(value).toMatch(/^[0-9a-f-]{36}$/);
-  return value as string;
+  if (typeof value !== 'string' || !OPAQUE_MUTATION_ID.test(value)) {
+    throw new Error(MUTATION_ID_ERROR);
+  }
+
+  return value;
 }
 
 export async function proveLearnLoopRoute(
@@ -311,7 +315,7 @@ export async function expectOutboxEmpty(page: Page, options: OfflineRouteProofOp
 
 export function assertAppGeneratedMutation(record: OfflineMutationRecord) {
   expect(typeof record.client_mutation_id).toBe('string');
-  expect(record.client_mutation_id).toMatch(/^[0-9a-f-]{36}$/);
+  expect(record.client_mutation_id).toMatch(OPAQUE_MUTATION_ID);
   expect(record.rating).toMatch(/^(good|hard)$/);
 }
 

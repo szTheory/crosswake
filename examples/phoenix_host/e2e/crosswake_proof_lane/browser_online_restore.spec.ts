@@ -90,7 +90,9 @@ test('repository and generated helpers accept only lowercase opaque mutation IDs
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
         expect((error as Error).message).toBe('PL-BROWSER-MUTATION-ID');
-        expect((error as Error).message).not.toContain(invalidMutationId);
+        if (invalidMutationId) {
+          expect((error as Error).message).not.toContain(invalidMutationId);
+        }
       }
     }
   }

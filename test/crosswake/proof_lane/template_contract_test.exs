@@ -39,6 +39,9 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert template =~ "adapter.assertBackendConfirmation"
     assert template =~ "adapter.assertOutboxEmpty"
     assert template =~ "adapter.assertDuplicateIdempotency"
+    assert template =~ "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    assert template =~ "PL-BROWSER-MUTATION-ID"
+    refute template =~ "throw new Error(`"
     refute template =~ "LearnLoop"
     refute template =~ "EvidenceManifest"
   end
