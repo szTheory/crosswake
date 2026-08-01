@@ -223,6 +223,43 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "promotion accepts only an :ok lifecycle-hook result and cleans malformed hook failures" do
+    for {_label, value} <- [
+          {:nil, nil},
+          {:true, true},
+          {:false, false},
+          {:tuple, {:error, "CANARY-TUPLE"}},
+          {:map, %{canary: "CANARY-MAP"}},
+          {:integer, 42}
+        ] do
+      with_destination(fn destination ->
+        assert {:error, error} =
+                 Evidence.promote(@valid, destination, before_promote: fn -> value end)
+
+        assert_promotion_hook_failure!(error, destination, "CANARY")
+      end)
+    end
+
+    with_destination(fn destination ->
+      assert :ok = Evidence.promote(@valid, destination, before_promote: fn -> :ok end)
+      assert :ok = Evidence.check(destination)
+    end)
+  end
+
+  test "promotion normalizes lifecycle-hook raises throws and exits without retaining artifacts" do
+    for hook <- [
+          fn -> raise "CANARY-RAISE" end,
+          fn -> throw({:canary, "CANARY-THROW"}) end,
+          fn -> exit({:canary, "CANARY-EXIT"}) end
+        ] do
+      with_destination(fn destination ->
+        assert {:error, error} = Evidence.promote(@valid, destination, before_promote: hook)
+
+        assert_promotion_hook_failure!(error, destination, "CANARY")
+      end)
+    end
+  end
+
   test "native promotion fails closed for unsupported platforms and compiler seams" do
     alias Crosswake.ProofLane.NativePromotion
 
@@ -249,6 +286,14 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       Path.join(stage, "proof-lane-evidence.json"),
       Jason.encode!(Evidence.to_map(evidence))
     )
+  end
+
+  defp assert_promotion_hook_failure!(error, destination, canary) do
+    assert error.rule_id == "PL-EVIDENCE-PROMOTE"
+    assert error.path == "artifact"
+    refute inspect(error) =~ canary
+    refute File.exists?(destination)
+    assert [] == Path.wildcard(destination <> ".stage-*")
   end
 
   defp with_stage(fun) do
