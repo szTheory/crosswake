@@ -1,14 +1,30 @@
 import XCTest
 
 final class ProofLaneUITests: XCTestCase {
-  func testShellLifecyclePreservesObservableBackendAuthorityPosture() {
+  func testLifecycleRefresh() {
     let app = XCUIApplication()
+    app.launchEnvironment["UIPreferredContentSizeCategoryName"] = "UIContentSizeCategoryAccessibilityXXXL"
     app.launch()
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-ready").firstMatch.waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-auth-posture").firstMatch.exists)
+    let outcome = app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch
+    XCTAssertTrue(outcome.exists)
+    XCTAssertTrue(outcome.label.contains("Unavailable"))
+    XCTAssertGreaterThanOrEqual(app.windows.firstMatch.frame.minX, 0)
     app.terminate()
     app.launch()
-    XCTAssertTrue(app.buttons.matching(identifier: "proof-lane-reconnect").firstMatch.waitForExistence(timeout: 5))
-    XCTAssertTrue(app.staticTexts.matching(identifier: "proof-lane-outcome").firstMatch.exists)
+    XCTAssertTrue(outcome.waitForExistence(timeout: 5))
+  }
+
+  func testRetryControlIsConditionalAndAccessibleWhenHostProvidesIt() {
+    let app = XCUIApplication()
+    app.launch()
+    let retry = app.buttons.matching(identifier: "proof-lane-reconnect").firstMatch
+
+    if retry.exists {
+      XCTAssertGreaterThanOrEqual(retry.frame.width, 44)
+      XCTAssertGreaterThanOrEqual(retry.frame.height, 44)
+      XCTAssertTrue(retry.isHittable)
+    }
   }
 }

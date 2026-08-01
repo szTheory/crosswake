@@ -2,11 +2,33 @@ import XCTest
 @testable import CrosswakeProofLane
 
 final class ProofLaneContractTests: XCTestCase {
-  func testLaterPrerequisitesRemainExplicitlyNonPassing() {
-    let driver = ProofLanePrerequisiteDriver()
-    XCTAssertEqual(driver.outcome(for: .replayAuthorization), .blocked)
-    XCTAssertEqual(driver.outcome(for: .packAudio), .unavailable)
-    XCTAssertNotEqual(driver.outcome(for: .replayAuthorization), .passed)
-    XCTAssertNotEqual(driver.outcome(for: .packAudio), .passed)
+  func testHostAdapterContract() {
+    let adapter = FixtureAdapter()
+    XCTAssertEqual(adapter.observe().outcome, .blocked)
+    XCTAssertEqual(adapter.observe().prerequisite, .replayAuthorization)
+    XCTAssertNotNil(adapter.retry)
+    adapter.retry?()
+    XCTAssertEqual(adapter.observe().outcome, .unavailable)
+    XCTAssertEqual(adapter.observe().prerequisite, .packAudio)
+  }
+
+  func testMissingAdapterRemainsUnavailable() {
+    XCTAssertNil(ProofLaneHostAdapterFactory.make())
+  }
+
+  private final class FixtureAdapter: ProofLaneHostAdapter {
+    private var snapshot = ProofLaneSnapshot(
+      outcome: .blocked, prerequisite: .replayAuthorization, shellBooted: true
+    )
+
+    func observe() -> ProofLaneSnapshot { snapshot }
+
+    var retry: (() -> Void)? {
+      { [weak self] in
+        self?.snapshot = ProofLaneSnapshot(
+          outcome: .unavailable, prerequisite: .packAudio, shellBooted: true
+        )
+      }
+    }
   }
 }

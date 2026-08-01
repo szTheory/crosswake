@@ -59,6 +59,39 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
              Jason.decode(String.trim(output))
   end
 
+  test "proof lane leaves configured global git and swiftpm files byte-identical", %{
+    bin: bin,
+    project: project,
+    root: root
+  } do
+    write_xcodebuild(bin)
+    home = Path.join(root, "home")
+    git_config = Path.join(home, ".gitconfig")
+    swiftpm_config = Path.join(home, ".swiftpm/configuration/mirrors.json")
+    File.mkdir_p!(Path.dirname(swiftpm_config))
+    File.write!(git_config, "[user]\n\tname = untouched\n")
+    File.write!(swiftpm_config, "{\"object\": []}\n")
+    before_git = File.read!(git_config)
+    before_swiftpm = File.read!(swiftpm_config)
+
+    {output, status} =
+      System.cmd("bash", [@script, "--proof-lane"],
+        stderr_to_stdout: true,
+        env: [
+          {"HOME", home},
+          {"PATH", bin <> ":" <> System.get_env("PATH")},
+          {"CROSSWAKE_IOS_PROJECT_ROOT", project},
+          {"CROSSWAKE_IOS_SHIM_MODE", "success"},
+          {"CROSSWAKE_IOS_USE_LOCAL_CORE", "1"}
+        ]
+      )
+
+    assert status == 0, output
+    assert {:ok, %{"outcome" => "passed"}} = Jason.decode(String.trim(output))
+    assert File.read!(git_config) == before_git
+    assert File.read!(swiftpm_config) == before_swiftpm
+  end
+
   defp write_xcodebuild(bin) do
     path = Path.join(bin, "xcodebuild")
 

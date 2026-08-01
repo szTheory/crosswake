@@ -70,6 +70,7 @@ else
 fi
 
 DERIVED_DATA_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-derived.XXXXXX")"
+IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
 
 if [[ "$PROOF_LANE" == "1" ]]; then
   project="${PROJECT_ROOT}/CrosswakeProofLane.xcodeproj"
@@ -79,60 +80,25 @@ else
   scheme="${SCHEME}"
 fi
 
-# Hermetic release-PR resolution: the checked-in host pins the remote SwiftPM
-# package at the CURRENT version, which isn't tagged on the remote mirror until the
-# release PR merges. When CROSSWAKE_IOS_USE_LOCAL_CORE=1, redirect the remote URL to a
-# locally-tagged clone of packages/crosswake-shell-core-ios via a SwiftPM mirror
-# (~/.swiftpm/configuration/mirrors.json, honored by xcodebuild) — no pbxproj edit, so
-# the checked-in remote ref stays intact for the native-evidence drift guards.
-if [[ "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
+# Hermetic release-PR resolution uses operation-owned sources and process-scoped Git
+# configuration. It never writes the user's global Git or SwiftPM configuration.
+if [[ "$PROOF_LANE" != "1" && "${CROSSWAKE_IOS_USE_LOCAL_CORE:-0}" == "1" ]]; then
   ios_core_remote="https://github.com/szTheory/crosswake-shell-core-ios.git"
   ios_core_version="$(sed -n 's/.*minimumVersion = \([0-9][0-9.]*\);.*/\1/p' "${project}/project.pbxproj" | head -1)"
-  # Keep the throwaway clone off /var/folders — xcodebuild's package resolution can't reliably
-  # read mktemp paths there (CI showed the mirror tags present yet "no versions match", i.e.
-  # the redirect target was unreadable/unhonored). RUNNER_TEMP (/Users/runner/work/_temp) is
-  # accessible on CI; fall back to a workspace dir locally.
-  ios_core_clone="${RUNNER_TEMP:-${ROOT_DIR}/tmp}/crosswake-ios-core-hermetic"
-  # The package is a regular subtree of the monorepo (not a submodule/standalone repo), so a
-  # fresh CI checkout has no .git here — build a throwaway git repo from the files so SwiftPM
-  # can resolve a version tag from it (git clone of a non-repo path fails: phase18 hermetic).
-  rm -rf "${ios_core_clone}"
-  mkdir -p "${ios_core_clone}"
-  cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
-  rm -rf "${ios_core_clone}/.git"
-  git -C "${ios_core_clone}" -c init.defaultBranch=main init -q
-  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci add -A
-  git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${ios_core_version}"
-  # Lightweight tags (no -m) — most broadly recognized by SwiftPM's version resolver.
-  git -C "${ios_core_clone}" tag -f "${ios_core_version}"
-  git -C "${ios_core_clone}" tag -f "v${ios_core_version}"
-  # Redirect at the GIT layer (insteadOf, honored by SwiftPM which shells out to git) — more
-  # robust than the SwiftPM mirror config, which CI's xcodebuild ignored. Keep the SwiftPM
-  # mirror too as a belt-and-suspenders second mechanism.
-  git config --global "url.${ios_core_clone}.insteadOf" "${ios_core_remote}"
-  mirror_dir="${HOME}/.swiftpm/configuration"
-  mkdir -p "${mirror_dir}"
-  cat > "${mirror_dir}/mirrors.json" <<JSON
-{
-  "object" : [
-    {
-      "mirror" : "${ios_core_clone}",
-      "original" : "${ios_core_remote}"
-    }
-  ],
-  "version" : 1
-}
-JSON
-  echo "hermetic: redirected ${ios_core_remote} -> ${ios_core_clone} @ ${ios_core_version}"
-  echo "hermetic-debug: mirror tags = [$(git -C "${ios_core_clone}" tag | tr '\n' ' ')]"
-  echo "hermetic-debug: git insteadOf = $(git config --global --get "url.${ios_core_clone}.insteadOf")"
+  if [[ -n "${ios_core_version}" ]]; then
+    ios_core_clone="${TMPDIR_ROOT:-${DERIVED_DATA_ROOT}}/crosswake-ios-core-hermetic"
+    mkdir -p "${ios_core_clone}"
+    cp -R "${ROOT_DIR}/packages/crosswake-shell-core-ios/." "${ios_core_clone}/"
+    git -C "${ios_core_clone}" -c init.defaultBranch=main init -q
+    git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci add -A
+    git -C "${ios_core_clone}" -c user.email=ci@crosswake -c user.name=ci commit -q -m "hermetic ${ios_core_version}"
+    git -C "${ios_core_clone}" tag "${ios_core_version}"
+    git -C "${ios_core_clone}" tag "v${ios_core_version}"
+    export GIT_CONFIG_COUNT=1
+    export GIT_CONFIG_KEY_0="url.${ios_core_clone}.insteadOf"
+    export GIT_CONFIG_VALUE_0="${ios_core_remote}"
+  fi
 fi
-
-# Force a clean SwiftPM package cache so resolution reads the mirror's tags fresh
-# (avoids any stale "no versions" cache keyed on the original URL). Harmless for the
-# non-hermetic generated-shell path. Unconditional to avoid empty-array expansion
-# under `set -u` on macOS bash 3.2.
-IOS_SPM_CACHE="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-ios-spm.XXXXXX")"
 
 project_check="$("$XCODEBUILD" -list -project "$project" -clonedSourcePackagesDirPath "${IOS_SPM_CACHE}" 2>&1)" || {
   if [[ "$PROOF_LANE" == "1" ]]; then
@@ -204,34 +170,6 @@ if [[ "$BUILD_FOR_TESTING" != "1" ]]; then
 fi
 
 destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
-
-if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
-  if command -v xcrun >/dev/null 2>&1; then
-    runtime_id="$(xcrun simctl list runtimes available 2>/dev/null | awk '
-      /iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS/ {
-        if (match($0, /com\.apple\.CoreSimulator\.SimRuntime\.iOS-[^ )]+/)) {
-          print substr($0, RSTART, RLENGTH)
-          exit
-        }
-      }
-    ' || true)"
-
-    if [[ -n "${runtime_id:-}" ]]; then
-      xcrun simctl create "Crosswake CI iPhone" \
-        "com.apple.CoreSimulator.SimDeviceType.iPhone-16" \
-        "$runtime_id" >/dev/null 2>&1 || true
-      destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
-    fi
-  fi
-fi
-
-if [[ "$LAUNCH_SIMULATOR" == "1" ]] && ! printf '%s\n' "$destinations" | grep -q "platform:iOS Simulator.*name:iPhone"; then
-  echo "No concrete iPhone simulator destination found; downloading iOS simulator platform..." >&2
-  xcodebuild -downloadPlatform iOS || {
-    echo "warning: iOS simulator platform download failed; retrying with currently available destinations" >&2
-  }
-  destinations="$("$XCODEBUILD" -project "$project" -scheme "$scheme" -showdestinations 2>&1)"
-fi
 
 destination_name="$(printf '%s\n' "$destinations" | awk '
   /platform:iOS Simulator/ && /name:iPhone/ {

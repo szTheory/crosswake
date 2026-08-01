@@ -22,15 +22,19 @@ private struct ProofLaneView: View {
       Text("Backend authority required")
         .accessibilityIdentifier("proof-lane-auth-posture")
       Text("\(snapshot.outcome.rawValue.capitalized): \(snapshot.prerequisite.rawValue)")
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityIdentifier("proof-lane-outcome")
       if let retry = adapter?.retry {
         Button("Retry proof check") {
           retry()
           refresh()
         }
+        .frame(minWidth: 44, minHeight: 44)
         .accessibilityIdentifier("proof-lane-reconnect")
       }
     }
+    .padding(24)
     .onAppear(perform: refresh)
   }
 
