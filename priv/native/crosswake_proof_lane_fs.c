@@ -90,9 +90,14 @@ static void test_hook(void) {
   }
 }
 
+static int test_post_create_fault(const char *expected) {
+  const char *fault = getenv("CROSSWAKE_PROOF_LANE_FS_TEST_POST_CREATE_FAULT");
+  return fault && strcmp(fault, expected) == 0;
+}
+
 static int write_file(const char *root_path, const char *relative, const char *input_path) {
   char buffer[8192];
-  int root, parent, fresh, file, input;
+  int root, parent, fresh, file, input, result;
   struct stat input_stat;
   ssize_t read_count;
   if (!safe_relative(relative)) return UNSAFE;
@@ -117,16 +122,33 @@ static int write_file(const char *root_path, const char *relative, const char *i
     int code = errno == EEXIST ? EXISTS : (errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE);
     close(input); close(parent); close(root); return code;
   }
-  while ((read_count = read(input, buffer, sizeof(buffer))) > 0) {
+  while (1) {
     ssize_t written = 0;
+    if (test_post_create_fault("read")) { result = FAILURE; goto cleanup_created; }
+    read_count = read(input, buffer, sizeof(buffer));
+    if (read_count <= 0) break;
     while (written < read_count) {
       ssize_t count = write(file, buffer + written, (size_t)(read_count - written));
-      if (count <= 0) { close(input); close(file); close(parent); close(root); return FAILURE; }
+      if (test_post_create_fault("write") || count <= 0) {
+        result = FAILURE;
+        goto cleanup_created;
+      }
       written += count;
     }
   }
-  if (read_count < 0 || fsync(file) != 0) { close(input); close(file); close(parent); close(root); return FAILURE; }
+  if (read_count < 0 || test_post_create_fault("fsync") || fsync(file) != 0) {
+    result = FAILURE;
+    goto cleanup_created;
+  }
   close(input); close(file); close(parent); close(root); return 0;
+
+cleanup_created:
+  close(input);
+  close(file);
+  unlinkat(parent, leaf(relative), 0);
+  close(parent);
+  close(root);
+  return result;
 }
 
 static int read_file(const char *root_path, const char *relative, int emit) {

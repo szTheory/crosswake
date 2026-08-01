@@ -125,10 +125,22 @@ defmodule Crosswake.ProofLane.GeneratorFS do
   end
 
   defp hook_env(opts) do
-    case Keyword.get(opts, :before_final_open_hook) do
-      value when is_binary(value) -> [{"CROSSWAKE_PROOF_LANE_FS_TEST_BEFORE_FINAL_OPEN", value}]
-      _ -> []
-    end
+    before_final_open =
+      case Keyword.get(opts, :before_final_open_hook) do
+        value when is_binary(value) -> [{"CROSSWAKE_PROOF_LANE_FS_TEST_BEFORE_FINAL_OPEN", value}]
+        _ -> []
+      end
+
+    post_create_fault =
+      case Keyword.get(opts, :post_create_fault) do
+        value when value in [:read, :write, :fsync] ->
+          [{"CROSSWAKE_PROOF_LANE_FS_TEST_POST_CREATE_FAULT", Atom.to_string(value)}]
+
+        _ ->
+          []
+      end
+
+    before_final_open ++ post_create_fault
   end
 
   defp compiler do
