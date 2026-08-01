@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 6
+open_count: 7
 waived_count: 0
 fixed_count: 0
-total_count: 6
-last_updated: 2026-07-31T20:46:49.899Z
+total_count: 7
+last_updated: 2026-08-01T00:46:07.479Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,7 @@ last_updated: 2026-07-31T20:46:49.899Z
 | 4 | 158 | unrun-verify | test/crosswake/planning/first_adopter_context_test.exs |  | Broader Task 2 planning-context verification is blocked by the executor-start STATE.md transition. | open |  | 2026-07-31T13:45:25.123Z |  |
 | 5 | 159 | stub | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Focused native XCTest/XCUITest source expansion is intentionally deferred to Plan 159-03. | open |  | 2026-07-31T20:45:02.500Z |  |
 | 6 | 159 | deviation | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Auto-fixed incomplete PBX project skeleton so Xcode enumerates the proof-owned targets. | open |  | 2026-07-31T20:46:49.899Z |  |
+| 7 | 159 | unrun-verify | script/verify_generated_ios_shell.sh |  | Fresh non-mocked native proof verifier remains unavailable until an installed concrete iPhone simulator exists. | open |  | 2026-08-01T00:46:07.479Z |  |
 
 ````json
 [
@@ -94,6 +95,18 @@ last_updated: 2026-07-31T20:46:49.899Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-07-31T20:46:49.899Z",
+    "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "unrun-verify",
+    "phase": "159",
+    "file": "script/verify_generated_ios_shell.sh",
+    "line": null,
+    "description": "Fresh non-mocked native proof verifier remains unavailable until an installed concrete iPhone simulator exists.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-01T00:46:07.479Z",
     "resolved_at": null
   }
 ]
