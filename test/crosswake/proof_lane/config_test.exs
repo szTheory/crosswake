@@ -96,6 +96,26 @@ defmodule Crosswake.ProofLane.ConfigTest do
     end)
   end
 
+  test "rejects TypeScript-unsafe endpoint characters without echoing them" do
+    for {key, unsafe_value} <- [
+          {:sync_path, "/study/\"sync"},
+          {:sync_path, "/study\\\\sync"},
+          {:evidence_path, "/_proof/\"evidence"},
+          {:evidence_path, "/_proof\\\\evidence"}
+        ] do
+      assert {:error, %{rule_id: "PL-CONFIG-VALUE", key: returned_key} = error} =
+               Config.normalize(Map.put(@valid, key, unsafe_value))
+
+      assert returned_key == Atom.to_string(key)
+
+      assert Exception.message(error) ==
+               "PL-CONFIG-VALUE: #{returned_key}; use the documented local proof-lane shape"
+
+      refute Exception.message(error) =~ unsafe_value
+      refute inspect(error) =~ unsafe_value
+    end
+  end
+
   test "accepts only declarative safe mutation field segments" do
     assert {:ok, _} =
              Config.normalize(Map.put(@valid, :mutation_id_path, "record.client_mutation_id"))

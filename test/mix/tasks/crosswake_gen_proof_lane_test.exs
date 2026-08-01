@@ -128,16 +128,67 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
   test "direct unsafe configs fail closed before generator actions inspect destinations" do
     with_root(fn root, config ->
-      unsafe_config = %{config | ios_shell_root: "/tmp/not-the-native-ios-root"}
-      before = snapshot(root)
+      for {key, unsafe_value} <- [
+            {:ios_shell_root, "/tmp/not-the-native-ios-root"},
+            {:sync_path, "/study/\"sync"},
+            {:sync_path, "/study\\\\sync"},
+            {:evidence_path, "/_proof/\"evidence"},
+            {:evidence_path, "/_proof\\\\evidence"}
+          ] do
+        unsafe_config = Map.put(config, key, unsafe_value)
+        before = snapshot(root)
 
-      for action <- [&Generator.generate/1, &Generator.check/1, &Generator.diff/1] do
-        assert_raise Config.Error,
-                     "PL-CONFIG-VALUE: ios_shell_root; use the documented local proof-lane shape",
-                     fn -> action.(unsafe_config) end
+        for action <- [&Generator.generate/1, &Generator.check/1, &Generator.diff/1] do
+          assert_raise Config.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn -> action.(unsafe_config) end
+        end
+
+        assert before == snapshot(root)
       end
+    end)
+  end
 
-      assert before == snapshot(root)
+  test "application and selected config reject unsafe endpoints before output-root creation" do
+    with_root(fn root, config ->
+      previous = Application.get_env(:crosswake, :proof_lane)
+
+      try do
+        for {key, unsafe_value} <- [
+              {:sync_path, "/study/\"sync"},
+              {:evidence_path, "/_proof\\\\evidence"}
+            ] do
+          unsafe_config = config |> Map.from_struct() |> Map.put(key, unsafe_value)
+          before = snapshot(root)
+          Application.put_env(:crosswake, :proof_lane, unsafe_config)
+
+          assert_raise Mix.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn -> Mix.Task.rerun("crosswake.gen.proof_lane", ["ios"]) end
+
+          assert before == snapshot(root)
+
+          config_path = Path.join(root, "proof_lane_#{key}.exs")
+          File.write!(config_path, selected_config(unsafe_config))
+          before = snapshot(root)
+
+          assert_raise Mix.Error,
+                       "PL-CONFIG-VALUE: #{key}; use the documented local proof-lane shape",
+                       fn ->
+                         Mix.Task.rerun("crosswake.gen.proof_lane", [
+                           "ios",
+                           "--config",
+                           config_path
+                         ])
+                       end
+
+          assert before == snapshot(root)
+        end
+      after
+        if previous,
+          do: Application.put_env(:crosswake, :proof_lane, previous),
+          else: Application.delete_env(:crosswake, :proof_lane)
+      end
     end)
   end
 
@@ -297,4 +348,14 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   end
 
   defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
+
+  defp selected_config(config) do
+    inspect(config,
+      limit: :infinity,
+      printable_limit: :infinity,
+      charlists: :as_lists,
+      structs: false
+    )
+    |> then(&"import Config\nconfig :crosswake, :proof_lane, #{&1}\n")
+  end
 end
