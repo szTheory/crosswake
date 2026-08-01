@@ -33,8 +33,8 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
-  shell, offline-island, and physical-device proof scaffolding.
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+  shell, offline-island, and physical-device proof scaffolding (completed 2026-08-01).
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
   redaction, backend reauthorization, auth continuity, and server-side disablement.
@@ -147,10 +147,12 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 13/14 plans executed
-**Verification:** Gaps Found (20/23 must-haves verified); browser and generated native execution
-pass, but post-create write failures can retain partial destinations and manifest collisions can
-leak staging files. PROOF-01 remains blocked pending gap closure.
+**Plans:** 14/14 plans executed
+**Verification:** Complete (23/23 must-haves verified) — a fresh final-tree gate separately passed
+post-create read/write/fsync cleanup, focused generator/config/template/iOS/evidence checks, the
+real Phoenix-host browser corpus, generated shared XCTest/XCUITest execution, shell syntax, and
+formatting. PROOF-01 through PROOF-04 are complete; TODO-002 remains open and adopter-instance
+completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
@@ -189,7 +191,7 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 159-14-PLAN.md — Run the complete fresh final-tree gate and reconcile evidence-backed status.
+- [x] 159-14-PLAN.md — Run the complete fresh final-tree gate and reconcile evidence-backed status.
 
 **Cross-cutting constraints:**
 

@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 159
-current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-13-PLAN.md
-last_updated: "2026-08-01T02:06:57.522Z"
+current_phase: 160
+current_phase_name: scoped-replay-and-auth-safety
+status: ready
+stopped_at: Completed 159-14-PLAN.md
+last_updated: "2026-08-01T02:10:51Z"
 last_activity: 2026-08-01
 last_activity_desc: Phase 159 Plan 13 cleanup repair completed
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 34
-  completed_plans: 33
-  percent: 20
-current_plan: 14
+  completed_plans: 34
+  percent: 40
+current_plan: 0
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 13 of 14 complete
-Status: Plan 159-14 ready to execute the fresh final-tree gate
-Last activity: 2026-08-01 — Plan 159-13 cleanup repair completed
+Phase: 160 (scoped-replay-and-auth-safety) — READY
+Plan: Phase 159 complete (14 of 14 plans)
+Status: Fresh final-tree proof gate passed; ready to discuss Phase 160 when bounded adopter inputs are available
+Last activity: 2026-08-01 — Plan 159-14 complete gate reconciled PROOF-01 through PROOF-04
 
 ## Active Objective
 
@@ -44,7 +44,7 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plan 159-14 to rerun the complete fresh final-tree gate. TODO-002 remains the bounded
+Begin Phase 160 discussion when its bounded replay/auth inputs are available. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
@@ -156,8 +156,8 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-08-01T02:06:57.515Z
-**Stopped at:** Completed 159-13-PLAN.md
-**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-14-PLAN.md
+**Stopped at:** Completed 159-14-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 

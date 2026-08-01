@@ -1,19 +1,19 @@
 ---
 phase: 159-host-reusable-proof-lane
-verified: 2026-08-01T01:35:52Z
-status: gaps_found
-score: 20/23 must-haves verified
+verified: 2026-08-01T02:10:51Z
+status: passed
+score: 23/23 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-next_action: "Fix the generator helper's post-create cleanup and manifest-collision staging cleanup, then rerun Phase 159 verification."
-next_command: "/gsd-plan-phase 159 --gaps"
+next_action: "Begin Phase 160 discussion when its bounded replay/auth inputs are ready."
+next_command: "/gsd-discuss-phase 160"
 re_verification:
   previous_status: passed
   previous_score: 23/23
-  gaps_closed: []
-  gaps_remaining:
-    - "Generation can retain a partial destination file after a write or fsync failure."
-    - "A manifest publish collision retains a .staging-* file while reporting reuse."
+  gaps_closed:
+    - "Post-create read, write, and fsync failures remove only their newly created destination while preserving the sanitized write result."
+    - "Manifest publication collisions remove helper-owned staging; cleanup failure remains non-passing."
+  gaps_remaining: []
   regressions:
     - "The previous final-tree proof gate did not exercise post-create write/fsync failure cleanup."
     - "The previous final-tree proof gate did not assert staging-file removal on manifest collision."
@@ -127,3 +127,23 @@ The remediation is bounded: clean up a newly created final file on every post-cr
 
 _Verified: 2026-08-01T01:35:52Z_
 _Verifier: the agent (gsd-verifier)_
+
+---
+
+## Fresh Complete Re-verification — Passed
+
+**Verified:** 2026-08-01T02:10:51Z
+**Tree discipline:** The protected `.planning/config.json` and `COVERAGE.md` SHA-256 values were identical before and after the complete gate. The pre-existing config modification was neither staged nor changed.
+
+The Phase 159 cleanup repair was verified from one unchanged final tree. Before the combined suite, the real compiled-helper ExUnit selectors `post_create_fault:read`, `post_create_fault:write`, and `post_create_fault:fsync` each passed. Every selected branch preserves the original sanitized `PL-GENERATE-WRITE` result, removes its newly created destination, and allows a subsequent byte-identical full-output rerun.
+
+The focused generator/config/template/iOS/evidence suite then passed, including manifest-collision staging removal, cleanup-failure non-reuse, interruption cleanup, no retained partial/staging artifacts, and byte-identical concurrent-winner controls. The real Phoenix-host command passed its typecheck and all five Playwright tests with the existing `webServer` as the sole Phoenix lifecycle owner. Shell syntax passed. The generated shared scheme completed build-for-testing and test-without-building for both XCTest and XCUITest bundles with the closed `PL-IOS-TEST-EXECUTION` passed outcome. Formatting passed.
+
+| Requirement | Fresh final-tree result | Status |
+| --- | --- | --- |
+| PROOF-01 | Named post-create cleanup selectors plus focused collision/interruption/concurrency controls passed. | ✓ SATISFIED |
+| PROOF-02 | Focused closed-config and template contract tests passed. | ✓ SATISFIED |
+| PROOF-03 | Real Phoenix browser corpus and generated shared XCTest/XCUITest scheme passed. | ✓ SATISFIED |
+| PROOF-04 | Focused privacy-safe evidence checks and final-byte controls passed. | ✓ SATISFIED |
+
+The completed proof remains bounded: no physical-device support, backend replay/auth authority, pronunciation-pack implementation, Android work, generic sync/storage, external API capability, or new UI surface is claimed. TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
