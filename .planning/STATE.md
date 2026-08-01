@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-08-PLAN.md
-last_updated: "2026-08-01T00:28:45.074Z"
+stopped_at: Completed 159-10-PLAN.md
+last_updated: "2026-08-01T00:33:00.851Z"
 last_activity: 2026-07-31
 last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 32
-  completed_plans: 28
+  completed_plans: 29
   percent: 20
 current_plan: null
 ---
@@ -23,7 +23,7 @@ current_plan: null
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 2 of 12
+Plan: 3 of 12
 Status: Ready to execute
 Last activity: 2026-07-31 — Phase 159 execution started
 
@@ -122,6 +122,8 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Evidence promotion uses OS no-replace directory primitives and preserves concurrent destination winners.
 - [Phase ?]: Generator filesystem authority is confined to GeneratorFS using root-relative paths only.
 - [Phase ?]: Unsafe topology and native-helper failures fail closed with stable relative-path rules.
+- [Phase ?]: The existing Playwright webServer remains the sole owner of Phoenix test-database setup and server lifecycle.
+- [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 
 ## Deferred Items
 
@@ -150,8 +152,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T00:28:45.067Z
-**Stopped at:** Completed 159-08-PLAN.md
+**Last session:** 2026-08-01T00:33:00.842Z
+**Stopped at:** Completed 159-10-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -186,3 +188,4 @@ this milestone reset.
 | Phase 159 P06 | 14m | 3 tasks | 10 files |
 | Phase 159 P07 | 13m | 2 tasks | 5 files |
 | Phase 159 P08 | 22m | 2 tasks | 4 files |
+| Phase 159 P10 | 14m | 2 tasks | 7 files |
