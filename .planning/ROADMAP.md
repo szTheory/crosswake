@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 12/12 plans executed
+**Plans:** 12/14 plans executed; 2 gap-closure plans ready
 **Verification:** Gaps Found (20/23 must-haves verified); browser and generated native execution
 pass, but post-create write failures can retain partial destinations and manifest collisions can
 leak staging files. PROOF-01 remains blocked pending gap closure.
@@ -182,6 +182,14 @@ Plans:
 **Wave 6** *(blocked on all prior gap plans)*
 
 - [x] 159-12-PLAN.md — Reconcile Phase 159 only from a fresh complete automated proof gate.
+
+**Wave 7** *(gap closure; blocked on Wave 6 completion)*
+
+- [ ] 159-13-PLAN.md — Repair post-create and publication-collision cleanup with deterministic regressions.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 159-14-PLAN.md — Run the complete fresh final-tree gate and reconcile evidence-backed status.
 
 **Cross-cutting constraints:**
 

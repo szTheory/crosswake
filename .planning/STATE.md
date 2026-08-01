@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Phase 159 verification found blocking generator cleanup gaps
-last_updated: "2026-08-01T01:35:52Z"
+status: ready_to_execute
+stopped_at: Phase 159 gap-closure plans 13-14 verified and ready to execute
+last_updated: "2026-08-01T01:54:44Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 independent verification found blocking generator cleanup gaps
+last_activity_desc: Phase 159 gap-closure plans 13-14 created and plan-checked
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 32
+  total_plans: 34
   completed_plans: 32
   percent: 40
-current_plan: null
+current_plan: 13
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTED, GAPS FOUND
-Plan: 12 of 12 complete
-Status: Verification gaps found (20/23 must-haves verified)
-Last activity: 2026-08-01 — Independent verification reproduced two generator cleanup gaps
+Phase: 159 (host-reusable-proof-lane) — GAP CLOSURE READY TO EXECUTE
+Plan: 12 of 14 complete
+Status: Plans 159-13 and 159-14 verified and ready to execute
+Last activity: 2026-08-01 — Gap-closure plans created and plan-checked
 
 ## Active Objective
 
@@ -44,7 +44,7 @@ framework launch.
 
 ## Next Action
 
-Plan and execute Phase 159 gap closure for post-create failure cleanup and manifest-collision
+Execute Phase 159 Plans 159-13 and 159-14 for post-create failure cleanup and manifest-collision
 staging cleanup, then rerun the complete final-tree gate. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
@@ -158,8 +158,8 @@ this milestone reset.
 ## Session
 
 **Last session:** 2026-08-01T01:35:52Z
-**Stopped at:** Phase 159 verification found blocking generator cleanup gaps
-**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-VERIFICATION.md
+**Stopped at:** Phase 159 gap-closure plans 13-14 verified and ready to execute
+**Resume file:** .planning/phases/159-host-reusable-proof-lane/159-13-PLAN.md
 
 ## Performance Metrics
 
