@@ -148,7 +148,7 @@ defmodule Crosswake.ProofLane.Config do
         "#",
         "@",
         "\"",
-        "\\\\",
+        "\\",
         "\0",
         "\r",
         "\n"
