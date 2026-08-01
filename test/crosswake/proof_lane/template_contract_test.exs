@@ -21,11 +21,13 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     }
 
     rendered =
-      EEx.eval_file(Path.join(@root, "priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex"),
+      EEx.eval_file(
+        Path.join(@root, "priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex"),
         assigns: [config: config, template_version: 1]
       )
 
-    assert rendered == source("examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts")
+    assert rendered ==
+             source("examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts")
   end
 
   test "generated browser adapter retains the closed offline-island semantic sequence" do
@@ -97,7 +99,10 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     assert project =~ "path = CrosswakeProofLane.app"
     assert project =~ "explicitFileType = wrapper.application"
     assert project =~ "ENABLE_TESTABILITY = YES"
-    assert project =~ "TEST_HOST = \"$(BUILT_PRODUCTS_DIR)/CrosswakeProofLane.app/CrosswakeProofLane\""
+
+    assert project =~
+             "TEST_HOST = \"$(BUILT_PRODUCTS_DIR)/CrosswakeProofLane.app/CrosswakeProofLane\""
+
     assert project =~ "BUNDLE_LOADER = \"$(TEST_HOST)\""
   end
 

@@ -15,7 +15,10 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
     %{root: root, bin: bin, project: project}
   end
 
-  test "proof lane reports closed unavailable, blocked, and passed outcomes", %{bin: bin, project: project} do
+  test "proof lane reports closed unavailable, blocked, and passed outcomes", %{
+    bin: bin,
+    project: project
+  } do
     for {mode, expected_outcome, expected_status} <- [
           {"list-fail", "unavailable", 3},
           {"missing-target", "blocked", 2},
@@ -36,8 +39,10 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
         )
 
       assert status == expected_status
+
       assert {:ok, %{"outcome" => ^expected_outcome, "rule_id" => rule_id, "scope" => scope}} =
                Jason.decode(String.trim(output))
+
       assert String.starts_with?(rule_id, "PL-IOS-")
       assert scope in ["generated-target-graph", "generated-proof-targets"]
     end
@@ -55,7 +60,13 @@ defmodule Crosswake.ProofLane.IosVerifierTest do
       )
 
     assert status == 3
-    assert {:ok, %{"outcome" => "unavailable", "rule_id" => "PL-IOS-XCODEBUILD", "scope" => "generated-proof-targets"}} =
+
+    assert {:ok,
+            %{
+              "outcome" => "unavailable",
+              "rule_id" => "PL-IOS-XCODEBUILD",
+              "scope" => "generated-proof-targets"
+            }} =
              Jason.decode(String.trim(output))
   end
 
