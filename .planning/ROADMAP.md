@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 20/20 plans executed
+**Plans:** 21 plans (20 executed, 1 planned gap closure)
 **Verification:** Gaps found (22/23 must-haves verified) — independent current-tree review and
 verification found that the generated browser spec template is inert while the passing Phoenix
 command exercises a hand-maintained example-host fixture. PROOF-01 and PROOF-03 remain blocked;
@@ -211,6 +211,10 @@ Plans:
 **Wave 12** *(blocked on both Wave 11 repairs)*
 
 - [x] 159-20-PLAN.md — Run one fresh same-tree gate and reconcile both current verification gaps without overclaiming advisory evidence.
+
+**Wave 13** *(gap closure; blocked on Wave 12 completion)*
+
+- [ ] 159-21-PLAN.md — Execute the generated Playwright spec through a fail-closed host adapter and prove isolated rendered output cannot be masked by the hand-maintained fixture.
 
 **Cross-cutting constraints:**
 

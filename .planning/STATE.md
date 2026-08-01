@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: gaps_found
-stopped_at: Independent verification after 159-20 found an inert generated browser spec template
-last_updated: "2026-08-01T23:18:30Z"
+status: ready_to_execute
+stopped_at: Phase 159 gap-closure Plan 159-21 ready to execute
+last_updated: "2026-08-01T23:44:20Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 verification found an inert generated browser spec template
+last_activity_desc: Planned executable generated-browser-spec gap closure as 159-21
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 40
+  total_plans: 41
   completed_plans: 40
   percent: 40
-current_plan: 20
+current_plan: 21
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 20 of 20
-Status: 22/23 must-haves verified; generated browser spec template is not executable
-Last activity: 2026-08-01 — independent review and verification reproduced the template gap
+Phase: 159 (host-reusable-proof-lane) — READY TO EXECUTE GAP CLOSURE
+Plan: 21 of 21 (planned)
+Status: Plan 159-21 will make the generated browser spec executable and prove rendered output
+Last activity: 2026-08-01 — gap-closure plan passed independent plan verification
 
 ## Active Objective
 
@@ -44,10 +44,11 @@ framework launch.
 
 ## Next Action
 
-Plan a bounded Phase 159 gap closure that makes the generated browser spec itself executable and
-proves the rendered output, then rerun Phase 159 verification. Do not start Phase 160 while this
-gap remains. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
-remains `unknown_blocking`.
+Execute Plan 159-21, then rerun Phase 159 verification. The bounded repair makes the generated
+browser spec itself executable, introduces a fail-closed host-adapter seam, advances template
+provenance to version 2 without overwriting host bytes, and proves isolated rendered output through
+the existing Phoenix Playwright lifecycle. Do not start Phase 160 while this gap remains. TODO-002
+remains the bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
 
