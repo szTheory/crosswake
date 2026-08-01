@@ -6,9 +6,9 @@ current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: discussing
 stopped_at: Completed 159-12-PLAN.md
-last_updated: "2026-08-01T01:22:00Z"
-last_activity: 2026-07-31
-last_activity_desc: Phase 159 execution started
+last_updated: "2026-08-01T01:25:20.597Z"
+last_activity: 2026-08-01
+last_activity_desc: Phase 159 final-tree proof gate passed
 progress:
   total_phases: 5
   completed_phases: 2
@@ -125,6 +125,7 @@ promote adopter-instance or physical-device support.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
 - [Phase 159]: Fresh final-tree evidence closes descriptor-safe generation, live Phoenix browser proof, executed shared-scheme XCTest/XCUITest, opaque mutation IDs, and fail-closed evidence hooks without promoting physical-device support.
+- [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
 
 ## Deferred Items
 
@@ -153,7 +154,7 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T01:22:00Z
+**Last session:** 2026-08-01T01:25:20.588Z
 **Stopped at:** Completed 159-12-PLAN.md
 **Resume file:** None
 
@@ -192,3 +193,4 @@ this milestone reset.
 | Phase 159 P10 | 14m | 2 tasks | 7 files |
 | Phase 159 P11 | 2m | 1 tasks | 2 files |
 | Phase 159 P09 | ongoing continuation | 2 tasks | 10 files |
+| Phase 159 P12 | 15m | 2 tasks | 7 files |
