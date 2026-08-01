@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 15/17 plans executed
+**Plans:** 16/17 plans executed
 **Verification:** Gaps Found (21/23 must-haves verified) — independent review and verification
 reproduced two fail-closed contract defects after the fresh final-tree gate: an unwired generated
 iOS adapter can be reported as passed, and accepted endpoint values can render invalid TypeScript.
@@ -196,7 +196,7 @@ Plans:
 **Wave 9** *(gap closure; independently blocked on the executed Wave 8 plan)*
 
 - [x] 159-15-PLAN.md — Require real host-adapter evidence before generated iOS proof can pass.
-- [ ] 159-16-PLAN.md — Reject TypeScript-unsafe endpoint configuration before any generator write.
+- [x] 159-16-PLAN.md — Reject TypeScript-unsafe endpoint configuration before any generator write.
 
 **Wave 10** *(blocked on both Wave 9 repairs)*
 

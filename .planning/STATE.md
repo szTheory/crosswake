@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-15-PLAN.md
-last_updated: "2026-08-01T22:12:24.166Z"
+stopped_at: Completed 159-16-PLAN.md
+last_updated: "2026-08-01T22:18:33.297Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 execution started
+last_activity_desc: completed deterministic host-adapter evidence gate
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 37
-  completed_plans: 35
-  percent: 40
+  completed_plans: 36
+  percent: 20
 current_plan: 15
 ---
 
@@ -23,7 +23,7 @@ current_plan: 15
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 15 of 17 executed; Plan 159-16 is ready, then Plan 159-17 reconciles both repairs
+Plan: 16 of 17 executed; Plan 159-16 is ready, then Plan 159-17 reconciles both repairs
 Status: Native proof false-pass repair completed; endpoint safety repair remains
 Last activity: 2026-08-01 — completed deterministic host-adapter evidence gate
 
@@ -132,6 +132,8 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.
 - [Phase ?]: Generated iOS proof passes only after exact host-adapter XCTest and adapter-derived lifecycle/accessibility XCUITest markers.
 - [Phase ?]: Nil host adapters remain deterministic blocked outcomes; unavailable and blocked are never proof success.
+- [Phase ?]: Proof-lane endpoint paths reject quote and backslash characters at the canonical normalizer before rendering or filesystem activity.
+- [Phase ?]: Direct Config structs are normalized before generator root derivation so direct, application, and selected config seams fail identically.
 
 ## Deferred Items
 
@@ -160,8 +162,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T22:12:24.159Z
-**Stopped at:** Completed 159-15-PLAN.md
+**Last session:** 2026-08-01T22:18:33.290Z
+**Stopped at:** Completed 159-16-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -202,3 +204,4 @@ this milestone reset.
 | Phase 159 P12 | 15m | 2 tasks | 7 files |
 | Phase 159 P13 | 12m | 2 tasks | 3 files |
 | Phase 159-host-reusable-proof-lane P15 | 10m | 1 tasks | 5 files |
+| Phase 159 P16 | 6 min | 1 tasks | 4 files |
