@@ -48,6 +48,24 @@ defmodule Crosswake.ProofLane.TemplateContractTest do
     refute template =~ "EvidenceManifest"
   end
 
+  test "Phoenix-host proof command requires, typechecks, and selects the generated browser proof" do
+    spec_path = "examples/phoenix_host/e2e/crosswake_proof_lane/proof_lane.spec.ts"
+    support_path = "examples/phoenix_host/e2e/crosswake_proof_lane/support/proof_lane.ts"
+    spec_relative = "e2e/crosswake_proof_lane/proof_lane.spec.ts"
+    support_relative = "e2e/crosswake_proof_lane/support/proof_lane.ts"
+    package = source("examples/phoenix_host/package.json")
+    typecheck = source("examples/phoenix_host/tsconfig.offline_route_proof.json")
+    wrapper = source("script/verify_phoenix_host_proof_lane.sh")
+
+    assert File.exists?(Path.join(@root, spec_path))
+    assert File.exists?(Path.join(@root, support_path))
+    assert package =~ spec_relative
+    assert typecheck =~ spec_relative
+    assert typecheck =~ support_relative
+    assert wrapper =~ spec_relative
+    assert wrapper =~ support_relative
+  end
+
   test "proof project declares concrete separate XCTest and XCUITest source membership" do
     project =
       source(

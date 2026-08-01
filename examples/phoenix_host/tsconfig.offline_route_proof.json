@@ -9,6 +9,8 @@
   },
   "files": [
     "e2e/support/offline_route_proof.typecheck.d.ts",
-    "e2e/support/offline_route_proof.ts"
+    "e2e/support/offline_route_proof.ts",
+    "e2e/crosswake_proof_lane/support/proof_lane.ts",
+    "e2e/crosswake_proof_lane/proof_lane.spec.ts"
   ]
 }
