@@ -95,6 +95,11 @@ static int test_post_create_fault(const char *expected) {
   return fault && strcmp(fault, expected) == 0;
 }
 
+static int test_collision_cleanup_failure(void) {
+  const char *fault = getenv("CROSSWAKE_PROOF_LANE_FS_TEST_COLLISION_CLEANUP_FAILURE");
+  return fault && strcmp(fault, "1") == 0;
+}
+
 static int write_file(const char *root_path, const char *relative, const char *input_path) {
   char buffer[8192];
   int root, parent, fresh, file, input, result;
@@ -185,7 +190,14 @@ static int publish_file(const char *root_path, const char *staging, const char *
     close(root); return UNSAFE;
   }
   if (linkat(stage_parent, leaf(staging), destination_parent, leaf(destination), 0) != 0) {
-    int code = errno == EEXIST ? EXISTS : (errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE);
+    int code;
+    if (errno == EEXIST) {
+      code = test_collision_cleanup_failure() || unlinkat(stage_parent, leaf(staging), 0) != 0
+                 ? FAILURE
+                 : EXISTS;
+    } else {
+      code = errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE;
+    }
     close(stage_parent); close(destination_parent); close(root); return code;
   }
   if (unlinkat(stage_parent, leaf(staging), 0) != 0) {

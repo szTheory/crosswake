@@ -103,6 +103,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       Process.put(:crosswake_proof_lane_interrupt_before_manifest, true)
       assert {:error, {"PL-GENERATE-INTERRUPTED", "manifest"}} = Generator.generate(config)
       refute File.exists?(Path.join(root, ".crosswake/proof_lane.json"))
+      assert [] == staging_paths(root)
       Process.delete(:crosswake_proof_lane_interrupt_before_manifest)
     end)
   end
@@ -120,6 +121,7 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
       assert Enum.all?(outcomes, &match?({:ok, _}, &1))
       assert File.regular?(Path.join(root, ".crosswake/proof_lane.json"))
+      assert [] == staging_paths(root)
       assert :ok = Generator.check(config)
     end)
   end
@@ -293,4 +295,6 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       if previous, do: System.put_env(key, previous), else: System.delete_env(key)
     end
   end
+
+  defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
 end
