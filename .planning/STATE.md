@@ -4,16 +4,16 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: ready_to_execute
-stopped_at: Phase 159 gap-closure plans verified and ready to execute
-last_updated: "2026-08-01T02:48:28Z"
+status: executing
+stopped_at: Completed 159-15-PLAN.md
+last_updated: "2026-08-01T22:12:24.166Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 independent review and verification reproduced two blocking gaps
+last_activity_desc: Phase 159 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 37
-  completed_plans: 34
+  completed_plans: 35
   percent: 40
 current_plan: 15
 ---
@@ -22,10 +22,10 @@ current_plan: 15
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — READY TO EXECUTE GAP CLOSURE
-Plan: 14 of 17 executed; Plans 159-15 and 159-16 are ready in parallel
-Status: Three gap-closure plans verified; deterministic repairs precede fresh final-tree reconciliation
-Last activity: 2026-07-31 — planned and verified false-passing iOS proof and unsafe endpoint rendering repairs
+Phase: 159 (host-reusable-proof-lane) — EXECUTING
+Plan: 15 of 17 executed; Plan 159-16 is ready, then Plan 159-17 reconciles both repairs
+Status: Native proof false-pass repair completed; endpoint safety repair remains
+Last activity: 2026-08-01 — completed deterministic host-adapter evidence gate
 
 ## Active Objective
 
@@ -44,9 +44,9 @@ framework launch.
 
 ## Next Action
 
-Execute Phase 159 Plans 159-15 and 159-16 in parallel, then run Plan 159-17's fresh final-tree
-reconciliation. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
-remains `unknown_blocking`.
+Execute Phase 159 Plan 159-16, then run Plan 159-17's fresh final-tree reconciliation. TODO-002
+remains the bounded adopter-input gate and adopter-instance completeness remains
+`unknown_blocking`.
 
 ## Blockers
 
@@ -61,7 +61,6 @@ remains `unknown_blocking`.
   mutation actions, staleness, auth sensitivity, expected pronunciation-pack sizes/codecs, and
   fallbacks before adopter-instance promotion.
 
-- Generated iOS proof can report `passed` while the host-adapter factory remains unwired.
 - Accepted quote or backslash endpoint input can render invalid generated TypeScript.
 
 ## Decisions
@@ -131,6 +130,8 @@ remains `unknown_blocking`.
 - [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
 - [Phase ?]: Failed exclusive proof writes remove only their newly created destination before returning the original write failure.
 - [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.
+- [Phase ?]: Generated iOS proof passes only after exact host-adapter XCTest and adapter-derived lifecycle/accessibility XCUITest markers.
+- [Phase ?]: Nil host adapters remain deterministic blocked outcomes; unavailable and blocked are never proof success.
 
 ## Deferred Items
 
@@ -159,8 +160,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-01T02:06:57.515Z
-**Stopped at:** Completed 159-14-PLAN.md
+**Last session:** 2026-08-01T22:12:24.159Z
+**Stopped at:** Completed 159-15-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -200,3 +201,4 @@ this milestone reset.
 | Phase 159 P09 | ongoing continuation | 2 tasks | 10 files |
 | Phase 159 P12 | 15m | 2 tasks | 7 files |
 | Phase 159 P13 | 12m | 2 tasks | 3 files |
+| Phase 159-host-reusable-proof-lane P15 | 10m | 1 tasks | 5 files |
