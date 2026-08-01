@@ -1,6 +1,6 @@
 ---
 phase: 159-host-reusable-proof-lane
-reviewed: 2026-08-01T02:17:11Z
+reviewed: 2026-08-01T22:31:08Z
 depth: standard
 files_reviewed: 29
 files_reviewed_list:
@@ -34,8 +34,8 @@ files_reviewed_list:
   - test/crosswake/proof_lane/template_contract_test.exs
   - test/mix/tasks/crosswake_gen_proof_lane_test.exs
 findings:
-  critical: 2
-  warning: 0
+  critical: 1
+  warning: 1
   info: 0
   total: 2
 status: issues_found
@@ -43,33 +43,49 @@ status: issues_found
 
 # Phase 159: Code Review Report
 
-**Reviewed:** 2026-08-01T02:17:11Z
+**Reviewed:** 2026-08-01T22:31:08Z
 **Depth:** standard
 **Files Reviewed:** 29
 **Status:** issues_found
 
 ## Summary
 
-The generator and evidence code have strong no-clobber and containment intent, and the focused ExUnit suite passes. However, the iOS verifier promotes a test run of the unconnected placeholder app as a passed proof, and configuration accepted by the closed normalizer can produce syntactically invalid generated TypeScript. Both defects undermine the lane's fail-closed contract.
+The proof lane has careful missing-only generation, opaque evidence validation, and fail-closed native verification. However, the advertised Phoenix-host proof command does not execute the generated host proof at all, so it can report success based only on repository-specific fixtures. Configuration validation also permits a single backslash through an EEx-to-TypeScript string boundary despite intending to reject TypeScript-unsafe endpoint characters.
 
 ## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Unwired proof lane is promoted as a passing result
+### CR-01: Proof command omits the generated host proof
 
-**File:** `priv/templates/crosswake/proof_lane/ios/ProofLaneDriver.swift.eex:18-21`; `priv/templates/crosswake/proof_lane/ios/CrosswakeProofLaneUITests/ProofLaneUITests.swift.eex:10-17`; `script/verify_generated_ios_shell.sh:164`
-**Issue:** The generated adapter factory always returns `nil`, so the app has no host probe, no auth/replay capability, and remains in the default `.unavailable` state. The UI test explicitly accepts `Unavailable`, and the verification script emits `{"outcome":"passed"}` whenever the XCTest/XCUITest bundles execute. Consequently, a newly generated, completely unintegrated lane passes the command that is supposed to communicate whether the real host crossing worked. This violates the required explicit blocking prerequisite and creates false proof evidence.
-**Fix:** Make a missing or placeholder host adapter a deterministic blocked result. For example, expose a stable `adapterInstalled`/`probeConfigured` condition in the app and require the UI test and verifier to observe a non-placeholder adapter before returning `passed`; otherwise emit a `blocked` outcome with a stable prerequisite rule. Keep the unavailable state only for genuinely unavailable tool/device capabilities, not an unimplemented host integration.
+**File:** `/Users/jon/projects/crosswake/examples/phoenix_host/package.json:8`
+**Issue:** `proof:offline-island` runs `offline_sync.spec.ts` and `browser_online_restore.spec.ts`, but not the generator's `e2e/crosswake_proof_lane/proof_lane.spec.ts`. The latter is the host-owned proof that supplies the real route adapter, checks backend confirmation, drains the outbox, and performs the duplicate replay. The included `browser_online_restore.spec.ts` only invokes the helpers with stubs (`contextLog` and callbacks that flip a boolean), so this command can pass even when the generated/host-specific proof has been deleted, does not compile, or fails all real replay assertions. This produces a false passing proof artifact for the first-adopter route.
 
-### CR-02: Accepted endpoint configuration is emitted into TypeScript without escaping
+**Fix:** Include the generated proof spec in the command and make the typecheck scope cover its support module. For example:
 
-**File:** `lib/crosswake/proof_lane/config.ex:141-144`; `priv/templates/crosswake/proof_lane/e2e/support/proof_lane.ts.eex:63-64`
-**Issue:** `host_local_path?/1` allows double quotes and backslashes. Those values are interpolated directly between TypeScript double quotes. For example, `sync_path: "/proof\""` normalizes successfully, then renders an unterminated `syncPath` string and prevents the generated browser lane from compiling. More complex accepted characters can alter the generated source. This breaks the promised closed configuration boundary and fails after files have been generated.
-**Fix:** Validate endpoint values against a strict path-segment grammar that excludes JavaScript string delimiters/control characters, and render all string values with a real TypeScript/JSON string encoder rather than raw EEx interpolation. Add generation/typecheck coverage for quote and backslash inputs, asserting they are rejected before any output is written.
+```json
+"proof:offline-island": "playwright test e2e/offline_sync.spec.ts e2e/crosswake_proof_lane/proof_lane.spec.ts e2e/crosswake_proof_lane/browser_online_restore.spec.ts"
+```
+
+If the generated spec is deliberately absent until a host installs it, have the command fail closed with a stable `PL-*` prerequisite result rather than silently substituting helper-only tests.
+
+## Warnings
+
+### WR-01: Single backslashes bypass endpoint validation and alter generated TypeScript values
+
+**File:** `/Users/jon/projects/crosswake/lib/crosswake/proof_lane/config.ex:141-155`
+**Issue:** `host_local_path?/1` checks for `"\\\\"`, which is a two-backslash string in Elixir, rather than a single backslash. Consequently `Config.normalize/1` accepts `sync_path: "/study/\\n"` (confirmed directly), and the template writes it into a double-quoted TypeScript literal. TypeScript interprets the escape, so the runtime endpoint differs from the reviewed configuration; other escapes can make the generated source invalid. This violates the stated fail-closed protection for TypeScript-unsafe endpoint values.
+
+**Fix:** Reject every backslash, and add a regression case with exactly one backslash (not two):
+
+```elixir
+not String.contains?(value, ["\\", "\"", "\0", "\r", "\n"])
+```
+
+Also retain the existing generated-render/typecheck test so a future interpolation change cannot reintroduce escape handling.
 
 ---
 
-_Reviewed: 2026-08-01T02:17:11Z_
+_Reviewed: 2026-08-01T22:31:08Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
