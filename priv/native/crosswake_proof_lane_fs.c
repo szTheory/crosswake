@@ -99,7 +99,7 @@ static int write_file(const char *root_path, const char *relative, const char *i
   root = root_fd(root_path);
   if (root < 0) return UNSAFE;
   parent = parent_fd(root, relative, 1);
-  if (parent < 0) { close(root); return UNSAFE; }
+  if (parent < 0) { int code = errno == ENOENT ? MISSING : UNSAFE; close(root); return code; }
   test_hook();
   fresh = parent_fd(root, relative, 0);
   if (fresh < 0 || !same_directory(parent, fresh)) {
@@ -138,7 +138,7 @@ static int read_file(const char *root_path, const char *relative, int emit) {
   root = root_fd(root_path);
   if (root < 0) return UNSAFE;
   parent = parent_fd(root, relative, 0);
-  if (parent < 0) { close(root); return UNSAFE; }
+  if (parent < 0) { int code = errno == ENOENT ? MISSING : UNSAFE; close(root); return code; }
   file = openat(parent, leaf(relative), O_RDONLY | O_NOFOLLOW);
   close(parent); close(root);
   if (file < 0) return errno == ENOENT ? MISSING : UNSAFE;
@@ -150,8 +150,31 @@ static int read_file(const char *root_path, const char *relative, int emit) {
   return count < 0 ? FAILURE : 0;
 }
 
+static int publish_file(const char *root_path, const char *staging, const char *destination) {
+  int root, stage_parent, destination_parent;
+  if (!safe_relative(staging) || !safe_relative(destination)) return UNSAFE;
+  root = root_fd(root_path);
+  if (root < 0) return UNSAFE;
+  stage_parent = parent_fd(root, staging, 0);
+  destination_parent = parent_fd(root, destination, 0);
+  if (stage_parent < 0 || destination_parent < 0) {
+    if (stage_parent >= 0) close(stage_parent);
+    if (destination_parent >= 0) close(destination_parent);
+    close(root); return UNSAFE;
+  }
+  if (linkat(stage_parent, leaf(staging), destination_parent, leaf(destination), 0) != 0) {
+    int code = errno == EEXIST ? EXISTS : (errno == ELOOP || errno == ENOTDIR ? UNSAFE : FAILURE);
+    close(stage_parent); close(destination_parent); close(root); return code;
+  }
+  if (unlinkat(stage_parent, leaf(staging), 0) != 0) {
+    close(stage_parent); close(destination_parent); close(root); return FAILURE;
+  }
+  close(stage_parent); close(destination_parent); close(root); return 0;
+}
+
 int main(int argc, char **argv) {
   if (argc == 5 && strcmp(argv[1], "write") == 0) return write_file(argv[2], argv[3], argv[4]);
+  if (argc == 5 && strcmp(argv[1], "publish") == 0) return publish_file(argv[2], argv[3], argv[4]);
   if (argc != 4) return FAILURE;
   if (strcmp(argv[1], "read") == 0) return read_file(argv[2], argv[3], 1);
   if (strcmp(argv[1], "regular") == 0) return read_file(argv[2], argv[3], 0);

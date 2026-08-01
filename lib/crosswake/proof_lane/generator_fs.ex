@@ -28,7 +28,7 @@ defmodule Crosswake.ProofLane.GeneratorFS do
   def read(root, relative) when is_binary(root) and is_binary(relative) do
     case invoke("read", root, relative, "", []) do
       {:ok, 0, contents} -> {:ok, contents}
-      {:error, 11} -> {:error, :missing}
+      {:ok, 11, _} -> {:error, :missing}
       _ -> {:error, :unsafe}
     end
   end
@@ -41,6 +41,30 @@ defmodule Crosswake.ProofLane.GeneratorFS do
   end
 
   def regular?(_, _), do: false
+
+  @spec status(Path.t(), String.t()) :: :regular | :missing | :unsafe
+  def status(root, relative) when is_binary(root) and is_binary(relative) do
+    case invoke("regular", root, relative, "", []) do
+      {:ok, 0, _} -> :regular
+      {:ok, 11, _} -> :missing
+      _ -> :unsafe
+    end
+  end
+
+  def status(_, _), do: :unsafe
+
+  @spec publish(Path.t(), String.t(), String.t()) :: {:ok, :created | :reused} | {:error, error()}
+  def publish(root, staging, destination)
+      when is_binary(root) and is_binary(staging) and is_binary(destination) do
+    case invoke_publish(root, staging, destination) do
+      {:ok, 0, _} -> {:ok, :created}
+      {:ok, 10, _} -> {:ok, :reused}
+      {:ok, 12, _} -> destination_error(destination)
+      _ -> write_error(destination)
+    end
+  end
+
+  def publish(_, _, destination), do: write_error(destination)
 
   defp invoke(action, root, relative, input, opts) do
     with {:ok, compiler} <- compiler(),
@@ -55,12 +79,28 @@ defmodule Crosswake.ProofLane.GeneratorFS do
         {output, status} =
           System.cmd(executable, args, stderr_to_stdout: true, env: hook_env(opts))
 
-        if status == 0, do: {:ok, status, output}, else: {:error, status}
+        {:ok, status, output}
       rescue
         _ -> {:error, 20}
       after
         File.rm(executable)
         File.rm(input_path)
+      end
+    end
+  end
+
+  defp invoke_publish(root, staging, destination) do
+    with {:ok, compiler} <- compiler(),
+         {:ok, executable} <- build(compiler) do
+      try do
+        {output, status} =
+          System.cmd(executable, ["publish", root, staging, destination], stderr_to_stdout: true)
+
+        {:ok, status, output}
+      rescue
+        _ -> {:error, 20}
+      after
+        File.rm(executable)
       end
     end
   end

@@ -197,10 +197,10 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       assert before == snapshot(root)
       assert {:error, findings} = Generator.check(config)
 
-      assert %{
-               rule_id: "PL-GENERATE-DESTINATION",
-               path: "e2e/crosswake_proof_lane/proof_lane.spec.ts"
-             } in findings
+      assert Enum.any?(findings, fn finding ->
+               finding.rule_id == "PL-GENERATE-DESTINATION" &&
+                 finding.path == "e2e/crosswake_proof_lane/proof_lane.spec.ts"
+             end)
 
       assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :missing} in diff
     end)

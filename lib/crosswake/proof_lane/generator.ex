@@ -1,7 +1,7 @@
 defmodule Crosswake.ProofLane.Generator do
   @moduledoc "Renders a host-owned proof lane with atomic, missing-only writes."
 
-  alias Crosswake.ProofLane.Config
+  alias Crosswake.ProofLane.{Config, GeneratorFS}
 
   @schema_version 1
   @template_version 1
@@ -28,10 +28,9 @@ defmodule Crosswake.ProofLane.Generator do
           | {:error, {String.t(), String.t()}}
   def generate(%Config{} = config) do
     root = host_root!(config)
-    desired = desired(config, root)
+    desired = desired(config)
 
-    with :ok <- validate_destinations(root, desired),
-         {:ok, results} <- ensure_files(desired),
+    with {:ok, results} <- ensure_files(root, desired),
          :ok <- interrupt_before_manifest(),
          {:ok, manifest_result} <- ensure_manifest(root, desired) do
       {:ok, Enum.sort_by(results ++ [manifest_result], & &1.path)}
@@ -41,11 +40,10 @@ defmodule Crosswake.ProofLane.Generator do
   @spec check(Config.t()) :: :ok | {:error, [finding()]}
   def check(%Config{} = config) do
     root = host_root!(config)
-    desired = desired(config, root)
+    desired = desired(config)
 
     findings =
-      validate_destinations_findings(root, desired) ++
-        missing_findings(root, desired) ++ manifest_findings(root, desired)
+      missing_findings(root, desired) ++ manifest_findings(root, desired)
 
     case findings |> Enum.uniq() |> Enum.sort_by(& &1.path) do
       [] -> :ok
@@ -56,13 +54,13 @@ defmodule Crosswake.ProofLane.Generator do
   @spec diff(Config.t()) :: [diff_entry()]
   def diff(%Config{} = config) do
     root = host_root!(config)
-    desired = desired(config, root)
+    desired = desired(config)
 
     desired
-    |> Kernel.++([manifest_desired(root, desired)])
-    |> Enum.map(fn %{path: path, destination: destination, contents: contents} ->
+    |> Kernel.++([manifest_desired(desired)])
+    |> Enum.map(fn %{path: path, relative: relative, contents: contents} ->
       status =
-        case File.read(destination) do
+        case GeneratorFS.read(root, relative) do
           {:ok, ^contents} -> :current
           {:ok, _} -> :different
           _ -> :missing
@@ -73,19 +71,19 @@ defmodule Crosswake.ProofLane.Generator do
     |> Enum.sort_by(& &1.path)
   end
 
-  defp desired(config, root) do
+  defp desired(config) do
     Enum.map(@templates, fn {relative, template} ->
       %{
         path: relative,
-        destination: destination(root, relative),
+        relative: destination_relative(relative),
         contents: render(template, config)
       }
     end)
   end
 
-  defp ensure_files(desired) do
+  defp ensure_files(root, desired) do
     Enum.reduce_while(desired, {:ok, []}, fn entry, {:ok, results} ->
-      case ensure_missing(entry.destination, entry.contents, entry.path) do
+      case ensure_missing(root, entry.relative, entry.contents, entry.path) do
         {:ok, result} -> {:cont, {:ok, [result | results]}}
         {:error, _} = error -> {:halt, error}
       end
@@ -93,65 +91,36 @@ defmodule Crosswake.ProofLane.Generator do
   end
 
   defp ensure_manifest(root, desired) do
-    manifest = manifest_desired(root, desired)
-    path = manifest.destination
+    manifest = manifest_desired(desired)
 
-    case File.read(path) do
-      {:ok, _} -> {:ok, %{path: manifest.path, status: :reused}}
-      {:error, :enoent} -> promote_manifest(path, manifest.contents, manifest.path)
-      {:error, _} -> {:error, {"PL-GENERATE-COLLISION", manifest.path}}
+    case GeneratorFS.read(root, manifest.relative) do
+      {:ok, _} ->
+        {:ok, %{path: manifest.path, status: :reused}}
+
+      {:error, :missing} ->
+        promote_manifest(root, manifest.relative, manifest.contents, manifest.path)
+
+      {:error, :unsafe} ->
+        {:error, {"PL-GENERATE-DESTINATION", manifest.path}}
     end
   end
 
-  defp promote_manifest(path, contents, relative_path) do
-    staging = path <> ".staging-" <> Integer.to_string(System.unique_integer([:positive]))
+  defp promote_manifest(root, relative, contents, relative_path) do
+    staging = relative <> ".staging-" <> Integer.to_string(System.unique_integer([:positive]))
 
-    with :ok <- File.mkdir_p(Path.dirname(path)),
-         {:ok, io} <- File.open(staging, [:write, :exclusive, :binary]),
-         :ok <- IO.binwrite(io, contents),
-         :ok <- File.close(io) do
-      case File.ln(staging, path) do
-        :ok ->
-          File.rm(staging)
-          {:ok, %{path: relative_path, status: :created}}
-
-        {:error, :eexist} ->
-          File.rm(staging)
-          {:ok, %{path: relative_path, status: :reused}}
-
-        {:error, _} ->
-          File.rm(staging)
-          {:error, {"PL-GENERATE-MANIFEST", "manifest"}}
-      end
+    with {:ok, :created} <- GeneratorFS.write(root, staging, contents),
+         {:ok, status} <- GeneratorFS.publish(root, staging, relative) do
+      {:ok, %{path: relative_path, status: status}}
     else
-      {:error, _} ->
-        File.rm(staging)
-        {:error, {"PL-GENERATE-MANIFEST", "manifest"}}
+      {:error, {"PL-GENERATE-DESTINATION", _}} = error -> error
+      _ -> {:error, {"PL-GENERATE-MANIFEST", "manifest"}}
     end
   end
 
-  defp ensure_missing(path, contents, relative_path) do
-    with :ok <- File.mkdir_p(Path.dirname(path)) do
-      case File.open(path, [:write, :exclusive, :binary]) do
-        {:ok, io} ->
-          case IO.binwrite(io, contents) do
-            :ok ->
-              :ok = File.close(io)
-              {:ok, %{path: relative_path, status: :created}}
-
-            {:error, _} ->
-              File.close(io)
-              {:error, {"PL-GENERATE-WRITE", relative_path}}
-          end
-
-        {:error, :eexist} ->
-          {:ok, %{path: relative_path, status: :reused}}
-
-        {:error, _} ->
-          {:error, {"PL-GENERATE-WRITE", relative_path}}
-      end
-    else
-      {:error, _} -> {:error, {"PL-GENERATE-WRITE", relative_path}}
+  defp ensure_missing(root, relative, contents, relative_path) do
+    case GeneratorFS.write(root, relative, contents) do
+      {:ok, status} -> {:ok, %{path: relative_path, status: status}}
+      {:error, _} = error -> error
     end
   end
 
@@ -163,37 +132,20 @@ defmodule Crosswake.ProofLane.Generator do
     end
   end
 
-  defp validate_destinations(root, desired) do
-    if validate_destinations_findings(root, desired) == [],
-      do: :ok,
-      else: {:error, {"PL-GENERATE-DESTINATION", "destination"}}
-  end
-
-  defp validate_destinations_findings(root, desired) do
-    Enum.flat_map(desired ++ [manifest_desired(root, desired)], fn %{
-                                                                     path: path,
-                                                                     destination: destination
-                                                                   } ->
-      if within?(root, destination) do
-        []
-      else
-        [finding("PL-GENERATE-DESTINATION", path, "use a contained iOS shell root")]
+  defp missing_findings(root, desired) do
+    Enum.flat_map(desired, fn %{path: path, relative: relative} ->
+      case GeneratorFS.status(root, relative) do
+        :regular -> []
+        :missing -> [finding("PL-GENERATE-MISSING", path, "run mix crosswake.gen.proof_lane ios")]
+        :unsafe -> [finding("PL-GENERATE-DESTINATION", path, "use a contained iOS shell root")]
       end
     end)
   end
 
-  defp missing_findings(_root, desired) do
-    Enum.flat_map(desired, fn %{path: path, destination: destination} ->
-      if File.regular?(destination),
-        do: [],
-        else: [finding("PL-GENERATE-MISSING", path, "run mix crosswake.gen.proof_lane ios")]
-    end)
-  end
-
   defp manifest_findings(root, desired) do
-    manifest = manifest_desired(root, desired)
+    manifest = manifest_desired(desired)
 
-    case File.read(manifest.destination) do
+    case GeneratorFS.read(root, manifest.relative) do
       {:ok, contents} when contents == manifest.contents ->
         []
 
@@ -206,15 +158,18 @@ defmodule Crosswake.ProofLane.Generator do
           )
         ]
 
-      _ ->
+      {:error, :missing} ->
         [finding("PL-GENERATE-MISSING", manifest.path, "run mix crosswake.gen.proof_lane ios")]
+
+      _ ->
+        [finding("PL-GENERATE-DESTINATION", manifest.path, "use a contained iOS shell root")]
     end
   end
 
-  defp manifest_desired(root, desired) do
+  defp manifest_desired(desired) do
     %{
       path: ".crosswake/proof_lane.json",
-      destination: destination(root, ".crosswake/proof_lane.json"),
+      relative: ".crosswake/proof_lane.json",
       contents:
         Jason.encode!(%{
           "schema_version" => @schema_version,
@@ -235,18 +190,12 @@ defmodule Crosswake.ProofLane.Generator do
     end
   end
 
-  defp destination(root, relative) do
+  defp destination_relative(relative) do
     if String.starts_with?(relative, "CrosswakeProofLane") do
-      Path.join([root, "native", "ios", relative])
+      Path.join(["native", "ios", relative])
     else
-      Path.join(root, relative)
+      relative
     end
-  end
-
-  defp within?(root, path) do
-    expanded_root = Path.expand(root)
-    expanded_path = Path.expand(path)
-    expanded_path == expanded_root or String.starts_with?(expanded_path, expanded_root <> "/")
   end
 
   defp render(template, config) do
