@@ -178,6 +178,46 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "generator actions reject generated namespace and manifest symlinks without writes outside root" do
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      File.ln_s!(outside, Path.join(root, "e2e"))
+
+      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/crosswake_proof_lane/proof_lane.spec.ts"}} =
+               Generator.generate(config)
+
+      refute File.exists?(Path.join(outside, "crosswake_proof_lane/proof_lane.spec.ts"))
+
+      before = snapshot(root)
+      diff = Generator.diff(config)
+
+      assert before == snapshot(root)
+      assert {:error, findings} = Generator.check(config)
+
+      assert %{
+               rule_id: "PL-GENERATE-DESTINATION",
+               path: "e2e/crosswake_proof_lane/proof_lane.spec.ts"
+             } in findings
+
+      assert %{path: "e2e/crosswake_proof_lane/proof_lane.spec.ts", status: :missing} in diff
+    end)
+
+    with_root(fn root, config ->
+      outside = temporary_root()
+      File.mkdir_p!(outside)
+      File.ln_s!(outside, Path.join(root, ".crosswake"))
+      on_exit(fn -> File.rm_rf!(outside) end)
+
+      assert {:error, {"PL-GENERATE-DESTINATION", ".crosswake/proof_lane.json"}} =
+               Generator.generate(config)
+
+      refute File.exists?(Path.join(outside, "proof_lane.json"))
+    end)
+  end
+
   defp wait_for_file(path, attempts \\ 100)
   defp wait_for_file(_path, 0), do: flunk("native final-create hook was not reached")
 
