@@ -99,9 +99,9 @@ defmodule Crosswake.ProofLane.ConfigTest do
   test "rejects TypeScript-unsafe endpoint characters without echoing them" do
     for {key, unsafe_value} <- [
           {:sync_path, "/study/\"sync"},
-          {:sync_path, "/study\\\\sync"},
+          {:sync_path, "/study/" <> <<92>> <> "sync"},
           {:evidence_path, "/_proof/\"evidence"},
-          {:evidence_path, "/_proof\\\\evidence"}
+          {:evidence_path, "/_proof/" <> <<92>> <> "evidence"}
         ] do
       assert {:error, %{rule_id: "PL-CONFIG-VALUE", key: returned_key} = error} =
                Config.normalize(Map.put(@valid, key, unsafe_value))

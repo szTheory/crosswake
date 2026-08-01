@@ -131,9 +131,9 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
       for {key, unsafe_value} <- [
             {:ios_shell_root, "/tmp/not-the-native-ios-root"},
             {:sync_path, "/study/\"sync"},
-            {:sync_path, "/study\\\\sync"},
+            {:sync_path, "/study/" <> <<92>> <> "sync"},
             {:evidence_path, "/_proof/\"evidence"},
-            {:evidence_path, "/_proof\\\\evidence"}
+            {:evidence_path, "/_proof/" <> <<92>> <> "evidence"}
           ] do
         unsafe_config = Map.put(config, key, unsafe_value)
         before = snapshot(root)
@@ -155,8 +155,8 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
       try do
         for {key, unsafe_value} <- [
-              {:sync_path, "/study/\"sync"},
-              {:evidence_path, "/_proof\\\\evidence"}
+              {:sync_path, "/study/" <> <<92>> <> "sync"},
+              {:evidence_path, "/_proof/" <> <<92>> <> "evidence"}
             ] do
           unsafe_config = config |> Map.from_struct() |> Map.put(key, unsafe_value)
           before = snapshot(root)
