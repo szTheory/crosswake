@@ -33,16 +33,16 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 
 ### PROOF — Host-reusable proof lane
 
-- [x] **PROOF-01:** `mix crosswake.gen.proof_lane ios` copies host-owned configurable ExUnit,
+- [ ] **PROOF-01:** `mix crosswake.gen.proof_lane ios` copies host-owned configurable ExUnit,
   Playwright, shell, and physical-device proof scaffolding without overwriting host files.
 
-- [x] **PROOF-02:** The scaffold accepts route ID/path, IndexedDB database/store, mutation-ID
+- [ ] **PROOF-02:** The scaffold accepts route ID/path, IndexedDB database/store, mutation-ID
   extraction, sync endpoint, evidence endpoint, router, and iOS shell root.
 
-- [x] **PROOF-03:** Browser proof preserves an adopter's existing browser/unit/fixture corpus and
+- [ ] **PROOF-03:** Browser proof preserves an adopter's existing browser/unit/fixture corpus and
   adds only shell/offline-island coverage that browser automation cannot provide.
 
-- [x] **PROOF-04:** Generated evidence rejects raw mutation payloads, account identifiers, media,
+- [ ] **PROOF-04:** Generated evidence rejects raw mutation payloads, account identifiers, media,
   tokens, and stable device identifiers.
 
 ### SCOPE — Privacy-safe replay and auth safety

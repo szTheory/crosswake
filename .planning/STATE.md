@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: complete
-stopped_at: Completed 159-20-PLAN.md
-last_updated: "2026-08-01T23:09:10Z"
+status: gaps_found
+stopped_at: Independent verification after 159-20 found an inert generated browser spec template
+last_updated: "2026-08-01T23:18:30Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 host-reusable proof lane completed from fresh same-tree evidence
+last_activity_desc: Phase 159 verification found an inert generated browser spec template
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,10 +22,10 @@ current_plan: 20
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — COMPLETE
+Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
 Plan: 20 of 20
-Status: Complete — fresh same-tree deterministic gate passed
-Last activity: 2026-08-01 — Phase 159 host-reusable proof lane completed
+Status: 22/23 must-haves verified; generated browser spec template is not executable
+Last activity: 2026-08-01 — independent review and verification reproduced the template gap
 
 ## Active Objective
 
@@ -44,9 +44,10 @@ framework launch.
 
 ## Next Action
 
-Phase 159 is complete. Do not start Phase 160 until the first adopter supplies TODO-002 route
-inputs while the public-v1 mobile path is active. TODO-002 remains the bounded adopter-input gate
-and adopter-instance completeness remains `unknown_blocking`.
+Plan a bounded Phase 159 gap closure that makes the generated browser spec itself executable and
+proves the rendered output, then rerun Phase 159 verification. Do not start Phase 160 while this
+gap remains. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
+remains `unknown_blocking`.
 
 ## Blockers
 

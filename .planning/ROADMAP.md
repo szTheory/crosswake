@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -148,11 +148,12 @@ truth, and codename-only Linear drafts.
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 **Plans:** 20/20 plans executed
-**Verification:** Passed (23/23 must-haves verified) — one fresh same-tree gate confirms the
-generated Phoenix-host proof is typechecked and executed alongside the primary corpus, and exactly
-one backslash is rejected across every endpoint-config seam before render or write. The generated
-accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
-adopter-instance completeness remains `unknown_blocking`.
+**Verification:** Gaps found (22/23 must-haves verified) — independent current-tree review and
+verification found that the generated browser spec template is inert while the passing Phoenix
+command exercises a hand-maintained example-host fixture. PROOF-01 and PROOF-03 remain blocked;
+PROOF-02 and PROOF-04 have current-tree evidence. The generated accessibility runtime remains an
+advisory `not_run` backstop; TODO-002 remains open and adopter-instance completeness remains
+`unknown_blocking`.
 
 Plans:
 **Wave 1**
