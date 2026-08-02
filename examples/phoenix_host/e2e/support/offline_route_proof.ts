@@ -284,7 +284,7 @@ export async function readQueuedOfflineMutations(
   const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
   const scopeRef = options.scopeRef ?? 'v1.scope_fixture_alpha_01';
 
-  return page.evaluate(([dbName, expectedScope]: [string, string]) => {
+  return page.evaluate(({ dbName, expectedScope }: { dbName: string; expectedScope: string }) => {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(dbName, 3);
       req.onsuccess = () => {
@@ -301,7 +301,7 @@ export async function readQueuedOfflineMutations(
       };
       req.onerror = () => reject(req.error);
     });
-  }, [databaseName, scopeRef]);
+  }, { dbName: databaseName, expectedScope: scopeRef });
 }
 
 export async function expectSyncedReview(request: APIRequestContext, clientMutationId: string, expectedCount = 1) {

@@ -19,7 +19,7 @@ export const proofLaneHostAdapter = {
     await resetOfflineStudyDatabase(page);
     await page.goto('/offline');
     await expect(page.locator('#status')).toContainText('Sync is paused');
-    await page.evaluate(() => window.crosswakeOfflineStudy.activateScope('v1.scope_fixture_alpha_01'));
+    await page.evaluate(() => (window as any).crosswakeOfflineStudy.activateScope('v1.scope_fixture_alpha_01'));
     expect(await page.evaluate(() => !!window.liveSocket)).toBe(false);
   },
   performMutation: async (page) => {
