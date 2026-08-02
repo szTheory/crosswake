@@ -9,6 +9,7 @@ defmodule Crosswake.Offline.Replay do
     @moduledoc false
 
     @enforce_keys [
+      :scope_ref,
       :route_id,
       :sync_seam,
       :journal_entry_id,
@@ -18,6 +19,7 @@ defmodule Crosswake.Offline.Replay do
       :payload
     ]
     defstruct [
+      :scope_ref,
       :route_id,
       :sync_seam,
       :journal_entry_id,
@@ -28,6 +30,7 @@ defmodule Crosswake.Offline.Replay do
     ]
 
     @type t :: %__MODULE__{
+            scope_ref: String.t(),
             route_id: String.t(),
             sync_seam: String.t(),
             journal_entry_id: String.t(),
@@ -68,6 +71,7 @@ defmodule Crosswake.Offline.Replay do
   @spec new_request(keyword()) :: Request.t()
   def new_request(attrs) when is_list(attrs) do
     struct!(Request, %{
+      scope_ref: Keyword.fetch!(attrs, :scope_ref),
       route_id: Keyword.fetch!(attrs, :route_id),
       sync_seam: Keyword.fetch!(attrs, :sync_seam),
       journal_entry_id: Keyword.fetch!(attrs, :journal_entry_id),
@@ -81,6 +85,7 @@ defmodule Crosswake.Offline.Replay do
   @spec request_for_entry(Entry.t()) :: Request.t()
   def request_for_entry(%Entry{} = entry) do
     new_request(
+      scope_ref: entry.scope_ref,
       route_id: entry.route_id,
       sync_seam: entry.sync_seam,
       journal_entry_id: entry.id,
@@ -109,6 +114,7 @@ defmodule Crosswake.Offline.Replay do
   @spec to_map(Request.t() | Outcome.t()) :: map()
   def to_map(%Request{} = request) do
     %{
+      "scope_ref" => request.scope_ref,
       "route_id" => request.route_id,
       "sync_seam" => request.sync_seam,
       "journal_entry_id" => request.journal_entry_id,

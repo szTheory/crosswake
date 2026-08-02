@@ -1,13 +1,39 @@
 import { canSatisfyJournalReserve } from './storage_logic.js';
 
 const DB_NAME = 'crosswake_offline_study';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_CARDS = 'flashcards';
-const STORE_MUTATIONS = 'mutations';
+const STORE_MUTATIONS = 'scoped_mutations';
+const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
 
 let db;
 let currentCardIndex = 0;
 let cards = [];
+let activeScopeRef = null;
+
+function isScopeRef(value) {
+  return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
+}
+
+function requireActiveScope() {
+  if (!isScopeRef(activeScopeRef)) {
+    throw new Error('CW-OFFLINE-SCOPE-INACTIVE');
+  }
+
+  return activeScopeRef;
+}
+
+// The host calls this only after it has independently established backend authority.
+// The scope is intentionally never rendered, logged, or copied into status text.
+function activateScope(scopeRef) {
+  if (!isScopeRef(scopeRef)) {
+    throw new Error('CW-OFFLINE-SCOPE-REF');
+  }
+
+  activeScopeRef = scopeRef;
+}
+
+window.crosswakeOfflineStudy = Object.freeze({ activateScope });
 
 function configuredSyncEndpoint() {
   const endpoint = document.body.dataset.syncEndpoint;
@@ -74,7 +100,8 @@ function initDB() {
         db.createObjectStore(STORE_CARDS, { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains(STORE_MUTATIONS)) {
-        db.createObjectStore(STORE_MUTATIONS, { keyPath: 'id', autoIncrement: true });
+        const mutations = db.createObjectStore(STORE_MUTATIONS, { keyPath: ['scope_ref', 'local_ref'] });
+        mutations.createIndex('by_scope', 'scope_ref', { unique: false });
       }
     };
   });
@@ -109,11 +136,11 @@ function getAllCards() {
   });
 }
 
-function queueMutation(mutation) {
+function queueMutation(scopeRef, mutation) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_MUTATIONS, 'readwrite');
     const store = tx.objectStore(STORE_MUTATIONS);
-    const request = store.add(mutation);
+    const request = store.add({ ...mutation, scope_ref: scopeRef, local_ref: mutation.client_mutation_id });
 
     request.onsuccess = () => resolve();
     request.onerror = (event) => {
@@ -125,11 +152,11 @@ function queueMutation(mutation) {
   });
 }
 
-function getAllMutations() {
+function getScopeMutations(scopeRef) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_MUTATIONS, 'readonly');
     const store = tx.objectStore(STORE_MUTATIONS);
-    const request = store.getAll();
+    const request = store.index('by_scope').getAll(scopeRef);
 
     request.onsuccess = () => resolve(request.result);
     request.onerror = (event) => reject(event.target.error);
@@ -137,9 +164,9 @@ function getAllMutations() {
   });
 }
 
-function deleteAcceptedMutations(records, acceptedIds) {
+function deleteAcceptedMutations(scopeRef, records, acceptedIds) {
   const acceptedIdSet = new Set(acceptedIds);
-  const toDelete = records.filter(r => acceptedIdSet.has(r.client_mutation_id)).map(r => r.id);
+  const toDelete = records.filter(r => acceptedIdSet.has(r.client_mutation_id)).map(r => [scopeRef, r.local_ref]);
   if (toDelete.length === 0) return Promise.resolve();
 
   return new Promise((resolve, reject) => {
@@ -153,11 +180,11 @@ function deleteAcceptedMutations(records, acceptedIds) {
   });
 }
 
-function countMutations() {
+function countScopeMutations(scopeRef) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_MUTATIONS, 'readonly');
     const store = tx.objectStore(STORE_MUTATIONS);
-    const request = store.count();
+    const request = store.index('by_scope').count(scopeRef);
 
     request.onsuccess = () => resolve(request.result);
     request.onerror = (event) => reject(event.target.error);
@@ -184,7 +211,7 @@ function updateStatusError() {
 }
 
 async function updateQueuedStatus(prefix = 'Queued for replay') {
-  const queued = await countMutations().catch(() => 0);
+  const queued = await countScopeMutations(requireActiveScope()).catch(() => 0);
   updateStatus(`${prefix} - ${queued} saved locally`);
 }
 
@@ -194,7 +221,8 @@ async function flushOutbox() {
   if (flushing) return;
   flushing = true;
   try {
-    const records = await getAllMutations();
+    const scopeRef = requireActiveScope();
+    const records = await getScopeMutations(scopeRef);
     if (records.length === 0) return;
 
     updateStatusClear();
@@ -206,6 +234,7 @@ async function flushOutbox() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          scope_ref: scopeRef,
           events: records.map(r => ({
             client_mutation_id: r.client_mutation_id,
             card_id: r.card_id,
@@ -227,9 +256,9 @@ async function flushOutbox() {
       rejected.forEach(r => console.warn('Rejected mutation:', r.client_mutation_id, r.errors));
 
       const acceptedIds = acceptedRecords.map(r => r.client_mutation_id);
-      await deleteAcceptedMutations(records, acceptedIds);
+      await deleteAcceptedMutations(scopeRef, records, acceptedIds);
 
-      const remaining = await countMutations();
+      const remaining = await countScopeMutations(scopeRef);
       const accepted = acceptedIds.length;
 
       if (rejected.length > 0) {
@@ -296,7 +325,7 @@ function setupEventListeners() {
     await updateQueuedStatus('Queued for replay');
   });
 
-  flushOutbox();
+  // Retained work stays inert until the host calls activateScope with fresh authority.
 }
 
 async function handleReview(rating) {
@@ -309,7 +338,8 @@ async function handleReview(rating) {
   };
 
   try {
-    await queueMutation(mutation);
+    const scopeRef = requireActiveScope();
+    await queueMutation(scopeRef, mutation);
     updateStatusClear();
     updateStatus('Saved locally');
 

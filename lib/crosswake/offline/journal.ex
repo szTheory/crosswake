@@ -8,6 +8,7 @@ defmodule Crosswake.Offline.Journal do
 
     @enforce_keys [
       :id,
+      :scope_ref,
       :route_id,
       :sync_seam,
       :operation,
@@ -20,6 +21,7 @@ defmodule Crosswake.Offline.Journal do
     ]
     defstruct [
       :id,
+      :scope_ref,
       :route_id,
       :sync_seam,
       :operation,
@@ -35,6 +37,7 @@ defmodule Crosswake.Offline.Journal do
 
     @type t :: %__MODULE__{
             id: String.t(),
+            scope_ref: String.t(),
             route_id: String.t(),
             sync_seam: String.t(),
             operation: atom(),
@@ -47,10 +50,16 @@ defmodule Crosswake.Offline.Journal do
           }
   end
 
+  @scope_ref_pattern ~r/^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/
+  @scope_ref_error "CW-OFFLINE-SCOPE-REF"
+
   @spec new_entry(keyword()) :: Entry.t()
   def new_entry(attrs) when is_list(attrs) do
+    scope_ref = attrs |> Keyword.fetch!(:scope_ref) |> validate_scope_ref!()
+
     struct!(Entry, %{
       id: Keyword.fetch!(attrs, :id),
+      scope_ref: scope_ref,
       route_id: Keyword.fetch!(attrs, :route_id),
       sync_seam: Keyword.fetch!(attrs, :sync_seam),
       operation: Keyword.fetch!(attrs, :operation),
@@ -73,6 +82,7 @@ defmodule Crosswake.Offline.Journal do
   def to_map(%Entry{} = entry) do
     %{
       "id" => entry.id,
+      "scope_ref" => entry.scope_ref,
       "route_id" => entry.route_id,
       "sync_seam" => entry.sync_seam,
       "operation" => Atom.to_string(entry.operation),
@@ -84,4 +94,14 @@ defmodule Crosswake.Offline.Journal do
       "status" => Atom.to_string(entry.status)
     }
   end
+
+  defp validate_scope_ref!(scope_ref) when is_binary(scope_ref) do
+    if Regex.match?(@scope_ref_pattern, scope_ref) do
+      scope_ref
+    else
+      raise ArgumentError, @scope_ref_error
+    end
+  end
+
+  defp validate_scope_ref!(_scope_ref), do: raise(ArgumentError, @scope_ref_error)
 end

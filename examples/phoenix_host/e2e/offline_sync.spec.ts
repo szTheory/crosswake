@@ -8,6 +8,8 @@ import {
 } from './support/offline_route_proof';
 
 test.describe('Crosswake offline island: card rating queues in IndexedDB, reconnect flushes via app code, Ecto confirms exactly one review row', () => {
+  const alphaScope = 'v1.scope_fixture_alpha_01';
+
   test.beforeEach(async ({ page }) => {
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
@@ -17,6 +19,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   test('offline rating queues in IndexedDB, reconnect via app flush, Ecto confirms one row, duplicate is idempotent', async ({ page, context }) => {
     // Step 1: Navigate to the offline island
     await page.goto('/offline');
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
 
     // Proves /offline is a socketless island (no LiveView WebSocket dependency)
     expect(await page.evaluate(() => !!window.liveSocket)).toBe(false); // OBSERVATION_ONLY
@@ -65,5 +68,47 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
       const res = await page.request.get(`/_e2e/sync-state/${capturedId}`);
       return res.ok() ? res.json() : { count: -1 };
     }, { timeout: 5000 }).toMatchObject({ count: 1 }); // still exactly one row
+  });
+
+  test('exact scope storage leaves a retained second partition untouched', async ({ page, context }) => {
+    const betaScope = 'v1.scope_fixture_bravo_01';
+
+    await page.goto('/offline');
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+
+    const betaBefore = await page.evaluate(async scopeRef => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study', 2);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction('scoped_mutations', 'readwrite');
+        tx.objectStore('scoped_mutations').add({
+          scope_ref: scopeRef,
+          local_ref: 'retained-beta-entry',
+          client_mutation_id: 'retained-beta-entry',
+          card_id: 99,
+          rating: 'hard',
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+
+      return [{ client_mutation_id: 'retained-beta-entry', card_id: 99, rating: 'hard' }];
+    }, betaScope);
+
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    const alphaRecords = await readQueuedOfflineMutations(page, { scopeRef: alphaScope });
+    const betaAfter = await readQueuedOfflineMutations(page, { scopeRef: betaScope });
+
+    expect(alphaRecords).toHaveLength(1);
+    expect(betaAfter).toEqual(betaBefore);
+    await expect(page.locator('#status')).not.toContainText(alphaScope);
+    await expect(page.locator('#status')).not.toContainText(betaScope);
   });
 });

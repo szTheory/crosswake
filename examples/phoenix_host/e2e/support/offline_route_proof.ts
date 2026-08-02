@@ -16,6 +16,7 @@ export type OfflineMutationRecord = {
 
 export type OfflineRouteProofOptions = {
   databaseName?: string;
+  scopeRef?: string;
 };
 
 export type LearnLoopRouteProofOptions = OfflineRouteProofOptions & {
@@ -281,21 +282,22 @@ export async function readQueuedOfflineMutations(
   options: OfflineRouteProofOptions = {},
 ): Promise<OfflineMutationRecord[]> {
   const databaseName = options.databaseName ?? DEFAULT_OFFLINE_STUDY_DB;
+  const scopeRef = options.scopeRef ?? 'v1.scope_fixture_alpha_01';
 
-  return page.evaluate((dbName: string) => {
+  return page.evaluate(([dbName, expectedScope]: [string, string]) => {
     return new Promise((resolve, reject) => {
-      const req = indexedDB.open(dbName, 1);
+      const req = indexedDB.open(dbName, 2);
       req.onsuccess = () => {
         const db = req.result;
         const tx = db.transaction('mutations', 'readonly');
-        const store = tx.objectStore('mutations');
-        const getAll = store.getAll();
+        const store = tx.objectStore('scoped_mutations');
+        const getAll = store.index('by_scope').getAll(expectedScope);
         getAll.onsuccess = () => resolve(getAll.result);
         getAll.onerror = () => reject(getAll.error);
       };
       req.onerror = () => reject(req.error);
     });
-  }, databaseName);
+  }, [databaseName, scopeRef]);
 }
 
 export async function expectSyncedReview(request: APIRequestContext, clientMutationId: string, expectedCount = 1) {
