@@ -21,10 +21,9 @@ defmodule Crosswake.Doctor do
   alias Crosswake.SupportMatrix
 
   @doc false
-  @spec static_readiness(SafeObservation.t()) :: %{
-          configuration: atom(),
-          adapter_readiness: atom()
-        }
+  @spec static_readiness(SafeObservation.t()) ::
+          {:ok, %{configuration: atom(), adapter_readiness: atom()}}
+          | {:error, SafeObservation.Error.t()}
   def static_readiness(%SafeObservation{} = observation),
     do: SafeObservation.to_doctor(observation)
 

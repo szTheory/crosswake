@@ -358,17 +358,21 @@ defmodule Crosswake.Telemetry do
   end
 
   @doc false
-  @spec emit_safe_observation(SafeObservation.t()) :: :ok
+  @spec emit_safe_observation(SafeObservation.t()) :: :ok | {:error, SafeObservation.Error.t()}
   def emit_safe_observation(%SafeObservation{} = observation) do
-    metadata = SafeObservation.to_telemetry(observation)
-    measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
+    with {:ok, metadata} <- SafeObservation.to_telemetry(observation) do
+      measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
 
-    :telemetry.execute(
-      [:crosswake, :offline, :replay, :stop],
-      measurements,
-      Map.drop(metadata, Map.keys(measurements))
-    )
+      :telemetry.execute(
+        [:crosswake, :offline, :replay, :stop],
+        measurements,
+        Map.drop(metadata, Map.keys(measurements))
+      )
+    end
   end
+
+  def emit_safe_observation(_),
+    do: {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-INPUT", path: :input}}
 
   # ---------------------------------------------------------------------------
   # Private: handler, opts normalization, PII scrub
