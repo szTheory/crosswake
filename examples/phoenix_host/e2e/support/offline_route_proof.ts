@@ -289,7 +289,7 @@ export async function readQueuedOfflineMutations(
       const req = indexedDB.open(dbName, 3);
       req.onsuccess = () => {
         const db = req.result;
-        const tx = db.transaction('mutations', 'readonly');
+        const tx = db.transaction('scoped_mutations', 'readonly');
         const store = tx.objectStore('scoped_mutations');
         const getAll = store.index('by_scope').getAll(expectedScope);
         getAll.onsuccess = () => resolve(getAll.result);
