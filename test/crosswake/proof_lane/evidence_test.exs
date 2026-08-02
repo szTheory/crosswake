@@ -228,10 +228,13 @@ defmodule Crosswake.ProofLane.EvidenceTest do
       write_complete_marker!(stage)
 
       with_snapshot_replacement(stage, fn ->
-        assert :ok = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+        assert :ok =
+                 Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
       end)
 
-      assert {:error, error} = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+      assert {:error, error} =
+               Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+
       assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
     end)
   end

@@ -26,6 +26,7 @@ defmodule Crosswake.ProofLane.Evidence do
   @artifact_name "proof-lane-evidence.json"
   @complete_name ".complete"
   @approved_kinds [:evidence_json]
+  @after_digest_barrier {__MODULE__, :after_digest_barrier}
   @assertion_ids ~w(browser_offline_island shell_boot auth_continuity relaunch_persistence replay_prerequisite pack_audio_prerequisite)
 
   @sensitive_terms ~w(
@@ -87,8 +88,7 @@ defmodule Crosswake.ProofLane.Evidence do
 
   @spec check(Path.t()) :: :ok | {:error, Error.t()}
   def check(path) when is_binary(path) do
-    with :ok <- scan_stage(path),
-         {:ok, evidence} <- read_evidence(path),
+    with {:ok, evidence} <- read_verified_evidence(path),
          :ok <- require_sources(evidence.approved_hashes) do
       :ok
     end
@@ -98,8 +98,7 @@ defmodule Crosswake.ProofLane.Evidence do
 
   @spec check(Path.t(), list()) :: :ok | {:error, Error.t()}
   def check(path, sources) when is_binary(path) and is_list(sources) do
-    with :ok <- scan_stage(path),
-         {:ok, evidence} <- read_evidence(path),
+    with {:ok, evidence} <- read_verified_evidence(path),
          :ok <- verify_sources(evidence.approved_hashes, sources) do
       :ok
     end
@@ -110,11 +109,7 @@ defmodule Crosswake.ProofLane.Evidence do
 
   @spec scan_stage(Path.t()) :: :ok | {:error, Error.t()}
   def scan_stage(stage) when is_binary(stage) do
-    with {:ok, entries} <- enumerate(stage),
-         :ok <- ensure_only_evidence(entries),
-         {:ok, bytes} <- read_artifact(stage),
-         :ok <- verify_complete_marker(stage, bytes),
-         :ok <- scan_bytes(bytes, @artifact_name) do
+    with {:ok, _evidence} <- read_verified_evidence(stage) do
       :ok
     end
   end
@@ -376,22 +371,29 @@ defmodule Crosswake.ProofLane.Evidence do
     end
   end
 
-  defp read_evidence(stage) do
-    with {:ok, bytes} <- File.read(Path.join(stage, @artifact_name)),
-         {:ok, decoded} <- Jason.decode(bytes),
-         {:ok, evidence} <- string_map_to_evidence(decoded) do
+  defp read_verified_evidence(stage) do
+    with {:ok, entries} <- enumerate(stage),
+         :ok <- ensure_only_evidence(entries),
+         {:ok, bytes} <- read_artifact(stage),
+         :ok <- verify_complete_marker(stage, bytes),
+         :ok <- run_after_digest_barrier(),
+         {:ok, evidence} <- decode_evidence(bytes, @artifact_name) do
       {:ok, evidence}
-    else
-      _ -> error("PL-EVIDENCE-SCAN", @artifact_name, "use canonical approved evidence")
     end
   end
 
   defp scan_bytes(bytes, path) do
+    with {:ok, _evidence} <- decode_evidence(bytes, path) do
+      :ok
+    end
+  end
+
+  defp decode_evidence(bytes, path) do
     with {:ok, decoded} <- Jason.decode(bytes),
          :ok <- no_sensitive_value(decoded, path),
          {:ok, evidence} <- string_map_to_evidence(decoded),
          true <- Jason.encode!(to_map(evidence)) == bytes do
-      :ok
+      {:ok, evidence}
     else
       _ -> error("PL-EVIDENCE-SCAN", path, "use canonical approved evidence")
     end
@@ -502,6 +504,38 @@ defmodule Crosswake.ProofLane.Evidence do
         do: :ok,
         else: error("PL-EVIDENCE-PATH", "artifact", "use an absolute safe destination")
       )
+
+  if Mix.env() == :test do
+    defp run_after_digest_barrier do
+      case Process.get(@after_digest_barrier) do
+        nil ->
+          :ok
+
+        fun when is_function(fun, 0) ->
+          result =
+            try do
+              {:barrier_return, fun.()}
+            rescue
+              _ -> :barrier_failure
+            catch
+              _, _ -> :barrier_failure
+            end
+
+          case result do
+            {:barrier_return, :ok} ->
+              :ok
+
+            _ ->
+              error("PL-EVIDENCE-INTEGRITY", "artifact", "retain complete digest-bound evidence")
+          end
+
+        _ ->
+          error("PL-EVIDENCE-INTEGRITY", "artifact", "retain complete digest-bound evidence")
+      end
+    end
+  else
+    defp run_after_digest_barrier, do: :ok
+  end
 
   defp run_hook(nil), do: :ok
 
