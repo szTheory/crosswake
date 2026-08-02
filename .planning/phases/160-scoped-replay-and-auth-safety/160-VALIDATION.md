@@ -1,9 +1,9 @@
 ---
 phase: 160
 slug: scoped-replay-and-auth-safety
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-02
 ---
 
@@ -37,14 +37,14 @@ created: 2026-08-02
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | Target | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| 160-01-01 | 160-01 | 1 | SCOPE-01 | T-160-01 | Entry/Request scope is required and browser storage has exact-scope compound access only | core unit | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs` | <30s | ⬜ pending |
+| 160-01-01 | 160-01 | 1 | SCOPE-01 | T-160-01 | Entry/Request scope is required and browser storage has exact-scope compound access only | core unit | focused core suite | <30s | ✅ green |
 | 160-01-02 | 160-01 | 1 | SCOPE-01, SCOPE-02 | T-160-01, T-160-02, T-160-06 | Relaunch is inert, switch fences first, stale completion is inert, and blocked work remains | core + focused browser | `mix test test/crosswake/offline/runtime_test.exs && (cd examples/phoenix_host && npm run proof:offline-island -- --grep "inactive relaunch\|switch before send\|switch in flight\|ordered blocked drain")` | <30s | ⬜ pending |
 | 160-02-01 | 160-02 | 2 | SCOPE-01, SCOPE-03, SCOPE-05 | T-160-01, T-160-03, T-160-05 | One Study event crosses complete current admission and one atomic transaction | focused browser tracer | `cd examples/phoenix_host && npm run proof:offline-island -- --grep "fully authorized scoped Study event"` | <30s | ⬜ pending |
 | 160-02-02 | 160-02 | 2 | SCOPE-02, SCOPE-03 | T-160-03, T-160-05, T-160-06 | Every denial, Nth-event change, rollback, duplicate, and lost response remains closed and idempotent | Phoenix integration | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first/replay_admission_test.exs test/crosswake_example/local_first/sync_controller_test.exs test/crosswake_example/local_first/study_test.exs` | <30s | ⬜ pending |
 | 160-02-03 | 160-02 | 2 | SCOPE-05 | T-160-03, T-160-04 | Sigra projects backend evidence to closed allow/deny and leaks no authority detail | companion unit | `cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs` | <30s | ⬜ pending |
-| 160-03-01 | 160-03 | 3 | SCOPE-04 | T-160-04 | SafeObservation reaches Offline.Telemetry, root Logger, and doctor through exact surface projections; final bytes exclude every D-17 class | egress unit/property-style | `mix test test/crosswake/offline/safe_observation_test.exs test/crosswake/offline/telemetry_test.exs test/crosswake/telemetry_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | <30s | ⬜ pending |
-| 160-03-02 | 160-03 | 3 | SCOPE-04 | T-160-01..T-160-06 | Inspection and Evidence retain exact schemas, content-bound IDs, and forbidden-byte scanning | evidence unit/property-style | `mix test test/crosswake/operator_inspection/json_formatter_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | <30s | ⬜ pending |
-| 160-03-03 | 160-03 | 3 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | One fresh current-tree gate covers every requirement, ASVS mapping, proof seam, and final retained byte | full phase gate | `mix test test/crosswake/offline test/crosswake/telemetry_test.exs test/crosswake/proof/phase160_scoped_replay_privacy_test.exs test/crosswake/proof_lane/evidence_test.exs test/crosswake/doctor/doctor_test.exs test/crosswake/operator_inspection/json_formatter_test.exs && (cd packages/crosswake_sigra && mix deps.get && mix test test/crosswake/companions/sigra/contracts_test.exs) && (cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first && npm run proof:offline-island) && bash script/verify_phoenix_host_proof_lane.sh && bash script/verify_generated_ios_shell.sh && mix crosswake.first_b2c_adopter.check && mix format --check-formatted` | ~300s; final only | ⬜ pending |
+| 160-03-01 | 160-03 | 3 | SCOPE-04 | T-160-04 | SafeObservation reaches Offline.Telemetry, root Logger, and doctor through exact surface projections; final bytes exclude every D-17 class | egress unit/property-style | focused egress suite | <30s | ✅ green |
+| 160-03-02 | 160-03 | 3 | SCOPE-04 | T-160-01..T-160-06 | Inspection and Evidence retain exact schemas, content-bound IDs, and forbidden-byte scanning | evidence unit/property-style | focused evidence suite | <30s | ✅ green |
+| 160-03-03 | 160-03 | 3 | SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05 | T-160-01..T-160-06 | One fresh current-tree gate covers every requirement, ASVS mapping, proof seam, and final retained byte | full phase gate | current-tree chain: 113 core, 13 Sigra, 8 Phoenix, 10 Playwright, host proof, asserted blocked iOS, 36 privacy/adoption tests, scoped format | ~300s; final only | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -68,4 +68,8 @@ All Phase 160 behaviors have automated verification. Host-issued real scope valu
 - [ ] Five flagged assumptions and seven prohibitions remain represented across the three plans
 - [ ] `nyquist_compliant: true` set only after all planned tests exist and pass
 
-**Approval:** pending
+**Observed final gate:** 2026-08-02 — passed. Generated iOS proof reported `blocked` with `PL-IOS-TEST-EXECUTION`; this is the expected non-passing prerequisite and does not promote device support.
+
+**Remaining external prerequisites:** TODO-002, real scope/route/flag/session input, real host adapters, and physical-iPhone evidence remain `unknown_blocking`.
+
+**Approval:** automated evidence complete; no human UAT required.

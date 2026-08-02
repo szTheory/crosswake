@@ -77,8 +77,19 @@ defmodule Crosswake.TestSupport.StubChimewayDomainCompanion do
 
   # Chimeway domain includes :token (session token used in notification flows).
   # This is one of the 11 core baseline keys not in the threadline domain list.
-  @chimeway_domain_forbidden_keys [:token, :raw_token, :device_token, :session_ref, :subject_ref,
-    :actor_id, :ip, :email, :device_id, :user_agent, :provider_payload]
+  @chimeway_domain_forbidden_keys [
+    :token,
+    :raw_token,
+    :device_token,
+    :session_ref,
+    :subject_ref,
+    :actor_id,
+    :ip,
+    :email,
+    :device_id,
+    :user_agent,
+    :provider_payload
+  ]
 
   @impl true
   def companion_id, do: :stub_chimeway_domain
@@ -152,7 +163,18 @@ defmodule Crosswake.TelemetryTest do
   end
 
   test "default Logger receives the closed replay projection only" do
-    assert {:ok, observation} = SafeObservation.new(%{route_id: "route-0123456789abcdef", runtime: :offline_island, lifecycle: :replayed, outcome: :accepted, denial: :none, measurements: %{event_count: 1}, configuration: :configured, adapter_readiness: :blocked})
+    assert {:ok, observation} =
+             SafeObservation.new(%{
+               route_id: "route-0123456789abcdef",
+               runtime: :offline_island,
+               lifecycle: :replayed,
+               outcome: :accepted,
+               denial: :none,
+               measurements: %{event_count: 1},
+               configuration: :configured,
+               adapter_readiness: :blocked
+             })
+
     :ok = Crosswake.Telemetry.attach_default_logger(encode: true)
     log = capture_log(fn -> Crosswake.Telemetry.emit_safe_observation(observation) end)
     assert log =~ "route-0123456789abcdef"
@@ -202,10 +224,12 @@ defmodule Crosswake.TelemetryTest do
     :ok = Crosswake.Telemetry.attach_default_logger()
 
     first_detach = Crosswake.Telemetry.detach_default_logger()
+
     assert first_detach == :ok,
            "first detach_default_logger/0 must return :ok; got #{inspect(first_detach)}"
 
     second_detach = Crosswake.Telemetry.detach_default_logger()
+
     assert second_detach == {:error, :not_found},
            "second detach_default_logger/0 must return {:error, :not_found}; got #{inspect(second_detach)}"
   end
@@ -298,7 +322,9 @@ defmodule Crosswake.TelemetryTest do
       companion_union =
         Application.get_env(:crosswake, :companions, [])
         |> Enum.flat_map(fn mod ->
-          if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+          if function_exported?(mod, :forbidden_metadata_keys, 0),
+            do: mod.forbidden_metadata_keys(),
+            else: []
         end)
         |> MapSet.new()
 
@@ -351,11 +377,15 @@ defmodule Crosswake.TelemetryTest do
     test "events/0's :active tier includes exactly the 5 bridge events (push, reply, dropped, hook_ack, hook_missing)" do
       bridge_events =
         Crosswake.Telemetry.events()
-        |> Enum.filter(fn e -> match?([:crosswake, :bridge | _], e.event) and e.tier == :active end)
+        |> Enum.filter(fn e ->
+          match?([:crosswake, :bridge | _], e.event) and e.tier == :active
+        end)
 
-      bridge_suffixes = Enum.map(bridge_events, fn %{event: [:crosswake, :bridge, suffix]} -> suffix end)
+      bridge_suffixes =
+        Enum.map(bridge_events, fn %{event: [:crosswake, :bridge, suffix]} -> suffix end)
 
-      assert Enum.sort(bridge_suffixes) == Enum.sort([:push, :reply, :dropped, :hook_ack, :hook_missing]),
+      assert Enum.sort(bridge_suffixes) ==
+               Enum.sort([:push, :reply, :dropped, :hook_ack, :hook_missing]),
              "expected exactly the 5 Phase 154 bridge events in events/0; got #{inspect(bridge_suffixes)}"
 
       for entry <- bridge_events do

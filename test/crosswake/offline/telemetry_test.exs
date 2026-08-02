@@ -28,9 +28,28 @@ defmodule Crosswake.Offline.TelemetryTest do
   end
 
   test "emits only the SafeObservation telemetry projection" do
-    assert {:ok, observation} = SafeObservation.new(%{route_id: "route-0123456789abcdef", runtime: :offline_island, lifecycle: :replayed, outcome: :accepted, denial: :none, measurements: %{event_count: 1}, configuration: :configured, adapter_readiness: :blocked})
-    assert :ok = Telemetry.emit(observation, fn metadata ->
-      assert Map.keys(metadata) |> Enum.sort() == [:denial, :event_count, :lifecycle, :outcome, :route_id, :runtime]
-    end)
+    assert {:ok, observation} =
+             SafeObservation.new(%{
+               route_id: "route-0123456789abcdef",
+               runtime: :offline_island,
+               lifecycle: :replayed,
+               outcome: :accepted,
+               denial: :none,
+               measurements: %{event_count: 1},
+               configuration: :configured,
+               adapter_readiness: :blocked
+             })
+
+    assert :ok =
+             Telemetry.emit(observation, fn metadata ->
+               assert Map.keys(metadata) |> Enum.sort() == [
+                        :denial,
+                        :event_count,
+                        :lifecycle,
+                        :outcome,
+                        :route_id,
+                        :runtime
+                      ]
+             end)
   end
 end

@@ -30,12 +30,12 @@ defmodule Crosswake.Telemetry do
   - `metadata` — list of metadata key atoms emitted in the metadata map (key names only, no PII values)
   """
   @type event_doc :: %{
-    event: [atom()],
-    tier: :active | :reserved,
-    description: String.t(),
-    measurements: [atom()],
-    metadata: [atom()]
-  }
+          event: [atom()],
+          tier: :active | :reserved,
+          description: String.t(),
+          measurements: [atom()],
+          metadata: [atom()]
+        }
 
   # The 11-atom core PII baseline denylist (D-136-A / DECOUPLE-05 / D-5 Phase 139).
   # Always applied regardless of companion presence — an absent/misconfigured companion
@@ -319,7 +319,9 @@ defmodule Crosswake.Telemetry do
     companion_forbidden_keys =
       Application.get_env(:crosswake, :companions, [])
       |> Enum.flat_map(fn mod ->
-        if function_exported?(mod, :forbidden_metadata_keys, 0), do: mod.forbidden_metadata_keys(), else: []
+        if function_exported?(mod, :forbidden_metadata_keys, 0),
+          do: mod.forbidden_metadata_keys(),
+          else: []
       end)
 
     forbidden_keys =
@@ -360,7 +362,12 @@ defmodule Crosswake.Telemetry do
   def emit_safe_observation(%SafeObservation{} = observation) do
     metadata = SafeObservation.to_telemetry(observation)
     measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
-    :telemetry.execute([:crosswake, :offline, :replay, :stop], measurements, Map.drop(metadata, Map.keys(measurements)))
+
+    :telemetry.execute(
+      [:crosswake, :offline, :replay, :stop],
+      measurements,
+      Map.drop(metadata, Map.keys(measurements))
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -432,5 +439,4 @@ defmodule Crosswake.Telemetry do
     |> Keyword.put_new(:level, :info)
     |> Keyword.put_new(:encode, false)
   end
-
 end

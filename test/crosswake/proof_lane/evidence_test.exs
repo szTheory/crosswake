@@ -67,9 +67,12 @@ defmodule Crosswake.ProofLane.EvidenceTest do
   end
 
   test "accepts the six closed scoped-replay assertion identifiers without expanding the artifact schema" do
-    assertions = ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
+    assertions =
+      ~w(scope_partition lifecycle_fence per_event_reauthorization atomic_idempotency safe_observation disablement)
+
     assert {:ok, evidence} = Evidence.build(%{@valid | assertion_ids: assertions})
     assert Evidence.to_map(evidence)["assertion_ids"] == assertions
+
     assert Map.keys(Evidence.to_map(evidence)) |> Enum.sort() ==
              ~w(approved_hashes assertion_ids captured_at commit_ref crosswake_version device_class outcome retention_label route_id schema_version status template_version)
   end

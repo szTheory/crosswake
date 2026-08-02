@@ -21,8 +21,12 @@ defmodule Crosswake.Doctor do
   alias Crosswake.SupportMatrix
 
   @doc false
-  @spec static_readiness(SafeObservation.t()) :: %{configuration: atom(), adapter_readiness: atom()}
-  def static_readiness(%SafeObservation{} = observation), do: SafeObservation.to_doctor(observation)
+  @spec static_readiness(SafeObservation.t()) :: %{
+          configuration: atom(),
+          adapter_readiness: atom()
+        }
+  def static_readiness(%SafeObservation{} = observation),
+    do: SafeObservation.to_doctor(observation)
 
   defmodule Report do
     @moduledoc false
@@ -158,6 +162,7 @@ defmodule Crosswake.Doctor do
     phase_95_findings = phase_95_threadline_findings(install_manifest, cwd)
     phase_65_findings = phase_65_diagnostic_export_findings()
     phase_66_findings = phase_66_generator_drift_findings(manifest, cwd, opts)
+
     phase_154_findings =
       legacy_capability_id_findings(manifest) ++
         capability_rebuild_findings(manifest) ++
@@ -810,7 +815,9 @@ defmodule Crosswake.Doctor do
                   Enum.flat_map(
                     Application.get_env(:crosswake, :companions, []),
                     fn mod ->
-                      if function_exported?(mod, :denial_codes, 0), do: mod.denial_codes(), else: []
+                      if function_exported?(mod, :denial_codes, 0),
+                        do: mod.denial_codes(),
+                        else: []
                     end
                   ),
               safe_detail_keys: Map.get(auth_truth, :safe_detail_keys, []),
@@ -828,15 +835,16 @@ defmodule Crosswake.Doctor do
   defp phase_62_notification_findings(manifest) do
     routes = manifest.routes |> Map.values()
     capabilities = Map.keys(manifest.capability_registry || %{})
-    
-    has_notifications? = Enum.any?(routes, fn route ->
-      "notification_token" in route.capabilities or route.notification_open == true
-    end) or "notification_token" in capabilities
+
+    has_notifications? =
+      Enum.any?(routes, fn route ->
+        "notification_token" in route.capabilities or route.notification_open == true
+      end) or "notification_token" in capabilities
 
     if has_notifications? do
       truth = SupportMatrix.notification_support_truth() |> List.first(%{})
       telemetry = Map.get(truth, :telemetry, %{})
-      
+
       [
         check(
           :advisory,
@@ -954,7 +962,8 @@ defmodule Crosswake.Doctor do
     Map.get(config, :schema) || Map.get(config, "schema")
   end
 
-  defp ledger_schema(config) when is_atom(config) and not is_nil(config) and not is_boolean(config) do
+  defp ledger_schema(config)
+       when is_atom(config) and not is_nil(config) and not is_boolean(config) do
     config
   end
 
@@ -1083,7 +1092,9 @@ defmodule Crosswake.Doctor do
   defp check_schema_drift(schema, schema_fields) do
     schema_field_set = MapSet.new(schema_fields)
     canonical_set = MapSet.new(@canonical_ledger_columns)
-    missing = MapSet.difference(canonical_set, schema_field_set) |> MapSet.to_list() |> Enum.sort()
+
+    missing =
+      MapSet.difference(canonical_set, schema_field_set) |> MapSet.to_list() |> Enum.sort()
 
     if missing == [] do
       []
@@ -2267,7 +2278,11 @@ defmodule Crosswake.Doctor do
           "native_controls_ui",
           "could not find a reference to #{module_name} anywhere else in this host's lib/**/*.ex",
           "wire the generated component into a LiveView (for example `<.confirm_modal .../>` from #{module_name}) — this check is a best-effort grep over source text and is never authoritative; it cannot see a reference through an alias, a macro-injected import, or a module used only from a template compiled elsewhere.",
-          %{path: Path.relative_to(component_path, cwd), module: module_name, authoritative: false}
+          %{
+            path: Path.relative_to(component_path, cwd),
+            module: module_name,
+            authoritative: false
+          }
         )
       ]
     end
@@ -2284,11 +2299,12 @@ defmodule Crosswake.Doctor do
       Path.join(ios_shell_root, "CrosswakeShell/CrosswakeShell.entitlements"),
       Path.join(ios_shell_root, "CrosswakeShell/PrivacyInfo.xcprivacy")
     ]
+
     android_files = [
       Path.join(android_shell_root, "app/src/main/AndroidManifest.xml")
     ]
 
-    placeholder_findings = 
+    placeholder_findings =
       (ios_files ++ android_files)
       |> Enum.flat_map(&check_shell_unreplaced_placeholders/1)
 
@@ -2296,9 +2312,13 @@ defmodule Crosswake.Doctor do
     android_contents = read_all_files(android_files)
 
     capabilities = Map.keys(manifest.capability_registry || %{})
-    
+
     ios_drift = if ios_contents != "", do: check_drift(capabilities, ios_contents, :ios), else: []
-    android_drift = if android_contents != "", do: check_drift(capabilities, android_contents, :android), else: []
+
+    android_drift =
+      if android_contents != "",
+        do: check_drift(capabilities, android_contents, :android),
+        else: []
 
     placeholder_findings ++ ios_drift ++ android_drift
   end
@@ -2319,6 +2339,7 @@ defmodule Crosswake.Doctor do
         else
           []
         end
+
       _ ->
         []
     end
@@ -2327,7 +2348,7 @@ defmodule Crosswake.Doctor do
   defp read_all_files(paths) do
     paths
     |> Enum.map(&File.read/1)
-    |> Enum.flat_map(fn 
+    |> Enum.flat_map(fn
       {:ok, content} -> [content]
       _ -> []
     end)
@@ -2337,8 +2358,10 @@ defmodule Crosswake.Doctor do
   defp check_drift(capabilities, contents, platform) do
     Enum.flat_map(capabilities, fn cap ->
       expected_strings = capability_expected_strings(cap, platform)
-      missing_string = Enum.find(expected_strings, fn str -> not String.contains?(contents, str) end)
-      
+
+      missing_string =
+        Enum.find(expected_strings, fn str -> not String.contains?(contents, str) end)
+
       if missing_string do
         [
           check(
@@ -2356,21 +2379,28 @@ defmodule Crosswake.Doctor do
     end)
   end
 
-  defp capability_expected_strings(cap, :ios) when cap in ["notification_token", "push.notifications"] do
+  defp capability_expected_strings(cap, :ios)
+       when cap in ["notification_token", "push.notifications"] do
     ["aps-environment", "NSPrivacyCollectedDataTypeDeviceID"]
   end
-  defp capability_expected_strings(cap, :android) when cap in ["notification_token", "push.notifications"] do
+
+  defp capability_expected_strings(cap, :android)
+       when cap in ["notification_token", "push.notifications"] do
     ["POST_NOTIFICATIONS"]
   end
 
-  defp capability_expected_strings(cap, :ios) when cap in ["media_capture", "camera", "camera.capture"] do
+  defp capability_expected_strings(cap, :ios)
+       when cap in ["media_capture", "camera", "camera.capture"] do
     ["NSCameraUsageDescription"]
   end
-  defp capability_expected_strings(cap, :android) when cap in ["media_capture", "camera", "camera.capture"] do
+
+  defp capability_expected_strings(cap, :android)
+       when cap in ["media_capture", "camera", "camera.capture"] do
     ["android.permission.CAMERA"]
   end
 
   defp capability_expected_strings(cap, :ios) when cap in ["haptics", "haptics.impact"], do: []
+
   defp capability_expected_strings(cap, :android) when cap in ["haptics", "haptics.impact"] do
     ["android.permission.VIBRATE"]
   end
@@ -2378,11 +2408,14 @@ defmodule Crosswake.Doctor do
   defp capability_expected_strings(cap, :ios) when cap in ["file_picker", "files.pick"] do
     ["NSPhotoLibraryUsageDescription"]
   end
-  defp capability_expected_strings(cap, :android) when cap in ["file_picker", "files.pick"], do: []
+
+  defp capability_expected_strings(cap, :android) when cap in ["file_picker", "files.pick"],
+    do: []
 
   defp capability_expected_strings("deep_link", :ios) do
     ["com.apple.developer.associated-domains"]
   end
+
   defp capability_expected_strings("deep_link", :android) do
     ["android.intent.action.VIEW"]
   end

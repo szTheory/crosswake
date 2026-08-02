@@ -43,8 +43,13 @@ defmodule Crosswake.Offline.SafeObservation do
 
   @spec to_telemetry(t()) :: %{required(atom()) => atom() | non_neg_integer() | String.t()}
   def to_telemetry(%__MODULE__{} = observation) do
-    %{route_id: observation.route_id, runtime: observation.runtime, lifecycle: observation.lifecycle,
-      outcome: observation.outcome, denial: observation.denial}
+    %{
+      route_id: observation.route_id,
+      runtime: observation.runtime,
+      lifecycle: observation.lifecycle,
+      outcome: observation.outcome,
+      denial: observation.denial
+    }
     |> Map.merge(observation.measurements)
   end
 
@@ -53,7 +58,10 @@ defmodule Crosswake.Offline.SafeObservation do
 
   @spec to_doctor(t()) :: %{configuration: atom(), adapter_readiness: atom()}
   def to_doctor(%__MODULE__{} = observation),
-    do: %{configuration: observation.configuration, adapter_readiness: observation.adapter_readiness}
+    do: %{
+      configuration: observation.configuration,
+      adapter_readiness: observation.adapter_readiness
+    }
 
   defp exact_atom_keys(attrs) do
     if Map.keys(attrs) |> MapSet.new() == MapSet.new(@replay_keys ++ @doctor_keys),
@@ -62,8 +70,11 @@ defmodule Crosswake.Offline.SafeObservation do
   end
 
   defp route(value) when is_binary(value) do
-    if value =~ ~r/^route-[0-9a-f]{16}$/, do: :ok, else: error("CW-SAFE-OBSERVATION-ROUTE", :route_id)
+    if value =~ ~r/^route-[0-9a-f]{16}$/,
+      do: :ok,
+      else: error("CW-SAFE-OBSERVATION-ROUTE", :route_id)
   end
+
   defp route(_), do: error("CW-SAFE-OBSERVATION-ROUTE", :route_id)
 
   defp enum(value, allowed, path) do
@@ -73,13 +84,18 @@ defmodule Crosswake.Offline.SafeObservation do
   defp measurements(values) when is_map(values) and not is_struct(values) do
     valid? =
       Map.keys(values) |> Enum.all?(&(&1 in @measurements)) and
-        Enum.all?(values, fn {_key, value} -> is_integer(value) and value >= 0 and value <= 1_000_000 end)
+        Enum.all?(values, fn {_key, value} ->
+          is_integer(value) and value >= 0 and value <= 1_000_000
+        end)
 
     if valid?, do: :ok, else: error("CW-SAFE-OBSERVATION-MEASUREMENT", :measurements)
   end
+
   defp measurements(_), do: error("CW-SAFE-OBSERVATION-MEASUREMENT", :measurements)
 
-  defp readiness(value, _path) when value in [:configured, :unconfigured, :ready, :blocked, :unavailable], do: :ok
+  defp readiness(value, _path)
+       when value in [:configured, :unconfigured, :ready, :blocked, :unavailable], do: :ok
+
   defp readiness(_, path), do: error("CW-SAFE-OBSERVATION-READINESS", path)
 
   defp error(rule_id, path), do: {:error, %Error{rule_id: rule_id, path: path}}
