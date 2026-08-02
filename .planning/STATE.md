@@ -143,6 +143,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Retained evidence requires a regular 64-byte SHA-256 marker matching exact canonical artifact bytes on every read.
 - [Phase ?]: Generated proof-lane bytes publish through a bounded private frame and descriptor-only atomic destination handoff.
 - [Phase ?]: Concurrent helper builds reuse a content-addressed warning-clean executable without expanding the generator filesystem API.
+- [Phase 159]: Phase completion requires a fresh full same-tree gate; focused repairs and stale evidence cannot advance status.
 
 ## Deferred Items
 
@@ -171,8 +172,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T01:43:38.330Z
-**Stopped at:** Completed 159-23-PLAN.md
+**Last session:** 2026-08-02T02:00:00Z
+**Stopped at:** Completed 159-24-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -221,4 +222,4 @@ this milestone reset.
 | Phase 159 P21 | 20m | 2 tasks | 7 files |
 | Phase 159 P22 | 14m | 1 tasks | 4 files |
 | Phase 159 P23 | 36m | 1 tasks | 4 files |
-| Phase 159 P24 | 2m | 1 task | 5 files |
+| Phase 159 P24 | 4m | 1 tasks | 6 files |
