@@ -21,11 +21,12 @@ defmodule CrosswakeExample.LocalFirst.SyncController do
 
   def sync(conn, _params), do: blocked(conn, :invalid_envelope, :bad_request)
 
-  defp sync_events(conn, scope_ref, events) do
+  @doc false
+  def sync_events(conn, scope_ref, events, admission_opts \\ []) do
     initial = %{accepted_records: [], rejected: [], halted: nil}
 
     case Enum.reduce_while(events, {:ok, initial}, fn event, {:ok, result} ->
-           case ReplayAdmission.authorize(conn, scope_ref, event) do
+           case ReplayAdmission.authorize(conn, scope_ref, event, admission_opts) do
              {:allow, authority} ->
                case Study.apply_one(scope_ref, event, authority) do
                  {:ok, accepted} ->

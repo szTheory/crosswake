@@ -7,7 +7,7 @@ defmodule CrosswakeExample.LocalFirst.Study do
   def list_events, do: Repo.all(ReviewEvent)
 
   @spec apply_one(String.t(), map(), map()) :: {:ok, map()} | {:error, atom()}
-  def apply_one(scope_ref, event, _authority) when is_binary(scope_ref) and is_map(event) do
+  def apply_one(scope_ref, event, authority) when is_binary(scope_ref) and is_map(event) do
     id = Map.get(event, "client_mutation_id")
 
     Ecto.Multi.new()
@@ -23,9 +23,13 @@ defmodule CrosswakeExample.LocalFirst.Study do
           {:ok, record}
 
         :new ->
-          %ReviewEvent{}
-          |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
-          |> repo.insert()
+          if Map.get(authority, :rollback) do
+            {:error, :forced_rollback}
+          else
+            %ReviewEvent{}
+            |> ReviewEvent.changeset(Map.put(event, "scope_ref", scope_ref))
+            |> repo.insert()
+          end
       end
     end)
     |> Repo.transaction()
