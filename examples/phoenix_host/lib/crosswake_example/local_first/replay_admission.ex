@@ -5,6 +5,7 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
   # browser supplies an opaque scope reference only; it cannot turn that reference
   # into a session, route, feature, or domain allow decision.
   @max_events 20
+  @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
 
   alias Crosswake.Companions.Sigra.Contracts
   alias Crosswake.Manifest.Types.RouteEntry
@@ -44,7 +45,10 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmission do
 
   def valid_batch?(_), do: false
 
-  defp valid_scope("v1." <> rest) when byte_size(rest) in 8..120, do: :ok
+  defp valid_scope(scope_ref) when is_binary(scope_ref) do
+    if Regex.match?(@scope_ref_pattern, scope_ref), do: :ok, else: {:error, :invalid_envelope}
+  end
+
   defp valid_scope(_), do: {:error, :invalid_envelope}
 
   defp valid_event(%{"client_mutation_id" => id, "card_id" => card, "rating" => rating})

@@ -160,11 +160,26 @@ defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
 
       assert {:deny, :invalid_envelope} =
                ReplayAdmission.authorize(%Plug.Conn{}, scope_ref, @event,
-                 session: fn _ -> send(self(), :session_called); {:ok, %{scope_ref: scope_ref}} end,
-                 route: fn _ -> send(self(), :route_called); {:ok, %{id: "offline-study"}} end,
-                 feature: fn _ -> send(self(), :feature_called); :allow end,
-                 sigra: fn _ -> send(self(), :sigra_called); :allow end,
-                 domain: fn _, _, _ -> send(self(), :domain_called); :allow end
+                 session: fn _ ->
+                   send(self(), :session_called)
+                   {:ok, %{scope_ref: scope_ref}}
+                 end,
+                 route: fn _ ->
+                   send(self(), :route_called)
+                   {:ok, %{id: "offline-study"}}
+                 end,
+                 feature: fn _ ->
+                   send(self(), :feature_called)
+                   :allow
+                 end,
+                 sigra: fn _ ->
+                   send(self(), :sigra_called)
+                   :allow
+                 end,
+                 domain: fn _, _, _ ->
+                   send(self(), :domain_called)
+                   :allow
+                 end
                )
 
       refute_received :session_called

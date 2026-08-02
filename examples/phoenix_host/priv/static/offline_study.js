@@ -7,7 +7,7 @@ const STORE_MUTATIONS = 'scoped_mutations';
 const STORE_LIFECYCLE = 'scope_lifecycle';
 const STORE_LEGACY_MUTATIONS = 'mutations';
 const STORE_LEGACY_QUARANTINE = 'legacy_mutations_quarantine';
-const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
+const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$(?![\s\S])/;
 const CLIENT_MUTATION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const HALTED_REPLAY_CLASSES = new Set([
   'authority_unavailable',

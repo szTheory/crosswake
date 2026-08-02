@@ -50,7 +50,7 @@ defmodule Crosswake.Offline.Journal do
           }
   end
 
-  @scope_ref_pattern ~r/^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/
+  @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
   @scope_ref_error "CW-OFFLINE-SCOPE-REF"
 
   @spec new_entry(keyword()) :: Entry.t()
