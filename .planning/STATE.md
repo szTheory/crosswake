@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-06-PLAN.md
-last_updated: "2026-08-02T19:06:40.386Z"
+status: ready_to_execute
+stopped_at: Planned Phase 160 final gap closure through 160-11-PLAN.md
+last_updated: "2026-08-02T22:28:47.000Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 execution started
+last_activity_desc: Phase 160 final gap closure planned and verified
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 56
+  total_plans: 59
   completed_plans: 53
   percent: 40
-current_plan: 0
+current_plan: 9
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 3 of 8
+Phase: 160 (scoped-replay-and-auth-safety) — READY TO EXECUTE
+Plan: 8 of 11 complete
 Status: Ready to execute
-Last activity: 2026-08-02 — Phase 160 execution started
+Last activity: 2026-08-02 — Phase 160 final gap closure planned and verified
 
 ## Active Objective
 
@@ -44,7 +44,7 @@ framework launch.
 
 ## Next Action
 
-Execute only Phase 160 gap plans 04-08, then rerun `$gsd-secure-phase 160`. TODO-002 remains the
+Execute only Phase 160 gap plans 09-11, then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains the
 bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not
 infer concrete adopter routes or promote downstream device claims.
 
