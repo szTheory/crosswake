@@ -1,10 +1,44 @@
 defmodule CrosswakeExample.LocalFirst.ReplayAdmissionTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias CrosswakeExample.LocalFirst.ReplayAdmission
 
   @scope "v1.scope_fixture_alpha_01"
   @event %{"client_mutation_id" => "mutation-1", "card_id" => 1, "rating" => "good"}
+
+  test "the no-callback default path supplies typed backend evidence without exposing it" do
+    assert {:allow, authority} = ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event)
+    assert %{route: %{id: "offline-study"}} = authority
+
+    rendered = inspect(authority)
+    refute rendered =~ "actor_id"
+    refute rendered =~ "org_id"
+    refute rendered =~ "auth_context"
+    refute rendered =~ "token"
+  end
+
+  test "a server-configured predicated default route denies before the domain callback" do
+    previous = Application.get_env(:crosswake_example, :offline_study_fixture_auth_min_level)
+
+    Application.put_env(
+      :crosswake_example,
+      :offline_study_fixture_auth_min_level,
+      :phishing_resistant
+    )
+
+    on_exit(fn ->
+      if is_nil(previous),
+        do: Application.delete_env(:crosswake_example, :offline_study_fixture_auth_min_level),
+        else: Application.put_env(:crosswake_example, :offline_study_fixture_auth_min_level, previous)
+    end)
+
+    assert {:deny, :sigra_denied} =
+             ReplayAdmission.authorize(%Plug.Conn{}, @scope, @event,
+               domain: fn _, _, _ -> send(self(), :domain_called); :allow end
+             )
+
+    refute_received :domain_called
+  end
 
   test "runs each current authority layer in D-08 order" do
     parent = self()
