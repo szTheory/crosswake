@@ -195,6 +195,47 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     end)
   end
 
+  test "check/1 consumes the completion-digest-bound snapshot after the artifact is replaced" do
+    with_stage(fn stage ->
+      write_canonical!(stage)
+
+      with_snapshot_replacement(stage, fn ->
+        assert :ok = Evidence.check(stage)
+      end)
+
+      assert {:error, error} = Evidence.check(stage)
+      assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
+    end)
+  end
+
+  test "check/2 validates approved sources from the completion-digest-bound snapshot after replacement" do
+    assert {:ok, base} = Evidence.build(@valid)
+    canonical_bytes = Jason.encode!(Evidence.to_map(base))
+
+    assert {:ok, evidence} =
+             Evidence.build(
+               Map.put(@valid, :approved_hashes, [
+                 %{kind: :evidence_json, canonical_bytes: canonical_bytes}
+               ])
+             )
+
+    with_stage(fn stage ->
+      File.write!(
+        Path.join(stage, "proof-lane-evidence.json"),
+        Jason.encode!(Evidence.to_map(evidence))
+      )
+
+      write_complete_marker!(stage)
+
+      with_snapshot_replacement(stage, fn ->
+        assert :ok = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+      end)
+
+      assert {:error, error} = Evidence.check(stage, [%{kind: :evidence_json, canonical_bytes: canonical_bytes}])
+      assert error.rule_id == "PL-EVIDENCE-INTEGRITY"
+    end)
+  end
+
   test "retained readers reject malformed digest markers without echoing marker bytes" do
     with_destination(fn destination ->
       assert :ok = Evidence.promote(@valid, destination)
@@ -356,6 +397,24 @@ defmodule Crosswake.ProofLane.EvidenceTest do
     refute inspect(error) =~ canary
     refute File.exists?(destination)
     assert [] == Path.wildcard(destination <> ".stage-*")
+  end
+
+  defp with_snapshot_replacement(stage, fun) do
+    artifact = Path.join(stage, "proof-lane-evidence.json")
+    test_pid = self()
+
+    Process.put({Evidence, :after_digest_barrier}, fn ->
+      File.write!(artifact, "CANARY-REPLACEMENT")
+      send(test_pid, :evidence_snapshot_replaced)
+      :ok
+    end)
+
+    try do
+      fun.()
+      assert_receive :evidence_snapshot_replaced
+    after
+      Process.delete({Evidence, :after_digest_barrier})
+    end
   end
 
   defp with_stage(fun) do
