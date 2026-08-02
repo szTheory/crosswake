@@ -242,79 +242,66 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
-  test "descriptor-relative writes reject an ancestor swap before final create" do
+  test "descriptor publication uses only anonymous bytes and preserves collision winners" do
     with_root(fn root, _config ->
-      outside = temporary_root()
-      hook = Path.join(root, "before-final-open")
-      File.mkdir_p!(outside)
-      File.mkdir_p!(Path.join(root, "e2e"))
-      on_exit(fn -> File.rm_rf!(outside) end)
+      relative = "e2e/descriptor.txt"
+      winner = "host-owned winner\n"
+
+      assert {:ok, :created} = GeneratorFS.write(root, relative, "exact rendered bytes\n")
+      assert File.read!(Path.join(root, relative)) == "exact rendered bytes\n"
+
+      assert {:ok, :reused} = GeneratorFS.write(root, relative, "replacement bytes\n")
+      assert File.read!(Path.join(root, relative)) == "exact rendered bytes\n"
+
+      collision = "e2e/collision.txt"
+      File.write!(Path.join(root, collision), winner)
+      assert {:ok, :reused} = GeneratorFS.write(root, collision, "replacement bytes\n")
+      assert File.read!(Path.join(root, collision)) == winner
+    end)
+  end
+
+  test "publication barriers are callback-only and post-publication failure preserves exact bytes" do
+    with_root(fn root, _config ->
+      parent = self()
+      relative = "e2e/barrier.txt"
+      expected = "exact rendered bytes\n"
 
       task =
         Task.async(fn ->
-          GeneratorFS.write(root, "e2e/race.txt", "safe", before_final_open_hook: hook)
+          GeneratorFS.write(root, relative, expected,
+            before_publish: fn ->
+              send(parent, :before_publish)
+              :ok
+            end,
+            after_publish: fn ->
+              send(parent, :after_publish)
+              :error
+            end
+          )
         end)
 
-      wait_for_file(hook)
-      File.rm_rf!(Path.join(root, "e2e"))
-      File.ln_s!(outside, Path.join(root, "e2e"))
-
-      assert {:error, {"PL-GENERATE-DESTINATION", "e2e/race.txt"}} = Task.await(task)
-      refute File.exists?(Path.join(outside, "race.txt"))
+      assert_receive :before_publish, 5_000
+      assert_receive :after_publish, 5_000
+      assert {:error, {"PL-GENERATE-WRITE", ^relative}} = Task.await(task)
+      assert File.read!(Path.join(root, relative)) == expected
     end)
   end
 
-  for fault <- [:read, :write, :fsync] do
-    @tag post_create_fault: fault
-    test "post-create #{fault} failure removes destination and permits full-byte rerun" do
-      with_root(fn root, _config ->
-        relative = "e2e/post-create-#{unquote(fault)}.txt"
-        expected = "complete generated output\n"
+  test "production publication source excludes named staging and privileged empty-path linking" do
+    generator = File.read!("lib/crosswake/proof_lane/generator.ex")
+    fs = File.read!("lib/crosswake/proof_lane/generator_fs.ex")
+    native = File.read!("priv/native/crosswake_proof_lane_fs.c")
 
-        assert {:error, {"PL-GENERATE-WRITE", ^relative}} =
-                 GeneratorFS.write(root, relative, expected, post_create_fault: unquote(fault))
-
-        refute File.exists?(Path.join(root, relative))
-        assert {:ok, :created} = GeneratorFS.write(root, relative, expected)
-        assert File.read!(Path.join(root, relative)) == expected
-      end)
-    end
-  end
-
-  test "manifest publication collision removes helper staging and preserves the winner" do
-    with_root(fn root, _config ->
-      staging = ".crosswake/proof_lane.json.staging-collision"
-      destination = ".crosswake/proof_lane.json"
-      winner_bytes = "host-owned winner\n"
-
-      File.mkdir_p!(Path.join(root, ".crosswake"))
-      File.write!(Path.join(root, staging), "helper-owned staging\n")
-      File.write!(Path.join(root, destination), winner_bytes)
-
-      assert {:ok, :reused} = GeneratorFS.publish(root, staging, destination)
-      assert File.read!(Path.join(root, destination)) == winner_bytes
-      refute File.exists?(Path.join(root, staging))
-    end)
-  end
-
-  test "manifest publication collision cleanup failure is not reported as reuse" do
-    with_root(fn root, _config ->
-      staging = ".crosswake/proof_lane.json.staging-cleanup-failure"
-      destination = ".crosswake/proof_lane.json"
-      winner_bytes = "host-owned winner\n"
-
-      File.mkdir_p!(Path.join(root, ".crosswake"))
-      File.write!(Path.join(root, staging), "helper-owned staging\n")
-      File.write!(Path.join(root, destination), winner_bytes)
-
-      with_env("CROSSWAKE_PROOF_LANE_FS_TEST_COLLISION_CLEANUP_FAILURE", "1", fn ->
-        assert {:error, {"PL-GENERATE-WRITE", ^destination}} =
-                 GeneratorFS.publish(root, staging, destination)
-      end)
-
-      assert File.read!(Path.join(root, destination)) == winner_bytes
-      assert File.exists?(Path.join(root, staging))
-    end)
+    refute generator =~ ".staging-"
+    refute generator =~ "promote_manifest"
+    refute fs =~ "input_file"
+    refute fs =~ "invoke_publish"
+    refute fs =~ "System.cmd(executable, args"
+    refute native =~ "AT_EMPTY_PATH"
+    refute native =~ "input_path"
+    assert native =~ "/proc/self/fd"
+    assert native =~ "AT_SYMLINK_FOLLOW"
+    assert native =~ "O_TMPFILE"
   end
 
   test "generator actions reject generated namespace and manifest symlinks without writes outside root" do
@@ -355,29 +342,6 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
 
       refute File.exists?(Path.join(outside, "proof_lane.json"))
     end)
-  end
-
-  defp wait_for_file(path, attempts \\ 100)
-  defp wait_for_file(_path, 0), do: flunk("native final-create hook was not reached")
-
-  defp wait_for_file(path, attempts) do
-    if File.exists?(path) do
-      :ok
-    else
-      Process.sleep(10)
-      wait_for_file(path, attempts - 1)
-    end
-  end
-
-  defp with_env(key, value, fun) do
-    previous = System.get_env(key)
-    System.put_env(key, value)
-
-    try do
-      fun.()
-    after
-      if previous, do: System.put_env(key, previous), else: System.delete_env(key)
-    end
   end
 
   defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
