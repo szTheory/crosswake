@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: discussing
-stopped_at: Completed 159-27-PLAN.md; Phase 160 discussion next
-last_updated: "2026-08-02T03:00:00Z"
+current_phase: 159
+current_phase_name: host-reusable-proof-lane
+status: gaps_found
+stopped_at: Phase 159 verification found an ancestor-replacement publication gap after Plan 27
+last_updated: "2026-08-02T02:50:14Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 Plan 27 completed fresh same-tree proof-lane reconciliation.
+last_activity_desc: Phase 159 re-verification found a blocking native evidence-publication race.
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 47
   completed_plans: 47
-  percent: 40
-current_plan: 0
+  percent: 20
+current_plan: 27
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — DISCUSSION NEXT
-Plan: Phase 159 complete (27 of 27 executed)
-Status: Fresh Phase 159 same-tree gate passed; Phase 160 discussion may begin.
-Last activity: 2026-08-02 — Phase 159 Plan 27 completed final same-tree reconciliation.
+Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
+Plan: 27 of 27 executed; one new gap-closure plan is required
+Status: Native evidence publication can be redirected by an ancestor replacement after reservation.
+Last activity: 2026-08-02 — Independent review and re-verification invalidated Phase 159 completion.
 
 ## Active Objective
 
@@ -44,10 +44,17 @@ framework launch.
 
 ## Next Action
 
-Discuss Phase 160 scoped replay and auth safety. TODO-002 remains the bounded adopter-input gate
-and adopter-instance completeness remains `unknown_blocking`.
+Plan the Phase 159 gap closure: pin the destination parent and reserved destination with no-follow
+directory descriptors, publish only through descriptor-relative operations, add a deterministic
+ancestor-replacement regression, then rerun the complete same-tree gate. Do not start Phase 160.
+TODO-002 remains the bounded adopter-input gate and adopter-instance completeness remains
+`unknown_blocking`.
 
 ## Blockers
+
+- Phase 159 native evidence publication reserves a pathname and then reuses pathname-based leaf
+  operations, so an ancestor replacement can redirect retained evidence outside the requested
+  destination. Descriptor-pinned publication and an adversarial regression are required.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.

@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -148,12 +148,12 @@ truth, and codename-only Linear drafts.
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 **Plans:** 27/27 plans executed
-**Verification:** Complete (23/23 must-haves verified) — one fresh repaired same-tree gate passed
-private-helper provenance and poisoned-cache rejection, digest-bound evidence replacement
-regressions for both check arities, warning-clean native helper builds, explicit TypeScript,
-isolated generated Phoenix Playwright proof, shell syntax, and formatting. The generated
-accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
-adopter-instance completeness remains `unknown_blocking`.
+**Verification:** Gaps found (8/10 must-haves verified) — the fresh focused gate passes 54 tests,
+warning-clean native helper builds, explicit TypeScript, isolated generated Phoenix Playwright
+proof, shell syntax, and formatting, but native evidence publication remains redirectable through
+an ancestor-replacement race because reservation and leaf operations are path-based rather than
+descriptor-relative. The generated accessibility runtime remains an advisory `not_run` backstop;
+TODO-002 remains open and adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
