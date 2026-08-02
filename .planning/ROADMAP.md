@@ -147,7 +147,7 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 27/27 plans executed
+**Plans:** 27/28 plans executed
 **Verification:** Gaps found (8/10 must-haves verified) — the fresh focused gate passes 54 tests,
 warning-clean native helper builds, explicit TypeScript, isolated generated Phoenix Playwright
 proof, shell syntax, and formatting, but native evidence publication remains redirectable through
@@ -233,6 +233,10 @@ Plans:
 **Wave 17** *(blocked on both Wave 16 repairs)*
 
 - [x] 159-27-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 without promoting advisory runtime or unresolved spec-less probes.
+
+**Wave 18** *(gap closure; blocked on the executed Wave 17 plan)*
+
+- [ ] 159-28-PLAN.md — Pin retained-evidence publication to no-follow directory descriptors, prove ancestor replacement cannot redirect it, and reconcile Phase 159 from one fresh complete gate.
 
 **Cross-cutting constraints:**
 

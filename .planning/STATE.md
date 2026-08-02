@@ -5,14 +5,14 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: gaps_found
-stopped_at: Phase 159 verification found an ancestor-replacement publication gap after Plan 27
+stopped_at: Phase 159 gap-closure Plan 28 verified and ready to execute
 last_updated: "2026-08-02T02:50:14Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 re-verification found a blocking native evidence-publication race.
+last_activity_desc: Gap-closure Plan 28 passed independent plan verification.
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 47
+  total_plans: 48
   completed_plans: 47
   percent: 20
 current_plan: 27
@@ -23,9 +23,9 @@ current_plan: 27
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
-Plan: 27 of 27 executed; one new gap-closure plan is required
-Status: Native evidence publication can be redirected by an ancestor replacement after reservation.
-Last activity: 2026-08-02 — Independent review and re-verification invalidated Phase 159 completion.
+Plan: 27 of 28 executed; gap-closure Plan 28 is verified and ready to run
+Status: The descriptor-pinning repair remains open until Plan 28 executes and its fresh gate passes.
+Last activity: 2026-08-02 — Gap-closure planning passed independent verification with all requirements and decisions covered.
 
 ## Active Objective
 
@@ -44,11 +44,11 @@ framework launch.
 
 ## Next Action
 
-Plan the Phase 159 gap closure: pin the destination parent and reserved destination with no-follow
-directory descriptors, publish only through descriptor-relative operations, add a deterministic
-ancestor-replacement regression, then rerun the complete same-tree gate. Do not start Phase 160.
-TODO-002 remains the bounded adopter-input gate and adopter-instance completeness remains
-`unknown_blocking`.
+Execute Phase 159 Plan 28: pin the destination parent and reserved destination with no-follow
+directory descriptors, publish only through descriptor-relative operations, prove ancestor
+replacement cannot redirect retained evidence, then rerun the complete same-tree gate. Do not
+start Phase 160. TODO-002 remains the bounded adopter-input gate and adopter-instance completeness
+remains `unknown_blocking`.
 
 ## Blockers
 
