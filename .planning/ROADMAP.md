@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -147,14 +147,13 @@ truth, and codename-only Linear drafts.
 **Effort:** 3 focused days
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
-**Plans:** 23/24 plans executed
-**Verification:** Gaps found (22/23 must-haves verified) — Plan 159-21 closes the generated-browser
-gap by executing isolated version-2 output through the existing Phoenix lifecycle. Independent
-review and verification reproduced two final-publication symlink swaps: evidence promotion can
-retain an unscanned substituted symlink, and manifest publication can report a symlinked artifact
-as created. PROOF-01 and PROOF-04 remain blocked; PROOF-02 and PROOF-03 are satisfied. The generated
-accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
-adopter-instance completeness remains `unknown_blocking`.
+**Plans:** 24/24 plans executed
+**Verification:** Complete (23/23 must-haves verified) — the final same-tree gate passed focused
+evidence and descriptor-publication regressions, warning-clean native helper builds, explicit
+TypeScript, isolated generated Phoenix Playwright proof, shell syntax, and formatting. Linux
+ordinary-unprivileged procfs descriptor publication passed; privileged empty-path publication is
+absent. The generated accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains
+open and adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
@@ -224,7 +223,7 @@ Plans:
 
 **Wave 15** *(blocked on both Wave 14 publication repairs)*
 
-- [ ] 159-24-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 only from observed publication and preserved-contract evidence.
+- [x] 159-24-PLAN.md — Run one fresh complete same-tree gate and reconcile Phase 159 only from observed publication and preserved-contract evidence.
 
 **Cross-cutting constraints:**
 

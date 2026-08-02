@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 159
-current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-23-PLAN.md
-last_updated: "2026-08-02T01:43:38.341Z"
-last_activity: 2026-08-01
-last_activity_desc: digest-bound evidence acceptance completed.
+current_phase: 160
+current_phase_name: scoped-replay-and-auth-safety
+status: ready_for_discussion
+stopped_at: Completed 159-24-PLAN.md
+last_updated: "2026-08-02T02:00:00Z"
+last_activity: 2026-08-02
+last_activity_desc: final same-tree proof-lane gate completed.
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 44
-  completed_plans: 43
-  percent: 40
-current_plan: 24
+  completed_plans: 44
+  percent: 60
+current_plan: 0
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 23 of 24 executed; Plan 159-24 remains
-Status: Executing Phase 159 final same-tree gate.
-Last activity: 2026-08-02 — descriptor-only publication completed.
+Phase: 160 (scoped-replay-and-auth-safety) — READY FOR DISCUSSION
+Plan: Phase 159 complete; Phase 160 has not started
+Status: Final Phase 159 same-tree gate passed and planning truth is synchronized.
+Last activity: 2026-08-02 — final proof-lane gate completed.
 
 ## Active Objective
 
@@ -44,15 +44,10 @@ framework launch.
 
 ## Next Action
 
-Execute only Phase 159 Plan 159-24. The final plan must rerun the complete same-tree gate before
-status advances. Do not start Phase 160 while this gate remains. TODO-002 remains the bounded
+Discuss Phase 160 only. Phase 159 has complete fresh automated proof; TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
-
-- Phase 159 evidence and manifest publication can currently report success after their staging
-  source is swapped to a symlink; PROOF-01 and PROOF-04 remain blocked pending execution of the
-  digest-bound evidence and anonymous-descriptor publication plans plus fresh verification.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -128,7 +123,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
-- [Phase 159]: Independent review and verification reproduced post-create partial-file retention and manifest-collision staging leakage; PROOF-01 remains blocked pending bounded cleanup fixes.
+- [Phase 159]: Fresh final-tree controls close the evidence and manifest publication gaps with digest-bound evidence and descriptor-only publication; all PROOF requirements are complete.
 - [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
 - [Phase ?]: Failed exclusive proof writes remove only their newly created destination before returning the original write failure.
 - [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.
@@ -142,7 +137,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated Phoenix host proof is required, typed, and selected within the existing primary browser corpus.
 - [Phase ?]: Proof-lane endpoint paths reject every backslash byte at canonical normalization before raw EEx rendering or generator filesystem authority.
 - [Phase 159]: The final same-tree gate typechecks and executes the generated Phoenix-host proof with backend confirmation, empty-outbox, and duplicate-idempotency assertions; endpoint one-backslash rejection is verified at every config seam.
-- [Phase 159]: Executable generated-browser proof is verified, but final evidence and manifest publication must reject swapped symlink staging sources before PROOF-01/04 can close.
+- [Phase 159]: Executable generated-browser proof, swapped-source rejection, and descriptor publication are verified together by the final same-tree gate.
 - [Phase ?]: Generated browser specs use one typed host adapter that defaults to stable PL-BROWSER-HOST-ADAPTER denial.
 - [Phase ?]: Phoenix proof pre-seeds the host adapter and executes only isolated version-2 generated Playwright output.
 - [Phase ?]: Retained evidence requires a regular 64-byte SHA-256 marker matching exact canonical artifact bytes on every read.
@@ -226,3 +221,4 @@ this milestone reset.
 | Phase 159 P21 | 20m | 2 tasks | 7 files |
 | Phase 159 P22 | 14m | 1 tasks | 4 files |
 | Phase 159 P23 | 36m | 1 tasks | 4 files |
+| Phase 159 P24 | 2m | 1 task | 5 files |
