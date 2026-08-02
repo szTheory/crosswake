@@ -5,17 +5,17 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-25-PLAN.md
-last_updated: "2026-08-02T02:31:29.294Z"
+stopped_at: Completed 159-26-PLAN.md
+last_updated: "2026-08-02T02:36:56.251Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 Plan 25 completed private helper provenance repair
+last_activity_desc: Phase 159 Plan 26 completed digest-bound evidence snapshot repair.
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 47
-  completed_plans: 45
+  completed_plans: 46
   percent: 20
-current_plan: 25
+current_plan: 26
 ---
 
 # Project State
@@ -23,9 +23,9 @@ current_plan: 25
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 25 of 27 executed
-Status: Plan 25 complete; Plans 26 and 27 remain before phase reconciliation.
-Last activity: 2026-08-02 — Phase 159 Plan 25 completed private helper provenance repair.
+Plan: 26 of 27 executed
+Status: Plan 26 complete; Plan 27 remains before phase reconciliation.
+Last activity: 2026-08-02 — Phase 159 Plan 26 completed digest-bound evidence snapshot repair.
 
 ## Active Objective
 
@@ -149,6 +149,7 @@ and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Concurrent helper builds reuse a content-addressed warning-clean executable without expanding the generator filesystem API.
 - [Phase 159]: Phase completion requires a fresh full same-tree gate; focused repairs and stale evidence cannot advance status.
 - [Phase ?]: Generator helpers are reusable only inside one invocation-owned private lifecycle; predictable shared-temp executables are inert.
+- [Phase ?]: Evidence checks consume only the completion-digest-bound snapshot; replacement races use a test-only process-local barrier.
 
 ## Deferred Items
 
@@ -177,8 +178,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T02:31:29.282Z
-**Stopped at:** Completed 159-25-PLAN.md
+**Last session:** 2026-08-02T02:36:56.239Z
+**Stopped at:** Completed 159-26-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -229,3 +230,4 @@ this milestone reset.
 | Phase 159 P23 | 36m | 1 tasks | 4 files |
 | Phase 159 P24 | 4m | 1 tasks | 6 files |
 | Phase 159 P25 | 22m | 1 tasks | 3 files |
+| Phase 159-host-reusable-proof-lane P26 | 9min | 1 tasks | 2 files |
