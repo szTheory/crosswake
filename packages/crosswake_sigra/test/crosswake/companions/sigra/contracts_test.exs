@@ -20,12 +20,15 @@ defmodule Crosswake.Companions.Sigra.ContractsTest do
                Sigra.replay_decision(valid_route(), %Contracts.AuthContext{
                  actor_id: "actor_secret",
                  org_id: "org_secret",
-                 mfa_level: :mfa,
-                 auth_age: -1
+                 mfa_level: :unknown,
+                 auth_age: 120
                })
 
       assert {:deny, :sigra_denied} =
-               Sigra.replay_decision(%RouteEntry{valid_route() | auth_min_level: :phishing_resistant}, valid_auth_context())
+               Sigra.replay_decision(
+                 %RouteEntry{valid_route() | auth_min_level: :phishing_resistant},
+                 valid_auth_context()
+               )
     end
 
     test "accepts only valid typed route and auth context evidence" do
