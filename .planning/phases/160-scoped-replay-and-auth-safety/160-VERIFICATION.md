@@ -1,174 +1,181 @@
 ---
 phase: 160-scoped-replay-and-auth-safety
-verified: 2026-08-02T18:14:00Z
+verified: 2026-08-02T19:36:04Z
 status: gaps_found
-score: 0/7 must-haves verified
+score: 21/26 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  previous_score: 0/7
+  gaps_closed:
+    - "Legacy IndexedDB mutations are atomically quarantined and require an active exact-scope lease for recovery."
+    - "Post-await stale success and denial paths are lease-fenced; a halted batch is visibly paused and retained."
+    - "Default Sigra admission receives typed RouteEntry/AuthContext evidence."
+    - "Legacy null-scope rows retain a global idempotency tombstone."
+    - "SafeObservation projections revalidate forged structs before egress."
+  gaps_remaining:
+    - "ReplayAdmission accepts non-opaque scope references that core and browser reject."
+    - "Study reports a persisted rejected idempotency record as accepted."
+    - "The online event listener invokes flushOutbox while inactive, producing an unhandled rejected promise instead of an inert no-op."
+  regressions: []
 gaps:
-  - truth: "Opaque scope-partitioned outboxes retain and recover queued work safely across upgrade."
+  - truth: "Every scoped replay envelope uses one bounded versioned opaque scope reference and malformed scope input fails closed."
     status: failed
-    reason: "The IndexedDB v3 upgrade creates scoped_mutations but neither reads nor quarantines the legacy mutations store, making existing queued work permanently unreachable."
-    artifacts:
-      - path: "examples/phoenix_host/priv/static/offline_study.js"
-        issue: "initDB/1 has no legacy-store migration, quarantine, or visible recovery path."
-    missing:
-      - "An upgrade fixture from the legacy store and an explicit non-assigning migration/quarantine/recovery flow."
-  - truth: "Account transition fencing prevents an old epoch from mutating the current UI."
-    status: failed
-    reason: "flushOutbox checks the lease once after response parsing, then awaits deletion/count operations and updates shared status without rechecking it."
-    artifacts:
-      - path: "examples/phoenix_host/priv/static/offline_study.js"
-        issue: "Lines 307-329 permit a fenced old flush to overwrite status for a newly activated scope."
-    missing:
-      - "Lease checks before every post-await storage/UI side effect and regression cases for delayed success and non-OK responses."
-  - truth: "Every event is reauthorized against the current backend session, route, feature, Sigra, and host domain before effect."
-    status: failed
-    reason: "The default production Sigra branch evaluates nil route and nil authority input; direct execution returns :allow."
+    reason: "The host validator accepts any v1. prefix plus 8-120 arbitrary bytes, including whitespace and account-like delimiters; callbacks can then authorize and persist it."
     artifacts:
       - path: "examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex"
-        issue: "sigra_allows?/3 calls evaluate_auth(nil, nil, []) rather than evaluating resolved route/session."
+        issue: "valid_scope/1 is weaker than the anchored core/browser grammar."
     missing:
-      - "Fail-closed construction of real Sigra RouteEntry/AuthContext plus a default-path denial integration test."
-  - truth: "Accepted retries remain idempotent across the scope migration."
+      - "Use the common anchored vN.<16-128 URL-safe bytes> grammar at host admission and add negative integration cases."
+  - truth: "Rejected, conflict, blocked, and ambiguous replay outcomes remain explicit and retained rather than being acknowledged as accepted."
     status: failed
-    reason: "Existing review_events receive NULL scope_ref while the global unique index is dropped; scoped lookup cannot find a legacy row and can apply its mutation again."
+    reason: "Study.apply_one/3 and current_outcome/2 classify every same-scope or null-scope existing ReviewEvent as accepted without examining status."
     artifacts:
-      - path: "examples/phoenix_host/priv/repo/migrations/20260802160000_scope_review_events.exs"
-        issue: "Nullable scope_ref and scoped-only unique index replace the only legacy idempotency guard without backfill or quarantine."
+      - path: "examples/phoenix_host/lib/crosswake_example/local_first/study.ex"
+        issue: "A persisted status: rejected returns outcome: accepted, causing the browser accepted-prefix path to delete the retained record."
     missing:
-      - "Authoritative backfill plus NOT NULL scoped uniqueness, or a retained global guard/quarantine, with an old-row duplicate regression."
-  - truth: "Raw answers and other sensitive values cannot reach telemetry, Logger, doctor, inspection, aggregates, or evidence."
-    status: failed
-    reason: "Public SafeObservation structs can be directly constructed and every projection/egress trusts the struct without revalidation."
-    artifacts:
-      - path: "lib/crosswake/offline/safe_observation.ex"
-        issue: "to_telemetry/1 and to_doctor/1 directly copy fields from any %SafeObservation{} value."
-      - path: "lib/crosswake/telemetry.ex"
-        issue: "emit_safe_observation/1 sends the unvalidated telemetry projection to the root telemetry/default Logger path."
-    missing:
-      - "Boundary revalidation or an opaque validated type, plus forged-struct canary tests for all projections and Logger bytes."
-  - truth: "A disabled replay path retains queued work and visibly fails closed rather than presenting progress."
-    status: failed
-    reason: "The browser ignores SyncController's halted field on a 200 partial batch and renders normal Synced status while the blocked current/later records remain queued."
+      - "Map persisted rejected rows to a retained rejected result in both normal and race-recovery paths, with regression tests."
+  - truth: "Retained partitions launch inert and inactive reconnects do not create replay work or errors."
+    status: partial
+    reason: "The online listener passes flushOutbox directly; flushOutbox calls requireActiveLease before its try/finally, so reconnect after launch/logout/fence rejects without a handler."
     artifacts:
       - path: "examples/phoenix_host/priv/static/offline_study.js"
-        issue: "flushOutbox reads accepted_records/rejected only; it never handles data.data.halted before rendering Synced."
+        issue: "window.addEventListener('online', flushOutbox) permits an unhandled rejection while inactive."
     missing:
-      - "Closed halted/blocked UI handling that retains queue, pauses drain, and tests a mid-batch feature-disable response."
+      - "Make inactive replay an explicit no-op and catch unexpected listener failures; add an inactive-online regression."
 ---
 
 # Phase 160: Scoped Replay and Auth Safety Verification Report
 
-**Phase Goal:** enforce account-scoped outboxes, payload redaction, backend reauthorization, auth continuity, and server-side disablement for one scoped replay flow.
-**Verified:** 2026-08-02T18:14:00Z
+**Phase Goal:** Enforce account-scoped outboxes, payload redaction, backend reauthorization, auth continuity, and server-side disablement.
+**Verified:** 2026-08-02T19:36:04Z
 **Status:** gaps_found
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — after Plans 160-04 through 160-08 gap closure
 
 ## Goal Achievement
 
-The phase goal is **not achieved**. The planned suites pass, but they do not exercise the unsafe default admission branch, direct SafeObservation construction, legacy IndexedDB/SQL upgrades, or the post-await epoch/UI race. These are observable implementation failures, not external adopter prerequisites.
+The goal is **not achieved**. The prior six gaps are materially repaired, and the planned suites pass, but two reachable server paths violate opaque-scope and truthful-retention guarantees. A third browser listener path violates the required inert lifecycle behavior. These are implementation gaps, not deferred adopter inputs.
 
 ### Observable Truths
 
-| # | Truth | Status | Evidence |
+All 26 PLAN `must_haves.truths` were checked against current code and the focused runnable suites. Roadmap success criteria are covered by the matching rows below (cross-scope proof: 01/04/07; redaction: 03/08; backend-only Sigra: 06; disablement: 05).
+
+| Plan | # | Must-have (abridged) | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| 01 | 1 | Required opaque scope on entry/request/local record/lease/completion; no all-scope operation | ✓ VERIFIED | Core and browser use anchored `vN.` URL-safe grammar; exact scope IndexedDB access is exercised by 16 browser proofs. |
+| 01 | 2 | Inert launch and fenced account transitions | ✗ FAILED | Fencing is sound after activation, but `online -> flushOutbox -> requireActiveLease` rejects while inactive. |
+| 01 | 3 | Serial drain deletes accepted only; nonaccepted outcomes remain recoverable | ✗ FAILED | A persisted rejected event becomes `accepted`, so the accepted-prefix browser path deletes it. |
+| 02 | 1 | Exact-scope event completes ordered admission and atomic effect | ✗ FAILED | `ReplayAdmission.valid_scope/1` admits a non-opaque server envelope before the transaction. |
+| 02 | 2 | Malformed/missing/denied dynamic admission fails closed | ✗ FAILED | `"v1. bad scope"` is malformed by core/browser contract yet returns `{:allow, %{route: %{}}}` with valid callbacks. |
+| 02 | 3 | Duplicate accepted is accepted; rejected/conflict/blocked are explicit retained outcomes | ✗ FAILED | Existing same-scope/null rejected rows return `outcome: :accepted` in both transaction and recovery paths. |
+| 02 | 4 | Tracer preserves non-passing native/device prerequisites | ✓ VERIFIED | `160-VALIDATION.md` and browser proof keep native/device outcomes non-passing; TODO-002 remains `unknown_blocking`. |
+| 03 | 1 | Safe per-surface operational/evidence projections exclude sensitive bytes | ✓ VERIFIED | 118 core tests include forged-observation zero-egress coverage; every public projection calls `validate/1`. |
+| 03 | 2 | Doctor/inspection expose static policy readiness, not scopes/outbox | ✓ VERIFIED | `Doctor.static_readiness/1` uses only the two-key projection; focused egress tests pass. |
+| 03 | 3 | Exact evidence schema has closed Phase 160 assertions and final-byte scan | ✓ VERIFIED | `Evidence` retains its closed assertion vocabulary and evidence tests pass. |
+| 03 | 4 | TODO-002/adopter/device prerequisites remain blocked or unknown | ✓ VERIFIED | State, validation, and proof output retain `unknown_blocking`; no support promotion found. |
+| 04 | 1 | Legacy IndexedDB data is non-assigningly quarantined | ✓ VERIFIED | Upgrade cursor copy/delete is in the same transaction; legacy browser regressions pass. |
+| 04 | 2 | Only exact active lease recovery can move quarantine into a scope | ✓ VERIFIED | `recoverLegacyMutations/1` checks active scope/epoch; wrong-scope regression passes. |
+| 04 | 3 | Interrupted upgrade/recovery keeps one source of truth | ✓ VERIFIED | Transaction aborts on failure and browser recovery proofs pass. |
+| 05 | 1 | Fence-first logout/switch makes later old-epoch effects inert | ✓ VERIFIED | Abort, transaction ownership, and post-await lease guards; delayed success/denial browser tests pass. |
+| 05 | 2 | Delayed success/non-success cannot affect replacement scope | ✓ VERIFIED | `post-response fence` success and denial tests pass. |
+| 05 | 3 | Halted partial batches retain suffix and visibly pause | ✓ VERIFIED | Closed `halted` parser renders paused state after accepted-only delete; proof passes. |
+| 06 | 1 | Sigra accepts only typed route/AuthContext and otherwise returns safe denial | ✓ VERIFIED | Guarded `replay_decision/3`; 15 companion contract tests pass. |
+| 06 | 2 | Host passes current typed authority; browser/core gain no token authority | ✓ VERIFIED | Default resolution builds host-private route/AuthContext immediately before Sigra; no credential fields leave authority map. |
+| 06 | 3 | Default path has denial coverage and cannot allow through omitted callbacks | ✓ VERIFIED | Host test exercises default allow and missing-evidence denial before domain callback. |
+| 07 | 1 | Null-scope legacy row is a global accepted tombstone | ✓ VERIFIED | Global unique index restored and legacy tombstone test passes. |
+| 07 | 2 | New scoped uniqueness and cross-scope conflict are fail-closed | ✓ VERIFIED | Global lookup plus scoped conflict test leaves one row and returns conflict. |
+| 07 | 3 | Corrective migration is additive and does not invent legacy ownership | ✓ VERIFIED | Second migration adds only global unique index; no backfill code exists. |
+| 08 | 1 | Forged SafeObservation cannot reach egress | ✓ VERIFIED | Projection boundary round-trips through `new/1`; forged-struct suites pass. |
+| 08 | 2 | Egress consumers invoke output only on `{:ok, projection}` | ✓ VERIFIED | Offline/root telemetry and doctor pattern-match success; zero-egress tests pass. |
+| 08 | 3 | One same-tree gate covers original threats without self-approved security | ✓ VERIFIED | Validation records a passing gate; `160-SECURITY.md` still declares the independent audit blocked/open. |
+
+**Score:** 21/26 truths verified (0 present-but-behavior-unverified).
+
+### Required Artifacts
+
+| Artifact set | Status | Details |
+| --- | --- | --- |
+| 01 core scope/lifecycle and browser proof artifacts | ⚠️ PARTIAL | All exist and are substantive; `offline_study.js` has the inactive-listener gap. |
+| 02 host admission, Study, Sigra, E2E artifacts | ✗ HOLLOW | All exist and are wired, but admission grammar and rejected-outcome mapping are wrong. |
+| 03 SafeObservation, telemetry, doctor, evidence, privacy proof | ✓ VERIFIED | Boundary validation and success-only egress are wired and exercised. |
+| 04 legacy quarantine/recovery source and browser proof | ✓ VERIFIED | Real IndexedDB upgrade/recovery flow is connected and tested. |
+| 05 lifecycle/halting source and browser proof | ✓ VERIFIED | Post-await guards, abort ownership, and paused rendering are connected and tested. |
+| 06 typed Sigra host/companion artifacts | ✓ VERIFIED | Default host caller supplies typed inputs to guarded companion API. |
+| 07 migration/idempotency source and tests | ⚠️ PARTIAL | Migration guard is sound; Study’s status-blind outcome projection is not. |
+| 08 revalidated egress and validation ledger | ✓ VERIFIED | Source and tests are substantive; the ledger cannot cover the later-discovered defects. |
+
+### Key Link Verification
+
+| From | To | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Every retained outbox record is scope-partitioned and recoverable without cross-account assignment. | ✗ FAILED | `offline_study.js:122-133` adds `scoped_mutations` but never reads, migrates, or quarantines the legacy `mutations` store. A v1 queued record is silently stranded after the v3 upgrade. |
-| 2 | A logout/switch epoch prevents stale work from affecting a new scope's UI or storage. | ✗ FAILED | `offline_study.js:307-329` performs awaits and status mutations after its sole `leaseIsCurrent` check. The focused switch test passes but fences before response completion, not after that check. |
-| 3 | Each event uses current session, scope, route, feature, Sigra, and host-domain authority before mutation. | ✗ FAILED | `replay_admission.ex:116` calls Sigra with `(nil, nil, [])`; `MIX_ENV=test mix run` returned `decision: :allow` for that exact default call. |
-| 4 | Idempotency survives scope introduction and cannot repeat a legacy domain effect. | ✗ FAILED | The migration adds nullable `scope_ref`, drops global uniqueness, then creates nullable scoped uniqueness. `Study.apply_one/3` queries only the scoped pair. |
-| 5 | Operational and retained egress accept only validated safe projections. | ✗ FAILED | Direct execution constructed `%SafeObservation{route_id: "scope-canary", ...}` and `to_telemetry/1` returned it (`forged_route_reaches_projection: true`). Root telemetry accepts this projection. |
-| 6 | `crosswake_sigra` is a backend-authority adapter rather than a permissive tokenless gate. | ✗ FAILED | Although `Sigra.replay_decision/3` itself is closed when called correctly, the only default host integration bypasses resolved route/session evidence and permits nil inputs. |
-| 7 | Server-side disablement preserves work and visibly presents blocked state. | ✗ FAILED | `SyncController` emits partial-batch `halted`; browser `flushOutbox` ignores it and can render `Synced … queued …` for retained disabled work. |
+| `Journal.Entry.scope_ref` | `Replay.Request.scope_ref` | ✓ WIRED | `request_for_entry/1` directly copies `scope_ref`; core contract tests pass. |
+| Browser active scope/epoch | browser reads, sends, completion, UI | ⚠️ PARTIAL | Exact-scope operations and post-await guards work; inactive `online` event is not inert. |
+| Browser request | `SyncController` → `ReplayAdmission` → `Study` | ✗ NOT SAFE | Calls are wired, but host `valid_scope/1` accepts values the other endpoints reject. |
+| `Study.apply_one/3` | global/scoped idempotency and response | ✗ NOT SAFE | Transaction is atomic, but it discards persisted `status: "rejected"` when forming an outcome. |
+| Resolved host evidence | `Sigra.replay_decision/3` | ✓ WIRED | Typed `RouteEntry` and `AuthContext` reach the guarded call per event. |
+| `SafeObservation` | telemetry/Logger/Doctor/evidence | ✓ WIRED | Public projections validate; consumers emit only success projections; focused tests pass. |
+| `SyncController.halted` | learner paused status | ✓ WIRED | Browser parses allowed halted classes and renders paused state after retaining suffix. |
 
-**Score:** 0/7 truths verified.
+### Data-Flow Trace (Level 4)
 
-## Requirements Coverage
-
-Every requirement declared by the three PLAN frontmatters was found in `.planning/REQUIREMENTS.md`; there are no orphaned Phase 160 requirement IDs. All are blocked by current code evidence.
-
-| Requirement | Source Plan(s) | Description | Status | Evidence |
-| --- | --- | --- | --- | --- |
-| SCOPE-01 | 160-01, 160-02, 160-03 | Opaque scope envelopes and partitioned outbox | ✗ BLOCKED | New writes are scoped, but the v3 IndexedDB upgrade leaves old retained mutations inaccessible. |
-| SCOPE-02 | 160-01, 160-02, 160-03 | Logout/switch stops replay; cross-scope replay fails closed | ✗ BLOCKED | An old flush can update the new scope's shared status after a transition. |
-| SCOPE-03 | 160-02, 160-03 | Session, route, and feature reauthorization before mutation | ✗ BLOCKED | Default Sigra admission is evaluated with nil route/session, not current authority. |
-| SCOPE-04 | 160-03 | Raw payloads excluded from egress surfaces | ✗ BLOCKED | A forgeable public struct can carry arbitrary sensitive values into root telemetry/Logger projection. |
-| SCOPE-05 | 160-02, 160-03 | Sigra adapts backend authority only | ✗ BLOCKED | The default host call does not pass backend authority evidence to Sigra. |
-
-## Required Artifacts
-
-| Artifact | Expected | Status | Details |
+| Artifact | Data | Source | Status |
 | --- | --- | --- | --- |
-| `lib/crosswake/offline/journal.ex` | Required opaque journal scope | ✓ VERIFIED | Required bounded `scope_ref` validation and direct transport map copy exist. |
-| `lib/crosswake/offline/runtime.ex` | Lifecycle/epoch primitives | ✓ VERIFIED | Inactive/active lease and ordered drain primitives are substantive; browser integration still fails stale post-await fencing. |
-| `examples/phoenix_host/priv/static/offline_study.js` | Scoped browser storage and lifecycle | ✗ HOLLOW | New-store operations are wired, but legacy migration, post-await fencing, and partial-block UI handling are missing. |
-| `examples/phoenix_host/lib/crosswake_example/local_first/replay_admission.ex` | Fail-closed ordered host admission | ✗ HOLLOW | Wiring reaches `Study.apply_one/3`, but default Sigra authority evaluation is nil/nil. |
-| `examples/phoenix_host/lib/crosswake_example/local_first/study.ex` | Atomic idempotent domain mutation | ✗ HOLLOW | `Ecto.Multi` is wired, but the schema migration breaks idempotency for existing rows. |
-| `packages/crosswake_sigra/lib/crosswake/companions/sigra.ex` | Closed replay allow/deny projection | ⚠️ PARTIAL | `replay_decision/3` is substantive, but the production caller does not supply real inputs. |
-| `lib/crosswake/offline/safe_observation.ex` | Validated surface-specific projections | ✗ HOLLOW | Constructor validates maps; public structs bypass it at every projection. |
-| `lib/crosswake/telemetry.ex` / `lib/crosswake/doctor/doctor.ex` | Safe root egress | ✗ HOLLOW | Both trust forgeable SafeObservation structs. |
-| `lib/crosswake/proof_lane/evidence.ex` | Closed evidence assertions | ✓ VERIFIED | Existing exact-schema machinery remains wired; it cannot compensate for the unsafe source egress. |
+| Browser scoped mutations | active scope-indexed records | IndexedDB `by_scope` index | ✓ FLOWING — quarantine/recovery tests prove current data flow. |
+| Replay admission scope | request `scope_ref` | browser request/host session matcher | ✗ UNSAFE — host grammar accepts non-opaque bytes. |
+| Study replay outcome | persisted `ReviewEvent.status` | existing idempotency row | ✗ HOLLOW — status is read as a row but never used to select `accepted` vs `rejected`. |
+| Operational observations | closed observation fields | `SafeObservation.validate/1` / `new/1` | ✓ FLOWING — success-only projection paths tested. |
 
-## Key Link Verification
-
-| From | To | Via | Status | Details |
-| --- | --- | --- | --- | --- |
-| `Journal.Entry.scope_ref` | `Replay.Request.scope_ref` | `request_for_entry/1` | ✓ WIRED | Direct copy at `lib/crosswake/offline/replay.ex:79-88`. |
-| Browser active scope/epoch | IndexedDB/send/completion/UI | lease checks | ✗ PARTIAL | Checks exist before send and response handling, but not after later awaits or before all UI writes. |
-| `SyncController.sync_events/4` | `ReplayAdmission.authorize/4` | per-event reduction | ✓ WIRED | Direct invocation at `sync_controller.ex:29`. |
-| `ReplayAdmission.authorize/4` | Sigra | `sigra_allows?/3` | ✗ NOT SAFE | Default link calls `evaluate_auth(nil, nil, [])`. |
-| `ReplayAdmission.authorize/4` | `Study.apply_one/3` | allowed authority map | ⚠️ PARTIAL | Connected at `sync_controller.ex:31`, but its upstream Sigra decision is not authority-backed. |
-| `Study.apply_one/3` | `Repo.transaction/0` | `Ecto.Multi` | ✗ PARTIAL | Atomic new-row transaction exists; migration removes legacy uniqueness protection. |
-| `SafeObservation` | telemetry/Logger/doctor | projection functions | ✗ NOT SAFE | Connected, but accepts forged structs without validation. |
-| Server `halted` result | browser blocked status | `flushOutbox` response handling | ✗ NOT WIRED | Browser does not inspect `data.data.halted`. |
-
-## Data-Flow Trace (Level 4)
-
-| Artifact | Data Variable | Source | Produces Real Data | Status |
-| --- | --- | --- | --- | --- |
-| `offline_study.js` | `records` | `scoped_mutations.by_scope` IndexedDB index | New records only; legacy `mutations` is ignored | ⚠️ STATIC/LEGACY-DISCONNECTED |
-| `replay_admission.ex` | Sigra decision | resolved route/session should be source | Default source is literal `nil, nil` | ✗ DISCONNECTED |
-| `safe_observation.ex` | egress metadata | caller-supplied struct fields | No projection-boundary validation | ✗ UNTRUSTED |
-
-## Behavioral Spot-Checks
+### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Focused core lifecycle/scope contracts | `mix test test/crosswake/offline/journal_test.exs test/crosswake/offline/replay_test.exs test/crosswake/offline/runtime_test.exs` | 11 tests, 0 failures | ✓ PASS — does not cover legacy browser upgrade or post-await UI race |
-| Host admission/idempotency tests | `cd examples/phoenix_host && MIX_ENV=test mix test …local_first…` | 8 tests, 0 failures | ✓ PASS — callback-injected tests do not cover default Sigra inputs or old rows |
-| Safe egress tests | focused five-file Mix test | 66 tests, 0 failures | ✓ PASS — no direct-struct forgery test |
-| Sigra contracts | `cd packages/crosswake_sigra && mix test …contracts_test.exs` | 13 tests, 0 failures | ✓ PASS — companion test does not validate the host caller |
-| Existing in-flight browser test | `npm run proof:offline-island -- --grep "switch in flight keeps an old completion"` | 1 passed | ✓ PASS — does not fence after the response lease check |
-| Default Sigra branch | `MIX_ENV=test mix run -e 'Sigra.replay_decision(nil, nil, [])'` | `decision: :allow` | ✗ FAIL |
-| Forged SafeObservation projection | `mix run -e 'SafeObservation.to_telemetry(forged)'` | `forged_route_reaches_projection: true` | ✗ FAIL |
+| Core scope, privacy, evidence, doctor, inspection contracts | `mix test test/crosswake/offline …json_formatter_test.exs` | 118 tests, 0 failures | ✓ PASS |
+| Typed Sigra replay contract | `cd packages/crosswake_sigra && mix test …contracts_test.exs` | 15 tests, 0 failures | ✓ PASS |
+| Phoenix replay/admission/idempotency contracts | `cd examples/phoenix_host && MIX_ENV=test mix test test/crosswake_example/local_first` | 14 tests, 0 failures | ✓ PASS — lacks rejected-row status case and hostile scope grammar case. |
+| Browser scope/recovery/lifecycle/halting behavior | `cd examples/phoenix_host && npm run proof:offline-island` | 16 tests, 0 failures | ✓ PASS — lacks inactive `online` listener case. |
+| Host malformed-scope admission | `MIX_ENV=test mix run -e '…authorize("v1. bad scope", …)'` | `{:allow, %{route: %{}}}` | ✗ FAIL |
 
-## Review Reconciliation
+### Requirements Coverage
 
-All four blockers in `160-REVIEW.md` are confirmed independently:
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| SCOPE-01 | ✗ BLOCKED | Browser/core require an opaque grammar, but host admission accepts and can persist malformed scope references. |
+| SCOPE-02 | ✗ BLOCKED | Switch fencing works, but inactive reconnect produces an unhandled rejection rather than the required inert posture. |
+| SCOPE-03 | ✗ BLOCKED | Current authority layers are present, but a persisted rejection is falsely acknowledged and deleted as accepted. |
+| SCOPE-04 | ✓ SATISFIED | Revalidated allowlists and every-egress forged-canary tests pass. |
+| SCOPE-05 | ✓ SATISFIED | Sigra receives typed server authority and safely denies untyped input; no token authority was added to core/browser. |
 
-1. **CR-01 confirmed:** nil route/session default Sigra evaluation returns allow.
-2. **CR-02 confirmed:** direct `%SafeObservation{}` construction bypasses `new/1` and reaches the projection used by root telemetry.
-3. **CR-03 confirmed:** no legacy IndexedDB migration/quarantine/recovery code or upgrade fixture exists.
-4. **CR-04 confirmed:** nullable migration drops the global unique key without backfill, while the runtime checks only the scoped pair.
+No orphaned Phase 160 requirement IDs were found. Phases 161–162 cover pack/device work, not these implementation defects, so none is deferred.
 
-**WR-01 is confirmed.** It is a real SCOPE-02 failure, not merely a test-quality concern: there is no lease check before status writes after the deletion/count awaits, and no regression simulates that timing. An additional independent failure was found: a partial server-side feature denial is emitted as `halted` but rendered as ordinary sync progress by the browser.
+### Review Reconciliation
 
-## Anti-Patterns Found
+| Finding | Independent verdict | Goal impact |
+| --- | --- | --- |
+| CR-01 — non-opaque host scope accepted | **CONFIRMED (BLOCKER)** | Breaks SCOPE-01 and both the account-scoped/outbox boundary and malformed-admission contract. |
+| CR-02 — rejected row replayed as accepted | **CONFIRMED (BLOCKER)** | Breaks truthful retained outcomes; browser accepted-prefix deletion can remove the only attention signal. |
+| WR-01 — inactive online listener rejects | **CONFIRMED (WARNING / must-have failure)** | Does not cross scopes, but violates required inert launch/reconnect behavior and needs automated regression coverage. |
+
+### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `lib/crosswake/proof_lane/evidence.ex` | 29 | Unused `@after_digest_barrier` module attribute | ⚠️ Warning | Every focused run emits a compiler warning; not a phase-goal blocker. |
-| `test/crosswake/proof/phase160_scoped_replay_privacy_test.exs` | 19-27 | Source-string/equation assertions only | ⚠️ Warning | Test proves mentions of SafeObservation, not rejection of forged values at public egress. |
+| `lib/crosswake/proof_lane/evidence.ex` | 29 | Unused `@after_digest_barrier` | ⚠️ Warning | Existing compiler warning; not a Phase 160 goal blocker. |
+| `examples/phoenix_host/test/crosswake_example/local_first/*.exs` | relevant cases absent | Passing tests omit rejected-row and hostile-scope inputs | ⚠️ Warning | Suites passed while both critical behaviors remained unexercised. |
 
-## External Prerequisites
+### Privacy and External Boundaries
 
-TODO-002, real host-issued scope/route/flag/session data, host adapters, and physical-iPhone proof remain `unknown_blocking` downstream prerequisites. They are not used to defer or mask the Phase 160 implementation failures above; no human UAT is requested because all identified gaps have deterministic automated regression paths.
+TODO-002 and real adopter scope, route, feature, session, adapter, and physical-iPhone inputs remain `unknown_blocking`. This report neither infers those values nor promotes any device/support claim. All identified gaps are code-contract defects with deterministic automated fixes; no human UAT is created.
 
 ## Gaps Summary
 
-Six related gaps block the phase: unsafe legacy upgrade handling, stale UI fencing, nil-backed Sigra authorization, legacy idempotency regression, forgeable privacy projections, and ignored partial disablement. The next action is an automated gap-closure plan with explicit regression tests for each case; Phase 161/162 do not specifically address these contracts, so none is deferred.
+Three gaps block closure: align server scope validation with the opaque cross-layer contract, preserve `rejected` idempotency outcomes through normal and race paths, and make inactive online replay a caught no-op. The first two are critical goal failures; the third is a lifecycle must-have failure. The existing unrelated `.planning/config.json` modification was observed and left untouched.
+
+**Next action:** Gaps found. Plan the fixes, then re-run execute-phase before shipping.
+
+**Next command:** `/gsd:plan-phase 160 --gaps`
 
 ---
 
-_Verified: 2026-08-02T18:14:00Z_
+_Verified: 2026-08-02T19:36:04Z_
 _Verifier: the agent (gsd-verifier)_
