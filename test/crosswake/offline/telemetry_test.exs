@@ -52,4 +52,30 @@ defmodule Crosswake.Offline.TelemetryTest do
                       ]
              end)
   end
+
+  test "rejects forged observations before invoking the callback" do
+    observation = valid_observation()
+    forged = Map.put(observation, :route_id, "CANARY-OFFLINE-CALLBACK")
+
+    assert {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-ROUTE", path: :route_id}} =
+             Telemetry.emit(forged, fn _metadata -> send(self(), :callback_invoked) end)
+
+    refute_received :callback_invoked
+  end
+
+  defp valid_observation do
+    {:ok, observation} =
+      SafeObservation.new(%{
+        route_id: "route-0123456789abcdef",
+        runtime: :offline_island,
+        lifecycle: :replayed,
+        outcome: :accepted,
+        denial: :none,
+        measurements: %{event_count: 1},
+        configuration: :configured,
+        adapter_readiness: :blocked
+      })
+
+    observation
+  end
 end

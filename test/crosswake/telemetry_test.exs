@@ -181,6 +181,41 @@ defmodule Crosswake.TelemetryTest do
     refute log =~ "scope_ref"
   end
 
+  test "forged safe observations emit neither telemetry nor Logger output" do
+    assert {:ok, observation} =
+             SafeObservation.new(%{
+               route_id: "route-0123456789abcdef",
+               runtime: :offline_island,
+               lifecycle: :replayed,
+               outcome: :accepted,
+               denial: :none,
+               measurements: %{event_count: 1},
+               configuration: :configured,
+               adapter_readiness: :blocked
+             })
+
+    forged = Map.put(observation, :route_id, "CANARY-ROOT-TELEMETRY")
+    :ok = Crosswake.Telemetry.attach_default_logger(encode: true)
+
+    :ok =
+      :telemetry.attach(
+        "phase160-forged-observation",
+        [:crosswake, :offline, :replay, :stop],
+        fn _event, _measurements, _metadata, pid -> send(pid, :telemetry_emitted) end,
+        self()
+      )
+
+    on_exit(fn -> :telemetry.detach("phase160-forged-observation") end)
+
+    log = capture_log(fn ->
+      assert {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-ROUTE", path: :route_id}} =
+               Crosswake.Telemetry.emit_safe_observation(forged)
+    end)
+
+    refute_received :telemetry_emitted
+    refute log =~ "CANARY-ROOT-TELEMETRY"
+  end
+
   # ---------------------------------------------------------------------------
   # Test 1: attach_default_logger/0 registers a handler and returns :ok
   # RED until plan 02/03 creates Crosswake.Telemetry.attach_default_logger/1
