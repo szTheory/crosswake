@@ -15,7 +15,7 @@ progress:
   total_plans: 59
   completed_plans: 58
   percent: 40
-current_plan: 9
+current_plan: 10
 ---
 
 # Project State
@@ -25,7 +25,7 @@ current_plan: 9
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
 Plan: 10 of 11 complete
 Status: Ready to execute
-Last activity: 2026-08-02 — Completed Plan 160-09 scoped replay safety closure
+Last activity: 2026-08-02 — Completed Plan 160-10 inactive replay safety closure
 
 ## Active Objective
 
