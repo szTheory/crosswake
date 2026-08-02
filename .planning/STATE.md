@@ -5,17 +5,17 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
 status: executing
-stopped_at: Completed 159-22-PLAN.md
-last_updated: "2026-08-02T01:33:07.890Z"
+stopped_at: Completed 159-23-PLAN.md
+last_updated: "2026-08-02T01:43:38.341Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 execution started
+last_activity_desc: digest-bound evidence acceptance completed.
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 44
-  completed_plans: 42
+  completed_plans: 43
   percent: 40
-current_plan: 23
+current_plan: 24
 ---
 
 # Project State
@@ -23,9 +23,9 @@ current_plan: 23
 ## Current Position
 
 Phase: 159 (host-reusable-proof-lane) — EXECUTING
-Plan: 22 of 24 executed; Plans 159-23 through 159-24 remain
-Status: Executing Phase 159 gap closure.
-Last activity: 2026-08-01 — digest-bound evidence acceptance completed.
+Plan: 23 of 24 executed; Plan 159-24 remains
+Status: Executing Phase 159 final same-tree gate.
+Last activity: 2026-08-02 — descriptor-only publication completed.
 
 ## Active Objective
 
@@ -44,10 +44,8 @@ framework launch.
 
 ## Next Action
 
-Execute only Phase 159 Plans 159-22 through 159-24. Evidence acceptance must bind every read to the
-approved artifact SHA-256; generated files must publish from anonymous descriptors through the
-runtime-proved supported-platform primitive; the final plan must rerun the complete same-tree gate
-before status advances. Do not start Phase 160 while these gaps remain. TODO-002 remains the bounded
+Execute only Phase 159 Plan 159-24. The final plan must rerun the complete same-tree gate before
+status advances. Do not start Phase 160 while this gate remains. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
@@ -148,6 +146,8 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Generated browser specs use one typed host adapter that defaults to stable PL-BROWSER-HOST-ADAPTER denial.
 - [Phase ?]: Phoenix proof pre-seeds the host adapter and executes only isolated version-2 generated Playwright output.
 - [Phase ?]: Retained evidence requires a regular 64-byte SHA-256 marker matching exact canonical artifact bytes on every read.
+- [Phase ?]: Generated proof-lane bytes publish through a bounded private frame and descriptor-only atomic destination handoff.
+- [Phase ?]: Concurrent helper builds reuse a content-addressed warning-clean executable without expanding the generator filesystem API.
 
 ## Deferred Items
 
@@ -176,8 +176,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T01:33:07.881Z
-**Stopped at:** Completed 159-22-PLAN.md
+**Last session:** 2026-08-02T01:43:38.330Z
+**Stopped at:** Completed 159-23-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -225,3 +225,4 @@ this milestone reset.
 | Phase 159 P20 | 1m | 1 task | 6 files |
 | Phase 159 P21 | 20m | 2 tasks | 7 files |
 | Phase 159 P22 | 14m | 1 tasks | 4 files |
+| Phase 159 P23 | 36m | 1 tasks | 4 files |
