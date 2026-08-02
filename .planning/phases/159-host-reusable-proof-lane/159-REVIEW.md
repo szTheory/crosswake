@@ -1,6 +1,6 @@
 ---
 phase: 159-host-reusable-proof-lane
-reviewed: 2026-08-02T00:02:26Z
+reviewed: 2026-08-01T00:00:00Z
 depth: standard
 files_reviewed: 33
 files_reviewed_list:
@@ -39,39 +39,55 @@ files_reviewed_list:
   - test/mix/tasks/crosswake_gen_proof_lane_test.exs
 findings:
   critical: 2
-  warning: 0
+  warning: 1
   info: 0
-  total: 2
+  total: 3
 status: issues_found
 ---
 
 # Phase 159: Code Review Report
 
-**Reviewed:** 2026-08-02T00:02:26Z
+**Reviewed:** 2026-08-01T00:00:00Z
 **Depth:** standard
 **Files Reviewed:** 33
 **Status:** issues_found
 
 ## Summary
 
-The generated Phoenix proof is executable and its browser adapter is fail-closed, but the two final filesystem publication boundaries do not verify that their staged source is still a regular owned artifact. A staging-path swap can therefore make either operation return success while publishing a symbolic link. This violates the proof lane's no-follow, provenance, and privacy-safe retention guarantees.
+The browser proof and generated host-owned scaffold preserve the intended offline-island sequence, and the focused ExUnit review command passes. However, the proof publication boundary has two exploitable integrity failures: a predictable executable cache in the shared temporary directory and a time-of-check/time-of-use gap in retained-evidence validation. The native evidence writer also leaves incomplete artifacts behind after failures, contrary to the phase's atomic evidence requirement.
+
+## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Evidence promotion can successfully retain a substituted symlink
+### CR-01: Shared temporary executable cache permits arbitrary code execution
 
-**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_evidence_promote.c:20-24`
-**Issue:** The helper uses `stat(argv[1])`, which follows symlinks, before `renameat2(..., RENAME_NOREPLACE)` / `renameatx_np(..., RENAME_EXCL)`. The stage directory is writable through the lifecycle seam until this call. If it is replaced with a symlink after `scan_stage/1` and before promotion, `stat` accepts the linked directory and rename moves the symlink itself to the destination. `Evidence.promote/3` then returns `:ok`, leaving the retained evidence destination as a symlink outside the reviewed stage. This was reproduced with a `before_promote` hook: promotion returned `:ok` and `File.lstat(destination).type` was `:symlink`.
-**Fix:** Open or inspect the source with no-follow semantics immediately before publication and reject any non-directory source. At minimum, replace `stat` with `lstat` and reject `S_ISLNK`; preferably use descriptor-relative no-follow operations and validate both source and destination parents so the check and publication share an anchored filesystem authority.
+**File:** `lib/crosswake/proof_lane/generator_fs.ex:160-175`
 
-### CR-02: Manifest publication accepts a swapped staging symlink as generated output
+**Issue:** The helper executable name is deterministically derived from public source bytes under `System.tmp_dir!()`. If a regular file already exists there, lines 162-163 trust it without checking ownership, origin, or even whether it is a symlink to an attacker-controlled executable; `invoke_read/3` and `run_port/4` then execute it. Another process that can write the shared temporary directory can pre-create `crosswake-proof-lane-fs-<known-digest>` and obtain code execution whenever the host runs generation, `--check`, or `--diff`.
 
-**File:** `/Users/jon/projects/crosswake/priv/native/crosswake_proof_lane_fs.c:192-206`
-**Issue:** `publish_file` hard-links the staging leaf without opening or `fstat`-checking it first. `linkat(..., 0)` will hard-link a symlink itself, so a staging-file swap between `GeneratorFS.write/4` and `GeneratorFS.publish/3` makes the manifest destination a symlink while the function returns success. That bypasses the claimed generated-file provenance boundary; a subsequent `check` may reject it, but generation has already reported a created manifest and left an unsafe host artifact. Reproduction with a symlink at `.crosswake/proof_lane.json.staging-race` returned `{:ok, :created}` and produced a symlinked `.crosswake/proof_lane.json`.
-**Fix:** Before linking, open the staging leaf with `openat(stage_parent, leaf, O_RDONLY | O_NOFOLLOW)`, require `fstat` to report a regular file, and publish only that verified source (or use a descriptor-anchored regular-file copy with exclusive destination creation). Reject and clean up staging when the source is a symlink or otherwise not regular.
+**Fix:** Do not reuse a predictable executable in a shared directory. Build into a process-private `0700` directory using an unpredictable name, execute that exact file, and remove it afterwards. If caching is retained, use a private cache directory and reject symlinks/non-owned files with `lstat` plus ownership and mode checks before execution.
+
+### CR-02: Evidence check can approve artifact bytes that were never digest-verified
+
+**File:** `lib/crosswake/proof_lane/evidence.ex:89-94`
+
+**Issue:** `check/1` first calls `scan_stage/1`, which reads and digest-verifies one copy of `proof-lane-evidence.json` (lines 111-118, 358-376), but then `read_evidence/1` reopens the pathname and decodes a second copy (lines 379-386). A concurrent writer can replace the JSON after `scan_stage/1` returns. `check/1` will then validate and return success for the replacement bytes without proving that they match `.complete`; the same gap exists in `check/2`. This defeats the claimed digest-bound retained-evidence integrity boundary.
+
+**Fix:** Read the artifact once and carry those verified bytes through marker verification, scanning, decoding, and source-hash validation. At minimum, make `scan_stage/1` return the verified bytes/evidence and have both `check` variants consume that result; preferably use descriptor-based reads and revalidate file identity to avoid a path replacement race.
+
+## Warnings
+
+### WR-01: Native promotion leaves incomplete evidence at the final destination on write failures
+
+**File:** `priv/native/crosswake_evidence_promote.c:95-118`
+
+**Issue:** The native publisher creates the final destination before writing the artifact and completion marker. Any later failure (write, `fsync`, permission change, marker creation, rename, or directory sync) returns an error without removing the created directory or partial files. That leaves a partially promoted artifact at the advertised destination, violating the phase requirement that failed evidence generation be atomic and leave no retained artifact.
+
+**Fix:** Track ownership after successful `mkdir`, and on every later failure use directory-descriptor-relative cleanup to unlink the incomplete files and remove the directory only if it is still the publisher's directory. Preserve the existing no-clobber collision behavior.
 
 ---
 
-_Reviewed: 2026-08-02T00:02:26Z_
+_Reviewed: 2026-08-01T00:00:00Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
