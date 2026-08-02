@@ -286,7 +286,7 @@ export async function readQueuedOfflineMutations(
 
   return page.evaluate(({ dbName, expectedScope }: { dbName: string; expectedScope: string }) => {
     return new Promise((resolve, reject) => {
-      const req = indexedDB.open(dbName, 3);
+      const req = indexedDB.open(dbName, 4);
       req.onsuccess = () => {
         const db = req.result;
         const tx = db.transaction('scoped_mutations', 'readonly');

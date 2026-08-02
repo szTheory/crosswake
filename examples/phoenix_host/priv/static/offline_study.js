@@ -8,6 +8,7 @@ const STORE_LIFECYCLE = 'scope_lifecycle';
 const STORE_LEGACY_MUTATIONS = 'mutations';
 const STORE_LEGACY_QUARANTINE = 'legacy_mutations_quarantine';
 const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
+const CLIENT_MUTATION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 let db;
 let currentCardIndex = 0;
@@ -60,7 +61,7 @@ function leaseIsCurrent(lease) {
   return activeScopeRef === lease.scopeRef && activeEpoch === lease.epoch;
 }
 
-window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope });
+window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope, recoverLegacyMutations });
 
 function configuredSyncEndpoint() {
   const endpoint = document.body.dataset.syncEndpoint;
@@ -175,6 +176,77 @@ function countLegacyQuarantine() {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
     tx.onabort = () => reject(tx.error);
+  });
+}
+
+function recoverLegacyMutations(scopeRef) {
+  if (!isScopeRef(scopeRef) || scopeRef !== activeScopeRef) return Promise.resolve('blocked');
+
+  let lease;
+  try {
+    lease = requireActiveLease();
+  } catch (_error) {
+    return Promise.resolve('blocked');
+  }
+
+  if (lease.scopeRef !== scopeRef) return Promise.resolve('blocked');
+
+  return new Promise(resolve => {
+    let outcome = 'blocked';
+    let tx;
+    try {
+      tx = db.transaction([STORE_LEGACY_QUARANTINE, STORE_MUTATIONS], 'readwrite');
+    } catch (_error) {
+      resolve(outcome);
+      return;
+    }
+
+    const quarantineStore = tx.objectStore(STORE_LEGACY_QUARANTINE);
+    const mutationsStore = tx.objectStore(STORE_MUTATIONS);
+    const cursorRequest = quarantineStore.openCursor();
+
+    const abort = () => {
+      try {
+        tx.abort();
+      } catch (_error) {
+        // The transaction has already settled; its closed blocked result remains safe.
+      }
+    };
+
+    cursorRequest.onerror = abort;
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (!cursor) return;
+      if (!leaseIsCurrent(lease)) return abort();
+
+      const legacy = cursor.value;
+      if (!legacy || !CLIENT_MUTATION_ID_PATTERN.test(legacy.client_mutation_id)) return abort();
+
+      const { scope_ref: _legacyScope, local_ref: _legacyRef, migration_ref: _migrationRef, ...mutation } = legacy;
+      const scopedMutation = {
+        ...mutation,
+        scope_ref: lease.scopeRef,
+        local_ref: legacy.client_mutation_id,
+      };
+      const addRequest = mutationsStore.add(scopedMutation);
+      addRequest.onerror = abort;
+      addRequest.onsuccess = () => {
+        if (!leaseIsCurrent(lease)) return abort();
+        const deleteRequest = cursor.delete();
+        deleteRequest.onerror = abort;
+        deleteRequest.onsuccess = () => cursor.continue();
+      };
+    };
+
+    tx.oncomplete = () => {
+      if (leaseIsCurrent(lease)) {
+        legacyRecoveryRequired = false;
+        outcome = 'recovered';
+      }
+      resolve(outcome);
+    };
+    tx.onerror = () => resolve(outcome);
+    tx.onabort = () => resolve(outcome);
   });
 }
 
