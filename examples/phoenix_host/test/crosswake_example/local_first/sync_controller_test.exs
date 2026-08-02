@@ -9,6 +9,7 @@ defmodule CrosswakeExample.LocalFirst.SyncControllerTest do
   @scope "v1.scope_fixture_alpha_01"
 
   setup do
+    Repo.delete_all(ReviewEvent)
     on_exit(fn -> Repo.delete_all(ReviewEvent) end)
     :ok
   end

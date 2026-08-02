@@ -7,6 +7,7 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
   @scope "v1.scope_fixture_alpha_01"
 
   setup do
+    Repo.delete_all(ReviewEvent)
     id = "study-#{System.unique_integer([:positive])}"
     on_exit(fn -> Repo.delete_all(ReviewEvent) end)
     %{event: %{"client_mutation_id" => id, "card_id" => 1, "rating" => "good"}}
