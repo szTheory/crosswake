@@ -159,6 +159,31 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
     end)
   end
 
+  test "generator actions ignore a poisoned former shared helper cache" do
+    with_root(fn root, config ->
+      poison = former_helper_path()
+      canary = Path.join(root, "poisoned-helper-ran")
+      File.write!(poison, "#!/bin/sh\nprintf poisoned-helper > \"#{canary}\"\nexit 0\n")
+      File.chmod!(poison, 0o700)
+
+      try do
+        assert {:ok, :created} = GeneratorFS.write(root, "e2e/direct.txt", "safe\n")
+        assert {:ok, "safe\n"} = GeneratorFS.read(root, "e2e/direct.txt")
+        assert GeneratorFS.regular?(root, "e2e/direct.txt")
+        assert :regular == GeneratorFS.status(root, "e2e/direct.txt")
+
+        assert {:ok, _} = Generator.generate(config)
+        assert :ok = Generator.check(config)
+        assert Enum.all?(Generator.diff(config), &(&1.status in [:current, :different, :missing]))
+
+        refute File.exists?(canary)
+        assert File.regular?(poison)
+      after
+        File.rm(poison)
+      end
+    end)
+  end
+
   test "direct unsafe configs fail closed before generator actions inspect destinations" do
     with_root(fn root, config ->
       for {key, unsafe_value} <- [
@@ -345,6 +370,12 @@ defmodule Mix.Tasks.Crosswake.Gen.ProofLaneTest do
   end
 
   defp staging_paths(root), do: Path.wildcard(Path.join(root, ".crosswake/*.staging-*"))
+
+  defp former_helper_path do
+    source = File.read!("priv/native/crosswake_proof_lane_fs.c")
+    digest = source |> then(&:crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+    Path.join(System.tmp_dir!(), "crosswake-proof-lane-fs-" <> digest)
+  end
 
   defp selected_config(config) do
     inspect(config,
