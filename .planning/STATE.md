@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
-current_phase_name: Scoped Replay and Auth Safety
+current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Phase 160 context gathered
-last_updated: "2026-08-02T16:11:37.077Z"
+stopped_at: Completed 160-01-PLAN.md
+last_updated: "2026-08-02T17:25:06.652Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 159 complete, transitioned to Phase 160
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,10 +22,10 @@ current_plan: 0
 
 ## Current Position
 
-Phase: 160 — Scoped Replay and Auth Safety
-Plan: Not started
+Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-08-02 — Phase 159 complete, transitioned to Phase 160
+Last activity: 2026-08-02 — Phase 160 execution started
 
 ## Active Objective
 
@@ -147,6 +147,8 @@ device claims.
 - [Phase ?]: Generator helpers are reusable only inside one invocation-owned private lifecycle; predictable shared-temp executables are inert.
 - [Phase ?]: Evidence checks consume only the completion-digest-bound snapshot; replacement races use a test-only process-local barrier.
 - [Phase 159]: Retained-evidence publication holds no-follow parent and destination descriptors after reservation; all leaf writes, verification, no-replace handoff, owned-leaf cleanup, and synchronization remain descriptor-relative, and a deterministic ancestor replacement cannot redirect evidence.
+- [Phase ?]: Opaque scope refs are versioned, bounded, and validated without echoing rejected values.
+- [Phase ?]: Browser replay starts inert and requires an exact scope-plus-epoch lease before storage, send, completion, or UI mutation.
 
 ## Deferred Items
 
@@ -175,9 +177,9 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T14:47:42.438Z
-**Stopped at:** Phase 160 context gathered
-**Resume file:** .planning/phases/160-scoped-replay-and-auth-safety/160-CONTEXT.md
+**Last session:** 2026-08-02T17:25:06.640Z
+**Stopped at:** Completed 160-01-PLAN.md
+**Resume file:** None
 
 ## Performance Metrics
 
@@ -230,3 +232,4 @@ this milestone reset.
 | Phase 159-host-reusable-proof-lane P26 | 9min | 1 tasks | 2 files |
 | Phase 159-host-reusable-proof-lane P27 | 6min | 1 task | 5 files |
 | Phase 159-host-reusable-proof-lane P28 | 15m | 2 tasks | 7 files |
+| Phase 160 P01 | 726s | 2 tasks | 7 files |
