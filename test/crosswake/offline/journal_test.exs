@@ -54,4 +54,18 @@ defmodule Crosswake.Offline.JournalTest do
 
     refute Exception.message(error) =~ invalid_scope
   end
+
+  test "journal entries reject a missing scope with the same stable rule" do
+    assert_raise ArgumentError, "CW-OFFLINE-SCOPE-REF", fn ->
+      Journal.new_entry(
+        id: "journal-missing-scope",
+        route_id: "study-session",
+        sync_seam: "study_reviews",
+        operation: :grade_card,
+        client_mutation_id: "mutation-missing-scope",
+        idempotency_key: "study-session:mutation-missing-scope",
+        base_checkpoint: "deck-42:v7"
+      )
+    end
+  end
 end

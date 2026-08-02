@@ -3,6 +3,7 @@ defmodule Crosswake.Offline.Replay do
   Typed replay request and outcome contract for the study-session exemplar.
   """
 
+  alias Crosswake.Offline.Journal
   alias Crosswake.Offline.Journal.Entry
 
   defmodule Request do
@@ -71,7 +72,7 @@ defmodule Crosswake.Offline.Replay do
   @spec new_request(keyword()) :: Request.t()
   def new_request(attrs) when is_list(attrs) do
     struct!(Request, %{
-      scope_ref: Keyword.fetch!(attrs, :scope_ref),
+      scope_ref: attrs |> Keyword.get(:scope_ref) |> Journal.scope_ref!(),
       route_id: Keyword.fetch!(attrs, :route_id),
       sync_seam: Keyword.fetch!(attrs, :sync_seam),
       journal_entry_id: Keyword.fetch!(attrs, :journal_entry_id),

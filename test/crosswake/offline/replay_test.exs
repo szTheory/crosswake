@@ -74,4 +74,18 @@ defmodule Crosswake.Offline.ReplayTest do
 
     assert Replay.to_map(Replay.request_for_entry(entry))["scope_ref"] == entry.scope_ref
   end
+
+  test "replay requests reject malformed scopes with the stable non-echoing rule" do
+    assert_raise ArgumentError, "CW-OFFLINE-SCOPE-REF", fn ->
+      Replay.new_request(
+        scope_ref: "not-a-scope",
+        route_id: "study-session",
+        sync_seam: "study_reviews",
+        journal_entry_id: "journal-invalid-request",
+        client_mutation_id: "mutation-invalid-request",
+        idempotency_key: "study-session:mutation-invalid-request",
+        base_checkpoint: "deck-42:v7"
+      )
+    end
+  end
 end

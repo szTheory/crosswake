@@ -55,7 +55,7 @@ defmodule Crosswake.Offline.Journal do
 
   @spec new_entry(keyword()) :: Entry.t()
   def new_entry(attrs) when is_list(attrs) do
-    scope_ref = attrs |> Keyword.fetch!(:scope_ref) |> validate_scope_ref!()
+    scope_ref = attrs |> Keyword.get(:scope_ref) |> scope_ref!()
 
     struct!(Entry, %{
       id: Keyword.fetch!(attrs, :id),
@@ -95,7 +95,9 @@ defmodule Crosswake.Offline.Journal do
     }
   end
 
-  defp validate_scope_ref!(scope_ref) when is_binary(scope_ref) do
+  @doc false
+  @spec scope_ref!(term()) :: String.t()
+  def scope_ref!(scope_ref) when is_binary(scope_ref) do
     if Regex.match?(@scope_ref_pattern, scope_ref) do
       scope_ref
     else
@@ -103,5 +105,5 @@ defmodule Crosswake.Offline.Journal do
     end
   end
 
-  defp validate_scope_ref!(_scope_ref), do: raise(ArgumentError, @scope_ref_error)
+  def scope_ref!(_scope_ref), do: raise(ArgumentError, @scope_ref_error)
 end
