@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Completed 160-04-PLAN.md
-last_updated: "2026-08-02T19:01:01.790Z"
+stopped_at: Completed 160-06-PLAN.md
+last_updated: "2026-08-02T19:06:40.386Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 56
-  completed_plans: 51
+  completed_plans: 53
   percent: 40
 current_plan: 0
 ---
@@ -23,7 +23,7 @@ current_plan: 0
 ## Current Position
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-08-02 — Phase 160 execution started
 
@@ -154,6 +154,8 @@ infer concrete adopter routes or promote downstream device claims.
 - [Phase ?]: Sigra projects backend authority to only allow or the safe sigra_denied class.
 - [Phase ?]: Operational egress receives only explicit SafeObservation projections; generated iOS blocked output remains non-passing prerequisite evidence.
 - [Phase ?]: Legacy IndexedDB mutations are quarantined on upgrade and can enter one scoped outbox only through a matching active host lease.
+- [Phase ?]: Replay admission requires typed RouteEntry and validated AuthContext; all other inputs project to sigra_denied.
+- [Phase ?]: The Phoenix host constructs synthetic fixture authority privately for each default replay event and never returns it to callers.
 
 ## Deferred Items
 
@@ -182,8 +184,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T19:01:01.782Z
-**Stopped at:** Completed 160-04-PLAN.md
+**Last session:** 2026-08-02T19:06:40.378Z
+**Stopped at:** Completed 160-06-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -241,3 +243,4 @@ this milestone reset.
 | Phase 160 P02 | 31m | 3 tasks | 13 files |
 | Phase 160 P03 | 55m | 3 tasks | 22 files |
 | Phase 160 P04 | 5m | 2 tasks | 3 files |
+| Phase 160-scoped-replay-and-auth-safety P06 | 15min | 2 tasks | 4 files |
