@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v21.0
 milestone_name: First B2C Adopter Readiness
-current_phase: 160
-current_phase_name: scoped-replay-and-auth-safety
-status: ready_for_discussion
-stopped_at: Completed 159-24-PLAN.md
+current_phase: 159
+current_phase_name: host-reusable-proof-lane
+status: gaps_found
+stopped_at: Phase 159 verification found two post-execution integrity gaps
 last_updated: "2026-08-02T02:00:00Z"
 last_activity: 2026-08-02
-last_activity_desc: final same-tree proof-lane gate completed.
+last_activity_desc: Independent verification found two gaps after the final same-tree gate.
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 44
   completed_plans: 44
-  percent: 60
-current_plan: 0
+  percent: 40
+current_plan: 24
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — READY FOR DISCUSSION
-Plan: Phase 159 complete; Phase 160 has not started
-Status: Final Phase 159 same-tree gate passed and planning truth is synchronized.
-Last activity: 2026-08-02 — final proof-lane gate completed.
+Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
+Plan: 24 of 24 executed; two verification gaps require new gap-closure plans
+Status: Independent verification found a shared-temp helper provenance gap and an evidence-read TOCTOU gap.
+Last activity: 2026-08-02 — independent goal verification scored 21/23 must-haves.
 
 ## Active Objective
 
@@ -44,10 +44,18 @@ framework launch.
 
 ## Next Action
 
-Discuss Phase 160 only. Phase 159 has complete fresh automated proof; TODO-002 remains the bounded
+Plan Phase 159 gap closure for the shared-temp helper provenance boundary and the evidence-read
+TOCTOU boundary. Do not start Phase 160 while these gaps remain. TODO-002 remains the bounded
 adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
+
+- Phase 159 generator helper execution trusts a predictable executable in a shared temporary
+  directory without trustworthy provenance; a private or verified helper path and poisoned-cache
+  regression are required.
+
+- Phase 159 evidence checks can reopen the artifact after digest verification and accept replacement
+  bytes; verified bytes must flow through decode/source validation with deterministic race coverage.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -123,7 +131,7 @@ adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
 - [Phase ?]: Browser proof accepts only anchored lowercase UUID-shaped opaque mutation references and emits PL-BROWSER-MUTATION-ID without echoing input.
 - [Phase ?]: Evidence lifecycle hooks permit only an absent hook or an installed zero-arity hook returning exactly :ok; every other outcome is one sanitized promotion failure.
 - [Phase ?]: Generated Xcode proof targets declare explicit product/module names and XCTest host settings so real shared-scheme tests retain unique outputs.
-- [Phase 159]: Fresh final-tree controls close the evidence and manifest publication gaps with digest-bound evidence and descriptor-only publication; all PROOF requirements are complete.
+- [Phase 159]: The final same-tree gate proved digest-bound evidence and descriptor-only publication but missed shared-temp helper provenance and post-verification evidence replacement races; PROOF requirements remain open.
 - [Phase ?]: Phase 159 completion requires one fresh final-tree gate with real Phoenix-host browser and shared-scheme XCTest/XCUITest execution.
 - [Phase ?]: Failed exclusive proof writes remove only their newly created destination before returning the original write failure.
 - [Phase ?]: Manifest reuse is returned only after helper-owned staging cleanup succeeds; cleanup failure remains non-passing.

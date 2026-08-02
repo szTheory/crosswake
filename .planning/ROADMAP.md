@@ -33,7 +33,7 @@ separately funded business-line mandate.
   surface-area audit, classify adopter routes, update support truth, and install privacy-safe
   context routing.
 
-- [x] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
+- [ ] **Phase 159: Host-Reusable Proof Lane** — generate configurable host-owned browser,
   shell, offline-island, and physical-device proof scaffolding.
 
 - [ ] **Phase 160: Scoped Replay and Auth Safety** — enforce account-scoped outboxes, payload
@@ -148,12 +148,13 @@ truth, and codename-only Linear drafts.
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 **Plans:** 24/24 plans executed
-**Verification:** Complete (23/23 must-haves verified) — the final same-tree gate passed focused
+**Verification:** Gaps found (21/23 must-haves verified) — the final same-tree gate passed focused
 evidence and descriptor-publication regressions, warning-clean native helper builds, explicit
-TypeScript, isolated generated Phoenix Playwright proof, shell syntax, and formatting. Linux
-ordinary-unprivileged procfs descriptor publication passed; privileged empty-path publication is
-absent. The generated accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains
-open and adopter-instance completeness remains `unknown_blocking`.
+TypeScript, isolated generated Phoenix Playwright proof, shell syntax, and formatting, but did not
+exercise two adversarial paths. A predictable shared-temp helper executable lacks trustworthy
+provenance, and evidence checks can reopen replacement bytes after digest verification. The
+generated accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
+adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
