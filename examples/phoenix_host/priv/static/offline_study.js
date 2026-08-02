@@ -48,11 +48,19 @@ async function activateScope(scopeRef) {
 }
 
 async function fenceScope() {
-  const lifecycle = await readLifecycle();
-  const epoch = lifecycle.epoch + 1;
+  // Revoke browser authority before the first await. A response already on the
+  // wire remains server-authorized independently, but it can no longer touch
+  // this browser's storage or learner status.
+  const worker = activeFlush;
   activeScopeRef = null;
   activeEpoch = 0;
+  worker?.controller.abort();
+  worker?.storageTransaction?.abort();
+
+  const lifecycle = await readLifecycle();
+  const epoch = lifecycle.epoch + 1;
   await writeLifecycle({ key: 'active', state: 'stopping', scope_ref: null, epoch });
+  await worker?.promise.catch(() => undefined);
   await writeLifecycle({ key: 'active', state: 'inactive', scope_ref: null, epoch });
   updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
 }
@@ -333,19 +341,29 @@ function getScopeMutations(scopeRef) {
   });
 }
 
-function deleteAcceptedMutations(scopeRef, records, acceptedIds) {
+function deleteAcceptedMutations(scopeRef, records, acceptedIds, invocation) {
   const acceptedIdSet = new Set(acceptedIds);
   const toDelete = records.filter(r => acceptedIdSet.has(r.client_mutation_id)).map(r => [scopeRef, r.local_ref]);
   if (toDelete.length === 0) return Promise.resolve();
 
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_MUTATIONS, 'readwrite');
+    invocation.storageTransaction = tx;
     const store = tx.objectStore(STORE_MUTATIONS);
     toDelete.forEach(id => store.delete(id));
 
-    tx.oncomplete = () => resolve();
-    tx.onerror = (event) => reject(event.target.error);
-    tx.onabort = () => reject(tx.error);
+    tx.oncomplete = () => {
+      if (invocation.storageTransaction === tx) invocation.storageTransaction = null;
+      resolve();
+    };
+    tx.onerror = (event) => {
+      if (invocation.storageTransaction === tx) invocation.storageTransaction = null;
+      reject(event.target.error);
+    };
+    tx.onabort = () => {
+      if (invocation.storageTransaction === tx) invocation.storageTransaction = null;
+      reject(tx.error);
+    };
   });
 }
 
@@ -385,16 +403,28 @@ async function updateQueuedStatus(prefix = 'Queued for replay') {
   updateStatus(`${prefix} - ${queued} saved locally`);
 }
 
-let flushing = false;
+let activeFlush = null;
 
 async function flushOutbox() {
-  if (flushing) return;
-  flushing = true;
+  if (activeFlush) return activeFlush.promise;
+
+  const invocation = {
+    lease: requireActiveLease(),
+    controller: new AbortController(),
+    storageTransaction: null,
+    promise: null,
+  };
+  invocation.promise = flushScopedOutbox(invocation);
+  activeFlush = invocation;
+  return invocation.promise;
+}
+
+async function flushScopedOutbox(invocation) {
+  const { lease, controller } = invocation;
+  const { scopeRef } = lease;
   try {
-    const lease = requireActiveLease();
-    const { scopeRef } = lease;
     const records = await getScopeMutations(scopeRef);
-    if (records.length === 0) return;
+    if (!leaseIsCurrent(lease) || records.length === 0) return;
 
     updateStatusClear();
     updateStatus('Syncing');
@@ -411,39 +441,54 @@ async function flushOutbox() {
             card_id: r.card_id,
             rating: r.rating
           }))
-        })
+        }),
+        signal: controller.signal,
       });
     } catch (_networkError) {
+      if (!leaseIsCurrent(lease)) return;
       updateStatusError();
       updateStatus(`Queued for replay - ${records.length} saved locally. Retrying on reconnect.`);
       return;
     }
 
     if (response.ok) {
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (_parseError) {
+        if (!leaseIsCurrent(lease)) return;
+        updateStatusError();
+        updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+        return;
+      }
       if (!leaseIsCurrent(lease)) return;
       const acceptedRecords = (data.data && data.data.accepted_records) || [];
       const rejected = (data.data && data.data.rejected) || [];
 
       const acceptedIds = acceptedRecords.map(r => r.client_mutation_id);
-      await deleteAcceptedMutations(scopeRef, records, acceptedIds);
+      await deleteAcceptedMutations(scopeRef, records, acceptedIds, invocation);
+      if (!leaseIsCurrent(lease)) return;
 
       const remaining = await countScopeMutations(scopeRef);
+      if (!leaseIsCurrent(lease)) return;
       const accepted = acceptedIds.length;
 
       if (rejected.length > 0) {
+        if (!leaseIsCurrent(lease)) return;
         updateStatusError();
         updateStatus('Saved changes need attention and remain on this device.');
       } else {
+        if (!leaseIsCurrent(lease)) return;
         updateStatusClear();
         updateStatus(`Synced ${accepted} - queued ${remaining}`);
       }
     } else {
+      if (!leaseIsCurrent(lease)) return;
       updateStatusError();
       updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
     }
   } finally {
-    flushing = false;
+    if (activeFlush === invocation) activeFlush = null;
   }
 }
 
