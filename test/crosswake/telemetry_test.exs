@@ -207,10 +207,12 @@ defmodule Crosswake.TelemetryTest do
 
     on_exit(fn -> :telemetry.detach("phase160-forged-observation") end)
 
-    log = capture_log(fn ->
-      assert {:error, %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-ROUTE", path: :route_id}} =
-               Crosswake.Telemetry.emit_safe_observation(forged)
-    end)
+    log =
+      capture_log(fn ->
+        assert {:error,
+                %SafeObservation.Error{rule_id: "CW-SAFE-OBSERVATION-ROUTE", path: :route_id}} =
+                 Crosswake.Telemetry.emit_safe_observation(forged)
+      end)
 
     refute_received :telemetry_emitted
     refute log =~ "CANARY-ROOT-TELEMETRY"

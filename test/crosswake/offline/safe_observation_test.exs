@@ -59,7 +59,11 @@ defmodule Crosswake.Offline.SafeObservationTest do
           _ -> Map.put(struct!(SafeObservation, @valid), field, value)
         end
 
-      for projection <- [&SafeObservation.to_telemetry/1, &SafeObservation.to_logger/1, &SafeObservation.to_doctor/1] do
+      for projection <- [
+            &SafeObservation.to_telemetry/1,
+            &SafeObservation.to_logger/1,
+            &SafeObservation.to_doctor/1
+          ] do
         assert {:error, error} = projection.(forged)
         assert %SafeObservation.Error{rule_id: rule_id, path: path} = error
         assert is_binary(rule_id)

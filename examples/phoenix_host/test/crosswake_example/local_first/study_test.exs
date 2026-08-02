@@ -55,7 +55,9 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
     assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 
-  test "concurrent same-scope retries commit one effect and return closed acceptance", %{event: event} do
+  test "concurrent same-scope retries commit one effect and return closed acceptance", %{
+    event: event
+  } do
     results =
       1..2
       |> Task.async_stream(fn _ -> Study.apply_one(@scope, event, %{}) end,
