@@ -63,7 +63,11 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
                Study.apply_one(@scope, event, %{})
 
       assert id == event["client_mutation_id"]
-      assert [^persisted] = Repo.all(ReviewEvent)
+
+      assert %ReviewEvent{id: persisted_id, status: "rejected", scope_ref: ^scope_ref} =
+               Repo.get!(ReviewEvent, persisted.id)
+
+      assert persisted_id == persisted.id
     end
   end
 

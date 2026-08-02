@@ -48,7 +48,10 @@ defmodule CrosswakeExample.LocalFirst.Study do
       {:ok, %{effect: :scope_conflict}} ->
         {:error, :scope_conflict}
 
-      {:ok, %{effect: _record}} ->
+      {:ok, %{effect: :duplicate}} ->
+        current_outcome(scope_ref, id)
+
+      {:ok, %{effect: %ReviewEvent{}}} ->
         {:ok, %{client_mutation_id: id, outcome: :accepted}}
 
       {:error, _operation, _reason, _changes} ->
@@ -66,12 +69,20 @@ defmodule CrosswakeExample.LocalFirst.Study do
 
   defp current_outcome(scope_ref, id) do
     case Repo.get_by(ReviewEvent, client_mutation_id: id) do
-      %ReviewEvent{scope_ref: nil} -> {:ok, %{client_mutation_id: id, outcome: :accepted}}
-      %ReviewEvent{scope_ref: ^scope_ref} -> {:ok, %{client_mutation_id: id, outcome: :accepted}}
+      %ReviewEvent{scope_ref: nil} = review_event -> persisted_outcome(review_event, id)
+      %ReviewEvent{scope_ref: ^scope_ref} = review_event -> persisted_outcome(review_event, id)
       %ReviewEvent{} -> {:error, :scope_conflict}
       nil -> {:error, :transaction_failed}
     end
   end
+
+  defp persisted_outcome(%ReviewEvent{status: "accepted"}, id),
+    do: {:ok, %{client_mutation_id: id, outcome: :accepted}}
+
+  defp persisted_outcome(%ReviewEvent{status: "rejected"}, id),
+    do: {:ok, %{client_mutation_id: id, outcome: :rejected}}
+
+  defp persisted_outcome(_review_event, _id), do: {:error, :invalid_persisted_outcome}
 
   defp race_outcome(scope_ref, id, attempts \\ 3)
 

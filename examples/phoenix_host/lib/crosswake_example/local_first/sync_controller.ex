@@ -29,9 +29,13 @@ defmodule CrosswakeExample.LocalFirst.SyncController do
            case ReplayAdmission.authorize(conn, scope_ref, event, admission_opts) do
              {:allow, authority} ->
                case Study.apply_one(scope_ref, event, authority) do
-                 {:ok, accepted} ->
+                 {:ok, %{outcome: :accepted} = accepted} ->
                    {:cont,
                     {:ok, %{result | accepted_records: result.accepted_records ++ [accepted]}}}
+
+                 {:ok, %{outcome: :rejected} = rejected} ->
+                   {:halt,
+                    {:ok, %{result | halted: :rejected, rejected: result.rejected ++ [rejected]}}}
 
                  {:error, reason} ->
                    {:halt,
