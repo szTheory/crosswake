@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 7/8 plans executed
+**Plans:** 8/8 plans executed
 
 Plans:
 **Wave 1**
@@ -293,7 +293,7 @@ Plans:
 
 **Wave 6** *(blocked on Plans 160-05 through 160-07)*
 
-- [ ] 160-08-PLAN.md — Revalidate every SafeObservation egress and run the complete post-gap automated gate.
+- [x] 160-08-PLAN.md — Revalidate every SafeObservation egress and run the complete post-gap automated gate.
 
 **Smallest shippable version:** Opaque scope on every envelope, scope-partitioned outbox,
 logout/account-switch replay stop, endpoint reauthorization, raw-payload redaction, and host flag
