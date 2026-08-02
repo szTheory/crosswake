@@ -14,7 +14,8 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect.poll(() => page.locator('#status').textContent()).toContain('Sync is paused');
   }
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.title === 'legacy upgrade quarantines unscoped work') return;
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
     await resetOfflineStudyDatabase(page);
@@ -189,5 +190,65 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
     expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
     await expect(page.locator('#status')).not.toContainText(alphaScope);
+  });
+
+  test('legacy upgrade quarantines unscoped work', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(async () => {
+      await new Promise<void>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study', 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore('mutations', { keyPath: 'client_mutation_id' });
+        };
+        request.onsuccess = () => {
+          const tx = request.result.transaction('mutations', 'readwrite');
+          tx.objectStore('mutations').add({
+            client_mutation_id: 'legacy-mutation',
+            card_id: 1,
+            rating: 'good',
+          });
+          tx.oncomplete = () => {
+            request.result.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    });
+
+    await page.goto('/offline');
+    await expect(page.locator('#status')).toContainText('Saved changes need attention');
+
+    const stores = await page.evaluate(async () => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const tx = database.transaction(['mutations', 'legacy_mutations_quarantine', 'scoped_mutations'], 'readonly');
+      const counts = await Promise.all([
+        new Promise<number>((resolve, reject) => {
+          const request = tx.objectStore('mutations').count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        }),
+        new Promise<number>((resolve, reject) => {
+          const request = tx.objectStore('legacy_mutations_quarantine').count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        }),
+        new Promise<number>((resolve, reject) => {
+          const request = tx.objectStore('scoped_mutations').count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        }),
+      ]);
+      database.close();
+      return counts;
+    });
+
+    expect(stores).toEqual([0, 1, 0]);
+    await expect(page.locator('#status')).toContainText('Saved changes need attention');
   });
 });
