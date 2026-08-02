@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 3/8 plans executed; 5 security gap-closure plans ready
+**Plans:** 3/8 plans executed
 
 Plans:
 **Wave 1**

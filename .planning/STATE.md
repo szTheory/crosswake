@@ -5,16 +5,16 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Phase 160 gap closure planned — Plans 04-08 ready
-last_updated: "2026-08-02T18:43:57.547Z"
+stopped_at: Completed 160-04-PLAN.md
+last_updated: "2026-08-02T19:01:01.790Z"
 last_activity: 2026-08-02
-last_activity_desc: Phase 160 security gap closure planned
+last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 56
   completed_plans: 51
-  percent: 60
+  percent: 40
 current_plan: 0
 ---
 
@@ -23,9 +23,9 @@ current_plan: 0
 ## Current Position
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 3 of 8
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-08-02 — Phase 160 security gap closure planned
+Last activity: 2026-08-02 — Phase 160 execution started
 
 ## Active Objective
 
@@ -153,6 +153,7 @@ infer concrete adopter routes or promote downstream device claims.
 - [Phase ?]: Review-event idempotency is qualified by opaque scope and commits with its domain effect in one transaction.
 - [Phase ?]: Sigra projects backend authority to only allow or the safe sigra_denied class.
 - [Phase ?]: Operational egress receives only explicit SafeObservation projections; generated iOS blocked output remains non-passing prerequisite evidence.
+- [Phase ?]: Legacy IndexedDB mutations are quarantined on upgrade and can enter one scoped outbox only through a matching active host lease.
 
 ## Deferred Items
 
@@ -181,8 +182,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T18:05:21.856Z
-**Stopped at:** Completed 160-03-PLAN.md
+**Last session:** 2026-08-02T19:01:01.782Z
+**Stopped at:** Completed 160-04-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -239,3 +240,4 @@ this milestone reset.
 | Phase 160 P01 | 726s | 2 tasks | 7 files |
 | Phase 160 P02 | 31m | 3 tasks | 13 files |
 | Phase 160 P03 | 55m | 3 tasks | 22 files |
+| Phase 160 P04 | 5m | 2 tasks | 3 files |
