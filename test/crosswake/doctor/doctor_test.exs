@@ -19,9 +19,15 @@ defmodule Crosswake.DoctorTest do
   alias Crosswake.Doctor.Formatter
   alias Crosswake.Doctor.JSONFormatter
   alias Crosswake.Offline.Status
+  alias Crosswake.Offline.SafeObservation
   alias Crosswake.Offline.Telemetry
   alias Crosswake.SupportMatrix
   alias Mix.Tasks.Crosswake.Gen.NativeControlsUi
+
+  test "static readiness excludes runtime and active-scope data" do
+    assert {:ok, observation} = SafeObservation.new(%{route_id: "route-0123456789abcdef", runtime: :offline_island, lifecycle: :replayed, outcome: :accepted, denial: :none, measurements: %{event_count: 1}, configuration: :configured, adapter_readiness: :blocked})
+    assert Doctor.static_readiness(observation) == %{configuration: :configured, adapter_readiness: :blocked}
+  end
 
   setup do
     target =

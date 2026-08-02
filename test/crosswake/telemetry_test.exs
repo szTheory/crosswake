@@ -132,6 +132,7 @@ defmodule Crosswake.TelemetryTest do
 
   use ExUnit.Case, async: false
   import ExUnit.CaptureLog
+  alias Crosswake.Offline.SafeObservation
 
   @handler_id "crosswake-default-logger"
 
@@ -148,6 +149,14 @@ defmodule Crosswake.TelemetryTest do
     end)
 
     :ok
+  end
+
+  test "default Logger receives the closed replay projection only" do
+    assert {:ok, observation} = SafeObservation.new(%{route_id: "route-0123456789abcdef", runtime: :offline_island, lifecycle: :replayed, outcome: :accepted, denial: :none, measurements: %{event_count: 1}, configuration: :configured, adapter_readiness: :blocked})
+    :ok = Crosswake.Telemetry.attach_default_logger(encode: true)
+    log = capture_log(fn -> Crosswake.Telemetry.emit_safe_observation(observation) end)
+    assert log =~ "route-0123456789abcdef"
+    refute log =~ "scope_ref"
   end
 
   # ---------------------------------------------------------------------------

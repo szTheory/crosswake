@@ -13,11 +13,16 @@ defmodule Crosswake.Doctor do
   alias Crosswake.Doctor.PublishReadiness
   alias Crosswake.Manifest
   alias Crosswake.Offline.Status, as: OfflineStatus
+  alias Crosswake.Offline.SafeObservation
   alias Crosswake.Offline.Telemetry, as: OfflineTelemetry
   alias Crosswake.Policy.Compiler
   alias Crosswake.Policy.Diagnostic
   alias Crosswake.Shell.Denial
   alias Crosswake.SupportMatrix
+
+  @doc false
+  @spec static_readiness(SafeObservation.t()) :: %{configuration: atom(), adapter_readiness: atom()}
+  def static_readiness(%SafeObservation{} = observation), do: SafeObservation.to_doctor(observation)
 
   defmodule Report do
     @moduledoc false

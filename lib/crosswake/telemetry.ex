@@ -18,6 +18,7 @@ defmodule Crosswake.Telemetry do
   """
 
   require Logger
+  alias Crosswake.Offline.SafeObservation
 
   @typedoc """
   A self-describing telemetry event catalog entry.
@@ -122,6 +123,13 @@ defmodule Crosswake.Telemetry do
   # Called at call time — NOT a module attribute (D-05 runtime aggregation, avoids stale-.beam).
   defp build_active_events do
     [
+      %{
+        event: [:crosswake, :offline, :replay],
+        tier: :active,
+        description: "Emitted for a closed scoped-replay observation.",
+        measurements: [:attempt_count, :event_count, :duration_ms],
+        metadata: [:route_id, :runtime, :lifecycle, :outcome, :denial]
+      },
       %{
         event: [:crosswake, :companion, :dependency_check],
         tier: :active,
@@ -345,6 +353,14 @@ defmodule Crosswake.Telemetry do
   @spec detach_default_logger() :: :ok | {:error, :not_found}
   def detach_default_logger do
     :telemetry.detach("crosswake-default-logger")
+  end
+
+  @doc false
+  @spec emit_safe_observation(SafeObservation.t()) :: :ok
+  def emit_safe_observation(%SafeObservation{} = observation) do
+    metadata = SafeObservation.to_telemetry(observation)
+    measurements = Map.take(metadata, [:attempt_count, :event_count, :duration_ms])
+    :telemetry.execute([:crosswake, :offline, :replay, :stop], measurements, Map.drop(metadata, Map.keys(measurements)))
   end
 
   # ---------------------------------------------------------------------------
