@@ -139,6 +139,49 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#status')).toContainText('Sync is paused');
   });
 
+  test('inactive online replay is inert after launch and fence', async ({ page }) => {
+    const pageErrors: string[] = [];
+    const consoleOutput: string[] = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('console', message => consoleOutput.push(message.text()));
+
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(() => {
+      (window as any).__inactiveOnlineReplay = { fetches: 0, rejections: 0 };
+      window.fetch = () => {
+        (window as any).__inactiveOnlineReplay.fetches += 1;
+        return Promise.reject(new Error('unexpected replay request'));
+      };
+      window.addEventListener('unhandledrejection', event => {
+        (window as any).__inactiveOnlineReplay.rejections += 1;
+        event.preventDefault();
+      });
+    });
+
+    const inactiveStatus = await page.locator('#status').textContent();
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await page.waitForTimeout(50);
+
+    expect(await page.evaluate(() => (window as any).__inactiveOnlineReplay)).toEqual({ fetches: 0, rejections: 0 });
+    expect(await page.locator('#status').textContent()).toBe(inactiveStatus);
+    expect(pageErrors).toEqual([]);
+    expect(consoleOutput).toEqual([]);
+
+    await page.evaluate(async scopeRef => {
+      await window.crosswakeOfflineStudy.activateScope(scopeRef);
+      await window.crosswakeOfflineStudy.fenceScope();
+    }, alphaScope);
+    const fencedStatus = await page.locator('#status').textContent();
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await page.waitForTimeout(50);
+
+    expect(await page.evaluate(() => (window as any).__inactiveOnlineReplay)).toEqual({ fetches: 0, rejections: 0 });
+    expect(await page.locator('#status').textContent()).toBe(fencedStatus);
+    expect(pageErrors).toEqual([]);
+    expect(consoleOutput).toEqual([]);
+  });
+
   test('switch before send keeps the old scope queue retained', async ({ page, context }) => {
     const betaScope = 'v1.scope_fixture_bravo_01';
     await page.goto('/offline');
