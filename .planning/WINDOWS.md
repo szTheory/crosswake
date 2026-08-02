@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 7
+open_count: 8
 waived_count: 0
 fixed_count: 0
-total_count: 7
-last_updated: 2026-08-01T00:46:07.479Z
+total_count: 8
+last_updated: 2026-08-02T17:35:34.942Z
 ---
 
 # Broken Windows Ledger
@@ -22,6 +22,7 @@ last_updated: 2026-08-01T00:46:07.479Z
 | 5 | 159 | stub | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Focused native XCTest/XCUITest source expansion is intentionally deferred to Plan 159-03. | open |  | 2026-07-31T20:45:02.500Z |  |
 | 6 | 159 | deviation | priv/templates/crosswake/proof_lane/ios/CrosswakeProofLane.xcodeproj/project.pbxproj.eex |  | Auto-fixed incomplete PBX project skeleton so Xcode enumerates the proof-owned targets. | open |  | 2026-07-31T20:46:49.899Z |  |
 | 7 | 159 | unrun-verify | script/verify_generated_ios_shell.sh |  | Fresh non-mocked native proof verifier remains unavailable until an installed concrete iPhone simulator exists. | open |  | 2026-08-01T00:46:07.479Z |  |
+| 8 | 160 | deviation | examples/phoenix_host/e2e/support/offline_route_proof.ts | 293 | Scoped browser proof reader used legacy IndexedDB store after the scoped migration | open |  | 2026-08-02T17:35:34.942Z |  |
 
 ````json
 [
@@ -107,6 +108,18 @@ last_updated: 2026-08-01T00:46:07.479Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-01T00:46:07.479Z",
+    "resolved_at": null
+  },
+  {
+    "id": 8,
+    "kind": "deviation",
+    "phase": "160",
+    "file": "examples/phoenix_host/e2e/support/offline_route_proof.ts",
+    "line": 293,
+    "description": "Scoped browser proof reader used legacy IndexedDB store after the scoped migration",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-02T17:35:34.942Z",
     "resolved_at": null
   }
 ]

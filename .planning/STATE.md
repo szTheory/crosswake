@@ -5,15 +5,15 @@ milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
 status: executing
-stopped_at: Completed 160-01-PLAN.md
-last_updated: "2026-08-02T17:25:06.652Z"
+stopped_at: Completed 160-02-PLAN.md
+last_updated: "2026-08-02T17:35:35.614Z"
 last_activity: 2026-08-02
 last_activity_desc: Phase 160 execution started
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 51
-  completed_plans: 48
+  completed_plans: 50
   percent: 40
 current_plan: 0
 ---
@@ -23,7 +23,7 @@ current_plan: 0
 ## Current Position
 
 Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-08-02 — Phase 160 execution started
 
@@ -149,6 +149,9 @@ device claims.
 - [Phase 159]: Retained-evidence publication holds no-follow parent and destination descriptors after reservation; all leaf writes, verification, no-replace handoff, owned-leaf cleanup, and synchronization remain descriptor-relative, and a deterministic ancestor replacement cannot redirect evidence.
 - [Phase ?]: Opaque scope refs are versioned, bounded, and validated without echoing rejected values.
 - [Phase ?]: Browser replay starts inert and requires an exact scope-plus-epoch lease before storage, send, completion, or UI mutation.
+- [Phase ?]: Each replay event resolves host session, scope, route, feature, Sigra, and domain authority in order immediately before mutation.
+- [Phase ?]: Review-event idempotency is qualified by opaque scope and commits with its domain effect in one transaction.
+- [Phase ?]: Sigra projects backend authority to only allow or the safe sigra_denied class.
 
 ## Deferred Items
 
@@ -177,8 +180,8 @@ this milestone reset.
 
 ## Session
 
-**Last session:** 2026-08-02T17:25:06.640Z
-**Stopped at:** Completed 160-01-PLAN.md
+**Last session:** 2026-08-02T17:35:35.601Z
+**Stopped at:** Completed 160-02-PLAN.md
 **Resume file:** None
 
 ## Performance Metrics
@@ -233,3 +236,4 @@ this milestone reset.
 | Phase 159-host-reusable-proof-lane P27 | 6min | 1 task | 5 files |
 | Phase 159-host-reusable-proof-lane P28 | 15m | 2 tasks | 7 files |
 | Phase 160 P01 | 726s | 2 tasks | 7 files |
+| Phase 160 P02 | 31m | 3 tasks | 13 files |

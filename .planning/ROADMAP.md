@@ -266,16 +266,16 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 0/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 160-01-PLAN.md — Establish scope-required contracts, partitioned browser storage, and lifecycle fencing.
+- [x] 160-01-PLAN.md — Establish scope-required contracts, partitioned browser storage, and lifecycle fencing.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 160-02-PLAN.md — Complete the authorized Study-event tracer through host admission, Sigra, and atomic mutation.
+- [x] 160-02-PLAN.md — Complete the authorized Study-event tracer through host admission, Sigra, and atomic mutation.
 
 **Wave 3** *(blocked on Waves 1-2 completion)*
 
