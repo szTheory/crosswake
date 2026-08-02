@@ -42,5 +42,30 @@ defmodule CrosswakeExample.LocalFirst.StudyTest do
   test "rollback leaves neither an idempotency decision nor a domain effect", %{event: event} do
     assert {:error, :transaction_failed} = Study.apply_one(@scope, event, %{rollback: true})
     assert Repo.aggregate(ReviewEvent, :count, :id) == 0
+
+    assert {:ok, %{outcome: :accepted}} = Study.apply_one(@scope, event, %{})
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 1
+  end
+
+  test "a mutation ID owned by another scope is retained as a closed conflict", %{event: event} do
+    other_scope = "v1.scope_fixture_beta_01"
+
+    assert {:ok, %{outcome: :accepted}} = Study.apply_one(other_scope, event, %{})
+    assert {:error, :scope_conflict} = Study.apply_one(@scope, event, %{})
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 1
+  end
+
+  test "concurrent same-scope retries commit one effect and return closed acceptance", %{event: event} do
+    results =
+      1..2
+      |> Task.async_stream(fn _ -> Study.apply_one(@scope, event, %{}) end,
+        max_concurrency: 2,
+        timeout: 5_000,
+        ordered: false
+      )
+      |> Enum.map(fn {:ok, result} -> result end)
+
+    assert Enum.all?(results, &match?({:ok, %{outcome: :accepted}}, &1))
+    assert Repo.aggregate(ReviewEvent, :count, :id) == 1
   end
 end
