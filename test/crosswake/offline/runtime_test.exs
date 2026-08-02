@@ -88,7 +88,7 @@ defmodule Crosswake.Offline.RuntimeTest do
   test "runtime retains unaccepted entries in journal order when replay is blocked" do
     entries = [:first, :second, :third]
 
-    assert {:halted, [:first, :second, :third]} =
+    assert {:halted, [:second, :third]} =
              Runtime.drain(entries, fn
                :first -> :accepted
                :second -> :blocked

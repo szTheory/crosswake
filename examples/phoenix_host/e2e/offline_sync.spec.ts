@@ -10,6 +10,10 @@ import {
 test.describe('Crosswake offline island: card rating queues in IndexedDB, reconnect flushes via app code, Ecto confirms exactly one review row', () => {
   const alphaScope = 'v1.scope_fixture_alpha_01';
 
+  async function waitForInactiveLifecycle(page) {
+    await expect.poll(() => page.locator('#status').textContent()).toContain('Sync is paused');
+  }
+
   test.beforeEach(async ({ page }) => {
     // D-01: delete IndexedDB BEFORE page scripts open it (addInitScript runs first)
     // keep in sync with offline_study.js:3 (DB_NAME = 'crosswake_offline_study')
@@ -19,6 +23,7 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
   test('offline rating queues in IndexedDB, reconnect via app flush, Ecto confirms one row, duplicate is idempotent', async ({ page, context }) => {
     // Step 1: Navigate to the offline island
     await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
 
     // Proves /offline is a socketless island (no LiveView WebSocket dependency)
@@ -74,11 +79,12 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     const betaScope = 'v1.scope_fixture_bravo_01';
 
     await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
     await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
 
     const betaBefore = await page.evaluate(async scopeRef => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const request = indexedDB.open('crosswake_offline_study', 2);
+        const request = indexedDB.open('crosswake_offline_study', 3);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
@@ -110,5 +116,79 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     expect(betaAfter).toEqual(betaBefore);
     await expect(page.locator('#status')).not.toContainText(alphaScope);
     await expect(page.locator('#status')).not.toContainText(betaScope);
+  });
+
+  test('inactive relaunch keeps retained work unavailable until host activation', async ({ page }) => {
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+
+    await expect.poll(async () => page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('crosswake_offline_study', 3);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      return await new Promise<any>((resolve, reject) => {
+        const tx = db.transaction('scope_lifecycle', 'readonly');
+        const request = tx.objectStore('scope_lifecycle').get('active');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    })).toMatchObject({ state: 'inactive', scope_ref: null });
+
+    await expect(page.locator('#status')).toContainText('Sync is paused');
+  });
+
+  test('switch before send keeps the old scope queue retained', async ({ page, context }) => {
+    const betaScope = 'v1.scope_fixture_bravo_01';
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    await page.evaluate(async scopeRef => {
+      await window.crosswakeOfflineStudy.fenceScope();
+      await window.crosswakeOfflineStudy.activateScope(scopeRef);
+    }, betaScope);
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
+  });
+
+  test('switch in flight keeps an old completion from deleting or updating the new scope', async ({ page, context }) => {
+    const betaScope = 'v1.scope_fixture_bravo_01';
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    const [queued] = await readQueuedOfflineMutations(page, { scopeRef: alphaScope });
+
+    let fulfill!: () => Promise<void>;
+    await page.route('**/study/sync', async route => {
+      await new Promise<void>(resolve => { fulfill = async () => { await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { accepted_records: [{ client_mutation_id: queued.client_mutation_id }], rejected: [] } }),
+      }); resolve(); }; });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(() => Boolean(fulfill)).toBe(true);
+    await page.evaluate(async scopeRef => {
+      await window.crosswakeOfflineStudy.fenceScope();
+      await window.crosswakeOfflineStudy.activateScope(scopeRef);
+    }, betaScope);
+    await fulfill();
+
+    await expect.poll(async () => (await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).length).toBe(1);
+    expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
+    await expect(page.locator('#status')).not.toContainText(alphaScope);
   });
 });

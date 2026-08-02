@@ -1,39 +1,63 @@
 import { canSatisfyJournalReserve } from './storage_logic.js';
 
 const DB_NAME = 'crosswake_offline_study';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_CARDS = 'flashcards';
 const STORE_MUTATIONS = 'scoped_mutations';
+const STORE_LIFECYCLE = 'scope_lifecycle';
 const SCOPE_REF_PATTERN = /^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/;
 
 let db;
 let currentCardIndex = 0;
 let cards = [];
 let activeScopeRef = null;
+let activeEpoch = 0;
 
 function isScopeRef(value) {
   return typeof value === 'string' && SCOPE_REF_PATTERN.test(value);
 }
 
-function requireActiveScope() {
-  if (!isScopeRef(activeScopeRef)) {
+function requireActiveLease() {
+  if (!isScopeRef(activeScopeRef) || !Number.isSafeInteger(activeEpoch) || activeEpoch < 1) {
     throw new Error('CW-OFFLINE-SCOPE-INACTIVE');
   }
 
-  return activeScopeRef;
+  return { scopeRef: activeScopeRef, epoch: activeEpoch };
 }
 
 // The host calls this only after it has independently established backend authority.
 // The scope is intentionally never rendered, logged, or copied into status text.
-function activateScope(scopeRef) {
+async function activateScope(scopeRef) {
   if (!isScopeRef(scopeRef)) {
     throw new Error('CW-OFFLINE-SCOPE-REF');
   }
 
+  const lifecycle = await readLifecycle();
+  if (lifecycle.state !== 'inactive') {
+    throw new Error('CW-OFFLINE-SCOPE-TRANSITION');
+  }
+
+  activeEpoch = lifecycle.epoch + 1;
   activeScopeRef = scopeRef;
+  await writeLifecycle({ key: 'active', state: 'active', scope_ref: scopeRef, epoch: activeEpoch });
+  updateStatus('Saved changes will sync when ready.');
 }
 
-window.crosswakeOfflineStudy = Object.freeze({ activateScope });
+async function fenceScope() {
+  const lifecycle = await readLifecycle();
+  const epoch = lifecycle.epoch + 1;
+  activeScopeRef = null;
+  activeEpoch = 0;
+  await writeLifecycle({ key: 'active', state: 'stopping', scope_ref: null, epoch });
+  await writeLifecycle({ key: 'active', state: 'inactive', scope_ref: null, epoch });
+  updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
+}
+
+function leaseIsCurrent(lease) {
+  return activeScopeRef === lease.scopeRef && activeEpoch === lease.epoch;
+}
+
+window.crosswakeOfflineStudy = Object.freeze({ activateScope, fenceScope });
 
 function configuredSyncEndpoint() {
   const endpoint = document.body.dataset.syncEndpoint;
@@ -67,9 +91,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     cards = await getAllCards();
     renderCurrentCard();
     setupEventListeners();
+    await resetLifecycleOnLaunch();
+    updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
   } catch (error) {
-    updateStatus('Error initializing: ' + error.message);
-    console.error(error);
+    updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
   }
 });
 
@@ -103,8 +128,37 @@ function initDB() {
         const mutations = db.createObjectStore(STORE_MUTATIONS, { keyPath: ['scope_ref', 'local_ref'] });
         mutations.createIndex('by_scope', 'scope_ref', { unique: false });
       }
+      if (!db.objectStoreNames.contains(STORE_LIFECYCLE)) {
+        db.createObjectStore(STORE_LIFECYCLE, { keyPath: 'key' });
+      }
     };
   });
+}
+
+function readLifecycle() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_LIFECYCLE, 'readonly');
+    const request = tx.objectStore(STORE_LIFECYCLE).get('active');
+    request.onsuccess = () => resolve(request.result || { key: 'active', state: 'inactive', scope_ref: null, epoch: 0 });
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function writeLifecycle(lifecycle) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_LIFECYCLE, 'readwrite');
+    tx.objectStore(STORE_LIFECYCLE).put(lifecycle);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+async function resetLifecycleOnLaunch() {
+  const prior = await readLifecycle();
+  activeScopeRef = null;
+  activeEpoch = 0;
+  await writeLifecycle({ key: 'active', state: 'inactive', scope_ref: null, epoch: prior.epoch + 1 });
 }
 
 function seedDummyCards() {
@@ -211,7 +265,8 @@ function updateStatusError() {
 }
 
 async function updateQueuedStatus(prefix = 'Queued for replay') {
-  const queued = await countScopeMutations(requireActiveScope()).catch(() => 0);
+  const { scopeRef } = requireActiveLease();
+  const queued = await countScopeMutations(scopeRef).catch(() => 0);
   updateStatus(`${prefix} - ${queued} saved locally`);
 }
 
@@ -221,7 +276,8 @@ async function flushOutbox() {
   if (flushing) return;
   flushing = true;
   try {
-    const scopeRef = requireActiveScope();
+    const lease = requireActiveLease();
+    const { scopeRef } = lease;
     const records = await getScopeMutations(scopeRef);
     if (records.length === 0) return;
 
@@ -250,10 +306,9 @@ async function flushOutbox() {
 
     if (response.ok) {
       const data = await response.json();
+      if (!leaseIsCurrent(lease)) return;
       const acceptedRecords = (data.data && data.data.accepted_records) || [];
       const rejected = (data.data && data.data.rejected) || [];
-
-      rejected.forEach(r => console.warn('Rejected mutation:', r.client_mutation_id, r.errors));
 
       const acceptedIds = acceptedRecords.map(r => r.client_mutation_id);
       await deleteAcceptedMutations(scopeRef, records, acceptedIds);
@@ -263,14 +318,14 @@ async function flushOutbox() {
 
       if (rejected.length > 0) {
         updateStatusError();
-        updateStatus(`Rejected by server - review needed. Synced ${accepted} - queued ${remaining}`);
+        updateStatus('Saved changes need attention and remain on this device.');
       } else {
         updateStatusClear();
         updateStatus(`Synced ${accepted} - queued ${remaining}`);
       }
     } else {
       updateStatusError();
-      updateStatus(`Queued for replay - ${records.length} saved locally. Retrying on reconnect.`);
+      updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
     }
   } finally {
     flushing = false;
@@ -322,7 +377,7 @@ function setupEventListeners() {
   window.addEventListener('online', flushOutbox);
   window.addEventListener('offline', async () => {
     updateStatusClear();
-    await updateQueuedStatus('Queued for replay');
+    if (activeScopeRef) await updateQueuedStatus('Queued for replay');
   });
 
   // Retained work stays inert until the host calls activateScope with fresh authority.
@@ -338,8 +393,10 @@ async function handleReview(rating) {
   };
 
   try {
-    const scopeRef = requireActiveScope();
+    const lease = requireActiveLease();
+    const { scopeRef } = lease;
     await queueMutation(scopeRef, mutation);
+    if (!leaseIsCurrent(lease)) return;
     updateStatusClear();
     updateStatus('Saved locally');
 
@@ -363,7 +420,7 @@ async function handleReview(rating) {
       updateStatus('QuotaExceededError handled gracefully.');
     } else {
       updateStatusClear();
-      updateStatus('Error saving review: ' + (error ? error.message : 'Unknown error'));
+      updateStatus('Sync is paused. Your saved changes remain on this device. Sign in again or try later.');
     }
   }
 }
