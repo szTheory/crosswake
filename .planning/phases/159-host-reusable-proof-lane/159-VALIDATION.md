@@ -1,7 +1,7 @@
 ---
 phase: 159
 slug: host-reusable-proof-lane
-status: complete
+status: validated
 nyquist_compliant: true
 wave_18_complete: true
 validated: 2026-08-02T14:20:00Z
@@ -52,3 +52,36 @@ This ledger retains only closed results, counts, stable behavior names, safe rel
 Protected before/after SHA-256 values are identical: `.planning/config.json` `de08e6a97eedb77d5b7bb23c1193c1e4aab126508e8cd26ea029e824f3391ab8`; `COVERAGE.md` `812faa33f005443b3c46f7c9fc355e63a3052b05d457c5d780349c81d848a552`.
 
 **Approval:** all deterministic required checks passed on the repaired final tree. Phase 159 is complete without widening support, device, Android, replay/auth, pack/audio, external API, or generic-sync/storage claims.
+
+## Test Infrastructure
+
+| Surface | Framework / command | Status |
+| --- | --- | --- |
+| Generator, config, templates, iOS verifier, and retained evidence | ExUnit via the focused five-file `mix test` gate | COVERED — 55 tests passed |
+| Native publication helpers | C11 compiler with `-Wall -Wextra -Werror` | COVERED — both helpers built warning-clean |
+| Generated Phoenix host contract | TypeScript plus the isolated Playwright proof using the existing host webServer lifecycle | COVERED — typecheck and one Chromium proof passed |
+| Generated shell scripts | `bash -n` | COVERED |
+| Declared Elixir sources and tests | `mix format --check-formatted` | COVERED |
+
+## Requirement-to-Test Map
+
+| Requirement | Source plans | Automated evidence | Status |
+| --- | --- | --- | --- |
+| PROOF-01 | 159-01 through 159-28 where declared | `crosswake_gen_proof_lane_test.exs`, native helper warning-clean builds, collision/concurrency/interruption regressions | COVERED |
+| PROOF-02 | 159-01 through 159-28 where declared | `config_test.exs`, generator rerun/check/diff tests, endpoint and root normalization tests | COVERED |
+| PROOF-03 | 159-01 through 159-28 where declared | `template_contract_test.exs`, `ios_verifier_test.exs`, Phoenix TypeScript check, isolated generated Playwright proof | COVERED |
+| PROOF-04 | 159-01 through 159-28 where declared | `evidence_test.exs`, digest-snapshot, privacy, collision, interruption, and ancestor-replacement regressions | COVERED |
+
+## Manual-Only
+
+None. Physical-device execution belongs to Phase 162 and is not a Phase 159 validation gap. The generated accessibility-size runtime remains advisory and non-promoting.
+
+## Validation Audit 2026-08-02
+
+| Metric | Count |
+| --- | ---: |
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Nyquist sign-off:** compliant. Every Phase 159 requirement has current automated verification, and no additional test files were required.
