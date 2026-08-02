@@ -266,7 +266,7 @@ copy the smallest adopter-specific test slice.
 **Effort:** 2 focused days
 **Depends on:** Phase 159
 **Requirements:** SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05
-**Plans:** 5/8 plans executed
+**Plans:** 7/8 plans executed
 
 Plans:
 **Wave 1**
@@ -285,11 +285,11 @@ Plans:
 
 - [x] 160-04-PLAN.md — Quarantine legacy IndexedDB work and recover it only under an explicit exact-scope host lease.
 - [x] 160-06-PLAN.md — Require typed current RouteEntry/AuthContext evidence at the default Sigra replay boundary.
-- [ ] 160-07-PLAN.md — Restore legacy/global idempotency protection without inventing account ownership.
+- [x] 160-07-PLAN.md — Restore legacy/global idempotency protection without inventing account ownership.
 
 **Wave 5** *(blocked on Plan 160-04)*
 
-- [ ] 160-05-PLAN.md — Own browser worker shutdown across every await and render partial halted batches as paused.
+- [x] 160-05-PLAN.md — Own browser worker shutdown across every await and render partial halted batches as paused.
 
 **Wave 6** *(blocked on Plans 160-05 through 160-07)*
 
