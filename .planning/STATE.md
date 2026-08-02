@@ -4,11 +4,11 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 159
 current_phase_name: host-reusable-proof-lane
-status: executing
-stopped_at: Completed 159-21-PLAN.md
-last_updated: "2026-08-01T23:57:00.098Z"
+status: gaps_found
+stopped_at: Phase 159 verification found final-publication symlink gaps
+last_updated: "2026-08-02T00:06:25Z"
 last_activity: 2026-08-01
-last_activity_desc: Phase 159 execution started
+last_activity_desc: Phase 159 verification closed the browser gap and found two publication blockers
 progress:
   total_phases: 5
   completed_phases: 2
@@ -22,10 +22,10 @@ current_plan: 21
 
 ## Current Position
 
-Phase: 159 (host-reusable-proof-lane) — FINAL VERIFICATION PENDING
+Phase: 159 (host-reusable-proof-lane) — GAPS FOUND
 Plan: 21 of 21 executed
-Status: Re-run the Phase 159 same-tree verification before promoting phase requirements.
-Last activity: 2026-08-01 — Plan 159-21 made the generated Phoenix browser proof executable and isolated.
+Status: 22/23 must-haves verified; PROOF-01 and PROOF-04 remain blocked by final-publication symlink swaps.
+Last activity: 2026-08-01 — verification closed the generated-browser gap and reproduced two filesystem publication blockers.
 
 ## Active Objective
 
@@ -44,13 +44,17 @@ framework launch.
 
 ## Next Action
 
-Execute Plan 159-21, then rerun Phase 159 verification. The bounded repair makes the generated
-browser spec itself executable, introduces a fail-closed host-adapter seam, advances template
-provenance to version 2 without overwriting host bytes, and proves isolated rendered output through
-the existing Phoenix Playwright lifecycle. Do not start Phase 160 while this gap remains. TODO-002
-remains the bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`.
+Plan Phase 159 gap closure for the two reproduced final-publication defects, then execute only those
+gap plans and rerun verification. Evidence promotion must reject a swapped stage-directory symlink,
+and manifest publication must reject a swapped staging-file symlink before reporting success. Do
+not start Phase 160 while these gaps remain. TODO-002 remains the bounded adopter-input gate and
+adopter-instance completeness remains `unknown_blocking`.
 
 ## Blockers
+
+- Phase 159 evidence and manifest publication can currently report success after their staging
+  source is swapped to a symlink; PROOF-01 and PROOF-04 remain blocked pending no-follow/type checks
+  at the final native publication boundaries.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
@@ -140,6 +144,7 @@ remains the bounded adopter-input gate and adopter-instance completeness remains
 - [Phase ?]: Generated Phoenix host proof is required, typed, and selected within the existing primary browser corpus.
 - [Phase ?]: Proof-lane endpoint paths reject every backslash byte at canonical normalization before raw EEx rendering or generator filesystem authority.
 - [Phase 159]: The final same-tree gate typechecks and executes the generated Phoenix-host proof with backend confirmation, empty-outbox, and duplicate-idempotency assertions; endpoint one-backslash rejection is verified at every config seam.
+- [Phase 159]: Executable generated-browser proof is verified, but final evidence and manifest publication must reject swapped symlink staging sources before PROOF-01/04 can close.
 - [Phase ?]: Generated browser specs use one typed host adapter that defaults to stable PL-BROWSER-HOST-ADAPTER denial.
 - [Phase ?]: Phoenix proof pre-seeds the host adapter and executes only isolated version-2 generated Playwright output.
 

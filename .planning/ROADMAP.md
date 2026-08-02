@@ -148,11 +148,13 @@ truth, and codename-only Linear drafts.
 **Depends on:** Phase 158
 **Requirements:** PROOF-01, PROOF-02, PROOF-03, PROOF-04
 **Plans:** 21/21 plans executed
-**Verification:** Final same-tree verification pending — Plan 159-21 now executes isolated
-version-2 generated browser output through the existing Phoenix lifecycle, but requirements remain
-unpromoted until the complete Phase 159 gate is rerun. The generated accessibility runtime remains
-an advisory `not_run` backstop; TODO-002 remains open and adopter-instance completeness remains
-`unknown_blocking`.
+**Verification:** Gaps found (22/23 must-haves verified) — Plan 159-21 closes the generated-browser
+gap by executing isolated version-2 output through the existing Phoenix lifecycle. Independent
+review and verification reproduced two final-publication symlink swaps: evidence promotion can
+retain an unscanned substituted symlink, and manifest publication can report a symlinked artifact
+as created. PROOF-01 and PROOF-04 remain blocked; PROOF-02 and PROOF-03 are satisfied. The generated
+accessibility runtime remains an advisory `not_run` backstop; TODO-002 remains open and
+adopter-instance completeness remains `unknown_blocking`.
 
 Plans:
 **Wave 1**
