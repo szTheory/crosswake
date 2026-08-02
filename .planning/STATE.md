@@ -4,28 +4,28 @@ milestone: v21.0
 milestone_name: First B2C Adopter Readiness
 current_phase: 160
 current_phase_name: scoped-replay-and-auth-safety
-status: executing
-stopped_at: Completed 160-11-PLAN.md
-last_updated: "2026-08-02T22:47:15.321Z"
+status: gaps_found
+stopped_at: Independent verification found a client-controlled replay-status gap after 160-11
+last_updated: "2026-08-02T22:56:38.000Z"
 last_activity: 2026-08-02
-last_activity_desc: Completed Plan 160-10 inactive replay safety closure
+last_activity_desc: Phase 160 re-verification found one remaining SCOPE-03 gap
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 59
   completed_plans: 59
-  percent: 60
-current_plan: 10
+  percent: 40
+current_plan: 11
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 160 (scoped-replay-and-auth-safety) — EXECUTING
+Phase: 160 (scoped-replay-and-auth-safety) — GAPS FOUND
 Plan: 11 of 11 complete
-Status: Ready for independent verification and security audit
-Last activity: 2026-08-02 — Completed Plan 160-11 final scoped replay validation
+Status: Independent verification found one remaining SCOPE-03 gap
+Last activity: 2026-08-02 — Re-verification scored 34/35 must-haves
 
 ## Active Objective
 
@@ -44,11 +44,17 @@ framework launch.
 
 ## Next Action
 
-Execute only Phase 160 gap plans 09-11, then rerun verification and `$gsd-secure-phase 160`. TODO-002 remains the
-bounded adopter-input gate and adopter-instance completeness remains `unknown_blocking`; do not
-infer concrete adopter routes or promote downstream device claims.
+Run `$gsd-plan-phase 160 --gaps` to close the server-authority hole: replay admission must reject
+extra wire fields and persistence must allowlist server-owned attributes so the browser cannot set
+the stored outcome/status. Then execute the gap plan, rerun verification, and run
+`$gsd-secure-phase 160`. TODO-002 remains the bounded adopter-input gate and adopter-instance
+completeness remains `unknown_blocking`; do not infer concrete adopter routes or promote downstream
+device claims.
 
 ## Blockers
+
+- Phase 160 SCOPE-03 remains blocked because replay admission accepts extra event fields and the
+  persistence path permits a browser-supplied outcome/status after authority checks pass.
 
 - The route inventory needs adopter-supplied concrete route IDs/paths, mutation actions, staleness,
   auth sensitivity, expected pronunciation-pack sizes/codecs, and fallbacks.
