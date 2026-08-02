@@ -192,6 +192,74 @@ test.describe('Crosswake offline island: card rating queues in IndexedDB, reconn
     await expect(page.locator('#status')).not.toContainText(alphaScope);
   });
 
+  test('post-response fence blocks old success side effects', async ({ page, context }) => {
+    const betaScope = 'v1.scope_fixture_bravo_01';
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+    const [queued] = await readQueuedOfflineMutations(page, { scopeRef: alphaScope });
+
+    await page.evaluate(() => {
+      window.fetch = () => new Promise(resolve => {
+        (window as any).__releaseScopedReplay = () => resolve(new Response(JSON.stringify({
+          data: { accepted_records: [{ client_mutation_id: 'pending' }], rejected: [] },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(() => page.evaluate(() => Boolean((window as any).__releaseScopedReplay))).toBe(true);
+
+    const fence = page.evaluate(() => window.crosswakeOfflineStudy.fenceScope());
+    expect(await Promise.race([
+      fence.then(() => 'settled'),
+      page.waitForTimeout(50).then(() => 'pending'),
+    ])).toBe('pending');
+    await page.evaluate(() => (window as any).__releaseScopedReplay());
+    await fence;
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), betaScope);
+
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    expect(await readQueuedOfflineMutations(page, { scopeRef: betaScope })).toHaveLength(0);
+    await expect(page.locator('#status')).toContainText('Saved changes will sync when ready.');
+  });
+
+  test('post-response fence blocks old denial status', async ({ page, context }) => {
+    const betaScope = 'v1.scope_fixture_bravo_01';
+    await page.goto('/offline');
+    await waitForInactiveLifecycle(page);
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), alphaScope);
+    await context.setOffline(true);
+    await page.click('#btn-flip');
+    await page.click('#btn-good');
+
+    let releaseResponse!: () => Promise<void>;
+    await page.route('**/study/sync', async route => {
+      await new Promise<void>(resolve => {
+        releaseResponse = async () => {
+          await route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: { class: 'feature_disabled' } }) });
+          resolve();
+        };
+      });
+    });
+
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect.poll(() => Boolean(releaseResponse)).toBe(true);
+
+    const fence = page.evaluate(() => window.crosswakeOfflineStudy.fenceScope());
+    await releaseResponse();
+    await fence;
+    await page.evaluate(scopeRef => window.crosswakeOfflineStudy.activateScope(scopeRef), betaScope);
+
+    expect(await readQueuedOfflineMutations(page, { scopeRef: alphaScope })).toHaveLength(1);
+    await expect(page.locator('#status')).toContainText('Saved changes will sync when ready.');
+  });
+
   test('legacy upgrade quarantines unscoped work', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(async () => {
