@@ -127,11 +127,11 @@ when they protect a recurring contract; one-time reconciliation remains phase ev
 | PROOF-02 | Phase 159 | Complete |
 | PROOF-03 | Phase 159 | Complete |
 | PROOF-04 | Phase 159 | Complete |
-| SCOPE-01 | Phase 160 | Complete |
-| SCOPE-02 | Phase 160 | Complete |
-| SCOPE-03 | Phase 160 | Complete |
-| SCOPE-04 | Phase 160 | Complete |
-| SCOPE-05 | Phase 160 | Complete |
+| SCOPE-01 | Phase 160 | Gaps Found |
+| SCOPE-02 | Phase 160 | Gaps Found |
+| SCOPE-03 | Phase 160 | Gaps Found |
+| SCOPE-04 | Phase 160 | Gaps Found |
+| SCOPE-05 | Phase 160 | Gaps Found |
 | PACK-01 | Phase 161 | Pending |
 | PACK-02 | Phase 161 | Pending |
 | PACK-03 | Phase 161 | Pending |
